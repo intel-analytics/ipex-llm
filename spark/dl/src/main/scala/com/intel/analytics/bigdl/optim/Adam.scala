@@ -77,138 +77,14 @@ class Adam[@specialized(Float, Double) T: ClassTag](
 
     val times = new Array[Long](parallelNum)
 
-    Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-      val start = System.nanoTime()
-      val offset = tid * taskSize + math.min(tid, extraTask)
-      val length = taskSize + (if (tid < extraTask) 1 else 0)
-      val currentDfdx = dfdx.narrow(1, offset + 1, length)
-      val currentParameter = parameter.narrow(1, offset + 1, length)
-      val currentOnes = ones.narrow(1, 1, length)
-      val (_s, _r, _denom) =
-        if (state.get[Tensor[T]](s"s$tid").isDefined && state.get[Tensor[T]](s"r$tid").isDefined
-          && state.get[Tensor[T]](s"denom$tid").isDefined) {
-          (state.get[Tensor[T]](s"s$tid").get, state.get[Tensor[T]](s"r$tid").get,
-            state.get[Tensor[T]](s"denom$tid").get)
-        } else {
-          (Tensor[T]().resizeAs(currentParameter).zero(),
-            Tensor[T]().resizeAs(currentParameter).zero(),
-            Tensor[T]().resizeAs(currentParameter).zero())
-        }
-      Adam.updateFrame(_s, _r, _denom, clr, currentDfdx, currentParameter,
-        beta1, beta2, timestep, currentOnes, eps)
-
-      state(s"s$tid") = _s // 1st moment variables
-      state(s"r$tid") = _r // 2nd moment variables
-      state(s"denom$tid") = _denom // 3nd moment variables
-      times(tid) = (System.nanoTime() - start) / 1000000L
-    }))
-
-    Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
-    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
-
-
-    state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
-
-    (parameter, Array(fx))
-  }
-
-  val embeddingSize = 64
-  val numEmbedding = 128
-  val lastUpdated = collection.mutable.HashMap(
-    Array.tabulate(numEmbedding)(i => (i + 1, 0)): _*)
-
-  def updateNograd(indices: Tensor[T], parameter: Tensor[T]): Unit = {
-    val ones = Tensor(embeddingSize).fill(ev.one)
-
-    val lr = this.learningRate
-    val lrd = this.learningRateDecay
-    val beta1 = this.beta1
-    val beta2 = this.beta2
-    val eps = this.Epsilon
-
-    val uniqueIndices = Tensor[T](Storage(indices.storage().array().distinct))
-
-    var timestep = state.getOrElse[Int]("evalCounter", 0)
-
-    val clr = lr / (1 + timestep*lrd)
-
-    timestep = timestep + 1
-
-    val parallelNum = Engine.coreNumber()
-    val gradLength = uniqueIndices.nElement()
-    val taskSize = gradLength / parallelNum
-    val extraTask = gradLength % parallelNum
-
-    val times = new Array[Long](parallelNum)
-
-    Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-      val start = System.nanoTime()
-      val offset = tid * taskSize + math.min(tid, extraTask)
-      val length = taskSize + (if (tid < extraTask) 1 else 0)
-      val currentDfdx = uniqueIndices.narrow(1, offset + 1, length)
-      val currentParameter = parameter.narrow(1, offset + 1, length)
-      var i = 1
-      while(i <= currentDfdx.nElement()) {
-        val index = ev.toType[Int](currentDfdx.valueAt(i))
-        val (_s, _r, _denom) =
-          if (state.get[Tensor[T]](s"s$index").isDefined &&
-            state.get[Tensor[T]](s"r$index").isDefined
-            && state.get[Tensor[T]](s"denom$index").isDefined) {
-            (state.get[Tensor[T]](s"s$index").get,
-              state.get[Tensor[T]](s"r$index").get,
-              state.get[Tensor[T]](s"denom$index").get)
-          } else {
-            (Tensor[T](embeddingSize).zero(),
-              Tensor[T](embeddingSize).zero(),
-              Tensor[T](embeddingSize).zero())
-          }
-        val indexThParameter = parameter.narrow(1, index * embeddingSize + 1, embeddingSize)
-        Adam.updateFrameZeroGrad(
-          timestep, lastUpdated(index),
-          _s, _r, _denom, clr, indexThParameter,
-          beta1, beta2, ones, eps)
-        state(s"s$index") = _s // 1st moment variables
-        state(s"r$index") = _r // 2nd moment variables
-        state(s"denom$index") = _denom // 3nd moment variables
-        lastUpdated(index) = timestep
-        i += 1
+    (0 until parallelNum).foreach{tid =>
+      if (state.get[Tensor[T]](s"s$tid").isEmpty) {
+        state(s"s$tid") = Tensor[T]()
+        state(s"r$tid") = Tensor[T]()
+        state(s"denom$tid") = Tensor[T]()
       }
-
-      times(tid) = (System.nanoTime() - start) / 1000000L
-    }))
-    Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
-    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
-
-
-    state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
-  }
-
-  override def optimize(feval: (Tensor[T]) => Array[(Tensor[T], Tensor[T])],
-                        parameter: Tensor[T]): (Tensor[T], Array[T]) = {
-    val lr = this.learningRate
-    val lrd = this.learningRateDecay
-    val beta1 = this.beta1
-    val beta2 = this.beta2
-    val eps = this.Epsilon
-
-    val (fx, dfdx) = feval(parameter)
-
-    var timestep = state.getOrElse[Int]("evalCounter", 0)
-
-    val clr = lr / (1 + timestep*lrd)
-
-    timestep = timestep + 1
-
-    val parallelNum = Engine.coreNumber()
-    val gradLength = parameter.nElement()
-    val taskSize = gradLength / parallelNum
-    val extraTask = gradLength % parallelNum
-    if (ones == null || ones.nElement() < taskSize + 1) {
-      ones = Tensor[T]().resize(taskSize + 1).fill(ev.one)
     }
 
-    val times = new Array[Long](parallelNum)
-
     Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
       val start = System.nanoTime()
       val offset = tid * taskSize + math.min(tid, extraTask)
@@ -217,21 +93,13 @@ class Adam[@specialized(Float, Double) T: ClassTag](
       val currentParameter = parameter.narrow(1, offset + 1, length)
       val currentOnes = ones.narrow(1, 1, length)
       val (_s, _r, _denom) =
-        if (state.get[Tensor[T]](s"s$tid").isDefined && state.get[Tensor[T]](s"r$tid").isDefined
-          && state.get[Tensor[T]](s"denom$tid").isDefined) {
-          (state.get[Tensor[T]](s"s$tid").get, state.get[Tensor[T]](s"r$tid").get,
-            state.get[Tensor[T]](s"denom$tid").get)
-        } else {
-          (Tensor[T]().resizeAs(currentParameter).zero(),
-            Tensor[T]().resizeAs(currentParameter).zero(),
-            Tensor[T]().resizeAs(currentParameter).zero())
-        }
+        (state.get[Tensor[T]](s"s$tid").get.resizeAs(currentParameter),
+          state.get[Tensor[T]](s"r$tid").get.resizeAs(currentParameter),
+          state.get[Tensor[T]](s"denom$tid").get.resizeAs(currentParameter))
+
       Adam.updateFrame(_s, _r, _denom, clr, currentDfdx, currentParameter,
         beta1, beta2, timestep, currentOnes, eps)
 
-      state(s"s$tid") = _s // 1st moment variables
-      state(s"r$tid") = _r // 2nd moment variables
-      state(s"denom$tid") = _denom // 3nd moment variables
       times(tid) = (System.nanoTime() - start) / 1000000L
     }))
 

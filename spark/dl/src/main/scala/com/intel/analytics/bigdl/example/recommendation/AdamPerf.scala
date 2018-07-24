@@ -16,9 +16,11 @@
 
 package com.intel.analytics.bigdl.example.recommendation
 
-import com.intel.analytics.bigdl.optim.Adam
+import com.intel.analytics.bigdl.nn.LookupTable
+import com.intel.analytics.bigdl.optim.{Adam, EmbeddingAdam}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.util.Random
 
@@ -28,6 +30,7 @@ object AdamPerf {
     val batchSize = args(1).toInt
     val core = args(2).toInt
     System.setProperty("bigdl.localMode", "true")
+    val sparse = args(3) == "1"
     Engine.init(1, core, false)
     val userCount = 138493
     val itemCount = 26744
@@ -36,24 +39,72 @@ object AdamPerf {
       hiddenLayers = Array(128, 64),
       mfEmbed = 64)
       .buildModel()
-    val (w, g) = model.getParameters()
-    val optimMethod = new Adam[Float]()
-    g.randn()
 
-    // warm up
-    (0 until 5).foreach{i =>
-      optimMethod.optimize(_ => (1, g), w)
-    }
+    if (sparse) {
+      val embeddings = model.embeddingModel.findModules("LookupTable")
+        .map(_.asInstanceOf[LookupTable[Float]])
+      val input = Tensor[Float].range(1, batchSize * core)
+      val embeddingsGradient = embeddings.map{embedding =>
+        val inputAndGradient = Array.tabulate(core)(c =>
+          (input.narrow(1, batchSize * c + 1, batchSize),
+            Tensor[Float](batchSize, embedding.nOutput).rand()))
+        val optimMethod = new EmbeddingAdam[Float]()
+          optimMethod.setNOutput(embedding.nIndex, embedding.nOutput)
+        val parameter = embedding.getParameters()._1
+        (inputAndGradient, optimMethod, parameter)
+      }
 
-    var count = 0L
-    (0 until iteration).foreach { i =>
-      println(i)
-      g.randn()
+      def update(): Unit = {
+        embeddingsGradient.foreach {v =>
+          val inputAndGradient = v._1
+          val optimMethod = v._2
+          val parameter = v._3
+
+          optimMethod.updateNograd(input, parameter)
+          optimMethod.optimizeEmbedding(inputAndGradient, parameter)
+        }
+      }
+
+      // warm up
+      (0 until 5).foreach { i =>
+        update()
+      }
+
       val start = System.nanoTime()
-      optimMethod.optimize(_ => (1, g), w)
+      var count = 0L
+      (0 until iteration).foreach { i =>
+        println(i)
+        val start = System.nanoTime()
+        update()
+        val end = System.nanoTime()
+        println(s"sparse time is ${(end - start) / 1e6.toLong}")
+        count += end - start
+      }
       val end = System.nanoTime()
-      println(s"time is ${(end - start) / 1e6.toLong}")
-      count += end - start
+      println(s"average sparse time is ${(end - start) / 1e6.toLong / iteration}")
+
+
+    } else {
+      // update with dense gradient
+      val (w, g) = model.embeddingModel.getParameters()
+      val optimMethod = new Adam[Float]()
+      g.randn()
+
+      // warm up
+      (0 until 5).foreach { i =>
+        optimMethod.optimize(_ => (1, g), w)
+      }
+
+      var count = 0L
+      (0 until iteration).foreach { i =>
+        println(i)
+        g.randn()
+        val start = System.nanoTime()
+        optimMethod.optimize(_ => (1, g), w)
+        val end = System.nanoTime()
+        println(s"time is ${(end - start) / 1e6.toLong}")
+        count += end - start
+      }
     }
   }
 
