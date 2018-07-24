@@ -70,9 +70,10 @@ object AdamPerf {
         update()
       }
 
-      val start = System.nanoTime()
       var count = 0L
       (0 until iteration).foreach { i =>
+        val n = i % 10
+        input.range(1 + n * batchSize * core, 1 + (n + 1) * batchSize * core)
         println(i)
         val start = System.nanoTime()
         update()
@@ -80,9 +81,8 @@ object AdamPerf {
         println(s"sparse time is ${(end - start) / 1e6.toLong}")
         count += end - start
       }
-      val end = System.nanoTime()
-      println(s"average sparse time is ${(end - start) / 1e6.toLong / iteration}")
 
+      println(s"average sparse time is ${count / 1e6.toLong / iteration}")
 
     } else {
       // update with dense gradient

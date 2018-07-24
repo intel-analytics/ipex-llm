@@ -115,8 +115,9 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 
   var embeddingNoutput = 0
   var embeddingNIndex = 0
-  var lastUpdated = collection.mutable.HashMap(
-    Array.tabulate(embeddingNoutput)(i => (i + 1, 0)): _*)
+  var lastUpdated = Array.tabulate(embeddingNIndex)(_ => 1)
+//  var lastUpdated = collection.mutable.HashMap(
+//    Array.tabulate(embeddingNoutput)(i => (i + 1, 0)): _*)
 
   // TODO: clear before saving
   var s: Array[Tensor[T]] = _
@@ -125,8 +126,9 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
   def setNOutput(nIndex: Int, nOutput: Int): Unit = {
     embeddingNoutput = nOutput
     embeddingNIndex = nIndex
-    lastUpdated = collection.mutable.HashMap(
-      Array.tabulate(nIndex)(i => (i + 1, 1)): _*)
+//    lastUpdated = collection.mutable.HashMap(
+//      Array.tabulate(nIndex)(i => (i + 1, 1)): _*)
+    lastUpdated = Array.tabulate(nIndex)(_ => 1)
     ones = Tensor(embeddingNoutput).fill(ev.one)
     s = Array.tabulate(nIndex)(_ => Tensor[T](nOutput))
     r = Array.tabulate(nIndex)(_ => Tensor[T](nOutput))
@@ -149,9 +151,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 
     var timestep = state.getOrElse[Int]("evalCounter", 1)
 
-    val clr = lr / (1 + timestep*lrd)
-
-    timestep = timestep + 1
+    val clr = lr / (1 + (timestep - 1) *lrd)
 
     val parallelNum = Engine.coreNumber()
     val gradLength = uniqueIndices.nElement()
@@ -161,36 +161,23 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 //    val times = new Array[Long](parallelNum)
 
     Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-      val start = System.nanoTime()
       val offset = tid * taskSize + math.min(tid, extraTask)
       val length = taskSize + (if (tid < extraTask) 1 else 0)
       val currentIndex = uniqueIndices.narrow(1, offset + 1, length)
       var i = 1
       while(i <= currentIndex.nElement()) {
         val index = ev.toType[Int](currentIndex.valueAt(i))
-        val (_s, _r, _denom) = (s(index - 1), r(index - 1), denom(index - 1))
-//          (state.get[Tensor[T]](s"s$index").get.resize(embeddingNoutput),
-//            state.get[Tensor[T]](s"r$index").get.resize(embeddingNoutput),
-//            state.get[Tensor[T]](s"denom$index").get.resize(embeddingNoutput))
-//          if (state.get[Tensor[T]](s"s$index").isDefined) {
-//            (state.get[Tensor[T]](s"s$index").get,
-//              state.get[Tensor[T]](s"r$index").get,
-//              state.get[Tensor[T]](s"denom$index").get)
-//          } else {
-//            (Tensor[T](embeddingNoutput),
-//              Tensor[T](embeddingNoutput),
-//              Tensor[T](embeddingNoutput))
-//          }
-        val indexThParameter = parameter.narrow(1,
-          (index - 1) * embeddingNoutput + 1, embeddingNoutput)
-        Adam.updateFrameZeroGrad(
-          timestep, lastUpdated(index),
-          _s, _r, _denom, clr, indexThParameter,
-          beta1, beta2, ones, eps)
-//        state(s"s$index") = _s // 1st moment variables
-//        state(s"r$index") = _r // 2nd moment variables
-//        state(s"denom$index") = _denom // 3nd moment variables
-        lastUpdated(index) = timestep
+        if (timestep > lastUpdated(index - 1)) {
+          val (_s, _r, _denom) = (s(index - 1), r(index - 1), denom(index - 1))
+          val indexThParameter = parameter.narrow(1,
+            (index - 1) * embeddingNoutput + 1, embeddingNoutput)
+          println(s"update index ${index}")
+          Adam.updateFrameZeroGrad(
+            timestep, lastUpdated(index - 1),
+            _s, _r, _denom, clr, indexThParameter,
+            beta1, beta2, ones, eps)
+          lastUpdated(index - 1) = timestep
+        }
 //        println(index)
         i += 1
       }
@@ -245,30 +232,13 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
       while(i <= currentIndex.nElement()) {
         val index = ev.toType[Int](currentIndex.valueAt(i))
         val (_s, _r, _denom) = (s(index - 1), r(index - 1), denom(index - 1))
-//          (state.get[Tensor[T]](s"s$index").get.resize(embeddingNoutput),
-//            state.get[Tensor[T]](s"r$index").get.resize(embeddingNoutput),
-//            state.get[Tensor[T]](s"denom$index").get.resize(embeddingNoutput))
-//          if (state.get[Tensor[T]](s"s$index").isDefined &&
-//            state.get[Tensor[T]](s"r$index").isDefined
-//            && state.get[Tensor[T]](s"denom$index").isDefined) {
-//            (state.get[Tensor[T]](s"s$index").get,
-//              state.get[Tensor[T]](s"r$index").get,
-//              state.get[Tensor[T]](s"denom$index").get)
-//          } else {
-//            (Tensor[T](embeddingNoutput).zero(),
-//              Tensor[T](embeddingNoutput).zero(),
-//              Tensor[T](embeddingNoutput).zero())
-//          }
         val indexThParameter = parameter.narrow(1,
           (index - 1) * embeddingNoutput + 1, embeddingNoutput)
         val iThGradient = currentDfdx.select(1, i)
         Adam.updateFrame(
           _s, _r, _denom, clr, iThGradient, indexThParameter,
           beta1, beta2, timestep, ones, eps)
-//        state(s"s$index") = _s // 1st moment variables
-//        state(s"r$index") = _r // 2nd moment variables
-//        state(s"denom$index") = _denom // 3nd moment variables
-        lastUpdated(index) = timestep
+        lastUpdated(index - 1) = timestep + 1
         i += 1
       }
 //      Adam.logger.info(s"update grad${tid} $i ${ev.toType[Int](currentIndex.valueAt(i - 1))}")
@@ -277,7 +247,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 //    Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
 //    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
 
-
+    timestep = timestep + 1
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
   }
 

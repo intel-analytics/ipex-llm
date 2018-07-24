@@ -165,7 +165,7 @@ object Adam {
     beta1: Double, beta2: Double,
     ones: Tensor[T], eps: Double)(
      implicit ev: TensorNumeric[T]): Unit = {
-    (lastUpdatedIteration until currentIteration).foreach{timestep =>
+    (lastUpdatedIteration until (currentIteration - 1)).foreach{timestep =>
       /**
        * m_t = beta_1 * m_t-1
        * v_t = beta_2 * v_t-1
