@@ -55,10 +55,15 @@ object ResNet50Perf {
     System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
     System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
 
-    val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
-      s"${Runtime.getRuntime.availableProcessors() / 2}").toInt
-    Engine.setCoreNumber(1)
-    MklDnn.setNumThreads(coreNumber)
+//    val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
+//      s"${Math.ceil(Runtime.getRuntime.availableProcessors() / 2).toInt}").toInt
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("bigdl.mklNumThreads",
+      s"${Math.ceil(Runtime.getRuntime.availableProcessors / 2).toInt}")
+    System.setProperty("bigdl.coreNumber", "1")
+    Engine.init
+//    Engine.setCoreNumber(1)
+//    MklDnn.setNumThreads(coreNumber)
 
     parser.parse(argv, new ResNet50PerfParams()).foreach { params =>
       val batchSize = params.batchSize

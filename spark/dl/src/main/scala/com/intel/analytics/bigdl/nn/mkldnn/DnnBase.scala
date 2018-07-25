@@ -266,16 +266,17 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
   }
 
   private def checkInputs: Boolean = {
-    def recursive(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): Array[Boolean] = {
+    def getAllInputs(
+      module: AbstractModule[_ <: Activity, _ <: Activity, Float]): Array[Boolean] = {
       module match {
-        case seq: Sequential => recursive(seq.modules.head)
-        case concat: ConcatTable => concat.modules.flatMap(x => recursive(x)).toArray
+        case seq: Sequential => getAllInputs(seq.modules.head)
+        case concat: ConcatTable => concat.modules.flatMap(x => getAllInputs(x)).toArray
         case _: Input => Array(true)
         case _ => Array(false)
       }
     }
 
-    !recursive(this).contains(false)
+    getAllInputs(this).forall(_ == true)
   }
 
   final def compile(phase: Phase): Unit = {

@@ -16,9 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import java.io.{IOException, ObjectInputStream}
-
-import com.intel.analytics.bigdl.mkl.{AlgKind, Memory, MklDnn, PropKind, Query}
+import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Ones, VariableFormat, Zeros}
@@ -56,6 +54,7 @@ class SpatialBatchNormalization(
 
   private[mkldnn] val runningMean = new Blob(Array(nOutput))
   private[mkldnn] val runningVariance = new Blob(Array(nOutput))
+  // TODO we should make it private. Currently, ResNet50 will use it out of this scope.
   val weightAndBias = new Blob(Array(nOutput * 2))
   val gradWeightAndBias = new Blob(Array(nOutput * 2))
 
@@ -194,7 +193,7 @@ class SpatialBatchNormalization(
       }
     }
 
-    weightAndBias.sync(isDense2Native = true)
+    weightAndBias.syncBeforeRead()
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
@@ -209,8 +208,8 @@ class SpatialBatchNormalization(
       variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
     }
 
-    runningMean.sync(isDense2Native = false)
-    runningVariance.sync(isDense2Native = false)
+    runningMean.syncAfterWrite()
+    runningVariance.syncAfterWrite()
 
     output
   }
@@ -273,7 +272,7 @@ class SpatialBatchNormalization(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
-    gradWeightAndBias.sync(isDense2Native = false)
+    gradWeightAndBias.syncAfterWrite()
 
     gradInput
   }

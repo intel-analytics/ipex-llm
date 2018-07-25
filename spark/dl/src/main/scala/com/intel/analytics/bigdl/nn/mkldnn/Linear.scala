@@ -16,18 +16,12 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import java.io.{IOException, ObjectInputStream}
-
-import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, PropKind, Query, Stream => DnnStream}
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable, TensorModule}
+import com.intel.analytics.bigdl.mkl._
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
 
 class Linear(
   val inputSize: Int,
@@ -37,10 +31,10 @@ class Linear(
   private val initGradWeight: Tensor[Float] = null,
   private val initGradBias: Tensor[Float] = null) extends MklDnnLayer with Initializable {
 
-  val weight = new Blob(Array(outputSize, inputSize))
-  val bias = new Blob(Array(outputSize))
-  val gradWeight = new Blob(Array(outputSize, inputSize))
-  val gradBias = new Blob(Array(outputSize))
+  private[mkldnn] val weight: Blob = new Blob(Array(outputSize, inputSize))
+  private[mkldnn] val bias: Blob = new Blob(Array(outputSize))
+  private[mkldnn] val gradWeight: Blob = new Blob(Array(outputSize, inputSize))
+  private[mkldnn] val gradBias: Blob = new Blob(Array(outputSize))
 
   @transient private var forwardPrimDesc: Long = 0L
 
@@ -61,14 +55,14 @@ class Linear(
   override def reset(): Unit = {
     if (initWeight == null) {
       weightInitMethod.init(weight.dense, VariableFormat.OUT_IN)
-      weight.sync(isDense2Native = true)
+      weight.syncBeforeRead()
     } else {
       weight.copy(initWeight)
     }
 
     if (initBias == null) {
       biasInitMethod.init(bias.dense, VariableFormat.ONE_D)
-      bias.sync(isDense2Native = true)
+      bias.syncBeforeRead()
     } else {
       bias.copy(initBias)
     }
@@ -107,8 +101,16 @@ class Linear(
       MemoryData.operationWant(forwardPrimDesc, x)
     }
 
-    weight.setShape(realWei)
-    bias.setShape(bis)
+    require(weight.size().product == realWei.shape.product,
+      s"${getName} weight shape is not correct.")
+
+    // we should resize the tensor. Because sometimes, weight of Linear will has 4-D, where
+    // the last 2 dims is 1. we should reisze it. It will not allocate a new storage because of
+    // the same size.
+    weight.resize(realWei.shape)
+
+    weight.setMemoryData(realWei)
+    bias.setMemoryData(bis)
 
     val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
       bis.getPrimitive(runtime))
@@ -139,8 +141,8 @@ class Linear(
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
-    weight.sync(isDense2Native = true)
-    bias.sync(isDense2Native = true)
+    weight.syncBeforeRead()
+    bias.syncBeforeRead()
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
@@ -216,8 +218,10 @@ class Linear(
       MemoryData.operationWant(gradWeightPrimDesc, x)
     }
 
-    gradWeight.setShape(realWei)
-    gradBias.setShape(bis)
+    gradWeight.resize(realWei.shape)
+
+    gradWeight.setMemoryData(realWei)
+    gradBias.setMemoryData(bis)
 
     val srcs = Array(inputFormats()(0).getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -266,8 +270,8 @@ class Linear(
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
 
-    gradWeight.sync(isDense2Native = false)
-    gradBias.sync(isDense2Native = false)
+    gradWeight.syncAfterWrite()
+    gradBias.syncAfterWrite()
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -275,7 +279,8 @@ class Linear(
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
-    (Array(weight.shape(), bias.shape()), Array(gradWeight.shape(), gradBias.shape()))
+    (Array(weight.memoryData(), bias.memoryData()),
+      Array(gradWeight.memoryData(), gradBias.memoryData()))
   }
 
   override def zeroGradParameters(): Unit = {
