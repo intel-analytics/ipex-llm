@@ -45,8 +45,7 @@ object LocalOptimizer {
 class LocalOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: LocalDataSet[MiniBatch[T]],
-  criterion: Criterion[T],
-  inputFormats: Array[MemoryData] = null
+  criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
