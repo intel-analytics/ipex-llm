@@ -104,11 +104,6 @@ class Linear(
     require(weight.size().product == realWei.shape.product,
       s"${getName} weight shape is not correct.")
 
-    // we should resize the tensor. Because sometimes, weight of Linear will has 4-D, where
-    // the last 2 dims is 1. we should reisze it. It will not allocate a new storage because of
-    // the same size.
-    weight.resize(realWei.shape)
-
     weight.setMemoryData(realWei)
     bias.setMemoryData(bis)
 
@@ -217,8 +212,6 @@ class Linear(
     val List(realWei, realDiffDst) = List(Query.DiffWeightsPd, Query.DiffDstPd).map { x =>
       MemoryData.operationWant(gradWeightPrimDesc, x)
     }
-
-    gradWeight.resize(realWei.shape)
 
     gradWeight.setMemoryData(realWei)
     gradBias.setMemoryData(bis)

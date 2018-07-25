@@ -24,7 +24,8 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
  * dense tensor to native tensor before `submit`. For the gradient, we should sync the native
  * tensor to dense tensor after `submit`.
  *
- * **We should call `resize` instead of calling the `resize` of `dense` and `native`.**
+ * The `setMemoryData` requires the elements number should be consistent. If the shape is not,
+ * it will reshape first.
  *
  * The Blob has another attribute `_memoryData` and will not be determined when the blob created.
  * It can be determined when we initialize the primitives.
@@ -35,7 +36,7 @@ private[mkldnn] class Blob(_size: Array[Int]) extends Serializable {
   val dense: Tensor[Float] = Tensor[Float](_size)
   val native: DnnTensor[Float] = DnnTensor[Float](_size)
 
-  private var _memoryData: MemoryData = _
+  @transient private var _memoryData: MemoryData = _
 
   /**
    * it will copy the dense tensor to native tensor before `submit` reads the native tensor
@@ -59,11 +60,18 @@ private[mkldnn] class Blob(_size: Array[Int]) extends Serializable {
    * @param memoryData memory data you want.
    */
   def setMemoryData(memoryData: MemoryData): Unit = {
-    require(size().deep == memoryData.shape.deep, s"You may assign wrong layout")
+    require(_memoryData == null, "You should only set once")
+    require(size().product == memoryData.shape.product, s"You may assign wrong layout")
+
+    // we should resize the tensor. Because sometimes, weight of Linear will has 4-D, where
+    // the last 2 dims is 1. we should reisze it. It will not allocate a new storage because of
+    // the same size.
+    List(native, dense).foreach(_.resize(memoryData.shape))
     _memoryData = memoryData
   }
 
   def memoryData(): MemoryData = {
+    require(_memoryData != null, "You should setMemoryData first")
     _memoryData
   }
 
@@ -78,17 +86,10 @@ private[mkldnn] class Blob(_size: Array[Int]) extends Serializable {
   }
 
   def size(): Array[Int] = {
-    require(dense.size().deep == native.size().deep, s"The shape of Blob is not consistent")
     dense.size()
   }
 
   def size(index: Int): Int = {
-    require(dense.size().deep == native.size().deep, s"The shape of Blob is not consistent")
     dense.size(index)
-  }
-
-  def resize(newSize: Array[Int]): this.type = {
-    List(dense, native).foreach(_.resize(newSize))
-    this
   }
 }

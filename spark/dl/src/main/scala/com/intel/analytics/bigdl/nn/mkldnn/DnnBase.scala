@@ -267,16 +267,16 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
 
   private def checkInputs: Boolean = {
     def getAllInputs(
-      module: AbstractModule[_ <: Activity, _ <: Activity, Float]): Array[Boolean] = {
+      module: AbstractModule[_ <: Activity, _ <: Activity, Float]): Boolean = {
       module match {
         case seq: Sequential => getAllInputs(seq.modules.head)
-        case concat: ConcatTable => concat.modules.flatMap(x => getAllInputs(x)).toArray
-        case _: Input => Array(true)
-        case _ => Array(false)
+        case concat: ConcatTable => concat.modules.map(x => getAllInputs(x)).reduce(_ && _)
+        case _: Input => true
+        case _ => false
       }
     }
 
-    getAllInputs(this).forall(_ == true)
+    getAllInputs(this)
   }
 
   final def compile(phase: Phase): Unit = {
@@ -288,7 +288,7 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
    * Create MklDnnRuntime and compile the model
    * @param phase
    */
-  final def compile(phase: Phase, formats: Array[MemoryData]): Unit = {
+  private[mkldnn] final def compile(phase: Phase, formats: Array[MemoryData]): Unit = {
     compile(phase, new MklDnnRuntime(), formats)
   }
 
@@ -298,7 +298,8 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
    * @param phase
    * @param runtime
    */
-  final def compile(phase: Phase, runtime: MklDnnRuntime, formats: Array[MemoryData]): Unit = {
+  private[mkldnn] final def compile(phase: Phase, runtime: MklDnnRuntime,
+    formats: Array[MemoryData]): Unit = {
     freeze()
     fusion(phase)
     initPrimitives(phase, runtime, formats)
