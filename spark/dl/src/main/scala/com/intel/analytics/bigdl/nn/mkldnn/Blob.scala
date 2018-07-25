@@ -41,14 +41,14 @@ private[mkldnn] class Blob(_size: Array[Int]) extends Serializable {
   /**
    * it will copy the dense tensor to native tensor before `submit` reads the native tensor
    */
-  def syncBeforeRead(): Unit = {
+  def syncToNative(): Unit = {
     native.copy(dense)
   }
 
   /**
    * it will copy the native tensor to dense tensor after `submit` updates the native tensor
    */
-  def syncAfterWrite(): Unit = {
+  def syncToHeap(): Unit = {
     dense.copy(native)
   }
 

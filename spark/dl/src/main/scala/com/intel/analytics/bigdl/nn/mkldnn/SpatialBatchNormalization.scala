@@ -193,7 +193,7 @@ class SpatialBatchNormalization(
       }
     }
 
-    weightAndBias.syncBeforeRead()
+    weightAndBias.syncToNative()
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
@@ -208,8 +208,8 @@ class SpatialBatchNormalization(
       variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
     }
 
-    runningMean.syncAfterWrite()
-    runningVariance.syncAfterWrite()
+    runningMean.syncToHeap()
+    runningVariance.syncToHeap()
 
     output
   }
@@ -272,7 +272,7 @@ class SpatialBatchNormalization(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
-    gradWeightAndBias.syncAfterWrite()
+    gradWeightAndBias.syncToHeap()
 
     gradInput
   }

@@ -55,14 +55,14 @@ class Linear(
   override def reset(): Unit = {
     if (initWeight == null) {
       weightInitMethod.init(weight.dense, VariableFormat.OUT_IN)
-      weight.syncBeforeRead()
+      weight.syncToNative()
     } else {
       weight.copy(initWeight)
     }
 
     if (initBias == null) {
       biasInitMethod.init(bias.dense, VariableFormat.ONE_D)
-      bias.syncBeforeRead()
+      bias.syncToNative()
     } else {
       bias.copy(initBias)
     }
@@ -136,8 +136,8 @@ class Linear(
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
-    weight.syncBeforeRead()
-    bias.syncBeforeRead()
+    weight.syncToNative()
+    bias.syncToNative()
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
@@ -263,8 +263,8 @@ class Linear(
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
 
-    gradWeight.syncAfterWrite()
-    gradBias.syncAfterWrite()
+    gradWeight.syncToHeap()
+    gradBias.syncToHeap()
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {

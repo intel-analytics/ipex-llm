@@ -119,14 +119,14 @@ class SpatialConvolution(
   override def reset(): Unit = {
     if (initWeight == null) { // TODO only support oihw format weights
       weightInitMethod.init(weight.dense, VariableFormat.OUT_IN)
-      weight.syncBeforeRead()
+      weight.syncToNative()
     } else {
       weight.copy(initWeight)
     }
 
     if (initBias == null) {
       biasInitMethod.init(bias.dense, VariableFormat.ONE_D)
-      bias.syncBeforeRead()
+      bias.syncToNative()
     } else {
       bias.copy(initBias)
     }
@@ -223,8 +223,8 @@ class SpatialConvolution(
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
-    weight.syncBeforeRead()
-    bias.syncBeforeRead()
+    weight.syncToNative()
+    bias.syncToNative()
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
@@ -357,8 +357,8 @@ class SpatialConvolution(
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
 
-    gradWeight.syncAfterWrite()
-    gradBias.syncAfterWrite()
+    gradWeight.syncToHeap()
+    gradBias.syncToHeap()
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
