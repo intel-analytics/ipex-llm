@@ -194,6 +194,33 @@ class TestSimpleIntegration(ZooTestCase):
         model = Model(x, z)
         model.summary()
 
+    def test_word_embedding_without_word_index(self):
+        model = Sequential()
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        glove_path = os.path.join(resource_path, "glove.6B/glove.6B.50d.txt")
+        embedding = WordEmbedding(glove_path, input_length=10)
+        model.add(embedding)
+        input_data = np.random.randint(20, size=(32, 10))
+        self.assert_forward_backward(model, input_data)
+
+    def test_word_embedding_with_word_index(self):
+        model = Sequential()
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        glove_path = os.path.join(resource_path, "glove.6B/glove.6B.50d.txt")
+        word_index = {"with": 1, "is": 2, "him": 3, "have": 4}
+        embedding = WordEmbedding(glove_path, word_index, input_length=30)
+        model.add(embedding)
+        input_data = np.random.randint(5, size=(4, 30))
+        self.assert_forward_backward(model, input_data)
+
+    def test_get_word_index(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        glove_path = os.path.join(resource_path, "glove.6B/glove.6B.50d.txt")
+        word_index = WordEmbedding.get_word_index(glove_path)
+        assert word_index["the"] == 1
+        assert word_index["for"] == 11
+        assert word_index["as"] == 20
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
