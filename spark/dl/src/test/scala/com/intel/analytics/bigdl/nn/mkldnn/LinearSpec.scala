@@ -381,7 +381,7 @@ class LinearSpec extends FlatSpec with Matchers {
       .add(Linear(outputSize, inputSize, initWeight = initWeight, initBias = initBias))
       .add(Linear(outputSize, inputSize, initWeight = initWeight, initBias = initBias))
 
-    seq.compile(TrainingPhase, Array(HeapData(inputShape2, Memory.Format.nchw)))
+    seq2.compile(TrainingPhase, Array(HeapData(inputShape2, Memory.Format.nchw)))
 
     seq.forward(input)
     seq.backward(input, input)
