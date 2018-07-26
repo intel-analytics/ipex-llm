@@ -27,13 +27,15 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import scala.reflect.ClassTag
 
 /**
- * Turn positive integers (indexes) into dense vectors of fixed size.
+ * Turn non-negative integers (indices) into dense vectors of fixed size.
  * The input of this layer should be 2D.
  *
  * This layer can only be used as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param inputDim Int > 0. Size of the vocabulary.
+ * @param inputDim Int > 0. Size of the vocabulary, ie. 1 + maximum integer
+ *                 index occurring in the input data.
+ *                 Each word index in the input should be within range [0, inputDim-1].
  * @param outputDim Int >= 0. Dimension of the dense embedding.
  * @param init Initialization method for the weights of the layer. Default is RandomUniform.
  *             You can also pass in corresponding string representations such as 'uniform'
@@ -44,22 +46,22 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Embedding[T: ClassTag](
-   override val inputDim: Int,
-   override val outputDim: Int,
-   override val init: InitializationMethod = RandomUniform,
-   wRegularizer: Regularizer[T] = null,
-   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+    override val inputDim: Int,
+    override val outputDim: Int,
+    override val init: InitializationMethod = RandomUniform,
+    wRegularizer: Regularizer[T] = null,
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BEmbedding[T] (
     inputDim, outputDim, init, wRegularizer, inputShape) with Net {
 }
 
 object Embedding {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputDim: Int,
-    outputDim: Int,
-    init: String = "uniform",
-    wRegularizer: Regularizer[T] = null,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Embedding[T] = {
+      inputDim: Int,
+      outputDim: Int,
+      init: String = "uniform",
+      wRegularizer: Regularizer[T] = null,
+      inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Embedding[T] = {
     new Embedding[T](inputDim, outputDim, KerasUtils.getInitMethod(init),
       wRegularizer, inputShape)
   }
