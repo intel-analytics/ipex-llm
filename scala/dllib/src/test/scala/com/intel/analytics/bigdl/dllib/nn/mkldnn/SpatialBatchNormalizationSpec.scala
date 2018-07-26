@@ -55,10 +55,10 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     bn.backward(input, gradOutput)
     nnBn.backward(input, gradOutput)
 
-    val gradWeight1 = Tools.dense(bn.gradWeightAndBias).toTensor
+    val gradWeight1 = Tools.dense(bn.gradWeightAndBias.native).toTensor
     val gradWeight2 = nnBn.getParameters()._2
 
-    val weight1 = Tools.dense(bn.weightAndBias).toTensor
+    val weight1 = Tools.dense(bn.weightAndBias.native).toTensor
     val weight2 = nnBn.getParameters()._1
 
     Equivalent.nearequals(weight1, weight2) should be (true)
@@ -100,7 +100,48 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     bn.backward(input, gradOutput)
     cloned.backward(input, gradOutput)
     Tools.dense(bn.gradInput) should be (Tools.dense(cloned.gradInput))
-    Tools.dense(bn.gradWeightAndBias) should be (Tools.dense(cloned.gradWeightAndBias))
+    Tools.dense(bn.gradWeightAndBias.native) should be (
+      Tools.dense(cloned.gradWeightAndBias.native))
+  }
+
+  "batch norm with dense weights and gradients" should "work correctly" in {
+    val batchSize = 2
+    RNG.setSeed(100)
+    val input = Tensor(100, 1, 10, 10).rand(-1, 1)
+    val gradOutput = Tensor(100, 1, 10, 10).rand(-1, 1)
+    val (channel, height, width) = (1, 10, 10)
+
+    val initWeight1 = Tensor(channel).rand(-1, 1)
+    val initBias1 = Tensor(channel).fill(0)
+    val initWeight2 = Tensor(channel).rand(-1, 1)
+    val initBias2 = Tensor(channel).fill(0)
+
+    val bn1 = SpatialBatchNormalization(1, 0.0, initWeight = initWeight1, initBias = initBias1)
+    val bn2 = SpatialBatchNormalization(1, 0.0, initWeight = initWeight2, initBias = initBias2)
+
+    val inputShape = Array(100, 1, 10, 10)
+    for (bn <- List(bn1, bn2)) {
+      bn.setRuntime(new MklDnnRuntime)
+      bn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+      bn.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+      bn.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    }
+
+    bn1.forward(input)
+    bn1.backward(input, gradOutput)
+
+    bn1.parameters()._1.zip(bn2.parameters()._1).foreach(x => x._1.copy(x._2))
+
+    bn1.forward(input)
+    bn1.backward(input, gradOutput)
+
+    bn2.forward(input)
+    bn2.backward(input, gradOutput)
+
+    Tools.dense(bn1.output) should be (Tools.dense(bn2.output))
+    Tools.dense(bn1.gradInput) should be (Tools.dense(bn2.gradInput))
+
+    bn1.parameters()._2.zip(bn2.parameters()._2).foreach(x => x._1 should be (x._2))
   }
 
   "bn updateOutput" should "work correctly" in {
@@ -467,11 +508,11 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     gradWeightAndBias.select(1, 1).copy(gradWeight)
     gradWeightAndBias.select(1, 2).copy(gradBias)
 
-    compare(weightAndBias.view(Array(2 * channel)), bn.weightAndBias)
+    compare(weightAndBias.view(Array(2 * channel)), bn.weightAndBias.native)
     compare(output, seq.output)
-    compare(runningMean, bn.runningMean)
-    compare(runningVariance, bn.runningVariance)
-    compare(gradWeightAndBias.view(Array(2 * channel)), bn.gradWeightAndBias)
+    compare(runningMean, bn.runningMean.native)
+    compare(runningVariance, bn.runningVariance.native)
+    compare(gradWeightAndBias.view(Array(2 * channel)), bn.gradWeightAndBias.native)
     compare(gradInput, seq.gradInput)
   }
 
@@ -549,9 +590,9 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     weightAndBias.select(1, 1).copy(weight)
     weightAndBias.select(1, 2).copy(bias)
 
-    compare(weightAndBias.view(Array(2 * channel)), bn.weightAndBias)
-    compare(runningMean, bn.runningMean)
-    compare(runningVariance, bn.runningVariance)
+    compare(weightAndBias.view(Array(2 * channel)), bn.weightAndBias.native)
+    compare(runningMean, bn.runningMean.native)
+    compare(runningVariance, bn.runningVariance.native)
 
     val denseOutput = Tools.dense(bn.output).toTensor
 

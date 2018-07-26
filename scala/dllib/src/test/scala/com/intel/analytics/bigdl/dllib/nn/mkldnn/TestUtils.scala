@@ -213,12 +213,12 @@ object Tools {
         weightAndBias.select(1, 2).copy(bias)
 
         ret &= Equivalent.nearequals(weightAndBias.view(bn.gradWeightAndBias.size()),
-          dense(bn.gradWeightAndBias).toTensor, epsilon)
+          dense(bn.gradWeightAndBias.native).toTensor, epsilon)
         val runningMean = Tools.getTensor(s"Fwrd_$name.Wght.0", Array(channel), identity)
         val runningVariance = Tools.getTensor(s"Fwrd_$name.Wght.1", Array(channel), identity)
 
-        ret &= compare2Tensors(runningMean, dense(bn.runningMean).toTensor)
-        ret &= compare2Tensors(runningVariance, dense(bn.runningVariance).toTensor)
+        ret &= compare2Tensors(runningMean, dense(bn.runningMean.native).toTensor)
+        ret &= compare2Tensors(runningVariance, dense(bn.runningVariance.native).toTensor)
 
         assert(ret, s"${module.getName()} gradient can't pass, please check")
       case _ =>

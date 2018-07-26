@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{AlgKind, Memory, MklDnn, PropKind, Query}
+import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Ones, VariableFormat, Zeros}
@@ -51,10 +51,12 @@ class SpatialBatchNormalization(
 
   private val mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
   private val variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  private[mkldnn] val runningMean: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  private[mkldnn] val runningVariance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  val weightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
-  val gradWeightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
+
+  private[mkldnn] val runningMean = new Blob(Array(nOutput))
+  private[mkldnn] val runningVariance = new Blob(Array(nOutput))
+  // TODO we should make it private. Currently, ResNet50 will use it out of this scope.
+  val weightAndBias = new Blob(Array(nOutput * 2))
+  val gradWeightAndBias = new Blob(Array(nOutput * 2))
 
   var scaleFactor: Float = 0.0f
   var biasFactor: Float = 0.0f
@@ -175,7 +177,7 @@ class SpatialBatchNormalization(
       if (this.isTraining()) {
         val buffer = new ArrayBuffer[Tensor[Float]]()
         buffer.append(input.asInstanceOf[Tensor[Float]])
-        buffer.append(weightAndBias)
+        buffer.append(weightAndBias.native)
         buffer.append(output.asInstanceOf[Tensor[Float]])
         buffer.append(mean)
         buffer.append(variance)
@@ -183,13 +185,15 @@ class SpatialBatchNormalization(
       } else {
         val buffer = new ArrayBuffer[Tensor[Float]]()
         buffer.append(input.asInstanceOf[Tensor[Float]])
-        buffer.append(runningMean)
-        buffer.append(runningVariance)
-        buffer.append(weightAndBias)
+        buffer.append(runningMean.native)
+        buffer.append(runningVariance.native)
+        buffer.append(weightAndBias.native)
         buffer.append(output.asInstanceOf[Tensor[Float]])
         updateOutputTensors = buffer.toArray
       }
     }
+
+    weightAndBias.syncToNative()
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
@@ -200,9 +204,12 @@ class SpatialBatchNormalization(
       // update running(Mean, Var) and scaleFactor
       scaleFactor = scaleFactor * momentum.toFloat + 1
 
-      mean.axpby(1, momentum.toFloat, runningMean)
-      variance.axpby(biasFactor, momentum.toFloat, runningVariance)
+      mean.axpby(1, momentum.toFloat, runningMean.native)
+      variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
     }
+
+    runningMean.syncToHeap()
+    runningVariance.syncToHeap()
 
     output
   }
@@ -253,9 +260,9 @@ class SpatialBatchNormalization(
       buffer.append(mean)
       buffer.append(variance)
       buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
-      buffer.append(weightAndBias)
+      buffer.append(weightAndBias.native)
       buffer.append(gradInput.asInstanceOf[Tensor[Float]])
-      buffer.append(gradWeightAndBias.asInstanceOf[Tensor[Float]])
+      buffer.append(gradWeightAndBias.native)
       updateGradInputTensors = buffer.toArray
     }
 
@@ -265,6 +272,8 @@ class SpatialBatchNormalization(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
+    gradWeightAndBias.syncToHeap()
+
     gradInput
   }
 
@@ -273,12 +282,13 @@ class SpatialBatchNormalization(
   }
 
   override def zeroGradParameters(): Unit = {
-    if (affine) { gradWeightAndBias.zero() }
-    if (gradInput != null) { gradInput.asInstanceOf[DnnTensor[Float]].zero() }
+    if (affine) {
+      gradWeightAndBias.zero()
+    }
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
-    (Array(weightAndBias), Array(gradWeightAndBias))
+    (Array(weightAndBias.dense), Array(gradWeightAndBias.dense))
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
