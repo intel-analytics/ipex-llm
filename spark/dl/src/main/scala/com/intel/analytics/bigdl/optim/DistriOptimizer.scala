@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
 import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import java.io.{File, FilenameFilter}
@@ -31,10 +31,13 @@ import java.util.Calendar
 
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.MklDnnContainer
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
-import org.apache.spark.TaskContext
+import org.apache.spark.network.netty.SparkTransportConf
+import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
 import scala.collection.mutable
@@ -132,6 +135,7 @@ object DistriOptimizer {
 
     val _subModelNumber = Engine.getEngineType() match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
     }
     val driverState = T(
       "epoch" -> optimMethods.values.head.state("epoch"),
@@ -610,6 +614,7 @@ object DistriOptimizer {
     val modelBroadcast = ModelBroadcast[T]().broadcast(sc, model)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
 
@@ -641,6 +646,10 @@ object DistriOptimizer {
       Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
+        localModel match {
+          case container: MklDnnContainer => container.compile(TrainingPhase)
+          case _ =>
+        }
         // differentiate partition models from each other by partition ID
         setModelId(localModel, partitionId)
         val localCriterion = broadcastCriterion.cloneCriterion()
@@ -717,12 +726,19 @@ object DistriOptimizer {
     logger.info(s"$header Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
       val vMethodsArr = cached.localMethods
-      val workingModels = cached.localModels
+      val workingModels = cached.localModels.map { x =>
+        val _x = x.cloneModule()
+        if (x.isInstanceOf[MklDnnContainer]) {
+          _x.asInstanceOf[MklDnnContainer].compile(InferencePhase)
+        }
+        _x
+      }
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {

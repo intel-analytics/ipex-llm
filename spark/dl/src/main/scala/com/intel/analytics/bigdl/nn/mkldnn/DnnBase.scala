@@ -32,7 +32,7 @@ trait MklDnnModule extends MklDnnModuleHelper {
    * Note that this instance will be erased when send to remote worker, so you
    * should recreate a MklDnnRuntime.
    */
-  @transient protected var runtime : MklDnnRuntime = _
+  @transient protected var runtime: MklDnnRuntime = _
 
   def setRuntime(runtime: MklDnnRuntime): Unit = {
     this.runtime = runtime
@@ -44,15 +44,21 @@ trait MklDnnModule extends MklDnnModuleHelper {
    */
   private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
   : (Array[MemoryData], Array[MemoryData])
+
   private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase)
   : (Array[MemoryData], Array[MemoryData])
+
   private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData], phase: Phase): Array[MemoryData]
   = grad
 
   private[mkldnn] def inputFormats(): Array[MemoryData]
+
   private[mkldnn] def gradInputFormats(): Array[MemoryData]
+
   private[mkldnn] def outputFormats(): Array[MemoryData]
+
   private[mkldnn] def gradOutputFormats(): Array[MemoryData]
+
   private[mkldnn] def gradOutputWeightFormats(): Array[MemoryData]
 }
 
@@ -74,10 +80,12 @@ trait MklDnnModuleHelper {
       case _ => throw new UnsupportedOperationException("memory format is not supported")
     }
   }
+
   protected def singleNativeData(formats: Array[MemoryData]): Array[MemoryData] = {
     require(formats.length == 1, "Only accept one tensor as input")
     nativeData(formats)
   }
+
   protected def nativeData(formats: Array[MemoryData]): Array[MemoryData] = {
     formats.map(
       f => {
@@ -257,11 +265,30 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
     super.add(module)
   }
 
+  private def checkInputs: Boolean = {
+    def getAllInputs(
+      module: AbstractModule[_ <: Activity, _ <: Activity, Float]): Boolean = {
+      module match {
+        case seq: Sequential => getAllInputs(seq.modules.head)
+        case concat: ConcatTable => concat.modules.map(x => getAllInputs(x)).reduce(_ && _)
+        case _: Input => true
+        case _ => false
+      }
+    }
+
+    getAllInputs(this)
+  }
+
+  final def compile(phase: Phase): Unit = {
+    require(checkInputs, s"You should add Input for the container.")
+    compile(phase, new MklDnnRuntime, Array[MemoryData]())
+  }
+
   /**
    * Create MklDnnRuntime and compile the model
    * @param phase
    */
-  final def compile(phase: Phase, formats: Array[MemoryData]): Unit = {
+  private[mkldnn] final def compile(phase: Phase, formats: Array[MemoryData]): Unit = {
     compile(phase, new MklDnnRuntime(), formats)
   }
 
@@ -271,7 +298,8 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
    * @param phase
    * @param runtime
    */
-  final def compile(phase: Phase, runtime: MklDnnRuntime, formats: Array[MemoryData]): Unit = {
+  private[mkldnn] final def compile(phase: Phase, runtime: MklDnnRuntime,
+    formats: Array[MemoryData]): Unit = {
     freeze()
     fusion(phase)
     initPrimitives(phase, runtime, formats)
