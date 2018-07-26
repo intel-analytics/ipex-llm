@@ -88,7 +88,7 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result.size() should be(Array(2, 10))
   }
 
-  "TFNet " should "work for kyro serializer" in {
+  "TFNet " should "work for kryo serializer" in {
 
     val resource = getClass().getClassLoader().getResource("tfnet")
     val net = TFNet(resource.getPath)
