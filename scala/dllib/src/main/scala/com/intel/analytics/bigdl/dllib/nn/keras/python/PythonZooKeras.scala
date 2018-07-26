@@ -18,9 +18,9 @@ package com.intel.analytics.zoo.pipeline.api.keras.python
 
 import java.nio.ByteOrder
 import java.util
-import java.util.{List => JList}
+import java.util.{List => JList, Map => JMap, HashMap => JHashMap}
 
-import com.intel.analytics.bigdl.{Criterion, DataSet}
+import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 
 import scala.collection.JavaConverters._
@@ -31,7 +31,6 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -1128,5 +1127,19 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createZooKerasTop5Accuracy(
       zeroBasedLabel: Boolean = true): ValidationMethod[T] = {
     new Top5Accuracy[T](zeroBasedLabel)
+  }
+
+  def createZooKerasWordEmbedding(
+      embeddingFile: String,
+      wordIndex: JMap[String, Int] = null,
+      trainable: Boolean = false,
+      inputShape: JList[Int] = null): WordEmbedding[T] = {
+    WordEmbedding[T](embeddingFile, if (wordIndex!= null) wordIndex.asScala.toMap else null,
+      trainable, inputShape.get(0))
+  }
+
+  def wordEmbeddingGetWordIndex(
+      embeddingFile: String): JMap[String, Int] = {
+    WordEmbedding.getWordIndex(embeddingFile).asJava
   }
 }
