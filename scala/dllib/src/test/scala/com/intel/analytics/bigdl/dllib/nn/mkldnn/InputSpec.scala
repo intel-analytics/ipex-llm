@@ -27,7 +27,9 @@ class InputSpec extends BigDLSpecHelper {
     layer.initBwdPrimitives(Array(), Phase.TrainingPhase)
     val tensor = Tensor[Float](2, 2).rand()
     val grad = Tensor[Float](2, 2).rand()
-    layer.forward(tensor) should be(tensor)
-    layer.backward(tensor, grad) should be(grad)
+    val output = layer.forward(tensor)
+    val gradInput = layer.backward(tensor, grad)
+    Tools.dense(output) should be(tensor)
+    Tools.dense(gradInput) should be(grad)
   }
 }
