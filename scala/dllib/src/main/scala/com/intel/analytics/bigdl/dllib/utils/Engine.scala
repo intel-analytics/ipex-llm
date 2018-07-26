@@ -34,6 +34,7 @@ import scala.util.control.{ControlThrowable, NonFatal}
 sealed trait EngineType
 
 case object MklBlas extends EngineType
+case object MklDnn extends EngineType
 
 
 object Engine {
@@ -200,6 +201,7 @@ object Engine {
   private var engineType: EngineType = {
     System.getProperty("bigdl.engineType", "mklblas").toLowerCase(Locale.ROOT) match {
       case "mklblas" => MklBlas
+      case "mkldnn" => MklDnn
       case engineType => throw new IllegalArgumentException(s"Unknown engine type $engineType")
     }
   }

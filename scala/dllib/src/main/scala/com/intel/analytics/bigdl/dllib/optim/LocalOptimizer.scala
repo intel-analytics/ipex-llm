@@ -18,9 +18,12 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.{HeapData, MemoryData, MklDnnContainer}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -54,6 +57,7 @@ class LocalOptimizer[T: ClassTag] (
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
+    case MklDnn => 1
     case _ => throw new IllegalArgumentException
   }
 
@@ -66,6 +70,10 @@ class LocalOptimizer[T: ClassTag] (
       val m = model.cloneModule()
       Util.putWeightBias(wb, m)
       Util.initGradWeightBias(wb, m)
+      m match {
+        case container: MklDnnContainer => container.compile(TrainingPhase)
+        case _ =>
+      }
       m
     }).toArray
     Util.putWeightBias(wb, model)
@@ -231,6 +239,13 @@ class LocalOptimizer[T: ClassTag] (
     logger.info(s"$header Validate model...")
 
     workingModels.foreach(_.evaluate())
+    val localWorkingModels = workingModels.map {
+      case container: MklDnnContainer =>
+        val _c = container.cloneModule()
+        _c.compile(InferencePhase)
+        _c
+      case default => default
+    }
 
     var count = 0
     dataIter.map(batch => {
@@ -246,7 +261,7 @@ class LocalOptimizer[T: ClassTag] (
             val currentMiniBatch = batch.slice(offset, length)
             val input = currentMiniBatch.getInput()
             val target = currentMiniBatch.getTarget()
-            val output = workingModels(b).forward(input)
+            val output = localWorkingModels(b).forward(input)
             val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {
               validation(output, target)

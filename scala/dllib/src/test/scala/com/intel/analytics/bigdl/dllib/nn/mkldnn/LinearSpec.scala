@@ -205,8 +205,8 @@ class LinearSpec extends FlatSpec with Matchers {
     println(nnLinear.gradWeight)
     println(nnLinear.gradBias)
 
-    Tools.dense(linear.gradWeight) should be (nnLinear.gradWeight)
-    Tools.dense(linear.gradBias) should be (nnLinear.gradBias)
+    Tools.dense(linear.gradWeight.native) should be (nnLinear.gradWeight)
+    Tools.dense(linear.gradBias.native) should be (nnLinear.gradBias)
   }
 
   "linear cloned" should "work correctly" in {
@@ -246,8 +246,51 @@ class LinearSpec extends FlatSpec with Matchers {
     cloned.backward(input, gradOutput)
 
     Tools.dense(linear.gradInput) should be (Tools.dense(cloned.gradInput))
-    Tools.dense(linear.gradWeight) should be (Tools.dense(cloned.gradWeight))
-    Tools.dense(linear.gradBias) should be (Tools.dense(cloned.gradBias))
+    Tools.dense(linear.gradWeight.native) should be (Tools.dense(cloned.gradWeight.native))
+    Tools.dense(linear.gradBias.native) should be (Tools.dense(cloned.gradBias.native))
+  }
+
+  "linear with dense weights" should "work correctly" in {
+    val inputSize = 2
+    val outputSize = 2
+    val batchSize = 2
+
+    val inputFormat = HeapData(Array(batchSize, inputSize), Memory.Format.nc)
+    val outputFormat = HeapData(Array(batchSize, outputSize), Memory.Format.nc)
+    val input = Tensor[Float](batchSize, inputSize).rand()
+    val gradOutput = Tensor[Float]().resize(outputFormat.shape).rand()
+
+    val initWeight1 = Tensor[Float](outputSize, inputSize).rand()
+    val initBias1 = Tensor[Float](outputSize).rand()
+
+    val initWeight2 = Tensor[Float](outputSize, inputSize).rand()
+    val initBias2 = Tensor[Float](outputSize).rand()
+
+    val linear1 = Linear(inputSize, outputSize, initWeight = initWeight1, initBias = initBias1)
+    linear1.setRuntime(new MklDnnRuntime)
+    linear1.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    linear1.initBwdPrimitives(Array(outputFormat), TrainingPhase)
+    linear1.initGradWPrimitives(Array(outputFormat), TrainingPhase)
+
+    linear1.forward(input)
+    linear1.backward(input, gradOutput)
+
+    linear1.parameters()._1.zip(Array(initWeight2, initBias2)).foreach(x => x._1.copy(x._2))
+    linear1.forward(input)
+    linear1.backward(input, gradOutput)
+
+    val linear2 = Linear(inputSize, outputSize, initWeight = initWeight2, initBias = initBias2)
+    linear2.setRuntime(new MklDnnRuntime)
+    linear2.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    linear2.initBwdPrimitives(Array(outputFormat), TrainingPhase)
+    linear2.initGradWPrimitives(Array(outputFormat), TrainingPhase)
+
+    linear2.forward(input)
+    linear2.backward(input, gradOutput)
+
+    Tools.dense(linear1.output) should be (Tools.dense(linear2.output))
+    Tools.dense(linear1.gradInput) should be (Tools.dense(linear2.gradInput))
+    linear1.parameters()._2.zip(linear2.parameters()._2).foreach(x => x._1 should be (x._2))
   }
 
   "linear with maxpooling" should "work correctly" in {
@@ -338,7 +381,7 @@ class LinearSpec extends FlatSpec with Matchers {
       .add(Linear(outputSize, inputSize, initWeight = initWeight, initBias = initBias))
       .add(Linear(outputSize, inputSize, initWeight = initWeight, initBias = initBias))
 
-    seq.compile(TrainingPhase, Array(HeapData(inputShape2, Memory.Format.nchw)))
+    seq2.compile(TrainingPhase, Array(HeapData(inputShape2, Memory.Format.nchw)))
 
     seq.forward(input)
     seq.backward(input, input)

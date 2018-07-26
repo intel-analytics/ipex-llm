@@ -37,8 +37,8 @@ class FusionSpec extends FlatSpec with Matchers {
     model1.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
     System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
-    val conv2 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false, initWeight = conv1.weight,
-      initBias = conv1.bias)
+    val conv2 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false,
+      initWeight = conv1.weight.native, initBias = conv1.bias.native)
     val reorder2 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
     val reorder22 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
     val model2 = Sequential().add(reorder2).add(conv2).add(ReLU()).add(reorder22)
@@ -77,8 +77,8 @@ class FusionSpec extends FlatSpec with Matchers {
     model1.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
     System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
-    val conv2 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false, initWeight = conv1.weight,
-      initBias = conv1.bias)
+    val conv2 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false,
+      initWeight = conv1.weight.native, initBias = conv1.bias.native)
     val bn2 = SpatialBatchNormalization(64, eps = 0.0)
     bn2.runningMean.copy(runningMean)
     bn2.runningVariance.copy(runningVar)
