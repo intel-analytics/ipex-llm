@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.zoo.pipeline.api.net
 
+import com.esotericsoftware.kryo.{Kryo, KryoSerializable}
+import com.esotericsoftware.kryo.io.{Input, Output}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -26,8 +28,10 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasLayerWrapper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import org.apache.spark.utils.SparkUtils
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -191,6 +195,13 @@ object NetUtils {
   private[zoo] def removePort(nodes: Seq[String]): Seq[String] = {
     nodes.map(node => if (node contains ":") node.split(":")(0) else node)
   }
+
+  private[zoo] def isDriver = try {
+    SparkUtils.isDriver
+  } catch {
+    case e: NullPointerException =>
+      true
+  }
 }
 
 private[zoo] case class Meta(inputNames: Array[String],
@@ -260,6 +271,122 @@ trait NetUtils[T, D <: Module[T] with NetUtils[T, D]] {
         nodesSet.filter(!visited.contains(_))
           .filter(!stack.contains(_)).foreach(stack.push)
         node
+      }
+    }
+  }
+}
+
+private[zoo] abstract class SerializationHolder
+  extends Serializable with KryoSerializable {
+
+  protected def timing[T](name: String)(f: => T): T = {
+    val logger = LoggerFactory.getLogger(getClass)
+    val begin = System.currentTimeMillis
+    val result = f
+    val end = System.currentTimeMillis
+    val cost = end - begin
+    logger.debug(s"$name time elapsed [${cost / 1000} s, ${cost % 1000} ms].")
+    result
+  }
+
+  protected trait CommonOutputStream {
+    def writeInt(value: Int): Unit
+    def write(value: Array[Byte]): Unit
+    def writeString(value: String): Unit
+    def writeObject(obj: AnyRef): Unit
+  }
+
+  protected trait CommonInputStream {
+    def readInt(): Int
+    def read(buff: Array[Byte], off: Int, len: Int): Int
+    def skip(len: Int): Unit
+    def readString(): String
+    def readObject(): AnyRef
+  }
+
+  def writeInternal(out: CommonOutputStream): Unit
+
+  def readInternal(in: CommonInputStream): Unit
+
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    writeInternal(new CommonOutputStream {
+      override def writeInt(value: Int): Unit = out.writeInt(value)
+
+      override def write(value: Array[Byte]): Unit = out.write(value)
+
+      override def writeString(str: String): Unit = out.writeUTF(str)
+
+      override def writeObject(obj: AnyRef): Unit = out.writeObject(obj)
+    })
+  }
+
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    readInternal(new CommonInputStream {
+      override def read(buff: Array[Byte], off: Int, len: Int): Int = in.read(buff, off, len)
+
+      override def skip(len: Int): Unit = in.skip(len)
+
+      override def readInt(): Int = in.readInt()
+
+      override def readString(): String = in.readUTF()
+
+      override def readObject(): AnyRef = in.readObject()
+    })
+  }
+
+  override def read(kryo: Kryo, in: Input): Unit = {
+    readInternal(new CommonInputStream {
+      override def read(buff: Array[Byte], off: Int, len: Int): Int = in.read(buff, off, len)
+
+      override def skip(len: Int): Unit = in.skip(len)
+
+      override def readInt(): Int = in.readInt()
+
+      override def readString(): String = in.readString()
+
+      override def readObject(): AnyRef = kryo.readClassAndObject(in)
+    })
+  }
+
+  override def write(kryo: Kryo, out: Output): Unit = {
+    writeInternal(new CommonOutputStream {
+      override def writeInt(value: Int): Unit = out.writeInt(value)
+
+      override def write(value: Array[Byte]): Unit = out.write(value)
+
+      override def writeString(value: String): Unit = out.writeString(value)
+
+      override def writeObject(obj: AnyRef): Unit = kryo.writeClassAndObject(out, obj)
+    })
+  }
+}
+
+private[zoo] class RegistryMap[T]() {
+
+  private val logger = LoggerFactory.getLogger(getClass)
+
+  private val registry = new mutable.WeakHashMap[String, T]()
+
+  private def getRegistrySize = registry.size
+
+  def getOrCreate(id: String)(create: => T): (T, Boolean) = {
+    if (registry.contains(id)) {
+      logger.debug(s"$id already exists, read from registry. " +
+        s"Current registry size: $getRegistrySize")
+      (registry(id), false)
+    } else {
+      this.synchronized {
+        if (registry.contains(id)) {
+          logger.debug(s"$id already exists, read from registry. " +
+            s"Current registry size: $getRegistrySize")
+          (registry(id), false)
+        } else {
+          logger.debug(s"$id does not exist, created it and added to registry. " +
+            s"Current registry size: $getRegistrySize")
+          val res = create
+          registry.put(id, res)
+          (res, true)
+        }
       }
     }
   }
