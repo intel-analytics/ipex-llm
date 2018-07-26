@@ -53,12 +53,13 @@ class SpatialConvolution(
   // It's `lazy` so the reordermanager need not serialized.
   @transient private lazy val reorderManager = new ReorderManager
 
-  val weight: DnnTensor[Float] = DnnTensor[Float](weightShape)
-  private var weightForBackward: DnnTensor[Float] = _
-  val bias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
-  val gradWeight: DnnTensor[Float] = DnnTensor[Float](weightShape)
-  val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
+  private[mkldnn] val weight = new Blob(weightShape)
+  private[mkldnn] val bias = new Blob(Array(nOutputPlane))
+  private[mkldnn] val gradWeight = new Blob(weightShape)
+  private[mkldnn] val gradBias = new Blob(Array(nOutputPlane))
 
+  private var weightForBackward: DnnTensor[Float] = _
+  private var weightForBackwardMemoryData: MemoryData = _
   @transient private var forwardPrimDesc: Long = 0L
 
   @transient private var updateOutputMemoryPrimitives: Array[Long] = _
@@ -89,14 +90,6 @@ class SpatialConvolution(
     this
   }
 
-  private object ParamsShape extends Serializable {
-    var weight: MemoryData = _
-    var weightForBackward: MemoryData = _
-    var bias: MemoryData = _
-    var gradWeight: MemoryData = _
-    var gradBias: MemoryData = _
-  }
-
   private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
     format match {
       case DataFormat.NCHW =>
@@ -125,17 +118,15 @@ class SpatialConvolution(
 
   override def reset(): Unit = {
     if (initWeight == null) { // TODO only support oihw format weights
-      val t = Tensor[Float](weightShape)
-      weightInitMethod.init(t, VariableFormat.OUT_IN)
-      weight.copy(t)
+      weightInitMethod.init(weight.dense, VariableFormat.OUT_IN)
+      weight.syncToNative()
     } else {
       weight.copy(initWeight)
     }
 
     if (initBias == null) {
-      val t = Tensor[Float](Array(nOutputPlane))
-      biasInitMethod.init(t, VariableFormat.ONE_D)
-      bias.copy(t)
+      biasInitMethod.init(bias.dense, VariableFormat.ONE_D)
+      bias.syncToNative()
     } else {
       bias.copy(initBias)
     }
@@ -164,7 +155,7 @@ class SpatialConvolution(
 
     val src = NativeData(inputShape, Memory.Format.any)
     val wei = NativeData(weightShape, Memory.Format.any)
-    val bis = NativeData(bias.size(), Memory.Format.x)
+    val bis = NativeData(Array(nOutputPlane), Memory.Format.x)
     val dst = NativeData(outputShape, Memory.Format.any)
 
     val desc = MklDnn.ConvForwardDescInit(
@@ -197,8 +188,8 @@ class SpatialConvolution(
       MemoryData.operationWant(forwardPrimDesc, x)
     }
 
-    ParamsShape.weight = realWei
-    ParamsShape.bias = bis
+    weight.setMemoryData(realWei)
+    bias.setMemoryData(bis)
 
     val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
       bis.getPrimitive(runtime))
@@ -221,8 +212,8 @@ class SpatialConvolution(
     if (updateOutputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(input.asInstanceOf[Tensor[Float]])
-      buffer.append(weight)
-      buffer.append(bias)
+      buffer.append(weight.native)
+      buffer.append(bias.native)
       if (sum) {
         output = sumOp.output
       }
@@ -231,6 +222,9 @@ class SpatialConvolution(
     }
 
     updateWithNewTensor(updateOutputTensors, 0, input)
+
+    weight.syncToNative()
+    bias.syncToNative()
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
@@ -248,7 +242,7 @@ class SpatialConvolution(
 
     val src = NativeData(inputShape, Memory.Format.any)
     val wei = NativeData(weightShape, Memory.Format.any)
-    val bis = NativeData(bias.size(), Memory.Format.x)
+    val bis = NativeData(Array(nOutputPlane), Memory.Format.x)
     val dst = NativeData(outputShape, Memory.Format.any)
 
     val desc = MklDnn.ConvBackwardDataDescInit(
@@ -264,9 +258,9 @@ class SpatialConvolution(
         MemoryData.operationWant(backwardPrimDesc, x)
       }
 
-    ParamsShape.weightForBackward = realWei
+    weightForBackwardMemoryData = realWei
 
-    reorderManager.register(ParamsShape.weight, realWei)
+    reorderManager.register(weight.memoryData(), realWei)
 
     val srcs = Array(realDiffDst.getPrimitive(runtime), realWei.getPrimitive(runtime),
       inputFormats()(0).getPrimitive(runtime))
@@ -286,8 +280,8 @@ class SpatialConvolution(
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    weightForBackward = reorderManager.infer(Array(ParamsShape.weight),
-      Array(ParamsShape.weightForBackward), weight).asInstanceOf[DnnTensor[Float]]
+    weightForBackward = reorderManager.infer(Array(weight.memoryData()),
+      Array(weightForBackwardMemoryData), weight.native).asInstanceOf[DnnTensor[Float]]
 
     if (updateGradInputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
@@ -313,7 +307,7 @@ class SpatialConvolution(
 
     val src = NativeData(inputShape, Memory.Format.any)
     val wei = NativeData(weightShape, Memory.Format.any)
-    val bis = NativeData(bias.size(), Memory.Format.x)
+    val bis = NativeData(Array(nOutputPlane), Memory.Format.x)
 
     val desc = MklDnn.ConvBackwardWeightsDescInit(
       AlgKind.ConvolutionDirect,
@@ -330,8 +324,8 @@ class SpatialConvolution(
         MemoryData.operationWant(gradWeightPrimDesc, x)
       }
 
-    ParamsShape.gradWeight = realWei
-    ParamsShape.gradBias = bis
+    gradWeight.setMemoryData(realWei)
+    gradBias.setMemoryData(bis)
 
     val srcs = Array(realSrc.getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -352,8 +346,8 @@ class SpatialConvolution(
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(input.asInstanceOf[Tensor[Float]])
       buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
-      buffer.append(gradWeight)
-      buffer.append(gradBias)
+      buffer.append(gradWeight.native)
+      buffer.append(gradBias.native)
       updateGradWTensors = buffer.toArray
     }
 
@@ -362,10 +356,13 @@ class SpatialConvolution(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
+
+    gradWeight.syncToHeap()
+    gradBias.syncToHeap()
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
-    (Array(weight, bias), Array(gradWeight, gradBias))
+    (Array(weight.dense, bias.dense), Array(gradWeight.dense, gradBias.dense))
   }
 
   override def zeroGradParameters(): Unit = {
@@ -374,7 +371,8 @@ class SpatialConvolution(
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
-    (Array(ParamsShape.weight, ParamsShape.bias), Array(ParamsShape.gradWeight, ParamsShape.bias))
+    (Array(weight.memoryData(), bias.memoryData()),
+      Array(gradWeight.memoryData(), bias.memoryData()))
   }
 }
 
