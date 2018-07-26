@@ -16,12 +16,9 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.serializer
 
-import java.io.File
 import java.lang.reflect.Modifier
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.serializer.{ModuleLoader, ModulePersister}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.zoo.pipeline.api.keras.layers.NoKeras2
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
@@ -38,7 +35,8 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
     "com.intel.analytics.zoo.pipeline.api.autograd.LambdaTorch",
     "com.intel.analytics.zoo.pipeline.api.net.TFNet",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.Recurrent",
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent")
+    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
+    "com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding")
 
   private val unRegularNameMapping = Map[String, String]()
 
