@@ -167,19 +167,19 @@ class KerasNet(ZooKerasLayer):
         Evaluate a model on a given dataset in distributed mode.
 
         # Arguments
-        x: Evaluation data. A Numpy array or RDD of Sample.
+        x: Evaluation data. A Numpy array or RDD of Sample or ImageSet.
         y: Labels. A Numpy array. Default is None if x is already RDD of Sample.
         batch_size: Number of samples per batch. Default is 32.
         """
         if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
-            data_rdd = to_sample_rdd(x, y)
-        elif isinstance(x, RDD) and not y:
-            data_rdd = x
+            data = to_sample_rdd(x, y)
+        elif (isinstance(x, RDD) or isinstance(x, ImageSet)) and not y:
+            data = x
         else:
             raise TypeError("Unsupported evaluation data type: %s" % type(x))
         return callBigDlFunc(self.bigdl_type, "zooEvaluate",
                              self.value,
-                             data_rdd,
+                             data,
                              batch_size)
 
     def forward(self, input):
@@ -212,11 +212,17 @@ class KerasNet(ZooKerasLayer):
         Use a model to do prediction.
 
         # Arguments
-        x: Prediction data. A Numpy array or RDD of Sample.
+        x: Prediction data. A Numpy array or RDD of Sample or ImageSet.
         batch_size: Number of samples per batch. Default is 32.
         distributed: Boolean. Whether to do prediction in distributed mode or local mode.
                      Default is True. In local mode, x must be a Numpy array.
         """
+        if isinstance(x, ImageSet):
+            results = callBigDlFunc(self.bigdl_type, "zooPredict",
+                                    self.value,
+                                    x,
+                                    batch_size)
+            return ImageSet(results)
         if distributed:
             if isinstance(x, np.ndarray):
                 data_rdd = to_sample_rdd(x, np.zeros([x.shape[0]]))
