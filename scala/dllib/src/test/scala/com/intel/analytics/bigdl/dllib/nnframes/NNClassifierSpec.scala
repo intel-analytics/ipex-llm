@@ -108,6 +108,24 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(nnModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
 
+  "NNClassifier" should "support model with Sigmoid" in {
+    val model = new Sequential().add(Linear[Float](6, 10)).add(Linear[Float](10, 1))
+      .add(Sigmoid[Float])
+    val criterion = BCECriterion[Float]()
+    val classifier = NNClassifier(model, criterion, Array(6))
+      .setOptimMethod(new Adam[Float]())
+      .setLearningRate(0.01)
+      .setBatchSize(10)
+      .setMaxEpoch(10)
+    val data = sc.parallelize(smallData.map(t => (t._1, t._2 - 1.0)))
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+
+    val nnModel = classifier.fit(df)
+    nnModel.isInstanceOf[NNClassifierModel[_]] should be(true)
+    val correctCount = nnModel.transform(df).where("prediction=label").count()
+    assert(correctCount > nRecords * 0.8)
+  }
+
   "NNClassifier" should "apply with size support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
