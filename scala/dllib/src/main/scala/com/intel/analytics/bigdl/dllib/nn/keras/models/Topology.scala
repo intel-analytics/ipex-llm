@@ -44,7 +44,6 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
-
 abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T] with Net {
 
@@ -136,6 +135,9 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
     this.compile(optimizer, loss, null)
   }
 
+  /**
+   * You can also use custom loss function during compile.
+   */
   def compile(
       optimizer: OptimMethod[T],
       loss: (Variable[T], Variable[T]) => Variable[T],
@@ -301,7 +303,7 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Train a model for a fixed number of epochs on a dataset.
+   * Train a model for a fixed number of epochs on RDD.
    *
    * @param x Training dataset, RDD of Sample.
    * @param batchSize Number of samples per gradient update. Default is 32.
@@ -316,6 +318,14 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
     this.fit(toDataSet(x, batchSize), nbEpoch, toDataSet(validationData, batchSize))
   }
 
+  /**
+   * Train a model for a fixed number of epochs on ImageSet.
+   *
+   * @param x Training dataset, ImageSet.
+   * @param batchSize Number of samples per gradient update.
+   * @param nbEpoch Number of iterations to train.
+   * @param validationData ImageSet, or null if validation is not configured. Default is null.
+   */
   def fit(
       x: ImageSet,
       batchSize: Int,
@@ -332,7 +342,7 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Evaluate a model on a given dataset.
+   * Evaluate a model on given RDD.
    *
    * @param x Evaluation dataset, RDD of Sample.
    * @param batchSize Number of samples per batch.
@@ -357,7 +367,21 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Use a model to do prediction.
+   * Evaluate a model on ImageSet.
+   *
+   * @param x Evaluation dataset, ImageSet.
+   * @param batchSize Number of samples per batch.
+   */
+  def evaluate(
+      x: ImageSet,
+      batchSize: Int)
+      (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
+    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    evaluateImage(x.toImageFrame(), this.vMethods, Some(batchSize))
+  }
+
+  /**
+   * Use a model to do prediction for RDD.
    *
    * @param x Prediction data, RDD of Sample.
    * @param batchSize Number of samples per batch.
@@ -372,12 +396,32 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
    * Use a model to do prediction in local mode.
    *
    * @param x Prediction data, LocalDataSet.
+   * @param batchSize Number of samples per batch.
    */
   def predict(
       x: LocalDataSet[MiniBatch[T]],
       batchSize: Int)(implicit ev: TensorNumeric[T]): Array[Activity] = {
     val localPredictor = LocalPredictor(this, batchPerCore = KerasUtils.calBatchPerCore(batchSize))
     localPredictor.predict(x)
+  }
+
+  /**
+   * Use a model to do prediction on ImageSet.
+   *
+   * @param x Prediction data, ImageSet.
+   * @param batchSize Number of samples per batch.
+   */
+  def predict(
+      x: ImageSet,
+      batchSize: Int): ImageSet = {
+    val batchPerPartition = if (x.isDistributed()) {
+      batchSize / x.toDistributed().rdd.partitions.length
+    }
+    else {
+      KerasUtils.calBatchPerCore(batchSize)
+    }
+    ImageSet.fromImageFrame(predictImage(x.toImageFrame(),
+      batchPerPartition = batchPerPartition))
   }
 
   /**
