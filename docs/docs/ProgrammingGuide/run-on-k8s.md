@@ -1,18 +1,18 @@
-The [Apache Spark on Kubernetes](https://apache-spark-on-k8s.github.io/userdocs/index.html) project enables
+The [Apache Spark on Kubernetes](https://spark.apache.org/docs/2.3.0/running-on-kubernetes.html) project enables
 native support for submitting Spark application to a kubernetes cluster. As a deep learning library for Apache
 Spark, BigDL can also run on Kubernetes by leveraging Spark on Kubernetes.
 
 ---
 ## **Prerequisites**
 
-1. You need to have a running Kubernetes cluster that support Spark on Kubernetes. See [here](https://apache-spark-on-k8s.github.io/userdocs/running-on-kubernetes.html#prerequisites)
-
-2. You need to spin up the **resource staging server** for dependency management. See [Dependency Management](https://apache-spark-on-k8s.github.io/userdocs/running-on-kubernetes.html#dependency-management) (This is optional if all your application dependencies are
-packaged into your own custom docker image or resides in remote locations like HDFS. See [Dependency Management Without The Resource Staging Server](https://apache-spark-on-k8s.github.io/userdocs/running-on-kubernetes.html#dependency-management-without-the-resource-staging-server))
+You need to have a running Kubernetes cluster that support Spark on Kubernetes. See [here](https://spark.apache.org/docs/2.3.0/running-on-kubernetes.html#prerequisites)
 
 ---
 ## **Docker images**
+For Spark2.3,
+BigDL ships with a Dockerfile that can be found in the ```kubernetes/dockerfiles/``` directory.
 
+For Spark2.2,
 BigDL already published pre-built docker images that can be deployed into containers with pods.
 
 The images are as follows:
@@ -49,7 +49,7 @@ $SPARK_HOME/bin/spark-submit \
   --conf spark.kubernetes.executor.docker.image=intelanalytics/spark-executor:v2.2.0-kubernetes-0.5.0-ubuntu-14.04 \
   --conf spark.kubernetes.initcontainer.docker.image=intelanalytics/spark-init:v2.2.0-kubernetes-0.5.0-ubuntu-14.04 \
   --conf spark.kubernetes.resourceStagingServer.uri=http://<address-of-any-cluster-node>:31000 \
-  $BIGDL_HOME/lib/bigdl-0.4.0-SNAPSHOT-jar-with-dependencies.jar \
+  $BIGDL_HOME/lib/bigdl-0.6.0-SNAPSHOT-jar-with-dependencies.jar \
 -f hdfs://master:9000/mnist \
 -b 128 \
 -e 2 \
@@ -65,8 +65,8 @@ $SPARK_HOME/bin/spark-submit \
   --deploy-mode cluster \
   --master k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
   --kubernetes-namespace default \
-  --jars $BIGDL_HOME/lib/bigdl-0.4.0-SNAPSHOT-jar-with-dependencies.jar \
-  --py-files $BIGDL_HOME/lib/bigdl-0.4.0-SNAPSHOT-python-api.zip \
+  --jars $BIGDL_HOME/lib/bigdl-0.6.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files $BIGDL_HOME/lib/bigdl-0.6.0-SNAPSHOT-python-api.zip \
   --conf spark.executor.instances=4 \
   --conf spark.app.name=bigdl-1 \
   --conf spark.executor.cores=1 \
