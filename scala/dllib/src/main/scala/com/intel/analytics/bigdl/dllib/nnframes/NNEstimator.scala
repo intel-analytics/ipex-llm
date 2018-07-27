@@ -43,7 +43,7 @@ import scala.reflect.ClassTag
 
 private[nnframes] trait HasBatchSize extends Params {
 
-   final val batchSize: IntParam = new IntParam(this, "batchSize", "batchSize")
+  final val batchSize: IntParam = new IntParam(this, "batchSize", "batchSize")
 
   def getBatchSize: Int = $(batchSize)
 }
@@ -528,7 +528,7 @@ class NNModel[T: ClassTag] private[zoo] (
         val featureSeq = rowBatch.map(r => r.get(featureColIndex))
         val samples = featureSteps(featureSeq.iterator)
         val predictions = toBatch(samples).flatMap { batch =>
-          val batchResult = localModel.forward(batch.getInput()).toTensor.squeeze()
+          val batchResult = localModel.forward(batch.getInput()).toTensor
           if (batchResult.size().length == 2) {
             batchResult.split(1).map(outputToPrediction)
           } else if (batchResult.size().length == 1) {

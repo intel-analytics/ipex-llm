@@ -24,7 +24,7 @@ import com.intel.analytics.zoo.feature.common._
 import com.intel.analytics.zoo.pipeline.nnframes.NNModel.NNModelWriter
 import org.apache.spark.ml.DefaultParamsWriterWrapper
 import org.apache.spark.ml.adapter.SchemaUtils
-import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.param.{DoubleParam, ParamMap}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
@@ -139,11 +139,38 @@ object NNClassifier {
  */
 class NNClassifierModel[T: ClassTag] private[zoo] (
     @transient override val model: Module[T],
-    override val uid: String = "DLClassifierModel"
+    override val uid: String = Identifiable.randomUID("nnClassifierModel")
   )(implicit ev: TensorNumeric[T]) extends NNModel[T](model) {
 
+  /**
+   * Param for threshold in binary classification prediction.
+   *
+   * The threshold applies to the raw output of the model. If the output is greater than
+   * threshold, then predict 1, else 0. A high threshold encourages the model to predict 0
+   * more often; a low threshold encourages the model to predict 1 more often.
+   *
+   * Note: the param is different from the one in Spark ProbabilisticClassifier which is compared
+   * against estimated probability.
+   *
+   * Default is 0.5.
+   */
+  final val threshold = new DoubleParam(this, "threshold", "threshold in binary" +
+    " classification prediction")
+
+  def getThreshold: Double = $(threshold)
+
+  def setThreshold(value: Double): this.type = {
+    set(threshold, value)
+  }
+  setDefault(threshold, 0.5)
+
   protected override def outputToPrediction(output: Tensor[T]): Any = {
-    ev.toType[Double](output.max(1)._2.valueAt(1))
+    if (output.size().deep == Array(1).deep) {
+      val raw = ev.toType[Double](output.toArray().head)
+      if (raw > 0.5) 1.0 else 0.0
+    } else {
+      ev.toType[Double](output.max(1)._2.valueAt(1))
+    }
   }
 
   override def transformSchema(schema : StructType): StructType = {
@@ -208,10 +235,10 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
       val (meta, model, typeTag, feaTran) = NNModel.getMetaAndModel(path, sc)
       val nnModel = typeTag match {
         case "TensorDouble" =>
-          new NNClassifierModel[Double](model.asInstanceOf[Module[Double]])
+          new NNClassifierModel[Double](model.asInstanceOf[Module[Double]], meta.uid)
             .setSamplePreprocessing(feaTran.asInstanceOf[Preprocessing[Any, Sample[Double]]])
         case "TensorFloat" =>
-          new NNClassifierModel[Float](model.asInstanceOf[Module[Float]])
+          new NNClassifierModel[Float](model.asInstanceOf[Module[Float]], meta.uid)
             .setSamplePreprocessing(feaTran.asInstanceOf[Preprocessing[Any, Sample[Float]]])
         case _ =>
           throw new Exception("Only support float and double for now")
