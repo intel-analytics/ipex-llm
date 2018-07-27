@@ -22,6 +22,7 @@ Then download the InceptionV1 pre-trained checkpoint from [here](https://github.
 * Download Analytics Zoo and build it.
 * Run `export SPARK_HOME=the root directory of Spark`.
 * Run `export ANALYTICS_ZOO_HOME=the dist directory under the Analytics Zoo project`.
+* Prepare the training dataset from https://www.kaggle.com/c/dogs-vs-cats and extract it.
 * Run the following bash command to start the jupyter notebook. Change parameter settings as you need, ie `MASTER = local[physcial_core_number]`.
 ```bash
 MASTER=local[*]
