@@ -89,7 +89,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
   private val syncMetaMap = new ConcurrentHashMap[String, SyncMeta[T]]
 
   override def init(name: String, globalSize: Int): Unit = {
-    syncMetaMap.putIfAbsent(name, SyncMeta(name, 0, globalSize,
+    syncMetaMap.putIfAbsent(name, SyncMeta(name, globalSize,
       new ConcurrentHashMap[Int, CompressedTensor[T]]()))
   }
 
@@ -98,7 +98,6 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
     val ayncTask = new AyncTask(syncMeta, parameter)
     val future = workerPool.submit(ayncTask)
     syncResults.put(name, future)
-    syncMeta.counter = syncMeta.counter + 1
   }
 
   override def get(name: String): Tensor[T] = {
@@ -206,5 +205,5 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
 
 }
 
-case class SyncMeta[T](name: String, var counter: Int, globalSize: Int,
+case class SyncMeta[T](name: String, globalSize: Int,
                        stateOfWorld: ConcurrentHashMap[Int, CompressedTensor[T]])
