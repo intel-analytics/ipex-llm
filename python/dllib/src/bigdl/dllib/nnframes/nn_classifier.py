@@ -99,6 +99,39 @@ class HasOptimMethod:
         return self.optimMethod
 
 
+class HasThreshold(Params):
+    """
+    Mixin for param Threshold in binary classification.
+
+    The threshold applies to the raw output of the model. If the output is greater than
+    threshold, then predict 1, else 0. A high threshold encourages the model to predict 0
+    more often; a low threshold encourages the model to predict 1 more often.
+
+    Note: the param is different from the one in Spark ProbabilisticClassifier which is compared
+    against estimated probability.
+
+    Default is 0.5.
+    """
+
+    def __init__(self):
+        super(HasThreshold, self).__init__()
+        self.threshold = Param(self, "threshold", "threshold")
+        self._setDefault(threshold=0.5)
+
+    def setThreshold(self, val):
+        """
+        Sets the value of :py:attr:`threshold`.
+        """
+        self._paramMap[self.threshold] = val
+        return self
+
+    def getThreshold(self):
+        """
+        Gets the value of threshold or its default value.
+        """
+        return self.getOrDefault(self.threshold)
+
+
 class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize,
                   HasOptimMethod, HasSamplePreprocessing, JavaValue):
     """
@@ -447,7 +480,7 @@ class NNClassifier(NNEstimator):
         return classifierModel
 
 
-class NNClassifierModel(NNModel):
+class NNClassifierModel(NNModel, HasThreshold):
     """
     NNClassifierModel is a specialized [[NNModel]] for classification tasks. The prediction
     column will have the datatype of Double.
