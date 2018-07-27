@@ -123,14 +123,16 @@ class TestSimpleIntegration(ZooTestCase):
             [ImageBytesToMat(), ImageResize(256, 256), ImageCenterCrop(224, 224),
              ImageChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
              ImageMatToTensor(), ImageSetToSample(target_keys=['label'])])
-        data_rdd = image_set.transform(transformer)
+        data = image_set.transform(transformer)
 
         model = Sequential()
         model.add(Convolution2D(1, 5, 5, input_shape=(3, 224, 224)))
         model.add(Reshape((1*220*220, )))
         model.add(Dense(20, activation="softmax"))
         model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-        model.fit(data_rdd, batch_size=8, nb_epoch=2, validation_data=data_rdd)
+        model.fit(data, batch_size=8, nb_epoch=2, validation_data=data)
+        result = model.predict(data, batch_size=8)
+        accuracy = model.evaluate(data, batch_size=8)
 
     def test_remove_batch(self):
         from zoo.pipeline.api.utils import remove_batch
