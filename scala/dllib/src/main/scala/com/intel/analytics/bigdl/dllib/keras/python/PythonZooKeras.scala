@@ -176,11 +176,30 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     result.map(activityToList).toList.asJava
   }
 
+  def zooPredict(
+      module: KerasNet[T],
+      x: ImageSet,
+      batchSize: Int): ImageSet = {
+    module.predict(x, batchSize)
+  }
+
   def zooEvaluate(
       module: KerasNet[T],
       x: JavaRDD[Sample],
       batchSize: Int = 32): JList[EvaluatedResult] = {
     val resultArray = module.evaluate(toJSample(x), batchSize)
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
+  }
+
+  def zooEvaluate(
+      module: KerasNet[T],
+      x: ImageSet,
+      batchSize: Int): JList[EvaluatedResult] = {
+    val resultArray = module.evaluate(x, batchSize)
     val testResultArray = resultArray.map { result =>
       EvaluatedResult(result._1.result()._1, result._1.result()._2,
         result._2.toString())
