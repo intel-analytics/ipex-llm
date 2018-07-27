@@ -22,15 +22,14 @@ import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
+import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.collection.JavaConverters._
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
  */
-class ThreadPool(private var poolSize: Int) {
-
+class ThreadPool(private var poolSize: Int, private var withAffinity: Boolean = false) {
   import ThreadPool._
 
 
@@ -40,25 +39,19 @@ class ThreadPool(private var poolSize: Int) {
   private var context = spawnThreadPool(poolSize)
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
-    if (poolSize == 1) {
-      singleThreadPool
-    } else {
-      new ExecutionContext {
-        if (threadPool != null) threadPool.shutdown()
-        threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
-          override def newThread(r: Runnable): Thread = {
-            val t = Executors.defaultThreadFactory().newThread(r)
-            t.setDaemon(true)
-            t
-          }
-        })
-
-        def execute(runnable: Runnable) {
-          threadPool.submit(runnable)
-        }
-
-        def reportFailure(t: Throwable) {}
+    new ExecutionContext {
+      if (threadPool != null) threadPool.shutdown()
+      threadPool = if (poolSize != 1) {
+        Executors.newFixedThreadPool(poolSize, new DemonThreadFactory)
+      } else {
+        Executors.newSingleThreadExecutor(new DemonThreadFactory)
       }
+
+      def execute(runnable: Runnable) {
+        threadPool.submit(runnable)
+      }
+
+      def reportFailure(t: Throwable) {}
     }
   }
 
@@ -209,3 +202,10 @@ object ThreadPool {
   private val logger = Logger.getLogger(getClass)
 }
 
+private class DemonThreadFactory extends ThreadFactory {
+  override def newThread(r: Runnable): Thread = {
+    val t = Executors.defaultThreadFactory().newThread(r)
+    t.setDaemon(true)
+    t
+  }
+}

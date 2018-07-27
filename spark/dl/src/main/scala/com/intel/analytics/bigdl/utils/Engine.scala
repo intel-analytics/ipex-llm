@@ -38,6 +38,12 @@ case object MklDnn extends EngineType
 
 
 object Engine {
+
+  // initialize some properties. Do not call it by manually.
+  // Because when we create some variables, they will set relevant properties, such as `_model`.
+  // If we do, any change of property for mkldnn will have no effect.
+  setMklDnnEnvironments()
+
   @deprecated(
     "See https://bigdl-project.github.io/master/#APIGuide/Engine/",
     "0.1.0")
@@ -314,7 +320,7 @@ object Engine {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
       (core * 50).toString).toInt
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
-      _default = new ThreadPool(defaultPoolSize)
+      _default = new ThreadPool(defaultPoolSize, withAffinity = true)
     }
 
     val modelPoolSize: Int = if (engineType == MklBlas) {
@@ -514,5 +520,14 @@ object Engine {
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
+  }
+
+  def setMklDnnEnvironments(): Unit = {
+    val threadsNumber = Math.ceil(Runtime.getRuntime.availableProcessors() / 2).toInt
+
+    System.setProperty("bigdl.disable.mklBlockTime", "true")
+    System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
+    System.setProperty("bigdl.coreNumber", "1")
+    System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
   }
 }
