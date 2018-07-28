@@ -67,9 +67,9 @@ def __prepare_bigdl_env():
 
     def append_path(env_var_name, path):
         try:
-	    if path not in os.environ[env_var_name]:
-	            print("Adding %s to %s" % (path, env_var_name))
-	            os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
+            if path not in os.environ[env_var_name]:
+	        print("Adding %s to %s" % (path, env_var_name))
+	        os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
         except KeyError:
             os.environ[env_var_name] = path
 
