@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.utils
 import java.nio.ByteBuffer
 import java.util.concurrent._
 
-import com.intel.analytics.bigdl.parameters.AllReduceParameter.{computePoolSize, logger, syncPool, syncPoolSize}
 import com.intel.analytics.bigdl.parameters.{CompressedTensor, FP16CompressedTensor, SerializerInstance}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.log4j.Logger
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
 
@@ -33,16 +33,17 @@ import scala.collection.JavaConverters._
 trait DistriParameterSynchronizer[T] {
 
   /**
-   * Init synchronization context for new layer
+   * Init synchronization context for new parameter
    * @param name  identifier for parameter
    * @param globalSize toal size of parameter
+   * @param priority priority for this parameter
    */
-  def init(name: String, globalSize: Int): Unit
+  def init(name: String, globalSize: Int, priority: Int = 1): Unit
 
   /**
    * put parameter to global
    * @param name identifier for parameter
-   * @param parameter  paraemter to put
+   * @param parameter  parameter to put
    */
   def put(name: String, parameter: Tensor[T]): Unit
 
@@ -52,6 +53,11 @@ trait DistriParameterSynchronizer[T] {
    * @return  parameter
    */
   def get(name: String): Tensor[T]
+
+  /**
+   * clear the synchronizer
+   */
+  def clear(): Unit
 }
 
 class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
@@ -59,19 +65,34 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
                                                     (implicit ev: TensorNumeric[T])
   extends DistriParameterSynchronizer[T] with Serializable {
 
-  private val syncResults: mutable.HashMap[String, Future[Tensor[T]]]
-    = new mutable.HashMap[String, Future[Tensor[T]]]()
+  import com.intel.analytics.bigdl.utils.BlockManagerParameterSynchronizer.logger
+
+  private val syncResults: mutable.HashMap[String, FutureTask[Tensor[T]]]
+    = new mutable.HashMap[String, FutureTask[Tensor[T]]]()
+
+  private val taskSize: Int = System.getProperty("bigdl.ParameterSynchronier." +
+    "asyncTaskSize", "100").toInt
 
   private val clearPoolSize: Int = System.getProperty("bigdl.ParameterSynchronier." +
-    "syncPoolSize", "1").toInt
+    "clearPoolSize", "1").toInt
 
   private val workerPoolSize: Int = System.getProperty("bigdl.ParameterSynchronier" +
     ".syncPoolSize", "4").toInt
 
   private val syncPoolSize: Int = Math.max(System.getProperty("bigdl.ParameterSynchronier" +
     ".computePoolSize",
-    (Runtime.getRuntime().availableProcessors() / 2).toString).toInt, 1)
+    (Runtime.getRuntime().availableProcessors() / 2).toString).toInt, 2)
 
+  private val fetchCompletionPoolSize: Int = System.getProperty("bigdl.ParameterSynchronier" +
+    ".fetchCompletionPoolSize", "1").toInt
+
+  private val asyncTaskWaitingQueue : PriorityBlockingQueue[AsyncFutureTask] =
+    new PriorityBlockingQueue[AsyncFutureTask](taskSize)
+
+  private val blockFetchRequestQueue: PriorityBlockingQueue[BlockFetchRequest] =
+    new PriorityBlockingQueue[BlockFetchRequest](taskSize)
+
+  // thread pool to remove expired blocks
   private lazy val clearPool: ExecutorService =
     Executors.newFixedThreadPool(clearPoolSize, new ThreadFactory {
       override def newThread(r: Runnable): Thread = {
@@ -81,7 +102,8 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
       }
     })
 
-  private lazy val workerPool: ExecutorService =
+  // main thread pool to do put-get-aggregate
+  private val workerPool: ExecutorService =
     Executors.newFixedThreadPool(workerPoolSize, new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
       val t = Executors.defaultThreadFactory().newThread(r)
@@ -90,6 +112,15 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
     }
   })
 
+  // long running thread to fetch the request
+  workerPool.submit(new Runnable {
+    override def run(): Unit = {
+      val asyncFutureTask = asyncTaskWaitingQueue.take
+      workerPool.submit(asyncFutureTask.task)
+    }
+  })
+
+  // thread pool for put and aggregate
   private lazy val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize,
     new ThreadFactory {
       override def newThread(r: Runnable): Thread = {
@@ -99,21 +130,67 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
       }
     })
 
+  // thread pool for fetching blocks
+  private lazy val fetchPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize,
+    new ThreadFactory {
+      override def newThread(r: Runnable): Thread = {
+        val t = Executors.defaultThreadFactory().newThread(r)
+        t.setDaemon(true)
+        t
+      }
+    })
+
+  // thread pool to update sow on fetching completion
+  private val fetchCompletionPool: ExecutorService = Executors.
+    newFixedThreadPool(fetchCompletionPoolSize,
+    new ThreadFactory {
+      override def newThread(r: Runnable): Thread = {
+        val t = Executors.defaultThreadFactory().newThread(r)
+        t.setDaemon(true)
+        t
+      }
+    })
+
+  (0 until syncPoolSize).foreach(th => {
+    fetchPool.submit(new Runnable {
+      override def run(): Unit = {
+        while (true) {
+          val fetchRequest = blockFetchRequestQueue.take
+          val syncMeta = fetchRequest.syncMeta
+          val pid = fetchRequest.futureTask.fetchOnCompletion.fromPartition
+          val parameterBlockId = getParameterBlockId(syncMeta.name,
+          syncMeta.counter, pid, partitionID)
+          val block = BlockManagerWrapper.getLocalOrRemoteBytes(parameterBlockId)
+          if (block == None) {
+            // promote the priporty in next fetch
+            fetchRequest.priority += 1
+            blockFetchRequestQueue.add(fetchRequest)
+          } else {
+            val fetchOnCompletion = fetchRequest.futureTask.fetchOnCompletion
+            fetchOnCompletion.setFetched(block.get)
+            fetchCompletionPool.submit(fetchRequest.futureTask.task)
+          }
+        }
+      }
+    })
+  })
 
   private val syncMetaMap = new ConcurrentHashMap[String, SyncMeta[T]]
 
-  override def init(name: String, globalSize: Int): Unit = {
-    syncMetaMap.putIfAbsent(name, SyncMeta(name, 1, globalSize,
+  override def init(name: String, globalSize: Int, priority: Int = 1): Unit = {
+    syncMetaMap.putIfAbsent(name, SyncMeta(name, 1, priority, globalSize,
       new ConcurrentHashMap[Int, CompressedTensor[T]]()))
   }
 
   override def put(name: String, parameter: Tensor[T]): Unit = {
     val syncMeta = syncMetaMap.get(name)
-    val ayncTask = new AyncTask(syncMeta, parameter)
+    val asyncTask = new AsyncTask(syncMeta, parameter)
+    val futureTask = new FutureTask[Tensor[T]](asyncTask)
+    val futureAsyncTask = new AsyncFutureTask(futureTask, syncMeta.priority)
+    asyncTaskWaitingQueue.add(futureAsyncTask)
     val clearTask = new ClearTask(name, syncMeta.counter - 1, partitionID)
-    val future = workerPool.submit(ayncTask)
     clearPool.execute(clearTask)
-    syncResults.put(name, future)
+    syncResults.put(name, futureTask)
   }
 
   override def get(name: String): Tensor[T] = {
@@ -130,19 +207,24 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
       (0 until totalPartition).foreach(pid => {
         val parameterBlockId = getParameterBlockId(name,
           counter, partitionID, pid)
-        println(s"${partitionID} delete : ${name}${counter-1}" +
-          s"paraBytes${partitionID}${pid}")
         BlockManagerWrapper.removeBlock(parameterBlockId)
       })
     }
   }
 
-  private class AyncTask(syncMeta: SyncMeta[T],
+  private class AsyncFutureTask(val task : FutureTask[_], val priority: Int)
+    extends Comparable[AsyncFutureTask] {
+    override def compareTo(o: AsyncFutureTask): Int = {
+      o.priority.compareTo(this.priority)
+    }
+  }
+
+  private class AsyncTask(val syncMeta: SyncMeta[T],
     parameter: Tensor[T]) extends Callable[Tensor[T]] {
 
     override def call(): Tensor[T] = {
 
-      // step 1: clear last status map
+      // step 1: clear last status
 
       syncMeta.stateOfWorld.clear
 
@@ -162,8 +244,6 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
               val partitionParam = parameter.narrow(1, offset, length)
               val parameterBlockId = getParameterBlockId(syncMeta.name,
                 syncMeta.counter, partitionID, pid)
-              println(s"${partitionID} put : ${syncMeta.name}${syncMeta.counter}" +
-                s"paraBytes${partitionID}${pid}")
               val fp16param = new FP16CompressedTensor[T](length)(_classTag)
               fp16param.compress(0, parameter, offset - 1, length)
               BlockManagerWrapper.putBytes(parameterBlockId,
@@ -185,18 +265,13 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
         new Callable[Int] {
           override def call(): Int = {
             try {
-              var block : Option[ByteBuffer] = None
-              val parameterBlockId = getParameterBlockId(syncMeta.name,
-                syncMeta.counter, pid, partitionID)
-              println(s"${partitionID} get : ${syncMeta.name}${syncMeta.counter}" +
-                s"paraBytes${pid}${partitionID}")
-              while (block == None) {
-                block = BlockManagerWrapper.getLocalOrRemoteBytes(parameterBlockId)
-              }
-              println(s"${partitionID} get : ${syncMeta.name}${syncMeta.counter}" +
-                s"paraBytes${pid}${partitionID} done")
-              syncMeta.stateOfWorld.put(pid, SerializerInstance.create(block.get)(_classTag))
-              pid
+              val fetchOnCompletion = new BlockFetchOnCompletion(syncMeta, pid)
+              val futureTask = new FutureTask[Int](fetchOnCompletion)
+              val priorityFutureTask = new PriorityFutureTask(futureTask, fetchOnCompletion)
+              val fetchRequest = new BlockFetchRequest(syncMeta, syncMeta.priority,
+                priorityFutureTask)
+              blockFetchRequestQueue.add(fetchRequest)
+              futureTask.get
             } catch {
               case t: Throwable =>
                 logger.error("Error: " + ExceptionUtils.getStackTrace(t))
@@ -235,6 +310,33 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
     }
   }
 
+  private class BlockFetchRequest(val syncMeta: SyncMeta[T],
+                                  var priority: Int,
+                                 val futureTask: PriorityFutureTask)
+    extends Comparable[BlockFetchRequest] {
+    override def compareTo(o: BlockFetchRequest): Int = {
+      o.priority.compareTo(this.priority)
+    }
+  }
+
+  private class BlockFetchOnCompletion(val syncMeta: SyncMeta[T], val fromPartition: Int)
+    extends Callable[Int] {
+    val _classTag = classTag[T]
+    private var _fetched: ByteBuffer = null
+    def setFetched(fetched: ByteBuffer): Unit = {
+      this._fetched = fetched
+    }
+    override def call(): Int = {
+      syncMeta.stateOfWorld.put(fromPartition, SerializerInstance.create(_fetched)(_classTag))
+      fromPartition
+    }
+  }
+
+ private class PriorityFutureTask(val task : FutureTask[_],
+                               val fetchOnCompletion: BlockFetchOnCompletion) {
+
+ }
+
   private def getBlockId(name: String): BlockId = {
     SparkExtension.getLocalBlockId(name)
   }
@@ -243,7 +345,22 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
     SparkExtension.getLocalBlockId(name + counter +  pidFrom + "paraBytes" + pidTo)
   }
 
+  override def clear(): Unit = {
+    clearPool.shutdown
+    syncPool.shutdown
+    workerPool.shutdown
+    fetchPool.shutdown
+    fetchCompletionPool.shutdown
+  }
 }
 
-case class SyncMeta[T](name: String, var counter: Int, globalSize: Int,
+object BlockManagerParameterSynchronizer {
+  val logger: Logger = Logger.getLogger(getClass)
+  def apply[T: ClassTag](partitionID: Int,
+            totalPartition: Int)
+           (implicit ev: TensorNumeric[T]): BlockManagerParameterSynchronizer[T]
+  = new BlockManagerParameterSynchronizer[T](partitionID, totalPartition)
+}
+
+case class SyncMeta[T](name: String, var counter: Int, priority: Int, globalSize: Int,
                        stateOfWorld: ConcurrentHashMap[Int, CompressedTensor[T]])
