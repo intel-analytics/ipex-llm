@@ -20,16 +20,20 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, 
 
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+class TestModel(supportedConcurrentNum: Integer = 1) extends AbstractInferenceModel {
+}
+
 class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   var floatInferenceModel: FloatInferenceModel = _
-
+  var abstractInferenceModel = new TestModel()
   before {
     val resource = getClass().getClassLoader().getResource("models")
     val modelPath = resource.getPath + "/caffe/test_persist.prototxt"
     val weightPath = resource.getPath + "/caffe/test_persist.caffemodel"
     floatInferenceModel = InferenceModelFactory.
       loadFloatInferenceModelForCaffe(modelPath, weightPath)
+    abstractInferenceModel.loadCaffe(modelPath, weightPath)
   }
 
   after {
@@ -52,6 +56,22 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // println(floatInferenceModel2.predictor)
     assert(floatInferenceModel.model == floatInferenceModel2.model)
     assert(floatInferenceModel.predictor != null)
+    in.close()
+  }
+
+  "abstract inference model " should "serialize" in {
+    val bos = new ByteArrayOutputStream
+    val out = new ObjectOutputStream(bos)
+    out.writeObject(abstractInferenceModel)
+    out.flush()
+    val bytes = bos.toByteArray()
+    bos.close()
+
+    val bis = new ByteArrayInputStream(bytes)
+    val in = new ObjectInputStream(bis)
+    val abstractInferenceModel2 = in.readObject.asInstanceOf[TestModel]
+    assert(abstractInferenceModel.modelQueue.take().model
+      == abstractInferenceModel2.modelQueue.take().model)
     in.close()
   }
 }
