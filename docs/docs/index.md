@@ -29,10 +29,10 @@ Analytics Zoo makes it easy to build deep learning application on Spark and BigD
 
 ---
 ## High level pipeline APIs
-Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that natively support Spark DataFrames and ML Pipelines, autograd and custom layer/loss, trasnfer learning, etc.
+Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that natively support Spark DataFrames and ML Pipelines, autograd and custom layer/loss, transfer learning, etc.
 
 ### nnframes
-`nnframes` provides *native deep learning support in Spark DataFrames and ML Pipelines*, so that you can easily build complex deep learning pipelines in just a few lines, as illustracted below. (See more details [here](ProgrammingGuide/nnframes.md))
+`nnframes` provides *native deep learning support in Spark DataFrames and ML Pipelines*, so that you can easily build complex deep learning pipelines in just a few lines, as illustrated below. (See more details [here](ProgrammingGuide/nnframes.md))
 
 1. Initialize *NNContext* and load images into *DataFrames* using `NNImageReader`
 
@@ -103,8 +103,8 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 3. Train model with *custom loss function*
 
 ```
-   model.compile(optimizer = SGD(), loss = mean_absolute_error)
-   model.fit(x = ..., y = ...)
+   model.compile(optimizer=SGD(), loss=mean_absolute_error)
+   model.fit(x=..., y=...)
 ```
 
 ### Transfer learning
@@ -117,14 +117,14 @@ Using the high level transfer learning APIs, you can easily customize pretrained
    full_model = Net.load_caffe(def_path, model_path)
 ```
 
-2. Remove last few layers
+2. Remove the last few layers
 
 ```
-   # create a new model by remove layers after pool5/drop_7x7_s1
+   # create a new model by removing layers after pool5/drop_7x7_s1
    model = full_model.new_graph(["pool5/drop_7x7_s1"])
 ```
 
-3. Freeze first few layers
+3. Freeze the first few layers
 
 ```
    # freeze layers from input to pool4/3x3_s2 inclusive
