@@ -41,6 +41,16 @@ def check_spark_source_conflict(spark_home, pyspark_path):
         warnings.warn(warning_msg)
 
 
+def __sys_path_insert(file_path):
+    try:
+        if file_path not in sys.path.split(":"):
+            print("Prepending %s to sys.path" % file_path)
+            sys.path.insert(0, file_path)
+    except:
+        raise RuntimeError("The %s has already been inserted into the sys.path" % file_path)
+
+
+
 def __prepare_spark_env():
     spark_home = os.environ.get('SPARK_HOME', None)
     if exist_pyspark():
@@ -56,8 +66,8 @@ def __prepare_spark_env():
         print("Using %s" % spark_home)
         py4j = glob.glob(os.path.join(spark_home, 'python/lib', 'py4j-*.zip'))[0]
         pyspark = glob.glob(os.path.join(spark_home, 'python/lib', 'pyspark*.zip'))[0]
-        sys.path.insert(0, py4j)
-        sys.path.insert(0, pyspark)
+        __sys_path_insert(py4j)
+        __sys_path_insert(pyspark)
 
 
 def __prepare_bigdl_env():
@@ -65,21 +75,20 @@ def __prepare_bigdl_env():
     conf_paths = glob.glob(os.path.join(jar_dir, "share/conf/*.conf"))
     bigdl_classpath = get_bigdl_classpath()
 
-    def append_path(env_var_name, path):
+    def append_path(env_var_name, jar_path):
         try:
-            if path not in os.environ[env_var_name]:
-	        print("Adding %s to %s" % (path, env_var_name))
-	        os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
+            if jar_path not in os.environ[env_var_name].split(":"):
+	            print("Adding %s to %s" % (jar_path, env_var_name))
+	            os.environ[env_var_name] = jar_path + ":" + os.environ[env_var_name]  # noqa
         except KeyError:
-            os.environ[env_var_name] = path
+            os.environ[env_var_name] = jar_path
 
     if bigdl_classpath:
         append_path("BIGDL_JARS", bigdl_classpath)
 
     if conf_paths:
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
-        print("Prepending %s to sys.path" % conf_paths[0])
-        sys.path.insert(0, conf_paths[0])
+        __sys_path_insert(conf_paths[0])
 
     if os.environ.get("BIGDL_JARS", None) and is_spark_below_2_2():
         for jar in os.environ["BIGDL_JARS"].split(":"):
@@ -87,7 +96,7 @@ def __prepare_bigdl_env():
 
     if os.environ.get("BIGDL_PACKAGES", None):
         for package in os.environ["BIGDL_PACKAGES"].split(":"):
-            sys.path.insert(0, package)
+            __sys_path_insert(package)
 
 
 def get_bigdl_classpath():
