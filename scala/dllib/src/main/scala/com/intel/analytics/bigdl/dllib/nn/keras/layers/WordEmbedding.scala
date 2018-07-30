@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import java.io.File
+import java.io._
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.nn.Identity
@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding.EmbeddingMatrixHolder
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
-import org.apache.commons.lang.SerializationUtils
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{Map => MMap}
@@ -269,12 +268,19 @@ object WordEmbedding {
       }
       out.writeString(id)
       if (inDriver) {
-        val w = SerializationUtils.serialize(cachedWeight)
+        val stream = new ByteArrayOutputStream()
+        val oos = new ObjectOutputStream(stream)
+        oos.writeObject(cachedWeight)
+        oos.close()
+        val w = stream.toByteArray
         val len = w.length
         out.writeInt(len)
         timing(s"writing ${len / 1024 / 1024}Mb weight to stream") {
           out.write(w)
         }
+      }
+      else {
+        out.writeInt(0)
       }
     }
 
@@ -292,7 +298,12 @@ object WordEmbedding {
             numOfBytes += read
           }
         }
-        SerializationUtils.deserialize(w).asInstanceOf[Tensor[T]]
+        val ois = new ObjectInputStream(new ByteArrayInputStream(w))
+        try {
+          ois.readObject().asInstanceOf[Tensor[T]]
+        } finally {
+          ois.close()
+        }
       }
       if (!isCreated) {
         val len = in.readInt()
