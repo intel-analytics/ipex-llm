@@ -18,18 +18,21 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
+import com.google.common.util.concurrent.MoreExecutors
 import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
-import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.collection.JavaConverters._
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
  */
-class ThreadPool(private var poolSize: Int, private var withAffinity: Boolean = false) {
+class ThreadPool(private var poolSize: Int) {
+
   import ThreadPool._
 
 
@@ -39,19 +42,26 @@ class ThreadPool(private var poolSize: Int, private var withAffinity: Boolean = 
   private var context = spawnThreadPool(poolSize)
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
-    new ExecutionContext {
-      if (threadPool != null) threadPool.shutdown()
-      threadPool = if (poolSize != 1) {
-        Executors.newFixedThreadPool(poolSize, new DemonThreadFactory)
-      } else {
-        Executors.newSingleThreadExecutor(new DemonThreadFactory)
-      }
+    if (poolSize == 1) {
+      threadPool = MoreExecutors.sameThreadExecutor()
+      singleThreadPool
+    } else {
+      new ExecutionContext {
+        if (threadPool != null) threadPool.shutdown()
+        threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
+          override def newThread(r: Runnable): Thread = {
+            val t = Executors.defaultThreadFactory().newThread(r)
+            t.setDaemon(true)
+            t
+          }
+        })
 
-      def execute(runnable: Runnable) {
-        threadPool.submit(runnable)
-      }
+        def execute(runnable: Runnable) {
+          threadPool.submit(runnable)
+        }
 
-      def reportFailure(t: Throwable) {}
+        def reportFailure(t: Throwable) {}
+      }
     }
   }
 
@@ -68,6 +78,8 @@ class ThreadPool(private var poolSize: Int, private var withAffinity: Boolean = 
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
+      com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(size)
+      Affinity.setOmpAffinity()
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
@@ -202,10 +214,3 @@ object ThreadPool {
   private val logger = Logger.getLogger(getClass)
 }
 
-private class DemonThreadFactory extends ThreadFactory {
-  override def newThread(r: Runnable): Thread = {
-    val t = Executors.defaultThreadFactory().newThread(r)
-    t.setDaemon(true)
-    t
-  }
-}

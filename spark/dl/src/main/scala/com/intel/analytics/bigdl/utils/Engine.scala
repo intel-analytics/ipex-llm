@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import org.apache.spark._
 import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import org.apache.spark.utils.SparkUtils
 import py4j.GatewayServer
 
@@ -216,7 +217,7 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getMklNumThreads)
+  @volatile private var _model: ThreadPool = null // new ThreadPool(1).setMKLThread(MKL.getMklNumThreads, "model")
 
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
@@ -320,7 +321,8 @@ object Engine {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
       (core * 50).toString).toInt
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
-      _default = new ThreadPool(defaultPoolSize, withAffinity = true)
+      _default = new ThreadPool(defaultPoolSize)
+      _default.setMKLThread(MKL.getMklNumThreads)
     }
 
     val modelPoolSize: Int = if (engineType == MklBlas) {
@@ -333,6 +335,10 @@ object Engine {
       _model = new ThreadPool(modelPoolSize)
       _model.setMKLThread(MKL.getMklNumThreads)
     }
+
+    MKL.setNumThreads(MKL.getMklNumThreads)
+    com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(MKL.getMklNumThreads)
+    Affinity.setOmpAffinity()
   }
 
   /**
