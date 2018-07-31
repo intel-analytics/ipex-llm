@@ -12,9 +12,6 @@ You need to have a running Kubernetes cluster that support Spark on Kubernetes. 
 For Spark2.3,
 BigDL ships with a Dockerfile that can be found in the ```kubernetes/dockerfiles/``` directory.
 
-For Spark2.2,
-BigDL already published pre-built docker images that can be deployed into containers with pods.
-
 The images are as follows:
 
 |Component|Image|
@@ -65,8 +62,8 @@ $SPARK_HOME/bin/spark-submit \
   --deploy-mode cluster \
   --master k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
   --kubernetes-namespace default \
-  --jars $BIGDL_HOME/lib/bigdl-0.6.0-SNAPSHOT-jar-with-dependencies.jar \
-  --py-files $BIGDL_HOME/lib/bigdl-0.6.0-SNAPSHOT-python-api.zip \
+  --jars $BIGDL_HOME/lib/bigdl-0.7.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files $BIGDL_HOME/lib/bigdl-0.7.0-SNAPSHOT-python-api.zip \
   --conf spark.executor.instances=4 \
   --conf spark.app.name=bigdl-1 \
   --conf spark.executor.cores=1 \
