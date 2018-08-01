@@ -35,7 +35,7 @@ trait DistriParameterSynchronizer[T] {
   /**
    * Init synchronization context for new parameter
    * @param name  identifier for parameter
-   * @param globalSize toal size of parameter
+   * @param globalSize total size of parameter
    * @param priority priority for this parameter
    */
   def init(name: String, globalSize: Int, priority: Int = 1): Unit
@@ -63,9 +63,11 @@ trait DistriParameterSynchronizer[T] {
 class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
                                                      totalPartition: Int)
                                                     (implicit ev: TensorNumeric[T])
-  extends DistriParameterSynchronizer[T] with Serializable {
+  extends DistriParameterSynchronizer[T] {
 
   import com.intel.analytics.bigdl.utils.BlockManagerParameterSynchronizer.logger
+
+  @volatile private var shutdown = false
 
   private val syncResults: mutable.HashMap[String, FutureTask[Tensor[T]]]
     = new mutable.HashMap[String, FutureTask[Tensor[T]]]()
@@ -154,7 +156,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
   (0 until syncPoolSize).foreach(th => {
     fetchPool.submit(new Runnable {
       override def run(): Unit = {
-        while (true) {
+        while (true && !shutdown) {
           val fetchRequest = blockFetchRequestQueue.take
           val syncMeta = fetchRequest.syncMeta
           val pid = fetchRequest.futureTask.fetchOnCompletion.fromPartition
@@ -346,6 +348,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
   }
 
   override def clear(): Unit = {
+    shutdown = true
     clearPool.shutdown
     syncPool.shutdown
     workerPool.shutdown
