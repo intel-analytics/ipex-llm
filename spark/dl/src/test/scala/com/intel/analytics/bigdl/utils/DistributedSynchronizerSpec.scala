@@ -36,7 +36,6 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers {
       sync.init(s"testPara", 10)
       var res : Iterator[_] = null
       sync.put(s"testPara", tensor)
-      // sync.get("testPara")
       res = Iterator.single(sync.get(s"testPara"))
       sync.clear
       res
