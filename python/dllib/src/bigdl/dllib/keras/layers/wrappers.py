@@ -81,3 +81,27 @@ class Bidirectional(ZooKerasLayer):
                                             merge_mode,
                                             list(input_shape) if input_shape else None,
                                             **kwargs)
+
+
+class KerasLayerWrapper(ZooKerasLayer):
+    """
+    Wrap a torch style layer to keras style layer.
+    This layer can be built multiple times.
+    This layer will return a keras compatible layer
+
+    # Arguments
+    torch_layer: a torch style layer.
+    input_shape: A shape tuple, not including batch.
+    i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
+    >>> from zoo.pipeline.api.keras.layers import KerasLayerWrapper
+    >>> from bigdl.nn.layer import Linear
+    >>> linear = Linear(100, 10, with_bias=True)
+    creating: createLinear
+    >>> kerasLayer = KerasLayerWrapper(linear, input_shape=(100, ))
+    creating: createZooKerasKerasLayerWrapper
+    """
+    def __init__(self, torch_layer, input_shape=None, **kwargs):
+        super(KerasLayerWrapper, self).__init__(None,
+                                                torch_layer,
+                                                list(input_shape) if input_shape else None,
+                                                **kwargs)
