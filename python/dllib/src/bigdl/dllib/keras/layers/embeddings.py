@@ -117,3 +117,48 @@ class WordEmbedding(ZooKerasLayer):
         """
         return callBigDlFunc(bigdl_type, "wordEmbeddingGetWordIndex",
                              embedding_file)
+
+
+class SparseEmbedding(ZooKerasLayer):
+    """
+    SparseEmbedding is the sparse version of layer Embedding.
+
+    The input of SparseEmbedding should be a 2D SparseTensor or two 2D sparseTensors.
+    If the input is a SparseTensor, the values are positive integer ids,
+    values in each row of this SparseTensor will be turned into a dense vector.
+    If the input is two SparseTensors, the first tensor should be the integer ids, just
+    like the SparseTensor input. And the second tensor is the corresponding
+    weights of the integer ids.
+
+    This layer can only be used as the first layer in a model, you need to provide the argument
+    inputShape (a Single Shape, does not include the batch dimension).
+
+    # Arguments
+    input_dim: Size of the vocabulary. Int > 0.
+    output_dim: Dimension of the dense embedding. Int >= 0.
+    init: String representation of the initialization method for the weights of the layer.
+          Default is 'uniform'.
+    combiner: A string specifying the reduce type.
+              Currently "mean", "sum", "sqrtn" is supported.
+     max_norm: If provided, each embedding is normalized to have l2 norm equal to
+               maxNorm before combining.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the embedding matrix. Default is None.
+    input_shape: A Single Shape, does not include the batch dimension.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
+
+    >>> sparse_embedding = SparseEmbedding(input_dim=10, output_dim=4, input_shape=(10, ))
+    creating: createZooKerasSparseEmbedding
+    """
+    def __init__(self, input_dim, output_dim, combiner="sum", max_norm=-1.0, init="uniform",
+                 W_regularizer=None, input_shape=None, **kwargs):
+        super(SparseEmbedding, self).__init__(None,
+                                              input_dim,
+                                              output_dim,
+                                              combiner,
+                                              max_norm,
+                                              init,
+                                              W_regularizer,
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)

@@ -340,6 +340,64 @@ class Dense(ZooKerasLayer):
                                     **kwargs)
 
 
+class SparseDense(ZooKerasLayer):
+    """
+    SparseDense is the sparse version of layer Dense. SparseDense has two different from Dense:
+    firstly, SparseDense's input Tensor is a SparseTensor. Secondly, SparseDense doesn't backward
+    gradient to next layer in the backpropagation by default, as the gradInput of SparseDense is
+    useless and very big in most cases.
+
+    But, considering model like Wide&Deep, we provide backwardStart and backwardLength to backward
+    part of the gradient to next layer.
+
+    The most common input is 2D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a Single Shape, does not include the batch dimension).
+
+    # Arguments
+    output_dim: The size of output dimension.
+    init: String representation of the initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representation of the activation function to use
+                (such as 'relu' or 'sigmoid'). Default is None.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    backward_start: backward start index, counting from 1.
+    backward_length: backward length.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
+
+    >>> sparseDense = SparseDense(10, input_shape=(10, 4), name="sparseDense")
+    creating: createZooKerasSparseDense
+    """
+
+    def __init__(self, output_dim, init="glorot_uniform", activation=None,
+                 W_regularizer=None, b_regularizer=None, backward_start=-1,
+                 backward_length=-1, init_weight=None, init_bias=None,
+                 init_grad_weight=None, init_grad_bias=None,
+                 bias=True, input_shape=None, **kwargs):
+        super(SparseDense, self).__init__(None,
+                                          output_dim,
+                                          init,
+                                          activation,
+                                          W_regularizer,
+                                          b_regularizer,
+                                          backward_start,
+                                          backward_length,
+                                          init_weight,
+                                          init_bias,
+                                          init_grad_weight,
+                                          init_grad_bias,
+                                          bias,
+                                          list(input_shape) if input_shape else None,
+                                          **kwargs)
+
+
 class MaxoutDense(ZooKerasLayer):
     """
     A dense maxout layer that takes the element-wise maximum of linear layers.
