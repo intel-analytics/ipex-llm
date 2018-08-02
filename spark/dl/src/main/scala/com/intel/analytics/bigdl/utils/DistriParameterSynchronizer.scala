@@ -156,7 +156,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
   (0 until syncPoolSize).foreach(th => {
     fetchPool.submit(new Runnable {
       override def run(): Unit = {
-        while (true && !shutdown) {
+        while (!shutdown) {
           val fetchRequest = blockFetchRequestQueue.take
           val syncMeta = fetchRequest.syncMeta
           val pid = fetchRequest.futureTask.fetchOnCompletion.fromPartition
