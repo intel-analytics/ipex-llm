@@ -1164,10 +1164,11 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createZooKerasSparseCategoricalCrossEntropy(
       logProbAsInput: Boolean = false,
       zeroBasedLabel: Boolean = true,
-      weights: Tensor[T] = null,
+      weights: JTensor = null,
       sizeAverage: Boolean = true,
       paddingValue: Int = -1): SparseCategoricalCrossEntropy[T] = {
-    SparseCategoricalCrossEntropy(logProbAsInput, zeroBasedLabel, weights,
+    SparseCategoricalCrossEntropy(logProbAsInput, zeroBasedLabel,
+      if (weights == null) null else toTensor(weights),
       sizeAverage, paddingValue)
   }
 
