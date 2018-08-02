@@ -35,14 +35,12 @@ abstract class LossFunction[A <: Activity: ClassTag, B <: Activity: ClassTag, T:
   protected val loss: AbstractCriterion[A, B, T]
 
   override def updateOutput(input: A, target: B): T = {
-    loss.updateOutput(input, target)
-    output = loss.output
+    output = loss.updateOutput(input, target)
     output
   }
 
   def updateGradInput(input: A, target: B): A = {
-    loss.updateGradInput(input, target)
-    gradInput = loss.gradInput
+    gradInput = loss.updateGradInput(input, target)
     gradInput
   }
 

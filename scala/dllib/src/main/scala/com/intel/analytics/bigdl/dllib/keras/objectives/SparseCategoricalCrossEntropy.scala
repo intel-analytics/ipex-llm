@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.objectives
 import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion => BigDLClassNLLCriterion}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 
 import scala.reflect.ClassTag
 
@@ -34,14 +34,15 @@ import scala.reflect.ClassTag
  *                       as input. Default is false and inputs should be probabilities.
  * @param zeroBasedLabel Boolean. Whether target labels start from 0. Default is true.
  *                       If false, labels start from 1.
- * @param weights Weights of each class if you have an unbalanced training set.
+ * @param weights Tensor. Weights of each class if you have an unbalanced training set.
+ *                Default is null.
  * @param sizeAverage Boolean. Whether losses are averaged over observations for each
  *                    mini-batch. Default is true. If false, the losses are instead
  *                    summed for each mini-batch.
  * @param paddingValue Integer. If the target is set to this value, the training process
  *                     will skip this sample. In other words, the forward process will
  *                     return zero output and the backward process will also return
- *                     zero gradInput. Default is 1.
+ *                     zero gradInput. Default is -1.
  */
 class SparseCategoricalCrossEntropy[T: ClassTag](
     val logProbAsInput: Boolean = false,
@@ -52,7 +53,7 @@ class SparseCategoricalCrossEntropy[T: ClassTag](
   extends TensorLossFunction[T] {
 
   override val loss: TensorCriterion[T] =
-    BigDLClassNLLCriterion[T](weights, sizeAverage, logProbAsInput, paddingValue)
+    ClassNLLCriterion[T](weights, sizeAverage, logProbAsInput, paddingValue)
 
   private val targetBuffer: Tensor[T] = Tensor[T]()
 
@@ -60,12 +61,10 @@ class SparseCategoricalCrossEntropy[T: ClassTag](
     if (zeroBasedLabel) {
       targetBuffer.resizeAs(target)
       targetBuffer.fill(ev.one).add(target)
-      output = loss.updateOutput(input, targetBuffer)
-      output
+      super.updateOutput(input, targetBuffer)
     }
     else {
-      output = loss.updateOutput(input, target)
-      output
+      super.updateOutput(input, target)
     }
   }
 
@@ -73,12 +72,10 @@ class SparseCategoricalCrossEntropy[T: ClassTag](
     if (zeroBasedLabel) {
       targetBuffer.resizeAs(target)
       targetBuffer.fill(ev.one).add(target)
-      gradInput = loss.updateGradInput(input, targetBuffer)
-      gradInput
+      super.updateGradInput(input, targetBuffer)
     }
     else {
-      gradInput = loss.updateGradInput(input, target)
-      gradInput
+      super.updateGradInput(input, target)
     }
   }
 }
