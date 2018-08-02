@@ -223,7 +223,7 @@ object ResNet {
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
 
-      model.add(ReorderMemory(HeapData(Array(batchSize, 3, 224, 224), Memory.Format.nchw)))
+      model.add(Input(Array(batchSize, 3, 224, 224), Memory.Format.nchw))
         .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false)
         .setName("conv1").setReLU(true))
         .add(SbnDnn(64).setName("bn_conv1"))

@@ -78,8 +78,10 @@ class ThreadPool(private var poolSize: Int) {
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
-      com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(size)
-      Affinity.setOmpAffinity()
+      if (System.getProperty("bigdl.engineType") == "mkldnn") {
+        com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(size)
+        Affinity.setOmpAffinity()
+      }
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))

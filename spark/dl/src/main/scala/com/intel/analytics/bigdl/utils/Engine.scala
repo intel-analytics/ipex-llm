@@ -217,7 +217,10 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = null // new ThreadPool(1).setMKLThread(MKL.getMklNumThreads, "model")
+  @volatile private var _model: ThreadPool = null
+
+  // Thread pool for read data
+  @volatile private var _io: ThreadPool = null
 
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
@@ -317,6 +320,14 @@ object Engine {
     _default
   }
 
+  private[bigdl] def io: ThreadPool = {
+    if (_io == null) {
+      throw new IllegalStateException(s"Engine.init: Thread engine is not " +
+        s"initialized. $NOT_INIT_ERROR")
+    }
+    _io
+  }
+
   private def initThreadPool(core : Int) : Unit = {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
       (core * 50).toString).toInt
@@ -325,10 +336,14 @@ object Engine {
       _default.setMKLThread(MKL.getMklNumThreads)
     }
 
+    if (_io == null) {
+      _io = new ThreadPool(core)
+    }
+
     val modelPoolSize: Int = if (engineType == MklBlas) {
       1
     } else {
-      core
+      1
     }
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
@@ -336,9 +351,11 @@ object Engine {
       _model.setMKLThread(MKL.getMklNumThreads)
     }
 
-    MKL.setNumThreads(MKL.getMklNumThreads)
-    com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(MKL.getMklNumThreads)
-    Affinity.setOmpAffinity()
+    if (engineType == MklDnn) {
+      MKL.setNumThreads(MKL.getMklNumThreads)
+      com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(MKL.getMklNumThreads)
+      Affinity.setOmpAffinity()
+    }
   }
 
   /**
@@ -529,11 +546,13 @@ object Engine {
   }
 
   def setMklDnnEnvironments(): Unit = {
-    val threadsNumber = Math.ceil(Runtime.getRuntime.availableProcessors() / 2).toInt
+    if (System.getProperty("bigdl.engineType") == "mkldnn") { // do not use engineType
+      val threadsNumber = Math.ceil(Runtime.getRuntime.availableProcessors() / 2).toInt
 
-    System.setProperty("bigdl.disable.mklBlockTime", "true")
-    System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
-    System.setProperty("bigdl.coreNumber", "1")
-    System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
+      System.setProperty("bigdl.disable.mklBlockTime", "true")
+      System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
+      System.setProperty("bigdl.coreNumber", "1")
+      System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
+    }
   }
 }

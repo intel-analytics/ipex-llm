@@ -733,11 +733,13 @@ object DistriOptimizer {
       val cached = modelIter.next()
       val vMethodsArr = cached.localMethods
       val workingModels = cached.localModels.map { x =>
-        val _x = x.cloneModule()
         if (x.isInstanceOf[MklDnnContainer]) {
+          val _x = x.cloneModule()
           _x.asInstanceOf[MklDnnContainer].compile(InferencePhase)
+          _x
+        } else {
+          x
         }
-        _x
       }
 
       workingModels.foreach(_.evaluate())
