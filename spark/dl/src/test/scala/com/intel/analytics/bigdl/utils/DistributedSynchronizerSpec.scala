@@ -42,10 +42,10 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers {
       res
     }).collect
     res.length should be  (4)
-    res(0) should be (Tensor[Float](3).fill(2.5f))
-    res(1) should be (Tensor[Float](3).fill(2.5f))
-    res(2) should be (Tensor[Float](2).fill(2.5f))
-    res(3) should be (Tensor[Float](2).fill(2.5f))
+    res(0) should be (Tensor[Float](10).fill(2.5f))
+    res(1) should be (Tensor[Float](10).fill(2.5f))
+    res(2) should be (Tensor[Float](10).fill(2.5f))
+    res(3) should be (Tensor[Float](10).fill(2.5f))
     sc.stop
   }
 }

@@ -160,8 +160,13 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
           val fetchRequest = blockFetchRequestQueue.take
           val syncMeta = fetchRequest.syncMeta
           val pid = fetchRequest.futureTask.fetchOnCompletion.fromPartition
-          val parameterBlockId = getParameterBlockId(syncMeta.name,
-          syncMeta.counter, pid, partitionID)
+          val aggregated = fetchRequest.aggregated
+          val parameterBlockId = if (aggregated) {
+            getParameterBlockId(s"${syncMeta.name}_aggregated", syncMeta.counter, pid, -1)
+          }
+          else {
+            getParameterBlockId(syncMeta.name, syncMeta.counter, pid, partitionID)
+          }
           val block = BlockManagerWrapper.getLocalOrRemoteBytes(parameterBlockId)
           if (block == None) {
             // promote the priporty in next fetch
@@ -181,7 +186,8 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
 
   override def init(name: String, globalSize: Int, priority: Int = 1): Unit = {
     syncMetaMap.putIfAbsent(name, SyncMeta(name, 1, priority, globalSize,
-      new ConcurrentHashMap[Int, CompressedTensor[T]]()))
+      new ConcurrentHashMap[Int, CompressedTensor[T]](),
+      new ConcurrentHashMap[Int, Tensor[T]]()))
   }
 
   override def put(name: String, parameter: Tensor[T]): Unit = {
@@ -229,6 +235,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
       // step 1: clear last status
 
       syncMeta.stateOfWorld.clear
+      syncMeta.aggregatedStateOfWorld.clear
 
       val _classTag = classTag[T]
       val size = syncMeta.globalSize
@@ -244,6 +251,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
               val offset = parameter.storageOffset() + pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
               val partitionParam = parameter.narrow(1, offset, length)
+              syncMeta.aggregatedStateOfWorld.put(pid, partitionParam)
               val parameterBlockId = getParameterBlockId(syncMeta.name,
                 syncMeta.counter, partitionID, pid)
               val fp16param = new FP16CompressedTensor[T](length)(_classTag)
@@ -308,20 +316,54 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
       val res = Tensor[T](length)
       params.head.deCompress(res)
       res.div(ev.fromType(totalPartition))
-      res
+
+      // step 5: put aggregated to global
+      val parameterBlockId = getParameterBlockId(s"${syncMeta.name}_aggregated",
+        syncMeta.counter, partitionID, -1)
+      val fp16paramAggregated = new FP16CompressedTensor[T](length)(_classTag)
+      fp16paramAggregated.compress(0, res, 0, length)
+      BlockManagerWrapper.putBytes(parameterBlockId,
+        fp16paramAggregated.bytes(), StorageLevel.MEMORY_ONLY_SER)
+
+      // step 6: get all other aggregated partitions
+
+      val AggregatedSyncThreads = (0 until totalPartition).map { pid =>
+        new Callable[Int] {
+          override def call(): Int = {
+            try {
+              val fetchOnCompletion = new BlockFetchOnCompletion(syncMeta, pid, true)
+              val futureTask = new FutureTask[Int](fetchOnCompletion)
+              val priorityFutureTask = new PriorityFutureTask(futureTask, fetchOnCompletion)
+              val fetchRequest = new BlockFetchRequest(syncMeta, syncMeta.priority,
+                priorityFutureTask, true)
+              blockFetchRequestQueue.add(fetchRequest)
+              futureTask.get
+            } catch {
+              case t: Throwable =>
+                logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+                throw t
+            }
+          }
+        }
+      }
+      syncPool.invokeAll(AggregatedSyncThreads.asJava)
+
+      parameter
     }
   }
 
   private class BlockFetchRequest(val syncMeta: SyncMeta[T],
                                   var priority: Int,
-                                 val futureTask: PriorityFutureTask)
+                                 val futureTask: PriorityFutureTask,
+                                 val aggregated: Boolean = false)
     extends Comparable[BlockFetchRequest] {
     override def compareTo(o: BlockFetchRequest): Int = {
       o.priority.compareTo(this.priority)
     }
   }
 
-  private class BlockFetchOnCompletion(val syncMeta: SyncMeta[T], val fromPartition: Int)
+  private class BlockFetchOnCompletion(val syncMeta: SyncMeta[T], val fromPartition: Int,
+                                      val aggregated: Boolean = false)
     extends Callable[Int] {
     val _classTag = classTag[T]
     private var _fetched: ByteBuffer = null
@@ -329,7 +371,12 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
       this._fetched = fetched
     }
     override def call(): Int = {
-      syncMeta.stateOfWorld.put(fromPartition, SerializerInstance.create(_fetched)(_classTag))
+      if (aggregated) {
+        val partitionParam = syncMeta.aggregatedStateOfWorld.get(fromPartition)
+        SerializerInstance.create(_fetched)(_classTag).deCompress(partitionParam)
+      } else {
+        syncMeta.stateOfWorld.put(fromPartition, SerializerInstance.create(_fetched)(_classTag))
+      }
       fromPartition
     }
   }
@@ -366,4 +413,5 @@ object BlockManagerParameterSynchronizer {
 }
 
 case class SyncMeta[T](name: String, var counter: Int, priority: Int, globalSize: Int,
-                       stateOfWorld: ConcurrentHashMap[Int, CompressedTensor[T]])
+                       stateOfWorld: ConcurrentHashMap[Int, CompressedTensor[T]],
+                      aggregatedStateOfWorld: ConcurrentHashMap[Int, Tensor[T]])
