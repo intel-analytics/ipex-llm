@@ -42,12 +42,9 @@ def check_spark_source_conflict(spark_home, pyspark_path):
 
 
 def __sys_path_insert(file_path):
-    try:
-        if file_path not in sys.path.split(":"):
-            print("Prepending %s to sys.path" % file_path)
-            sys.path.insert(0, file_path)
-    except:
-        raise RuntimeError("The %s has already been inserted into the sys.path" % file_path)
+    if file_path not in sys.path:
+        print("Prepending %s to sys.path" % file_path)
+        sys.path.insert(0, file_path)
 
 
 
