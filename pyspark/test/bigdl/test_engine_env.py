@@ -26,7 +26,7 @@ class TestEngineEnv():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        self.spark_home = '/home/megaspoon/Documents/spark-2.0.1-bin-hadoop2.7'
+        pass
 
     def teardown_method(self, method):
         """ teardown any state that was previously setup with a setup_method
@@ -34,9 +34,6 @@ class TestEngineEnv():
         """
         pass
 
-    def test___prepare_bigdl_env(self):
-        with pytest.raises(KeyError):
-            __prepare_bigdl_env()
     def test___sys_path_insert(self):
         py4j = glob.glob(os.path.join(self.spark_home, 'python/lib', 'py4j-*.zip'))[0]
         pyspark = glob.glob(os.path.join(self.spark_home, 'python/lib', 'pyspark*.zip'))[0]
