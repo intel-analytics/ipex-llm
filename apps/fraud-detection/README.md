@@ -13,7 +13,7 @@ how to use scala in Jupyter notebook.
 
 An outline is:
 ```bash
-pip install https://dist.apache.org/repos/dist/dev/incubator/toree/0.2.0/snapshots/dev1/toree-pip/toree-0.2.0.dev1.tar.gz
+pip install https://dist.apache.org/repos/dist/dev/incubator/toree/0.2.0-incubating-rc6/toree-pip/toree-0.2.0.tar.gz
 ```
 Run `export SPARK_HOME=the root directory of Spark`.
 
