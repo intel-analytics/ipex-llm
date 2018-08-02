@@ -681,7 +681,7 @@ object TFNet {
   def apply(folder: String, config: SessionConfig = TFNet.SessionConfig()): TFNet = {
     val (model, meta) = NetUtils.processTFFolder(folder)
     val graphDef = parseGraph(model)
-    TFNet(graphDef, model, meta, defaultSessionConfig.toByteArray())
+    TFNet(graphDef, model, meta, config.toByteArray())
   }
 
   private def parseGraph(graphProtoTxt: String) : GraphDef = {
