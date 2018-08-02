@@ -59,7 +59,7 @@ class SparseCategoricalCrossEntropy(LossFunction):
                        as input. Default is False and inputs should be probabilities.
     zero_based_label: Boolean. Whether target labels start from 0. Default is True.
                       If False, labels start from 1.
-    weights: Weights of each class if you have an unbalanced training set.
+    weights: A Numpy array. Weights of each class if you have an unbalanced training set.
     size_average: Boolean. Whether losses are averaged over observations for each
                   mini-batch. Default is True. If False, the losses are instead
                   summed for each mini-batch.
@@ -68,7 +68,12 @@ class SparseCategoricalCrossEntropy(LossFunction):
                    return zero output and the backward process will also return
                    zero grad_input. Default is -1.
 
-    >>> metrics = SparseCategoricalCrossEntropy()
+    >>> loss = SparseCategoricalCrossEntropy()
+    creating: createZooKerasSparseCategoricalCrossEntropy
+    >>> import numpy as np
+    >>> np.random.seed(1128)
+    >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
+    >>> loss = SparseCategoricalCrossEntropy(weights=weights)
     creating: createZooKerasSparseCategoricalCrossEntropy
     """
     def __init__(self, log_prob_as_input=False, zero_based_label=True,
@@ -91,7 +96,7 @@ class MeanAbsoluteError(LossFunction):
               mini-batch. Default is True. If False, the losses are instead
               summed for each mini-batch.
 
-    >>> metrics = MeanAbsoluteError()
+    >>> loss = MeanAbsoluteError()
     creating: createZooKerasMeanAbsoluteError
     """
     def __init__(self, size_average=True, bigdl_type="float"):
