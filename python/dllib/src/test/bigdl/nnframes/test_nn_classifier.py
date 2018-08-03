@@ -39,6 +39,7 @@ class TestNNClassifer():
         sparkConf = create_spark_conf().setMaster("local[1]").setAppName("testNNClassifer")
         self.sc = init_nncontext(sparkConf)
         self.sqlContext = SQLContext(self.sc)
+        assert(self.sc.appName == "testNNClassifer")
 
     def teardown_method(self, method):
         """ teardown any state that was previously setup with a setup_method
