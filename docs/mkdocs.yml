@@ -55,6 +55,25 @@ pages:
     - Image Classification: APIGuide/Models/image-classification.md
     - Text Classification: APIGuide/Models/text-classification.md
     - Recommendation: APIGuide/Models/recommendation.md
+- Keras-Style API Guide:
+  - Python Guide: KerasStyleAPIGuide/keras-api-python.md
+  - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
+  - Layers:
+    - Activation: KerasStyleAPIGuide/Layers/activation.md
+    - Initialization: KerasStyleAPIGuide/Layers/initialization.md
+    - Core Layers: KerasStyleAPIGuide/Layers/core.md
+    - Convolutional Layers: KerasStyleAPIGuide/Layers/convolutional.md
+    - Pooling Layers: KerasStyleAPIGuide/Layers/pooling.md
+    - Recurrent Layers: KerasStyleAPIGuide/Layers/recurrent.md
+    - Normalization Layers: KerasStyleAPIGuide/Layers/normalization.md
+    - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
+    - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
+    - Advanced Activations: KerasStyleAPIGuide/Layers/advanced-activation.md
+    - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
+  - Optimization:
+    - Train, evaluate or predict a model: KerasStyleAPIGuide/Optimization/training.md
+    - Optimizers: KerasStyleAPIGuide/Optimization/optimizer.md
+    - Losses: KerasStyleAPIGuide/Optimization/loss.md
 - Keras2-Style API Guide:
   - Python Guide: Keras2StyleAPIGuide/keras-api-python.md
   - Scala Guide: Keras2StyleAPIGuide/keras-api-scala.md
