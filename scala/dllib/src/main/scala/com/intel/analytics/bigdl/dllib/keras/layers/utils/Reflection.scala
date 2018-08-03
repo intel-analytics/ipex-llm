@@ -74,9 +74,13 @@ class GraphRef[T: ClassTag](instance: Graph[T]) {
   }
 }
 
-class EngineRef {
+object EngineRef {
   def getCoreNumber(): Int = {
     KerasUtils.invokeMethod(Engine, "coreNumber").asInstanceOf[Int]
+  }
+
+  def getNodeNumber(): Int = {
+    KerasUtils.invokeMethod(Engine, "nodeNumber").asInstanceOf[Int]
   }
 }
 
