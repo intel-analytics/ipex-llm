@@ -104,8 +104,7 @@ class EngineRefSpec extends ZooSpecHelper {
 
   "invokeMethod set and coreNumber" should "work properly" in {
     Engine.init
-    val engineRef = new EngineRef()
-    val num = engineRef.getCoreNumber()
+    val num = EngineRef.getCoreNumber()
     print(num)
   }
 }
