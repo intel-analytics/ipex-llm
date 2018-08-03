@@ -59,30 +59,19 @@ object InferenceModelFactory {
     new FloatInferenceModel(model, predictor)
   }
 
-  def loadFloatInferenceModelArrayWithSharedWeights(modelPath: String,
-                                                    weightPath: String,
-                                                    num: Int = 1): Array[FloatInferenceModel] = {
-    val originModel = loadFloatInferenceModel(modelPath, weightPath)
-    cloneSharedWeightsModelsIntoArray(originModel, num)
-  }
-
-  def loadFloatInferenceModelArrayWithSharedWeightsForCaffe(modelPath: String,
-                                                            weightPath: String,
-                                                            num: Int = 1):
-  Array[FloatInferenceModel] = {
-    val originModel = loadFloatInferenceModelForCaffe(modelPath, weightPath)
-    cloneSharedWeightsModelsIntoArray(originModel, num)
-  }
-
-  def loadFloatInferenceModelArrayWithSharedWeightsForTF(modelPath: String,
-                                                         intraOpParallelismThreads: Int = 1,
-                                                         interOpParallelismThreads: Int = 1,
-                                                         usePerSessionThreads: Boolean = true,
-                                                         num: Int = 1):
-  Array[FloatInferenceModel] = {
-    val originalModel = loadFloatInferenceModelForTF(modelPath,
-      intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
-    cloneSharedWeightsModelsIntoArray(originalModel, num)
+  def cloneSharedWeightsModelsIntoArray(originalModel: FloatInferenceModel,
+                                                num: Int): Array[FloatInferenceModel] = {
+    var modelList = ArrayBuffer[FloatInferenceModel]()
+    val emptyModel = originalModel.model.cloneModule()
+    clearWeightsBias(emptyModel)
+    var i = 0
+    while (i < num) {
+      val clonedModel = emptyModel.cloneModule
+      val newModel = makeUpModel(clonedModel, originalModel.model.getWeightsBias)
+      modelList.append(newModel)
+      i += 1
+    }
+    modelList.toArray
   }
 
   private def clearTensor[T: ClassTag](tensors: Array[Tensor[T]])
@@ -122,21 +111,5 @@ object InferenceModelFactory {
     val predictor = LocalPredictor(model = newModel, batchPerCore = 1)
     newModel.evaluate()
     new FloatInferenceModel(newModel, predictor)
-  }
-
-  private def cloneSharedWeightsModelsIntoArray(originalModel: FloatInferenceModel,
-                                                num: Int): Array[FloatInferenceModel] = {
-    var modelList = ArrayBuffer[FloatInferenceModel]()
-    val emptyModel = originalModel.model.cloneModule()
-    clearWeightsBias(emptyModel)
-    modelList.append(originalModel)
-    var i = 1
-    while (i < num) {
-      val clonedModel = emptyModel.cloneModule
-      val newModel = makeUpModel(clonedModel, originalModel.model.getWeightsBias)
-      modelList.append(newModel)
-      i += 1
-    }
-    modelList.toArray
   }
 }
