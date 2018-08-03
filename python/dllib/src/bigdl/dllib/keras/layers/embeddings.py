@@ -140,7 +140,7 @@ class SparseEmbedding(ZooKerasLayer):
           Default is 'uniform'.
     combiner: A string specifying the reduce type.
               Currently "mean", "sum", "sqrtn" is supported.
-     max_norm: If provided, each embedding is normalized to have l2 norm equal to
+    max_norm: If provided, each embedding is normalized to have l2 norm equal to
                maxNorm before combining.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the embedding matrix. Default is None.
