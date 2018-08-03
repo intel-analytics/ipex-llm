@@ -207,13 +207,17 @@ class KerasNet(ZooKerasLayer):
         else:
             return [KerasNet.convert_output(x) for x in output]
 
-    def predict(self, x, batch_size=32, distributed=True):
+    def predict(self, x, batch_size=-1, distributed=True):
         """
         Use a model to do prediction.
 
         # Arguments
         x: Prediction data. A Numpy array or RDD of Sample or ImageSet.
-        batch_size: Number of samples per batch. Default is 32.
+        batch_size: When distributed is True, the default value is 4 * rdd.getNumPartitions.
+                    When distributed is False the default value is 4 * numOfCores.
+                    If you want to tune the batch_size,
+                    you should make sure its value can be divisible by
+                    rdd.getNumPartitions(distributed=True) or numOfCores(distributed=False)
         distributed: Boolean. Whether to do prediction in distributed mode or local mode.
                      Default is True. In local mode, x must be a Numpy array.
         """
@@ -245,13 +249,17 @@ class KerasNet(ZooKerasLayer):
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
 
-    def predict_classes(self, x, batch_size=32, zero_based_label=True):
+    def predict_classes(self, x, batch_size=-1, zero_based_label=True):
         """
         Use a model to predict for classes. By default, label predictions start from 0.
 
         # Arguments
         x: Prediction data. A Numpy array or RDD of Sample.
-        batch_size: Number of samples per batch. Default is 32.
+        batch_size: When distributed is True, the default value is 4 * rdd.getNumPartitions.
+                    When distributed is False the default value is 4 * numOfCores.
+                    If you want to tune the batch_size,
+                    you should make sure its value can be divisible by
+                    rdd.getNumPartitions(distributed=True) or numOfCores(distributed=False)
         zero_based_label: Boolean. Whether result labels start from 0.
                           Default is True. If False, result labels start from 1.
         """
