@@ -31,6 +31,7 @@ object AdamPerf {
     val core = args(2).toInt
     System.setProperty("bigdl.localMode", "true")
     val sparse = args(3) == "1"
+    val rand = args(4) == "1"
     Engine.init(1, core, false)
     val userCount = 138493
     val itemCount = 26744
@@ -51,29 +52,49 @@ object AdamPerf {
         val optimMethod = new EmbeddingAdam[Float]()
           optimMethod.setNOutput(embedding.nIndex, embedding.nOutput)
         val parameter = embedding.getParameters()._1
-        (inputAndGradient, optimMethod, parameter)
+        val parameterArray = Array.tabulate(embedding.nIndex)(i =>
+          embedding.weight.select(1, i + 1)
+        )
+        (inputAndGradient, optimMethod, parameter, parameterArray)
       }
 
       def update(): Unit = {
-        embeddingsGradient.foreach {v =>
+        var i = 0
+        while (i < embeddingsGradient.size) {
+          val v = embeddingsGradient(i)
           val inputAndGradient = v._1
           val optimMethod = v._2
           val parameter = v._3
+          val parameterArray = v._4
 
+          var start = System.nanoTime()
+//          optimMethod.updateNograd(input, parameterArray)
+//          println(s"${i}update parameter array ${parameterArray.length} " +
+//            s"Nograd ${System.nanoTime() - start}")
           optimMethod.updateNograd(input, parameter)
+          println(s"${i}update parameter ${parameter.nElement()} " +
+            s"Nograd ${System.nanoTime() - start}")
+          start = System.nanoTime()
           optimMethod.optimizeEmbedding(inputAndGradient, parameter)
+          println(s"${i}update parameter ${parameter.nElement()} " +
+            s"Embedding ${System.nanoTime() - start}")
+
+          i += 1
         }
+
       }
 
       // warm up
-      (0 until 5).foreach { i =>
+      (0 until 20).foreach { i =>
+        val n = i % 10
+        if (rand) input.range(1 + n * batchSize * core, (n + 1) * batchSize * core)
         update()
       }
 
       var count = 0L
       (0 until iteration).foreach { i =>
         val n = i % 10
-        input.range(1 + n * batchSize * core, 1 + (n + 1) * batchSize * core)
+        if (rand) input.range(1 + n * batchSize * core, (n + 1) * batchSize * core)
         println(i)
         val start = System.nanoTime()
         update()

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.example.recommendation
 
 import com.intel.analytics.bigdl.nn.BCECriterion
-import com.intel.analytics.bigdl.optim.Adam
+import com.intel.analytics.bigdl.optim.{Adam, ParallelAdam}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -28,6 +28,7 @@ object NcfPerf {
     val iteration = args(0).toInt
     val batchSize = args(1).toInt
     val core = args(2).toInt
+    val train = args(3).toInt == 1
     System.setProperty("bigdl.localMode", "true")
     Engine.init(1, core, false)
     val userCount = 138493
@@ -86,75 +87,99 @@ object NcfPerf {
       })
     }
 
-    (0 until iteration).foreach { i =>
-      input.select(2, 1).apply1(_ => Random.nextInt(userCount) + 1)
-      input.select(2, 2).apply1(_ => Random.nextInt(itemCount) + 1)
-      target.apply1(_ => Random.nextInt(2))
-      println(i)
+    if (train) {
+      (0 until iteration).foreach { i =>
+        input.select(2, 1).apply1(_ => Random.nextInt(userCount) + 1)
+        input.select(2, 2).apply1(_ => Random.nextInt(itemCount) + 1)
+        target.apply1(_ => Random.nextInt(2))
+        println(i)
 
-      Engine.default.invokeAndWait((0 until core).map { tid =>
-        () =>
-          val currentInput = input.narrow(1, tid * batchSize + 1, batchSize)
-          val currentTarget = target.narrow(1, tid * batchSize + 1, batchSize)
-          val currentModel = workingModels(tid)
+        Engine.default.invokeAndWait((0 until core).map { tid =>
+          () =>
+            val currentInput = input.narrow(1, tid * batchSize + 1, batchSize)
+            val currentTarget = target.narrow(1, tid * batchSize + 1, batchSize)
+            val currentModel = workingModels(tid)
 
 
-          var start = System.nanoTime()
+            var start = System.nanoTime()
 
-          val output = currentModel.forward(currentInput)
-          modelForwardTime(tid) += System.nanoTime() - start
+            val output = currentModel.forward(currentInput)
+            modelForwardTime(tid) += System.nanoTime() - start
 
-          start = System.nanoTime()
-          val loss = criterion.forward(output, currentTarget)
-          criterionForwardTime(tid) += System.nanoTime() - start
+            start = System.nanoTime()
+            val loss = criterion.forward(output, currentTarget)
+            criterionForwardTime(tid) += System.nanoTime() - start
 
-          start = System.nanoTime()
-          val gradOutput = criterion.backward(output, currentTarget)
-          criterionBackwardTime(tid) += System.nanoTime() - start
+            start = System.nanoTime()
+            val gradOutput = criterion.backward(output, currentTarget)
+            criterionBackwardTime(tid) += System.nanoTime() - start
 
-          start = System.nanoTime()
-          val gradInput = currentModel.backward(currentInput, gradOutput)
-          modelBackwardTime(tid) += System.nanoTime() - start
+            start = System.nanoTime()
+            val gradInput = currentModel.backward(currentInput, gradOutput)
+            modelBackwardTime(tid) += System.nanoTime() - start
 
-      })
+        })
 
-      var start = System.nanoTime()
-      val grad = g
-      Engine.default.invokeAndWait(
-        (0 until syncGradParallelNum).map(tid =>
-          () => {
-            val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
-            val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
-            var i = 0
-            while (i < parallelism) {
-              val sliceG = workingModelWAndG(i)._2.narrow(1, offset + 1, length)
-              if (i == 0) {
-                grad.narrow(1, offset + 1, length)
-                  .copy(sliceG)
-                sliceG.zero()
-              } else {
-                grad.narrow(1, offset + 1, length)
-                  .add(sliceG)
-                sliceG.zero()
+        var start = System.nanoTime()
+        val grad = g
+        Engine.default.invokeAndWait(
+          (0 until syncGradParallelNum).map(tid =>
+            () => {
+              val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+              val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+              var i = 0
+              while (i < parallelism) {
+                val sliceG = workingModelWAndG(i)._2.narrow(1, offset + 1, length)
+                if (i == 0) {
+                  grad.narrow(1, offset + 1, length)
+                    .copy(sliceG)
+                  sliceG.zero()
+                } else {
+                  grad.narrow(1, offset + 1, length)
+                    .add(sliceG)
+                  sliceG.zero()
+                }
+                i += 1
               }
-              i += 1
-            }
-          })
-      )
-      grad.div(parallelism)
-      accgradientTime += System.nanoTime() - start
+            })
+        )
+        grad.div(parallelism)
+        accgradientTime += System.nanoTime() - start
 
-      start = System.nanoTime()
-      optimMethod.optimize(_ => (1, grad), w)
-      updateWeightTime += System.nanoTime() - start
+        start = System.nanoTime()
+        optimMethod.optimize(_ => (1, grad), w)
+        updateWeightTime += System.nanoTime() - start
+      }
+
+      println(s"${modelForwardTime.max / 1e6 / iteration}ms")
+      println(s"${criterionForwardTime.max / 1e6 / iteration}ms")
+      println(s"${criterionBackwardTime.max / 1e6 / iteration}ms")
+      println(s"${modelBackwardTime.max / 1e6 / iteration}ms")
+      println(s"${accgradientTime / 1e6 / iteration}ms")
+      println(s"${updateWeightTime / 1e6 / iteration}ms")
+    } else {
+      var computingTime = 0L
+      (0 until iteration).foreach { i =>
+        input.select(2, 1).apply1(_ => Random.nextInt(userCount) + 1)
+        input.select(2, 2).apply1(_ => Random.nextInt(itemCount) + 1)
+        target.apply1(_ => Random.nextInt(2))
+        println(i)
+
+        var start = System.nanoTime()
+        Engine.default.invokeAndWait((0 until core).map { tid =>
+          () =>
+            val currentInput = input.narrow(1, tid * batchSize + 1, batchSize)
+            val currentTarget = target.narrow(1, tid * batchSize + 1, batchSize)
+            val currentModel = workingModels(tid)
+
+            val output = currentModel.forward(currentInput)
+            modelForwardTime(tid) += System.nanoTime() - start
+        })
+        computingTime += System.nanoTime() - start
+      }
+
+      println(s"Throughput is ${batchSize * core * iteration * 1e9 / computingTime} records/s")
     }
-
-    println(s"${modelForwardTime.max / 1e6 / iteration}ms")
-    println(s"${criterionForwardTime.max / 1e6 / iteration}ms")
-    println(s"${criterionBackwardTime.max / 1e6 / iteration}ms")
-    println(s"${modelBackwardTime.max / 1e6 / iteration}ms")
-    println(s"${accgradientTime / 1e6 / iteration}ms")
-    println(s"${updateWeightTime / 1e6 / iteration}ms")
 
   }
 

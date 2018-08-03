@@ -94,7 +94,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
             Tensor[T]().resizeAs(currentParameter).zero(),
             Tensor[T]().resizeAs(currentParameter).zero())
         }
-      Adam.updateFrame(_s, _r, _denom, clr, currentDfdx, currentParameter,
+      ParallelAdam.updateFrame(_s, _r, _denom, clr, currentDfdx, currentParameter,
         beta1, beta2, timestep, currentOnes, eps)
 
       state(s"s$tid") = _s // 1st moment variables
@@ -103,8 +103,9 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
       times(tid) = (System.nanoTime() - start) / 1000000L
     }))
 
-    Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
-    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
+    ParallelAdam.logger
+      .info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
+    ParallelAdam.logger.info(s"Time is ${times.mkString("\t")} ms")
 
 
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
@@ -123,6 +124,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
   var s: Array[Tensor[T]] = _
   var r: Array[Tensor[T]] = _
   var denom: Array[Tensor[T]] = _
+  var buffer: Array[Tensor[T]] = _
   def setNOutput(nIndex: Int, nOutput: Int): Unit = {
     embeddingNoutput = nOutput
     embeddingNIndex = nIndex
@@ -133,6 +135,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
     s = Array.tabulate(nIndex)(_ => Tensor[T](nOutput))
     r = Array.tabulate(nIndex)(_ => Tensor[T](nOutput))
     denom = Array.tabulate(nIndex)(_ => Tensor[T](nOutput))
+    buffer = Array.tabulate(nIndex)(_ => Tensor[T](nOutput))
     (1 to nIndex).foreach{i =>
       state(s"s$i") = Tensor[Float]() // 1st moment variables
       state(s"r$i") = Tensor[Float]() // 2nd moment variables
@@ -147,7 +150,9 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
     val beta2 = this.beta2
     val eps = this.Epsilon
 
+    val uniqueStart = System.nanoTime()
     val uniqueIndices = Tensor[T](Storage(indices.storage().array().distinct))
+    println(s"unique indices ${System.nanoTime() - uniqueStart}")
 
     var timestep = state.getOrElse[Int]("evalCounter", 1)
 
@@ -160,7 +165,9 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 
 //    val times = new Array[Long](parallelNum)
 
-    Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+    var updateTime = System.nanoTime()
+    (0 until parallelNum).map(tid => {
+//      Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
       val offset = tid * taskSize + math.min(tid, extraTask)
       val length = taskSize + (if (tid < extraTask) 1 else 0)
       val currentIndex = uniqueIndices.narrow(1, offset + 1, length)
@@ -168,13 +175,14 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
       while(i <= currentIndex.nElement()) {
         val index = ev.toType[Int](currentIndex.valueAt(i))
         if (timestep > lastUpdated(index - 1)) {
-          val (_s, _r, _denom) = (s(index - 1), r(index - 1), denom(index - 1))
+          val (_s, _r, _denom, _buffer) =
+            (s(index - 1), r(index - 1), denom(index - 1), buffer(index - 1))
           val indexThParameter = parameter.narrow(1,
             (index - 1) * embeddingNoutput + 1, embeddingNoutput)
-          println(s"update index ${index}")
-          Adam.updateFrameZeroGrad(
+//          println(s"update index ${index}")
+          ParallelAdam.updateFrameZeroGrad(
             timestep, lastUpdated(index - 1),
-            _s, _r, _denom, clr, indexThParameter,
+            _s, _r, _denom, _buffer, clr, indexThParameter,
             beta1, beta2, ones, eps)
           lastUpdated(index - 1) = timestep
         }
@@ -183,13 +191,65 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
       }
 //      Adam.logger.info(s"zero grad${tid} $i ${ev.toType[Int](currentIndex.valueAt(i - 1))}")
 //      times(tid) = (System.nanoTime() - start) / 1000000L
-    }))
+    })
 //  Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
 //    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
+    println(s"${parallelNum}nograd update frame time cost ${System.nanoTime() - updateTime}")
 
 
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
   }
+
+//  def updateNograd(indices: Tensor[T], parameter: Array[Tensor[T]]): Unit = {
+//    val lr = this.learningRate
+//    val lrd = this.learningRateDecay
+//    val beta1 = this.beta1
+//    val beta2 = this.beta2
+//    val eps = this.Epsilon
+//
+//    val uniqueStart = System.nanoTime()
+//    val uniqueIndices = Tensor[T](Storage(indices.storage().array().distinct))
+//    println(s"unique indices ${System.nanoTime() - uniqueStart}")
+//
+//    var timestep = state.getOrElse[Int]("evalCounter", 1)
+//
+//    val clr = lr / (1 + (timestep - 1) *lrd)
+//
+//    val parallelNum = Engine.coreNumber()
+//    val gradLength = uniqueIndices.nElement()
+//    val taskSize = gradLength / parallelNum
+//    val extraTask = gradLength % parallelNum
+//
+//    //    val times = new Array[Long](parallelNum)
+//
+//    var updateTime = System.nanoTime()
+//    Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+//      val offset = tid * taskSize + math.min(tid, extraTask)
+//      val length = taskSize + (if (tid < extraTask) 1 else 0)
+//      val currentIndex = uniqueIndices.narrow(1, offset + 1, length)
+//      var i = 1
+//      while(i <= currentIndex.nElement()) {
+//        val index = ev.toType[Int](currentIndex.valueAt(i))
+//        if (timestep > lastUpdated(index - 1)) {
+//          val (_s, _r, _denom, _buffer) =
+//            (s(index - 1), r(index - 1), denom(index - 1), buffer(index - 1))
+//          val indexThParameter = parameter(index - 1)
+//          //          println(s"update index ${index}")
+//          ParallelAdam.updateFrameZeroGrad(
+//            timestep, lastUpdated(index - 1),
+//            _s, _r, _denom, _buffer, clr, indexThParameter,
+//            beta1, beta2, ones, eps)
+//          lastUpdated(index - 1) = timestep
+//        }
+//        //        println(index)
+//        i += 1
+//      }
+//    }))
+//    println(s"${parallelNum}nograd update frame time cost ${System.nanoTime() - updateTime}")
+//
+//
+//    state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
+//  }
 
   /**
    * update embedding gradient
@@ -235,7 +295,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
         val indexThParameter = parameter.narrow(1,
           (index - 1) * embeddingNoutput + 1, embeddingNoutput)
         val iThGradient = currentDfdx.select(1, i)
-        Adam.updateFrame(
+        ParallelAdam.updateFrame(
           _s, _r, _denom, clr, iThGradient, indexThParameter,
           beta1, beta2, timestep, ones, eps)
         lastUpdated(index - 1) = timestep + 1
@@ -244,9 +304,8 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 //      Adam.logger.info(s"update grad${tid} $i ${ev.toType[Int](currentIndex.valueAt(i - 1))}")
     }))
 
-//    Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
-//    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
 
+    // TODO: timestep
     timestep = timestep + 1
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
   }
@@ -269,59 +328,3 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
   override def getLearningRate(): Double = this.learningRate
 }
 
-//object Adam {
-//  val logger = Logger.getLogger(this.getClass)
-//
-//  private[optim] def updateFrame[T: ClassTag](_s: Tensor[T], _r: Tensor[T], _denom: Tensor[T],
-//      clr: Double, dfdx: Tensor[T], parameter: Tensor[T],
-//      beta1: Double, beta2: Double, timestep: Int,
-//      ones: Tensor[T], eps: Double)(
-//         implicit ev: TensorNumeric[T]): Unit = {
-//    /**
-//     * m_t = beta_1 * m_t-1 + (1 - beta_1) * g_t
-//     * v_t = beta_2 * v_t-1 + (1 - beta_2) * g_t * g_t
-//     */
-//    _s.mul(ev.fromType[Double](beta1)).add(ev.fromType[Double](1-beta1), dfdx)
-//    _r.mul(ev.fromType[Double](beta2)).addcmul(ev.fromType[Double](1-beta2), dfdx, dfdx)
-//    _denom.sqrt(_r)
-//
-//    // used as MKL.axpy: 1 * a + y = y, and fill buffer with one
-//    _denom.add(ev.fromType(eps), ones)
-//
-//    // efficiency improved upon by changing the order of computation, at expense of clarity
-//    val biasCorrection1 = 1 - pow(beta1, timestep)
-//    val biasCorrection2 = 1 - pow(beta2, timestep)
-//    val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
-//    _denom.cdiv(_s, _denom)
-//    parameter.add(ev.fromType[Double](-stepSize), _denom)
-//  }
-//
-//
-//  private[optim] def updateFrameZeroGrad[T: ClassTag](
-//      currentIteration: Int, lastUpdatedIteration: Int,
-//      _s: Tensor[T], _r: Tensor[T], _denom: Tensor[T],
-//      clr: Double, parameter: Tensor[T],
-//      beta1: Double, beta2: Double,
-//      ones: Tensor[T], eps: Double)(
-//      implicit ev: TensorNumeric[T]): Unit = {
-//    (lastUpdatedIteration until currentIteration).foreach{timestep =>
-//      /**
-//       * m_t = beta_1 * m_t-1
-//       * v_t = beta_2 * v_t-1
-//       */
-//      _s.mul(ev.fromType[Double](beta1))
-//      _r.mul(ev.fromType[Double](beta2))
-//      _denom.sqrt(_r)
-//
-//      // used as MKL.axpy: 1 * a + y = y
-//      _denom.add(ev.fromType(eps), ones)
-//
-//      // efficiency improved upon by changing the order of computation, at expense of clarity
-//      val biasCorrection1 = 1 - pow(beta1, timestep)
-//      val biasCorrection2 = 1 - pow(beta2, timestep)
-//      val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
-//      _denom.cdiv(_s, _denom)
-//      parameter.add(ev.fromType[Double](-stepSize), _denom)
-//    }
-//  }
-//}

@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import breeze.linalg.*
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
-import org.apache.log4j.Logger
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.math._
 import scala.reflect.ClassTag
@@ -34,14 +34,14 @@ import scala.reflect.ClassTag
  * @tparam T
  */
 class Adam[@specialized(Float, Double) T: ClassTag](
-    var learningRate: Double = 1e-3,
-    var learningRateDecay: Double = 0.0,
-    var beta1: Double = 0.9,
-    var beta2: Double = 0.999,
-    var Epsilon: Double = 1e-8)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
+ var learningRate: Double = 1e-3,
+ var learningRateDecay: Double = 0.0,
+ var beta1: Double = 0.9,
+ var beta2: Double = 0.999,
+ var Epsilon: Double = 1e-8)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
   @transient
-  private var ones: Tensor[T] = null
+  private var buffer: Tensor[T] = null
 
   /**
    * An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
@@ -52,7 +52,8 @@ class Adam[@specialized(Float, Double) T: ClassTag](
    * @return the new x vector and the function list {fx}, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-                        parameter: Tensor[T]): (Tensor[T], Array[T]) = {
+               parameter: Tensor[T]): (Tensor[T], Array[T]) = {
+    if (buffer == null) buffer = Tensor[T]()
     val lr = this.learningRate
     val lrd = this.learningRateDecay
     val beta1 = this.beta1
@@ -63,51 +64,43 @@ class Adam[@specialized(Float, Double) T: ClassTag](
 
     var timestep = state.getOrElse[Int]("evalCounter", 0)
 
+    val (_s, _r, _denom) =
+      if (state.get[Tensor[T]]("s").isDefined) {
+        (state.get[Tensor[T]]("s").get, state.get[Tensor[T]]("r").get,
+          state.get[Tensor[T]]("denom").get.resizeAs(dfdx))
+      } else {
+        (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero(),
+          Tensor[T]().resizeAs(dfdx).zero())
+      }
+
     val clr = lr / (1 + timestep*lrd)
 
     timestep = timestep + 1
 
-    val parallelNum = Engine.coreNumber()
-    val gradLength = parameter.nElement()
-    val taskSize = gradLength / parallelNum
-    val extraTask = gradLength % parallelNum
-    if (ones == null || ones.nElement() < taskSize + 1) {
-      ones = Tensor[T]().resize(taskSize + 1).fill(ev.one)
-    }
+    /**
+     * m_t = beta_1 * m_t-1 + (1 - beta_1) * g_t
+     * v_t = beta_2 * v_t-1 + (1 - beta_2) * g_t * g_t
+     */
+    _s.mul(ev.fromType[Double](beta1)).add(ev.fromType[Double](1-beta1), dfdx)
+    _r.mul(ev.fromType[Double](beta2)).addcmul(ev.fromType[Double](1-beta2), dfdx, dfdx)
+    _denom.sqrt(_r)
 
-    val times = new Array[Long](parallelNum)
+    // used as MKL.axpy: 1 * a + y = y, and fill buffer with one
+    buffer.resizeAs(dfdx).fill(ev.one)
+    _denom.add(ev.fromType(eps), buffer)
 
-    (0 until parallelNum).foreach{tid =>
-      if (state.get[Tensor[T]](s"s$tid").isEmpty) {
-        state(s"s$tid") = Tensor[T]()
-        state(s"r$tid") = Tensor[T]()
-        state(s"denom$tid") = Tensor[T]()
-      }
-    }
+    // efficiency improved upon by changing the order of computation, at expense of clarity
+    val biasCorrection1 = 1 - pow(beta1, timestep)
+    val biasCorrection2 = 1 - pow(beta2, timestep)
+    val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
 
-    Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-      val start = System.nanoTime()
-      val offset = tid * taskSize + math.min(tid, extraTask)
-      val length = taskSize + (if (tid < extraTask) 1 else 0)
-      val currentDfdx = dfdx.narrow(1, offset + 1, length)
-      val currentParameter = parameter.narrow(1, offset + 1, length)
-      val currentOnes = ones.narrow(1, 1, length)
-      val (_s, _r, _denom) =
-        (state.get[Tensor[T]](s"s$tid").get.resizeAs(currentParameter),
-          state.get[Tensor[T]](s"r$tid").get.resizeAs(currentParameter),
-          state.get[Tensor[T]](s"denom$tid").get.resizeAs(currentParameter))
-
-      Adam.updateFrame(_s, _r, _denom, clr, currentDfdx, currentParameter,
-        beta1, beta2, timestep, currentOnes, eps)
-
-      times(tid) = (System.nanoTime() - start) / 1000000L
-    }))
-
-    Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
-    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
-
+    _denom.cdiv(_s, _denom)
+    parameter.add(ev.fromType[Double](-stepSize), _denom)
 
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
+    state("s") = _s // 1st moment variables
+    state("r") = _r // 2nd moment variables
+    state("denom") = _denom // 3nd moment variables
 
     (parameter, Array(fx))
   }
@@ -128,61 +121,4 @@ class Adam[@specialized(Float, Double) T: ClassTag](
   }
 
   override def getLearningRate(): Double = this.learningRate
-}
-
-object Adam {
-  val logger = Logger.getLogger(this.getClass)
-
-  private[optim] def updateFrame[T: ClassTag](_s: Tensor[T], _r: Tensor[T], _denom: Tensor[T],
-                                              clr: Double, dfdx: Tensor[T], parameter: Tensor[T],
-                                              beta1: Double, beta2: Double, timestep: Int,
-                                              ones: Tensor[T], eps: Double)(
-                                                 implicit ev: TensorNumeric[T]): Unit = {
-    /**
-     * m_t = beta_1 * m_t-1 + (1 - beta_1) * g_t
-     * v_t = beta_2 * v_t-1 + (1 - beta_2) * g_t * g_t
-     */
-    _s.mul(ev.fromType[Double](beta1)).add(ev.fromType[Double](1-beta1), dfdx)
-    _r.mul(ev.fromType[Double](beta2)).addcmul(ev.fromType[Double](1-beta2), dfdx, dfdx)
-    _denom.sqrt(_r)
-
-    // used as MKL.axpy: 1 * a + y = y, and fill buffer with one
-    _denom.add(ev.fromType(eps), ones)
-
-    // efficiency improved upon by changing the order of computation, at expense of clarity
-    val biasCorrection1 = 1 - pow(beta1, timestep)
-    val biasCorrection2 = 1 - pow(beta2, timestep)
-    val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
-    _denom.cdiv(_s, _denom)
-    parameter.add(ev.fromType[Double](-stepSize), _denom)
-  }
-
-
-  private[optim] def updateFrameZeroGrad[T: ClassTag](
-    currentIteration: Int, lastUpdatedIteration: Int,
-    _s: Tensor[T], _r: Tensor[T], _denom: Tensor[T],
-    clr: Double, parameter: Tensor[T],
-    beta1: Double, beta2: Double,
-    ones: Tensor[T], eps: Double)(
-     implicit ev: TensorNumeric[T]): Unit = {
-    (lastUpdatedIteration until (currentIteration - 1)).foreach{timestep =>
-      /**
-       * m_t = beta_1 * m_t-1
-       * v_t = beta_2 * v_t-1
-       */
-      _s.mul(ev.fromType[Double](beta1))
-      _r.mul(ev.fromType[Double](beta2))
-      _denom.sqrt(_r)
-
-      // used as MKL.axpy: 1 * a + y = y
-      _denom.add(ev.fromType(eps), ones)
-
-      // efficiency improved upon by changing the order of computation, at expense of clarity
-      val biasCorrection1 = 1 - pow(beta1, timestep)
-      val biasCorrection2 = 1 - pow(beta2, timestep)
-      val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
-      _denom.cdiv(_s, _denom)
-      parameter.add(ev.fromType[Double](-stepSize), _denom)
-    }
-  }
 }

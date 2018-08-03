@@ -110,5 +110,107 @@ class AdamSpec extends FlatSpec with Matchers {
     }
     println(s"average eta = ${sum / iter} seconds")
   }
+
+  "adam for embedding" should "works the same with adam" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
+    val t = Tensor[Float](T(1.0f, 2.0f, 4.0f, 6.0f))
+    val input = Array(t.narrow(1, 1, 2), t.narrow(1, 3, 2))
+    val gradient = Array(Tensor[Float](2, 4).range(1, 8, 1),
+      Tensor[Float](2, 4).range(9, 16, 1))
+    val weightEmbedding = Tensor[Float](24).randn()   // 6 * 4
+    val weightDense = weightEmbedding.clone()
+    val denseGradient = Tensor[Float](24)
+
+    val adam = new Adam[Float]()
+    val adamEm = new EmbeddingAdam[Float]()
+    adamEm.setNOutput(6, 4)
+
+    (0 until 100).foreach {i =>
+      denseGradient.zero()
+      var j = 1
+      input(0).apply1{v =>
+        val index = v % 6 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(0).select(1, j)
+        )
+        j += 1
+        index
+      }
+      j = 1
+      input(1).apply1{v =>
+        val index = v % 6 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(1).select(1, j)
+        )
+        j += 1
+        index
+      }
+
+//      adamEm.updateNograd(input(0), weightEmbedding)
+//      adamEm.updateNograd(input(1), weightEmbedding)
+      adamEm.updateNograd(t, weightEmbedding)
+      weightEmbedding should be (weightDense)
+      adamEm.optimizeEmbedding(input.zip(gradient), weightEmbedding)
+
+      adam.optimize(_ => (1, denseGradient), weightDense)
+
+
+      if (weightEmbedding != weightDense) {
+        println
+      }
+    }
+  }
+
+  "adam for embedding" should "works the same with adam 2" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
+    val t = Tensor[Float](T(1.0f, 2.0f, 6.0f, 7.0f))
+    val input = Array(t.narrow(1, 1, 2), t.narrow(1, 3, 2))
+    val gradient = Array(Tensor[Float](2, 4).range(1, 8, 1),
+      Tensor[Float](2, 4).range(9, 16, 1))
+    val weightEmbedding = Tensor[Float](32).randn()   // 8 * 4
+    val weightDense = weightEmbedding.clone()
+    val denseGradient = Tensor[Float](32)
+
+    val adam = new Adam[Float]()
+    val adamEm = new EmbeddingAdam[Float]()
+    adamEm.setNOutput(8, 4)
+
+    (0 until 100).foreach {i =>
+      denseGradient.zero()
+      var j = 1
+      input(0).apply1{v =>
+        val index = v % 8 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(0).select(1, j)
+        )
+        j += 1
+        index
+      }
+      j = 1
+      input(1).apply1{v =>
+        val index = v % 8 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(1).select(1, j)
+        )
+        j += 1
+        index
+      }
+
+      //      adamEm.updateNograd(input(0), weightEmbedding)
+      //      adamEm.updateNograd(input(1), weightEmbedding)
+      adamEm.updateNograd(t, weightEmbedding)
+//      weightEmbedding should be (weightDense)
+      adamEm.optimizeEmbedding(input.zip(gradient), weightEmbedding)
+
+      adam.optimize(_ => (1, denseGradient), weightDense)
+
+
+      if (weightEmbedding != weightDense) {
+        println
+      }
+    }
+  }
 }
 
