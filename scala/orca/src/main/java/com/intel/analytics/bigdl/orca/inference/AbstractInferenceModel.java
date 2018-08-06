@@ -17,6 +17,7 @@
 package com.intel.analytics.zoo.pipeline.inference;
 
 import com.intel.analytics.bigdl.utils.Engine;
+import scala.actors.threadpool.Arrays;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -108,7 +109,7 @@ public abstract class AbstractInferenceModel implements Serializable {
     return result;
   }
 
-  public List<List<JTensor>> predict(List<JTensor> inputs) {
+  public List<List<JTensor>> predict(List<List<JTensor>> inputs) {
     FloatInferenceModel model = null;
     List<List<JTensor>> result;
     try {
@@ -122,6 +123,10 @@ public abstract class AbstractInferenceModel implements Serializable {
       modelQueue.offer(model);
     }
     return result;
+  }
+
+  public List<List<JTensor>> predict(List<JTensor>[] inputs) {
+    return predict(Arrays.asList(inputs));
   }
 
   private void writeObject(ObjectOutputStream out) throws IOException {
