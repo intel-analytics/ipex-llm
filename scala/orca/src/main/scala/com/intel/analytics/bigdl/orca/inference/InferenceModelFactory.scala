@@ -34,17 +34,15 @@ object InferenceModelFactory {
   def loadFloatInferenceModel(modelPath: String, weightPath: String)
   : FloatInferenceModel = {
     val model = ModelLoader.loadFloatModel(modelPath, weightPath)
-    val predictor = LocalPredictor(model = model, batchPerCore = 1)
     model.evaluate()
-    new FloatInferenceModel(model, predictor)
+    new FloatInferenceModel(model)
   }
 
   def loadFloatInferenceModelForCaffe(modelPath: String, weightPath: String)
   : FloatInferenceModel = {
     val model = ModelLoader.loadFloatModelForCaffe(modelPath, weightPath)
-    val predictor = LocalPredictor(model = model, batchPerCore = 1)
     model.evaluate()
-    new FloatInferenceModel(model, predictor)
+    new FloatInferenceModel(model)
   }
 
   def loadFloatInferenceModelForTF(modelPath: String,
@@ -54,9 +52,8 @@ object InferenceModelFactory {
     val sessionConfig = TFNet.SessionConfig(intraOpParallelismThreads,
       interOpParallelismThreads, usePerSessionThreads)
     val model = ModelLoader.loadFloatModelForTF(modelPath, sessionConfig)
-    val predictor = LocalPredictor(model = model, batchPerCore = 1)
     model.evaluate()
-    new FloatInferenceModel(model, predictor)
+    new FloatInferenceModel(model)
   }
 
   def cloneSharedWeightsModelsIntoArray(originalModel: FloatInferenceModel,
@@ -86,7 +83,6 @@ object InferenceModelFactory {
   }
 
   private def clearWeightsBias(model: Module[Float]): Unit = {
-    // clear parameters
     clearTensor(model.parameters()._1)
     clearTensor(model.parameters()._2)
   }
@@ -108,8 +104,7 @@ object InferenceModelFactory {
   FloatInferenceModel = {
     val newModel = model.cloneModule()
     putWeightsBias(weightBias, newModel)
-    val predictor = LocalPredictor(model = newModel, batchPerCore = 1)
     newModel.evaluate()
-    new FloatInferenceModel(newModel, predictor)
+    new FloatInferenceModel(newModel)
   }
 }
