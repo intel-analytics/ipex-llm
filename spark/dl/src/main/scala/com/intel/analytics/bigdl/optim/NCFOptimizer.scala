@@ -16,16 +16,19 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.lang.invoke.MethodHandles.Lookup
+
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.recommendation.NeuralCFV2
-import com.intel.analytics.bigdl.nn.{Graph, Utils}
+import com.intel.analytics.bigdl.nn.{Graph, LookupTable, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{SparseTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -99,11 +102,18 @@ class NCFOptimizer[T: ClassTag] (
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
     val optimMethod: OptimMethod[T] = optimMethods(model.getName())
-    val optimMethod2: OptimMethod[T] = optimMethods(model.getName()).clone()
+    val optimMethod2: Map[String, OptimMethod[T]] = Map(
+    "mlpUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 128),
+    "mlpItemEmbedding" -> new EmbeddingAdam[T]().setNOutput(26744, 128),
+    "mfUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 64),
+    "mfItemEmbedding" -> new EmbeddingAdam[T]().setNOutput(26744, 64)
+    )
     dataset.shuffle()
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
+    val userMapping = new mutable.HashMap[Int, Int]()
+    val itemMapping = new mutable.HashMap[Int, Int]()
     while (!endWhen(state)) {
       val start = System.nanoTime()
       println("start")
@@ -131,6 +141,39 @@ class NCFOptimizer[T: ClassTag] (
       }
       val dataFetchTime = System.nanoTime()
       println("dataFetch")
+
+      val input = batch.getInput().toTensor[Float]
+      val inputUser = input.select(2, 1)
+      val inputItem = input.select(2, 2)
+
+      def getMapping(input: Tensor[Float],
+                     userMapping: mutable.HashMap[Int, Int],
+                     itemMapping: mutable.HashMap[Int, Int]): Unit = {
+        val inputArray = input.storage().array()
+        var userCount = 1
+        var itemCount = 1
+        var i = 0
+        while(i < input.nElement()) {
+          val userIndex = inputArray(i).toInt
+          if (!userMapping.contains(userIndex)) {
+            userMapping.put(userIndex, userCount)
+            userCount += 1
+          }
+          val itemIndex = inputArray(i + 1).toInt
+          if (!itemMapping.contains(itemIndex)) {
+            itemMapping.put(itemIndex, itemCount)
+            itemCount += 1
+          }
+          i += 2
+        }
+      }
+
+      userMapping.clear()
+      itemMapping.clear()
+      getMapping(inputUser, userMapping, itemMapping)
+
+      val getMappingTime = System.nanoTime()
+
       val lossSum = Engine.default.invokeAndWait(
         (0 until parallelism).map(i =>
           () => {
@@ -174,28 +217,51 @@ class NCFOptimizer[T: ClassTag] (
       val zeroGradTime = System.nanoTime()
       println("zeroGrad")
 
-      (0 until parallelism).foreach { i =>
-        val input = miniBatchBuffer(i).getInput()
+      val embeddingGradients = (0 until parallelism).flatMap{ i =>
         val localEmbedding = workingEmbeddingModels(i).asInstanceOf[Graph[T]]
         val input1 = localEmbedding("userId").get.output.asInstanceOf[Tensor[T]]
         val input2 = localEmbedding("itemId").get.output.asInstanceOf[Tensor[T]]
         val mlpUserEmbedding = localEmbedding("mlpUserEmbedding").get
-          .asInstanceOf[AbstractModule[Activity, Activity, T]]
+          .asInstanceOf[LookupTable[T]]
         val mlpItemEmbedding = localEmbedding("mlpItemEmbedding").get
-          .asInstanceOf[AbstractModule[Activity, Activity, T]]
+          .asInstanceOf[LookupTable[T]]
         val mfUserEmbedding = localEmbedding("mfUserEmbedding").get
-          .asInstanceOf[AbstractModule[Activity, Activity, T]]
+          .asInstanceOf[LookupTable[T]]
         val mfItemEmbedding = localEmbedding("mfItemEmbedding").get
-          .asInstanceOf[AbstractModule[Activity, Activity, T]]
+          .asInstanceOf[LookupTable[T]]
         val localLinears = workingLinears(i)
-        val a = Seq(
-          (mlpUserEmbedding, input1, localLinears.gradInput.toTable[Tensor[T]](1)),
-          (mlpItemEmbedding, input2, localLinears.gradInput.toTable[Tensor[T]](2)),
-          (mfUserEmbedding, input1, localLinears.gradInput.toTable[Tensor[T]](3)),
-          (mfItemEmbedding, input2, localLinears.gradInput.toTable[Tensor[T]](4)))
-        Engine.default.invokeAndWait(a.map(v => () => {
-          v._1.accGradParameters(v._2, v._3)
-        }))
+        Iterator(
+          (mlpUserEmbedding.gradWeight, userMapping,
+            input1, localLinears.gradInput.toTable[Tensor[T]](1)),
+          (mlpItemEmbedding.gradWeight, itemMapping,
+            input2, localLinears.gradInput.toTable[Tensor[T]](2)),
+          (mfUserEmbedding.gradWeight, userMapping,
+            input1, localLinears.gradInput.toTable[Tensor[T]](3)),
+          (mfItemEmbedding.gradWeight, itemMapping,
+            input2, localLinears.gradInput.toTable[Tensor[T]](4)))
+      }.groupBy(_._1).map(v => (v._1, v._2.map(v2 => (v2._3, v2._4)).toArray))
+
+      def mergeEmbeddingGrad(inputGrad: Array[(Tensor[T], Tensor[T])],
+                             gradMap: mutable.HashMap[Int, Int],
+                             embeddingGradient: Tensor[T]): Unit = {
+        var parallelism = 0
+        while(parallelism < inputGrad.length) {
+          val indices = inputGrad(parallelism)._1
+          val grad = inputGrad(parallelism)._2
+          var i = 1
+          while(i <= indices.nElement()) {
+            val currentIndex = indices.valueAt(i)
+            val position = gradMap(currentIndex)
+            embeddingGradient.select(1, position).add(grad.select(1, i))
+            i += 1
+          }
+        }
+        parallelism += 1
+      }
+
+      val mlpUser = workingEmbeddingModels.map{m =>
+        m("mlpUserEmbedding").get
+          .asInstanceOf[AbstractModule[Activity, Activity, T]]
       }
 
       val computingTime2 = System.nanoTime()
@@ -231,9 +297,17 @@ class NCFOptimizer[T: ClassTag] (
 
       val updateWeightTime1 = System.nanoTime()
 
-      optimMethod2.state.update("epoch", state.get("epoch"))
-      optimMethod2.state.update("neval", state.get("neval"))
-      optimMethod2.optimize(_ => (ev.fromType(loss), embeddingGrad), embeddingWeight)
+      optimMethod2.foreach{v =>
+        val moduleName = v._1
+        val optimMethod = v._2
+        val embedding = model(moduleName).get
+          .asInstanceOf[AbstractModule[Activity, Activity, T]]
+      }
+
+//      optimMethod2.state.update("epoch", state.get("epoch"))
+//      optimMethod2.state.update("neval", state.get("neval"))
+//      optimMethod2.optimize(_ => (ev.fromType(loss), embeddingGrad), embeddingWeight)
+
 
       val updateWeightTime2 = System.nanoTime()
       println("update weight")
@@ -247,8 +321,9 @@ class NCFOptimizer[T: ClassTag] (
         s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
         optimMethod.getHyperParameter()
         )
-      logger.debug( s"data fetch time is ${(dataFetchTime - start) / 1e9}s \n" +
-        s"model computing time is ${(computingTime - dataFetchTime) / 1e9}s \n" +
+      logger.debug(s"data fetch time is ${(dataFetchTime - start) / 1e9}s \n" +
+        s"get mapping time is ${(getMappingTime - dataFetchTime) / 1e9}s \n" +
+        s"model computing time is ${(computingTime - getMappingTime) / 1e9}s \n" +
         s"zero grad time is ${(zeroGradTime - computingTime) / 1e9}s \n" +
         s"acc embedding time is ${(computingTime2 - zeroGradTime) / 1e9}s \n" +
         s"aggregate linear is ${(aggTime - computingTime2) / 1e9}s \n" +

@@ -125,7 +125,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
   var r: Array[Tensor[T]] = _
   var denom: Array[Tensor[T]] = _
   var buffer: Array[Tensor[T]] = _
-  def setNOutput(nIndex: Int, nOutput: Int): Unit = {
+  def setNOutput(nIndex: Int, nOutput: Int): this.type = {
     embeddingNoutput = nOutput
     embeddingNIndex = nIndex
 //    lastUpdated = collection.mutable.HashMap(
@@ -141,6 +141,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
       state(s"r$i") = Tensor[Float]() // 2nd moment variables
       state(s"denom$i") = Tensor[Float]() // 3nd moment variables
     }
+    this
   }
 
   def updateNograd(indices: Tensor[T], parameter: Tensor[T]): Unit = {
