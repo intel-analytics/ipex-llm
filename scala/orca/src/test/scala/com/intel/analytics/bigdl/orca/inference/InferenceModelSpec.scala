@@ -94,13 +94,13 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
 
     val weightsForAModel3 = aModel2.modelQueue.take().model.getWeightsBias()(0).storage()
     val weightsForAModel4 = aModel2.modelQueue.take().model.getWeightsBias()(0).storage()
-    val localpredictor5 = aModel2.modelQueue.take().predictor
-    val localpredictor6 = aModel2.modelQueue.take().predictor
     assert(weightsForAModel3 == weightsForAModel4)
 
     val inputTensor = Tensor[Float](3, 5, 5).rand()
-    val inputs = new util.ArrayList[JTensor]()
-    inputs.add(transferTensorToJTensor(inputTensor))
+    val input = new util.ArrayList[JTensor]()
+    input.add(transferTensorToJTensor(inputTensor))
+    val inputs = new util.ArrayList[util.List[JTensor]]()
+    inputs.add(input)
     val result = fModels(0).predict(inputs).get(0).get(0)
     val data = result.getData.mkString(",")
     val shape = result.getShape.mkString(",")
@@ -153,7 +153,6 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     val floatInferenceModel2 = in.readObject.asInstanceOf[FloatInferenceModel]
     // println(floatInferenceModel2.predictor)
     assert(floatInferenceModel.model == floatInferenceModel2.model)
-    assert(floatInferenceModel.predictor != null)
     in.close()
   }
 }
