@@ -16,6 +16,8 @@
 # limitations under the License.
 #
 
+set -x
+
 #setup pathes
 ANALYTICS_ZOO_TUTORIALS_HOME=${ANALYTICS_ZOO_HOME}/apps
 ANALYTICS_ZOO_VERSION=${ANALYTICS_ZOO_VERSION_ENV}
@@ -27,8 +29,12 @@ export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=$ANALYTICS_ZOO_TUTORIALS_HOME --ip=* --port=$NotebookPort --no-browser --NotebookApp.token=$NotebookToken --allow-root"
 
 ${SPARK_HOME}/bin/pyspark \
-  --master local[4] \
-  --driver-memory 4g \
+  --master local[*] \
+  --driver-cores ${RUNTIME_DRIVER_CORES_ENV} \
+  --driver-memory ${RUNTIME_DRIVER_MEMORY_ENV} \
+  --executor-cores ${RUNTIME_EXECUTOR_CORES_ENV} \
+  --executor-memory ${RUNTIME_EXECUTOR_MEMORY_ENV} \
+  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES_ENV} \
   --properties-file ${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf \
   --py-files ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
   --jars ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
