@@ -117,7 +117,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.setGradientClippingByL2Norm(0.2f)
     model.fit(trainingData, batchSize = 8, validationData = testData, nbEpoch = 2)
     val accuracy = model.evaluate(testData, batchSize = 8)
-    val predictResults = model.predict(testData, batchSize = 8)
+    val predictResults = model.predict(testData, batchPerThread = 8)
     FileUtils.deleteDirectory(tmpLogDir)
     FileUtils.deleteDirectory(tmpCheckpointDir)
   }
@@ -196,7 +196,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.compile(optimizer = "sgd", loss = "sparse_categorical_crossentropy",
       metrics = List("accuracy"))
     model.fit(trainingData, nbEpoch = 2, batchSize = 8, validationData = testData)
-    model.predict(testData, batchSize = 8)
+    model.predict(testData, batchPerThread = 8)
     val accuracy = model.evaluate(testData, batchSize = 8)
   }
 
