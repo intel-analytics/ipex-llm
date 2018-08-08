@@ -63,13 +63,16 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "initNNContext" should "work properly" in {
+  "initNNContext" should "contain spark-analytics-zoo.conf properties" in {
     sc = SparkContext.getOrCreate()
     sc.stop()
     val conf = new SparkConf()
       .setMaster("local[4]")
     sc = NNContext.initNNContext(conf, "hello")
     assert(sc.appName == "hello")
+    sc.getConf.get("spark.serializer") should be
+    ("org.apache.spark.serializer.JavaSerializer")
+    sc.getConf.get("spark.scheduler.minRegisteredResourcesRatio") should be ("1.0")
   }
 
   "sequential compile and fit with custom loss" should "work properly" in {
