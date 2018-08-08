@@ -47,6 +47,6 @@ if __name__ == "__main__":
     parser.add_option("--topN", type=int, dest="topN", default=1, help="top N number")
     (options, args) = parser.parse_args(sys.argv)
 
-    sc = init_nncontext(create_spark_conf().setAppName("Image Classification Example"))
+    sc = init_nncontext("Image Classification Example")
 
     predict(options.model_path, options.img_path, options.topN)
