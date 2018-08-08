@@ -424,27 +424,6 @@ object KerasUtils {
     }
   }
 
-  def calBatchPerPartition(batchSize: Int, partitionNum: Int): Int = {
-    if (batchSize > 0) {
-      batchSize / partitionNum
-    } else {
-      4
-    }
-  }
-
-  def calBatchPerCore(batchSize: Int): Int = {
-    if (batchSize > 0) {
-      val batchPerCore = batchSize / EngineRef.getCoreNumber()
-      if (batchPerCore < 1) {
-        1
-      } else {
-        batchPerCore
-      }
-    } else {
-      4
-    }
-  }
-
   def validateBatchSize(batchSize: Int): Unit = {
     val totalCores = EngineRef.getCoreNumber() * EngineRef.getNodeNumber()
     require(batchSize % totalCores == 0,
