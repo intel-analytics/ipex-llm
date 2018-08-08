@@ -75,7 +75,7 @@ Create DistributedImageSet
 from zoo.common.nncontext import *
 from zoo.feature.image.imageset import *
 
-sc = init_nncontext(create_spark_conf().setMaster("local[2]").setAppName("test image"))
+sc = init_nncontext(init_spark_conf().setMaster("local[2]").setAppName("test image"))
 # create DistributedImageSet from an image
 distributed_image_set = ImageSet.read("/tmp/test.jpg", sc, 2)
 
