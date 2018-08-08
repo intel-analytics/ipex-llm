@@ -31,7 +31,7 @@ class TestNNImageReader():
         setup any state tied to the execution of the given method in a
         class. setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("TestNNImageReader")
+        sparkConf = init_spark_conf().setMaster("local[1]").setAppName("TestNNImageReader")
         self.sc = init_nncontext(sparkConf)
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
