@@ -16,6 +16,7 @@
 
 package com.intel.analytics.zoo.common
 
+import java.io.InputStream
 import java.util.Properties
 
 import com.intel.analytics.bigdl.utils.Engine
@@ -129,17 +130,17 @@ object NNContext {
    * @return Spark Context
    */
   def initNNContext(conf: SparkConf, appName: String): SparkContext = {
-    val bigdlConf = Engine.createSparkConf(conf)
+    val zooConf = createSparkConf(conf)
     if (appName != null) {
-      bigdlConf.setAppName(appName)
+      zooConf.setAppName(appName)
     }
-    if (bigdlConf.getBoolean("spark.analytics.zoo.versionCheck", defaultValue = false)) {
+    if (zooConf.getBoolean("spark.analytics.zoo.versionCheck", defaultValue = false)) {
       val reportWarning =
-        bigdlConf.getBoolean("spark.analytics.zoo.versionCheck.warning", defaultValue = false)
+        zooConf.getBoolean("spark.analytics.zoo.versionCheck.warning", defaultValue = false)
       checkSparkVersion(reportWarning)
       checkScalaVersion(reportWarning)
     }
-    val sc = SparkContext.getOrCreate(bigdlConf)
+    val sc = SparkContext.getOrCreate(zooConf)
     Engine.init
     sc
   }
@@ -178,5 +179,30 @@ object NNContext {
     initNNContext(null, null)
   }
 
+  /**
+   * Read spark conf values from spark-analytics-zoo.conf
+   */
+  private[zoo] def readConf: Seq[(String, String)] = {
+    val stream: InputStream = getClass.getResourceAsStream("/spark-analytics-zoo.conf")
+    val lines = scala.io.Source.fromInputStream(stream)
+      .getLines.filter(_.startsWith("spark")).toArray
+
+    // For spark 1.5, we observe nio block manager has better performance than netty block manager
+    // So we will force set block manager to nio. If user don't want this, he/she can set
+    // bigdl.network.nio == false to customize it. This configuration/blcok manager setting won't
+    // take affect on newer spark version as the nio block manger has been removed
+    lines.map(_.split("\\s+")).map(d => (d(0), d(1))).toSeq
+      .filter(_._1 != "spark.shuffle.blockTransferService" ||
+        System.getProperty("bigdl.network.nio", "true").toBoolean)
+  }
+
+  def createSparkConf(existingConf: SparkConf = null) : SparkConf = {
+    var _conf = existingConf
+    if (_conf == null) {
+      _conf = new SparkConf()
+    }
+    readConf.foreach(c => _conf.set(c._1, c._2))
+    _conf
+  }
 }
 
