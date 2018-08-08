@@ -48,7 +48,7 @@ def getOrCreateSparkContext(conf=None, appName=None):
     """
     with SparkContext._lock:
         if SparkContext._active_spark_context is None:
-            spark_conf = create_spark_conf() if conf is None else conf
+            spark_conf = init_spark_conf() if conf is None else conf
             if appName:
                 spark_conf.setAppName(appName)
             return SparkContext.getOrCreate(spark_conf)
@@ -56,8 +56,49 @@ def getOrCreateSparkContext(conf=None, appName=None):
             return SparkContext.getOrCreate()
 
 
+def get_analytics_zoo_conf():
+    zoo_conf_file = "spark-analytics-zoo.conf"
+    zoo_python_wrapper = "python-api.zip"
+
+    for p in sys.path:
+        if zoo_conf_file in p and os.path.isfile(p):
+            with open(p) if sys.version_info < (3,) else open(p, encoding='latin-1') as conf_file:
+                return load_conf(conf_file.read())
+        if zoo_python_wrapper in p and os.path.isfile(p):
+            import zipfile
+            with zipfile.ZipFile(p, 'r') as zip_conf:
+                if zoo_conf_file in zip_conf.namelist():
+                    content = zip_conf.read(zoo_conf_file)
+                    if sys.version_info >= (3,):
+                        content = str(content, 'latin-1')
+                    return load_conf(content)
+    return {}
+
+
+def init_spark_conf():
+    zoo_conf = get_analytics_zoo_conf()
+    sparkConf = SparkConf()
+    sparkConf.setAll(zoo_conf.items())
+    if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
+        for jar in os.environ["BIGDL_JARS"].split(":"):
+            extend_spark_driver_cp(sparkConf, jar)
+
+    # add content in PYSPARK_FILES in spark.submit.pyFiles
+    # This is a workaround for current Spark on k8s
+    python_lib = os.environ.get('PYSPARK_FILES', None)
+    if python_lib:
+        existing_py_files = sparkConf.get("spark.submit.pyFiles")
+        if existing_py_files:
+            sparkConf.set(key="spark.submit.pyFiles",
+                          value="%s,%s" % (python_lib, existing_py_files))
+        else:
+            sparkConf.set(key="spark.submit.pyFiles", value=python_lib)
+
+    return sparkConf
+
+
 def check_version():
-    sc = get_spark_context()
+    sc = getOrCreateSparkContext()
     conf = sc._conf
     if conf.get("spark.analytics.zoo.versionCheck", "False").lower() == "true":
         report_warn = conf.get(
@@ -102,14 +143,10 @@ def _get_bigdl_verion_conf():
     bigdl_build_file = "zoo-version-info.properties"
     bigdl_python_wrapper = "python-api.zip"
 
-    def load_conf(conf_str):
-        return dict(line.split("=") for line in conf_str.split("\n") if
-                    "#" not in line and line.strip())
-
     for p in sys.path:
         if bigdl_build_file in p and os.path.isfile(p):
             with open(p) if sys.version_info < (3,) else open(p, encoding='latin-1') as conf_file:
-                return load_conf(conf_file.read())
+                return load_conf(conf_file.read(), "=")
         if bigdl_python_wrapper in p and os.path.isfile(p):
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
@@ -117,8 +154,13 @@ def _get_bigdl_verion_conf():
                     content = zip_conf.read(bigdl_build_file)
                     if sys.version_info >= (3,):
                         content = str(content, 'latin-1')
-                    return load_conf(content)
+                    return load_conf(content, "=")
     raise RuntimeError("Error while locating file zoo-version-info.properties, " +
                        "please make sure the mvn generate-resources phase" +
                        " is executed and a zoo-version-info.properties file" +
                        " is located in zoo/target/extra-resources")
+
+
+def load_conf(conf_str, split_char=None):
+    return dict(line.split(split_char) for line in conf_str.split("\n") if
+                "#" not in line and line.strip())
