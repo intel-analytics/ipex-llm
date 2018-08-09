@@ -19,6 +19,7 @@
 * wordcloud
 * moviepy
 * requests
+* tensorflow
 * spark-${SPARK_VERSION} (in /opt/work/spark-${SPARK_VERSION})
 * Analytics-Zoo distribution (in /opt/work/analytics-zoo-${ANALYTICS_ZOO_VERSION})
 * Analytics-Zoo source code (in /opt/work/analytics-zoo)
@@ -59,29 +60,85 @@
 
 ### To start a notebook directly with a specified port(e.g. 12345). You can view the notebook on http://[host-ip]:12345
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken="your-token" intelanalytics/analytics-zoo:default
+    sudo docker run -it --rm -p 12345:12345 \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        intelanalytics/analytics-zoo:default
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken="your-token" intelanalytics/analytics-zoo:default
+    sudo docker run -it --rm --net=host \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        intelanalytics/analytics-zoo:default
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken="your-token" intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+    sudo docker run -it --rm -p 12345:12345 \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken="your-token" intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+    sudo docker run -it --rm --net=host \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
 
 ### If you need http and https proxy in your environment:
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken="your-token" -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port intelanalytics/analytics-zoo:default
+    sudo docker run -it --rm -p 12345:12345 \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        -e http_proxy=http://your-proxy-host:your-proxy-port \
+        -e https_proxy=https://your-proxy-host:your-proxy-port \
+        intelanalytics/analytics-zoo:default
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken="your-token" -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port  intelanalytics/analytics-zoo:default
+    sudo docker run -it --rm --net=host \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        -e http_proxy=http://your-proxy-host:your-proxy-port \
+        -e https_proxy=https://your-proxy-host:your-proxy-port \
+        intelanalytics/analytics-zoo:default
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken="your-token" -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port  intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+    sudo docker run -it --rm -p 12345:12345 \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        -e http_proxy=http://your-proxy-host:your-proxy-port \
+        -e https_proxy=https://your-proxy-host:your-proxy-port \
+        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken="your-token" -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+    sudo docker run -it --rm --net=host \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        -e http_proxy=http://your-proxy-host:your-proxy-port \
+        -e https_proxy=https://your-proxy-host:your-proxy-port \
+        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
 
 ### You can also start the container first
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken="your-token" intelanalytics/analytics-zoo:default bash
+    sudo docker run -it --rm --net=host \
+        -e NotebookPort=12345 \
+        -e NotebookToken="your-token" \
+        intelanalytics/analytics-zoo:default bash
 
 ### In the container, after setting proxy and ports, you can start the Notebook by:
 
     /opt/work/start-notebook.sh
 
+## Notice
+
+### If you need nightly build version of Analytics-Zoo, please pull the image form Dockerhub with:
+
+    sudo docker pull intelanalytics/analytics-zoo:latest
+
+### Please follow the readme in each app folder to test the jupyter notebooks !!!
+
+### With 0.3+ version of Anaytics-Zoo Docker image, you can specify the runtime conf of spark
+
+    sudo docker run -itd --net=host \
+        -e NotebookPort=12345 \
+        -e NotebookToken="1234qwer" \
+        -e http_proxy=http://your-proxy-host:your-proxy-port  \
+        -e https_proxy=https://your-proxy-host:your-proxy-port  \
+        -e RUNTIME_DRIVER_CORES_ENV=4 \
+        -e RUNTIME_DRIVER_MEMORY=20g \
+        -e RUNTIME_EXECUTOR_CORES=4 \
+        -e RUNTIME_EXECUTOR_MEMORY=20g \
+        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+        intelanalytics/analytics-zoo:latest
