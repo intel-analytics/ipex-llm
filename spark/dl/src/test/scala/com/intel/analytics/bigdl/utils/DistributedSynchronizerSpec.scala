@@ -18,14 +18,19 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.{SparkContext, TaskContext}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class DistributedSynchronizerSpec  extends FlatSpec with Matchers {
-  "DistributedSynchronizer" should "work properly" in {
+class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAndAfter {
+
+  var sc: SparkContext = null
+
+  before {
     val conf = Engine.createSparkConf().setAppName("test synchronizer").setMaster("local[*]")
       .set("spark.rpc.message.maxSize", "200")
-    val sc = new SparkContext(conf)
+    sc = new SparkContext(conf)
     Engine.init
+  }
+  "DistributedSynchronizer" should "work properly" in {
     val partition = 4
     val cores = 4
     val res = sc.parallelize((0 until partition), partition).mapPartitions(p => {
@@ -45,6 +50,31 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers {
     res(1) should be (Tensor[Float](10).fill(2.5f))
     res(2) should be (Tensor[Float](10).fill(2.5f))
     res(3) should be (Tensor[Float](10).fill(2.5f))
+  }
+
+  "DistributedSynchronizer with parameter size less than partition" should "worl properly" in {
+    val partition = 4
+    val cores = 4
+    val res = sc.parallelize((0 until partition), partition).mapPartitions(p => {
+      Engine.setNodeAndCore(partition, cores)
+      val partitionID = TaskContext.getPartitionId
+      val sync = new BlockManagerParameterSynchronizer[Float](partitionID, partition)
+      val tensor = Tensor[Float](2).fill(partitionID.toFloat + 1.0f)
+      sync.init(s"testPara", 2)
+      var res : Iterator[_] = null
+      sync.put(s"testPara", tensor)
+      res = Iterator.single(sync.get(s"testPara"))
+      sync.clear
+      res
+    }).collect
+    res.length should be  (4)
+    res(0) should be (Tensor[Float](2).fill(2.5f))
+    res(1) should be (Tensor[Float](2).fill(2.5f))
+    res(2) should be (Tensor[Float](2).fill(2.5f))
+    res(3) should be (Tensor[Float](2).fill(2.5f))
+  }
+
+  after {
     sc.stop
   }
 }
