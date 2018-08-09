@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.utils
 
 import java.nio.ByteBuffer
+import java.util
 import java.util.concurrent._
 
 import com.intel.analytics.bigdl.parameters.{CompressedTensor, FP16CompressedTensor, SerializerInstance}
@@ -94,6 +95,8 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
   private val blockFetchRequestQueue: PriorityBlockingQueue[BlockFetchRequest] =
     new PriorityBlockingQueue[BlockFetchRequest](taskSize)
 
+  private val longRunningThreads = new util.ArrayList[Thread]()
+
   // thread pool to remove expired blocks
   private lazy val clearPool: ExecutorService =
     Executors.newFixedThreadPool(clearPoolSize, new ThreadFactory {
@@ -117,8 +120,16 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
   // long running thread to fetch the request
   workerPool.submit(new Runnable {
     override def run(): Unit = {
-      val asyncFutureTask = asyncTaskWaitingQueue.take
-      workerPool.submit(asyncFutureTask.task)
+      longRunningThreads.add(Thread.currentThread)
+      while (!shutdown) {
+        try {
+          val asyncFutureTask = asyncTaskWaitingQueue.take
+          workerPool.submit(asyncFutureTask.task)
+        } catch {
+          case e : InterruptedException =>
+            logger.info("exit thread gracefully")
+        }
+      }
     }
   })
 
@@ -156,26 +167,32 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
   (0 until syncPoolSize).foreach(th => {
     fetchPool.submit(new Runnable {
       override def run(): Unit = {
+        longRunningThreads.add(Thread.currentThread)
         while (!shutdown) {
-          val fetchRequest = blockFetchRequestQueue.take
-          val syncMeta = fetchRequest.syncMeta
-          val pid = fetchRequest.futureTask.fetchOnCompletion.fromPartition
-          val aggregated = fetchRequest.aggregated
-          val parameterBlockId = if (aggregated) {
-            getParameterBlockId(s"${syncMeta.name}_aggregated", syncMeta.counter, pid, -1)
-          }
-          else {
-            getParameterBlockId(syncMeta.name, syncMeta.counter, pid, partitionID)
-          }
-          val block = BlockManagerWrapper.getLocalOrRemoteBytes(parameterBlockId)
-          if (block == None) {
-            // promote the priporty in next fetch
-            fetchRequest.priority += 1
-            blockFetchRequestQueue.add(fetchRequest)
-          } else {
-            val fetchOnCompletion = fetchRequest.futureTask.fetchOnCompletion
-            fetchOnCompletion.setFetched(block.get)
-            fetchCompletionPool.submit(fetchRequest.futureTask.task)
+          try {
+            val fetchRequest = blockFetchRequestQueue.take
+            val syncMeta = fetchRequest.syncMeta
+            val pid = fetchRequest.futureTask.fetchOnCompletion.fromPartition
+            val aggregated = fetchRequest.aggregated
+            val parameterBlockId = if (aggregated) {
+              getParameterBlockId(s"${syncMeta.name}_aggregated", syncMeta.counter, pid, -1)
+            }
+            else {
+              getParameterBlockId(syncMeta.name, syncMeta.counter, pid, partitionID)
+            }
+            val block = BlockManagerWrapper.getLocalOrRemoteBytes(parameterBlockId)
+            if (block == None) {
+              // promote the priporty in next fetch
+              fetchRequest.priority += 1
+              blockFetchRequestQueue.add(fetchRequest)
+            } else {
+              val fetchOnCompletion = fetchRequest.futureTask.fetchOnCompletion
+              fetchOnCompletion.setFetched(block.get)
+              fetchCompletionPool.submit(fetchRequest.futureTask.task)
+            }
+          } catch {
+            case e : InterruptedException =>
+              logger.info("exit thread gracefully")
           }
         }
       }
@@ -407,6 +424,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
 
   override def clear(): Unit = {
     shutdown = true
+    longRunningThreads.asScala.foreach(_.interrupt())
     clearPool.shutdown
     syncPool.shutdown
     workerPool.shutdown
