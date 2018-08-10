@@ -105,3 +105,159 @@ class MeanAbsoluteError(LossFunction):
 
 
 mae = MAE = MeanAbsoluteError
+
+
+class BinaryCrossEntropy(LossFunction):
+    """
+    A loss that measures the Binary Cross Entropy between the target and the output
+
+    # Arguments
+    size_average: Boolean. Whether losses are averaged over observations for each
+                mini-batch. Default is True. If False, the losses are instead
+                summed for each mini-batch.
+    weights: weights over the input dimension
+
+    >>> metrics = BinaryCrossEntropy()
+    creating: createZooKerasBinaryCrossEntropy
+    """
+    def __init__(self, weights=None, size_average=True, bigdl_type="float"):
+        super(BinaryCrossEntropy, self).__init__(None, bigdl_type,
+                                                 JTensor.from_ndarray(weights),
+                                                 size_average)
+
+
+class CategoricalCrossEntropy(LossFunction):
+    """
+    This is same with cross entropy criterion, except the target tensor is a one-hot tensor
+
+    >>> metrics = CategoricalCrossEntropy()
+    creating: createZooKerasCategoricalCrossEntropy
+    """
+    def __init__(self, bigdl_type="float"):
+        super(CategoricalCrossEntropy, self).__init__(None, bigdl_type)
+
+
+class CosineProximity(LossFunction):
+    """
+    The negative of the mean cosine proximity between predictions and targets.
+    The cosine proximity is defined as below:
+        x'(i) = x(i) / sqrt(max(sum(x(i)^2), 1e-12))
+        y'(i) = y(i) / sqrt(max(sum(x(i)^2), 1e-12))
+        cosine_proximity(x, y) = mean(-1 * x'(i) * y'(i))
+
+    >>> metrics = CosineProximity()
+    creating: createZooKerasCosineProximity
+    """
+    def __init__(self, bigdl_type="float"):
+        super(CosineProximity, self).__init__(None, bigdl_type)
+
+
+class Hinge(LossFunction):
+    """
+    Creates a criterion that optimizes a two-class classification
+    hinge loss (margin-based loss) between input x (a Tensor of dimension 1) and output y.
+
+    # Arguments:
+    margin: if unspecified, is by default 1.
+    size_average: Boolean. Whether losses are averaged over observations for each
+                  mini-batch. Default is True. If False, the losses are instead
+                  summed for each mini-batch.
+
+    >>> metrics = Hinge()
+    creating: createZooKerasHinge
+    """
+    def __init__(self, margin=1.0, size_average=True, bigdl_type="float"):
+        super(Hinge, self).__init__(None, bigdl_type, float(margin), size_average)
+
+
+class KullbackLeiblerDivergence(LossFunction):
+    """
+    Loss calculated as:y_true = K.clip(y_true, K.epsilon(), 1)
+    y_pred = K.clip(y_pred, K.epsilon(), 1)
+    and output K.sum(y_true * K.log(y_true / y_pred), axis=-1)
+
+    >>> metrics = KullbackLeiblerDivergence()
+    creating: createZooKerasKullbackLeiblerDivergence
+    """
+    def __init__(self, bigdl_type="float"):
+        super(KullbackLeiblerDivergence, self).__init__(None, bigdl_type)
+
+
+class MeanAbsolutePercentageError(LossFunction):
+    """
+    It caculates diff = K.abs((y - x) / K.clip(K.abs(y), K.epsilon(), Double.MaxValue))
+    and return 100 * K.mean(diff) as outpout
+
+    >>> metrics = MeanAbsolutePercentageError()
+    creating: createZooKerasMeanAbsolutePercentageError
+    """
+    def __init__(self, bigdl_type="float"):
+        super(MeanAbsolutePercentageError, self).__init__(None, bigdl_type)
+
+mape = MAPE = MeanAbsolutePercentageError
+
+
+class MeanSquaredError(LossFunction):
+    """
+    A loss that measures the mean absolute value of the element-wise difference
+    between the input and the target.
+
+    # Arguments
+    size_average: Boolean. Whether losses are averaged over observations for each
+              mini-batch. Default is True. If False, the losses are instead
+              summed for each mini-batch.
+
+    >>> metrics = MeanAbsoluteError()
+    creating: createZooKerasMeanAbsoluteError
+    """
+    def __init__(self, size_average=True, bigdl_type="float"):
+        super(MeanAbsoluteError, self).__init__(None, bigdl_type,
+                                                size_average)
+
+mse = MSE = MeanSquaredError
+
+
+class MeanSquaredLogarithmicError(LossFunction):
+    """
+    It calculates:
+    first_log = K.log(K.clip(y, K.epsilon(), Double.MaxValue) + 1.)
+    second_log = K.log(K.clip(x, K.epsilon(), Double.MaxValue) + 1.)
+    and output K.mean(K.square(first_log - second_log))
+
+    >>> metrics = MeanSquaredLogarithmicError()
+    creating: createZooKerasMeanSquaredLogarithmicError
+    """
+    def __init__(self, bigdl_type="float"):
+        super(MeanSquaredLogarithmicError, self).__init__(None, bigdl_type)
+
+msle = MSLE = MeanSquaredLogarithmicError
+
+
+class Poisson(LossFunction):
+    """
+    Loss calculated as: K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-1)
+
+    >>> metrics = Poisson()
+    creating: createZooKerasPoisson
+    """
+    def __init__(self, bigdl_type="float"):
+        super(Poisson, self).__init__(None, bigdl_type)
+
+
+class SquaredHinge(LossFunction):
+    """
+    Creates a criterion that optimizes a two-class classification
+    squared hinge loss (margin-based loss)
+    between input x (a Tensor of dimension 1) and output y.
+
+    # Arguments:
+    margin: if unspecified, is by default 1.
+    size_average: Boolean. Whether losses are averaged over observations for each
+                  mini-batch. Default is True. If False, the losses are instead
+                  summed for each mini-batch.
+
+    >>> metrics = SquaredHinge()
+    creating: createZooKerasSquaredHinge
+    """
+    def __init__(self, margin=1.0, size_average=False, bigdl_type="float"):
+        super(SquaredHinge, self).__init__(None, bigdl_type, float(margin), size_average)
