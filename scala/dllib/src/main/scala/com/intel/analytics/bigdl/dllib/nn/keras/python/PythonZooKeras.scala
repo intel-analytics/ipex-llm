@@ -18,7 +18,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.python
 
 import java.nio.ByteOrder
 import java.util
-import java.util.{List => JList, Map => JMap, HashMap => JHashMap}
+import java.util.{HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
@@ -39,7 +39,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, Top5Accuracy}
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.keras.objectives.{MeanAbsoluteError, SparseCategoricalCrossEntropy}
+import com.intel.analytics.zoo.pipeline.api.keras.objectives._
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils, TFNet}
 import org.apache.spark.api.java.JavaRDD
 
@@ -1175,6 +1175,54 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createZooKerasMeanAbsoluteError(
       sizeAverage: Boolean = true): MeanAbsoluteError[T] = {
     MeanAbsoluteError[T](sizeAverage)
+  }
+
+  def createZooKerasMeanSquaredError(
+      sizeAverage: Boolean = true): MeanSquaredError[T] = {
+    MeanSquaredError[T](sizeAverage)
+  }
+
+  def createZooKerasCategoricalCrossEntropy(): CategoricalCrossEntropy[T] = {
+    CategoricalCrossEntropy[T]()
+  }
+
+  def createZooKerasKullbackLeiblerDivergence(): KullbackLeiblerDivergence[T] = {
+    KullbackLeiblerDivergence[T]()
+  }
+
+  def createZooKerasPoisson(): Poisson[T] = {
+    Poisson[T]()
+  }
+
+  def createZooKerasMeanAbsolutePercentageError(): MeanAbsolutePercentageError[T] = {
+    MeanAbsolutePercentageError[T]()
+  }
+
+  def createZooKerasMeanSquaredLogarithmicError(): MeanSquaredLogarithmicError[T] = {
+    MeanSquaredLogarithmicError[T]()
+  }
+
+  def createZooKerasCosineProximity(): CosineProximity[T] = {
+    CosineProximity[T]()
+  }
+
+  def createZooKerasSquaredHinge(
+    margin : Double = 1.0, sizeAverage : Boolean = true):
+      SquaredHinge[T] = {SquaredHinge[T](margin, sizeAverage)
+  }
+
+  def createZooKerasHinge(
+    margin: Double = 1.0, sizeAverage: Boolean = true):
+      Hinge[T] = {Hinge[T](margin, sizeAverage)
+  }
+
+  def createZooKerasBinaryCrossEntropy(
+      weights: JTensor = null,
+      sizeAverage: Boolean = true
+      ): BinaryCrossEntropy[T] = {
+    BinaryCrossEntropy[T](
+      if (weights == null) null else toTensor(weights),
+      sizeAverage)
   }
 
   def createZooKerasAccuracy(
