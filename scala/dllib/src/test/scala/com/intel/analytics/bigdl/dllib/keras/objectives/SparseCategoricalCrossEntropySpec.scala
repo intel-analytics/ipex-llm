@@ -24,7 +24,6 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasBaseSpec
 
 import scala.math.abs
 
-
 class SparseCategoricalCrossEntropySpec extends KerasBaseSpec {
 
   "SparseCategoricalCrossEntropy" should "be the same as Keras" in {
