@@ -18,6 +18,7 @@ import zoo.pipeline.api.autograd as autograd
 from zoo.feature.image import ImageSet
 from zoo.pipeline.api.keras.base import ZooKerasLayer
 from zoo.pipeline.api.keras.utils import *
+from bigdl.nn.layer import Layer
 
 if sys.version >= '3':
     long = int
