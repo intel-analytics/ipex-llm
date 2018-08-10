@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.example.lenetLocal
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
@@ -38,7 +38,6 @@ object Train {
 
       System.setProperty("bigdl.localMode", "true")
       System.setProperty("bigdl.coreNumber", param.coreNumber.toString)
-      System.setProperty("bigdl.engineType", "mkldnn")
       Engine.init
 
       val trainData = param.folder + "/train-images-idx3-ubyte"
@@ -49,7 +48,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        LeNet5.dnn(10, param.batchSize)
+        LeNet5(classNum = 10)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
@@ -66,7 +65,7 @@ object Train {
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = CrossEntropyCriterion[Float]())
+        criterion = ClassNLLCriterion[Float]())
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
