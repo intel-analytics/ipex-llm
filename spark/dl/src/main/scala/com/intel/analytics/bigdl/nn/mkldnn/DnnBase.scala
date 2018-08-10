@@ -250,6 +250,10 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
     (null, null)
   }
+
+  override def release(): Unit = {
+    List(output, gradInput).foreach(_.asInstanceOf[DnnTensor[Float]].release())
+  }
 }
 
 /**

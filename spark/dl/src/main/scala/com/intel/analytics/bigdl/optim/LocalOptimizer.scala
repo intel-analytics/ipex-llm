@@ -286,5 +286,9 @@ class LocalOptimizer[T: ClassTag] (
       logger.info(s"$header ${r._2} is ${r._1}")
     })
   }
+
+  override def shutdown(): Unit = {
+    workingModels.foreach(_.release())
+  }
 }
 

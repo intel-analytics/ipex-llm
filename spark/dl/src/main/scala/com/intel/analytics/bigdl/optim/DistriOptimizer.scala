@@ -1062,6 +1062,7 @@ class DistriOptimizer[T: ClassTag] (
 
     // unpersist the model because the next time optimize is called, new `models` will be
     // created
+    shutdown()
     models.unpersist()
 
     model
@@ -1084,5 +1085,15 @@ class DistriOptimizer[T: ClassTag] (
       }
     }
     return choice;
+  }
+
+  override def shutdown(): Unit = {
+    models.mapPartitions { iter =>
+      iter.foreach { arrayModels =>
+        arrayModels.localModels.foreach(_.release())
+      }
+
+      iter
+    }.count()
   }
 }
