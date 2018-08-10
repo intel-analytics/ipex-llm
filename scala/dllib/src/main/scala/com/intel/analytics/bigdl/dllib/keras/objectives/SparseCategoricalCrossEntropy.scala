@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * A loss often used in multi-class classification problems with SoftMax
  * as the last layer of the neural network.
  *
- * By default, same as Keras, input(y_pred) is supposed to be probabilities of each class,
+ * By default, input(y_pred) is supposed to be probabilities of each class,
  * and target(y_true) is supposed to be the class label starting from 0.
  *
  * @param logProbAsInput Boolean. Whether to accept log-probabilities or probabilities

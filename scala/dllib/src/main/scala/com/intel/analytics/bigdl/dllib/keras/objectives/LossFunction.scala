@@ -27,7 +27,6 @@ import scala.reflect.ClassTag
  *
  * @tparam A Input data type.
  * @tparam B Target data type.
- * @tparam T Numeric type of parameter. Only support float/double now.
  */
 abstract class LossFunction[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractCriterion[A, B, T] {
@@ -48,8 +47,6 @@ abstract class LossFunction[A <: Activity: ClassTag, B <: Activity: ClassTag, T:
 
 /**
  * A subclass of LossFunction where input and target are both Tensors.
- *
- * @tparam T Numeric type of parameter. Only support float/double now.
  */
 abstract class TensorLossFunction[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends LossFunction[Tensor[T], Tensor[T], T]
