@@ -21,6 +21,7 @@ import java.util.concurrent._
 import com.google.common.util.concurrent.MoreExecutors
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
+import com.intel.analytics.bigdl.mkl.{MklDnn => BackendMklDnn}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
@@ -74,14 +75,9 @@ class ThreadPool(private var poolSize: Int) {
    * @return
    */
   def setMKLThread(size: Int): this.type = this.synchronized {
-    require(MKL.isMKLLoaded)
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
-      MKL.setNumThreads(size)
-      if (System.getProperty("bigdl.engineType") == "mkldnn") {
-        com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(size)
-        Affinity.setOmpAffinity()
-      }
+      ThreadPool.setThreadsOfBackend(size)
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
@@ -214,5 +210,15 @@ object ThreadPool {
   }
 
   private val logger = Logger.getLogger(getClass)
+
+  def setThreadsOfBackend(size: Int): Unit = {
+    require(MKL.isMKLLoaded)
+    require(BackendMklDnn.isLoaded)
+    MKL.setNumThreads(size)
+    if (System.getProperty("bigdl.engineType") == "mkldnn") {
+      BackendMklDnn.setNumThreads(size)
+      Affinity.setOmpAffinity()
+    }
+  }
 }
 

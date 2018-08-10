@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import org.apache.spark._
 import com.intel.analytics.bigdl.mkl.MKL
-import com.intel.analytics.bigdl.mkl.hardware.Affinity
+import com.intel.analytics.bigdl.mkl.hardware.CpuInfo
 import org.apache.spark.utils.SparkUtils
 import py4j.GatewayServer
 
@@ -40,9 +40,8 @@ case object MklDnn extends EngineType
 
 object Engine {
 
-  // initialize some properties. Do not call it by manually.
-  // Because when we create some variables, they will set relevant properties, such as `_model`.
-  // If we do, any change of property for mkldnn will have no effect.
+  // Initialize some properties for mkldnn engine. We should call it at the beginning.
+  // Otherwise some properties will have no effect.
   setMklDnnEnvironments()
 
   @deprecated(
@@ -333,7 +332,6 @@ object Engine {
       (core * 50).toString).toInt
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
       _default = new ThreadPool(defaultPoolSize)
-      _default.setMKLThread(MKL.getMklNumThreads)
     }
 
     if (_io == null) {
@@ -351,11 +349,7 @@ object Engine {
       _model.setMKLThread(MKL.getMklNumThreads)
     }
 
-    if (engineType == MklDnn) {
-      MKL.setNumThreads(MKL.getMklNumThreads)
-      com.intel.analytics.bigdl.mkl.MklDnn.setNumThreads(MKL.getMklNumThreads)
-      Affinity.setOmpAffinity()
-    }
+    ThreadPool.setThreadsOfBackend(MKL.getMklNumThreads)
   }
 
   /**
@@ -545,9 +539,9 @@ object Engine {
     }
   }
 
-  def setMklDnnEnvironments(): Unit = {
-    if (System.getProperty("bigdl.engineType") == "mkldnn") { // do not use engineType
-      val threadsNumber = Math.ceil(Runtime.getRuntime.availableProcessors() / 2).toInt
+  private def setMklDnnEnvironments(): Unit = {
+    if (System.getProperty("bigdl.engineType") == "mkldnn") { // do not use Engine.engineType
+      val threadsNumber = Math.ceil(CpuInfo.getPhysicalProcessorCount).toInt
 
       System.setProperty("bigdl.disable.mklBlockTime", "true")
       System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
