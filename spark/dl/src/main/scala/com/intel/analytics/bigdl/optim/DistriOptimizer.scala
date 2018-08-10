@@ -732,13 +732,7 @@ object DistriOptimizer {
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
       val vMethodsArr = cached.localMethods
-      val workingModels = cached.localModels.map { x =>
-        val _x = x.cloneModule()
-        if (x.isInstanceOf[MklDnnContainer]) {
-          _x.asInstanceOf[MklDnnContainer].compile(InferencePhase)
-        }
-        _x
-      }
+      val workingModels = cached.localModels
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
