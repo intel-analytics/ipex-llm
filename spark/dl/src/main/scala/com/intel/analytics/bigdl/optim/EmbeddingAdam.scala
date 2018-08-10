@@ -144,7 +144,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  def updateNograd(indices: Tensor[T], parameter: Tensor[T]): Unit = {
+  def updateZerograd(indices: Tensor[T], parameter: Tensor[T]): Unit = {
     val lr = this.learningRate
     val lrd = this.learningRateDecay
     val beta1 = this.beta1

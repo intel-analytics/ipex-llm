@@ -134,13 +134,13 @@ class NCFOptimizer[T: ClassTag] (
 
       val getMappingTime = System.nanoTime()
 
-      optimMethod2("mlpUserEmbedding").updateNograd(uniqueUserInput,
+      optimMethod2("mlpUserEmbedding").updateZerograd(uniqueUserInput,
         ncfModel.embeddingModel("mlpUserEmbedding").get.getParameters()._1)
-      optimMethod2("mlpItemEmbedding").updateNograd(uniqueItemInput,
+      optimMethod2("mlpItemEmbedding").updateZerograd(uniqueItemInput,
         ncfModel.embeddingModel("mlpItemEmbedding").get.getParameters()._1)
-      optimMethod2("mfUserEmbedding").updateNograd(uniqueUserInput,
+      optimMethod2("mfUserEmbedding").updateZerograd(uniqueUserInput,
         ncfModel.embeddingModel("mfUserEmbedding").get.getParameters()._1)
-      optimMethod2("mfItemEmbedding").updateNograd(uniqueItemInput,
+      optimMethod2("mfItemEmbedding").updateZerograd(uniqueItemInput,
         ncfModel.embeddingModel("mfItemEmbedding").get.getParameters()._1)
 
       val updateZeroGradientTime = System.nanoTime()

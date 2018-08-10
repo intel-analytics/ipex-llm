@@ -71,7 +71,7 @@ object AdamPerf {
 //          optimMethod.updateNograd(input, parameterArray)
 //          println(s"${i}update parameter array ${parameterArray.length} " +
 //            s"Nograd ${System.nanoTime() - start}")
-          optimMethod.updateNograd(input, parameter)
+          optimMethod.updateZerograd(input, parameter)
           println(s"${i}update parameter ${parameter.nElement()} " +
             s"Nograd ${System.nanoTime() - start}")
           start = System.nanoTime()

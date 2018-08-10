@@ -149,7 +149,7 @@ class AdamSpec extends FlatSpec with Matchers {
 
 //      adamEm.updateNograd(input(0), weightEmbedding)
 //      adamEm.updateNograd(input(1), weightEmbedding)
-      adamEm.updateNograd(t, weightEmbedding)
+      adamEm.updateZerograd(t, weightEmbedding)
       weightEmbedding should be (weightDense)
       adamEm.optimizeEmbedding(input.zip(gradient), weightEmbedding)
 
@@ -200,7 +200,7 @@ class AdamSpec extends FlatSpec with Matchers {
 
       //      adamEm.updateNograd(input(0), weightEmbedding)
       //      adamEm.updateNograd(input(1), weightEmbedding)
-      adamEm.updateNograd(t, weightEmbedding)
+      adamEm.updateZerograd(t, weightEmbedding)
 //      weightEmbedding should be (weightDense)
       adamEm.optimizeEmbedding(input.zip(gradient), weightEmbedding)
 
