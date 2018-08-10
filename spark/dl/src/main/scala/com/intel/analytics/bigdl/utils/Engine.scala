@@ -343,7 +343,7 @@ object Engine {
     val modelPoolSize: Int = if (engineType == MklBlas) {
       1
     } else {
-      1
+      core
     }
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
