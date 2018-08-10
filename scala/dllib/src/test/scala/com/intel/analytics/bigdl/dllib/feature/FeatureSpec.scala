@@ -15,14 +15,13 @@
  */
 package com.intel.analytics.zoo.feature
 
-import com.intel.analytics.zoo.common.NNContext
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.zoo.common.{NNContext, Utils}
 import com.intel.analytics.zoo.feature.common.{BigDLAdapter, Preprocessing}
 import com.intel.analytics.zoo.feature.image.{ImageBytesToMat, ImageResize, ImageSet}
-
+import org.apache.commons.io.FileUtils
 import org.apache.spark.{SparkConf, SparkContext}
-
 import org.opencv.imgcodecs.Imgcodecs
-
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
@@ -58,6 +57,22 @@ class FeatureSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imf = image.toDistributed().rdd.collect().head
     require(imf.getHeight() == 200)
     require(imf.getWidth() == 200)
+  }
+
+  "Local ImageSet" should "work with bytes" in {
+    val files = Utils.listLocalFiles(resource.getFile)
+    val bytes = files.map { p =>
+      FileUtils.readFileToByteArray(p)
+    }
+    ImageSet.array(bytes)
+  }
+
+  "Distribute ImageSet" should "work with bytes" in {
+    val data = sc.binaryFiles(resource.getFile).map { case (p, stream) =>
+      stream.toArray()
+    }
+    val images = ImageSet.rddBytes(data)
+    images.rdd.collect()
   }
 
   "ImageBytesToMat" should "work with png and jpg" in {
