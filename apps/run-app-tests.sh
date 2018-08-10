@@ -100,8 +100,8 @@ time2=$((now-start))
 echo "#3 start app test for ncf-explicit-feedback"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/recommendation/ncf-explicit-feedback
-sed "s/end_trigger=MaxEpoch(10)/end_trigger=MaxEpoch(5)/g" ${ANALYTICS_ZOO_HOME}/apps/recommendation/ncf-explicit-feedback.py >${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp.py
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/recommendation-ncf/ncf-explicit-feedback
+sed "s/end_trigger=MaxEpoch(10)/end_trigger=MaxEpoch(5)/g" ${ANALYTICS_ZOO_HOME}/apps/recommendation-ncf/ncf-explicit-feedback.py >${ANALYTICS_ZOO_HOME}/apps/recommendation-ncf/tmp.py
 ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
@@ -110,21 +110,21 @@ ${SPARK_HOME}/bin/spark-submit \
         --executor-cores 2  \
         --executor-memory 12g \
         --conf spark.akka.frameSize=64 \
-        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp.py  \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/recommendation-ncf/tmp.py  \
         --properties-file ${ANALYTICS_ZOO_CONF} \
         --jars ${ANALYTICS_ZOO_JAR} \
         --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-        ${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp.py
+        ${ANALYTICS_ZOO_HOME}/apps/recommendation-ncf/tmp.py
 now=$(date "+%s")
 time3=$((now-start))
-rm ${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp.py
+rm ${ANALYTICS_ZOO_HOME}/apps/recommendation-ncf/tmp.py
 
 echo "#4 start app test for wide_n_deep"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/recommendation/wide_n_deep
-sed "s/end_trigger=MaxEpoch(10)/end_trigger=MaxEpoch(5)/g" ${ANALYTICS_ZOO_HOME}/apps/recommendation/wide_n_deep.py >${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp_test.py
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/recommendation-wide-n-deep/wide_n_deep
+sed "s/end_trigger=MaxEpoch(10)/end_trigger=MaxEpoch(5)/g" ${ANALYTICS_ZOO_HOME}/apps/recommendation-wide-n-deep/wide_n_deep.py >${ANALYTICS_ZOO_HOME}/apps/recommendation-wide-n-deep/tmp_test.py
 ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
@@ -133,15 +133,15 @@ ${SPARK_HOME}/bin/spark-submit \
         --executor-cores 2  \
         --executor-memory 12g \
         --conf spark.akka.frameSize=64 \
-        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp_test.py  \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/recommendation-wide-n-deep/tmp_test.py  \
         --properties-file ${ANALYTICS_ZOO_CONF} \
         --jars ${ANALYTICS_ZOO_JAR} \
         --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-        ${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp_test.py
+        ${ANALYTICS_ZOO_HOME}/apps/recommendation-wide-n-deep/tmp_test.py
 now=$(date "+%s")
 time4=$((now-start))
-rm ${ANALYTICS_ZOO_HOME}/apps/recommendation/tmp_test.py
+rm ${ANALYTICS_ZOO_HOME}/apps/recommendation-wide-n-deep/tmp_test.py
 
 echo "#5 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
 #timer
