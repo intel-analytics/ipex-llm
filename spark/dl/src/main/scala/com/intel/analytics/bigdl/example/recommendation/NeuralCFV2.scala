@@ -173,12 +173,13 @@ class NeuralCFV2[T: ClassTag] private(val userCount: Int,
     var linear = Linear[T](itemEmbed + userEmbed, hiddenLayers(0)).inputs(mlpMerge)
     var relu = ReLU[T]().inputs(linear)
     for (i <- 1 to hiddenLayers.length - 1) {
-      linear = Linear(hiddenLayers(i - 1), hiddenLayers(i)).inputs(relu)
+      linear = Linear(hiddenLayers(i - 1), hiddenLayers(i)).setName(s"mlp_fc_$i").inputs(relu)
       relu = ReLU().inputs(linear)
     }
 
     val merge = JoinTable(2, 2).inputs(mfMerge, relu)
-    val finalLinear = Linear(mfEmbed + hiddenLayers.last, numClasses).inputs(merge)
+    val finalLinear = Linear(mfEmbed + hiddenLayers.last, numClasses)
+      .setName(s"fc_final").inputs(merge)
     val sigmoid = Sigmoid().inputs(finalLinear)
 
     ncfLayers = Graph(Array(mlpUser, mlpItem, mfUser, mfItem), sigmoid)

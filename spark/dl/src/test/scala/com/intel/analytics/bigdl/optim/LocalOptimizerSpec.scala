@@ -16,10 +16,11 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
+import com.intel.analytics.bigdl.example.recommendation.NeuralCFV2
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import com.intel.analytics.bigdl.visualization.TrainSummary
@@ -40,16 +41,30 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
   }
 
   private val feature = Tensor[Float](
+//    Storage[Float](
+//      Array[Float](
+//        0, 1, 0, 1,
+//        1, 0, 1, 0,
+//        0, 1, 0, 1,
+//        1, 0, 1, 0
+//      )
+//    ),
+//    storageOffset = 1,
+//    size = Array(4, 4)
     Storage[Float](
       Array[Float](
-        0, 1, 0, 1,
-        1, 0, 1, 0,
-        0, 1, 0, 1,
-        1, 0, 1, 0
+        1, 2,
+        3, 4,
+        1, 4,
+        2, 3,
+        3, 5,
+        4, 1,
+        6, 3,
+        2, 6
       )
     ),
     storageOffset = 1,
-    size = Array(4, 4)
+    size = Array(8, 2)
   )
   private val labelMSE = Tensor[Float](
     Storage[Float](
@@ -57,11 +72,25 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
         0,
         1,
         0,
+        1,
+        0,
+        1,
+        0,
         1
       )
     ),
     storageOffset = 1,
-    size = Array(4)
+    size = Array(8, 1)
+//    Storage[Float](
+//      Array[Float](
+//        0,
+//        1,
+//        0,
+//        1
+//      )
+//    ),
+//    storageOffset = 1,
+//    size = Array(4)
   )
 
   private val labelCrossEntropy = Tensor[Float](
@@ -445,5 +474,33 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model2 = optimizer2.optimize()
     val newG = model2.getParameters()._2
     assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
+  }
+
+  "ncf" should "works" in {
+    val ncf = NeuralCFV2[Float](
+      userCount = 1000,
+      itemCount = 500,
+      numClasses = 1,
+      userEmbed = 128,
+      itemEmbed = 128,
+      hiddenLayers = Array(256, 128, 64),
+      mfEmbed = 64).buildModel()
+
+    val itera = 2
+
+    val ncfOptimizer = new NCFOptimizer[Float](ncf.cloneModule(),
+      mseDataSet,
+      BCECriterion[Float]()).setOptimMethod(new Adam())
+      .setEndWhen(Trigger.severalIteration(itera))
+
+    val ncfResult = ncfOptimizer.optimize()
+
+    val localOptimizer = new LocalOptimizer[Float](ncf.ncfModel.cloneModule(),
+      mseDataSet, BCECriterion[Float]()).setOptimMethod(new Adam())
+      .setEndWhen(Trigger.severalIteration(itera))
+
+    val localResult = localOptimizer.optimize()
+
+    ncfResult.getParameters()._1 should be (localResult.getParameters()._1)
   }
 }

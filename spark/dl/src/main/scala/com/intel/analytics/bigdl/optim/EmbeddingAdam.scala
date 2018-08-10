@@ -152,7 +152,6 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
     val eps = this.Epsilon
 
     val uniqueStart = System.nanoTime()
-    val uniqueIndices = Tensor[T](Storage(indices.storage().array().distinct))
     println(s"unique indices ${System.nanoTime() - uniqueStart}")
 
     var timestep = state.getOrElse[Int]("evalCounter", 1)
@@ -160,7 +159,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
     val clr = lr / (1 + (timestep - 1) *lrd)
 
     val parallelNum = Engine.coreNumber()
-    val gradLength = uniqueIndices.nElement()
+    val gradLength = indices.nElement()
     val taskSize = gradLength / parallelNum
     val extraTask = gradLength % parallelNum
 
@@ -171,7 +170,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 //      Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
       val offset = tid * taskSize + math.min(tid, extraTask)
       val length = taskSize + (if (tid < extraTask) 1 else 0)
-      val currentIndex = uniqueIndices.narrow(1, offset + 1, length)
+      val currentIndex = indices.narrow(1, offset + 1, length)
       var i = 1
       while(i <= currentIndex.nElement()) {
         val index = ev.toType[Int](currentIndex.valueAt(i))
@@ -274,7 +273,7 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
 
 //    timestep = timestep + 1
 
-    val parallelNum = Engine.coreNumber()
+    val parallelNum = 1
 //    val gradLength = parameter.nElement()
 //    val taskSize = gradLength / parallelNum
 //    val extraTask = gradLength % parallelNum

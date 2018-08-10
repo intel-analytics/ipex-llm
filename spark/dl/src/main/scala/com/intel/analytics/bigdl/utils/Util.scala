@@ -101,7 +101,7 @@ object Util {
         tensors.map(_.storage().array().eq(storageArray))
           .reduce(_ & _)
         val storage = Storage(storageArray)
-        (tensors.map(_.nElement()).sum < storage.length(), storage)
+        (tensors.map(_.nElement()).sum <= storage.length(), storage)
       } else {
         (false, null)
       }

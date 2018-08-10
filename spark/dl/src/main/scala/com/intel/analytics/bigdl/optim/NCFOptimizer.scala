@@ -21,7 +21,7 @@ import java.lang.invoke.MethodHandles.Lookup
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.recommendation.NeuralCFV2
-import com.intel.analytics.bigdl.nn.{Graph, LookupTable, Utils}
+import com.intel.analytics.bigdl.nn.{Graph, LookupTable, Sequential, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{SparseTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -61,33 +61,19 @@ class NCFOptimizer[T: ClassTag] (
   // TODO: sharing failed
   private val workingEmbeddingModels = initModel(ncfModel.embeddingModel,
     subModelNumber, true)
-  private val workingLinears = initModel(ncfModel.ncfLayers,
+  ncfModel.ncfLayers.getParameters()
+  val workingLinears = initModel(ncfModel.ncfLayers,
     subModelNumber, false)
 
-  workingEmbeddingModels(0).parameters()._2.apply(0).setValue(1, 1, ev.fromType(0.01f))
-  workingEmbeddingModels(0).parameters()._1.apply(0).setValue(1, 1, ev.fromType(1.01f))
+  val (linearsWeight, linearsGrad) = ncfModel.ncfLayers.getParameters()
 
-  workingEmbeddingModels(0).getParameters()._2.setValue(1, ev.fromType(0.1f))
-  workingEmbeddingModels(0).getParameters()._1.setValue(1, ev.fromType(1.1f))
-  private val (embeddingWeight, embeddingGrad) = ncfModel.embeddingModel.getParameters()
-  private val (linearsWeight, linearsGrad) = ncfModel.ncfLayers.getParameters()
-  workingEmbeddingModels(0).getParameters()._2.setValue(1, ev.fromType(0.2f))
-  workingEmbeddingModels(0).getParameters()._1.setValue(1, ev.fromType(1.2f))
-
-  private val workingEmbeddingModelWAndG = workingEmbeddingModels.map(_.getParameters())
-  private val workingLinearModelWAndG = workingLinears.map(_.getParameters())
+  val workingLinearModelWAndG = workingLinears.map(_.getParameters())
 
   private val linearGradLength = linearsGrad.nElement()
   private val linearSyncGradTaskSize = linearGradLength / subModelNumber
   private val linearSyncGradExtraTask = linearGradLength % subModelNumber
   private val linearSyncGradParallelNum =
     if (linearSyncGradTaskSize == 0) linearSyncGradExtraTask else subModelNumber
-
-  private val embeddingGradLength = embeddingGrad.nElement()
-  private val embeddingSyncGradTaskSize = embeddingGradLength / subModelNumber
-  private val embeddingSyncGradExtraTask = embeddingGradLength % subModelNumber
-  private val embeddingSyncGradParallelNum =
-    if (embeddingSyncGradTaskSize == 0) linearSyncGradExtraTask else subModelNumber
 
   private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
@@ -102,7 +88,7 @@ class NCFOptimizer[T: ClassTag] (
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
     val optimMethod: OptimMethod[T] = optimMethods(model.getName())
-    val optimMethod2: Map[String, OptimMethod[T]] = Map(
+    val optimMethod2: Map[String, EmbeddingAdam[T]] = Map(
     "mlpUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 128),
     "mlpItemEmbedding" -> new EmbeddingAdam[T]().setNOutput(26744, 128),
     "mfUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 64),
@@ -112,19 +98,14 @@ class NCFOptimizer[T: ClassTag] (
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
-    val userMapping = new mutable.HashMap[Int, Int]()
-    val itemMapping = new mutable.HashMap[Int, Int]()
+    val userMapping = new mutable.HashMap[T, Int]()
+    val itemMapping = new mutable.HashMap[T, Int]()
+    val uniqueUserInput = Tensor()
+    val uniqueItemInput = Tensor()
+
     while (!endWhen(state)) {
       val start = System.nanoTime()
       println("start")
-
-      val tasks = Engine.default.invoke((0 until embeddingSyncGradParallelNum).map(tid =>
-        () => {
-          val offset = tid * embeddingSyncGradTaskSize + math.min(tid, embeddingSyncGradExtraTask)
-          val length = embeddingSyncGradTaskSize +
-            (if (tid < embeddingSyncGradExtraTask) 1 else 0)
-          embeddingGrad.narrow(1, offset + 1, length).zero()
-        }))
 
       // Fetch data and prepare tensors
       val batch = iter.next()
@@ -142,37 +123,27 @@ class NCFOptimizer[T: ClassTag] (
       val dataFetchTime = System.nanoTime()
       println("dataFetch")
 
-      val input = batch.getInput().toTensor[Float]
-      val inputUser = input.select(2, 1)
-      val inputItem = input.select(2, 2)
+      val input = batch.getInput().toTensor[T]
+      uniqueUserInput.resize(batch.size())
+      uniqueItemInput.resize(batch.size())
 
-      def getMapping(input: Tensor[Float],
-                     userMapping: mutable.HashMap[Int, Int],
-                     itemMapping: mutable.HashMap[Int, Int]): Unit = {
-        val inputArray = input.storage().array()
-        var userCount = 1
-        var itemCount = 1
-        var i = 0
-        while(i < input.nElement()) {
-          val userIndex = inputArray(i).toInt
-          if (!userMapping.contains(userIndex)) {
-            userMapping.put(userIndex, userCount)
-            userCount += 1
-          }
-          val itemIndex = inputArray(i + 1).toInt
-          if (!itemMapping.contains(itemIndex)) {
-            itemMapping.put(itemIndex, itemCount)
-            itemCount += 1
-          }
-          i += 2
-        }
-      }
 
       userMapping.clear()
       itemMapping.clear()
-      getMapping(inputUser, userMapping, itemMapping)
+      getMapping(input, userMapping, itemMapping, uniqueUserInput, uniqueItemInput)
 
       val getMappingTime = System.nanoTime()
+
+      optimMethod2("mlpUserEmbedding").updateNograd(uniqueUserInput,
+        ncfModel.embeddingModel("mlpUserEmbedding").get.getParameters()._1)
+      optimMethod2("mlpItemEmbedding").updateNograd(uniqueItemInput,
+        ncfModel.embeddingModel("mlpItemEmbedding").get.getParameters()._1)
+      optimMethod2("mfUserEmbedding").updateNograd(uniqueUserInput,
+        ncfModel.embeddingModel("mfUserEmbedding").get.getParameters()._1)
+      optimMethod2("mfItemEmbedding").updateNograd(uniqueItemInput,
+        ncfModel.embeddingModel("mfItemEmbedding").get.getParameters()._1)
+
+      val updateZeroGradientTime = System.nanoTime()
 
       val lossSum = Engine.default.invokeAndWait(
         (0 until parallelism).map(i =>
@@ -202,18 +173,6 @@ class NCFOptimizer[T: ClassTag] (
       val computingTime = System.nanoTime()
       println("computingTime")
 
-      Engine.default.sync(tasks)
-//      Engine.default.invokeAndWait(
-//        (0 until embeddingSyncGradParallelNum).map(tid =>
-//          () => {
-//            val offset = tid * embeddingSyncGradTaskSize
-//            + math.min(tid, embeddingSyncGradExtraTask)
-//            val length = embeddingSyncGradTaskSize +
-//              (if (tid < embeddingSyncGradExtraTask) 1 else 0)
-//            embeddingGrad.narrow(1, offset + 1, length).zero()
-//          })
-//      )
-
       val zeroGradTime = System.nanoTime()
       println("zeroGrad")
 
@@ -231,37 +190,25 @@ class NCFOptimizer[T: ClassTag] (
           .asInstanceOf[LookupTable[T]]
         val localLinears = workingLinears(i)
         Iterator(
-          (mlpUserEmbedding.gradWeight, userMapping,
+          ((optimMethod2("mlpUserEmbedding"), mlpUserEmbedding.getParameters()._1,
+            userMapping, uniqueUserInput),
             input1, localLinears.gradInput.toTable[Tensor[T]](1)),
-          (mlpItemEmbedding.gradWeight, itemMapping,
+          ((optimMethod2("mlpItemEmbedding"), mlpItemEmbedding.getParameters()._1,
+            itemMapping, uniqueItemInput),
             input2, localLinears.gradInput.toTable[Tensor[T]](2)),
-          (mfUserEmbedding.gradWeight, userMapping,
+          ((optimMethod2("mfUserEmbedding"), mfUserEmbedding.getParameters()._1,
+            userMapping, uniqueUserInput),
             input1, localLinears.gradInput.toTable[Tensor[T]](3)),
-          (mfItemEmbedding.gradWeight, itemMapping,
+          ((optimMethod2("mfItemEmbedding"), mfItemEmbedding.getParameters()._1,
+            itemMapping, uniqueItemInput),
             input2, localLinears.gradInput.toTable[Tensor[T]](4)))
-      }.groupBy(_._1).map(v => (v._1, v._2.map(v2 => (v2._3, v2._4)).toArray))
+      }.groupBy(_._1).map(v => (v._1._1, v._1._2, v._1._3, v._1._4,
+        v._2.map(v2 => (v2._2, v2._3)).toArray)).toArray
 
-      def mergeEmbeddingGrad(inputGrad: Array[(Tensor[T], Tensor[T])],
-                             gradMap: mutable.HashMap[Int, Int],
-                             embeddingGradient: Tensor[T]): Unit = {
-        var parallelism = 0
-        while(parallelism < inputGrad.length) {
-          val indices = inputGrad(parallelism)._1
-          val grad = inputGrad(parallelism)._2
-          var i = 1
-          while(i <= indices.nElement()) {
-            val currentIndex = indices.valueAt(i)
-            val position = gradMap(currentIndex)
-            embeddingGradient.select(1, position).add(grad.select(1, i))
-            i += 1
-          }
-        }
-        parallelism += 1
-      }
 
-      val mlpUser = workingEmbeddingModels.map{m =>
-        m("mlpUserEmbedding").get
-          .asInstanceOf[AbstractModule[Activity, Activity, T]]
+      embeddingGradients.foreach{v =>
+        val mergedGradient = NCFOptimizer.mergeEmbeddingGrad(v._5, v._3, parallelism)
+        v._1.optimizeEmbedding(Array((v._4, mergedGradient)), v._2)
       }
 
       val computingTime2 = System.nanoTime()
@@ -288,26 +235,17 @@ class NCFOptimizer[T: ClassTag] (
           })
       )
 
+      linearsGrad.div(ev.fromType(parallelism))
+
       val aggTime = System.nanoTime()
       println("agg")
 
       optimMethod.state.update("epoch", state.get("epoch"))
       optimMethod.state.update("neval", state.get("neval"))
-      optimMethod.optimize(_ => (ev.fromType(loss), linearsGrad), linearsWeight)
+      optimMethod.optimize(_ => (ev.fromType(loss), linearsGrad),
+        workingLinearModelWAndG.head._1)
 
       val updateWeightTime1 = System.nanoTime()
-
-      optimMethod2.foreach{v =>
-        val moduleName = v._1
-        val optimMethod = v._2
-        val embedding = model(moduleName).get
-          .asInstanceOf[AbstractModule[Activity, Activity, T]]
-      }
-
-//      optimMethod2.state.update("epoch", state.get("epoch"))
-//      optimMethod2.state.update("neval", state.get("neval"))
-//      optimMethod2.optimize(_ => (ev.fromType(loss), embeddingGrad), embeddingWeight)
-
 
       val updateWeightTime2 = System.nanoTime()
       println("update weight")
@@ -323,7 +261,8 @@ class NCFOptimizer[T: ClassTag] (
         )
       logger.debug(s"data fetch time is ${(dataFetchTime - start) / 1e9}s \n" +
         s"get mapping time is ${(getMappingTime - dataFetchTime) / 1e9}s \n" +
-        s"model computing time is ${(computingTime - getMappingTime) / 1e9}s \n" +
+        s"update zero gradient time is ${(updateZeroGradientTime - getMappingTime) / 1e9}s \n" +
+        s"model computing time is ${(computingTime - updateZeroGradientTime) / 1e9}s \n" +
         s"zero grad time is ${(zeroGradTime - computingTime) / 1e9}s \n" +
         s"acc embedding time is ${(computingTime2 - zeroGradTime) / 1e9}s \n" +
         s"aggregate linear is ${(aggTime - computingTime2) / 1e9}s \n" +
@@ -343,7 +282,13 @@ class NCFOptimizer[T: ClassTag] (
       checkpoint(wallClockTime)
     }
 
-    model
+    // copy running status from workingModels to model
+//    model.setExtraParameter(workingEmbeddingModels.head.getExtraParameter() ++
+//      workingLinears.head.getExtraParameter())
+
+    val a = Sequential().add(workingEmbeddingModels(0)).add(workingLinears(0))
+    a
+
   }
 
   private def checkpoint(wallClockTime: Long): Unit = {
@@ -425,11 +370,7 @@ object NCFOptimizer {
 
     val models = (1 to copies).map(i => {
       logger.info(s"Clone $i model...")
-      val m = if (i == copies) {
-        model
-      } else {
-        model.cloneModule()
-      }
+      val m: Module[T] = model.cloneModule()
       Util.putWeightBias(wb, m)
       if (shareGradient) {
         Util.putGradWeightBias(grad, m)
@@ -438,7 +379,66 @@ object NCFOptimizer {
       }
       m
     }).toArray
+    Util.putWeightBias(wb, model)
+    Util.initGradWeightBias(wb, model)
     models
+  }
+
+  def getMapping[T: ClassTag](input: Tensor[T],
+                 userMapping: mutable.HashMap[T, Int],
+                 itemMapping: mutable.HashMap[T, Int],
+                 uniqueUserInput: Tensor[T],
+                 uniqueItemInput: Tensor[T]
+                )(implicit ev: TensorNumeric[T]): Unit = {
+    val inputArray = input.storage().array()
+    var userCount = 1
+    var itemCount = 1
+    var i = 0
+    while(i < input.nElement()) {
+      {
+        val userIndex = inputArray(i)
+        if (!userMapping.contains(userIndex)) {
+          userMapping.put(userIndex, userCount)
+          uniqueUserInput.setValue(userCount, userIndex)
+          userCount += 1
+        }
+      }
+      {
+        val itemIndex = inputArray(i + 1)
+        if (!itemMapping.contains(itemIndex)) {
+          itemMapping.put(itemIndex, itemCount)
+          uniqueItemInput.setValue(itemCount, itemIndex)
+          itemCount += 1
+        }
+      }
+      i += 2
+    }
+    uniqueUserInput.resize(userCount - 1)
+    uniqueItemInput.resize(itemCount - 1)
+  }
+
+  def mergeEmbeddingGrad[T: ClassTag](
+      inputGrad: Array[(Tensor[T], Tensor[T])],
+      gradMap: mutable.HashMap[T, Int],
+      parallelism: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val embeddingGradient = Tensor(gradMap.size, inputGrad.head._2.size(2))
+    var p = 0
+    while(p < inputGrad.length) {
+      val indices = inputGrad(p)._1
+      val grad = inputGrad(p)._2
+      var i = 1
+      while(i <= indices.nElement()) {
+        val currentIndex = indices.valueAt(i)
+        val position = gradMap(currentIndex)
+        val eg = embeddingGradient.select(1, position)
+        val gg = grad.select(1, i)
+        embeddingGradient.select(1, position)
+          .add(ev.fromType(1.toFloat / parallelism), grad.select(1, i))
+        i += 1
+      }
+      p += 1
+    }
+    embeddingGradient
   }
 }
 
