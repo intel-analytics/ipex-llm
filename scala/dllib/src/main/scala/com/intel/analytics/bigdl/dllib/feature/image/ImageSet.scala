@@ -126,11 +126,29 @@ object ImageSet {
   }
 
   /**
+   * create LocalImageSet from array of bytes
+   * @param data nested array of bytes, expect inner array is a image
+   */
+  def array(data: Array[Array[Byte]]): LocalImageSet = {
+    val images = data.map(ImageFeature(_))
+    ImageSet.array(images)
+  }
+
+  /**
    * create DistributedImageSet
    * @param data rdd of ImageFeature
    */
   def rdd(data: RDD[ImageFeature]): DistributedImageSet = {
     new DistributedImageSet(data)
+  }
+
+  /**
+   * create DistributedImageSet for a RDD of array bytes
+   * @param data rdd of array of bytes
+   */
+  def rddBytes(data: RDD[Array[Byte]]): DistributedImageSet = {
+    val images = data.map(ImageFeature(_))
+    ImageSet.rdd(images)
   }
 
   /**
