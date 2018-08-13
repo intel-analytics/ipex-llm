@@ -14,12 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.util.engine import *
 import pytest
 import os
-import glob
-import pyspark
-
+from bigdl.util.common import *
 
 class TestEngineEnv():
     def setup_method(self, method):
@@ -34,13 +31,27 @@ class TestEngineEnv():
         """
         pass
 
-    def test___sys_path_insert(self):
-        py4j = glob.glob(os.path.join(self.spark_home, 'python/lib', 'py4j-*.zip'))[0]
-        pyspark = glob.glob(os.path.join(self.spark_home, 'python/lib', 'pyspark*.zip'))[0]
-        with pytest.raises(RuntimeError):
-            __sys_path_insert(py4j)
-        with pytest.raises(RuntimeError):
-            __sys_path_insert(pyspark)
+    def test___prepare_bigdl_env(self):
+        # BigDL will automatically execute 'prepare_env()' function which
+        # includes '__prepare_bigdl_env()'. To test if there's no more duplicate
+        #  adding jar path message, just do prepare_env()' again
+        # to see if the log is correct and the environment variables should not vary.
+
+        from bigdl.util.engine import prepare_env
+
+        bigdl_jars_env_1 = os.environ.get("BIGDL_JARS", None)
+        spark_class_path_1 = os.environ.get("SPARK_CLASSPATH", None)
+        sys_path_1 = sys.path
+        prepare_env()
+        # there should be no duplicate messages about adding jar path to
+        # the environment var "BIGDL_JARS"
+        # environment variables should remain the same
+        bigdl_jars_env_2 = os.environ.get("BIGDL_JARS", None)
+        spark_class_path_2 = os.environ.get("SPARK_CLASSPATH", None)
+        sys_path_2 = sys.path
+        assert bigdl_jars_env_1 == bigdl_jars_env_2
+        assert spark_class_path_1 == spark_class_path_2
+        assert sys_path_1 == sys_path_2
 
 if __name__ == '__main__':
     pytest.main()
