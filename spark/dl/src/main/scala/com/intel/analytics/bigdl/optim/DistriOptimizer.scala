@@ -22,14 +22,14 @@ import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
 import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor.{DnnStorage, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import com.intel.analytics.bigdl.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.MklDnnContainer
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -957,9 +957,11 @@ class DistriOptimizer[T: ClassTag] (
 
     prepareInput()
 
+    println(DnnStorage.get().count(!_._2))
     models = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
       optimMethods, parameterProcessors)
+    println(DnnStorage.get().count(!_._2))
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -1056,7 +1058,6 @@ class DistriOptimizer[T: ClassTag] (
 
     // unpersist the model because the next time optimize is called, new `models` will be
     // created
-    shutdown()
     models.unpersist()
 
     model
