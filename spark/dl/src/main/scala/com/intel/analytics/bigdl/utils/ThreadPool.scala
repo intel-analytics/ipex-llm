@@ -31,6 +31,10 @@ import scala.collection.JavaConverters._
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
+ *
+ * TODO `TreadPool` will give 2-version of thread pool, one uses scala version (`invokeAndWait`),
+ * another is provided to Java (`invokeAndWait2`). The design is weird. We should refactor this
+ * class later.
  */
 class ThreadPool(private var poolSize: Int) {
 

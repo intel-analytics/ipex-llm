@@ -42,7 +42,9 @@ object Engine {
 
   // Initialize some properties for mkldnn engine. We should call it at the beginning.
   // Otherwise some properties will have no effect.
-  setMklDnnEnvironments()
+  if (System.getProperty("bigdl.engineType") == "mkldnn") {
+    setMklDnnEnvironments()
+  }
 
   @deprecated(
     "See https://bigdl-project.github.io/master/#APIGuide/Engine/",
@@ -216,7 +218,7 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = null
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getMklNumThreads)
 
   // Thread pool for read data
   @volatile private var _io: ThreadPool = null
@@ -540,13 +542,11 @@ object Engine {
   }
 
   private def setMklDnnEnvironments(): Unit = {
-    if (System.getProperty("bigdl.engineType") == "mkldnn") { // do not use Engine.engineType
-      val threadsNumber = Math.ceil(CpuInfo.getPhysicalProcessorCount).toInt
+    val threadsNumber = Math.ceil(Runtime.getRuntime.availableProcessors().toFloat / 2).toInt
 
-      System.setProperty("bigdl.disable.mklBlockTime", "true")
-      System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
-      System.setProperty("bigdl.coreNumber", "1")
-      System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
-    }
+    System.setProperty("bigdl.disable.mklBlockTime", "true")
+    System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
+    System.setProperty("bigdl.coreNumber", "1")
+    System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
   }
 }
