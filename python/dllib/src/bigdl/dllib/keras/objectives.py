@@ -199,7 +199,7 @@ mape = MAPE = MeanAbsolutePercentageError
 
 class MeanSquaredError(LossFunction):
     """
-    A loss that measures the mean absolute value of the element-wise difference
+    A loss that measures the mean squared value of the element-wise difference
     between the input and the target.
 
     # Arguments
@@ -207,12 +207,12 @@ class MeanSquaredError(LossFunction):
               mini-batch. Default is True. If False, the losses are instead
               summed for each mini-batch.
 
-    >>> metrics = MeanAbsoluteError()
-    creating: createZooKerasMeanAbsoluteError
+    >>> metrics = MeanSquaredError()
+    creating: createZooKerasMeanSquaredError
     """
     def __init__(self, size_average=True, bigdl_type="float"):
-        super(MeanAbsoluteError, self).__init__(None, bigdl_type,
-                                                size_average)
+        super(MeanSquaredError, self).__init__(None, bigdl_type,
+                                               size_average)
 
 mse = MSE = MeanSquaredError
 
