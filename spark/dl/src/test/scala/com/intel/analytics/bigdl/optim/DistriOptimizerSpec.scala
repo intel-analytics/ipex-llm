@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.models.utils.CachedModels
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.HeapData
@@ -963,7 +962,7 @@ class DistriOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
     System.clearProperty("bigdl.engineType")
   }
 
-  "Train with MSE with two LBFGS" should "be good" in {
+  "Train model and shutdown" should "be good" in {
     RandomGenerator.RNG.setSeed(10)
     val model = dnn
     val count = DnnStorage.get().count(!_._2)

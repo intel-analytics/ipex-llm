@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
 import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.tensor.{DnnStorage, FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import java.io.{File, FilenameFilter}
@@ -960,13 +960,11 @@ class DistriOptimizer[T: ClassTag] (
 
     prepareInput()
 
-    println(DnnStorage.get().count(!_._2))
     val modelsAndBroadcast = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
       optimMethods, parameterProcessors)
     models = modelsAndBroadcast._1
     modelBroadcast = modelsAndBroadcast._2
-    println(DnnStorage.get().count(!_._2))
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
