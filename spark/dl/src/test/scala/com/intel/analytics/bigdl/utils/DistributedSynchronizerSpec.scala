@@ -75,7 +75,7 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
     res(3) should be (Tensor[Float](2).fill(2.5f))
   }
 
-  "DistributedSynchronizer with parameter offset > 1" should "worl properly" in {
+  "DistributedSynchronizer with parameter offset > 1" should "work properly" in {
     val partition = 4
     val cores = 4
     val res = sc.parallelize((0 until partition), partition).mapPartitions(p => {
