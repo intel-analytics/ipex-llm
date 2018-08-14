@@ -96,6 +96,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
     require(capacity > 0, s"capacity should not be larger than 0")
     val ptr = Memory.AlignedMalloc(capacity * DnnStorage.FLOAT_BYTES, DnnStorage.CACHE_LINE_SIZE)
     require(ptr != 0L, s"allocate native aligned memory failed")
+    _isReleased = false
     DnnStorage.add(ptr)
     ptr
   }

@@ -22,9 +22,11 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.models.utils.CachedModels
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.{DenseTensor, DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
@@ -963,11 +965,13 @@ class DistriOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with MSE with two LBFGS" should "be good" in {
     RandomGenerator.RNG.setSeed(10)
+    val model = dnn
+    val count = DnnStorage.get().count(!_._2)
     val optimizer = new DistriOptimizer(
-      dnn,
+      model,
       dataSet,
-      new CrossEntropyCriterion[Float]())
+      new CrossEntropyCriterion[Float]()).setEndWhen(Trigger.severalIteration(1))
     optimizer.optimize()
-    optimizer.shutdown()
+    DnnStorage.get().count(!_._2) should be (count)
   }
 }

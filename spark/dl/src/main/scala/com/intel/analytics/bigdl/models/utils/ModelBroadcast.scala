@@ -240,4 +240,19 @@ object CachedModels {
         }
       }
     }
+
+  def deleteKey[T: ClassTag](key: String)(implicit ev: TensorNumeric[T]): Unit =
+    CachedModels.synchronized {
+      val keys = cachedModels.keys
+      for (k <- keys) {
+        if (k == key) {
+          val models = cachedModels(key)
+          println(s"delete key = $key ${models.length}")
+          for (model <- models) {
+            model.release()
+          }
+          cachedModels.remove(key)
+        }
+      }
+  }
 }

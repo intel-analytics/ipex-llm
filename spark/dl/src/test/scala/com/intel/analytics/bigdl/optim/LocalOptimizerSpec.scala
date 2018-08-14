@@ -476,15 +476,15 @@ class LocalOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train model and shutdown" should "be good" in {
     RandomGenerator.RNG.setSeed(1000)
+    val model = dnnModel
+    val count = DnnStorage.get().count(!_._2)
     val optimizer = new LocalOptimizer[Float](
-      dnnModel,
+      model,
       creDataSet,
       new CrossEntropyCriterion[Float].asInstanceOf[Criterion[Float]]
     )
 
     optimizer.optimize()
-
-    optimizer.shutdown()
-    DnnStorage.get().count(!_._2) should be (4)
+    DnnStorage.get().count(!_._2) should be (count)
   }
 }
