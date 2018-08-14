@@ -110,11 +110,53 @@ public class JTensor {
     this.shape = shape;
   }
 
+  public static String toString(int[] a) {
+    if (a == null)
+      return "null";
+    int iMax = a.length - 1;
+    if (iMax == -1)
+      return "[]";
+
+    int max = Math.min(500, iMax);
+
+    StringBuilder b = new StringBuilder();
+    b.append('[');
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == max && i < iMax)
+        return b.append(", ... ]").toString();
+      if (i == iMax)
+        return b.append(']').toString();
+      b.append(", ");
+    }
+  }
+
+  public static String toString(float[] a) {
+    if (a == null)
+      return "null";
+    int iMax = a.length - 1;
+    if (iMax == -1)
+      return "[]";
+
+    int max = Math.min(500, iMax);
+
+    StringBuilder b = new StringBuilder();
+    b.append('[');
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == max && i < iMax)
+        return b.append(", ... ]").toString();
+      if (i == iMax)
+        return b.append(']').toString();
+      b.append(", ");
+    }
+  }
+
   @Override
   public String toString() {
     return "JTensor{" +
-            "data=" + data +
-            ", shape=" + shape +
+            "data=" + toString(data) +
+            ", shape=" + toString(shape) +
             '}';
   }
 }
