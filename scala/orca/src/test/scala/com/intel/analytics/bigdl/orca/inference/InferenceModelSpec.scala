@@ -155,4 +155,11 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     assert(floatInferenceModel.model == floatInferenceModel2.model)
     in.close()
   }
+
+  "JTensor toString" should "return element" in {
+    val data = Array(1.0f, 2.0f, 3.0f, 4.0f)
+    val shape = Array(1, 4)
+    val jTensor = new JTensor(data, shape)
+    jTensor.toString should be ("JTensor{data=[1.0, 2.0, 3.0, 4.0], shape=[1, 4]}")
+  }
 }
