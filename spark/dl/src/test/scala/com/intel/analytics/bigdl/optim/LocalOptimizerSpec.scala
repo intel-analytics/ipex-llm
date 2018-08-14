@@ -482,7 +482,7 @@ class LocalOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
       model,
       creDataSet,
       new CrossEntropyCriterion[Float].asInstanceOf[Criterion[Float]]
-    )
+    ).setEndWhen(Trigger.severalIteration(1))
 
     optimizer.optimize()
     DnnStorage.get().count(!_._2) should be (count)
