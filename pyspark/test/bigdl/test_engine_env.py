@@ -18,6 +18,7 @@ import pytest
 import os
 from bigdl.util.common import *
 
+
 class TestEngineEnv():
     def setup_method(self, method):
         """ setup any state tied to the execution of the given method in a
