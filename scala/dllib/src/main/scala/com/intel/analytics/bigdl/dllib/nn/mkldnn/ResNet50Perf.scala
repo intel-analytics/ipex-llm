@@ -55,15 +55,9 @@ object ResNet50Perf {
     System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
     System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
 
-//    val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
-//      s"${Math.ceil(Runtime.getRuntime.availableProcessors() / 2).toInt}").toInt
     System.setProperty("bigdl.localMode", "true")
-    System.setProperty("bigdl.mklNumThreads",
-      s"${Math.ceil(Runtime.getRuntime.availableProcessors / 2).toInt}")
-    System.setProperty("bigdl.coreNumber", "1")
+    System.setProperty("bigdl.engineType", "mkldnn")
     Engine.init
-//    Engine.setCoreNumber(1)
-//    MklDnn.setNumThreads(coreNumber)
 
     parser.parse(argv, new ResNet50PerfParams()).foreach { params =>
       val batchSize = params.batchSize
@@ -75,7 +69,7 @@ object ResNet50Perf {
       val inputFormat = Memory.Format.nchw
       val inputShape = Array(batchSize, 3, 224, 224)
       val input = Tensor(inputShape).rand()
-      val label = Tensor(batchSize).apply1(_ => Math.floor(RNG.uniform(0, 1) * 1000).toFloat)
+      val label = Tensor(batchSize).apply1(_ => Math.ceil(RNG.uniform(0, 1) * 1000).toFloat)
 
       val model = ResNet(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
       val criterion = CrossEntropyCriterion()
@@ -227,7 +221,7 @@ object ResNet {
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
 
-      model.add(ReorderMemory(HeapData(Array(batchSize, 3, 224, 224), Memory.Format.nchw)))
+      model.add(Input(Array(batchSize, 3, 224, 224), Memory.Format.nchw))
         .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false)
         .setName("conv1").setReLU(true))
         .add(SbnDnn(64).setName("bn_conv1"))

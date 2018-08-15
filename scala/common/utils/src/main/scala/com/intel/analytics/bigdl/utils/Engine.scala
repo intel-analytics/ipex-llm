@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import org.apache.spark._
 import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.hardware.CpuInfo
 import org.apache.spark.utils.SparkUtils
 import py4j.GatewayServer
 
@@ -38,6 +39,13 @@ case object MklDnn extends EngineType
 
 
 object Engine {
+
+  // Initialize some properties for mkldnn engine. We should call it at the beginning.
+  // Otherwise some properties will have no effect.
+  if (System.getProperty("bigdl.engineType") == "mkldnn") {
+    setMklDnnEnvironments()
+  }
+
   @deprecated(
     "See https://bigdl-project.github.io/master/#APIGuide/Engine/",
     "0.1.0")
@@ -212,6 +220,9 @@ object Engine {
   // Thread pool for layer use
   @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getMklNumThreads)
 
+  // Thread pool for read data
+  @volatile private var _io: ThreadPool = null
+
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
    * system has. The biggest number it supports is the physical cores number.
@@ -310,11 +321,23 @@ object Engine {
     _default
   }
 
+  private[bigdl] def io: ThreadPool = {
+    if (_io == null) {
+      throw new IllegalStateException(s"Engine.init: Thread engine is not " +
+        s"initialized. $NOT_INIT_ERROR")
+    }
+    _io
+  }
+
   private def initThreadPool(core : Int) : Unit = {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
       (core * 50).toString).toInt
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
       _default = new ThreadPool(defaultPoolSize)
+    }
+
+    if (_io == null) {
+      _io = new ThreadPool(core * 50)
     }
 
     val modelPoolSize: Int = if (engineType == MklBlas) {
@@ -327,6 +350,8 @@ object Engine {
       _model = new ThreadPool(modelPoolSize)
       _model.setMKLThread(MKL.getMklNumThreads)
     }
+
+    ThreadPool.setThreadsOfBackend(MKL.getMklNumThreads)
   }
 
   /**
@@ -514,5 +539,14 @@ object Engine {
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
+  }
+
+  private def setMklDnnEnvironments(): Unit = {
+    val threadsNumber = Math.ceil(Runtime.getRuntime.availableProcessors().toFloat / 2).toInt
+
+    System.setProperty("bigdl.disable.mklBlockTime", "true")
+    System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
+    System.setProperty("bigdl.coreNumber", "1")
+    System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
   }
 }
