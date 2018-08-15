@@ -274,7 +274,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
         new Callable[Int] {
           override def call(): Int = {
             try {
-              val offset = parameter.storageOffset() + pid * taskSize + math.min(pid, extraSize)
+              val offset = 1 + pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
               val partitionParam = parameter.narrow(1, offset, length)
               syncMeta.aggregatedStateOfWorld.put(pid, partitionParam)
