@@ -29,14 +29,18 @@ ENV BIGDL_VERSION_ENV		${BIGDL_VERSION}
 ENV BIGDL_HOME			    /opt/bigdl-${BIGDL_VERSION}
 
 
+# If this docker file is being used in the context of building your images from a Spark distribution, the docker build
+# command should be invoked from the top level directory of the Spark distribution. E.g.:
+# docker build -t spark-base:latest -f dockerfiles/spark-base/Dockerfile .
+
 RUN apt-get update && \
     apt-get install -y vim curl nano wget
 #tini
 ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-RUN chmod +x /sbin/tini && \
+RUN chmod a+x /sbin/tini
 #java
-    wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u152-b16/aa0333dd3019491ca4f6ddbe78cdb6d0/jdk-8u152-linux-x64.tar.gz" && \
+RUN wget http://ftp.osuosl.org/pub/funtoo/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
     gunzip jdk-8u152-linux-x64.tar.gz && \
     tar -xf jdk-8u152-linux-x64.tar -C /opt && \
     rm jdk-8u152-linux-x64.tar && \
