@@ -453,6 +453,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val pad = 1
     val stride = 2
 
+    val initCount = DnnStorage.get().count(!_._2)
     val conv = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
     conv.setName(name)
     conv.setRuntime(new MklDnnRuntime)
@@ -466,7 +467,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     conv.backward(input, gradOutput)
 
     conv.release()
-    DnnStorage.get().count(_._2 == false) should be (0)
+    DnnStorage.get().count(_._2 == false) should be (initCount)
   }
 
   "conv with dense weights and gradients" should "work correctly" in {

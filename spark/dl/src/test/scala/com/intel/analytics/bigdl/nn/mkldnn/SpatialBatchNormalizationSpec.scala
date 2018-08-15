@@ -112,6 +112,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     val initWeight = Tensor(channel).rand(-1, 1)
     val initBias = Tensor(channel).fill(0)
+    val initCount = DnnStorage.get().count(!_._2)
 
     val bn = SpatialBatchNormalization(1, 0.0, initWeight = initWeight, initBias = initBias)
 
@@ -126,7 +127,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     bn.backward(input, gradOutput)
 
     bn.release()
-    DnnStorage.get().count(_._2 == false) should be (0)
+    DnnStorage.get().count(_._2 == false) should be (initCount)
   }
 
   "batch norm with dense weights and gradients" should "work correctly" in {

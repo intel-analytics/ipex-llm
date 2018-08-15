@@ -263,6 +263,8 @@ class LinearSpec extends FlatSpec with Matchers {
     val initWeight = Tensor[Float](outputSize, inputSize).rand()
     val initBias = Tensor[Float](outputSize).rand()
 
+    val initCount = DnnStorage.get().count(!_._2)
+
     val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
     linear.setRuntime(new MklDnnRuntime)
     linear.initFwdPrimitives(Array(inputFormat), TrainingPhase)
@@ -273,7 +275,7 @@ class LinearSpec extends FlatSpec with Matchers {
     linear.backward(input, gradOutput)
 
     linear.release()
-    DnnStorage.get().count(_._2 == false) should be (0)
+    DnnStorage.get().count(_._2 == false) should be (initCount)
   }
 
   "linear with dense weights" should "work correctly" in {
