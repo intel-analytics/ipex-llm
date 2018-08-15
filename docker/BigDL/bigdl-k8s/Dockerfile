@@ -63,9 +63,13 @@ COPY kubernetes/dockerfiles/bigdl/entrypoint.sh /opt/
 #python
 ADD examples /opt/spark/examples
 ADD python /opt/spark/python
-RUN apt-get install -y build-essential python python-setuptools python-dev && \
-    easy_install pip && \
-    pip install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud
+RUN apt-get install -y software-properties-common python-software-properties python-pkg-resources && \
+    add-apt-repository -y ppa:jonathonf/python-2.7 && \
+    apt-get update && \
+    apt-get install -y build-essential python python-setuptools python-dev && \
+    wget https://bootstrap.pypa.io/get-pip.py && \
+    python2 get-pip.py && \
+    pip install numpy six
 
 ENV PYTHON_VERSION 2.7.13
 ENV PYSPARK_PYTHON python
