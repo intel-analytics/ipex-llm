@@ -57,7 +57,7 @@ COPY jars /opt/spark/jars
 COPY bin /opt/spark/bin
 COPY sbin /opt/spark/sbin
 COPY conf /opt/spark/conf
-COPY dockerfiles/spark-base/entrypoint.sh /opt/
+COPY dockerfiles/bigdl/entrypoint.sh /opt/
 
 
 #python
