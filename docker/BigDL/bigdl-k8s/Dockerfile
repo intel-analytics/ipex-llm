@@ -14,64 +14,77 @@
 # limitations under the License.
 #
 
+#FROM openjdk:8-alpine
 
 FROM ubuntu:14.04
 
-MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
-
-WORKDIR /opt/work
-
 ARG BIGDL_VERSION=0.6.0
 ARG SPARK_VERSION=2.3.1
-ENV BIGDL_VERSION_ENV		${BIGDL_VERSION}
+
+ENV JAVA_HOME	            /opt/jdk
+ENV PATH	                ${JAVA_HOME}/bin:${PATH}
 ENV SPARK_VERSION_ENV		${SPARK_VERSION}
-ENV SPARK_HOME			/opt/work/spark-${SPARK_VERSION}
-ENV BIGDL_HOME			/opt/work/bigdl-${BIGDL_VERSION}
-ENV BIGDL_TUTORIALS_HOME	/opt/work/BigDL-Tutorials
-ENV JAVA_HOME 			/opt/jdk
-ENV PATH 			${JAVA_HOME}/bin:${PATH}
+ENV SPARK_HOME              /opt/spark
+ENV BIGDL_VERSION_ENV		${BIGDL_VERSION}
+ENV BIGDL_HOME			    /opt/bigdl-${BIGDL_VERSION}
+
 
 RUN apt-get update && \
-    apt-get install -y vim curl nano wget unzip maven git libc6
+    apt-get install -y vim curl nano wget
+#tini
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+RUN chmod +x /sbin/tini && \
 #java
-RUN wget http://ftp.osuosl.org/pub/funtoo/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
+    wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u152-b16/aa0333dd3019491ca4f6ddbe78cdb6d0/jdk-8u152-linux-x64.tar.gz" && \
     gunzip jdk-8u152-linux-x64.tar.gz && \
     tar -xf jdk-8u152-linux-x64.tar -C /opt && \
     rm jdk-8u152-linux-x64.tar && \
     ln -s /opt/jdk1.8.0_152 /opt/jdk
-#python
-RUN apt-get install -y software-properties-common python-software-properties python-pkg-resources && \
-    add-apt-repository -y ppa:jonathonf/python-2.7 && \
-    apt-get update && \
-    apt-get install -y build-essential python python-setuptools python-dev && \
-    wget https://bootstrap.pypa.io/get-pip.py && \
-    python2 get-pip.py && \
-    pip install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud && \
-    python2 -m pip install ipykernel && \
-    python2 -m ipykernel install --user
-    pip install numpy six
-#spark
 
-RUN wget http://www-us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop2.7 spark-${SPARK_VERSION} && \
-    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
-
-#bigdl
-RUN git clone https://github.com/intel-analytics/BigDL-Tutorials.git
-
-ADD ./download-bigdl.sh /opt/
-RUN chmod a+x /opt/download-bigdl.sh
-RUN /opt/download-bigdl.sh
-
-COPY ./entrypoint.sh /opt/
-
-RUN chmod a+x /opt/entrypoint.sh
-
-RUN touch ${SPARK_HOME}/RELEASE && \
+RUN mkdir -p /opt/spark && \
+    mkdir -p /opt/spark/work-dir \
+    touch /opt/spark/RELEASE && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
+COPY jars /opt/spark/jars
+COPY bin /opt/spark/bin
+COPY sbin /opt/spark/sbin
+COPY conf /opt/spark/conf
+COPY dockerfiles/spark-base/entrypoint.sh /opt/
 
-#ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
+#python
+ADD examples /opt/spark/examples
+ADD python /opt/spark/python
+RUN apt-get install -y build-essential python python-setuptools python-dev && \
+    easy_install pip && \
+    pip install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud
+
+ENV PYTHON_VERSION 2.7.13
+ENV PYSPARK_PYTHON python
+ENV PYSPARK_DRIVER_PYTHON python
+ENV PYTHONPATH ${SPARK_HOME}/python/:${SPARK_HOME}/python/lib/py4j-0.10.4-src.zip:${PYTHONPATH}
+
+CMD SPARK_CLASSPATH="${SPARK_HOME}/jars/*" && \
+    env | grep SPARK_JAVA_OPT_ | sed 's/[^=]*=\(.*\)/\1/g' > /tmp/java_opts.txt && \
+    readarray -t SPARK_DRIVER_JAVA_OPTS < /tmp/java_opts.txt && \
+    if ! [ -z ${SPARK_MOUNTED_CLASSPATH+x} ]; then SPARK_CLASSPATH="$SPARK_MOUNTED_CLASSPATH:$SPARK_CLASSPATH"; fi && \
+    if ! [ -z ${SPARK_SUBMIT_EXTRA_CLASSPATH+x} ]; then SPARK_CLASSPATH="$SPARK_SUBMIT_EXTRA_CLASSPATH:$SPARK_CLASSPATH"; fi && \
+    if ! [ -z ${SPARK_EXTRA_CLASSPATH+x} ]; then SPARK_CLASSPATH="$SPARK_EXTRA_CLASSPATH:$SPARK_CLASSPATH"; fi && \
+    if ! [ -z ${SPARK_MOUNTED_FILES_DIR+x} ]; then cp -R "$SPARK_MOUNTED_FILES_DIR/." .; fi && \
+    if ! [ -z ${SPARK_MOUNTED_FILES_FROM_SECRET_DIR+x} ]; then cp -R "$SPARK_MOUNTED_FILES_FROM_SECRET_DIR/." .; fi && \
+    ${JAVA_HOME}/bin/java "${SPARK_DRIVER_JAVA_OPTS[@]}" -cp $SPARK_CLASSPATH -Xms$SPARK_DRIVER_MEMORY -Xmx$SPARK_DRIVER_MEMORY -Dspark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS $SPARK_DRIVER_CLASS $PYSPARK_PRIMARY $PYSPARK_FILES $SPARK_DRIVER_ARGS
+
+#bigdl
+ADD ./download-bigdl.sh /opt/
+RUN chmod a+x /opt/download-bigdl.sh
+RUN /opt/download-bigdl.sh
+
+COPY kubernetes/bigdl/mnist /tmp/
+
+WORKDIR /opt/spark/work-dir
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
