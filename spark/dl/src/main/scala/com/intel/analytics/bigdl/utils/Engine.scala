@@ -337,7 +337,7 @@ object Engine {
     }
 
     if (_io == null) {
-      _io = new ThreadPool(core)
+      _io = new ThreadPool(core * 50)
     }
 
     val modelPoolSize: Int = if (engineType == MklBlas) {
