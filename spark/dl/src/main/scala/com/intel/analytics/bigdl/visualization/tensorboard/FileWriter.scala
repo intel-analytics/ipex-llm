@@ -37,7 +37,7 @@ private[bigdl] class FileWriter(val logDirectory : String, flushMillis: Int = 10
   if (!fs.exists(logPath)) fs.mkdirs(logPath)
 
   private val eventWriter = new EventWriter(logDirectory, flushMillis, fs)
-  Engine.default.invoke(() => eventWriter.run())
+  Engine.io.invoke(() => eventWriter.run())
 
   /**
    * Adds a Summary protocol buffer to the event file.
