@@ -1064,7 +1064,6 @@ class DistriOptimizer[T: ClassTag] (
     // unpersist the model because the next time optimize is called, new `models` will be
     // created
     shutdown()
-    CachedModels.deleteKey(modelBroadcast.uuid)
     models.unpersist()
 
     model
@@ -1098,5 +1097,6 @@ class DistriOptimizer[T: ClassTag] (
 
       iter
     }.count()
+    CachedModels.deleteKey(modelBroadcast.uuid)
   }
 }

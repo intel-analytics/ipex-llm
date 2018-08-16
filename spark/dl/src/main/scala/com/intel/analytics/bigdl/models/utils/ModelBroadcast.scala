@@ -205,7 +205,7 @@ private[bigdl] object ModelInfo {
     implicit ev: TensorNumeric[T]): ModelInfo[T] = new ModelInfo[T](uuid, model)
 }
 
-object CachedModels {
+private[bigdl] object CachedModels {
   import java.util.concurrent.ConcurrentHashMap
 
   import scala.collection._
@@ -232,7 +232,6 @@ object CachedModels {
       for (key <- keys) {
         if (key != currentKey) {
           val models = cachedModels(key)
-          println(s"delete key = $key ${models.length}")
           for (model <- models) {
             model.release()
           }
@@ -247,7 +246,6 @@ object CachedModels {
       for (k <- keys) {
         if (k == key) {
           val models = cachedModels(key)
-          println(s"delete key = $key ${models.length}")
           for (model <- models) {
             model.release()
           }
