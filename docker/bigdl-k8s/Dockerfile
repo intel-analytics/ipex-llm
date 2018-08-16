@@ -21,7 +21,7 @@ FROM ubuntu:14.04
 ARG BIGDL_VERSION=0.6.0
 ARG SPARK_VERSION=2.3.1
 
-ENV JAVA_HOME	            /opt/jdk
+ENV JAVA_HOME	            /usr
 ENV PATH	                ${JAVA_HOME}/bin:${PATH}
 ENV SPARK_VERSION_ENV		${SPARK_VERSION}
 ENV SPARK_HOME              /opt/spark
@@ -29,22 +29,12 @@ ENV BIGDL_VERSION_ENV		${BIGDL_VERSION}
 ENV BIGDL_HOME			    /opt/bigdl-${BIGDL_VERSION}
 
 
-# If this docker file is being used in the context of building your images from a Spark distribution, the docker build
-# command should be invoked from the top level directory of the Spark distribution. E.g.:
-# docker build -t spark-base:latest -f dockerfiles/spark-base/Dockerfile .
-
 RUN apt-get update && \
     apt-get install -y vim curl nano wget unzip
 #tini
 ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN chmod a+x /sbin/tini
-#java
-RUN wget http://ftp.osuosl.org/pub/funtoo/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
-    gunzip jdk-8u152-linux-x64.tar.gz && \
-    tar -xf jdk-8u152-linux-x64.tar -C /opt && \
-    rm jdk-8u152-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_152 /opt/jdk
 
 RUN mkdir -p /opt/spark && \
     mkdir -p /opt/spark/work-dir \
@@ -58,7 +48,6 @@ COPY bin /opt/spark/bin
 COPY sbin /opt/spark/sbin
 COPY conf /opt/spark/conf
 COPY kubernetes/dockerfiles/bigdl/entrypoint.sh /opt/
-
 
 #python
 ADD examples /opt/spark/examples
@@ -74,11 +63,20 @@ RUN apt-get install -y software-properties-common python-software-properties pyt
 ENV PYTHON_VERSION 2.7.13
 ENV PYSPARK_PYTHON python
 ENV PYSPARK_DRIVER_PYTHON python
-ENV PYTHONPATH ${SPARK_HOME}/python/:${SPARK_HOME}/python/lib/py4j-0.10.4-src.zip:${PYTHONPATH}
+ENV PYTHONPATH ${SPARK_HOME}/python/:${SPARK_HOME}/python/lib/py4j-0.10.6-src.zip:${PYTHONPATH}
+
+#java
+RUN add-apt-repository ppa:openjdk-r/ppa -y && \
+    apt-get update && \
+    apt-get install openjdk-8-jdk -y && \
+    update-alternatives --config java && \
+    update-alternatives --config javac && \
+    ln -s /usr/lib/jvm/java-8-openjdk-amd64/jre /opt/jdk
 
 #bigdl
 ADD kubernetes/dockerfiles/bigdl/download-bigdl.sh /opt/
-RUN chmod a+x /opt/download-bigdl.sh
+RUN chmod a+x /opt/entrypoint.sh && \
+    chmod a+x /opt/download-bigdl.sh
 RUN /opt/download-bigdl.sh
 
 COPY kubernetes/dockerfiles/bigdl/mnist /tmp/
