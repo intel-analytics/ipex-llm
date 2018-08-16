@@ -21,7 +21,7 @@ FROM ubuntu:14.04
 ARG BIGDL_VERSION=0.6.0
 ARG SPARK_VERSION=2.3.1
 
-ENV JAVA_HOME	            /usr
+ENV JAVA_HOME	            /opt/jdk
 ENV PATH	                ${JAVA_HOME}/bin:${PATH}
 ENV SPARK_VERSION_ENV		${SPARK_VERSION}
 ENV SPARK_HOME              /opt/spark
