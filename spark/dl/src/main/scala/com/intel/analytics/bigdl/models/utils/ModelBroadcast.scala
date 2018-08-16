@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.nn.quantized.StorageManager
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Util._
+import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 
@@ -103,9 +104,10 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
    * put the weight and bias back to the model
    *
    * @param initGradient if init gradParameter.
+   * @param shareWeight if share weights among models/partitions
    * @return model
    */
-  def value(initGradient: Boolean = false): Module[T] = {
+  def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
     CachedModels.deleteAll(uuid)
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)
@@ -121,15 +123,21 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
       val uuid = broadcastModel.value.uuid
       CachedModels.add(uuid, localModel)
 
+      val parameters = if (shareWeight) {
+        broadcastParameters.value
+      } else {
+        SerializationUtils.clone(broadcastParameters.value)
+      }
+
       // share weight
-      putWeightBias(broadcastParameters.value, localModel)
+      putWeightBias(parameters, localModel)
       // share Consts
       if (localModel.isInstanceOf[Container[_, _, T]] && broadcastConsts.value.nonEmpty) {
         putConsts(localModel.asInstanceOf[Container[_, _, T]], broadcastConsts.value)
       }
       // init gradient
       if (initGradient) {
-        initGradWeightBias(broadcastParameters.value, localModel)
+        initGradWeightBias(parameters, localModel)
       }
       localModel
     }

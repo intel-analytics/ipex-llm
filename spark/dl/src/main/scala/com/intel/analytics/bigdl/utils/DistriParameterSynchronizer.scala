@@ -61,8 +61,8 @@ trait DistriParameterSynchronizer[T] {
   def clear(): Unit
 }
 
-class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
-                                                     totalPartition: Int)
+class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
+                                                     val totalPartition: Int)
                                                     (implicit ev: TensorNumeric[T])
   extends DistriParameterSynchronizer[T] {
 
@@ -203,28 +203,34 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
 
   override def init(name: String, globalSize: Int, priority: Int = 1): Unit = {
     val partitionToCount = if (globalSize < totalPartition) globalSize else totalPartition
-    syncMetaMap.putIfAbsent(name, SyncMeta(name, 1, priority, globalSize, partitionToCount,
+    syncMetaMap.putIfAbsent(name, SyncMeta(name, 0, priority, globalSize, partitionToCount,
       new ConcurrentHashMap[Int, CompressedTensor[T]](),
       new ConcurrentHashMap[Int, Tensor[T]]()))
   }
 
   override def put(name: String, parameter: Tensor[T]): Unit = {
     val syncMeta = syncMetaMap.get(name)
+    syncMeta.counter += 1
     val asyncTask = new AsyncTask(syncMeta, parameter)
     val futureTask = new FutureTask[Tensor[T]](asyncTask)
     val futureAsyncTask = new AsyncFutureTask(futureTask, syncMeta.priority)
     asyncTaskWaitingQueue.add(futureAsyncTask)
-    val clearTask = new ClearTask(name, syncMeta.counter - 1,
-      partitionID, syncMeta.partitionToCount)
-    clearPool.execute(clearTask)
+    if (syncMeta.counter > 1) {
+      val clearTask = new ClearTask(name, syncMeta.counter - 1,
+        partitionID, syncMeta.partitionToCount)
+      clearPool.execute(clearTask)
+    }
     syncResults.put(name, futureTask)
   }
 
   override def get(name: String): Tensor[T] = {
+    val syncMeta = syncMetaMap.get(name)
+    // no need to do aggregation for first forward
+    if (syncMeta.counter == 0) {
+      return null
+    }
     require(syncResults.contains(name), "put must be done before get")
     val res = syncResults.get(name).get.get()
-    val syncMeta = syncMetaMap.get(name)
-    syncMeta.counter += 1
     res
   }
 
@@ -232,15 +238,22 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
                          partitionToCount: Int)
     extends Runnable {
     override def run(): Unit = {
-      (0 until partitionToCount).foreach(pid => {
-        val parameterBlockId = getParameterBlockId(name,
-          counter, partitionID, pid)
-        BlockManagerWrapper.removeBlock(parameterBlockId)
-      })
-      // only local parititon < partitionToCount, there are aggregated blocks
-      if (partitionID < partitionToCount) {
-        val aggregatedParameterBlockId = getParameterBlockId(s"${name}_aggregated",
-          counter, partitionID, -1)
+      try {
+        (0 until partitionToCount).foreach(pid => {
+          val parameterBlockId = getParameterBlockId(name,
+            counter, partitionID, pid)
+          BlockManagerWrapper.removeBlock(parameterBlockId)
+        })
+        // only local parititon < partitionToCount, there are aggregated blocks
+        if (partitionID < partitionToCount) {
+          val aggregatedParameterBlockId = getParameterBlockId(s"${name}_aggregated",
+            counter, partitionID, -1)
+          BlockManagerWrapper.removeBlock(aggregatedParameterBlockId)
+        }
+      } catch {
+        case e: Exception =>
+          logger.info("exit thread gracefully")
+
       }
     }
   }
@@ -426,8 +439,8 @@ class BlockManagerParameterSynchronizer[T: ClassTag](partitionID: Int,
     shutdown = true
     longRunningThreads.asScala.foreach(_.interrupt())
     clearPool.shutdown
-    syncPool.shutdown
     workerPool.shutdown
+    syncPool.shutdown
     fetchPool.shutdown
     fetchCompletionPool.shutdown
   }

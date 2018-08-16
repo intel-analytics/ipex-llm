@@ -49,7 +49,7 @@ private[bigdl] object ParameterSynchronizer {
    * @param eventKey Event key
    * @tparam T
    */
-  def reset[T: ClassTag](eventKey: String): Unit = {
+  def reset[T: ClassTag](eventKey: String): Boolean = {
     events.get(eventKey).reset
   }
 
@@ -92,15 +92,18 @@ private[bigdl] class Event[T: ClassTag](threadNum: Int) {
   /**
    * Reset event, clear the data
    */
-  def reset(): Unit = {
+  def reset(): Boolean = {
+    var res = false
     barrier.await
     if (data.size != 0) {
       data.synchronized {
         if (data.size != 0) {
           data.clear
+          res = true
         }
       }
     }
     barrier.await
+    res
   }
 }

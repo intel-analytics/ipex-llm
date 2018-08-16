@@ -218,6 +218,9 @@ abstract class Container[A <: Activity : ClassTag,
     }
   }
 
+  override private[bigdl] def updateParameter(): Unit = {}
+  override protected def asyncGradient(): Unit = {}
+
   /**
    * Check if some module is duplicated in the model
    */
