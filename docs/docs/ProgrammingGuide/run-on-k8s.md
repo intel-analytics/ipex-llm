@@ -15,10 +15,15 @@ Otherwise, you can use [minikube](https://kubernetes.io/docs/setup/minikube/) to
 
 ## **Docker image**
 For Spark2.3,
-BigDL ships with a Dockerfile that can be found in the ```docker/spark2.3-k8s``` directory. To built it, copy the 
-``docker/spark2.3-k8s`` folder under ```kubernetes/dockerfiles/``` your unzipped spark 2.3 folder. Then the  docker build 
+BigDL ships with a Dockerfile that can be found in the ```docker/spark2.3-k8s``` directory. 
+
+To built it, copy the 
+``docker/spark2.3-k8s`` folder under ```kubernetes/dockerfiles/``` your unzipped spark 2.3 folder. 
+
+Then the  docker build 
 command should be invoked from the top level directory of the Spark distribution. E.g.:
 ```docker build -t bigdl-spark2.3-k8s:latest -f kubernetes/dockerfiles/spark2.3-k8s/Dockerfile . ```
+
 You can set your own image name and tag. We'll just use ```bigdl-spark2.3-k8s:latest``` as the name and tag for
 demonstration in the following usage example.
 
@@ -30,7 +35,9 @@ Now, let's go on a quick tour on how to run BigDL Lenet5 example with a local k8
 
 ### Build your BigDL on Kubernetes image
 Follow the instructions under **Docker Image** section above, and you can have your pre-built docker image 
-```bigdl-spark2.3-k8s:latest```. Now you can tag it and push it to your docker hub for your k8s cluster's docker 
+```bigdl-spark2.3-k8s:latest```.
+
+Now you can tag it and push it to your docker hub for your k8s cluster's docker 
  deamon to pull it. Something like:
 ```$shell
 # tag the image for yourself
