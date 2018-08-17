@@ -374,6 +374,12 @@ class SpatialConvolution(
     (Array(weight.memoryData(), bias.memoryData()),
       Array(gradWeight.memoryData(), bias.memoryData()))
   }
+
+  override def release(): Unit = {
+    super.release()
+    List(weight, bias, gradWeight, gradBias).foreach(_.release())
+    weightForBackward.release()
+  }
 }
 
 object SpatialConvolution {

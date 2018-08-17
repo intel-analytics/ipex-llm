@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.nn.{Xavier, Zeros}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
@@ -442,6 +442,32 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Tools.dense(conv.gradInput) should be (Tools.dense(cloned.gradInput))
     Tools.dense(conv.gradWeight.native) should be (Tools.dense(cloned.gradWeight.native))
     Tools.dense(conv.gradBias.native) should be (Tools.dense(cloned.gradBias.native))
+  }
+
+  "conv release" should "work correctly" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 2, 3, 3)
+    val name = "conv"
+    val nOutput = 2
+    val kernel = 3
+    val pad = 1
+    val stride = 2
+
+    val initCount = DnnStorage.get().count(!_._2)
+    val conv = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    conv.setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    val input = Tensor(inputShape).rand(-1, 1)
+    val gradOutput = Tensor(outputShape).rand(-1, 1)
+    conv.forward(input)
+    conv.backward(input, gradOutput)
+
+    conv.release()
+    DnnStorage.get().count(_._2 == false) should be (initCount)
   }
 
   "conv with dense weights and gradients" should "work correctly" in {

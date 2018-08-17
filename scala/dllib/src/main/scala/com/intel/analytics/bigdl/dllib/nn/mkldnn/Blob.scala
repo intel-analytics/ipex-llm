@@ -92,4 +92,6 @@ private[mkldnn] class Blob(_size: Array[Int]) extends Serializable {
   def size(index: Int): Int = {
     dense.size(index)
   }
+
+  def release(): Unit = native.release()
 }

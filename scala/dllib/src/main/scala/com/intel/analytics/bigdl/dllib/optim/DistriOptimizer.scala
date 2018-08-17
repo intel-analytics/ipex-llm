@@ -29,7 +29,7 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import com.intel.analytics.bigdl.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.MklDnnContainer
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -601,7 +601,7 @@ object DistriOptimizer {
     validationMethods: Option[Array[ValidationMethod[T]]],
     optimMethod: Map[String, OptimMethod[T]],
     parameterProcessors: ArrayBuffer[ParameterProcessor]
-  )(implicit ev: TensorNumeric[T]) = {
+  )(implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer.Cache[T]], ModelBroadcast[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
     // ensure model's parameter is compacted for getting a better performance when broadcasting
@@ -681,7 +681,7 @@ object DistriOptimizer {
     logger.info("Cache thread models...")
     models.count()
     logger.info("Cache thread models... done")
-    models
+    (models, modelBroadcast)
   }
 
   private def setModelId[T: ClassTag](model: Module[T], partitionId: Int): Unit = {
@@ -732,13 +732,7 @@ object DistriOptimizer {
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
       val vMethodsArr = cached.localMethods
-      val workingModels = cached.localModels.map { x =>
-        val _x = x.cloneModule()
-        if (x.isInstanceOf[MklDnnContainer]) {
-          _x.asInstanceOf[MklDnnContainer].compile(InferencePhase)
-        }
-        _x
-      }
+      val workingModels = cached.localModels
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
@@ -852,6 +846,9 @@ class DistriOptimizer[T: ClassTag] (
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
+  // this variable is used to check the models cloned when broadcast, if there're native resources,
+  // it will be deleted at the end of Optimizer.
+  private var modelBroadcast: ModelBroadcast[T] = null
 
   /**
    * Clean some internal states, so this or other optimizers can run optimize again
@@ -963,9 +960,11 @@ class DistriOptimizer[T: ClassTag] (
 
     prepareInput()
 
-    models = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
+    val modelsAndBroadcast = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
       optimMethods, parameterProcessors)
+    models = modelsAndBroadcast._1
+    modelBroadcast = modelsAndBroadcast._2
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -1046,9 +1045,11 @@ class DistriOptimizer[T: ClassTag] (
               newOptimMethod.clearHistory()
               (moduleName, newOptimMethod)
             }
-            models = DistriOptimizer.initThreadModels(newModel, distDataset, criterion, state,
-              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
-              optimMethods, parameterProcessors)
+            val modelsAndBroadcast = DistriOptimizer.initThreadModels(newModel, distDataset,
+              criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters,
+              validationMethods, optimMethods, parameterProcessors)
+            models = modelsAndBroadcast._1
+            modelBroadcast = modelsAndBroadcast._2
           } else {
             throw t
           }
@@ -1062,6 +1063,7 @@ class DistriOptimizer[T: ClassTag] (
 
     // unpersist the model because the next time optimize is called, new `models` will be
     // created
+    shutdown()
     models.unpersist()
 
     model
@@ -1084,5 +1086,17 @@ class DistriOptimizer[T: ClassTag] (
       }
     }
     return choice;
+  }
+
+  // this shutdown should not be called out of this scope.
+  private[optim] override def shutdown(): Unit = {
+    models.mapPartitions { iter =>
+      iter.foreach { arrayModels =>
+        arrayModels.localModels.foreach(_.release())
+      }
+
+      iter
+    }.count()
+    CachedModels.deleteKey(modelBroadcast.uuid)
   }
 }
