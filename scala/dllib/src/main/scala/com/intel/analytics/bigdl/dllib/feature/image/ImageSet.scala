@@ -160,7 +160,7 @@ object ImageSet {
    * if sc is defined, path can be local or HDFS. Wildcard character are supported.
    * if sc is null, path is local directory/image file/image file with wildcard character
    * @param sc SparkContext
-   * @param minPartitions A suggestion value of the minimal splitting number for input data.
+   * @param minPartitions A suggestion value of the minimal partition number
    * @param resizeH height after resize, by default is -1 which will not resize the image
    * @param resizeW width after resize, by default is -1 which will not resize the image
    * @param imageCodec specifying the color type of a loaded image, same as in OpenCV.imread.
