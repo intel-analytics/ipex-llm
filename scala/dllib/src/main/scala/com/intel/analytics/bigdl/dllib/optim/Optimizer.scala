@@ -462,6 +462,10 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  /**
+   * shutdown the optimizer, which will release the native resources if exists.
+   */
+  private[optim] def shutdown(): Unit = {}
 }
 
 object Optimizer {

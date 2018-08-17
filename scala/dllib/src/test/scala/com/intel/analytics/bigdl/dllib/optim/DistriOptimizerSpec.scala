@@ -21,10 +21,13 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.tensor.{DenseTensor, Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensor, DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
@@ -109,6 +112,13 @@ object DistriOptimizerSpecModel {
       .add(new Linear(2, 1))
       .add(new Sigmoid)
       .add(new ExceptionTest(failCountNumberLists, sleep))
+  }
+
+  def dnn: Module[Float] = {
+    new nn.mkldnn.Sequential()
+      .add(nn.mkldnn.Input(Array(8, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Linear(4, 2))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(8, 2), Memory.Format.nc)))
   }
 }
 
@@ -884,4 +894,83 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 }
 
+@com.intel.analytics.bigdl.tags.Serial
+class DistriOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
 
+  import DistriOptimizerSpec._
+  import DistriOptimizerSpecModel._
+
+  Logger.getLogger("org").setLevel(Level.WARN)
+  Logger.getLogger("akka").setLevel(Level.WARN)
+
+  private var sc: SparkContext = _
+
+  private var dataSet: DistributedDataSet[MiniBatch[Float]] = _
+
+  before {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    sc = new SparkContext("local[1]", "RDDOptimizerSpec")
+
+    val input1: Tensor[Float] = Tensor[Float](Storage[Float](Array(0.0f, 1.0f, 0.0f, 1.0f)))
+    val output1 = 0.0f
+    val input2: Tensor[Float] = Tensor[Float](Storage[Float](Array(1.0f, 0.0f, 1.0f, 0.0f)))
+    val output2 = 1.0f
+    var plusOne = 1.0f
+    val nodeNumber = 4
+    val coreNumber = 4
+    val batchSize = 2 * coreNumber
+    Engine.init(nodeNumber, coreNumber, onSpark = true)
+
+    val prepareData: Int => (MiniBatch[Float]) = index => {
+      val input = Tensor[Float]().resize(batchSize, 4)
+      val target = Tensor[Float]().resize(batchSize)
+      var i = 0
+      while (i < batchSize) {
+        if (i % 2 == 0) {
+          target.setValue(i + 1, output1 + plusOne)
+          input.select(1, i + 1).copy(input1)
+        } else {
+          target.setValue(i + 1, output2 + plusOne)
+          input.select(1, i + 1).copy(input2)
+        }
+        i += 1
+      }
+      MiniBatch(input, target)
+    }
+
+    val rdd = sc.parallelize(1 to (256 * 4), 4).map(prepareData)
+
+    dataSet = new DistributedDataSet[MiniBatch[Float]] {
+      override def originRDD(): RDD[_] = rdd
+
+      override def data(train: Boolean): RDD[MiniBatch[Float]] = rdd
+
+      override def size(): Long = rdd.count()
+
+      override def shuffle(): Unit = {}
+    }
+
+    System.setProperty("bigdl.check.singleton", false.toString)
+    Engine.model.setPoolSize(1)
+  }
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "Train model and shutdown" should "be good" in {
+    RandomGenerator.RNG.setSeed(10)
+    val model = dnn
+    val count = DnnStorage.get().count(!_._2)
+    val optimizer = new DistriOptimizer(
+      model,
+      dataSet,
+      new CrossEntropyCriterion[Float]()).setEndWhen(Trigger.severalIteration(1))
+    optimizer.optimize()
+    DnnStorage.get().count(!_._2) should be (count)
+  }
+}
