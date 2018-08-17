@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.recommendation.NeuralCFV2
 import com.intel.analytics.bigdl.nn.{Graph, LookupTable, Sequential, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{SparseTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{SparseTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
@@ -89,11 +89,21 @@ class NCFOptimizer[T: ClassTag] (
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
     val optimMethod: OptimMethod[T] = optimMethods(model.getName())
     val optimMethod2: Map[String, EmbeddingAdam[T]] = Map(
-    "mlpUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 128),
-    "mlpItemEmbedding" -> new EmbeddingAdam[T]().setNOutput(26744, 128),
-    "mfUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 64),
-    "mfItemEmbedding" -> new EmbeddingAdam[T]().setNOutput(26744, 64)
+      "mlpUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 128),
+      "mlpItemEmbedding" -> new EmbeddingAdam[T]().setNOutput(26744, 128),
+      "mfUserEmbedding" -> new EmbeddingAdam[T]().setNOutput(138493, 64),
+      "mfItemEmbedding" -> new EmbeddingAdam[T]().setNOutput(26744, 64)
     )
+    val embeddingAccGradient: Map[String, Tensor[T]] = Map(
+      "mlpUserEmbedding" -> Tensor[T](),
+      "mlpItemEmbedding" -> Tensor[T](),
+      "mfUserEmbedding" -> Tensor[T](),
+      "mfItemEmbedding" -> Tensor[T]()
+    )
+
+    var embeddingGradients: Array[(String, Tensor[T],
+      mutable.HashMap[T, Int], Tensor[T], Array[(Tensor[T], Tensor[T])])] = null
+
     dataset.shuffle()
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
@@ -134,13 +144,13 @@ class NCFOptimizer[T: ClassTag] (
 
       val getMappingTime = System.nanoTime()
 
-      optimMethod2("mlpUserEmbedding").updateZerograd(uniqueUserInput,
+      optimMethod2("mlpUserEmbedding").updateZeroGrad(uniqueUserInput,
         ncfModel.embeddingModel("mlpUserEmbedding").get.getParameters()._1)
-      optimMethod2("mlpItemEmbedding").updateZerograd(uniqueItemInput,
+      optimMethod2("mlpItemEmbedding").updateZeroGrad(uniqueItemInput,
         ncfModel.embeddingModel("mlpItemEmbedding").get.getParameters()._1)
-      optimMethod2("mfUserEmbedding").updateZerograd(uniqueUserInput,
+      optimMethod2("mfUserEmbedding").updateZeroGrad(uniqueUserInput,
         ncfModel.embeddingModel("mfUserEmbedding").get.getParameters()._1)
-      optimMethod2("mfItemEmbedding").updateZerograd(uniqueItemInput,
+      optimMethod2("mfItemEmbedding").updateZeroGrad(uniqueItemInput,
         ncfModel.embeddingModel("mfItemEmbedding").get.getParameters()._1)
 
       val updateZeroGradientTime = System.nanoTime()
@@ -150,7 +160,6 @@ class NCFOptimizer[T: ClassTag] (
           () => {
             val localEmbedding = workingEmbeddingModels(i)
             val localLinears = workingLinears(i)
-//            localEmbedding.zeroGradParameters()
             localEmbedding.training()
             localLinears.training()
             localLinears.zeroGradParameters()
@@ -173,42 +182,43 @@ class NCFOptimizer[T: ClassTag] (
       val computingTime = System.nanoTime()
       println("computingTime")
 
+      Engine.default.invokeAndWait(embeddingAccGradient.values.map(ag => () => {
+        parallelZero(ag.storage())
+      }).toSeq)
+
       val zeroGradTime = System.nanoTime()
       println("zeroGrad")
 
-      val embeddingGradients = (0 until parallelism).flatMap{ i =>
-        val localEmbedding = workingEmbeddingModels(i).asInstanceOf[Graph[T]]
-        val input1 = localEmbedding("userId").get.output.asInstanceOf[Tensor[T]]
-        val input2 = localEmbedding("itemId").get.output.asInstanceOf[Tensor[T]]
-        val mlpUserEmbedding = localEmbedding("mlpUserEmbedding").get
-          .asInstanceOf[LookupTable[T]]
-        val mlpItemEmbedding = localEmbedding("mlpItemEmbedding").get
-          .asInstanceOf[LookupTable[T]]
-        val mfUserEmbedding = localEmbedding("mfUserEmbedding").get
-          .asInstanceOf[LookupTable[T]]
-        val mfItemEmbedding = localEmbedding("mfItemEmbedding").get
-          .asInstanceOf[LookupTable[T]]
-        val localLinears = workingLinears(i)
-        Iterator(
-          ((optimMethod2("mlpUserEmbedding"), mlpUserEmbedding.getParameters()._1,
-            userMapping, uniqueUserInput),
-            input1, localLinears.gradInput.toTable[Tensor[T]](1)),
-          ((optimMethod2("mlpItemEmbedding"), mlpItemEmbedding.getParameters()._1,
-            itemMapping, uniqueItemInput),
-            input2, localLinears.gradInput.toTable[Tensor[T]](2)),
-          ((optimMethod2("mfUserEmbedding"), mfUserEmbedding.getParameters()._1,
-            userMapping, uniqueUserInput),
-            input1, localLinears.gradInput.toTable[Tensor[T]](3)),
-          ((optimMethod2("mfItemEmbedding"), mfItemEmbedding.getParameters()._1,
-            itemMapping, uniqueItemInput),
-            input2, localLinears.gradInput.toTable[Tensor[T]](4)))
-      }.groupBy(_._1).map(v => (v._1._1, v._1._2, v._1._3, v._1._4,
-        v._2.map(v2 => (v2._2, v2._3)).toArray)).toArray
-
-
-      embeddingGradients.foreach{v =>
-        val mergedGradient = NCFOptimizer.mergeEmbeddingGrad(v._5, v._3, parallelism)
-        v._1.optimizeEmbedding(Array((v._4, mergedGradient)), v._2)
+      if (embeddingGradients == null) {
+        // run once to group the gradient
+        embeddingGradients = (0 until parallelism).flatMap { i =>
+          val localEmbedding = workingEmbeddingModels(i).asInstanceOf[Graph[T]]
+          val input1 = localEmbedding("userId").get.output.asInstanceOf[Tensor[T]]
+          val input2 = localEmbedding("itemId").get.output.asInstanceOf[Tensor[T]]
+          val mlpUserEmbedding = localEmbedding("mlpUserEmbedding").get
+            .asInstanceOf[LookupTable[T]]
+          val mlpItemEmbedding = localEmbedding("mlpItemEmbedding").get
+            .asInstanceOf[LookupTable[T]]
+          val mfUserEmbedding = localEmbedding("mfUserEmbedding").get
+            .asInstanceOf[LookupTable[T]]
+          val mfItemEmbedding = localEmbedding("mfItemEmbedding").get
+            .asInstanceOf[LookupTable[T]]
+          val localLinears = workingLinears(i)
+          Iterator(
+            (("mlpUserEmbedding", mlpUserEmbedding.getParameters()._1,
+              userMapping, uniqueUserInput),
+              input1, localLinears.gradInput.toTable[Tensor[T]](1)),
+            (("mlpItemEmbedding", mlpItemEmbedding.getParameters()._1,
+              itemMapping, uniqueItemInput),
+              input2, localLinears.gradInput.toTable[Tensor[T]](2)),
+            (("mfUserEmbedding", mfUserEmbedding.getParameters()._1,
+              userMapping, uniqueUserInput),
+              input1, localLinears.gradInput.toTable[Tensor[T]](3)),
+            (("mfItemEmbedding", mfItemEmbedding.getParameters()._1,
+              itemMapping, uniqueItemInput),
+              input2, localLinears.gradInput.toTable[Tensor[T]](4)))
+        }.groupBy(_._1).map(v => (v._1._1, v._1._2, v._1._3, v._1._4,
+          v._2.map(v2 => (v2._2, v2._3)).toArray)).toArray
       }
 
       val computingTime2 = System.nanoTime()
@@ -247,6 +257,15 @@ class NCFOptimizer[T: ClassTag] (
 
       val updateWeightTime1 = System.nanoTime()
 
+      embeddingGradients.foreach{v =>
+        val optimMethod = optimMethod2(v._1)
+        val accGrad = embeddingAccGradient(v._1)
+        val mergedGradient = NCFOptimizer.mergeEmbeddingGrad(v._5, v._3, parallelism,
+          accGrad)
+        optimMethod.optimizeEmbedding(Array((v._4, mergedGradient)), v._2)
+      }
+
+
       val updateWeightTime2 = System.nanoTime()
       println("update weight")
       val end = System.nanoTime()
@@ -266,7 +285,7 @@ class NCFOptimizer[T: ClassTag] (
         s"zero grad time is ${(zeroGradTime - computingTime) / 1e9}s \n" +
         s"acc embedding time is ${(computingTime2 - zeroGradTime) / 1e9}s \n" +
         s"aggregate linear is ${(aggTime - computingTime2) / 1e9}s \n" +
-        s"update linear time is ${(updateWeightTime1 - aggTime) / 1e9}s" +
+        s"update linear time is ${(updateWeightTime1 - aggTime) / 1e9}s \n" +
         s"update embedding time is ${(updateWeightTime2 - updateWeightTime1) / 1e9}s")
 
       state("neval") = state[Int]("neval") + 1
@@ -420,18 +439,18 @@ object NCFOptimizer {
   def mergeEmbeddingGrad[T: ClassTag](
       inputGrad: Array[(Tensor[T], Tensor[T])],
       gradMap: mutable.HashMap[T, Int],
-      parallelism: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val embeddingGradient = Tensor(gradMap.size, inputGrad.head._2.size(2))
+      parallelism: Int,
+      embeddingGradient: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    embeddingGradient.resize(gradMap.size, inputGrad.head._2.size(2))
     var p = 0
     while(p < inputGrad.length) {
       val indices = inputGrad(p)._1
       val grad = inputGrad(p)._2
       var i = 1
+      // TODO: use array and MKL
       while(i <= indices.nElement()) {
         val currentIndex = indices.valueAt(i)
         val position = gradMap(currentIndex)
-        val eg = embeddingGradient.select(1, position)
-        val gg = grad.select(1, i)
         embeddingGradient.select(1, position)
           .add(ev.fromType(1.toFloat / parallelism), grad.select(1, i))
         i += 1
@@ -439,6 +458,21 @@ object NCFOptimizer {
       p += 1
     }
     embeddingGradient
+  }
+
+  def parallelZero[T: ClassTag](storage: Storage[T])
+  (implicit ev: TensorNumeric[T]): Unit = {
+    if (null != storage && storage.size > 0) {
+      val length = storage.array().size
+      val parallism = Engine.coreNumber()
+      val taskSize = length / parallism
+      val extraTask = length % parallism
+      Engine.default.invokeAndWait((0 until parallism).map(tid => () => {
+        val offset = taskSize * tid + Math.min(extraTask, tid) + 1
+        val length = taskSize + (if (tid < extraTask) 1 else 0)
+        storage.fill(ev.zero, offset, length)
+      }))
+    }
   }
 }
 

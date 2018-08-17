@@ -71,7 +71,7 @@ object AdamPerf {
 //          optimMethod.updateNograd(input, parameterArray)
 //          println(s"${i}update parameter array ${parameterArray.length} " +
 //            s"Nograd ${System.nanoTime() - start}")
-          optimMethod.updateZerograd(input, parameter)
+          optimMethod.updateZeroGrad(input, parameter)
           println(s"${i}update parameter ${parameter.nElement()} " +
             s"Nograd ${System.nanoTime() - start}")
           start = System.nanoTime()
@@ -87,14 +87,14 @@ object AdamPerf {
       // warm up
       (0 until 20).foreach { i =>
         val n = i % 10
-        if (rand) input.range(1 + n * batchSize * core, (n + 1) * batchSize * core)
+        if (rand) input.range(1 + n, n + 1 + 10 * (batchSize * core - 1), 10)
         update()
       }
 
       var count = 0L
       (0 until iteration).foreach { i =>
         val n = i % 10
-        if (rand) input.range(1 + n * batchSize * core, (n + 1) * batchSize * core)
+        if (rand) input.range(1 + n, n + 1 + 10 * (batchSize * core - 1), 10)
         println(i)
         val start = System.nanoTime()
         update()

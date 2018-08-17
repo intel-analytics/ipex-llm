@@ -486,7 +486,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
       hiddenLayers = Array(256, 128, 64),
       mfEmbed = 64).buildModel()
 
-    val itera = 2
+    val itera = 4
 
     val ncfOptimizer = new NCFOptimizer[Float](ncf.cloneModule(),
       mseDataSet,

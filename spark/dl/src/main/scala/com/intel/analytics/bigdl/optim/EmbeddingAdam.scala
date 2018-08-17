@@ -144,30 +144,32 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  def updateZerograd(indices: Tensor[T], parameter: Tensor[T]): Unit = {
+  def updateZeroGrad(indices: Tensor[T], parameter: Tensor[T]): Unit = {
     val lr = this.learningRate
     val lrd = this.learningRateDecay
     val beta1 = this.beta1
     val beta2 = this.beta2
     val eps = this.Epsilon
 
-    val uniqueStart = System.nanoTime()
-    println(s"unique indices ${System.nanoTime() - uniqueStart}")
 
-    var timestep = state.getOrElse[Int]("evalCounter", 1)
+    val uniqueStart = System.nanoTime()
+//    indices.storage().array().sortWith((a, b) => ev.isGreater(b, a))
+//    indices.range(1, indices.nElement())
+    println(s"sort indices ${System.nanoTime() - uniqueStart}")
+
+    val timestep = state.getOrElse[Int]("evalCounter", 1)
 
     val clr = lr / (1 + (timestep - 1) *lrd)
 
-    val parallelNum = Engine.coreNumber()
+    val parallelNum = Engine.coreNumber() * 2
     val gradLength = indices.nElement()
     val taskSize = gradLength / parallelNum
     val extraTask = gradLength % parallelNum
 
 //    val times = new Array[Long](parallelNum)
 
-    var updateTime = System.nanoTime()
-    (0 until parallelNum).map(tid => {
-//      Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+    val updateTime = System.nanoTime()
+    Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
       val offset = tid * taskSize + math.min(tid, extraTask)
       val length = taskSize + (if (tid < extraTask) 1 else 0)
       val currentIndex = indices.narrow(1, offset + 1, length)
@@ -179,23 +181,17 @@ class EmbeddingAdam[@specialized(Float, Double) T: ClassTag](
             (s(index - 1), r(index - 1), denom(index - 1), buffer(index - 1))
           val indexThParameter = parameter.narrow(1,
             (index - 1) * embeddingNoutput + 1, embeddingNoutput)
-//          println(s"update index ${index}")
           ParallelAdam.updateFrameZeroGrad(
             timestep, lastUpdated(index - 1),
             _s, _r, _denom, _buffer, clr, indexThParameter,
             beta1, beta2, ones, eps)
           lastUpdated(index - 1) = timestep
         }
-//        println(index)
         i += 1
       }
-//      Adam.logger.info(s"zero grad${tid} $i ${ev.toType[Int](currentIndex.valueAt(i - 1))}")
-//      times(tid) = (System.nanoTime() - start) / 1000000L
-    })
-//  Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
-//    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
-    println(s"${parallelNum}nograd update frame time cost ${System.nanoTime() - updateTime}")
-
+    }))
+    println(s"${parallelNum} ${indices.nElement()}" +
+      s" zero grad update frame time cost ${System.nanoTime() - updateTime}")
 
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
   }
