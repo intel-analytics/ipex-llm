@@ -83,8 +83,11 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
    * Release the native array, the storage object is useless
    */
   def release(): Unit = {
-    Memory.AlignedFree(ptr.address)
-    _isReleased = true
+    if (!this.isReleased()) {
+      Memory.AlignedFree(ptr.address)
+      _isReleased = true
+      DnnStorage.checkAndSet(ptr.address)
+    }
   }
 
   def isReleased(): Boolean = _isReleased
@@ -93,6 +96,8 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
     require(capacity > 0, s"capacity should not be larger than 0")
     val ptr = Memory.AlignedMalloc(capacity * DnnStorage.FLOAT_BYTES, DnnStorage.CACHE_LINE_SIZE)
     require(ptr != 0L, s"allocate native aligned memory failed")
+    _isReleased = false
+    DnnStorage.add(ptr)
     ptr
   }
 
@@ -122,4 +127,20 @@ private[bigdl] class Pointer(val address: Long)
 object DnnStorage {
   private[tensor] val CACHE_LINE_SIZE = System.getProperty("bigdl.cache.line", "64").toInt
   private[tensor] val FLOAT_BYTES: Int = 4
+
+  import java.util.concurrent.ConcurrentHashMap
+  private val nativeStorages: ConcurrentHashMap[Long, Boolean] = new ConcurrentHashMap()
+
+  def checkAndSet(pointer: Long): Boolean = {
+    nativeStorages.replace(pointer, false, true)
+  }
+
+  def add(key: Long): Unit = {
+    nativeStorages.put(key, false)
+  }
+
+  def get(): Map[Long, Boolean] = {
+    import scala.collection.JavaConverters._
+    nativeStorages.asScala.toMap
+  }
 }

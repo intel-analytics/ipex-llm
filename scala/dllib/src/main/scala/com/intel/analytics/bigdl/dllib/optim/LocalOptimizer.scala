@@ -208,6 +208,7 @@ class LocalOptimizer[T: ClassTag] (
 
     // copy running status from workingModels to model
     model.setExtraParameter(workingModels.head.getExtraParameter())
+    shutdown()
 
     model
   }
@@ -285,6 +286,10 @@ class LocalOptimizer[T: ClassTag] (
     }).zip(vMethods).foreach(r => {
       logger.info(s"$header ${r._2} is ${r._1}")
     })
+  }
+
+  private[optim] override def shutdown(): Unit = {
+    workingModels.foreach(_.release())
   }
 }
 
