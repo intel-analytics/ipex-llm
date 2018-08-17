@@ -19,13 +19,13 @@ from zoo.common.nncontext import init_nncontext
 from zoo.models.image.imageclassification import *
 
 
-def predict(model_path, img_path, topN):
+def predict(model_path, img_path, topN, partition_num):
     print("ImageClassification prediction")
     print("Model Path %s" % model_path)
     print("Image Path %s" % img_path)
     print("Top N : %d" % topN)
     imc = ImageClassifier.load_model(model_path)
-    image_set = ImageSet.read(img_path, sc)
+    image_set = ImageSet.read(img_path, sc, partition_num)
     output = imc.predict_image_set(image_set)
     labelMap = imc.get_config().label_map()
     predicts = output.get_predict().collect()
@@ -45,8 +45,10 @@ if __name__ == "__main__":
     parser.add_option("--model", type=str, dest="model_path", default="",
                       help="Path where the model is stored")
     parser.add_option("--topN", type=int, dest="topN", default=1, help="top N number")
+    parser.add_option("--partition_num", type=int, dest="partition_num", default=4,
+                      help="The number of partitions")
     (options, args) = parser.parse_args(sys.argv)
 
     sc = init_nncontext("Image Classification Example")
 
-    predict(options.model_path, options.img_path, options.topN)
+    predict(options.model_path, options.img_path, options.topN, options.partition_num)
