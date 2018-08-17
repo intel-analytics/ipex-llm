@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Ignore, Matchers}
@@ -102,6 +102,32 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     Tools.dense(bn.gradInput) should be (Tools.dense(cloned.gradInput))
     Tools.dense(bn.gradWeightAndBias.native) should be (
       Tools.dense(cloned.gradWeightAndBias.native))
+  }
+
+  "batch norm released" should "work correctly" in {
+    val batchSize = 2
+    RNG.setSeed(100)
+    val input = Tensor(100, 1, 10, 10).rand(-1, 1)
+    val (channel, height, width) = (1, 10, 10)
+
+    val initWeight = Tensor(channel).rand(-1, 1)
+    val initBias = Tensor(channel).fill(0)
+    val initCount = DnnStorage.get().count(!_._2)
+
+    val bn = SpatialBatchNormalization(1, 0.0, initWeight = initWeight, initBias = initBias)
+
+    val inputShape = Array(100, 1, 10, 10)
+    bn.setRuntime(new MklDnnRuntime)
+    bn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    bn.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    bn.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    bn.forward(input)
+    val gradOutput = Tensor(inputShape).rand(-1, 1)
+    bn.backward(input, gradOutput)
+
+    bn.release()
+    DnnStorage.get().count(_._2 == false) should be (initCount)
   }
 
   "batch norm with dense weights and gradients" should "work correctly" in {
