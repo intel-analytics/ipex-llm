@@ -217,9 +217,9 @@ object ThreadPool {
 
   def setThreadsOfBackend(size: Int): Unit = {
     require(MKL.isMKLLoaded)
-    require(BackendMklDnn.isLoaded)
     MKL.setNumThreads(size)
     if (System.getProperty("bigdl.engineType") == "mkldnn") {
+      require(BackendMklDnn.isLoaded)
       BackendMklDnn.setNumThreads(size)
       Affinity.setOmpAffinity()
     }
