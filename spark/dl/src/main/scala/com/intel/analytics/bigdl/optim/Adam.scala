@@ -82,20 +82,20 @@ class Adam[@specialized(Float, Double) T: ClassTag](
      * v_t = beta_2 * v_t-1 + (1 - beta_2) * g_t * g_t
      */
     _s.mul(ev.fromType[Double](beta1)).add(ev.fromType[Double](1-beta1), dfdx)
-    // buffer = dfdx * dfdx
-    buffer.resizeAs(dfdx).cmul(dfdx, dfdx)
-    _r.mul(ev.fromType[Double](beta2)).add(ev.fromType[Double](1-beta2), buffer)
+    _r.mul(ev.fromType[Double](beta2)).addcmul(ev.fromType[Double](1-beta2), dfdx, dfdx)
     _denom.sqrt(_r)
 
     // used as MKL.axpy: 1 * a + y = y, and fill buffer with one
-    buffer.fill(ev.one)
+    buffer.resizeAs(dfdx).fill(ev.one)
     _denom.add(ev.fromType(eps), buffer)
 
     // efficiency improved upon by changing the order of computation, at expense of clarity
     val biasCorrection1 = 1 - pow(beta1, timestep)
     val biasCorrection2 = 1 - pow(beta2, timestep)
     val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
-    parameter.addcdiv(ev.fromType[Double](-stepSize), _s, _denom)
+
+    _denom.cdiv(_s, _denom)
+    parameter.add(ev.fromType[Double](-stepSize), _denom)
 
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
     state("s") = _s // 1st moment variables

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, TestUtils}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -28,8 +28,10 @@ import scala.util.Random
 class AdamSpec extends FlatSpec with Matchers {
   val start = System.currentTimeMillis()
   "adam" should "perform well on rosenbrock function" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
     val x = Tensor[Double](2).fill(0)
-    val config = T("learningRate" -> 0.002)
+    val config = T("learningRate" -> 0.005)
     val optm = new Adam[Double]
     var fx = new ArrayBuffer[Double]
     for (i <- 1 to 10001) {
@@ -53,6 +55,8 @@ class AdamSpec extends FlatSpec with Matchers {
     x(Array(2)) should be(1.0 +- 0.01)
   }
   "adam" should " work fast with MKL" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
     RandomGenerator.RNG.setSeed(100)
     val inputSize = 500
     val hiddenSize = 500
@@ -105,6 +109,108 @@ class AdamSpec extends FlatSpec with Matchers {
       println(s"iter-${i}, eta = ${duration} seconds")
     }
     println(s"average eta = ${sum / iter} seconds")
+  }
+
+  "adam for embedding" should "works the same with adam" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
+    val t = Tensor[Float](T(1.0f, 2.0f, 4.0f, 6.0f))
+    val input = Array(t.narrow(1, 1, 2), t.narrow(1, 3, 2))
+    val gradient = Array(Tensor[Float](2, 4).range(1, 8, 1),
+      Tensor[Float](2, 4).range(9, 16, 1))
+    val weightEmbedding = Tensor[Float](24).randn()   // 6 * 4
+    val weightDense = weightEmbedding.clone()
+    val denseGradient = Tensor[Float](24)
+
+    val adam = new Adam[Float]()
+    val adamEm = new EmbeddingAdam[Float]()
+    adamEm.setNOutput(6, 4)
+
+    (0 until 100).foreach {i =>
+      denseGradient.zero()
+      var j = 1
+      input(0).apply1{v =>
+        val index = v % 6 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(0).select(1, j)
+        )
+        j += 1
+        index
+      }
+      j = 1
+      input(1).apply1{v =>
+        val index = v % 6 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(1).select(1, j)
+        )
+        j += 1
+        index
+      }
+
+//      adamEm.updateNograd(input(0), weightEmbedding)
+//      adamEm.updateNograd(input(1), weightEmbedding)
+      adamEm.updateZeroGrad(t, weightEmbedding)
+      weightEmbedding should be (weightDense)
+      adamEm.optimizeEmbedding(input.zip(gradient), weightEmbedding)
+
+      adam.optimize(_ => (1, denseGradient), weightDense)
+
+
+      if (weightEmbedding != weightDense) {
+        println
+      }
+    }
+  }
+
+  "adam for embedding" should "works the same with adam 2" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
+    val t = Tensor[Float](T(1.0f, 2.0f, 6.0f, 7.0f))
+    val input = Array(t.narrow(1, 1, 2), t.narrow(1, 3, 2))
+    val gradient = Array(Tensor[Float](2, 4).range(1, 8, 1),
+      Tensor[Float](2, 4).range(9, 16, 1))
+    val weightEmbedding = Tensor[Float](32).randn()   // 8 * 4
+    val weightDense = weightEmbedding.clone()
+    val denseGradient = Tensor[Float](32)
+
+    val adam = new Adam[Float]()
+    val adamEm = new EmbeddingAdam[Float]()
+    adamEm.setNOutput(8, 4)
+
+    (0 until 100).foreach {i =>
+      denseGradient.zero()
+      var j = 1
+      input(0).apply1{v =>
+        val index = v % 8 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(0).select(1, j)
+        )
+        j += 1
+        index
+      }
+      j = 1
+      input(1).apply1{v =>
+        val index = v % 8 + 1
+        denseGradient.narrow(1, (index.toInt - 1) * 4 + 1, 4).copy(
+          gradient(1).select(1, j)
+        )
+        j += 1
+        index
+      }
+
+      //      adamEm.updateNograd(input(0), weightEmbedding)
+      //      adamEm.updateNograd(input(1), weightEmbedding)
+      adamEm.updateZeroGrad(t, weightEmbedding)
+//      weightEmbedding should be (weightDense)
+      adamEm.optimizeEmbedding(input.zip(gradient), weightEmbedding)
+
+      adam.optimize(_ => (1, denseGradient), weightDense)
+
+
+      if (weightEmbedding != weightDense) {
+        println
+      }
+    }
   }
 }
 

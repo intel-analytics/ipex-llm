@@ -120,4 +120,5 @@ object Storage {
 
   def apply[@specialized(Float, Double) T: ClassTag](data: Array[T]): Storage[T] =
     new ArrayStorage[T](data)
+
 }
