@@ -167,7 +167,7 @@ class TreeNNAccuracy[T: ClassTag]()(
 /**
  * Caculate the percentage that output's max probability index equals target
  */
-class Top1Accuracy[T](
+class Top1Accuracy[T: ClassTag](
   implicit ev: TensorNumeric[T])
   extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity):
@@ -175,8 +175,13 @@ class Top1Accuracy[T](
     var correct = 0
     var count = 0
 
-    val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
+    val _output = if (output.toTensor[T].size().head != _target.size().head) {
+      output.toTensor[T].narrow(1, 1, _target.size().head)
+    } else {
+      output.toTensor[T]
+    }
+
     if (_output.dim() == 2) {
       (if (_output.size(2) == 1) {
         _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
@@ -215,11 +220,18 @@ class Top1Accuracy[T](
 /**
  * Caculate the percentage that target in output's top5 probability indexes
  */
-class Top5Accuracy[T] extends ValidationMethod[T] {
+class Top5Accuracy[T: ClassTag](
+  implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity):
   AccuracyResult = {
-    val _output = output.asInstanceOf[Tensor[T]]
-    val _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
+    var _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
+
+    val _output = if (output.toTensor[T].size().head != _target.size().head) {
+      output.toTensor[T].narrow(1, 1, _target.size().head)
+    } else {
+      output.toTensor[T]
+    }
+
     var correct = 0
     var count = 0
     if (_output.dim() == 2) {

@@ -91,6 +91,9 @@ class SpatialBatchNormalization(
     val zeros = Tensor[Float](Array(nOutput)).fill(0)
     mean.copy(zeros)
     variance.copy(zeros)
+
+    runningMean.zero()
+    runningVariance.zero()
   }
 
   private object Index extends Serializable {
@@ -146,7 +149,7 @@ class SpatialBatchNormalization(
       val dsts = Array(outputFormats()(0), mean, variance).map(_.getPrimitive(runtime))
       (srcs, dsts)
     } else {
-      val srcs = Array(inputFormats()(0), runningMean, runningVariance, weightAndBias).map { x =>
+      val srcs = Array(inputFormats()(0), mean, variance, weightAndBias).map { x =>
         x.getPrimitive(runtime)
       }
       val dsts = Array(outputFormats()(0).getPrimitive(runtime))
@@ -158,15 +161,14 @@ class SpatialBatchNormalization(
 
     updateOutputMemoryPrimitives = srcs ++ dsts
     updateOutputPrimitives = Array(primitive)
-    output = initTensor(outputFormats()(0))
 
-    if (phase == TrainingPhase) {
-      this.runningMean.zero()
-      this.runningVariance.zero()
+    if (output == null || output.isInstanceOf[DnnTensor[_]] &&
+      output.toTensor[Float].size().deep != outputFormats()(0).shape.deep) {
+      output = initTensor(outputFormats()(0))
     }
 
     if (updateOutputTensors != null) {
-      updateOutputTensors = Array.empty
+      updateOutputTensors = null
     }
 
     (inputFormats(), outputFormats())
@@ -185,16 +187,21 @@ class SpatialBatchNormalization(
       } else {
         val buffer = new ArrayBuffer[Tensor[Float]]()
         buffer.append(input.asInstanceOf[Tensor[Float]])
-        buffer.append(runningMean.native)
-        buffer.append(runningVariance.native)
+        buffer.append(mean)
+        buffer.append(variance)
         buffer.append(weightAndBias.native)
         buffer.append(output.asInstanceOf[Tensor[Float]])
         updateOutputTensors = buffer.toArray
       }
     }
 
-    if (isTraining()) {
+    if (this.isTraining()) {
       weightAndBias.syncToNative()
+    } else {
+      // we should re-computing the running mean and running variance.
+      // FIXME should do it at `initFwdPrimitives`
+      mean.scale(runningMean.native, 1 / scaleFactor)
+      variance.scale(runningVariance.native, 1 / scaleFactor)
     }
 
     updateWithNewTensor(updateOutputTensors, 0, input)
@@ -208,6 +215,7 @@ class SpatialBatchNormalization(
 
       mean.axpby(1, momentum.toFloat, runningMean.native)
       variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
+
       runningMean.syncToHeap()
       runningVariance.syncToHeap()
     }
@@ -292,6 +300,10 @@ class SpatialBatchNormalization(
     (Array(weightAndBias.dense), Array(gradWeightAndBias.dense))
   }
 
+  override def getExtraParameter(): Array[Tensor[Float]] = {
+    Array(runningMean.dense, runningVariance.dense)
+  }
+
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
     (Array(NativeData(weightAndBias.size(), Memory.Format.x)),
     Array(NativeData(gradWeightAndBias.size(), Memory.Format.x)))
@@ -301,10 +313,20 @@ class SpatialBatchNormalization(
     s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum, $affine)"
   }
 
-  override def release(): Unit = {
-    super.release()
-    List(weightAndBias, gradWeightAndBias, runningMean, runningVariance).foreach(_.release())
-    List(mean, variance).foreach(_.release())
+  override def evaluate(): this.type = {
+    if (isTraining()) {
+      train = false
+//      initFwdPrimitives(inputFormats(), InferencePhase)
+    }
+    this
+  }
+
+  override def training(): this.type = {
+    if (!isTraining()) {
+      train = true
+//      initFwdPrimitives(inputFormats(), TrainingPhase)
+    }
+    this
   }
 }
 

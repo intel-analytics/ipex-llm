@@ -82,9 +82,9 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   /**
    * Release the native array, the storage object is useless
    */
-  def release(): Unit = {
+  def release(): Unit = synchronized {
     if (!this.isReleased()) {
-      Memory.AlignedFree(ptr.address)
+//      Memory.AlignedFree(ptr.address)
       _isReleased = true
       DnnStorage.checkAndSet(ptr.address)
     }

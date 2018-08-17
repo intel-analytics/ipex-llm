@@ -93,6 +93,10 @@ object ResNet50Perf {
           model.backward(input, errors)
         }
 
+        model.evaluate()
+        model.forward(input)
+        model.training()
+
         val takes = System.nanoTime() - start
 
         val throughput = "%.2f".format(batchSize.toFloat / (takes / 1e9))

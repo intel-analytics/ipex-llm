@@ -340,11 +340,10 @@ object Engine {
       _io = new ThreadPool(core * 50)
     }
 
-    val modelPoolSize: Int = if (engineType == MklBlas) {
-      1
-    } else {
-      core
-    }
+    // for dnn model we should set the pool size to 1 also.
+    // otherwise, it will downgrade the performance and
+    // FIXME make the loss to NaN.
+    val modelPoolSize = 1
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
