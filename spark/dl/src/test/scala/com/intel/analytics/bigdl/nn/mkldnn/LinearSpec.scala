@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -248,6 +248,34 @@ class LinearSpec extends FlatSpec with Matchers {
     Tools.dense(linear.gradInput) should be (Tools.dense(cloned.gradInput))
     Tools.dense(linear.gradWeight.native) should be (Tools.dense(cloned.gradWeight.native))
     Tools.dense(linear.gradBias.native) should be (Tools.dense(cloned.gradBias.native))
+  }
+
+  "linear released" should "work correctly" in {
+    val inputSize = 2
+    val outputSize = 2
+    val batchSize = 2
+
+    val inputFormat = HeapData(Array(batchSize, inputSize), Memory.Format.nc)
+    val outputFormat = HeapData(Array(batchSize, outputSize), Memory.Format.nc)
+    val input = Tensor[Float](batchSize, inputSize).rand()
+    val gradOutput = Tensor[Float]().resize(outputFormat.shape).rand()
+
+    val initWeight = Tensor[Float](outputSize, inputSize).rand()
+    val initBias = Tensor[Float](outputSize).rand()
+
+    val initCount = DnnStorage.get().count(!_._2)
+
+    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+    linear.setRuntime(new MklDnnRuntime)
+    linear.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    linear.initBwdPrimitives(Array(outputFormat), TrainingPhase)
+    linear.initGradWPrimitives(Array(outputFormat), TrainingPhase)
+
+    linear.forward(input)
+    linear.backward(input, gradOutput)
+
+    linear.release()
+    DnnStorage.get().count(_._2 == false) should be (initCount)
   }
 
   "linear with dense weights" should "work correctly" in {

@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.tensor.{DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -116,6 +118,13 @@ object LocalOptimizerSpecModel {
       .add(Sigmoid[Float]())
       .add(Linear[Float](4, 1).setName("fc_2"))
       .add(Sigmoid[Float]())
+  }
+
+  def dnnModel: Module[Float] = {
+    new nn.mkldnn.Sequential()
+      .add(nn.mkldnn.Input(Array(4, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Linear(4, 2))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(4, 2), Memory.Format.nc)))
   }
 }
 
@@ -445,5 +454,37 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model2 = optimizer2.optimize()
     val newG = model2.getParameters()._2
     assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
+  }
+}
+
+@com.intel.analytics.bigdl.tags.Serial
+class LocalOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
+
+  import LocalOptimizerSpecModel._
+  import DummyDataSet._
+
+  before {
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("bigdl.engineType", "mkldnn")
+    Engine.init
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "Train model and shutdown" should "be good" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val model = dnnModel
+    val count = DnnStorage.get().count(!_._2)
+    val optimizer = new LocalOptimizer[Float](
+      model,
+      creDataSet,
+      new CrossEntropyCriterion[Float].asInstanceOf[Criterion[Float]]
+    ).setEndWhen(Trigger.severalIteration(1))
+
+    optimizer.optimize()
+    DnnStorage.get().count(!_._2) should be (count)
   }
 }

@@ -299,6 +299,12 @@ class SpatialBatchNormalization(
   override def toString(): String = {
     s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum, $affine)"
   }
+
+  override def release(): Unit = {
+    super.release()
+    List(weightAndBias, gradWeightAndBias, runningMean, runningVariance).foreach(_.release())
+    List(mean, variance).foreach(_.release())
+  }
 }
 
 object SpatialBatchNormalization {

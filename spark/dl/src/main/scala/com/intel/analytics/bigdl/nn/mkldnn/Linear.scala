@@ -280,6 +280,11 @@ class Linear(
     gradWeight.zero()
     gradBias.zero()
   }
+
+  override def release(): Unit = {
+    super.release()
+    List(weight, bias, gradWeight, gradBias).foreach(_.release())
+  }
 }
 
 object Linear {

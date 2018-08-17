@@ -15,10 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{DataType, MklDnn}
+import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.DynamicContainer
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.utils.T
 
 import scala.collection.mutable.ArrayBuffer
@@ -249,6 +249,26 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
 
   def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
     (null, null)
+  }
+
+  override def release(): Unit = {
+    val tensors: ArrayBuffer[DnnTensor[Float]] = ArrayBuffer.empty
+    List(output, gradInput).filter(_ != null).foreach { t =>
+      if (t.isTensor && t.toTensor[Float].getTensorType == MklDnnType) {
+        tensors.append(t.asInstanceOf[DnnTensor[Float]])
+      }
+
+      if (t.isTable) {
+        val table = t.toTable
+        var i = 1
+        while (i <= table.length()) {
+          tensors.append(table(i))
+          i += 1
+        }
+      }
+    }
+
+    tensors.foreach(_.release())
   }
 }
 
