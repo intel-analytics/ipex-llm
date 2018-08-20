@@ -16,8 +16,10 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier}
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import java.util
+
+import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialConvolution, Xavier, Zeros}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -60,22 +62,49 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Convolution2D[T: ClassTag](
-  override val nbFilter: Int,
-  override val nbRow: Int,
-  override val nbCol: Int,
-  override val init: InitializationMethod = Xavier,
-  override val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
-  override val borderMode: String = "valid",
-  override val subsample: Array[Int] = Array(1, 1),
-  override val dimOrdering: DataFormat = DataFormat.NCHW,
+  val nbFilter: Int,
+  val nbRow: Int,
+  val nbCol: Int,
+  val init: InitializationMethod = Xavier,
+  val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
+  val borderMode: String = "valid",
+  val subsample: Array[Int] = Array(1, 1),
+  val dimOrdering: DataFormat = DataFormat.NCHW,
   wRegularizer: Regularizer[T] = null,
   bRegularizer: Regularizer[T] = null,
-  override val bias: Boolean = true,
-  override val inputShape: Shape = null)
-  (implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.Convolution2D[T](nbFilter, nbRow, nbCol, init,
-    activation, borderMode, subsample, dimOrdering,
-    wRegularizer, bRegularizer, bias, inputShape) with Net {}
+  val bias: Boolean = true,
+  val inputShape: Shape = null,
+  val pads: Array[Int] = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
+  if (borderMode != null) {
+    require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+      s"Convolution2D: $borderMode")
+  }
+  require(subsample.length == 2,
+      s"For Convolution2D, subsample should be of length 2 but got length ${subsample.length}")
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
+    val shortPads = KerasUtils.getPadsFromBorderMode(borderMode, pads)
+
+    val layer = SpatialConvolution(
+      nInputPlane = input(dimOrdering.getHWCDims(4)._3 - 1),
+      nOutputPlane = nbFilter,
+      kernelW = nbCol,
+      kernelH = nbRow,
+      strideW = subsample(1),
+      strideH = subsample(0),
+      padW = shortPads._2,
+      padH = shortPads._1,
+      wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer,
+      withBias = bias,
+      format = dimOrdering)
+    layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
+    KerasUtils.fuse(layer, activation,
+      inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
+}
 
 object Convolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](
