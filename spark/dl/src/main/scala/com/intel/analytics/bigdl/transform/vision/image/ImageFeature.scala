@@ -223,7 +223,7 @@ class ImageFeature extends Serializable {
     require(frameLength * channel + offset <= storage.length)
     if (channel == 3) {
       copyBGR(storage, offset, toRGB, data, frameLength)
-    } else if (!greyToRGB){
+    } else if (!greyToRGB) {
       copyChannels(storage, offset, channel, data, frameLength)
     } else {
       copyGreyToRGB(storage, offset, data, frameLength)
