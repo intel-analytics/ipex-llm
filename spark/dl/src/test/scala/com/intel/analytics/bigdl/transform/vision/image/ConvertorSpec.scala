@@ -55,7 +55,7 @@ class ConvertorSpec extends FlatSpec with Matchers {
   }
 
   "MatToTensor" should "work when copy grey image to RGB" in {
-    val resource = getClass.getClassLoader.getResource("imagenet/grey")
+    val resource = getClass.getClassLoader.getResource("grey")
     val data = ImageFrame.read(resource.getFile)
     val transformer = MatToTensor[Float](greyToRGB = true)
     transformer(data)
