@@ -166,7 +166,7 @@ class Convolution2D(ZooKerasLayer):
                  init="glorot_uniform", activation=None,
                  border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None, **kwargs):
+                 input_shape=None, pads=None,  **kwargs):
         super(Convolution2D, self).__init__(None,
                                             nb_filter,
                                             nb_row,
@@ -180,6 +180,7 @@ class Convolution2D(ZooKerasLayer):
                                             b_regularizer,
                                             bias,
                                             list(input_shape) if input_shape else None,
+                                            pads,
                                             **kwargs)
 
 
