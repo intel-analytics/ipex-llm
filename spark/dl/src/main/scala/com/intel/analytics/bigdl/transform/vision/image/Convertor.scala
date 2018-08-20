@@ -149,10 +149,12 @@ object MatToFloats {
  * transform opencv mat to tensor
  * @param toRGB BGR to RGB (default is BGR)
  * @param tensorKey key to store transformed tensor
+ * @param shareBuffer use same memory for the output tensors, default is true
+ * @param greyToRGB convert grey image to RGB, default is false
  */
 class MatToTensor[T: ClassTag](toRGB: Boolean = false,
   tensorKey: String = ImageFeature.imageTensor,
-  shareBuffer: Boolean = true)(implicit ev: TensorNumeric[T])
+  shareBuffer: Boolean = true, greyToRGB: Boolean = false)(implicit ev: TensorNumeric[T])
   extends FeatureTransformer {
   private val imageTensor: Tensor[T] = Tensor[T]()
   private val matToFloats = MatToFloats()
@@ -162,12 +164,14 @@ class MatToTensor[T: ClassTag](toRGB: Boolean = false,
     try {
       val (height, width, channel) = feature.getSize
       matToFloats.transform(feature)
-      if (channel == 1) {
+      if (channel == 1 && !greyToRGB) {
         imageTensor.resize(height, width)
+      } else if (channel == 1 && greyToRGB) {
+        imageTensor.resize(3, height, width)
       } else {
         imageTensor.resize(channel, height, width)
       }
-      feature.copyTo[T](imageTensor.storage().array(), 0, ImageFeature.floats, toRGB)
+      feature.copyTo[T](imageTensor.storage().array(), 0, ImageFeature.floats, toRGB, greyToRGB)
       if (!shareBuffer) {
         feature(tensorKey) = imageTensor.clone()
       } else {
@@ -188,9 +192,9 @@ object MatToTensor {
   val logger = Logger.getLogger(getClass)
 
   def apply[T: ClassTag](toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor,
-    shareBuffer: Boolean = true)
+    shareBuffer: Boolean = true, greyToRGB: Boolean = false)
     (implicit ev: TensorNumeric[T])
-  : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey, shareBuffer)
+  : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey, shareBuffer, greyToRGB)
 }
 
 /**
