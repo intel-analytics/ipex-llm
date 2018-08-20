@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.utils._
 import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.concurrent.Callable
 
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
@@ -103,8 +104,6 @@ object ParallelOptimizer {
       case MklBlas => coresPerNode
       case MklDnn => 1
     }
-
-    Thread.sleep(5000)
     val driverState = T(
       "epoch" -> optimMethods.values.head.state("epoch"),
       "neval" -> optimMethods.values.head.state("neval"),
@@ -340,7 +339,11 @@ object ParallelOptimizer {
           logger.info(s"training finished, updating all layers parameters")
           models.mapPartitions(modelIter => {
             val localModels = modelIter.next.localModels
-            localModels.foreach(localModel => updateLayerParameters(localModel))
+            val updateTaskes = localModels.map(localModel => () => {
+              updateLayerParameters(localModel)
+            })
+            Engine.default.invokeAndWait2(updateTaskes)
+           // localModels.foreach(localModel => updateLayerParameters(localModel))
             Iterator.empty
           }).collect
         }

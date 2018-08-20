@@ -883,11 +883,10 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimMethod.state[Int]("recordsProcessedThisEpoch") should be(0)
   }
 
-  "Train with Parallel optimizer" should "work properly" in {
+  "Train with Parallel optimizer" should "have same result as distributed optimizer" in {
     val mm = mse
     val parameters = mm.getParameters()._1
     parameters.fill(0.125)
-    //  println(parameters)
     val optimizer = new ParallelOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxIteration(1))
@@ -896,37 +895,34 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val updatedParameters = model.getParameters()._1
 
-    val expected = Array(0.1817626953125f,
-    0.038330078125f,
-    0.1817626953125f,
-    0.038330078125f,
-    0.1822030541088411f,
-    0.03782299513615597f,
-    0.1822030541088411f,
-    0.03782299513615597f,
-    0.1822030541088411f,
-    0.03782299513615597f,
-    0.1822030541088411f,
-    0.03782299513615597f,
-    0.1822030541088411f,
-    0.03782299513615597f,
-    0.1822030541088411f,
-    0.03782299513615597f,
-    0.09502604924499707f,
-    0.09502604924499707f,
-    0.09502604924499707f,
-    0.09502604924499707f,
-    -0.4609375f,
-    -0.4609375f,
-    -0.4609375f,
-    -0.4609375f,
-    -0.8682841401411674)
-
-    updatedParameters.storage().array()
-    assert(Tensor(Storage(expected)).almostEqual(updatedParameters, 0.01),
+    val expected = Array[Double](0.1817626953125,
+    0.038330078125,
+    0.1817626953125,
+    0.038330078125,
+    0.1817626953125,
+    0.038330078125,
+    0.1817626953125,
+    0.038330078125,
+    0.1817626953125,
+    0.038330078125,
+    0.1817626953125,
+    0.038330078125,
+    0.1817626953125,
+    0.038330078125,
+    0.1817626953125,
+    0.038330078125,
+    0.0950927734375,
+    0.0950927734375,
+    0.0950927734375,
+    0.0950927734375,
+    -0.4609375,
+    -0.4609375,
+    -0.4609375,
+    -0.4609375,
+    -0.861328125)
+    assert(Tensor(Storage(expected)).almostEqual(updatedParameters, 0.1),
       "optimized model should have correct weight")
   }
-  
 }
 
 

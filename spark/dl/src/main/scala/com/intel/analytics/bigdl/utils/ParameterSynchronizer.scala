@@ -72,6 +72,16 @@ private[bigdl] object ParameterSynchronizer {
   def collect[T: ClassTag](eventKey: String): java.util.Map[String, Tensor[T]] = {
     events.get(eventKey).data.asInstanceOf[java.util.Map[String, Tensor[T]]]
   }
+
+  /**
+   * sync point
+   * @param eventKey Event key
+   * @tparam T
+   */
+
+  def await[T: ClassTag](eventKey: String): Unit = {
+    events.get(eventKey).asInstanceOf[Event[T]].await
+  }
 }
 
 private[bigdl] class Event[T: ClassTag](threadNum: Int) {
@@ -105,5 +115,9 @@ private[bigdl] class Event[T: ClassTag](threadNum: Int) {
     }
     barrier.await
     res
+  }
+
+  def await(): Unit = {
+    barrier.await
   }
 }

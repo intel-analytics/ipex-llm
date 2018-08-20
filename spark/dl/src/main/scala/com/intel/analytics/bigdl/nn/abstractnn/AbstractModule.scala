@@ -307,6 +307,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
           require(optimMethod != null, s"optim method for ${this.getName} cannot be null")
           optimMethod.optimize(_ => (ev.fromType(0.0f), grads),
             weights)
+          ParameterSynchronizer.await[T](s"${this.getName}_${this.getId}")
           this.zeroGradParameters
         }
       }
@@ -359,6 +360,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
               i += 1
             }
           }))
+          modelGrandients(0).div(ev.fromType(_subModelNumber))
           // put local aggregated gradients to global
           this.getParameterSynchronizer.put(this.getName, modelGrandients(0))
         }
