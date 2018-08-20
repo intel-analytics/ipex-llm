@@ -16,13 +16,15 @@
 
 from __future__ import print_function
 
+import logging
+import shutil
 from unittest import TestCase
 
 import keras.backend as K
+import numpy as np
 from bigdl.keras.converter import WeightLoader
-from zoo.common.nncontext import *
 
-import logging
+from zoo.common.nncontext import *
 
 np.random.seed(1337)  # for reproducibility
 
@@ -45,6 +47,7 @@ class ZooTestCase(TestCase):
         self.sc = init_nncontext(sparkConf)
         self.sc.setLogLevel("ERROR")
         self.sqlContext = SQLContext(self.sc)
+        self.tmp_dirs = []
 
     def teardown_method(self, method):
         """
@@ -52,6 +55,14 @@ class ZooTestCase(TestCase):
         """
         K.set_image_dim_ordering("th")
         self.sc.stop()
+        if hasattr(self, "tmp_dirs"):
+            for d in self.tmp_dirs:
+                shutil.rmtree(d)
+
+    def create_temp_dir(self):
+        tmp_dir = tempfile.mkdtemp()
+        self.tmp_dirs.append(tmp_dir)
+        return tmp_dir
 
     def assert_allclose(self, a, b, rtol=1e-6, atol=1e-6, msg=None):
         # from tensorflow
