@@ -148,6 +148,7 @@ object DistriOptimizer {
     logger.info("Count dataset")
     val countBefore = System.nanoTime()
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
+    validationDataSet.get.toDistributed().data(train = false).map(_.size()).reduce(_ + _)
     val countAfter = System.nanoTime()
     logger.info(s"Count dataset complete. Time elapsed: ${(countAfter - countBefore) / 1e9}s")
     if (numSamples != dataset.size()) {
@@ -907,6 +908,7 @@ class DistriOptimizer[T: ClassTag] (
     if (!dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].isCached) {
       logger.info("caching training rdd ...")
       dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].cache()
+      validationDataSet.get.toDistributed().cache()
     }
   }
 
