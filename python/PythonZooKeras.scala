@@ -358,11 +358,17 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null,
       bias: Boolean = true,
-      inputShape: JList[Int] = null): Convolution2D[T] = {
+      inputShape: JList[Int] = null,
+      pads: JList[Int]): Convolution2D[T] = {
     new Convolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
       KerasUtils.getKerasActivation(activation), borderMode,
       toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
-      wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+      wRegularizer, bRegularizer, bias, toScalaShape(inputShape),
+      if (pads != null) {
+        pads.asScala.toArray
+      } else {
+        null
+      })
   }
 
   def createZooKerasMaxPooling2D(

@@ -36,8 +36,12 @@ import scala.reflect.ClassTag
 
 object KerasUtils {
 
-  def getPadsFromBorderMode(borderMode: String = "valid"): (Int, Int) = {
-    if (borderMode == "same") {
+  def getPadsFromBorderMode(borderMode: String = "valid",
+      paddings: Array[Int] = null): (Int, Int) = {
+    if (paddings != null && !paddings.isEmpty) {
+      require(paddings.length == 2)
+      (paddings(0), paddings(1))
+    } else if (borderMode == "same") {
       // padH, padW
       (-1, -1)
     } else {
