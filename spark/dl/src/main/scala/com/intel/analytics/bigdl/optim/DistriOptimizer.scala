@@ -71,7 +71,8 @@ object DistriOptimizer {
     localStates: Array[Table],
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
-    optimMethods: Map[String, OptimMethod[T]]
+    optimMethods: Map[String, OptimMethod[T]],
+    parameterSynchronizer: DistriParameterSynchronizer[T] = null
   )
 
   /**
