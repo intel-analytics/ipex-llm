@@ -153,6 +153,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         total_weight = ev.plus(total_weight, w)
         i += 1
       }
+      if (total_weight == 0) {
+        total_weight = ev.fromType[Int](1)
+      }
       target.resize(targetSize)
     }
     if (sizeAverage && total_weight != 0) {
