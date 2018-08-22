@@ -46,6 +46,7 @@ java -cp xxx.jar -DFOO=BAR your.main.class.name
 - `bigdl.failure.retryTimes`: To set how many times to retry when there's failure in distributed training. Default is 5.
 - `bigdl.failure.retryTimeInterval`: To set how long to recount the retry times. Time unit here is second. Default is 120.
 - `bigdl.check.singleton`: To check whether multiple partitions run on the same executor, which is bad for performance. Default is false.
+- `bigdl.ModelBroadcastFactory`: Specify a ModelBroadcastFactory which creates a ModelBroadcast to control how to broadcast the model in the distributed training.
 
 **Tensor**
 

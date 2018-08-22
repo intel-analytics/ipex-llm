@@ -32,6 +32,41 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
+ * ModelBroadcast is used to broadcast model
+ */
+trait ModelBroadcast[T] extends Serializable {
+  /**
+   * Broadcast the model
+   * @param sc    SparkContext
+   * @param model model to broadcast
+   * @return this
+   */
+  def broadcast(sc: SparkContext, model: Module[T]): this.type
+
+  /**
+   * Get the broadcast model on worker
+   *
+   * @param initGradient If create a tensor for gradient when fetch the model. Please note that
+   *                     the gradient is not needed in model inference
+   * @return model
+   */
+  def value(initGradient: Boolean = false): Module[T]
+
+  def uuid(): String = UUID.randomUUID().toString
+}
+
+private[bigdl] object ModelBroadcast {
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModelBroadcast[T] = {
+    if (System.getProperty("bigdl.ModelBroadcastFactory") != null) {
+      val cls = Class.forName(System.getProperty("bigdl.ModelBroadcastFactory"))
+      cls.getConstructors()(0).newInstance().asInstanceOf[ModelBroadcastFactory].create()
+    } else {
+      new DefaultModelBroadcastFactory().create()
+    }
+  }
+}
+
+/**
  * ModelBroadcast is used to broadcast model.
  *
  * Note: If you want to use this to broadcast training model, please use value(true) to get
@@ -40,14 +75,12 @@ import scala.reflect.ClassTag
  * @tparam T data type
  * @param applyProtoBuffer it will use proto buffer serialization for broadcasting if set true
  */
-class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends Serializable {
+private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = false)
+  (implicit ev: TensorNumeric[T]) extends ModelBroadcast[T] {
 
   private var broadcastModel: Broadcast[ModelInfo[T]] = _
   private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
-
-  private[bigdl] val uuid: String = UUID.randomUUID().toString
 
   /**
    * broadcast the model
@@ -58,7 +91,7 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
    * @param model model to broadcast
    * @return this
    */
-  def broadcast(sc: SparkContext, model: Module[T]): this.type = {
+  override def broadcast(sc: SparkContext, model: Module[T]): this.type = {
     CachedModels.deleteAll(uuid) // delete the models on driver
 
     if (applyProtoBuffer) {
@@ -102,10 +135,11 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
    * get the broadcast model
    * put the weight and bias back to the model
    *
-   * @param initGradient if init gradParameter.
+   * @param initGradient If create a tensor for gradient when fetch the model. Please note that
+   *                     the gradient is not needed in model inference
    * @return model
    */
-  def value(initGradient: Boolean = false): Module[T] = {
+  override def value(initGradient: Boolean = false): Module[T] = {
     CachedModels.deleteAll(uuid)
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)
@@ -172,13 +206,6 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
       // just return an empty array when parameters is empty.
       Array()
     }
-  }
-}
-
-object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag](applyProtoBuffer: Boolean = false)
-        (implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
-    new ModelBroadcast(applyProtoBuffer)
   }
 }
 
