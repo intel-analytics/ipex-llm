@@ -275,7 +275,7 @@ object ParallelOptimizer {
           driverState[Int]("neval"), wallClockTime)
         logger.info(s"${_header} Trained ${localRecordsNum} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}. ${getHyperParameterLog(optimMethods)}")
+            driverState("Loss")}.")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
@@ -833,8 +833,9 @@ class ParallelOptimizer[T: ClassTag] (
     subModules.foreach(sub => {
       if (optimMethodMap.get(sub.getName) == None) {
         require(parentMethod != null, s"${sub.getName}'s parent optim method should not be null")
-        sub.setOptimMethod(parentMethod)
-        optimMethodMap(sub.getName) = parentMethod
+        val subOptimMethod = parentMethod.clone
+        sub.setOptimMethod(subOptimMethod)
+        optimMethodMap(sub.getName) = subOptimMethod
       }
       if (sub.isInstanceOf[Container[_, _, T]]) {
         val currMethod = optimMethodMap(sub.getName)
