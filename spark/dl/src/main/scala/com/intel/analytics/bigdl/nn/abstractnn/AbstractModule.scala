@@ -108,6 +108,34 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
+   * parameter synchronizer for gradient synchronization
+   */
+  var _parameterSynchronizer: DistriParameterSynchronizer[T] = null
+
+  /**
+   * set parameter synchronizer
+   * @param parameterSynchronizer parameter synchronizer
+   */
+  def setParameterSynchronizer(parameterSynchronizer: DistriParameterSynchronizer[T]): Unit = {
+    _parameterSynchronizer = parameterSynchronizer
+  }
+
+
+  /**
+   * get parameter synchronizer
+   * @return parameter synchronizer
+   */
+  def getParameterSynchronizer(): DistriParameterSynchronizer[T] = _parameterSynchronizer
+
+  var _optimMethod: OptimMethod[T] = null
+
+  def setOptimMethod(optimMethod: OptimMethod[T]): Unit = {
+    _optimMethod = optimMethod
+  }
+
+  def getOptimMethod(): OptimMethod[T] = _optimMethod
+
+  /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
    * Tensor.set to keep some information like tensor share
    *
@@ -254,6 +282,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   final def forward(input: A): B = {
     val before = System.nanoTime()
     try {
+      updateParameter
       updateOutput(input)
     } catch {
       case l: LayerException =>
@@ -265,6 +294,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     forwardTime += System.nanoTime() - before
 
     output
+  }
+
+  private[bigdl] def updateParameter(): Unit = {
+    if (this.getParameterSynchronizer() != null && this.isTraining) {
+      if (this.parameters() != null) {
+        val weights = this.getParameters()._1
+        val copy = Tensor[T]().resizeAs(weights).copy(weights)
+        val grads = this.getParameterSynchronizer.get(this.getName)
+        if (grads != null) {
+          val optimMethod = this.getOptimMethod
+          require(optimMethod != null, s"optim method for ${this.getName} cannot be null")
+          optimMethod.optimize(_ => (ev.fromType(0.0f), grads),
+            weights)
+          ParameterSynchronizer.await[T](s"${this.getName}_${this.getId}")
+          this.zeroGradParameters
+        }
+      }
+    }
   }
 
   /**
@@ -282,8 +329,43 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     updateGradInput(input, gradOutput)
     accGradParameters(input, gradOutput)
     backwardTime += System.nanoTime() - before
-
+    asyncGradient
     gradInput
+  }
+
+  protected def asyncGradient(): Unit = {
+    if (this.getParameterSynchronizer() != null) {
+      if (this.parameters() != null) {
+        val partitionedId = s"${this.getName}_${this.getId}"
+        val grads = this.getParameters()._2
+         ParameterSynchronizer.syncData[T](partitionedId, grads)
+        val modelGrandients = ParameterSynchronizer.collect[T](partitionedId).values.toArray.
+          map(_.asInstanceOf[Tensor[T]])
+        val active = ParameterSynchronizer.reset[T](partitionedId)
+        if (active) {
+          // aggregate local gradients
+          val _subModelNumber = modelGrandients.length
+          val pOffset = grads.storageOffset
+          val pLength = grads.nElement
+          val taskSize = pLength / _subModelNumber
+          val extraTask = pLength % _subModelNumber
+          val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
+          Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+            val offset = 1 + tid * taskSize + math.min(tid, extraTask)
+            val length = taskSize + (if (tid < extraTask) 1 else 0)
+            var i = 1
+            while (i < modelGrandients.length) {
+              modelGrandients(0).narrow(1, offset, length)
+                .add(modelGrandients(i).narrow(1, offset, length))
+              i += 1
+            }
+          }))
+          modelGrandients(0).div(ev.fromType(_subModelNumber))
+          // put local aggregated gradients to global
+          this.getParameterSynchronizer.put(this.getName, modelGrandients(0))
+        }
+      }
+    }
   }
 
   /**
