@@ -188,6 +188,14 @@ class TestLayer(ZooTestCase):
         input_data = [np.random.random([2, 10]), np.random.random([2, 10])]
         self.compare_layer(kmodel, zmodel, input_data, self.convert_two_dense)
 
+    def test_reshape(self):
+        a = np.random.random((2, 2, 3, 4))
+        i1 = ZLayer.Input(shape=(2, 3, 4))
+        s = ZLayer.Reshape((-1, 2, 12))(i1)
+        m = ZModel(i1, s)
+        # predict should not generate exception
+        y = m.predict(a, distributed=False)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
