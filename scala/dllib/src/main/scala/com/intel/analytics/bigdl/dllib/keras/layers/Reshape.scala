@@ -75,8 +75,8 @@ class Reshape[T: ClassTag](
     if (infer) {
       val nElements = nonBatchInput.product
       val resizeElements = - targetShape.product
-      require(nElements > resizeElements && nElements % resizeElements == 0,
-        "Total size after reshape must be unchanged")
+      require(nElements % resizeElements == 0, s"Total size after reshape must be unchanged." +
+          s" inputShape: $inputShape, targetShape: ${targetShape.mkString(", ")}")
       targetShape(inferIndex) = nElements / resizeElements
     }
     else {
