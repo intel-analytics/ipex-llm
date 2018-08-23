@@ -49,7 +49,9 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val input2 = Const[Float, Float](Tensor[Float].range(1, 6, 1)).setName("const").inputs()
     val output = CAddTable[Float]().inputs(input1, input2)
     val model = Graph(input1, output)
-    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
+    System.setProperty("bigdl.ModelBroadcastFactory",
+      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
 
     val testModel = modelBroadCast.value()
     val testInput = Tensor[Float].range(2, 7, 1)
@@ -90,7 +92,9 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "model broadcast with applyProtoBuffer" should "work properly" in {
     val model = LeNet5(10)
 
-    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
+    System.setProperty("bigdl.ModelBroadcastFactory",
+      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
@@ -108,7 +112,10 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = LeNet5(10)
     model.getParameters()
 
-    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
+
+    System.setProperty("bigdl.ModelBroadcastFactory",
+      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
@@ -124,7 +131,9 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "quantized model broadcast with applyProtoBuffer" should "work properly" in {
     val model = LeNet5(10).quantize()
 
-    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
+    System.setProperty("bigdl.ModelBroadcastFactory",
+      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
@@ -152,6 +161,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   after {
+    System.clearProperty("bigdl.ModelBroadcastFactory")
     if (sc != null) {
       sc.stop()
     }
