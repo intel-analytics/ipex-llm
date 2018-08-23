@@ -55,7 +55,7 @@ trait ModelBroadcast[T] extends Serializable {
   def uuid(): String = UUID.randomUUID().toString
 }
 
-private[bigdl] object ModelBroadcast {
+object ModelBroadcast {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModelBroadcast[T] = {
     if (System.getProperty("bigdl.ModelBroadcastFactory") != null) {
       val cls = Class.forName(System.getProperty("bigdl.ModelBroadcastFactory"))

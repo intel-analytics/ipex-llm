@@ -34,7 +34,7 @@ java -cp xxx.jar -DFOO=BAR your.main.class.name
 **Mode**
 
 - `bigdl.localMode`: Whether BigDL is running as a local Java/Scala program. Default is false.
-- `bigdl.engineType`: Default is **mkldnn**. When you run model contains mkl dnn layers, you should set it to **mkldnn** to get better performance.
+- `bigdl.engineType`: Default is **mklblas**. When you run model contains mkl dnn layers, you should set it to **mkldnn** to get better performance.
 
 **Multi-threading**
 
