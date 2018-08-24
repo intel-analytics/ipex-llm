@@ -300,14 +300,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     if (this.getParameterSynchronizer() != null && this.isTraining) {
       if (this.parameters() != null) {
         val weights = this.getParameters()._1
-        val copy = Tensor[T]().resizeAs(weights).copy(weights)
+        val localGrads = this.getParameters()._2
         val grads = this.getParameterSynchronizer.get(this.getName)
         if (grads != null) {
+          if (localGrads != grads) {
+            localGrads.copy(grads)
+          }
+          ParameterSynchronizer.await[T](s"${this.getName}_${this.getId}")
           val optimMethod = this.getOptimMethod
           require(optimMethod != null, s"optim method for ${this.getName} cannot be null")
-          optimMethod.optimize(_ => (ev.fromType(0.0f), grads),
+          optimMethod.optimize(_ => (ev.fromType(0.0f), localGrads),
             weights)
-          ParameterSynchronizer.await[T](s"${this.getName}_${this.getId}")
           this.zeroGradParameters
         }
       }
