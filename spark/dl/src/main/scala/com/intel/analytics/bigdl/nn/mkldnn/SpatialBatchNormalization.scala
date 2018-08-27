@@ -141,8 +141,16 @@ class SpatialBatchNormalization(
       MklDnn.PrimitiveDescCreate(forwardDesc, runtime.engine, 0)
     }
 
-    _inputFormats = Array(MemoryData.operationWant(primDesc, Query.SrcPd))
-    _outputFormats = Array(MemoryData.operationWant(primDesc, Query.DstPd))
+    if (_inputFormats == null) {
+      _inputFormats = new Array[MemoryData](1)
+    }
+
+    if (_outputFormats == null) {
+      _outputFormats = new Array[MemoryData](1)
+    }
+
+    _inputFormats(0) = MemoryData.operationWant(primDesc, Query.SrcPd)
+    _outputFormats(0) = MemoryData.operationWant(primDesc, Query.DstPd)
 
     val (srcs, dsts) = if (phase == TrainingPhase) {
       val srcs = Array(inputFormats()(0), weightAndBias).map(_.getPrimitive(runtime))
@@ -174,6 +182,7 @@ class SpatialBatchNormalization(
     (inputFormats(), outputFormats())
   }
 
+  @transient var inited: Boolean = false
   override def updateOutput(input: Activity): Activity = {
     if (updateOutputTensors == null) {
       if (this.isTraining()) {
@@ -208,6 +217,7 @@ class SpatialBatchNormalization(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
+    inited = true
 
     if (this.isTraining()) {
       // update running(Mean, Var) and scaleFactor
@@ -316,7 +326,7 @@ class SpatialBatchNormalization(
   override def evaluate(): this.type = {
     if (isTraining()) {
       train = false
-//      initFwdPrimitives(inputFormats(), InferencePhase)
+      initFwdPrimitives(inputFormats(), InferencePhase)
     }
     this
   }
@@ -324,9 +334,15 @@ class SpatialBatchNormalization(
   override def training(): this.type = {
     if (!isTraining()) {
       train = true
-//      initFwdPrimitives(inputFormats(), TrainingPhase)
+      initFwdPrimitives(inputFormats(), TrainingPhase)
     }
     this
+  }
+
+  override def release(): Unit = {
+    super.release()
+    List(weightAndBias, gradWeightAndBias, runningMean, runningVariance).foreach(_.release())
+    List(mean, variance).foreach(_.release())
   }
 }
 

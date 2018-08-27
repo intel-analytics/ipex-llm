@@ -49,7 +49,6 @@ object ResNet50Perf {
   }
 
   def main(argv: Array[String]): Unit = {
-    System.setProperty("bigdl.disable.mklBlockTime", "true");
     System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
     System.setProperty("bigdl.mkldnn.fusion.bnrelu", "true")
     System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
@@ -226,8 +225,7 @@ object ResNet {
       iChannels = 64
 
       model.add(Input(Array(batchSize, 3, 224, 224), Memory.Format.nchw))
-        .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false)
-        .setName("conv1").setReLU(true))
+        .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false).setName("conv1"))
         .add(SbnDnn(64).setName("bn_conv1"))
         .add(ReLU().setName("conv1_relu"))
         .add(MaxPooling(3, 3, 2, 2).setName("pool1"))
