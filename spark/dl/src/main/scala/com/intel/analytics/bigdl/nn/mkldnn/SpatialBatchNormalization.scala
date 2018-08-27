@@ -182,7 +182,6 @@ class SpatialBatchNormalization(
     (inputFormats(), outputFormats())
   }
 
-  @transient var inited: Boolean = false
   override def updateOutput(input: Activity): Activity = {
     if (updateOutputTensors == null) {
       if (this.isTraining()) {
@@ -217,7 +216,6 @@ class SpatialBatchNormalization(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
-    inited = true
 
     if (this.isTraining()) {
       // update running(Mean, Var) and scaleFactor
