@@ -17,16 +17,18 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 import org.apache.spark.SparkConf
 import org.apache.spark.serializer.KryoSerializer
 import org.scalatest.{FlatSpec, Matchers}
 
 class WordEmbeddingSpec extends FlatSpec with Matchers {
+  val gloveDir: String = getClass.getClassLoader.getResource("glove.6B").getPath
+  val embeddingFile: String = gloveDir + "/glove.6B.50d.txt"
 
   "WordEmbedding GloVe with wordIndex and serialization" should "work properly" in {
-    val gloveDir = getClass().getClassLoader().getResource("glove.6B").getPath
-    val embeddingFile = gloveDir + "/glove.6B.50d.txt"
     val wordIndex = Map("the" -> 1, "with" -> 2, "analyticszoo" -> 3)
     val seq = Sequential[Float]()
     val layer = WordEmbedding[Float](embeddingFile, wordIndex, inputLength = 1)
@@ -96,8 +98,6 @@ class WordEmbeddingSpec extends FlatSpec with Matchers {
   }
 
   "WordEmbedding GloVe without wordIndex" should "work properly" in {
-    val gloveDir = getClass().getClassLoader().getResource("glove.6B").getPath
-    val embeddingFile = gloveDir + "/glove.6B.50d.txt"
     val seq = Sequential[Float]()
     val layer = WordEmbedding[Float](embeddingFile, inputLength = 1)
     seq.add(layer)
@@ -147,4 +147,19 @@ class WordEmbeddingSpec extends FlatSpec with Matchers {
     wordIndex("it") should be (21)
   }
 
+}
+
+class WordEmbeddingSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val gloveDir = getClass.getClassLoader.getResource("glove.6B").getPath
+    val embeddingFile = gloveDir + "/glove.6B.50d.txt"
+    val layer = WordEmbedding[Float](embeddingFile, inputLength = 1)
+    layer.build(Shape(4, 1))
+    val input = Tensor[Float](4, 1)
+    input(Array(1, 1)) = 5
+    input(Array(2, 1)) = 10
+    input(Array(3, 1)) = 0
+    input(Array(4, 1)) = 12
+    runSerializationTest(layer, input)
+  }
 }
