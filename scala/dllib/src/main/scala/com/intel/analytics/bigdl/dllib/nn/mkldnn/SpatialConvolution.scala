@@ -223,8 +223,10 @@ class SpatialConvolution(
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
-    weight.syncToNative()
-    bias.syncToNative()
+    if (isTraining()) {
+      weight.syncToNative()
+      bias.syncToNative()
+    }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
