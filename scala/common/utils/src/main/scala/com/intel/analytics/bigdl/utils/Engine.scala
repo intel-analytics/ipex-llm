@@ -542,10 +542,12 @@ object Engine {
   }
 
   private def setMklDnnEnvironments(): Unit = {
-    val threadsNumber = Math.ceil(Runtime.getRuntime.availableProcessors().toFloat / 2).toInt
+    val default = Math.ceil(Runtime.getRuntime.availableProcessors().toFloat / 2).toInt
+    val threadsNumber= System.getProperty("bigdl.mklNumThreads", default.toString)
+    System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
+
 
     System.setProperty("bigdl.disable.mklBlockTime", "true")
-    System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
     System.setProperty("bigdl.coreNumber", "1")
     System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
   }
