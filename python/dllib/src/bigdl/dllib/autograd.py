@@ -245,6 +245,7 @@ def mm(x, y, axes):
 
 class Variable(kbase.ZooKerasCreator):
     def __init__(self, input_shape, node=None, jvalue=None, name=None):
+
         if jvalue:
             self.value = jvalue
             self.bigdl_type = "float"
@@ -253,6 +254,9 @@ class Variable(kbase.ZooKerasCreator):
                 super(Variable, self).__init__(jvalue, "float", node, name)
             else:
                 super(Variable, self).__init__(jvalue, "float", toMultiShape(input_shape), name)
+
+    def set_name(self, name):
+        self.node.element().set_name(name)
 
     @classmethod
     def from_node(cls, node):
