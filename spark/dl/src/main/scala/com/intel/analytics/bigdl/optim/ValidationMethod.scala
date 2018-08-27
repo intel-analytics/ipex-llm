@@ -260,7 +260,7 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
  * HR intuitively measures whether the test item is present on the top-k list.
  *
  * @param k top k.
- * @param negNum number of negtive items.
+ * @param negNum number of negative items.
  */
 class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
     implicit ev: TensorNumeric[T])
@@ -320,7 +320,7 @@ class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
  * NDCG accounts for the position of the hit by assigning higher scores to hits at top ranks.
  *
  * @param k top k.
- * @param negNum number of negtive items.
+ * @param negNum number of negative items.
  */
 class Ndcg[T: ClassTag](k: Int = 10, negNum: Int = 100)(
     implicit ev: TensorNumeric[T])

@@ -2072,6 +2072,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new Top1Accuracy()
   }
 
+  def createHitRatio(k: Int = 10, negNum: Int = 100): ValidationMethod[T] = {
+    new HitRatio(k, negNum)
+  }
+
+  def createNdcg(k: Int = 10, negNum: Int = 100): ValidationMethod[T] = {
+    new Ndcg(k, negNum)
+  }
+
   def createTreeNNAccuracy(): ValidationMethod[T] = {
     new TreeNNAccuracy()
   }
