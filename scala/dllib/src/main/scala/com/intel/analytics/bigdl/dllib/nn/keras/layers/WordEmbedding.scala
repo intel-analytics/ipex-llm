@@ -21,9 +21,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.nn.Identity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.serialization.Bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializer, SerializeContext}
+import com.intel.analytics.bigdl.utils.serializer.converters.{DataConverter, TensorConverter}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding.EmbeddingMatrixHolder
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
 import org.slf4j.LoggerFactory
@@ -31,6 +34,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable.{Map => MMap}
 import scala.io.Source
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * Embedding layer with pre-trained weights for words.
@@ -45,7 +49,7 @@ class WordEmbedding[T: ClassTag] private(
     override val inputDim: Int,
     override val outputDim: Int,
     embeddingMatrix: EmbeddingMatrixHolder[T],
-    trainable: Boolean = false,
+    val trainable: Boolean = false,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Embedding[T](inputDim, outputDim, inputShape = inputShape) {
 
@@ -98,6 +102,11 @@ class WordEmbedding[T: ClassTag] private(
 }
 
 object WordEmbedding {
+
+  DataConverter.registerConverter(
+    "com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding.EmbeddingMatrixHolder[T]",
+    EmbeddingMatrixHolderConverter)
+
   val id = new AtomicInteger(0) // id in the registry map should be unique
 
   /**
@@ -260,6 +269,8 @@ object WordEmbedding {
       private var id: String)(implicit ev: TensorNumeric[T])
     extends SerializationHolder {
 
+    def getId: String = id
+
     override def writeInternal(out: CommonOutputStream): Unit = {
       val (cachedWeight, _) = weightRegistry.getOrCreate(id) {
         timing("exporting as weight tensor") {
@@ -311,5 +322,33 @@ object WordEmbedding {
       }
       weight = cachedWeight.asInstanceOf[Tensor[T]]
     }
+  }
+}
+
+
+object EmbeddingMatrixHolderConverter extends DataConverter {
+  override def getAttributeValue[T: ClassTag](
+      context: DeserializeContext,
+      attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
+    val map = attribute.getNameAttrListValue.getAttrMap
+    val id = map.get("id").getStringValue
+    val weight = TensorConverter.getAttributeValue[T](context, map.get("weight"))
+    new EmbeddingMatrixHolder[T](weight.asInstanceOf[Tensor[T]], id)
+  }
+
+  override def setAttributeValue[T: ClassTag](
+      context: SerializeContext[T],
+      attributeBuilder: AttrValue.Builder,
+      value: Any,
+      valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
+    val matrixHolder = value.asInstanceOf[WordEmbedding.EmbeddingMatrixHolder[T]]
+    val idAttr = AttrValue.newBuilder()
+      .setDataType(DataType.STRING)
+      .setStringValue(matrixHolder.getId).build()
+    val weightAttr = AttrValue.newBuilder
+    TensorConverter.setAttributeValue(context, weightAttr, matrixHolder.weight)
+    val attrList = NameAttrList.newBuilder()
+      .putAttr("id", idAttr).putAttr("weight", weightAttr.build())
+    attributeBuilder.setNameAttrListValue(attrList)
   }
 }
