@@ -1254,4 +1254,17 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       embeddingFile: String): JMap[String, Int] = {
     WordEmbedding.getWordIndex(embeddingFile).asJava
   }
+
+  def zooGetWeightsShape(model: AbstractModule[Activity, Activity, T]): JList[JList[Int]] = {
+    val weights = model.getWeightsBias()
+    if (weights != null) {
+      weights.map{w => w.size().toList.asJava}.toList.asJava
+    } else {
+      null
+    }
+  }
+
+  def zooSetWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
+    super.setWeights(model, weights)
+  }
 }
