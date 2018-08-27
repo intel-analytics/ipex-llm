@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
 import com.intel.analytics.zoo.pipeline.api.autograd.Variable
+import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils}
 
@@ -58,6 +59,7 @@ object Net {
   Model
   Sequential
   GraphNet
+  WordEmbedding
   def setInitMethod(module: AbstractModule[_, _, _],
       weightInitMethod: InitializationMethod = null,
       biasInitMethod: InitializationMethod = null, throwException: Boolean = true): Unit = {
