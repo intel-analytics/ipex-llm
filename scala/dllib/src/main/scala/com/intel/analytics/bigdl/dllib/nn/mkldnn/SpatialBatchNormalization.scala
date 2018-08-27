@@ -193,7 +193,9 @@ class SpatialBatchNormalization(
       }
     }
 
-    weightAndBias.syncToNative()
+    if (isTraining()) {
+      weightAndBias.syncToNative()
+    }
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
@@ -206,10 +208,9 @@ class SpatialBatchNormalization(
 
       mean.axpby(1, momentum.toFloat, runningMean.native)
       variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
+      runningMean.syncToHeap()
+      runningVariance.syncToHeap()
     }
-
-    runningMean.syncToHeap()
-    runningVariance.syncToHeap()
 
     output
   }
