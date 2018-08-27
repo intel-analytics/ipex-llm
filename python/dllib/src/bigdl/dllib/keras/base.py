@@ -90,6 +90,29 @@ class ZooKerasLayer(ZooKerasCreator, ZooCallable, Layer, InferShape):
         if name:
             self.set_name(name)
 
+    def get_weights_shape(self):
+        """
+        :return: None if without weights
+        """
+        jshapes = callBigDlFunc(self.bigdl_type, "zooGetWeightsShape",
+                                self.value)
+        return [tuple(jshape) for jshape in jshapes]
+
+    def set_weights(self, weights):
+        """
+        Set weights for this layer
+
+        :param weights: a list of numpy arrays which represent weight and bias
+        """
+        current_shapes = self.get_weights_shape()
+        assert len(current_shapes) == len(weights), "The parameters number should be the same"
+        for w, cws in zip(weights, current_shapes):
+            assert w.shape == cws, \
+                "The shape of parameter should be the same, but got %s, %s" % (w.shape, cws)
+
+        tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in to_list(weights)]
+        callBigDlFunc(self.bigdl_type, "zooSetWeights", self.value, tensors)
+
     @classmethod
     def of(cls, jvalue, bigdl_type="float"):
         return ZooKerasLayer(jvalue, bigdl_type)
