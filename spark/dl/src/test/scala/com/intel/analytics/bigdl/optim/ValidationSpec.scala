@@ -241,4 +241,46 @@ class ValidationSpec extends FlatSpec with Matchers {
     val test = new LossResult(1.5f, 1)
     result should be(test)
   }
+
+  "HR@10" should "works fine" in {
+    val o = Tensor[Float].range(1, 1000, 1).apply1(_ / 1000)
+    val t = Tensor[Float](1000).zero
+    t.setValue(1000, 1)
+    val hr = new HitRatio[Float](negNum = 999)
+    val r1 = hr.apply(o, t).result()
+    r1._1 should be (1.0)
+
+    o.setValue(1000, 0.9988f)
+    val r2 = hr.apply(o, t).result()
+    r2._1 should be (1.0)
+
+    o.setValue(1000, 0.9888f)
+    val r3 = hr.apply(o, t).result()
+    r3._1 should be (0.0f)
+  }
+
+  "ndcg" should "works fine" in {
+    val o = Tensor[Float].range(1, 1000, 1).apply1(_ / 1000)
+    val t = Tensor[Float](1000).zero
+    t.setValue(1000, 1)
+    val ndcg = new Ndcg[Float](negNum = 999)
+    val r1 = ndcg.apply(o, t).result()
+    r1._1 should be (1.0)
+
+    o.setValue(1000, 0.9988f)
+    val r2 = ndcg.apply(o, t).result()
+    r2._1 should be (0.63092977f)
+
+    o.setValue(1000, 0.9888f)
+    val r3 = ndcg.apply(o, t).result()
+    r3._1 should be (0.0f)
+  }
+
+  "CongituousResult" should "works fine" in {
+    val cr1 = new ContiguousResult(0.2f, 2, "HR@10")
+    val cr2 = new ContiguousResult(0.1f, 1, "HR@10")
+    val result = cr1 + cr2
+    result.result()._1 should be (0.1f)
+    result.result()._2 should be (3)
+  }
 }
