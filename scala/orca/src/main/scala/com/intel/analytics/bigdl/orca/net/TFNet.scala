@@ -45,7 +45,7 @@ import scala.collection.mutable
  * @param graphDef serialized representation of a graph
  */
 class TFNet(graphDef: TFGraphHolder,
-                    graphMeta: Meta,
+                    val graphMeta: Meta,
                     config: Array[Int])
   extends AbstractModule[Activity, Activity, Float] {
 
@@ -90,7 +90,7 @@ class TFNet(graphDef: TFGraphHolder,
   @transient
   private lazy val tensorManager = new ResourceManager()
 
-  private def graph = graphDef.tfGraph
+  private[zoo] def graph = graphDef.tfGraph
 
   val inputNames: Array[String] = graphMeta.inputNames
   private val inputTypes = inputNames.map(name2type)
@@ -184,7 +184,7 @@ class TFNet(graphDef: TFGraphHolder,
   }
 
   @transient
-  private lazy val sess = {
+  private[zoo] lazy val sess = {
     val sess = new Session(graphDef.tfGraph, config.map(_.toByte))
     sess
   }
@@ -694,7 +694,7 @@ object TFNet {
    * @param graphDef the tensorflow GraphDef object
    * @return
    */
-  private def apply(graphDef: GraphDef, graphId: String,
+  private[zoo] def apply(graphDef: GraphDef, graphId: String,
                     graphMeta: Meta,
                     config: Array[Byte]): TFNet = {
     val graph = new Graph()
@@ -739,7 +739,7 @@ object TFNet {
     TFNet(graphDef, model, meta, config.toByteArray())
   }
 
-  private def parseGraph(graphProtoTxt: String) : GraphDef = {
+  private[zoo] def parseGraph(graphProtoTxt: String) : GraphDef = {
     var fr: File = null
     var in: InputStream = null
     try {
