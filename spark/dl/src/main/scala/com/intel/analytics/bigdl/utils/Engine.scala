@@ -543,7 +543,7 @@ object Engine {
 
   private def setMklDnnEnvironments(): Unit = {
     val default = Math.ceil(Runtime.getRuntime.availableProcessors().toFloat / 2).toInt
-    val threadsNumber= System.getProperty("bigdl.mklNumThreads", default.toString)
+    val threadsNumber = System.getProperty("bigdl.mklNumThreads", default.toString)
     System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
 
 
