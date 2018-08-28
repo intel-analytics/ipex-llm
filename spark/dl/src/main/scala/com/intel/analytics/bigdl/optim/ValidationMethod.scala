@@ -265,6 +265,13 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
 class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
     implicit ev: TensorNumeric[T])
   extends ValidationMethod[T] {
+  /**
+   * Output and target should belong to the same user.
+   * And have (negNum + 1) elements.
+   * Target should have only one positive label, means one element is 1, others
+   * are all 0.
+   * A couple of output and target will be count as one record.
+   */
   override def apply(output: Activity, target: Activity): ValidationResult = {
     require(output.toTensor[T].nElement() == negNum + 1,
       s"negNum is $negNum, output's nElement should be ${negNum}, but got" +
@@ -294,7 +301,7 @@ class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
   }
 
   // compute hit rate
-  def calHitRate(index: Int, o: Tensor[T], k: Int): Float = {
+  private def calHitRate(index: Int, o: Tensor[T], k: Int): Float = {
     var topK = 1
     var i = 1
     val precision = ev.toType[Float](o.valueAt(index))
@@ -322,9 +329,16 @@ class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
  * @param k top k.
  * @param negNum number of negative items.
  */
-class Ndcg[T: ClassTag](k: Int = 10, negNum: Int = 100)(
+class NDCG[T: ClassTag](k: Int = 10, negNum: Int = 100)(
     implicit ev: TensorNumeric[T])
   extends ValidationMethod[T] {
+  /**
+   * Output and target should belong to the same user.
+   * And have (negNum + 1) elements.
+   * Target should have only one positive label, means one element is 1, others
+   * are all 0.
+   * A couple of output and target will be count as one record.
+   */
   override def apply(output: Activity, target: Activity): ValidationResult = {
     require(output.toTensor[T].nElement() == negNum + 1,
       s"negNum is $negNum, output's nElement should be ${negNum}, but got" +
@@ -350,13 +364,13 @@ class Ndcg[T: ClassTag](k: Int = 10, negNum: Int = 100)(
     require(positiveCount == 1, s"${format()}: too many positive items, excepted 1," +
       s" but got $positiveCount")
 
-    val ndcg = calNdcg(positiveItem, o, k)
+    val ndcg = calNDCG(positiveItem, o, k)
 
     new ContiguousResult(ndcg, 1, s"NDCG")
   }
 
   // compute NDCG
-  def calNdcg(index: Int, o: Tensor[T], k: Int): Float = {
+  private def calNDCG(index: Int, o: Tensor[T], k: Int): Float = {
     var ranking = 1
     var i = 1
     val precision = ev.toType[Float](o.valueAt(index))

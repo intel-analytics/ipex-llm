@@ -104,14 +104,13 @@ class HitRatio(JavaValue):
         """
         JavaValue.__init__(self, None, bigdl_type, k, neg_num)
 
-class Ndcg(JavaValue):
+class NDCG(JavaValue):
     """
     Normalized Discounted Cumulative Gain(NDCG).
     NDCG accounts for the position of the hit by assigning higher scores to hits at top ranks.
 
-
-    >>> ndcg = Ndcg(k = 10)
-    creating: createNdcg
+    >>> ndcg = NDCG(k = 10)
+    creating: createNDCG
     """
     def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
         """
