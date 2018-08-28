@@ -24,27 +24,30 @@ import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.optim.{LocalPredictor, OptimMethod, Regularizer, ValidationMethod}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd._
-import com.intel.analytics.zoo.pipeline.api.keras.layers._
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasLayerWrapper, _}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, Top5Accuracy}
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.keras.objectives._
-import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils, TFNet}
+import com.intel.analytics.zoo.pipeline.api.net._
 import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
+import scala.io.Source
 import scala.reflect.ClassTag
+import scala.reflect.io.Path
 
 object PythonZooKeras {
 
@@ -1266,5 +1269,49 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
 
   def zooSetWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
     super.setWeights(model, weights)
+  }
+
+  def trainTFNet(modelPath: String,
+                 optimMethod: OptimMethod[Float],
+                 x: JavaRDD[Sample],
+                 batchSize: Int = 32,
+                 endTrigger: Trigger = Trigger.maxEpoch(1)): JList[JTensor] = {
+    val (model, meta) = NetUtils.processTFFolder(modelPath)
+
+    val folderPath = Path(modelPath)
+    val trainingMetaPath = folderPath / Path("training_meta.json")
+
+    val jsonStr = Source.fromFile(trainingMetaPath.jfile).getLines().mkString
+    import org.json4s._
+    import org.json4s.jackson.JsonMethods._
+    implicit val formats = DefaultFormats
+
+    val trainingMeta = parse(jsonStr).camelizeKeys.extract[TrainMeta]
+
+    val newMeta = Meta(
+      (meta.inputNames.toSeq ++: trainingMeta.variables.toSeq).toArray,
+      meta.outputNames)
+    val graphDef = TFNet.parseGraph(model)
+    val tfnet = TFNet(graphDef, model, newMeta, TFNet.defaultSessionConfig.toByteArray())
+
+
+    val trainer = new TFTrainingHelper(tfnet,
+      trainingMeta.inputNames,
+      trainingMeta.outputNames,
+      trainingMeta.variables,
+      trainingMeta.gradVariables)
+
+
+    import com.intel.analytics.bigdl.dataset.{Sample => JSample}
+    import scala.collection.JavaConverters._
+    val optimizer = Optimizer(trainer,
+      toJSample(x).asInstanceOf[RDD[JSample[Float]]], new IdentityCriterion(), batchSize)
+
+    optimizer.setOptimMethod(optimMethod)
+    optimizer.setEndWhen(endTrigger)
+    optimizer.optimize()
+
+    trainer.parameters()._1
+      .map(t => toJTensor(t.asInstanceOf[Tensor[T]])).toVector.asJava
   }
 }
