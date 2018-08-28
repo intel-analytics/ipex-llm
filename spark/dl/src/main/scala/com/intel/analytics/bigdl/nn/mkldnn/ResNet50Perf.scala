@@ -113,8 +113,9 @@ object ResNet {
   def modelInit(model: Module[Float]): Unit = {
     def initModules(model: Module[Float]): Unit = {
       model match {
-        case container: Container[Activity, Activity, Float]
-        => container.modules.foreach(m => initModules(m))
+        case container: Container[Activity, Activity, Float] =>
+          container.modules.foreach(m => initModules(m))
+
         case conv: SpatialConvolution =>
           val n: Float = conv.kernelW * conv.kernelW * conv.nOutputPlane
           val weight = Tensor[Float].resize(conv.weight.size()).apply1 { _ =>
@@ -123,17 +124,21 @@ object ResNet {
           val bias = Tensor[Float].resize(conv.bias.size()).apply1(_ => 0.0f)
           conv.weight.copy(weight)
           conv.bias.copy(bias)
+
         case bn: SpatialBatchNormalization =>
-          val runningMean = Tensor[Float].resize(bn.runningMean.size()).fill(0)
-          val runningVairance = Tensor[Float].resize(bn.runningVariance.size()).fill(1)
-          bn.runningMean.copy(runningMean)
-          bn.runningVariance.copy(runningVairance)
+          val weightAndBias = Tensor[Float]().resize(Array(2, bn.nOutput))
+          weightAndBias.select(1, 1).fill(1)
+          weightAndBias.select(1, 2).fill(0)
+          bn.weightAndBias.copy(weightAndBias.view(Array(bn.nOutput * 2)))
+
         case linear: Linear =>
           val bias = Tensor[Float](linear.bias.size()).apply1(_ => 0.0f)
           linear.bias.copy(bias)
-        case _ => Unit
+
+        case _ =>
       }
     }
+
     initModules(model)
   }
 

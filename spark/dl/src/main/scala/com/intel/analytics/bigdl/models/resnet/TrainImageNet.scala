@@ -117,9 +117,9 @@ object TrainImageNet {
           s"maxLr: $maxLr, " +
           s"delta: $delta, nesterov: ${param.nesterov}")
         new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
-        momentum = param.momentum, dampening = param.dampening,
-        nesterov = param.nesterov,
-        learningRateSchedule = SGD.EpochDecayWithWarmUp(warmUpIteration, delta, imageNetDecay))
+          weightDecay = param.weightDecay, momentum = param.momentum, dampening = param.dampening,
+          nesterov = param.nesterov,
+          learningRateSchedule = SGD.EpochDecayWithWarmUp(warmUpIteration, delta, imageNetDecay))
       }
 
       val optimizer = Optimizer(
