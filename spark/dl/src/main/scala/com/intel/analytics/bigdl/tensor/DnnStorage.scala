@@ -110,6 +110,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
       Memory.CopyArray2Ptr(elements, 0, ptr.address, 0, size, DnnStorage.FLOAT_BYTES)
     } else {
       ptr = new Pointer(allocate(this.size))
+      Memory.Zero(ptr.address, this.size, DnnStorage.FLOAT_BYTES)
     }
   }
 
