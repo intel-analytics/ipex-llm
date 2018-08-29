@@ -362,7 +362,7 @@ optimizer = Optimizer(
 ```
 
 ## ParallelAdam ##
-Multi-Thread version of [Adam](#Adam).
+Multi-Thread version of [Adam](#adam).
 
 **Scala:**
 ```scala
