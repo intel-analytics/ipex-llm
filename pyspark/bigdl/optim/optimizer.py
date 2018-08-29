@@ -28,7 +28,7 @@ from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
-from bigdl.util.common import get_spark_context
+from bigdl.util.common import get_node_and_core_number
 from bigdl.util.common import to_list
 from bigdl.dataset.dataset import *
 
@@ -498,7 +498,7 @@ class Adam(OptimMethod):
     :param beta1 first moment coefficient
     :param beta2 second moment coefficient
     :param epsilon for numerical stability
-    >>> adagrad = Adam()
+    >>> adam = Adam()
     creating: createAdam
     """
     def __init__(self,
@@ -510,6 +510,28 @@ class Adam(OptimMethod):
                  bigdl_type="float"):
         super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
                            beta1, beta2, epsilon)
+
+class ParallelAdam(OptimMethod):
+    """
+    An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
+    :param learningrate learning rate
+    :param learningrate_decay learning rate decay
+    :param beta1 first moment coefficient
+    :param beta2 second moment coefficient
+    :param epsilon for numerical stability
+    >>> pAdam = ParallelAdam()
+    creating: createParallelAdam
+    """
+    def __init__(self,
+                 learningrate = 1e-3,
+                 learningrate_decay = 0.0,
+                 beta1 = 0.9,
+                 beta2 = 0.999,
+                 epsilon = 1e-8,
+                 parallel_num = get_node_and_core_number()[1],
+                 bigdl_type="float"):
+        super(ParallelAdam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
+                                   beta1, beta2, epsilon, parallel_num)
 
 class Ftrl(OptimMethod):
     """
