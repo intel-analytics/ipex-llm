@@ -401,7 +401,7 @@ class LossResult(private var loss: Float, private var count: Int)
   extends ContiguousResult(loss, count, name = "Loss")
 
 /**
- * A generate result type who's data is contiguous float.
+ * A generic result type who's data is contiguous float.
  *
  * @param contiResult loss calculated by forward function
  * @param count recording the times of calculating loss

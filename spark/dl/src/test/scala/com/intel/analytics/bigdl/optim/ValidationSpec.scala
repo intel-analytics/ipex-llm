@@ -263,7 +263,7 @@ class ValidationSpec extends FlatSpec with Matchers {
     val o = Tensor[Float].range(1, 1000, 1).apply1(_ / 1000)
     val t = Tensor[Float](1000).zero
     t.setValue(1000, 1)
-    val ndcg = new Ndcg[Float](negNum = 999)
+    val ndcg = new NDCG[Float](negNum = 999)
     val r1 = ndcg.apply(o, t).result()
     r1._1 should be (1.0)
 
