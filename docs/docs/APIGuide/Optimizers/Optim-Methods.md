@@ -6,7 +6,7 @@ val optim = new Adam(learningRate=1e-3, learningRateDecay=0.0, beta1=0.9, beta2=
 ```
 **Python:**
 ```python
-optim = Adam(learningRate=1e-3, learningRateDecay-0.0, beta1=0.9, beta2=0.999, Epsilon=1e-8, bigdl_type="float")
+optim = Adam(learningrate=1e-3, learningrate_decay=0.0, beta1=0.9, beta2=0.999, epsilon=1e-8, bigdl_type="float")
 ```
 
 An implementation of Adam optimization, first-order gradient-based optimization of stochastic  objective  functions. http://arxiv.org/pdf/1412.6980.pdf
@@ -359,4 +359,16 @@ optimizer = Optimizer(
     optim_method=optim_method,
     end_trigger=MaxEpoch(20),
     batch_size=32)
+```
+
+## ParallelAdam ##
+Multi-Thread version of [Adam](Adam).
+
+**Scala:**
+```scala
+val optim = new ParallelAdam(learningRate=1e-3, learningRateDecay=0.0, beta1=0.9, beta2=0.999, Epsilon=1e-8, parallelNum=Engine.coreNumber())
+```
+**Python:**
+```python
+optim = ParallelAdam(learningrate=1e-3, learningrate_decay=0.0, beta1=0.9, beta2=0.999, epsilon=1e-8, parallel_num=get_node_and_core_number()[1], bigdl_type="float")
 ```
