@@ -156,9 +156,9 @@ Notice: Like HitRatio, output and target should belong to the same user. And hav
 
 **Scala:**
 ```scala
-val hr10 = new HitRatio(k = 10, negNum = 100)
+val ndcg = new NDCG(k = 10, negNum = 100)
 ```
 **Python:**
 ```python
-hr10 = HitRatio(k = 10)
+ndcg = NDCG(k = 10)
 ```
