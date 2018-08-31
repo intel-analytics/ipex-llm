@@ -216,67 +216,6 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     })
   }
 
-  "model predict should have no memory leak" should "be correct" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-    LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-    RNG.setSeed(100)
-    val resource = getClass.getClassLoader.getResource("pascal/")
-    val imageFrame = ImageFrame.read(resource.getFile, sc) ->
-      Resize(256, 256) -> CenterCrop(224, 224) ->
-      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> ImageFrameToSample()
-    val model = Inception_v1_NoAuxClassifier(classNum = 1000)
-    val quant = model.quantize()
-    val init = StorageManager.get()
-    println(s"init count ${init.count(!_._2.isFreed)}")
-    var second: Map[Long, StorageInfo] = null
-    (0 until 20).foreach { i =>
-      val detection = quant.predictImage(imageFrame, batchPerPartition = 16).toDistributed()
-      detection.rdd.first()
-      detection.rdd.collect()
-      println("=" * 80)
-      println(StorageManager.get().count(!_._2.isFreed))
-      println("-" * 80)
-    }
-    CachedModels.deleteAll("")
-    // NOTE: if this case failed, please check,
-    // 1. mapPartition, does it used the variable out side of the method scope.
-    // 2. ModelBroadcast, does it add the ref correctly
-    StorageManager.get().count(!_._2.isFreed) should be (init.count(!_._2.isFreed))
-  }
-
-  "local predictor shutdown" should "work properly" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
-    val input = Tensor[Float](4, 3, 224, 224).rand(-1, 1)
-
-    val samples = (1 to 20).map(i => {
-      Sample(Tensor[Float](3, 224, 224).randn())
-    }).toArray
-    val imageFrame = ImageFrame.array((0 until 20).map(x => {
-      val im = ImageFeature()
-      im(ImageFeature.sample) = samples(x)
-      im
-    }).toArray)
-
-    val model = Inception_v1_NoAuxClassifier(1000)
-    val quant = model.quantize().evaluate()
-    val initNativeSize = StorageManager.get().count(x => !x._2.isFreed)
-
-    // has no memory issues
-    (0 to 4).foreach { _ =>
-      quant.predictImage(imageFrame).toLocal().array.map(_.predict().asInstanceOf[Tensor[Float]])
-      StorageManager.get().count(x => !x._2.isFreed) should be (initNativeSize)
-    }
-
-    // check the model can work again
-    quant.forward(input)
-    val quant2 = model.quantize().evaluate()
-    quant2.forward(input)
-
-    quant.output.toTensor[Float] should be (quant2.output.toTensor[Float])
-  }
-
   "localpredictor" should "serialize successfully" in {
     val localPredictor = LocalPredictor(Linear[Float](3, 10))
     SerializationUtils.clone(localPredictor)

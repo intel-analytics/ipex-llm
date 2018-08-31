@@ -85,9 +85,9 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   def release(): Unit = synchronized {
     if (!this.isReleased()) {
       Memory.AlignedFree(ptr.address)
+      DnnStorage.checkAndSet(ptr.address)
       _isReleased = true
       ptr = null
-      DnnStorage.checkAndSet(ptr.address)
     }
   }
 

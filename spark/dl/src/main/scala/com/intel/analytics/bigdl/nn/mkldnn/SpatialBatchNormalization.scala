@@ -105,9 +105,7 @@ class SpatialBatchNormalization(
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    _inputFormats = inputs
-
-    val m = inputFormats()(0).shape.product / this.nOutput
+    val m = inputs(0).shape.product / this.nOutput
     biasFactor = if (m > 1) { m.toFloat / (m - 1) } else { 1 }
 
     val List(mean, variance, runningMean, runningVariance): List[NativeData] =
@@ -177,6 +175,12 @@ class SpatialBatchNormalization(
 
     if (updateOutputTensors != null) {
       updateOutputTensors = null
+    }
+
+    (isTraining(), phase) match {
+      case (true, InferencePhase) => train = false
+      case (false, TrainingPhase) => train = true
+      case _ =>
     }
 
     (inputFormats(), outputFormats())
@@ -323,7 +327,6 @@ class SpatialBatchNormalization(
 
   override def evaluate(): this.type = {
     if (isTraining()) {
-      train = false
       initFwdPrimitives(inputFormats(), InferencePhase)
     }
     this
@@ -331,7 +334,6 @@ class SpatialBatchNormalization(
 
   override def training(): this.type = {
     if (!isTraining()) {
-      train = true
       initFwdPrimitives(inputFormats(), TrainingPhase)
     }
     this
