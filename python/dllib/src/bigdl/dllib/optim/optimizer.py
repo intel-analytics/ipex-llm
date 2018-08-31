@@ -87,6 +87,40 @@ class Loss(JavaValue):
             cri = ClassNLLCriterion()
         JavaValue.__init__(self, None, bigdl_type, cri)
 
+class HitRatio(JavaValue):
+    """
+    Hit Ratio(HR) used in recommandation application.
+    HR intuitively measures whether the test item is present on the top-k list.
+
+    >>> hr10 = HitRatio(k = 10)
+    creating: createHitRatio
+    """
+    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+        """
+        Create hit ratio validation method.
+
+        :param k: top k
+        :param neg_num: number of negative items.
+        """
+        JavaValue.__init__(self, None, bigdl_type, k, neg_num)
+
+class NDCG(JavaValue):
+    """
+    Normalized Discounted Cumulative Gain(NDCG).
+    NDCG accounts for the position of the hit by assigning higher scores to hits at top ranks.
+
+    >>> ndcg = NDCG(k = 10)
+    creating: createNDCG
+    """
+    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+        """
+        Create NDCG validation method.
+
+        :param k: top k
+        :param neg_num: number of negative items.
+        """
+        JavaValue.__init__(self, None, bigdl_type, k, neg_num)
+
 class MAE(JavaValue):
     """
     This evaluation method calculates the mean absolute error of output with respect to target.
