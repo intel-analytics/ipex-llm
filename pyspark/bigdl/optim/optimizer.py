@@ -29,6 +29,7 @@ from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_node_and_core_number
+from bigdl.util.common import init_engine
 from bigdl.util.common import to_list
 from bigdl.dataset.dataset import *
 
@@ -519,6 +520,7 @@ class ParallelAdam(OptimMethod):
     :param beta1 first moment coefficient
     :param beta2 second moment coefficient
     :param epsilon for numerical stability
+    >>> init_engine()
     >>> pAdam = ParallelAdam()
     creating: createParallelAdam
     """
@@ -528,8 +530,10 @@ class ParallelAdam(OptimMethod):
                  beta1 = 0.9,
                  beta2 = 0.999,
                  epsilon = 1e-8,
-                 parallel_num = get_node_and_core_number()[1],
+                 parallel_num = -1,
                  bigdl_type="float"):
+        if parallel_num == -1:
+            parallel_num = get_node_and_core_number()[1]
         super(ParallelAdam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
                                    beta1, beta2, epsilon, parallel_num)
 
