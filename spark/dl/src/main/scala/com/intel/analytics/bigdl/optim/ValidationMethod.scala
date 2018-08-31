@@ -226,7 +226,7 @@ class Top5Accuracy[T: ClassTag](
   AccuracyResult = {
     var _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
 
-    val _output = if (output.toTensor[T].size().head != _target.size().head) {
+    val _output = if (output.toTensor[T].size(1) != _target.size(1)) {
       output.toTensor[T].narrow(1, 1, _target.size().head)
     } else {
       output.toTensor[T]

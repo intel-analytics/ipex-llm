@@ -86,6 +86,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
     if (!this.isReleased()) {
       Memory.AlignedFree(ptr.address)
       _isReleased = true
+      ptr = null
       DnnStorage.checkAndSet(ptr.address)
     }
   }
@@ -108,16 +109,13 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
       ptr = new Pointer(allocate(this.size))
       val elements = in.readObject().asInstanceOf[Array[Float]]
       Memory.CopyArray2Ptr(elements, 0, ptr.address, 0, size, DnnStorage.FLOAT_BYTES)
-    } else {
-      ptr = new Pointer(allocate(this.size))
-      Memory.Zero(ptr.address, this.size, DnnStorage.FLOAT_BYTES)
     }
   }
 
   @throws(classOf[IOException])
   private def writeObject(out: ObjectOutputStream): Unit = {
     out.defaultWriteObject()
-    if (!isReleased()) {
+    if (!_isReleased) {
       val elements = new Array[Float](this.length())
       Memory.CopyPtr2Array(this.ptr.address, 0, elements, 0, size, DnnStorage.FLOAT_BYTES)
       out.writeObject(elements)

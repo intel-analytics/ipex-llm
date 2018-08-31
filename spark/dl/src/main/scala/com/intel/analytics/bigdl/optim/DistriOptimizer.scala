@@ -148,10 +148,6 @@ object DistriOptimizer {
     logger.info("Count dataset")
     val countBefore = System.nanoTime()
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
-    // FIXME dnn model must cache val dataset first, otherwise there will be a segment fault.
-    if (Engine.getEngineType() == MklDnn) {
-      validationDataSet.get.toDistributed().data(train = false).map(_.size()).reduce(_ + _)
-    }
     val countAfter = System.nanoTime()
     logger.info(s"Count dataset complete. Time elapsed: ${(countAfter - countBefore) / 1e9}s")
     if (numSamples != dataset.size()) {
@@ -912,7 +908,9 @@ class DistriOptimizer[T: ClassTag] (
       logger.info("caching training rdd ...")
       dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].cache()
       // FIXME dnn model must cache val dataset first, otherwise there will be a segment fault.
-      validationDataSet.get.toDistributed().cache()
+      if (validationDataSet.isDefined) {
+        validationDataSet.get.toDistributed().cache()
+      }
     }
   }
 

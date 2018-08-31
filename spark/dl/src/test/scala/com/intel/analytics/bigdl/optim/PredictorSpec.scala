@@ -246,6 +246,37 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     StorageManager.get().count(!_._2.isFreed) should be (init.count(!_._2.isFreed))
   }
 
+  "local predictor shutdown" should "work properly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val input = Tensor[Float](4, 3, 224, 224).rand(-1, 1)
+
+    val samples = (1 to 20).map(i => {
+      Sample(Tensor[Float](3, 224, 224).randn())
+    }).toArray
+    val imageFrame = ImageFrame.array((0 until 20).map(x => {
+      val im = ImageFeature()
+      im(ImageFeature.sample) = samples(x)
+      im
+    }).toArray)
+
+    val model = Inception_v1_NoAuxClassifier(1000)
+    val quant = model.quantize().evaluate()
+    val initNativeSize = StorageManager.get().count(x => !x._2.isFreed)
+
+    // has no memory issues
+    (0 to 4).foreach { _ =>
+      quant.predictImage(imageFrame).toLocal().array.map(_.predict().asInstanceOf[Tensor[Float]])
+      StorageManager.get().count(x => !x._2.isFreed) should be (initNativeSize)
+    }
+
+    // check the model can work again
+    quant.forward(input)
+    val quant2 = model.quantize().evaluate()
+    quant2.forward(input)
+
+    quant.output.toTensor[Float] should be (quant2.output.toTensor[Float])
+  }
+
   "localpredictor" should "serialize successfully" in {
     val localPredictor = LocalPredictor(Linear[Float](3, 10))
     SerializationUtils.clone(localPredictor)
