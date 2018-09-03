@@ -578,9 +578,16 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       strides: JList[Int],
       borderMode: String = "valid",
       dimOrdering: String = "th",
-      inputShape: JList[Int] = null): AveragePooling2D[T] = {
+      inputShape: JList[Int] = null,
+      pads: JList[Int],
+      count_include_pad: Boolean = false): AveragePooling2D[T] = {
     new AveragePooling2D(toScalaArray(poolSize), toScalaArray(strides),
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape),
+      if (pads != null) {
+        pads.asScala.toArray
+      } else {
+        null
+      }, count_include_pad)
   }
 
   def createZooKerasAveragePooling3D(
