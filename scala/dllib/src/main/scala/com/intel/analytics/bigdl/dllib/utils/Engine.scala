@@ -218,7 +218,7 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getMklNumThreads)
+  @volatile private var _model: ThreadPool = new ThreadPool(1)
 
   // Thread pool for read data
   @volatile private var _io: ThreadPool = null
@@ -340,16 +340,15 @@ object Engine {
       _io = new ThreadPool(core * 50)
     }
 
-    val modelPoolSize: Int = if (engineType == MklBlas) {
-      1
-    } else {
-      core
-    }
+    // for dnn model we should set the pool size to 1 also.
+    // otherwise, it will downgrade the performance and
+    // FIXME make the loss to NaN.
+    val modelPoolSize = 1
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(MKL.getMklNumThreads)
     }
+    _model.setMKLThread(MKL.getMklNumThreads)
 
     ThreadPool.setThreadsOfBackend(MKL.getMklNumThreads)
   }

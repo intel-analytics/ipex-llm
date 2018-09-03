@@ -242,6 +242,60 @@ class ValidationSpec extends FlatSpec with Matchers {
     result should be(test)
   }
 
+  "top1 accuracy" should "be correct on 2d tensor with diff size of output and target" in {
+    val output = Tensor(Storage(Array[Double](
+      0, 0, 0, 1,
+      0, 1, 0, 0,
+      1, 0, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+      0, 1, 0, 0
+    )), 1, Array(8, 4))
+
+    val target = Tensor(Storage(Array[Double](
+      4,
+      2,
+      1,
+      3,
+      2,
+      2
+    )))
+
+    val validation = new Top1Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(4, 6)
+    result should be(test)
+  }
+
+  "Top5 accuracy" should "be correct on 2d tensor with diff size of output and target" in {
+    val output = Tensor(Storage(Array[Double](
+      0, 0, 8, 1, 2, 0, 0, 0,
+      0, 1, 0, 0, 2, 3, 4, 6,
+      1, 0, 0, 0.6, 0.1, 0.2, 0.3, 0.4,
+      0, 0, 1, 0, 0.5, 1.5, 2, 0,
+      1, 0, 0, 6, 2, 3, 4, 5,
+      0, 0, 1, 0, 1, 1, 1, 1,
+      0, 0, 0, 1, 1, 2, 3, 4,
+      0, 1, 0, 0, 2, 4, 3, 2
+    )), 1, Array(8, 8))
+
+    val target = Tensor(Storage(Array[Double](
+      4,
+      2,
+      1,
+      3,
+      2,
+      2
+    )))
+
+    val validation = new Top5Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(4, 6)
+    result should be(test)
+  }
+
   "HR@10" should "works fine" in {
     val o = Tensor[Float].range(1, 1000, 1).apply1(_ / 1000)
     val t = Tensor[Float](1000).zero
