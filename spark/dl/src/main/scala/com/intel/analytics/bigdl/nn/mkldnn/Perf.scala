@@ -33,7 +33,7 @@ import scopt.OptionParser
 
 import scala.reflect.ClassTag
 
-object ResNet50Perf {
+object Perf {
 
   val logger = Logger.getLogger(getClass)
 
