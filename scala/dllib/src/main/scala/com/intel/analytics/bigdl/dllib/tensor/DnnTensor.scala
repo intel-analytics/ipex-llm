@@ -95,6 +95,11 @@ class DnnTensor[T: ClassTag](
     Memory.Axpby(this.nElement(), a, x, b, y)
   }
 
+  def scale(from: DnnTensor[T], scal: Float): Unit = {
+    val length = this.nElement()
+    Memory.Scale(length, scal, from._storage.ptr.address, this._storage.ptr.address)
+  }
+
   override def toTensor[D](implicit ev: TensorNumeric[D]): DnnTensor[D] = {
     this.asInstanceOf[DnnTensor[D]]
   }
@@ -108,6 +113,41 @@ class DnnTensor[T: ClassTag](
   override def nDimension(): Int = size().length
 
   override def getTensorType: TensorType = MklDnnType
+
+  override def equals(obj: Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[DnnTensor[T]]) {
+      return false
+    }
+    val other = obj.asInstanceOf[DnnTensor[T]]
+
+    if (this.size().deep != other.size().deep) {
+      return false
+    }
+
+    if (this._storage.ptr != other._storage.ptr) {
+      return false
+    }
+
+    true
+  }
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = 1
+    hash = hash * seed + this.nDimension
+    var d = 1
+    while (d <= this.nDimension) {
+      hash = hash * seed + this.size(d)
+      d += 1
+    }
+
+    hash = hash * seed + this._storage.ptr.hashCode()
+
+    hash
+  }
 }
 
 object DnnTensor {
