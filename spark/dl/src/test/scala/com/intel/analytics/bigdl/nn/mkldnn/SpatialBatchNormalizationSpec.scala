@@ -623,7 +623,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val denseOutput = Tools.dense(bn.output).toTensor
 
     denseOutput.storage().array().zip(output.storage().array()).foreach { x =>
-      if (x._2.isInfinity)  x._1.isInfinity should be (true)
+      if (x._2.isInfinity || x._2.isNaN)  x._1.isInfinity || x._1.isNaN should be (true)
     }
   }
 
