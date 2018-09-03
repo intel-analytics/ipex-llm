@@ -2144,6 +2144,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new Adam[T](learningRate, learningRateDecay, beta1, beta2, Epsilon)
   }
 
+  def createParallelAdam(
+        learningRate: Double = 1e-3,
+        learningRateDecay: Double = 0.0,
+        beta1: Double = 0.9,
+        beta2: Double = 0.999,
+        Epsilon: Double = 1e-8,
+        parallelNum: Int = Engine.coreNumber()): ParallelAdam[T] = {
+    new ParallelAdam[T](learningRate, learningRateDecay, beta1, beta2, Epsilon, parallelNum)
+  }
+
   def createFtrl(
       learningRate: Double = 1e-3,
       learningRatePower: Double = -0.5,
