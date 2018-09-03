@@ -907,6 +907,10 @@ class DistriOptimizer[T: ClassTag] (
     if (!dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].isCached) {
       logger.info("caching training rdd ...")
       dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].cache()
+      // FIXME dnn model must cache val dataset first, otherwise there will be a segment fault.
+      if (validationDataSet.isDefined) {
+        validationDataSet.get.toDistributed().cache()
+      }
     }
   }
 

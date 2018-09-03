@@ -380,7 +380,7 @@ class SpatialConvolution(
   override def release(): Unit = {
     super.release()
     List(weight, bias, gradWeight, gradBias).foreach(_.release())
-    weightForBackward.release()
+    if (weightForBackward != null) { weightForBackward.release() }
   }
 }
 
