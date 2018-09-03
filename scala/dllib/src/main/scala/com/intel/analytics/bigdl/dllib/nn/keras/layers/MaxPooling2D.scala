@@ -16,7 +16,7 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.SpatialMaxPooling
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.keras.Pooling2D
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -47,12 +47,11 @@ class MaxPooling2D[T: ClassTag](
   override val poolSize: Array[Int] = Array(2, 2),
   override val strides: Array[Int] = null,
   override val borderMode: String = "valid",
-  override val dimOrdering: DataFormat = DataFormat.NCHW,
+  val dimOrdering: DataFormat = DataFormat.NCHW,
   override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling2D[T](poolSize, strides, borderMode,
-    dimOrdering, inputShape) with Net {
+  extends Pooling2D[T](poolSize, strides, borderMode, inputShape) with Net {
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val layer = SpatialMaxPooling(
       kW = poolSize(1),
@@ -62,7 +61,7 @@ class MaxPooling2D[T: ClassTag](
       padW = pads._2,
       padH = pads._1,
       format = dimOrdering)
-    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    layer.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 

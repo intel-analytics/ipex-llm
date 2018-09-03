@@ -17,10 +17,9 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.SpatialAveragePooling
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.keras.Pooling2D
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, Pooling2D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -49,12 +48,13 @@ class AveragePooling2D[T: ClassTag](
     override val poolSize: Array[Int] = Array(2, 2),
     override val strides: Array[Int] = null,
     override val borderMode: String = "valid",
-    override val dimOrdering: DataFormat = DataFormat.NCHW,
-    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling2D[T](
-    poolSize, strides, borderMode, dimOrdering, inputShape) with Net {
+    val dimOrdering: DataFormat = DataFormat.NCHW,
+    override val inputShape: Shape = null,
+    val pads: Array[Int] = null,
+    val countIncludePad: Boolean = false)(implicit ev: TensorNumeric[T])
+  extends Pooling2D[T](poolSize, strides, borderMode, inputShape) {
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val layer = SpatialAveragePooling(
       kW = poolSize(1),
@@ -65,7 +65,7 @@ class AveragePooling2D[T: ClassTag](
       padH = pads._1,
       countIncludePad = false,
       format = dimOrdering)
-    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    layer.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -75,7 +75,9 @@ object AveragePooling2D {
     strides: (Int, Int) = null,
     borderMode: String = "valid",
     dimOrdering: String = "th",
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
+    inputShape: Shape = null,
+    pads: Array[Int] = null,
+    countIncludePad: Boolean = false)(implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
     val poolSizeArray = poolSize match {
       case null => throw new IllegalArgumentException("For AveragePooling2D, " +
         "poolSize can not be null, please input int tuple of length 2")
@@ -87,6 +89,6 @@ object AveragePooling2D {
     }
     new AveragePooling2D[T](
       poolSizeArray, strideArray,
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), inputShape, pads, countIncludePad)
   }
 }
