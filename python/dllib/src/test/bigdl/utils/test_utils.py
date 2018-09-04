@@ -21,8 +21,6 @@ import shutil
 from unittest import TestCase
 
 import keras.backend as K
-import numpy as np
-from bigdl.keras.converter import WeightLoader
 
 from zoo.common.nncontext import *
 
@@ -125,6 +123,7 @@ class ZooTestCase(TestCase):
         """
         Compare forward results for Keras model against Zoo Keras API model.
         """
+        from bigdl.keras.converter import WeightLoader
         WeightLoader.load_weights_from_kmodel(zmodel, kmodel)
         zmodel.training(is_training=False)
         bigdl_output = zmodel.forward(input_data)
