@@ -39,8 +39,20 @@ private[zoo] object LayerWrapperByForward {
 
   private def singleShapeDummyValue[T: ClassTag](
      singleShape: Shape)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    Tensor[T](
-      (List(2) ++ KerasUtils.removeBatch(singleShape).toSingle()).toArray).fill(ev.one)
+    // There's no batch dimension in `Parameter`
+    val enrichShape = if (! isConcreteShape(singleShape)) {
+      List(2) ++ KerasUtils.removeBatch(singleShape).toSingle()
+    } else {
+      singleShape.toSingle()
+    }
+    Tensor[T](enrichShape.toArray).fill(ev.one)
+  }
+
+  private def isConcreteShape(shape: Shape): Boolean = {
+    shape match {
+      case s: SingleShape => s.toSingle().forall(_ > 0)
+      case m: MultiShape => m.toMulti().forall(isConcreteShape(_))
+    }
   }
 
   def computeOutputShape[T: ClassTag](torchLayer: AbstractModule[Activity, Activity, T],
@@ -53,7 +65,11 @@ private[zoo] object LayerWrapperByForward {
     val dummyOutTensor = torchLayer.cloneModule().forward(input)
     require(dummyOutTensor.isTensor, "We only support single output for now but got a Table")
     val outSize = dummyOutTensor.toTensor.size()
-    KerasUtils.addBatch(Shape(outSize.slice(1, outSize.length)))
+    if (isConcreteShape(calcInputShape)) {
+      Shape(outSize)
+    } else {
+      KerasUtils.addBatch(Shape(outSize.slice(1, outSize.length)))
+    }
   }
 }
 
