@@ -4,6 +4,7 @@ extra_css: [extra.css]
 theme_dir: mkdocs_windmill 
 repo_name: 'Fork on GitHub '
 repo_url: 'https://github.com/intel-analytics/analytics-zoo'
+google_analytics: ['UA-125166209-1', 'analytics-zoo.github.io']
 extra:
     version: latest
     article_nav_top: false
@@ -56,4 +57,7 @@ pages:
     - Text Classification: APIGuide/Models/text-classification.md
     - Recommendation: APIGuide/Models/recommendation.md
 - Powered by: powered-by.md
+- White Paper:
+  - BigDL: wp-bigdl.md
+  - Analytics-Zoo: wp-analyticszoo.md
 - FAQ and Known Issues: known-issues.md
