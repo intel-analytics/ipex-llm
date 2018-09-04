@@ -36,6 +36,10 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
     "com.intel.analytics.zoo.pipeline.api.net.TFNet",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.Recurrent",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
+    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalCAddTable",
+    "com.intel.analytics.zoo.pipeline.api.autograd.InternalParameter",
+    "com.intel.analytics.zoo.pipeline.api.autograd.KerasParameter",
+    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
     "com.intel.analytics.zoo.pipeline.api.net.TFTrainingHelper")
 
   private val unRegularNameMapping = Map[String, String]()
