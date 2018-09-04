@@ -32,7 +32,7 @@ class DenseSpec extends KerasBaseSpec {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3])
-        |input = np.random.uniform(0, 1, [1, 3])
+        |input = np.random.uniform(0, 1, [8, 3])
         |output_tensor = Dense(2, activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
