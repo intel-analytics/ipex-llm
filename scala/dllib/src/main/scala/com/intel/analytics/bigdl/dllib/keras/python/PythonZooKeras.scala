@@ -28,6 +28,8 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.{Container, InitializationMethod}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
@@ -1274,7 +1276,8 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     }
   }
 
-  def zooSetWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
+  def zooSetWeights(model: AbstractModule[Activity, Activity, T],
+      weights: JList[JTensor]): Unit = {
     super.setWeights(model, weights)
   }
 
@@ -1320,5 +1323,19 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
 
     trainer.parameters()._1
       .map(t => toJTensor(t.asInstanceOf[Tensor[T]])).toVector.asJava
+  }
+
+
+  def createZooKerasParameter(inputShape: JList[Int],
+      initMethod: InitializationMethod, initWeight: JTensor): Parameter[T] = {
+    Parameter[T](toScalaShape(inputShape), initMethod, toTensor(initWeight))
+  }
+
+  def getParameterWeight(parameter: Parameter[T]): JTensor = {
+    toJTensor(parameter.getWeight())
+  }
+
+  def setParameterWeight(parameter: Parameter[T], value: JTensor): Unit = {
+    parameter.setWeight(toTensor(value))
   }
 }
