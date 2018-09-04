@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.{nn => bnn}
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalMM
+import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.{InternalCAddTable, InternalMM}
 import com.intel.analytics.zoo.pipeline.api.keras.models._
 
 import scala.reflect.ClassTag
@@ -263,13 +263,20 @@ object AutoGrad {
     require(y.getOutputShape().isInstanceOf[SingleShape], "Only accept single shape")
     val xShape = x.getOutputShape().toSingle().toArray
     val yShape = y.getOutputShape().toSingle().toArray
-    require(xShape.length == 3, s"mm only support 3D input, but got: ${xShape}")
-    require(yShape.length == 3, s"mm only support 3D input, but got: ${yShape}")
     require(axes.length == 2, s"axes.length should be 2, but got: ${axes.length}")
-    require(axes(0) >= 1 && axes(0) <= 2, s"axes should between [1, 2], not ${axes(0)}")
-    require(axes(1) >= 1 && axes(1) <= 2, s"axes should between [1, 2], not ${axes(1)}")
-    val transposeX = if (axes(0) != 2) {true} else {false}
-    val transposeY = if (axes(1) == 2) {true} else {false}
+    if (xShape.length == 2 && yShape.length == 2) {
+      require(axes(0) >= 0 && axes(0) <= 1, s"axes should between [0, 1], not ${axes(0)}")
+      require(axes(1) >= 0 && axes(1) <= 1, s"axes should between [0, 1], not ${axes(1)}")
+    } else if ((xShape.length == 3 && yShape.length == 3)) {
+      require(axes(0) >= 1 && axes(0) <= 2, s"axes should between [1, 2], not ${axes(0)}")
+      require(axes(1) >= 1 && axes(1) <= 2, s"axes should between [1, 2], not ${axes(1)}")
+    } else {
+      throw new IllegalArgumentException(s"Only support 2D and 3D input for now," +
+        s"but got [${xShape.mkString(",")}] and [${xShape.mkString(",")}]")
+    }
+
+    val transposeX = if (axes(0) != xShape.length - 1) {true} else {false}
+    val transposeY = if (axes(1) == yShape.length - 1) {true} else {false}
     val mm = InternalMM[T](transA = transposeX,
       transB = transposeY)
     val kmm = new KerasLayerWrapper[T](mm.asInstanceOf[AbstractModule[Activity, Activity, T]])
@@ -332,17 +339,20 @@ object Variable extends {
   }
 }
 
-class Variable[T: ClassTag] private[zoo] (val node: ModuleNode[T], var name: String = null)(
+class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
+    var name: String = null)(
     implicit ev: TensorNumeric[T]) extends Serializable {
 
-  if (name == null) {
-    name = node.element.getName()
-  } else {
-    node.element.setName(name)
-  }
+  if (node != null) {
+    if (name == null) {
+      name = node.element.getName()
+    } else {
+      node.element.setName(name)
+    }
 
-  require(node.element.isInstanceOf[KerasLayer[Activity, Activity, T]])
-  require(node.element.asInstanceOf[InferShape].getOutputShape() != null)
+    require(node.element.isInstanceOf[KerasLayer[Activity, Activity, T]])
+    require(node.element.asInstanceOf[InferShape].getOutputShape() != null)
+  }
 
   private[zoo] def getRoots(): Array[ModuleNode[T]] = {
     val dfs = this.node.graph(reverse = true).DFS.toList.reverse
@@ -381,7 +391,7 @@ class Variable[T: ClassTag] private[zoo] (val node: ModuleNode[T], var name: Str
   // scalastyle:off
   def +(a: Variable[T]): Variable[T] = {
     val o =
-      new KerasLayerWrapper[T](bnn.CAddTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](new InternalCAddTable[T, T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     val (x, y) = broadcast(this, a)
     Variable(o.inputs(Array(x.node, y.node)))
   }
@@ -489,13 +499,23 @@ class Variable[T: ClassTag] private[zoo] (val node: ModuleNode[T], var name: Str
   }
 
   private[zoo] def broadcast(x: Variable[T], y: Variable[T]): (Variable[T], Variable[T]) = {
-    val yShape = y.getOutputShape().toSingle()
-    val xShape = x.getOutputShape().toSingle()
-    require(xShape.size == yShape.size,
-      s"The two variables should have the same dims," +
-        s"but got: ${xShape.size} and ${yShape.size}")
     var xx = x
     var yy = y
+
+    var yShape = yy.getOutputShape().toSingle()
+    var xShape = xx.getOutputShape().toSingle()
+    if (yShape.size > xShape.size) {
+      xx = AutoGrad.expandDims(x, 0)
+    } else if (yShape.size < xShape.size) {
+      yy = AutoGrad.expandDims(y, 0)
+    }
+    yShape = yy.getOutputShape().toSingle()
+    xShape = xx.getOutputShape().toSingle()
+    require(xShape.size == yShape.size,
+      s"The two variables should have the same dims," +
+        s"but got: ${x.getOutputShape().toSingle().mkString(",")}" +
+        s"and ${y.getOutputShape().toSingle().mkString(",")}")
+
     var i = yShape.length - 1
     while (i >= 1) { // Ignore the batch dim
       if (yShape(i) != xShape(i)) {
