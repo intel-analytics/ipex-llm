@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad, Parameter, Variable}
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
@@ -28,6 +29,17 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
 
 class ModelSerialTest extends ModuleSerializationTest {
+  private def testParameterSerialWithModel(): Unit = {
+    val input = Variable[Float](Shape(3))
+    val w = Parameter[Float](Shape(2, 3)) // outputSize * inputSize
+    val bias = Parameter[Float](Shape(2))
+    val cDense = AutoGrad.mm(input, w, axes = List(1, 1)) + bias
+    val model = Model[Float](input = input, output = cDense)
+
+    val inputData = Tensor[Float](8, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, inputData)
+  }
+
   override def test(): Unit = {
     val input = Input[Float](inputShape = Shape(10))
     val model = Model(input, Dense[Float](8).inputs(input))
@@ -39,6 +51,8 @@ class ModelSerialTest extends ModuleSerializationTest {
       model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       inputData)
+
+    testParameterSerialWithModel()
   }
 }
 
