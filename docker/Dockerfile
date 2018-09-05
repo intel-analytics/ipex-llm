@@ -44,7 +44,7 @@ ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 RUN apt-get update && \
     apt-get install -y --force-yes vim curl nano wget unzip maven git
 #java
-RUN wget http://ftp.osuosl.org/pub/funtoo/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
+RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
     gunzip jdk-8u152-linux-x64.tar.gz && \
     tar -xf jdk-8u152-linux-x64.tar -C /opt && \
     rm jdk-8u152-linux-x64.tar && \
