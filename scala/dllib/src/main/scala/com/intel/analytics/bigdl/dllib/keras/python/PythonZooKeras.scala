@@ -381,9 +381,15 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       strides: JList[Int],
       borderMode: String = "valid",
       dimOrdering: String = "th",
-      inputShape: JList[Int] = null): MaxPooling2D[T] = {
+      inputShape: JList[Int] = null,
+      pads: JList[Int]): MaxPooling2D[T] = {
     new MaxPooling2D[T](toScalaArray(poolSize), toScalaArray(strides),
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape),
+      if (pads != null) {
+        pads.asScala.toArray
+      } else {
+        null
+      })
   }
 
   def createZooKerasActivation(
