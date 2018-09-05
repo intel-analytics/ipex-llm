@@ -128,7 +128,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
   def zooPredict(
-      module: KerasNet[T],
+      module: AbstractModule[Activity, Activity, T],
       x: JavaRDD[Sample],
       batchPerThread: Int): JavaRDD[JList[Object]] = {
     val resRDD = module.predict(x.rdd.map(toJSample), batchPerThread)
