@@ -30,7 +30,8 @@ import scala.reflect.ClassTag
 
 private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shape,
     val initMethod: InitializationMethod = RandomUniform(-0.05, 0.05),
-    val initWeight: Tensor[T] = null)(implicit ev: TensorNumeric[T])
+    val initWeight: Tensor[T] = null,
+    val trainable: Boolean = true)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](inputShape)
     with InternalWithoutInput with Net {
 
@@ -52,7 +53,8 @@ private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shap
     new InternalParameter[T](
       shape = inputShape,
       initMethod = this.initMethod,
-      initWeight = this.initWeight).asInstanceOf[AbstractModule[Activity, Activity, T]]
+      initWeight = this.initWeight,
+      trainable = this.trainable).asInstanceOf[AbstractModule[Activity, Activity, T]]
 
   override def skipDuplicateCheck(): Boolean = true
 }
@@ -63,12 +65,13 @@ private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shap
 class Parameter[T: ClassTag] private[zoo](val inputShape: Shape,
     val initMethod: InitializationMethod = RandomUniform(-0.5, 0.5),
     val initWeight: Tensor[T] = null,
+    val trainable: Boolean = true,
     name: String = null)(
     implicit ev: TensorNumeric[T])
   extends Variable[T](null, name) {
 
   // build and init the KerasParameter
-  val kerasParameter = new KerasParameter[T](inputShape, initMethod, initWeight)
+  val kerasParameter = new KerasParameter[T](inputShape, initMethod, initWeight, trainable)
   this.node = new Node(kerasParameter)
   this.node.element.asInstanceOf[KerasParameter[T]].build(inputShape)
 
@@ -89,15 +92,18 @@ object Parameter {
       inputShape: Shape,
       initMethod: InitializationMethod = RandomUniform(-0.05, 0.05),
       initWeight: Tensor[T] = null,
+      trainable: Boolean = true,
       name: String = null)(implicit ev: TensorNumeric[T]): Parameter[T] = {
-    new Parameter[T](inputShape, initMethod = initMethod, initWeight = initWeight, name = name)
+    new Parameter[T](inputShape, initMethod = initMethod, initWeight = initWeight,
+      trainable = trainable, name = name)
   }
 }
 
 private[zoo] class InternalParameter[T: ClassTag](
     val shape: Shape,
     val initMethod: InitializationMethod = RandomUniform(-0.05, 0.05),
-    val initWeight: Tensor[T] = null)(implicit ev: TensorNumeric[T])
+    val initWeight: Tensor[T] = null,
+    val trainable: Boolean = true)(implicit ev: TensorNumeric[T])
   extends TensorModule[T] with Initializable {
 
   var weight: Tensor[T] =
@@ -132,7 +138,11 @@ private[zoo] class InternalParameter[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     gradWeight.resizeAs(gradOutput)
-    gradWeight.copy(gradOutput)
+    if (trainable) {
+      gradWeight.copy(gradOutput)
+    } else {
+      gradWeight.fill(ev.zero)
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
