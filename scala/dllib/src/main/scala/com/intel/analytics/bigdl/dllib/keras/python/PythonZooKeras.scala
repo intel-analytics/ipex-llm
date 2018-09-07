@@ -33,7 +33,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Engine, Table}
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd._
@@ -45,6 +45,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.objectives._
 import com.intel.analytics.zoo.pipeline.api.net._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
+import com.intel.analytics.bigdl.dataset.{Sample => JSample}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -131,7 +132,13 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       module: AbstractModule[Activity, Activity, T],
       x: JavaRDD[Sample],
       batchPerThread: Int): JavaRDD[JList[Object]] = {
-    val resRDD = module.predict(x.rdd.map(toJSample), batchPerThread)
+    val resRDD = module match {
+      case net: KerasNet[T] =>
+        net.predict(x.rdd.map(toJSample), batchPerThread)
+      case _ =>
+        module.predict(x.rdd.map(toJSample), batchPerThread * x.getNumPartitions)
+    }
+
     resRDD.map(activityToList).toJavaRDD()
   }
 
@@ -1179,6 +1186,14 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     TFNet(path)
   }
 
+  def createTFTrainingHelper(modelPath: String): TFTrainingHelper = {
+    TFTrainingHelper(modelPath)
+  }
+
+  def createIdentityCriterion(): IdentityCriterion = {
+    new IdentityCriterion()
+  }
+
   def connectInputs(module: AbstractModule[Activity, Activity, T],
       x: JList[Variable[T]]): Variable[T] = {
     require(!x.isEmpty, "We don't accept empty inputs")
@@ -1287,6 +1302,19 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     super.setWeights(model, weights)
   }
 
+  def createTFOptimizer(modelPath: String,
+                        optimMethod: OptimMethod[Float],
+                        x: JavaRDD[Sample],
+                        batchSize: Int = 32): TFOptimizer = {
+    new TFOptimizer(modelPath, optimMethod,
+      toJSample(x).asInstanceOf[RDD[JSample[Float]]], batchSize)
+  }
+
+  def tfOptimize(optimizer: TFOptimizer, endTrigger: Trigger): JList[JTensor] = {
+    val result = optimizer.optimize(endTrigger)
+    result.map(t => toJTensor(t.asInstanceOf[Tensor[T]])).toVector.asJava
+  }
+
   def trainTFNet(modelPath: String,
                  optimMethod: OptimMethod[Float],
                  x: JavaRDD[Sample],
@@ -1318,7 +1346,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       trainingMeta.gradVariables)
 
 
-    import com.intel.analytics.bigdl.dataset.{Sample => JSample}
+
     import scala.collection.JavaConverters._
     val optimizer = Optimizer(trainer,
       toJSample(x).asInstanceOf[RDD[JSample[Float]]], new IdentityCriterion(), batchSize)
