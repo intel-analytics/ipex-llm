@@ -1333,8 +1333,8 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
 
 
   def createZooKerasParameter(inputShape: JList[Int],
-      initMethod: InitializationMethod, initWeight: JTensor): Parameter[T] = {
-    Parameter[T](toScalaShape(inputShape), initMethod, toTensor(initWeight))
+      initMethod: InitializationMethod, initWeight: JTensor, trainable: Boolean): Parameter[T] = {
+    Parameter[T](toScalaShape(inputShape), initMethod, toTensor(initWeight), trainable)
   }
 
   def getParameterWeight(parameter: Parameter[T]): JTensor = {
