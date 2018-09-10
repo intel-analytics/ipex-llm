@@ -228,7 +228,8 @@ object AutoGrad {
 
   /**
    * Adds a 1-sized dimension at index "axis".
-   * @param axis Position where to add a new axis. You should start from 1 as dim 0 is for batch.
+   * The axis is 0 based and if you set the axis to 0, you would change the batch dim.
+   * @param axis Position where to add a new axis.
    */
   def expandDims[T: ClassTag](x: Variable[T], axis: Int)(
       implicit ev: TensorNumeric[T]): Variable[T] = {
