@@ -30,7 +30,7 @@ pages:
     - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
     - Autograd: ProgrammingGuide/autograd.md
     - Transfer Learning: ProgrammingGuide/transferlearning.md
-    - Inference: ProgrammingGuide/inference.md
+    - Model Serving: ProgrammingGuide/inference.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
   - Built-in Models:
@@ -41,6 +41,8 @@ pages:
   - Reference Use Cases:
     - Use Cases: ProgrammingGuide/usercases-overview.md
     - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
+- White Paper:
+  - BigDL: wp-bigdl.md
 - API Guide:
   - Pipeline APIs:
     - NNFrames: APIGuide/PipelineAPI/nnframes.md
@@ -57,7 +59,4 @@ pages:
     - Text Classification: APIGuide/Models/text-classification.md
     - Recommendation: APIGuide/Models/recommendation.md
 - Powered by: powered-by.md
-- White Paper:
-  - BigDL: wp-bigdl.md
-  - Analytics-Zoo: wp-analyticszoo.md
 - FAQ and Known Issues: known-issues.md
