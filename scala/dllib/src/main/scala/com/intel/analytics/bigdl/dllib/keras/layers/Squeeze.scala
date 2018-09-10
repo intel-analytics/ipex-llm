@@ -51,8 +51,7 @@ class Squeeze[T: ClassTag](
 
   if (dims != null) {
     for (dim <- dims) {
-      require(dim != 0, s"Invalid squeeze dim: $dim, cannot squeeze the batch dimension")
-      require(dim > 0, s"Invalid squeeze dim: $dim, dim should be positive")
+      require(dim >= 0, s"Invalid squeeze dim: $dim, dim should be equal to or greater than 0")
     }
   }
 
@@ -82,7 +81,7 @@ class Squeeze[T: ClassTag](
       com.intel.analytics.bigdl.nn.Squeeze(dims.map(x => x + 1), batchMode = false)
     }
     else {
-      com.intel.analytics.bigdl.nn.Squeeze(null, batchMode = true)
+      com.intel.analytics.bigdl.nn.Squeeze(null, batchMode = false)
     }
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
