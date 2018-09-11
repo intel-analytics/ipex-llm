@@ -35,8 +35,11 @@ abstract class Pooling2D[T: ClassTag](
 
   require(poolSize.length == 2,
   s"For Pooling2D, poolSize should be of length 2 but got length ${poolSize.length}")
-  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
-  s"Pooling2D: $borderMode")
+
+  if (borderMode!=null) {
+    require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+      s"Pooling2D: $borderMode")
+  }
 
   val strideValues: Array[Int] = if (strides == null) poolSize else strides
   require(strideValues.length == 2,
