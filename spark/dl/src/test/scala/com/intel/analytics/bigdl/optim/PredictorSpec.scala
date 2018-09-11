@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn.quantized.{StorageInfo, StorageManager}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table, T}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.log4j.{Level, Logger}
@@ -189,7 +189,6 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     })
   }
 
-
   "predictImage with table output" should "work properly" in {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
@@ -214,6 +213,68 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       assert(imageFeatures(x - 1).predict() != null)
       assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
+  }
+
+  "model.predict" should "support model with output type table of tables" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    val input1 = Input()
+    val input2 = Input()
+
+
+    val l1 = Sequential()
+    l1.add(Exp())
+    // l1.add(SplitTable(2))
+    val l2 = Sequential()
+    l2.add(Exp())
+    // l2.add(SplitTable(2))
+
+    val parallel = ParallelTable()
+
+    parallel.add(l2)
+    parallel.add(l1)
+    val para = parallel.inputs(input1, input2)
+
+    val graph = Graph(Array(input1, input2), para)
+
+    val output = graph.forward(T(Tensor(T(
+      T(1.0f, 2.0f, 3.0f),
+      T(4.0f, 5.0f, 6.0f),
+      T(7.0f, 8.0f, 9.0f)
+    )), Tensor(T(
+      T(0.5f, 0.4f)
+    ))
+    ))
+
+    val test_tensor = Array(Tensor(Tensor(T(
+      T(1.0f, 2.0f, 3.0f),
+      T(4.0f, 5.0f, 6.0f),
+      T(7.0f, 8.0f, 9.0f)
+    ))), Tensor(Tensor(T(
+      T(0.5f, 0.4f))
+    )))
+    val sample = Sample(test_tensor)
+
+    val data = sc.parallelize(Seq(sample), 1)
+    val res1 = graph.predict(data, 1, true).collect()(0).toTable.getState()(1)
+        .asInstanceOf[Table].getState()
+    val res2 = graph.predict(data, 1, true).collect()(0).toTable.getState()(2)
+      .asInstanceOf[Table].getState()
+    val expected1 = output.toTable.getState()(1).asInstanceOf[Tensor[Float]]
+    val expected2 = output.toTable.getState()(2).asInstanceOf[Tensor[Float]]
+
+    res1(1).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected1.valueAt(1, 1))
+    res1(1).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected1.valueAt(1, 2))
+    res1(1).asInstanceOf[Tensor[Float]].valueAt(3) should be (expected1.valueAt(1, 3))
+    res1(2).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected1.valueAt(2, 1))
+    res1(2).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected1.valueAt(2, 2))
+    res1(2).asInstanceOf[Tensor[Float]].valueAt(3) should be (expected1.valueAt(2, 3))
+    res1(3).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected1.valueAt(3, 1))
+    res1(3).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected1.valueAt(3, 2))
+    res1(3).asInstanceOf[Tensor[Float]].valueAt(3) should be (expected1.valueAt(3, 3))
+
+    res2(1).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected2.valueAt(1, 1))
+    res2(1).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected2.valueAt(1, 2))
+
   }
 
   "model predict should have no memory leak" should "be correct" in {
