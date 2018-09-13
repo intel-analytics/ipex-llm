@@ -1,5 +1,5 @@
 # <font size="6">Analytics Zoo</font>
-*A unified analytics + AI platform for __distribtued TensoFlow, Keras and BigDL on Apache Spark__*
+*A unified analytics + AI platform for __distributed TensorFlow, Keras and BigDL on Apache Spark__*
 
 ---
 
@@ -13,17 +13,17 @@
 
 In addition, Analytics Zoo also provides a rich set of analytics and AI support for the end-to-end pipeline, including:
 
-- *Easy-to-use abstractions and APIs* (e.g., transfer learning support, autograd operations, Spark Dataframe and ML pipeline support, online model serving API, etc.) 
--	*Common feature engineering operations* (for image, text, 3D image, etc.)
+- *Easy-to-use abstractions and APIs* (e.g., transfer learning support, autograd operations, Spark DataFrame and ML pipeline support, online model serving API, etc.) 
+- *Common feature engineering operations* (for image, text, 3D image, etc.)
 - *Built-in deep learning models* (e.g., object detection, image classification, text classification, recommendation, etc.) 
 - *Reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image similarity, etc.)
 
 ## How to use Analytics Zoo?
 - To get started, please refer to the [Python install guide](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) or [Scala install guide](https://analytics-zoo.github.io/master/#ScalaUserGuide/install/).
 
-- For running distributed TensorFlow on Spark and BigDL, please refer to the quick start [here](#distributed-tensoflow-and-keras-on-sparkbigdl) and more examples [here](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tfnet).
+- For running distributed TensorFlow on Spark and BigDL, please refer to the quick start [here](#distributed-tensorflow-and-keras-on-sparkbigdl) and more examples [here](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tfnet).
 
-- For more information, You may refer to the [Analytis Zoo document website](https://analytics-zoo.github.io/).
+- For more information, You may refer to the [Analytics Zoo document website](https://analytics-zoo.github.io/).
 
 - For additional questions and discussions, you can join the [Google User Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)).
 
@@ -31,7 +31,7 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
 
 ## Overview
 
-- [Distributed Tensoflow and Keras on Spark/BigDL](#distributed-tensoflow-and-keras-on-sparkbigdl)
+- [Distributed Tensorflow and Keras on Spark/BigDL](#distributed-tensorflow-and-keras-on-sparkbigdl)
 
     - Data wrangling and analysis using PySpark
     - Deep learning model development using TensorFlow or Keras
@@ -53,7 +53,7 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
   
 - [Reference use cases](#reference-use-cases): a collection of end-to-end *reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image augmentation, object detection, variational autoencoder, etc.)
 
-## _Distributed Tensoflow and Keras on Spark/BigDL_
+## _Distributed Tensorflow and Keras on Spark/BigDL_
 To make it easy to build and productionize the deep learning applications for Big Data, Analytics Zoo provides a unified analytics + AI platform that seamlessly unites Spark, TensorFlow, Keras and BigDL programs into an integrated pipeline (as illustrated below), which can then transparently run on a large-scale Hadoop/Spark clusters for distributed training and inference. (Please see more examples [here](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tfnet)).
 
 1.Data wrangling and analysis using PySpark
@@ -103,7 +103,7 @@ To make it easy to build and productionize the deep learning applications for Bi
    optimizer.optimize(end_trigger=MaxEpoch(5))
 ```
 
-4.Alternatively, using Keras APIs for model development and distribtued training
+4.Alternatively, using Keras APIs for model development and distributed training
 ```python
    from zoo.pipeline.api.keras.models import *
    from zoo.pipeline.api.keras.layers import *
