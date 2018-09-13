@@ -1194,6 +1194,11 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     new IdentityCriterion()
   }
 
+  def createTFValidationMethod(validationMethod: ValidationMethod[Float],
+                               outputLength: Int, targetLength: Int): TFValidationMethod = {
+    new TFValidationMethod(validationMethod, outputLength, targetLength)
+  }
+
   def connectInputs(module: AbstractModule[Activity, Activity, T],
       x: JList[Variable[T]]): Variable[T] = {
     require(!x.isEmpty, "We don't accept empty inputs")
@@ -1308,11 +1313,6 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
                         batchSize: Int = 32): TFOptimizer = {
     new TFOptimizer(modelPath, optimMethod,
       toJSample(x).asInstanceOf[RDD[JSample[Float]]], batchSize)
-  }
-
-  def tfOptimize(optimizer: TFOptimizer, endTrigger: Trigger): JList[JTensor] = {
-    val result = optimizer.optimize(endTrigger)
-    result.map(t => toJTensor(t.asInstanceOf[Tensor[T]])).toVector.asJava
   }
 
   def trainTFNet(modelPath: String,
