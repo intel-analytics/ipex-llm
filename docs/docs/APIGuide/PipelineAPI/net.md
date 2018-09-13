@@ -188,5 +188,47 @@ val m = TFNet("/tmp/models/tfnet")
 m = TFNet.from_export_folder("/tmp/models/tfnet")
 ```
 
-Please refer to [TFNet Object Detection Example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/tfnet) and
+Please refer to [TFNet Object Detection Example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/tensorflow/tfnet) and
 the [Image Classification Using TFNet Notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/tfnet) for more information.
+
+
+## TFDataset
+
+TFDatset represents a distributed collection of elements to be feed into Tensorflow graph.
+TFDatasets can be created using a RDD and each of its records is a list of numpy.ndarray representing
+the tensors to be feed into tensorflow graph on each iteration. TFDatasets must be used with the
+TFOptimizer or TFPredictor.
+
+**Python**
+```python
+   dataset = TFDataset.from_rdd(train_rdd,
+                                 names=["features", "labels"],
+                                 shapes=[[28, 28, 1], [1]],
+                                 types=[tf.float32, tf.int32],
+                                 batch_size=BATCH_SIZE)
+```
+
+## TFOptimizer
+TFOptimizer is the class that does all the hard work in distributed training, such as model
+distribution and parameter synchronization. It takes the **loss** (a scalar tensor) as input and runs
+stochastic gradient descent using the given **optimMethod** on all the **Variables** that contributing
+to this loss.
+
+**Python**
+```python
+optimizer = TFOptimizer(loss, Adam(1e-3))
+optimizer.set_train_summary(TrainSummary("/tmp/az_lenet", "lenet"))
+optimizer.optimize(end_trigger=MaxEpoch(5))
+```
+
+## TFPredictor
+
+TFPredictor takes a list of tensorflow tensors as the model outputs and feed all the elements in
+ TFDatasets to produce those outputs and returns a Spark RDD with each of its elements representing the
+ model prediction for the corresponding input elements.
+ 
+**Python**
+```python
+predictor = TFPredictor(sess, [logits])
+predictions_rdd = predictor.predict()
+```

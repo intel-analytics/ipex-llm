@@ -31,6 +31,7 @@ pages:
     - Autograd: ProgrammingGuide/autograd.md
     - Transfer Learning: ProgrammingGuide/transferlearning.md
     - Model Serving: ProgrammingGuide/inference.md
+    - Distributed Tensoflow on Spark/BigDL: ProgrammingGuide/tensorflow.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
   - Built-in Models:
