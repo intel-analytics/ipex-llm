@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
+import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding
 import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, TFNet}
 import org.slf4j.LoggerFactory
@@ -31,6 +32,7 @@ object ModelLoader extends InferenceSupportive {
   Model
   Sequential
   GraphNet
+  WordEmbedding
 
   timing("bigdl init engine") {
     System.setProperty("bigdl.localMode", System.getProperty("bigdl.localMode", "true"))
