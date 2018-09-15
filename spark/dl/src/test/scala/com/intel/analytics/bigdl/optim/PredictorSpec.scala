@@ -215,7 +215,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
   }
-  
+
   "predictImage with output " +
   "whose type is a table of 2 table and 1 tensor" should "work properly" in {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
