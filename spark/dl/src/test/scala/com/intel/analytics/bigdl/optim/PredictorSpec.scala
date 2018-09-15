@@ -210,71 +210,56 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val imageFeatures = detection.rdd.collect()
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
+      print(imageFeatures(x - 1).predict())
       assert(imageFeatures(x - 1).predict() != null)
       assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
   }
 
-  "model.predict" should "support model with output type table of tables" in {
+  "predictImage with output " +
+    "whose type is a table of 2 table and 1 tensor" should "work properly" in {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val ims = (1 to 50).map(x => {
+      val im = ImageFeature()
+      im(ImageFeature.uri) = x.toString
+      im(ImageFeature.imageTensor) = Tensor[Float](3, 24, 24).randn()
+      im
+    })
+
+    // define nodes for the first graph with a table output
+    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
     val input1 = Input()
+    val conv1 = SpatialConvolution(3, 6, 5, 5).inputs(input1)
+    val out1 = Tanh().inputs(conv1)
+    val out2 = ReLU().inputs(conv1)
+
+    // define nodes for the second graph with a table output
     val input2 = Input()
+    val conv2 = SpatialConvolution(3, 6, 5, 5).inputs(input2)
+    val out3 = Sigmoid().inputs(conv2)
+    val out4 = LogSigmoid().inputs(conv2)
 
+    // create the first graph
+    val g1 = Graph(input1, Array(out1, out2))
 
-    val l1 = Sequential()
-    l1.add(Exp())
-    // l1.add(SplitTable(2))
-    val l2 = Sequential()
-    l2.add(Exp())
-    // l2.add(SplitTable(2))
+    // create the second graph
+    val g2 = Graph(input2, Array(out3, out4))
 
-    val parallel = ParallelTable()
+    // create a model which consists of the first graph, the second graph and an Indentity node
+    val model = ConcatTable()
+    model.add(g1)
+    model.add(g2)
+    // this Idenitity node should generate a tensor output
+    model.add(Identity())
+    val detection = model.predictImage(imageFrame).toDistributed()
 
-    parallel.add(l2)
-    parallel.add(l1)
-    val para = parallel.inputs(input1, input2)
-
-    val graph = Graph(Array(input1, input2), para)
-
-    val output = graph.forward(T(Tensor(T(
-      T(1.0f, 2.0f, 3.0f),
-      T(4.0f, 5.0f, 6.0f),
-      T(7.0f, 8.0f, 9.0f)
-    )), Tensor(T(
-      T(0.5f, 0.4f)
-    ))
-    ))
-
-    val test_tensor = Array(Tensor(Tensor(T(
-      T(1.0f, 2.0f, 3.0f),
-      T(4.0f, 5.0f, 6.0f),
-      T(7.0f, 8.0f, 9.0f)
-    ))), Tensor(Tensor(T(
-      T(0.5f, 0.4f))
-    )))
-    val sample = Sample(test_tensor)
-
-    val data = sc.parallelize(Seq(sample), 1)
-    val res1 = graph.predict(data, 1, true).collect()(0).toTable.getState()(1)
-        .asInstanceOf[Table].getState()
-    val res2 = graph.predict(data, 1, true).collect()(0).toTable.getState()(2)
-      .asInstanceOf[Table].getState()
-    val expected1 = output.toTable.getState()(1).asInstanceOf[Tensor[Float]]
-    val expected2 = output.toTable.getState()(2).asInstanceOf[Tensor[Float]]
-
-    res1(1).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected1.valueAt(1, 1))
-    res1(1).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected1.valueAt(1, 2))
-    res1(1).asInstanceOf[Tensor[Float]].valueAt(3) should be (expected1.valueAt(1, 3))
-    res1(2).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected1.valueAt(2, 1))
-    res1(2).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected1.valueAt(2, 2))
-    res1(2).asInstanceOf[Tensor[Float]].valueAt(3) should be (expected1.valueAt(2, 3))
-    res1(3).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected1.valueAt(3, 1))
-    res1(3).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected1.valueAt(3, 2))
-    res1(3).asInstanceOf[Tensor[Float]].valueAt(3) should be (expected1.valueAt(3, 3))
-
-    res2(1).asInstanceOf[Tensor[Float]].valueAt(1) should be (expected2.valueAt(1, 1))
-    res2(1).asInstanceOf[Tensor[Float]].valueAt(2) should be (expected2.valueAt(1, 2))
-
+    val imageFeatures = detection.rdd.collect()
+    (1 to 20).foreach(x => {
+      imageFeatures(x - 1).uri() should be (x.toString)
+      assert(imageFeatures(x - 1).predict() != null)
+      assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 3)
+    })
   }
 
   "model predict should have no memory leak" should "be correct" in {

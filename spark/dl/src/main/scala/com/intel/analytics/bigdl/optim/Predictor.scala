@@ -68,27 +68,49 @@ object Predictor {
     })
   }
 
-  private[optim] def splitTable[T: ClassTag](output: Activity, shareBuffer: Boolean)
+  private[optim] def splitTensor[T: ClassTag](output: Tensor[T],
+                                  shareBuffer: Boolean, batchSize: Int)
+    (implicit ev: TensorNumeric[T]): Array[Activity] = {
+    val result = if (shareBuffer) output else output.clone()
+    val size = result.size(1)
+    require(batchSize == size,
+      s"The batchSize is required to be $size, while actual is $batchSize")
+    val out = result.split(1)
+    out.asInstanceOf[Array[Activity]]
+  }
+
+  private[optim] def splitTable[T: ClassTag](output: Activity, shareBuffer: Boolean, batchSize: Int)
     (implicit ev: TensorNumeric[T]): Array[Activity] = {
     val out = if (output.isTensor) {
-      val result = if (shareBuffer) output.toTensor[T] else output.toTensor[T].clone()
-      result.split(1)
+      splitTensor(output.toTensor, shareBuffer, batchSize)
     } else {
-      val result = if (shareBuffer) output.toTable else output.toTable.clone()
-      val table = T()
-      (1 to result.length()).foreach(key => {
-        val res = splitTable(result[Activity](key), true)
-        table.insert(T.array(res))
-      })
-      Array(table)
+      val result = output.toTable
+      val tables = new Array[Table](batchSize)
 
+      (1 to result.length()).foreach(key => {
+
+        var i = 1
+        while (i <= batchSize) {
+          val table = T()
+          tables(i - 1) = table
+          (1 to result.length()).foreach(key => {
+            val split = splitTable(result(key), shareBuffer, batchSize)
+            val size = split.length
+            require(batchSize == size,
+              s"The batchSize is required to be $size, while actual is $batchSize")
+            table.insert(split(i - 1))
+          })
+          i += 1
+        }
+      })
+      tables
     }
     out.asInstanceOf[Array[Activity]]
   }
 
   private[optim] def splitBatch[T: ClassTag](output: Activity, shareBuffer: Boolean, batchSize: Int)
     (implicit ev: TensorNumeric[T]): Array[Activity] = {
-    splitTable(output, shareBuffer)
+    splitTable(output, shareBuffer, batchSize)
   }
 
   def predictImage[T: ClassTag](imageFrame: DistributedImageFrame,
