@@ -223,8 +223,10 @@ class SpatialConvolution(
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
-    weight.syncToNative()
-    bias.syncToNative()
+    if (isTraining()) {
+      weight.syncToNative()
+      bias.syncToNative()
+    }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
@@ -373,6 +375,12 @@ class SpatialConvolution(
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
     (Array(weight.memoryData(), bias.memoryData()),
       Array(gradWeight.memoryData(), bias.memoryData()))
+  }
+
+  override def release(): Unit = {
+    super.release()
+    List(weight, bias, gradWeight, gradBias).foreach(_.release())
+    if (weightForBackward != null) { weightForBackward.release() }
   }
 }
 

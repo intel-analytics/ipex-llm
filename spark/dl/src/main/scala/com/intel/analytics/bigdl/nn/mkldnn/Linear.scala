@@ -136,8 +136,10 @@ class Linear(
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
-    weight.syncToNative()
-    bias.syncToNative()
+    if (isTraining()) {
+      weight.syncToNative()
+      bias.syncToNative()
+    }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
@@ -279,6 +281,11 @@ class Linear(
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
+  }
+
+  override def release(): Unit = {
+    super.release()
+    List(weight, bias, gradWeight, gradBias).foreach(_.release())
   }
 }
 

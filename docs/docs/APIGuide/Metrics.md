@@ -130,3 +130,35 @@ test_results = model.evaluate(trainingData, batch_size, [Top5Accuracy()])
 Test result: 0.0, total_num: 10, method: Top5Accuracy
 ```
 
+---
+## HitRatio ##
+
+Hit Ratio(HR) used in recommandation application. HR intuitively measures whether the test item is present on the top-k list.  
+
+Notice: Output and target should belong to the same user. And have (negNum + 1) elements. Target should have only one positive label, means one element is 1, others are all 0. A couple of output and target will be count as one record.
+
+**Scala:**
+```scala
+val hr10 = new HitRatio(k = 10, negNum = 100)
+```
+**Python:**
+```python
+hr10 = HitRatio(k = 10)
+```
+
+---
+## NDCG ##
+
+NDCG is Normalized Discounted Cumulative Gain(NDCG).  
+NDCG accounts for the position of the hit by assigning higher scores to hits at top ranks.  
+
+Notice: Like HitRatio, output and target should belong to the same user. And have (negNum + 1) elements. Target should have only one positive label, means one element is 1, others are all 0. A couple of output and target will be count as one record.
+
+**Scala:**
+```scala
+val ndcg = new NDCG(k = 10, negNum = 100)
+```
+**Python:**
+```python
+ndcg = NDCG(k = 10)
+```

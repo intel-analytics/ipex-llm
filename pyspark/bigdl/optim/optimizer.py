@@ -28,7 +28,8 @@ from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
-from bigdl.util.common import get_spark_context
+from bigdl.util.common import get_node_and_core_number
+from bigdl.util.common import init_engine
 from bigdl.util.common import to_list
 from bigdl.dataset.dataset import *
 
@@ -86,6 +87,40 @@ class Loss(JavaValue):
         if cri is None:
             cri = ClassNLLCriterion()
         JavaValue.__init__(self, None, bigdl_type, cri)
+
+class HitRatio(JavaValue):
+    """
+    Hit Ratio(HR) used in recommandation application.
+    HR intuitively measures whether the test item is present on the top-k list.
+
+    >>> hr10 = HitRatio(k = 10)
+    creating: createHitRatio
+    """
+    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+        """
+        Create hit ratio validation method.
+
+        :param k: top k
+        :param neg_num: number of negative items.
+        """
+        JavaValue.__init__(self, None, bigdl_type, k, neg_num)
+
+class NDCG(JavaValue):
+    """
+    Normalized Discounted Cumulative Gain(NDCG).
+    NDCG accounts for the position of the hit by assigning higher scores to hits at top ranks.
+
+    >>> ndcg = NDCG(k = 10)
+    creating: createNDCG
+    """
+    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+        """
+        Create NDCG validation method.
+
+        :param k: top k
+        :param neg_num: number of negative items.
+        """
+        JavaValue.__init__(self, None, bigdl_type, k, neg_num)
 
 class MAE(JavaValue):
     """
@@ -498,7 +533,7 @@ class Adam(OptimMethod):
     :param beta1 first moment coefficient
     :param beta2 second moment coefficient
     :param epsilon for numerical stability
-    >>> adagrad = Adam()
+    >>> adam = Adam()
     creating: createAdam
     """
     def __init__(self,
@@ -510,6 +545,31 @@ class Adam(OptimMethod):
                  bigdl_type="float"):
         super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
                            beta1, beta2, epsilon)
+
+class ParallelAdam(OptimMethod):
+    """
+    An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
+    :param learningrate learning rate
+    :param learningrate_decay learning rate decay
+    :param beta1 first moment coefficient
+    :param beta2 second moment coefficient
+    :param epsilon for numerical stability
+    >>> init_engine()
+    >>> pAdam = ParallelAdam()
+    creating: createParallelAdam
+    """
+    def __init__(self,
+                 learningrate = 1e-3,
+                 learningrate_decay = 0.0,
+                 beta1 = 0.9,
+                 beta2 = 0.999,
+                 epsilon = 1e-8,
+                 parallel_num = -1,
+                 bigdl_type="float"):
+        if parallel_num == -1:
+            parallel_num = get_node_and_core_number()[1]
+        super(ParallelAdam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
+                                   beta1, beta2, epsilon, parallel_num)
 
 class Ftrl(OptimMethod):
     """

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.mkldnn.ResNet.DatasetType.ImageNet
+import com.intel.analytics.bigdl.nn.mkldnn.models.Vgg_16
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -32,11 +33,14 @@ import scopt.OptionParser
 
 import scala.reflect.ClassTag
 
-object ResNet50Perf {
+object Perf {
 
   val logger = Logger.getLogger(getClass)
 
-  val parser = new OptionParser[ResNet50PerfParams]("BigDL Local ResNet-50 Performance Test") {
+  val parser = new OptionParser[ResNet50PerfParams]("BigDL w/ Dnn Local Model Performance Test") {
+    opt[String]('m', "model")
+      .text("model you want, vgg16 | resnet50")
+      .action((v, p) => p.copy(model = v))
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
       .action((v, p) => p.copy(batchSize = v))
@@ -49,21 +53,14 @@ object ResNet50Perf {
   }
 
   def main(argv: Array[String]): Unit = {
-    System.setProperty("bigdl.disable.mklBlockTime", "true");
     System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
     System.setProperty("bigdl.mkldnn.fusion.bnrelu", "true")
     System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
     System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
 
-//    val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
-//      s"${Math.ceil(Runtime.getRuntime.availableProcessors() / 2).toInt}").toInt
     System.setProperty("bigdl.localMode", "true")
-    System.setProperty("bigdl.mklNumThreads",
-      s"${Math.ceil(Runtime.getRuntime.availableProcessors / 2).toInt}")
-    System.setProperty("bigdl.coreNumber", "1")
+    System.setProperty("bigdl.engineType", "mkldnn")
     Engine.init
-//    Engine.setCoreNumber(1)
-//    MklDnn.setNumThreads(coreNumber)
 
     parser.parse(argv, new ResNet50PerfParams()).foreach { params =>
       val batchSize = params.batchSize
@@ -75,9 +72,14 @@ object ResNet50Perf {
       val inputFormat = Memory.Format.nchw
       val inputShape = Array(batchSize, 3, 224, 224)
       val input = Tensor(inputShape).rand()
-      val label = Tensor(batchSize).apply1(_ => Math.floor(RNG.uniform(0, 1) * 1000).toFloat)
+      val label = Tensor(batchSize).apply1(_ => Math.ceil(RNG.uniform(0, 1) * 1000).toFloat)
 
-      val model = ResNet(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
+      val model = params.model match {
+        case "vgg16" => Vgg_16(batchSize, classNum, false)
+        case "resnet50" => ResNet(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
+        case _ => throw new UnsupportedOperationException(s"Unkown model ${params.model}")
+      }
+
       val criterion = CrossEntropyCriterion()
 
       if (training) {
@@ -111,17 +113,19 @@ object ResNet50Perf {
 }
 
 case class ResNet50PerfParams (
-    batchSize: Int = 16,
-    iteration: Int = 50,
-    training: Boolean = true
+  batchSize: Int = 16,
+  iteration: Int = 50,
+  training: Boolean = true,
+  model: String = "vgg16"
 )
 
 object ResNet {
   def modelInit(model: Module[Float]): Unit = {
     def initModules(model: Module[Float]): Unit = {
       model match {
-        case container: Container[Activity, Activity, Float]
-        => container.modules.foreach(m => initModules(m))
+        case container: Container[Activity, Activity, Float] =>
+          container.modules.foreach(m => initModules(m))
+
         case conv: SpatialConvolution =>
           val n: Float = conv.kernelW * conv.kernelW * conv.nOutputPlane
           val weight = Tensor[Float].resize(conv.weight.size()).apply1 { _ =>
@@ -130,17 +134,21 @@ object ResNet {
           val bias = Tensor[Float].resize(conv.bias.size()).apply1(_ => 0.0f)
           conv.weight.copy(weight)
           conv.bias.copy(bias)
+
         case bn: SpatialBatchNormalization =>
-          val runningMean = Tensor[Float].resize(bn.runningMean.size()).fill(0)
-          val runningVairance = Tensor[Float].resize(bn.runningVariance.size()).fill(1)
-          bn.runningMean.copy(runningMean)
-          bn.runningVariance.copy(runningVairance)
+          val weightAndBias = Tensor[Float]().resize(Array(2, bn.nOutput))
+          weightAndBias.select(1, 1).fill(1)
+          weightAndBias.select(1, 2).fill(0)
+          bn.weightAndBias.copy(weightAndBias.view(Array(bn.nOutput * 2)))
+
         case linear: Linear =>
           val bias = Tensor[Float](linear.bias.size()).apply1(_ => 0.0f)
           linear.bias.copy(bias)
-        case _ => Unit
+
+        case _ =>
       }
     }
+
     initModules(model)
   }
 
@@ -227,9 +235,8 @@ object ResNet {
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
 
-      model.add(ReorderMemory(HeapData(Array(batchSize, 3, 224, 224), Memory.Format.nchw)))
-        .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false)
-        .setName("conv1").setReLU(true))
+      model.add(Input(Array(batchSize, 3, 224, 224), Memory.Format.nchw))
+        .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false).setName("conv1"))
         .add(SbnDnn(64).setName("bn_conv1"))
         .add(ReLU().setName("conv1_relu"))
         .add(MaxPooling(3, 3, 2, 2).setName("pool1"))

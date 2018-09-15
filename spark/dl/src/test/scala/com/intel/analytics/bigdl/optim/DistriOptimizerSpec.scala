@@ -21,10 +21,13 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.tensor.{DenseTensor, Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensor, DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
@@ -109,6 +112,13 @@ object DistriOptimizerSpecModel {
       .add(new Linear(2, 1))
       .add(new Sigmoid)
       .add(new ExceptionTest(failCountNumberLists, sleep))
+  }
+
+  def dnn: Module[Float] = {
+    new nn.mkldnn.Sequential()
+      .add(nn.mkldnn.Input(Array(8, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Linear(4, 2))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(8, 2), Memory.Format.nc)))
   }
 }
 
@@ -883,5 +893,4 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimMethod.state[Int]("recordsProcessedThisEpoch") should be(0)
   }
 }
-
 

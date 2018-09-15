@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.tensor.{DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -116,6 +118,13 @@ object LocalOptimizerSpecModel {
       .add(Sigmoid[Float]())
       .add(Linear[Float](4, 1).setName("fc_2"))
       .add(Sigmoid[Float]())
+  }
+
+  def dnnModel: Module[Float] = {
+    new nn.mkldnn.Sequential()
+      .add(nn.mkldnn.Input(Array(4, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Linear(4, 2))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(4, 2), Memory.Format.nc)))
   }
 }
 

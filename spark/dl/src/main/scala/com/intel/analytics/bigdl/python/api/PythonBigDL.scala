@@ -2072,6 +2072,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new Top1Accuracy()
   }
 
+  def createHitRatio(k: Int = 10, negNum: Int = 100): ValidationMethod[T] = {
+    new HitRatio(k, negNum)
+  }
+
+  def createNDCG(k: Int = 10, negNum: Int = 100): ValidationMethod[T] = {
+    new NDCG(k, negNum)
+  }
+
   def createTreeNNAccuracy(): ValidationMethod[T] = {
     new TreeNNAccuracy()
   }
@@ -2134,6 +2142,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     beta2: Double = 0.999,
     Epsilon: Double = 1e-8): Adam[T] = {
     new Adam[T](learningRate, learningRateDecay, beta1, beta2, Epsilon)
+  }
+
+  def createParallelAdam(
+        learningRate: Double = 1e-3,
+        learningRateDecay: Double = 0.0,
+        beta1: Double = 0.9,
+        beta2: Double = 0.999,
+        Epsilon: Double = 1e-8,
+        parallelNum: Int = Engine.coreNumber()): ParallelAdam[T] = {
+    new ParallelAdam[T](learningRate, learningRateDecay, beta1, beta2, Epsilon, parallelNum)
   }
 
   def createFtrl(

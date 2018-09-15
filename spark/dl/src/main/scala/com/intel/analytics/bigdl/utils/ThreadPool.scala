@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
+import com.google.common.util.concurrent.MoreExecutors
 import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.hardware.Affinity
+import com.intel.analytics.bigdl.mkl.{MklDnn => BackendMklDnn}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
@@ -28,6 +31,10 @@ import scala.collection.JavaConverters._
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
+ *
+ * TODO `TreadPool` will give 2-version of thread pool, one uses scala version (`invokeAndWait`),
+ * another is provided to Java (`invokeAndWait2`). The design is weird. We should refactor this
+ * class later.
  */
 class ThreadPool(private var poolSize: Int) {
 
@@ -41,6 +48,7 @@ class ThreadPool(private var poolSize: Int) {
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
     if (poolSize == 1) {
+      threadPool = MoreExecutors.sameThreadExecutor()
       singleThreadPool
     } else {
       new ExecutionContext {
@@ -71,10 +79,9 @@ class ThreadPool(private var poolSize: Int) {
    * @return
    */
   def setMKLThread(size: Int): this.type = this.synchronized {
-    require(MKL.isMKLLoaded)
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
-      MKL.setNumThreads(size)
+      ThreadPool.setThreadsOfBackend(size)
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
@@ -207,5 +214,15 @@ object ThreadPool {
   }
 
   private val logger = Logger.getLogger(getClass)
+
+  def setThreadsOfBackend(size: Int): Unit = {
+    require(MKL.isMKLLoaded)
+    MKL.setNumThreads(size)
+    if (System.getProperty("bigdl.engineType") == "mkldnn") {
+      require(BackendMklDnn.isLoaded)
+      BackendMklDnn.setNumThreads(size)
+      Affinity.setOmpAffinity()
+    }
+  }
 }
 

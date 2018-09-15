@@ -17,12 +17,14 @@
 package com.intel.analytics.bigdl.models.resnet
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.inception.{ImageNet2012, ImageNet2012Val}
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.mkldnn.ResNet.DatasetType.ImageNet
 import com.intel.analytics.bigdl.nn.{BatchNormalization, Container, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -66,38 +68,34 @@ object TrainImageNet {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        val curModel =
-          ResNet(classNum = param.classes, T("shortcutType" -> shortcut, "depth" -> param.depth,
-          "optnet" -> param.optnet, "dataSet" -> dataSetType))
-        if (param.optnet) {
-          ResNet.shareGradInput(curModel)
+        Engine.getEngineType() match {
+          case MklBlas =>
+            val curModel =
+              ResNet(classNum = param.classes, T("shortcutType" -> shortcut, "depth" -> param.depth,
+                "optnet" -> param.optnet, "dataSet" -> dataSetType))
+            if (param.optnet) {
+              ResNet.shareGradInput(curModel)
+            }
+            ResNet.modelInit(curModel)
+
+            /* Here we set parallism specificall for BatchNormalization and its Sub Layers, this is
+            very useful especially when you want to leverage more computing resources like you want
+            to use as many cores as possible but you cannot set batch size too big for each core due
+            to the memory limitation, so you can set batch size per core smaller, but the smaller
+            batch size will increase the instability of convergence, the synchronization among BN
+            layers basically do the parameters synchronization among cores and thus will avoid the
+            instability while improves the performance a lot. */
+            val parallisim = Engine.coreNumber
+            setParallism(curModel, parallisim)
+
+            curModel
+          case MklDnn =>
+            nn.mkldnn.ResNet(param.batchSize / Engine.nodeNumber(), param.classes,
+              T("depth" -> 50, "dataSet" -> ImageNet))
         }
-        ResNet.modelInit(curModel)
-        curModel
       }
 
       println(model)
-
-      /* Here we set parallism specificall
-      for BatchNormalization and its Sub Layers,
-      this is very useful especially when
-      you want to leverage more computing
-      resources like you want to use
-      as many cores as possible but you cannot
-      set batch size too big for each core due
-      to the memory limitation, so you can set
-      batch size per core smaller, but the smaller
-      batch size will increase the instability of
-      convergence, the synchronization among BN
-      layers basically do the parameters
-      synchronization among cores
-       and thus will avoid the instability while
-       improves the performance a lot.
-       */
-
-      val parallisim = Engine.coreNumber
-
-      setParallism(model, parallisim)
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
         val optim = OptimMethod.load[Float](param.stateSnapshot.get).asInstanceOf[SGD[Float]]
@@ -119,9 +117,9 @@ object TrainImageNet {
           s"maxLr: $maxLr, " +
           s"delta: $delta, nesterov: ${param.nesterov}")
         new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
-        momentum = param.momentum, dampening = param.dampening,
-        nesterov = param.nesterov,
-        learningRateSchedule = SGD.EpochDecayWithWarmUp(warmUpIteration, delta, imageNetDecay))
+          weightDecay = param.weightDecay, momentum = param.momentum, dampening = param.dampening,
+          nesterov = param.nesterov,
+          learningRateSchedule = SGD.EpochDecayWithWarmUp(warmUpIteration, delta, imageNetDecay))
       }
 
       val optimizer = Optimizer(

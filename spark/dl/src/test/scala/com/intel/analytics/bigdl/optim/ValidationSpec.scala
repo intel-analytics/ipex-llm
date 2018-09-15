@@ -241,4 +241,100 @@ class ValidationSpec extends FlatSpec with Matchers {
     val test = new LossResult(1.5f, 1)
     result should be(test)
   }
+
+  "top1 accuracy" should "be correct on 2d tensor with diff size of output and target" in {
+    val output = Tensor(Storage(Array[Double](
+      0, 0, 0, 1,
+      0, 1, 0, 0,
+      1, 0, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+      0, 1, 0, 0
+    )), 1, Array(8, 4))
+
+    val target = Tensor(Storage(Array[Double](
+      4,
+      2,
+      1,
+      3,
+      2,
+      2
+    )))
+
+    val validation = new Top1Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(4, 6)
+    result should be(test)
+  }
+
+  "Top5 accuracy" should "be correct on 2d tensor with diff size of output and target" in {
+    val output = Tensor(Storage(Array[Double](
+      0, 0, 8, 1, 2, 0, 0, 0,
+      0, 1, 0, 0, 2, 3, 4, 6,
+      1, 0, 0, 0.6, 0.1, 0.2, 0.3, 0.4,
+      0, 0, 1, 0, 0.5, 1.5, 2, 0,
+      1, 0, 0, 6, 2, 3, 4, 5,
+      0, 0, 1, 0, 1, 1, 1, 1,
+      0, 0, 0, 1, 1, 2, 3, 4,
+      0, 1, 0, 0, 2, 4, 3, 2
+    )), 1, Array(8, 8))
+
+    val target = Tensor(Storage(Array[Double](
+      4,
+      2,
+      1,
+      3,
+      2,
+      2
+    )))
+
+    val validation = new Top5Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(4, 6)
+    result should be(test)
+  }
+
+  "HR@10" should "works fine" in {
+    val o = Tensor[Float].range(1, 1000, 1).apply1(_ / 1000)
+    val t = Tensor[Float](1000).zero
+    t.setValue(1000, 1)
+    val hr = new HitRatio[Float](negNum = 999)
+    val r1 = hr.apply(o, t).result()
+    r1._1 should be (1.0)
+
+    o.setValue(1000, 0.9988f)
+    val r2 = hr.apply(o, t).result()
+    r2._1 should be (1.0)
+
+    o.setValue(1000, 0.9888f)
+    val r3 = hr.apply(o, t).result()
+    r3._1 should be (0.0f)
+  }
+
+  "ndcg" should "works fine" in {
+    val o = Tensor[Float].range(1, 1000, 1).apply1(_ / 1000)
+    val t = Tensor[Float](1000).zero
+    t.setValue(1000, 1)
+    val ndcg = new NDCG[Float](negNum = 999)
+    val r1 = ndcg.apply(o, t).result()
+    r1._1 should be (1.0)
+
+    o.setValue(1000, 0.9988f)
+    val r2 = ndcg.apply(o, t).result()
+    r2._1 should be (0.63092977f)
+
+    o.setValue(1000, 0.9888f)
+    val r3 = ndcg.apply(o, t).result()
+    r3._1 should be (0.0f)
+  }
+
+  "CongituousResult" should "works fine" in {
+    val cr1 = new ContiguousResult(0.2f, 2, "HR@10")
+    val cr2 = new ContiguousResult(0.1f, 1, "HR@10")
+    val result = cr1 + cr2
+    result.result()._1 should be (0.1f)
+    result.result()._2 should be (3)
+  }
 }
