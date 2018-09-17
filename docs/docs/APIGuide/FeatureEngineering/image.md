@@ -165,3 +165,184 @@ Example:
 val imageSet = ImageSet.read(path, sc)
 imageSet -> ImageBytesToMat()
 ```
+## 3D Image Support
+
+### Create ImageSet for 3D Images
+
+For 3D images, you can still use ImageSet as the collection of ImageFeature3D. You can create ImageSet for 3D images in the similar way as for 2D images. Since we do not provide 3D image reader in analytics zoo, before create ImageSet, we suppose you already read 3D images to tensor(scala) or numpy array(python).
+
+Scala example:
+```scala
+val image = ImageFeature3D(tensor)
+
+// create local imageset for 3D images
+val arr = Array[ImageFeature](image)
+val localImageSet = ImageSet.array(arr)
+
+// create distributed imageset for 3D images
+val rdd = sc.parallelize(Seq[ImageFeature](image))
+val imageSet = ImageSet.rdd(rdd)
+```
+
+Python example:
+```python
+
+# get image numpy array
+img_np =
+
+# create local imageset for 3D images
+local_imageset = LocalImageSet(image_list=[img_np])
+
+# create distributed imageset for 3D images
+rdd = sc.parallelize([img_np])
+dist_imageSet = DistributedImageSet(image_rdd=rdd)
+```
+
+### 3D Image Transformers
+Analytics zoo also provides several image transformers for 3D Images.
+The usage is similar as 2D image transformers. After create these transformers, call `transform` with ImageSet to get transformed ImageSet.
+
+Currently we support three kinds of 3D image transformers: Crop, Rotation and Affine Transformation.
+
+#### Crop transformers
+
+##### Crop3D
+
+Scala:
+```scala
+import com.intel.analytics.zoo.feature.image3d.Crop3D
+
+// create Crop3D transformer
+val cropper = Crop3D(start, patchSize)
+val outputImageSet = imageset.transform(cropper)
+```
+
+Crop a patch from a 3D image from 'start' of patch size. The patch size should be less than the image size.
+   * start: start point array(depth, height, width) for cropping
+   * patchSize: patch size array(depth, height, width)
+
+Python:
+```python
+from zoo.feature.image3d.transformation import Crop3D
+
+crop = Crop3D(start, patch_size)
+transformed_image = crop(image_set)
+```
+* start: start point list[]depth, height, width] for cropping
+* patch_size: patch size list[]depth, height, width]
+
+##### RandomCrop3D
+
+Scala:
+```scala
+import com.intel.analytics.zoo.feature.image3d.RandomCrop3D
+
+// create Crop3D transformer
+val cropper = RandomCrop3D(cropDepth, cropHeight, cropWidth)
+val outputImageSet = imageset.transform(cropper)
+```
+
+Crop a random patch from an 3D image with specified patch size. The patch size should be less than the image size.
+* cropDepth: depth after crop
+* cropHeight: height after crop
+* cropWidth: width after crop
+
+Python:
+```python
+from zoo.feature.image3d.transformation import RandomCrop3D
+
+crop = RandomCrop3D(crop_depth, crop_height, crop_width)
+transformed_image = crop(image_set)
+```
+* crop_depth: depth after crop
+* crop_height: height after crop
+* crop_width: width after crop
+
+##### CenterCrop3D
+
+Scala:
+```scala
+import com.intel.analytics.zoo.feature.image3d.CenterCrop3D
+
+// create Crop3D transformer
+val cropper = CenterCrop3D(cropDepth, cropHeight, cropWidth)
+val outputImageSet = imageset.transform(cropper)
+```
+
+Crop a `cropDepth` x `cropWidth` x `cropHeight` patch from center of image. The patch size should be less than the image size.
+* cropDepth: depth after crop
+* cropHeight: height after crop
+* cropWidth: width after crop
+
+Python:
+```python
+from zoo.feature.image3d.transformation import CenterCrop3D
+
+crop = CenterCrop3D(crop_depth, crop_height, crop_width)
+transformed_image = crop(image_set)
+```
+* crop_depth: depth after crop
+* crop_height: height after crop
+* crop_width: width after crop
+
+#### Rotation
+Scala:
+```scala
+import com.intel.analytics.zoo.feature.image3d.Rotate3D
+
+// create Crop3D transformer
+val rotAngles = Array[Double](yaw, pitch, roll)
+val rot = Rotate3D(rotAngles)
+val outputImageSet = imageset.transform(rot)
+```
+
+Rotate a 3D image with specified angles.
+* rotationAngles: the angles for rotation.
+   Which are the yaw(a counterclockwise rotation angle about the z-axis),
+   pitch(a counterclockwise rotation angle about the y-axis),
+   and roll(a counterclockwise rotation angle about the x-axis).
+
+Python:
+```python
+from zoo.feature.image3d.transformation import Rotate3D
+
+rot = Rotate3D(rotation_angles)
+transformed_image = rot(image_set)
+```
+
+#### Affine Transformation
+Scala:
+```scala
+import com.intel.analytics.zoo.feature.image3d.AffineTransform3D
+import com.intel.analytics.bigdl.tensor.Tensor
+
+// create Crop3D transformer
+val matArray = Array[Double](1, 0, 0, 0, 1.5, 1.2, 0, 1.3, 1.4)
+val matTensor = Tensor[Double](matArray, Array[Int](3, 3))
+val trans = Tensor[Double](3)
+trans(1) = 0
+trans(2) = 1.8
+trans(3) = 1.1
+val aff = AffineTransform3D(mat=matTensor, translation = trans, clampMode = "clamp", padVal = 0)
+val outputImageSet = imageset.transform(aff)
+```
+Affine transformer implements affine transformation on a given tensor.
+To avoid defects in resampling, the mapping is from destination to source.
+dst(z,y,x) = src(f(z),f(y),f(x)) where f: dst -> src
+
+* mat: [Tensor[Double], dim: DxHxW] defines affine transformation from dst to src.
+* translation: [Tensor[Double], dim: 3, default: (0,0,0)] defines translation in each axis.
+* clampMode: [String, (default: "clamp",'padding')] defines how to handle interpolation off the input image.
+* padVal: [Double, default: 0] defines padding value when clampMode="padding". Setting this value when clampMode="clamp" will cause an error.
+
+Python:
+```python
+from zoo.feature.image3d.transformation import AffineTransform3D
+
+affine = AffineTransform3D(affine_mat, translation, clamp_mode, pad_val)
+transformed_image = affine(image_set)
+```
+* affine_mat: numpy array in 3x3 shape.Define affine transformation from dst to src.
+* translation: numpy array in 3 dimension.Default value is np.zero(3). Define translation in each axis.
+* clamp_mode: str, default value is "clamp". Define how to handle interpolation off the input image.
+* pad_val: float, default is 0.0. Define padding value when clampMode="padding". Setting this value when clampMode="clamp" will cause an error.

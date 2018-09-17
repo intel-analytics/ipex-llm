@@ -364,3 +364,6 @@ result = prediction.collect()
 You can load pre-trained Analytics-Zoo/BigDL model. Then call to `predictImageSet` to predict ImageSet.
 
 For details, you can check guide of [image classificaion](./image-classification.md) or [object detection](./object-detection.md)
+
+## 3D Image Support
+For 3D images, we can support above operations based on ImageSet. For details, please refer to [image API guide](../APIGuide/FeatureEngineering/image.md)
