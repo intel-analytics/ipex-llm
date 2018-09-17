@@ -267,6 +267,30 @@ class TestNNClassifer():
         assert len(lr_result) == 5
         assert len(mae_result) == 4
 
+    def test_NNEstimator_checkpoint(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        df = self.get_estimator_df()
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            estimator = NNEstimator(model, criterion).setMaxEpoch(5)\
+                .setBatchSize(4)\
+                .setCheckpoint(tmp_dir, EveryEpoch(), False)
+
+            checkpoint_config = estimator.getCheckpoint()
+            assert checkpoint_config[0] == tmp_dir
+            assert "EveryEpoch" in str(checkpoint_config)
+            assert checkpoint_config[2] is False
+
+            estimator.fit(df)
+            assert len(os.listdir(tmp_dir)) > 0
+        finally:
+            try:
+                shutil.rmtree(tmp_dir)  # delete directory
+            except OSError as exc:
+                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
+                    raise  # re-raise exception
+
     def test_NNModel_transform_with_nonDefault_featureCol(self):
         model = Sequential().add(Linear(2, 2))
         nnModel = NNModel(model, SeqToTensor([2]))\
