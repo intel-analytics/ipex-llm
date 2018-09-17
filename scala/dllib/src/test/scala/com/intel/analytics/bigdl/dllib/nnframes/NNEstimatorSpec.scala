@@ -18,6 +18,7 @@ package com.intel.analytics.zoo.pipeline.nnframes
 
 import java.io.File
 
+import com.google.common.io.Files
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn._
@@ -530,6 +531,33 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     estimator.fit(df)
     estimator.setGradientClippingByL2Norm(0.2f)
     estimator.fit(df)
+  }
+
+  "An NNEstimator" should "support checkpoint" in {
+    val tmpFile = Files.createTempDir().getPath
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = NNEstimator(model, criterion, Array(6), Array(1))
+      .setBatchSize(nRecords)
+      .setMaxEpoch(5)
+      .setCheckpoint(tmpFile, Trigger.everyEpoch)
+    assert(estimator.getCheckpointPath == tmpFile)
+
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    try {
+      estimator.fit(df)
+      val f = new File(tmpFile)
+      assert(new File(tmpFile).listFiles().length > 0)
+
+      // fit again to test overwrite works without error
+      NNEstimator(model, criterion, Array(6), Array(1))
+        .setBatchSize(nRecords)
+        .setMaxEpoch(5)
+        .setCheckpoint(tmpFile, Trigger.everyEpoch, isOverWrite = true).fit(df)
+    } finally {
+      Path(tmpFile).deleteRecursively()
+    }
   }
 }
 
