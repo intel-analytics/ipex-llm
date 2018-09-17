@@ -111,6 +111,21 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
     this, "cachingSample", "whether to cache the Samples after preprocessing")
 
   def isCachingSample: Boolean = $(cachingSample)
+
+  /**
+   * Set a check point saved at `path` triggered by `trigger`
+   * Default: not enabled
+   */
+  final val checkpointPath = new Param[String](this, "checkpointPath", "path for check points")
+  final val checkpointTrigger = new Param[Trigger](this, "checkpointTrigger",
+    "Trigger for check points")
+  final val checkpointOverwrite = new BooleanParam(this, "checkpointOverwrite",
+    "checkpointOverwrite")
+
+  /**
+   * Get check point path.
+   */
+  def getCheckpointPath: String = $(checkpointPath)
 }
 
 /**
@@ -230,7 +245,7 @@ class NNEstimator[T: ClassTag] private[zoo] (
   def getValidationSummary: Option[ValidationSummary] = validationSummary
 
   /**
-   * Enable validation Summary
+   * Enable validation Summary. Default: not enabled.
    */
   def setValidationSummary(value: ValidationSummary): this.type = {
     this.validationSummary = Some(value)
@@ -242,13 +257,13 @@ class NNEstimator[T: ClassTag] private[zoo] (
   @transient protected var validationMethods: Array[ValidationMethod[T]] = _
   @transient protected var validationBatchSize: Int = 0
   /**
-   * Set a validate evaluation during training
+   * Set a validate evaluation during training. Default: not enabled.
    *
    * @param trigger how often to evaluation validation set
    * @param validationDF validate data set
    * @param vMethods a set of validation method [[ValidationMethod]]
    * @param batchSize batch size for validation
-   * @return this optimizer
+   * @return this estimator
    */
   def setValidation(trigger: Trigger, validationDF: DataFrame,
                     vMethods : Array[ValidationMethod[T]], batchSize: Int)
@@ -273,6 +288,22 @@ class NNEstimator[T: ClassTag] private[zoo] (
     else {
       None
     }
+  }
+
+  /**
+   * Set check points during training. Not enabled by default.
+   *
+   * @param path the directory to save
+   * @param trigger how often to save the check point
+   * @param isOverWrite: whether to overwrite existing snapshots in path. Default is True
+   * @return this estimator
+   */
+  def setCheckpoint(path: String, trigger: Trigger, isOverWrite: Boolean = true): this.type = {
+    require(path != null && trigger != null, "checkpoint path and trigger cannot be null")
+    set(checkpointPath, path)
+    set(checkpointTrigger, trigger)
+    set(checkpointOverwrite, isOverWrite)
+    this
   }
 
   protected def validateParams(schema : StructType): Unit = {
@@ -356,6 +387,13 @@ class NNEstimator[T: ClassTag] private[zoo] (
 
     if (this.trainSummary.isDefined) {
       optimizer.setTrainSummary(this.trainSummary.get)
+    }
+
+    if (isSet(this.checkpointPath)) {
+      optimizer.setCheckpoint($(checkpointPath), $(checkpointTrigger))
+      if ($(checkpointOverwrite)) {
+        optimizer.overWriteCheckpoint()
+      }
     }
 
     val optimizedModel = optimizer.optimize()

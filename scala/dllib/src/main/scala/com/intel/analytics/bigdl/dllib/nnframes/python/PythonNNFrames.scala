@@ -164,6 +164,14 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     estimator.setValidation(trigger, validationDF, vMethods.asScala.toArray, batchSize)
   }
 
+  def setCheckpoint(
+      estimator: NNEstimator[T],
+      path: String,
+      trigger: Trigger,
+      isOverWrite: Boolean): NNEstimator[T] = {
+    estimator.setCheckpoint(path, trigger, isOverWrite)
+  }
+
   def setValidationSummary(
       estimator: NNEstimator[T],
       value: ValidationSummary): NNEstimator[T] = {
