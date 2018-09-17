@@ -87,19 +87,19 @@ object Predictor {
       val result = output.toTable
       val tables = new Array[Table](batchSize)
 
-      var i = 1
-      while (i <= batchSize) {
-        val table = T()
-        tables(i - 1) = table
-        (1 to result.length()).foreach(key => {
-          val split = splitBatch(result(key), shareBuffer, batchSize)
-          val size = split.length
-          require(batchSize == size,
-            s"The batchSize is required to be $size, while actual is $batchSize")
-          table.insert(split(i - 1))
-        })
-        i += 1
-      }
+
+      (1 to result.length()).foreach(key => {
+        val split = splitBatch(result(key), shareBuffer, batchSize)
+        val size = split.length
+        require(batchSize == size,
+          s"The batchSize is required to be $size, while actual is $batchSize")
+        var i = 0
+        while (i < batchSize) {
+          if (tables(i) == null) tables(i) = T()
+          tables(i).insert(split(i))
+          i += 1
+        }
+      })
       tables
     }
     out.asInstanceOf[Array[Activity]]
