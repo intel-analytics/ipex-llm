@@ -37,7 +37,8 @@ class Preprocessing(JavaValue):
         # move the import here to break circular import
         if "zoo.feature.image.imageset.ImageSet" not in sys.modules:
             from zoo.feature.image import ImageSet
-        if type(input) is ImageSet:
+        # if type(input) is ImageSet:
+        if isinstance(input, ImageSet):
             jset = callBigDlFunc(bigdl_type, "transformImageSet", self.value, input)
             return ImageSet(jvalue=jset)
 
@@ -49,8 +50,7 @@ class ChainedPreprocessing(Preprocessing):
     """
     def __init__(self, transformers, bigdl_type="float"):
         for transfomer in transformers:
-            assert transfomer.__class__.__bases__[0].__name__ in [
-                "Preprocessing", "ImagePreprocessing"], \
+            assert isinstance(transfomer, Preprocessing), \
                 str(transfomer) + " should be subclass of Preprocessing "
 
         super(ChainedPreprocessing, self).__init__(bigdl_type, transformers)
