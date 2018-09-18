@@ -103,4 +103,33 @@ val out = model.forward(T(inputValue, inputValue)).toTensor[Float]
 ```
 
 
+### Define a model using trainable Parameter
+Build a `Linear` Model (Wx + b) by using trainable `Parameter` which is equivalent to use `Dense` layer.
+* Scala
+```
+import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad, Parameter, Variable}
+import com.intel.analytics.zoo.pipeline.api.keras.models.Model
+val input = Variable[Float](Shape(3))
+val w = Parameter[Float](Shape(2, 3)) // outputSize * inputSize
+val bias = Parameter[Float](Shape(2))
+val cDense = AutoGrad.mm(input, w, axes = List(1, 1)) + bias
+val model = Model[Float](input = input, output = cDense)
+
+```
+
+* Python
+
+```
+from zoo.pipeline.api.autograd import *
+from zoo.pipeline.api.keras.models import *
+input = Variable((3,))
+w = Parameter((2, 3)) # outputSize * inputSize
+bias = Parameter((2,))
+cDense = mm(input, w, axes = (1, 1)) + bias
+model = Model(input = input, output = cDense)
+
+```
+
+
+
 
