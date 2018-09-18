@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn.quantized.{StorageInfo, StorageManager}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table, T}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.log4j.{Level, Logger}
@@ -189,7 +189,6 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     })
   }
 
-
   "predictImage with table output" should "work properly" in {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
@@ -211,9 +210,86 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val imageFeatures = detection.rdd.collect()
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
+      print(imageFeatures(x - 1).predict())
       assert(imageFeatures(x - 1).predict() != null)
       assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
+  }
+
+  "predictImage with output " +
+  "whose type is a table of 2 table and 1 tensor" should "work properly" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val ims = (1 to 50).map(x => {
+      val im = ImageFeature()
+      im(ImageFeature.uri) = x.toString
+      im(ImageFeature.imageTensor) = Tensor[Float](3, 24, 24).randn()
+      im
+    })
+
+    // define nodes for the first graph with a table output
+    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
+    val input1 = Input()
+    val conv1 = SpatialConvolution(3, 6, 5, 5).inputs(input1)
+    val out1 = Tanh().inputs(conv1)
+    val out2 = ReLU().inputs(conv1)
+
+    // define nodes for the second graph with a table output
+    val input2 = Input()
+    val conv2 = SpatialConvolution(3, 6, 5, 5).inputs(input2)
+    val out3 = Sigmoid().inputs(conv2)
+    val out4 = LogSigmoid().inputs(conv2)
+
+    // create the first graph
+    val g1 = Graph(input1, Array(out1, out2))
+
+    // create the second graph
+    val g2 = Graph(input2, Array(out3, out4))
+
+    // create a model which consists of the first graph, the second graph and an Indentity node
+    val model = ConcatTable()
+    model.add(g1)
+    model.add(g2)
+    // this Idenitity node should generate a tensor output
+    model.add(Identity())
+    val detection = model.predictImage(imageFrame).toDistributed()
+
+    val imageFeatures = detection.rdd.collect()
+    (1 to 20).foreach(x => {
+      imageFeatures(x - 1).uri() should be (x.toString)
+      assert(imageFeatures(x - 1).predict() != null)
+      assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 3)
+    })
+  }
+
+  "model predict should have no memory leak" should "be correct" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    RNG.setSeed(100)
+    val resource = getClass.getClassLoader.getResource("pascal/")
+    val imageFrame = ImageFrame.read(resource.getFile, sc) ->
+      Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor() -> ImageFrameToSample()
+    val model = Inception_v1_NoAuxClassifier(classNum = 1000)
+    val quant = model.quantize()
+    val init = StorageManager.get()
+    println(s"init count ${init.count(!_._2.isFreed)}")
+    var second: Map[Long, StorageInfo] = null
+    (0 until 20).foreach { i =>
+      val detection = quant.predictImage(imageFrame, batchPerPartition = 16).toDistributed()
+      detection.rdd.first()
+      detection.rdd.collect()
+      println("=" * 80)
+      println(StorageManager.get().count(!_._2.isFreed))
+      println("-" * 80)
+    }
+    CachedModels.deleteAll("")
+    // NOTE: if this case failed, please check,
+    // 1. mapPartition, does it used the variable out side of the method scope.
+    // 2. ModelBroadcast, does it add the ref correctly
+    StorageManager.get().count(!_._2.isFreed) should be (init.count(!_._2.isFreed))
   }
 
   "localpredictor" should "serialize successfully" in {
