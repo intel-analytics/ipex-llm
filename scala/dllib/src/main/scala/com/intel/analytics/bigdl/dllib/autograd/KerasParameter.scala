@@ -35,10 +35,6 @@ private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shap
   extends KerasLayer[Activity, Activity, T](inputShape)
     with InternalWithoutInput with Net {
 
-  if (this.modules.isEmpty == null) {
-    build(inputShape)
-  }
-
   def setWeight(tensor: Tensor[T]): Unit = {
     this.labor.asInstanceOf[InternalParameter[T]].setWeight(tensor)
   }
@@ -60,10 +56,16 @@ private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shap
 }
 
 /**
- * Parameters is a trainable Variable
+ * Parameters is trainable Variable and it can be treated as a constant value
+ * if trainable is set to be False.
+ * @param inputShape Shape of this Parameter
+ * @param initMethod A method used to initialize the Parameter.
+ *                   The default value is RandomUniform(-0.05, 0.05)
+ * @param initWeight The init value for the Parameter
+ * @param trainable It's true by default, meaning the value would be updated by gradient.
  */
 class Parameter[T: ClassTag] private[zoo](val inputShape: Shape,
-    val initMethod: InitializationMethod = RandomUniform(-0.5, 0.5),
+    val initMethod: InitializationMethod = RandomUniform(-0.05, 0.05),
     val initWeight: Tensor[T] = null,
     val trainable: Boolean = true,
     name: String = null)(
