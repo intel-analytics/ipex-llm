@@ -17,6 +17,7 @@
 import pytest
 import shutil
 import errno
+import string
 from bigdl.nn.criterion import *
 from bigdl.nn.layer import *
 from bigdl.optim.optimizer import *
@@ -29,6 +30,7 @@ from zoo.common.nncontext import *
 from zoo.pipeline.nnframes import *
 from zoo.feature.common import *
 from zoo.feature.image import *
+from zoo.util.tf import *
 
 
 class TestNNClassifer():
@@ -573,6 +575,32 @@ class TestNNClassifer():
             except OSError as exc:
                 if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
                     raise  # re-raise exception
+
+    def test_input_node_of_tfnet_from_session(self):
+        import tensorflow as tff
+        input1 = tff.placeholder(dtype=tff.float32, shape=(None, 2))
+        input2 = tff.placeholder(dtype=tff.float32, shape=(None, 2))
+        hidden = tff.layers.dense(input1, 4)
+        output = tff.layers.dense(hidden, 1)
+        sess = tff.Session()
+        sess.run(tff.global_variables_initializer())
+        tmp_dir = tempfile.mkdtemp()
+        modelPath = os.path.join(tmp_dir, "model")
+        raised_error = False
+        try:
+            export_tf(sess, modelPath, inputs=[input1, input2], outputs=[output])
+        except ValueError as v:
+            assert (((str(v)).find((input2.name)[0:-2])) != -1)
+            raised_error = True
+        finally:
+            try:
+                shutil.rmtree(modelPath)  # delete directory
+            except OSError as exc:
+                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
+                    raise  # re-raise exception
+
+        if not raised_error:
+            raise ValueError("we do not find this error, test failed")
 
 
 if __name__ == "__main__":
