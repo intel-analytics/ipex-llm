@@ -452,6 +452,11 @@ class Parameter(kbase.ZooKerasLayer):
     """
     A trainable Variable. The default init_method is RandomUniform(-0.05, 0.05).
     You can also specify the init_weight by passing a ndarray.
+    :param shape: Shape of this Parameter
+    :param init_method: A method used to initialize the Parameter.
+                        The default value is RandomUniform(-0.05, 0.05)
+    :param init_weight: A ndarray as the init value.
+    :param trainable It's true by default, meaning the value would be updated by gradient.
     """
     def __init__(self, shape, init_method=None,
                  init_weight=None, trainable=True, **kwargs):
