@@ -1,4 +1,4 @@
-Spark can run on clusters managed by Kubernetes. This feature makes use of native Kubernetes scheduler that has been added to Spark 2.3.now As a deep learning library for Apache
+Spark can run on clusters managed by Kubernetes. This feature makes use of native Kubernetes scheduler that has been added to Spark 2.3. Now as a deep learning library for Apache
 Spark, BigDL can also run on Kubernetes by leveraging Spark on Kubernetes.
 
 ---
