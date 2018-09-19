@@ -39,7 +39,7 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       val partitionID = TaskContext.getPartitionId
       val sync = new BlockManagerParameterSynchronizer[Float](partitionID, partition)
       val tensor = Tensor[Float](10).fill(partitionID.toFloat + 1.0f)
-      sync.init(s"testPara", 10)
+      sync.init(s"testPara", 10, weights = null, grads = tensor)
       var res : Iterator[_] = null
       sync.put(s"testPara", tensor)
       res = Iterator.single(sync.get(s"testPara"))
@@ -47,13 +47,14 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       res
     }).collect
     res.length should be  (4)
-    res(0) should be (Tensor[Float](10).fill(2.5f))
-    res(1) should be (Tensor[Float](10).fill(2.5f))
-    res(2) should be (Tensor[Float](10).fill(2.5f))
-    res(3) should be (Tensor[Float](10).fill(2.5f))
+    res(0).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
+    res(1).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
+    res(2).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
+    res(3).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
   }
 
-  "DistributedSynchronizer with parameter size less than partition" should "worl properly" in {
+  "DistributedSynchronizer with parameter size less than partition" should "work properly" in {
+    val cores1 = Runtime.getRuntime().availableProcessors
     val partition = 4
     val cores = 4
     val res = sc.parallelize((0 until partition), partition).mapPartitions(p => {
@@ -61,7 +62,7 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       val partitionID = TaskContext.getPartitionId
       val sync = new BlockManagerParameterSynchronizer[Float](partitionID, partition)
       val tensor = Tensor[Float](2).fill(partitionID.toFloat + 1.0f)
-      sync.init(s"testPara", 2)
+      sync.init(s"testPara", 2, weights = null, grads = tensor)
       var res : Iterator[_] = null
       sync.put(s"testPara", tensor)
       res = Iterator.single(sync.get(s"testPara"))
@@ -69,10 +70,10 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       res
     }).collect
     res.length should be  (4)
-    res(0) should be (Tensor[Float](2).fill(2.5f))
-    res(1) should be (Tensor[Float](2).fill(2.5f))
-    res(2) should be (Tensor[Float](2).fill(2.5f))
-    res(3) should be (Tensor[Float](2).fill(2.5f))
+    res(0).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](2).fill(2.5f))
+    res(1).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](2).fill(2.5f))
+    res(2).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](2).fill(2.5f))
+    res(3).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](2).fill(2.5f))
   }
 
   "DistributedSynchronizer with parameter offset > 1" should "work properly" in {
@@ -84,7 +85,7 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       val sync = new BlockManagerParameterSynchronizer[Float](partitionID, partition)
       val tensor = Tensor[Float](20)
       val parameter = tensor.narrow(1, 10, 10).fill(partitionID.toFloat + 1.0f)
-      sync.init(s"testPara", 10)
+      sync.init(s"testPara", 10, weights = null, grads = parameter)
       var res : Iterator[_] = null
       sync.put(s"testPara", parameter)
       res = Iterator.single(sync.get(s"testPara"))
@@ -92,10 +93,10 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       res
     }).collect
     res.length should be  (4)
-    res(0) should be (Tensor[Float](10).fill(2.5f))
-    res(1) should be (Tensor[Float](10).fill(2.5f))
-    res(2) should be (Tensor[Float](10).fill(2.5f))
-    res(3) should be (Tensor[Float](10).fill(2.5f))
+    res(0).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
+    res(1).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
+    res(2).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
+    res(3).asInstanceOf[Tuple2[_, _]]._2 should be (Tensor[Float](10).fill(2.5f))
   }
 
   after {
