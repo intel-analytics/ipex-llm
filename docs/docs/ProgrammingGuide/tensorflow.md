@@ -1,20 +1,17 @@
-# Distributed Tensoflow on Spark/BigDL
-
-Analytics-Zoo provides a set APIs to for running tensorflow model in a distributed fashion.
+Analytics-Zoo provides a set APIs for running tensorflow model on Spark in a distributed fashion.
 
 ## Concepts
-- **TFDatasets** represents a distributed collection of elements to be feed into Tensorflow graph.
-TFDatasets can be created using a RDD and each of its records is a list of numpy.ndarray representing
-the tensors to be feed into tensorflow graph on each iteration. TFDatasets must be used with the
-TFOptimizer or TFPredictor that we will describe next.
+- **TFDatasets** represents a distributed collection of elements to be fed into a Tensorflow graph.
+TFDatasets can be created directly from an RDD; each record in the RDD should be a list of numpy.ndarray
+representing the input data. TFDatasets must be used with the TFOptimizer or TFPredictor (to be described next).
 
 - **TFOptimizer** is the class that does all the hard work in distributed training, such as model
-distribution and parameter synchronization. It takes the **loss** (a scalar tensor) as input and runs
-stochastic gradient descent using the given **optimMethod** on all the **Variables** that contributing
-to this loss.
+distribution and parameter synchronization. It takes the user specified **loss** (a TensorFlow scalar tensor) as
+an argument and runs stochastic gradient descent using the given **optimMethod** on all the **Variables** that
+contribute to this loss.
 
-- **TFPredictor** takes a list of tensorflow tensors as the model outputs and feed all the elements in
-TFDatasets to produce those outputs and returns a Spark RDD with each of its elements representing the
+- **TFPredictor** takes a list of user specified TensorFlow tensors as the model outputs, and feed all the
+elements in TFDatasets to produce those outputs; it returns a Spark RDD with each of its records representing the
 model prediction for the corresponding input elements.
 
 ## Training
@@ -77,7 +74,7 @@ saver.save(optimizer.sess, "/tmp/lenet/")
 
 ### Inference
 
-1.Data wrangling and analysis using PySpark
+1.Data processing using PySpark
 
 ```python
 from zoo import init_nncontext
@@ -122,14 +119,14 @@ predictor = TFPredictor(sess, [logits])
 predictions_rdd = predictor.predict()
 ```
 
-### Relation to TFNet
+### Relationship to TFNet
 
-**TFNet** is a layer representing a tensorflow sub-graph (specified by the inputs and outputs tensor).
-It implements the standard BigDL AbstractModule API, it can be used with other Analytics-Zoo/BigDL layers
+**TFNet** is a layer representing a TensorFlow sub-graph (specified by the input and output TensorFlow tensors).
+It implements the standard BigDL layer API, and can be used with other Analytics-Zoo/BigDL layers
 to construct more complex models for training or inference using the standard Analytics-Zoo/BigDL API. 
 
-You can think of `TFDatasets`, `TFOptimizer`, `TFPredictor` as a set api for training/testing tensorflow models
-on Spark/BigDL and resulting a tensorlfow model; while `TFNet` as an Analytics-Zoo layer initialized using tensorflow graph.
+You can think of `TFDatasets`, `TFOptimizer`, `TFPredictor` as a set API for training/testing TensorFlow models
+on Spark/BigDL, while `TFNet` as an Analytics-Zoo/BigDL layer initialized using TensorFlow graph.
 
-For more information on TFNet, please refer to [this](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/APIGuide/PipelineAPI/net.md#tfnet)
+For more information on TFNet, please refer to the [API Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/APIGuide/PipelineAPI/net.md#tfnet)
 
