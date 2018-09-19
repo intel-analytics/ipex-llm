@@ -278,12 +278,23 @@ case class ConstInitMethod(value: Double) extends InitializationMethod {
  *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
  */
 case object Xavier extends InitializationMethod {
+  private var version2: Boolean = false
+
+  def setVersion2(v: Boolean): this.type = {
+    version2 = v
+    this
+  }
+
   def init[T](variable: Tensor[T], dataFormat: VariableFormat)
              (implicit ev: TensorNumeric[T]): Unit = {
     val shape = variable.size()
     val fanIn = dataFormat.getFanIn(shape)
     val fanOut = dataFormat.getFanOut(shape)
-    val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+    val stdv = if (version2) {
+      math.sqrt(3.0 / fanIn)
+    } else {
+      math.sqrt(6.0 / (fanIn + fanOut))
+    }
     variable.rand(-stdv, stdv)
   }
 

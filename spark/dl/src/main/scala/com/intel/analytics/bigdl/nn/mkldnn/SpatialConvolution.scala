@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.io.{IOException, ObjectOutputStream}
+
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn._
@@ -118,7 +120,11 @@ class SpatialConvolution(
 
   override def reset(): Unit = {
     if (initWeight == null) { // TODO only support oihw format weights
-      weightInitMethod.init(weight.dense, VariableFormat.OUT_IN)
+      weightInitMethod.init(weight.dense, if (nGroup == 1) {
+        VariableFormat.OUT_IN_KW_KH
+      } else {
+        VariableFormat.GP_OUT_IN_KW_KH
+      })
       weight.syncToNative()
     } else {
       weight.copy(initWeight)
@@ -202,6 +208,15 @@ class SpatialConvolution(
     updateOutputMemoryPrimitives = srcs ++ dsts
     updateOutputPrimitives = Array(primitive)
     output = initTensor(dst)
+
+    // by default, the initial weight is oihw format.
+    if (realWei.layout != Memory.Format.oihw) {
+      val srcFormat = HeapData(realWei.shape, Memory.Format.oihw)
+      val dstFormat = HeapData(realWei.shape, realWei.layout)
+      reorderManager.register(srcFormat, dstFormat)
+      val result = reorderManager.infer(Array(srcFormat), Array(dstFormat), weight.dense)
+      weight.dense.copy(result.toTensor)
+    }
 
     _inputFormats = Array(realSrc)
     _outputFormats = Array(realDst)
@@ -329,6 +344,9 @@ class SpatialConvolution(
     gradWeight.setMemoryData(realWei)
     gradBias.setMemoryData(bis)
 
+    require(weight.memoryData().layout == gradWeight.memoryData().layout,
+      s"layout should be the same")
+
     val srcs = Array(realSrc.getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realWei.getPrimitive(runtime), bis.getPrimitive(runtime))
@@ -381,6 +399,20 @@ class SpatialConvolution(
     super.release()
     List(weight, bias, gradWeight, gradBias).foreach(_.release())
     if (weightForBackward != null) { weightForBackward.release() }
+  }
+
+  @throws(classOf[IOException])
+  private def writeObject(out: ObjectOutputStream): Unit = {
+    if (weight.isMemoryDataSet() && weight.memoryData().layout != Memory.Format.oihw) {
+      val srcFormat = HeapData(weight.memoryData().shape, weight.memoryData().layout)
+      val dstFormat = HeapData(weight.memoryData().shape, Memory.Format.oihw)
+
+      reorderManager.register(srcFormat, dstFormat)
+      val result = reorderManager.infer(Array(srcFormat), Array(dstFormat), weight.dense)
+      weight.dense.copy(result.toTensor)
+    }
+
+    out.defaultWriteObject()
   }
 }
 

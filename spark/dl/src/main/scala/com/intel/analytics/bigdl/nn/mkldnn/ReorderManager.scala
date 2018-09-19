@@ -95,9 +95,7 @@ private[mkldnn] class ReorderManager() {
     from match {
       case h: HeapData =>
         to match {
-          case hh: HeapData =>
-            require(h.layout == hh.layout, "Heap data layout should be same")
-            false
+          case hh: HeapData => true
           case nn: NativeData => true
           case _ => throw new UnsupportedOperationException("Not support such memory format")
         }
