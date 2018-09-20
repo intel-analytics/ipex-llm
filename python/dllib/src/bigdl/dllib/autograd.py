@@ -231,7 +231,7 @@ def softplus(x):
     return Variable.from_jvalue(callBigDlFunc("float", "softplus", x))
 
 
-def mm(x, y, axes):
+def mm(x, y, axes=None):
     """
     Module to perform matrix multiplication on two mini-batch inputs,
     producing a mini-batch.
@@ -261,6 +261,10 @@ class Variable(kbase.ZooKerasCreator):
     @classmethod
     def from_node(cls, node):
         return cls(input_shape=None, node=node)
+
+    @property
+    def shape(self):
+        return self.get_output_shape()
 
     @property
     def node(self):
@@ -469,6 +473,10 @@ class Parameter(kbase.ZooKerasLayer):
                                         kbase.JTensor.from_ndarray(init_weight),
                                         trainable,
                                         ** kwargs)
+
+    @property
+    def shape(self):
+        return self.get_weight().shape
 
     def get_weight(self):
         """
