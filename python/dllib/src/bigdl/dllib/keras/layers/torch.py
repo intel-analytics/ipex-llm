@@ -352,6 +352,25 @@ class Exp(ZooKerasLayer):
                                   **kwargs)
 
 
+class Identity(ZooKerasLayer):
+    """
+    Identity just return the input to output.
+    It's useful in same parallel container to get an origin input.
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
+
+    >>> identity = Identity(input_shape=(3, ))
+    creating: createZooKerasIdentity
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(Identity, self).__init__(None,
+                                       list(input_shape) if input_shape else None,
+                                       **kwargs)
+
+
 class Log(ZooKerasLayer):
     """
     Applies a log transformation to the input.
