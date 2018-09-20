@@ -202,7 +202,7 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   }
 
   def mm(x: Variable[T], y: Variable[T], axes: JList[Int]): Variable[T] = {
-    autograd.AutoGrad.mm(x, y, axes.asScala.toList)
+    autograd.AutoGrad.mm(x, y, if (axes != null) axes.asScala.toList else null)
   }
 
   def l2Normalize(x: Variable[T], axis: Int): Variable[T] = {
