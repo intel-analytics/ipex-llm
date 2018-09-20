@@ -71,6 +71,11 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     Sequential[T]()
   }
 
+  def createZooKerasIdentity(
+    inputShape: JList[Int] = null): Identity[T] = {
+    Identity[T](toScalaShape(inputShape))
+  }
+
   def createZooKerasInput(
       inputShape: JList[JList[Int]] = null,
       name : String = null): Variable[T] = {
