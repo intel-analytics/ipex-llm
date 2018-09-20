@@ -47,9 +47,8 @@ trait DistriParameterSynchronizer[T] {
   /**
    * put parameter to global
    * @param name identifier for parameter
-   * @param parameter  parameter to put
    */
-  def put(name: String, parameter: Tensor[T]): Unit
+  def put(name: String): Unit
 
   /**
    * get parameter for specific identifier
@@ -414,7 +413,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
       new ConcurrentHashMap[Int, Tensor[T]](), weights, grads))
   }
 
-  override def put(name: String, parameter: Tensor[T]): Unit = {
+  override def put(name: String): Unit = {
     val syncMeta = syncMetaMap.get(name)
     syncMeta.counter += 1
     val asyncTask = new AsyncTask(syncMeta.grads)

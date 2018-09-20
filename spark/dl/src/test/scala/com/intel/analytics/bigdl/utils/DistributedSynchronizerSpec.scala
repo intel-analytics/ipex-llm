@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.{SparkContext, TaskContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAndAfter {
+class DistributedSynchronizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   var sc: SparkContext = null
 
@@ -41,7 +41,7 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       val tensor = Tensor[Float](10).fill(partitionID.toFloat + 1.0f)
       sync.init(s"testPara", 10, weights = null, grads = tensor)
       var res : Iterator[_] = null
-      sync.put(s"testPara", tensor)
+      sync.put(s"testPara")
       res = Iterator.single(sync.get(s"testPara"))
       sync.clear
       res
@@ -64,7 +64,7 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       val tensor = Tensor[Float](2).fill(partitionID.toFloat + 1.0f)
       sync.init(s"testPara", 2, weights = null, grads = tensor)
       var res : Iterator[_] = null
-      sync.put(s"testPara", tensor)
+      sync.put(s"testPara")
       res = Iterator.single(sync.get(s"testPara"))
       sync.clear
       res
@@ -87,7 +87,7 @@ class DistributedSynchronizerSpec  extends FlatSpec with Matchers with BeforeAnd
       val parameter = tensor.narrow(1, 10, 10).fill(partitionID.toFloat + 1.0f)
       sync.init(s"testPara", 10, weights = null, grads = parameter)
       var res : Iterator[_] = null
-      sync.put(s"testPara", parameter)
+      sync.put(s"testPara")
       res = Iterator.single(sync.get(s"testPara"))
       sync.clear
       res
