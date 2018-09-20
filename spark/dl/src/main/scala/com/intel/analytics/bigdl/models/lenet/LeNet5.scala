@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models.lenet
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 
@@ -83,5 +84,23 @@ object LeNet5 {
     val fc1 = Dense(100, activation = "tanh").setName("fc1").inputs(flatten)
     val fc2 = Dense(classNum, activation = "softmax").setName("fc2").inputs(fc1)
     Model(input, fc2)
+  }
+
+  def dnn(batchSize: Int, classNum: Int): mkldnn.Sequential = {
+    val inputShape = Array(batchSize, 1, 28, 28)
+    val outputShape = Array(batchSize, 10)
+
+    val model = mkldnn.Sequential()
+      .add(mkldnn.Input(inputShape, Memory.Format.nchw))
+      .add(mkldnn.SpatialConvolution(1, 20, 5, 5).setName("conv1"))
+      .add(mkldnn.SpatialBatchNormalization(20).setName("bn1"))
+      .add(mkldnn.MaxPooling(2, 2, 2, 2).setName("pool1"))
+      .add(mkldnn.SpatialConvolution(20, 50, 5, 5).setName("conv2"))
+      .add(mkldnn.MaxPooling(2, 2, 2, 2).setName("pool2"))
+      .add(mkldnn.Linear(50 * 4 * 4, 500).setName("ip1"))
+      .add(mkldnn.ReLU().setName("relu1"))
+      .add(mkldnn.Linear(500, 10).setName("ip2"))
+      .add(mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)))
+    model
   }
 }
