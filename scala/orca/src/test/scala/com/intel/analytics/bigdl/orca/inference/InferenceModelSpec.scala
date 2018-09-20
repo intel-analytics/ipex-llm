@@ -98,10 +98,15 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
 
     val inputTensor = Tensor[Float](3, 5, 5).rand()
     val input = new util.ArrayList[JTensor]()
-    input.add(transferTensorToJTensor(inputTensor))
+    val inputJTensor = transferTensorToJTensor(inputTensor)
+    input.add(inputJTensor)
     val inputs = new util.ArrayList[util.List[JTensor]]()
     inputs.add(input)
-    val result = fModels(0).predict(inputs).get(0).get(0)
+    inputs.add(input)
+    inputs.add(input)
+    val results = fModels(0).predict(inputs)
+    println(results)
+    val result = results.get(0).get(0)
     val data = result.getData.mkString(",")
     val shape = result.getShape.mkString(",")
 
