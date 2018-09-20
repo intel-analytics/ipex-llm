@@ -164,6 +164,10 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     estimator.setValidation(trigger, validationDF, vMethods.asScala.toArray, batchSize)
   }
 
+  def setEndWhen(estimator: NNEstimator[T], trigger: Trigger): NNEstimator[T] = {
+    estimator.setEndWhen(trigger)
+  }
+
   def setCheckpoint(
       estimator: NNEstimator[T],
       path: String,
