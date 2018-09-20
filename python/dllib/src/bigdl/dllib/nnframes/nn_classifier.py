@@ -210,13 +210,12 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         self.learningRate = Param(self, "learningRate", "learning rate")
         self.learningRateDecay = Param(self, "learningRateDecay", "learning rate decay")
         self.cachingSample = Param(self, "cachingSample", "cachingSample")
-        self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1, learningRateDecay=0.0,
-                         cachingSample=True)
 
         self.train_summary = None
         self.validation_config = None
         self.checkpoint_config = None
         self.validation_summary = None
+        self.endWhen = None
 
     def setSamplePreprocessing(self, val):
         """
@@ -238,6 +237,21 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         Gets the value of maxEpoch or its default value.
         """
         return self.getOrDefault(self.maxEpoch)
+
+    def setEndWhen(self, trigger):
+        """
+        When to stop the training, passed in a Trigger. E.g. maxIterations(100)
+        """
+        pythonBigDL_method_name = "setEndWhen"
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, trigger)
+        self.endWhen = trigger
+        return self
+
+    def getEndWhen(self):
+        """
+        Gets the value of endWhen or its default value.
+        """
+        return self.endWhen
 
     def setLearningRate(self, val):
         """
