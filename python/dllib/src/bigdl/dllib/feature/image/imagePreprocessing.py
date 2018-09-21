@@ -311,8 +311,8 @@ class ImageFeatureToTensor(Preprocessing):
     """
     a Transformer that convert ImageFeature to a Tensor.
     """
-    def __init__(self, bigdl_type="float"):
-        super(ImageFeatureToTensor, self).__init__(bigdl_type)
+    def __init__(self, to_chw=True, bigdl_type="float"):
+        super(ImageFeatureToTensor, self).__init__(bigdl_type, to_chw)
 
 
 class RowToImageFeature(Preprocessing):
