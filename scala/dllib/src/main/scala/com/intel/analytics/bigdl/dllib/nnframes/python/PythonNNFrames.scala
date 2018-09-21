@@ -114,10 +114,6 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     MLlibVectorToTensor(size.asScala.toArray)
   }
 
-  def createImageFeatureToTensor(): ImageFeatureToTensor[T] = {
-    ImageFeatureToTensor()
-  }
-
   def createRowToImageFeature(): RowToImageFeature[T] = {
     RowToImageFeature()
   }
