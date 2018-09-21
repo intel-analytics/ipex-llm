@@ -95,7 +95,7 @@ private[mkldnn] class ReorderManager() {
     from match {
       case h: HeapData =>
         to match {
-          case hh: HeapData => true
+          case hh: HeapData => h.layout != hh.layout
           case nn: NativeData => true
           case _ => throw new UnsupportedOperationException("Not support such memory format")
         }

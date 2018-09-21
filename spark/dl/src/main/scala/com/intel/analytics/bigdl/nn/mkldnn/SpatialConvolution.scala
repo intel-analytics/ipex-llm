@@ -209,9 +209,14 @@ class SpatialConvolution(
     updateOutputPrimitives = Array(primitive)
     output = initTensor(dst)
 
-    // by default, the initial weight is oihw format.
-    if (realWei.layout != Memory.Format.oihw) {
-      val srcFormat = HeapData(realWei.shape, Memory.Format.oihw)
+    // by default, the initial weight is oihw / goihw format.
+    val defaultWeightLayout = if (nGroup == 1) {
+      Memory.Format.oihw
+    } else {
+      Memory.Format.goihw
+    }
+    if (realWei.layout != defaultWeightLayout) {
+      val srcFormat = HeapData(realWei.shape, defaultWeightLayout)
       val dstFormat = HeapData(realWei.shape, realWei.layout)
       reorderManager.register(srcFormat, dstFormat)
       val result = reorderManager.infer(Array(srcFormat), Array(dstFormat), weight.dense)
