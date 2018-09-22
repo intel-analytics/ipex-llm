@@ -28,9 +28,10 @@ class Preprocessing(JavaValue):
     the scala Preprocessing
     """
     def __init__(self, bigdl_type="float", *args):
+        self.bigdl_type = bigdl_type
         self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self), *args)
 
-    def __call__(self, input, bigdl_type="float"):
+    def __call__(self, input):
         """
         transform ImageSet
         """
@@ -39,7 +40,7 @@ class Preprocessing(JavaValue):
             from zoo.feature.image import ImageSet
         # if type(input) is ImageSet:
         if isinstance(input, ImageSet):
-            jset = callBigDlFunc(bigdl_type, "transformImageSet", self.value, input)
+            jset = callBigDlFunc(self.bigdl_type, "transformImageSet", self.value, input)
             return ImageSet(jvalue=jset)
 
 
