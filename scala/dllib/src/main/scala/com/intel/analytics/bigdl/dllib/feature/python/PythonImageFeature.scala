@@ -268,6 +268,13 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
     ImagePixelNormalizer(means.asScala.toArray.map(_.toFloat))
   }
 
+  def createImageRandomPreprocessing(
+      preprocessing: ImageProcessing,
+      prob: Double
+    ): ImageRandomPreprocessing = {
+    ImageRandomPreprocessing(preprocessing, prob)
+  }
+
   def createImageRandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean): ImageRandomCrop = {
     ImageRandomCrop(cropWidth, cropHeight, isClip)
   }
