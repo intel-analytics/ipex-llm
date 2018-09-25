@@ -57,12 +57,10 @@ object Utils {
     checkpointIteration: Int = 1000,
     maxLr: Double = 0.06,
     warmupEpoch: Option[Int] = None,
-    gradientL2NormThreshold: Option[Double] = None,
-    gradientMin: Option[Double] = None,
-    gradientMax: Option[Double] = None
+    gradientL2NormThreshold: Option[Double] = None
   )
 
-  val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
+  val trainParser = new OptionParser[TrainParams]("BigDL Vgg Example") {
     opt[String]('f', "folder")
       .text("where you put the Cifar10 data")
       .action((x, c) => c.copy(folder = x))
@@ -117,12 +115,6 @@ object Utils {
     opt[Double]("gradientL2NormThreshold")
       .text("gradient L2-Norm threshold")
       .action((x, c) => c.copy(gradientL2NormThreshold = Some(x)))
-    opt[Double]("gradientMax")
-      .text("max gradient clipping by")
-      .action((x, c) => c.copy(gradientMax = Some(x)))
-    opt[Double]("gradientMin")
-      .text("min gradient clipping by")
-      .action((x, c) => c.copy(gradientMin = Some(x)))
   }
 
   case class TestParams(

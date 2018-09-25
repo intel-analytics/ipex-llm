@@ -129,53 +129,71 @@ object VggForCifar10 {
 }
 
 object Vgg_16 {
+  private object Conv {
+    def apply(
+      nInputPlane: Int,
+      nOutputPlane: Int,
+      kernelW: Int,
+      kernelH: Int,
+      strideW: Int = 1,
+      strideH: Int = 1,
+      padW: Int = 0,
+      padH: Int = 0,
+      nGroup: Int = 1,
+      propagateBack: Boolean = true): SpatialConvolution[Float] = {
+      val conv = SpatialConvolution(nInputPlane, nOutputPlane, kernelW, kernelH,
+        strideW, strideH, padW, padH, nGroup, propagateBack)
+      conv.setInitMethod(Xavier.setVersion2(true), Zeros)
+      conv
+    }
+  }
+
   def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val model = Sequential()
-    model.add(SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
-    model.add(SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1))
-    model.add(ReLU(true))
-    model.add(SpatialMaxPooling(2, 2, 2, 2))
-
-    model.add(SpatialConvolution(64, 128, 3, 3, 1, 1, 1, 1))
-    model.add(ReLU(true))
-    model.add(SpatialConvolution(128, 128, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(64, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
     model.add(SpatialMaxPooling(2, 2, 2, 2))
 
-    model.add(SpatialConvolution(128, 256, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(64, 128, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
-    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1))
-    model.add(ReLU(true))
-    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(128, 128, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
     model.add(SpatialMaxPooling(2, 2, 2, 2))
 
-    model.add(SpatialConvolution(256, 512, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(128, 256, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
-    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(256, 256, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
-    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(256, 256, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
     model.add(SpatialMaxPooling(2, 2, 2, 2))
 
-    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(256, 512, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
-    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(512, 512, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
-    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(Conv(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(Conv(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(Conv(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(Conv(512, 512, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
     model.add(SpatialMaxPooling(2, 2, 2, 2))
 
     model.add(View(512 * 7 * 7))
-    model.add(Linear(512 * 7 * 7, 4096))
+    model.add(Linear(512 * 7 * 7, 4096).setInitMethod(Xavier, ConstInitMethod(0.1)))
     model.add(Threshold(0, 1e-6))
     if (hasDropout) model.add(Dropout(0.5))
-    model.add(Linear(4096, 4096))
+    model.add(Linear(4096, 4096).setInitMethod(Xavier, ConstInitMethod(0.1)))
     model.add(Threshold(0, 1e-6))
     if (hasDropout) model.add(Dropout(0.5))
-    model.add(Linear(4096, classNum))
-    model.add(LogSoftMax())
+    model.add(Linear(4096, classNum).setInitMethod(Xavier, ConstInitMethod(0.1)))
 
     model
   }
