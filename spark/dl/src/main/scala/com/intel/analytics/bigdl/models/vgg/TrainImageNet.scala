@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.vgg
 
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.{Module, SoftmaxWithCriterion}
+import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, SoftmaxWithCriterion}
 import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, MklBlas, MklDnn}
@@ -89,8 +89,12 @@ object TrainImageNet {
       trainSummary.setSummaryTrigger("LearningRate", Trigger.severalIteration(1))
       trainSummary.setSummaryTrigger("Parameters", Trigger.severalIteration(10))
 
+      val criterion = Engine.getEngineType() match {
+        case MklBlas => CrossEntropyCriterion[Float]()
+        case MklDnn => SoftmaxWithCriterion[Float]()
+      }
 
-      val optimizer = Optimizer(model, trainDataSet, SoftmaxWithCriterion[Float]())
+      val optimizer = Optimizer(model, trainDataSet, criterion)
       val validationTrigger = Trigger.severalIteration(param.checkpointIteration)
       val validationMethods = Array(new Top1Accuracy[Float], new Top5Accuracy[Float])
 
