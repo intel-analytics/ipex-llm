@@ -70,10 +70,36 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
   def localImageSetToImageTensor(imageSet: LocalImageSet,
                                  floatKey: String = ImageFeature.floats,
                                  toChw: Boolean = true): JList[JTensor] = {
-    val transform = ImageFeatureToTensor(toChw)
-    imageSet.array.map { x =>
-        toJTensor(transform(Iterator(x)).next())
-    }.toList.asJava
+    imageSet.array.map(imf => {
+      if (imf.getSize == null) {
+        imageFeature3DToImageTensor(imf, floatKey)
+      } else {
+        toTensor(imf, toChw)
+      }
+    }).toList.asJava
+  }
+
+  def imageFeature3DToImageTensor(imageFeature: ImageFeature,
+                                  tensorKey: String = ImageFeature.imageTensor): JTensor = {
+    toJTensor(imageFeature(tensorKey).asInstanceOf[Tensor[T]])
+  }
+
+  def toTensor(imf: ImageFeature, toChw: Boolean = true): JTensor = {
+    val (data, size) = if (imf.contains(ImageFeature.floats)) {
+      (imf.floats(),
+        Array(imf.getHeight(), imf.getWidth(), imf.getChannel()))
+    } else {
+      val mat = imf.opencvMat()
+      val floats = new Array[Float](mat.height() * mat.width() * imf.getChannel())
+      OpenCVMat.toFloatPixels(mat, floats)
+      (floats, Array(mat.height(), mat.width(), imf.getChannel()))
+    }
+    var image = Tensor(Storage(data)).resize(size)
+    if (toChw) {
+      // transpose the shape of image from (h, w, c) to (c, h, w)
+      image = image.transpose(1, 3).transpose(2, 3).contiguous()
+    }
+    toJTensor(image.asInstanceOf[Tensor[T]])
   }
 
   def localImageSetToLabelTensor(imageSet: LocalImageSet): JList[JTensor] = {
@@ -87,10 +113,12 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
 
   def distributedImageSetToImageTensorRdd(imageSet: DistributedImageSet,
     floatKey: String = ImageFeature.floats, toChw: Boolean = true): JavaRDD[JTensor] = {
-    val transform = ImageFeatureToTensor(toChw)
-    imageSet.rdd.map { x =>
-      toJTensor(transform(Iterator(x)).next())
-    }.toJavaRDD()
+    imageSet.rdd.map(imf => {
+      // 3D image
+      if (imf.getSize == null) {
+        imageFeature3DToImageTensor(imf, floatKey)
+      } else toTensor(imf, toChw)
+    }).toJavaRDD()
   }
 
   def distributedImageSetToLabelTensorRdd(imageSet: DistributedImageSet): JavaRDD[JTensor] = {
@@ -185,8 +213,8 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
     ImageBrightness(deltaLow, deltaHigh)
   }
 
-  def createImageFeatureToTensor(toChw: Boolean = true): ImageFeatureToTensor[T] = {
-    ImageFeatureToTensor(toChw)
+  def createImageFeatureToTensor(): ImageFeatureToTensor[T] = {
+    ImageFeatureToTensor()
   }
 
   def createImageChannelNormalizer(
