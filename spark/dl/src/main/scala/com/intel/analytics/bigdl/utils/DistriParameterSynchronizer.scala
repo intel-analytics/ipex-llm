@@ -20,7 +20,7 @@ import java.util
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.mkl.hardware.Affinity
+import com.intel.analytics.bigdl.mkl.hardware.{Affinity, CpuInfo}
 import com.intel.analytics.bigdl.parameters.{CompressedTensor, FP16CompressedTensor, SerializerInstance}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -72,7 +72,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
 
   @volatile private var shutdown = false
 
-  private val communicationStartCore = Runtime.getRuntime().availableProcessors() / 2 - 4
+  private val communicationStartCore = CpuInfo.getPhysicalProcessorCount - 4
 
   private val syncResults: mutable.HashMap[String, FutureTask[Tensor[T]]]
   = new mutable.HashMap[String, FutureTask[Tensor[T]]]()
