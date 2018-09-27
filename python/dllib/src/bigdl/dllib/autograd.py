@@ -243,33 +243,7 @@ def mm(x, y, axes=None):
     return Variable.from_jvalue(callBigDlFunc("float", "mm", x, y, axes))
 
 
-class Variable(kbase.ZooKerasCreator):
-    def __init__(self, input_shape, node=None, jvalue=None, name=None):
-        self.name = name
-        if jvalue:
-            self.value = jvalue
-            self.bigdl_type = "float"
-        else:
-            if node:
-                super(Variable, self).__init__(jvalue, "float", node, name)
-            else:
-                super(Variable, self).__init__(jvalue, "float", toMultiShape(input_shape), name)
-
-    def set_name(self, name):
-        self.node.element().set_name(name)
-
-    @classmethod
-    def from_node(cls, node):
-        return cls(input_shape=None, node=node)
-
-    @property
-    def shape(self):
-        return self.get_output_shape()
-
-    @property
-    def node(self):
-        return Node.of(self.value.node())
-
+class VariableOperator(object):
     # TODO: we need to add a mapping for Shape here.
     def __to_batch_shape(cls, shape):
         return tuple([None] + shape[1:])
@@ -285,6 +259,10 @@ class Variable(kbase.ZooKerasCreator):
 
     def get_output_shape(self):
         return self.__process_shape(callBigDlFunc("float", "varGetOutputShape", self))
+
+    @property
+    def shape(self):
+        return self.get_output_shape()
 
     @staticmethod
     def from_jvalue(jvalue):
@@ -325,16 +303,6 @@ class Variable(kbase.ZooKerasCreator):
 
     def __neg__(self):
         return neg(self)
-
-    def squeeze(self, dim=None):
-        """
-        Delete the singleton dimension(s).
-        The dim can be zero, and if so you would change the batch dim.
-        For example, if input has size (2, 1, 3, 4, 1):
-        Squeeze(dim = 1) will give output size (2, 3, 4, 1)
-        Squeeze(dims = null) will give output size (2, 3, 4)
-        """
-        return Variable.from_jvalue(callBigDlFunc("float", "squeeze", self, dim))
 
     def slice(self, dim, start_index, length):
         """
@@ -377,21 +345,39 @@ class Variable(kbase.ZooKerasCreator):
         """
         return Variable.from_jvalue(callBigDlFunc("float", "indexSelect", self, dim, index))
 
-    # TODO: we need a Shape mapping here.
-    def __to_batch_shape(cls, shape):
-        return tuple([None] + shape[1:])
+    def squeeze(self, dim=None):
+        """
+        Delete the singleton dimension(s).
+        The dim can be zero, and if so you would change the batch dim.
+        For example, if input has size (2, 1, 3, 4, 1):
+        Squeeze(dim = 1) will give output size (2, 3, 4, 1)
+        Squeeze(dims = null) will give output size (2, 3, 4)
+        """
+        return Variable.from_jvalue(callBigDlFunc("float", "squeeze", self, dim))
 
-    def __process_shape(self, shape):
-        if len(shape) == 1:
-            return self.__to_batch_shape(shape[0])
+
+class Variable(kbase.ZooKerasCreator, VariableOperator):
+    def __init__(self, input_shape, node=None, jvalue=None, name=None):
+        self.name = name
+        if jvalue:
+            self.value = jvalue
+            self.bigdl_type = "float"
         else:
-            return [self.__to_batch_shape(s) for s in shape]
+            if node:
+                super(Variable, self).__init__(jvalue, "float", node, name)
+            else:
+                super(Variable, self).__init__(jvalue, "float", toMultiShape(input_shape), name)
 
-    def get_input_shape(self):
-        return self.__process_shape(callBigDlFunc("float", "varGetInputShape", self))
+    def set_name(self, name):
+        self.node.element().set_name(name)
 
-    def get_output_shape(self):
-        return self.__process_shape(callBigDlFunc("float", "varGetOutputShape", self))
+    @classmethod
+    def from_node(cls, node):
+        return cls(input_shape=None, node=node)
+
+    @property
+    def node(self):
+        return Node.of(self.value.node())
 
 
 class Lambda(kbase.ZooKerasCreator):
@@ -452,7 +438,7 @@ class LambdaLayer(kbase.ZooKerasLayer):
                                           **kwargs)
 
 
-class Parameter(kbase.ZooKerasLayer):
+class Parameter(kbase.ZooKerasLayer, VariableOperator):
     """
     A trainable Variable. The default init_method is RandomUniform(-0.05, 0.05).
     You can also specify the init_weight by passing a ndarray.
