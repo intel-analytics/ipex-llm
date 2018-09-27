@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 
 class Reshape extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     new ReshapeLoadTF[T]()
   }
 }
