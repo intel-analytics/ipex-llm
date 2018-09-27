@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.{InferReshape => ReshapeOps}
+import com.intel.analytics.bigdl.nn.{Reshape => ReshapeOps}
+import com.intel.analytics.bigdl.nn.InferReshape
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -29,7 +30,7 @@ import scala.reflect.ClassTag
 
 class Reshape extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     new ReshapeLoadTF[T]()
   }
 }
@@ -37,12 +38,9 @@ class Reshape extends TensorflowOpsLoader {
 class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapter[T](Array(2)) {
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
+    val infer = sizes.toArray().contains(-1)
 
-    val batchMode = if (sizes.nDimension() >= 1 && sizes.nElement() > 0) {
-      sizes.valueAt(1) == -1
-    } else {
-      false
-    }
+    val batchMode = if (infer) false else true
 
     val arraySize = new Array[Int](if (batchMode) sizes.nElement() - 1 else sizes.nElement())
     var i = if (batchMode) 2 else 1
@@ -52,7 +50,8 @@ class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapte
       k += 1
       i += 1
     }
-    ReshapeOps[T](size = arraySize, batchMode)
+    if (infer) ReshapeOps[T](size = arraySize, Some(batchMode))
+    else InferReshape[T](size = arraySize, batchMode)
   }
 }
 
