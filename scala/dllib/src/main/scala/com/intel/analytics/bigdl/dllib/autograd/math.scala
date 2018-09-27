@@ -460,8 +460,19 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
    * Squeeze(dims = null) will give output size (2, 3, 4)
    */
   def squeeze(dim: Int): Variable[T] = {
-    val layer = Squeeze[T](dim)
-    Variable(layer.inputs(this.node))
+    val dims = new Array[Int](1)
+    dims(0) = dim
+    squeeze(dims)
+  }
+
+  def squeeze(dims: Array[Int]): Variable[T] = {
+    val blayer = if (dims == null){
+       com.intel.analytics.bigdl.nn.Squeeze[T](null, batchMode = false)
+    } else {
+      com.intel.analytics.bigdl.nn.Squeeze[T](dims.map(x => x + 1), batchMode = false)
+    }
+    val klayer = new KerasLayerWrapper[T](blayer)
+    Variable(klayer.inputs(this.node))
   }
 
   /**

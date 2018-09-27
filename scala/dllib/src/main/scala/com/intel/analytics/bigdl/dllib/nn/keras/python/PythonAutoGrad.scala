@@ -165,6 +165,15 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     a.squeeze(dim)
   }
 
+  def squeeze(a: Variable[T], dims: JList[Int]): Variable[T] = {
+    if (dims == null) {
+      a.squeeze(null)
+    }
+    else {
+      a.squeeze(dims.asScala.toArray)
+    }
+  }
+
   def slice(a: Variable[T], dim: Int, startIndex: Int, length: Int): Variable[T] = {
     a.slice(dim, startIndex, length)
   }
