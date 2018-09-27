@@ -37,8 +37,8 @@ class BufferedImageResize(resizeH: Int, resizeW: Int) extends ImageProcessing {
           img.getScaledInstance(resizeW, resizeH, java.awt.Image.SCALE_SMOOTH)
 
         val imageBuff: BufferedImage =
-          new BufferedImage(resizeW, resizeH, BufferedImage.TYPE_3BYTE_BGR)
-        imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
+                  new BufferedImage(resizeW, resizeH, img.getType)
+        imageBuff.getGraphics().drawImage(scaledImage, 0, 0, null)
 
         val output = new ByteArrayOutputStream()
         val uri = imf[String](ImageFeature.uri)
