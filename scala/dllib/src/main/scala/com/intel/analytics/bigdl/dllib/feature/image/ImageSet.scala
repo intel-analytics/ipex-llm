@@ -125,13 +125,29 @@ object ImageSet {
     new LocalImageSet(data)
   }
 
+  private def transform(imageSet: ImageSet,
+                        resizeH: Int, resizeW: Int, imageCodec: Int): ImageSet = {
+    if (resizeW == -1 || resizeH == -1) {
+      imageSet -> ImageBytesToMat(imageCodec = imageCodec)
+    } else {
+      imageSet -> BufferedImageResize(resizeH, resizeW) ->
+        ImageBytesToMat(imageCodec = imageCodec)
+    }
+  }
+
   /**
    * create LocalImageSet from array of bytes
    * @param data nested array of bytes, expect inner array is a image
+   * @param resizeH height after resize, by default is -1 which will not resize the image
+   * @param resizeW width after resize, by default is -1 which will not resize the image
+   * @param imageCodec specifying the color type of a loaded image, same as in OpenCV.imread.
+   *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
    */
-  def array(data: Array[Array[Byte]]): LocalImageSet = {
+  def array(data: Array[Array[Byte]], resizeH: Int = -1, resizeW: Int = -1,
+            imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageSet = {
     val images = data.map(ImageFeature(_))
-    ImageSet.array(images)
+    val imageSet = ImageSet.array(images)
+    transform(imageSet, resizeH, resizeW, imageCodec)
   }
 
   /**
@@ -145,10 +161,16 @@ object ImageSet {
   /**
    * create DistributedImageSet for a RDD of array bytes
    * @param data rdd of array of bytes
+   * @param resizeH height after resize, by default is -1 which will not resize the image
+   * @param resizeW width after resize, by default is -1 which will not resize the image
+   * @param imageCodec specifying the color type of a loaded image, same as in OpenCV.imread.
+   *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
    */
-  def rddBytes(data: RDD[Array[Byte]]): DistributedImageSet = {
+  def rddBytes(data: RDD[Array[Byte]], resizeH: Int = -1, resizeW: Int = -1,
+               imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageSet = {
     val images = data.map(ImageFeature(_))
-    ImageSet.rdd(images)
+    val imageSet = ImageSet.rdd(images)
+    transform(imageSet, resizeH, resizeW, imageCodec)
   }
 
   /**
@@ -182,11 +204,7 @@ object ImageSet {
       }
       ImageSet.array(images)
     }
-    if (resizeW == -1 || resizeH == -1) {
-      imageSet -> ImageBytesToMat(imageCodec = imageCodec)
-    } else {
-      imageSet -> BufferedImageResize(resizeH, resizeW) -> ImageBytesToMat(imageCodec = imageCodec)
-    }
+    transform(imageSet, resizeH, resizeW, imageCodec)
   }
 
   /**

@@ -16,7 +16,7 @@
 package com.intel.analytics.zoo.feature.image
 
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.transform.vision.image.{MatToFloats => BMatToFloats}
+import com.intel.analytics.bigdl.transform.vision.image.MatToFloats
 
 import scala.reflect.ClassTag
 
@@ -24,10 +24,11 @@ class ImageMatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
                        outKey: String = ImageFeature.floats, shareBuffer: Boolean = true)
   extends ImageProcessing {
 
-  private val internalResize =
-    BMatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
+  private val internalMatToFloats =
+    MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
+
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    internalResize.apply(prev)
+    internalMatToFloats.apply(prev)
   }
 }
 

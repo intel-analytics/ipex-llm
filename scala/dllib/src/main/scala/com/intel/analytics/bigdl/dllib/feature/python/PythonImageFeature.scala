@@ -226,6 +226,10 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
       stdR.toFloat, stdG.toFloat, stdB.toFloat)
   }
 
+  def createPerImageNormalize(min: Double, max: Double, normType: Int = 32): PerImageNormalize = {
+    PerImageNormalize(min, max, normType)
+  }
+
   def createImageMatToTensor(toRGB: Boolean = false,
                              tensorKey: String = ImageFeature.imageTensor,
                              shareBuffer: Boolean = true,

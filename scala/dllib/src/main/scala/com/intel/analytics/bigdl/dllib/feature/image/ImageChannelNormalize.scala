@@ -15,7 +15,9 @@
  */
 package com.intel.analytics.zoo.feature.image
 
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, augmentation}
+import org.opencv.core.Core
 
 /**
  * image channel normalize
@@ -52,5 +54,40 @@ object ImageChannelNormalize {
 
   def apply(mean: Float, std: Float): ImageChannelNormalize = {
     new ImageChannelNormalize(Array(mean), Array(std))
+  }
+}
+
+/**
+ * Normalizes the norm or value range Per image, similar to opencv::normalize
+ * https://docs.opencv.org/ref/master/d2/de8/group__core__array.html
+ * #ga87eef7ee3970f86906d69a92cbf064bd
+ * ImageNormalize normalizes scale and shift the input features.
+ * Various normalize methods are supported. Eg. NORM_INF, NORM_L1,
+ * NORM_L2 or NORM_MINMAX.
+ * Pleas notice it's a per image normalization.
+ * @param min lower range boundary in case of the range normalization or
+ *            norm value to normalize
+ * @param max upper range boundary in case of the range normalization;
+ *            it is not used for the norm normalization.
+ * @param normType normalization type, see opencv:NormTypes.
+ *           https://docs.opencv.org/ref/master/d2/de8/group__core__array.html
+ *           #gad12cefbcb5291cf958a85b4b67b6149f
+ *           Default Core.NORM_MINMAX
+ */
+class PerImageNormalize(min: Double, max: Double, normType: Int = Core.NORM_MINMAX)
+  extends ImageProcessing {
+  override def transformMat(feature: ImageFeature): Unit = {
+    PerImageNormalize.transform(feature.opencvMat(), feature.opencvMat(), min, max, normType)
+  }
+}
+
+object PerImageNormalize {
+  def apply(min: Double, max: Double, normType: Int = Core.NORM_MINMAX): PerImageNormalize = {
+    new PerImageNormalize(min, max, normType)
+  }
+
+  def transform(input: OpenCVMat, output: OpenCVMat, min: Double, max: Double, normType: Int)
+  : Unit = {
+    Core.normalize(input, output, min, max, normType)
   }
 }
