@@ -25,8 +25,8 @@ import scala.util.Random
 class ReshapeLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val reshapeLoadTF = new ReshapeLoadTF[Float]().setName("reshapeLoadTF")
-    val input = T(Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat()),
-      Tensor[Int](T(1, 5, 25)))
+    val input = T(Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(1, 6, -1)))
     runSerializationTest(reshapeLoadTF, input)
   }
 }

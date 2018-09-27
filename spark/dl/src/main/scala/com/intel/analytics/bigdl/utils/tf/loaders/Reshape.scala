@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.{Reshape => ReshapeOps}
+import com.intel.analytics.bigdl.nn.{InferReshape => ReshapeOps}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -52,7 +52,7 @@ class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapte
       k += 1
       i += 1
     }
-    ReshapeOps[T](size = arraySize, Some(batchMode))
+    ReshapeOps[T](size = arraySize, batchMode)
   }
 }
 
