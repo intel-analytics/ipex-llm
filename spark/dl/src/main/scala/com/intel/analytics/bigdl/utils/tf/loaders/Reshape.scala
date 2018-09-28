@@ -50,8 +50,8 @@ class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapte
       k += 1
       i += 1
     }
-    if (infer) ReshapeOps[T](size = arraySize, Some(batchMode))
-    else InferReshape[T](size = arraySize, batchMode)
+    if (infer) InferReshape[T](size = arraySize, batchMode)
+    else ReshapeOps[T](size = arraySize, Some(batchMode))
   }
 }
 
