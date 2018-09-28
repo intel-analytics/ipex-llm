@@ -477,8 +477,13 @@ class Loss[@specialized(Float, Double)T: ClassTag](
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   if (criterion == null) criterion = ClassNLLCriterion[T]()
   override def apply(output: Activity, target: Activity): LossResult = {
-    val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
+    val _output = if (output.toTensor[T].nDimension() != 1 &&
+      output.toTensor[T].size().head != _target.size().head) {
+      output.toTensor[T].narrow(1, 1, _target.size().head)
+    } else {
+      output.toTensor[T]
+    }
     val loss = ev.toType[Float](criterion.forward(_output, _target))
     val count = 1
 
