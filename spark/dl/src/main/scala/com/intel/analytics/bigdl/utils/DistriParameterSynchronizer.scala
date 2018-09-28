@@ -41,8 +41,8 @@ trait DistriParameterSynchronizer[T] {
    * @param globalSize total size of parameter
    * @param priority priority for this parameter
    */
-  def init(name: String, globalSize: Int, priority: Int = 1, weights: Tensor[T]
-           , grads: Tensor[T]): Unit
+  def init(name: String, globalSize: Int, priority: Int = 1, weights: Tensor[T],
+           grads: Tensor[T]): Unit
 
   /**
    * put parameter to global
@@ -63,10 +63,8 @@ trait DistriParameterSynchronizer[T] {
   def clear(): Unit
 }
 
-class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
-                                       val totalPartition: Int)
-                                      (implicit ev: TensorNumeric[T])
-  extends DistriParameterSynchronizer[T]{
+class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val totalPartition: Int)
+  (implicit ev: TensorNumeric[T]) extends DistriParameterSynchronizer[T]{
 
   import com.intel.analytics.bigdl.utils.BlockManagerParameterSynchronizer.logger
 
@@ -127,14 +125,75 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
       }
     })
 
-  (0 until syncPoolSize).map(wp => {
-    fetchPool.submit(new Runnable {
-      override def run(): Unit = {
-        val v = threadCount.incrementAndGet()
-        Affinity.setAffinity(communicationStartCore + (v) % 4)
+  // to process request
+  private val workerPool: ExecutorService =
+    Executors.newFixedThreadPool(workerPoolSize, new ThreadFactory {
+      override def newThread(r: Runnable): Thread = {
+        val t = Executors.defaultThreadFactory().newThread(r)
+        t.setDaemon(true)
+        t
       }
     })
-  })
+
+  // to do local sync threads
+
+  private lazy val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize,
+    new ThreadFactory {
+      override def newThread(r: Runnable): Thread = {
+        val t = Executors.defaultThreadFactory().newThread(r)
+        t.setDaemon(true)
+        t
+      }
+    })
+
+  private lazy val clearPool: ExecutorService =
+    Executors.newFixedThreadPool(clearPoolSize, new ThreadFactory {
+      override def newThread(r: Runnable): Thread = {
+        val t = Executors.defaultThreadFactory().newThread(r)
+        t.setDaemon(true)
+        t
+      }
+    })
+
+  initAffinityThreads
+
+  private def initAffinityThreads(): Unit = {
+    (0 until syncPoolSize).map(wp => {
+      fetchPool.submit(new Runnable {
+        override def run(): Unit = {
+          val v = threadCount.incrementAndGet()
+          Affinity.setAffinity(communicationStartCore + (v) % 4)
+        }
+      })
+    })
+
+    (0 until workerPoolSize).map(wp => {
+      workerPool.submit(new Runnable {
+        override def run(): Unit = {
+          val v = threadCount.incrementAndGet()
+          Affinity.setAffinity(communicationStartCore + (v) % 4)
+        }
+      })
+    })
+
+    (0 until fetchCompletionPoolSize).map(wp => {
+      fetchCompletionPool.submit(new Runnable {
+        override def run(): Unit = {
+          val v = threadCount.incrementAndGet()
+          Affinity.setAffinity(communicationStartCore + (v) % 4)
+        }
+      })
+    })
+
+    (0 until clearPoolSize).map(wp => {
+      clearPool.submit(new Runnable {
+        override def run(): Unit = {
+          val v = threadCount.incrementAndGet()
+          Affinity.setAffinity(communicationStartCore + (v) % 4)
+        }
+      })
+    })
+  }
 
   (0 until syncPoolSize).foreach(th => {
     fetchPool.submit(new Runnable {
@@ -170,53 +229,6 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
     })
   })
 
-  // to process request
-  private val workerPool: ExecutorService =
-    Executors.newFixedThreadPool(workerPoolSize, new ThreadFactory {
-      override def newThread(r: Runnable): Thread = {
-        val t = Executors.defaultThreadFactory().newThread(r)
-        t.setDaemon(true)
-        t
-      }
-    })
-
-  // to do local sync threads
-
-  private lazy val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize,
-    new ThreadFactory {
-      override def newThread(r: Runnable): Thread = {
-        val t = Executors.defaultThreadFactory().newThread(r)
-        t.setDaemon(true)
-        t
-      }
-    })
-
-  (0 until workerPoolSize).map(wp => {
-    workerPool.submit(new Runnable {
-      override def run(): Unit = {
-        val v = threadCount.incrementAndGet()
-        Affinity.setAffinity(communicationStartCore + (v) % 4)
-      }
-    })
-  })
-
-  (0 until fetchCompletionPoolSize).map(wp => {
-    fetchCompletionPool.submit(new Runnable {
-      override def run(): Unit = {
-        val v = threadCount.incrementAndGet()
-        Affinity.setAffinity(communicationStartCore + (v) % 4)
-      }
-    })
-  })
-
-  (0 until clearPoolSize).map(wp => {
-    clearPool.submit(new Runnable {
-      override def run(): Unit = {
-        val v = threadCount.incrementAndGet()
-        Affinity.setAffinity(communicationStartCore + (v) % 4)
-      }
-    })
-  })
 
   private class BlockFetchRequest(val syncMeta: SyncMeta[T],
                                   var priority: Int,
@@ -242,13 +254,14 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
         val partitionParam = syncMeta.aggregatedStateOfWorld.get(fromPartition)
         SerializerInstance.create(_fetched)(_classTag).deCompress(partitionParam)
         val acc = syncRequest.state.addAndGet(1)
-        if (acc == syncRequest.syncMeta.partitionToCount + 3) {
+        if (acc == syncRequest.syncMeta.partitionToCount + SyncState.PUT_AGGREGATED.id) {
           asyncTaskWaitingQueue.add(syncRequest)
         }
       } else {
         syncMeta.stateOfWorld.put(fromPartition, SerializerInstance.create(_fetched)(_classTag))
         if (syncMeta.stateOfWorld.size == totalPartition) {
-          val updated = syncRequest.state.compareAndSet(1, 2)
+          val updated = syncRequest.state.compareAndSet(SyncState.FETCH_PARTITION.id,
+            SyncState.AGGREGATION.id)
           if (updated) {
             asyncTaskWaitingQueue.add(syncRequest)
           }
@@ -270,7 +283,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
           val taskSize = size / partitonToCount
           val extraSize = size % partitonToCount
           val state = asyncTaskReq.state.get
-          if (state == 0) {
+          if (state == SyncState.INIT.id) {
             // step 1: clear last status
             syncMeta.stateOfWorld.clear
 
@@ -303,9 +316,9 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
               }
             }
             putThreads.foreach(pth => syncPool.submit(pth))
-            asyncTaskReq.state.set(1)
+            asyncTaskReq.state.set(SyncState.FETCH_PARTITION.id)
             asyncTaskWaitingQueue.add(asyncTaskReq)
-          } else if (state == 1) {
+          } else if (state == SyncState.FETCH_PARTITION.id) {
             // fetch aggregated partition
             if (partitionID < syncMeta.partitionToCount) {
               val syncThreads = (0 until totalPartition).map { pid =>
@@ -322,7 +335,8 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
                       pid
                     } catch {
                       case t: Throwable =>
-                        logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+                        logger.error("Error in processing fetching request: "
+                          + ExceptionUtils.getStackTrace(t))
                         throw t
                     }
                   }
@@ -330,10 +344,10 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
               }
               syncThreads.foreach(sth => syncPool.submit(sth))
             } else {
-              asyncTaskReq.state.set(3)
+              asyncTaskReq.state.set(SyncState.PUT_AGGREGATED.id)
               asyncTaskWaitingQueue.add(asyncTaskReq)
             }
-          } else if (state == 2) {
+          } else if (state == SyncState.AGGREGATION.id) {
             // aggregated completed
             val length = taskSize + (if (partitionID < extraSize) 1 else 0)
             val poolSize = Engine.default.getPoolSize
@@ -364,9 +378,9 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
             fp16paramAggregated.compress(0, res, 0, length)
             BlockManagerWrapper.putBytes(parameterBlockId,
               fp16paramAggregated.bytes(), StorageLevel.MEMORY_ONLY_SER)
-            asyncTaskReq.state.set(3)
+            asyncTaskReq.state.set(SyncState.PUT_AGGREGATED.id)
             asyncTaskWaitingQueue.add(asyncTaskReq)
-          } else if (state == 3) {
+          } else if (state == SyncState.PUT_AGGREGATED.id) {
             val aggregatedSyncThreads = (0 until syncMeta.partitionToCount).map { pid =>
               new Callable[Int] {
                 override def call(): Int = {
@@ -381,29 +395,21 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
                     pid
                   } catch {
                     case t: Throwable =>
-                      logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+                      logger.error("Error in processing request: "
+                        + ExceptionUtils.getStackTrace(t))
                       throw t
                   }
                 }
               }
             }
             aggregatedSyncThreads.foreach(aggr => syncPool.submit(aggr))
-          } else if (state == 3 + syncMeta.partitionToCount) {
+          } else if (state == SyncState.PUT_AGGREGATED.id + syncMeta.partitionToCount) {
             asyncTaskReq.futureTask.run
           }
         }
       }
     })
   })
-
-  private lazy val clearPool: ExecutorService =
-    Executors.newFixedThreadPool(clearPoolSize, new ThreadFactory {
-      override def newThread(r: Runnable): Thread = {
-        val t = Executors.defaultThreadFactory().newThread(r)
-        t.setDaemon(true)
-        t
-      }
-    })
 
   override def init(name: String, globalSize: Int, priority: Int = 1, weights: Tensor[T]
                     , grads: Tensor[T]): Unit = {
@@ -501,10 +507,9 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int,
 
 object BlockManagerParameterSynchronizer {
   val logger: Logger = Logger.getLogger(getClass)
-  def apply[T: ClassTag](partitionID: Int,
-                         totalPartition: Int)
-                        (implicit ev: TensorNumeric[T]): BlockManagerParameterSynchronizer[T]
-  = new BlockManagerParameterSynchronizer[T](partitionID, totalPartition)
+  def apply[T: ClassTag](partitionID: Int, totalPartition: Int)
+    (implicit ev: TensorNumeric[T]): BlockManagerParameterSynchronizer[T]
+    = new BlockManagerParameterSynchronizer[T](partitionID, totalPartition)
 }
 
 
@@ -514,3 +519,11 @@ case class SyncMeta[T](name: String, var counter: Int, priority: Int,
                        aggregatedStateOfWorld: ConcurrentHashMap[Int, Tensor[T]],
                        weights: Tensor[T] = null,
                        grads: Tensor[T] = null)
+
+object SyncState extends Enumeration{
+  type State = Value
+  val INIT = Value("0")
+  val FETCH_PARTITION = Value("1")
+  val AGGREGATION = Value("2")
+  val PUT_AGGREGATED = Value("3")
+}
