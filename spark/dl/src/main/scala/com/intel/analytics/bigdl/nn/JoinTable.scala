@@ -132,9 +132,9 @@ class JoinTable[T: ClassTag] (
         val inputTensor = input[Tensor[_]](_i + 1)
         if (!gradInput.contains(_i + 1)) {
           gradInput(_i + 1) =
-            inputTensor.emptyInstance().resize(inputTensor.size())
+            inputTensor.emptyInstance().resizeAs(inputTensor)
         } else {
-          gradInput[Tensor[T]](_i + 1).resize(inputTensor.size())
+          gradInput[Tensor[T]](_i + 1).resizeAs(inputTensor)
         }
         if(narrowedTensor.isContiguous() || dimension > 2) {
           gradInput[Tensor[NumericWildcard]](_i + 1).copy(narrowedTensor)
