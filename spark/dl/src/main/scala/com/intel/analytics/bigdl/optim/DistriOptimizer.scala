@@ -317,9 +317,7 @@ object DistriOptimizer {
             (0 until _subModelNumber).map { i =>
               () => {
                 cached.localModels(i).training()
-                if (Engine.getEngineType() != MklDnn) {
-                  cached.localModels(i).zeroGradParameters()
-                }
+                cached.localModels(i).zeroGradParameters()
               }
             }
           }

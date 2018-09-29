@@ -131,7 +131,8 @@ class SpatialConvolution(
       bias.copy(initBias)
     }
 
-    zeroGradParameters()
+    gradWeight.zero()
+    gradBias.zero()
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
@@ -368,8 +369,6 @@ class SpatialConvolution(
   }
 
   override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {

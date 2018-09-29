@@ -94,6 +94,8 @@ class SpatialBatchNormalization(
 
     runningMean.zero()
     runningVariance.zero()
+
+    gradWeightAndBias.zero()
   }
 
   private object Index extends Serializable {
@@ -303,9 +305,6 @@ class SpatialBatchNormalization(
   }
 
   override def zeroGradParameters(): Unit = {
-    if (affine) {
-      gradWeightAndBias.zero()
-    }
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
