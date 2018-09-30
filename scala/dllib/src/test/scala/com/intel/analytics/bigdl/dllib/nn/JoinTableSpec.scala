@@ -38,6 +38,26 @@ class JoinTableSpec extends FlatSpec with Matchers {
     gradInput[Tensor[Int]](2) should be (Tensor[Int](T(3, 4)))
   }
 
+  "Join Table " should "works if batchsize changed" in {
+    val input1 = Tensor[Int](T(1, 2, 3, 4)).resize(2, 2)
+    val input2 = Tensor[Int](T(5, 6, 7, 8)).resize(2, 2)
+    val layer = JoinTable[Float](2, 2)
+    val gradOuput = Tensor[Int](T(9, 10, 11, 12, 13, 14, 15, 16)).resize(2, 4)
+    layer.forward(T(input1, input2))
+    layer.backward(T(input1, input2), gradOuput)
+
+    val input3 = Tensor[Int](T(1, 2)).resize(1, 2)
+    val input4 = Tensor[Int](T(3, 4)).resize(1, 2)
+    val expectedOutput2 = Tensor[Int](T(1, 2, 3, 4)).resize(1, 4)
+    val output2 = layer.forward(T(input3, input4))
+    output2 should be (expectedOutput2)
+    val gradOuput2 = Tensor[Int](T(5, 6, 7, 8)).resize(1, 4)
+    val gradInput = layer.backward(T(input3, input4), gradOuput2)
+
+    gradInput[Tensor[Int]](1) should be (Tensor[Int](T(5, 6)).resize(1, 2))
+    gradInput[Tensor[Int]](2) should be (Tensor[Int](T(7, 8)).resize(1, 2))
+  }
+
 }
 
 class JoinTableSerialTest extends ModuleSerializationTest {
