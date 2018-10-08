@@ -38,19 +38,24 @@ class Reshape extends TensorflowOpsLoader {
 class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapter[T](Array(2)) {
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
-    val infer = sizes.toArray().contains(-1)
 
-    // val batchMode = false
 
-    val arraySize = new Array[Int](sizes.nElement())
-    var i = 1
+    val batchMode = if (sizes.nDimension() >= 1 && sizes.nElement() > 0) {
+      sizes.valueAt(1) == -1
+    } else {
+      false
+    }
+    val arraySize = new Array[Int](if (batchMode) sizes.nElement() - 1 else sizes.nElement())
+    var i = if (batchMode) 2 else 1
     var k = 0
     while(i <= sizes.nElement()) {
       arraySize(k) = sizes.valueAt(i)
+      k += 1
       i += 1
     }
-    if (infer) InferReshape[T](size = arraySize)
-    else ReshapeOps[T](size = arraySize, Some(true))
+    val infer = arraySize.contains(-1)
+    if (infer) InferReshape[T](size = arraySize, batchMode)
+    else ReshapeOps[T](size = arraySize, Some(batchMode))
   }
 }
 
