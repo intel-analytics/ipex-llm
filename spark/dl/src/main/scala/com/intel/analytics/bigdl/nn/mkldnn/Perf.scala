@@ -314,9 +314,8 @@ object SbnDnn {
   def apply[@specialized(Float, Double) T: ClassTag](
     nOutput: Int,
     eps: Double = 1e-3,
-    momentum: Double = 0.9,
-    affine: Boolean = true)
+    momentum: Double = 0.9)
     (implicit ev: TensorNumeric[T]): SpatialBatchNormalization = {
-    SpatialBatchNormalization(nOutput, eps, momentum, affine).setInitMethod(Ones, Zeros)
+    SpatialBatchNormalization(nOutput, eps, momentum).setInitMethod(Ones, Zeros)
   }
 }
