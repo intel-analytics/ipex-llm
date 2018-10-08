@@ -104,50 +104,18 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
   val threadCount = new AtomicInteger(0)
 
   // thread pool to update sow on fetching completion
-  private val fetchCompletionPool: ExecutorService = Executors.
-    newFixedThreadPool(fetchCompletionPoolSize,
-      new ThreadFactory {
-        override def newThread(r: Runnable): Thread = {
-          val t = Executors.defaultThreadFactory().newThread(r)
-          t.setDaemon(true)
-          t
-        }
-      })
-
+  private val fetchCompletionPool: ExecutorService = initThreadPool(fetchCompletionPoolSize)
   // to fetch all remote blocks
 
-  private lazy val fetchPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize,
-    new ThreadFactory {
-      override def newThread(r: Runnable): Thread = {
-        val t = Executors.defaultThreadFactory().newThread(r)
-        t.setDaemon(true)
-        t
-      }
-    })
-
+  private lazy val fetchPool: ExecutorService = initThreadPool(syncPoolSize)
   // to process request
-  private val workerPool: ExecutorService =
-    Executors.newFixedThreadPool(workerPoolSize, new ThreadFactory {
-      override def newThread(r: Runnable): Thread = {
-        val t = Executors.defaultThreadFactory().newThread(r)
-        t.setDaemon(true)
-        t
-      }
-    })
-
+  private val workerPool: ExecutorService = initThreadPool(workerPoolSize)
   // to do local sync threads
+  private lazy val syncPool: ExecutorService = initThreadPool(syncPoolSize)
+  private lazy val clearPool: ExecutorService = initThreadPool(clearPoolSize)
 
-  private lazy val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize,
-    new ThreadFactory {
-      override def newThread(r: Runnable): Thread = {
-        val t = Executors.defaultThreadFactory().newThread(r)
-        t.setDaemon(true)
-        t
-      }
-    })
-
-  private lazy val clearPool: ExecutorService =
-    Executors.newFixedThreadPool(clearPoolSize, new ThreadFactory {
+  private def initThreadPool(capacity: Int): ExecutorService =
+    Executors.newFixedThreadPool(capacity, new ThreadFactory {
       override def newThread(r: Runnable): Thread = {
         val t = Executors.defaultThreadFactory().newThread(r)
         t.setDaemon(true)
@@ -158,35 +126,15 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
   initAffinityThreads
 
   private def initAffinityThreads(): Unit = {
-    (0 until syncPoolSize).map(wp => {
-      fetchPool.submit(new Runnable {
-        override def run(): Unit = {
-          val v = threadCount.incrementAndGet()
-          Affinity.setAffinity(communicationStartCore + (v) % 4)
-        }
-      })
-    })
+    initAffinityThreadsForThreadPool(fetchPool, syncPoolSize)
+    initAffinityThreadsForThreadPool(workerPool, workerPoolSize)
+    initAffinityThreadsForThreadPool(fetchCompletionPool, fetchCompletionPoolSize)
+    initAffinityThreadsForThreadPool(clearPool, clearPoolSize)
+  }
 
-    (0 until workerPoolSize).map(wp => {
-      workerPool.submit(new Runnable {
-        override def run(): Unit = {
-          val v = threadCount.incrementAndGet()
-          Affinity.setAffinity(communicationStartCore + (v) % 4)
-        }
-      })
-    })
-
-    (0 until fetchCompletionPoolSize).map(wp => {
-      fetchCompletionPool.submit(new Runnable {
-        override def run(): Unit = {
-          val v = threadCount.incrementAndGet()
-          Affinity.setAffinity(communicationStartCore + (v) % 4)
-        }
-      })
-    })
-
-    (0 until clearPoolSize).map(wp => {
-      clearPool.submit(new Runnable {
+  private def initAffinityThreadsForThreadPool(threadPool: ExecutorService, capacity: Int): Unit = {
+    (0 until capacity).map(wp => {
+      threadPool.submit(new Runnable {
         override def run(): Unit = {
           val v = threadCount.incrementAndGet()
           Affinity.setAffinity(communicationStartCore + (v) % 4)
