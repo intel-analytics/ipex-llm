@@ -40,18 +40,17 @@ class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapte
     val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
     val infer = sizes.toArray().contains(-1)
 
-    val batchMode = false
+    // val batchMode = false
 
-    val arraySize = new Array[Int](if (batchMode) sizes.nElement() - 1 else sizes.nElement())
-    var i = if (batchMode) 2 else 1
+    val arraySize = new Array[Int](sizes.nElement())
+    var i = 1
     var k = 0
     while(i <= sizes.nElement()) {
       arraySize(k) = sizes.valueAt(i)
-      k += 1
       i += 1
     }
-    if (infer) InferReshape[T](size = arraySize, batchMode)
-    else ReshapeOps[T](size = arraySize, Some(batchMode))
+    if (infer) InferReshape[T](size = arraySize)
+    else ReshapeOps[T](size = arraySize, Some(true))
   }
 }
 
