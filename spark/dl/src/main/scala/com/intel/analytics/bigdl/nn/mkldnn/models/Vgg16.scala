@@ -86,7 +86,7 @@ object Vgg_16 {
       propagateBack: Boolean = true): SpatialConvolution = {
       val conv = SpatialConvolution(nInputPlane, nOutputPlane, kernelW, kernelH,
         strideW, strideH, padW, padH, nGroup, propagateBack)
-      conv.setInitMethod(Xavier.setVersion2(true), Zeros)
+      conv.setInitMethod(Xavier.setVarianceNormAverage(false), Zeros)
       conv
     }
   }

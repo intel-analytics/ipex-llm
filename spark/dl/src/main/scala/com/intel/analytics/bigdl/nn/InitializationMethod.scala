@@ -278,10 +278,10 @@ case class ConstInitMethod(value: Double) extends InitializationMethod {
  *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
  */
 case object Xavier extends InitializationMethod {
-  private var version2: Boolean = false
+  private var varianceNormAverage: Boolean = true
 
-  def setVersion2(v: Boolean): this.type = {
-    version2 = v
+  def setVarianceNormAverage(v: Boolean): this.type = {
+    varianceNormAverage = v
     this
   }
 
@@ -290,7 +290,7 @@ case object Xavier extends InitializationMethod {
     val shape = variable.size()
     val fanIn = dataFormat.getFanIn(shape)
     val fanOut = dataFormat.getFanOut(shape)
-    val stdv = if (version2) {
+    val stdv = if (!varianceNormAverage) {
       math.sqrt(3.0 / fanIn)
     } else {
       math.sqrt(6.0 / (fanIn + fanOut))
