@@ -5,7 +5,7 @@ Before you run this example, you need to install tensorflow on your machine. Thi
 by
 
 ```bash
-pip install tensorflow==1.2.0
+pip install tensorflow
 ```
 
 ## Load tensorflow model
@@ -16,7 +16,7 @@ python model.py
 
 2. Freeze tensorflow model
 ```bash
-wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
+wget https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/tools/freeze_graph.py
 python freeze_graph.py --input_graph model/model.pbtxt --input_checkpoint model/model.chkp --output_node_names="LeNet/fc4/BiasAdd" --output_graph "model.pb"
 ```
 
