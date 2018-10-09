@@ -28,7 +28,6 @@ class SpatialBatchNormalization(
   val nOutput: Int,
   val eps: Double = 1e-5,
   val momentum: Double = 0.1,
-  val affine: Boolean = true,
   private val initWeight: Tensor[Float] = null,
   private val initBias: Tensor[Float] = null,
   private val initGradWeight: Tensor[Float] = null,
@@ -94,6 +93,8 @@ class SpatialBatchNormalization(
 
     runningMean.zero()
     runningVariance.zero()
+
+    gradWeightAndBias.zero()
   }
 
   private object Index extends Serializable {
@@ -303,9 +304,6 @@ class SpatialBatchNormalization(
   }
 
   override def zeroGradParameters(): Unit = {
-    if (affine) {
-      gradWeightAndBias.zero()
-    }
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -322,7 +320,7 @@ class SpatialBatchNormalization(
   }
 
   override def toString(): String = {
-    s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum, $affine)"
+    s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum)"
   }
 
   override def evaluate(): this.type = {
@@ -356,7 +354,7 @@ object SpatialBatchNormalization {
     initBias: Tensor[Float] = null,
     initGradWeight: Tensor[Float] = null,
     initGradBias: Tensor[Float] = null): SpatialBatchNormalization = {
-    new SpatialBatchNormalization(nOutput, eps, momentum, affine,
-      initWeight, initBias, initGradWeight, initGradBias)
+    new SpatialBatchNormalization(nOutput, eps, momentum, initWeight, initBias, initGradWeight,
+      initGradBias)
   }
 }
