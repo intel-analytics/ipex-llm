@@ -284,17 +284,19 @@ object DistriOptimizer {
 
               // Aggregate multi-model's gradient to the first model's gradient
               val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
-              Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-                val offset = pOffset + tid * taskSize + math.min(tid, extraTask)
-                val length = taskSize + (if (tid < extraTask) 1 else 0)
-                var i = 1
-                while (i < finishedGradients.length) {
-                  finishedGradients(0).narrow(1, offset, length)
-                    .add(finishedGradients(i).narrow(1, offset, length))
-                  i += 1
-                }
-              }))
-              driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
+              if (parallelNum != 1) {
+                Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+                  val offset = pOffset + tid * taskSize + math.min(tid, extraTask)
+                  val length = taskSize + (if (tid < extraTask) 1 else 0)
+                  var i = 1
+                  while (i < finishedGradients.length) {
+                    finishedGradients(0).narrow(1, offset, length)
+                      .add(finishedGradients(i).narrow(1, offset, length))
+                    i += 1
+                  }
+                }))
+                driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
+              }
               val putG = System.nanoTime()
               // Put first finished model's gradient who aggregated
               // all other models' gradient to AllReduceParameter
