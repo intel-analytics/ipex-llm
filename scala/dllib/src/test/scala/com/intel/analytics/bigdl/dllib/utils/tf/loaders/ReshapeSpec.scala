@@ -30,9 +30,9 @@ class ReshapeSpec extends TensorflowSpecHelper {
     val shape = Tensor[Int](T(1, 32, 12, 32))
     compare[Float](
       NodeDef.newBuilder()
-        .setName("Reshape test")
+        .setName("ReshapeTest")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
-        .putAttr("Tshape", typeAttr(DataType.DT_FLOAT))
+        .putAttr("Tshape", typeAttr(DataType.DT_INT32))
         .setOp("Reshape"),
       Seq(data, shape),
       0
@@ -43,9 +43,9 @@ class ReshapeSpec extends TensorflowSpecHelper {
     val shape = Tensor[Int](T(1, 32, -1, 32))
     compare[Float](
       NodeDef.newBuilder()
-        .setName("Reshape test")
+        .setName("ReshapeTest")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
-        .putAttr("Tshape", typeAttr(DataType.DT_FLOAT))
+        .putAttr("Tshape", typeAttr(DataType.DT_INT32))
         .setOp("Reshape"),
       Seq(data, shape),
       0
