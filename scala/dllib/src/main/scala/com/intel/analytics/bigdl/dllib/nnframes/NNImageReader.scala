@@ -17,13 +17,14 @@
 package com.intel.analytics.zoo.pipeline.nnframes
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature, ImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.zoo.feature.image.ImageSet
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import org.opencv.core.CvType
+import org.opencv.core.{CvType, Mat}
 import org.opencv.imgcodecs.Imgcodecs
 
 import scala.language.existentials
@@ -43,7 +44,7 @@ object NNImageSchema {
       StructField("nChannels", IntegerType, false) ::
       // OpenCV-compatible type: CV_8UC3, CV_8UC1 in most cases
       StructField("mode", IntegerType, false) ::
-      // Bytes in image file
+      // Bytes in row-wise BGR
       StructField("data", BinaryType, false) :: Nil)
 
   /**
@@ -70,18 +71,14 @@ object NNImageSchema {
           s" $other in ${imf.uri()}. Only 1, 3 and 4 are supported.")
       }
       (cvType, floatData)
-    } else if (imf.contains(ImageFeature.bytes)) {
-      val bytesData = imf.bytes()
-      val cvType = imf.getChannel() match {
-        case 1 => CvType.CV_8UC1
-        case 3 => CvType.CV_8UC3
-        case 4 => CvType.CV_8UC4
-        case other => throw new IllegalArgumentException(s"Unsupported number of channels:" +
-          s" $other in ${imf.uri()}. Only 1, 3 and 4 are supported.")
-      }
+    } else if (imf.contains(ImageFeature.mat)) {
+      val mat = imf.opencvMat()
+      val cvType = mat.`type`()
+      val bytesData = new Array[Byte]((mat.total() * mat.elemSize()).toInt)
+      mat.get(0, 0, bytesData)
       (cvType, bytesData)
     } else {
-      throw new IllegalArgumentException(s"ImageFeature should have imageTensor or bytes.")
+      throw new IllegalArgumentException(s"ImageFeature should have imageTensor or mat.")
     }
 
     Row(
@@ -102,8 +99,12 @@ object NNImageSchema {
     val storageType = row.getInt(4)
     storageType match {
       case CvType.CV_8UC3 | CvType.CV_8UC1 | CvType.CV_8UC4 =>
-        imf.update(ImageFeature.bytes, row.getAs[Array[Byte]](5))
-        BytesToMat().transform(imf)
+        val bytesData = row.getAs[Array[Byte]](5)
+        val mat = new Mat(h, w, storageType)
+        mat.put(0, 0, bytesData)
+        val opencvMat = new OpenCVMat(mat)
+        imf(ImageFeature.mat) = opencvMat
+        imf(ImageFeature.originalSize) = opencvMat.shape()
       case CvType.CV_32FC3 | CvType.CV_32FC1 | CvType.CV_32FC4 =>
         val data = row.getSeq[Float](5).toArray
         val size = Array(h, w, c)
@@ -162,7 +163,12 @@ object NNImageReader {
    * @param resizeH height after resize, by default is -1 which will not resize the image
    * @param resizeW width after resize, by default is -1 which will not resize the image
    * @param imageCodec specifying the color type of a loaded image, same as in OpenCV.imread.
-   *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
+   *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED.
+   *              >0 Return a 3-channel color image. Note In the current implementation the
+   *                 alpha channel, if any, is stripped from the output image. Use negative value
+   *                  if you need the alpha channel.
+   *              =0 Return a grayscale image.
+   *              <0 Return the loaded image as is (with alpha channel if any).
    * @return DataFrame with a single column "image" of images;
    *         see DLImageSchema.byteSchema for the details
    */
