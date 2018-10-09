@@ -254,6 +254,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   final def forward(input: A): B = {
     val before = System.nanoTime()
     try {
+      updateParameter
       updateOutput(input)
     } catch {
       case l: LayerException =>
@@ -282,8 +283,16 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     updateGradInput(input, gradOutput)
     accGradParameters(input, gradOutput)
     backwardTime += System.nanoTime() - before
-
+    asyncGradient
     gradInput
+  }
+
+  private[bigdl] def asyncGradient(): Unit = {
+    if (this.getParameterSynchronizer() != null) {
+      if (this.parameters() != null) {
+        this.getParameterSynchronizer.put(this.getName)
+      }
+    }
   }
 
   /**
@@ -1115,5 +1124,60 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * JVM GC can't release them reliably.
    */
   def release(): Unit = {}
+
+
+  /**
+   * parameter synchronizer for gradient synchronization
+   */
+  var _parameterSynchronizer: DistriParameterSynchronizer[T] = null
+
+  /**
+   * set parameter synchronizer
+   * @param parameterSynchronizer parameter synchronizer
+   */
+  def setParameterSynchronizer(parameterSynchronizer: DistriParameterSynchronizer[T]): Unit = {
+    _parameterSynchronizer = parameterSynchronizer
+  }
+
+
+  /**
+   * get parameter synchronizer
+   * @return parameter synchronizer
+   */
+  def getParameterSynchronizer(): DistriParameterSynchronizer[T] = _parameterSynchronizer
+
+
+  var _optimMethod: OptimMethod[T] = null
+
+  /**
+   * set optim method
+   */
+
+  def setOptimMethod(optimMethod: OptimMethod[T]): Unit = {
+    _optimMethod = optimMethod
+  }
+
+  /**
+   * get optim method for layer
+   */
+
+  def getOptimMethod(): OptimMethod[T] = _optimMethod
+
+  private[bigdl] def updateParameter(): Unit = {
+    if (this.getParameterSynchronizer() != null && this.isTraining) {
+      if (this.parameters() != null) {
+        val before = System.nanoTime()
+        val (weights, grads) = this.getParameterSynchronizer.get(this.getName)
+        val syncEndTime = System.nanoTime()
+        if (grads != null) {
+          val optimMethod = this.getOptimMethod
+          require(optimMethod != null, s"optim method for ${this.getName} cannot be null")
+          optimMethod.optimize(_ => (ev.fromType(0.0f), grads),
+            weights)
+          this.zeroGradParameters
+        }
+      }
+    }
+  }
 }
 
