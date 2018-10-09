@@ -53,7 +53,7 @@ class TestNNImageReader():
         assert first_row[2] == 500
         assert first_row[3] == 3
         assert first_row[4] == 16
-        assert len(first_row[5]) == 95959
+        assert len(first_row[5]) == 562500
 
     def test_read_image_withOriginColumn(self):
         image_path = os.path.join(self.resource_path, "pascal/000025.jpg")
