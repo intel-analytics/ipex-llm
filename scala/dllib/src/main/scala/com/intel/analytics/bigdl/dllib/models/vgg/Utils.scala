@@ -16,12 +16,16 @@
 
 package com.intel.analytics.bigdl.models.vgg
 
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.ByteRecord
+import com.intel.analytics.bigdl.DataSet
+import com.intel.analytics.bigdl.dataset.image.{CropCenter, CropRandom}
+import com.intel.analytics.bigdl.dataset.{ByteRecord, DataSet, MiniBatch}
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.{ChannelScaledNormalizer, RandomCropper, RandomResize}
+import com.intel.analytics.bigdl.transform.vision.image.{MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}
 import com.intel.analytics.bigdl.utils.File
+import org.apache.spark.SparkContext
 import scopt.OptionParser
 
 import scala.collection.mutable.ArrayBuffer
@@ -43,10 +47,20 @@ object Utils {
     overWriteCheckpoint: Boolean = false,
     learningRate: Double = 0.01,
     weightDecay: Double = 0.0005,
-    graphModel: Boolean = false
+    graphModel: Boolean = false,
+    maxIteration: Int = 40000,
+    momentum: Double = 0.9,
+    dampening: Double = 0.0,
+    nesterov: Boolean = true,
+    classNumber: Int = 1000,
+    env: String = "local",
+    checkpointIteration: Int = 1000,
+    maxLr: Double = 0.06,
+    warmupEpoch: Option[Int] = None,
+    gradientL2NormThreshold: Option[Double] = None
   )
 
-  val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
+  val trainParser = new OptionParser[TrainParams]("BigDL Vgg Example") {
     opt[String]('f', "folder")
       .text("where you put the Cifar10 data")
       .action((x, c) => c.copy(folder = x))
@@ -80,6 +94,27 @@ object Utils {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[Int]('i', "maxIteration")
+      .text("iteration numbers")
+      .action((x, c) => c.copy(maxIteration = x))
+    opt[Int]("classNum")
+      .text("class number")
+      .action((x, c) => c.copy(classNumber = x))
+    opt[Int]("checkpointIteration")
+      .text("checkpoint interval of iterations")
+      .action((x, c) => c.copy(checkpointIteration = x))
+    opt[Double]("weightDecay")
+      .text("weight decay")
+      .action((x, c) => c.copy(weightDecay = x))
+    opt[Double]("maxLr")
+      .text("max Lr after warm up")
+      .action((x, c) => c.copy(maxLr = x))
+    opt[Int]("warmupEpoch")
+      .text("warm up epoch numbers")
+      .action((x, c) => c.copy(warmupEpoch = Some(x)))
+    opt[Double]("gradientL2NormThreshold")
+      .text("gradient L2-Norm threshold")
+      .action((x, c) => c.copy(gradientL2NormThreshold = Some(x)))
   }
 
   case class TestParams(
@@ -170,6 +205,37 @@ object Utils {
       result.append(ByteRecord(img, label + 1.0f))
       i += 1
     }
+  }
+
+  private type BatchDataSet = DataSet[MiniBatch[Float]]
+  def valDataSet(path: String, sc: SparkContext, imageSize: Int, batchSize: Int): BatchDataSet = {
+    DataSet.SeqFileFolder.filesToImageFeatureDataset(path, sc, 1000).transform(
+      MTImageFeatureToBatch(
+        width = imageSize,
+        height = imageSize,
+        batchSize = batchSize,
+        transformer = PixelBytesToMat() ->
+          RandomResize(256, 256) ->
+          RandomCropper(224, 224, false, CropCenter) ->
+          ChannelScaledNormalizer(104, 117, 124, 1) ->
+          MatToTensor[Float](), toRGB = false
+      )
+    )
+  }
+
+  def trainDataSet(path: String, sc: SparkContext, imageSize: Int, batchSize: Int): BatchDataSet = {
+    DataSet.SeqFileFolder.filesToImageFeatureDataset(path, sc, 1000).transform(
+      MTImageFeatureToBatch(
+        width = imageSize,
+        height = imageSize,
+        batchSize = batchSize,
+        transformer = PixelBytesToMat() ->
+          RandomResize(256, 256) ->
+          RandomCropper(224, 224, true, CropRandom) ->
+          ChannelScaledNormalizer(104, 117, 124, 1) ->
+          MatToTensor[Float](), toRGB = false
+      )
+    )
   }
 }
 
