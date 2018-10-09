@@ -25,10 +25,7 @@ import com.intel.analytics.bigdl.utils._
 import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.concurrent.Callable
 
-import com.intel.analytics.bigdl.Test.getExecutionOrder
-import com.intel.analytics.bigdl.mkl.hardware.CpuInfo
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.mkldnn.MklDnnContainer
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
@@ -258,7 +255,7 @@ object ParallelOptimizer {
         logger.info(s"${_header} Trained ${localRecordsNum} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}.")
-        logger.info("\n" + metrics.summary())
+        logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
 
