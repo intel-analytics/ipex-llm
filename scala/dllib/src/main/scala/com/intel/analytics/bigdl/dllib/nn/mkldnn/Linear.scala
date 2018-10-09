@@ -67,7 +67,8 @@ class Linear(
       bias.copy(initBias)
     }
 
-    zeroGradParameters()
+    gradWeight.zero()
+    gradBias.zero()
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
@@ -279,8 +280,6 @@ class Linear(
   }
 
   override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
   }
 
   override def release(): Unit = {
