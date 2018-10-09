@@ -39,7 +39,12 @@ class NNImageReader:
         :param resizeH height after resize, by default is -1 which will not resize the image
         :param resizeW width after resize, by default is -1 which will not resize the image
         :param image_codec specifying the color type of a loaded image, same as in OpenCV.imread.
-               By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED(-1)
+               By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED(-1).
+               >0 Return a 3-channel color image. Note In the current implementation the
+                  alpha channel, if any, is stripped from the output image. Use negative value
+                  if you need the alpha channel.
+               =0 Return a grayscale image.
+               <0 Return the loaded image as is (with alpha channel if any).
         :return DataFrame with a single column "image"; Each record in the column represents
                 one image record: Row (uri, height, width, channels, CvType, bytes).
         """
