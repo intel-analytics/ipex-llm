@@ -292,7 +292,7 @@ object SGD {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      val polyIter = nevals - excludeIterations
+      val polyIter = nevals // fix: should have no exclude iterations.
       val clr = if (polyIter > maxIteration) {
         0.0
       } else {
@@ -306,7 +306,7 @@ object SGD {
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
       val lr = optimMethod.learningRate
-      val polyIter = nevals - excludeIterations
+      val polyIter = nevals // fix: should have no exclude iterations.
       val clr = if (polyIter > maxIteration) {
         0.0
       } else {
