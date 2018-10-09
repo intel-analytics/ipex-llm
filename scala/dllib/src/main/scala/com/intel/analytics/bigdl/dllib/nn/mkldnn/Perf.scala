@@ -75,7 +75,7 @@ object Perf {
       val label = Tensor(batchSize).apply1(_ => Math.ceil(RNG.uniform(0, 1) * 1000).toFloat)
 
       val model = params.model match {
-        case "vgg16" => Vgg_16(batchSize, classNum, false)
+        case "vgg16" => Vgg_16(batchSize, classNum, true)
         case "resnet50" => ResNet(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
         case _ => throw new UnsupportedOperationException(s"Unkown model ${params.model}")
       }

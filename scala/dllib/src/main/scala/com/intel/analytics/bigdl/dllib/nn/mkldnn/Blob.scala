@@ -75,6 +75,14 @@ private[mkldnn] class Blob(_size: Array[Int]) extends Serializable {
     _memoryData
   }
 
+  def isMemoryDataSet(): Boolean = {
+    if (_memoryData == null) {
+      false
+    } else {
+      true
+    }
+  }
+
   def zero(): Unit = {
     dense.zero()
     native.zero()
