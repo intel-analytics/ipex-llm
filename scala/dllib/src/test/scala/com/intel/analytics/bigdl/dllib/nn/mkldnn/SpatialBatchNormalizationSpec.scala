@@ -506,7 +506,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val gradBias = Tools.getTensor("Bwrd_bn.Grad.4", Array(channel), identity)
 
     val bn = new SpatialBatchNormalization(channel, eps = 0.0, momentum = 1.0,
-      affine = true, initWeight = weight, initBias = bias)
+      initWeight = weight, initBias = bias)
 
     val reorder1 = ReorderMemory(HeapData(shape, Memory.Format.nchw)).setName("reorder1")
     val reorder2 = ReorderMemory(HeapData(shape, Memory.Format.nchw)).setName("reorder2")
@@ -595,7 +595,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val runningVariance = Tools.getTensor("Fwrd_bn.Wght.1", Array(channel), identity)
 
     val bn = new SpatialBatchNormalization(channel, eps = 0.0, momentum = 1.0,
-      affine = true, initWeight = weight, initBias = bias)
+      initWeight = weight, initBias = bias)
     bn.runningMean.copy(runningMean)
     bn.runningVariance.copy(runningVariance)
 
