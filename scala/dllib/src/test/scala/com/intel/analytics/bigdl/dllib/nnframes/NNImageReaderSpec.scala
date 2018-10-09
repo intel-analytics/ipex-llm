@@ -58,7 +58,7 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(r.getInt(2) == 500)
     assert(r.getInt(3) == 3)
     assert(r.getInt(4) == CvType.CV_8UC3)
-    assert(r.getAs[Array[Byte]](5).length == 95959)
+    assert(r.getAs[Array[Byte]](5).length == 562500)
   }
 
   "NNImageReader" should "has correct result for imageNet" in {
@@ -103,6 +103,17 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(imageDF.count() == 6)
   }
 
+  "read png image" should "work with image_codec" in {
+    val resource = getClass.getClassLoader.getResource("png/zoo.png")
+    val df = NNImageReader.readImages(resource.getFile, sc, imageCodec = 1)
+    assert(df.count() == 1)
+    val r = df.head().getAs[Row](0)
+    assert(r.getString(0).endsWith("png/zoo.png"))
+    // should only have 3 channels with image_codec
+    assert(r.getInt(3) == 3)
+    assert(r.getInt(4) == CvType.CV_8UC3)
+  }
+
   "read gray scale image" should "work" in {
     val resource = getClass.getClassLoader.getResource("gray/gray.bmp")
     val df = NNImageReader.readImages(resource.getFile, sc)
@@ -113,6 +124,30 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(r.getInt(2) == 50)
     assert(r.getInt(3) == 1)
     assert(r.getInt(4) == CvType.CV_8UC1)
+  }
+
+  "read gray scale image with resize" should "work" in {
+    val resource = getClass.getClassLoader.getResource("gray/gray.bmp")
+    val df = NNImageReader.readImages(resource.getFile, sc, -1, 300, 300)
+    assert(df.count() == 1)
+    val r = df.head().getAs[Row](0)
+    assert(r.getString(0).endsWith("gray.bmp"))
+    assert(r.getInt(1) == 300)
+    assert(r.getInt(2) == 300)
+    assert(r.getInt(3) == 1)
+    assert(r.getInt(4) == CvType.CV_8UC1)
+  }
+
+  "read gray scale image with image_codec" should "work" in {
+    val resource = getClass.getClassLoader.getResource("gray/gray.bmp")
+    val df = NNImageReader.readImages(resource.getFile, sc, imageCodec = 1)
+    assert(df.count() == 1)
+    val r = df.head().getAs[Row](0)
+    assert(r.getString(0).endsWith("gray.bmp"))
+    assert(r.getInt(1) == 50)
+    assert(r.getInt(2) == 50)
+    assert(r.getInt(3) == 3)
+    assert(r.getInt(4) == CvType.CV_8UC3)
   }
 
   "NNImageReader" should "support withOriginColumn" in {
