@@ -199,17 +199,19 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val (weightAll1, gradWeightAll1) = model1.parameters()
 
     RNG.setSeed(100)
-    val model2 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1)
+    val conv = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1)
+    val model2 = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(conv)
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+
     model2.zeroGradParameters()
 
-    model2.setRuntime(new MklDnnRuntime)
-    model2.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
-    model2.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    model2.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    model2.compile(TrainingPhase)
 
-    val initWeight = Tools.fromOIHW(weightAll1(0), model2.parametersWithShape()._1(0))
-    model2.weight.copy(initWeight)
-    model2.bias.copy(model1.bias)
+    val initWeight = Tools.fromOIHW(weightAll1(0), conv.parametersWithShape()._1(0))
+    conv.weight.copy(initWeight)
+    conv.bias.copy(model1.bias)
 
     RNG.setSeed(1)
     val input = Tensor(batchSize, 3, 224, 224).apply1(e => RNG.uniform(0, 1).toFloat)
@@ -237,8 +239,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val gw1 = model1.gradWeight
     val gb1 = model1.gradBias
 
-    val gw2 = Tools.toOIHW(model2.gradWeight.native, model2.parametersWithShape()._2(0))
-    val gb2 = Tools.dense(model2.gradBias.native).toTensor
+    val gw2 = Tools.toOIHW(conv.gradWeight.native, conv.parametersWithShape()._2(0))
+    val gb2 = Tools.dense(conv.gradBias.native).toTensor
 
     Equivalent.nearequals(gw1, gw2, 1e-4) should be(true)
     Equivalent.nearequals(gb1, gb2, 1e-3) should be(true)
