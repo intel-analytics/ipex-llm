@@ -18,9 +18,40 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.utils.tf.Tensorflow.typeAttr
+import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
+import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.util.Random
 
+class ReshapeSpec extends TensorflowSpecHelper {
+  "Reshape" should "be correct for Float" in {
+    val data = Tensor[Float](4, 32, 32, 3).rand()
+    val shape = Tensor[Int](T(1, 32, 12, 32))
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName("Reshape test")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .putAttr("Tshape", typeAttr(DataType.DT_FLOAT))
+        .setOp("Reshape"),
+      Seq(data, shape),
+      0
+    )
+  }
+  "Reshape" should "be correct for Float with inference" in {
+    val data = Tensor[Float](4, 32, 32, 3).rand()
+    val shape = Tensor[Int](T(1, 32, -1, 32))
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName("Reshape test")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .putAttr("Tshape", typeAttr(DataType.DT_FLOAT))
+        .setOp("Reshape"),
+      Seq(data, shape),
+      0
+    )
+  }
+}
 
 class ReshapeLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
