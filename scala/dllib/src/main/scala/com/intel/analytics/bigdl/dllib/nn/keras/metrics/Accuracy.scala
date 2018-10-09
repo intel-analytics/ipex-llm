@@ -18,8 +18,9 @@ package com.intel.analytics.zoo.pipeline.api.keras.metrics
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.{AccuracyResult, Top1Accuracy, ValidationResult, Top5Accuracy => BigDLTop5Accuracy}
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
 
 /**
  * Measures top1 accuracy for classification problems.
@@ -27,7 +28,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
  * @param zeroBasedLabel Boolean. Whether target labels start from 0. Default is true.
  *                       If false, labels start from 1.
  */
-class Accuracy[T](
+class Accuracy[T: ClassTag](
     val zeroBasedLabel: Boolean = true)(implicit ev: TensorNumeric[T])
   extends Top1Accuracy[T] {
 
@@ -48,7 +49,7 @@ class Accuracy[T](
  * @param zeroBasedLabel Boolean. Whether target labels start from 0. Default is true.
  *                       If false, labels start from 1.
  */
-class Top5Accuracy[T](
+class Top5Accuracy[T: ClassTag](
     val zeroBasedLabel: Boolean = true)(implicit ev: TensorNumeric[T])
   extends BigDLTop5Accuracy[T] {
 
