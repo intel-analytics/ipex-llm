@@ -19,6 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.{Reshape => ReshapeOps}
+import com.intel.analytics.bigdl.nn.InferReshape
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -38,12 +39,12 @@ class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapte
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
 
+
     val batchMode = if (sizes.nDimension() >= 1 && sizes.nElement() > 0) {
       sizes.valueAt(1) == -1
     } else {
       false
     }
-
     val arraySize = new Array[Int](if (batchMode) sizes.nElement() - 1 else sizes.nElement())
     var i = if (batchMode) 2 else 1
     var k = 0
@@ -52,7 +53,9 @@ class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapte
       k += 1
       i += 1
     }
-    ReshapeOps[T](size = arraySize, Some(batchMode))
+    val infer = arraySize.contains(-1)
+    if (infer) InferReshape[T](size = arraySize, batchMode)
+    else ReshapeOps[T](size = arraySize, Some(batchMode))
   }
 }
 
