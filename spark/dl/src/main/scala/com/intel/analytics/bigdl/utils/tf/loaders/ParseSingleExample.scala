@@ -42,13 +42,14 @@ class ParseSingleExample extends TensorflowOpsLoader {
         case DataType.DT_DOUBLE => DoubleType
         case DataType.DT_STRING => StringType
       }
+    val denseKeys = nodeDef.getAttrMap.get("dense_keys").getList.getSList.asScala
     val denseShapes = nodeDef.getAttrMap.get("dense_shapes")
       .getList.getShapeList.asScala
       .map { shapeProto =>
         shapeProto.getDimList.asScala.map(_.getSize.toInt).toArray
       }
 
-    new ParseSingleExampleOperation[T](Tdense, denseShapes)
+    new ParseSingleExampleOperation[T](Tdense, denseKeys, denseShapes)
   }
 }
 

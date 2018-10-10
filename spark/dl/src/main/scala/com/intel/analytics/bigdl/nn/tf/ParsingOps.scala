@@ -91,6 +91,7 @@ private[bigdl] class ParseExample[T: ClassTag](val nDense: Int,
 }
 
 private[bigdl] class ParseSingleExample[T: ClassTag](val tDense: Seq[TensorDataType],
+                                                     val denseKeys: Seq[ByteString],
                                                val denseShape: Seq[Array[Int]])
                                               (implicit ev: TensorNumeric[T])
   extends Operation[Table, Table, T] {
@@ -98,32 +99,24 @@ private[bigdl] class ParseSingleExample[T: ClassTag](val tDense: Seq[TensorDataT
   type StringType = ByteString
 
   override def updateOutput(input: Table): Table = {
-    val nDense = 1
-    require(input[Tensor[StringType]](1).size(1) == 1, "only support one example at a time")
-    val serialized = input[Tensor[StringType]](1).valueAt(1)
-    val denseKeys = Range(3, 3 + nDense).map(index => input(index).asInstanceOf[Tensor[StringType]])
-      .map(_.value().toStringUtf8)
-    val denseDefault = Range(3 + nDense, 3 + 2 * nDense)
-      .map(index => input(index).asInstanceOf[Tensor[_]])
-
+    val serialized = input[Tensor[StringType]](1).value()
 
     val example = Example.parseFrom(serialized)
 
     val featureMap = example.getFeatures.getFeatureMap
 
-    val outputs = denseDefault
-      .zip(denseKeys)
-      .zip(tDense).zip(denseShape).map { case (((default, key), tensorType), shape) =>
+    val outputs = denseKeys
+      .zip(tDense).zip(denseShape).map { case ((byteSKey, tensorType), shape) =>
+      val key = byteSKey.toStringUtf8
       if (featureMap.containsKey(key)) {
         val feature = featureMap.get(key)
         getTensorFromFeature(feature, tensorType, shape)
       } else {
-        default
+        None
       }
     }
 
     for (elem <- outputs) {
-      elem.asInstanceOf[Tensor[NumericWildcard]].addSingletonDimension()
       output.insert(elem)
     }
     output
@@ -228,23 +221,22 @@ private[bigdl] object ParseExample extends ModuleSerializable {
 }
 
 private[bigdl] object ParseSingleExample extends ModuleSerializable {
-  def apply[T: ClassTag](nDense: Int,
-                         tDense: Seq[TensorDataType],
+  def apply[T: ClassTag](tDense: Seq[TensorDataType],
+                         denseKeys: Seq[ByteString],
                          denseShape: Seq[Array[Int]])
                         (implicit ev: TensorNumeric[T]): ParseSingleExample[T] =
-    new ParseSingleExample[T](tDense, denseShape)
+    new ParseSingleExample[T](tDense, denseKeys, denseShape)
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val attrMap = context.bigdlModule.getAttrMap
 
-    val nDense = DataConverter.getAttributeValue(context, attrMap.get("nDense")).
-      asInstanceOf[Int]
-
     val tDense = DataConverter.getAttributeValue(context, attrMap.get("tDense")).
       asInstanceOf[Array[String]].map(toTensorType(_))
 
+    val denseKeys = DataConverter.getAttributeValue(context, attrMap.get("denseKeys")).
+      asInstanceOf[Array[ByteString]]
     val shapeSize = DataConverter.getAttributeValue(context, attrMap.get("shapeSize")).
       asInstanceOf[Int]
 
@@ -254,7 +246,7 @@ private[bigdl] object ParseSingleExample extends ModuleSerializable {
         attrMap.get(s"shapeSize_${i - 1}")).
         asInstanceOf[Array[Int]]
     }
-    ParseSingleExample[T](nDense, tDense.toSeq, denseShape.toSeq)
+    ParseSingleExample[T](tDense.toSeq, denseKeys.toSeq, denseShape.toSeq)
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
