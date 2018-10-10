@@ -143,7 +143,7 @@ object ParallelOptimizer {
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val maxDropPercentage = state.get[Double]("maxDropPercentage").get
     val iterationPerTime = System.getProperty("bigdl.parallelOptimizer." +
-      "iterationPerTime", "5").toInt
+      "iterationPerTime", "1").toInt
     val driverSubModelNum = partitionNum * _subModelNumber * iterationPerTime
     var dropModelNumBatch = 0
     var lossArray = new Array[Double](_subModelNumber)
@@ -287,7 +287,6 @@ object ParallelOptimizer {
           }.count()
           dropModelNumBatch = 0
         }
-
         driverState("neval") = driverState[Int]("neval") + iterationPerTime
         if (recordsProcessedThisEpoch >= numSamples) {
           // Epoch is finished

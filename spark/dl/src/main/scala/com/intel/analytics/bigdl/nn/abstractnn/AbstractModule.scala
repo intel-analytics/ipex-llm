@@ -1129,13 +1129,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * parameter synchronizer for gradient synchronization
    */
-  var _parameterSynchronizer: DistriParameterSynchronizer[T] = null
+  private var _parameterSynchronizer: DistriParameterSynchronizer[T] = null
 
   /**
    * set parameter synchronizer
    * @param parameterSynchronizer parameter synchronizer
    */
-  def setParameterSynchronizer(parameterSynchronizer: DistriParameterSynchronizer[T]): Unit = {
+  private[bigdl] def setParameterSynchronizer(parameterSynchronizer:
+    DistriParameterSynchronizer[T]): Unit = {
     _parameterSynchronizer = parameterSynchronizer
   }
 
@@ -1144,16 +1145,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * get parameter synchronizer
    * @return parameter synchronizer
    */
-  def getParameterSynchronizer(): DistriParameterSynchronizer[T] = _parameterSynchronizer
+  private[bigdl] def getParameterSynchronizer():
+    DistriParameterSynchronizer[T] = _parameterSynchronizer
 
 
-  var _optimMethod: OptimMethod[T] = null
+  private var _optimMethod: OptimMethod[T] = null
 
   /**
    * set optim method
    */
 
-  def setOptimMethod(optimMethod: OptimMethod[T]): Unit = {
+  private[bigdl] def setOptimMethod(optimMethod: OptimMethod[T]): Unit = {
     _optimMethod = optimMethod
   }
 
@@ -1161,7 +1163,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * get optim method for layer
    */
 
-  def getOptimMethod(): OptimMethod[T] = _optimMethod
+  private[bigdl] def getOptimMethod(): OptimMethod[T] = _optimMethod
 
   private[bigdl] def updateParameter(): Unit = {
     if (this.getParameterSynchronizer() != null && this.isTraining) {
