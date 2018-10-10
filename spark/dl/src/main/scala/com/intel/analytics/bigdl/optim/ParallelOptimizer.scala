@@ -105,6 +105,9 @@ object ParallelOptimizer {
       case MklBlas => coresPerNode
       case MklDnn => 1
     }
+
+    require(_subModelNumber == 1, "currently only single model supported especially for mkldnn")
+
     val driverState = T(
       "epoch" -> optimMethods.values.head.state("epoch"),
       "neval" -> optimMethods.values.head.state("neval"),
@@ -168,28 +171,11 @@ object ParallelOptimizer {
           var count = 0
           var finishedThreadSize = 0
           val cached = modelIter.next()
-          val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
+         // val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
+          var miniBatch: MiniBatch[T] = null
           while (count < iterationPerTime) {
             val syWStart = System.nanoTime()
-            val batch = data.next()
-            val stackSize = batch.size() / _subModelNumber
-            tasks += Engine.default.invoke(() => {
-              require((batch.size() >= _subModelNumber) &&
-                (batch.size() % _subModelNumber == 0), "total batch size: " +
-                s"${batch.size()} should be divided by total core number: ${_subModelNumber}")
-              if (batch.size() < _subModelNumber * 2) {
-                logger.warn("Warning: for better training speed, " +
-                  "total batch size is recommended to be at least two times of core number" +
-                  s"${_subModelNumber}, please tune your batch size accordingly")
-              }
-              var b = 0
-              while (b < _subModelNumber) {
-                miniBatchBuffer(b) = batch.slice(b * stackSize + 1, stackSize)
-                b += 1
-              }
-            })
-            Engine.default.sync(tasks)
-            tasks.clear()
+            miniBatch = data.next()
             // ======================Start train models===================================
             var time = System.nanoTime()
             if (dropPercentage > 0.0 && iteration > warmupIterationNum +
@@ -197,22 +183,20 @@ object ParallelOptimizer {
               timeout = threshold
             }
             val pre = (iteration % computeThresholdbatchSize) * _subModelNumber
-            val trainingThreads = Engine.default.invokeAndWait2((0 until _subModelNumber).map(i =>
-              () => {
-                val trainStart = System.nanoTime()
-                val localModel = cached.localModels(i)
-                localModel.training()
-                val localCriterion = cached.localCriterions(i)
-                val input = miniBatchBuffer(i).getInput()
-                val target = miniBatchBuffer(i).getTarget()
-                val output = localModel.forward(input)
-                lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
-                val errors = localCriterion.backward(output, target)
-                localModel.backward(input, errors)
-                cached.moduleTimeList(i + pre) = System.nanoTime() - trainStart
-                i
-              }
-            ), timeout)
+            val trainingThreads = Engine.default.invokeAndWait2(Seq(() => {
+              val trainStart = System.nanoTime()
+              val localModel = cached.localModels(0)
+              localModel.training()
+              val localCriterion = cached.localCriterions(0)
+              val input = miniBatch.getInput()
+              val target = miniBatch.getTarget()
+              val output = localModel.forward(input)
+              lossArray(0) = ev.toType[Double](localCriterion.forward(output, target))
+              val errors = localCriterion.backward(output, target)
+              localModel.backward(input, errors)
+              cached.moduleTimeList(0 + pre) = System.nanoTime() - trainStart
+              0
+            }), timeout)
             val computingTime = System.nanoTime() - time
             driverMetrics.add("computing time average", computingTime)
             driverMetrics.add("computing time for each node", computingTime)
@@ -220,7 +204,7 @@ object ParallelOptimizer {
             val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
             val currFinishedSize = finishedThreads.size
             finishedThreadSize += currFinishedSize
-            recordsNum += currFinishedSize * stackSize
+            recordsNum += currFinishedSize * miniBatch.size
             var i = 0
             while (i < currFinishedSize) {
               lossSum += lossArray(finishedThreads(i))
