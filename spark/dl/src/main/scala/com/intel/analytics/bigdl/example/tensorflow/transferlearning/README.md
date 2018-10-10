@@ -15,12 +15,12 @@ and only train a linear model on these features.
 
 ## Make sure Spark, BigDL (both scala and python api) and Tensorflow are successfully install
 
-Please refer to [BigDL](https://bigdl-project.github.io/master/), [Tensorflow](https://www.tensorflow.org/versions/r1.2/install/) for more information.
+Please refer to [BigDL](https://bigdl-project.github.io/master/), [Tensorflow](https://www.tensorflow.org/versions/r1.10/install/) for more information.
 
-We currently support Tensorflow r1.2.
+We currently support Tensorflow r1.10.
 
 ```shell
-pip install tensorflow==1.2.0
+pip install tensorflow==1.10
 ```
 
 ## Install the TF-slim image models library
