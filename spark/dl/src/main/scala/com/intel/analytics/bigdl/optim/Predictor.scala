@@ -82,7 +82,14 @@ object Predictor {
   private[optim] def splitBatch[T: ClassTag](output: Activity, shareBuffer: Boolean, batchSize: Int)
     (implicit ev: TensorNumeric[T]): Array[Activity] = {
     val out = if (output.isTensor) {
-      splitTensor(output.toTensor, shareBuffer, batchSize)
+      val result = if (shareBuffer) output.toTensor[T] else output.toTensor[T].clone()
+      if (result.dim() == 1) {
+        require(batchSize == 1,
+          s"If result dim == 1, the batchSize is required to be 1, while actual is $batchSize")
+        Array(result)
+      } else {
+        splitTensor(output.toTensor, shareBuffer, batchSize)
+      }
     } else {
       val result = output.toTable
       val tables = new Array[Table](batchSize)
