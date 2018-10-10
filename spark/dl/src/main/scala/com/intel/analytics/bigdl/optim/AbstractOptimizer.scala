@@ -203,11 +203,10 @@ abstract class AbstractOptimizer {
   }
 
   /**
-    * Clean some internal states, so this or other optimizers can run optimize again
-    *
-    * This method will be called at the end of optimize. You need not call it if optimize succeed.
-    * If the optimize fails, you may call it before next optimize.
-    */
+   * Clean some internal states, so this or other optimizers can run optimize again
+   * This method will be called at the end of optimize. You need not call it if optimize succeed.
+   * If the optimize fails, you may call it before next optimize.
+   */
   private[bigdl] def clearState[T: ClassTag](models: RDD[DistriOptimizer.Cache[T]]) : Unit = {
     // Reset the singleton flag, so other optimizers can run
     models.mapPartitions(iter => {
