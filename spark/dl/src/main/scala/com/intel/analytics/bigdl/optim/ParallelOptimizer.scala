@@ -472,7 +472,9 @@ object ParallelOptimizer extends AbstractOptimizer {
         res ++= getExecutionOrder(sub)
       })
     } else {
-      res += module
+      if (module.parameters() != null) {
+        res += module
+      }
     }
     res
   }
@@ -673,25 +675,12 @@ class ParallelOptimizer[T: ClassTag] (
 
   private def defaultPrioritize(): mutable.HashMap[String, Int] = {
     val priorities = new mutable.HashMap[String, Int]
-    val orders = getExecutionOrder(this._model)
+    val orders = ParallelOptimizer.getExecutionOrder(this._model)
     val len = orders.size
     orders.zipWithIndex.foreach(order => {
       priorities.put(order._1.getName, len - order._2)
     })
     priorities
-  }
-
-  private def getExecutionOrder(module : Module[T]): ArrayBuffer[Module[T]] = {
-    val res = new ArrayBuffer[Module[T]]
-    if (module.isInstanceOf[Container[_, _, T]]) {
-      val subModules = module.asInstanceOf[Container[_, _, T]].modules
-      subModules.foreach(sub => {
-        res ++= getExecutionOrder(sub)
-      })
-    } else {
-      res += module
-    }
-    res
   }
 
   override def optimize(): Module[T] = {
@@ -745,82 +734,24 @@ class ParallelOptimizer[T: ClassTag] (
     val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
     var lastFailureTimestamp = System.nanoTime()
 
-    while (retryNum < maxRetry) {
-      try {
-        ParallelOptimizer.optimize(
-          model,
-          distDataset,
-          coresPerNode,
-          state,
-          endWhen,
-          metrics,
-          models,
-          optimMethods,
-          validationTrigger,
-          validationDataSet,
-          validationMethods,
-          checkpointTrigger,
-          checkpointPath,
-          trainSummary,
-          validationSummary,
-          isOverWrite
-        )
-        retryNum = Int.MaxValue
-      } catch {
-        case e: IllegalArgumentException =>
-          throw e
-        case t: Throwable =>
-          ParallelOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-          if (checkpointPath.isDefined) {
-            /* To avoid retry number is used up by first few exceptions, we count time here.
-             * If exception exceeds maxRetry times in maxRetry*retryTimeInterval seconds,
-             * we will give up retry Or we will reset retryNum
-             */
-            if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
-              retryNum += 1
-              if (retryNum == maxRetry) {
-                throw t
-              }
-            } else {
-              retryNum = 1
-            }
-            ParallelOptimizer.logger.info(s"Retrying $retryNum times")
-            lastFailureTimestamp = System.nanoTime()
-
-            val modelFile = getLatestFile(checkpointPath.get, "model")
-            clearState()
-            models.unpersist()
-            val newModel = if (modelFile != null) {
-              ParallelOptimizer.logger.info("Model recover from last snapshot")
-              Module.load[T](modelFile)
-            } else {
-              ParallelOptimizer.logger.info("Model recover from origin model")
-              model
-            }
-            optimMethods = optimMethods.map { case (moduleName, optimMethod) =>
-              val methodFile = getLatestFile(checkpointPath.get, s"optimMethod-$moduleName")
-
-              val newOptimMethod = if (methodFile != null) {
-                ParallelOptimizer.logger.
-                  info(s"$moduleName's OptimMethod recover from last snapshot")
-                OptimMethod.load[T](methodFile)
-              } else {
-                ParallelOptimizer.logger.
-                  info(s"$moduleName's OptimMethod recover from origin model")
-                optimMethod
-              }
-              newOptimMethod.clearHistory()
-              (moduleName, newOptimMethod)
-            }
-            models = ParallelOptimizer.initThreadModels(newModel, distDataset, criterion, state,
-              nodeNumber, coresPerNode,
-              checkSingleton, validationMethods, optimMethods, _priorities)
-
-          } else {
-            throw t
-          }
-      }
-    }
+    ParallelOptimizer.optimize(
+      model,
+      distDataset,
+      coresPerNode,
+      state,
+      endWhen,
+      metrics,
+      models,
+      optimMethods,
+      validationTrigger,
+      validationDataSet,
+      validationMethods,
+      checkpointTrigger,
+      checkpointPath,
+      trainSummary,
+      validationSummary,
+      isOverWrite
+    )
 
     ParallelOptimizer.getModel(models, null, model)
 
