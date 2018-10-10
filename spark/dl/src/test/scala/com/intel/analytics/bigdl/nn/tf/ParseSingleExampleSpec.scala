@@ -48,20 +48,17 @@ class ParseSingleExampleSpec extends FlatSpec with Matchers {
     val outputStream = CodedOutputStream.newInstance(data)
     example.writeTo(outputStream)
 
+    val key1 = ByteString.copyFromUtf8("floatFeature")
+    val key2 = ByteString.copyFromUtf8("longFeature")
+    val key3 = ByteString.copyFromUtf8("bytesFeature")
+    val denseKeys = Seq(key1, key2, key3)
+
     val exampleParser = new ParseSingleExample[Float](
-      Seq(FloatType, LongType, StringType), Seq(Array(3), Array(3), Array()))
+      Seq(FloatType, LongType, StringType), denseKeys, Seq(Array(3), Array(3), Array()))
 
     val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
-    val names = Tensor[ByteString]()
-    val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
-    val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())
-    val key3 = Tensor[ByteString](Array(ByteString.copyFromUtf8("bytesFeature")), Array[Int]())
 
-    val default1 = Tensor[Float]()
-    val default2 = Tensor[Long]()
-    val default3 = Tensor[ByteString]()
-
-    val input = T(serialized, names, key1, key2, key3, default1, default2, default3)
+    val input = T(serialized)
 
     val output = exampleParser.forward(input)
 
@@ -69,10 +66,9 @@ class ParseSingleExampleSpec extends FlatSpec with Matchers {
     val longTensor = output(2).asInstanceOf[Tensor[Long]]
     val stringTensor = output(3).asInstanceOf[Tensor[ByteString]]
 
-    floatTensor should be (Tensor[Float](T(T(0.0f, 1.0f, 2.0f))))
-    longTensor should be (Tensor[Long](T(T(0L, 1L, 2L))))
-    stringTensor should be (Tensor[ByteString](
-      Array(ByteString.copyFromUtf8("abcd")), Array[Int](1)))
+    floatTensor should be (Tensor[Float](T(0.0f, 1.0f, 2.0f)))
+    longTensor should be (Tensor[Long](T(0L, 1L, 2L)))
+    stringTensor should be (Tensor.scalar((ByteString.copyFromUtf8("abcd"))))
   }
 
 }
@@ -102,19 +98,17 @@ class ParseSingleExampleSerialTest extends ModuleSerializationTest {
     val outputStream = CodedOutputStream.newInstance(data)
     example.writeTo(outputStream)
 
+    val key1 = ByteString.copyFromUtf8("floatFeature")
+    val key2 = ByteString.copyFromUtf8("longFeature")
+    val key3 = ByteString.copyFromUtf8("bytesFeature")
+    val denseKeys = Seq(key1, key2, key3)
+
     val exampleParser = new ParseSingleExample[Float](Seq(FloatType, LongType, StringType),
-      Seq(Array(3), Array(3), Array())).setName("parseSingleExample")
+      denseKeys, Seq(Array(3), Array(3), Array())).setName("parseSingleExample")
 
     val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
-    val names = Tensor[ByteString]()
-    val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
-    val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())
-    val key3 = Tensor[ByteString](Array(ByteString.copyFromUtf8("bytesFeature")), Array[Int]())
 
-    val default1 = Tensor[Float]()
-    val default2 = Tensor[Long]()
-    val default3 = Tensor[ByteString]()
-    val input = T(serialized, names, key1, key2, key3, default1, default2, default3)
+    val input = T(serialized)
     runSerializationTest(exampleParser, input)
   }
 }
