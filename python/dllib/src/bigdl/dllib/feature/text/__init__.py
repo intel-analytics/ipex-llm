@@ -14,5 +14,6 @@
 # limitations under the License.
 #
 
-from .text import *
+from .text_feature import *
+from .text_set import *
 from .transformer import *

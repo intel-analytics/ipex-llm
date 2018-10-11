@@ -78,7 +78,7 @@ class SequenceShaper(TextTransformer):
                 If 'post', the sequence will be truncated from the end.
     pad_element: String. The element to be padded to the sequence if the original length is
                  smaller than the target length. Default is "##".
-                 Make sure that the padding element is meaninglessin your corpus.
+                 Make sure that the padding element is meaningless in your corpus.
     >>> sequence_shaper = SequenceShaper(len=6, trunc_mode="post", pad_element="xxxx")
     creating: createSequenceShaper
     """
