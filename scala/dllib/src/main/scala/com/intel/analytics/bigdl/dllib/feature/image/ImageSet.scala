@@ -17,7 +17,7 @@
 package com.intel.analytics.zoo.feature.image
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, Sample}
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.feature.common.Preprocessing
@@ -25,6 +25,8 @@ import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.opencv.imgcodecs.Imgcodecs
+
+import scala.reflect.ClassTag
 
 /**
  * ImageSet wraps a set of ImageFeature
@@ -72,9 +74,9 @@ abstract class ImageSet {
   def toImageFrame(): ImageFrame
 
   /**
-   * Convert ImageSet to DataSet of ImageFeature.
+   * Convert ImageSet to DataSet of Sample.
    */
-  def toDataSet(): DataSet[ImageFeature]
+  def toDataSet[T: ClassTag]: DataSet[Sample[T]]
 }
 
 class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
@@ -91,8 +93,8 @@ class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
     ImageFrame.array(array)
   }
 
-  override def toDataSet(): DataSet[ImageFeature] = {
-    DataSet.array(array)
+  override def toDataSet[T: ClassTag]: DataSet[Sample[T]] = {
+    DataSet.array(array.map(_[Sample[T]](ImageFeature.sample)))
   }
 }
 
@@ -110,8 +112,8 @@ class DistributedImageSet(var rdd: RDD[ImageFeature]) extends ImageSet {
     ImageFrame.rdd(rdd)
   }
 
-  override def toDataSet(): DataSet[ImageFeature] = {
-    DataSet.rdd[ImageFeature](rdd)
+  override def toDataSet[T: ClassTag]: DataSet[Sample[T]] = {
+    DataSet.rdd(rdd.map(_[Sample[T]](ImageFeature.sample)))
   }
 }
 

@@ -16,8 +16,9 @@
 package com.intel.analytics.zoo.feature.common
 
 import com.intel.analytics.bigdl.dataset.Transformer
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.zoo.feature.image.ImageSet
+import com.intel.analytics.zoo.feature.text.{TextFeature, TextSet}
 import org.apache.commons.lang3.SerializationUtils
 
 /**
@@ -47,6 +48,15 @@ trait Preprocessing[A, B] extends Transformer[A, B] {
     } else {
       throw new IllegalArgumentException("We expect " +
         "Preprocessing[ImageFeature, ImageFeature] here")
+    }
+  }
+
+  def apply(textSet: TextSet): TextSet = {
+    this match {
+      case textTransformer: Preprocessing[TextFeature, TextFeature] =>
+        textSet.transform(textTransformer)
+      case _ => throw new IllegalArgumentException("We expect " +
+        "Preprocessing[TextFeature, TextFeature] here")
     }
   }
 }
