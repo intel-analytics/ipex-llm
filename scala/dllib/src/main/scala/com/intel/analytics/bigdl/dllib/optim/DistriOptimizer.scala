@@ -33,6 +33,7 @@ import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.MklDnnContainer
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, getModel}
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
@@ -45,7 +46,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
-object DistriOptimizer {
+object DistriOptimizer extends AbstractOptimizer {
   import Optimizer._
 
   val logger: Logger = Logger.getLogger(getClass)
@@ -61,6 +62,7 @@ object DistriOptimizer {
    * @param moduleTimeList module running time
    * @param localMethods cached validation methods
    * @param optimMethods cached optim methods
+   * @param parameterSynchronizer cached parameter synchronizer
    * @tparam T Tensor element type
    */
   case class Cache[T](
@@ -71,7 +73,8 @@ object DistriOptimizer {
     localStates: Array[Table],
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
-    optimMethods: Map[String, OptimMethod[T]]
+    optimMethods: Map[String, OptimMethod[T]],
+    parameterSynchronizer: DistriParameterSynchronizer[T] = null
   )
 
   /**
@@ -494,87 +497,6 @@ object DistriOptimizer {
   }
 
   /**
-   * Create checkpoint.
-   *
-   * @param cacheTrigger cache trigger
-   * @param cachePath cache path
-   * @param isOverWrite whether over write
-   * @param wallClockTime wall clock time
-   * @param models cached models
-   * @param state state table
-   * @param parameters all reduce parameters
-   */
-  private def checkpoint[T: ClassTag](
-    cacheTrigger: Option[Trigger],
-    cachePath: Option[String],
-    isOverWrite: Boolean,
-    wallClockTime: Long,
-    models: RDD[Cache[T]],
-    state: Table,
-    parameters: Map[String, AllReduceParameter[T]],
-    optimMethods: Map[String, OptimMethod[T]],
-    trainingModel: Module[T]): Unit = {
-    cacheTrigger.foreach { trigger =>
-      cachePath.foreach { path =>
-        if (trigger(state)) {
-          saveModel(getModel(models, parameters, trainingModel), cachePath, isOverWrite,
-            s".${state[Int]("neval")}")
-          logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to $path")
-          optimMethods.foreach{case (name, optimMethod) =>
-            optimMethod.state.update("epoch", state[Int]("epoch"))
-            optimMethod.state.update("neval", state[Int]("neval"))
-            saveOptimMethod(optimMethod, cachePath, isOverWrite, s"-$name.${state[Int]("neval")}")
-            logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save optimMethod " +
-              s"${optimMethod} to $path")
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Save train summaries.
-   *
-   * @param trainSummary train logger
-   * @param models cached models
-   * @param driverState driver state
-   * @param parameters [[AllReduceParameter]]
-   */
-  private def saveSummary[T: ClassTag](
-    trainSummary: TrainSummary,
-    models: RDD[Cache[T]],
-    driverState: Table,
-    parameters: Map[String, AllReduceParameter[T]],
-    trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
-    val currentIteration = driverState[Int]("neval") - 1
-    val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
-    if (parametersTrigger.isDefined && parametersTrigger.get(driverState)) {
-      val model = getModel(models, parameters, trainingModel)
-      val parametersTable = model.getParametersTable()
-      // Parallelize to create Histogram.
-      Engine.default.invokeAndWait(
-        parametersTable.keySet.toSeq.map(moduleName => () => {
-          val paramTable = parametersTable[Table](moduleName)
-          paramTable.keySet.foreach { paramName =>
-            trainSummary.addHistogram(
-              s"$moduleName/$paramName", paramTable[Tensor[T]](paramName), currentIteration)}
-        }))
-    }
-    val scalarTrigger = trainSummary.getScalarTriggers()
-    // Not parallelizable, because driverState is changing each iteration.
-    scalarTrigger.foreach { v =>
-      if (v._2(driverState)) {
-        // TODO: Support show learningrate for multiOptimMethod
-        require(driverState.contains(v._1), s"DistriOptimizer.saveSummary: Summary ${v._1} " +
-          s"is not supported now.")
-        trainSummary.addScalar(
-          v._1, driverState[Float](v._1), currentIteration
-        )
-      }
-    }
-  }
-
-  /**
    * Init engine and cache models, weights, gradients, criterions, state tables
    * and validation methods on worker nodes.
    *
@@ -695,93 +617,6 @@ object DistriOptimizer {
   }
 
   /**
-   * Validate current model and save the result.
-   *
-   * @param validationTrigger validation trigger
-   * @param validationDataSet validation dataset
-   * @param validationMethods validation methods
-   * @param coresPerNode cores per node
-   * @param models cached models
-   * @param state state table
-   * @param validationSummary validation logger.
-   * @param header log header string
-   */
-  private def validate[T](
-    validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSet[MiniBatch[T]]],
-    validationMethods: Option[Array[ValidationMethod[T]]],
-    coresPerNode: Int,
-    models: RDD[Cache[T]],
-    state: Table,
-    validationSummary: Option[ValidationSummary],
-    header: String
-  ): Unit = {
-    if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
-      return
-    }
-    val trigger = validationTrigger.get
-    if (!trigger(state)) {
-      return
-    }
-    val vMethods = validationMethods.get
-    val validateRDD = validationDataSet.get.toDistributed().data(train = false)
-    logger.info(s"$header Validate model...")
-    val _subModelNumber = Engine.getEngineType match {
-      case MklBlas => coresPerNode
-      case MklDnn => 1
-      case _ => throw new IllegalArgumentException
-    }
-    val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
-      val cached = modelIter.next()
-      val vMethodsArr = cached.localMethods
-      val workingModels = cached.localModels
-
-      workingModels.foreach(_.evaluate())
-      dataIter.map(batch => {
-        val stackSize = batch.size() / _subModelNumber
-        val extraSize = batch.size() % _subModelNumber
-        val parallelism = if (stackSize == 0) extraSize else _subModelNumber
-        Engine.default.invokeAndWait(
-          (0 until parallelism).map(b =>
-            () => {
-              val offset = b * stackSize + math.min(b, extraSize) + 1
-              val length = stackSize + (if (b < extraSize) 1 else 0)
-              val miniBatch = batch.slice(offset, length)
-              val input = miniBatch.getInput()
-              val target = miniBatch.getTarget()
-              val output = workingModels(b).forward(input)
-              val validatMethods = vMethodsArr(b).get
-              validatMethods.map(validation => {
-                validation(output, target)
-              })
-            }
-          )
-        ).reduce((left, right) => {
-          left.zip(right).map { case (l, r) =>
-            l + r
-          }
-        })
-      })
-    }).reduce((left, right) => {
-      left.zip(right).map { case (l, r) =>
-        l + r
-      }
-    }).zip(vMethods)
-    results.foreach(r => {
-      logger.info(s"$header ${r._2} is ${r._1}")
-    })
-    state("score") = results(0)._1.result._1
-    if(validationSummary.isDefined) {
-      results.foreach { r =>
-        val result = r._1.result
-        validationSummary.get.addScalar(r._2.toString(), result._1,
-          state[Int]("neval") - 1
-        )
-      }
-    }
-  }
-
-  /**
    * Fetch current model parameters to driver, and copy to trainingModel.
    *
    * @param models cached models
@@ -789,10 +624,10 @@ object DistriOptimizer {
    * @param trainingModel the model is trained by optimizer
    * @return trained model
    */
-  private def getModel[T: ClassTag](
+  override protected def getModel[T: ClassTag](
     models: RDD[Cache[T]],
     parameters: Map[String, AllReduceParameter[T]],
-    trainingModel: Module[T]): Module[T] = {
+    trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val extraState = models.map(_.localModels.head.getExtraParameter()).first()
     trainingModel.setExtraParameter(extraState)
@@ -829,6 +664,7 @@ object DistriOptimizer {
 
     trainingModel
   }
+
 }
 
 /**
@@ -859,29 +695,17 @@ class DistriOptimizer[T: ClassTag] (
    * If the optimize fails, you may call it before next optimize.
    */
   def clearState() : Unit = {
-    // Reset the singleton flag, so other optimizers can run
-    models.mapPartitions(iter => {
-      Engine.resetSingletonFlag()
-      iter
-    }).count()
+   DistriOptimizer.clearState(models)
   }
 
   private def endEpoch(): Unit = {
-    optimMethods.foreach { case (moduleName, optimMethod) =>
-      val records = optimMethod.state.get[Int]("recordsProcessedThisEpoch")
-      if (records.isDefined && records.get != 0) {
-        optimMethod.state("epoch") = optimMethod.state[Int]("epoch") + 1
-        optimMethod.state("recordsProcessedThisEpoch") = 0
-      }
-    }
+    DistriOptimizer.endEpoch(optimMethods)
   }
 
   override def setTrainData(sampleRDD: RDD[Sample[T]],
     batchSize: Int,
     miniBatch: MiniBatch[T]): this.type = {
-    this.dataset = (DataSet.rdd(sampleRDD) ->
-      SampleToMiniBatch(miniBatch, batchSize, None))
-      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.dataset = DistriOptimizer.setTrainData(sampleRDD, batchSize, miniBatch)
     // if current epoch is not finished, we will end the
     // current epoch and start a new epoch when optimize is called
     endEpoch()
@@ -894,25 +718,18 @@ class DistriOptimizer[T: ClassTag] (
     labelPaddingParam: PaddingParam[T] = null) : this.type = {
     val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
     val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
-    dataset = (DataSet.rdd(sampleRDD) ->
-      SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
-      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.dataset = DistriOptimizer.setTrainData(sampleRDD, batchSize,
+      featurePaddingParam, labelPaddingParam)
     // if current epoch is not finished, we will end the
     // current epoch and start a new epoch when optimize is called
     endEpoch()
     this
   }
 
-
   override def prepareInput(): Unit = {
-    import DistriOptimizer._
     if (!dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].isCached) {
-      logger.info("caching training rdd ...")
-      dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].cache()
-      // FIXME dnn model must cache val dataset first, otherwise there will be a segment fault.
-      if (validationDataSet.isDefined) {
-        validationDataSet.get.toDistributed().cache()
-      }
+      DistriOptimizer.logger.info("caching training rdd ...")
+      DistriOptimizer.prepareInput(this.dataset, this.validationDataSet)
     }
   }
 

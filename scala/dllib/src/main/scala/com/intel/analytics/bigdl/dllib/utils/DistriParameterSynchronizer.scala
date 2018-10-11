@@ -395,7 +395,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
 
   override def clear(): Unit = {
     shutdown = true
-    longRunningThreads.asScala.foreach(_.interrupt())
+    longRunningThreads.asScala.foreach(th => if (th != null) {th.interrupt()})
     clearPool.shutdown
     workerPool.shutdown
     syncPool.shutdown

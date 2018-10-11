@@ -139,6 +139,7 @@ class Sequential extends MklDnnContainer {
         modules(i - 1).output
       )
       currentModule.accGradParameters(curInput, lastGradInput)
+      currentModule.asyncGradient
       lastGradInput = reorderManager.infer(
         mklDnnModules(i).gradInputFormats(),
         mklDnnModules(i - 1).gradOutputWeightFormats(),
@@ -148,6 +149,7 @@ class Sequential extends MklDnnContainer {
     }
 
     modules(i).accGradParameters(input, lastGradInput)
+    modules(i).asyncGradient
   }
 
   override private[mkldnn] def inputFormats() = {
