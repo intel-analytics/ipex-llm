@@ -16,7 +16,6 @@
 
 package com.intel.analytics.zoo.feature.text
 
-import com.intel.analytics.bigdl.dataset.Sample
 import org.scalatest.{FlatSpec, Matchers}
 
 class TextFeatureToSampleSpec extends FlatSpec with Matchers {
@@ -31,7 +30,7 @@ class TextFeatureToSampleSpec extends FlatSpec with Matchers {
   "TextFeatureToSample with label" should "work properly" in {
     val toSample = TextFeatureToSample()
     val transformed = toSample.transform(genFeature().setLabel(1))
-    val sample = transformed[Sample[Float]](TextFeature.sample)
+    val sample = transformed.getSample
     require(sample.getData().sameElements(Array(1.0f, 2.0f,
       3.0f, 4.0f, 5.0f, 2.0f, 6.0f, 1.0f)))
   }
@@ -39,7 +38,7 @@ class TextFeatureToSampleSpec extends FlatSpec with Matchers {
   "TextFeatureToSample without label" should "work properly" in {
     val toSample = TextFeatureToSample()
     val transformed = toSample.transform(genFeature())
-    val sample = transformed[Sample[Float]](TextFeature.sample)
+    val sample = transformed.getSample
     require(sample.getData().sameElements(Array(1.0f, 2.0f,
       3.0f, 4.0f, 5.0f, 2.0f, 6.0f)))
   }
