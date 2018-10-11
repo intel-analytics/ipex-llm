@@ -92,7 +92,7 @@ class TopologySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "model.summary() for Sequential" should "work properly" in {
     val model = Sequential[Float]()
-    model.add(Embedding[Float](20000, 128, inputShape = Shape(100)).setName("embedding1"))
+    model.add(Embedding[Float](20000, 128, inputLength = 100).setName("embedding1"))
     model.add(Dropout[Float](0.25))
     model.add(Convolution1D[Float](nbFilter = 64, filterLength = 5, borderMode = "valid",
       activation = "relu", subsampleLength = 1).setName("conv1"))
