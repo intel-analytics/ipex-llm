@@ -69,13 +69,19 @@ object Predictor {
   }
 
   private[optim] def splitTensor[T: ClassTag](output: Tensor[T],
-                                  shareBuffer: Boolean, batchSize: Int)
-    (implicit ev: TensorNumeric[T]): Array[Activity] = {
+                                              shareBuffer: Boolean, batchSize: Int)
+                                             (implicit ev: TensorNumeric[T]): Array[Activity] = {
     val result = if (shareBuffer) output else output.clone()
-    val size = result.size(1)
-    require(batchSize == size,
-      s"The batchSize is required to be $size, while actual is $batchSize")
-    val out = result.split(1)
+    val out = if (result.dim() == 1) {
+      require(batchSize == 1, s"If result dimension is 1, the batchSize is required to be 1, " +
+        s"while actual is $batchSize")
+      Array(result)
+    } else {
+      val size = result.size(1)
+      require(batchSize == size,
+        s"The batchSize is required to be $size, while actual is $batchSize")
+      result.split(1)
+    }
     out.asInstanceOf[Array[Activity]]
   }
 
@@ -143,7 +149,7 @@ object Predictor {
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
       require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
-        s"should be divided by partitionNum ${partitionNum}")
+        s"should be divided by partitionNum $partitionNum")
       batchSize
     } else {
       batchPerPartition * partitionNum
@@ -157,7 +163,7 @@ object Predictor {
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
       miniBatch.flatMap(batch => {
-        val output = localModel.forward(batch.getInput)
+        val output = localModel.forward(batch.getInput())
         splitBatch(output, shareBuffer, batch.size())
 
       })
