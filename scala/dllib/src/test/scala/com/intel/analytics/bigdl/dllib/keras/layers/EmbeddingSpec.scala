@@ -26,7 +26,7 @@ class EmbeddingSpec extends KerasBaseSpec {
   // Compared results with Keras on Python side
   "Embedding" should "work properly" in {
     val seq = Sequential[Float]()
-    val layer = Embedding[Float](1000, 32, inputShape = Shape(4))
+    val layer = Embedding[Float](1000, 32, inputLength = 4)
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 32))
     val input = Tensor[Float](2, 4)
@@ -46,7 +46,7 @@ class EmbeddingSpec extends KerasBaseSpec {
 
 class EmbeddingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val layer = Embedding[Float](1000, 32, inputShape = Shape(4))
+    val layer = Embedding[Float](1000, 32, inputLength = 4)
     layer.build(Shape(2, 4))
     val input = Tensor[Float](2, 4)
     input(Array(1, 1)) = 1
