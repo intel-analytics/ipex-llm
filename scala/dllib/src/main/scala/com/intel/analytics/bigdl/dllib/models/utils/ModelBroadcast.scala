@@ -50,7 +50,7 @@ trait ModelBroadcast[T] extends Serializable {
    *                     the gradient is not needed in model inference
    * @return model
    */
-  def value(initGradient: Boolean = false): Module[T]
+  def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T]
 
   def uuid(): String = UUID.randomUUID().toString
 }
@@ -124,7 +124,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
    *                     the gradient is not needed in model inference
    * @return model
    */
-  override def value(initGradient: Boolean = false): Module[T] = {
+  override def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
     CachedModels.deleteAll(uuid)
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)
@@ -140,8 +140,14 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
       val uuid = broadcastModel.value.uuid
       CachedModels.add(uuid, localModel)
 
+      val parameters = if (shareWeight) {
+        broadcastParameters.value
+      } else {
+        SerializationUtils.clone(broadcastParameters.value)
+      }
+
       // share weight
-      putWeightBias(broadcastParameters.value, localModel)
+      putWeightBias(parameters, localModel)
       // share Consts
       if (localModel.isInstanceOf[Container[_, _, T]] && broadcastConsts.value.nonEmpty) {
         putConsts(localModel.asInstanceOf[Container[_, _, T]], broadcastConsts.value)
