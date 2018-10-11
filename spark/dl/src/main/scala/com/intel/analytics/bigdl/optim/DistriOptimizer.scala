@@ -700,11 +700,12 @@ class DistriOptimizer[T: ClassTag] (
   }
 
 
-  // By default, optimMethod state for each worker will not be reserved.
+  // By default, optimMethod internal state for each worker will not be reserved and reuse.
   private var reserveOptimMethod = false
   private[bigdl] var previousOptim: RDD[Map[String, OptimMethod[T]]] = null
   /**
-   * If you want to reserve optimMethod for each worker when training, you can call it.
+   * If you want to reserve optimMethod for each worker, and reuse those methods in
+   * next training task, you can call it.
    */
   def reserveOptim(): this.type = {
     reserveOptimMethod = true
@@ -714,12 +715,12 @@ class DistriOptimizer[T: ClassTag] (
   // replace optim methods with previous
   private def resetOptimMethods[T: ClassTag](
     models: RDD[DistriOptimizer.Cache[T]],
-    optimMethods: RDD[Map[String, OptimMethod[T]]]):
+    previousOptimMethods: RDD[Map[String, OptimMethod[T]]]):
     RDD[DistriOptimizer.Cache[T]] = {
-      models.zipPartitions(optimMethods) { (m1, m2) => {
-        val t1 = m1.next()
-        t1.optimMethods = m2.next()
-        Iterator(t1)
+      models.zipPartitions(previousOptimMethods) { (m1, m2) => {
+        val cache = m1.next()
+        cache.optimMethods = m2.next()
+        Iterator(cache)
       }
     }
   }
