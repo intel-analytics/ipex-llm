@@ -61,8 +61,8 @@ object Embedding {
       outputDim: Int,
       init: String = "uniform",
       wRegularizer: Regularizer[T] = null,
-      inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Embedding[T] = {
+      inputLength: Int)(implicit ev: TensorNumeric[T]): Embedding[T] = {
     new Embedding[T](inputDim, outputDim, KerasUtils.getInitMethod(init),
-      wRegularizer, inputShape)
+      wRegularizer, Shape(inputLength))
   }
 }
