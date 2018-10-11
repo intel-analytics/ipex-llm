@@ -231,4 +231,7 @@ abstract class Container[A <: Activity : ClassTag,
   override def release(): Unit = {
     modules.foreach(_.release())
   }
+
+  override private[bigdl] def updateParameter(): Unit = {}
+  override private[bigdl] def asyncGradient(): Unit = {}
 }

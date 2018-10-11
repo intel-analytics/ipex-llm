@@ -58,6 +58,7 @@ class ConcatTable extends MklDnnContainer {
     var i = 0
     while (i < modules.length) {
       modules(i).accGradParameters(input, gradOutput.toTable(i + 1))
+      modules(i).asyncGradient
       i += 1
     }
   }
