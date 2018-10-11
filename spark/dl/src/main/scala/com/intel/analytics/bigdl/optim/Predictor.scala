@@ -72,10 +72,16 @@ object Predictor {
                                   shareBuffer: Boolean, batchSize: Int)
     (implicit ev: TensorNumeric[T]): Array[Activity] = {
     val result = if (shareBuffer) output else output.clone()
-    val size = result.size(1)
-    require(batchSize == size,
-      s"The batchSize is required to be $size, while actual is $batchSize")
-    val out = result.split(1)
+    val out = if (result.dim() == 1) {
+      require(batchSize == 1, s"If result dimension is 1, the batchSize is required to be 1, " +
+        s"while actual is $batchSize")
+      Array(result)
+    } else {
+      val size = result.size(1)
+      require(batchSize == size,
+        s"The batchSize is required to be $size, while actual is $batchSize")
+      result.split(1)
+    }
     out.asInstanceOf[Array[Activity]]
   }
 
