@@ -892,5 +892,48 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimMethod.state[Int]("neval") should be(31)
     optimMethod.state[Int]("recordsProcessedThisEpoch") should be(0)
   }
+
+  "reserve optimMethod for each worker" should "be correct" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+
+    val mm = Sequential[Double]().add(Linear(4, 1))
+      .add(Sigmoid())
+
+    val optimizer = new DistriOptimizer[Double](
+      _model = mm,
+      _dataset = dataSet,
+      _criterion = new MSECriterion[Double]()
+    )
+
+    val optimMethod = new Adam[Double](learningRate = 20.0)
+
+    optimizer
+        .setOptimMethod(optimMethod)
+        .reserveOptim()
+        .setEndWhen(Trigger.maxIteration(3))
+    val model = optimizer.optimize()
+    val optim1 = optimizer.previousOptim.collect()
+
+    optimizer.setEndWhen(Trigger.maxEpoch(0))
+    optimizer.optimize()
+    val optim2 = optimizer.previousOptim.collect()
+
+    var i = 0
+    while (i < optim1.length) {
+      val t1 = optim1(i).values.head.asInstanceOf[Adam[Double]]
+      val t2 = optim2(i).values.head.asInstanceOf[Adam[Double]]
+
+      t1.beta1 should be(t2.beta1)
+      t1.beta2 should be(t2.beta2)
+      t1.learningRate should be(t2.learningRate)
+      t1.learningRateDecay should be(t2.learningRateDecay)
+      t1.Epsilon should be(t2.Epsilon)
+      t1.state should be(t2.state)
+
+      i += 1
+    }
+  }
 }
 
