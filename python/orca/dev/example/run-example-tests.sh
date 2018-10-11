@@ -53,15 +53,16 @@ fi
 
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
-    --driver-memory 20g \
-    --executor-memory 20g \
+    --driver-memory 2g \
+    --executor-memory 2g \
     --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/textclassification/text_classification.py \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
     ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/textclassification/text_classification.py \
     --nb_epoch 2 \
-    --data_path analytics-zoo-data/data
+    --data_path analytics-zoo-data/data/20news-18828 \
+    --embedding_path analytics-zoo-data/data/glove.6B
 
 
 now=$(date "+%s")
@@ -116,7 +117,6 @@ ${SPARK_HOME}/bin/spark-submit \
     analytics-zoo-models/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model hdfs://172.168.2.181:9000/kaggle/train_100 /tmp
 now=$(date "+%s")
 time4=$((now-start))
-
 
 
 echo "#1 textclassification time used:$time1 seconds"
