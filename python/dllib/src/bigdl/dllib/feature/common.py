@@ -33,15 +33,20 @@ class Preprocessing(JavaValue):
 
     def __call__(self, input):
         """
-        transform ImageSet
+        Transform ImageSet or TextSet.
         """
         # move the import here to break circular import
         if "zoo.feature.image.imageset.ImageSet" not in sys.modules:
             from zoo.feature.image import ImageSet
+        if "zoo.feature.text.text_set.TextSet" not in sys.modules:
+            from zoo.feature.text import TextSet
         # if type(input) is ImageSet:
         if isinstance(input, ImageSet):
             jset = callBigDlFunc(self.bigdl_type, "transformImageSet", self.value, input)
             return ImageSet(jvalue=jset)
+        elif isinstance(input, TextSet):
+            jset = callBigDlFunc(self.bigdl_type, "transformTextSet", self.value, input)
+            return TextSet(jvalue=jset)
 
 
 class ChainedPreprocessing(Preprocessing):
