@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.mkldnn.ResNet.DatasetType.ImageNet
+import com.intel.analytics.bigdl.nn.mkldnn.models.Vgg_16
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -32,11 +33,14 @@ import scopt.OptionParser
 
 import scala.reflect.ClassTag
 
-object ResNet50Perf {
+object Perf {
 
   val logger = Logger.getLogger(getClass)
 
-  val parser = new OptionParser[ResNet50PerfParams]("BigDL Local ResNet-50 Performance Test") {
+  val parser = new OptionParser[ResNet50PerfParams]("BigDL w/ Dnn Local Model Performance Test") {
+    opt[String]('m', "model")
+      .text("model you want, vgg16 | resnet50")
+      .action((v, p) => p.copy(model = v))
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
       .action((v, p) => p.copy(batchSize = v))
@@ -70,7 +74,12 @@ object ResNet50Perf {
       val input = Tensor(inputShape).rand()
       val label = Tensor(batchSize).apply1(_ => Math.ceil(RNG.uniform(0, 1) * 1000).toFloat)
 
-      val model = ResNet(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
+      val model = params.model match {
+        case "vgg16" => Vgg_16(batchSize, classNum, false)
+        case "resnet50" => ResNet(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
+        case _ => throw new UnsupportedOperationException(s"Unkown model ${params.model}")
+      }
+
       val criterion = CrossEntropyCriterion()
 
       if (training) {
@@ -104,9 +113,10 @@ object ResNet50Perf {
 }
 
 case class ResNet50PerfParams (
-    batchSize: Int = 16,
-    iteration: Int = 50,
-    training: Boolean = true
+  batchSize: Int = 16,
+  iteration: Int = 50,
+  training: Boolean = true,
+  model: String = "vgg16"
 )
 
 object ResNet {
