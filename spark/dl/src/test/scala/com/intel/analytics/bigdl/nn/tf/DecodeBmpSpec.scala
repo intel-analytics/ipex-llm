@@ -27,6 +27,9 @@ import org.tensorflow.example.Example
 class DecodeBmpSerialTest extends ModuleSerializationTest {
   private def getInputs(name: String): Tensor[ByteString] = {
     import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    /* since the tfrecord file is loaded into byteArrays regardless of the
+      original image type, we can map "bmp" to 0 as well
+    */
     val index = name match {
       case "png" => 0
       case "jpeg" => 1
