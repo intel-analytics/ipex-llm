@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 
 import java.nio.ByteOrder
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.tf.{ParseSingleExample => ParseSingleExampleOperation}
 import com.intel.analytics.bigdl.tensor._
@@ -42,7 +43,9 @@ class ParseSingleExample extends TensorflowOpsLoader {
         case DataType.DT_DOUBLE => DoubleType
         case DataType.DT_STRING => StringType
       }
-    val denseKeys = nodeDef.getAttrMap.get("dense_keys").getList.getSList.asScala
+    val denseKeysByteArray = nodeDef.getAttrMap.get("dense_keys").getList.
+      getSList.asScala.map(_.toByteArray)
+    val denseKeys = denseKeysByteArray.map(ByteString.copyFrom(_))
     val denseShapes = nodeDef.getAttrMap.get("dense_shapes")
       .getList.getShapeList.asScala
       .map { shapeProto =>

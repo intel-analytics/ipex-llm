@@ -259,6 +259,11 @@ private[bigdl] object ParseSingleExample extends ModuleSerializable {
       universe.typeOf[Array[String]])
     bigDLModelBuilder.putAttr("tDense", tensorTypeBuilder.build)
 
+    val denseKeyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, denseKeyBuilder,
+      parseSingleExample.denseKeys.toArray,
+      universe.typeOf[Array[String]])
+    bigDLModelBuilder.putAttr("denseKeys", tensorTypeBuilder.build)
     val shapeSizeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context, shapeSizeBuilder,
       parseSingleExample.denseShape.size,
