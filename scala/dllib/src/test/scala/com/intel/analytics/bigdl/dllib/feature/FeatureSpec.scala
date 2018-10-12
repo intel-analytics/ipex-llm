@@ -17,14 +17,21 @@ package com.intel.analytics.zoo.feature
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.transform.vision.image
+import com.intel.analytics.bigdl.transform.vision.image.MatToFloats._
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.zoo.common.{NNContext, Utils}
 import com.intel.analytics.zoo.feature.common.{BigDLAdapter, Preprocessing}
 import com.intel.analytics.zoo.feature.image._
 import org.apache.commons.io.FileUtils
+import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.reflect.ClassTag
 
 
 class FeatureSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -128,5 +135,69 @@ class FeatureSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     require(nchw.transpose(1, 2).transpose(2, 3).contiguous().storage().array().deep
       == nhwc.storage().array().deep)
+  }
+
+  "ImageChannelNormalize with std not 1" should "work properly" in {
+    val data = ImageSet.read(resource.getFile)
+    val transformer = ImageChannelNormalize(100, 200, 300, 4, 3, 2) -> ImageMatToTensor[Float]()
+    val transformed = transformer(data)
+    val imf = transformed.asInstanceOf[LocalImageSet].array(0)
+
+    val data2 = ImageFrame.read(resource.getFile)
+    val toFloat = new MatToFloatsWithNorm(meanRGB = Some(100f, 200f, 300f),
+      stdRGB = Some(4f, 3f, 2f))
+    val transformed2 = toFloat(data2)
+    val imf2 = transformed2.asInstanceOf[LocalImageFrame].array(0)
+
+    imf2.floats().length should be (270 * 290 * 3)
+    imf2.floats() should equal(imf.floats())
+  }
+}
+
+class MatToFloatsWithNorm(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
+  meanRGB: Option[(Float, Float, Float)] = None,
+  stdRGB: Option[(Float, Float, Float)] = None, outKey: String = ImageFeature.floats)
+  extends FeatureTransformer {
+  @transient private var data: Array[Float] = _
+
+  private def normalize(img: Array[Float],
+    meanR: Float, meanG: Float, meanB: Float,
+    stdR: Float = 1f, stdG: Float = 1f, stdB: Float = 1f): Array[Float] = {
+    val content = img
+    require(content.length % 3 == 0)
+    var i = 0
+    while (i < content.length) {
+      content(i + 2) = (content(i + 2) - meanR) / stdR
+      content(i + 1) = (content(i + 1) - meanG) / stdG
+      content(i + 0) = (content(i + 0) - meanB) / stdB
+      i += 3
+    }
+    img
+  }
+
+  override def transform(feature: ImageFeature): ImageFeature = {
+    var input: OpenCVMat = null
+    val (height, width, channel) = if (feature.isValid) {
+      input = feature.opencvMat()
+      (input.height(), input.width(), input.channels())
+    } else {
+      (validHeight, validWidth, validChannels)
+    }
+    if (null == data || data.length < height * width * channel) {
+      data = new Array[Float](height * width * channel)
+    }
+    if (feature.isValid) {
+      try {
+        OpenCVMat.toFloatPixels(input, data)
+        normalize(data, meanRGB.get._1, meanRGB.get._2, meanRGB.get._3
+          , stdRGB.get._1, stdRGB.get._2, stdRGB.get._3)
+      } finally {
+        if (null != input) input.release()
+        feature(ImageFeature.mat) = null
+      }
+    }
+    feature(outKey) = data
+    feature(ImageFeature.size) = (height, width, channel)
+    feature
   }
 }
