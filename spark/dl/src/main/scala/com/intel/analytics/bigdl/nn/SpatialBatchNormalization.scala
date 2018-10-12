@@ -319,6 +319,7 @@ object SpatialBatchNormalization {
       val offsetOffset = offset.storageOffset() - 1
       var isIdenticalScale = false
       var identicalScale = 0.0f
+
       if (scaleData.length == 1) {
         isIdenticalScale = true
         identicalScale = scaleData(0)
