@@ -99,6 +99,9 @@ private[bigdl] class DecodeJpeg[T: ClassTag](channels: Int, val ratio: Int = 1)
 private[bigdl] class DecodePng[T: ClassTag](channels: Int)(implicit ev: TensorNumeric[T])
   extends DecodeImage[T](channels)
 
+private[bigdl] class DecodeBmp[T: ClassTag](channels: Int)(implicit ev: TensorNumeric[T])
+  extends DecodeImage[T](channels)
+
 private[bigdl] class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends DecodeImage[T](3) {
 

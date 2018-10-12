@@ -317,17 +317,38 @@ object SpatialBatchNormalization {
       val scaleOffset = scale.storageOffset() - 1
       val offsetData = offset.storage().array()
       val offsetOffset = offset.storageOffset() - 1
-      var i = 0
-      while (i < n) {
-        var c = 0
-        while (c < nChannels) {
-          val invStd = 1 / Math.sqrt(varData(varOffset + c) + eps).toFloat
-          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
-            meanData(c + meanOffset)) * invStd * scaleData(scaleOffset + c) +
-            offsetData(offsetOffset + c)
-          c += 1
+      var isIdenticalScale = false
+      var identicalScale = 0.0f
+      if (scale.stride().length == 1 && scale.stride()(0) == 0 && scaleData.length == 1) {
+        isIdenticalScale = true
+        identicalScale = scaleData(0)
+      }
+      if (isIdenticalScale) {
+        var i = 0
+        while (i < n) {
+          var c = 0
+          while (c < nChannels) {
+            val invStd = 1 / Math.sqrt(varData(varOffset + c) + eps).toFloat
+            outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+              meanData(c + meanOffset)) * invStd * identicalScale +
+              offsetData(offsetOffset + c)
+            c += 1
+          }
+          i += nChannels
         }
-        i += nChannels
+      } else {
+        var i = 0
+        while (i < n) {
+          var c = 0
+          while (c < nChannels) {
+            val invStd = 1 / Math.sqrt(varData(varOffset + c) + eps).toFloat
+            outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+              meanData(c + meanOffset)) * invStd * scaleData(scaleOffset + c) +
+              offsetData(offsetOffset + c)
+            c += 1
+          }
+          i += nChannels
+        }
       }
     } else {
       var i = 0
