@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.ops.{RandomUniform => RandomUniformOps}
-import com.intel.analytics.bigdl.nn.tf.{DecodeRawSerializer, ParseExample, StridedSlice}
+import com.intel.analytics.bigdl.nn.tf.{DecodeRawSerializer, ParseExample, ParseSingleExample, StridedSlice}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -271,6 +271,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.quantized.Linear",
       quantized.Linear)
     registerModule("com.intel.analytics.bigdl.nn.tf.ParseExample", ParseExample)
+    registerModule("com.intel.analytics.bigdl.nn.tf.ParseSingleExample", ParseSingleExample)
     registerModule("com.intel.analytics.bigdl.nn.SReLU", SReLU)
     registerModule("com.intel.analytics.bigdl.nn.tf.DecodeRaw", DecodeRawSerializer)
     registerModule("com.intel.analytics.bigdl.nn.ops.RandomUniform", RandomUniformOps)
