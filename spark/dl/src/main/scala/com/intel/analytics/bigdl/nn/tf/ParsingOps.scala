@@ -235,8 +235,17 @@ private[bigdl] object ParseSingleExample extends ModuleSerializable {
     val tDense = DataConverter.getAttributeValue(context, attrMap.get("tDense")).
       asInstanceOf[Array[String]].map(toTensorType(_))
 
-    val denseKeys = DataConverter.getAttributeValue(context, attrMap.get("denseKeys")).
-      asInstanceOf[Array[ByteString]]
+    val denseKeysString = DataConverter.getAttributeValue(context,
+      attrMap.get("denseKeys")).
+      asInstanceOf[Array[String]]
+
+    val denseKeys = new Array[ByteString](denseKeysString.length)
+
+    (0 until denseKeysString.length).foreach(index => {
+      val denseKeyBytes = denseKeysString(index).getBytes("utf-8")
+      denseKeys(index) = ByteString.copyFrom(denseKeyBytes)
+    })
+
     val shapeSize = DataConverter.getAttributeValue(context, attrMap.get("shapeSize")).
       asInstanceOf[Int]
 
@@ -259,11 +268,19 @@ private[bigdl] object ParseSingleExample extends ModuleSerializable {
       universe.typeOf[Array[String]])
     bigDLModelBuilder.putAttr("tDense", tensorTypeBuilder.build)
 
-    val denseKeyBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, denseKeyBuilder,
-      parseSingleExample.denseKeys.toArray,
+    val denseKeys = parseSingleExample.denseKeys.toArray
+
+    val denseKeysString = new Array[String](denseKeys.length)
+
+    (0 until denseKeys.length).foreach(index => {
+      denseKeysString(index) = new String(denseKeys(index).toByteArray, "utf-8")
+    })
+
+    val denseKeysBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, denseKeysBuilder,
+      denseKeysString,
       universe.typeOf[Array[String]])
-    bigDLModelBuilder.putAttr("denseKeys", tensorTypeBuilder.build)
+    bigDLModelBuilder.putAttr(s"denseKeys", denseKeysBuilder.build)
     val shapeSizeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context, shapeSizeBuilder,
       parseSingleExample.denseShape.size,
