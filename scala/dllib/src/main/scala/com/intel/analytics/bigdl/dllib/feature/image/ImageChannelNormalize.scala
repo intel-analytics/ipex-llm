@@ -49,7 +49,7 @@ object ImageChannelNormalize {
    */
   def apply(meanR: Float, meanG: Float, meanB: Float,
             stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): ImageChannelNormalize = {
-    new ImageChannelNormalize(Array(meanB, meanG, meanR), Array(stdR, stdG, stdB))
+    new ImageChannelNormalize(Array(meanB, meanG, meanR), Array(stdB, stdG, stdR))
   }
 
   def apply(mean: Float, std: Float): ImageChannelNormalize = {
