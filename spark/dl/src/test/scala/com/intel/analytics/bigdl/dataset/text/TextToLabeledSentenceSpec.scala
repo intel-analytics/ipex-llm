@@ -19,28 +19,17 @@ package com.intel.analytics.bigdl.dataset.text
 import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, SparkContextLifeCycle}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.io.Source
 
 @com.intel.analytics.bigdl.tags.Serial
-class TextToLabeledSentenceSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-
-  before {
-    val nodeNumber = 1
-    val coreNumber = 1
-    Engine.init(nodeNumber, coreNumber, true)
-    sc = new SparkContext("local[1]", "TextToLabeledSentence")
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class TextToLabeledSentenceSpec extends SparkContextLifeCycle with Matchers {
+  override def nodeNumber: Int = 1
+  override def coreNumber: Int = 1
+  override def appName: String = "TextToLabeledSentence"
 
   "TextToLabeledSentenceSpec" should "indexes sentences correctly on Spark" in {
     val tmpFile = java.io.File

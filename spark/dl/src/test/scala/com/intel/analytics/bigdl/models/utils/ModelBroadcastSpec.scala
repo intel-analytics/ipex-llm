@@ -22,19 +22,21 @@ import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.commons.lang3.SerializationUtils
+import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class ModelBroadcastSpec extends SparkContextLifeCycle with Matchers {
 
-  var sc: SparkContext = null
+  override def appName: String = "ModelBroadcast"
+
+  override def afterTest: Any = {
+    System.clearProperty("bigdl.ModelBroadcastFactory")
+  }
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
-  before {
-    sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
-  }
 
   "model broadcast" should "work properly" in {
     val model = LeNet5(10)
@@ -158,13 +160,6 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     info.model.toString() should be (newInfo.model.toString())
     info.model.parameters()._1 should be (newInfo.model.parameters()._1)
     info.model.parameters()._2 should be (newInfo.model.parameters()._2)
-  }
-
-  after {
-    System.clearProperty("bigdl.ModelBroadcastFactory")
-    if (sc != null) {
-      sc.stop()
-    }
   }
 
 }
