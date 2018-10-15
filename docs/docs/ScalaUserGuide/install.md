@@ -20,6 +20,7 @@ libraryDependencies += "com.intel.analytics.zoo" % "analytics-zoo-bigdl_0.6.0-[s
 ```
 
 Remarks:
+
 - Please choose the available suffix above according to your Spark platform and the BigDL version you want to use.
 - You don't need to add the BigDL dependency to your project as it has already been packaged within Analytics Zoo.
 - You can find the option `${ANALYTICS_ZOO_VERSION}` from the [Release Page](../release-download.md).
