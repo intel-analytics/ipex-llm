@@ -13,13 +13,16 @@ Currently, Analytics Zoo releases are hosted on maven central; here's an example
     <version>${ANALYTICS_ZOO_VERSION}</version>
 </dependency>
 ```
-Please choose the suffix according to your Spark platform.
 
 SBT developers can use
 ```sbt
 libraryDependencies += "com.intel.analytics.zoo" % "analytics-zoo-bigdl_0.6.0-[spark_1.6.2|spark_2.1.1|spark_2.2.0|spark_2.3.1]" % "${ANALYTICS_ZOO_VERSION}"
 ```
-You can find the optional `${ANALYTICS_ZOO_VERSION}` from the [Release Page](../release-download.md).
+
+Remarks:
+- Please choose the available suffix above according to your Spark platform and the BigDL version you want to use.
+- You don't need to add the BigDL dependency to your project as it has already been packaged within Analytics Zoo.
+- You can find the option `${ANALYTICS_ZOO_VERSION}` from the [Release Page](../release-download.md).
 
 ---
 ## **Link with a development version**
