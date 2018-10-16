@@ -93,7 +93,7 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "NNImageReader" should "read recursively by wildcard path" in {
     val imageDF = NNImageReader.readImages(imageNetResource.getFile + "*", sc)
-    assert(imageDF.count() == 10)
+    assert(imageDF.count() == 11)
   }
 
   "NNImageReader" should "read from multiple path" in {
