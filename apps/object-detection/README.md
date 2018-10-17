@@ -7,10 +7,18 @@ In messi.ipynb we use a pretrained detect messi model to detect messi in a video
 * Python 2.7/3.5/3.6 (Need moviepy)
 * Apache Spark 1.6.0/2.1.0 (This version needs to be same with the version you use to build Analytics Zoo)
 
-## Run with Jupyter
-* Download Analytics Zoo and build it.
+## Install or download Analytics Zoo
+Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
+
+## Run Jupyter after pip install
+```bash
+export SPARK_DRIVER_MEMORY=8g
+jupyter notebook --notebook-dir=./ --ip=* --no-browser
+```
+
+## Run Jupyter with prebuilt package
 * Run `export SPARK_HOME=the root directory of Spark`.
-* Run `export ANALYTICS_ZOO_HOME=the dist directory under the Analytics Zoo project`.
+* Run `export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package`.
 * Run `pip install moviepy`.
 For object-detection.ipynb video can be found from YouTube-8M ([YouTube-8M](https://research.google.com/youtube8m/) and [The video](https://www.youtube.com/watch?v=akcYAuaP4jw)).
 Run `$ANALYTICS_ZOO_HOME/apps/object-detection/download_model.sh` to download the pretrained model.
@@ -20,8 +28,5 @@ MASTER=local[*]
 ${ANALYTICS_ZOO_HOME}/bin/jupyter-with-zoo.sh \
     --master ${MASTER} \
     --driver-cores 2  \
-    --driver-memory 8g  \
-    --total-executor-cores 2  \
-    --executor-cores 2  \
-    --executor-memory 8g
+    --driver-memory 8g
 ```
