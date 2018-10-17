@@ -20,13 +20,13 @@ import java.util.{ArrayList => JArrayList, List => JList}
 
 import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod}
-import com.intel.analytics.bigdl.python.api.PythonBigDL
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, Module}
+import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.common._
-import com.intel.analytics.zoo.feature.image.{ImageFeatureToTensor, RowToImageFeature}
+import com.intel.analytics.zoo.feature.image.RowToImageFeature
 import com.intel.analytics.zoo.pipeline.nnframes._
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
@@ -41,7 +41,7 @@ object PythonNNFrames {
   def ofDouble(): PythonNNFrames[Double] = new PythonNNFrames[Double]()
 }
 
-class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
+class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
 
   def nnReadImage(path: String, sc: JavaSparkContext, minParitions: Int,
                   resizeH: Int, resizeW: Int, imageCodec: Int): DataFrame = {
