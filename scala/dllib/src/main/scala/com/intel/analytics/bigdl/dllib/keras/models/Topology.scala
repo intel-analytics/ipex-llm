@@ -539,20 +539,12 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
    *        batchPerThread * rdd.getNumPartitions(distributed mode)
    *        or batchPerThread * numOfCores(local mode)
    */
-  // TODO: Add Predictor for Text.
   def predict(
       x: TextSet,
       batchPerThread: Int): TextSet = {
     x match {
       case distributed: DistributedTextSet =>
-        val rdd = distributed.rdd
-        val predictRDD = predict(
-          rdd.map(_.getSample).asInstanceOf[RDD[Sample[T]]], batchPerThread)
-        val resRDD = rdd.zip(predictRDD).map{case (feature, predict) =>
-          feature(TextFeature.predict) = predict
-          feature
-        }
-        TextSet.rdd(resRDD).setWordIndex(x.getWordIndex)
+        TextPredictor[T](this, batchPerThread).predict(distributed)
       case local: LocalTextSet =>
         val features = local.array
         val samples = features.map(_.getSample).asInstanceOf[Array[Sample[T]]]
