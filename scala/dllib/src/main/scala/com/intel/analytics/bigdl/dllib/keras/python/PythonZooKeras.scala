@@ -1221,12 +1221,12 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def createZooKerasAccuracy(
       zeroBasedLabel: Boolean = true): ValidationMethod[T] = {
-    new Accuracy[T](zeroBasedLabel)
+    new Accuracy(zeroBasedLabel)
   }
 
   def createZooKerasTop5Accuracy(
       zeroBasedLabel: Boolean = true): ValidationMethod[T] = {
-    new Top5Accuracy[T](zeroBasedLabel)
+    new Top5Accuracy(zeroBasedLabel)
   }
 
   def createZooKerasWordEmbedding(
