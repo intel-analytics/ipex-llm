@@ -18,10 +18,11 @@ package com.intel.analytics.zoo.feature.python
 
 import java.util.{List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL, Sample}
+import com.intel.analytics.bigdl.python.api.{JTensor, Sample}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dataset.{Sample => JSample}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.common.Preprocessing
 import com.intel.analytics.zoo.feature.text.TruncMode.TruncMode
 import com.intel.analytics.zoo.feature.text.{DistributedTextSet, _}
@@ -37,7 +38,7 @@ object PythonTextFeature {
   def ofDouble(): PythonTextFeature[Double] = new PythonTextFeature[Double]()
 }
 
-class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
+class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
 
   def createTextFeature(text: String): TextFeature = {
     TextFeature(text)
