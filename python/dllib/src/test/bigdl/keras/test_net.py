@@ -110,14 +110,14 @@ class TestLayer(ZooTestCase):
 
         assert len(Sequential().add(model).flattened_layers()) == 12
 
-    def test_tf_net(self):
+    def test_init_tf_net(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
         tfnet_path = os.path.join(resource_path, "tfnet")
         net = TFNet.from_export_folder(tfnet_path)
         output = net.forward(np.random.rand(2, 4))
         assert output.shape == (2, 2)
 
-    def test_load_tf_from_folder(self):
+    def test_from_folder_load_tf(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
         tfnet_path = os.path.join(resource_path, "tfnet")
         net = Net.load_tf(tfnet_path)
