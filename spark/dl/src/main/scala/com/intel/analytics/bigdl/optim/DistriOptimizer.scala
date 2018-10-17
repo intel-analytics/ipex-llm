@@ -707,8 +707,8 @@ class DistriOptimizer[T: ClassTag] (
    * If you want to reserve optimMethod for each worker, and reuse those methods in
    * next training task, you can call it.
    */
-  def reserveOptim(): this.type = {
-    reserveOptimMethod = true
+  def reserveOptim(reserve: Boolean): this.type = {
+    reserveOptimMethod = reserve
     this
   }
 
@@ -923,11 +923,12 @@ class DistriOptimizer[T: ClassTag] (
 
     // reserve optimMethod internal state for each worker if need
     if (reserveOptimMethod) {
-      previousOptim = models.map(m => m.optimMethods)
+      previousOptim = models.map(m => m.optimMethods).cache()
+      previousOptim.count()
     } else {
-      previousOptim = null
-      models.unpersist()
+      if (previousOptim != null) previousOptim.unpersist()
     }
+    models.unpersist()
 
     model
   }

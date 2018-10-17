@@ -930,6 +930,10 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       t1.learningRate should be(t2.learningRate)
       t1.learningRateDecay should be(t2.learningRateDecay)
       t1.Epsilon should be(t2.Epsilon)
+
+      t2.state.contains("s") should be(true)
+      t2.state.contains("r") should be(true)
+
       t1.state should be(t2.state)
 
       i += 1
