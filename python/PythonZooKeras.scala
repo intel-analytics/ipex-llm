@@ -16,42 +16,36 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.python
 
-import java.nio.ByteOrder
 import java.util
-import java.util.{HashMap => JHashMap, List => JList, Map => JMap}
+import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
+import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.{Container, InitializationMethod}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.InitializationMethod
 import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
-import com.intel.analytics.bigdl.utils.{Engine, Table}
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
-import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasLayerWrapper, _}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, Top5Accuracy}
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.keras.objectives._
-import com.intel.analytics.zoo.pipeline.api.net._
 import org.apache.spark.api.java.JavaRDD
-import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.dataset.{Sample => JSample}
+import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.text.TextSet
+import com.intel.analytics.zoo.pipeline.api.net.GraphNet
 
 import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
 import scala.reflect.ClassTag
-import scala.reflect.io.Path
 
 object PythonZooKeras {
 
@@ -60,7 +54,7 @@ object PythonZooKeras {
   def ofDouble(): PythonZooKeras[Double] = new PythonZooKeras[Double]()
 }
 
-class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLKeras[T] {
+class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
 
   def createZooKerasModel(
       input: JList[Variable[T]],
@@ -295,58 +289,8 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
   }
 
-  def newGraph(model: NetUtils[T, _],
-               outputs: JList[String]): NetUtils[T, _] = {
-    model.newGraph(outputs.asScala).asInstanceOf[NetUtils[T, _]]
-  }
-
-  def freezeUpTo(model: NetUtils[T, _], names: JList[String]): Unit = {
-    model.freezeUpTo(names.asScala: _*)
-  }
-
-  def netLoadBigDL(
-          modulePath: String,
-          weightPath : String): AbstractModule[Activity, Activity, T] = {
-    Net.loadBigDL[T](modulePath, weightPath)
-  }
-
-  def netLoadCaffe(
-                    defPath: String,
-                    modelPath : String): AbstractModule[Activity, Activity, T] = {
-    Net.loadCaffe[T](defPath, modelPath)
-  }
-
-  def netLoad(
-               modulePath: String,
-               weightPath : String): AbstractModule[Activity, Activity, T] = {
-    Net.load[T](modulePath, weightPath)
-  }
-
-  def netLoadTorch(
-               path: String): AbstractModule[Activity, Activity, T] = {
-    Net.loadTorch[T](path)
-  }
-
-  def netLoadTF(path: String, inputs: JList[String], outputs: JList[String],
-             byteOrder: String, binFile: String = null): AbstractModule[Activity, Activity, T] = {
-    val order = byteOrder match {
-      case "little_endian" => ByteOrder.LITTLE_ENDIAN
-      case "big_endian" => ByteOrder.BIG_ENDIAN
-      case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
-    }
-    Net.loadTF[T](path, inputs.asScala, outputs.asScala, order, Option(binFile))
-  }
-
-  def netLoadTF(folder: String): AbstractModule[Activity, Activity, T] = {
-    Net.loadTF[T](folder)
-  }
-
   def kerasNetToModel(value: KerasNet[T]): Model[T] = {
     value.toModel()
-  }
-
-  def netToKeras(value: NetUtils[T, _]): KerasLayer[Activity, Activity, T] = {
-    value.toKeras()
   }
 
   def zooKerasNetSummary(
@@ -1205,30 +1149,6 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     ResizeBilinear(outputHeight, outputWidth, alignCorners, dimOrdering)
   }
 
-  def createTFNet(
-      path: String,
-      inputNames: JList[String],
-      outputNames: JList[String]): TFNet = {
-    TFNet(path, inputNames.asScala.toArray, outputNames.asScala.toArray)
-  }
-
-  def createTFNet(path: String): TFNet = {
-    TFNet(path)
-  }
-
-  def createTFTrainingHelper(modelPath: String): TFTrainingHelper = {
-    TFTrainingHelper(modelPath)
-  }
-
-  def createIdentityCriterion(): IdentityCriterion = {
-    new IdentityCriterion()
-  }
-
-  def createTFValidationMethod(validationMethod: ValidationMethod[Float],
-                               outputLength: Int, targetLength: Int): TFValidationMethod = {
-    new TFValidationMethod(validationMethod, outputLength, targetLength)
-  }
-
   def connectInputs(module: AbstractModule[Activity, Activity, T],
       x: JList[Variable[T]]): Variable[T] = {
     require(!x.isEmpty, "We don't accept empty inputs")
@@ -1336,59 +1256,6 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       weights: JList[JTensor]): Unit = {
     super.setWeights(model, weights)
   }
-
-  def createTFOptimizer(modelPath: String,
-                        optimMethod: OptimMethod[Float],
-                        x: JavaRDD[Sample],
-                        batchSize: Int = 32): TFOptimizer = {
-    new TFOptimizer(modelPath, optimMethod,
-      toJSample(x).asInstanceOf[RDD[JSample[Float]]], batchSize)
-  }
-
-  def trainTFNet(modelPath: String,
-                 optimMethod: OptimMethod[Float],
-                 x: JavaRDD[Sample],
-                 batchSize: Int = 32,
-                 endTrigger: Trigger = Trigger.maxEpoch(1)): JList[JTensor] = {
-    val (model, meta) = NetUtils.processTFFolder(modelPath)
-
-    val folderPath = Path(modelPath)
-    val trainingMetaPath = folderPath / Path("training_meta.json")
-
-    val jsonStr = Source.fromFile(trainingMetaPath.jfile).getLines().mkString
-    import org.json4s._
-    import org.json4s.jackson.JsonMethods._
-    implicit val formats = DefaultFormats
-
-    val trainingMeta = parse(jsonStr).camelizeKeys.extract[TrainMeta]
-
-    val newMeta = Meta(
-      (meta.inputNames.toSeq ++: trainingMeta.variables.toSeq).toArray,
-      meta.outputNames)
-    val graphDef = TFNet.parseGraph(model)
-    val tfnet = TFNet(graphDef, model, newMeta, TFNet.defaultSessionConfig.toByteArray())
-
-
-    val trainer = new TFTrainingHelper(tfnet,
-      trainingMeta.inputNames,
-      trainingMeta.outputNames,
-      trainingMeta.variables,
-      trainingMeta.gradVariables)
-
-
-
-    import scala.collection.JavaConverters._
-    val optimizer = Optimizer(trainer,
-      toJSample(x).asInstanceOf[RDD[JSample[Float]]], new IdentityCriterion(), batchSize)
-
-    optimizer.setOptimMethod(optimMethod)
-    optimizer.setEndWhen(endTrigger)
-    optimizer.optimize()
-
-    trainer.parameters()._1
-      .map(t => toJTensor(t.asInstanceOf[Tensor[T]])).toVector.asJava
-  }
-
 
   def createZooKerasParameter(inputShape: JList[Int],
       initMethod: InitializationMethod, initWeight: JTensor, trainable: Boolean): Parameter[T] = {

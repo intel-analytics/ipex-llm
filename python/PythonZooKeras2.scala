@@ -18,13 +18,11 @@ package com.intel.analytics.zoo.pipeline.api.keras.python
 
 import java.util.{List => JList}
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.python.api.PythonBigDLKeras
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.autograd.Variable
-import com.intel.analytics.zoo.pipeline.api.keras2.layers.{Conv1D, Dense, MaxPooling1D, AveragePooling1D, Maximum, Minimum, Average}
+import com.intel.analytics.zoo.common.PythonZoo
+import com.intel.analytics.zoo.pipeline.api.keras2.layers.{Average, AveragePooling1D, Conv1D, Dense, MaxPooling1D, Maximum, Minimum}
+
 import scala.collection.JavaConverters._
 import com.intel.analytics.zoo.pipeline.api.keras2.layers._
 
@@ -37,7 +35,7 @@ object PythonZooKeras2 {
   def ofDouble(): PythonZooKeras2[Double] = new PythonZooKeras2[Double]()
 }
 
-class PythonZooKeras2[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLKeras[T] {
+class PythonZooKeras2[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
 
   def createZooKeras2Dense(
       units: Int,
