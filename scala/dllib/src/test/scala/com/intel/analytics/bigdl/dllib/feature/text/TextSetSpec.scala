@@ -106,8 +106,15 @@ class TextSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.compile("sgd", "sparse_categorical_crossentropy", List("accuracy"))
     model.fit(transformed, batchSize = 4, nbEpoch = 2, validationData = transformed)
     require(! transformed.toDistributed().rdd.first().contains("predict"))
-    val predictSet = model.predict(transformed, batchPerThread = 1)
-    require(predictSet.toDistributed().rdd.first().contains("predict"))
+
+    val predictSet = model.predict(transformed, batchPerThread = 2).toDistributed()
+    val textFeatures = predictSet.rdd.collect()
+    textFeatures.foreach(feature => {
+      require(feature.contains("predict"))
+      val input = feature.getSample.feature.reshape(Array(1, 30))
+      val output = model.forward(input).toTensor[Float].split(1)(0)
+      feature.getPredict[Float] should be (output)
+    })
     val accuracy = model.evaluate(transformed, batchSize = 4)
   }
 
@@ -124,8 +131,15 @@ class TextSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.compile("sgd", "sparse_categorical_crossentropy", List("accuracy"))
     model.fit(transformed, batchSize = 4, nbEpoch = 2, validationData = transformed)
     require(! transformed.toLocal().array.head.contains("predict"))
-    val predictSet = model.predict(transformed, batchPerThread = 1)
-    require(predictSet.toLocal().array.head.contains("predict"))
+
+    val predictSet = model.predict(transformed, batchPerThread = 2).toLocal()
+    val textFeatures = predictSet.array
+    textFeatures.foreach(feature => {
+      require(feature.contains("predict"))
+      val input = feature.getSample.feature.reshape(Array(1, 30))
+      val output = model.forward(input).toTensor[Float].split(1)(0)
+      feature.getPredict[Float] should be(output)
+    })
     val accuracy = model.evaluate(transformed, batchSize = 4)
   }
 }
