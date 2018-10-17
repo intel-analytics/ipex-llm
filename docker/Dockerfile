@@ -22,7 +22,7 @@ WORKDIR /opt/work
 
 ARG ANALYTICS_ZOO_VERSION=0.3.0-SNAPSHOT
 ARG BIGDL_VERSION=0.7.0
-ARG SPARK_VERSION=2.3.2
+ARG SPARK_VERSION=2.3.1
 ARG RUNTIME_DRIVER_CORES=4
 ARG RUNTIME_DRIVER_MEMORY=20g
 ARG RUNTIME_EXECUTOR_CORES=4
@@ -63,7 +63,7 @@ RUN apt-get install -y --force-yes software-properties-common python-software-pr
     python2 -m pip install ipykernel && \
     python2 -m ipykernel install --user
 #spark
-RUN wget https://www.apache.org/dyn/closer.lua/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+RUN wget http://mirrors.shu.edu.cn/apache/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 spark-${SPARK_VERSION} && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
