@@ -1,4 +1,4 @@
-# Summary
+## Summary
 
 Python demo of transfer Learning based on Spark DataFrame (Dataset). 
 
@@ -11,73 +11,81 @@ imagenet dataset to solve the dogs-vs-cats classification problem by transfer le
 Analytics Zoo. For transfer learning, we will treat the inception-v1 model as a feature extractor
 and only train a linear model on these features.
 
-# Preparation
+## Install or download Analytics Zoo
+Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/)
+to install analytics-zoo via __pip__ or __download the prebuilt package__.
 
-## Get the dogs-vs-cats datasets
+## Image Transfer Learning
+1. For this example we use kaggle [Dogs vs. Cats](https://www.kaggle.com/c/dogs-vs-cats/data) train
+dataset. Download the data and run the following commands to copy about 1100 images of cats
+and dogs into `samples` folder.
 
-Download the training dataset from https://www.kaggle.com/c/dogs-vs-cats and extract it.
-The following commands copy about 1100 images of cats and dogs into demo/cats and demo/dogs separately.
+    ```bash
+    unzip train.zip -d /tmp/zoo/dogs_cats
+    cd /tmp/zoo/dogs_cats
+    mkdir samples
+    cp train/cat.7* samples
+    cp train/dog.7* samples
+    ```
+    `7` is randomly chosen and can be replaced with other digit.
 
-```
-mkdir -p demo/dogs
-mkdir -p demo/cats
-cp train/cat.7* demo/cats
-cp train/dog.7* demo/dogs
-```
+2. Get the pre-trained Inception-V1 model
+Download the pre-trained Inception-V1 model from [Analytics Zoo](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model),
+and put it in `/tmp/zoo` or other path.
 
-## Get the pre-trained Inception-V1 model
+3. Run the image transfer learning:
+ImageTransferLearningExample.py takes 2 parameters: Path to the pre-trained models and 
+Path to the images.
 
-Download the pre-trained Inception-V1 model from [Analytics Zoo](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model)
+- Run after pip install
+You can easily use the following commands to run this example:
+    ```bash
+    export SPARK_DRIVER_MEMORY=5g
+    python ImageTransferLearningExample.py /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/dogs_cats/samples
+    ```
+    See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
 
-Alternatively, user may also download pre-trained caffe/Tensorflow/keras model. Please refer to
-programming guide in [BigDL](https://bigdl-project.github.io/) 
+- Run with prebuilt package
+Run the following command for Spark local mode (`MASTER=local[*]`) or cluster mode:
+    ```bash
+    export SPARK_HOME=the root directory of Spark
+    export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
 
-# Training for dogs/cats classification
+    ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+    --master local[1] \
+    --driver-memory 5g \
+    ImageTransferLearningExample.py \
+    /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/dogs_cats/samples
+    ```
+    See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
 
-ImageTransferLearningExample.py takes 2 parameters:
-1. Path to the pre-trained models. (E.g. path/to/model/bigdl_inception-v1_imagenet_0.4.0.model)
-2. Path to the folder of the training images. (E.g. path/to/data/dogs-vs-cats/demo)
-
-User may submit ImageInferenceExample.py via spark-submit.
-E.g.
-```
-zoo/scripts/spark-submit-with-zoo.sh --master local[2] \
-somePath/ImageTransferLearningExample.py \
-path/to/model/bigdl_inception-v1_imagenet_0.4.0.model path/to/data/demo
-```
-
-or run the script in Jupyter notebook or Pyspark and manually set parameters
-
+4. see the result
 After training, you should see something like this in the console:
-
-```
-+-------------------+-------------+-----+-------------------+--------------------+----------+
-|              image|         name|label|           features|           embedding|prediction|
-+-------------------+-------------+-----+-------------------+--------------------+----------+
-|[file:/some/path...|cat.10007.jpg|  1.0|[file:/some/path...|[1.44402220030315...|       1.0|
-|[file:/some/path...|cat.10008.jpg|  1.0|[file:/some/path...|[2.78127276942541...|       1.0|
-|[file:/some/path...|cat.10013.jpg|  1.0|[file:/some/path...|[1.72082152971597...|       1.0|
-|[file:/some/path...|cat.10017.jpg|  1.0|[file:/some/path...|[1.07376172309159...|       1.0|
-|[file:/some/path...|cat.10020.jpg|  1.0|[file:/some/path...|[6.77592743159038...|       1.0|
-|[file:/some/path...|cat.10021.jpg|  1.0|[file:/some/path...|[1.57088209107314...|       1.0|
-|[file:/some/path...|cat.10024.jpg|  1.0|[file:/some/path...|[2.72918850896530...|       2.0|
-|[file:/some/path...|cat.10048.jpg|  1.0|[file:/some/path...|[6.11712948739295...|       1.0|
-|[file:/some/path...|cat.10068.jpg|  1.0|[file:/some/path...|[8.66246239183965...|       1.0|
-|[file:/some/path...|cat.10069.jpg|  1.0|[file:/some/path...|[3.47972563758958...|       1.0|
-|[file:/some/path...|cat.10076.jpg|  1.0|[file:/some/path...|[1.33044534322834...|       1.0|
-|[file:/some/path...|cat.10081.jpg|  1.0|[file:/some/path...|[6.24413246441690...|       1.0|
-|[file:/some/path...|cat.10103.jpg|  1.0|[file:/some/path...|[4.13055857961808...|       1.0|
-|[file:/some/path...| cat.1011.jpg|  1.0|[file:/some/path...|[1.52658026308927...|       2.0|
-|[file:/some/path...|cat.10111.jpg|  1.0|[file:/some/path...|[9.06654804566642...|       1.0|
-|[file:/some/path...|cat.10113.jpg|  1.0|[file:/some/path...|[6.60018413327634...|       1.0|
-|[file:/some/path...|cat.10125.jpg|  1.0|[file:/some/path...|[1.46317620419722...|       1.0|
-|[file:/some/path...|cat.10131.jpg|  1.0|[file:/some/path...|[6.65911130681706...|       1.0|
-|[file:/some/path...|cat.10154.jpg|  1.0|[file:/some/path...|[3.50153422914445...|       1.0|
-|[file:/some/path...|cat.10155.jpg|  1.0|[file:/some/path...|[1.32401575683616...|       1.0|
-+--------------------+-------------+-----+--------------------+--------------------+----------+
-only showing top 20 rows
-
-Test Error = 0.0754258 
-```
-With master = local[2]. The transfer learning can finish in 8 minutes. As we can see,
-the model from transfer learning can achieve over 90% accuracy on the validation set.
+    ```
+    +--------------------+------------+-----+--------------------+----------+
+    |               image|        name|label|           embedding|prediction|
+    +--------------------+------------+-----+--------------------+----------+
+    |[file:/tmp/zoo/do...|cat.7294.jpg|  1.0|[6.7788767E-7, 4....|       1.0|
+    |[file:/tmp/zoo/do...|cat.7353.jpg|  1.0|[4.956814E-6, 2.9...|       1.0|
+    |[file:/tmp/zoo/do...|cat.7363.jpg|  1.0|[3.5506052E-6, 1....|       1.0|
+    |[file:/tmp/zoo/do...|cat.7464.jpg|  1.0|[3.1471086E-6, 1....|       1.0|
+    |[file:/tmp/zoo/do...|cat.7741.jpg|  1.0|[4.4906E-5, 5.736...|       1.0|
+    |[file:/tmp/zoo/do...|cat.7798.jpg|  1.0|[5.948801E-6, 8.0...|       1.0|
+    |[file:/tmp/zoo/do...|cat.7806.jpg|  1.0|[1.0959853E-6, 5....|       1.0|
+    |[file:/tmp/zoo/do...|cat.7909.jpg|  1.0|[4.113644E-5, 1.8...|       1.0|
+    |[file:/tmp/zoo/do...|dog.7051.jpg|  2.0|[2.739595E-7, 2.4...|       2.0|
+    |[file:/tmp/zoo/do...|dog.7070.jpg|  2.0|[4.9666202E-8, 2....|       2.0|
+    |[file:/tmp/zoo/do...|dog.7200.jpg|  2.0|[1.8055023E-4, 3....|       2.0|
+    |[file:/tmp/zoo/do...|dog.7320.jpg|  2.0|[0.0010374242, 2....|       2.0|
+    |[file:/tmp/zoo/do...|dog.7329.jpg|  2.0|[9.2436676E-5, 1....|       2.0|
+    |[file:/tmp/zoo/do...|dog.7494.jpg|  2.0|[2.0494679E-6, 6....|       2.0|
+    |[file:/tmp/zoo/do...|dog.7825.jpg|  2.0|[1.9400559E-6, 6....|       2.0|
+    |[file:/tmp/zoo/do...|dog.7833.jpg|  2.0|[1.7606219E-5, 9....|       2.0|
+    |[file:/tmp/zoo/do...| dog.784.jpg|  2.0|[4.171166E-4, 5.3...|       2.0|
+    |[file:/tmp/zoo/do...|dog.7991.jpg|  2.0|[4.5410037E-8, 3....|       2.0|
+    +--------------------+------------+-----+--------------------+----------+
+    
+    Test Error = 0.0333333
+    ```
+    With master = local[1]. The transfer learning can finish in 8 minutes. As we can see,
+    the model from transfer learning can achieve high accuracy on the validation set.

@@ -1,67 +1,78 @@
-# Summary
+## Summary
 
 Python demo of image classification: inference with a pre-trained Inception_V1 model based on Spark DataFrame (Dataset).
 
-Zoo provides the DataFrame-based API for image reading, preprocessing, model training and inference. The related
-classes followed the typical estimator/transformer pattern of Spark ML and can be used in a standard Spark ML pipeline.
+Zoo provides the DataFrame-based API for image reading, preprocessing, model training and inference. The related classes followed the typical estimator/transformer pattern of Spark ML and can be used in a standard Spark ML pipeline.
 
-# Preparation
+## Install or download Analytics Zoo
 
-## Get the imagenet ILSVRC2012 validation datasets
+Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
 
-Download the validation dataset from http://image-net.org/download-images. For this demo, you may take the top 100 images to save time.
+## Image Model Inference
+You can run ModelInference example by the following steps.
 
-## Get the pre-trained Inception-V1 model
+1. Get the pre-trained Inception-V1 model
+Download the pre-trained Inception-V1 model from [Analytics Zoo](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model),
+and put it in `/tmp/zoo` or other path.
 
-Download the pre-trained Inception-V1 model from [Analytics Zoo](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model)
+2. Prepare predict dataset
+You can use your own image data (JPG or PNG), or some images from imagenet-2012 validation
+dataset <http://image-net.org/download-images> to run the example. We use `/tmp/zoo/infer_images`
+in this example.
 
-Alternatively, user may also download pre-trained caffe/Tensorflow/keras model. Please refer to
-programming guide in [BigDL](https://bigdl-project.github.io/) 
+3. Run this example
+ImageInferenceExample.py takes 2 parameters: Path to the pre-trained models and path to the images.
 
-# Inference for image classification
+- Run after pip install
+You can easily use the following commands to run this example:
+    ```bash
+    export SPARK_DRIVER_MEMORY=3g
+    python ImageInferenceExample.py /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/infer_images
+    ```
+    See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
 
-ImageInferenceExample.py takes 2 parameters:
-1. Path to the pre-trained models. (E.g. path/to/model/bigdl_inception-v1_imagenet_0.4.0.model)
-2. Path to the folder of the images. (E.g. path/to/data/imagenet/validation)
+- Run with prebuilt package
+Run the following command for Spark local mode (`MASTER=local[*]`) or cluster mode:
+    ```bash
+    export SPARK_HOME=the root directory of Spark
+    export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
 
-User may submit ImageInferenceExample.py via spark-submit. An example script is provided in zoo/scripts, please set
-SPARK_HOME and ANALYTICS_ZOO_HOME accordingly.
-E.g.
-```
-some/path/spark-submit-with-zoo.sh --master local[1]
-somePath/ImageInferenceExample.py
-path/to/model/bigdl_inception-v1_imagenet_0.4.0.model path/to/data/imagenet/validation
-```
+    ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+    --master local[1] \
+    --driver-memory 3g \
+    ImageInferenceExample.py \
+    /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/infer_images
+    ```
+    See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
 
-or run the script in Jupyter notebook or Pyspark and manually set parameters
-
+4. see the result
 After inference, you should see something like this in the console:
+```
++-------------------------------------------------------+----------+
+|name                                                   |prediction|
++-------------------------------------------------------+----------+
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000001.JPEG|59.0      |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000002.JPEG|796.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000003.JPEG|231.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000004.JPEG|970.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000005.JPEG|432.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000006.JPEG|59.0      |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000007.JPEG|378.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000008.JPEG|713.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000009.JPEG|107.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000010.JPEG|284.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000011.JPEG|110.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000012.JPEG|287.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000013.JPEG|371.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000014.JPEG|758.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000015.JPEG|596.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000016.JPEG|148.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000017.JPEG|2.0       |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000018.JPEG|22.0      |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000019.JPEG|479.0     |
+|file:/tmp/zoo/infer_images/ILSVRC2012_val_00000020.JPEG|518.0     |
++-------------------------------------------------------+----------+
+only showing top 20 rows
 
 ```
-+-----------------------------------------------------------------------------+----------+
-|name                                                                         |prediction|
-+-----------------------------------------------------------------------------+----------+
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000001.JPEG|59.0      |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000002.JPEG|796.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000003.JPEG|231.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000004.JPEG|810.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000005.JPEG|521.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000006.JPEG|59.0      |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000007.JPEG|335.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000008.JPEG|456.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000009.JPEG|675.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000010.JPEG|851.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000011.JPEG|110.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000012.JPEG|287.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000013.JPEG|371.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000014.JPEG|758.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000015.JPEG|596.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000016.JPEG|148.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000017.JPEG|2.0       |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000018.JPEG|22.0      |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000019.JPEG|479.0     |
-|hdfs://Gondolin-Node-056:9000/imagenet/predict_s/ILSVRC2012_val_00000020.JPEG|518.0     |
-+-----------------------------------------------------------------------------+----------+
-
-```
-To map the class to human readable text, please refer to https://github.com/Lasagne/Recipes/blob/master/examples/resnet50/imagenet_classes.txt 
+    To map the class to human readable text, please refer to https://github.com/Lasagne/Recipes/blob/master/examples/resnet50/imagenet_classes.txt 
