@@ -7,18 +7,28 @@ In this notebook, we will use a pre-trained Inception_V1 model. But we will oper
 * Apache Spark 2.x
 * Jupyter Notebook 4.1
 
-## Steps to run the notebook
-* Download Analytics Zoo and build it.
+## Install or download Analytics Zoo
+Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
+
+## Run Jupyter after pip install
+```bash
+export SPARK_DRIVER_MEMORY=10g
+jupyter notebook --notebook-dir=./ --ip=* --no-browser
+```
+
+## Run Jupyter with prebuilt package
 * Run `export SPARK_HOME=the root directory of Spark`.
-* Run `export ANALYTICS_ZOO_HOME=the dist directory under the Analytics Zoo project`.
+* Run `export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package`.
 * Prepare the training dataset from https://www.kaggle.com/c/dogs-vs-cats and extract it.
   
   The following commands copy about 1100 images of cats and dogs into demo/cats and demo/dogs separately.
-          
-          mkdir -p demo/dogs
-          mkdir -p demo/cats
-          cp train/cat.7* demo/cats
-          cp train/dog.7* demo/dogs```
+```bash          
+mkdir -p demo/dogs
+mkdir -p demo/cats
+cp train/cat.7* demo/cats
+cp train/dog.7* demo/dogs
+```
+
 * Download the pre-trained [Inception-V1 model](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model). Alternatively, user may also download pre-trained caffe/Tensorflow/keras model.
 * Run the following bash command to start the jupyter notebook. Change parameter settings as you need, ie `MASTER = local[physcial_core_number]`.
 ```bash
