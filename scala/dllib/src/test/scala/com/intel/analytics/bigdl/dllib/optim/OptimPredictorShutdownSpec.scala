@@ -30,28 +30,17 @@ import com.intel.analytics.bigdl.tensor.{DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, RandomGenerator, SparkContextLifeCycle}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class OptimPredictorShutdownSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-  val nodeNumber = 1
-  val coreNumber = 1
+class OptimPredictorShutdownSpec extends SparkContextLifeCycle with Matchers {
+  override def nodeNumber: Int = 1
+  override def coreNumber: Int = 1
+  override def appName: String = "predictor"
 
-  before {
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("predictor")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
   "model predict should have no memory leak" should "be correct" in {
     LoggerFilter.redirectSparkInfoLogs()
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
@@ -112,20 +101,19 @@ class OptimPredictorShutdownSpec extends FlatSpec with Matchers with BeforeAndAf
   }
 }
 
-class DistriOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
+class DistriOptimizerSpec2 extends SparkContextLifeCycle with Matchers {
 
   import DistriOptimizerSpecModel._
+
+  override def appName: String = "RDDOptimizerSpec"
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
 
-  private var sc: SparkContext = _
-
   private var dataSet: DistributedDataSet[MiniBatch[Float]] = _
 
-  before {
+  override def beforeTest: Any = {
     System.setProperty("bigdl.engineType", "mkldnn")
-    sc = new SparkContext("local[1]", "RDDOptimizerSpec")
 
     val input1: Tensor[Float] = Tensor[Float](Storage[Float](Array(0.0f, 1.0f, 0.0f, 1.0f)))
     val output1 = 0.0f
@@ -170,11 +158,7 @@ class DistriOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
     Engine.model.setPoolSize(1)
   }
 
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-
+  override def afterTest: Any = {
     System.clearProperty("bigdl.engineType")
   }
 
