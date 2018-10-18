@@ -22,7 +22,7 @@ import java.util.concurrent.{Callable, Executors}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils, SparkContextLifeCycle}
 import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -30,22 +30,10 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-  val nodeNumber = 1
-  val coreNumber = 1
-
-  before {
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("DataSetSpec")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class DataSetSpec extends SparkContextLifeCycle with Matchers {
+  override def nodeNumber: Int = 1
+  override def coreNumber: Int = 1
+  override def appName: String = "DataSetSpec"
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {
