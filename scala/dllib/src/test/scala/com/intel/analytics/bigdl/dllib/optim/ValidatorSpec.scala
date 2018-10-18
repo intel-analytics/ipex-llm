@@ -23,27 +23,16 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
-class ValidatorSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class ValidatorSpec extends SparkContextLifeCycle with Matchers {
 
-  var sc: SparkContext = null
-  val nodeNumber = 1
-  val coreNumber = 1
-
-  before {
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("validator")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+  override def nodeNumber: Int = 1
+  override def coreNumber: Int = 1
+  override def appName: String = "validator"
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {
