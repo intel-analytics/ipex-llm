@@ -128,5 +128,5 @@ to construct more complex models for training or inference using the standard An
 You can think of `TFDatasets`, `TFOptimizer`, `TFPredictor` as a set API for training/testing TensorFlow models
 on Spark/BigDL, while `TFNet` as an Analytics-Zoo/BigDL layer initialized using TensorFlow graph.
 
-For more information on TFNet, please refer to the [API Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/APIGuide/PipelineAPI/net.md#tfnet)
+For more information on TFNet, please refer to the [API Guide](../APIGuide/PipelineAPI/net.md#tfnet)
 
