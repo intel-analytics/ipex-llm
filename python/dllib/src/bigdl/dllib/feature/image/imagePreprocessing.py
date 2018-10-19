@@ -66,7 +66,7 @@ class ImageBrightness(ImagePreprocessing):
     :param deltaHigh brightness parameter: high bound
     """
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
-        super(ImageBrightness, self).__init__(bigdl_type, delta_low, delta_high)
+        super(ImageBrightness, self).__init__(bigdl_type, float(delta_low), float(delta_high))
 
 
 class ImageChannelNormalize(ImagePreprocessing):
@@ -81,8 +81,9 @@ class ImageChannelNormalize(ImagePreprocessing):
     """
     def __init__(self, mean_r, mean_g, mean_b, std_r=1.0,
                  std_g=1.0, std_b=1.0, bigdl_type="float"):
-        super(ImageChannelNormalize, self).__init__(bigdl_type, mean_r, mean_g,
-                                                    mean_b, std_r, std_g, std_b)
+        super(ImageChannelNormalize, self).__init__(bigdl_type, float(mean_r), float(mean_g),
+                                                    float(mean_b), float(std_r), float(std_g),
+                                                    float(std_b))
 
 
 class PerImageNormalize(ImagePreprocessing):
@@ -104,7 +105,7 @@ class PerImageNormalize(ImagePreprocessing):
     Default Core.NORM_MINMAX
     """
     def __init__(self, min, max, norm_type=32, bigdl_type="float"):
-        super(PerImageNormalize, self).__init__(bigdl_type, min, max, norm_type)
+        super(PerImageNormalize, self).__init__(bigdl_type, float(min), float(max), norm_type)
 
 
 class ImageMatToTensor(ImagePreprocessing):
@@ -139,7 +140,7 @@ class ImageHue(ImagePreprocessing):
     :param deltaHigh hue parameter: high bound
     """
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
-        super(ImageHue, self).__init__(bigdl_type, delta_low, delta_high)
+        super(ImageHue, self).__init__(bigdl_type, float(delta_low), float(delta_high))
 
 
 class ImageSaturation(ImagePreprocessing):
@@ -149,7 +150,7 @@ class ImageSaturation(ImagePreprocessing):
     :param deltaHigh brightness parameter: high bound
     """
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
-        super(ImageSaturation, self).__init__(bigdl_type, delta_low, delta_high)
+        super(ImageSaturation, self).__init__(bigdl_type, float(delta_low), float(delta_high))
 
 
 class ImageChannelOrder(ImagePreprocessing):
@@ -190,11 +191,12 @@ class ImageColorJitter(ImagePreprocessing):
                  shuffle=False,
                  bigdl_type="float"):
         super(ImageColorJitter, self).__init__(bigdl_type,
-                                               brightness_prob, brightness_delta,
-                                               contrast_prob, contrast_lower, contrast_upper,
-                                               hue_prob, hue_delta,
-                                               saturation_prob, saturation_lower, saturation_upper,
-                                               random_order_prob, shuffle)
+                                               float(brightness_prob), float(brightness_delta),
+                                               float(contrast_prob), float(contrast_lower),
+                                               float(contrast_upper), float(hue_prob),
+                                               float(hue_delta), float(saturation_prob),
+                                               float(saturation_lower), float(saturation_upper),
+                                               float(random_order_prob), shuffle)
 
 
 class ImageAspectScale(ImagePreprocessing):
