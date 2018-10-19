@@ -359,7 +359,7 @@ ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/anomaly-detect
 chmod +x ${ANALYTICS_ZOO_HOME}/bin/data/NAB/nyc_taxi/get_nyc_taxi.sh
 
 ${ANALYTICS_ZOO_HOME}/bin/data/NAB/nyc_taxi/get_nyc_taxi.sh
-sed "s/nb_epoch=30/nb_epoch=15/g" ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection/anomaly-detection-nyc-taxi.py >${ANALYTICS_ZOO_HOME}/apps/anomaly-detection/tmp_test.py
+sed "s/nb_epoch=20/nb_epoch=15/g" ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection/anomaly-detection-nyc-taxi.py >${ANALYTICS_ZOO_HOME}/apps/anomaly-detection/tmp_test.py
 ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
