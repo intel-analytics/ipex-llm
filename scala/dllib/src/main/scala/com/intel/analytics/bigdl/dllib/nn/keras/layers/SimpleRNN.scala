@@ -59,7 +59,7 @@ class SimpleRNN[T: ClassTag](
    var uRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.Recurrent[T](
+  extends Recurrent[T](
     outputDim, returnSequences, goBackwards, inputShape) with Net {
 
   override def buildCell(input: Array[Int]): Cell[T] = {
