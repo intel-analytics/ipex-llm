@@ -219,5 +219,21 @@ class TestLayer():
         imageFrame = ImageFrame.read(resource_path, self.sc)
         splits = imageFrame.random_split([1.0])
 
+    def test_channel_scaled_normalizer(self):
+        transformer = ChannelScaledNormalizer(123, 117, 104, 1)
+        self.transformer_test(transformer)
+
+    def test_random_alter_aspect(self):
+        transformer = RandomAlterAspect(0.08, 1, 0.75, "CUBIC", 20)
+        self.transformer_test(transformer)
+
+    def test_random_cropper(self):
+        transformer = RandomCropper(20, 20, True, "Random", 3)
+        self.transformer_test(transformer)
+
+    def test_random_resize(self):
+        transformer = RandomResize(100, 100)
+        self.transformer_test(transformer)
+
 if __name__ == "__main__":
     pytest.main([__file__])

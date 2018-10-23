@@ -21,34 +21,34 @@ def inception_layer_v1(input_size, config, name_prefix=""):
     concat = Concat(2)
     conv1 = Sequential()
     conv1.add(SpatialConvolution(input_size, config[1][1], 1, 1, 1, 1)
-              .set_init_method(weight_init_method=Xavier(),bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(),bias_init_method=ConstInitMethod(0.1))
               .set_name(name_prefix + "1x1"))
     conv1.add(ReLU(True).set_name(name_prefix + "relu_1x1"))
     concat.add(conv1)
     conv3 = Sequential()
     conv3.add(SpatialConvolution(input_size, config[2][1], 1, 1, 1, 1)
-              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name(name_prefix + "3x3_reduce"))
     conv3.add(ReLU(True).set_name(name_prefix + "relu_3x3_reduce"))
     conv3.add(SpatialConvolution(config[2][1], config[2][2], 3, 3, 1, 1, 1, 1)
-              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name(name_prefix + "3x3"))
     conv3.add(ReLU(True).set_name(name_prefix + "relu_3x3"))
     concat.add(conv3)
     conv5 = Sequential()
     conv5.add(SpatialConvolution(input_size, config[3][1], 1, 1, 1, 1)
-              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name(name_prefix + "5x5_reduce"))
     conv5.add(ReLU(True).set_name(name_prefix + "relu_5x5_reduce"))
     conv5.add(SpatialConvolution(config[3][1], config[3][2], 5, 5, 1, 1, 2, 2)
-              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name(name_prefix + "5x5"))
     conv5.add(ReLU(True).set_name(name_prefix + "relu_5x5"))
     concat.add(conv5)
     pool = Sequential()
     pool.add(SpatialMaxPooling(3, 3, 1, 1, 1, 1, to_ceil=True).set_name(name_prefix + "pool"))
     pool.add(SpatialConvolution(input_size, config[4][1], 1, 1, 1, 1)
-             .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+             .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
              .set_name(name_prefix + "pool_proj"))
     pool.add(ReLU(True).set_name(name_prefix + "relu_pool_proj"))
     concat.add(pool).set_name(name_prefix + "output")
@@ -58,17 +58,17 @@ def inception_layer_v1(input_size, config, name_prefix=""):
 def inception_v1_no_aux_classifier(class_num, has_dropout=True):
     model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False)
-              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name("conv1/7x7_s2"))
     model.add(ReLU(True).set_name("conv1/relu_7x7"))
     model.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool1/3x3_s2"))
     model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("pool1/norm1"))
     model.add(SpatialConvolution(64, 64, 1, 1, 1, 1)
-              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name("conv2/3x3_reduce"))
     model.add(ReLU(True).set_name("conv2/relu_3x3_reduce"))
     model.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1)
-              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name("conv2/3x3"))
     model.add(ReLU(True).set_name("conv2/relu_3x3"))
     model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
@@ -108,7 +108,7 @@ def inception_v1_no_aux_classifier(class_num, has_dropout=True):
 def inception_v1(class_num, has_dropout=True):
     feature1 = Sequential()
     feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False)
-                 .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+                 .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
                  .set_name("conv1/7x7_s2"))
     feature1.add(ReLU(True).set_name("conv1/relu_7x7"))
     feature1.add(
@@ -117,11 +117,11 @@ def inception_v1(class_num, has_dropout=True):
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75)
                  .set_name("pool1/norm1"))
     feature1.add(SpatialConvolution(64, 64, 1, 1, 1, 1)
-                 .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+                 .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
                  .set_name("conv2/3x3_reduce"))
     feature1.add(ReLU(True).set_name("conv2/relu_3x3_reduce"))
     feature1.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1)
-                 .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+                 .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
                  .set_name("conv2/3x3"))
     feature1.add(ReLU(True).set_name("conv2/relu_3x3"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
@@ -267,20 +267,20 @@ if __name__ == "__main__":
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
-                                  RandomCrop(image_size, image_size),
-                                  RandomTransformer(HFlip(), 0.5),
-                                  ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                  MatToTensor(to_rgb=True),
+                                  Resize(256, 256),
+                                  RandomCropper(image_size, image_size, True, "Random", 3),
+                                  ChannelNormalize(123, 117, 104),
+                                  MatToTensor(to_rgb=False),
                                   ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                   ])
     raw_train_data = get_inception_data(options.folder, sc, "train")
     train_data = DataSet.image_frame(raw_train_data).transform(train_transformer)
 
     val_transformer = Pipeline([PixelBytesToMat(),
-                                CenterCrop(image_size, image_size),
-                                RandomTransformer(HFlip(), 0.5),
-                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                MatToTensor(to_rgb=True),
+                                Resize(256, 256),
+                                RandomCropper(image_size, image_size, False, "Center", 3),
+                                ChannelNormalize(123, 117, 104),
+                                MatToTensor(to_rgb=False),
                                   ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                 ])
     raw_val_data = get_inception_data(options.folder, sc, "val")
@@ -315,7 +315,7 @@ if __name__ == "__main__":
         polyIteration = maxIteration - warmup_iteration
         lrSchedule = SequentialSchedule(iterationPerEpoch)
         lrSchedule.add(Warmup(warmupDelta), warmup_iteration)
-        lrSchedule.add(Poly(0.5, polyIteration), polyIteration)
+        lrSchedule.add(Poly(0.5, maxIteration), polyIteration)
         optim = SGD(learningrate=options.learningRate, learningrate_decay=0.0, weightdecay=options.weightDecay,
                     momentum=0.9, dampening=0.0, nesterov=False,
                     leaningrate_schedule=lrSchedule)
