@@ -36,7 +36,7 @@ object ImageNet2012 {
     classNumber: Int
   )
   : DataSet[MiniBatch[Float]] = {
-    DataSet.SeqFileFolder.filesToImageFeatureDataset(path, sc, 1000).transform(
+    DataSet.SeqFileFolder.filesToImageFeatureDataset(path, sc, classNumber).transform(
       MTImageFeatureToBatch(
         width = imageSize,
         height = imageSize,
