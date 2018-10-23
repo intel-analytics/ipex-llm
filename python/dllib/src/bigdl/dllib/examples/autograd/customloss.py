@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.common.nncontext import init_nncontext
+from zoo.common.nncontext import *
 from zoo.pipeline.api.autograd import *
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
@@ -26,7 +26,7 @@ def mean_absolute_error(y_true, y_pred):
 
 
 if __name__ == "__main__":
-    sc = init_nncontext()
+    sc = init_nncontext(init_spark_conf().setMaster("local[4]"))
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
     Y_ = ((2 * X_).sum(1) + 0.4).reshape([data_len, 1])
