@@ -39,11 +39,14 @@ class AUC(JavaValue):
 
 class Accuracy(ZooKerasCreator, JavaValue):
     """
-    Measures top1 accuracy for classification problems.
+    Measures top1 accuracy for multi-class classification
+    or accuracy for binary classification.
 
     # Arguments
     zero_based_label: Boolean. Whether target labels start from 0. Default is True.
                       If False, labels start from 1.
+                      Note that this only takes effect for multi-class classification.
+                      For binary classification, labels ought to be 0 or 1.
 
     >>> acc = Accuracy()
     creating: createZooKerasAccuracy
@@ -55,7 +58,7 @@ class Accuracy(ZooKerasCreator, JavaValue):
 
 class Top5Accuracy(ZooKerasCreator, JavaValue):
     """
-    Measures top5 accuracy for classification problems.
+    Measures top5 accuracy for multi-class classification.
 
     # Arguments
     zero_based_label: Boolean. Whether target labels start from 0. Default is True.
