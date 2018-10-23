@@ -220,7 +220,7 @@ class TestLayer():
         splits = imageFrame.random_split([1.0])
 
     def test_channel_scaled_normalizer(self):
-        transformer = ChannelScaledNormalizer(123, 117, 104, 1)
+        transformer = ChannelScaledNormalizer(123, 117, 104, 1.0)
         self.transformer_test(transformer)
 
     def test_random_alter_aspect(self):
