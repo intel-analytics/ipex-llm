@@ -51,6 +51,24 @@ class AccuracySpec extends FlatSpec with Matchers {
     result should be(test)
   }
 
+  "accuracy for binary classification" should "ignore zero-based label" in {
+    val output = Tensor(Storage(Array[Double](0.3, 0.2, 0.6, 0.8)), 1, Array(4, 1))
+    val target = Tensor(Storage(Array[Double](0, 1, 1, 1)))
+    val validation = new Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(3, 4)
+    result should be(test)
+  }
+
+  "accuracy for binary classification" should "be correct on 1d tensor" in {
+    val output = Tensor(Storage(Array[Double](0.3)), 1, Array(1))
+    val target = Tensor(Storage(Array[Double](0)))
+    val validation = new Accuracy[Double](zeroBasedLabel = false)
+    val result = validation(output, target)
+    val test = new AccuracyResult(1, 1)
+    result should be(test)
+  }
+
   "top1 accuracy using 1-based label" should "be correct on 1d tensor" in {
     val output = Tensor(Storage(Array[Double](
       0, 0, 0, 1
