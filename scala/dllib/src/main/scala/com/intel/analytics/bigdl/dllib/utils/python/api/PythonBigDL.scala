@@ -33,6 +33,7 @@ import org.apache.spark.rdd.RDD
 import java.lang.{Boolean => JBoolean}
 import java.nio.ByteOrder
 
+import com.intel.analytics.bigdl.dataset.image.{CropCenter, CropRandom, CropperMethod}
 import com.intel.analytics.bigdl.dlframes._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
@@ -2907,6 +2908,39 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createFixExpand(eh: Int, ew: Int): FixExpand = {
     FixExpand(eh, ew)
+  }
+
+  def createChannelScaledNormalizer(meanR: Int, meanG: Int, meanB: Int, scale: Double)
+    : ChannelScaledNormalizer = {
+    ChannelScaledNormalizer(meanR, meanG, meanB, scale)
+  }
+
+  def createRandomAlterAspect(min_area_ratio: Float,
+                              max_area_ratio: Int,
+                              min_aspect_ratio_change: Float,
+                              interp_mode: String,
+                              cropLength: Int)
+  : RandomAlterAspect = {
+    RandomAlterAspect(min_area_ratio, max_area_ratio, min_aspect_ratio_change,
+      interp_mode, cropLength)
+  }
+
+  def createRandomCropper(cropWidth: Int, cropHeight: Int,
+                          mirror: Boolean, cropperMethod: String,
+                          channels: Int)
+  : RandomCropper = {
+    if (cropperMethod == "Random") {
+      RandomCropper(cropWidth, cropHeight, mirror,
+        CropRandom, channels)
+    } else {
+      RandomCropper(cropWidth, cropHeight, mirror,
+        CropCenter, channels)
+    }
+  }
+
+  def createRandomResize(minSize: Int, maxSize : Int)
+  : RandomResize = {
+    RandomResize(minSize, maxSize)
   }
 
   def transformImageFeature(transformer: FeatureTransformer, feature: ImageFeature)
