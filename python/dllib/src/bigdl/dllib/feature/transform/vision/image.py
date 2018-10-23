@@ -671,6 +671,58 @@ class FixExpand(FeatureTransformer):
     def __init__(self, expand_height, expand_width, bigdl_type="float"):
         super(FixExpand, self).__init__(bigdl_type, expand_height, expand_width)
 
+class ChannelScaledNormalizer(FeatureTransformer):
+    """
+    Scaled image at channel level with offset and scale
+    :param mean_r : offset for R channel
+    :param mean_g : offset for G channel
+    :param mean_b: offset for B channel
+    :param scale: scaling factor for all channels
+    """
+    def __init__(self, mean_r, mean_g, mean_b, scale, bigdl_type="float"):
+        super(ChannelScaledNormalizer, self).__init__(bigdl_type, mean_r, mean_g, mean_b, scale)
+
+class RandomAlterAspect(FeatureTransformer):
+    """
+    Apply random crop based on area ratio and resize to cropLenth size
+    :param min_area_ratio  min area ratio
+    :param max_area_ratio  max area ratio
+    :param min_aspect_ratio_change factor applied to ratio area
+    :param interp_mode   interp mode applied in resize
+    :param crop_length final size resized to
+    """
+    def __init__(self, min_area_ratio,
+                 max_area_ratio,
+                 min_aspect_ratio_change,
+                 interp_mode,
+                 crop_length, bigdl_type="float"):
+        super(RandomAlterAspect, self).__init__(bigdl_type, min_area_ratio,
+                                                max_area_ratio,
+                                                min_aspect_ratio_change,
+                                                interp_mode,
+                                                crop_length)
+
+class RandomCropper(FeatureTransformer):
+    """
+    Random cropper on uniform distribution with fixed height & width
+    :param crop_w  width cropped to
+    :param crop_h height cropped to
+    :param mirror   whether mirror
+    :param cropper_method crop method
+    :param channels total channels
+    """
+    def __init__(self, crop_w, crop_h, mirror, cropper_method, channels, bigdl_type="float"):
+        super(RandomCropper, self).__init__(bigdl_type, crop_w, crop_h, mirror, cropper_method, channels)
+
+class RandomResize(FeatureTransformer):
+    """
+    Random resize between minSize and maxSize and scale height and width to each other
+    :param min_size min size to resize to
+    :param max_size max size to resize to
+    """
+    def __init__(self, min_size, max_size, bigdl_type="float"):
+        super(RandomResize, self).__init__(bigdl_type, min_size, max_size)
+
 class SeqFileFolder(JavaValue):
 
     @classmethod
