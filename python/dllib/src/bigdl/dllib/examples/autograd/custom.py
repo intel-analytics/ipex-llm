@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.common.nncontext import init_nncontext
+from zoo.common.nncontext import *
 from zoo.pipeline.api.autograd import *
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args(sys.argv)
 
-    sc = init_nncontext()
+    sc = init_nncontext(init_spark_conf().setMaster("local[4]"))
 
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
