@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Util._
 import org.apache.commons.lang3.SerializationUtils
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.broadcast.Broadcast
 
 import scala.collection.mutable.ArrayBuffer
@@ -35,6 +35,8 @@ import scala.reflect.ClassTag
  * ModelBroadcast is used to broadcast model
  */
 trait ModelBroadcast[T] extends Serializable {
+  private val _uuid = UUID.randomUUID().toString
+
   /**
    * Broadcast the model
    * @param sc    SparkContext
@@ -52,7 +54,7 @@ trait ModelBroadcast[T] extends Serializable {
    */
   def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T]
 
-  def uuid(): String = UUID.randomUUID().toString
+  def uuid(): String = _uuid
 }
 
 object ModelBroadcast {
@@ -125,11 +127,11 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
    * @return model
    */
   override def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
-    CachedModels.deleteAll(uuid)
+    CachedModels.deleteAll(getFullUId(uuid))
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)
       val uuid = broadcastModel.value.uuid
-      CachedModels.add(uuid, localModel)
+      CachedModels.add(getFullUId(uuid), localModel)
 
       if (initGradient) {
         initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
@@ -138,7 +140,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
     } else {
       val localModel = broadcastModel.value.model.cloneModule()
       val uuid = broadcastModel.value.uuid
-      CachedModels.add(uuid, localModel)
+      CachedModels.add(getFullUId(uuid), localModel)
 
       val parameters = if (shareWeight) {
         broadcastParameters.value
@@ -158,6 +160,10 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
       }
       localModel
     }
+  }
+
+  private def getFullUId(uuid: String): String = {
+    uuid + "-" + TaskContext.getPartitionId()
   }
 
   private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
