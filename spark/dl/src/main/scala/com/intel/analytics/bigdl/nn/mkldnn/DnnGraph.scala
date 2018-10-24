@@ -30,15 +30,16 @@ import scala.reflect.ClassTag
 
 
 class DnnGraph(
-    private val _inputs : Seq[ModuleNode[Float]],
-    private val _outputs : Seq[ModuleNode[Float]],
-    private val enableExcludeChecking: Boolean = true)
+  private val _inputs : Seq[ModuleNode[Float]],
+  private val _outputs : Seq[ModuleNode[Float]],
+  private val enableExcludeChecking: Boolean = true)
   extends StaticGraph[Float](_inputs, _outputs, None, enableExcludeChecking) {
   private var forwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var inputCache: Array[Activity] = _
   private var backId2ForwardId: Array[Int] = _
 
+  @transient private var compiled: Boolean = false
   @transient protected lazy val reorderManager = new ReorderManager()
 
   if (enableExcludeChecking) {
@@ -48,6 +49,9 @@ class DnnGraph(
   buildBackwardGraph()
 
   override def updateOutput(input: Activity): Activity = {
+    // compile dnn graph according to model status
+    if (!compiled) compile()
+
     var i = 0
     while(i < forwardExecution.length) {
       val node = forwardExecution(i)
@@ -98,13 +102,6 @@ class DnnGraph(
     }
   }
 
-  // change nn identity to mkldnn identity
-  private def toDnnIdentity(model: nn.Identity[Float])
-    : AbstractModule[Activity, Activity, Float] = {
-    mkldnn.Identity[Float]().setName(model.getName())
-      .asInstanceOf[AbstractModule[Activity, Activity, Float]]
-  }
-
   override def buildBackwardGraph(): this.type = {
     super.buildBackwardGraph()
     forwardExecution = forwardGraph.topologySort.reverse
@@ -120,6 +117,8 @@ class DnnGraph(
       while(j < forwardExecution.length) {
         if (forwardExecution(j).element.getName() == backwardExecution(i).element.getName()) {
           val e = forwardExecution(j).element
+          // when creating graph, there may add nn.Identity node,
+          // here we have to change it to mkldnn node
           if (e.isInstanceOf[nn.Identity[Float]]) {
             forwardExecution(j).element = toDnnIdentity(e.asInstanceOf[nn.Identity[Float]])
             backwardExecution(i).element = forwardExecution(j).element
@@ -138,9 +137,15 @@ class DnnGraph(
     this
   }
 
+  // change nn identity to mkldnn identity
+  private def toDnnIdentity(model: nn.Identity[Float])
+  : AbstractModule[Activity, Activity, Float] = {
+    mkldnn.Identity[Float]().setName(model.getName())
+      .asInstanceOf[AbstractModule[Activity, Activity, Float]]
+  }
+
   // if node has no previous node, then it will just use input as real input
-  private def findDnnInput(node: ModuleNode[Float], input: Activity)
-    : Activity = {
+  private def findDnnInput(node: ModuleNode[Float], input: Activity): Activity = {
     if (node.element.isInstanceOf[WithoutInput]) return null
 
     val realInputFormats = node.element.asInstanceOf[MklDnnModule].inputFormats()
@@ -174,9 +179,8 @@ class DnnGraph(
     nodeInput
   }
 
-  private def findDnnGradOutput(curNode: ModuleNode[Float],
-                                gradOutput: Activity,
-                                isAcc: Boolean = false): Activity = {
+  private def findDnnGradOutput(curNode: ModuleNode[Float], gradOutput: Activity,
+    isAcc: Boolean = false): Activity = {
     var curGradOutput : Activity = if (curNode.eq(dummyOutputGrad)) gradOutput else null
 
     val realGradOutputFormats = if (isAcc) {
@@ -222,7 +226,7 @@ class DnnGraph(
   }
 
   private def addActivity(activity: Activity, realFormats: Array[MemoryData],
-                          other: Activity, otherFormats: Array[MemoryData]): Activity = {
+    other: Activity, otherFormats: Array[MemoryData]): Activity = {
     val realOthers = if (otherFormats.length > 0) {
       reorderManager.infer(otherFormats, realFormats, other)
     } else {
@@ -231,9 +235,15 @@ class DnnGraph(
     super.accActivity(activity, realOthers)
   }
 
-  def compile(phase: Phase) : Unit = {
+  private def compile() : Unit = {
+    val phase = if (this.train) {
+      Phase.TrainingPhase
+    } else {
+      Phase.InferencePhase
+    }
     setRuntime(new MklDnnRuntime(), phase)
     initPrimitives(phase, Array[MemoryData]())
+    compiled = true
   }
 
   private def setRuntime(runtime: MklDnnRuntime, phase: Phase): Unit = {
@@ -248,8 +258,7 @@ class DnnGraph(
     }
   }
 
-  private def initPrimitives(phase: Phase, inputFormats: Array[MemoryData])
-  : Unit = {
+  private def initPrimitives(phase: Phase, inputFormats: Array[MemoryData]): Unit = {
     val outFormats = initFwdPrimitives(inputFormats, phase)._2
     if (phase == Phase.TrainingPhase) {
       initBwdPrimitives(outFormats, phase)
@@ -303,8 +312,7 @@ class DnnGraph(
   }
 
   // init forward primitives
-  private def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
-  : (Array[MemoryData], Array[MemoryData]) = {
+  private def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
     for (i <- 0 until forwardExecution.length) {
@@ -321,8 +329,7 @@ class DnnGraph(
   }
 
   // init updateGradInput primitives
-  private def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
-  : (Array[MemoryData], Array[MemoryData]) = {
+  private def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
     for (i <- 0 until backwardExecution.length - 1) {
@@ -339,8 +346,7 @@ class DnnGraph(
   }
 
   // init acc primitives
-  private def initGradWPrimitives(grads: Array[MemoryData], phase: Phase):
-  Array[MemoryData] = {
+  private def initGradWPrimitives(grads: Array[MemoryData], phase: Phase) = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
     for (i <- 0 until backwardExecution.length - 1) {

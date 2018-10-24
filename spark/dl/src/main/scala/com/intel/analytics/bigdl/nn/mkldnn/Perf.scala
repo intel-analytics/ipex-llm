@@ -40,7 +40,7 @@ object Perf {
 
   val parser = new OptionParser[ResNet50PerfParams]("BigDL w/ Dnn Local Model Performance Test") {
     opt[String]('m', "model")
-      .text("model you want, vgg16 | resnet50")
+      .text("model you want, vgg16 | resnet50 | vgg16_graph | resnet50_graph")
       .action((v, p) => p.copy(model = v))
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
@@ -78,16 +78,25 @@ object Perf {
       val model = params.model match {
         case "vgg16" => Vgg_16(batchSize, classNum, true)
         case "resnet50" => ResNet(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
+        case "vgg16_graph" => Vgg_16.graph(batchSize, classNum, true)
+        case "resnet50_graph" =>
+          ResNet.graph(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
         case _ => throw new UnsupportedOperationException(s"Unkown model ${params.model}")
       }
 
       val criterion = CrossEntropyCriterion()
 
       if (training) {
-        model.compile(TrainingPhase, Array(HeapData(inputShape, inputFormat)))
+        if (model.isInstanceOf[MklDnnContainer]) {
+          model.asInstanceOf[MklDnnContainer]
+            .compile(TrainingPhase, Array(HeapData(inputShape, inputFormat)))
+        }
         model.training()
       } else {
-        model.compile(InferencePhase, Array(HeapData(inputShape, inputFormat)))
+        if (model.isInstanceOf[MklDnnContainer]) {
+          model.asInstanceOf[MklDnnContainer]
+            .compile(InferencePhase, Array(HeapData(inputShape, inputFormat)))
+        }
         model.evaluate()
       }
 
@@ -117,7 +126,7 @@ case class ResNet50PerfParams (
   batchSize: Int = 16,
   iteration: Int = 50,
   training: Boolean = true,
-  model: String = "vgg16"
+  model: String = "resnet50_graph"
 )
 
 object ResNet {
