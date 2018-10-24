@@ -16,11 +16,13 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{Embedding => BEmbedding}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform}
+import com.intel.analytics.bigdl.nn.{AddConstant => TAddConstant, InitializationMethod, LookupTable, RandomUniform, Sequential => TSequential}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
@@ -36,10 +38,15 @@ import scala.reflect.ClassTag
  * @param inputDim Int > 0. Size of the vocabulary, ie. 1 + maximum integer
  *                 index occurring in the input data.
  *                 Each word index in the input should be within range [0, inputDim-1].
- * @param outputDim Int >= 0. Dimension of the dense embedding.
+ * @param outputDim Int > 0. Dimension of the dense embedding.
  * @param init Initialization method for the weights of the layer. Default is RandomUniform.
  *             You can also pass in corresponding string representations such as 'uniform'
  *             or 'normal', etc. for simple init methods in the factory method.
+ * @param weights Tensor. Initial weights set to this layer, which should be a Tensor of
+ *                size (inputDim, outputDim). Default is null and in this case weights are
+ *                initialized by the initialization method specified by 'init'.
+ *                Otherwise, 'weights' will override 'init' to take effect.
+ * @param trainable Whether this layer is trainable or not. Default is true.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the embedding matrix. Default is null.
  * @param inputShape A Single Shape, does not include the batch dimension.
@@ -49,10 +56,38 @@ class Embedding[T: ClassTag](
     override val inputDim: Int,
     override val outputDim: Int,
     override val init: InitializationMethod = RandomUniform,
+    val weights: Tensor[T] = null,
+    val trainable: Boolean = true,
     wRegularizer: Regularizer[T] = null,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BEmbedding[T] (
     inputDim, outputDim, init, wRegularizer, inputShape) with Net {
+
+  require(inputDim > 0, s"inputDim of Embedding must be a positive integer, but got $inputDim")
+  require(outputDim > 0, s"outputDim of Embedding must be a positive integer, but got $outputDim")
+
+  if (weights != null) {
+    require(weights.size().sameElements(Array(inputDim, outputDim)),
+    "weights size should match (inputDim, outputDim)")
+  }
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val model = TSequential[T]()
+    model.add(TAddConstant(1.0))
+    val layer = LookupTable(
+      nIndex = inputDim,
+      nOutput = outputDim,
+      wRegularizer = wRegularizer)
+    if (weights != null) {
+      layer.setWeightsBias(Array(weights))
+    }
+    else {
+      layer.setInitMethod(weightInitMethod = init)
+    }
+    if (! trainable) layer.freeze()
+    model.add(layer)
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
 }
 
 object Embedding {
@@ -60,9 +95,13 @@ object Embedding {
       inputDim: Int,
       outputDim: Int,
       init: String = "uniform",
+      weights: Tensor[T] = null,
+      trainable: Boolean = true,
       wRegularizer: Regularizer[T] = null,
-      inputLength: Int)(implicit ev: TensorNumeric[T]): Embedding[T] = {
+      inputLength: Int = -1)(implicit ev: TensorNumeric[T]): Embedding[T] = {
+    // Remark: It is possible that inputShape is specified in Input node or layer.
+    val shape = if (inputLength > 0) Shape(inputLength) else null
     new Embedding[T](inputDim, outputDim, KerasUtils.getInitMethod(init),
-      wRegularizer, Shape(inputLength))
+      weights, trainable, wRegularizer, shape)
   }
 }
