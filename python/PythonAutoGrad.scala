@@ -121,8 +121,8 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     autograd.AutoGrad.abs(a)
   }
 
-  def sum(a: Variable[T], axis: Int = 0, keepdims: Boolean = false): Variable[T] = {
-    autograd.AutoGrad.sum(a, axis, keepdims)
+  def sum(a: Variable[T], axis: Int = 0, keepDims: Boolean = false): Variable[T] = {
+    autograd.AutoGrad.sum(a, axis, keepDims)
   }
 
   def clip(a: Variable[T], min: Double, max: Double): Variable[T] = {
