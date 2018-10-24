@@ -57,17 +57,17 @@ object AutoGrad {
    * Sum of the values in a variable, alongside the specified axis.
    * @param x A variable.
    * @param axis axis to compute the mean. 0-based indexed.
-   * @param keepdims A boolean, whether to keep the dimensions or not.
+   * @param keepDims A boolean, whether to keep the dimensions or not.
    * If `keepDims` is `False`, the rank of the variable is reduced
    * by 1. If `keepDims` is `True`,
    * the reduced dimensions are retained with length 1.
    * @return A variable with the mean of elements of `x`.
    */
-  def sum[T: ClassTag](x: Variable[T], axis: Int = 0, keepdims: Boolean = false)(
+  def sum[T: ClassTag](x: Variable[T], axis: Int = 0, keepDims: Boolean = false)(
       implicit ev: TensorNumeric[T]): Variable[T] = {
     val o: KerasLayer[Activity, Activity, T] =
       new KerasLayerWrapper[T](bnn.Sum[T](dimension = normalizeAxis(axis) + 1,
-        squeeze = !keepdims).asInstanceOf[AbstractModule[Activity, Activity, T]])
+        squeeze = !keepDims).asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(x.node))
   }
 
@@ -136,8 +136,8 @@ object AutoGrad {
    * Mean of a tensor, alongside the specified axis.
    * @param axis axis to compute the mean. 0-based indexed.
    * @param keepDims A boolean, whether to keep the dimensions or not.
-   *If `keepdims` is `False`, the rank of the tensor is reduced
-   *by 1. If `keep_dims` is `True`,
+   *If `keepDims` is `False`, the rank of the tensor is reduced
+   *by 1. If `keepDims` is `True`,
    *the reduced dimensions are retained with length 1.
    * @return
    *         A tensor with the mean of elements of `x`.
@@ -303,7 +303,7 @@ object AutoGrad {
    */
   def l2Normalize[T: ClassTag](x: Variable[T], axis: Int)
       (implicit ev: TensorNumeric[T]): Variable[T] = {
-    val l2Normalize = x / sqrt(maximum(sum(x * x, axis, keepdims = true), epsilon()))
+    val l2Normalize = x / sqrt(maximum(sum(x * x, axis, keepDims = true), epsilon()))
     l2Normalize
   }
 
@@ -326,7 +326,7 @@ object AutoGrad {
     require(xShape.length == 2 || xShape.length == 3,
       s"Only support 2D and 3D for now, but got: ${xShape.length}")
     if (xShape.length == 2) {
-      sum(x*y, axis = 1, keepdims = true)
+      sum(x*y, axis = 1, keepDims = true)
     } else {
       mm(x, y, axes)
     }
