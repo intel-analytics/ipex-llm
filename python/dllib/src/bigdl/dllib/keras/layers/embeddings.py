@@ -16,7 +16,7 @@
 
 import sys
 
-from bigdl.util.common import callBigDlFunc
+from bigdl.util.common import callBigDlFunc, JTensor
 from ..engine.topology import ZooKerasLayer
 
 if sys.version >= '3':
@@ -34,26 +34,37 @@ class Embedding(ZooKerasLayer):
 
     # Arguments
     input_dim: Size of the vocabulary. Int > 0.
-    output_dim: Dimension of the dense embedding. Int >= 0.
+    output_dim: Dimension of the dense embedding. Int > 0.
     init: String representation of the initialization method for the weights of the layer.
           Default is 'uniform'.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the embedding matrix. Default is None.
+    weights: Initial weights set to this layer, which should be a numpy array of
+             size (inputDim, outputDim). Default is None and in this case weights are
+             initialized by the initialization method specified by 'init'.
+             Otherwise, 'weights' will override 'init' to take effect.
+    trainable: Whether this layer is trainable or not. Default is True.
     input_length: Positive int. The sequence length of each input.
     name: String to set the name of the layer.
           If not specified, its name will by default to be a generated string.
 
     >>> embedding = Embedding(1000, 32, input_length=10, name="embedding1")
     creating: createZooKerasEmbedding
+
+    >>> import numpy as np
+    >>> embedding = Embedding(10, 200, weights=np.random.random([10, 200]), input_length=10)
+    creating: createZooKerasEmbedding
     """
-    def __init__(self, input_dim, output_dim, init="uniform", input_length=None,
-                 W_regularizer=None, input_shape=None, **kwargs):
+    def __init__(self, input_dim, output_dim, init="uniform", weights=None, trainable=True,
+                 input_length=None, W_regularizer=None, input_shape=None, **kwargs):
         if input_length:
-            input_shape = (input_length,)
+            input_shape = (input_length, )
         super(Embedding, self).__init__(None,
                                         input_dim,
                                         output_dim,
                                         init,
+                                        JTensor.from_ndarray(weights),
+                                        trainable,
                                         W_regularizer,
                                         list(input_shape) if input_shape else None,
                                         **kwargs)
