@@ -24,10 +24,12 @@ import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerialization
 class EmbeddingSpec extends KerasBaseSpec {
 
   // Compared results with Keras on Python side
-  "Embedding" should "work properly" in {
+  "Embedding with weights" should "work properly" in {
+    val weights = Tensor[Float](10, 32).rand()
     val seq = Sequential[Float]()
-    val layer = Embedding[Float](1000, 32, inputLength = 4)
+    val layer = Embedding[Float](10, 32, weights = weights, inputLength = 4)
     seq.add(layer)
+    require(seq.getWeightsBias().sameElements(Array(weights)))
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 32))
     val input = Tensor[Float](2, 4)
     input(Array(1, 1)) = 1
@@ -38,7 +40,15 @@ class EmbeddingSpec extends KerasBaseSpec {
     input(Array(2, 2)) = 3
     input(Array(2, 3)) = 2
     input(Array(2, 4)) = 6
-    val output = seq.forward(input)
+    val output = seq.forward(input).toTensor[Float]
+    for (i <- 0 to 1) {
+      val nonBatchOutput = output.split(1)(i)
+      for (j <- 0 to 3) {
+        val actual = nonBatchOutput.split(1)(j)
+        val expected = weights.select(1, input.valueAt(i + 1, j + 1).toInt + 1)
+        require(actual == expected)
+      }
+    }
     val gradInput = seq.backward(input, output)
   }
 
