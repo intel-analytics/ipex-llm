@@ -316,9 +316,12 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       inputDim: Int,
       outputDim: Int,
       init: String = "uniform",
+      weights: JTensor = null,
+      trainable: Boolean = true,
       wRegularizer: Regularizer[T] = null,
       inputShape: JList[Int] = null): Embedding[T] = {
-    Embedding[T](inputDim, outputDim, init, wRegularizer, inputShape.get(0))
+    Embedding[T](inputDim, outputDim, init, toTensor(weights),
+      trainable, wRegularizer, if (inputShape != null) inputShape.get(0) else -1)
   }
 
   def createZooKerasBatchNormalization(
@@ -1235,7 +1238,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       trainable: Boolean = false,
       inputShape: JList[Int] = null): WordEmbedding[T] = {
     WordEmbedding[T](embeddingFile, if (wordIndex!= null) wordIndex.asScala.toMap else null,
-      trainable, inputShape.get(0))
+      trainable, if (inputShape != null) inputShape.get(0) else -1)
   }
 
   def wordEmbeddingGetWordIndex(
