@@ -90,5 +90,30 @@ now=$(date "+%s")
 time1=$((now-start))
 echo "dogs-vs-cats time used:$time1 seconds"
 
+echo "#5 start app test for using_variational_autoencoder_to_generate_digital_numbers"
+#timer
+start=$(date "+%s")
+
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_digital_numbers
+
+sed "s/nb_epoch = 6/nb_epoch=2/g; s/batch_size=batch_size/batch_size=1008/g" ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_digital_numbers.py > ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/tmp_test.py
+
+export SPARK_DRIVER_MEMORY=12g
+python ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/tmp_test.py
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "using_variational_autoencoder_to_generate_digital_numbers failed"
+    exit $exit_status
+fi
+
+unset SPARK_DRIVER_MEMORY
+now=$(date "+%s")
+time5=$((now-start))
+echo "#5 using_variational_autoencoder_to_generate_digital_numbers time used:$time5 seconds"
+
+
 # This should be done at the very end after all tests finish.
 clear_up
