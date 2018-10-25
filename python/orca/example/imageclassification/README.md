@@ -1,38 +1,40 @@
-## Image Classification example
+# Image Classification example
 This example illustrates how to do the image classification with pre-trained model
 
-### Run steps
-1. Prepare pre-trained models
+## Install or download Analytics Zoo
+Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via pip or download the prebuilt package.
 
+## Prepare pre-trained models
 Download pre-trained models from [Image Classification](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ProgrammingGuide/image-classification.md)
 
-2. Prepare predict dataset
-
+## Prepare predict dataset
 Put your image data for prediction in one folder.
 
-3. Run the example
-
+## Run after pip install
 ```bash
+export SPARK_DRIVER_MEMORY=10g
 modelPath=... // model path
-
 imagePath=... // image path
-
 topN=... // top n prediction
-
 partitionNum=... // A suggestion value of the minimal partition number
+python predict.py -f $imagePath --model $modelPath --topN 5 --partition_num ${partitionNum}
+```
+See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
 
-ANALYTICS_ZOO_HOME=
-PYTHON_API_ZIP_PATH=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_BIGDL_VERSION-spark_SPARK_VERSION-ZOO_VERSION-python-api.zip
-ZOO_JAR_PATH=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_BIGDL_VERSION-spark_SPARK_VERSION-ZOO_VERSION-jar-with-dependencies.jar 
-PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
-
-spark-submit \
+## Run with prebuilt package
+Run the following command for Spark local mode (MASTER=local[*]) or cluster mode:
+```bash
+export SPARK_HOME=the root directory of Spark
+export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
+MASTER=...
+modelPath=... // model path
+imagePath=... // image path
+topN=... // top n prediction
+partitionNum=... // A suggestion value of the minimal partition number
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
     --master local[4] \
     --driver-memory 10g \
     --executor-memory 10g \
-    --py-files ${PYTHON_API_ZIP_PATH} \
-    --jars ${ZOO_JAR_PATH} \
-    --conf spark.driver.extraClassPath=${ZOO_JAR_PATH} \
-    --conf spark.executor.extraClassPath=${ZOO_JAR_PATH} \
     path/to/predict.py -f $imagePath --model $modelPath --topN 5 --partition_num ${partitionNum}
 ```
+See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
