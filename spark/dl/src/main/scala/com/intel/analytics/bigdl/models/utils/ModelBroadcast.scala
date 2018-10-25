@@ -52,7 +52,8 @@ trait ModelBroadcast[T] extends Serializable {
    *                     the gradient is not needed in model inference
    * @return model
    */
-  def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T]
+  def value(initGradient: Boolean = false, shareWeight: Boolean = true,
+    partitionId: Int = -1): Module[T]
 
   def uuid(): String = _uuid
 }
@@ -126,12 +127,13 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
    *                     the gradient is not needed in model inference
    * @return model
    */
-  override def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
-    CachedModels.deleteAll(getFullUId(uuid))
+  override def value(initGradient: Boolean = false, shareWeight: Boolean = true,
+    partitionId: Int = -1): Module[T] = {
+    CachedModels.deleteAll(getFullUId(uuid, partitionId))
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)
       val uuid = broadcastModel.value.uuid
-      CachedModels.add(getFullUId(uuid), localModel)
+      CachedModels.add(getFullUId(uuid, partitionId), localModel)
 
       if (initGradient) {
         initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
@@ -140,7 +142,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
     } else {
       val localModel = broadcastModel.value.model.cloneModule()
       val uuid = broadcastModel.value.uuid
-      CachedModels.add(getFullUId(uuid), localModel)
+      CachedModels.add(getFullUId(uuid, partitionId), localModel)
 
       val parameters = if (shareWeight) {
         broadcastParameters.value
@@ -162,8 +164,8 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
     }
   }
 
-  private def getFullUId(uuid: String): String = {
-    uuid + "-" + TaskContext.getPartitionId()
+  private def getFullUId(uuid: String, partitionId: Int): String = {
+    uuid + "-" + partitionId
   }
 
   private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
