@@ -74,8 +74,7 @@ object NNImageSchema {
     } else if (imf.contains(ImageFeature.mat)) {
       val mat = imf.opencvMat()
       val cvType = mat.`type`()
-      val bytesData = new Array[Byte]((mat.total() * mat.elemSize()).toInt)
-      mat.get(0, 0, bytesData)
+      val bytesData = OpenCVMat.toBytePixels(mat)._1
       (cvType, bytesData)
     } else {
       throw new IllegalArgumentException(s"ImageFeature should have imageTensor or mat.")
@@ -100,9 +99,7 @@ object NNImageSchema {
     storageType match {
       case CvType.CV_8UC3 | CvType.CV_8UC1 | CvType.CV_8UC4 =>
         val bytesData = row.getAs[Array[Byte]](5)
-        val mat = new Mat(h, w, storageType)
-        mat.put(0, 0, bytesData)
-        val opencvMat = new OpenCVMat(mat)
+        val opencvMat = OpenCVMat.fromPixelsBytes(bytesData, h, w, c)
         imf(ImageFeature.mat) = opencvMat
         imf(ImageFeature.originalSize) = opencvMat.shape()
       case CvType.CV_32FC3 | CvType.CV_32FC1 | CvType.CV_32FC4 =>
