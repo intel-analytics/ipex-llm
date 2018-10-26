@@ -370,23 +370,29 @@ private[zoo] class RegistryMap[T]() {
   private def getRegistrySize = registry.size
 
   def getOrCreate(id: String)(create: => T): (T, Boolean) = {
-    if (registry.contains(id)) {
-      logger.debug(s"$id already exists, read from registry. " +
-        s"Current registry size: $getRegistrySize")
-      (registry(id), false)
-    } else {
-      this.synchronized {
-        if (registry.contains(id)) {
+
+    val result: Option[T] = registry.get(id)
+    result match {
+      case Some(value) =>
+        logger.debug(s"$id already exists, read from registry. " +
+          s"Current registry size: $getRegistrySize")
+        return (value, false)
+      case _ =>
+    }
+
+    registry.synchronized {
+      val result: Option[T] = registry.get(id)
+      result match {
+        case Some(value) =>
           logger.debug(s"$id already exists, read from registry. " +
             s"Current registry size: $getRegistrySize")
-          (registry(id), false)
-        } else {
+          (value, false)
+        case _ =>
           logger.debug(s"$id does not exist, created it and added to registry. " +
             s"Current registry size: $getRegistrySize")
           val res = create
           registry.put(id, res)
           (res, true)
-        }
       }
     }
   }
