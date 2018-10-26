@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Util._
 import org.apache.commons.lang3.SerializationUtils
-import org.apache.spark.{SparkContext, TaskContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 
 import scala.collection.mutable.ArrayBuffer
