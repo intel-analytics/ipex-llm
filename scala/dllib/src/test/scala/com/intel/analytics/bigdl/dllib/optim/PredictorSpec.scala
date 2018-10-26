@@ -268,8 +268,11 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
     var second: Map[Long, StorageInfo] = null
     (0 until 20).foreach { i =>
       val detection = quant.predictImage(imageFrame, batchPerPartition = 16).toDistributed()
-      detection.rdd.first()
-      detection.rdd.collect()
+
+      // adding a transformer to handle multi trans of detection will be right
+      val transformer = ImageFrameToSample()
+      transformer(detection).toDistributed().rdd.collect()
+
       println("=" * 80)
       println(StorageManager.get().count(!_._2.isFreed))
       println("-" * 80)
