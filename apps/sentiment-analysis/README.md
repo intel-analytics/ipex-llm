@@ -13,12 +13,22 @@ In this example, you will learn how to use Analytics Zoo to develop deep learnin
 * Python 2.7/3.5/3.6
 * Apache Spark 1.6.0/2.1.0 (This version needs to be same with the version you use to build Analytics Zoo)
 
-## Run with Jupyter
-* Download Analytics Zoo and build it.
-* Run `export SPARK_HOME=the root directory of Spark`.
-* Run `export ANALYTICS_ZOO_HOME=the dist directory under the Analytics Zoo project`.
-* Run the following bash command to start the jupyter notebook. Change parameter settings as you need, ie `MASTER = local[physcial_core_number]`.
+## Install or download Analytics Zoo
+Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
+
+## Run after pip install
+Start jupyter notebook as you normally do, e.g.
+```
+jupyter notebook --notebook-dir=./ --ip=* --no-browser```bash
+```
+See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
+
+## Run with prebuilt package
+Run the following bash command to start the jupyter notebook. Change parameter settings as you need, ie `MASTER = local[physcial_core_number]`.
 ```bash
+export SPARK_HOME=the root directory of Spark
+export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
+
 MASTER=local[*]
 ${ANALYTICS_ZOO_HOME}/bin/jupyter-with-zoo.sh \
     --master ${MASTER} \
@@ -28,3 +38,4 @@ ${ANALYTICS_ZOO_HOME}/bin/jupyter-with-zoo.sh \
     --executor-cores 4  \
     --executor-memory 12g
 ```
+See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
