@@ -165,25 +165,68 @@ ${SPARK_HOME}/bin/spark-submit \
 now=$(date "+%s")
 time5=$((now-start))
 
-elif [ $1 = 2 ]; then
-echo "#6 start app test for using_variational_autoencoder_to_generate_faces"
+echo "#6 start app test for image-similarity"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces
-
-sed -i "s/data_files\[\:100000\]/data_files\[\:5000\]/g" ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
-FILENAME="${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip"
+ ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-similarity/image-similarity
+ sed "s%/tmp/images%${ANALYTICS_ZOO_HOME}/apps/image-similarity%g;s%/googlenet_places365/deploy.prototxt%/googlenet_places365/deploy_googlenet_places365.prototxt%g;s%/vgg_16_places365/deploy.prototxt%/vgg_16_places365/deploy_vgg16_places365.prototxt%g;s%./samples%${ANALYTICS_ZOO_HOME}/apps/image-similarity/samples%g" ${ANALYTICS_ZOO_HOME}/apps/image-similarity/image-similarity.py >${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/imageClassification.tar.gz"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
-   echo "Downloading celeba images"
-   wget -P ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ftp://zoo:1234qwer@10.239.47.211/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
-   unzip -d ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip
-   echo "Finished"
+   echo "Downloading images"
+   
+   wget $FTP_URI/analytics-zoo-data/imageClassification.tar.gz -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity
+   tar -zxvf ${ANALYTICS_ZOO_HOME}/apps/image-similarity/imageClassification.tar.gz -C ${ANALYTICS_ZOO_HOME}/apps/image-similarity
+   
+   echo "Finished downloading images"
 fi
-
-${SPARK_HOME}/bin/spark-submit \
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/deploy_googlenet_places365.prototxt"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading places365 deploy model"
+   
+   wget https://raw.githubusercontent.com/CSAILVision/places365/master/deploy_googlenet_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
+   
+   echo "Finished downloading model"
+fi
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/googlenet_places365.caffemodel"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading places365 weight model"
+   
+   wget http://places2.csail.mit.edu/models_places365/googlenet_places365.caffemodel -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
+   
+   echo "Finished downloading model"
+fi
+ FILENAME=" ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/deploy_vgg16_places365.prototxt"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading VGG deploy model"
+   
+   wget https://raw.githubusercontent.com/CSAILVision/places365/master/deploy_vgg16_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
+   
+   echo "Finished downloading model"
+fi
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/vgg16_hybrid1365.caffemodel"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading VGG weight model"
+   
+   wget $FTP_URI/analytics-zoo-models/image-classification/vgg16_places365.caffemodel -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
+   
+   echo "Finished downloading model"
+fi
+ ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
         --driver-memory 12g  \
@@ -191,15 +234,18 @@ ${SPARK_HOME}/bin/spark-submit \
         --executor-cores 2  \
         --executor-memory 12g \
         --conf spark.akka.frameSize=64 \
-        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py,${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/utils.py \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py  \
         --properties-file ${ANALYTICS_ZOO_CONF} \
         --jars ${ANALYTICS_ZOO_JAR} \
         --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-        ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
-now=$(date "+%s")
+        ${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py
+ now=$(date "+%s")
 time6=$((now-start))
+rm ${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py
+echo "#6 image-similarity time used:$time11 seconds"
 
+elif [ $1 = 2 ]; then
 echo "#7 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
 #timer
 start=$(date "+%s")
@@ -244,19 +290,20 @@ ${SPARK_HOME}/bin/spark-submit \
 now=$(date "+%s")
 time7=$((now-start))
 
-elif [ $1 = 3 ]; then
-echo "#8 start app test for sentiment-analysis"
+echo "#8 start app test for using_variational_autoencoder_to_generate_faces"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces
 
-FILENAME="/tmp/.bigdl/dataset/glove.6B.zip"
+sed -i "s/data_files\[\:100000\]/data_files\[\:5000\]/g" ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
+FILENAME="${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
-   echo "Downloading glove6B"
-   wget -P /tmp/.bigdl/dataset/ $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip
+   echo "Downloading celeba images"
+   wget -P ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ftp://zoo:1234qwer@10.239.47.211/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
+   unzip -d ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip
    echo "Finished"
 fi
 
@@ -268,15 +315,16 @@ ${SPARK_HOME}/bin/spark-submit \
         --executor-cores 2  \
         --executor-memory 12g \
         --conf spark.akka.frameSize=64 \
-        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py  \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py,${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/utils.py \
         --properties-file ${ANALYTICS_ZOO_CONF} \
         --jars ${ANALYTICS_ZOO_JAR} \
         --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-        ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py
+        ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
 now=$(date "+%s")
 time8=$((now-start))
 
+elif [ $1 = 3 ]; then
 echo "#9 start app test for image-augmentation"
 #timer
 start=$(date "+%s")
@@ -350,9 +398,38 @@ time10=$((now-start))
 rm ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/tmp.py
 echo "#10 dogs-vs-cats time used:$time10 seconds"
 
+echo "#11 start app test for sentiment-analysis"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment
 
+FILENAME="/tmp/.bigdl/dataset/glove.6B.zip"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading glove6B"
+   wget -P /tmp/.bigdl/dataset/ $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip
+   echo "Finished"
+fi
 
-elif [ $1 = 5 ]; then
+${SPARK_HOME}/bin/spark-submit \
+        --master ${MASTER} \
+        --driver-cores 2  \
+        --driver-memory 12g  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --executor-memory 12g \
+        --conf spark.akka.frameSize=64 \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py  \
+        --properties-file ${ANALYTICS_ZOO_CONF} \
+        --jars ${ANALYTICS_ZOO_JAR} \
+        --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py
+now=$(date "+%s")
+time11=$((now-start))
+
 echo "#12 start app test for image_classification_inference"
 #timer
 start=$(date "+%s")
@@ -412,6 +489,28 @@ fi
 time12=$((now-start))
 rm ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
 echo "#12 image_classification_inference time used:$time12 seconds"
+
+echo "#13 start app test for image-augementation-3d"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d
+${SPARK_HOME}/bin/spark-submit \
+        --master ${MASTER} \
+        --driver-cores 2  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --driver-memory 1g  \
+        --executor-memory 1g \
+        --conf spark.akka.frameSize=64 \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d.py \
+        --properties-file ${ANALYTICS_ZOO_CONF} \
+        --jars ${ANALYTICS_ZOO_JAR} \
+        --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d.py
+now=$(date "+%s")
+time13=$((now-start))
+echo "#13 image-augementation-3d time used:$time13 seconds"
 
 else
 echo "#1 start app test for anomaly-detection-nyc-taxi"
@@ -565,24 +664,68 @@ ${SPARK_HOME}/bin/spark-submit \
 now=$(date "+%s")
 time5=$((now-start))
 
-echo "#6 start app test for using_variational_autoencoder_to_generate_faces"
+echo "#6 start app test for image-similarity"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces
-
-sed -i "s/data_files\[\:100000\]/data_files\[\:5000\]/g" ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
-FILENAME="${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip"
+ ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-similarity/image-similarity
+ sed "s%/tmp/images%${ANALYTICS_ZOO_HOME}/apps/image-similarity%g;s%/googlenet_places365/deploy.prototxt%/googlenet_places365/deploy_googlenet_places365.prototxt%g;s%/vgg_16_places365/deploy.prototxt%/vgg_16_places365/deploy_vgg16_places365.prototxt%g;s%./samples%${ANALYTICS_ZOO_HOME}/apps/image-similarity/samples%g" ${ANALYTICS_ZOO_HOME}/apps/image-similarity/image-similarity.py >${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/imageClassification.tar.gz"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
-   echo "Downloading celeba images"
-   wget -P ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ftp://zoo:1234qwer@10.239.47.211/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
-   unzip -d ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip
-   echo "Finished"
+   echo "Downloading images"
+   
+   wget $FTP_URI/analytics-zoo-data/imageClassification.tar.gz -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity
+   tar -zxvf ${ANALYTICS_ZOO_HOME}/apps/image-similarity/imageClassification.tar.gz -C ${ANALYTICS_ZOO_HOME}/apps/image-similarity
+   
+   echo "Finished downloading images"
 fi
-
-${SPARK_HOME}/bin/spark-submit \
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/deploy_googlenet_places365.prototxt"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading places365 deploy model"
+   
+   wget https://raw.githubusercontent.com/CSAILVision/places365/master/deploy_googlenet_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
+   
+   echo "Finished downloading model"
+fi
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/googlenet_places365.caffemodel"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading places365 weight model"
+   
+   wget http://places2.csail.mit.edu/models_places365/googlenet_places365.caffemodel -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
+   
+   echo "Finished downloading model"
+fi
+ FILENAME=" ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/deploy_vgg16_places365.prototxt"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading VGG deploy model"
+   
+   wget https://raw.githubusercontent.com/CSAILVision/places365/master/deploy_vgg16_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
+   
+   echo "Finished downloading model"
+fi
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/vgg16_hybrid1365.caffemodel"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading VGG weight model"
+   
+   wget $FTP_URI/analytics-zoo-models/image-classification/vgg16_places365.caffemodel -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
+   
+   echo "Finished downloading model"
+fi
+ ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
         --driver-memory 12g  \
@@ -590,14 +733,16 @@ ${SPARK_HOME}/bin/spark-submit \
         --executor-cores 2  \
         --executor-memory 12g \
         --conf spark.akka.frameSize=64 \
-        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py,${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/utils.py \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py  \
         --properties-file ${ANALYTICS_ZOO_CONF} \
         --jars ${ANALYTICS_ZOO_JAR} \
         --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-        ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
-now=$(date "+%s")
+        ${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py
+ now=$(date "+%s")
 time6=$((now-start))
+rm ${ANALYTICS_ZOO_HOME}/apps/image-similarity/tmp.py
+echo "#6 image-similarity time used:$time11 seconds"
 
 echo "#7 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
 #timer
@@ -643,18 +788,20 @@ ${SPARK_HOME}/bin/spark-submit \
 now=$(date "+%s")
 time7=$((now-start))
 
-echo "#8 start app test for sentiment-analysis"
+echo "#8 start app test for using_variational_autoencoder_to_generate_faces"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces
 
-FILENAME="/tmp/.bigdl/dataset/glove.6B.zip"
+sed -i "s/data_files\[\:100000\]/data_files\[\:5000\]/g" ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
+FILENAME="${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
-   echo "Downloading glove6B"
-   wget -P /tmp/.bigdl/dataset/ $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip
+   echo "Downloading celeba images"
+   wget -P ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ftp://zoo:1234qwer@10.239.47.211/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
+   unzip -d ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/ ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/img_align_celeba.zip
    echo "Finished"
 fi
 
@@ -666,12 +813,12 @@ ${SPARK_HOME}/bin/spark-submit \
         --executor-cores 2  \
         --executor-memory 12g \
         --conf spark.akka.frameSize=64 \
-        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py  \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py,${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/utils.py \
         --properties-file ${ANALYTICS_ZOO_CONF} \
         --jars ${ANALYTICS_ZOO_JAR} \
         --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-        ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py
+        ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
 now=$(date "+%s")
 time8=$((now-start))
 
@@ -747,6 +894,120 @@ now=$(date "+%s")
 time10=$((now-start))
 rm ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/tmp.py
 echo "#10 dogs-vs-cats time used:$time10 seconds"
+
+echo "#11 start app test for sentiment-analysis"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment
+
+FILENAME="/tmp/.bigdl/dataset/glove.6B.zip"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading glove6B"
+   wget -P /tmp/.bigdl/dataset/ $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip
+   echo "Finished"
+fi
+
+${SPARK_HOME}/bin/spark-submit \
+        --master ${MASTER} \
+        --driver-cores 2  \
+        --driver-memory 12g  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --executor-memory 12g \
+        --conf spark.akka.frameSize=64 \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py  \
+        --properties-file ${ANALYTICS_ZOO_CONF} \
+        --jars ${ANALYTICS_ZOO_JAR} \
+        --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        ${ANALYTICS_ZOO_HOME}/apps/sentiment-analysis/sentiment.py
+now=$(date "+%s")
+time11=$((now-start))
+
+echo "#12 start app test for image_classification_inference"
+#timer
+start=$(date "+%s")
+ ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/tfnet/image_classification_inference
+ sed "s%/path/to/yourdownload%${ANALYTICS_ZOO_HOME}/apps/tfnet%g;s%file:///path/toyourdownload/dogs-vs-cats/train%${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain%g;s%test.jpg%${ANALYTICS_ZOO_HOME}/apps/tfnet/test.jpg%g;s%imagenet_class_index.json%${ANALYTICS_ZOO_HOME}/apps/tfnet/imagenet_class_index.json%g" ${ANALYTICS_ZOO_HOME}/apps/tfnet/image_classification_inference.py > ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/models/*"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading model"
+   
+   git clone https://github.com/tensorflow/models/ ${ANALYTICS_ZOO_HOME}/apps/tfnet/models
+   
+   echo "Finished downloading model"
+fi
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint/inception_v1.ckpt"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading inception_v1 checkpoint"
+   
+   wget http://download.tensorflow.org/models/inception_v1_2016_08_28.tar.gz -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint
+   tar -zxvf ${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint/inception_v1_2016_08_28.tar.gz -C ${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint
+   
+   echo "Finished downloading checkpoint"
+fi
+ FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain.zip"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading dogs and cats images"
+   
+   wget $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/minitrain.zip -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/data
+   unzip -d ${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain ${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain.zip
+   #wget $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/data
+   #unzip -d ${ANALYTICS_ZOO_HOME}/apps/tfnet/data ${ANALYTICS_ZOO_HOME}/apps/tfnet/data/train.zip
+    echo "Finished downloading images"
+fi
+ ${SPARK_HOME}/bin/spark-submit \
+        --master ${MASTER} \
+        --driver-cores 2  \
+        --driver-memory 12g  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --executor-memory 12g \
+        --conf spark.akka.frameSize=64 \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py  \
+        --properties-file ${ANALYTICS_ZOO_CONF} \
+        --jars ${ANALYTICS_ZOO_JAR} \
+        --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
+ now=$(date "+%s")
+time12=$((now-start))
+rm ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
+echo "#12 image_classification_inference time used:$time12 seconds"
+
+echo "#13 start app test for image-augementation-3d"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d
+${SPARK_HOME}/bin/spark-submit \
+        --master ${MASTER} \
+        --driver-cores 2  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --driver-memory 1g  \
+        --executor-memory 1g \
+        --conf spark.akka.frameSize=64 \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d.py \
+        --properties-file ${ANALYTICS_ZOO_CONF} \
+        --jars ${ANALYTICS_ZOO_JAR} \
+        --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d.py
+now=$(date "+%s")
+time13=$((now-start))
+echo "#13 image-augementation-3d time used:$time13 seconds"
 fi
 
 echo "#1 anomaly-detection-nyc-taxi time used:$time1 seconds"
@@ -754,9 +1015,11 @@ echo "#2 object-detection time used:$time2 seconds"
 echo "#3 ncf-explicit-feedback time used:$time3 seconds"
 echo "#4 wide_n_deep time used:$time4 seconds"
 echo "#5 using_variational_autoencoder_to_generate_digital_numbers time used:$time5 seconds"
-echo "#6 using_variational_autoencoder_to_generate_faces time used:$time6 seconds"
+echo "#6 image-similarity time used:$time6 seconds"
 echo "#7 using_variational_autoencoder_and_deep_feature_loss_to_generate_faces time used:$time7 seconds"
-echo "#8 sentimentAnalysis time used:$time8 seconds"
+echo "#8 using_variational_autoencoder_to_generate_faces time used:$time8 seconds"
 echo "#9 image-augmentation time used:$time9 seconds"
 echo "#10 dogs-vs-cats time used:$time10 seconds"
+echo "#11 sentiment-analysis time used:$time11 seconds"
 echo "#12 image_classification_inference time used:$time12 seconds"
+echo "#13 image-augementation-3d time used:$time13 seconds"
