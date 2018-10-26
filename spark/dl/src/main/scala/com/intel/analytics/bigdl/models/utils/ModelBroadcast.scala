@@ -35,6 +35,8 @@ import scala.reflect.ClassTag
  * ModelBroadcast is used to broadcast model
  */
 trait ModelBroadcast[T] extends Serializable {
+  private val _uuid = UUID.randomUUID().toString
+
   /**
    * Broadcast the model
    * @param sc    SparkContext
@@ -52,7 +54,7 @@ trait ModelBroadcast[T] extends Serializable {
    */
   def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T]
 
-  def uuid(): String = UUID.randomUUID().toString
+  def uuid(): String = _uuid
 }
 
 object ModelBroadcast {
