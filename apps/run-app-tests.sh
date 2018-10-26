@@ -435,17 +435,11 @@ echo "#12 start app test for image_classification_inference"
 start=$(date "+%s")
  ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/tfnet/image_classification_inference
  sed "s%/path/to/yourdownload%${ANALYTICS_ZOO_HOME}/apps/tfnet%g;s%file:///path/toyourdownload/dogs-vs-cats/train%${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain%g;s%test.jpg%${ANALYTICS_ZOO_HOME}/apps/tfnet/test.jpg%g;s%imagenet_class_index.json%${ANALYTICS_ZOO_HOME}/apps/tfnet/imagenet_class_index.json%g" ${ANALYTICS_ZOO_HOME}/apps/tfnet/image_classification_inference.py > ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
- FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/models/*"
-if [ -f "$FILENAME" ]
-then
-   echo "$FILENAME already exists."
-else
-   echo "Downloading model"
-   
-   git clone https://github.com/tensorflow/models/ ${ANALYTICS_ZOO_HOME}/apps/tfnet/models
-   
-   echo "Finished downloading model"
-fi
+ ModelPath="${ANALYTICS_ZOO_HOME}/apps/tfnet/models/"
+ rm -rf "$ModelPath"
+ echo "Downloading model"
+ git clone https://github.com/tensorflow/models/ ${ANALYTICS_ZOO_HOME}/apps/tfnet/models
+ echo "Finished downloading model"
  FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint/inception_v1.ckpt"
 if [ -f "$FILENAME" ]
 then
@@ -490,7 +484,7 @@ time12=$((now-start))
 rm ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
 echo "#12 image_classification_inference time used:$time12 seconds"
 
-echo "#13 start app test for image-augementation-3d"
+echo "#13 start app test for image-augmentation-3d"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d
@@ -510,7 +504,7 @@ ${SPARK_HOME}/bin/spark-submit \
         ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d.py
 now=$(date "+%s")
 time13=$((now-start))
-echo "#13 image-augementation-3d time used:$time13 seconds"
+echo "#13 image-augmentation-3d time used:$time13 seconds"
 
 else
 echo "#1 start app test for anomaly-detection-nyc-taxi"
@@ -932,17 +926,11 @@ echo "#12 start app test for image_classification_inference"
 start=$(date "+%s")
  ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/tfnet/image_classification_inference
  sed "s%/path/to/yourdownload%${ANALYTICS_ZOO_HOME}/apps/tfnet%g;s%file:///path/toyourdownload/dogs-vs-cats/train%${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain%g;s%test.jpg%${ANALYTICS_ZOO_HOME}/apps/tfnet/test.jpg%g;s%imagenet_class_index.json%${ANALYTICS_ZOO_HOME}/apps/tfnet/imagenet_class_index.json%g" ${ANALYTICS_ZOO_HOME}/apps/tfnet/image_classification_inference.py > ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
- FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/models/*"
-if [ -f "$FILENAME" ]
-then
-   echo "$FILENAME already exists."
-else
-   echo "Downloading model"
-   
-   git clone https://github.com/tensorflow/models/ ${ANALYTICS_ZOO_HOME}/apps/tfnet/models
-   
-   echo "Finished downloading model"
-fi
+ ModelPath="${ANALYTICS_ZOO_HOME}/apps/tfnet/models/"
+ rm -rf "$ModelPath"
+ echo "Downloading model"
+ git clone https://github.com/tensorflow/models/ ${ANALYTICS_ZOO_HOME}/apps/tfnet/models
+ echo "Finished downloading model"
  FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint/inception_v1.ckpt"
 if [ -f "$FILENAME" ]
 then
@@ -987,7 +975,7 @@ time12=$((now-start))
 rm ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
 echo "#12 image_classification_inference time used:$time12 seconds"
 
-echo "#13 start app test for image-augementation-3d"
+echo "#13 start app test for image-augmentation-3d"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d
@@ -1007,7 +995,7 @@ ${SPARK_HOME}/bin/spark-submit \
         ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augementation-3d.py
 now=$(date "+%s")
 time13=$((now-start))
-echo "#13 image-augementation-3d time used:$time13 seconds"
+echo "#13 image-augmentation-3d time used:$time13 seconds"
 fi
 
 echo "#1 anomaly-detection-nyc-taxi time used:$time1 seconds"
@@ -1022,4 +1010,4 @@ echo "#9 image-augmentation time used:$time9 seconds"
 echo "#10 dogs-vs-cats time used:$time10 seconds"
 echo "#11 sentiment-analysis time used:$time11 seconds"
 echo "#12 image_classification_inference time used:$time12 seconds"
-echo "#13 image-augementation-3d time used:$time13 seconds"
+echo "#13 image-augmentation-3d time used:$time13 seconds"
