@@ -125,7 +125,7 @@ object Predictor {
       partitionNum = Some(partitionNum),
       featurePaddingParam = featurePaddingParam), shareBuffer)
     val result = rdd.mapPartitions(partition => {
-      val localModel = modelBroad.value(partitionId = TaskContext.getPartitionId())
+      val localModel = modelBroad.value()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
 
       partition.grouped(localBatchPerPartition).flatMap(imageFeatures => {
@@ -154,7 +154,7 @@ object Predictor {
       partitionNum = Some(partitionNum),
       featurePaddingParam = featurePaddingParam))
     dataSet.mapPartitions { partition =>
-      val localModel = modelBroad.value(partitionId = TaskContext.getPartitionId())
+      val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
       miniBatch.flatMap(batch => {
