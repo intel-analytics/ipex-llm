@@ -137,56 +137,36 @@ Here we use Analytics Zoo [Object Detection Python example](https://github.com/i
 
 * Yarn cluster mode
 ```
-    SPARK_HOME=the root directory of Spark
-    ANALYTICS_ZOO_ROOT=the root directory of the Analytics Zoo project
-    ANALYTICS_ZOO_HOME=$ANALYTICS_ZOO_ROOT/dist
-    ANALYTICS_ZOO_PY_ZIP=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-VERSION-python-api.zip
-    ANALYTICS_ZOO_JAR=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-VERSION-jar-with-dependencies.jar
-    ANALYTICS_ZOO_CONF=${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf
-    PYTHONPATH=${ANALYTICS_ZOO_PY_ZIP}:$PYTHONPATH
-    VENV_HOME=the parent directory of venv.zip and venv folder
+    export SPARK_HOME=the root directory of Spark
+    export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
+    export VENV_HOME=the parent directory of venv.zip and venv folder
     
-    PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python \
+    PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=venv.zip/venv/bin/python \
     --master yarn-cluster \
     --executor-memory 10g \
     --driver-memory 10g \
     --executor-cores 8 \
     --num-executors 2 \
-    --properties-file ${ANALYTICS_ZOO_CONF} \
-    --jars ${ANALYTICS_ZOO_JAR} \
-    --py-files ${ANALYTICS_ZOO_PY_ZIP} \
     --archives ${VENV_HOME}/venv.zip \
-    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/objectdetection/predict.py model_path image_path output_path
+    predict.py model_path image_path output_path
 ```
 
 * Yarn client mode
 ```
-    SPARK_HOME=the root directory of Spark
-    ANALYTICS_ZOO_ROOT=the root directory of the Analytics Zoo project
-    ANALYTICS_ZOO_HOME=$ANALYTICS_ZOO_ROOT/dist
-    ANALYTICS_ZOO_PY_ZIP=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-VERSION-python-api.zip
-    ANALYTICS_ZOO_JAR=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-VERSION-jar-with-dependencies.jar
-    ANALYTICS_ZOO_CONF=${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf
-    PYTHONPATH=${ANALYTICS_ZOO_PY_ZIP}:$PYTHONPATH
-    VENV_HOME=the parent directory of venv.zip and venv folder
+    export SPARK_HOME=the root directory of Spark
+    export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
+    export VENV_HOME=the parent directory of venv.zip and venv folder
     
-    PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
+    PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
     --master yarn \
     --deploy-mode client \
     --executor-memory 10g \
     --driver-memory 10g \
     --executor-cores 16 \
     --num-executors 2 \
-    --properties-file ${ANALYTICS_ZOO_CONF} \
-    --jars ${ANALYTICS_ZOO_JAR} \
-    --py-files ${ANALYTICS_ZOO_PY_ZIP} \
     --archives ${VENV_HOME}/venv.zip \
-    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/objectdetection/predict.py model_path image_path output_path
+    predict.py model_path image_path output_path
 ```
 
 ---
