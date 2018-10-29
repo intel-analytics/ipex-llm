@@ -71,17 +71,17 @@ object Predictor {
   private[optim] def splitTensor[T: ClassTag](output: Tensor[T],
                                   shareBuffer: Boolean, batchSize: Int)
     (implicit ev: TensorNumeric[T]): Array[Activity] = {
-    val result = if (shareBuffer) output else output.clone()
+    val result = if (shareBuffer) output else output.clone
 
     val out = if (batchSize == 1) {
-      Array(result)
+      Array(result.squeeze)
     } else {
       val size = result.size(1)
       require(batchSize == size,
         s"The batchSize is required to be $size, while actual is $batchSize")
       result.split(1)
     }
-    
+
     out.asInstanceOf[Array[Activity]]
   }
 
@@ -179,7 +179,7 @@ object Predictor {
       batchPerPartition, featurePaddingParam).collect()
     result.mapPartitions { partition =>
       partition.map(output => {
-        val _output = output.toTensor[T].squeeze
+        val _output = output.toTensor[T]
         require(_output.dim() == 1, s"Predictor.predictClass:" +
           s"Only support one sample has one label, but got ${_output.dim()} label")
         ev.toType[Int](_output.max(1)._2.valueAt(1))
