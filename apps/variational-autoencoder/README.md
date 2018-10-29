@@ -16,20 +16,33 @@ in Analytics Zoo. These notebooks are developed on Apache Spark 2.1
    This notebook is similar to the previous one but use a more sophisticated loss function to generate
    more vivid images at the cost of more training time.
 
-To run this example, you should 
-* Download Analytics Zoo and build it.
-* Run `export SPARK_HOME=the root directory of Spark`.
-* Run `export ANALYTICS_ZOO_HOME=the dist directory under the Analytics Zoo project`.
-* Run the following bash command to start the jupyter notebook. Change parameter settings as you need, ie `MASTER = local[physcial_core_number]`.
-```Bash
-MASTER=local[*]
-${ANALYTICS_ZOO_HOME}/bin/jupyter-with-zoo.sh \
-    --master ${MASTER} \
-    --driver-cores 4  \
-    --driver-memory 22g  \
-    --total-executor-cores 4  \
-    --executor-cores 4  \
-    --executor-memory 22g
-```
+## Install or download Analytics Zoo  
+* Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
 
+## Run after pip install
+You can easily use the following commands to run this example:
+
+    export SPARK_DRIVER_MEMORY=22g
+    jupyter notebook --notebook-dir=./ --ip=* --no-browser
+
+See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
+
+## Run with prebuilt package
+Run the following command for Spark local mode (`MASTER=local[*]`) or cluster mode:
+
+    export SPARK_HOME=the root directory of Spark
+    export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
+
+Run the following bash command to start the jupyter notebook. Change parameter settings as you need, e.g. `MASTER = local[physcial_core_number]`.
+
+	MASTER=local[*]
+	${ANALYTICS_ZOO_HOME}/bin/jupyter-with-zoo.sh \
+		--master ${MASTER} \
+		--driver-cores 4  \
+		--driver-memory 22g  \
+		--total-executor-cores 4  \
+		--executor-cores 4  \
+		--executor-memory 22g
+
+See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
 
