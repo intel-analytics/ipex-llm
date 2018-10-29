@@ -71,11 +71,15 @@ object Predictor {
   private[optim] def splitTensor[T: ClassTag](output: Tensor[T],
                                   shareBuffer: Boolean, batchSize: Int)
     (implicit ev: TensorNumeric[T]): Array[Activity] = {
-    val result = if (shareBuffer) output else output.clone()
-    val size = result.size(1)
-    require(batchSize == size,
-      s"The batchSize is required to be $size, while actual is $batchSize")
-    val out = result.split(1)
+    val result = if (shareBuffer) output else output.clone
+    val out = if (batchSize == 1) {
+      Array(result.squeeze)
+    } else {
+      val size = result.size(1)
+      require(batchSize == size,
+        s"The batchSize is required to be $size, while actual is $batchSize")
+      result.split(1)
+    }
     out.asInstanceOf[Array[Activity]]
   }
 
