@@ -69,7 +69,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val prob = imageFeatures.map(x => x[Tensor[Float]](ImageFeature.predict))
     val data = imageFeatures.map(_[Sample[Float]](ImageFeature.sample))
     prob(0) should be(model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 224, 224)))
-      .toTensor[Float].split(1)(0))
+      .toTensor[Float].squeeze)
   }
 
   "predictImage with more data" should "work properly" in {
@@ -94,7 +94,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val prob = imageFeatures.map(x => x[Tensor[Float]](ImageFeature.predict))
     val data = imageFeatures.map(_[Sample[Float]](ImageFeature.sample))
     prob(0) should be(model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 24, 24)))
-      .toTensor[Float].split(1)(0))
+      .toTensor[Float].squeeze)
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
       if (imageFeatures(x - 1).predict() == null) println(x, imageFeatures(x - 1).predict())
