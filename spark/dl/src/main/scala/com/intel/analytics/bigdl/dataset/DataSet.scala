@@ -27,9 +27,10 @@ import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, 
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable
 import scala.reflect._
 
 /**
@@ -104,6 +105,11 @@ trait AbstractDataSet[D, DataSequence] {
    * @return
    */
   def toDistributed(): DistributedDataSet[D] = this.asInstanceOf[DistributedDataSet[D]]
+
+//  def getSplits[R <: AbstractDataSet[D, DataSequence]](): Iterator[R] =
+//    Iterator.single(this.asInstanceOf[R])
+  def getSplits(): Seq[AbstractDataSet[D, DataSequence]] =
+   Seq(this)
 }
 
 /**
@@ -230,6 +236,8 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
    * Check if rdd is cached.
    */
   var isCached = false
+
+  override def getSplits(): Seq[DistributedDataSet[T]] = Seq(this)
 }
 
 /**
@@ -314,6 +322,51 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
     indexes.unpersist()
     isCached = false
   }
+
+//  override def getSplits[R <: AbstractDataSet[T, RDD[T]]](): Iterator[R] = {
+//    Iterator.single(this.asInstanceOf[R])
+//  }
+  override def getSplits(): Seq[CachedDistriDataSet[T]] = {
+    val originData = this.buffer
+    val nodeNum = Engine.nodeNumber()
+    val partitions = originData.partitions.length
+    // todo Assuming partition number is n* nodeNum here.
+    val splits = partitions / nodeNum + (if (partitions % nodeNum == 0) 0 else 1 )
+
+    val rddBatches = mutable.ArrayBuffer[CachedDistriDataSet[T]]()
+    for(i <- 0 until splits) {
+      val data = originData
+        .mapPartitionsWithIndex((index, iter) => {
+            val upperLimit = (i + 1) * nodeNum
+            val downLimit = upperLimit - nodeNum
+            if (index < upperLimit && index > downLimit) iter
+            else Iterator.empty
+          })
+      rddBatches.append(new CachedDistriDataSet(data, isInOrder, groupSize))
+    }
+
+    rddBatches
+//    new Iterator[CachedDistriDataSet[T]] {
+//      private val _offset = new AtomicInteger(0)
+//
+//      override def hasNext: Boolean = {
+//        if (_offset.intValue() < splits) true
+//        else false
+//      }
+//
+//      override def next(): CachedDistriDataSet[T] = {
+//        val data = originData
+//          .mapPartitionsWithIndex(
+//            (index, iter) => {
+//          val upperLimit = (_offset.get() +1) * nodeNum
+//          val downLimit = upperLimit - nodeNum
+//          if (index < upperLimit && index > downLimit) iter
+//          else Iterator.empty
+//        })
+//        new CachedDistriDataSet(data, isInOrder, groupSize)
+//      }
+//    }
+  }
 }
 
 /**
@@ -321,6 +374,28 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
  */
 object DataSet {
   val logger = Logger.getLogger(getClass)
+
+  def main(args: Array[String]): Unit = {
+    val rdd = new SparkContext(Engine.createSparkConf().setAppName("test").setMaster("local[*]"))
+      .parallelize(Seq(Array(1), Array(2), Array(3), Array(4)))
+    Engine.init
+    val a = new CachedDistriDataSet[Int](rdd)
+    a.getSplits()
+      .foreach(r => println(s"xxxx:$r"))
+  }
+
+  /**
+    * Indicate whether to coalesce the original input data.
+    */
+  var declineRepartitionedRdd = true
+
+  /**
+    * Decide how to deal with user defined repartitioned RDDs.
+    * @return
+    */
+  def declineRepartition(accept: Boolean): Unit = {
+    declineRepartitionedRdd = accept
+  }
 
   /**
    * Wrap an array as a DataSet.
@@ -357,8 +432,9 @@ object DataSet {
    */
   def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
+    val transformedData = if (declineRepartitionedRdd) data.coalesce(nodeNumber, true) else data
     new CachedDistriDataSet[T](
-      data.coalesce(nodeNumber, true)
+      transformedData
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
@@ -384,8 +460,9 @@ object DataSet {
   private[bigdl] def sortRDD[T: ClassTag](data: RDD[T], isInOrder: Boolean = false,
                                           groupSize: Int = 1): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
+    val transformedData = if (declineRepartitionedRdd) data.coalesce(nodeNumber, true) else data
     new CachedDistriDataSet[T](
-      data.coalesce(nodeNumber, true)
+      transformedData
         .mapPartitions(iter => {
           Iterator.single(sortData(iter.toArray, isInOrder))
         }).setName("cached dataset")
@@ -557,7 +634,9 @@ object DataSet {
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text], num).map(image => {
         ByteRecord(image._2.copyBytes(), readLabel(image._1).toFloat)
       }).filter(_.label <= classNum)
-      rawData.coalesce(num, true)
+      val transformedData = if (declineRepartitionedRdd) rawData.coalesce(num, true) else rawData
+//      rawData.coalesce(num, true)
+      transformedData
     }
 
     /**
@@ -597,6 +676,7 @@ object DataSet {
       directoryStream.asScala.map(_.toAbsolutePath.toString)
         .filter(_.endsWith(".seq")).toArray.sortWith(_ < _).map(p => LocalSeqFilePath(Paths.get(p)))
     }
+
   }
 
 }
