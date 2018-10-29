@@ -136,12 +136,12 @@ you can run Python programs using Analytics Zoo using the following command.
 Here we use Analytics Zoo [Object Detection Python example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/objectdetection) for illustration.
 
 * Yarn cluster mode
-```
-    export SPARK_HOME=the root directory of Spark
-    export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
-    export VENV_HOME=the parent directory of venv.zip and venv folder
-    
-    PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+```bash
+export SPARK_HOME=the root directory of Spark
+export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
+export VENV_HOME=the parent directory of venv.zip and venv folder
+
+PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=venv.zip/venv/bin/python \
     --master yarn-cluster \
     --executor-memory 10g \
@@ -153,12 +153,12 @@ Here we use Analytics Zoo [Object Detection Python example](https://github.com/i
 ```
 
 * Yarn client mode
-```
-    export SPARK_HOME=the root directory of Spark
-    export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
-    export VENV_HOME=the parent directory of venv.zip and venv folder
-    
-    PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+```bash
+export SPARK_HOME=the root directory of Spark
+export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
+export VENV_HOME=the parent directory of venv.zip and venv folder
+
+PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
     --master yarn \
     --deploy-mode client \
     --executor-memory 10g \

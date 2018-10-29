@@ -76,7 +76,9 @@ apt-get install -y zip
 easy_install pip
 ```
 * Create the virtualenv package for dependencies.
-    * Under $ANALYTICS_ZOO_HOME (the dist directory under the Analytics Zoo project), you can find ```bin/python_package.sh```. Run this script to create the dependency virtual environment according to the dependencies listed in `requirements.txt`. You can add your own dependencies into this file if you wish. The current requirements only contain those needed for running Analytics Zoo Python examples and models.
+    * ```export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package```
+    
+    * Run ```${ANALYTICS_ZOO_HOME}/bin/python_package.sh``` to create the dependency virtual environment according to the dependencies listed in `requirements.txt`. You can add your own dependencies into this file if you wish. The current requirements only contain those needed for running Analytics Zoo Python examples and models.
 
     * After running this script, there will be `venv.zip` and `venv` directory generated in current directory. You can use them to submit your Python jobs. Please refer to [here](run.md#run-with-virtual-environment-on-yarn) for the commands to submit an Analytics Zoo Python job with the created virtual environment in Yarn cluster.
 
