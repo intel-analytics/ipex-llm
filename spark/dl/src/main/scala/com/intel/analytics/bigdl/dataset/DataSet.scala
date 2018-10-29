@@ -327,45 +327,28 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
 //    Iterator.single(this.asInstanceOf[R])
 //  }
   override def getSplits(): Seq[CachedDistriDataSet[T]] = {
-    val originData = this.buffer
-    val nodeNum = Engine.nodeNumber()
-    val partitions = originData.partitions.length
-    // todo Assuming partition number is n* nodeNum here.
-    val splits = partitions / nodeNum + (if (partitions % nodeNum == 0) 0 else 1 )
+    if (DataSet.declineRepartitionedRdd) {
+      Seq(this)
+    } else {
+      val originData = this.buffer
+      val nodeNum = Engine.nodeNumber()
+      val partitions = originData.partitions.length
+      // todo Assuming partition number is n* nodeNum here.
+      val splits = partitions / nodeNum + (if (partitions % nodeNum == 0) 0 else 1)
 
-    val rddBatches = mutable.ArrayBuffer[CachedDistriDataSet[T]]()
-    for(i <- 0 until splits) {
-      val data = originData
-        .mapPartitionsWithIndex((index, iter) => {
+      val rddBatches = mutable.ArrayBuffer[CachedDistriDataSet[T]]()
+      for (i <- 0 until splits) {
+        val data = originData
+          .mapPartitionsWithIndex((index, iter) => {
             val upperLimit = (i + 1) * nodeNum
             val downLimit = upperLimit - nodeNum
             if (index < upperLimit && index > downLimit) iter
             else Iterator.empty
           })
-      rddBatches.append(new CachedDistriDataSet(data, isInOrder, groupSize))
+        rddBatches.append(new CachedDistriDataSet(data, isInOrder, groupSize))
+      }
+      rddBatches
     }
-
-    rddBatches
-//    new Iterator[CachedDistriDataSet[T]] {
-//      private val _offset = new AtomicInteger(0)
-//
-//      override def hasNext: Boolean = {
-//        if (_offset.intValue() < splits) true
-//        else false
-//      }
-//
-//      override def next(): CachedDistriDataSet[T] = {
-//        val data = originData
-//          .mapPartitionsWithIndex(
-//            (index, iter) => {
-//          val upperLimit = (_offset.get() +1) * nodeNum
-//          val downLimit = upperLimit - nodeNum
-//          if (index < upperLimit && index > downLimit) iter
-//          else Iterator.empty
-//        })
-//        new CachedDistriDataSet(data, isInOrder, groupSize)
-//      }
-//    }
   }
 }
 

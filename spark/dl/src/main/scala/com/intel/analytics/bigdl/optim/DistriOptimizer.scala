@@ -799,8 +799,7 @@ class DistriOptimizer[T: ClassTag] (
           s"have corresponding OptimMethod")
       }
 
-      // do not cache all data into RAM
-      // prepareInput()
+      prepareInput()
 
       val modelsAndBroadcast = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
         nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
