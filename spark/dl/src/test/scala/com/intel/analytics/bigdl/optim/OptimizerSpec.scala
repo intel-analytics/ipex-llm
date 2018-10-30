@@ -189,6 +189,9 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     trueDummyOptimizer.setEndWhen(Trigger.or(trueDummyTrigger, falseDummyTrigger))
     trueDummyOptimizer.optimize()
 
+    trueDummyOptimizer.setEndWhen(Trigger.or(trueDummyTrigger, trueDummyTrigger))
+    trueDummyOptimizer.optimize()
+
     trueDummyOptimizer.setEndWhen(Trigger.or(falseDummyTrigger, trueDummyTrigger))
     trueDummyOptimizer.optimize()
 
