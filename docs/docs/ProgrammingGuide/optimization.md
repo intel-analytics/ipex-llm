@@ -130,6 +130,16 @@ optimizer.setEndWhen(
 optimizer.setEndWhen(
    Trigger.or(Trigger.maxScore(0.99f),Trigger.maxEpoch(10))
 )
+
+// Inner and/or 
+optimizer.setEndWhen(
+   Trigger.or(
+        Trigger.and( 
+            Trigger.maxScore(0.99f), Trigger.maxEpoch(10) 
+        ),
+        Trigger.maxEpoch(50)
+   )
+)
 ```
  
 
