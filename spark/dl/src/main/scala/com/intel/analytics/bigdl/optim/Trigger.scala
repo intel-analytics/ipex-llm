@@ -129,7 +129,7 @@ object Trigger {
    * @param first first trigger
    * @param others others triggers
    */
-  def and(first : Trigger, others : Trigger*) : Trigger = {
+  def and(first : Trigger, others : Trigger*): Trigger = {
     new Trigger() {
       override def apply(state: Table): Boolean = {
         first.apply(state) && others.forall(_.apply(state))
@@ -142,7 +142,7 @@ object Trigger {
    * @param first first trigger
    * @param others others triggers
    */
-  def or(first : Trigger, others : Trigger*) : Trigger = {
+  def or(first : Trigger, others : Trigger*): Trigger = {
     new Trigger() {
       override def apply(state: Table): Boolean = {
         first.apply(state) || others.exists(_.apply(state))
