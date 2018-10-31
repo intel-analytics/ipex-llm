@@ -119,6 +119,19 @@ data you want to process, a.k.a epoch.
 // The default endWhen in scala is 100 iterations
 optimizer.setEndWhen(Trigger.maxEpoch(10))  // Change to 10 epoch
 ```
+You also can use multiple triggers to decide when to end the training:
+```scala
+// If all of the inner triggers are triggered (logical AND)
+optimizer.setEndWhen(
+   Trigger.and(Trigger.maxScore(0.99f),Trigger.maxEpoch(10))
+)
+
+// If any of the inner triggers are triggered (logical OR)
+optimizer.setEndWhen(
+   Trigger.or(Trigger.maxScore(0.99f),Trigger.maxEpoch(10))
+)
+```
+ 
 
 **python**
 ```
