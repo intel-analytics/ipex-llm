@@ -186,7 +186,12 @@ object NetUtils {
         s"${metaPath.path} does not exist")
     }
 
-    val jsonStr = Source.fromFile(metaPath.jfile).getLines().mkString
+    val src = Source.fromFile(metaPath.jfile)
+    val jsonStr = try {
+      src.getLines().mkString
+    } finally {
+      src.close()
+    }
 
     val meta = parse(jsonStr).camelizeKeys.extract[Meta]
     (modelPath.toString(), meta)
