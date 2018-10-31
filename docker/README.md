@@ -51,10 +51,10 @@
     sudo docker build \
         --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
         --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
-        --build-arg ANALYTICS_ZOO_VERSION=0.2.0 \
+        --build-arg ANALYTICS_ZOO_VERSION=0.3.0 \
         --build-arg BIGDL_VERSION=0.6.0 \
-        --build-arg SPARK_VERSION=2.2.0 \
-        --rm -t intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0 .
+        --build-arg SPARK_VERSION=2.3.1 \
+        --rm -t intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1 .
 
 ## How to use the image.
 
@@ -73,12 +73,12 @@
     sudo docker run -it --rm -p 12345:12345 \
         -e NotebookPort=12345 \
         -e NotebookToken="your-token" \
-        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+        intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
 
     sudo docker run -it --rm --net=host \
         -e NotebookPort=12345 \
         -e NotebookToken="your-token" \
-        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+        intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
 
 ### If you need http and https proxy in your environment:
 
@@ -101,14 +101,14 @@
         -e NotebookToken="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
-        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+        intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
 
     sudo docker run -it --rm --net=host \
         -e NotebookPort=12345 \
         -e NotebookToken="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
-        intelanalytics/analytics-zoo:0.2.0-bigdl_0.6.0-spark_2.2.0
+        intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
 
 ### You can also start the container first
 
