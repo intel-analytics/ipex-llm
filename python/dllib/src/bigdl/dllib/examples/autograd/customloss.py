@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from bigdl.optim.optimizer import SGD
 from zoo.common.nncontext import *
 from zoo.pipeline.api.autograd import *
 from zoo.pipeline.api.keras.layers import *
