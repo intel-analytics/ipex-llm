@@ -13,13 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from pyspark import RDD
 
 import zoo.pipeline.api.autograd as autograd
+from bigdl.util.common import callBigDlFunc, to_list
+from bigdl.nn.layer import Layer
 from zoo.feature.image import ImageSet
 from zoo.feature.text import TextSet
 from zoo.pipeline.api.keras.base import ZooKerasLayer
-from zoo.pipeline.api.keras.utils import *
-from bigdl.nn.layer import Layer
+from zoo.pipeline.api.keras.utils import to_bigdl_optim_method, to_bigdl_criterion
+from zoo.pipeline.api.keras.utils import to_bigdl_metrics
+from zoo.common import JTensor, to_sample_rdd
+
+import sys
+import six
+import numpy as np
 
 if sys.version >= '3':
     long = int
@@ -205,7 +213,7 @@ class KerasNet(ZooKerasLayer):
 
     @staticmethod
     def convert_output(output):
-        if type(output) is JTensor:
+        if hasattr(output, "to_ndarray"):
             return output.to_ndarray()
         elif len(output) == 1:
             return KerasNet.convert_output(output[0])
@@ -280,14 +288,14 @@ class KerasNet(ZooKerasLayer):
 
     def get_layer(self, name):
         layer = [l for l in self.layers if l.name() == name]
-        if (len(layer) == 0):
+        if len(layer) == 0:
             raise Exception("Could not find a layer named: %s" + name)
-        elif (len(layer) > 1):
+        elif len(layer) > 1:
             raise Exception("There are multiple layers named: %s" + name)
         else:
             return layer[0]
 
-    def summary(self, line_length=120, positions=[.33, .55, .67, 1.]):
+    def summary(self, line_length=120, positions=(.33, .55, .67, 1.)):
         """
         Print out the summary information of an Analytics Zoo Keras Model.
 
@@ -345,7 +353,7 @@ class Input(autograd.Variable):
     >>> input = Input(name="input1", shape=(3, 5))
     creating: createZooKerasInput
     """
-    def __init__(self, shape=None, name=None, bigdl_type="float"):
+    def __init__(self, shape=None, name=None):
         super(Input, self).__init__(input_shape=list(shape) if shape else None,
                                     node=None, jvalue=None, name=name)
 
