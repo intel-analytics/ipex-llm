@@ -151,6 +151,54 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dummyOptimizer.optimize()
   }
 
+  it should "support multiply triggers to end training" in {
+
+    def createDummyBooleanOptimiser(endShouldBe : Boolean) : Optimizer[Float, Float] =
+      new Optimizer[Float, Float](model, null, null) {
+        override def optimize() : Module[Float] = {
+          val state = T()
+          endWhen(state) should be(endShouldBe)
+          model
+        }
+    }
+
+    def createDummyTrigger(triggerBoolRes : Boolean) : Trigger = new Trigger {
+      override def apply(state: Table): Boolean = triggerBoolRes
+    }
+
+    val trueDummyOptimizer = createDummyBooleanOptimiser(true)
+    val falseDummyOptimizer = createDummyBooleanOptimiser(false)
+
+    val trueDummyTrigger = createDummyTrigger(true)
+    val falseDummyTrigger = createDummyTrigger(false)
+
+    // AND
+    trueDummyOptimizer.setEndWhen(Trigger.and(trueDummyTrigger, trueDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.and(trueDummyTrigger, falseDummyTrigger))
+    falseDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.and(falseDummyTrigger, trueDummyTrigger))
+    falseDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.and(falseDummyTrigger, falseDummyTrigger))
+    falseDummyOptimizer.optimize()
+
+    // OR
+    trueDummyOptimizer.setEndWhen(Trigger.or(trueDummyTrigger, falseDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    trueDummyOptimizer.setEndWhen(Trigger.or(trueDummyTrigger, trueDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    trueDummyOptimizer.setEndWhen(Trigger.or(falseDummyTrigger, trueDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.or(falseDummyTrigger, falseDummyTrigger))
+    falseDummyOptimizer.optimize()
+  }
+
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
