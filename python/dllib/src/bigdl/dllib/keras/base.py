@@ -15,12 +15,7 @@
 #
 
 from bigdl.nn.layer import Layer
-from bigdl.util.common import JavaValue, callBigDlFunc, to_list
-
-import numpy as np
-import sys
-
-from zoo.common import JTensor
+from bigdl.util.common import *
 
 if sys.version >= '3':
     long = int
@@ -117,26 +112,6 @@ class ZooKerasLayer(ZooKerasCreator, ZooCallable, Layer, InferShape):
 
         tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in to_list(weights)]
         callBigDlFunc(self.bigdl_type, "zooSetWeights", self.value, tensors)
-
-    @staticmethod
-    def check_input(input):
-        """
-        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
-        :return: (list of JTensor, isTable)
-        """
-        def to_jtensor(i):
-            if isinstance(i, np.ndarray):
-                return JTensor.from_ndarray(i)
-            elif isinstance(i, JTensor):
-                return i
-            else:
-                raise Exception("Error unknown input type %s" % type(i))
-        if type(input) is list:
-            if len(input) == 0:
-                raise Exception('Error when checking: empty input')
-            return list(map(lambda i: to_jtensor(i), input)), True
-        else:
-            return [to_jtensor(input)], False
 
     @classmethod
     def of(cls, jvalue, bigdl_type="float"):
