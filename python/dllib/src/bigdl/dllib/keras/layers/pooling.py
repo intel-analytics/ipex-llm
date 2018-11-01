@@ -44,7 +44,7 @@ class MaxPooling1D(ZooKerasLayer):
     creating: createZooKerasMaxPooling1D
     """
     def __init__(self, pool_length=2, stride=None, border_mode="valid",
-                 input_shape=None, **kwargs):
+                 input_shape=None, pad=0, **kwargs):
         if not stride:
             stride = -1
         super(MaxPooling1D, self).__init__(None,
@@ -52,6 +52,7 @@ class MaxPooling1D(ZooKerasLayer):
                                            stride,
                                            border_mode,
                                            list(input_shape) if input_shape else None,
+                                           pad,
                                            **kwargs)
 
 
