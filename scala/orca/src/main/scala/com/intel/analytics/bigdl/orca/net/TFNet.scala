@@ -21,8 +21,6 @@ import java.nio._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.LayerWrapperByForward
-import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model}
 import com.intel.analytics.zoo.pipeline.api.net.TFNet.TFGraphHolder
 import org.tensorflow.framework.GraphDef
 import org.tensorflow.types.UInt8
@@ -30,6 +28,7 @@ import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
 import org.json4s._
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
@@ -48,12 +47,7 @@ import scala.collection.mutable
 class TFNet(graphDef: TFGraphHolder,
                     val graphMeta: Meta,
                     config: Array[Int])
-  extends KerasNet[Float] {
-
-  override def finalize(): Unit = {
-    this.graph.close()
-    this.sess.close()
-  }
+  extends AbstractModule[Activity, Activity, Float] {
 
   // todo if an exception is thrown during forward or backward, there will be memory leak
   // maybe create a resource manager to handle tensor creation and destruction
@@ -289,11 +283,8 @@ class TFNet(graphDef: TFGraphHolder,
   private def emptyTFTensorArray(arr: Array[TTensor[_]]): Unit = {
     var i = 0
     while (i < arr.length) {
-      if (arr(i) != null) {
-        arr(i).close()
-        arr(i) = null
-      }
-
+      arr(i).close()
+      arr(i) = null
       i += 1
     }
   }
@@ -552,28 +543,6 @@ class TFNet(graphDef: TFGraphHolder,
   private def addGrad(name: String) = {
     val parts = name.split(":")
     parts(0) + "_grad:" + parts(1)
-  }
-
-  override def toModel(): Model[Float] = {
-    throw new Exception("Not supported")
-  }
-
-  override def summary(lineLength: Int, positions: Array[Double]): Unit = {
-    throw new Exception("Not supported")
-  }
-
-  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, Float] = {
-    this
-  }
-
-  override def computeOutputShape(calcInputShape: Shape): Shape = {
-    LayerWrapperByForward.computeOutputShape[Float](doBuild(calcInputShape), calcInputShape)
-  }
-
-
-  def close(): Unit = {
-    this.sess.close()
-    this.graph.close()
   }
 }
 
