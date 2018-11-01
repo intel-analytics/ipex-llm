@@ -544,8 +544,11 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       poolLength: Int = 2,
       stride: Int = -1,
       borderMode: String = "valid",
-      inputShape: JList[Int] = null): MaxPooling1D[T] = {
-    MaxPooling1D(poolLength, stride, borderMode, toScalaShape(inputShape))
+      inputShape: JList[Int] = null,
+      pad: Int = 0): MaxPooling1D[T] = {
+    MaxPooling1D(poolLength, stride, borderMode, toScalaShape(inputShape),
+      pad)
+
   }
 
   def createZooKerasMaxPooling3D(

@@ -55,14 +55,14 @@ class AveragePooling2D[T: ClassTag](
   extends Pooling2D[T](poolSize, strides, borderMode, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
-    val pads = KerasUtils.getPadsFromBorderMode(borderMode)
+    val paddings = KerasUtils.getPadsFromBorderMode(borderMode, pads)
     val layer = SpatialAveragePooling(
       kW = poolSize(1),
       kH = poolSize(0),
       dW = strideValues(1),
       dH = strideValues(0),
-      padW = pads._2,
-      padH = pads._1,
+      padW = paddings._2,
+      padH = paddings._1,
       countIncludePad = false,
       format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Activity, Activity, T]]

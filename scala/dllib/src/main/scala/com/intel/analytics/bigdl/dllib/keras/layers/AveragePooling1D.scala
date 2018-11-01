@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.nn.keras.Pooling1D
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -51,7 +51,7 @@ class AveragePooling1D[T: ClassTag](
   extends Pooling1D[T](
     poolLength, stride, borderMode, inputShape) with Net {
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
     val input = inputShape.toSingle().toArray
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val model = TSequential[T]()
@@ -67,7 +67,7 @@ class AveragePooling1D[T: ClassTag](
       format = DataFormat.NHWC)
     model.add(layer)
     model.add(com.intel.analytics.bigdl.nn.Squeeze(3))
-    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
