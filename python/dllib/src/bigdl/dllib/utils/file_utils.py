@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.util.common import Sample as BSample, JTensor as BJTensor, get_spark_context
+from bigdl.util.common import Sample as BSample, JTensor as BJTensor
 import numpy as np
 
 
@@ -36,22 +36,6 @@ def to_list_of_numpy(elements):
             raise ValueError("Wrong type: %s" % type(element))
 
     return results
-
-
-def to_sample_rdd(x, y, sc=None, num_slices=None):
-    """
-    Conver x and y into RDD[Sample]
-    :param sc: SparkContext
-    :param x: ndarray and the first dimension should be batch
-    :param y: ndarray and the first dimension should be batch
-    :param numSlices:
-    :return:
-    """
-    if sc is None:
-        sc = get_spark_context()
-    x_rdd = sc.parallelize(x, num_slices)
-    y_rdd = sc.parallelize(y, num_slices)
-    return x_rdd.zip(y_rdd).map(lambda item: Sample.from_ndarray(item[0], item[1]))
 
 
 class JTensor(BJTensor):
