@@ -32,14 +32,14 @@ import scala.reflect.ClassTag
 class DnnGraph(
   private val _inputs : Seq[ModuleNode[Float]],
   private val _outputs : Seq[ModuleNode[Float]],
+  private val _variables: Option[(Array[Tensor[Float]], Array[Tensor[Float]])] = None,
   private val enableExcludeChecking: Boolean = true)
-  extends StaticGraph[Float](_inputs, _outputs, None, enableExcludeChecking) {
+  extends StaticGraph[Float](_inputs, _outputs, _variables, enableExcludeChecking) {
   private var forwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var inputCache: Array[Activity] = _
   private var backId2ForwardId: Array[Int] = _
 
-  @transient private var compiled: Boolean = false
   @transient protected lazy val reorderManager = new ReorderManager()
 
   if (enableExcludeChecking) {
@@ -49,9 +49,6 @@ class DnnGraph(
   buildBackwardGraph()
 
   override def updateOutput(input: Activity): Activity = {
-    // compile dnn graph according to model status
-    if (!compiled) compile()
-
     var i = 0
     while(i < forwardExecution.length) {
       val node = forwardExecution(i)
@@ -144,7 +141,7 @@ class DnnGraph(
       .asInstanceOf[AbstractModule[Activity, Activity, Float]]
   }
 
-  // if node has no previous node, then it will just use input as real input
+  // if node has no previous node, then it will just use graph input as real module input
   private def findDnnInput(node: ModuleNode[Float], input: Activity): Activity = {
     if (node.element.isInstanceOf[WithoutInput]) return null
 
@@ -235,15 +232,9 @@ class DnnGraph(
     super.accActivity(activity, realOthers)
   }
 
-  private def compile() : Unit = {
-    val phase = if (this.train) {
-      Phase.TrainingPhase
-    } else {
-      Phase.InferencePhase
-    }
+  final def compile(phase: Phase) : Unit = {
     setRuntime(new MklDnnRuntime(), phase)
     initPrimitives(phase, Array[MemoryData]())
-    compiled = true
   }
 
   private def setRuntime(runtime: MklDnnRuntime, phase: Phase): Unit = {
@@ -274,14 +265,17 @@ class DnnGraph(
       val prevFormats = node.prevNodesAndEdges
         .filterNot(n => n._1.element.isInstanceOf[ControlDependency[Float]])
         .map(n => {
-          // output is tensor and fromIndex number is 1
-          if (n._1.element.asInstanceOf[MklDnnModule].outputFormats().length == 1
-            && n._2.fromIndex.getOrElse(1) == 1) {
-            n._1.element.asInstanceOf[MklDnnModule].outputFormats()
-          } else {
-            val index = n._2.fromIndex.get
-            val f = n._1.element.asInstanceOf[MklDnnModule].gradInputFormats()
-            Array(f(index))
+          val outputFormats = n._1.element.asInstanceOf[MklDnnModule].outputFormats()
+          // if outputFormats length is 1, output is a tensor
+          n._2.fromIndex match {
+            case Some(i) =>
+              if (n._1.element.output == null || (i == 1 && outputFormats.length == 1)) {
+                outputFormats
+              } else {
+                val index = n._2.fromIndex.get
+                Array(outputFormats(index))
+              }
+            case None => outputFormats
           }
         }).toArray
       prevFormats.flatMap(n => n.toSeq)
@@ -367,6 +361,7 @@ object DnnGraph {
   def apply(
     inputs : Seq[ModuleNode[Float]],
     outputs : Seq[ModuleNode[Float]],
+    variables: Option[(Array[Tensor[Float]], Array[Tensor[Float]])] = None,
     enableExcludeChecking: Boolean = true): DnnGraph =
-    new DnnGraph(inputs, outputs, enableExcludeChecking)
+    new DnnGraph(inputs, outputs, variables, enableExcludeChecking)
 }

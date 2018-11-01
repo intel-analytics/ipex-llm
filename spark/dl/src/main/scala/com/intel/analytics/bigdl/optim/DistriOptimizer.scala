@@ -31,7 +31,7 @@ import java.util.Calendar
 
 import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.MklDnnContainer
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, getModel}
 import org.apache.commons.lang.exception.ExceptionUtils
@@ -572,6 +572,7 @@ object DistriOptimizer extends AbstractOptimizer {
         val localModel = modelBroadcast.value(true)
         localModel match {
           case container: MklDnnContainer => container.compile(TrainingPhase)
+          case graph: DnnGraph => graph.compile(TrainingPhase)
           case _ =>
         }
         // differentiate partition models from each other by partition ID

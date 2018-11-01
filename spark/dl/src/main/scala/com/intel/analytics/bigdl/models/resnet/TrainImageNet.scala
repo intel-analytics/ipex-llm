@@ -90,8 +90,13 @@ object TrainImageNet {
 
             curModel
           case MklDnn =>
-            nn.mkldnn.ResNet(param.batchSize / Engine.nodeNumber(), param.classes,
-              T("depth" -> 50, "dataSet" -> ImageNet))
+            if (param.graphModel) {
+              nn.mkldnn.ResNet.graph(param.batchSize / Engine.nodeNumber(), param.classes,
+                T("depth" -> 50, "dataSet" -> ImageNet))
+            } else {
+              nn.mkldnn.ResNet(param.batchSize / Engine.nodeNumber(), param.classes,
+                T("depth" -> 50, "dataSet" -> ImageNet))
+            }
         }
       }
 

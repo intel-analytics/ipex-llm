@@ -50,10 +50,15 @@ object TrainImageNet {
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
+      } else if (param.graphModel) {
+        Engine.getEngineType() match {
+          case MklBlas => Vgg_16.graph(classNumber)
+          case MklDnn =>
+            nn.mkldnn.models.Vgg_16.graph(batchSize / Engine.nodeNumber(), classNumber)
+        }
       } else {
         Engine.getEngineType() match {
-          case MklBlas =>
-            Vgg_16(classNumber)
+          case MklBlas => Vgg_16(classNumber)
           case MklDnn =>
             nn.mkldnn.models.Vgg_16(batchSize / Engine.nodeNumber(), classNumber)
         }

@@ -43,7 +43,7 @@ class DnnGraphSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
     val dnnModle = models.Vgg_16(batchSize, 1000, false)
 
-    // graphModel.asInstanceOf[DnnGraph].compile(TrainingPhase)
+    graphModel.asInstanceOf[DnnGraph].compile(TrainingPhase)
     dnnModle.compile(TrainingPhase)
 
     val input = Tensor[Float](inputShape).rand()
@@ -82,7 +82,7 @@ class DnnGraphSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
     val dnnModle = LeNet5.dnn(batchSize, 10)
 
-    // graphModel.asInstanceOf[DnnGraph].compile(TrainingPhase)
+    graphModel.asInstanceOf[DnnGraph].compile(TrainingPhase)
     dnnModle.compile(TrainingPhase)
 
     val input = Tensor[Float](inputShape).rand()
@@ -126,7 +126,7 @@ class DnnGraphSpec extends FlatSpec with Matchers {
     val input = Tensor[Float](inputShape).rand()
     val gradOutput = Tensor[Float](batchSize, 1000).rand()
 
-    // graphModel.asInstanceOf[DnnGraph].compile(TrainingPhase)
+    graphModel.asInstanceOf[DnnGraph].compile(TrainingPhase)
     dnnModle.compile(TrainingPhase)
 
     for (i <- 0 to 2) {
