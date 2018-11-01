@@ -18,7 +18,6 @@ import pytest
 
 import keras.layers as KLayer
 from keras.models import Sequential as KSequential
-
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import zoo.pipeline.api.keras.layers as ZLayer
 from zoo.pipeline.api.keras.models import Model as ZModel
@@ -116,7 +115,6 @@ class TestLayer(ZooTestCase):
         tfnet_path = os.path.join(resource_path, "tfnet")
         net = TFNet.from_export_folder(tfnet_path)
         output = net.forward(np.random.rand(2, 4))
-        net.close()
         assert output.shape == (2, 2)
 
     def test_from_folder_load_tf(self):
@@ -135,7 +133,6 @@ class TestLayer(ZooTestCase):
         sess.close()
         out_value = net.forward(np.array(1.0))
         assert len(out_value.shape) == 0
-        net.close()
 
         # the following test would fail on bigdl 0.6.0 due to a bug in bigdl,
         # comment it out for now
@@ -166,7 +163,6 @@ class TestLayer(ZooTestCase):
 
         self.assert_allclose(output_value, output_value_ref)
         self.assert_allclose(grad_input_value, grad_input_value_ref)
-        net.close()
 
 
 if __name__ == "__main__":
