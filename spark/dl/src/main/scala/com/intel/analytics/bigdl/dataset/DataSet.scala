@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, 
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 
@@ -108,8 +109,7 @@ trait AbstractDataSet[D, DataSequence] {
 
 //  def getSplits[R <: AbstractDataSet[D, DataSequence]](): Iterator[R] =
 //    Iterator.single(this.asInstanceOf[R])
-  def getSplits(): Seq[AbstractDataSet[D, DataSequence]] =
-   Seq(this)
+  def getSplits(): Seq[AbstractDataSet[D, DataSequence]] = Seq(this)
 }
 
 /**
@@ -240,6 +240,51 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
   override def getSplits(): Seq[DistributedDataSet[T]] = Seq(this)
 }
 
+class SplitableTransformedDistributedDataSet[S: ClassTag, C: ClassTag]
+(preDataSet: DistributedDataSet[S], transformer: Transformer[S, C])
+  extends DistributedDataSet[C] with Serializable {
+
+  val broadcast: Broadcast[Transformer[S, C]] =
+    preDataSet.originRDD().sparkContext.broadcast(transformer)
+
+  val cachedTransformer: RDD[Transformer[S, C]] = preDataSet.originRDD()
+    .mapPartitions(_ => Iterator.single(broadcast.value.cloneTransformer())
+    ).setName("Cached Transformer").persist()
+
+  override def size(): Long = preDataSet.size()
+
+  override def shuffle(): Unit = preDataSet.shuffle()
+
+  override def originRDD(): RDD[_] = preDataSet.originRDD()
+
+  override def cache(): Unit = {
+    cachedTransformer.count()
+    isCached = true
+  }
+
+  override def unpersist(): Unit = {
+    cachedTransformer.unpersist()
+    isCached = false
+  }
+
+  override def data(train: Boolean): RDD[C] =
+    preDataSet.data(train).zipPartitions(cachedTransformer)(
+      (data, tran) => tran.next()(data))
+
+  override def getSplits(): Seq[DistributedDataSet[C]] = {
+    if (DataSet.declineRepartitionedRdd) {
+      Seq(this)
+    } else {
+      val preDataSets = preDataSet.getSplits()
+      preDataSets.map(pre => new SplitableTransformedDistributedDataSet(pre, transformer))
+    }
+  }
+
+  override def transform[M: ClassTag](transformer: Transformer[C, M]): DataSet[M] = {
+    new SplitableTransformedDistributedDataSet[C, M](this, transformer)
+  }
+}
+
 /**
  * Wrap a RDD as a DataSet.
  * @param buffer
@@ -250,7 +295,7 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
  */
 class CachedDistriDataSet[T: ClassTag] private[dataset]
 (buffer: RDD[Array[T]], isInOrder: Boolean = false, groupSize: Int = 1)
-  extends DistributedDataSet[T] {
+  extends DistributedDataSet[T] with Serializable {
 
   protected lazy val count: Long = buffer.mapPartitions(iter => {
     require(iter.hasNext)
@@ -323,9 +368,14 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
     isCached = false
   }
 
-//  override def getSplits[R <: AbstractDataSet[T, RDD[T]]](): Iterator[R] = {
-//    Iterator.single(this.asInstanceOf[R])
-//  }
+  override def ->[C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
+    this.transform(transformer)
+  }
+
+  override def transform[C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
+    new SplitableTransformedDistributedDataSet(this, transformer)
+  }
+
   override def getSplits(): Seq[CachedDistriDataSet[T]] = {
     if (DataSet.declineRepartitionedRdd) {
       Seq(this)
@@ -342,9 +392,9 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
           .mapPartitionsWithIndex((index, iter) => {
             val upperLimit = (i + 1) * nodeNum
             val downLimit = upperLimit - nodeNum
-            if (index < upperLimit && index > downLimit) iter
+            if (index < upperLimit && index >= downLimit) iter
             else Iterator.empty
-          })
+          }).repartition(nodeNum)
         rddBatches.append(new CachedDistriDataSet(data, isInOrder, groupSize))
       }
       rddBatches
@@ -360,10 +410,17 @@ object DataSet {
 
   def main(args: Array[String]): Unit = {
     val rdd = new SparkContext(Engine.createSparkConf().setAppName("test").setMaster("local[*]"))
-      .parallelize(Seq(Array(1), Array(2), Array(3), Array(4)))
+      .parallelize(Seq(Array(1), Array(2), Array(3), Array(4))).repartition(4)
     Engine.init
+    DataSet.declineRepartitionedRdd = true
     val a = new CachedDistriDataSet[Int](rdd)
-    a.getSplits()
+
+    val c = (DataSet.rdd(rdd) -> new Transformer[Array[Int], Array[Int]] {
+      override def apply(prev: Iterator[Array[Int]]): Iterator[Array[Int]] = prev
+    }).asInstanceOf[DistributedDataSet[Int]]
+
+    val b: DistributedDataSet[Int] = a.asInstanceOf[DistributedDataSet[Int]]
+      c.getSplits()
       .foreach(r => println(s"xxxx:$r"))
   }
 

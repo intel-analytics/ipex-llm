@@ -191,6 +191,8 @@ object DistriOptimizer extends AbstractOptimizer {
 
     var dataRDD = dataset.data(train = true)
 
+    logger.warn("------------new loop starting-------------")
+
     while (!endWhen(driverState)) {
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
@@ -765,14 +767,22 @@ class DistriOptimizer[T: ClassTag] (
     state("maxDropPercentage") = maxDropPercentage
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(_model)
 
+
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
 
-    // todo init model when we acturally use these data.
+    val triggerType = endWhen.getTriggerType()
+    val loopValue: Int = triggerType match {
+      case TriggerType.MaxEpoch | TriggerType.MaxIteration => endWhen.getTriggerValue().asInstanceOf[Int]
+      case _ => Integer.MAX_VALUE
+    }
+
     val distDatasets = originalDataset.getSplits()
-    for (distDataset <- distDatasets) {
+    DistriOptimizer.logger.info(s"total split number of input data is ${distDatasets.length}")
+    for (i <- 0 until distDatasets.length) {
+      val distDataset = distDatasets(i)
       require(distDataset != null, s"input dataSet cannot create enough splits")
-      distDataset.originRDD().repartition(Engine.nodeNumber())
+//      distDataset.originRDD().repartition(Engine.nodeNumber())
       val partitionNum = distDataset.originRDD().partitions.length
       val modelParameters = model.getParameters()
       // subModuleName -> (storageOffset, length, AllReduceParameter)
@@ -906,6 +916,13 @@ class DistriOptimizer[T: ClassTag] (
       // created
       shutdown()
       models.unpersist()
+
+      // todo for each loop, we should add the MaxEpoch ,thus cause confusing output logs.
+      triggerType match {
+        case TriggerType.MaxEpoch => endWhen = Trigger.maxEpoch(if (loopValue < (Integer.MAX_VALUE / (i + 1))) (i + 1)*loopValue else Integer.MAX_VALUE)
+        case TriggerType.MaxIteration => endWhen = Trigger.maxIteration(if (loopValue < (Integer.MAX_VALUE / (i + 1))) (i + 1)*loopValue else Integer.MAX_VALUE)
+        case _ =>
+      }
     }
     model
   }
