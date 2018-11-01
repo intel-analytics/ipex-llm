@@ -781,6 +781,7 @@ class DistriOptimizer[T: ClassTag] (
     DistriOptimizer.logger.info(s"total split number of input data is ${distDatasets.length}")
     for (i <- 0 until distDatasets.length) {
       val distDataset = distDatasets(i)
+      DistriOptimizer.logger.info(s"current dataset has ${distDataset.originRDD().partitions.length}")
       require(distDataset != null, s"input dataSet cannot create enough splits")
 //      distDataset.originRDD().repartition(Engine.nodeNumber())
       val partitionNum = distDataset.originRDD().partitions.length
