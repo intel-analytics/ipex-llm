@@ -18,12 +18,13 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, Activity}
 import com.intel.analytics.bigdl.nn.keras.Pooling1D
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
+import scala.tools.nsc.interpreter.JList
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -46,13 +47,20 @@ class MaxPooling1D[T: ClassTag](
     override val poolLength: Int = 2,
     override val stride: Int = -1,
     override val borderMode: String = "valid",
-    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+    override val inputShape: Shape = null,
+    val pad: Int = 0)(implicit ev: TensorNumeric[T])
   extends Pooling1D[T](
     poolLength, stride, borderMode, inputShape) with Net {
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
     val input = inputShape.toSingle().toArray
-    val pads = KerasUtils.getPadsFromBorderMode(borderMode)
+
+    val pads = KerasUtils.getPadsFromBorderMode(borderMode, if (pad == 0) {
+      null
+    } else {
+      Array(pad, 0)
+    })
     val model = TSequential[T]()
     model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
     val layer = SpatialMaxPooling(
@@ -65,7 +73,7 @@ class MaxPooling1D[T: ClassTag](
       format = DataFormat.NHWC)
     model.add(layer)
     model.add(com.intel.analytics.bigdl.nn.Squeeze(3))
-    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -74,7 +82,8 @@ object MaxPooling1D {
     poolLength: Int = 2,
     stride: Int = -1,
     borderMode: String = "valid",
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): MaxPooling1D[T] = {
-    new MaxPooling1D[T](poolLength, stride, borderMode, inputShape)
+    inputShape: Shape = null,
+    pads: Int = 0)(implicit ev: TensorNumeric[T]): MaxPooling1D[T] = {
+    new MaxPooling1D[T](poolLength, stride, borderMode, inputShape, pads)
   }
 }
