@@ -267,17 +267,21 @@ class SplitableTransformedDistributedDataSet[S: ClassTag, C: ClassTag]
     isCached = false
   }
 
-  override def data(train: Boolean): RDD[C] =
+  // todo should not call data() when preDataSet is the one created at line 467
+  override def data(train: Boolean): RDD[C] = {
+    println(s"-------called data($train) in $this ------------")
     preDataSet.data(train).zipPartitions(cachedTransformer)(
       (data, tran) => tran.next()(data))
+  }
 
   override def getSplits(): Seq[DistributedDataSet[C]] = {
-    if (DataSet.declineRepartitionedRdd) {
-      Seq(this)
-    } else {
+    // todo remove if condition ,leave to parent?
+//    if (DataSet.declineRepartitionedRdd) {
+//      Seq(this)
+//    } else {
       val preDataSets = preDataSet.getSplits()
-      preDataSets.map(pre => new SplitableTransformedDistributedDataSet(pre, transformer))
-    }
+      preDataSets.map(pre => new SplitableTransformedDistributedDataSet(pre, transformer.cloneTransformer()))
+//    }
   }
 
   override def transform[M: ClassTag](transformer: Transformer[C, M]): DataSet[M] = {
@@ -309,6 +313,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
   }).setName("original index").cache()
 
   override def data(train: Boolean): RDD[T] = {
+    println(s"-------called data($train) in $this ------------")
     val _train = train
     val _groupSize = if (isInOrder) Utils.getBatchSize(groupSize) else 1
     buffer.zipPartitions(indexes)((dataIter, indexIter) => {
@@ -376,30 +381,6 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
     new SplitableTransformedDistributedDataSet(this, transformer)
   }
 
-  override def getSplits(): Seq[CachedDistriDataSet[T]] = {
-    if (DataSet.declineRepartitionedRdd) {
-      Seq(this)
-    } else {
-      val originData = this.buffer
-      val nodeNum = Engine.nodeNumber()
-      val partitions = originData.partitions.length
-      // todo Assuming partition number is n* nodeNum here.
-      val splits = partitions / nodeNum + (if (partitions % nodeNum == 0) 0 else 1)
-
-      val rddBatches = mutable.ArrayBuffer[CachedDistriDataSet[T]]()
-      for (i <- 0 until splits) {
-        val data = originData
-          .mapPartitionsWithIndex((index, iter) => {
-            val upperLimit = (i + 1) * nodeNum
-            val downLimit = upperLimit - nodeNum
-            if (index < upperLimit && index >= downLimit) iter
-            else Iterator.empty
-          }).repartition(nodeNum)
-        rddBatches.append(new CachedDistriDataSet(data, isInOrder, groupSize))
-      }
-      rddBatches
-    }
-  }
 }
 
 /**
@@ -472,14 +453,72 @@ object DataSet {
    */
   def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
-    val transformedData = if (declineRepartitionedRdd) data.coalesce(nodeNumber, true) else data
-    new CachedDistriDataSet[T](
-      transformedData
-        .mapPartitions(iter => {
-          Iterator.single(iter.toArray)
-        }).setName("cached dataset")
-        .cache()
-    )
+    val transformedData = if (declineRepartitionedRdd) {
+      new CachedDistriDataSet[T](
+        data.coalesce(nodeNumber, true)
+          .mapPartitions(iter => {
+            Iterator.single(iter.toArray)
+          }).setName("cached dataset")
+          .cache()
+      )
+    } else {
+      val originalRdd = data
+      // 这个类的唯一作用是返回一个可以split成cachedDataSet的dataset，除此之外任何操作都应当报错
+      // todo 是否应该成为一个Splitable？将来会不会有别的地方用到
+      // todo 或者这里应该设计为他所有的方法都委托给他的孩子节点完成，如果他有多个孩子呢？
+      // 他的意义是什么，可不可以扩展，这里是从rdd到dataset的入口，想清楚
+      new DistributedDataSet[T] with Serializable {
+
+        override def originRDD(): RDD[_] = originalRdd
+
+        override def data(train: Boolean): RDD[T] = ???
+
+        override def shuffle(): Unit = ???
+
+        override def size(): Long = ???
+
+        override def transform[C: ClassTag](transformer: Transformer[T, C]): DataSet[C] = {
+          new SplitableTransformedDistributedDataSet(this, transformer)
+        }
+
+        // todo 如果是一个，直接按普通的返回，如果是多个，先切分数据，然后返回
+        override def getSplits(): Seq[CachedDistriDataSet[T]] = {
+          if (declineRepartitionedRdd) {
+            Seq(new CachedDistriDataSet[T](
+              originalRdd.coalesce(nodeNumber, true)
+                .mapPartitions(iter => {
+                  Iterator.single(iter.toArray)
+                }).setName("cached dataset")
+                .cache()
+            ))
+          } else {
+            val nodeNum = Engine.nodeNumber()
+            val partitions = originalRdd.partitions.length
+            val splits = partitions / nodeNum + (if (partitions % nodeNum == 0) 0 else 1)
+
+            val rddBatches = mutable.ArrayBuffer[CachedDistriDataSet[T]]()
+            for (i <- 0 until splits) {
+              val splittedData = originalRdd
+                .mapPartitionsWithIndex((index, iter) => {
+                  val upperLimit = (i + 1) * nodeNum
+                  val downLimit = upperLimit - nodeNum
+                  if (index < upperLimit && index >= downLimit) iter
+                  else Iterator.empty
+                })
+              rddBatches.append(new CachedDistriDataSet(
+                splittedData.repartition(nodeNum)
+                  .mapPartitions(iter => {
+                  Iterator.single(iter.toArray)
+                }).setName("cached dataset")
+                  .cache()
+              ))
+            }
+            rddBatches
+          }
+        }
+      }
+    }
+    transformedData
   }
 
   def imageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
