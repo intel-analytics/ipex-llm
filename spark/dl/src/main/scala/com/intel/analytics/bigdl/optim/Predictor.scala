@@ -72,6 +72,7 @@ object Predictor {
                                   shareBuffer: Boolean, batchSize: Int)
     (implicit ev: TensorNumeric[T]): Array[Activity] = {
     val result = if (shareBuffer) output else output.clone
+
     val out = if (batchSize == 1) {
       Array(result.squeeze)
     } else {
@@ -80,6 +81,7 @@ object Predictor {
         s"The batchSize is required to be $size, while actual is $batchSize")
       result.split(1)
     }
+
     out.asInstanceOf[Array[Activity]]
   }
 
@@ -173,6 +175,8 @@ object Predictor {
     implicit ev: TensorNumeric[T]): RDD[Int] = {
     val result = Predictor.predict(dataSet, batchSize, true, model,
       batchPerPartition, featurePaddingParam)
+    val res = Predictor.predict(dataSet, batchSize, true, model,
+      batchPerPartition, featurePaddingParam).collect()
     result.mapPartitions { partition =>
       partition.map(output => {
         val _output = output.toTensor[T]

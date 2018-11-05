@@ -66,7 +66,6 @@ function deploy {
     cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
 }
 
-deploy 1.5.2 SPARK_1.5 ''
 deploy 1.6.2 SPARK_1.6 ''
 
 mv dl/pom.xml.origin dl/pom.xml
