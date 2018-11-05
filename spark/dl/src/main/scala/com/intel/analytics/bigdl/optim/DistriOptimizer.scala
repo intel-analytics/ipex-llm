@@ -191,7 +191,7 @@ object DistriOptimizer extends AbstractOptimizer {
 
     var dataRDD = dataset.data(train = true)
 
-    logger.warn("------------new loop starting-------------")
+    logger.debug("------------new loop starting-------------")
 
     while (!endWhen(driverState)) {
       val lossSum = sc.accumulator(0.0, "loss sum")
@@ -778,10 +778,10 @@ class DistriOptimizer[T: ClassTag] (
     }
 
     val distDatasets = originalDataset.getSplits()
-    DistriOptimizer.logger.info(s"total split number of input data is ${distDatasets.length}")
+    DistriOptimizer.logger.debug(s"total split number of input data is ${distDatasets.length}")
     for (i <- 0 until distDatasets.length) {
       val distDataset = distDatasets(i)
-      DistriOptimizer.logger.info(s"current dataset has ${distDataset.originRDD().partitions.length}")
+      DistriOptimizer.logger.debug(s"current dataset has ${distDataset.originRDD().partitions.length} partitions")
       require(distDataset != null, s"input dataSet cannot create enough splits")
 //      distDataset.originRDD().repartition(Engine.nodeNumber())
       val partitionNum = distDataset.originRDD().partitions.length
@@ -921,11 +921,16 @@ class DistriOptimizer[T: ClassTag] (
       // created
       shutdown()
       models.unpersist()
-
+      distDataset.unpersist()
       // todo for each loop, we should add the MaxEpoch ,thus cause confusing output logs.
       triggerType match {
-        case TriggerType.MaxEpoch => endWhen = Trigger.maxEpoch(if (loopValue < (Integer.MAX_VALUE / (i + 1))) (i + 1)*loopValue else Integer.MAX_VALUE)
-        case TriggerType.MaxIteration => endWhen = Trigger.maxIteration(if (loopValue < (Integer.MAX_VALUE / (i + 1))) (i + 1)*loopValue else Integer.MAX_VALUE)
+        case TriggerType.MaxEpoch => {
+          endWhen = Trigger.maxEpoch(if (loopValue < (Integer.MAX_VALUE / (i + 2))) (i + 2)*loopValue else Integer.MAX_VALUE)
+          DistriOptimizer.logger.info(s"changing current endwhen value to ${endWhen.getTriggerValue()}")
+        }
+        case TriggerType.MaxIteration => {
+          endWhen = Trigger.maxIteration(if (loopValue < (Integer.MAX_VALUE / (i + 2))) (i + 2)*loopValue else Integer.MAX_VALUE)
+        }
         case _ =>
       }
     }

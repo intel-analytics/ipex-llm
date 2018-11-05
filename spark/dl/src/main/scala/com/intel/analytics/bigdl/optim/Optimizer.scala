@@ -601,12 +601,10 @@ object Optimizer {
       batchSize: Int,
       featurePaddingParam: PaddingParam[T] = null,
       labelPaddingParam: PaddingParam[T] = null
-//      declineRepartitionedRDD: Boolean = true
          )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
 
     val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
     val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
-//    DataSet.declineRepartition(declineRepartitionedRDD)
 
     new DistriOptimizer[T](
        _model = model,
@@ -636,10 +634,7 @@ object Optimizer {
           criterion: Criterion[T],
           batchSize: Int,
           miniBatchImpl: MiniBatch[T]
-//          declineRepartitionedRDD: Boolean = true
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-
-//    DataSet.declineRepartition(declineRepartitionedRDD)
 
     new DistriOptimizer[T](
       _model = model,

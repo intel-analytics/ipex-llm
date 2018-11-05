@@ -240,7 +240,16 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
   override def getSplits(): Seq[DistributedDataSet[T]] = Seq(this)
 }
 
-class SplitableTransformedDistributedDataSet[S: ClassTag, C: ClassTag]
+/**
+ * Wrap DataSet as a splittable dataset with inherited transformer which can transform itself into another DataSet.
+ * @param preDataSet the dataset before splitting
+ * @param transformer the transformer used for transform
+ * @param ev$1
+ * @param ev$2
+ * @tparam S dataType of the former DataSet
+ * @tparam C dataType of the transformed DataSet after calling transform()
+ */
+class SplittableTransformedDistributedDataSet[S: ClassTag, C: ClassTag]
 (preDataSet: DistributedDataSet[S], transformer: Transformer[S, C])
   extends DistributedDataSet[C] with Serializable {
 
@@ -264,28 +273,23 @@ class SplitableTransformedDistributedDataSet[S: ClassTag, C: ClassTag]
 
   override def unpersist(): Unit = {
     cachedTransformer.unpersist()
+    preDataSet.unpersist()
     isCached = false
   }
 
-  // todo should not call data() when preDataSet is the one created at line 467
   override def data(train: Boolean): RDD[C] = {
-    println(s"-------called data($train) in $this ------------")
+    DataSet.logger.debug(s"-------called data($train) in $this ------------")
     preDataSet.data(train).zipPartitions(cachedTransformer)(
       (data, tran) => tran.next()(data))
   }
 
   override def getSplits(): Seq[DistributedDataSet[C]] = {
-    // todo remove if condition ,leave to parent?
-//    if (DataSet.declineRepartitionedRdd) {
-//      Seq(this)
-//    } else {
       val preDataSets = preDataSet.getSplits()
-      preDataSets.map(pre => new SplitableTransformedDistributedDataSet(pre, transformer.cloneTransformer()))
-//    }
+      preDataSets.map(pre => new SplittableTransformedDistributedDataSet(pre, transformer.cloneTransformer()))
   }
 
   override def transform[M: ClassTag](transformer: Transformer[C, M]): DataSet[M] = {
-    new SplitableTransformedDistributedDataSet[C, M](this, transformer)
+    new SplittableTransformedDistributedDataSet[C, M](this, transformer)
   }
 }
 
@@ -313,7 +317,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
   }).setName("original index").cache()
 
   override def data(train: Boolean): RDD[T] = {
-    println(s"-------called data($train) in $this ------------")
+    DataSet.logger.debug(s"-------called data($train) in $this ------------")
     val _train = train
     val _groupSize = if (isInOrder) Utils.getBatchSize(groupSize) else 1
     buffer.zipPartitions(indexes)((dataIter, indexIter) => {
@@ -378,7 +382,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
   }
 
   override def transform[C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
-    new SplitableTransformedDistributedDataSet(this, transformer)
+    new SplittableTransformedDistributedDataSet(this, transformer)
   }
 
 }
@@ -388,22 +392,6 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
  */
 object DataSet {
   val logger = Logger.getLogger(getClass)
-
-  def main(args: Array[String]): Unit = {
-    val rdd = new SparkContext(Engine.createSparkConf().setAppName("test").setMaster("local[*]"))
-      .parallelize(Seq(Array(1), Array(2), Array(3), Array(4))).repartition(4)
-    Engine.init
-    DataSet.declineRepartitionedRdd = true
-    val a = new CachedDistriDataSet[Int](rdd)
-
-    val c = (DataSet.rdd(rdd) -> new Transformer[Array[Int], Array[Int]] {
-      override def apply(prev: Iterator[Array[Int]]): Iterator[Array[Int]] = prev
-    }).asInstanceOf[DistributedDataSet[Int]]
-
-    val b: DistributedDataSet[Int] = a.asInstanceOf[DistributedDataSet[Int]]
-      c.getSplits()
-      .foreach(r => println(s"xxxx:$r"))
-  }
 
   /**
     * Indicate whether to coalesce the original input data.
@@ -463,25 +451,18 @@ object DataSet {
       )
     } else {
       val originalRdd = data
-      // 这个类的唯一作用是返回一个可以split成cachedDataSet的dataset，除此之外任何操作都应当报错
-      // todo 是否应该成为一个Splitable？将来会不会有别的地方用到
-      // todo 或者这里应该设计为他所有的方法都委托给他的孩子节点完成，如果他有多个孩子呢？
-      // 他的意义是什么，可不可以扩展，这里是从rdd到dataset的入口，想清楚
+
+      // should not call methods other than transform() and getSplits(), for that will be meaningless
       new DistributedDataSet[T] with Serializable {
-
         override def originRDD(): RDD[_] = originalRdd
-
         override def data(train: Boolean): RDD[T] = ???
-
         override def shuffle(): Unit = ???
-
         override def size(): Long = ???
 
         override def transform[C: ClassTag](transformer: Transformer[T, C]): DataSet[C] = {
-          new SplitableTransformedDistributedDataSet(this, transformer)
+          new SplittableTransformedDistributedDataSet(this, transformer)
         }
 
-        // todo 如果是一个，直接按普通的返回，如果是多个，先切分数据，然后返回
         override def getSplits(): Seq[CachedDistriDataSet[T]] = {
           if (declineRepartitionedRdd) {
             Seq(new CachedDistriDataSet[T](
