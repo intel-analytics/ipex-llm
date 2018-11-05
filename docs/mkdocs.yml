@@ -34,6 +34,7 @@ pages:
     - Distributed Tensoflow on Spark/BigDL: ProgrammingGuide/tensorflow.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
+    - Working with Texts: ProgrammingGuide/workingwithtexts.md
   - Built-in Models:
     - Object Detection API: ProgrammingGuide/object-detection.md
     - Image Classification API: ProgrammingGuide/image-classification.md
@@ -53,7 +54,7 @@ pages:
     - Inference: APIGuide/PipelineAPI/inference.md
   - Feature Engineering:
     - Image: APIGuide/FeatureEngineering/image.md
-    - Preprocessing: APIGuide/FeatureEngineering/preprocessing.md
+    - Text: APIGuide/FeatureEngineering/text.md
   - Models:
     - Object Detection: APIGuide/Models/object-detection.md
     - Image Classification: APIGuide/Models/image-classification.md
