@@ -157,7 +157,7 @@ class TextSet(JavaValue):
 
     def normalize(self):
         """
-        Do normalization on tokens.
+        Do normalization on tokens. Need to tokenize first.
         See Normalizer for more details.
 
         :return: TextSet after normalization.
@@ -165,25 +165,28 @@ class TextSet(JavaValue):
         jvalue = callBigDlFunc(self.bigdl_type, "textSetNormalize", self.value)
         return TextSet(jvalue=jvalue)
 
-    def shape_sequence(self, len, mode="pre"):
+    def shape_sequence(self, len, trunc_mode="pre"):
         """
         Shape the sequence of tokens to a fixed length. Padding element will be "##".
+        Need to tokenize first.
         See SequenceShaper for more details.
 
         :return: TextSet after sequence shaping.
         """
-        jvalue = callBigDlFunc(self.bigdl_type, "textSetShapeSequence", self.value, len, mode)
+        jvalue = callBigDlFunc(self.bigdl_type, "textSetShapeSequence", self.value, len, trunc_mode)
         return TextSet(jvalue=jvalue)
 
     def word2idx(self, remove_topN=0, max_words_num=-1):
         """
         Map word tokens to indices.
-        Index will start from 1 and corresponds to the occurrence frequency of each word sorted
-        in descending order.
+        Result index will start from 1 and corresponds to the occurrence frequency of each word
+        sorted in descending order.
+        Need to tokenize first.
         See WordIndexer for more details.
+        After word2idx, you can get the generated wordIndex dict by calling 'get_word_index()'.
 
-        :param remove_topN: Int. Remove the topN words with highest frequencies in the case
-                            where those are treated as stopwords.
+        :param remove_topN: Non-negative int. Remove the topN words with highest frequencies
+                            in the case where those are treated as stopwords.
                             Default is 0, namely remove nothing.
         :param max_words_num: Int. The maximum number of words to be taken into consideration.
                               Default is -1, namely all words will be considered.
@@ -196,6 +199,7 @@ class TextSet(JavaValue):
     def generate_sample(self):
         """
         Generate BigDL Sample.
+        Need to word2idx first.
         See TextFeatureToSample for more details.
 
         :return: TextSet with Samples.
@@ -226,9 +230,11 @@ class TextSet(JavaValue):
                ascending order sorted among all subdirectories.
                All texts will be given a label according to the subdirectory where it is located.
                Labels start from 0.
-        :param sc: An instance of SparkContext if any. Default is None.
-        :param min_partitions: A suggestion value of the minimal partition number.
-                               Int. Default is 1. Only need to specify this when sc is not None.
+        :param sc: An instance of SparkContext.
+                   If specified, texts will be read as a DistributedTextSet.
+                   Default is None and in this case texts will be read as a LocalTextSet.
+        :param min_partitions: Int. A suggestion value of the minimal partition number for input
+                               texts. Only need to specify this when sc is not None. Default is 1.
         :return: TextSet.
         """
         jvalue = callBigDlFunc(bigdl_type, "readTextSet", path, sc, min_partitions)
