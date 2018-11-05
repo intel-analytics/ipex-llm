@@ -20,6 +20,7 @@ import org.apache.log4j.Logger
 
 /**
  * Given a wordIndex map, transform tokens to corresponding indices.
+ * Need to tokenize first.
  * Input key: TextFeature.tokens
  * Output key: TextFeature.indexedTokens
  *

@@ -24,6 +24,7 @@ import scala.reflect.ClassTag
 
 /**
  * Transform indexedTokens and label (if any) of a TextFeature to a BigDL Sample.
+ * Need to word2idx first.
  * Input key: TextFeature.indexedTokens and TextFeature.label (if any)
  * Output key: TextFeature.sample
  */

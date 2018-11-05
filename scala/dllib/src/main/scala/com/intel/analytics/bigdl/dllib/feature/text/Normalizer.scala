@@ -17,7 +17,8 @@
 package com.intel.analytics.zoo.feature.text
 
 /**
- * Removes all dirty (non English alphabet) characters from tokens and convert to lower case.
+ * Removes all dirty (non English alphabet) characters from tokens and converts words
+ * to lower case. Need to tokenize first.
  * Input key: TextFeature.tokens
  * Output key: TextFeature.tokens
  *             In this case, original tokens will be replaced by normalized tokens.

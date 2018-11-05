@@ -23,14 +23,16 @@ import com.intel.analytics.zoo.feature.text.TruncMode.TruncMode
  * If the original sequence is longer than the target length, it will be truncated from
  * the beginning or the end.
  * If the original sequence is shorter than the target length, it will be padded to the end.
+ * Need to tokenize first.
  * Input key: TextFeature.tokens
  * Output key: TextFeature.tokens
  * The original token sequence will be replaced by the shaped sequence.
  *
- * @param len The target length.
- * @param truncMode Truncation mode. Either 'pre' or 'post'. Default is 'pre'.
- *                  If 'pre', the sequence will be truncated from the beginning.
- *                  If 'post', the sequence will be truncated from the end.
+ * @param len Positive integer. The target length.
+ * @param truncMode Truncation mode. Either TruncMode.pre or TruncMode.post.
+ *                  If TruncMode.pre, the sequence will be truncated from the beginning.
+ *                  If TruncMode.post, the sequence will be truncated from the end.
+ *                  Default is TruncMode.post.
  * @param padElement String. The element to be padded to the sequence if the original length
  *                   is smaller than the target length.
  *                   Default is "##". Make sure that the padding element is meaningless in

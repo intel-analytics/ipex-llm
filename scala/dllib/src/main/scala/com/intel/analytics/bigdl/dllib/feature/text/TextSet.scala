@@ -93,7 +93,7 @@ abstract class TextSet {
   }
 
   /**
-   * Do normalization on tokens.
+   * Do normalization on tokens. Need to tokenize first.
    * See Normalizer for more details.
    */
   def normalize(): TextSet = {
@@ -102,6 +102,7 @@ abstract class TextSet {
 
   /**
    * Shape the sequence of tokens to a fixed length. Padding element will be "##".
+   * Need to tokenize first.
    * See SequenceShaper for more details.
    */
   def shapeSequence(
@@ -112,13 +113,15 @@ abstract class TextSet {
 
   /**
    * Map word tokens to indices.
-   * Index will start from 1 and corresponds to the occurrence frequency of each word sorted
-   * in descending order.
+   * Result index will start from 1 and corresponds to the occurrence frequency of each word
+   * sorted in descending order.
+   * Need to tokenize first.
    * See WordIndexer for more details.
-   * After word2idx, you can get the wordIndex map by calling 'getWordIndex'.
+   * After word2idx, you can get the generated wordIndex map by calling 'getWordIndex'.
    *
-   * @param removeTopN Integer. Remove the topN words with highest frequencies in the case
-   *                   where those are treated as stopwords. Default is 0, namely remove nothing.
+   * @param removeTopN Non-negative Integer. Remove the topN words with highest frequencies in
+   *                   the case where those are treated as stopwords.
+   *                   Default is 0, namely remove nothing.
    * @param maxWordsNum Integer. The maximum number of words to be taken into consideration.
    *                    Default is -1, namely all words will be considered.
    */
@@ -133,6 +136,7 @@ abstract class TextSet {
 
   /**
    * Generate BigDL Sample.
+   * Need to word2idx first.
    * See TextFeatureToSample for more details.
    */
   def generateSample(): TextSet = {
@@ -196,9 +200,11 @@ object TextSet {
    *             ascending order sorted among all subdirectories.
    *             All texts will be given a label according to the subdirectory where it is located.
    *             Labels start from 0.
-   * @param sc An instance of SparkContext if any. Default is null.
-   * @param minPartitions A suggestion value of the minimal partition number.
-   *                      Integer. Default is 1. Only need to specify this when sc is not null.
+   * @param sc An instance of SparkContext.
+   *           If specified, texts will be read as a DistributedTextSet.
+   *           Default is null and in this case texts will be read as a LocalTextSet.
+   * @param minPartitions Integer. A suggestion value of the minimal partition number for input
+   *                      texts. Only need to specify this when sc is not null. Default is 1.
    * @return TextSet.
    */
   def read(path: String, sc: SparkContext = null, minPartitions: Int = 1): TextSet = {
@@ -260,6 +266,9 @@ object TextSet {
 }
 
 
+/**
+ * LocalTextSet is comprised of array of TextFeature.
+ */
 class LocalTextSet(var array: Array[TextFeature]) extends TextSet {
 
   override def transform(transformer: Preprocessing[TextFeature, TextFeature]): TextSet = {
@@ -301,6 +310,9 @@ class LocalTextSet(var array: Array[TextFeature]) extends TextSet {
 }
 
 
+/**
+ * DistributedTextSet is comprised of RDD of TextFeature.
+ */
 class DistributedTextSet(var rdd: RDD[TextFeature]) extends TextSet {
 
   override def transform(transformer: Preprocessing[TextFeature, TextFeature]): TextSet = {
