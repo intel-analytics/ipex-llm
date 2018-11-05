@@ -810,7 +810,6 @@ class DistriOptimizer[T: ClassTag] (
           s"have corresponding OptimMethod")
       }
 
-      // todo 不应该准备所有的输入，应该只prepare当前的那个transformers
       if (!distDataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].isCached) {
         DistriOptimizer.logger.info("caching training rdd ...")
         DistriOptimizer.prepareInput(distDataset, this.validationDataSet)

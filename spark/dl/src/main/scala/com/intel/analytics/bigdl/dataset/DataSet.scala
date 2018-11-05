@@ -107,8 +107,10 @@ trait AbstractDataSet[D, DataSequence] {
    */
   def toDistributed(): DistributedDataSet[D] = this.asInstanceOf[DistributedDataSet[D]]
 
-//  def getSplits[R <: AbstractDataSet[D, DataSequence]](): Iterator[R] =
-//    Iterator.single(this.asInstanceOf[R])
+  /**
+   * Split current DataSet to multi parts.
+   * @return A Seq(DataSet)
+   */
   def getSplits(): Seq[AbstractDataSet[D, DataSequence]] = Seq(this)
 }
 
