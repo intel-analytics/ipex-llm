@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
 /**
- * Embedding layer with pre-trained weights for words.
+ * Embedding layer that directly loads pre-trained word vectors as weights.
  * Turn non-negative integers (indices) into dense vectors of fixed size.
  * Currently only GloVe embedding is supported.
  * The input of this layer should be 2D.
@@ -110,11 +110,11 @@ object WordEmbedding {
   val id = new AtomicInteger(0) // id in the registry map should be unique
 
   /**
-   * Embedding layer with pre-trained weights for words.
+   * Embedding layer that directly loads pre-trained word vectors as weights.
    * Please use this layer as the first layer in a model.
    *
    * @param embeddingFile The path to the embedding file.
-   *                      Currently only the following GloVe files are supported:
+   *                      Currently the following GloVe files are supported:
    *                      "glove.6B.50d.txt", "glove.6B.100d.txt", "glove.6B.200d.txt"
    *                      "glove.6B.300d.txt", "glove.42B.300d.txt", "glove.840B.300d.txt".
    *                      You can download them from: https://nlp.stanford.edu/projects/glove/.
