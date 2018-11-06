@@ -184,11 +184,6 @@ object DistriOptimizer extends AbstractOptimizer {
 
     var epochStart = System.nanoTime()
 
-    if(!DataSet.declineRepartitionedRdd) {
-      val dataBuffer = dataset.originRDD()
-//      val
-    }
-
     var dataRDD = dataset.data(train = true)
 
     logger.debug("------------new loop starting-------------")
@@ -925,7 +920,6 @@ class DistriOptimizer[T: ClassTag] (
       triggerType match {
         case TriggerType.MaxEpoch => {
           endWhen = Trigger.maxEpoch(if (loopValue < (Integer.MAX_VALUE / (i + 2))) (i + 2)*loopValue else Integer.MAX_VALUE)
-          DistriOptimizer.logger.info(s"changing current endwhen value to ${endWhen.getTriggerValue()}")
         }
         case TriggerType.MaxIteration => {
           endWhen = Trigger.maxIteration(if (loopValue < (Integer.MAX_VALUE / (i + 2))) (i + 2)*loopValue else Integer.MAX_VALUE)
