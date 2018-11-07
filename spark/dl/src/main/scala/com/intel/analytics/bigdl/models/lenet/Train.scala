@@ -49,14 +49,11 @@ object Train {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) {
-          Engine.getEngineType() match {
-            case MklBlas => LeNet5.graph(10)
-            case MklDnn => LeNet5.dnnGraph(param.batchSize / Engine.nodeNumber(), 10)
-          }
+          LeNet5.graph(classNum = 10)
         } else {
           Engine.getEngineType() match {
             case MklBlas => LeNet5(10)
-            case MklDnn => LeNet5.dnn(param.batchSize / Engine.nodeNumber(), 10)
+            case MklDnn => LeNet5.dnnGraph(param.batchSize / Engine.nodeNumber(), 10)
           }
         }
       }
