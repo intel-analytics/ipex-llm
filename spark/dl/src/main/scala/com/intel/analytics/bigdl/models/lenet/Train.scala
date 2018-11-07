@@ -53,7 +53,7 @@ object Train {
         } else {
           Engine.getEngineType() match {
             case MklBlas => LeNet5(10)
-            case MklDnn => LeNet5.dnn(param.batchSize / Engine.nodeNumber(), 10)
+            case MklDnn => LeNet5.dnnGraph(param.batchSize / Engine.nodeNumber(), 10)
           }
         }
       }

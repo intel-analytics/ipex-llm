@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.mkldnn.DnnGraph
 
 object LeNet5 {
   def apply(classNum: Int): Module[Float] = {
@@ -102,5 +103,23 @@ object LeNet5 {
       .add(mkldnn.Linear(500, 10).setName("ip2"))
       .add(mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)))
     model
+  }
+
+  def dnnGraph(batchSize: Int, classNum: Int): mkldnn.DnnGraph = {
+    val inputShape = Array(batchSize, 1, 28, 28)
+    val outputShape = Array(batchSize, 10)
+
+    val input = mkldnn.Input(inputShape, Memory.Format.nchw).inputs()
+    val conv1 = mkldnn.SpatialConvolution(1, 20, 5, 5).setName("conv1").inputs(input)
+    val bn1 = mkldnn.SpatialBatchNormalization(20).setName("bn1").inputs(conv1)
+    val pool1 = mkldnn.MaxPooling(2, 2, 2, 2).setName("pool1").inputs(bn1)
+    val conv2 = mkldnn.SpatialConvolution(20, 50, 5, 5).setName("conv2").inputs(pool1)
+    val pool2 = mkldnn.MaxPooling(2, 2, 2, 2).setName("pool2").inputs(conv2)
+    val ip1 = mkldnn.Linear(50 * 4 * 4, 500).setName("ip1").inputs(pool2)
+    val relu1 = mkldnn.ReLU().setName("relu1").inputs(ip1)
+    val ip2 = mkldnn.Linear(500, 10).setName("ip2").inputs(relu1)
+    val output = mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)).inputs(ip2)
+
+    DnnGraph(Array(input), Array(output))
   }
 }
