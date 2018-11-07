@@ -916,7 +916,7 @@ class DistriOptimizer[T: ClassTag] (
       shutdown()
       models.unpersist()
       distDataset.unpersist()
-      // todo for each loop, we should add the MaxEpoch ,thus cause confusing output logs.
+      // todo for each loop, we should add the MaxEpoch ,thus cause confusing output logs. And we should consider new And/Or trigger now.
       triggerType match {
         case TriggerType.MaxEpoch => {
           endWhen = Trigger.maxEpoch(if (loopValue < (Integer.MAX_VALUE / (i + 2))) (i + 2)*loopValue else Integer.MAX_VALUE)
