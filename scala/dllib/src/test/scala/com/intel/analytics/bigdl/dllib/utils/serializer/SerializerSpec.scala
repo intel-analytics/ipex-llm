@@ -62,7 +62,8 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.nn.mkldnn.SoftMax",
     "com.intel.analytics.bigdl.nn.mkldnn.SpatialBatchNormalization",
     "com.intel.analytics.bigdl.nn.mkldnn.SpatialConvolution",
-    "com.intel.analytics.bigdl.nn.mkldnn.Dropout"
+    "com.intel.analytics.bigdl.nn.mkldnn.Dropout",
+    "com.intel.analytics.bigdl.nn.mkldnn.DnnGraph"
   )
 
   // Maybe one serial test class contains multiple module test
