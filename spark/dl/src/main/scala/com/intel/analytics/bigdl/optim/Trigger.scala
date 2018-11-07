@@ -37,7 +37,7 @@ object TriggerType extends Enumeration {
 
   type TriggerType = Value
 
-  val EveryEpoch, SeveralIteration, MaxEpoch, MaxIteration, MaxScore, MinLoss, And, Or = Value
+  val EveryEpoch, SeveralIteration, MaxEpoch, MaxIteration, MaxScore, MinLoss, And, Or, Anonymous = Value
 }
 
 object Trigger {
