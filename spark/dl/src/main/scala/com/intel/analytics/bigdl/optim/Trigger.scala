@@ -37,7 +37,7 @@ object TriggerType extends Enumeration {
 
   type TriggerType = Value
 
-  val EveryEpoch, SeveralIteration, MaxEpoch, MaxIteration, MaxScore, MinLoss = Value
+  val EveryEpoch, SeveralIteration, MaxEpoch, MaxIteration, MaxScore, MinLoss, And, Or = Value
 }
 
 object Trigger {
@@ -171,6 +171,11 @@ object Trigger {
    */
   def and(first : Trigger, others : Trigger*): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.And
+
+      override def getTriggerValue(): Any =
+        Seq(first.getTriggerValue(), others.map(_.getTriggerValue())::Nil)
+
       override def apply(state: Table): Boolean = {
         first.apply(state) && others.forall(_.apply(state))
       }
@@ -184,6 +189,11 @@ object Trigger {
    */
   def or(first : Trigger, others : Trigger*): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.Or
+
+      override def getTriggerValue(): Any =
+        Seq(first.getTriggerValue(), others.map(_.getTriggerValue())::Nil)
+
       override def apply(state: Table): Boolean = {
         first.apply(state) || others.exists(_.apply(state))
       }
