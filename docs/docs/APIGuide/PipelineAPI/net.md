@@ -66,7 +66,7 @@ model = Net.loadCaffe("hdfs://def/path", "hdfs://model/path") //load from hdfs
 model = Net.loadCaffe("s3://def/path", "s3://model/path") //load from s3
 ```
 
-### Load Tensorflow model
+### Load TensorFlow model
 
 We also provides utilities to load tensorflow model.
 
@@ -144,10 +144,16 @@ TFNet cannot be trained, so it can only be used for inference or as a feature ex
 When used as feature extractor, there should not be any trainable layers before TFNet, as all the gradient
 from TFNet is set to zero.
 
+__Note__: This feature currently supports __tensorflow 1.10__ and requires the OS to be one of the following 64-bit systems.
+__Ubuntu 16.04 or later__, __macOS 10.12.6 or later__ and __Windows 7 or later__.
 
-### Export tensorflow model to frozen inference graph
+To run on other system may require you to manually compile the TensorFlow source code. Instructions can
+be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
 
-Analytics-zoo provides a useful utility function, `export_tf`, to export a tensorflow model
+
+### Export TensorFlow model to frozen inference graph
+
+Analytics-zoo provides a useful utility function, `export_tf`, to export a TensorFlow model
 to frozen inference graph.
 
 For example:
@@ -172,12 +178,12 @@ from zoo.util.tf import export_tf
 export_tf(sess, "/tmp/models/tfnet", inputs=[images], outputs=[logits])
 ```
 
-In the above code, the `export_tf` utility function will frozen the tensorflow graph, strip unused operation according to the inputs and outputs and save it to the specified directory along with the input/output tensor names. 
+In the above code, the `export_tf` utility function will frozen the TensorFlow graph, strip unused operation according to the inputs and outputs and save it to the specified directory along with the input/output tensor names. 
 
 
 ### Creating a TFNet
 
-After we have export the tensorflow model, we can easily create a TFNet.
+After we have export the TensorFlow model, we can easily create a TFNet.
 
 **Scala:**
 ```scala
@@ -195,10 +201,16 @@ the [Image Classification Using TFNet Notebook](https://github.com/intel-analyti
 
 ## TFDataset
 
-TFDatset represents a distributed collection of elements to be feed into Tensorflow graph.
+TFDatset represents a distributed collection of elements to be feed into TensorFlow graph.
 TFDatasets can be created using a RDD and each of its records is a list of numpy.ndarray representing
-the tensors to be feed into tensorflow graph on each iteration. TFDatasets must be used with the
+the tensors to be feed into TensorFlow graph on each iteration. TFDatasets must be used with the
 TFOptimizer or TFPredictor.
+
+__Note__: This feature currently requires __tensorflow 1.10__ and OS is one of the following 64-bit systems.
+__Ubuntu 16.04 or later__, __macOS 10.12.6 or later__ and __Windows 7 or later__.
+
+To run on other system may require you to manually compile the TensorFlow source code. Instructions can
+be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
 
 **Python**
 ```python
@@ -215,6 +227,12 @@ distribution and parameter synchronization. It takes the **loss** (a scalar tens
 stochastic gradient descent using the given **optimMethod** on all the **Variables** that contributing
 to this loss.
 
+__Note__: This feature currently requires __tensorflow 1.10__ and OS is one of the following 64-bit systems.
+__Ubuntu 16.04 or later__, __macOS 10.12.6 or later__ and __Windows 7 or later__.
+
+To run on other system may require you to manually compile the TensorFlow source code. Instructions can
+be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
+
 **Python**
 ```python
 optimizer = TFOptimizer(loss, Adam(1e-3))
@@ -224,9 +242,15 @@ optimizer.optimize(end_trigger=MaxEpoch(5))
 
 ## TFPredictor
 
-TFPredictor takes a list of tensorflow tensors as the model outputs and feed all the elements in
+TFPredictor takes a list of TensorFlow tensors as the model outputs and feed all the elements in
  TFDatasets to produce those outputs and returns a Spark RDD with each of its elements representing the
  model prediction for the corresponding input elements.
+ 
+ __Note__: This feature currently requires __tensorflow 1.10__ and OS is one of the following 64-bit systems.
+ __Ubuntu 16.04 or later__, __macOS 10.12.6 or later__ and __Windows 7 or later__.
+ 
+ To run on other system may require you to manually compile the TensorFlow source code. Instructions can
+ be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
  
 **Python**
 ```python

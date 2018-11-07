@@ -1,7 +1,17 @@
-Analytics-Zoo provides a set APIs for running tensorflow model on Spark in a distributed fashion.
+Analytics-Zoo provides a set APIs for running TensorFlow model on Spark in a distributed fashion.
+
+## System Requirement
+TensorFlow version: 1.10
+
+OS version (all 64-bit): __Ubuntu 16.04 or later__, __macOS 10.12.6 or later__, __Windows 7 or later__ (TensorFlow is
+ only tested and supported on these 64-bit systems as stated [here](https://www.tensorflow.org/install/)).
+ 
+To run on other system may require you to manually compile the TensorFlow source code. Instructions can
+be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
+
 
 ## Concepts
-- **TFDatasets** represents a distributed collection of elements to be fed into a Tensorflow graph.
+- **TFDatasets** represents a distributed collection of elements to be fed into a TensorFlow graph.
 TFDatasets can be created directly from an RDD; each record in the RDD should be a list of numpy.ndarray
 representing the input data. TFDatasets must be used with the TFOptimizer or TFPredictor (to be described next).
 
@@ -31,7 +41,7 @@ train_rdd = sc.parallelize(file_list)
   .map(lambda image_label: decode_to_ndarrays(image_label))
 
 # TFDataset represents a distributed set of elements,
-# in which each element contains one or more Tensorflow Tensor objects. 
+# in which each element contains one or more TensorFlow Tensor objects. 
 dataset = TFDataset.from_rdd(train_rdd,
                              names=["features", "labels"],
                              shapes=[[28, 28, 1], [1]],
@@ -89,7 +99,7 @@ testing_rdd = sc.parallelize(file_list)
   .map(lambda image_label: decode_to_ndarrays(image_label))
 
 # TFDataset represents a distributed set of elements,
-# in which each element contains one or more Tensorflow Tensor objects. 
+# in which each element contains one or more TensorFlow Tensor objects. 
 dataset = TFDataset.from_rdd(testing_rdd,
                              names=["features"],
                              shapes=[[28, 28, 1]],
