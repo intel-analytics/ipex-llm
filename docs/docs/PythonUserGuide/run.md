@@ -175,13 +175,13 @@ PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=venv.zip/venv/
 To verify if Analytics Zoo can run successfully, run the following simple code:
 
 ```python
-import zoo.version
+import zoo
 from zoo.common.nncontext import *
 from zoo.pipeline.api.keras.models import *
 from zoo.pipeline.api.keras.layers import *
 
 # Get the current Analytics Zoo version
-zoo.version.__version__
+zoo.__version__
 # Create a SparkContext and initialize the BigDL engine.
 sc = init_nncontext()
 # Create a Sequential model containing a Dense layer.
