@@ -269,7 +269,7 @@ class And(JavaValue):
         :param first: first Trigger
         :param other: other Trigger
         """
-        JavaValue.__init__(self, None, first, list(other))
+        JavaValue.__init__(self, None, "float", first, list(other))
 
 class Or(JavaValue):
     """
@@ -287,7 +287,7 @@ class Or(JavaValue):
         :param first: first Trigger
         :param other: other Trigger
         """
-        JavaValue.__init__(self, None, first, list(other))
+        JavaValue.__init__(self, None, "float", first, list(other))
 
 class Poly(JavaValue):
     """
