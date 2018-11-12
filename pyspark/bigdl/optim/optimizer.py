@@ -259,6 +259,8 @@ class And(JavaValue):
 
 
     >>> a = And(MinLoss(0.1), MaxEpoch(2))
+    creating: createMinLoss
+    creating: createMaxEpoch
     creating: createAnd
     """
     def __init__(self, first, *other):
@@ -277,6 +279,8 @@ class Or(JavaValue):
 
 
     >>> o = Or(MinLoss(0.1), MaxEpoch(2))
+    creating: createMinLoss
+    creating: createMaxEpoch
     creating: createOr
     """
     def __init__(self, first, *other):
