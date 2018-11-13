@@ -120,6 +120,14 @@ class KerasNet(ZooKerasLayer):
                       self.value,
                       float(clip_norm))
 
+    def set_evaluate_status(self):
+        """
+        Set the model to be in evaluate status, i.e. remove the effect of Dropout, etc.
+        """
+        callBigDlFunc(self.bigdl_type, "zooSetEvaluateStatus",
+                      self.value)
+        return self
+
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, validation_data=None, distributed=True):
         """
         Train a model for a fixed number of epochs on a DataSet.
