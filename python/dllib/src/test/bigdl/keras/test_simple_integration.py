@@ -223,6 +223,12 @@ class TestSimpleIntegration(ZooTestCase):
         assert word_index["for"] == 11
         assert word_index["as"] == 20
 
+    def test_set_evaluate_status(self):
+        model = Sequential().add(Dropout(0.2, input_shape=(4, ))).set_evaluate_status()
+        input_data = np.random.random([3, 4])
+        output = model.forward(input_data)
+        assert np.allclose(input_data, output)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
