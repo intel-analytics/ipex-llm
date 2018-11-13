@@ -163,9 +163,7 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
    * @param logDir The base directory path to store training and validation logs.
    * @param appName The name of the application.
    */
-  def setTensorBoard(
-      logDir: String,
-      appName: String): Unit = {
+  def setTensorBoard(logDir: String, appName: String): Unit = {
     if (this.internalOptimizer != null) {
       internalOptimizer.setTrainSummary(TrainSummary(tensorBoardLogDir, tensorBoardAppName))
     }
@@ -226,6 +224,13 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
       this.internalOptimizer.setGradientClippingByl2Norm(clipNorm)
     }
     this.clipNorm = Some(clipNorm)
+  }
+
+  /**
+   * Set the model to be in evaluate status, i.e. remove the effect of Dropout, etc.
+   */
+  def setEvaluateStatus(): this.type = {
+    evaluate()
   }
 
   /**
