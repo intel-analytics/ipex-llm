@@ -17,7 +17,7 @@ package com.intel.analytics.zoo.pipeline.api.keras
 
 import java.io.{File => JFile}
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
 import com.intel.analytics.zoo.models.common.ZooModel
