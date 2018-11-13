@@ -281,6 +281,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     module.saveGraphTopology(logPath, backward)
   }
 
+  def zooSetEvaluateStatus(model: KerasNet[T]): KerasNet[T] = {
+    model.setEvaluateStatus()
+  }
+
   def zooPredictClasses(
       module: KerasNet[T],
       x: JavaRDD[Sample],
