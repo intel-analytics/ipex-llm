@@ -145,7 +145,7 @@ class ZooTestCase(TestCase):
         """
         model_class = model.__class__
         tmp_path = create_tmp_path() + ".bigdl"
-        model.save_model(tmp_path)
+        model.save_model(tmp_path, over_write=True)
         loaded_model = model_class.load_model(tmp_path)
         assert isinstance(loaded_model, model_class)
         self.compare_output_and_grad_input(model, loaded_model, input_data, rtol, atol)
