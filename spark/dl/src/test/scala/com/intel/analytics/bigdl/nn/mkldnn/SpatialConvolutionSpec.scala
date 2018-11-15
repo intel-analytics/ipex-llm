@@ -78,6 +78,55 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Equivalent.nearequals(grad1.toTensor, grad2) should be(true)
   }
 
+  "ConvolutionDnn with same padding" should "work correctly" in {
+    val nInputPlane = 2
+    val nOutputPlane = 4
+    val kW = 3
+    val kH = 3
+    val dW = 4
+    val dH = 4
+    val padW = -1
+    val padH = -1
+
+    val input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => Random.nextFloat())
+    RNG.setSeed(100)
+    val conv = SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+    RNG.setSeed(100)
+    val layer = nn.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(Array(2, 2, 23, 23), Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(Array(2, 4, 6, 6), Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(Array(2, 4, 6, 6), Memory.Format.nchw)), TrainingPhase)
+
+    val output = Tools.toNCHW(conv.forward(input).toTensor, conv.outputFormats()(0))
+    val grad1 = Tools.toNCHW(conv.updateGradInput(input, gradOutput).toTensor,
+      conv.gradInputFormats()(0))
+    conv.accGradParameters(input, gradOutput)
+
+    val weight1 = Tools.toOIHW(conv.weight.native, conv.parametersWithShape()._1(0))
+    val gradweight1 = Tools.toOIHW(conv.gradWeight.native, conv.parametersWithShape()._2(0))
+    val bias1 = Tools.dense(conv.bias.native).toTensor[Float]
+    val gradbias1 = Tools.dense(conv.gradBias.dense).toTensor
+
+    val output2 = layer.forward(input)
+    val grad2 = layer.updateGradInput(input, gradOutput)
+    layer.accGradParameters(input, gradOutput)
+
+    val weight2 = layer.weight
+    val gradweight2 = layer.gradWeight
+    val bias2 = layer.bias
+    val gradbias2 = layer.gradBias
+
+    Equivalent.nearequals(weight1, weight2.resizeAs(weight1)) should be(true)
+    Equivalent.nearequals(gradweight1, gradweight2.resizeAs(gradweight1)) should be(true)
+    Equivalent.nearequals(bias1, bias2) should be(true)
+    Equivalent.nearequals(gradbias1, gradbias2) should be(true)
+    Equivalent.nearequals(output.toTensor, output2) should be(true)
+    Equivalent.nearequals(grad1.toTensor, grad2) should be(true)
+  }
+
   "ConvolutionDnn with format=nchw and ngroup=2" should "work correctly" in {
     val nInputPlane = 2
     val nOutputPlane = 4
@@ -253,6 +302,26 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val nOutput = 2
     val kernel = 3
     val pad = 1
+    val stride = 2
+
+    val txt = prototxt(inputShape, name, nOutput, kernel, pad, stride)
+
+    val conv = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    conv.setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    Tools.compare(txt, conv, inputShape, outputShape)
+  }
+
+  "a simple convolution same padding compared with caffe" should "work correctly" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 2, 3, 3)
+    val name = "conv"
+    val nOutput = 2
+    val kernel = 3
+    val pad = -1
     val stride = 2
 
     val txt = prototxt(inputShape, name, nOutput, kernel, pad, stride)
