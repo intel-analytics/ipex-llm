@@ -18,13 +18,17 @@ package com.intel.analytics.bigdl.utils.mkldnn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import org.tensorflow.framework.NodeDef
-
+import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
-sealed class IROperate[T] {
+sealed class IROperate[T: ClassTag] {
+  val tag: ClassTag[T] = scala.reflect.classTag[T]
+  val numerics: TensorNumeric[T] = tag match {
+    case ClassTag.Float => TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
+    case ClassTag.Double => TensorNumeric.NumericDouble.asInstanceOf[TensorNumeric[T]]
+    case _ => throw new IllegalArgumentException(s"not supported class tag: ${tag}")
+  }
   def name: String = this.getClass.getSimpleName
 }
 

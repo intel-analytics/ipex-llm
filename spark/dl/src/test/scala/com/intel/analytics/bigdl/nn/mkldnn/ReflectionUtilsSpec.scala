@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.nn.mkldnn
 class ReflectionUtilsSpec extends BigDLSpecHelper {
 
   "test SpatialConvolution reflection" should "be right" in {
-    val model1 = nn.SpatialConvolution[Float](3, 32, 5, 5).asInstanceOf[Module[Float]]
+    val model1 = nn.SpatialConvolution[Float](2, 4, 3, 3, 4, 4, 0, 0).asInstanceOf[Module[Float]]
     val className = "com.intel.analytics.bigdl.utils.mkldnn.IRSpatialConvolution"
     val cls = Class.forName(className)
     val ir = ReflectUtils.reflectToIR[Float](model1, cls)
@@ -39,15 +39,15 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
     val cls3 = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.SpatialConvolution")
     val modelDnn = ReflectUtils.reflectFromIR(ir, cls3).asInstanceOf[mkldnn.SpatialConvolution]
 
-    val inputShape = Array(4, 3, 7, 7)
-    val outShape = Array(4, 32, 3, 3)
+    val inputShape = Array(2, 2, 23, 23)
+    val outShape = Array(2, 4, 6, 6)
     modelDnn.setRuntime(new MklDnnRuntime)
     modelDnn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
     modelDnn.initBwdPrimitives(Array(HeapData(outShape, Memory.Format.nchw)), TrainingPhase)
     modelDnn.initGradWPrimitives(Array(HeapData(outShape, Memory.Format.nchw)), TrainingPhase)
 
-    val input = Tensor[Float](4, 3, 7, 7).rand()
-    val gradOutput = Tensor[Float](4, 32, 3, 3).rand()
+    val input = Tensor[Float](inputShape).rand()
+    val gradOutput = Tensor[Float](outShape).rand()
 
     val out = model1.forward(input).toTensor[Float]
     val out1 = modelBlas.forward(input).toTensor[Float]
@@ -71,8 +71,6 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
 
     Equivalent.nearequals(Tools.dense(modelDnn.gradInput).toTensor,
       modelBlas.gradInput.toTensor[Float]) should be (true)
-
-    println("done")
   }
 
   "test BatchNorm reflection" should "be right" in {

@@ -37,7 +37,13 @@ object ReflectUtils {
     var i = 0
     while (i < fields.length) {
       val field = fields(i)
-      val name = field.getName
+      var name = field.getName
+      // handle for class tag and numerics
+      if (field.getType.getName == "scala.reflect.ClassTag") name = "tag"
+      if (field.getType.getName ==
+        "com.intel.analytics.bigdl.tensor.TensorNumericMath$TensorNumeric") {
+        name = "numerics"
+      }
       field.setAccessible(true)
       values(name) = field.get(o)
       i += 1
@@ -59,12 +65,10 @@ object ReflectUtils {
         val ptype = param.typeSignature
         if (ptype <:< universe.typeOf[ClassTag[_]]||
           ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
-          // todo: check
-          args(i) = ManifestFactory.Float
+          args(i) = nameAndValues("tag")
         } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
           || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
-          // todo: check
-          args(i) = TensorNumeric.NumericFloat
+          args(i) = nameAndValues("numerics")
         } else {
           val value = nameAndValues.get(name).getOrElse(null)
           args(i) = value
