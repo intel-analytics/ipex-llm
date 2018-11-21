@@ -225,7 +225,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     _gradInputFormats
   }
 
-  override private[mkldnn] def outputFormats() = {
+  override private[bigdl] def outputFormats() = {
     require(_outputFormats != null, "You should call initFwdPrimitives first")
     _outputFormats
   }

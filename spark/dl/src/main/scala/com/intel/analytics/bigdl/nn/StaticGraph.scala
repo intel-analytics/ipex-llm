@@ -15,11 +15,14 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.mkldnn._
 import com.intel.analytics.bigdl.utils.{Node, Util}
 
 import scala.reflect.ClassTag
@@ -146,5 +149,23 @@ class StaticGraph[T: ClassTag](
 
     gradInput = fetchModelGradInput()
     gradInput
+  }
+
+  def toIRgraph(inputFormats: Int = Memory.Format.nchw,
+                outputFormats: Int = Memory.Format.nc) : IRGraph[T] = {
+    // reminder: forwardExcutions have all nodes in the graph
+    val allNodes = forwardExecution
+    if (!BlasToIR[T].enableConvert(allNodes)) return null
+    if (inputFormats == Memory.Format.nhwc) return null
+
+    val oldToNew = BlasToIR[T].convert(allNodes)
+    val inputNodes = inputs.toArray.map(n => oldToNew.get(n).get)
+    val outputNodes = outputs.toArray.map(n => oldToNew.get(n).get)
+
+    val inputsIR = inputs.toArray.map(n => oldToNew.get(n).get)
+    val outputsIR = outputs.toArray.map(n => oldToNew.get(n).get)
+
+    IRGraph(inputsIR, outputsIR, variables,
+      inputFormats = inputFormats, outputFormats = outputFormats)
   }
 }
