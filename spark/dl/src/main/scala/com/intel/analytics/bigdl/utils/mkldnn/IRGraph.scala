@@ -52,12 +52,12 @@ class IRGraph[T: ClassTag](
     val outputFormats: Int = Memory.Format.nc)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] with Serializable {
 
-
-  var allNodes = new ArrayBuffer[Node[IRElement[T]]]
-  private[bigdl] var graph: Graph[T] = null
   @transient private var initFwd: Boolean = false
   @transient private var initBwd: Boolean = false
   @transient private var initAcc: Boolean = false
+
+  var allNodes = new ArrayBuffer[Node[IRElement[T]]]
+  private var graph: Graph[T] = null
 
   // init should find all nodes
   init()

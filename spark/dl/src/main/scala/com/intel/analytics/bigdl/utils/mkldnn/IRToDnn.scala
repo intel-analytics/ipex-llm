@@ -40,6 +40,7 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
 
   // converter function mappings
   private val IR2DnnMap = new mutable.HashMap[String, (IRElement[Float]) => Module[Float]]
+
   mapInit()
 
   private def mapInit(): Unit = {
@@ -47,8 +48,10 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
     IR2DnnMap("IRSpatialMaxPooling") = fromMaxPooling
     IR2DnnMap("IRSpatialAveragePooling") = fromAvgPooling
     IR2DnnMap("IRSpatialBatchNormalization") = fromSbn
+    IR2DnnMap("IRSpatialCrossMapLRN") = fromLRN
     IR2DnnMap("IRLinear") = fromLinear
     IR2DnnMap("IRReLU") = fromReLU
+    IR2DnnMap("IRJoinTable") = fromJoinTable
   }
 
   override def enableConvertLayer(layer: IRElement[Float]): Boolean = {
@@ -121,22 +124,43 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
     val t = node.getOp().asInstanceOf[IRSpatialConvolution[Float]]
     require(t.wRegularizer == null && t.bRegularizer == null,
       "Dnn SpatialConvolution can not support Regularizer")
+    require(t.format == DataFormat.NCHW, "Dnn SpatialConvolution only supports NCHW")
     val cls = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.SpatialConvolution")
     ReflectUtils.reflectFromIR(node, cls)
   }
 
   private def fromMaxPooling(node: IRElement[Float]) : Module[Float] = {
+    val t = node.getOp().asInstanceOf[IRSpatialMaxPooling[Float]]
+    require(t.format == DataFormat.NCHW, "Dnn SpatialMaxPooling only supports NCHW")
     val cls = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.MaxPooling")
     ReflectUtils.reflectFromIR(node, cls)
   }
 
   private def fromAvgPooling(node: IRElement[Float]) : Module[Float] = {
+    val t = node.getOp().asInstanceOf[IRSpatialAveragePooling[Float]]
+    require(t.format == DataFormat.NCHW, "Dnn SpatialAveragePooling only supports NCHW")
     val cls = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.AvgPooling")
+    ReflectUtils.reflectFromIR(node, cls)
+  }
+
+  private def fromLRN(node: IRElement[Float]) : Module[Float] = {
+    val t = node.getOp().asInstanceOf[IRSpatialCrossMapLRN[Float]]
+    require(t.format == DataFormat.NCHW, "Dnn LRN only supports NCHW")
+    val cls = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.LRN")
+    ReflectUtils.reflectFromIR(node, cls)
+  }
+
+  private def fromJoinTable(node: IRElement[Float]) : Module[Float] = {
+    val t = node.getOp().asInstanceOf[IRJoinTable[Float]]
+    require(t.nInputDims == 0,
+      s"Dnn JoinTable only supports nInputDims = 0, but get ${t.nInputDims}")
+    val cls = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.JoinTable")
     ReflectUtils.reflectFromIR(node, cls)
   }
 
   private def fromSbn(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialBatchNormalization[Float]]
+    require(t.dataFormat == DataFormat.NCHW, "Dnn SpatialBatchNormalization only supports NCHW")
     val nOutput = t.nOutput
     val eps = t.eps
     val momentum = t.momentum

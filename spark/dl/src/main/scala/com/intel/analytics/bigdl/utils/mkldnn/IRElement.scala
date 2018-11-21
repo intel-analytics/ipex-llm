@@ -97,22 +97,23 @@ case class IRSpatialCrossMapLRN[T: ClassTag](
             alpha: Double = 1.0,
             beta: Double = 0.75,
             k: Double = 1.0,
-            data_format: DataFormat = DataFormat.NCHW) extends IROperate[T]
-
-case class IRSelectTable[T: ClassTag](dimension: Int) extends IROperate[T]
+            format: DataFormat = DataFormat.NCHW) extends IROperate[T]
 
 case class IRReshape[T: ClassTag](
             size: Array[Int], batchMode: Option[Boolean] = None) extends IROperate[T]
 
 case class IRView[T: ClassTag]() extends IROperate[T]
 
-case class IRThreshold[T](th: Double = 1e-6, v: Double = 0.0,
-                          ip: Boolean = false) extends IROperate[T]
+case class IRSoftMax[T: ClassTag]() extends IROperate[T]
 
-case class IRLogSoftMax[T: ClassTag]() extends IROperate[T]
+case class IRSelectTable[T: ClassTag](dimension: Int) extends IROperate[T]
 
 case class IRCAddTable[T: ClassTag, D: ClassTag](inplace: Boolean = false) extends IROperate[T]
 
+case class IRJoinTable[T: ClassTag](dimension: Int,
+                                    nInputDims: Int = 0) extends IROperate[T]
+
+case class IRConcatTable[T: ClassTag]() extends IROperate[T]
 
 private[bigdl] class IRElement[T: ClassTag](
   val name: String,

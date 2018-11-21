@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
+/**
+ * Convert output to user defined layout
+ * @param outputLayOut output memory layout
+ * @param gradOutputLayout gradoutput memory layout
+ */
 class Output(outputLayOut: Int = Memory.Format.nc,
              gradOutputLayout: Int = Memory.Format.nc) extends MklDnnLayer {
-
-//  private var _outputLayOut : Int = outputLayOut
-//  private var _gradOutputLayout : Int = gradOutputLayout
 
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     require(inputs.length == 1, "Only accept one tensor as input")
