@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(1208478077576570643L)
 class ReLU[T: ClassTag](ip: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) {
+  implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) with MklInt8Convertible {
 }
 
 object ReLU {

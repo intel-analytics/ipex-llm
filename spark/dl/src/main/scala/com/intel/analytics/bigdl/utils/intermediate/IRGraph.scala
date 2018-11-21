@@ -170,6 +170,22 @@ private[bigdl] class IRGraph[T: ClassTag](
       initPrim = true
     }
   }
+
+  def setQuantize(value: Boolean): this.type = {
+    require(graph != null, s"you should build the graph first")
+    if (graph.isInstanceOf[DnnGraph]) {
+      graph.asInstanceOf[DnnGraph].setQuantize(value)
+    }
+    this
+  }
+
+  override def release(): Unit = {
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        graph.release()
+      }))
+    }
+  }
 }
 
 object IRGraph {

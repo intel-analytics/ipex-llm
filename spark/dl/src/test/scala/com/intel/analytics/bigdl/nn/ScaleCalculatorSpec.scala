@@ -411,6 +411,103 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     compareModules(concatTable1, loadedModule1)
   }
 
+  "Calculating scales" should "work correct for BLAS CAddTable Module" in {
+    val sampleMax = 999
+    val numElem = 12
+    val inputTable = T(
+      Tensor[Float](Array(1.0f, 2.0f), Array(2)),
+      Tensor[Float](Array(3.0f, 1.0f), Array(2)))
+
+    val caddTable0 = CAddTable[Float]()
+    caddTable0.setInputDimMask(0)
+    caddTable0.setOutputDimMask(0)
+    caddTable0.setWeightDimMask(0)
+
+    caddTable0.calcScales(null)
+
+    caddTable0.getInputScales().isEmpty should be (true)
+    caddTable0.getOutputScales().isEmpty should be (true)
+    caddTable0.getWeightScales().isEmpty should be (true)
+
+    // Global mask, non-null input
+    val caddTable1 = CAddTable()
+
+    caddTable1.calcScales(inputTable)
+    caddTable1.getOutputScales() should be (Array(Array[Float](4.0f)))
+    caddTable1.getInputScales() should be (
+      inputTable.toTable.map((pair: (Any, Any)) => {
+        val key = pair._1
+        val value: Tensor[Float] = pair._2.asInstanceOf[Tensor[Float]]
+        Array(value.abs().max())
+      }).toArray
+    )
+
+    caddTable1.saveModule(modelPath, weightPath, true)
+
+    val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    compareModules(caddTable1, loadedModule1)
+  }
+
+  "Calculating scales" should "work correct for BLAS ReLU Module" in {
+    val sampleMax = 999
+    val numElem = 12
+    val inputTensor = make1DTensor(numElem, sampleMax)
+
+    val relu0 = ReLU[Float]()
+    relu0.setInputDimMask(0)
+    relu0.setOutputDimMask(0)
+    relu0.setWeightDimMask(0)
+
+    relu0.calcScales(null)
+
+    relu0.getInputScales().isEmpty should be (true)
+    relu0.getOutputScales().isEmpty should be (true)
+    relu0.getWeightScales().isEmpty should be (true)
+
+    // Global mask, non-null input
+    val relu1 = ReLU[Float]()
+
+    relu1.calcScales(inputTensor)
+    relu1.getInputScales() should be (Array(Array[Float](sampleMax)))
+    relu1.getOutputScales() should be (Array(Array[Float](relu1.output.max())))
+
+    relu1.saveModule(modelPath, weightPath, true)
+
+    val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    compareModules(relu1, loadedModule1)
+  }
+
+  "Calculating scales" should "work correct for BLAS SpatialBatchNormalization Module" in {
+    val numElem = 12
+    val inputTensor = Tensor[Float](4, 2, 4, 4).rand(-100, 100)
+
+    val bn0 = SpatialBatchNormalization[Float](2)
+    bn0.setInputDimMask(0)
+    bn0.setOutputDimMask(0)
+    bn0.setWeightDimMask(0)
+
+    bn0.calcScales(null)
+
+    bn0.getInputScales().isEmpty should be (true)
+    bn0.getOutputScales().isEmpty should be (true)
+    bn0.getWeightScales().isEmpty should be (true)
+
+    // Global mask, non-null input
+    val bn1 = SpatialBatchNormalization[Float](2)
+
+    bn1.calcScales(inputTensor)
+    bn1.getInputScales() should be (Array(Array[Float](inputTensor.max())))
+    bn1.getOutputScales() should be (Array(Array[Float](bn1.output.max())))
+
+    bn1.saveModule(modelPath, weightPath, true)
+
+    val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    compareModules(bn1, loadedModule1)
+  }
+
   "Calculating scales" should "work correct for Graph Module" in {
     def makeTestingGraph(): Graph[Float] = {
       val input = Reshape(Array(1, 28, 28)).inputs()
@@ -461,6 +558,78 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .asInstanceOf[MklInt8Convertible]
     compareModules(graph1, loadedGraph1)
   }
+
+  "Calculating scales" should "work correct for DNN Graph Module" in {
+    import com.intel.analytics.bigdl.mkl.Memory
+
+    def dnnGraph(batchSize: Int, classNum: Int): mkldnn.DnnGraph = {
+      val inputShape = Array(batchSize, 1, 28, 28)
+      val outputShape = Array(batchSize, 10)
+
+      val input = mkldnn.Input(inputShape, Memory.Format.nchw).inputs()
+      val conv1 = mkldnn.SpatialConvolution(1, 20, 5, 5).setName("conv1").inputs(input)
+      val bn1 = mkldnn.SpatialBatchNormalization(20).setName("bn1").inputs(conv1)
+      val pool1 = mkldnn.MaxPooling(2, 2, 2, 2).setName("pool1").inputs(bn1)
+      val conv2 = mkldnn.SpatialConvolution(20, 50, 5, 5).setName("conv2").inputs(pool1)
+      val pool2 = mkldnn.MaxPooling(2, 2, 2, 2).setName("pool2").inputs(conv2)
+      val ip1 = mkldnn.Linear(50 * 4 * 4, 500).setName("ip1").inputs(pool2)
+      val relu1 = mkldnn.ReLU().setName("relu1").inputs(ip1)
+      val ip2 = mkldnn.Linear(500, 10).setName("ip2").inputs(relu1)
+      val output = mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)).inputs(ip2)
+
+      val graph = DnnGraph(Array(input), Array(output))
+      graph.evaluate()
+      graph.compile(InferencePhase)
+      graph
+    }
+
+    val inputTensor = Tensor(4, 1, 28, 28).rand()
+
+    // global mask, null input
+    val graph0 = dnnGraph(4, 10)
+    graph0.setInputDimMask(0)
+    graph0.setOutputDimMask(0)
+    graph0.calcScales(null)
+    graph0.getInputDimMask() should be (0)
+    graph0.getOutputDimMask() should be (0)
+    graph0.getInputScales().isEmpty should be (true)
+    graph0.getOutputScales().isEmpty should be (true)
+    graph0.release()
+
+    // global mask, non-null input
+    val graph1 = dnnGraph(4, 10)
+    graph1.setInputDimMask(0)
+    graph1.setOutputDimMask(0)
+    graph1.setWeightDimMask(1)
+    graph1.forward(inputTensor)
+    graph1.calcScales(inputTensor)
+    val graphOutput1 = graph1.output
+
+    graph1.getInputDimMask() should be (0)
+    graph1.getOutputDimMask() should be (0)
+    graphOutput1 should not be (null)
+
+    graph1.getForwardExecutions()
+      .filter(_.element.isInstanceOf[mkldnn.SpatialConvolution])
+      .map(_.element.asInstanceOf[mkldnn.SpatialConvolution])
+      .map(x => x.nOutputPlane == x.getWeightScales().flatten.length)
+      .exists(_ == false) should be (false)
+
+    graph1.getForwardExecutions()
+      .filter(_.element.isInstanceOf[mkldnn.SpatialBatchNormalization])
+      .map(_.element.asInstanceOf[mkldnn.SpatialBatchNormalization])
+      .map(x => x.getOutputScales().flatten.length == 1 && x.getInputScales().flatten.length == 1)
+      .exists(_ == false) should be (false)
+
+    graph1.getForwardExecutions()
+      .filter(_.element.isInstanceOf[mkldnn.ReLU])
+      .map(_.element.asInstanceOf[mkldnn.ReLU])
+      .map(x => x.getOutputScales().flatten.length == 1 && x.getInputScales().flatten.length == 1)
+      .exists(_ == false) should be (false)
+
+    graph1.release()
+  }
+
 
   private def graphValidationHelper(graph: Graph[Float], inputActvt: Activity): Unit = {
     val nextNodes = graph.getForwardExecutions()
