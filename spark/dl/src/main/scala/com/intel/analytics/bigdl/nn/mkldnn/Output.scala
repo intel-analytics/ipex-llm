@@ -25,7 +25,10 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
  * @param gradOutputLayout gradoutput memory layout
  */
 class Output(outputLayOut: Int = Memory.Format.nc,
-             gradOutputLayout: Int = Memory.Format.nc) extends MklDnnLayer {
+             gradOutputLayout: Int = -1) extends MklDnnLayer {
+
+  private val _outputLayOut = outputLayOut
+  private val _gradOutputLayout = if (gradOutputLayout == -1) outputLayOut else gradOutputLayout
 
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     require(inputs.length == 1, "Only accept one tensor as input")
@@ -34,31 +37,29 @@ class Output(outputLayOut: Int = Memory.Format.nc,
     val inputShape = inputs(0).shape
     val inputLayout = inputs(0).layout
 
-    if (inputLayout != outputLayOut) {
-      val outputShape = if (outputLayOut == Memory.Format.nhwc) {
-        // nchw -> nhwc
-        Array(inputShape(0), inputShape(2), inputShape(3), inputShape(1))
-      } else if (inputLayout == Memory.Format.nhwc) {
-        // nhwc -> nchw
-        Array(inputShape(0), inputShape(3), inputShape(1), inputShape(2))
-      } else inputShape
-      _outputFormats = Array(HeapData(outputShape, outputLayOut))
-      _inputFormats = _outputFormats
+    if (inputLayout != _outputLayOut) {
+
     } else {
       _outputFormats = inputs
       _inputFormats = inputs
     }
 
+    val outputShape = if (_outputLayOut == Memory.Format.nhwc) {
+      // nchw -> nhwc
+      Array(inputShape(0), inputShape(2), inputShape(3), inputShape(1))
+    } else if (inputLayout == Memory.Format.nhwc) {
+      // nhwc -> nchw
+      Array(inputShape(0), inputShape(3), inputShape(1), inputShape(2))
+    } else inputShape
+    _outputFormats = Array(HeapData(outputShape, _outputLayOut))
+    _inputFormats = _outputFormats
+
+
     (_inputFormats, _outputFormats)
   }
 
   override def updateOutput(input: Activity): Activity = {
-    if (input.toTensor[Float].isInstanceOf[DnnTensor[Float]]) {
-      if (output == null) output = Tensor[Float]()
-      output.toTensor[Float].resize(input.toTensor[Float].size()).copy(input.toTensor[Float])
-    } else {
-      output = input
-    }
+    output = input
     output
   }
 
@@ -69,8 +70,8 @@ class Output(outputLayOut: Int = Memory.Format.nc,
     val inputShape = grads(0).shape
     val inputLayout = grads(0).layout
 
-    if (inputLayout != gradOutputLayout) {
-      val outputShape = if (gradOutputLayout == Memory.Format.nhwc) {
+    if (inputLayout != _gradOutputLayout) {
+      val outputShape = if (_gradOutputLayout == Memory.Format.nhwc) {
         // nchw -> nhwc
         Array(inputShape(0), inputShape(2), inputShape(3), inputShape(1))
       } else if (inputLayout == Memory.Format.nhwc) {
@@ -78,7 +79,7 @@ class Output(outputLayOut: Int = Memory.Format.nc,
         Array(inputShape(0), inputShape(3), inputShape(1), inputShape(2))
       } else inputShape
 
-      _gradInputFormats = Array(HeapData(outputShape, gradOutputLayout))
+      _gradInputFormats = Array(HeapData(outputShape, _gradOutputLayout))
       _gradOutputFormats = _gradInputFormats
     } else {
       _gradInputFormats = grads
@@ -89,13 +90,7 @@ class Output(outputLayOut: Int = Memory.Format.nc,
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    if (gradOutput.toTensor[Float].isInstanceOf[DnnTensor[Float]]) {
-      if (gradInput == null) gradInput = Tensor[Float]()
-      gradInput.toTensor[Float].resize(gradOutput.toTensor[Float].size())
-        .copy(gradOutput.toTensor[Float])
-    } else {
-      gradInput = gradOutput
-    }
+    gradInput = gradOutput
     gradInput
   }
 
@@ -106,6 +101,6 @@ class Output(outputLayOut: Int = Memory.Format.nc,
 
 object Output {
   def apply(outputLayOut: Int = Memory.Format.nc,
-            gradOutputLayout: Int = Memory.Format.nc): Output =
+            gradOutputLayout: Int = -1): Output =
     new Output(outputLayOut, gradOutputLayout)
 }

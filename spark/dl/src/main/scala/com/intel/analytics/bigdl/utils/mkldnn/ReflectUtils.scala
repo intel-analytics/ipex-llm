@@ -19,8 +19,6 @@ package com.intel.analytics.bigdl.utils.mkldnn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
-import org.apache.commons.lang3.SerializationException
-
 import scala.collection.mutable
 import scala.reflect.{ClassTag, ManifestFactory}
 import scala.reflect.runtime._
@@ -34,30 +32,23 @@ object ReflectUtils {
     fields = fields ++ superFields
 
     val values = new mutable.HashMap[String, AnyRef]()
-    var i = 0
-    while (i < fields.length) {
-      val field = fields(i)
-      var name = field.getName
-      // handle for class tag and numerics
-      if (field.getType.getName == "scala.reflect.ClassTag") name = "tag"
-      if (field.getType.getName ==
-        "com.intel.analytics.bigdl.tensor.TensorNumericMath$TensorNumeric") {
-        name = "numerics"
-      }
+    fields.foreach(field => {
       field.setAccessible(true)
-      values(name) = field.get(o)
-      i += 1
-    }
+      values(field.getName) = field.get(o)
+    })
     values
   }
 
   // create layer2 object form layer1
-  private def reflection(layer1: Object, layer2: Class[_]) : Object = {
+  private def reflection(layer1: Object, layer2: Class[_],
+     tags: Array[ClassTag[_]], numerics: Array[TensorNumeric[_]]) : Object = {
     val nameAndValues = getFiledNameAndValues(layer1)
     val constructorMirror = getCostructorMirror(layer2)
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams.map(_.size).sum)
 
+    val tagIter = tags.iterator
+    val numericIter = numerics.iterator
     var i = 0
     constructorFullParams.foreach(map => {
       map.foreach(param => {
@@ -65,10 +56,12 @@ object ReflectUtils {
         val ptype = param.typeSignature
         if (ptype <:< universe.typeOf[ClassTag[_]]||
           ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
-          args(i) = nameAndValues("tag")
+          require(tagIter.hasNext, "If your module contains multiple class tags, " +
+            "do you forget to override getClassTagNumerics method")
+          args(i) = tagIter.next()
         } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
           || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
-          args(i) = nameAndValues("numerics")
+          args(i) = numericIter.next()
         } else {
           val value = nameAndValues.get(name).getOrElse(null)
           args(i) = value
@@ -76,13 +69,14 @@ object ReflectUtils {
         i += 1
       })
     })
-    println(layer1)
     constructorMirror.apply(args : _*).asInstanceOf[Object]
   }
 
   // create Module form IRElement
   def reflectFromIR[T : ClassTag](layer: IRElement[T], cls: Class[_]) : Module[T] = {
-    val blasLayer = ReflectUtils.reflection(layer.getOp(), cls).asInstanceOf[Module[T]]
+    val (tags, numerics) = layer.getOp().getClassTagNumerics()
+    val blasLayer = ReflectUtils.reflection(layer.getOp(), cls, tags, numerics)
+      .asInstanceOf[Module[T]]
 
     if (blasLayer.parameters() != null) {
       val params = blasLayer.getParameters()
@@ -98,7 +92,8 @@ object ReflectUtils {
 
   // create IRElement form Module
   def reflectToIR[T: ClassTag](layer: Module[T], cls: Class[_]) : IRElement[T] = {
-    val op = ReflectUtils.reflection(layer, cls).asInstanceOf[IROperate[T]]
+    val (tags, numerics) = layer.getClassTagNumerics()
+    val op = ReflectUtils.reflection(layer, cls, tags, numerics).asInstanceOf[IROperate[T]]
     val weightsAndBias =
       if (layer.parameters() != null) layer.getParameters() else (null, null)
     val element = IRElement[T](

@@ -29,6 +29,9 @@ sealed class IROperate[T: ClassTag] {
     case ClassTag.Double => TensorNumeric.NumericDouble.asInstanceOf[TensorNumeric[T]]
     case _ => throw new IllegalArgumentException(s"not supported class tag: ${tag}")
   }
+  def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array(scala.reflect.classTag[T]), Array(numerics))
+  }
   def name: String = this.getClass.getSimpleName
 }
 

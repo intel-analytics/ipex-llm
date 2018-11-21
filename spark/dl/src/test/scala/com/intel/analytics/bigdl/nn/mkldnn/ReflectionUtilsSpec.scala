@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import javassist.bytecode.stackmap.TypeData.ClassName
+
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -24,6 +26,8 @@ import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 import com.intel.analytics.bigdl.utils.mkldnn._
 import com.intel.analytics.bigdl.{Module, nn}
 import com.intel.analytics.bigdl.nn.mkldnn
+
+import scala.reflect.ClassTag
 
 class ReflectionUtilsSpec extends BigDLSpecHelper {
 
@@ -107,7 +111,7 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
     val weight2 = modelBlas.getParameters()._1
 
     Equivalent.nearequals(weight1, weight2) should be (true)
-    Equivalent.nearequals(gradWeight1, gradWeight2) should be (true)
+    Equivalent.nearequals(gradWeight1, gradWeight2, 1e-4) should be (true)
 
     Equivalent.nearequals(Tools.dense(modelDnn.gradInput).toTensor,
       modelBlas.gradInput.toTensor[Float]) should be (true)
