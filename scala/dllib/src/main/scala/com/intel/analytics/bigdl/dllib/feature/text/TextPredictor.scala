@@ -22,12 +22,11 @@ import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
-import com.intel.analytics.zoo.pipeline.api.keras.models.KerasNet
 
 import scala.reflect.ClassTag
 
 class TextPredictor[T: ClassTag](
-    model: KerasNet[T],
+    model: Module[T],
     batchPerThread: Int)(implicit ev: TensorNumeric[T]) extends Serializable {
 
   def predict(
@@ -39,14 +38,14 @@ class TextPredictor[T: ClassTag](
 
 object TextPredictor {
   def apply[T: ClassTag](
-    model: KerasNet[T],
+    model: Module[T],
     batchPerThread: Int)(implicit ev: TensorNumeric[T]): TextPredictor[T] = {
     new TextPredictor[T](model, batchPerThread)
   }
 
   def predict[T: ClassTag](
     textSet: DistributedTextSet,
-    model: KerasNet[T],
+    model: Module[T],
     batchPerThread: Int,
     shareBuffer: Boolean = false)(implicit ev: TensorNumeric[T]): DistributedTextSet = {
     val rdd = textSet.rdd
