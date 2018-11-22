@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.zoo.pipeline.api.net
 
+import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
+
 import com.esotericsoftware.kryo.{Kryo, KryoSerializable}
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.intel.analytics.bigdl.Module
@@ -26,6 +28,7 @@ import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.zoo.pipeline.api.Predictable
 import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasLayerWrapper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import org.apache.spark.utils.SparkUtils
@@ -41,8 +44,10 @@ import scala.reflect.ClassTag
 import scala.reflect.io.Path
 
 
-class GraphNet[T: ClassTag](graph: Graph[T])(implicit ev: TensorNumeric[T])
-  extends Container[Activity, Activity, T] with NetUtils[T, GraphNet[T]] {
+class GraphNet[T](graph: Graph[T])(implicit val tag: ClassTag[T], implicit val ev: TensorNumeric[T])
+  extends Container[Activity, Activity, T] with NetUtils[T, GraphNet[T]] with Predictable[T] {
+
+  protected val module: Module[T] = this
 
   // need to refer this object to make the register effective
   GraphNet

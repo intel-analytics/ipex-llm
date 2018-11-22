@@ -18,10 +18,15 @@ package com.intel.analytics.zoo.pipeline.api.net
 import java.io.{File, FileInputStream, InputStream}
 import java.nio._
 
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
+import com.intel.analytics.zoo.pipeline.api.{Predictable, Predictor}
 import com.intel.analytics.zoo.pipeline.api.net.TFNet.TFGraphHolder
+import org.apache.spark.rdd.RDD
 import org.tensorflow.framework.GraphDef
 import org.tensorflow.types.UInt8
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
@@ -31,6 +36,7 @@ import org.json4s._
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
 
 /**
  * [[TFNet]] wraps a tensorflow subgraph as a layer, and use tensorflow to
@@ -44,10 +50,14 @@ import scala.collection.mutable
  *
  * @param graphDef serialized representation of a graph
  */
-class TFNet(graphDef: TFGraphHolder,
+class TFNet(private val graphDef: TFGraphHolder,
                     val graphMeta: Meta,
                     config: Array[Int])
-  extends AbstractModule[Activity, Activity, Float] {
+  extends AbstractModule[Activity, Activity, Float] with Predictable[Float] {
+
+  protected val module: Module[Float] = this
+  implicit val ev = TensorNumeric.NumericFloat
+  implicit val tag: ClassTag[Float] = ClassTag.Float
 
   // todo if an exception is thrown during forward or backward, there will be memory leak
   // maybe create a resource manager to handle tensor creation and destruction
@@ -90,7 +100,7 @@ class TFNet(graphDef: TFGraphHolder,
   @transient
   private lazy val tensorManager = new ResourceManager()
 
-  private[zoo] def graph = graphDef.tfGraph
+  private[zoo] def graph = graphDef.tfGraph.graph
 
   val inputNames: Array[String] = graphMeta.inputNames
   private val inputTypes = inputNames.map(name2type)
@@ -185,7 +195,7 @@ class TFNet(graphDef: TFGraphHolder,
 
   @transient
   private[zoo] lazy val sess = {
-    val sess = new Session(graphDef.tfGraph, config.map(_.toByte))
+    val sess = new Session(this.graph, config.map(_.toByte))
     sess
   }
   @transient
@@ -418,6 +428,16 @@ class TFNet(graphDef: TFGraphHolder,
     (weights, gradWeights)
   }
 
+  override def finalize(): Unit = {
+    super.finalize()
+    this.sess.close()
+  }
+
+  override def release(): Unit = {
+    super.release()
+    this.sess.close()
+  }
+
   private def getOutput(idx: Int): Tensor[Float] = {
     if (output.isTable) {
       output.toTable[Tensor[Float]](idx)
@@ -551,17 +571,24 @@ object TFNet {
   @transient
   private lazy val inDriver = NetUtils.isDriver
 
-  private val graphRegistry = new RegistryMap[Graph]()
+  private val graphRegistry = new RegistryMap[ClosableGraph]()
 
   private val graphDefRegistry = new RegistryMap[Array[Byte]]()
 
-  class TFGraphHolder(@transient var tfGraph: Graph, private var id: String)
+  class ClosableGraph(val graph: Graph) {
+    override def finalize(): Unit = {
+      println("in ClosableGraph finalize")
+      graph.close()
+    }
+  }
+
+  class TFGraphHolder(@transient var tfGraph: ClosableGraph, private var id: String)
     extends SerializationHolder {
 
     override def writeInternal(out: CommonOutputStream): Unit = {
       val (graphDef, _) = graphDefRegistry.getOrCreate(id) {
         timing("export as graph def") {
-          tfGraph.toGraphDef
+          tfGraph.graph.toGraphDef
         }
       }
       val len = graphDef.length
@@ -602,11 +629,12 @@ object TFNet {
         timing("creating graph obj from graph def") {
           val g = new Graph()
           g.importGraphDef(graphDef)
-          g
+          new ClosableGraph(g)
         }
 
       }
       tfGraph = graph
+      id = id
     }
   }
 
@@ -700,7 +728,7 @@ object TFNet {
     val graph = new Graph()
     graph.importGraphDef(graphDef.toByteArray)
 
-    new TFNet(new TFGraphHolder(graph, graphId), graphMeta, config.map(_.toInt))
+    new TFNet(new TFGraphHolder(new ClosableGraph(graph), graphId), graphMeta, config.map(_.toInt))
   }
 
   /**
