@@ -269,7 +269,7 @@ if __name__ == "__main__":
     train_transformer = Pipeline([PixelBytesToMat(),
                                   Resize(256, 256),
                                   RandomCropper(image_size, image_size, True, "Random", 3),
-                                  ChannelNormalize(123, 117, 104),
+                                  ChannelNormalize(123.0, 117.0, 104.0),
                                   MatToTensor(to_rgb=False),
                                   ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                   ])
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     val_transformer = Pipeline([PixelBytesToMat(),
                                 Resize(256, 256),
                                 RandomCropper(image_size, image_size, False, "Center", 3),
-                                ChannelNormalize(123, 117, 104),
+                                ChannelNormalize(123.0, 117.0, 104.0),
                                 MatToTensor(to_rgb=False),
                                   ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                 ])
