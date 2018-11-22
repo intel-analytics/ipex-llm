@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.python
 import java.util
 import java.util.{List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.Criterion
+import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 
 import scala.collection.JavaConverters._
@@ -42,6 +42,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.objectives._
 import org.apache.spark.api.java.JavaRDD
 import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.text.TextSet
+import com.intel.analytics.zoo.pipeline.api.Predictable
 import com.intel.analytics.zoo.pipeline.api.net.GraphNet
 
 import scala.collection.mutable.ArrayBuffer
@@ -137,80 +138,6 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     module.fit(trainData, nbEpoch, valData)
   }
 
-  def zooPredict(
-      module: AbstractModule[Activity, Activity, T],
-      x: JavaRDD[Sample],
-      batchPerThread: Int): JavaRDD[JList[Object]] = {
-    val resRDD = module match {
-      case net: KerasNet[T] =>
-        net.predict(x.rdd.map(toJSample), batchPerThread)
-      case _ =>
-        module.predict(x.rdd.map(toJSample), batchPerThread * x.getNumPartitions)
-    }
-
-    resRDD.map(activityToList).toJavaRDD()
-  }
-
-  def zooForward(model: AbstractModule[Activity, Activity, T],
-                   input: JList[JTensor],
-                   inputIsTable: Boolean): JList[Object] = {
-    val inputActivity = jTensorsToActivity(input, inputIsTable)
-    val outputActivity = model.forward(inputActivity)
-    activityToList(outputActivity)
-  }
-
-  def activityToList(outputActivity: Activity): JList[Object] = {
-    if (outputActivity.isInstanceOf[Tensor[T]]) {
-      val list = new util.ArrayList[Object]()
-      list.add(toJTensor(outputActivity.toTensor))
-      list
-    } else {
-      table2JList(outputActivity.toTable)
-    }
-  }
-
-  private def table2JList(t: Table): JList[Object] = {
-    var i = 1
-    val list = new util.ArrayList[Object]()
-    while (i <= t.length()) {
-      val item = t[Object](i)
-      if (item.isInstanceOf[Tensor[T]]) {
-        list.add(toJTensor(item.asInstanceOf[Tensor[T]]))
-      } else if (item.isInstanceOf[Table]) {
-        list.add(table2JList(item.asInstanceOf[Table]))
-      } else {
-        throw new IllegalArgumentException(s"Table contains unrecognizable objects $item")
-      }
-      i += 1
-    }
-    list
-  }
-
-  def zooPredict(
-      module: KerasNet[T],
-      x: JList[JTensor],
-      batchPerThread: Int): JList[JList[Object]] = {
-    val sampleArray = toSampleArray(x.asScala.toList.map{f => toTensor(f)})
-    val localPredictor = LocalPredictor(module,
-      batchPerCore = batchPerThread)
-    val result = localPredictor.predict(sampleArray)
-    result.map(activityToList).toList.asJava
-  }
-
-  def zooPredict(
-      module: KerasNet[T],
-      x: ImageSet,
-      batchPerThread: Int): ImageSet = {
-    module.predict(x, batchPerThread)
-  }
-
-  def zooPredict(
-      module: KerasNet[T],
-      x: TextSet,
-      batchPerThread: Int): TextSet = {
-    module.predict(x, batchPerThread)
-  }
-
   private def processEvaluateResult(
     resultArray: Array[(ValidationResult, ValidationMethod[T])]): JList[EvaluatedResult] = {
     resultArray.map { result =>
@@ -283,14 +210,6 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def zooSetEvaluateStatus(model: KerasNet[T]): KerasNet[T] = {
     model.setEvaluateStatus()
-  }
-
-  def zooPredictClasses(
-      module: KerasNet[T],
-      x: JavaRDD[Sample],
-      batchPerThread: Int,
-      zeroBasedLabel: Boolean = true): JavaRDD[Int] = {
-    module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
   }
 
   def kerasNetToModel(value: KerasNet[T]): Model[T] = {
