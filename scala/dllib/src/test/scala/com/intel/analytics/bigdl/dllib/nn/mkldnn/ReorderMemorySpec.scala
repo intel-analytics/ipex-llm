@@ -48,4 +48,59 @@ class ReorderMemorySpec extends BigDLSpecHelper {
     grad should be(input)
   }
 
+  "Reorder from nhwc to nchw" should "be correct" in {
+    val shapeNCHW = Array(4, 3, 7, 7)
+    val shapeNHWC = Array(4, 7, 7, 3)
+    val inputFormats = HeapData(shapeNHWC, Memory.Format.nhwc)
+    val outputFormats = HeapData(shapeNCHW, Memory.Format.nchw)
+    val gradInputFormats = HeapData(shapeNCHW, Memory.Format.nchw)
+    val gradOutputFormats = HeapData(shapeNHWC, Memory.Format.nhwc)
+
+    val layer = ReorderMemory(inputFormat = inputFormats, outputFormat = outputFormats,
+      gradInputFormat = gradInputFormats, gradOutputFomat = gradOutputFormats)
+
+    layer.setRuntime(new MklDnnRuntime())
+    layer.initFwdPrimitives(Array(inputFormats), Phase.TrainingPhase)
+    layer.initBwdPrimitives(Array(gradOutputFormats), Phase.TrainingPhase)
+
+
+    val input = Tensor[Float](4, 7, 7, 3).rand()
+    val gradOutput = input.clone()
+    val output = layer.forward(input).toTensor[Float]
+    val grad = layer.backward(input, gradOutput)
+
+    val inputNHWC = input.transpose(2, 4).transpose(3, 4).contiguous().clone()
+
+    inputNHWC should be(output)
+    inputNHWC should be(grad)
+  }
+
+  "Reorder from nchw to nhwc" should "be correct" in {
+    val shapeNCHW = Array(4, 3, 7, 7)
+    val shapeNHWC = Array(4, 7, 7, 3)
+    val inputFormats = HeapData(shapeNCHW, Memory.Format.nchw)
+    val outputFormats = HeapData(shapeNHWC, Memory.Format.nhwc)
+    val gradInputFormats = HeapData(shapeNHWC, Memory.Format.nhwc)
+    val gradOutputFormats = HeapData(shapeNCHW, Memory.Format.nchw)
+
+    val layer = ReorderMemory(inputFormat = inputFormats, outputFormat = outputFormats,
+      gradInputFormat = gradInputFormats, gradOutputFomat = gradOutputFormats)
+
+    layer.setRuntime(new MklDnnRuntime())
+    layer.initFwdPrimitives(Array(inputFormats), Phase.TrainingPhase)
+    layer.initBwdPrimitives(Array(gradOutputFormats), Phase.TrainingPhase)
+
+    val input = Tensor[Float](4, 3, 7, 7).rand()
+    val gradOutput = input.clone()
+    val output = layer.forward(input).toTensor[Float]
+    val grad = layer.backward(input, gradOutput).toTensor[Float]
+
+    val inputNHWC = input.transpose(2, 3).transpose(3, 4).contiguous().clone()
+
+    // grad.resizeAs(inputNHWC)
+
+    inputNHWC should be(output)
+    inputNHWC should be(grad)
+  }
+
 }
