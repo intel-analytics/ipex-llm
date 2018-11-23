@@ -47,6 +47,7 @@ class SpatialBatchNormalization(
   @transient private var updateOutputMemoryPrimitives: Array[Long] = _
   @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
   @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient private var modelPhase: Phase = null
 
   private val mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
   private val variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
@@ -105,6 +106,20 @@ class SpatialBatchNormalization(
     val variance = 4
   }
 
+  private def initPhase(phase: Phase): Unit = {
+    if (phase != null) modelPhase = phase
+    (isTraining(), modelPhase) match {
+      case (true, InferencePhase) =>
+        train = false
+      case (false, TrainingPhase) =>
+        train = true
+      case (true, null) =>
+        modelPhase = TrainingPhase
+      case (false, null) =>
+        modelPhase = InferencePhase
+      case _ =>
+    }
+  }
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     val m = inputs(0).shape.product / this.nOutput
     biasFactor = if (m > 1) { m.toFloat / (m - 1) } else { 1 }
@@ -116,7 +131,9 @@ class SpatialBatchNormalization(
     // weight and bias should be combined
     val weightAndBias: NativeData = NativeData(Array(nOutput * 2), Memory.Format.x)
 
-    forwardDesc = phase match {
+    // init phase status
+    initPhase(phase)
+    forwardDesc = modelPhase match {
       case TrainingPhase =>
         MklDnn.BatchNormForwardDescInit(PropKind.Forward,
           inputs(0).getMemoryDescription(), eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
@@ -151,7 +168,7 @@ class SpatialBatchNormalization(
     _inputFormats(0) = MemoryData.operationWant(primDesc, Query.SrcPd)
     _outputFormats(0) = MemoryData.operationWant(primDesc, Query.DstPd)
 
-    val (srcs, dsts) = if (phase == TrainingPhase) {
+    val (srcs, dsts) = if (modelPhase == TrainingPhase) {
       val srcs = Array(inputFormats()(0), weightAndBias).map(_.getPrimitive(runtime))
       val dsts = Array(outputFormats()(0), mean, variance).map(_.getPrimitive(runtime))
       (srcs, dsts)
@@ -176,12 +193,6 @@ class SpatialBatchNormalization(
 
     if (updateOutputTensors != null) {
       updateOutputTensors = null
-    }
-
-    (isTraining(), phase) match {
-      case (true, InferencePhase) => train = false
-      case (false, TrainingPhase) => train = true
-      case _ =>
     }
 
     (inputFormats(), outputFormats())
@@ -239,8 +250,10 @@ class SpatialBatchNormalization(
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
     _gradOutputFormats = Array(NativeData(outputFormats()(0).shape, outputFormats()(0).layout))
 
+    // init phase status
+    initPhase(phase)
     // [PERF] the format of gradInput should be the same as input
-    val backwardDesc = phase match {
+    val backwardDesc = modelPhase match {
       case TrainingPhase =>
         MklDnn.BatchNormBackwardDescInit(PropKind.Backward,
           inputFormats()(0).getMemoryDescription(),
