@@ -51,17 +51,14 @@ trait MklDnnModule extends MklDnnModuleHelper {
   private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData], phase: Phase): Array[MemoryData]
   = grad
 
-  private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData]) = {
-    initFwdPrimitives(inputs, null)
-  }
+  private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData])
+  : (Array[MemoryData], Array[MemoryData]) = initFwdPrimitives(inputs, null)
 
-  private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData]) = {
-    initBwdPrimitives(grad, null)
-  }
+  private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData])
+  : (Array[MemoryData], Array[MemoryData]) = initBwdPrimitives(grad, null)
 
-  private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData]) = {
-    initGradWPrimitives(grad, null)
-  }
+  private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData])
+  : Array[MemoryData] = initGradWPrimitives(grad, null)
 
   private[mkldnn] def inputFormats(): Array[MemoryData]
 

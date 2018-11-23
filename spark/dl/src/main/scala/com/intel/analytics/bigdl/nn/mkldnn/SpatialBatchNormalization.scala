@@ -117,6 +117,7 @@ class SpatialBatchNormalization(
         modelPhase = TrainingPhase
       case (false, null) =>
         modelPhase = InferencePhase
+      case _ =>
     }
   }
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
