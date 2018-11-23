@@ -20,20 +20,24 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.apache.spark.SparkContext
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class BatchNormalizationSpec extends FlatSpec with Matchers {
+class BatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
+  before {
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("spark.master", "local[2]")
+    Engine.init
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("spark.master")
+  }
 
   "BacthNormalization parameter sync" should "work properly" in {
-    val conf = Engine.createSparkConf().setAppName("Test sync")
-      .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
-    val sc = SparkContext.getOrCreate(conf)
-
-    Engine.init
-
     val bn = BatchNormalization[Float](2)
 
     bn.setParallism(1)
