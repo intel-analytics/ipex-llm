@@ -78,7 +78,9 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   var dataSet: DistributedDataSet[MiniBatch[Float]] = null
 
   override def doBefore(): Unit = {
-    sc = new SparkContext("local[1]", "RDDOptimizerSpec")
+    val conf = Engine.createSparkConf().setAppName("RDDOptimizerSpec")
+      .setMaster("local[1]")
+    sc = SparkContext.getOrCreate(conf)
 
     val rdd = sc.parallelize(1 to (256 * 4), 4).map(prepareData)
 
