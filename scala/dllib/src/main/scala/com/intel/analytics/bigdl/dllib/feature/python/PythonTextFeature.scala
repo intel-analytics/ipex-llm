@@ -92,14 +92,14 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
     Normalizer()
   }
 
-  def createWordIndexer(map: JMap[String, Int], replaceElement: Int): WordIndexer = {
-    WordIndexer(map.asScala.toMap, replaceElement)
+  def createWordIndexer(map: JMap[String, Int]): WordIndexer = {
+    WordIndexer(map.asScala.toMap)
   }
 
   def createSequenceShaper(
       len: Int,
       truncMode: String,
-      padElement: String): SequenceShaper = {
+      padElement: Int): SequenceShaper = {
     SequenceShaper(len, toScalaTruncMode(truncMode), padElement)
   }
 
@@ -251,8 +251,9 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
   def textSetShapeSequence(
       textSet: TextSet,
       len: Int,
-      mode: String): TextSet = {
-    textSet.shapeSequence(len, toScalaTruncMode(mode))
+      truncMode: String,
+      padElement: Int): TextSet = {
+    textSet.shapeSequence(len, toScalaTruncMode(truncMode), padElement)
   }
 
   def textSetWord2idx(

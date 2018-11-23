@@ -16,40 +16,29 @@
 
 package com.intel.analytics.zoo.feature.text
 
-import org.apache.log4j.Logger
-
 /**
  * Given a wordIndex map, transform tokens to corresponding indices.
+ * Those words not in the map will be aborted.
  * Need to tokenize first.
  * Input key: TextFeature.tokens
  * Output key: TextFeature.indexedTokens
  *
  * @param map Map of each word (String) and its index (integer).
- *            It is recommended that the map contains all the words in your corpus.
- * @param replaceElement Integer. The element to fill if the word is not in
- *                       the given map. Default is 0 with the convention that
- *                       0 is reserved for unknown words.
  */
-class WordIndexer(
-   val map: Map[String, Int],
-   val replaceElement: Int = 0) extends TextTransformer {
+class WordIndexer(val map: Map[String, Int]) extends TextTransformer {
 
   require(map != null, "map for WordIndexer can't be null")
-
-  if (map.values.exists(_ == replaceElement)) {
-    WordIndexer.logger.warn(s"replaceElement $replaceElement exists in the wordIndex map")
-  }
 
   override def transform(feature: TextFeature): TextFeature = {
     require(feature.contains(TextFeature.tokens), "TextFeature doesn't contain tokens yet, " +
       "please tokenize first")
-    val tokens = feature[Array[String]](TextFeature.tokens)
-    val indices = tokens.map(word => {
+    val tokens = feature.getTokens
+    val indices = tokens.flatMap(word => {
       if (map.contains(word)) {
-        map(word).toFloat
+        Some(map(word).toFloat)
       }
       else {
-        replaceElement.toFloat
+        None
       }
     })
     feature(TextFeature.indexedTokens) = indices
@@ -58,11 +47,7 @@ class WordIndexer(
 }
 
 object WordIndexer {
-  val logger: Logger = Logger.getLogger(getClass)
-
-  def apply(
-     wordIndex: Map[String, Int],
-     replaceElement: Int = 0): WordIndexer = {
+  def apply(wordIndex: Map[String, Int]): WordIndexer = {
     new WordIndexer(wordIndex)
   }
 }

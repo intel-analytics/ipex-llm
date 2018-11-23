@@ -27,7 +27,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.util.StringUtils
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkContext, SparkException}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
@@ -93,22 +93,12 @@ abstract class TextSet {
   }
 
   /**
-   * Do normalization on tokens. Need to tokenize first.
+   * Do normalization on tokens.
+   * Need to tokenize first.
    * See Normalizer for more details.
    */
   def normalize(): TextSet = {
     transform(Normalizer())
-  }
-
-  /**
-   * Shape the sequence of tokens to a fixed length. Padding element will be "##".
-   * Need to tokenize first.
-   * See SequenceShaper for more details.
-   */
-  def shapeSequence(
-     len: Int,
-     truncMode: TruncMode = TruncMode.pre): TextSet = {
-    transform(SequenceShaper(len, truncMode))
   }
 
   /**
@@ -132,6 +122,18 @@ abstract class TextSet {
       generateWordIndexMap(removeTopN, maxWordsNum)
     }
     transform(WordIndexer(wordIndex))
+  }
+
+  /**
+   * Shape the sequence of indices to a fixed length.
+   * Need to word2idx first.
+   * See SequenceShaper for more details.
+   */
+  def shapeSequence(
+      len: Int,
+      truncMode: TruncMode = TruncMode.pre,
+      padElement: Int = 0): TextSet = {
+    transform(SequenceShaper(len, truncMode, padElement))
   }
 
   /**
