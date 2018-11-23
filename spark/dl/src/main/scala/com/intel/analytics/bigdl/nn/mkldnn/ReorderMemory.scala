@@ -31,13 +31,30 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
   private var realgradInput : Array[MemoryData] = null
   private var realgradOutput : Array[MemoryData] = null
 
+  private def initMemory(src: MemoryData, shape: Array[Int], layout: Int)
+    : Array[MemoryData] = {
+    src match {
+      case h: HeapData => Array(HeapData(shape, layout))
+      case n: NativeData => Array(NativeData(shape, layout))
+      case _ => throw new UnsupportedOperationException("Not support such memory format")
+    }
+  }
+
+  private def shapeToString(shape: Array[Int]): String = {
+    var name = ""
+    shape.foreach(s => name += s.toString + ",")
+    name
+  }
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = if (inputFormat == null) inputs else Array(inputFormat)
     require(_inputFormats.length == 1, "Only accept one tensor as input")
 
     if (outputFormat == null) _outputFormats = _inputFormats
+    shapeToString(_inputFormats(0).shape)
+
     require(_inputFormats(0).shape.product == _outputFormats(0).shape.product,
-      "input output memory not match")
+      "input output memory not match, input shape " + shapeToString(_inputFormats(0).shape)
+        + "output shape " + shapeToString(_outputFormats(0).shape))
 
     val inputShape = _inputFormats(0).shape
     val outputShape = _outputFormats(0).shape
@@ -49,10 +66,10 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     if (inputLayout != outputLayout) {
       if (inputLayout == Memory.Format.nhwc) {
         // remind: if format of input MemoryData is nhwc, its shape should be output shape
-        realInput = Array(HeapData(outputShape, inputLayout))
+        realInput = initMemory(_inputFormats(0), outputShape, inputLayout)
       } else if (outputLayout == Memory.Format.nhwc) {
         // remind: if format of output MemoryData is nhwc, its shape should be input shape
-       realOutput = Array(HeapData(inputShape, outputLayout))
+        realOutput = initMemory(_outputFormats(0), inputShape, outputLayout)
       }
     }
 
@@ -78,12 +95,8 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     realInput.map(_.getPrimitive(runtime)) ++ realOutput.map(_.getPrimitive(runtime))
   }
   override def updateOutput(input: Activity): Activity = {
-    if (_inputFormats(0).layout == _outputFormats(0).layout) {
-      output = input
-    } else {
-      output = super.updateOutput(input)
-      output.toTensor[Float].resize(_outputFormats(0).shape)
-    }
+    output = super.updateOutput(input)
+    output.toTensor[Float].resize(_outputFormats(0).shape)
     output
   }
 
@@ -97,7 +110,9 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     _gradOutputFormats = if (gradOutputFormat == null) grads else Array(gradOutputFormat)
     require(_gradOutputFormats.length == 1, "Only accept one tensor as input")
     require(_gradOutputFormats(0).shape.product == _gradInputFormats(0).shape.product,
-      "input output memory not match")
+      "gradInput and gradOutput memory not match," +
+        "gradInput shape " + shapeToString(_gradInputFormats(0).shape)
+        + "gradOutput shape " + shapeToString(_gradOutputFormats(0).shape))
 
     val gradInputShape = _gradInputFormats(0).shape
     val gradOutputShape = _gradOutputFormats(0).shape
@@ -108,11 +123,11 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 
     if (gradInputLayout != gradOutputLayout) {
       if (gradOutputLayout == Memory.Format.nhwc) {
-        // todo: if format of gradOutput MemoryData is nhwc, its shape should be gradInput shape
-        realgradOutput = Array(HeapData(gradInputShape, gradOutputLayout))
+        // remind: if format of gradOutput MemoryData is nhwc, its shape should be gradInput shape
+        realgradOutput = initMemory(_gradOutputFormats(0), gradInputShape, gradOutputLayout)
       } else if (gradInputLayout == Memory.Format.nhwc) {
-        // todo: if format of gradInput MemoryData is nhwc, its shape should be gradOutput shape
-        realgradInput = Array(HeapData(gradOutputShape, gradInputLayout))
+        // remind: if format of gradInput MemoryData is nhwc, its shape should be gradOutput shape
+        realgradInput = initMemory(_gradInputFormats(0), gradOutputShape, gradInputLayout)
       }
     }
 
@@ -129,12 +144,8 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    if (_gradInputFormats(0).layout == _gradOutputFormats(0).layout) {
-      gradInput = gradOutput
-    } else {
-      gradInput = super.updateGradInput(input, gradOutput)
-      gradInput.toTensor[Float].resize(_gradInputFormats(0).shape)
-    }
+    gradInput = super.updateGradInput(input, gradOutput)
+    gradInput.toTensor[Float].resize(_gradInputFormats(0).shape)
     gradInput
   }
 
