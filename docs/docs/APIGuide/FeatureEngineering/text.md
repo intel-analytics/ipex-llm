@@ -74,40 +74,12 @@ transformed_text_set = text_set.normalize()
 ```
 
 
-### **Sequence Shaping**
-Shape the sequence of tokens to a fixed length. 
-If the original sequence is shorter than the target length, "##" will be padded to the end. 
-Need to tokenize first.
-
-**Scala**
-```scala
-transformedTextSet = textSet.shapeSequence(len, truncMode = TruncMode.pre)
-```
-
-* `len`: Positive integer. The target length.
-* `truncMode`: Truncation mode if the original sequence is longer than the target length. Either `TruncMode.pre` or `TruncMode.post`. 
-If `TruncMode.pre`, the sequence will be truncated from the beginning. 
-If `TruncMode.post`, the sequence will be truncated from the end. 
-Default is `TruncMode.post`.
-
-
-**Python**
-```python
-transformed_text_set = text_set.shape_sequence(len, trunc_mode="pre")
-```
-
-* `len`: Positive int. The target length.
-* `truncMode`: String. Truncation mode if the original sequence is longer than the target length. Either `pre` or `post`. 
-If `pre`, the sequence will be truncated from the beginning. 
-If `post`, the sequence will be truncated from the end. 
-Default is `post`.
-
-
 ### **Word To Index**
 Map word tokens to indices. 
 Result index will start from 1 and corresponds to the occurrence frequency of each word sorted in descending order. 
 Here we adopt the convention that index 0 will be reserved for unknown words.
 Need to tokenize first.
+
 After word2idx, you can get the generated wordIndex map by calling ```getWordIndex``` (Scala) or ```get_word_index()``` (Python) of the transformed `TextSet`.
 
 **Scala**
@@ -126,6 +98,38 @@ transformed_text_set = text_set.word2idx(remove_topN=0, max_words_num=-1)
 
 * `remove_topN`: Non-negative int. Remove the topN words with highest frequencies in the case where those are treated as stopwords. Default is 0, namely remove nothing.
 * `max_words_num`: Int. The maximum number of words to be taken into consideration. Default is -1, namely all words will be considered.
+
+
+### **Sequence Shaping**
+Shape the sequence of indices to a fixed length. 
+Need to word2idx first.
+
+**Scala**
+```scala
+transformedTextSet = textSet.shapeSequence(len, truncMode = TruncMode.pre, padElement = 0)
+```
+
+* `len`: Positive integer. The target length.
+* `truncMode`: Truncation mode if the original sequence is longer than the target length. Either `TruncMode.pre` or `TruncMode.post`. 
+If `TruncMode.pre`, the sequence will be truncated from the beginning. 
+If `TruncMode.post`, the sequence will be truncated from the end. 
+Default is `TruncMode.post`.
+* `padElement`: Integer. The index element to be padded to the end of the sequence if the original length is smaller than the target length.
+Default is 0 with the convention that we reserve index 0 for unknown words.
+
+
+**Python**
+```python
+transformed_text_set = text_set.shape_sequence(len, trunc_mode="pre", pad_element=0)
+```
+
+* `len`: Positive int. The target length.
+* `truncMode`: String. Truncation mode if the original sequence is longer than the target length. Either `pre` or `post`. 
+If `pre`, the sequence will be truncated from the beginning. 
+If `post`, the sequence will be truncated from the end. 
+Default is `post`.
+* `padElement`: Int. The index element to be padded to the end of the sequence if the original length is smaller than the target length.
+Default is 0 with the convention that we reserve index 0 for unknown words.
 
 
 ### **BigDL Sample Generation**

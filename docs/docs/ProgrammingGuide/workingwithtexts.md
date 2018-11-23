@@ -47,12 +47,12 @@ You can easily call transformation methods of a `TextSet` one by one to build th
 
 **Scala Example**
 ```scala
-transformedTextSet = textSet.tokenize().normalize().shapeSequence(len).word2idx().generateSample()
+transformedTextSet = textSet.tokenize().normalize().word2idx().shapeSequence(len).generateSample()
 ```
 
 **Python Example**
 ```python
-transformed_text_set = text_set.tokenize().normalize().shape_sequence(len).word2idx().generate_sample()
+transformed_text_set = text_set.tokenize().normalize().word2idx().shape_sequence(len).generate_sample()
 ```
 
 
