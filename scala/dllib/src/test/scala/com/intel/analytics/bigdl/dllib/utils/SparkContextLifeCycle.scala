@@ -39,8 +39,8 @@ trait SparkContextLifeCycle extends FlatSpec with BeforeAndAfter {
 
   before {
     Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster(s"local[$coreNumber]").setAppName(appName)
-    sc = new SparkContext(conf)
+    val conf = Engine.createSparkConf().setMaster(s"local[$coreNumber]").setAppName(appName)
+    sc = SparkContext.getOrCreate(conf)
     beforeTest
   }
 
