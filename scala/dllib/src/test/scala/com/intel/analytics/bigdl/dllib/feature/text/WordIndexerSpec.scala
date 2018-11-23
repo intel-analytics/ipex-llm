@@ -22,13 +22,12 @@ class WordIndexerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val text = "hello my friend, please annotate my text"
   val feature = TextFeature(text)
   feature(TextFeature.tokens) = Array("hello", "my", "friend", "please",
-    "annotate", "my", "text", "##")
+    "annotate", "my", "text")
 
   "WordIndexer" should "work properly" in {
     val wordIndex = Map("friend" -> 1, "my" -> 2, "annotate" -> 3, "text" -> 4)
     val wordIndexer = WordIndexer(wordIndex)
     val transformed = wordIndexer.transform(feature)
-    require(transformed[Array[Float]](TextFeature.indexedTokens)
-      .sameElements(Array(0.0f, 2.0f, 1.0f, 0.0f, 3.0f, 2.0f, 4.0f, 0.0f)))
+    require(transformed.getIndices.sameElements(Array(2.0f, 1.0f, 3.0f, 2.0f, 4.0f)))
   }
 }

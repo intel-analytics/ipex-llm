@@ -55,14 +55,14 @@ class TextSetSpec extends ZooSpecHelper {
   "DistributedTextSet Transformation" should "work properly" in {
     val distributed = TextSet.rdd(sc.parallelize(genFeatures()))
     require(distributed.isDistributed)
-    val shaped = distributed -> Tokenizer() -> Normalizer() -> SequenceShaper(len = 5)
-    val transformed = shaped.word2idx().generateSample()
+    val normalized = distributed -> Tokenizer() -> Normalizer()
+    val transformed = normalized.word2idx().shapeSequence(5).generateSample()
     require(transformed.isDistributed)
 
     val wordIndex = transformed.getWordIndex
-    require(wordIndex.toArray.length == 9)
-    require(wordIndex.keySet == HashSet("friend", "please", "annotate", "my", "text",
-      "some", "sentence", "for", "test"))
+    require(wordIndex.toArray.length == 13)
+    require(wordIndex.keySet == HashSet("hello", "friend", "please", "annotate", "my", "text",
+      "world", "some", "sentence", "for", "test", "this", "is"))
     require(wordIndex("my") == 1)
 
     val features = transformed.toDistributed().rdd.collect()
@@ -74,20 +74,19 @@ class TextSetSpec extends ZooSpecHelper {
   "LocalTextSet Transformation" should "work properly" in {
     val local = TextSet.array(genFeatures())
     require(local.isLocal)
-    val transformed = local.tokenize().normalize().shapeSequence(len = 10)
-      .word2idx(removeTopN = 1).generateSample()
+    val transformed = local.tokenize().normalize().word2idx(removeTopN = 1)
+      .shapeSequence(len = 10).generateSample()
     require(transformed.isLocal)
 
     val wordIndex = transformed.getWordIndex
     require(wordIndex.toArray.length == 12)
     require(wordIndex.keySet.contains("hello"))
     require(!wordIndex.keySet.contains("Hello"))
-    require(!wordIndex.keySet.contains("##"))
 
     val features = transformed.toLocal().array
     require(features.length == 2)
     require(features(0).keys() == HashSet("label", "text", "tokens", "indexedTokens", "sample"))
-    require(features(0)[Array[Float]]("indexedTokens").length == 10)
+    require(features(0).getIndices.length == 10)
   }
 
   "TextSet read with sc, fit, predict and evaluate" should "work properly" in {
@@ -95,8 +94,8 @@ class TextSetSpec extends ZooSpecHelper {
     require(textSet.isDistributed)
     require(textSet.toDistributed().rdd.count() == 5)
     require(textSet.toDistributed().rdd.collect().head.keys() == HashSet("label", "text"))
-    val transformed = textSet.tokenize().normalize()
-      .shapeSequence(len = 30).word2idx().generateSample()
+    val transformed = textSet.tokenize().normalize().word2idx()
+      .shapeSequence(len = 30).generateSample()
     val model = TextClassifier(3, embeddingFile, transformed.getWordIndex, 30)
     model.compile(new SGD[Float](), SparseCategoricalCrossEntropy[Float](), List(new Accuracy()))
     model.fit(transformed, batchSize = 4, nbEpoch = 2, validationData = transformed)
@@ -116,7 +115,7 @@ class TextSetSpec extends ZooSpecHelper {
     val saveFile = createTmpFile()
     model.saveModel(saveFile.getAbsolutePath, overWrite = true)
     val loadedModel = TextClassifier.loadModel[Float](saveFile.getAbsolutePath)
-    val predictResults = model.predict(transformed, batchPerThread = 2)
+    val predictResults = loadedModel.predict(transformed, batchPerThread = 2)
       .toDistributed().rdd.collect()
   }
 
@@ -125,9 +124,10 @@ class TextSetSpec extends ZooSpecHelper {
     require(textSet.isLocal)
     require(textSet.toLocal().array.length == 5)
     require(textSet.toLocal().array.head.keys() == HashSet("label", "text"))
-    val tokenized = textSet -> Tokenizer() -> Normalizer() -> SequenceShaper(len = 30)
+    val tokenized = textSet -> Tokenizer() -> Normalizer()
     val wordIndex = tokenized.generateWordIndexMap()
-    val transformed = tokenized -> WordIndexer(wordIndex) -> TextFeatureToSample()
+    val transformed = tokenized -> WordIndexer(wordIndex) -> SequenceShaper(len = 30) ->
+      TextFeatureToSample()
     require(transformed.getWordIndex == wordIndex)
     val model = TextClassifier(10, embeddingFile, wordIndex, 30)
     model.compile(new Adagrad[Float](), SparseCategoricalCrossEntropy[Float](),
@@ -148,6 +148,6 @@ class TextSetSpec extends ZooSpecHelper {
     val saveFile = createTmpFile()
     model.saveModel(saveFile.getAbsolutePath, overWrite = true)
     val loadedModel = TextClassifier.loadModel[Float](saveFile.getAbsolutePath)
-    val predictResults = model.predict(transformed, batchPerThread = 2).toLocal().array
+    val predictResults = loadedModel.predict(transformed, batchPerThread = 2).toLocal().array
   }
 }

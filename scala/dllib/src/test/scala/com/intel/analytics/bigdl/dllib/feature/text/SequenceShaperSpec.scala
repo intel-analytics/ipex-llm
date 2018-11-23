@@ -22,20 +22,25 @@ class SequenceShaperSpec extends FlatSpec with Matchers {
   def genFeature(): TextFeature = {
     val text = "please annotate my text"
     val feature = TextFeature(text, label = 0)
-    feature(TextFeature.tokens) = Array("please", "annotate", "my", "text")
+    feature(TextFeature.indexedTokens) = Array(1.0f, 2.0f, 3.0f, 4.0f)
     feature
   }
 
-  "SequenceShaper trun pre for tokens" should "work properly" in {
+  "SequenceShaper trun pre for indices" should "work properly" in {
     val transformer = SequenceShaper(len = 2)
     val transformed = transformer.transform(genFeature())
-    require(transformed.getTokens.sameElements(Array("my", "text")))
+    require(transformed.getIndices.sameElements(Array(3.0f, 4.0f)))
   }
 
-  "SequenceShaper pad for tokens" should "work properly" in {
-    val transformer = SequenceShaper(len = 7, padElement = "xxxx")
+  "SequenceShaper trun post for indices" should "work properly" in {
+    val transformer = SequenceShaper(len = 3, truncMode = TruncMode.post)
     val transformed = transformer.transform(genFeature())
-    require(transformed.getTokens.sameElements(
-      Array("please", "annotate", "my", "text", "xxxx", "xxxx", "xxxx")))
+    require(transformed.getIndices.sameElements(Array(1.0f, 2.0f, 3.0f)))
+  }
+
+  "SequenceShaper pad for indices" should "work properly" in {
+    val transformer = SequenceShaper(len = 7)
+    val transformed = transformer.transform(genFeature())
+    require(transformed.getIndices.sameElements(Array(1.0f, 2.0f, 3.0f, 4.0f, 0.0f, 0.0f, 0.0f)))
   }
 }
