@@ -64,48 +64,45 @@ class Normalizer(TextTransformer):
         super(Normalizer, self).__init__(bigdl_type)
 
 
-class SequenceShaper(TextTransformer):
-    """
-    Shape the sequence of tokens to a fixed length.
-    If the original sequence is longer than the target length, it will be truncated from
-    the beginning or the end.
-    If the original sequence is shorter than the target length, it will be padded to the end.
-    The original token sequence will be replaced by the shaped sequence.
-    Need to tokenize first.
-
-    # Arguments
-    len: Positive int. The target length.
-    trunc_mode: Truncation mode. Either 'pre' or 'post'. Default is 'pre'.
-                If 'pre', the sequence will be truncated from the beginning.
-                If 'post', the sequence will be truncated from the end.
-    pad_element: String. The element to be padded to the sequence if the original length is
-                 smaller than the target length. Default is "##".
-                 Make sure that the padding element is meaningless in your corpus.
-    >>> sequence_shaper = SequenceShaper(len=6, trunc_mode="post", pad_element="xxxx")
-    creating: createSequenceShaper
-    """
-    def __init__(self, len, trunc_mode="pre", pad_element="##", bigdl_type="float"):
-        assert isinstance(pad_element, six.string_types), "pad_element should be a string"
-        super(SequenceShaper, self).__init__(bigdl_type, len, trunc_mode, pad_element)
-
-
 class WordIndexer(TextTransformer):
     """
     Given a wordIndex map, transform tokens to corresponding indices.
+    Those words not in the map will be aborted.
     Need to tokenize first.
 
     # Arguments
-    map: Dict with word as its key and index as its value.
-         It is recommended that the map contains all the words in your corpus.
-    replace_element: Int. The element to fill if the word is not in the given map.
-                     Default is 0 with the convention that 0 is reserved for unknown words.
+    map: Dict with word (string) as its key and index (int) as its value.
 
-    >>> word_indexer = WordIndexer(map={"it": 1, "me": 2}, replace_element=100)
+    >>> word_indexer = WordIndexer(map={"it": 1, "me": 2})
     creating: createWordIndexer
     """
-    def __init__(self, map, replace_element=0, bigdl_type="float"):
-        assert isinstance(replace_element, int), "replace_element should be an int"
-        super(WordIndexer, self).__init__(bigdl_type, map, replace_element)
+    def __init__(self, map, bigdl_type="float"):
+        super(WordIndexer, self).__init__(bigdl_type, map)
+
+
+class SequenceShaper(TextTransformer):
+    """
+    Shape the sequence of indices to a fixed length.
+    If the original sequence is longer than the target length, it will be truncated from
+    the beginning or the end.
+    If the original sequence is shorter than the target length, it will be padded to the end.
+    Need to word2idx first.
+    The original indices sequence will be replaced by the shaped sequence.
+
+    # Arguments
+    len: Positive int. The target length.
+    trunc_mode: Truncation mode. String. Either 'pre' or 'post'. Default is 'pre'.
+                If 'pre', the sequence will be truncated from the beginning.
+                If 'post', the sequence will be truncated from the end.
+    pad_element: Int. The element to be padded to the sequence if the original length is
+                 smaller than the target length.
+                 Default is 0 with the convention that we reserve index 0 for unknown words.
+    >>> sequence_shaper = SequenceShaper(len=6, trunc_mode="post", pad_element=10000)
+    creating: createSequenceShaper
+    """
+    def __init__(self, len, trunc_mode="pre", pad_element=0, bigdl_type="float"):
+        assert isinstance(pad_element, int), "pad_element should be an int"
+        super(SequenceShaper, self).__init__(bigdl_type, len, trunc_mode, pad_element)
 
 
 class TextFeatureToSample(TextTransformer):
