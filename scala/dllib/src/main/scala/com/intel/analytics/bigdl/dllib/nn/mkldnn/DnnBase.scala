@@ -146,10 +146,16 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     grad
   }
 
+  def getUpdateOutputMemoryPrimitives(): Array[Long] = {
+    inputFormats().map(_.getPrimitive(runtime)) ++ outputFormats().map(_.getPrimitive(runtime))
+  }
+  def getUpdateGradInputMemoryPrimitives(): Array[Long] = {
+    gradOutputFormats().map(_.getPrimitive(runtime)) ++
+      gradInputFormats().map(_.getPrimitive(runtime))
+  }
   override def updateOutput(input: Activity): Activity = {
     if (updateOutputMemoryPrimitives == null) {
-      updateOutputMemoryPrimitives =
-        inputFormats().map(_.getPrimitive(runtime)) ++ outputFormats().map(_.getPrimitive(runtime))
+      updateOutputMemoryPrimitives = getUpdateOutputMemoryPrimitives()
     }
     if (updateOutputTensors == null || cachedInput == null || !cachedInput.eq(input)) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
@@ -186,9 +192,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     if (updateGradInputMemoryPrimitives == null) {
-      updateGradInputMemoryPrimitives =
-        gradOutputFormats().map(_.getPrimitive(runtime)) ++
-          gradInputFormats().map(_.getPrimitive(runtime))
+      updateGradInputMemoryPrimitives = getUpdateGradInputMemoryPrimitives()
     }
     if (updateGradInputTensors == null || cachedInput == null || !cachedInput.eq(input) ||
       cachedGradOutput == null || !cachedGradOutput.eq(gradOutput)) {
