@@ -315,26 +315,6 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Tools.compare(txt, conv, inputShape, outputShape)
   }
 
-  "a simple convolution same padding compared with caffe" should "work correctly" in {
-    val inputShape = Array(4, 3, 5, 5)
-    val outputShape = Array(4, 2, 3, 3)
-    val name = "conv"
-    val nOutput = 2
-    val kernel = 3
-    val pad = -1
-    val stride = 2
-
-    val txt = prototxt(inputShape, name, nOutput, kernel, pad, stride)
-
-    val conv = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
-    conv.setName(name)
-    conv.setRuntime(new MklDnnRuntime)
-    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    Tools.compare(txt, conv, inputShape, outputShape)
-  }
-
   "conv exists some format conversion" should "work correctly" in {
     val inputShape = Array(4, 3, 224, 224)
     val outputShape = Array(4, 64, 112, 112)

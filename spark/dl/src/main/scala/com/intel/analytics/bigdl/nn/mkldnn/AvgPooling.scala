@@ -32,7 +32,11 @@ class AvgPooling(
   @transient private var paddingBR: Array[Int] = _
   @transient private var fwdPD: Long = _
 
-  private var algKind = AlgKind.PoolingAvgExcludePadding
+  private val algKind = if (padH == -1 && padW == -1) {
+    AlgKind.PoolingAvgIncludePadding
+  } else {
+    AlgKind.PoolingAvgExcludePadding
+  }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)
@@ -43,7 +47,6 @@ class AvgPooling(
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
     val (pt, pb, pl, pr, oh, ow) = if (padH == -1 && padW == -1) {
-      algKind = AlgKind.PoolingAvgIncludePadding
       val sizes = Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
       (sizes(0), sizes(1), sizes(2), sizes(3), sizes(4), sizes(5))
     } else {

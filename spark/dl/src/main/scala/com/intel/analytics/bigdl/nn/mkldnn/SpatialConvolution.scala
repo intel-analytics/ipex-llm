@@ -179,7 +179,7 @@ class SpatialConvolution(
       wei.getMemoryDescription(),
       bis.getMemoryDescription(),
       dst.getMemoryDescription(),
-      Array(strideW, strideH), paddingTL, paddingBR, // TODO check the meaning
+      Array(strideW, strideH), paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
 
     forwardPrimDesc = if (relu || sum) {
