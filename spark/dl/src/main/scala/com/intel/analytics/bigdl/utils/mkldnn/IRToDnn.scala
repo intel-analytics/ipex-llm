@@ -52,6 +52,8 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
     IR2DnnMap("IRLinear") = fromLinear
     IR2DnnMap("IRReLU") = fromReLU
     IR2DnnMap("IRJoinTable") = fromJoinTable
+    IR2DnnMap("IRBlasModule") = fromBlasModule
+    IR2DnnMap("IRInput") = fromInput
   }
 
   override def enableConvertLayer(layer: IRElement[Float]): Boolean = {
@@ -79,13 +81,8 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
     var convert = true
     allNodes.foreach(node => {
       val op = node.element.getOp()
-      if (op.isInstanceOf[IRReshape[Float]] && node.nextNodes.length == 1 &&
-        node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-        // support pattern "reshape -> linear"
-      } else if (op.isInstanceOf[IRView[Float]] && node.nextNodes.length == 1 &&
-        node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-        // support pattern "view -> linear"
-      } else if (!enableConvertLayer(node.element)) {
+      println(op)
+      if (!enableConvertLayer(node.element)) {
         convert = false
       }
     })
@@ -98,23 +95,26 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
     val oldToNew = new mutable.HashMap[Node[IRElement[Float]], Node[Module[Float]]]()
     allNodes.foreach(node => {
       val op = node.element.getOp()
-      val dnn = if (op.isInstanceOf[IRReshape[Float]] && node.nextNodes.length == 1 &&
-        node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-        new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
-      } else if (op.isInstanceOf[IRView[Float]] && node.nextNodes.length == 1 &&
-        node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-        new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
+      var dnn = if (enableConvertLayer(node.element)) {
+        new Node(convertLayer(node.element))
       } else {
-        if (enableConvertLayer(node.element)) {
-          new Node(convertLayer(node.element))
-        } else {
-          // todo: may be can support non dnn layers
-          throw new UnsupportedOperationException(s"can not find ${node.element.getOp()} ")
+        // todo: may be can support non dnn layers
+        throw new UnsupportedOperationException(s"can not find ${node.element.getOp()} ")
+      }
+
+      if (op.isInstanceOf[IRBlasModule[Float]]) {
+        val m = op.asInstanceOf[IRBlasModule[Float]].model
+        if (m.isInstanceOf[Reshape[Float]] && node.nextNodes.length == 1 &&
+          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
+          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
+        } else if (m.isInstanceOf[View[Float]] && node.nextNodes.length == 1 &&
+          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
+          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
         }
       }
       oldToNew.put(node, dnn)
     })
-    cloneNode(oldToNew)
+    cloneNode(allNodes, oldToNew)
     oldToNew
   }
 
@@ -189,6 +189,15 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
       "Dnn Linear can not support Regularizer")
     val cls = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.Linear")
     ReflectUtils.reflectFromIR(node, cls)
+  }
+
+  private def fromBlasModule(node: IRElement[Float]) : Module[Float] = {
+    val t = node.getOp().asInstanceOf[IRBlasModule[Float]]
+    BlasWrapper(t.model)
+  }
+
+  private def fromInput(node: IRElement[Float]) : Module[Float] = {
+    mkldnn.Identity[Float]()
   }
 }
 

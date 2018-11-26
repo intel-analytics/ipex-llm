@@ -16,10 +16,11 @@
 
 package com.intel.analytics.bigdl.utils.mkldnn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
 import scala.reflect.ClassTag
 
 sealed class IROperate[T: ClassTag] {
@@ -106,11 +107,6 @@ case class IRSpatialCrossMapLRN[T: ClassTag](
             k: Double = 1.0,
             format: DataFormat = DataFormat.NCHW) extends IROperate[T]
 
-case class IRReshape[T: ClassTag](
-            size: Array[Int], batchMode: Option[Boolean] = None) extends IROperate[T]
-
-case class IRView[T: ClassTag]() extends IROperate[T]
-
 case class IRSoftMax[T: ClassTag]() extends IROperate[T]
 
 case class IRSelectTable[T: ClassTag](dimension: Int) extends IROperate[T]
@@ -121,6 +117,10 @@ case class IRJoinTable[T: ClassTag](dimension: Int,
                                     nInputDims: Int = 0) extends IROperate[T]
 
 case class IRConcatTable[T: ClassTag]() extends IROperate[T]
+
+case class IRInput[T: ClassTag]() extends IROperate[T]
+
+case class IRBlasModule[T: ClassTag](model: TensorModule[T]) extends IROperate[T]
 
 private[bigdl] class IRElement[T: ClassTag](
   val name: String,

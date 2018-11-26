@@ -52,7 +52,7 @@ class IRconvertSpec extends BigDLSpecHelper {
     val pool1 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
     val conv2 = Node(IRElement[Float]("", IRSpatialConvolution[Float](20, 50, 5, 5)))
     val pool2 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
-    val reshape = Node(IRElement("", IRReshape[Float](Array(50*4*4))))
+    val reshape = Node(IRElement("", IRBlasModule(Reshape[Float](Array(50*4*4)))))
     val linear = Node(IRElement("", IRLinear[Float](50 * 4 * 4, 500)))
     val relu = Node(IRElement("", IRReLU[Float]()))
     val fc2 = Node(IRElement("", IRLinear[Float](500, 10)))

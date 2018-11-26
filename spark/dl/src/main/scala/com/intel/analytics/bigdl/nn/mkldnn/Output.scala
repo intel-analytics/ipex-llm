@@ -37,23 +37,20 @@ class Output(outputLayOut: Int = Memory.Format.nc,
     val inputShape = inputs(0).shape
     val inputLayout = inputs(0).layout
 
-    if (inputLayout != _outputLayOut) {
-
+    if (inputLayout != outputLayOut) {
+      val outputShape = if (outputLayOut == Memory.Format.nhwc) {
+        // nchw -> nhwc
+        Array(inputShape(0), inputShape(2), inputShape(3), inputShape(1))
+      } else if (inputLayout == Memory.Format.nhwc) {
+        // nhwc -> nchw
+        Array(inputShape(0), inputShape(3), inputShape(1), inputShape(2))
+      } else inputShape
+      _outputFormats = Array(HeapData(outputShape, outputLayOut))
+      _inputFormats = _outputFormats
     } else {
       _outputFormats = inputs
       _inputFormats = inputs
     }
-
-    val outputShape = if (_outputLayOut == Memory.Format.nhwc) {
-      // nchw -> nhwc
-      Array(inputShape(0), inputShape(2), inputShape(3), inputShape(1))
-    } else if (inputLayout == Memory.Format.nhwc) {
-      // nhwc -> nchw
-      Array(inputShape(0), inputShape(3), inputShape(1), inputShape(2))
-    } else inputShape
-    _outputFormats = Array(HeapData(outputShape, _outputLayOut))
-    _inputFormats = _outputFormats
-
 
     (_inputFormats, _outputFormats)
   }

@@ -31,7 +31,7 @@ class AvgPoolingSpec extends BigDLSpecHelper {
     val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
 
     RNG.setSeed(100)
-    val pool = AvgPooling(3, 3, 2, 2)
+    val pool = AvgPooling(3, 3, 2, 2).ceil()
     RNG.setSeed(100)
     val layer = SpatialAveragePooling[Float](3, 3, 2, 2).ceil()
 
@@ -58,7 +58,7 @@ class AvgPoolingSpec extends BigDLSpecHelper {
     val input = Tensor[Float](batchSize, 64, 112, 112).apply1(e => Random.nextFloat())
 
     RNG.setSeed(100)
-    val pool = AvgPooling(3, 3, 2, 2)
+    val pool = AvgPooling(3, 3, 2, 2).ceil()
     RNG.setSeed(100)
     val layer = SpatialAveragePooling[Float](3, 3, 2, 2).ceil()
 
@@ -83,7 +83,7 @@ class AvgPoolingSpec extends BigDLSpecHelper {
   "avg with java serialization" should "work correctly" in {
     val batchSize = 2
     val inputShape = Array(batchSize, 64, 112, 112)
-    val outputShape = Array(batchSize, 64, 56, 56)
+    val outputShape = Array(batchSize, 64, 55, 55)
 
     val input = Tensor[Float](batchSize, 64, 112, 112).rand(-1, 1)
 

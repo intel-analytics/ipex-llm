@@ -32,6 +32,26 @@ class AvgPooling(
   @transient private var paddingBR: Array[Int] = _
   @transient private var fwdPD: Long = _
 
+  var ceilMode = false
+
+  /**
+    * set ceil mode
+    * @return this
+    */
+  def ceil(): AvgPooling = {
+    ceilMode = true
+    this
+  }
+
+  /**
+    * set floor mode
+    * @return this
+    */
+  def floor(): AvgPooling = {
+    ceilMode = false
+    this
+  }
+
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)
     val strides = Array(dW, dH)
@@ -41,7 +61,7 @@ class AvgPooling(
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
     val (pt, pb, pl, pr, oh, ow) =
-      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
+      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW, ceilMode)
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
     val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)

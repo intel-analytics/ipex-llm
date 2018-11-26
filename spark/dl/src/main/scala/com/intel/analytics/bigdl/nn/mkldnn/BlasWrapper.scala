@@ -39,6 +39,7 @@ class BlasWrapper(val module: TensorModule[Float]) extends MklDnnLayer {
     } else {
       inputs(0).shape
     }
+    println(this)
 
     val outputShape = module.computeOutputShape(Shape(inputShape)).toSingle().toArray
 
