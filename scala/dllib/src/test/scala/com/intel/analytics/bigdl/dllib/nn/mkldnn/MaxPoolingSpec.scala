@@ -30,10 +30,11 @@ class MaxPoolingSpec extends BigDLSpecHelper {
     val batchSize = 2
     val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
 
+    val pad = -1
     RNG.setSeed(100)
-    val pool = MaxPooling(3, 3, 2, 2)
+    val pool = MaxPooling(3, 3, 2, 2, padH = pad, padW = pad)
     RNG.setSeed(100)
-    val layer = SpatialMaxPooling[Float](3, 3, 2, 2).ceil()
+    val layer = SpatialMaxPooling[Float](3, 3, 2, 2, padH = pad, padW = pad).ceil()
 
     val output2 = layer.forward(input).toTensor[Float]
 
