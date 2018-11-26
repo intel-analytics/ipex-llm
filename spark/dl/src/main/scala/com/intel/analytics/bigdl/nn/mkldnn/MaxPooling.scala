@@ -44,12 +44,16 @@ class MaxPooling(
     val c = _inputFormats(0).shape(1)
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
-    val (pt, pb, pl, pr, oh, ow) =
+
+    val (pt, pb, pl, pr, oh, ow) = if (padH == -1 && padW == -1) {
+      val sizes = Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
+      (sizes(0), sizes(1), sizes(2), sizes(3), sizes(4), sizes(5))
+    } else {
       Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
+    }
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
-          Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
-          Utils.getOutSizeAndPaddingForDNN(h, w, dH, dW, kH, kW, padH, padW, true)
+
     val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)
     val description = MklDnn.PoolingForwardDescInit(
       PropKind.Forward, AlgKind.PoolingMax,

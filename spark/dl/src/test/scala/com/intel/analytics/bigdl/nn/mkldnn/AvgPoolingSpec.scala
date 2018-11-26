@@ -26,6 +26,34 @@ import org.apache.commons.lang3.SerializationUtils
 import scala.util.Random
 
 class AvgPoolingSpec extends BigDLSpecHelper {
+  "Avg Pooling with same padding" should "be correct" in {
+    val batchSize = 2
+    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
+
+    val pad = -1
+    RNG.setSeed(100)
+    val pool = AvgPooling(3, 3, 2, 2, padH = pad, padW = pad)
+    RNG.setSeed(100)
+    val layer = SpatialAveragePooling[Float](3, 3, 2, 2, padH = pad, padW = pad).ceil()
+
+    val output2 = layer.forward(input).toTensor[Float]
+
+    val seq = Sequential()
+    seq.add(ReorderMemory(HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw),
+      HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw)))
+    seq.add(pool)
+    seq.add(ReorderMemory(HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw),
+      HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw)))
+    seq.compile(Phase.TrainingPhase, Array(HeapData(Array(batchSize, 480, 28, 28),
+      Memory.Format.nchw)))
+    val output1 = seq.forward(input)
+    output1 should be(output2)
+
+    val grad2 = layer.backward(input, output2).toTensor[Float]
+    val grad1 = seq.backward(input, output2)
+    grad1 should be(grad2)
+  }
+
   "Avg Pooling test1" should "be correct" in {
     val batchSize = 2
     val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
