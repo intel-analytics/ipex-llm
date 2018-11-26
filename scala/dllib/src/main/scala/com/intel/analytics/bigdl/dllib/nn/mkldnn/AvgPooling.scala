@@ -32,6 +32,12 @@ class AvgPooling(
   @transient private var paddingBR: Array[Int] = _
   @transient private var fwdPD: Long = _
 
+  private val algKind = if (padH == -1 && padW == -1) {
+    AlgKind.PoolingAvgIncludePadding
+  } else {
+    AlgKind.PoolingAvgExcludePadding
+  }
+
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)
     val strides = Array(dW, dH)
@@ -40,13 +46,18 @@ class AvgPooling(
     val c = _inputFormats(0).shape(1)
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
-    val (pt, pb, pl, pr, oh, ow) =
+    val (pt, pb, pl, pr, oh, ow) = if (padH == -1 && padW == -1) {
+      val sizes = Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
+      (sizes(0), sizes(1), sizes(2), sizes(3), sizes(4), sizes(5))
+    } else {
       Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
+    }
+
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
     val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)
     val description = MklDnn.PoolingForwardDescInit(
-      PropKind.Forward, AlgKind.PoolingAvgExcludePadding,
+      PropKind.Forward, algKind,
       _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
@@ -63,7 +74,7 @@ class AvgPooling(
     _gradOutputFormatsForWeight = _gradOutputFormats
     val strides = Array(dW, dH)
     val kernel = Array(kH, kW)
-    val description = MklDnn.PoolingBackwardDescInit(AlgKind.PoolingAvgExcludePadding,
+    val description = MklDnn.PoolingBackwardDescInit(algKind,
       _inputFormats(0).getMemoryDescription(),
       _gradOutputFormats(0).getMemoryDescription(),
       strides, kernel, paddingTL, paddingBR, MklDnn.PaddingKind.mkldnnPaddingZero)

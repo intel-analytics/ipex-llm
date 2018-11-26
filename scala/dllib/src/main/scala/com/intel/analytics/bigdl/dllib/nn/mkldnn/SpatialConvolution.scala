@@ -70,6 +70,8 @@ class SpatialConvolution(
   @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
   @transient private var updateGradWMemoryPrimitives: Array[Long] = _
   @transient private var updateGradWTensors: Array[Tensor[Float]] = _
+  @transient private var paddingTL: Array[Int] = _
+  @transient private var paddingBR: Array[Int] = _
 
   private var _relu = false
   private var _sum = false
@@ -154,8 +156,14 @@ class SpatialConvolution(
           padH, padW, ceilMode = false)
       }
 
+    val padTop = sizes(0)
+    val padBottom = sizes(1)
+    val padLeft = sizes(2)
+    val padRight = sizes(3)
     val outputHeight = sizes(4)
     val outputWidth = sizes(5)
+    paddingTL = Array(padTop, padLeft)
+    paddingBR = Array(padBottom, padRight)
 
     val inputShape = inputs(0).shape
     val outputShape = Array(inputs(0).shape(0), nOutputPlane, outputHeight, outputWidth)
@@ -171,7 +179,7 @@ class SpatialConvolution(
       wei.getMemoryDescription(),
       bis.getMemoryDescription(),
       dst.getMemoryDescription(),
-      Array(strideW, strideH), Array(padH, padW), Array(padH, padW), // TODO check the meaning
+      Array(strideW, strideH), paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
 
     forwardPrimDesc = if (relu || sum) {
@@ -272,7 +280,7 @@ class SpatialConvolution(
       AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(), // TODO check correctness of strides and padding
-      dst.getMemoryDescription(), Array(strideW, strideH), Array(padH, padW), Array(padH, padW),
+      dst.getMemoryDescription(), Array(strideW, strideH), paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     val backwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
@@ -337,7 +345,7 @@ class SpatialConvolution(
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
       bis.getMemoryDescription(),
-      grad(0).getMemoryDescription(), Array(strideW, strideH), Array(padH, padW), Array(padH, padW),
+      grad(0).getMemoryDescription(), Array(strideW, strideH), paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     val gradWeightPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
