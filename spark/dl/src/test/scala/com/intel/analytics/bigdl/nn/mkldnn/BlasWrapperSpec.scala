@@ -45,14 +45,14 @@ class BlasWrapperSpec extends BigDLSpecHelper {
 
   def modelWrapper(format: Int = Memory.Format.nchw, shape: Array[Int]) : DnnGraph = {
     val input = mkldnn.Input(shape, format).inputs()
-    val conv1 = BlasWrapper(nn.SpatialConvolution(1, 20, 5, 5)).inputs(input)
+    val conv1 = BlasWrapper(nn.SpatialConvolution[Float](1, 20, 5, 5)).inputs(input)
     val pool1 = mkldnn.MaxPooling(2, 2, 2, 2).setName("pool").inputs(conv1)
-    val conv2 = BlasWrapper(nn.SpatialConvolution(20, 50, 5, 5)).inputs(pool1)
+    val conv2 = BlasWrapper(nn.SpatialConvolution[Float](20, 50, 5, 5)).inputs(pool1)
     val pool2 = mkldnn.MaxPooling(2, 2, 2, 2).inputs(conv2)
     val fc = mkldnn.Linear(50 * 4 * 4, 500).inputs(pool2)
     val relu = mkldnn.ReLU().setName("relu1").inputs(fc)
     val fc2 = mkldnn.Linear(500, 10).setName("ip2").inputs(relu)
-    val log = BlasWrapper(nn.LogSoftMax()).inputs(fc2)
+    val log = BlasWrapper(nn.LogSoftMax[Float]()).inputs(fc2)
     DnnGraph(Array(input), Array(log))
   }
 

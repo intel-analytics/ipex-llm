@@ -66,7 +66,7 @@ private[mkldnn] class ReorderManager() {
         outputTable(i + 1) = inferTensor(from(i), to(i), output.toTable(i + 1))
         i += 1
       }
-      output
+      outputTable
     }
   }
 
