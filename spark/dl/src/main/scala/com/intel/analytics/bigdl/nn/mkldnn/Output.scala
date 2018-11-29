@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 /**
  * Convert output to user defined layout and appoint gradOutput layout
  * @param outputLayOut output memory layout
- * @param gradOutputLayout gradoutput memory layout,
- *                         if it is -1, that means gradOutputLayout same with outputLayOut
+ * @param gradOutputLayout gradoutput memory layout, if it is -1,
+ *                         that means gradOutput memory layout is same with output memory layout
  */
 class Output(outputLayOut: Int = Memory.Format.nc,
              gradOutputLayout: Int = -1) extends MklDnnLayer {
