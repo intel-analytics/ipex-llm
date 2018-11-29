@@ -38,7 +38,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   gradInput = module.gradInput
 
   private def inferFormats(inputs: Array[MemoryData]): Int = {
-    // remind: here assume all shapes in inputs should be same
+    // reminder: here assume all shapes in inputs should be same
     inputs.foreach(in =>
       require(in.shape.length == 2 || in.shape.length == 4,
       s"just support input shape dim is 2 or 4, but get ${in.shape.length}"))
@@ -51,10 +51,9 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    // todo: only support model having implemented computeOutputShape
+    // reminder: only support model having implemented computeOutputShape
     val inputShape = inputs.map(in => Shape(in.shape))
     val outputShape = if (inputShape.length == 1) {
-      // single shape
       List(module.computeOutputShape(inputShape(0)))
     } else {
       // multi shape
