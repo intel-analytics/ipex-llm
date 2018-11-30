@@ -30,43 +30,9 @@ import com.intel.analytics.zoo.feature.text._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import org.apache.spark.rdd.RDD
 
-import scala.collection.{GenTraversableOnce, Iterator}
-import scala.collection.Iterator.empty
+import scala.collection.Iterator
 import scala.reflect.ClassTag
 
-
-class FlatMapIteratorWithShutdown[T, B](preIter: Iterator[T], shutdownHook: () => Unit)
-                                       (f: T => GenTraversableOnce[B]) extends Iterator[B] {
-  private var cur: Iterator[B] = empty
-  private def nextCur() {
-    try {
-      cur = f(preIter.next()).toIterator
-    } catch {
-      case e: Throwable =>
-        shutdownHook()
-        throw e
-    }
-
-  }
-  override def hasNext: Boolean = {
-    while (!cur.hasNext) {
-      if (!preIter.hasNext) {
-        shutdownHook()
-        return false
-      }
-      nextCur()
-    }
-    true
-  }
-
-  override def next(): B = (if (hasNext) cur else empty).next()
-}
-
-object FlatMapIteratorWithShutdown {
-  def apply[T, B](preIter: Iterator[T], shutdownHook: () => Unit)
-                 (f: T => GenTraversableOnce[B]): FlatMapIteratorWithShutdown[T, B] =
-    new FlatMapIteratorWithShutdown(preIter, shutdownHook)(f)
-}
 
 object Predictor {
   def apply[T: ClassTag](model: Module[T],
@@ -170,14 +136,16 @@ object Predictor {
     val result = rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
-      val batchedIter = partition.grouped(localBatchPerPartition)
-      def shutdownHook() = {
-        localModel.release()
-      }
-      FlatMapIteratorWithShutdown(batchedIter, shutdownHook) { imageFeatures =>
-        Predictor.predictImageBatch[T](localModel, imageFeatures, outputLayer, predictKey,
-          localToBatch, shareBuffer)
-        imageFeatures
+      val batchedIter = partition.grouped(localBatchPerPartition) ++ Array(null)
+      batchedIter.flatMap { imageFeatures =>
+        if (imageFeatures != null ) {
+          Predictor.predictImageBatch[T](localModel, imageFeatures, outputLayer, predictKey,
+            localToBatch, shareBuffer)
+          imageFeatures
+        } else {
+          localModel.release()
+          Seq.empty
+        }
       }
     })
     ImageFrame.rdd(result)
@@ -203,13 +171,15 @@ object Predictor {
     dataSet.mapPartitions { partition =>
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()
-      val miniBatch = localTransformer(partition)
-      def shutdownHook() = {
-        localModel.release()
-      }
-      FlatMapIteratorWithShutdown(miniBatch, shutdownHook) { batch =>
-        val output = localModel.forward(batch.getInput)
-        splitBatch(output, shareBuffer, batch.size())
+      val miniBatch = localTransformer(partition) ++ Array(null)
+      miniBatch.flatMap { batch =>
+        if (batch != null) {
+          val output = localModel.forward(batch.getInput)
+          splitBatch(output, shareBuffer, batch.size())
+        } else {
+          localModel.release()
+          Seq.empty
+        }
       }
     }
   }
@@ -276,7 +246,9 @@ trait Predictable[T]  {
                x: LocalDataSet[MiniBatch[T]],
                batchPerThread: Int)(implicit ev: TensorNumeric[T]): Array[Activity] = {
     val localPredictor = LocalPredictor(module, batchPerCore = batchPerThread)
-    localPredictor.predict(x)
+    val result = localPredictor.predict(x)
+    localPredictor.shutdown()
+    result
   }
 
   /**
@@ -299,7 +271,9 @@ trait Predictable[T]  {
                x: Array[Sample[T]],
                batchPerThread: Int)(implicit ev: TensorNumeric[T]): Array[Activity] = {
     val localPredictor = LocalPredictor(module, batchPerCore = batchPerThread)
-    localPredictor.predict(x)
+    val result = localPredictor.predict(x)
+    localPredictor.shutdown()
+    result
   }
 
   /**
