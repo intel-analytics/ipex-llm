@@ -41,7 +41,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     // reminder: here assume all shapes in inputs should be same
     inputs.foreach(in =>
       require(in.shape.length == 2 || in.shape.length == 4,
-      s"just support input shape dim is 2 or 4, but get ${in.shape.length}"))
+      s"only input shape dim 2 and 4 supported, but get ${in.shape.length}"))
 
     inputs(0).layout match {
       case Memory.Format.nhwc => Memory.Format.nhwc
@@ -62,7 +62,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     }
     val outDim = outputShape(0).toSingle().length
     require(outDim == 4 || outDim == 2,
-      s"just support output shape dim is 2 or 4, but get ${outDim}")
+      s"only output shape dim 2 and 4 supported, but get ${outDim}")
 
     val inputFormats = inferFormats(inputs)
     val outputFormats = if (outDim == 4) inputFormats else Memory.Format.nc
