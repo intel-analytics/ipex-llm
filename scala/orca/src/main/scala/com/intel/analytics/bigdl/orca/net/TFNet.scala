@@ -577,7 +577,6 @@ object TFNet {
 
   class ClosableGraph(val graph: Graph) {
     override def finalize(): Unit = {
-      println("in ClosableGraph finalize")
       graph.close()
     }
   }
