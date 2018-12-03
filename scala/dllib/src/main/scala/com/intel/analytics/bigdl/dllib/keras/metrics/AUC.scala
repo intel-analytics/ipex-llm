@@ -130,8 +130,17 @@ class AUC[T](thresholdNum: Int = 200)(implicit ev: TensorNumeric[T])
 
   override def apply(output: Activity, target: Activity):
   ValidationResult = {
-    val _output = output.asInstanceOf[Tensor[T]].squeeze()
-    val _target = target.asInstanceOf[Tensor[T]].squeeze()
+    val _output = if (output.asInstanceOf[Tensor[T]].dim() == 2) {
+      output.asInstanceOf[Tensor[T]].squeeze(2)
+    } else {
+      output.asInstanceOf[Tensor[T]].squeeze()
+    }
+
+    val _target = if (target.asInstanceOf[Tensor[T]].dim() == 2) {
+      target.asInstanceOf[Tensor[T]].squeeze(2)
+    } else {
+      target.asInstanceOf[Tensor[T]].squeeze()
+    }
     require(_output.dim() <= 2 && _target.dim() <= 2,
       s"${_output.dim()} dim format is not supported")
     require(_output.dim() == _target.dim(),
