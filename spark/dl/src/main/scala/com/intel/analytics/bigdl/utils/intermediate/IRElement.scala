@@ -125,8 +125,7 @@ case class IRBlasModule[T: ClassTag](
 
 private[bigdl] class IRElement[T: ClassTag](
   val name: String,
-  val op_type: IROperate[T],
-  var formats: String = "",
+  val op: IROperate[T],
   private var weights: Tensor[T] = null,
   private var gradWeights: Tensor[T] = null) {
 
@@ -148,18 +147,20 @@ private[bigdl] class IRElement[T: ClassTag](
 
   def getName() : String = this.name
 
-  def getOp() : IROperate[T] = this.op_type
-
-  final def getFormats() : String = formats
-
-  final def setFormats(format: String) : Unit = {
-    formats = format
-  }
+  def getOp() : IROperate[T] = this.op
 }
 
 object IRElement {
-  def apply[T: ClassTag](name: String, op_type: IROperate[T],
-            formats: String = "", weights: Tensor[T] = null,
-            bias: Tensor[T] = null): IRElement[T] =
-    new IRElement[T](name, op_type, formats, weights, bias)
+  /**
+   * create IRElement
+   * @param name element name
+   * @param op element operation, like IRSpatialMaxPooling, IRBlasModule, etc.
+   * @param weights weights & bias for IRElement
+   * @param gradWeights gradWeight & gradbias for IRElement
+   * @tparam T
+   * @return
+   */
+  def apply[T: ClassTag](name: String, op: IROperate[T],
+                         weights: Tensor[T] = null, gradWeights: Tensor[T] = null): IRElement[T] =
+    new IRElement[T](name, op, weights, gradWeights)
 }

@@ -97,7 +97,7 @@ object ReflectUtils {
     val weightsAndBias =
       if (layer.parameters() != null) layer.getParameters() else (null, null)
     val element = IRElement[T](
-      layer.getName(), op, weights = weightsAndBias._1, bias = weightsAndBias._2)
+      layer.getName(), op, weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
     element
   }
 

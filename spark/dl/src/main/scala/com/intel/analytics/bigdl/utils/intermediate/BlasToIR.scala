@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
-class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElement[T]]{
+private[bigdl] class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElement[T]]{
 
   // reminder: some undefined IR operations can be presented by IRBlasModule
   override def enableConvertLayer(layer: Module[T]): Boolean = {
@@ -49,6 +49,6 @@ class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElement[T]]{
   }
 }
 
-object BlasToIR {
+private[bigdl] object BlasToIR {
   def apply[T: ClassTag](implicit ev: TensorNumeric[T]): BlasToIR[T] = new BlasToIR
 }

@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
+private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
 
   private val prefix = "com.intel.analytics.bigdl.nn.mkldnn."
   // converter function mappings
@@ -215,6 +215,6 @@ class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
   }
 }
 
-object IRToDnn {
+private[bigdl] object IRToDnn {
   def apply[T: ClassTag](implicit ev: TensorNumeric[T]): IRToDnn = new IRToDnn
 }

@@ -66,7 +66,7 @@ abstract class ConvertBase[T, D] {
   }
 }
 
-class IRToBlas[T: ClassTag] extends ConvertBase[IRElement[T], Module[T]]{
+private[bigdl] class IRToBlas[T: ClassTag] extends ConvertBase[IRElement[T], Module[T]]{
 
   override def enableConvertLayer(layer: IRElement[T]): Boolean = {
     if (layer.getOp().isInstanceOf[IRBlasModule[T]]) return true
@@ -87,7 +87,7 @@ class IRToBlas[T: ClassTag] extends ConvertBase[IRElement[T], Module[T]]{
   }
 }
 
-object IRToBlas {
+private[bigdl] object IRToBlas {
   def apply[T: ClassTag](implicit ev: TensorNumeric[T]): IRToBlas[T] = new IRToBlas
 }
 
