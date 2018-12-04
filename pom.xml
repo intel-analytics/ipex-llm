@@ -111,7 +111,7 @@
         <javac.version>1.7</javac.version>
         <scala.major.version>2.10</scala.major.version>
         <scala.version>2.10.7</scala.version>
-        <scala.macros.version>2.0.1</scala.macros.version>
+        <scala.macros.version>2.1.0</scala.macros.version>
         <scalatest.version>2.2.4</scalatest.version>
 
         <!-- platform encoding override -->
@@ -632,7 +632,7 @@
             <properties>
                 <scala.major.version>2.10</scala.major.version>
                 <scala.version>2.10.7</scala.version>
-                <scala.macros.version>2.0.1</scala.macros.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
             </properties>
         </profile>
         <profile>
