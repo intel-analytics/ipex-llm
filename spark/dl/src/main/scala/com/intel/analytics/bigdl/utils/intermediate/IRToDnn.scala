@@ -49,12 +49,10 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     IR2DnnMap("IRInput") = fromInput
   }
 
-  override def enableConvertLayer(layer: IRElement[Float]): Boolean = {
+  override def convertLayerCheck(layer: IRElement[Float]): Boolean = {
     val name = layer.getOp().name
-    if (IR2DnnMap.contains(name) && requirement(layer)) return true
-    val className = prefix + name.substring(2)
-    val cls = ReflectUtils.classFound(className)
-    if ( cls != null) true else false
+    if (IR2DnnMap.contains(name) && checkRequirement(layer)) return true
+    return ReflectionUtils.findClass(prefix + name.substring(2)) != null
   }
 
   override def convertLayer(layer: IRElement[Float]) : Module[Float] = {
@@ -64,16 +62,15 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
       if (layer.getName != "") dnn.setName(layer.name)
       dnn
     } else {
-      val cls = Class.forName(prefix + name.substring(2))
-      ReflectUtils.reflectFromIR(layer, cls)
+      ReflectionUtils.reflectFromIR(layer, Class.forName(prefix + name.substring(2)))
     }
   }
 
-  override def enableConvert(allNodes: Array[Node[IRElement[Float]]]) : Boolean = {
+  override def convertingCheck(allNodes: Array[Node[IRElement[Float]]]) : Boolean = {
     var convert = true
     allNodes.foreach(node => {
       val op = node.element.getOp()
-      if (!enableConvertLayer(node.element)) {
+      if (!convertLayerCheck(node.element)) {
         logger.info(s"${node.element} convertion failed")
         convert = false
       }
@@ -83,17 +80,17 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   override def convert(allNodes: Array[Node[IRElement[Float]]])
     : mutable.HashMap[Node[IRElement[Float]], Node[Module[Float]]] = {
-    val oldToNew = new mutable.HashMap[Node[IRElement[Float]], Node[Module[Float]]]()
+    val nodeMap = new mutable.HashMap[Node[IRElement[Float]], Node[Module[Float]]]()
     allNodes.foreach(node => {
       val op = node.element.getOp()
-      var dnn = if (enableConvertLayer(node.element)) {
+      var dnn = if (convertLayerCheck(node.element)) {
         new Node(convertLayer(node.element))
       } else {
         throw new UnsupportedOperationException(s"can not find ${node.element.getOp()} ")
       }
       // special treat for reshape -> linear and view -> linear
-      if (op.isInstanceOf[IRBlasModule[Float]]) {
-        val m = op.asInstanceOf[IRBlasModule[Float]].model
+      if (op.isInstanceOf[IRGeneralModule[Float]]) {
+        val m = op.asInstanceOf[IRGeneralModule[Float]].model
         if (m.isInstanceOf[Reshape[Float]] && node.nextNodes.length == 1 &&
           node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
           dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
@@ -102,10 +99,10 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
           dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
         }
       }
-      oldToNew.put(node, dnn)
+      nodeMap.put(node, dnn)
     })
-    cloneNode(allNodes, oldToNew)
-    oldToNew
+    cloneNode(allNodes, nodeMap)
+    nodeMap
   }
 
   private def fromReLU(node: IRElement[Float]) : Module[Float] = mkldnn.ReLU()
@@ -115,29 +112,25 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     require(t.wRegularizer == null && t.bRegularizer == null,
       "Dnn SpatialConvolution can not support Regularizer")
     require(t.format == DataFormat.NCHW, "Dnn SpatialConvolution only supports NCHW")
-    val cls = Class.forName(prefix + "SpatialConvolution")
-    ReflectUtils.reflectFromIR(node, cls)
+    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
   }
 
   private def fromSpatialMaxPooling(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialMaxPooling[Float]]
     require(t.format == DataFormat.NCHW, "Dnn SpatialMaxPooling only supports NCHW")
-    val cls = Class.forName(prefix + "MaxPooling")
-    ReflectUtils.reflectFromIR(node, cls)
+    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "MaxPooling"))
   }
 
   private def fromSpatialAveragePooling(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialAveragePooling[Float]]
     require(t.format == DataFormat.NCHW, "Dnn SpatialAveragePooling only supports NCHW")
-    val cls = Class.forName(prefix + "AvgPooling")
-    ReflectUtils.reflectFromIR(node, cls)
+    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "AvgPooling"))
   }
 
   private def fromSpatialCrossMapLRN(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialCrossMapLRN[Float]]
     require(t.format == DataFormat.NCHW, "Dnn LRN only supports NCHW")
-    val cls = Class.forName(prefix + "LRN")
-    ReflectUtils.reflectFromIR(node, cls)
+    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "LRN"))
   }
 
   private def fromJoinTable(node: IRElement[Float]) : Module[Float] = {
@@ -176,19 +169,18 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     val t = node.getOp().asInstanceOf[IRLinear[Float]]
     require(t.wRegularizer == null && t.bRegularizer == null,
       "Dnn Linear can not support Regularizer")
-    val cls = Class.forName(prefix + "Linear")
-    ReflectUtils.reflectFromIR(node, cls)
+    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "Linear"))
   }
 
   private def fromBlasModule(node: IRElement[Float]) : Module[Float] = {
-    BlasWrapper(node.getOp().asInstanceOf[IRBlasModule[Float]].model)
+    BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
   }
 
   private def fromInput(node: IRElement[Float]) : Module[Float] = {
     mkldnn.Identity[Float]()
   }
 
-  private def requirement(layer: IRElement[Float]) : Boolean = {
+  private def checkRequirement(layer: IRElement[Float]) : Boolean = {
     try {
       layer.getOp() match {
         case conv: IRSpatialConvolution[Float] =>

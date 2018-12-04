@@ -29,26 +29,38 @@ import scala.reflect.ClassTag
 abstract class ConvertBase[T, D] {
   /**
     * clone node relations
-    * @param oldToNew node element maps from T to D
+    * @param nodeMap node element maps from T to D
     */
-  def cloneNode(allNodes: Array[Node[T]], oldToNew: mutable.HashMap[Node[T], Node[D]]): Unit = {
+  def cloneNode(allNodes: Array[Node[T]], nodeMap: mutable.HashMap[Node[T], Node[D]]): Unit = {
     allNodes.foreach(node => {
       node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
-        if (oldToNew.contains(nextNodeAndEdge._1)) {
-          oldToNew.get(node).get.add(oldToNew.get(nextNodeAndEdge._1).get, nextNodeAndEdge._2)
+        if (nodeMap.contains(nextNodeAndEdge._1)) {
+          nodeMap.get(node).get.add(nodeMap.get(nextNodeAndEdge._1).get, nextNodeAndEdge._2)
         }
       })
     })
+    // sort previous node
+    nodeMap.toArray.foreach(node => {
+      // if node has more than one previous nodes, we have to consider nodes order
+      if (node._1.prevNodesAndEdges.length > 1) {
+        node._2.removePrevEdges()
+        node._1.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+          if (nodeMap.contains(prevNodeAndEdge._1)) {
+            node._2.from(nodeMap.get(prevNodeAndEdge._1).get, prevNodeAndEdge._2)
+          }
+        })
+      }
+    })
   }
 
-  def enableConvertLayer(layer: T) : Boolean
+  def convertLayerCheck(layer: T) : Boolean
 
   def convertLayer(layer : T) : D
 
-  def enableConvert(allNodes: Array[Node[T]]) : Boolean = {
+  def convertingCheck(allNodes: Array[Node[T]]) : Boolean = {
     var convert = true
     allNodes.foreach(node => {
-      if (!enableConvertLayer(node.element)) {
+      if (!convertLayerCheck(node.element)) {
         logger.info(s"${node.element} convertion failed")
         convert = false
       }
@@ -57,33 +69,32 @@ abstract class ConvertBase[T, D] {
   }
 
   def convert(allNodes: Array[Node[T]]): mutable.HashMap[Node[T], Node[D]] = {
-    val oldToNew = new mutable.HashMap[Node[T], Node[D]]()
+    val nodeMap = new mutable.HashMap[Node[T], Node[D]]()
     allNodes.foreach(node => {
-      oldToNew.put(node, new Node(convertLayer(node.element)))
+      nodeMap.put(node, new Node(convertLayer(node.element)))
     })
-    cloneNode(allNodes, oldToNew)
-    oldToNew
+    cloneNode(allNodes, nodeMap)
+    nodeMap
   }
 }
 
 private[bigdl] class IRToBlas[T: ClassTag] extends ConvertBase[IRElement[T], Module[T]]{
 
-  override def enableConvertLayer(layer: IRElement[T]): Boolean = {
-    if (layer.getOp().isInstanceOf[IRBlasModule[T]]) return true
+  private def className(layer: IRElement[T]): String = {
     val name = layer.getOp().name
-    val className = "com.intel.analytics.bigdl.nn." + name.substring(2)
-    val cls = ReflectUtils.classFound(className)
-    if ( cls != null) true
-    else false
+    s"com.intel.analytics.bigdl.nn.${name.substring(2)}"
+  }
+
+  override def convertLayerCheck(layer: IRElement[T]): Boolean = {
+    ReflectionUtils.findClass(className(layer)) != null ||
+      layer.getOp().isInstanceOf[IRGeneralModule[T]]
   }
 
   override def convertLayer(layer : IRElement[T]) : Module[T] = {
-    if (layer.getOp().isInstanceOf[IRBlasModule[T]]) {
-      return layer.getOp().asInstanceOf[IRBlasModule[T]].model
+    if (layer.getOp().isInstanceOf[IRGeneralModule[T]]) {
+      return layer.getOp().asInstanceOf[IRGeneralModule[T]].model
     }
-    val name = layer.getOp().name
-    val cls = Class.forName("com.intel.analytics.bigdl.nn." + name.substring(2))
-    ReflectUtils.reflectFromIR(layer, cls)
+    ReflectionUtils.reflectFromIR(layer, Class.forName(className(layer)))
   }
 }
 

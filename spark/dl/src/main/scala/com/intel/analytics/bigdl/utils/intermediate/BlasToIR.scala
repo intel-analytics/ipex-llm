@@ -23,24 +23,23 @@ import scala.reflect.ClassTag
 
 private[bigdl] class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElement[T]]{
 
-  // reminder: some undefined IR operations can be presented by IRBlasModule
-  override def enableConvertLayer(layer: Module[T]): Boolean = {
-    val layerName = layer.getClass.getSimpleName
-    val className = "com.intel.analytics.bigdl.utils.intermediate.IR" + layerName
-    val cls = ReflectUtils.classFound(className)
-    if ( cls != null) return true
-    if (layer.isInstanceOf[AbstractModule[Activity, Activity, T]]) true
-    else false
+  private def className(layer: Module[T]): String = {
+    val name = layer.getClass.getSimpleName
+    s"com.intel.analytics.bigdl.utils.intermediate.IR.$name"
+  }
+
+  // reminder: some undefined IR operations can be presented by IRGeneralModule
+  override def convertLayerCheck(layer: Module[T]): Boolean = {
+    ReflectionUtils.findClass(className(layer)) != null ||
+    layer.isInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 
   override def convertLayer(layer : Module[T]) : IRElement[T] = {
-    val layerName = layer.getClass.getSimpleName
-    val className = "com.intel.analytics.bigdl.utils.intermediate.IR" + layerName
-    val cls = ReflectUtils.classFound(className)
+    val cls = ReflectionUtils.findClass(className(layer))
     if ( cls != null) {
-      ReflectUtils.reflectToIR(layer, cls)
+      ReflectionUtils.reflectToIR(layer, cls)
     } else if (layer.isInstanceOf[AbstractModule[Activity, Activity, T]]) {
-      val op = IRBlasModule[T](
+      val op = IRGeneralModule[T](
         layer.asInstanceOf[AbstractModule[Activity, Activity, T]])
       IRElement(layer.getName(), op)
     } else {

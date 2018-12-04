@@ -23,9 +23,9 @@ import scala.collection.mutable
 import scala.reflect.{ClassTag, ManifestFactory}
 import scala.reflect.runtime._
 
-object ReflectUtils {
+object ReflectionUtils {
 
-  private def getFiledNameAndValues(o: Object): mutable.HashMap[String, AnyRef] = {
+  private def getFieldNameAndValues(o: Object): mutable.HashMap[String, AnyRef] = {
     val c = o.getClass
     var fields = c.getDeclaredFields
     val superFields = c.getSuperclass.getDeclaredFields
@@ -42,7 +42,7 @@ object ReflectUtils {
   // create layer2 object form layer1
   private def reflection(layer1: Object, layer2: Class[_],
      tags: Array[ClassTag[_]], numerics: Array[TensorNumeric[_]]) : Object = {
-    val nameAndValues = getFiledNameAndValues(layer1)
+    val nameAndValues = getFieldNameAndValues(layer1)
     val constructorMirror = getCostructorMirror(layer2)
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams.map(_.size).sum)
@@ -75,7 +75,7 @@ object ReflectUtils {
   // create Module form IRElement
   def reflectFromIR[T : ClassTag](layer: IRElement[T], cls: Class[_]) : Module[T] = {
     val (tags, numerics) = layer.getOp().getClassTagNumerics()
-    val blasLayer = ReflectUtils.reflection(layer.getOp(), cls, tags, numerics)
+    val blasLayer = ReflectionUtils.reflection(layer.getOp(), cls, tags, numerics)
       .asInstanceOf[Module[T]]
 
     if (blasLayer.parameters() != null) {
@@ -93,7 +93,7 @@ object ReflectUtils {
   // create IRElement form Module
   def reflectToIR[T: ClassTag](layer: Module[T], cls: Class[_]) : IRElement[T] = {
     val (tags, numerics) = layer.getClassTagNumerics()
-    val op = ReflectUtils.reflection(layer, cls, tags, numerics).asInstanceOf[IROperate[T]]
+    val op = ReflectionUtils.reflection(layer, cls, tags, numerics).asInstanceOf[IROperator[T]]
     val weightsAndBias =
       if (layer.parameters() != null) layer.getParameters() else (null, null)
     val element = IRElement[T](
@@ -101,7 +101,7 @@ object ReflectUtils {
     element
   }
 
-  def classFound(name: String): Class[_] = {
+  def findClass(name: String): Class[_] = {
     try {
       Class.forName(name)
     } catch {

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-sealed class IROperate[T: ClassTag] {
+sealed class IROperator[T: ClassTag] {
   val tag: ClassTag[T] = scala.reflect.classTag[T]
   val numerics: TensorNumeric[T] = tag match {
     case ClassTag.Float => TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
@@ -40,7 +40,7 @@ case class IRSpatialMaxPooling[T: ClassTag](
             kW: Int, kH: Int,
             dW: Int = 1, dH: Int = 1,
             padW: Int = 0, padH: Int = 0,
-            format: DataFormat = DataFormat.NCHW) extends IROperate[T]
+            format: DataFormat = DataFormat.NCHW) extends IROperator[T]
 
 case class IRSpatialAveragePooling[T: ClassTag](
             kW: Int, kH: Int,
@@ -48,7 +48,7 @@ case class IRSpatialAveragePooling[T: ClassTag](
             padW: Int = 0, padH: Int = 0,
             globalPooling: Boolean = false,
             ceilMode: Boolean = false, countIncludePad: Boolean = true,
-            divide: Boolean = true, format: DataFormat = DataFormat.NCHW) extends IROperate[T]
+            divide: Boolean = true, format: DataFormat = DataFormat.NCHW) extends IROperator[T]
 
 case class IRSpatialConvolution[T: ClassTag](
             nInputPlane: Int, nOutputPlane: Int,
@@ -59,7 +59,7 @@ case class IRSpatialConvolution[T: ClassTag](
             wRegularizer: Regularizer[T] = null, bRegularizer: Regularizer[T] = null,
             initWeight: Tensor[T] = null, initBias: Tensor[T] = null,
             initGradWeight: Tensor[T] = null, initGradBias: Tensor[T] = null,
-            withBias: Boolean = true, format: DataFormat = DataFormat.NCHW) extends IROperate[T]
+            withBias: Boolean = true, format: DataFormat = DataFormat.NCHW) extends IROperator[T]
 
 case class IRSpatialShareConvolution[T: ClassTag](
             nInputPlane: Int, nOutputPlane: Int,
@@ -70,7 +70,7 @@ case class IRSpatialShareConvolution[T: ClassTag](
             wRegularizer: Regularizer[T] = null, bRegularizer: Regularizer[T] = null,
             initWeight: Tensor[T] = null, initBias: Tensor[T] = null,
             initGradWeight: Tensor[T] = null, initGradBias: Tensor[T] = null,
-            withBias: Boolean = true) extends IROperate[T]
+            withBias: Boolean = true) extends IROperator[T]
 
 case class IRSpatialBatchNormalization[T: ClassTag](
             nOutput: Int, eps: Double = 1e-5, momentum: Double = 0.1,
@@ -78,14 +78,14 @@ case class IRSpatialBatchNormalization[T: ClassTag](
             initWeight: Tensor[T] = null, initBias: Tensor[T] = null,
             initGradWeight: Tensor[T] = null, initGradBias: Tensor[T] = null,
             dataFormat: DataFormat = DataFormat.NCHW,
-            runningMean: Tensor[T] = null, runningVar: Tensor[T] = null) extends IROperate[T]
+            runningMean: Tensor[T] = null, runningVar: Tensor[T] = null) extends IROperator[T]
 
-case class IRIdentity[T: ClassTag]() extends IROperate[T]
+case class IRIdentity[T: ClassTag]() extends IROperator[T]
 
 case class IRDropout[T: ClassTag](initP: Double = 0.5, inplace: Boolean = false,
-                                  scale: Boolean = true) extends IROperate[T]
+                                  scale: Boolean = true) extends IROperator[T]
 
-case class IRReLU[T: ClassTag](ip: Boolean = false) extends IROperate[T]
+case class IRReLU[T: ClassTag](ip: Boolean = false) extends IROperator[T]
 
 case class IRLinear[T: ClassTag](
             inputSize: Int,
@@ -96,36 +96,41 @@ case class IRLinear[T: ClassTag](
             initWeight: Tensor[T] = null,
             initBias: Tensor[T] = null,
             initGradWeight: Tensor[T] = null,
-            initGradBias: Tensor[T] = null) extends IROperate[T]
+            initGradBias: Tensor[T] = null) extends IROperator[T]
 
-case class IRSqueeze[T: ClassTag](dims: Array[Int], batchMode: Boolean) extends IROperate[T]
+case class IRSqueeze[T: ClassTag](dims: Array[Int], batchMode: Boolean) extends IROperator[T]
 
 case class IRSpatialCrossMapLRN[T: ClassTag](
             size: Int = 5,
             alpha: Double = 1.0,
             beta: Double = 0.75,
             k: Double = 1.0,
-            format: DataFormat = DataFormat.NCHW) extends IROperate[T]
+            format: DataFormat = DataFormat.NCHW) extends IROperator[T]
 
-case class IRSoftMax[T: ClassTag]() extends IROperate[T]
+case class IRSoftMax[T: ClassTag]() extends IROperator[T]
 
-case class IRSelectTable[T: ClassTag](dimension: Int) extends IROperate[T]
+case class IRSelectTable[T: ClassTag](dimension: Int) extends IROperator[T]
 
-case class IRCAddTable[T: ClassTag, D: ClassTag](inplace: Boolean = false) extends IROperate[T]
+case class IRCAddTable[T: ClassTag, D: ClassTag](inplace: Boolean = false) extends IROperator[T]
 
 case class IRJoinTable[T: ClassTag](dimension: Int,
-                                    nInputDims: Int = 0) extends IROperate[T]
+                                    nInputDims: Int = 0) extends IROperator[T]
 
-case class IRConcatTable[T: ClassTag]() extends IROperate[T]
+case class IRConcatTable[T: ClassTag]() extends IROperator[T]
 
-case class IRInput[T: ClassTag]() extends IROperate[T]
+case class IRInput[T: ClassTag]() extends IROperator[T]
 
-case class IRBlasModule[T: ClassTag](
-             model: AbstractModule[Activity, Activity, T]) extends IROperate[T]
+/**
+ * if blas module has no corresponding IROperator,
+ * then we can use IRGeneralModule to wrap this layer to IROperator
+ * @param model
+ */
+case class IRGeneralModule[T: ClassTag](
+             model: AbstractModule[Activity, Activity, T]) extends IROperator[T]
 
 private[bigdl] class IRElement[T: ClassTag](
   val name: String,
-  val op: IROperate[T],
+  val op: IROperator[T],
   private var weights: Tensor[T] = null,
   private var gradWeights: Tensor[T] = null) {
 
@@ -147,7 +152,7 @@ private[bigdl] class IRElement[T: ClassTag](
 
   def getName() : String = this.name
 
-  def getOp() : IROperate[T] = this.op
+  def getOp() : IROperator[T] = this.op
 }
 
 object IRElement {
@@ -160,7 +165,7 @@ object IRElement {
    * @tparam T
    * @return
    */
-  def apply[T: ClassTag](name: String, op: IROperate[T],
+  def apply[T: ClassTag](name: String, op: IROperator[T],
                          weights: Tensor[T] = null, gradWeights: Tensor[T] = null): IRElement[T] =
     new IRElement[T](name, op, weights, gradWeights)
 }

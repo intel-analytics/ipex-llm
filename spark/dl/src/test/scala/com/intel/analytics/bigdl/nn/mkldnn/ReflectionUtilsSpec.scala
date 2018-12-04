@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
-import com.intel.analytics.bigdl.utils.intermediate.{IRToBlas, IRToDnn, ReflectUtils}
+import com.intel.analytics.bigdl.utils.intermediate.{IRToBlas, IRToDnn, ReflectionUtils}
 import com.intel.analytics.bigdl.{Module, nn}
 
 class ReflectionUtilsSpec extends BigDLSpecHelper {
@@ -31,13 +31,13 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
     val model1 = nn.SpatialConvolution[Float](2, 4, 3, 3, 4, 4, 0, 0).asInstanceOf[Module[Float]]
     val className = "com.intel.analytics.bigdl.utils.intermediate.IRSpatialConvolution"
     val cls = Class.forName(className)
-    val ir = ReflectUtils.reflectToIR[Float](model1, cls)
+    val ir = ReflectionUtils.reflectToIR[Float](model1, cls)
     val cls2 = Class.forName(
       "com.intel.analytics.bigdl.nn.SpatialConvolution")
-    val modelBlas = ReflectUtils.reflectFromIR(ir, cls2)
+    val modelBlas = ReflectionUtils.reflectFromIR(ir, cls2)
 
     val cls3 = Class.forName("com.intel.analytics.bigdl.nn.mkldnn.SpatialConvolution")
-    val modelDnn = ReflectUtils.reflectFromIR(ir, cls3).asInstanceOf[mkldnn.SpatialConvolution]
+    val modelDnn = ReflectionUtils.reflectFromIR(ir, cls3).asInstanceOf[mkldnn.SpatialConvolution]
 
     val inputShape = Array(2, 2, 23, 23)
     val outShape = Array(2, 4, 6, 6)
@@ -77,7 +77,7 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
     val model1 = nn.SpatialBatchNormalization(3).asInstanceOf[Module[Float]]
     val className = "com.intel.analytics.bigdl.utils.intermediate.IRSpatialBatchNormalization"
     val cls = Class.forName(className)
-    val ir = ReflectUtils.reflectToIR[Float](model1, cls)
+    val ir = ReflectionUtils.reflectToIR[Float](model1, cls)
 
     val modelBlas = IRToBlas[Float].convertLayer(ir)
     val modelDnn = IRToDnn[Float].convertLayer(ir).asInstanceOf[mkldnn.SpatialBatchNormalization]

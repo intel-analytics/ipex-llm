@@ -43,7 +43,7 @@ class IRconvertSpec extends BigDLSpecHelper {
     val pool1 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
     val conv2 = Node(IRElement[Float]("", IRSpatialConvolution[Float](20, 50, 5, 5)))
     val pool2 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
-    val reshape = Node(IRElement("", IRBlasModule[Float](Reshape[Float](Array(50*4*4)))))
+    val reshape = Node(IRElement("", IRGeneralModule[Float](Reshape[Float](Array(50*4*4)))))
     val linear = Node(IRElement("", IRLinear[Float](50 * 4 * 4, 500)))
     val relu = Node(IRElement("", IRReLU[Float]()))
     val fc2 = Node(IRElement("output", IRLinear[Float](500, 10)))
@@ -73,9 +73,9 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     val blas = modelBlas().asInstanceOf[StaticGraph[Float]]
     val allNodes = blas.getSortedForwardExecutions()
-    require(BlasToIR[Float].enableConvert(allNodes))
+    require(BlasToIR[Float].convertingCheck(allNodes))
     val irNodes = BlasToIR[Float].convert(allNodes).map(_._2).toArray
-    require(IRToDnn[Float].enableConvert(irNodes))
+    require(IRToDnn[Float].convertingCheck(irNodes))
     val dnnNodes = IRToDnn[Float].convert(irNodes).map(_._2).toArray
 
     val inputsNodes = dnnNodes.filter(_.element.getName() == "input")(0)
@@ -107,10 +107,10 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     val allNodes = modelIR()
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToBlas[Float].enableConvert(allNodes))
+    require(IRToBlas[Float].convertingCheck(allNodes))
     val blasNodes = IRToBlas[Float].convert(allNodes).map(_._2).toArray
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToDnn[Float].enableConvert(allNodes))
+    require(IRToDnn[Float].convertingCheck(allNodes))
     val dnnNodes = IRToDnn[Float].convert(allNodes).map(_._2).toArray
 
     val blas = Graph(blasNodes.filter(_.element.getName() == "input"),
@@ -145,10 +145,10 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     val allNodes = modelIR2()
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToBlas[Float].enableConvert(allNodes))
+    require(IRToBlas[Float].convertingCheck(allNodes))
     val blasNodes = IRToBlas[Float].convert(allNodes).map(_._2).toArray
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToDnn[Float].enableConvert(allNodes))
+    require(IRToDnn[Float].convertingCheck(allNodes))
     val dnnNodes = IRToDnn[Float].convert(allNodes).map(_._2).toArray
 
     val blas = Graph(blasNodes.filter(_.element.getName() == "input"),
