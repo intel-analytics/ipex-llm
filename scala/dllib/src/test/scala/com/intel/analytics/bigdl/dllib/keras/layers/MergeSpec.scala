@@ -119,6 +119,19 @@ class MergeSpec extends KerasBaseSpec {
     seq.forward(input) should be ((input1 + input2 + input3)/3)
   }
 
+  "Merge concat_0" should "work properly" in {
+    val input1 = Tensor[Float](2, 3, 8).rand()
+    val input2 = Tensor[Float](2, 3, 8).rand()
+    val input = T(1 -> input1, 2 -> input2)
+    val seq = Sequential[Float]()
+    val l1 = InputLayer[Float](inputShape = Shape(3, 8))
+    val l2 = InputLayer[Float](inputShape = Shape(3, 8))
+    val layer = Merge[Float](layers = List(l1, l2), mode = "concat", concatAxis = 0)
+    seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 8))
+    seq.forward(input)
+  }
+
   "Merge concat" should "work properly" in {
     val input1 = Tensor[Float](2, 3, 8).rand()
     val input2 = Tensor[Float](2, 4, 8).rand()
