@@ -181,7 +181,7 @@ object ModuleSerializer extends ModuleSerializable{
     groupSerializerMaps(superModuleType) = groupSerializer
   }
 
-  private[serializer] def getCostructorMirror[T : ClassTag](cls : Class[_]):
+  private[bigdl] def getCostructorMirror[T : ClassTag](cls : Class[_]):
     universe.MethodMirror = {
     getLock.synchronized {
       val clsSymbol = runtimeMirror.classSymbol(cls)
