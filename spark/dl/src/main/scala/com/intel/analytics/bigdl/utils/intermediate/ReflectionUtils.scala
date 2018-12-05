@@ -23,7 +23,7 @@ import scala.collection.mutable
 import scala.reflect.{ClassTag, ManifestFactory}
 import scala.reflect.runtime._
 
-object ReflectionUtils {
+private[bigdl] object ReflectionUtils {
 
   private def getFieldNameAndValues(o: Object): mutable.HashMap[String, AnyRef] = {
     val c = o.getClass

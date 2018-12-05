@@ -25,7 +25,7 @@ private[bigdl] class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElem
 
   private def className(layer: Module[T]): String = {
     val name = layer.getClass.getSimpleName
-    s"com.intel.analytics.bigdl.utils.intermediate.IR.$name"
+    s"com.intel.analytics.bigdl.utils.intermediate.IR$name"
   }
 
   // reminder: some undefined IR operations can be presented by IRGeneralModule

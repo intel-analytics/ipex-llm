@@ -28,9 +28,9 @@ import scala.reflect.ClassTag
 
 abstract class ConvertBase[T, D] {
   /**
-    * clone node relations
-    * @param nodeMap node element maps from T to D
-    */
+   * clone node relations
+   * @param nodeMap node element maps from T to D
+   */
   def cloneNode(allNodes: Array[Node[T]], nodeMap: mutable.HashMap[Node[T], Node[D]]): Unit = {
     allNodes.foreach(node => {
       node.nextNodesAndEdges.foreach(nextNodeAndEdge => {

@@ -45,7 +45,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     IR2DnnMap("IRLinear") = fromLinear
     IR2DnnMap("IRReLU") = fromReLU
     IR2DnnMap("IRJoinTable") = fromJoinTable
-    IR2DnnMap("IRBlasModule") = fromBlasModule
+    IR2DnnMap("IRGeneralModule") = fromBlasModule
     IR2DnnMap("IRInput") = fromInput
   }
 
@@ -71,7 +71,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     allNodes.foreach(node => {
       val op = node.element.getOp()
       if (!convertLayerCheck(node.element)) {
-        logger.info(s"${node.element} convertion failed")
+        logger.info(s"${node.element.getOp()} convertion failed")
         convert = false
       }
     })
