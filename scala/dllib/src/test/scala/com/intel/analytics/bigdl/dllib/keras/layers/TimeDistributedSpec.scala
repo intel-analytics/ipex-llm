@@ -36,7 +36,8 @@ class TimeDistributedSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = TimeDistributed[Float](Dense(8, activation = "relu"), inputShape = Shape(10, 12))
+    val layer = TimeDistributed[Float](Dense[Float](8, activation = "relu"),
+      inputShape = Shape(10, 12))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 10, 8))
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
@@ -53,7 +54,7 @@ class TimeDistributedSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = TimeDistributed[Float](Convolution2D(8, 3, 3),
+    val layer = TimeDistributed[Float](Convolution2D[Float](8, 3, 3),
       inputShape = Shape(4, 3, 12, 12))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 8, 10, 10))
@@ -97,7 +98,7 @@ class TimeDistributedSpec extends KerasBaseSpec {
 
 class TimeDistributedSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val layer = TimeDistributed[Float](Dense(8), inputShape = Shape(10, 12))
+    val layer = TimeDistributed[Float](Dense[Float](8), inputShape = Shape(10, 12))
     layer.build(Shape(3, 10, 12))
     val input = Tensor[Float](3, 10, 12).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
