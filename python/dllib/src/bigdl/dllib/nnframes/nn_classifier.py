@@ -256,6 +256,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
     def setLearningRate(self, val):
         """
         Sets the value of :py:attr:`learningRate`.
+        .. note:: Deprecated in 0.4.0. Please set learning rate with optimMethod directly.
         """
         self._paramMap[self.learningRate] = val
         return self
@@ -269,6 +270,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
     def setLearningRateDecay(self, val):
         """
         Sets the value of :py:attr:`learningRateDecay`.
+        .. note:: Deprecated in 0.4.0. Please set learning rate decay with optimMethod directly.
         """
         self._paramMap[self.learningRateDecay] = val
         return self
