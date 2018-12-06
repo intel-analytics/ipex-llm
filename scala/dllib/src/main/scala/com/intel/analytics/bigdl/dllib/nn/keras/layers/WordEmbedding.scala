@@ -136,7 +136,19 @@ object WordEmbedding {
       trainable: Boolean = false,
       inputLength: Int = -1)(implicit ev: TensorNumeric[T]): WordEmbedding[T] = {
     val shape = if (inputLength > 0) Shape(inputLength) else null
+    val (inputDim, outputDim, embeddingMatrix) = prepareEmbedding[T](embeddingFile, wordIndex)
+    id.getAndIncrement()
+    new WordEmbedding[T](inputDim, outputDim,
+      new EmbeddingMatrixHolder[T](embeddingMatrix, "WordEmbedding" + id.toString),
+      trainable, shape)
+  }
 
+  def prepareEmbedding[@specialized(Float, Double) T: ClassTag](
+      embeddingFile: String,
+      wordIndex: Map[String, Int],
+      randomizeUnknownWords: Boolean = false,
+      normalizeEmbedding: Boolean = false)
+    (implicit ev: TensorNumeric[T]): (Int, Int, Tensor[T]) = {
     require(new File(embeddingFile).exists(),
       s"embeddingFile $embeddingFile doesn't exist. Please check your file path.")
 
@@ -146,15 +158,13 @@ object WordEmbedding {
           "with 0 reserved for unknown words.")
     }
 
-    id.getAndIncrement()
     val indexVec = buildIndexVec[T](wordIndex, embeddingFile)
     val inputDim = if (wordIndex == null) calcInputDimFromIndexVec[T](indexVec)
     else calcInputDimFromWordIndex(wordIndex)
     val outputDim = getOutputDimFromEmbeddingFile(embeddingFile)
-    val embeddingMatrix = buildEmbeddingMatrix[T](indexVec, inputDim, outputDim)
-    new WordEmbedding[T](inputDim, outputDim,
-      new EmbeddingMatrixHolder[T](embeddingMatrix, "WordEmbedding" + id.toString),
-      trainable, shape)
+    val embeddingMatrix = buildEmbeddingMatrix[T](indexVec, inputDim,
+      outputDim, randomizeUnknownWords, normalizeEmbedding)
+    (inputDim, outputDim, embeddingMatrix)
   }
 
   def calcInputDimFromWordIndex(wordIndex: Map[String, Int]): Int = {
@@ -233,14 +243,37 @@ object WordEmbedding {
   def buildEmbeddingMatrix[@specialized(Float, Double) T: ClassTag](
       indexVec: Map[Int, Array[T]],
       inputDim: Int,
-      outputDim: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+      outputDim: Int,
+      randomizeUnknownWords: Boolean = false,
+      normalizeEmbedding: Boolean = false)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val weights = Tensor[T](inputDim, outputDim).zero()
     for (i <- 1 until inputDim) {
       if (indexVec.get(i).isDefined) {
-        weights.narrow(1, i + 1, 1).copy(Tensor[T](indexVec(i), Array(outputDim)))
+        val vec = if (normalizeEmbedding) normalizeVector(indexVec(i)) else indexVec(i)
+        weights.narrow(1, i + 1, 1).copy(Tensor[T](vec, Array(outputDim)))
+      }
+      else if (randomizeUnknownWords) {
+        val vec = if (normalizeEmbedding) normalizeVector(randomVector(outputDim))
+        else randomVector(outputDim)
+        weights.narrow(1, i + 1, 1).copy(Tensor[T](vec, Array(outputDim)))
       }
     }
     weights
+  }
+
+  def normalizeVector[@specialized(Float, Double) T: ClassTag](
+      vec: Array[T])(implicit ev: TensorNumeric[T]): Array[T] = {
+    val sum = ev.sqrt(ev.sum(vec.length, vec.map(x => ev.times(x, x)), 0, 1))
+    vec.map(ev.divide(_, sum))
+  }
+
+  def randomVector[@specialized(Float, Double) T: ClassTag](
+      dim: Int)(implicit ev: TensorNumeric[T]): Array[T] = {
+    val alpha = ev.rand()
+    val vector = Array.fill(dim) {1}.map(x => {
+      ev.times(ev.minus(ev.times(ev.fromType(2.0), ev.rand()), ev.fromType(1.0)), alpha)
+    })
+    vector
   }
 
   /**
