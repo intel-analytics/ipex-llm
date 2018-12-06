@@ -34,12 +34,16 @@ import scala.reflect.ClassTag
 class TextFeature extends Serializable {
   import TextFeature.logger
 
-  private def this(text: String, label: Option[Int]) {
+  private def this(text: String, label: Option[Int], uri: String) {
     this
-    require(text != null, "text for a TextFeature can't be null")
-    state(TextFeature.text) = text
+    if (text != null) {
+      state(TextFeature.text) = text
+    }
     if (label.nonEmpty) {
       state(TextFeature.label) = label.get
+    }
+    if (uri != null) {
+      state(TextFeature.uri) = uri
     }
   }
 
@@ -94,8 +98,15 @@ class TextFeature extends Serializable {
 
   /**
    * Get the text content of the TextFeature.
+   * Return null if it doesn't exist.
    */
   def getText: String = apply[String](TextFeature.text)
+
+  /**
+   * Get the identifier of the TextFeature.
+   * Return null if it doesn't exist.
+   */
+  def uri(): String = apply[String](TextFeature.uri)
 
   /**
    * Get the tokens of the TextFeature.
@@ -105,7 +116,7 @@ class TextFeature extends Serializable {
 
   /**
    * Get the token indices of the TextFeature.
-   * If text hasn't been segmented or mapped from word to index, null will be returned.
+   * If text hasn't been segmented or transformed from word to index, null will be returned.
    */
   def getIndices: Array[Float] = apply[Array[Float]](TextFeature.indexedTokens)
 
@@ -124,7 +135,13 @@ class TextFeature extends Serializable {
 
 object TextFeature {
   /**
-   * Key for the original text content which should not be modified.
+   * Key for the identifier of the TextFeature.
+   * It can be the id of the text in your corpus or the uri of the file.
+   * Value should be a String.
+   */
+  val uri = "uri"
+  /**
+   * Key for the original text content.
    * Value should be a String.
    */
   val text = "text"
@@ -160,8 +177,8 @@ object TextFeature {
   /**
    * Create a TextFeature without label.
    */
-  def apply(text: String): TextFeature = {
-    new TextFeature(text, None)
+  def apply(text: String, uri: String = null): TextFeature = {
+    new TextFeature(text, None, uri)
   }
 
   /**
@@ -169,6 +186,14 @@ object TextFeature {
    * It is recommended that label starts from 0.
    */
   def apply(text: String, label: Int): TextFeature = {
-    new TextFeature(text, Some(label))
+    new TextFeature(text, Some(label), null)
+  }
+
+  /**
+   * Create a TextFeature with label and uri.
+   * It is recommended that label starts from 0.
+   */
+  def apply(text: String, label: Int, uri: String): TextFeature = {
+    new TextFeature(text, Some(label), uri)
   }
 }
