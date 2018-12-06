@@ -34,7 +34,8 @@ class DnnGraph(
   private val _outputs : Seq[ModuleNode[Float]],
   private val _variables: Option[(Array[Tensor[Float]], Array[Tensor[Float]])] = None,
   private val enableExcludeChecking: Boolean = true)
-  extends StaticGraph[Float](_inputs, _outputs, _variables, enableExcludeChecking) {
+  extends StaticGraph[Float](_inputs, _outputs, _variables, enableExcludeChecking)
+  with MklDnnLayer {
   private var forwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var inputCache: Array[Activity] = _
@@ -233,27 +234,21 @@ class DnnGraph(
   }
 
   final def compile(phase: Phase) : Unit = {
-    setRuntime(new MklDnnRuntime(), phase)
+    setRuntime(new MklDnnRuntime())
     initPrimitives(phase, Array[MemoryData]())
   }
 
-  private def setRuntime(runtime: MklDnnRuntime, phase: Phase): Unit = {
+  override def setRuntime(runtime: MklDnnRuntime): Unit = {
+    this.runtime = runtime
     reorderManager.setRuntime(runtime)
     forwardExecution.foreach(m => m.element.asInstanceOf[MklDnnModule].setRuntime(runtime))
-    if (phase == Phase.TrainingPhase) {
-      var i = 0
-      while (i < backwardExecution.length - 1) { // do not execute the dummy backward end
-        backwardExecution(i).element.asInstanceOf[MklDnnModule].setRuntime(runtime)
-        i += 1
-      }
-    }
   }
 
   private def initPrimitives(phase: Phase, inputFormats: Array[MemoryData]): Unit = {
-    val outFormats = initFwdPrimitives(inputFormats, phase)._2
+    _outputFormats = initFwdPrimitives(inputFormats, phase)._2
     if (phase == Phase.TrainingPhase) {
-      initBwdPrimitives(outFormats, phase)
-      initGradWPrimitives(outFormats, phase)
+      _gradOutputFormats = initBwdPrimitives(_outputFormats, phase)._1
+      _gradOutputFormatsForWeight = initGradWPrimitives(_outputFormats, phase)
     }
   }
 
@@ -306,7 +301,8 @@ class DnnGraph(
   }
 
   // init forward primitives
-  private def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+  override def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
+    : (Array[MemoryData], Array[MemoryData]) = {
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
     for (i <- 0 until forwardExecution.length) {
@@ -319,11 +315,14 @@ class DnnGraph(
       }
       if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
     }
+    _inputFormats = firstRealInputFormats
+    _outputFormats = lastOutputFormats
     (firstRealInputFormats, lastOutputFormats)
   }
 
   // init updateGradInput primitives
-  private def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
+  override def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
+    : (Array[MemoryData], Array[MemoryData]) = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
     for (i <- 0 until backwardExecution.length - 1) {
@@ -336,11 +335,14 @@ class DnnGraph(
       }
       if (i == 0) firstRealGradOutputFormats = realGradOutputAndInputFomrats._1
     }
+    _gradOutputFormats = firstRealGradOutputFormats
+    _gradInputFormats = lastGradInputFormats
     (firstRealGradOutputFormats, lastGradInputFormats)
   }
 
   // init acc primitives
-  private def initGradWPrimitives(grads: Array[MemoryData], phase: Phase) = {
+  override def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
+    : Array[MemoryData] = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
     for (i <- 0 until backwardExecution.length - 1) {
@@ -353,6 +355,7 @@ class DnnGraph(
       }
       if (i == 0) firstRealGradOutputFormats = realGradOutput
     }
+    _gradOutputFormatsForWeight = firstRealGradOutputFormats
     firstRealGradOutputFormats
   }
 }
