@@ -60,7 +60,9 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
   /**
    * learning rate for the optimizer in the NNEstimator.
    * Default: 0.001
+   * :: deprecated, please set the learning rate with optimMethod directly.
    */
+  @deprecated("Please set the learning rate with optimMethod directly", "0.4.0")
   final val learningRate = new DoubleParam(
     this, "learningRate", "learningRate", ParamValidators.gt(0))
 
@@ -69,7 +71,9 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
   /**
    * learning rate decay for each iteration.
    * Default: 0
+   * :: deprecated, please set the learning rate decay with optimMethod directly.
    */
+  @deprecated("Please set the learning rate decay with optimMethod directly", "0.4.0")
   final val learningRateDecay = new DoubleParam(this, "learningRateDecay", "learningRateDecay")
 
   def getLearningRateDecay: Double = $(learningRateDecay)
@@ -182,9 +186,17 @@ class NNEstimator[T: ClassTag] private[zoo] (
 
   def setEndWhen(trigger: Trigger): this.type = set(endWhen, trigger)
 
+  /**
+   * :: deprecated, please set the learning rate with optimMethod directly.
+   */
+  @deprecated("Please set with optimMethod directly", "0.4.0")
   def setLearningRate(value: Double): this.type = set(learningRate, value)
   setDefault(learningRate -> 1e-3)
 
+  /**
+   * :: deprecated, please set with optimMethod directly.
+   */
+  @deprecated("Please set with optimMethod directly.", "0.4.0")
   def setLearningRateDecay(value: Double): this.type = set(learningRateDecay, value)
   setDefault(learningRateDecay -> 0.0)
 
@@ -358,12 +370,23 @@ class NNEstimator[T: ClassTag] private[zoo] (
 
   protected override def internalFit(dataFrame: DataFrame): NNModel[T] = {
     val trainingDataSet = getDataSet(dataFrame, $(batchSize))
-    val state = T("learningRate" -> $(learningRate), "learningRateDecay" -> $(learningRateDecay))
     val endTrigger = if (isSet(endWhen)) $(endWhen) else Trigger.maxEpoch($(maxEpoch))
     val optimizer = Optimizer(model, trainingDataSet, criterion)
-      .setState(state)
       .setOptimMethod($(optimMethod))
       .setEndWhen(endTrigger)
+
+    // only set learning rate if user specifically set the values, otherwise use the
+    // learning rate from $(optimMethod)
+    if (isSet(learningRate) || isSet(learningRateDecay)) {
+      val state = T()
+      if (isSet(learningRate)) {
+        state.add(T("learningRate" -> $(learningRate)))
+      }
+      if (isSet(learningRateDecay)) {
+        state.add(T("learningRateDecay" -> $(learningRateDecay)))
+      }
+      optimizer.setState(state)
+    }
 
     if (isSet(l2GradientClippingParams)) {
       optimizer.setGradientClippingByl2Norm($(l2GradientClippingParams))
