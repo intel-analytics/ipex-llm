@@ -26,6 +26,18 @@ import json
 import copy
 
 
+def process_grad(grad):
+    if grad is not None:
+        grad = ops.convert_to_tensor_or_indexed_slices(grad)
+        if isinstance(grad, ops.IndexedSlices):
+            # In IndexedSlices is not supported in java api, we have to convert it to
+            # a dense tensor. This operation is potentially expensive, but there seems
+            # no work around
+            grad = tf.unsorted_segment_sum(grad.values, grad.indices,
+                                           grad.dense_shape[0])
+    return grad
+
+
 def export_tf(sess, folder, inputs, outputs,
               generate_backward=False, allow_non_differentiable_input=True):
     """
@@ -130,17 +142,6 @@ def export_tf(sess, folder, inputs, outputs,
             inputs = [g.get_tensor_by_name(x) for x in new_input_names]
             grads = tf.gradients(output_tensors, variables + inputs,
                                  grad_ys=grad_output_placeholders)
-
-            def process_grad(grad):
-                if grad is not None:
-                    grad = ops.convert_to_tensor_or_indexed_slices(grad)
-                    if isinstance(grad, ops.IndexedSlices):
-                        # In IndexedSlices is not supported in java api, we have to convert it to
-                        # a dense tensor. This operation is potentially expensive, but there seems
-                        # no work around
-                        grad = tf.unsorted_segment_sum(grad.values, grad.indices,
-                                                       grad.dense_shape[0])
-                return grad
 
             grads = [process_grad(grad) for grad in grads]
 
