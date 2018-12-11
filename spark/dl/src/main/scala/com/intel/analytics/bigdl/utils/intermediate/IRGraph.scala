@@ -43,18 +43,23 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T The numeric type in this module parameters.
  */
-class IRGraph[T: ClassTag](
+private[bigdl] class IRGraph[T: ClassTag](
     val inputs : Seq[Node[IRElement[T]]],
     val outputs : Seq[Node[IRElement[T]]],
     val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
     val generateBackward: Boolean = true,
-    val inputFormats: Int = Memory.Format.nchw,
-    val outputFormats: Int = Memory.Format.nc)
+    val inputFormats: Seq[Int] = Seq(Memory.Format.nchw),
+    val outputFormats: Seq[Int] = Seq(Memory.Format.nc))
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] with Serializable {
 
   @transient private var initFwd: Boolean = false
   @transient private var initBwd: Boolean = false
   @transient private var initAcc: Boolean = false
+
+  require(inputFormats.length == inputs.length, s"IRGraph: inputFormats" +
+    s"length ${inputFormats.length} should be same with input nodes length ${inputs.length}")
+  require(outputFormats.length == outputs.length, s"IRGraph: outputFormats" +
+    s"length ${inputFormats.length} should be same with input nodes length ${outputs.length}")
 
   val allNodes = new ArrayBuffer[Node[IRElement[T]]]
   private var graph: Graph[T] = null
@@ -132,13 +137,19 @@ class IRGraph[T: ClassTag](
   private def initFwdPrimitives(input: Activity): Unit = {
     if (!initFwd && graph.isInstanceOf[DnnGraph]) {
       val inputMemory = new ArrayBuffer[MemoryData]()
-      if (input.isTensor) {
-        inputMemory.append(HeapData(input.toTensor[T].size(), inputFormats))
+      if (input.isInstanceOf[Tensor[T]]) {
+        inputMemory.append(HeapData(input.toTensor[T].size(), inputFormats(0)))
       } else {
         val tensors = input.toTable
+        require(tensors.length() == inputFormats.length, s"table input length" +
+          s"${tensors.length()} should be same with inputFormats length ${inputFormats.length}")
+
+        var i = 0
         tensors.foreach(t => {
-          require(t._2.isInstanceOf[Tensor[T]])
-          inputMemory.append(HeapData(t._2.asInstanceOf[Tensor[T]].size(), inputFormats))
+          require(t._2.isInstanceOf[Tensor[T]],
+            "Only support input just contains tensor, but here get Table in input")
+          inputMemory.append(HeapData(t._2.asInstanceOf[Tensor[T]].size(), inputFormats(i)))
+          i += 1
         })
       }
       val dnnGraph = graph.asInstanceOf[DnnGraph]
@@ -173,6 +184,18 @@ object IRGraph {
     generateBackward: Boolean = true,
     inputFormats: Int = Memory.Format.nchw,
     outputFormats: Int = Memory.Format.nc
+  )( implicit ev: TensorNumeric[T]): IRGraph[T] = {
+    new IRGraph[T](inputs, outputs, variables, generateBackward,
+      Seq(inputFormats), Seq(outputFormats))
+  }
+
+  def apply[T: ClassTag](
+    inputs: Seq[Node[IRElement[T]]],
+    outputs: Seq[Node[IRElement[T]]],
+    variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
+    generateBackward: Boolean = true,
+    inputFormats: Seq[Int] = Seq(Memory.Format.nchw),
+    outputFormats: Seq[Int] = Seq(Memory.Format.nc)
   )( implicit ev: TensorNumeric[T]): IRGraph[T] = {
     new IRGraph[T](inputs, outputs, variables, generateBackward, inputFormats, outputFormats)
   }

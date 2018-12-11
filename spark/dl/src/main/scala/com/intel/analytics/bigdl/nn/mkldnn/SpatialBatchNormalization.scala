@@ -336,20 +336,6 @@ class SpatialBatchNormalization(
     s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum)"
   }
 
-  override def evaluate(): this.type = {
-    if (isTraining()) {
-      initFwdPrimitives(inputFormats(), InferencePhase)
-    }
-    this
-  }
-
-  override def training(): this.type = {
-    if (!isTraining()) {
-      initFwdPrimitives(inputFormats(), TrainingPhase)
-    }
-    this
-  }
-
   override def release(): Unit = {
     super.release()
     List(weightAndBias, gradWeightAndBias, runningMean, runningVariance).foreach(_.release())
