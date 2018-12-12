@@ -20,7 +20,7 @@ import java.util.List
 
 import breeze.linalg.reverse
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.{Graph, keras}
+import com.intel.analytics.bigdl.nn.{Graph, SpatialMaxPooling, keras}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -110,8 +110,8 @@ private[bigdl] class IRGraph[T: ClassTag](
     graph.accGradParameters(input, gradOutput)
   }
 
-  def build(): Unit = {
-    graph = new IRConverter[T](this).toGraph()
+  def build(dnnMode: Boolean = false): Unit = {
+    graph = new IRConverter[T](this).toGraph(dnnMode)
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
@@ -136,25 +136,24 @@ private[bigdl] class IRGraph[T: ClassTag](
 
   private def initFwdPrimitives(input: Activity): Unit = {
     if (!initFwd && graph.isInstanceOf[DnnGraph]) {
-      val inputMemory = new ArrayBuffer[MemoryData]()
+      val inputMemory = new Array[MemoryData](inputFormats.length)
       if (input.isInstanceOf[Tensor[T]]) {
-        inputMemory.append(HeapData(input.toTensor[T].size(), inputFormats(0)))
+        inputMemory(0) = HeapData(input.toTensor[T].size(), inputFormats(0))
       } else {
         val tensors = input.toTable
-        require(tensors.length() == inputFormats.length, s"table input length" +
+        require(tensors.length() == inputFormats.length, s"table input length " +
           s"${tensors.length()} should be same with inputFormats length ${inputFormats.length}")
-
-        var i = 0
         tensors.foreach(t => {
           require(t._2.isInstanceOf[Tensor[T]],
             "Only support input just contains tensor, but here get Table in input")
-          inputMemory.append(HeapData(t._2.asInstanceOf[Tensor[T]].size(), inputFormats(i)))
-          i += 1
+          val t1 = t._1.asInstanceOf[Int] // starts from 1
+          val t2 = t._2.asInstanceOf[Tensor[T]]
+          inputMemory(t1 - 1) = HeapData(t2.size(), inputFormats(t1 - 1))
         })
       }
       val dnnGraph = graph.asInstanceOf[DnnGraph]
       dnnGraph.setRuntime(new MklDnnRuntime())
-      dnnGraph.initFwdPrimitives(inputMemory.toArray)
+      dnnGraph.initFwdPrimitives(inputMemory)
       initFwd = true
     }
   }
@@ -192,10 +191,10 @@ object IRGraph {
   def apply[T: ClassTag](
     inputs: Seq[Node[IRElement[T]]],
     outputs: Seq[Node[IRElement[T]]],
-    variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-    generateBackward: Boolean = true,
-    inputFormats: Seq[Int] = Seq(Memory.Format.nchw),
-    outputFormats: Seq[Int] = Seq(Memory.Format.nc)
+    variables: Option[(Array[Tensor[T]], Array[Tensor[T]])],
+    generateBackward: Boolean,
+    inputFormats: Seq[Int],
+    outputFormats: Seq[Int]
   )( implicit ev: TensorNumeric[T]): IRGraph[T] = {
     new IRGraph[T](inputs, outputs, variables, generateBackward, inputFormats, outputFormats)
   }

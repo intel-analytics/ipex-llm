@@ -16,29 +16,31 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
-import com.intel.analytics.bigdl.mkl.{Engine, Memory}
-import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, mkldnn}
-import com.intel.analytics.bigdl.nn.mkldnn._
+import com.intel.analytics.bigdl.nn.Graph
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, InputWrapper, Output}
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Module, utils}
-import com.intel.analytics.bigdl.utils.{MklBlas, Node}
+import com.intel.analytics.bigdl.utils.{MklBlas, MklDnn, Node}
+
 import scala.reflect.ClassTag
 
 
 private[bigdl] class IRConverter[T: ClassTag](IRgraph: IRGraph[T])(implicit ev: TensorNumeric[T]) {
-
   /**
-   * build to generate BigDL graph
+   * convert IRgraph to blas or dnn graph.
+   * @param dnnMode If dnnMode = true, it means ir graph must be converted to dnn graph
    * @return
    */
-  def toGraph() : Graph[T] = {
-    if (utils.Engine.getEngineType() == MklBlas) {
+  def toGraph(dnnMode: Boolean = false) : Graph[T] = {
+    if (utils.Engine.getEngineType() == MklBlas && !dnnMode) {
       require(IRToBlas[T].convertingCheck(IRgraph.allNodes.toArray),
         "IR graph can not convert to Blas layer")
       toBlasGraph()
     } else {
       require(ev.getType() == FloatType, "Mkldnn engine only supports float data")
+      utils.Engine.setEngineType(MklDnn)
       require(IRToDnn[Float].convertingCheck(
         IRgraph.allNodes.toArray.asInstanceOf[Array[Node[IRElement[Float]]]]),
         "IR graph can not convert to Dnn layer")
@@ -62,11 +64,12 @@ private[bigdl] class IRConverter[T: ClassTag](IRgraph: IRGraph[T])(implicit ev: 
     })
 
     // add output node for graph
-    val realOutputs = outputs.map(n => {
-      val node = new Node[Module[Float]](Output(IRgraph.outputFormats))
-        n.add(node)
+    val realOutputs = outputs.zipWithIndex.map {
+      case (model: Node[Module[Float]], index: Int) =>
+        val node = new Node[Module[Float]](Output(IRgraph.outputFormats(index)))
+        model.add(node)
         node
-      })
+    }
 
     DnnGraph(realInputs, realOutputs,
       IRgraph.variables.asInstanceOf[Option[(Array[Tensor[Float]], Array[Tensor[Float]])]],

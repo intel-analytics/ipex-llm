@@ -252,10 +252,22 @@ class DnnGraph(
     }
   }
 
+  private def getInputMemoryData(node: ModuleNode[Float], memoryData: Array[MemoryData])
+    : Array[MemoryData] = {
+    if (inputs.length == 1) {
+      require(inputs(0).eq(node), "input node is not in the input list")
+      memoryData
+    } else {
+      val i = inputs.indexOf(node)
+      require(i != -1, "input node is not in the input list")
+      Array(memoryData(i))
+    }
+  }
+
   private def findInputFormats(node: ModuleNode[Float], inputs: Array[MemoryData])
     : Array[MemoryData] = {
     if (node.prevNodes.isEmpty) {
-      inputs
+      getInputMemoryData(node, inputs)
     } else {
       val prevFormats = node.prevNodesAndEdges
         .filterNot(n => n._1.element.isInstanceOf[ControlDependency[Float]])
@@ -301,7 +313,7 @@ class DnnGraph(
   }
 
   // init forward primitives
-  override def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
@@ -321,7 +333,7 @@ class DnnGraph(
   }
 
   // init updateGradInput primitives
-  override def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
@@ -341,7 +353,7 @@ class DnnGraph(
   }
 
   // init acc primitives
-  override def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[mkldnn] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
     : Array[MemoryData] = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
