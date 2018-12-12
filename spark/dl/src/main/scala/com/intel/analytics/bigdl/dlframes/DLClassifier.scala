@@ -72,7 +72,12 @@ class DLClassifierModel[T: ClassTag](
   )(implicit ev: TensorNumeric[T]) extends DLModel[T](model, featureSize) {
 
   protected override def outputToPrediction(output: Tensor[T]): Any = {
-    ev.toType[Double](output.max(1)._2.valueAt(1))
+    if (output.size().deep == Array(1).deep) {
+      val raw = ev.toType[Double](output.toArray().head)
+      if (raw > 0.5) 1.0 else 0.0
+    } else {
+      ev.toType[Double](output.max(1)._2.valueAt(1))
+    }
   }
 
   override def transformSchema(schema : StructType): StructType = {
