@@ -129,6 +129,30 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "An DLClassifier" should "support binary classification" in {
+    val model = new Sequential().add(Linear[Float](6, 1)).add(Sigmoid[Float])
+    val criterion = BCECriterion[Float]()
+    val classifier = new DLClassifier[Float](model, criterion, Array(6))
+      .setLearningRate(0.1)
+      .setBatchSize(2)
+      .setEndWhen(Trigger.maxIteration(10))
+
+    Array(
+      sqlContext.createDataFrame(sc.parallelize(
+        smallData.map(p => (p._1.map(_.toFloat), p._2.toFloat - 1))))
+        .toDF("features", "label"), // Float
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2 - 1))))
+        .toDF("features", "label") // Double
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = classifier.fit(df)
+      val result = dlModel.transform(df).collect()
+      val accuracy = result.count(v => v.get(1) == v.get(2)).toDouble / smallData.size
+      accuracy should be > math.max(smallData.count(_._2 == 1),
+        smallData.count(_._2 == 2)).toDouble / smallData.size
+    }
+  }
+
   "An DLClassifier" should "fit with adam and LBFGS" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
