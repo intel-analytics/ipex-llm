@@ -522,7 +522,7 @@ class TestNNClassifer():
             scaler = MinMaxScaler().setInputCol("features").setOutputCol("scaled")
             model = Sequential().add(Linear(2, 2))
             criterion = ClassNLLCriterion()
-            classifier = NNClassifier(model, criterion, MLlibVectorToTensor([2]))\
+            classifier = NNClassifier(model, criterion)\
                 .setBatchSize(4) \
                 .setLearningRate(0.01).setMaxEpoch(1).setFeaturesCol("scaled")
 
