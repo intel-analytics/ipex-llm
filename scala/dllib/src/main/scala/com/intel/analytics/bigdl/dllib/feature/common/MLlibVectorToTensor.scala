@@ -23,8 +23,11 @@ import scala.reflect.ClassTag
 
 /**
  * a Preprocessing that converts MLlib Vector to a Tensor.
+ * :: deprecated, NNEstimator can automatically extract Vectors now.
+ *
  * @param size dimensions of target Tensor.
  */
+@deprecated("NNEstimator can automatically extract Vectors now", "0.4.0")
 class MLlibVectorToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T])
   extends Preprocessing[Vector, Tensor[T]] {
 
@@ -34,6 +37,11 @@ class MLlibVectorToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNume
 }
 
 object MLlibVectorToTensor {
+
+  /**
+   * :: deprecated, NNEstimator can automatically extract Vectors now.
+   */
+  @deprecated("NNEstimator can automatically extract Vectors now", "0.4.0")
   def apply[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]): MLlibVectorToTensor[T] =
     new MLlibVectorToTensor[T](size)
 }
