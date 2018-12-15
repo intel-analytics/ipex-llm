@@ -91,6 +91,7 @@ class ArrayToTensor(Preprocessing):
 class MLlibVectorToTensor(Preprocessing):
     """
     a Transformer that converts MLlib Vector to a Tensor.
+    .. note:: Deprecated in 0.4.0. NNEstimator will automatically extract Vectors now.
     :param size dimensions of target Tensor.
     """
     def __init__(self, size, bigdl_type="float"):
