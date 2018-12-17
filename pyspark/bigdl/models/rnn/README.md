@@ -9,11 +9,18 @@ The implementation of RNNs in this code is referred to in the [Keras Recurrent](
 
 ## Get the BigDL files
 
-Please build BigDL referring to [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page).
+Please build BigDL referring to [Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/).
 
 
 ## Prepare the Input Data
 You can download the Tiny Shakespeare Texts corpus from [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt).
+
+After downloading the text, please place it into an appropriate directory (e.g `/opt/text/input.txt`). Please separate it into `train.txt` and `val.txt`. In our case, we just select 80 percentage of the input to be train and remaining 20 percentage to be val. The program will later read in the original text file from this directory.
+```shell
+export LANG=en_US.UTF-8
+head -n 8000 input.txt > val.txt
+tail -n +8000 input.txt > train.txt
+```
 
 If you run on spark local mode, you can skip this step, we will download the file for you.
 
@@ -71,10 +78,10 @@ http_proxy=...
 PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
        --master ${MASTER} \
        --deploy-mode client \
-      --conf spark.executorEnv.http_proxy=${http_proxy} \
-      --driver-memory 10g  \
-      --executor-cores 1  \
-      --executor-memory 60g \
+       --conf spark.executorEnv.http_proxy=${http_proxy} \
+       --driver-memory 10g  \
+       --executor-cores 1  \
+       --executor-memory 60g \
        --py-files ${PYTHON_API_PATH} \
        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
        --jars ${BigDL_JAR_PATH} \
@@ -83,12 +90,18 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
        --conf spark.executor.extraClassPath=bigdl-version-jar-with-dependencies.jar \
        --conf spark.yarn.appMasterEnv.NLTK_DATA=./ \
        --num-executors 1 \
-       ${BigDL_HOME}/pyspark/dl/models/rnn/rnnexample.py --folder hdfs://xxx:9000/rnn/ --batchSize 12
+       ${BigDL_HOME}/pyspark/bigdl/models/rnn/rnnexample.py --folder hdfs://xxx:9000/rnn/ --batchSize 12
 ```
 
-* `--folder` hdfs directory where train.txt and val.txt are located
-
-* `--batchSize` option can be used to set batch size, the default value is 128.
+* `--folder` hdfs directory where `train.txt` and `val.txt` are located. the default value is /tmp/rnn.
+* `--batchSize` option can be used to set batch size, the default value is 12.
+* `--hiddenSize` hidden unit size in the rnn cell, the default value is 40.
+* `--vocabSize` vocabulary size, the default value is 4000.
+* `--learningRate` inital learning rate, the default value is 0.1.
+* `--weightDecay` weight decay, the default value is 0.
+* `--momentum` momentum, the default value is 0.
+* `--dampening` dampening for momentum, the default value is 0.
+* `--maxEpoch` max number of epochs to train, the default value is 30.
 
 ## Expected Training Output
 Users can see the Loss of the model printed by the program. The Loss, in this case, is the perplexity of the language model. The lower, the better.

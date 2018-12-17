@@ -17,13 +17,16 @@
 package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl._
 
 import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, TestUtils}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
@@ -184,7 +187,8 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -236,7 +240,9 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -262,7 +268,7 @@ class LinearSpec extends FlatSpec with Matchers {
     assert(err < 1e-6)
   }
 
-  "Linear module in batch mode without bias" should "converate to correct weight and bias" in {
+  "Linear module in batch mode without bias" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2
     val batchN = 3
@@ -288,7 +294,8 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -386,5 +393,29 @@ class LinearSpec extends FlatSpec with Matchers {
 
     linear2.gradWeight should be(linear.gradWeight.mul(0.5))
     linear2.gradBias should be(linear.gradBias.mul(2))
+  }
+
+  "Xavier" should "init right in Linear" in {
+    RandomGenerator.RNG.setSeed(1)
+    val linear = Linear[Float](3, 5)
+      .setInitMethod(Xavier, Zeros)
+    val exceptedWeight = Tensor[Float](Storage(Array(
+      -0.1399592, -0.32341975, 0.32080957,
+      0.042518664, -0.5119037, -0.097942464,
+      0.6549186, -0.468386, -0.8185887,
+      0.059606634, 0.29525837, 0.7170032,
+      -0.14323229, -0.07412344, 0.10165376
+    ).map(_.toFloat))).resize(5, 3)
+    val exceptedBias = Tensor[Float](T(0f, 0f, 0f, 0f, 0f))
+    linear.weight should be (exceptedWeight)
+    linear.bias should be (exceptedBias)
+  }
+}
+
+class LinearSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val linear = Linear[Float](10, 2).setName("linear")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(linear, input)
   }
 }

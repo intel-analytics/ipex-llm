@@ -18,8 +18,12 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.{HeapData, MemoryData, MklDnnContainer}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -38,7 +42,7 @@ object LocalOptimizer {
  * @param dataset data set
  * @param criterion criterion to be used
  */
-class LocalOptimizer[T: ClassTag] private[optim](
+class LocalOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: LocalDataSet[MiniBatch[T]],
   criterion: Criterion[T]
@@ -47,15 +51,35 @@ class LocalOptimizer[T: ClassTag] private[optim](
     model, dataset, criterion) {
 
   import LocalOptimizer._
-  import Optimizer._
+  import Optimizer.{header, saveModel, saveState, checkSubModules, getHyperParameterLog}
 
   private val coreNumber = Engine.coreNumber()
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
+    case MklDnn => 1
     case _ => throw new IllegalArgumentException
   }
 
+  private val workingModels = {
+    model.getParameters()
+    val wb = Util.getAndClearWeightBias(model.parameters())
+
+    val models = (1 to subModelNumber).map(i => {
+      logger.info(s"Clone $i model...")
+      val m = model.cloneModule()
+      Util.putWeightBias(wb, m)
+      Util.initGradWeightBias(wb, m)
+      m match {
+        case container: MklDnnContainer => container.compile(TrainingPhase)
+        case _ =>
+      }
+      m
+    }).toArray
+    Util.putWeightBias(wb, model)
+    Util.initGradWeightBias(wb, model)
+    models
+  }
   private val (weight, grad) = model.getParameters()
   private val gradLength = grad.nElement()
   private val syncGradTaskSize = gradLength / subModelNumber
@@ -63,14 +87,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
   private val syncGradParallelNum =
     if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
 
-  private val workingModels = (1 to subModelNumber).map(i => {
-    logger.info(s"Clone $i model...")
-    model.cloneModule()
-  }).toArray
-
   private val workingModelWAndG = workingModels.map(_.getParameters())
-
-  workingModelWAndG.foreach(_._1.storage().set(weight.storage()))
 
   private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
@@ -78,12 +95,26 @@ class LocalOptimizer[T: ClassTag] private[optim](
   override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
-    optimMethod.clearHistory()
-    optimMethod.loadFromTable(state)
+    optimMethods.values.foreach{ optimMethod =>
+      optimMethod.clearHistory()
+    }
+
+    // To be compatible with the old usage that user define hyperparameters in a table.
+    if (optimMethods.size == 1) {
+      optimMethods.head._2.loadFromTable(state)
+    }
+
+    checkSubModules(model, optimMethods.keys.toSeq)
+    val currentOptimMethods = optimMethods.map{case (subModuleName, optimMethod) =>
+      val subModule = model(subModuleName)
+      (optimMethod, subModule.get.getParameters())
+    }
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
+
     dataset.shuffle()
+    val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
@@ -95,6 +126,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      state("parallelism") = parallelism
       val miniBatchBuffer = new Array[MiniBatch[T]](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize) + 1
@@ -143,36 +175,40 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val loss = lossSum / parallelism
       grad.div(ev.fromType(parallelism))
 
-      optimMethod.state.update("epoch", state.get("epoch"))
-      optimMethod.state.update("neval", state.get("neval"))
-      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      parameterProcessors.foreach(_.processParameters(model, state))
+
+      currentOptimMethods.foreach { case (optimMethod, (weight, grad)) =>
+        optimMethod.state.update("epoch", state.get("epoch"))
+        optimMethod.state.update("neval", state.get("neval"))
+        optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      }
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.size()
-      val head =
-        header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
+      val head = header(state[Int]("epoch"), count, numSamples, state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
         s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
-        optimMethod.getHyperParameter()
+        getHyperParameterLog(optimMethods)
         )
       state("neval") = state[Int]("neval") + 1
 
-      if (count >= dataset.size()) {
+      if (count >= numSamples) {
         state("epoch") = state[Int]("epoch") + 1
         dataset.shuffle()
         iter = dataset.toLocal().data(train = true)
         count = 0
       }
 
-      validate(wallClockTime)
+      validate(head)
       checkpoint(wallClockTime)
     }
 
     // copy running status from workingModels to model
-    model.copyStatus(workingModels.head)
+    model.setExtraParameter(workingModels.head.getExtraParameter())
+    shutdown()
 
     model
   }
@@ -190,7 +226,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     }
   }
 
-  private def validate(wallClockTime: Long): Unit = {
+  private def validate(header: String): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -201,9 +237,16 @@ class LocalOptimizer[T: ClassTag] private[optim](
     val vMethods = validationMethods.get
     val vMethodsArr = (1 to subModelNumber).map(i => vMethods.map(_.clone())).toArray
     val dataIter = validationDataSet.get.toLocal().data(train = false)
-    logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
+    logger.info(s"$header Validate model...")
 
     workingModels.foreach(_.evaluate())
+    val localWorkingModels = workingModels.map {
+      case container: MklDnnContainer =>
+        val _c = container.cloneModule()
+        _c.compile(InferencePhase)
+        _c
+      case default => default
+    }
 
     var count = 0
     dataIter.map(batch => {
@@ -219,7 +262,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
             val currentMiniBatch = batch.slice(offset, length)
             val input = currentMiniBatch.getInput()
             val target = currentMiniBatch.getTarget()
-            val output = workingModels(b).forward(input)
+            val output = localWorkingModels(b).forward(input)
             val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {
               validation(output, target)
@@ -232,7 +275,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
         }
       })
       count += batch.size()
-      logger.info(s"[Validation] $count/${validationDataSet.get.size()} Throughput is ${
+      logger.info(s"$header Throughput is ${
         batch.size() / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
@@ -241,8 +284,12 @@ class LocalOptimizer[T: ClassTag] private[optim](
         l + r
       }
     }).zip(vMethods).foreach(r => {
-      logger.info(s"${r._2} is ${r._1}")
+      logger.info(s"$header ${r._2} is ${r._1}")
     })
+  }
+
+  private[optim] override def shutdown(): Unit = {
+    workingModels.foreach(_.release())
   }
 }
 

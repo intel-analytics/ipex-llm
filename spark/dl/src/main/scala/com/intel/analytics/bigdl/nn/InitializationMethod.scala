@@ -19,9 +19,12 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.VariableFormat.Default
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 /**
  * VariableFormat describe the meaning of each dimension of the variable
+ * (the trainable parameters of a model like weight and bias) and can be used to
+ * return the fan in and fan out size of the variable when provided the variable shape.
  */
 trait VariableFormat {
   def getFanIn(shape: Array[Int]): Int = {
@@ -38,7 +41,16 @@ object VariableFormat {
    * The default VariableFormat used when we do not care about
    * the specified format of this variable.
    */
-  case object Default extends VariableFormat
+  case object Default extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      shape.product
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      shape.product
+    }
+
+  }
 
   case object ONE_D extends VariableFormat {
     override def getFanIn(shape: Array[Int]): Int = {
@@ -95,24 +107,24 @@ object VariableFormat {
 
   case object GP_OUT_IN_KW_KH extends VariableFormat {
     override def getFanIn(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(2) * receptiveFieldSize
     }
 
     override def getFanOut(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(1) * receptiveFieldSize
     }
   }
 
   case object GP_IN_OUT_KW_KH extends VariableFormat {
     override def getFanIn(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(1) * receptiveFieldSize
     }
 
     override def getFanOut(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(2) * receptiveFieldSize
     }
   }
@@ -129,6 +141,17 @@ object VariableFormat {
     }
   }
 
+  case object GP_KH_KW_IN_OUT extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(1) * shape(2)
+      shape(2) * receptiveFieldSize
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(1) * shape(2)
+      shape(3) * receptiveFieldSize
+    }
+  }
 }
 
 /**
@@ -255,15 +278,55 @@ case class ConstInitMethod(value: Double) extends InitializationMethod {
  *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
  */
 case object Xavier extends InitializationMethod {
+  private var varianceNormAverage: Boolean = true
+
+  def setVarianceNormAverage(v: Boolean): this.type = {
+    varianceNormAverage = v
+    this
+  }
+
   def init[T](variable: Tensor[T], dataFormat: VariableFormat)
              (implicit ev: TensorNumeric[T]): Unit = {
     val shape = variable.size()
     val fanIn = dataFormat.getFanIn(shape)
     val fanOut = dataFormat.getFanOut(shape)
-    val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+    val stdv = if (!varianceNormAverage) {
+      math.sqrt(3.0 / fanIn)
+    } else {
+      math.sqrt(6.0 / (fanIn + fanOut))
+    }
     variable.rand(-stdv, stdv)
   }
 
+}
+
+/**
+ * A Filler based on the paper [He, Zhang, Ren and Sun 2015]: Specifically
+ * accounts for ReLU nonlinearities.
+ *
+ * Aside: for another perspective on the scaling factor, see the derivation of
+ * [Saxe, McClelland, and Ganguli 2013 (v3)].
+ *
+ * It fills the incoming matrix by randomly sampling Gaussian data with std =
+ * sqrt(2 / n) where n is the fanIn, fanOut, or their average, depending on
+ * the varianceNormAverage parameter.
+ *
+ * @param varianceNormAverage VarianceNorm use average of (fanIn + fanOut) or just fanOut
+ */
+case class MsraFiller(varianceNormAverage: Boolean = true) extends InitializationMethod {
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val fanOut = dataFormat.getFanOut(shape)
+    val n = if (varianceNormAverage) {
+      (fanIn + fanOut) / 2
+    } else {
+      fanOut
+    }
+    val std = math.sqrt(2.0 / n)
+    variable.apply1(_ => ev.fromType(RandomGenerator.RNG.normal(0, std)))
+  }
 }
 
 /**

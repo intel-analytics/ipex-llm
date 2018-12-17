@@ -57,6 +57,13 @@ layer {
  top : "dummy"
 }
 layer {
+  name: "prob"
+  type: "Softmax"
+  bottom: "dummy"
+  top: "prob"
+}
+
+layer {
   name: "loss"
   type: "SoftmaxWithLoss"
   bottom: "dummy"

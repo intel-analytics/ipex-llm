@@ -22,27 +22,16 @@ import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl._
 
-class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class EvaluatorSpec extends SparkContextLifeCycle with Matchers {
 
-  var sc: SparkContext = null
-  val nodeNumber = 1
-  val coreNumber = 1
-
-  before {
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("evaluator")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+  override def nodeNumber: Int = 1
+  override def coreNumber: Int = 1
+  override def appName: String = "evaluator"
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {
@@ -70,9 +59,9 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     result(0)._1 should be (new AccuracyResult(0, 100))
     result(1)._1 should be (new AccuracyResult(100, 100))
-    result(2)._1 should be (new LossResult(57.669075f, 25))
+    result(2)._1 should be (new LossResult(57.610695f, 25))
     result(0)._1.result()._1 should be (0f)
     result(1)._1.result()._1 should be (1f)
-    result(2)._1.result()._1 should be (2.306763f+-0.000001f)
+    result(2)._1.result()._1 should be (2.3044279f+-0.000001f)
   }
 }

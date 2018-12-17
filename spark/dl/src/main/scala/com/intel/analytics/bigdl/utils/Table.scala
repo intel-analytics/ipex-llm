@@ -113,7 +113,7 @@ class Table private[bigdl](
   }
 
   override def toString: String = {
-    s" {\n\t${state.map{case (key: Any, value: Any) =>
+    s" {\n\t${state.filter(_._2 != null).map{case (key: Any, value: Any) =>
       s"$key: " + s"$value".split("\n").mkString(s"\n\t${key.toString.replaceAll(".", " ")}  ")
     }.mkString("\n\t")}\n }"
   }
@@ -289,6 +289,25 @@ class Table private[bigdl](
     new Table(newState)
   }
 
+  /**
+   * Return the elements of this table as a Seq.
+   * This method assumes the key of this table are all
+   * the integers between 1 to this.length(),
+   * the values are all D
+   */
+  def toSeq[D]: Seq[D] = {
+    for (i <- 0 until this.length()) yield {
+      try {
+        this(i + 1).asInstanceOf[D]
+      } catch {
+        case e: NoSuchElementException =>
+          throw new UnsupportedOperationException("toSeq requires the key of this table are" +
+            " all the integers between 1 to this.length()", e)
+      }
+
+    }
+  }
+
   override def toTensor[D]
   (implicit ev: TensorNumeric[D]): Tensor[D] =
     throw new IllegalArgumentException("Table cannot be cast to Tensor")
@@ -320,8 +339,20 @@ object T {
    * @param data
    * @return
    */
-  def array(data: Array[Any]): Table = {
-    new Table(data)
+  def array(data: Array[_]): Table = {
+    new Table(data.asInstanceOf[Array[Any]])
+  }
+
+  /**
+   * Construct a table from an array
+   *
+   * The index + 1 will be used as the key
+   *
+   * @param data
+   * @return
+   */
+  def seq(data: Seq[_]): Table = {
+    new Table(data.toArray.asInstanceOf[Array[Any]])
   }
 
   /**

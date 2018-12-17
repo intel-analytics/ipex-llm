@@ -38,7 +38,7 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 @SerialVersionUID(3917196591309935383L)
-class CAdd[@specialized(Float, Double) T: ClassTag](
+class CAdd[T: ClassTag](
   val size: Array[Int],
   var bRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
@@ -139,14 +139,6 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
     if (null != bRegularizer) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradBias.zero()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

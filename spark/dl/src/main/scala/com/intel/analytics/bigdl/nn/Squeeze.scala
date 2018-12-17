@@ -15,9 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 
 import scala.reflect.ClassTag
 
@@ -32,42 +32,55 @@ import scala.reflect.ClassTag
 @SerialVersionUID(7998127436291978408L)
 class Squeeze[T: ClassTag](
   val dims : Array[Int] = null, val batchMode: Boolean = false
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
+  )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
 
-  if (batchMode && dims != null) {
+  val dimensions = if (batchMode && dims != null) {
+    val newDims = new Array[Int](dims.length)
     var i = 0
-    while(i < dims.length) {
-      dims(i) += 1
+    while(i < newDims.length) {
+      newDims(i) = dims(i) + 1
       i += 1
     }
+    newDims
+  } else {
+    dims
   }
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.set(input)
-    if (dims != null) {
+  override def updateOutput(input: Tensor[_]): Tensor[_] = {
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
+    }
+    output.asInstanceOf[Tensor[NumericWildcard]].set(input.asInstanceOf[Tensor[NumericWildcard]])
+    if (dimensions != null) {
       var i = 0
-      while(i < dims.length) {
-        output.squeeze(dims(i))
+      while(i < dimensions.length) {
+        output.squeeze(dimensions(i))
         i += 1
       }
     } else {
       output.squeeze()
     }
 
-    if (batchMode && dims == null && input.size(1) == 1) {
+    if (batchMode && dimensions == null && input.size(1) == 1) {
       output.addSingletonDimension()
     }
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == gradOutput.nElement())
-    gradInput.set(gradOutput.view(input.size()))
+  override def updateGradInput(input: Tensor[_], gradOutput: Tensor[_]): Tensor[_] = {
+    if (gradInput.getType() != gradOutput.getType()) {
+      gradInput = gradOutput.emptyInstance()
+    }
+    require(input.nElement() == gradOutput.nElement(),
+      "input and gradoutput shoule be of the same size" +
+        s"input size ${input.nElement()} gradoutput size ${gradOutput.nElement()}")
+    gradInput.asInstanceOf[Tensor[NumericWildcard]]
+      .set(gradOutput.asInstanceOf[Tensor[NumericWildcard]].view(input.size()))
     gradInput
   }
 
   override def toString(): String = {
-    s"${getPrintName}(${if (dims != null) dims.mkString(",") + ", " else ""}" +
+    s"${getPrintName}(${if (dimensions != null) dimensions.mkString(",") + ", " else ""}" +
       s"${if (batchMode) "batch" else ""})"
   }
 
@@ -77,13 +90,13 @@ class Squeeze[T: ClassTag](
     case that: Squeeze[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        (dims.zip(that.dims).map(a => a._1 == a._2).reduce(_ && _)) &&
+        (dims.zip(that.dimensions).map(a => a._1 == a._2).reduce(_ && _)) &&
         batchMode == that.batchMode
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), dims, batchMode)
+    val state = Seq(super.hashCode(), dimensions, batchMode)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
@@ -98,6 +111,6 @@ object Squeeze {
   def apply[T: ClassTag](
     dims : Array[Int], batchMode: Boolean)(implicit ev: TensorNumeric[T])
   : Squeeze[T] = {
-    new Squeeze[T](dims.sortWith(_>_), batchMode)
+    new Squeeze[T](if (dims != null) dims.sortWith(_>_) else null, batchMode)
   }
 }

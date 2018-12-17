@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.visualization.tensorboard
 import java.io.{File, FileOutputStream}
 
 import com.google.common.primitives.{Ints, Longs}
+import com.intel.analytics.bigdl.utils.Crc32
 import netty.Crc32c
 import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
 import org.tensorflow.util.Event
@@ -41,9 +42,9 @@ private[bigdl] class RecordWriter(file: Path, fs: FileSystem) {
     val eventString = event.toByteArray
     val header = Longs.toByteArray(eventString.length.toLong).reverse
     outputStream.write(header)
-    outputStream.write(Ints.toByteArray(maskedCRC32(header).toInt).reverse)
+    outputStream.write(Ints.toByteArray(Crc32.maskedCRC32(crc32, header).toInt).reverse)
     outputStream.write(eventString)
-    outputStream.write(Ints.toByteArray(maskedCRC32(eventString).toInt).reverse)
+    outputStream.write(Ints.toByteArray(Crc32.maskedCRC32(crc32, eventString).toInt).reverse)
     if (outputStream.isInstanceOf[FSDataOutputStream]) {
       // Flush data to HDFS.
       outputStream.asInstanceOf[FSDataOutputStream].hflush()
@@ -52,16 +53,5 @@ private[bigdl] class RecordWriter(file: Path, fs: FileSystem) {
 
   def close(): Unit = {
     outputStream.close()
-  }
-
-  def maskedCRC32(data: Array[Byte]): Long = {
-    crc32.reset()
-    crc32.update(data, 0, data.length)
-    val x = u32(crc32.getValue)
-    u32(((x >> 15) | u32(x << 17)) + 0xa282ead8)
-  }
-
-  def u32(x: Long): Long = {
-    x & 0xffffffff
   }
 }

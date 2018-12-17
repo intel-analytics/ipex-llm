@@ -38,6 +38,11 @@ trait Initializable {
     this
   }
 
+  def setInitMethod(initMethod: Array[InitializationMethod]): this.type = {
+    throw new UnsupportedOperationException(s"setInitMethod with a array of InitializationMethod" +
+      s" does not support for ${this.toString}")
+  }
+
   def reset(): Unit
 
 }

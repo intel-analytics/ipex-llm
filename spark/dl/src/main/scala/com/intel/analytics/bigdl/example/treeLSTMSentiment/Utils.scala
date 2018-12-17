@@ -29,6 +29,7 @@ import scopt.OptionParser
 
 import scala.io.Source
 import scala.language.existentials
+import scala.reflect.ClassTag
 import scala.util.control.Breaks._
 
 object Utils {
@@ -154,13 +155,15 @@ object Utils {
     labelRDD: RDD[Array[Float]],
     sentenceRDD: RDD[Array[Int]]
   ): RDD[Sample[Float]] = {
-    def indexAndSort(rdd: RDD[_]) = rdd.zipWithIndex.map(_.swap).sortByKey()
+    def indexAndSort[D: ClassTag, P <: Product2[Long, D]](rdd: RDD[D]) = {
+      rdd.zipWithIndex.map(r => r.swap).sortByKey()
+    }
 
     indexAndSort(sentenceRDD)
       .join(indexAndSort(labelRDD))
       .join(indexAndSort(treeRDD))
       .values
-      .map { case ((input: Array[Int], label: Array[Float]), tree: Tensor[Float]) =>
+      .map{ case ((input, label), tree) =>
         Sample(
           featureTensors =
             Array(Tensor(input.map(_.toFloat), Array(input.length, 1)),
@@ -171,25 +174,24 @@ object Utils {
   }
 
   def loadEmbeddingAndVocabulary(
+    sc: SparkContext,
     w2vPath: String,
     vocabPath: String,
     indexFrom: Int
   ):
   (Tensor[Float], Map[String, Int]) = {
-    val word2Vec = scala.collection.mutable.Map[String, Array[Float]]()
-    for (line <- Source.fromFile(w2vPath, "ISO-8859-1").getLines) {
+    val word2Vec = sc.textFile(w2vPath)
+      .map(line => {
       val values = line.split(" ")
       val word = values(0)
       val coefs = values.slice(1, values.length).map(_.toFloat)
-      word2Vec += word -> coefs
-    }
+      word -> coefs
+    }).toLocalIterator.toList.toMap
 
     var i = 1
-    val vocabLines = Source
-      .fromFile(vocabPath, "ISO-8859-1")
-      .getLines
-      .toList
-    val word2VecTensor = Tensor(vocabLines.length + indexFrom - 1, word2Vec.last._2.length)
+    val vocabLines = sc.textFile(vocabPath).collect()
+    val word2VecTensor =
+      Tensor(vocabLines.length + indexFrom - 1, word2Vec.last._2.length)
 
     val vocab = scala.collection.mutable.Map[String, Int]()
     while (i < indexFrom) {
@@ -238,9 +240,9 @@ object Utils {
     override val baseDir: String = "/tmp/.bigdl/dataset/",
     override val batchSize: Int = 128,
     hiddenSize: Int = 250,
-    learningRate: Double = 0.05,
+    override val learningRate: Double = 0.05,
     regRate: Double = 1e-4,
-    p: Double = 0,
-    epoch: Int = 10
+    p: Double = 0.5,
+    epoch: Int = 5
   ) extends AbstractTextClassificationParams
 }

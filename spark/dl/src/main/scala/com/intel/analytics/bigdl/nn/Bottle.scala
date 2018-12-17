@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
@@ -35,7 +36,7 @@ class Bottle[T: ClassTag](
   val module: Module[T],
   val nInputDim: Int = 2,
   val nOutputDim1: Int = Int.MaxValue)
- (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+ (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   private val nOutputDim = if (nOutputDim1 == Int.MaxValue) nInputDim else nOutputDim1
 
@@ -63,7 +64,7 @@ class Bottle[T: ClassTag](
 
       // Forward with the module's dimension
       val newInput = input.view(inShape.storage().array().map(_.toInt))
-      val output1 = modules(0).updateOutput(newInput).toTensor[T]
+      val output1 = modules(0).forward(newInput).toTensor[T]
       require(output1.dim() == nOutputDim,
         s"Bottle: output dims on module should be $nOutputDim, but get ${output1.dim()}")
 
@@ -75,7 +76,7 @@ class Bottle[T: ClassTag](
 
       output.set(output1.view(inSize.storage().array().map(_.toInt)))
     } else {
-      output.set(modules(0).updateOutput(input).toTensor[T])
+      output.set(modules(0).forward(input).toTensor[T])
     }
     output
   }

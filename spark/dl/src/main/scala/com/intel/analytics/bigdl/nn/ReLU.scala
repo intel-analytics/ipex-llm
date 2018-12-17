@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.IdentityOutputShape
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag

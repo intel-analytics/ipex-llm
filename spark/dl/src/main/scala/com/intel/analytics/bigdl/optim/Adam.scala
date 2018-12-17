@@ -40,6 +40,9 @@ class Adam[@specialized(Float, Double) T: ClassTag](
  var beta2: Double = 0.999,
  var Epsilon: Double = 1e-8)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
+  @transient
+  private var buffer: Tensor[T] = null
+
   /**
    * An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
    *
@@ -50,7 +53,7 @@ class Adam[@specialized(Float, Double) T: ClassTag](
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
                parameter: Tensor[T]): (Tensor[T], Array[T]) = {
-
+    if (buffer == null) buffer = Tensor[T]()
     val lr = this.learningRate
     val lrd = this.learningRateDecay
     val beta1 = this.beta1
@@ -64,18 +67,30 @@ class Adam[@specialized(Float, Double) T: ClassTag](
     val (_s, _r, _denom) =
       if (state.get[Tensor[T]]("s").isDefined) {
         (state.get[Tensor[T]]("s").get, state.get[Tensor[T]]("r").get,
-          Tensor[T]().resizeAs(dfdx).zero())
+          state.get[Tensor[T]]("denom").get.resizeAs(dfdx))
       } else {
         (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero(),
           Tensor[T]().resizeAs(dfdx).zero())
       }
+
     val clr = lr / (1 + timestep*lrd)
 
     timestep = timestep + 1
 
+    /**
+     * m_t = beta_1 * m_t-1 + (1 - beta_1) * g_t
+     * v_t = beta_2 * v_t-1 + (1 - beta_2) * g_t * g_t
+     */
     _s.mul(ev.fromType[Double](beta1)).add(ev.fromType[Double](1-beta1), dfdx)
-    _r.mul(ev.fromType[Double](beta2)).addcmul(ev.fromType[Double](1-beta2), dfdx, dfdx)
-    _denom.resizeAs(_r).copy(_r).sqrt().add(ev.fromType[Double](eps))
+    // buffer = dfdx * dfdx
+    buffer.resizeAs(dfdx).cmul(dfdx, dfdx)
+    _r.mul(ev.fromType[Double](beta2)).add(ev.fromType[Double](1-beta2), buffer)
+    _denom.sqrt(_r)
+
+    // used as MKL.axpy: 1 * a + y = y, and fill buffer with one
+    buffer.fill(ev.one)
+    _denom.add(ev.fromType(eps), buffer)
+
     // efficiency improved upon by changing the order of computation, at expense of clarity
     val biasCorrection1 = 1 - pow(beta1, timestep)
     val biasCorrection2 = 1 - pow(beta2, timestep)
@@ -85,6 +100,7 @@ class Adam[@specialized(Float, Double) T: ClassTag](
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
     state("s") = _s // 1st moment variables
     state("r") = _r // 2nd moment variables
+    state("denom") = _denom // 3nd moment variables
 
     (parameter, Array(fx))
   }

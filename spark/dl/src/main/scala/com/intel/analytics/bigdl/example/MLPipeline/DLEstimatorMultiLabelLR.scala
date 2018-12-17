@@ -15,38 +15,41 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
-import com.intel.analytics.bigdl.nn.{Linear, LogSoftMax, MultiLabelSoftMarginCriterion, Sequential}
+import com.intel.analytics.bigdl.dlframes.DLEstimator
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.LBFGS
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.DLEstimator
 import org.apache.spark.sql.SQLContext
 
 /**
- *  Multi-label Logistic Regression with BigDL layers and DLEstimator
+ *  Multi-label regression with BigDL layers and DLEstimator
  */
 object DLEstimatorMultiLabelLR {
 
   def main(args: Array[String]): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("DLEstimatorMultiLabelLR")
-      .set("spark.task.maxFailures", "1")
+      .setMaster("local[1]")
     val sc = new SparkContext(conf)
     val sqlContext = SQLContext.getOrCreate(sc)
     Engine.init
 
-    val model = new Sequential[Float]().add(Linear[Float](2, 2)).add(LogSoftMax[Float])
-    val criterion = MultiLabelSoftMarginCriterion[Float]()
-    val estimator = new DLEstimator[Float](model, criterion, Array(2), Array(2))
+    val model = Sequential().add(Linear(2, 2))
+    val criterion = MSECriterion()
+    val estimator = new DLEstimator(model, criterion, Array(2), Array(2))
+      .setOptimMethod(new LBFGS[Double]())
+      .setLearningRate(1.0)
       .setBatchSize(4)
       .setMaxEpoch(10)
     val data = sc.parallelize(Seq(
-      (Array(0.0, 1.0), Array(1.0, 0.0)),
-      (Array(1.0, 0.0), Array(0.0, 1.0)),
-      (Array(0.0, 1.0), Array(1.0, 0.0)),
-      (Array(1.0, 0.0), Array(0.0, 1.0))))
+      (Array(2.0, 1.0), Array(1.0, 2.0)),
+      (Array(1.0, 2.0), Array(2.0, 1.0)),
+      (Array(2.0, 1.0), Array(1.0, 2.0)),
+      (Array(1.0, 2.0), Array(2.0, 1.0))))
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
     val dlModel = estimator.fit(df)
     dlModel.transform(df).show(false)
   }
-
 }

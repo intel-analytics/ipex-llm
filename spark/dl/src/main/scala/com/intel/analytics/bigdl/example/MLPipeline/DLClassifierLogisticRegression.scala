@@ -15,10 +15,11 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
+import com.intel.analytics.bigdl.dlframes.DLClassifier
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.DLClassifier
 import org.apache.spark.sql.SQLContext
 
 /**
@@ -29,14 +30,14 @@ object DLClassifierLogisticRegression {
   def main(args: Array[String]): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("DLClassifierLogisticRegression")
-      .set("spark.task.maxFailures", "1")
+      .setMaster("local[1]")
     val sc = new SparkContext(conf)
     val sqlContext = SQLContext.getOrCreate(sc)
     Engine.init
 
-    val model = new Sequential[Float]().add(Linear[Float](2, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
-    val estimator = new DLClassifier[Float](model, criterion, Array(2))
+    val model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
+    val criterion = ClassNLLCriterion()
+    val estimator = new DLClassifier(model, criterion, Array(2))
       .setBatchSize(4)
       .setMaxEpoch(10)
     val data = sc.parallelize(Seq(
@@ -48,5 +49,4 @@ object DLClassifierLogisticRegression {
     val dlModel = estimator.fit(df)
     dlModel.transform(df).show(false)
   }
-
 }

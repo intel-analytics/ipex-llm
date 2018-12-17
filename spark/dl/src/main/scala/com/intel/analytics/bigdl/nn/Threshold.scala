@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Engine
@@ -35,8 +35,8 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(3953292249027271493L)
-class Threshold[@specialized(Float, Double) T: ClassTag](
-  th: Double = 1e-6, v: Double = 0.0, ip: Boolean = false)(
+class Threshold[T: ClassTag](
+  private val th: Double = 1e-6, private val v: Double = 0.0, private val ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   var threshold = th
   var value = v
@@ -397,6 +397,13 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"${getPrintName}($th, $v)"
+  }
+
+  override def clearState(): this.type = {
+    if (!inPlace) {
+      super.clearState()
+    }
+    this
   }
 }
 

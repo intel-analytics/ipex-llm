@@ -22,97 +22,41 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 
+/**
+ * Handle different Vector types in Spark 1.5/1.6 and Spark 2.0+.
+ * Only support MLlib Vector for Spark 1.5/1.6.
+ */
+trait VectorCompatibility {
 
-private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
+  val validVectorTypes = Seq(new VectorUDT)
 
-  /**
-   * only validate feature columns here
-   */
-  protected def validateSchema(schema: StructType): Unit = {
-    val dataTypes = Seq(
-      new ArrayType(DoubleType, false),
-      new ArrayType(FloatType, false),
-      new VectorUDT)
-
-    // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
-    val actualDataType = schema($(featuresCol)).dataType
-    require(dataTypes.exists(actualDataType.equals),
-      s"Column ${$(featuresCol)} must be of type equal to one of the following types: " +
-        s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
-  }
-
-  def supportedTypesToSeq(row: Row, colType: DataType, index: Int): Seq[AnyVal] = {
-    val featureArr = if (colType == new VectorUDT) {
-      row.getAs[Vector](index).toArray.toSeq
-    } else if (colType == ArrayType(DoubleType, false)) {
-      row.getSeq[Double](index)
-    } else if (colType == ArrayType(FloatType, false)) {
-      row.getSeq[Float](index)
-    } else if (colType == DoubleType) {
-      Seq[Double](row.getDouble(index))
+  def getVectorSeq(row: Row, colType: DataType, index: Int): Seq[AnyVal] = {
+    if (colType == new org.apache.spark.mllib.linalg.VectorUDT) {
+      row.getAs[org.apache.spark.mllib.linalg.Vector](index).toArray.toSeq
+    } else {
+      throw new IllegalArgumentException(
+        s"$colType is not a supported vector type for Spark 1.5/1.6")
     }
-    featureArr.asInstanceOf[Seq[AnyVal]]
   }
-
-  protected def getFeatureArrayCol: String = $(featuresCol) + "_Array"
 }
-
 
 /**
  *A wrapper from org.apache.spark.ml.Estimator
  * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-private[ml] abstract class DLEstimatorBase
-  extends Estimator[DLTransformerBase] with DLParams with HasLabelCol{
+abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M],
+    M <: DLTransformerBase[M]]
+  extends Estimator[M] with HasLabelCol {
 
-  protected def getLabelArrayCol: String = $(labelCol) + "_Array"
+  protected def internalFit(dataFrame: DataFrame): M
 
-  protected def internalFit(featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLTransformerBase
-
-  override def fit(dataset: DataFrame): DLTransformerBase = {
-    transformSchema(dataset.schema, logging = true)
-    internalFit(toArrayType(dataset))
+  override def fit(dataFrame: DataFrame): M = {
+    transformSchema(dataFrame.schema, logging = true)
+    internalFit(dataFrame)
   }
 
-  /**
-   * convert feature and label columns to array data
-   */
-  protected def toArrayType(dataset: DataFrame): RDD[(Seq[AnyVal], Seq[AnyVal])] = {
-    val featureType = dataset.schema($(featuresCol)).dataType
-    val featureColIndex = dataset.schema.fieldIndex($(featuresCol))
-    val labelType = dataset.schema($(labelCol)).dataType
-    val labelColIndex = dataset.schema.fieldIndex($(labelCol))
-
-    dataset.rdd.map { row =>
-      val features = supportedTypesToSeq(row, featureType, featureColIndex)
-      val labels = supportedTypesToSeq(row, labelType, labelColIndex)
-      (features, labels)
-    }
-  }
-
-  /**
-   * validate both feature and label columns
-   */
-  protected override def validateSchema(schema: StructType): Unit = {
-    // validate feature column
-    super.validateSchema(schema)
-
-    // validate label column
-    val dataTypes = Seq(
-      new ArrayType(DoubleType, false),
-      new ArrayType(FloatType, false),
-      new VectorUDT,
-      DoubleType)
-
-    // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
-    val actualDataType = schema($(labelCol)).dataType
-    require(dataTypes.exists(actualDataType.equals),
-      s"Column ${$(labelCol)} must be of type equal to one of the following types: " +
-        s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
-  }
-
-  override def copy(extra: ParamMap): DLEstimatorBase = defaultCopy(extra)
+  override def copy(extra: ParamMap): Learner = defaultCopy(extra)
 }
 
 

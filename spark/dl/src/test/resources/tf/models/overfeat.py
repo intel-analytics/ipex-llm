@@ -30,6 +30,7 @@ def main():
     """
     height, width = 231, 231
     inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name='input')
+    inputs = tf.identity(inputs, "input_node")
     with slim.arg_scope(overfeat.overfeat_arg_scope()):
         net, end_points = overfeat.overfeat(inputs, is_training = False)
     print("nodes in the graph")

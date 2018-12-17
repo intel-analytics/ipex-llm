@@ -113,6 +113,13 @@ class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[JoinTable[T]]
 
+  override def clearState(): this.type = {
+    if (!isInplace) {
+      super.clearState()
+    }
+    this
+  }
+
 }
 
 object Reverse {

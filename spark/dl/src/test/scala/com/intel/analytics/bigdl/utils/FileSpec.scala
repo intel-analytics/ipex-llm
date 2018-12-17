@@ -33,7 +33,9 @@ class FileSpec extends FlatSpec with Matchers {
     val model = Module.loadTorch[Float](absolutePath).asInstanceOf[Sequential[Float]]
     model.getParameters() should be (alexnet.getParameters())
     for (i <- 0 until model.modules.size) {
-      println(i)
+      println(s"check the $i th layer in the model...")
+      // torch will discard the name
+      model.modules(i).setName(alexnet.asInstanceOf[Sequential[Float]].modules(i).getName())
       model.modules(i) should be (alexnet.asInstanceOf[Sequential[Float]].modules(i))
     }
     model should be (alexnet)
@@ -64,6 +66,24 @@ class FileSpec extends FlatSpec with Matchers {
     val testModule: Module[Double] = File.load(absolutePath)
 
     testModule should be(module)
+  }
+
+
+  "save/load big size model" should "work properly" in {
+    val tmpFile = java.io.File.createTempFile("module", "obj")
+    val absolutePath = tmpFile.getAbsolutePath
+
+
+    val module = Linear[Float](40000, 8000)
+
+    File.save(module, absolutePath, true)
+    val testModule: Module[Double] = File.load(absolutePath)
+
+    testModule should be(module)
+
+    if (tmpFile.exists()) {
+      tmpFile.delete()
+    }
   }
 
 }

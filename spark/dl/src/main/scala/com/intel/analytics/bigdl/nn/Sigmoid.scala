@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -28,21 +28,37 @@ import scala.reflect.ClassTag
  * Sigmoid is defined as: f(x) = 1 / (1 + exp(-x))
  */
 @SerialVersionUID(6855417348268610044L)
-class Sigmoid[@specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
+class Sigmoid[T: ClassTag](
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
+  private val buffer: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input)
-    output.map(input, (_, i) => ev.divide(ev.fromType[Int](1), ev.plus(ev.fromType[Int](1),
-      ev.exp(ev.negative(i)))))
+    output.resizeAs(input).fill(ev.one)
+    buffer.resizeAs(input).copy(input).mul(ev.fromType(-1))
+    buffer.exp().add(ev.one)
+    output.cdiv(buffer)
+
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input)
-    gradInput.copy(gradOutput)
-    gradInput.map(output, (g, z) => ev.times(ev.times(g, ev.minus(ev.fromType[Int](1), z)), z))
+    updateGradInputInternal(output, gradOutput)
+  }
+
+  private[bigdl] def updateGradInputInternal(output: Tensor[T],
+                                             gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput.resizeAs(gradOutput).copy(gradOutput)
+    buffer.resizeAs(gradOutput)
+    buffer.fill(ev.one).sub(output)
+    gradInput.cmul(output).cmul(buffer)
     gradInput
+  }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    buffer.set()
+    this
   }
 }
 

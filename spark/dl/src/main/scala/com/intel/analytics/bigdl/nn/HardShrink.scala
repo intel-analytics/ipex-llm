@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID( 3551967457354343585L)
-class HardShrink[T: ClassTag](lambda: Double = 0.5)
+class HardShrink[T: ClassTag](private val lambda: Double = 0.5)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   private val lam = ev.fromType[Double](lambda)
@@ -50,7 +50,8 @@ class HardShrink[T: ClassTag](lambda: Double = 0.5)
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isSameSizeAs(gradOutput),
-      "Input should have the same size as gradOutput")
+      "Input should have the same size as gradOutput" +
+        s"input size(${input.dim()}) gradOutput size(${gradOutput.dim()})")
     gradInput.resizeAs(input)
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T],

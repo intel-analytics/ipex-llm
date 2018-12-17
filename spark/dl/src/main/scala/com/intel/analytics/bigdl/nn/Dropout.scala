@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -187,7 +187,9 @@ class Dropout[T: ClassTag](
   }
 
   override def clearState(): this.type = {
-    super.clearState()
+    if (!inplace) {
+      super.clearState()
+    }
     noise.set()
     this
   }

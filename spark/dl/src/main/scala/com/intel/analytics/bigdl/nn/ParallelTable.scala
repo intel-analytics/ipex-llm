@@ -15,9 +15,12 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -27,12 +30,12 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1197848941394786045L)
 class ParallelTable[T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T] {
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Table, Table, T] {
 
   override def updateOutput(input: Table): Table = {
     var i = 0
     while (i < input.length()) {
-      output.update(i + 1, modules(i).updateOutput(input(i + 1)))
+      output.update(i + 1, modules(i).forward(input(i + 1)))
       i += 1
     }
     output
@@ -53,6 +56,29 @@ class ParallelTable[T: ClassTag]
       modules(i).accGradParameters(input(i + 1), gradOutput(i + 1))
       i += 1
     }
+  }
+
+  override def backward(input: Table, gradOutput: Table): Table = {
+    val before = System.nanoTime()
+    var i = 0
+    while (i < input.length()) {
+      gradInput.update(i + 1, modules(i).backward(input(i + 1), gradOutput(i + 1)))
+      i += 1
+    }
+    backwardTime += System.nanoTime() - before
+    gradInput
+  }
+
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val outputs = ArrayBuffer[ModuleNode[T]]()
+    var outputTuple: Array[ModuleNode[T]] = null
+    require(startNodes.length == modules.length, s"ParallelTable: " +
+      s"startNodes length ${startNodes.length} is more than modules length ${modules.length}")
+    for (i <- 0 to modules.size - 1) {
+      outputTuple = modules(i).getEndNodes(Array(startNodes(i)))
+      outputs ++= outputTuple
+    }
+    outputs.toArray
   }
 
   override def toString: String = {

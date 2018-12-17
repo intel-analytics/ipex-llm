@@ -85,8 +85,8 @@ trait Regularizer[T]
  */
 @SerialVersionUID(- 5617491971070914067L)
 class L1L2Regularizer[T: ClassTag](
-  l1: Double,
-  l2: Double
+  val l1: Double,
+  val l2: Double
 )(implicit ev: TensorNumeric[T])
   extends Regularizer[T] {
   override def accRegularization(
@@ -134,11 +134,14 @@ class L1L2Regularizer[T: ClassTag](
     gradParameter: Tensor[T],
     scale: Double
   ): Unit = {
-    if (alpha != 0 && scale != 0) gradParameter.add(ev.fromType(alpha*scale),
-      l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
+    if (alpha != 0 && scale != 0) {
+      if (null == l1SignBuffer) l1SignBuffer = Tensor()
+      gradParameter.add(ev.fromType(alpha*scale),
+        l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
+    }
   }
 
-  @transient private val l1SignBuffer = Tensor()
+  @transient private var l1SignBuffer: Tensor[T] = null
 
   /**
    * Accumulates the gradient of the l2 regularization of `parameter`
@@ -173,7 +176,7 @@ object L1L2Regularizer {
  */
 @SerialVersionUID(1950693435414946281L)
 case class L1Regularizer[T: ClassTag](
-  l1: Double
+  override val l1: Double
 ) (implicit ev: TensorNumeric[T])
   extends L1L2Regularizer[T](l1, 0)
 
@@ -184,6 +187,7 @@ case class L1Regularizer[T: ClassTag](
  */
 @SerialVersionUID(- 6597840589687540202L)
 case class L2Regularizer[T: ClassTag](
-  l2: Double
+  override val l2: Double
 ) (implicit ev: TensorNumeric[T])
   extends L1L2Regularizer[T](0, l2)
+

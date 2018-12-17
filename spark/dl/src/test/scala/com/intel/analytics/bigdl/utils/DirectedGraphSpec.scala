@@ -25,24 +25,33 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     test should be(nodeB)
     nodeA.prevNodes.length should be(0)
     nodeA.nextNodes.length should be(1)
+    nodeA.nextEdges.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
+    nodeA.nextEdges(0).fromIndex should be(None)
     nodeB.prevNodes.length should be(1)
+    nodeB.prevEdges.length should be(1)
     nodeB.prevNodes(0) should be(nodeA)
+    nodeB.prevEdges(0).fromIndex should be(None)
     nodeB.nextNodes.length should be(0)
+    nodeB.nextEdges.length should be(0)
   }
 
-  "Node add" should "ignore duplicated add" in {
+  "Node add with edge" should "be correct" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")
-    val test = nodeA -> nodeB
-    nodeA -> nodeB
+    val test = nodeA.add(nodeB, Edge(1))
     test should be(nodeB)
     nodeA.prevNodes.length should be(0)
     nodeA.nextNodes.length should be(1)
+    nodeA.nextEdges.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
+    nodeA.nextEdges(0).fromIndex.get should be(1)
     nodeB.prevNodes.length should be(1)
+    nodeB.prevEdges.length should be(1)
     nodeB.prevNodes(0) should be(nodeA)
+    nodeB.prevEdges(0).fromIndex.get should be(1)
     nodeB.nextNodes.length should be(0)
+    nodeB.nextEdges.length should be(0)
   }
 
   "Topology sort" should "be correct in a graph" in {
@@ -282,5 +291,117 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     set should contain(nodeB)
     set should contain(nodeC)
     set should contain(nodeD)
+  }
+
+  "Edge" should "be not equal for different instances" in {
+    val edge1 = Edge(1)
+    val edge2 = Edge(1)
+
+    edge1.equals(edge2) should be(false)
+
+    val edge3 = Edge()
+    val edge4 = Edge()
+
+    edge3.equals(edge4) should be(false)
+  }
+
+  "Clone graph" should "be correct" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeA -> nodeB -> nodeC
+    nodeB -> nodeD
+
+    val graph = nodeA.graph()
+    val cloneGraph = graph.cloneGraph()
+    val sort1 = graph.topologySort
+    val sort2 = cloneGraph.topologySort
+    sort1.map(_.element) should be(sort2.map(_.element))
+    sort1.zip(sort2).foreach(x => {
+      x._1.prevNodes.map(_.element) should be (x._2.prevNodes.map(_.element))
+      x._1.nextNodes.map(_.element) should be (x._2.nextNodes.map(_.element))
+    })
+  }
+
+  "Clone graph" should "should reuse the edge" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeA -> nodeB -> nodeC
+    nodeB -> nodeD
+
+    val graph = nodeA.graph()
+    val cloneGraph = graph.cloneGraph()
+    graph.topologySort.zip(cloneGraph.topologySort).foreach(n => {
+      n._1.prevEdges should be(n._2.prevEdges)
+      n._1.nextEdges should be(n._2.nextEdges)
+    })
+  }
+
+  "Reverse graph" should "be correct" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeA -> nodeB -> nodeC
+    nodeB -> nodeD
+
+    val graph = nodeA.graph()
+    val reverseGraph = graph.cloneGraph(true)
+    val originSort = graph.topologySort
+    val sorted = reverseGraph.topologySort
+    originSort.map(_.element) should be(sorted.map(_.element))
+    originSort(1).nextNodes.length should be(2)
+    originSort(1).prevNodes.length should be(1)
+    sorted(1).nextNodes.length should be(1)
+    sorted(1).prevNodes.length should be(2)
+  }
+
+  "delete edge" should "be correct when specify edge" in {
+    val e1 = Edge(1)
+    val e2 = Edge(2)
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    nodeA.add(nodeB, e1)
+    nodeA.add(nodeB, e2)
+    nodeA.delete(nodeB, e1)
+    nodeA.nextEdges.length should be(1)
+    nodeB.prevEdges.length should be(1)
+  }
+
+  "delete edge" should "be correct when not specify edge" in {
+    val e1 = Edge(1)
+    val e2 = Edge(2)
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    nodeA.add(nodeB, e1)
+    nodeA.add(nodeB, e2)
+    nodeA.delete(nodeB)
+    nodeA.nextEdges.length should be(0)
+    nodeB.prevEdges.length should be(0)
+  }
+
+  "delete edge" should "be correct when use default edge" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    nodeA -> nodeB
+    nodeA.delete(nodeB)
+    nodeA.nextEdges.length should be(0)
+    nodeB.prevEdges.length should be(0)
+  }
+
+  "remove previous edge" should "be correct" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    nodeA -> nodeC
+    nodeA -> nodeB
+    nodeB -> nodeC
+    nodeC.removePrevEdges()
+    nodeC.prevEdges.length should be(0)
+    nodeA.nextEdges.length should be(1)
+    nodeB.nextEdges.length should be(0)
   }
 }

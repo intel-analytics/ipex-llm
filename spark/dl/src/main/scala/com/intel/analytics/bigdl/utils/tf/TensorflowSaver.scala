@@ -15,13 +15,15 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.FileOutputStream
+import java.io.{FileOutputStream, OutputStream}
 import java.nio.ByteOrder
 
 import com.google.protobuf.CodedOutputStream
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{File, FileWriter, T}
 import org.apache.log4j.Logger
 import org.tensorflow.framework._
 
@@ -29,13 +31,15 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
+import scala.reflect.ClassTag
+
 object TensorflowSaver {
   /**
    * Save a graph model to protobuf files so that it can be used in tensorflow inference.
    *
    * When save the model, placeholders will be added to the tf model as input nodes. So you need to
    * pass in the names and shape for the placeholders. BigDL model doesn't have such information.
-   * The order of the placeholde information should be same as the inputs of the graph model
+   * The order of the placeholder information should be same as the inputs of the graph model
    *
    * @param model graph model instance
    * @param inputs input node defs
@@ -43,47 +47,56 @@ object TensorflowSaver {
    * @param byteOrder model byte order
    * @tparam T
    */
-  def saveGraphWitNodeDef[T](
+  def saveGraphWithNodeDef[T](
       model : Graph[T],
       inputs : Seq[NodeDef],
       path: String,
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
       extraNodes: Set[NodeDef] = Set()): Unit = {
     val inputNodeCache =
-      new mutable.HashMap[AbstractModule[Activity, Tensor[T], T], ArrayBuffer[NodeDef]]()
+      new mutable.HashMap[String, ArrayBuffer[NodeDef]]()
     model.inputs.zip(inputs).foreach(n => {
-      inputNodeCache(n._1.element) = ArrayBuffer(n._2)
-      println()
+      inputNodeCache(n._1.element.getName()) = ArrayBuffer(n._2)
     })
 
     val graphBuilder = GraphDef.newBuilder()
     inputs.foreach(graphBuilder.addNode(_))
 
-    model.executions.foreach(n => {
-      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
+    model.getSortedForwardExecutions.foreach(n => {
+      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element,
+        inputNodeCache(n.element.getName()),
         byteOrder)
       nodeDefs.foreach(nDef => {
         graphBuilder.addNode(nDef)
       })
       n.nextNodes.foreach(n => {
-        val list = inputNodeCache.getOrElse(n.element, ArrayBuffer())
+        val list = inputNodeCache.getOrElse(n.element.getName(), ArrayBuffer())
         list.append(nodeDefs(0))
-        inputNodeCache(n.element) = list
+        inputNodeCache(n.element.getName()) = list
       })
     })
 
     extraNodes.foreach(graphBuilder.addNode(_))
 
     // Save to file
-    val os = new FileOutputStream(path)
-    val output = CodedOutputStream.newInstance(os)
-    val graph = graphBuilder.build()
-    logger.info("Graph definition is:")
-    logger.info(graph.toString)
-    graph.writeTo(output)
-    output.flush()
-    os.close()
-    logger.info(s"Save as tensorflow model file to $path")
+    var fw: FileWriter = null
+    var out: OutputStream = null
+    try {
+      fw = FileWriter(path)
+      out = fw.create(true)
+      val output = CodedOutputStream.newInstance(out)
+      val graph = graphBuilder.build()
+      logger.debug("Graph definition is:")
+      logger.debug(graph.toString)
+      graph.writeTo(output)
+      output.flush()
+      out.flush()
+      logger.info(s"Save as tensorflow model file to $path")
+    } finally {
+      if (out != null) out.close()
+      if (fw != null) fw.close()
+    }
+
   }
 
   /**
@@ -91,7 +104,7 @@ object TensorflowSaver {
    *
    * When save the model, placeholders will be added to the tf model as input nodes. So you need to
    * pass in the names and shape for the placeholders. BigDL model doesn't have such information.
-   * The order of the placeholde information should be same as the inputs of the graph model
+   * The order of the placeholder information should be same as the inputs of the graph model
    *
    * @param model graph model instance
    * @param inputs placeholder information
@@ -100,16 +113,47 @@ object TensorflowSaver {
    * @param dataFormat model data format
    * @tparam T
    */
-  def saveGraph[T](
+  def saveGraph[T: ClassTag](
       model : Graph[T],
       inputs : Seq[(String, Seq[Int])],
       path: String,
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
-      dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): Unit = {
+      dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC)(
+    implicit ev: TensorNumeric[T]): Unit = {
+    // Check if there's pooling layer in which ceilMode is enable and pad is zero, we need double
+    // check if the ceilMode is real needed
+    val ceiledPoolingModules = model.modules.filter(m =>
+      if (m.isInstanceOf[SpatialMaxPooling[_]]) {
+        val a = m.asInstanceOf[SpatialMaxPooling[_]]
+        a.ceilMode == true && a.padH == 0 && a.padW == 0
+      } else if (m.isInstanceOf[SpatialAveragePooling[_]]) {
+        val a = m.asInstanceOf[SpatialAveragePooling[_]]
+        a.ceilMode == true && a.padH == 0 && a.padW == 0
+      } else {
+        false
+      })
+
+    if (ceiledPoolingModules.size != 0) {
+      val inputTensors = inputs.map(shape => Tensor[T]().resize(shape._2.toArray))
+      val inputActivity = if (inputTensors.size == 1) {
+        inputTensors.head
+      } else {
+        val t = T()
+        var i = 1
+        inputTensors.foreach(tensor => {
+          t(i) = tensor
+          i += 1
+        })
+        t
+      }
+      model.forward(inputActivity)
+    }
+
+
     val inputNodeDefs = inputs.map(input =>
       placeholder(model.getNumericType(), input._2, input._1)
     )
-    saveGraphWitNodeDef(model, inputNodeDefs, path, byteOrder)
+    saveGraphWithNodeDef(model, inputNodeDefs, path, byteOrder)
   }
 
   /**
@@ -124,6 +168,7 @@ object TensorflowSaver {
   private val logger = Logger.getLogger(getClass)
 
   private val maps = mutable.Map[String, BigDLToTensorflow](
+    getNameFromObj(TemporalConvolution.getClass.getName) -> TemporalConvolutionToTF,
     getNameFromObj(ReLU.getClass.getName) -> ReLUToTF,
     getNameFromObj(Linear.getClass.getName) -> LinearToTF,
     getNameFromObj(SpatialConvolution.getClass.getName) -> SpatialConvolutionToTF,
@@ -144,7 +189,9 @@ object TensorflowSaver {
     getNameFromObj(LogSoftMax.getClass.getName) -> LogSoftMaxToTF,
     getNameFromObj(SpatialBatchNormalization.getClass.getName) -> BatchNorm2DToTF,
     getNameFromObj(Input.getClass.getName) -> InputToTF,
-    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF
+    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF,
+    getNameFromObj(Scale.getClass.getName) -> ScaleToTF,
+    getNameFromObj(SpatialCrossMapLRN.getClass.getName) -> LRNToTF
   )
 
   private def getNameFromObj(name: String) : String = name.substring(0, name.length - 1)

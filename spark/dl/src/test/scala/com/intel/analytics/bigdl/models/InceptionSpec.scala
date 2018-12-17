@@ -16,19 +16,23 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.models.inception._
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Input}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class InceptionSpec extends TorchSpec {
+  private val suffix = ".t7" + (new java.util.Random()).nextLong()
+
   "Inception+bn" should "generate correct output" in {
     torchCheck()
 
@@ -157,16 +161,18 @@ class InceptionSpec extends TorchSpec {
       """
 
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-      "parameters_initial", "gradParameters_initial", "gradParameters", "parameters", "model2"))
+      "parameters_initial", "gradParameters_initial", "gradParameters", "parameters", "model2"),
+      suffix)
 
     val model = Inception.getModel[Double](1000, "inception-bn")
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
-    val parametersInitTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parametersInitTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(parameters == parametersInitTorch, "parameter compare failed")
 
-    val gradGarametersInitTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val gradGarametersInitTorch = TH.map("gradParameters_initial", suffix)
+      .asInstanceOf[Tensor[Double]]
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
 
@@ -178,24 +184,24 @@ class InceptionSpec extends TorchSpec {
 
     model.zeroGradParameters()
     val outputTest = model.forward(input).toTensor[Double]
-    val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
+    val outputTorch = TH.map("output", suffix).asInstanceOf[Tensor[Double]]
     outputTest shouldEqual outputTorch
 
-    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
+    val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
-    assert(abs(errTest - errTorch) < 2e-15)
+    assert(abs(errTest - errTorch) < 4e-15)
 
-    val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
     model.backward(input, gradOutputTest)
     gradOutputTest shouldEqual gradOutputTorch
 
     sgd.optimize(_ => (errTest, grad), weights, state, state)
 
-    val gradParametersTorch = TH.map("gradParameters").asInstanceOf[Tensor[Double]]
+    val gradParametersTorch = TH.map("gradParameters", suffix).asInstanceOf[Tensor[Double]]
     grad.equals(gradParametersTorch) should be (true)
-    val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
+    val parametersTorch = TH.map("parameters", suffix).asInstanceOf[Tensor[Double]]
     parameters.equals(parametersTorch) should be (true)
   }
 
@@ -343,19 +349,19 @@ class InceptionSpec extends TorchSpec {
       """
 
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-      "parameters_initial", "gradParameters_initial", "gradInput", "parameters"))
+      "parameters_initial", "gradParameters_initial", "gradInput", "parameters"), suffix)
 
-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = TH.map("gradInput", suffix).asInstanceOf[Tensor[Double]]
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     model.zeroGradParameters()
     println(s"model size: ${parameters.nElement()}")
-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parameterTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(parameters == parameterTorch, "parameter compare failed")
 
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-    val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
-    val gradparameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val parametersTorch = TH.map("parameters", suffix).asInstanceOf[Tensor[Double]]
+    val gradparameterTorch = TH.map("gradParameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(gradparameters == gradparameterTorch, "gradparameter compare failed")
 
     val (weights, grad) = model.getParameters()
@@ -377,7 +383,7 @@ class InceptionSpec extends TorchSpec {
 
     model.zeroGradParameters()
     var outputAbs = 0.0
-    val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
+    val outputTorch = TH.map("output", suffix).asInstanceOf[Tensor[Double]]
     val outputTest = model.forward(input).toTensor[Double]
     outputTest.map(outputTorch, (v1, v2) => {
       outputAbs += abs(v1 - v2)
@@ -386,12 +392,12 @@ class InceptionSpec extends TorchSpec {
     println(s"outputAbs:$outputAbs")
 
     val errTest = criterion.forward(outputTest, labels)
-    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
+    val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) == 0)
 
     val gradOutputTest = criterion.backward(outputTest, labels)
-    val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     gradOutputTest shouldEqual gradOutputTorch
 
     val gradInput = model.backward(input, gradOutputTest)
@@ -529,17 +535,18 @@ class InceptionSpec extends TorchSpec {
     TH.runNM(code,
       Map("input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err", "parameters_initial", "gradParameters_initial",
-        "gradParameters", "parameters", "initModel"))
+        "gradParameters", "parameters", "initModel"), suffix)
 
-    val model = TH.map("initModel").
+    val model = TH.map("initModel", suffix).
       asInstanceOf[AbstractModule[Tensor[Double], Tensor[Double], Double]]
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
-    val parametersInitTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parametersInitTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(parameters == parametersInitTorch, "parameter compare failed")
 
-    val gradGarametersInitTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val gradGarametersInitTorch = TH.map("gradParameters_initial", suffix)
+      .asInstanceOf[Tensor[Double]]
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
 
@@ -551,23 +558,23 @@ class InceptionSpec extends TorchSpec {
 
     model.zeroGradParameters()
     val outputTest = model.forward(input)
-    val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
+    val outputTorch = TH.map("output", suffix).asInstanceOf[Tensor[Double]]
     outputTest shouldEqual outputTorch
 
-    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
+    val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) < 4e-10)
 
-    val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
     model.backward(input, gradOutputTest)
     gradOutputTest shouldEqual gradOutputTorch
 
     sgd.optimize(_ => (errTest, grad), weights, state, state)
-    val gradParametersTorch = TH.map("gradParameters").asInstanceOf[Tensor[Double]]
+    val gradParametersTorch = TH.map("gradParameters", suffix).asInstanceOf[Tensor[Double]]
     grad == gradParametersTorch should be (true)
-    val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
+    val parametersTorch = TH.map("parameters", suffix).asInstanceOf[Tensor[Double]]
     parameters == parametersTorch should be (true)
   }
 
@@ -694,10 +701,10 @@ class InceptionSpec extends TorchSpec {
         end
       """
 
-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("initModel"))
+    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("initModel"), suffix)
 
     val model = Inception.getModel[Float](1000, "inception-bn")
-    val model2 = TH.map("initModel").
+    val model2 = TH.map("initModel", suffix).
       asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]]
     model2 should be (model)
 
@@ -733,5 +740,235 @@ class InceptionSpec extends TorchSpec {
       gradoutputtest should be (gradoutputtest2)
       weights.equals(weights2) should be (true)
     }
+  }
+
+  "Inception ModelCaffe" should "init right" in {
+    RNG.setSeed(1024)
+
+    Random.setSeed(1024)
+
+    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+
+    val model = Inception.getModelCaffe[Float](1000)
+
+    val criterion = new ClassNLLCriterion[Float]()
+
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor[Float]
+    val loss = criterion.forward(output, labels)
+
+    // since we already set the seed, the loss should match exactly
+    loss should be (6.893043f)
+  }
+
+  "InceptionV1 " should "init right" in {
+    RNG.setSeed(1024)
+
+    Random.setSeed(1024)
+
+    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+
+    val model = Inception_v1(1000)
+
+    val criterion = new ClassNLLCriterion[Float]()
+
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor[Float]
+    val loss = criterion.forward(output, labels)
+
+    // since we already set the seed, the loss should match exactly
+    loss should be (6.6648364f)
+  }
+
+  "Inception_Layer_V1 graph" should "be correct" in {
+    val batchSize = 8
+    RNG.setSeed(1000)
+    val model = Inception_Layer_v1(2, T(T(4), T(96, 128), T(16, 32), T(32)), "conv")
+    RNG.setSeed(1000)
+    val input = Input()
+    val f1 = Inception_Layer_v1(input, 2, T(T(4), T(96, 128), T(16, 32), T(32)), "conv")
+    val graphModel = Graph(input, f1)
+
+    val inputData = Tensor(batchSize, 2, 4, 4).rand()
+    val gradOutput = Tensor(batchSize, 256, 4, 4).rand()
+
+    val output1 = model.forward(inputData).toTensor[Float]
+    val output2 = graphModel.forward(inputData).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(inputData, gradOutput).toTensor[Float]
+    val gradInput2 = graphModel.backward(inputData, gradOutput).toTensor[Float]
+    gradInput1 should be(gradInput2)
+
+    model.getParametersTable()[Table]("conv1x1")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv1x1")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv3x3_reduce")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv3x3_reduce")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv3x3")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv3x3")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv5x5_reduce")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv5x5_reduce")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv5x5")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv5x5")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("convpool_proj")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("convpool_proj")[Tensor[Float]]("gradWeight")
+    )
+  }
+
+  "Inception graph" should "be correct" in {
+    val batchSize = 2
+    RNG.setSeed(1000)
+    val model = Inception_v1_NoAuxClassifier(1000, false)
+    RNG.setSeed(1000)
+    val graphModel = Inception_v1_NoAuxClassifier.graph(1000, false)
+
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput).toTensor[Float]
+    val gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
+    gradInput1 should be(gradInput2)
+
+    val table1 = model.getParametersTable()
+    val table2 = graphModel.getParametersTable()
+    table1.keySet.foreach(key => {
+      table1(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]]
+    })
+  }
+
+  "Inception_v1 graph" should "be correct" in {
+    val batchSize = 1
+    RNG.setSeed(1000)
+    val model = Inception_v1(1000, false)
+    RNG.setSeed(1000)
+    val graphModel = Inception_v1.graph(1000, false)
+
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 3000).apply1(e => Random.nextFloat())
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+  }
+
+  "Inception_Layer_V2 graph" should "be correct" in {
+    val batchSize = 8
+    RNG.setSeed(1000)
+    val model = Inception_Layer_v2(2, T(T(4), T(96, 128), T(16, 32), T("avg", 32)), "conv")
+    RNG.setSeed(1000)
+    val input1 = Input()
+    val f1 = Inception_Layer_v2(input1, 2, T(T(4), T(96, 128), T(16, 32), T("avg", 32)), "conv")
+    val graphModel = Graph(input1, f1)
+
+    val input = Tensor(batchSize, 2, 4, 4).rand()
+    val gradOutput = Tensor(batchSize, 256, 4, 4).rand()
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput).toTensor[Float]
+    val gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
+    gradInput1 should be(gradInput2)
+
+    val table1 = model.getParametersTable()
+    val table2 = graphModel.getParametersTable()
+    table1.keySet.foreach(key => {
+      table1(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]]
+    })
+  }
+
+  "Inception_v2_NoAuxClassifier graph" should "be correct" in {
+    val batchSize = 2
+    RNG.setSeed(1000)
+    val model = Inception_v2_NoAuxClassifier(1000)
+    RNG.setSeed(1000)
+    val graphModel = Inception_v2_NoAuxClassifier.graph(1000)
+
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput).toTensor[Float]
+    val gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
+    gradInput1 should be(gradInput2)
+
+    val table1 = model.getParametersTable()
+    val table2 = graphModel.getParametersTable()
+    table1.keySet.foreach(key => {
+      table1(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]]
+    })
+  }
+
+  "Inception_v2 graph" should "be correct" in {
+    val batchSize = 2
+    RNG.setSeed(1000)
+    val model = Inception_v2(1000)
+    RNG.setSeed(1000)
+    val graphModel = Inception_v2.graph(1000)
+
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 3000).apply1(e => Random.nextFloat())
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.updateGradInput(input, gradOutput)
+    val gradInput2 = graphModel.updateGradInput(input, gradOutput)
+    gradInput1 should be(gradInput2)
   }
 }

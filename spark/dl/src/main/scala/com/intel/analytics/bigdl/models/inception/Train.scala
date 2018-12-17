@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.models.inception
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.optim.SGD.{MultiStep, Poly, SequentialSchedule, Warmup}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
@@ -24,7 +25,7 @@ import org.apache.spark.SparkContext
 
 object TrainInceptionV1 {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Options._
 
@@ -43,8 +44,7 @@ object TrainInceptionV1 {
         param.batchSize,
         Engine.nodeNumber(),
         Engine.coreNumber(),
-        param.classNumber,
-        1281167
+        param.classNumber
       )
       val valSet = ImageNet2012Val(
         param.folder + "/val",
@@ -53,27 +53,35 @@ object TrainInceptionV1 {
         param.batchSize,
         Engine.nodeNumber(),
         Engine.coreNumber(),
-        param.classNumber,
-        50000
+        param.classNumber
       )
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
+      } else if (param.graphModel) {
+        Inception_v1_NoAuxClassifier.graph(classNum = param.classNumber)
       } else {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }
 
+      val iterationPerEpoch = math.ceil(1281167.toDouble / param.batchSize).toInt
+      val maxIteration = if (param.maxEpoch.isDefined) {
+        iterationPerEpoch * param.maxEpoch.get
+      } else param.maxIteration
+
+      val warmupIteration = param.warmupEpoch.getOrElse(0) * iterationPerEpoch
+
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
-      } else if (param.maxEpoch.isDefined) {
-        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
-          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule =
-            SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get))
       } else {
+        val warmupDelta = if (warmupIteration == 0) 0.0
+          else (param.maxLr.getOrElse(param.learningRate) - param.learningRate) / warmupIteration
+        val polyIteration = maxIteration - warmupIteration
+        val lrSchedule = SequentialSchedule(iterationPerEpoch)
+          .add(Warmup(warmupDelta), warmupIteration).add(Poly(0.5, maxIteration), polyIteration)
         new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
           weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule = SGD.Poly(0.5, param.maxIteration))
+          learningRateSchedule = lrSchedule)
       }
 
       val optimizer = Optimizer(
@@ -98,6 +106,15 @@ object TrainInceptionV1 {
 
       if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
+      }
+
+      if (param.gradientMin.isDefined && param.gradientMax.isDefined) {
+        optimizer.setConstantGradientClipping(param.gradientMin.get.toFloat,
+          param.gradientMax.get.toFloat)
+      }
+
+      if (param.gradientL2NormThreshold.isDefined) {
+        optimizer.setGradientClippingByl2Norm(param.gradientL2NormThreshold.get.toFloat)
       }
 
       optimizer

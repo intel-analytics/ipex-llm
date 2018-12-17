@@ -12,9 +12,12 @@ There're four files. **train-images-idx3-ubyte** contains train images,
  and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the
  download page.
 
+After you uncompress the gzip files, these files may be renamed by some uncompress tools, e.g. **train-images-idx3-ubyte** is renamed
+to **train-images.idx3-ubyte**. Please change the name back before you run the example.
+
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code.
 
 ## Train the Model
 ### Use Apache Spark

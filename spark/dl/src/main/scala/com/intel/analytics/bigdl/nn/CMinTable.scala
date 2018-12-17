@@ -79,7 +79,7 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
     gradInput
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[CMaxTable[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[CMinTable[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: CMinTable[T] =>

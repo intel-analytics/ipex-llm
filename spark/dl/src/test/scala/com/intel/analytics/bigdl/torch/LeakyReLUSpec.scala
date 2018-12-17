@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 class LeakyReLUSpec  extends TorchSpec {
     def random(): Double = RandomGenerator.RNG.normal(-10, 10)
 
-  "A LeakyReLU Module " should "generate correct output and grad not inplace when train = true" in {
+  "A LeakyReLU Module" should "generate correct output and grad not inplace" in {
     torchCheck()
     val seed = 100
     RNG.setSeed(seed)
@@ -34,12 +34,6 @@ class LeakyReLUSpec  extends TorchSpec {
     input.apply1(x => random())
     val gradOutput = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
-
-    val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
-    val end = System.nanoTime()
-    val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LeakyReLU()\n" +
@@ -51,28 +45,28 @@ class LeakyReLUSpec  extends TorchSpec {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
     luaOutput1 should be (output)
     luaOutput2 should be (gradInput)
 
     println("Test case : LeakyReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A LeakyReLU Module " should "generate correct output and grad inplace when train = true" in {
+  "A LeakyReLU Module" should "generate correct output and grad inplace" in {
     torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
-    val module = new LeakyReLU[Double](inplace = false)
+    val module = LeakyReLU[Double](inplace = true)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
     val gradOutput = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
-
-    val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input.clone(), gradOutput.clone())
-    val end = System.nanoTime()
-    val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LeakyReLU(1/100,true)\n" +
@@ -83,6 +77,150 @@ class LeakyReLUSpec  extends TorchSpec {
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input.clone(), gradOutput.clone())
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
+
+    println("Test case : LeakyReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A LeakyReLU Float Module" should "generate correct output and grad not inplace" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val module = new LeakyReLU[Float]()
+    val input = Tensor[Float](2, 2, 2)
+    input.apply1(x => random().toFloat)
+    val gradOutput = Tensor[Float](2, 2, 2)
+    input.apply1(x => random().toFloat)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "torch.setdefaulttensortype('torch.FloatTensor')\n" +
+      "module = nn.LeakyReLU()\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Float]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Float]]
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
+
+    println("Test case : LeakyReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A LeakyReLU Float Module" should "generate correct output and grad inplace" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val module = LeakyReLU[Float](inplace = true)
+    val input = Tensor[Float](2, 2, 2)
+    input.apply1(x => random().toFloat)
+    val gradOutput = Tensor[Float](2, 2, 2)
+    input.apply1(x => random().toFloat)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "torch.setdefaulttensortype('torch.FloatTensor')\n" +
+      "module = nn.LeakyReLU(1/100,true)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Float]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Float]]
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input.clone(), gradOutput.clone())
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
+
+    println("Test case : LeakyReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A LeakyReLU Float Module incontiguous input" should
+    "generate correct output and grad not inplace" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val module = new LeakyReLU[Float]()
+    val input = Tensor[Float](4, 2, 2).narrow(1, 2, 2)
+    input.apply1(x => random().toFloat)
+    val gradOutput = Tensor[Float](4, 2, 2).narrow(1, 2, 2)
+    input.apply1(x => random().toFloat)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "torch.setdefaulttensortype('torch.FloatTensor')\n" +
+      "module = nn.LeakyReLU()\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Float]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Float]]
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
+
+    println("Test case : LeakyReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A LeakyReLU Float Module incontiguous input" should
+    "generate correct output and grad inplace" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val module = LeakyReLU[Float](inplace = true)
+    val input = Tensor[Float](4, 2, 2).narrow(1, 2, 2)
+    input.apply1(x => random().toFloat)
+    val gradOutput = Tensor[Float](4, 2, 2).narrow(1, 2, 2)
+    input.apply1(x => random().toFloat)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "torch.setdefaulttensortype('torch.FloatTensor')\n" +
+      "module = nn.LeakyReLU(1/100,true)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Float]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Float]]
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input.clone(), gradOutput.clone())
+    val end = System.nanoTime()
+    val scalaTime = end - start
 
     luaOutput1 should be (output)
     luaOutput2 should be (gradInput)

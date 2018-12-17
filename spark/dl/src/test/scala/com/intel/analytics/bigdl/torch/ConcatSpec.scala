@@ -75,14 +75,8 @@ class ConcatSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    luaOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
-      v1
-    })
-    luaGradInput.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
-      v1
-    })
+    luaOutput.almostEqual(output, 1e-15)
+    luaGradInput.almostEqual(gradInput, 1e-15)
 
     println("Test case : Concat, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
@@ -142,22 +136,10 @@ class ConcatSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    luaOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
-      v1
-    })
-    luaGradInput.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
-      v1
-    })
-    gradParametersLua.map(gradParameters, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
-      v1
-    })
-    parametersLua.map(parameters, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
-      v1
-    })
+    luaOutput.almostEqual(output, 1e-15)
+    luaGradInput.almostEqual(gradInput, 1e-15)
+    gradParametersLua.almostEqual(gradParameters, 1e-11)
+    parametersLua.almostEqual(parameters, 1e-11)
     println("Test case : Concat, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 

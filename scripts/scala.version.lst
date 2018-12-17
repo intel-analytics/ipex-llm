@@ -1,0 +1,7 @@
+docker/BigDL/Dockerfile
+spark/dl/src/main/resources/bigdl-version-info.properties
+docs/docs/ProgrammingGuide/quantization-support.md
+docs/docs/ScalaUserGuide/install-pre-built.md
+scripts/download.sh
+scripts/run.example.sh
+pyspark/bigdl/models/textclassifier/README.md

@@ -15,10 +15,13 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -88,9 +91,64 @@ class MaskedSelect[T: ClassTag]
   }
 }
 
-object MaskedSelect {
+object MaskedSelect extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : MaskedSelect[T] = {
     new MaskedSelect[T]()
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val maskedSelect = super.doLoadModule(context).asInstanceOf[MaskedSelect[T]]
+    val modelAttributes = context.bigdlModule.getAttrMap
+
+    val maskIndices = modelAttributes.get("maskIndices")
+    val maskIndicesValue = DataConverter.getAttributeValue(context, maskIndices)
+      .asInstanceOf[Tensor[T]]
+    maskedSelect.maskIndices.resizeAs(maskIndicesValue).copy(maskIndicesValue)
+
+    val maskIndexBuffer = modelAttributes.get("maskIndexBuffer")
+    val maskIndexBufferValue = DataConverter.getAttributeValue(context, maskIndexBuffer)
+      .asInstanceOf[Tensor[T]]
+    maskedSelect.maskIndexBuffer.resizeAs(maskIndexBufferValue).copy(maskIndexBufferValue)
+
+    val gradBufferBuffer = modelAttributes.get("gradBuffer")
+    val gradBufferValue = DataConverter.getAttributeValue(context, gradBufferBuffer)
+      .asInstanceOf[Tensor[T]]
+    maskedSelect.gradBuffer.resizeAs(gradBufferValue).copy(gradBufferValue)
+
+    val gradMaskBuffer = modelAttributes.get("gradMask")
+    val gradMaskValue = DataConverter.getAttributeValue(context, gradMaskBuffer)
+      .asInstanceOf[Tensor[T]]
+    maskedSelect.gradMask.resizeAs(gradMaskValue).copy(gradMaskValue)
+
+    maskedSelect
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              maskedSelectBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    val masKSelect = context.moduleData.module.asInstanceOf[MaskedSelect[T]]
+
+    val maskIndicesBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, maskIndicesBuilder, masKSelect.maskIndices,
+      ModuleSerializer.tensorType)
+    maskedSelectBuilder.putAttr("maskIndices", maskIndicesBuilder.build)
+
+    val maskIndexBufferBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, maskIndexBufferBuilder, masKSelect.maskIndexBuffer,
+      ModuleSerializer.tensorType)
+    maskedSelectBuilder.putAttr("maskIndexBuffer", maskIndexBufferBuilder.build)
+
+    val gradBufferBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, gradBufferBuilder, masKSelect.gradBuffer,
+      ModuleSerializer.tensorType)
+    maskedSelectBuilder.putAttr("gradBuffer", gradBufferBuilder.build)
+
+    val gradMaskBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, gradMaskBuilder, masKSelect.gradMask,
+      ModuleSerializer.tensorType)
+    maskedSelectBuilder.putAttr("gradMask", gradMaskBuilder.build)
+
   }
 }

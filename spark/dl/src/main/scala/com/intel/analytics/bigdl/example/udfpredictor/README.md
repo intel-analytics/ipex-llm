@@ -13,7 +13,7 @@ Then create a UDF to do the text classification with this model, and use this UD
 
 ## Get the JAR
 Please build the source code with your specific version of spark referring the
-                                                              [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page).
+                                                              [Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/).
 
 
 ## Steps to run this example:

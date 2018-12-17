@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, Customizable}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable
@@ -41,13 +41,14 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     Identity[Double].inputs()
   }
 
-  private def loadDummy[T : ClassTag](message : GeneratedMessage)(implicit ev: TensorNumeric[T])
-    : Seq[ModuleNode[T]] = {
-    Seq(Identity[T].setName("Dummy").inputs())
+  private class LoadDummy[T: ClassTag](implicit ev: TensorNumeric[T]) extends Customizable[T] {
+    override def convertor(layer: GeneratedMessage): Seq[ModuleNode[T]] = {
+      Seq(Identity[T].setName("Dummy").inputs())
+    }
   }
 
-  val convertMap = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[Double]]]()
-  convertMap("DUMMY") = loadDummy[Double]
+  val convertMap = new mutable.HashMap[String, Customizable[Double]]()
+  convertMap("DUMMY") = new LoadDummy[Double]()
 
   "load caffe match all parameters" should "work properly" in {
     val module = Sequential()
@@ -55,7 +56,8 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
       .add(Convolution(4, 3, 2, 2).setName("conv2"))
       .add(Linear(2, 27, withBias = false).setName("ip"))
 
-    val model = CaffeLoader.load[Double](module, prototxt, modelPath)
+    val model = CaffeLoader.load[Double](module, prototxt, modelPath, true,
+      convertMap)
     val parameters = model.getParametersTable()
 
     val conv1weight = Tensor(Storage(Array(
@@ -203,7 +205,7 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
       .add(Convolution(4, 3, 2, 2).setName("conv2"))
       .add(View(27)).setName("view")
       .add(Linear(27, 2, withBias = false).setName("ip"))
-      .add(LogSoftMax().setName("softmax"))
+      .add(SoftMax().setName("softmax"))
 
     val staticInput = Tensor[Double](1, 3, 5, 5).apply1( e => Random.nextDouble())
 
@@ -261,7 +263,7 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
   "Customized converter with existing type" should " throw exception " in {
-    convertMap("INNERPRODUCT") = loadDummy[Double]
+    convertMap("INNERPRODUCT") = new LoadDummy[Double]
     intercept[IllegalArgumentException] {
       val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath,
         customizedConverters = convertMap)

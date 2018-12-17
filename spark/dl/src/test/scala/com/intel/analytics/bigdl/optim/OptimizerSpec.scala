@@ -18,20 +18,32 @@ package com.intel.analytics.bigdl.optim
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, Sample}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
+  private var sc: SparkContext = _
+  private val nodeNumber = 1
+  private val coreNumber = 4
 
   before {
-    Engine.setNodeAndCore(1, 4)
+    Engine.setNodeAndCore(nodeNumber, coreNumber)
+    sc = new SparkContext(s"local[$coreNumber]", "OptimizerSpec")
+  }
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
   }
 
   "Optimizer" should "end with maxEpoch" in {
@@ -139,6 +151,54 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dummyOptimizer.optimize()
   }
 
+  it should "support multiply triggers to end training" in {
+
+    def createDummyBooleanOptimiser(endShouldBe : Boolean) : Optimizer[Float, Float] =
+      new Optimizer[Float, Float](model, null, null) {
+        override def optimize() : Module[Float] = {
+          val state = T()
+          endWhen(state) should be(endShouldBe)
+          model
+        }
+    }
+
+    def createDummyTrigger(triggerBoolRes : Boolean) : Trigger = new Trigger {
+      override def apply(state: Table): Boolean = triggerBoolRes
+    }
+
+    val trueDummyOptimizer = createDummyBooleanOptimiser(true)
+    val falseDummyOptimizer = createDummyBooleanOptimiser(false)
+
+    val trueDummyTrigger = createDummyTrigger(true)
+    val falseDummyTrigger = createDummyTrigger(false)
+
+    // AND
+    trueDummyOptimizer.setEndWhen(Trigger.and(trueDummyTrigger, trueDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.and(trueDummyTrigger, falseDummyTrigger))
+    falseDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.and(falseDummyTrigger, trueDummyTrigger))
+    falseDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.and(falseDummyTrigger, falseDummyTrigger))
+    falseDummyOptimizer.optimize()
+
+    // OR
+    trueDummyOptimizer.setEndWhen(Trigger.or(trueDummyTrigger, falseDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    trueDummyOptimizer.setEndWhen(Trigger.or(trueDummyTrigger, trueDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    trueDummyOptimizer.setEndWhen(Trigger.or(falseDummyTrigger, trueDummyTrigger))
+    trueDummyOptimizer.optimize()
+
+    falseDummyOptimizer.setEndWhen(Trigger.or(falseDummyTrigger, falseDummyTrigger))
+    falseDummyOptimizer.optimize()
+  }
+
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
@@ -243,4 +303,44 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     res.isInstanceOf[DistriOptimizer[Float]] should be(false)
     res.isInstanceOf[LocalOptimizer[Float]] should be(true)
   }
+
+
+  "setTrainData" should "work in distributed optimizer" in {
+    val ds = new DistributedDataSet[Float] {
+      override def originRDD(): RDD[_] = null
+      override def data(train: Boolean): RDD[Float] = null
+      override def size(): Long = 0
+      override def shuffle(): Unit = {}
+    }
+
+    val model = Linear[Float](4, 3)
+    val criterion = ClassNLLCriterion[Float]()
+    val opt = Optimizer(model, ds, criterion)
+
+    val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber)
+      .map(_ => Sample[Float](Tensor[Float](2, 3).fill(1.0f)))
+
+    opt.setTrainData(rdd, 16)
+  }
+
+  "setTrainData" should "throw exception in local optimizer" in {
+    val ds = new LocalDataSet[Float] {
+      override def data(train: Boolean): Iterator[Float] = null
+      override def size(): Long = 0
+      override def shuffle(): Unit = {}
+    }
+    val model = Linear[Float](4, 3)
+    val criterion = ClassNLLCriterion[Float]()
+    val opt = Optimizer(model, ds, criterion)
+
+    val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber)
+      .map(_ => Sample[Float](Tensor[Float](2, 3).fill(1.0f)))
+
+    intercept[UnsupportedOperationException] {
+      opt.setTrainData(rdd, 16)
+    }
+
+  }
+
+
 }

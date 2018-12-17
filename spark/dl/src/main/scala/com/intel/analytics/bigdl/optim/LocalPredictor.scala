@@ -17,28 +17,41 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{SampleToMiniBatch, _}
+import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.quantized.QuantizedModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
-
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.utils.Util._
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
+import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
 object LocalPredictor {
 
-  def apply[T: ClassTag](model: Module[T], weightsBias: Array[Tensor[T]])
-                        (implicit ev: TensorNumeric[T]): LocalPredictor[T] = {
-    new LocalPredictor[T](model, weightsBias)
+  val logger = Logger.getLogger(getClass)
+
+  def apply[T: ClassTag](model: Module[T],
+    featurePaddingParam: Option[PaddingParam[T]] = None,
+    batchPerCore: Int = 4)
+    (implicit ev: TensorNumeric[T]): LocalPredictor[T] = {
+    new LocalPredictor[T](model, featurePaddingParam, batchPerCore)
   }
 }
 
-class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: Array[Tensor[T]])
-                                                (implicit ev: TensorNumeric[T])
-  extends Serializable {
+/**
+ * Predictor for local data
+ * @param model BigDL model
+ * @param featurePaddingParam featurePaddingParam if the inputs have variant size
+ * @param batchPerCore batch size per core, default is 4
+ */
+class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
+  featurePaddingParam: Option[PaddingParam[T]] = None,
+  batchPerCore: Int = 4)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
 
-  val logger = LocalValidator.logger
   private val coreNumber = Engine.coreNumber()
 
   private val subModelNumber = Engine.getEngineType match {
@@ -46,14 +59,38 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     case _ => throw new IllegalArgumentException
   }
 
-  private val batchPerCore = 4
+  // we should clone a new model which has no impact to origin model
+  private val clonedModel = model.cloneModule()
+
+  private val workingModels = {
+
+    val weightsBias = Util.getAndClearWeightBias(clonedModel.parameters())
+    val models = (1 to subModelNumber).map(_ => {
+      val submodel = clonedModel.cloneModule().evaluate()
+      putWeightBias(weightsBias, submodel)
+      submodel
+    }).toArray
+    Util.putWeightBias(weightsBias, clonedModel)
+    Util.initGradWeightBias(weightsBias, clonedModel)
+    models
+  }
+
+  val workingToBatch = {
+    val toBatch = SampleToMiniBatch[T](
+      batchSize = batchPerCore * subModelNumber,
+      partitionNum = Some(subModelNumber),
+      featurePaddingParam = featurePaddingParam)
+    (1 to subModelNumber).map(_ => {
+      toBatch.cloneTransformer()
+    }).toArray
+  }
 
   def predictClass(dataSet: Array[Sample[T]]): Array[Int] = {
     val result = predict(dataSet)
     result.map(output => {
       val _output = output.toTensor[T]
       require(_output.dim() == 1, s"Predictor.predictClass:" +
-        s"Only support one sample has one lable, but got ${_output.dim()} label")
+        s"Only support one sample has one label, but got ${_output.dim()} label")
       ev.toType[Int](_output.max(1)._2.valueAt(1))
     })
   }
@@ -70,12 +107,6 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
 
   def predict(dataSet: LocalDataSet[MiniBatch[T]]): Array[Activity] = {
     val dataIter = dataSet.data(train = false)
-
-    val workingModels = (1 to subModelNumber).map(_ => {
-      val submodel = model.cloneModule().evaluate()
-      putWeightBias(weightsBias, submodel)
-      submodel
-    }).toArray
     dataIter.map(batch => {
       println("Enter map")
       val stackSize = batch.size() / subModelNumber
@@ -101,54 +132,63 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
   }
 
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
-    val iter = dataSet.iterator
-    val transformer = SampleToBatch[T](
-      batchSize = batchPerCore * subModelNumber, None, None, None,
-      partitionNum = Some(1))
-    val dataIter = transformer(iter)
-
-    val workingModels = (1 to subModelNumber).map(_ => {
-      val submodel = model.cloneModule().evaluate()
-      putWeightBias(weightsBias, submodel)
-      submodel
-    }).toArray
+    val dataIter = dataSet.grouped(batchPerCore * subModelNumber)
 
     dataIter.map(batch => {
-      val stackSize = batch.size() / subModelNumber
-      val extraSize = batch.size() % subModelNumber
-      val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val start = System.nanoTime()
-      val result = Engine.default.invokeAndWait(
-        (0 until parallelism).map(b =>
+      val groupedSamples = batch.grouped(batchPerCore).toArray
+      Engine.default.invokeAndWait(
+        groupedSamples.indices.map(b =>
           () => {
-            val offset = b * stackSize + math.min(b, extraSize) + 1
-            val length = stackSize + (if (b < extraSize) 1 else 0)
-            val currentMiniBatch = batch.slice(offset, length)
-            val input = currentMiniBatch.getInput()
-            val output = workingModels(b).forward(input).toTensor[T]
-            output
-
+            val samples = groupedSamples(b)
+            val model = workingModels(b)
+            val toBatch = workingToBatch(b)
+            Predictor.predictSamples(model, samples, toBatch, false)
           }
         )
-      )
-      val batchResult = result.flatMap(_.split(1)).map(_.asInstanceOf[Activity])
-      batchResult
-    }).toArray.flatten
-
+      ).flatten
+    }).flatten.toArray
   }
 
-  private def putWeightBias(weightBias: Array[Tensor[T]],
-                            localModel: Module[T]): Unit = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(weightBias(i))
-      }
-      i += 1
-    }
+  /**
+   * local model predict images, return imageFrame with predicted tensor
+   * @param imageFrame imageFrame that contains images
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   * outputLayer will be used as predicted output
+   * @param shareBuffer whether to share same memory for each batch predict results
+   * @param predictKey key to store predicted result
+   */
+  def predictImage(imageFrame: LocalImageFrame,
+    outputLayer: String = null,
+    shareBuffer: Boolean = false,
+    predictKey: String = ImageFeature.predict): LocalImageFrame = {
+
+    val dataIter = imageFrame.array.grouped(batchPerCore * subModelNumber)
+
+    val result = dataIter.map(batch => {
+      val groupedImages = batch.grouped(batchPerCore).toArray
+      Engine.default.invokeAndWait(
+        groupedImages.indices.map(b =>
+          () => {
+            val imageFeatures = groupedImages(b)
+            val model = workingModels(b)
+            val toBatch = workingToBatch(b)
+            Predictor.predictImageBatch[T](model, imageFeatures, outputLayer, predictKey,
+              toBatch, shareBuffer)
+          }
+        )
+      ).flatten
+    }).flatten
+
+    ImageFrame.array(result.toArray)
   }
 
+  /**
+   * `shutdown` will release all native resources.
+   */
+  def shutdown(): Unit = {
+    workingModels.foreach(_.release())
+    clonedModel.release()
+  }
 }
 
 

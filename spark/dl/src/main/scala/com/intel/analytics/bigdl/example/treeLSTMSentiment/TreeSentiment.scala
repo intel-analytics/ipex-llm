@@ -34,11 +34,12 @@ object TreeLSTMSentiment {
     val embeddingDim = word2VecTensor.size(2)
     val embedding = LookupTable(vocabSize, embeddingDim)
     embedding.weight.set(word2VecTensor)
+    embedding.setScaleW(2)
 
     val treeLSTMModule = Sequential()
       .add(BinaryTreeLSTM(
         embeddingDim, hiddenSize, withGraph = true))
-      .add(Dropout(p))
+      .add(TimeDistributed(Dropout(p)))
       .add(TimeDistributed(Linear(hiddenSize, classNum)))
       .add(TimeDistributed(LogSoftMax()))
 

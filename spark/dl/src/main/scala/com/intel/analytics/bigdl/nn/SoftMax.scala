@@ -31,14 +31,15 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  */
 @SerialVersionUID(- 7842335603491194236L)
-class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient
   private var results: Array[Future[Unit]] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(1 <= input.nDimension() && input.nDimension() <= 4,
-      "1D, 2D, 3D or 4D tensor expected")
+      "1D, 2D, 3D or 4D tensor expected" +
+        s"input dimension ${input.nDimension()}")
     val (nFrame, stride) = if (input.nDimension() == 1) {
       (1, 1)
     } else if (input.nDimension() == 2) {
@@ -136,7 +137,8 @@ object SoftMax{
     results: Array[Future[Unit]])(implicit ev: TensorNumeric[T]): Tensor[T] = {
 
     require(input.size().deep == gradOutput.size().deep,
-      "input should have the same size with gradOutput")
+      "input should have the same size with gradOutput" +
+        s"inputsize ${input.size().deep} gradOutput ${gradOutput.size().deep}")
     val (nFrame, dim, stride) = if (output.nDimension() == 1) {
       (1, output.size(1), 1)
     } else if (output.nDimension() == 2) {

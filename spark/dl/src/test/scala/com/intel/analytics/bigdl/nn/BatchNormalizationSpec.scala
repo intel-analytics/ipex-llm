@@ -16,13 +16,155 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import org.apache.spark.SparkContext
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class BatchNormalizationSpec extends FlatSpec with Matchers {
+class BatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
+  before {
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("spark.master", "local[2]")
+    Engine.init
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("spark.master")
+  }
+
+  "BacthNormalization parameter sync" should "work properly" in {
+    val bn = BatchNormalization[Float](2)
+
+    bn.setParallism(1)
+
+    bn.weight.fill(1.0f)
+    bn.bias.fill(1.0f)
+
+    val input = Tensor[Float](2, 2)
+
+    input.select(1, 1).fill(1.0f)
+    input.select(1, 2).fill(2.0f)
+
+    val gradOutput = Tensor[Float](2, 2)
+
+    gradOutput.select(1, 1).fill(2.0f)
+    gradOutput.select(1, 2).fill(1.0f)
+
+    val output = bn.forward(input)
+
+    val gradInput = bn.backward(input, gradOutput)
+
+    val saveMean = bn.saveMean
+    val saveStd = bn.saveStd
+    val runningMean = bn.runningMean
+    val runningVar = bn.runningVar
+
+    val bn1 = BatchNormalization[Float](2)
+
+    bn1.setParallism(2)
+
+    bn1.weight.fill(1.0f)
+    bn1.bias.fill(1.0f)
+
+    val bn2 = bn1.cloneModule().asInstanceOf[BatchNormalization[Float]]
+
+    val modules = Array(bn1, bn2)
+
+    val input1 = Tensor[Float](1, 2).fill(1.0f)
+
+    val input2 = Tensor[Float](1, 2).fill(2.0f)
+
+    val inputs = Array(input1, input2)
+
+    val gradOutput1 = Tensor[Float](1, 2).fill(2.0f)
+    val gradOutput2 = Tensor[Float](1, 2).fill(1.0f)
+
+    val gradOutputs = Array(gradOutput1, gradOutput2)
+
+    Engine.default.invokeAndWait2((0 until modules.size).map(i =>
+      () => {
+        val trainStart = System.nanoTime()
+        val sub = modules(i)
+        val subInput = inputs(i)
+        val subGradOutput = gradOutputs(i)
+        sub.forward(subInput)
+        sub.backward(subInput, subGradOutput)
+      }
+    ))
+
+    val saveMean1 = bn1.saveMean
+    val saveStd1 = bn1.saveStd
+    val runningMean1 = bn1.runningMean
+    val runningVar1 = bn1.runningVar
+    val gradInput1 = bn1.gradInput
+    val out1 = bn1.output.squeeze
+
+    val saveMean2 = bn2.saveMean
+    val saveStd2 = bn2.saveStd
+    val runningMean2 = bn2.runningMean
+    val runningVar2 = bn2.runningVar
+    val gradInput2 = bn2.gradInput
+    val out2 = bn2.output.squeeze()
+
+    saveMean should be (saveMean1)
+    saveMean should be (saveMean2)
+    saveStd should be (saveStd1)
+    saveStd should be (saveStd2)
+    runningMean should be (runningMean1)
+    runningMean should be (runningMean2)
+    runningVar should be (runningVar1)
+    runningVar should be (runningVar2)
+
+    val sout1 = output.select(1, 1).squeeze()
+    sout1  should be (out1)
+
+    val sout2 = output.select(1, 2).squeeze()
+    sout2 should be (bn2.output)
+
+    val gin1 = gradInput.select(1, 1)
+
+    val gin2 = gradInput.select(1, 2)
+
+    gin1.squeeze should be (gradInput1.squeeze)
+    gin2.squeeze should be (gradInput2.squeeze)
+  }
+
+  "A BatchNormalization" should "generate correct output using default arguments" in {
+    val bn = BatchNormalization[Double](None)
+    val input = Tensor[Double](3, 3)
+
+    var i = 0
+    input.apply1(e => {
+      i += 1; i
+    })
+    val output = bn.forward(input)
+
+    val mean = Tensor[Double](Storage[Double](Array(4.0, 5.0, 6.0)))
+    val std = Tensor(Storage(Array(0.4082479, 0.4082479, 0.4082479)))
+    val output1 = Tensor[Double](3, 3)
+    for (i <- 1 to 3) {
+      for (j <- 1 to 3) {
+        output1.setValue(i, j, (input(Array(i, j)) - mean(Array(j))) * std(Array(j)))
+      }
+    }
+
+    output.nDimension() should be(2)
+    output.size(1) should be(3)
+    output.size(2) should be(3)
+
+    output.map(output1, (a, b) => {
+      a should be (b +- 0.0001)
+      a
+    })
+  }
+
   "A BatchNormalization" should "generate correct output" in {
+
     val bn = new BatchNormalization[Double](3)
     bn.weight(1) = 0.1
     bn.weight(2) = 0.2
@@ -206,6 +348,23 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
 
     bn2.gradWeight should be(bn1.gradWeight.mul(0.5))
     bn2.gradBias should be(bn1.gradBias.mul(2))
+  }
 
+  "BatchNormalization backward" should "be good when affine is false" in {
+    val layer = BatchNormalization[Float](3, affine = false)
+    val input = Tensor[Float](4, 3).fill(1)
+    val gradOutput = Tensor[Float](4, 3).fill(1)
+    val output = layer.forward(input)
+    output should be(Tensor[Float](4, 3).fill(0))
+    val gradInput = layer.backward(input, gradOutput)
+    gradInput should be(Tensor[Float](4, 3).fill(0))
+  }
+}
+
+class BatchNormalizationSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val batchNorm = BatchNormalization[Float](5).setName("batchNorm")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(batchNorm, input)
   }
 }

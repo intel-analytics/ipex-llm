@@ -16,9 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -41,14 +44,17 @@ class SpatialContrastiveNormalization[T: ClassTag](
   if (null == kernel) kernel = Tensor.ones[T](9, 9)
 
   private val kdim = kernel.nDimension()
-  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D")
-  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions")
+  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D" +
+    s"averaging kernel dimension ${kdim}")
+  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions" +
+    s"averaging kernel dimension ${kernel.size(1)}")
   if (kdim == 2) {
-    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions")
+    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions" +
+      s"averaging kernel dimension ${kernel.size(2)}")
   }
 
   // instantiate sub+div normalization
-  private val normalizer = new Sequential[T]()
+  private var normalizer = new Sequential[T]()
   normalizer.add(new SpatialSubtractiveNormalization(nInputPlane, kernel))
   normalizer.add(new SpatialDivisiveNormalization(nInputPlane, kernel, threshold, thresval))
 
@@ -96,7 +102,7 @@ class SpatialContrastiveNormalization[T: ClassTag](
   }
 }
 
-object SpatialContrastiveNormalization {
+object SpatialContrastiveNormalization extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int = 1,
       kernel: Tensor[T] = null,
@@ -104,5 +110,35 @@ object SpatialContrastiveNormalization {
       thresval: Double = 1e-4)(
       implicit ev: TensorNumeric[T]) : SpatialContrastiveNormalization[T] = {
     new SpatialContrastiveNormalization[T](nInputPlane, kernel, threshold, thresval)
+  }
+
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val spatialContrastiveNormaModule = super.doLoadModule(context).
+      asInstanceOf[SpatialContrastiveNormalization[T]]
+
+    val attrMap = context.bigdlModule.getAttrMap
+
+    spatialContrastiveNormaModule.normalizer = DataConverter.
+      getAttributeValue(context, attrMap.get("normalizer")).
+      asInstanceOf[Sequential[T]]
+
+    spatialContrastiveNormaModule
+  }
+
+  override def doSerializeModule[T: ClassTag](context : SerializeContext[T],
+                                            contrastiveNormBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(context, contrastiveNormBuilder)
+    val spatialContrastiveNormaModule = context.moduleData.module.
+      asInstanceOf[SpatialContrastiveNormalization[T]]
+
+    val normalizerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, normalizerBuilder,
+      spatialContrastiveNormaModule.normalizer,
+      ModuleSerializer.tensorModuleType)
+    contrastiveNormBuilder.putAttr("normalizer", normalizerBuilder.build)
+
   }
 }

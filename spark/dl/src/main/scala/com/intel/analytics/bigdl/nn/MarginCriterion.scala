@@ -22,16 +22,21 @@ import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, 
 import scala.reflect.ClassTag
 
 /**
- * Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
- * between input x (a Tensor of dimension 1) and output y.
+ * Creates a criterion that optimizes a two-class classification (squared)
+ * hinge loss (margin-based loss) between input x (a Tensor of dimension 1) and output y.
+ *
+ * When margin = 1, sizeAverage = True and squared = False, this is the same as hinge loss in keras;
+ * When margin = 1, sizeAverage = False and squared = True, this is the same as squared_hinge loss
+ * in keras.
  *
  * @param margin if unspecified, is by default 1.
  * @param sizeAverage whether to average the loss
+ * @param squared whether to calculate the squared hinge loss
  */
 
 @SerialVersionUID( - 5028892499250398130L)
 class MarginCriterion[@specialized(Float, Double) T: ClassTag]
- (val margin: Double = 1.0, val sizeAverage: Boolean = true)
+ (val margin: Double = 1.0, val sizeAverage: Boolean = true, squared: Boolean = false)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
@@ -40,7 +45,13 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], index1: Int, data2: Array[T], index2: Int): Unit = {
         val z = ev.minus(ev.fromType(margin), ev.times(data1(index1), data2(index2)))
-        if (ev.isGreater(z, ev.fromType(0))) sum = ev.plus(sum, z)
+        if (ev.isGreater(z, ev.fromType(0))) {
+          if (squared) {
+            sum = ev.plus(sum, ev.times(z, z))
+          } else {
+            sum = ev.plus(sum, z)
+          }
+        }
       }
     }
     DenseTensorApply.apply2[T](input, target, func)
@@ -49,7 +60,7 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else 1.0)
+    val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else -1.0)
     gradInput.resizeAs(input)
 
     // todo: the performance of contiguous tensor should be optimized
@@ -57,7 +68,15 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
       override def apply (data1: Array[T], offset1: Int, data2: Array[T],
                           offset2: Int, data3: Array[T], offset3: Int): Unit = {
         if (ev.isGreater(ev.fromType(margin), ev.times(data2(offset2), data3(offset3)))) {
-          data1(offset1) = ev.times(norm, data3(offset3))
+          if (squared) {
+            // dl/dx = -2y(1-xy)
+            data1(offset1) = ev.times(
+              ev.times(ev.times(ev.fromType(2), norm), data3(offset3)),
+              ev.minus(ev.fromType(margin),
+                ev.times(data2(offset2), data3(offset3))))
+          } else {
+            data1(offset1) = ev.times(norm, data3(offset3))
+          }
         }
       }
     }
@@ -90,7 +109,8 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
 object MarginCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
       margin: Double = 1.0,
-      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MarginCriterion[T] = {
-    new MarginCriterion[T](margin, sizeAverage)
+      sizeAverage: Boolean = true,
+      squared: Boolean = false)(implicit ev: TensorNumeric[T]) : MarginCriterion[T] = {
+    new MarginCriterion[T](margin, sizeAverage, squared)
   }
 }

@@ -16,14 +16,29 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{T, TestUtils}
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TestUtils}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class AdamSpec extends FlatSpec with Matchers {
+class AdamSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  before {
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("spark.master", "local[2]")
+    Engine.init
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("spark.master")
+  }
+
+
   val start = System.currentTimeMillis()
   "adam" should "perform well on rosenbrock function" in {
     val x = Tensor[Double](2).fill(0)
@@ -50,5 +65,31 @@ class AdamSpec extends FlatSpec with Matchers {
     x(Array(1)) should be(1.0 +- 0.01)
     x(Array(2)) should be(1.0 +- 0.01)
   }
+
+  "ParallelAdam" should "perform well on rosenbrock function" in {
+    val x = Tensor[Double](2).fill(0)
+    val optm = new ParallelAdam[Double](learningRate = 0.002, parallelNum = 2)
+    var fx = new ArrayBuffer[Double]
+    for (i <- 1 to 10001) {
+      val result = optm.optimize(TestUtils.rosenBrock, x)
+      if ((i - 1) % 1000 == 0) {
+        fx += result._2(0)
+      }
+    }
+
+    println(s"x is \n$x")
+    println("fx is")
+    for (i <- 1 to fx.length) {
+      println(s"${(i - 1) * 1000 + 1}, ${fx(i - 1)}")
+    }
+
+    val spend = System.currentTimeMillis() - start
+    println("Time Cost: " + spend + "ms")
+
+    (fx.last < 1e-9) should be(true)
+    x(Array(1)) should be(1.0 +- 0.01)
+    x(Array(2)) should be(1.0 +- 0.01)
+  }
+
 }
 

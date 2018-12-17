@@ -16,13 +16,17 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
+import java.awt.Color
+import java.awt.image.{BufferedImage, DataBufferByte}
+import java.nio.ByteBuffer
+
 import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
 object BytesToBGRImg {
-  def apply(normalize: Float = 255f): BytesToBGRImg =
-    new BytesToBGRImg(normalize)
+  def apply(normalize: Float = 255f, resizeW : Int = -1, resizeH : Int = -1): BytesToBGRImg =
+    new BytesToBGRImg(normalize, resizeW, resizeH)
 }
 
 /**
@@ -30,13 +34,33 @@ object BytesToBGRImg {
  * height, and the last is pixels coming with BGR order.
  * @param normalize
  */
-class BytesToBGRImg(normalize: Float)
+class BytesToBGRImg(normalize: Float, resizeW : Int = -1, resizeH : Int = -1)
   extends Transformer[ByteRecord, LabeledBGRImage] {
+
   private val buffer = new LabeledBGRImage()
 
   override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledBGRImage] = {
     prev.map(rawData => {
-      buffer.copy(rawData.data, normalize).setLabel(rawData.label)
+      buffer.copy(getImgData(rawData, resizeW, resizeH), normalize).setLabel(rawData.label)
     })
+  }
+
+  private def getImgData (record : ByteRecord, resizeW : Int, resizeH : Int)
+  : Array[Byte] = {
+    if (resizeW == -1) {
+      return record.data
+    } else {
+      val rawData = record.data
+      val imgBuffer = ByteBuffer.wrap(rawData)
+      val width = imgBuffer.getInt
+      val height = imgBuffer.getInt
+      val bufferedImage : BufferedImage
+      = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
+      val outputImagePixelData = bufferedImage.getRaster.getDataBuffer
+        .asInstanceOf[DataBufferByte].getData
+      System.arraycopy(imgBuffer.array(), 8,
+        outputImagePixelData, 0, outputImagePixelData.length)
+      BGRImage.resizeImage(bufferedImage, resizeW, resizeH)
+    }
   }
 }

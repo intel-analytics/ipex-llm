@@ -15,16 +15,15 @@
  */
 package org.apache.spark.ml
 
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util.SchemaUtils
-import org.apache.spark.sql.types._
+import org.apache.spark.ml.util.Identifiable
 
 import scala.reflect.ClassTag
 
 /**
+ * Deprecated. Please refer to package com.intel.analytics.bigdl.dlframes.
+ *
  * [[DLClassifier]] is a specialized [[DLEstimator]] that simplifies the data format for
  * classification tasks. It only supports label column of DoubleType.
  * and the fitted [[DLClassifierModel]] will have the prediction column of DoubleType.
@@ -33,56 +32,37 @@ import scala.reflect.ClassTag
  * @param criterion  BigDL criterion method
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class DLClassifier[@specialized(Float, Double) T: ClassTag](
-    override val model: Module[T],
+@deprecated("`DLClassifier` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
+class DLClassifier[T: ClassTag](
+    @transient override val model: Module[T],
     override val criterion : Criterion[T],
     override val featureSize : Array[Int],
-    override val uid: String = "DLClassifier"
+    override val uid: String = Identifiable.randomUID("dlClassifier")
   )(implicit ev: TensorNumeric[T])
-  extends DLEstimator[T](model, criterion, featureSize, Array(1)) {
+  extends com.intel.analytics.bigdl.dlframes.DLClassifier[T](model, criterion, featureSize) {
 
   override protected def wrapBigDLModel(
-      m: Module[T], featureSize: Array[Int]): DLTransformerBase = {
+      m: Module[T], featureSize: Array[Int]): DLClassifierModel[T] = {
     val dlModel = new DLClassifierModel[T](m, featureSize)
-    copyValues(dlModel.setParent(this))
-  }
-
-  override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
-    SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
-  }
-
-  override def copy(extra: ParamMap): DLClassifier[T] = {
-    copyValues(new DLClassifier(model, criterion, featureSize), extra)
+    copyValues(dlModel.setParent(this)).asInstanceOf[DLClassifierModel[T]]
   }
 }
 
 /**
+ * Deprecated. Please refer to package com.intel.analytics.bigdl.dlframes.
+ *
  * [[DLClassifierModel]] is a specialized [[DLModel]] for classification tasks.
  * The prediction column will have the datatype of Double.
  *
  * @param model BigDL module to be optimized
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
-    override val model: Module[T],
+@deprecated("`DLClassifierModel` is migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
+class DLClassifierModel[T: ClassTag](
+    @transient override val model: Module[T],
     featureSize : Array[Int],
     override val uid: String = "DLClassifierModel"
-  )(implicit ev: TensorNumeric[T]) extends DLModel[T](model, featureSize) {
-
-  override protected def batchOutputToPrediction(output: Tensor[T]): Iterable[_] = {
-    output.split(1)
-    val result = if (output.dim == 2) {
-      output.split(1).map(t => t.max(1)._2.storage().head)
-    } else {
-      throw new IllegalArgumentException
-    }
-    result.map(ev.toType[Double])
-  }
-
-  override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
-    SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
-  }
-}
-
+  )(implicit ev: TensorNumeric[T])
+  extends com.intel.analytics.bigdl.dlframes.DLClassifierModel[T](model, featureSize)

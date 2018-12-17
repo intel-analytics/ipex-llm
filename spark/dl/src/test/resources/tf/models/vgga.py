@@ -28,6 +28,7 @@ def main():
     """
     height, width = 224, 224
     inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name='input')
+    inputs = tf.identity(inputs, "input_node")
     net, end_points  = vgg.vgg_a(inputs, is_training = False)
     print("nodes in the graph")
     for n in end_points:

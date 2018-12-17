@@ -26,7 +26,6 @@ object BlockManagerWrapper {
     bytes: ByteBuffer,
     level: StorageLevel): Unit = {
     require(bytes != null, "Bytes is null")
-    SparkEnv.get.blockManager.removeBlock(blockId)
     SparkEnv.get.blockManager.putBytes(blockId, bytes, level)
   }
 
@@ -45,8 +44,19 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.getLocal(blockId)
   }
 
-  def byteBufferConvert(byteBuffer: ByteBuffer): ByteBuffer = {
-    byteBuffer
+
+  def getLocalBytes(blockId: BlockId): Option[ByteBuffer] = {
+    SparkEnv.get.blockManager.getLocalBytes(blockId)
+  }
+
+  def getLocalOrRemoteBytes(blockId: BlockId): Option[ByteBuffer] = {
+    val bm = SparkEnv.get.blockManager
+    val maybeLocalBytes = bm.getLocalBytes(blockId)
+    if (maybeLocalBytes.isDefined) {
+      maybeLocalBytes
+    } else {
+      bm.getRemoteBytes(blockId)
+    }
   }
 
   def unlock(blockId : BlockId): Unit = {}

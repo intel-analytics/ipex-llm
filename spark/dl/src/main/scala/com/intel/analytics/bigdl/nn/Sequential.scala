@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -28,7 +29,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
+(implicit ev: TensorNumeric[T]) extends DynamicContainer[Activity, Activity, T] {
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0
@@ -74,6 +75,7 @@ class Sequential[T: ClassTag]
   }
 
   override def backward(input: Activity, nextError: Activity): Activity = {
+    val before = System.nanoTime()
     var i = modules.length - 1
     var error = nextError.asInstanceOf[Activity]
     while (i > 0) {
@@ -84,6 +86,7 @@ class Sequential[T: ClassTag]
     error = modules(0).backward(input, error)
 
     this.gradInput = error
+    backwardTime += System.nanoTime() - before
     gradInput
   }
 
@@ -147,6 +150,15 @@ class Sequential[T: ClassTag]
       }$line}"
   }
 
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    var startnodes = startNodes
+    var curNodes: Array[ModuleNode[T]] = null
+    for (i <- 0 to modules.size - 1) {
+      curNodes = modules(i).getEndNodes(startnodes)
+      startnodes = curNodes
+    }
+    curNodes
+  }
 }
 
 object Sequential {

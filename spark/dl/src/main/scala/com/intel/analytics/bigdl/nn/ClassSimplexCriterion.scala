@@ -76,13 +76,18 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     transformTarget(target)
     require(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
-      "element number wrong")
+      "element number wrong" +
+      s"input dim(${input.nElement()})" +
+      s"targetBuffer dim(${targetBuffer.nElement()})")
     output = super.updateOutput(input, targetBuffer)
     output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == targetBuffer.nElement())
+    require(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
+      "element number wrong" +
+      s"input dim(${input.nElement()})" +
+      s"targetBuffer dim(${targetBuffer.nElement()})")
 
     gradInput = super.updateGradInput(input, targetBuffer)
     gradInput

@@ -18,8 +18,8 @@
 2.  Download [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) as the training data
 
     ```shell
-    wget http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.tar.gz
-    tar zxf news20.tar.gz
+    wget http://qwone.com/~jason/20Newsgroups/20news-18828.tar.gz
+    tar zxf 20news-18828.tar.gz
     ```
 
 3.  Put those data under BASE_DIR, and the final structure would look like this:
@@ -27,7 +27,7 @@
     ```
     [~/textclassification]$ tree . -L 1
     .
-    ├── 20_newsgroup
+    ├── 20news-18828
     └── glove.6B
     ```
 
@@ -49,7 +49,7 @@
         ```shell
         MASTER=xxx.xxx.xxx.xxx:xxxx
         BASE_DIR=${PWD} # where is the data
-        spark-submit --master ${MASTER} --driver-memory 5g --executor-memory 5g  \
+        spark-submit --master ${MASTER} --driver-memory 20g --executor-memory 20g  \
                    --total-executor-cores 32 --executor-cores 8                                \
                    --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \
@@ -59,7 +59,7 @@
         
                 ```shell
                 BASE_DIR=${PWD} # where is the data
-                spark-submit --master yarn --driver-memory 5g --executor-memory 5g  \
+                spark-submit --master yarn --driver-memory 20g --executor-memory 20g  \
                            --num-executor 4 --executor-cores 8                                \
                            --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
                            bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \

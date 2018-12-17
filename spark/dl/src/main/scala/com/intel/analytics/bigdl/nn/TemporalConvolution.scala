@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -301,7 +301,9 @@ class TemporalConvolution[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     // Require input of 2 dimensions or 3 dimensions
-    require(input.nDimension() == 2 || input.nDimension() == 3, "Only support 2D or 3D input")
+    require(input.nDimension() == 2 || input.nDimension() == 3,
+      "Only support 2D or 3D input, " +
+        s"input ${input.nDimension()}")
     // Require input to be contiguous
     require(gradOutput.isContiguous())
 
@@ -387,16 +389,6 @@ class TemporalConvolution[T: ClassTag](
     if (null != bRegularizer) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

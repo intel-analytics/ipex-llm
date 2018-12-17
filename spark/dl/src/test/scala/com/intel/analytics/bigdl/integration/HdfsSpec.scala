@@ -15,7 +15,9 @@
  */
 package com.intel.analytics.bigdl.integration
 
+import java.nio.ByteOrder
 import java.nio.file.{Files, Paths}
+import java.util.UUID
 
 import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.models.lenet.LeNet5
@@ -27,12 +29,15 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister}
+import com.intel.analytics.bigdl.utils.tf._
 import com.intel.analytics.bigdl.utils.{Engine, File}
 import com.intel.analytics.bigdl.visualization.Summary
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
@@ -145,6 +150,30 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
   }
 
+  "Save/load tensorflow lenet NCHW to/from HDFS" should "works properly" in {
+    val conv1 = SpatialConvolution[Float](1, 6, 5, 5).setName("conv1").inputs()
+    val tanh1 = Tanh[Float]().setName("tanh1").inputs(conv1)
+    val pool1 = SpatialMaxPooling[Float](2, 2, 2, 2).setName("pool1").inputs(tanh1)
+    val tanh2 = Tanh[Float]().setName("tanh2").inputs(pool1)
+    val conv2 = SpatialConvolution[Float](6, 12, 5, 5).setName("conv2").inputs(tanh2)
+    val pool2 = SpatialMaxPooling[Float](2, 2, 2, 2).setName("output").inputs(conv2)
+
+    val funcModel = Graph[Float](conv1, pool2)
+    val inputData = Tensor[Float](4, 1, 28, 28).rand()
+    val outputData = funcModel.forward(inputData).toTensor[Float]
+
+    val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+    TensorflowSaver.saveGraph[Float](funcModel, Seq(("input", Seq(4, 28, 28, 1))),
+      hdfsDir + "/test.tfmodel")
+
+    val loadedModel = TensorflowLoader.load[Float](hdfsDir + "/test.tfmodel",
+      Seq("input"),
+      Seq("output"),
+      ByteOrder.LITTLE_ENDIAN)
+    val loadedOutput = loadedModel.forward(inputData).toTensor[Float]
+    loadedOutput.almostEqual(outputData, 1e-7)
+  }
+
   "Persist and Load Caffe to/from HDFS" should "works properly" in {
 
     val input1 = Tensor(10).apply1( e => Random.nextDouble())
@@ -153,7 +182,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     input2.resizeAs(input1).copy(input1)
 
-    val linear = Linear(10, 10)
+    val linear = Linear(10, 10).setName("linear")
 
     // caffe only supports float, In order to compare the results, here we manually
     // set weight and bias to ensure there is no accurancy loss
@@ -174,11 +203,44 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       graph, overwrite = true)
 
     val modelFromHdfs = CaffeLoader.loadCaffe[Double](hdfsDir + "/test.prototxt",
-      hdfsDir + "/test.caffemodel")._1
+      hdfsDir + "/test.caffemodel", outputNames = Array[String]("linear"))._1
 
     val res2 = modelFromHdfs.forward(input2)
 
     res1 should be (res2)
 
+  }
+
+  "Read and write TFRecord file to HDFS " should "work" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val filePath = processPath(resource.getPath()) + "/mnist_train.tfrecord"
+    val hdfsDir = hdfs + s"/${com.google.common.io.Files.createTempDir().getPath()}"
+
+    val conf = Engine.createSparkConf()
+    conf.set("spark.master", "local[1]")
+    conf.set("spark.app.name", "hdfsSpec")
+    val sc = new SparkContext(conf)
+    Engine.init
+    Engine.model.setPoolSize(1)
+
+    TFUtils.saveToHDFS(Seq(filePath), hdfsDir, 4, sc)
+
+    val rdd = sc.newAPIHadoopFile[BytesWritable, NullWritable, TFRecordInputFormat](hdfsDir)
+
+    val result = rdd.map(_._1.copyBytes()).collect()
+
+    val sorted = result.sortBy(_.sum)
+    val expectedSorted = TFRecordIterator(new java.io.File(filePath)).toArray.sortBy(_.sum)
+
+    sorted should be (expectedSorted)
+
+    // clean up
+    val dest = new Path(hdfsDir)
+    val fs = dest.getFileSystem(new Configuration())
+    if (fs.exists(dest)) {
+      fs.delete(dest, true)
+    }
+    sc.stop()
+    fs.close()
   }
 }

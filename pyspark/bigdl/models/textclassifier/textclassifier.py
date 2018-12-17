@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-# Still in experimental stage!
 
 import itertools
 import re
@@ -26,6 +25,7 @@ from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 from bigdl.util.common import Sample
+import datetime as dt
 
 
 def text_to_words(review_text):
@@ -66,8 +66,6 @@ def to_sample(vectors, label, embedding_dim):
     features = np.array(flatten_features, dtype='float').reshape(
         [sequence_len, embedding_dim])
 
-    if model_type.lower() == "cnn":
-        features = features.transpose(1, 0)
     return Sample.from_ndarray(features, np.array(label))
 
 
@@ -75,36 +73,33 @@ def build_model(class_num):
     model = Sequential()
 
     if model_type.lower() == "cnn":
-        model.add(Reshape([embedding_dim, 1, sequence_len]))
-        model.add(SpatialConvolution(embedding_dim, 128, 5, 1))
-        model.add(ReLU())
-        model.add(SpatialMaxPooling(5, 1, 5, 1))
-        model.add(SpatialConvolution(128, 128, 5, 1))
-        model.add(ReLU())
-        model.add(SpatialMaxPooling(5, 1, 5, 1))
-        model.add(Reshape([128]))
+        model.add(TemporalConvolution(embedding_dim, 256, 5)) \
+            .add(ReLU()) \
+            .add(TemporalMaxPooling(sequence_len - 5 + 1)) \
+            .add(Squeeze(2))
     elif model_type.lower() == "lstm":
         model.add(Recurrent()
-                  .add(LSTM(embedding_dim, 128, p)))
+                  .add(LSTM(embedding_dim, 256, p)))
         model.add(Select(2, -1))
     elif model_type.lower() == "gru":
         model.add(Recurrent()
-                  .add(GRU(embedding_dim, 128, p)))
+                  .add(GRU(embedding_dim, 256, p)))
         model.add(Select(2, -1))
-    else:
-        raise ValueError('model can only be cnn, lstm, or gru')
 
-    model.add(Linear(128, 100))
-    model.add(Linear(100, class_num))
-    model.add(LogSoftMax())
+    model.add(Linear(256, 128)) \
+        .add(Dropout(0.2)) \
+        .add(ReLU()) \
+        .add(Linear(128, class_num)) \
+        .add(LogSoftMax())
+
     return model
 
 
-def train(sc,
+def train(sc, data_path,
           batch_size,
           sequence_len, max_words, embedding_dim, training_split):
     print('Processing text dataset')
-    texts = news20.get_news20()
+    texts = news20.get_news20(source_dir=data_path)
     data_rdd = sc.parallelize(texts, 2)
 
     word_to_ic = analyze_texts(data_rdd)
@@ -138,7 +133,7 @@ def train(sc,
         criterion=ClassNLLCriterion(),
         end_trigger=MaxEpoch(max_epoch),
         batch_size=batch_size,
-        optim_method=Adagrad(learningrate=0.01, learningrate_decay=0.0002))
+        optim_method=Adagrad(learningrate=learning_rate, learningrate_decay=0.001))
 
     optimizer.set_validation(
         batch_size=batch_size,
@@ -146,31 +141,48 @@ def train(sc,
         trigger=EveryEpoch(),
         val_method=[Top1Accuracy()]
     )
+
+    logdir = '/tmp/.bigdl/'
+    app_name = 'adam-' + dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+
+    train_summary = TrainSummary(log_dir=logdir, app_name=app_name)
+    train_summary.set_summary_trigger("Parameters", SeveralIteration(50))
+    val_summary = ValidationSummary(log_dir=logdir, app_name=app_name)
+    optimizer.set_train_summary(train_summary)
+    optimizer.set_val_summary(val_summary)
+
     train_model = optimizer.optimize()
+
 
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
+    parser.add_option("-l", "--learning_rate", dest="learning_rate", default="0.05")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
-    parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="50")  # noqa
-    parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")
+    parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="300")  # noqa
+    parser.add_option("-m", "--max_epoch", dest="max_epoch", default="30")
     parser.add_option("--model", dest="model_type", default="cnn")
     parser.add_option("-p", "--p", dest="p", default="0.0")
+    parser.add_option("-d", "--data_path", dest="data_path", default="/tmp/news20/")
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
         batch_size = int(options.batchSize)
         embedding_dim = int(options.embedding_dim)
+        learning_rate = float(options.learning_rate)
         max_epoch = int(options.max_epoch)
         p = float(options.p)
         model_type = options.model_type
-        sequence_len = 50
-        max_words = 1000
+        sequence_len = 500
+        max_words = 5000
         training_split = 0.8
         sc = SparkContext(appName="text_classifier",
                           conf=create_spark_conf())
+        data_path = options.data_path
+        redire_spark_logs()
+        show_bigdl_info_logs()
         init_engine()
-        train(sc,
+        train(sc, data_path,
               batch_size,
               sequence_len, max_words, embedding_dim, training_split)
         sc.stop()

@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * [[Container]] is an abstract [[AbstractModule]] class which
  * declares methods defined in all containers. A container usually
  * contain some other modules in the `modules` variable. It overrides
- * many module methods such that calls are propogated to the contained
+ * many module methods such that calls are propagated to the contained
  * modules.
  *
  * @tparam A Input data type
@@ -45,52 +45,42 @@ abstract class Container[A <: Activity : ClassTag,
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
-  }
-
-  override def zeroGradParameters(): Unit = {
-    modules.foreach(_.zeroGradParameters())
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    modules.foreach(_.updateParameters(learningRate))
-  }
-
   override def reset(): Unit = {
     modules.foreach(_.reset())
   }
 
-  override def training(): this.type = {
+  final override def training(): this.type = {
     train = true
     modules.foreach(_.training())
     this
   }
 
-  override def evaluate(): this.type = {
+  final override def evaluate(): this.type = {
     train = false
     modules.foreach(_.evaluate())
     this
   }
 
-  override def checkEngineType(): this.type = {
+  final override def checkEngineType(): this.type = {
     modules.foreach(_.checkEngineType())
     this
   }
 
   override def getTimes():
     Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
-    this.modules.flatMap(_.getTimes()).toArray
+    if (modules.isEmpty) {
+      return Array((this, forwardTime, backwardTime))
+    }
+    val subModuleTimes = this.modules.flatMap(_.getTimes()).toArray
+
+    val (subModuleForward, subModuleBackward) = Utils.calculateFwdBwdTime(subModuleTimes)
+
+    subModuleTimes ++ Array((this, this.forwardTime - subModuleForward,
+      this.backwardTime - subModuleBackward))
   }
 
   override def resetTimes(): Unit = {
+    super.resetTimes()
     modules.foreach(_.resetTimes())
   }
 
@@ -105,6 +95,17 @@ abstract class Container[A <: Activity : ClassTag,
       }
     })
     (weights.toArray, gradWeights.toArray)
+  }
+
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    val extraParam = new ArrayBuffer[Tensor[T]]()
+    modules.foreach(m => {
+      val state = m.getExtraParameter()
+      if (state != null) {
+        extraParam ++= state
+      }
+    })
+    extraParam.toArray
   }
 
   override def getParametersTable(): Table = {
@@ -135,20 +136,6 @@ abstract class Container[A <: Activity : ClassTag,
     }
 
     nodes
-  }
-
-  override def copyStatus(src: Module[T]): this.type = {
-    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
-    val srcContainer = src.asInstanceOf[Container[A, B, T]]
-    require(srcContainer.modules.length == modules.length,
-      s"copyStatus: container's length mismatch" +
-        s"excepted ${modules.length}, but get ${srcContainer.modules.length}")
-    var i = 0
-    while (i < modules.length) {
-      modules(i).copyStatus(srcContainer.modules(i))
-      i += 1
-    }
-    this
   }
 
   override def clearState() : this.type = {
@@ -182,6 +169,34 @@ abstract class Container[A <: Activity : ClassTag,
     this
   }
 
+  override def freeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      modules.foreach(_.freeze())
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.freeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
+    this
+  }
+
+  override def unFreeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      modules.foreach(_.unFreeze())
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.unFreeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
+    this
+  }
+
   override def apply(name : String): Option[AbstractModule[Activity, Activity, T]] = {
     if (this.getName() == name) {
       Some(this)
@@ -202,4 +217,21 @@ abstract class Container[A <: Activity : ClassTag,
       }
     }
   }
+
+  /**
+   * Check if some module is duplicated in the model
+   */
+  private[bigdl] override final def checkDuplicate(
+    record: mutable.HashSet[Int] = mutable.HashSet()
+  ): Unit = {
+    super.checkDuplicate(record)
+    if (!skipDuplicateCheck()) modules.foreach(_.checkDuplicate(record))
+  }
+
+  override def release(): Unit = {
+    modules.foreach(_.release())
+  }
+
+  override private[bigdl] def updateParameter(): Unit = {}
+  override private[bigdl] def asyncGradient(): Unit = {}
 }

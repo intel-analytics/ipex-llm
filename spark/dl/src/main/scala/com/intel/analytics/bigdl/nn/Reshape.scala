@@ -16,11 +16,15 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * The `forward(input)` reshape the input tensor into a
@@ -38,7 +42,7 @@ import scala.reflect.ClassTag
  *
  */
 @SerialVersionUID(- 830146931795053244L)
-class Reshape[@specialized(Float, Double) T: ClassTag](
+class Reshape[T: ClassTag](
   val size: Array[Int], var batchMode: Option[Boolean] = None)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val batchSize = new Array[Int](size.length + 1)
@@ -47,6 +51,10 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
     batchSize(i) = size(i - 1)
     nElement *= size(i - 1)
   }
+
+  // whether share the storage between input and output
+  // in this layer, if input is contiguous, inplace is true. otherwise, inplace is false
+  private var inplace: Boolean = true
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
@@ -57,7 +65,10 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
         s"reshape size is: ${nElement}")
       if (input.isContiguous()) output =
         input.view(size)
-      else output = input.contiguous().view(size)
+      else {
+        output = input.contiguous().view(size)
+        inplace = false
+      }
     }
     else {
       require(input.nElement() == nElement * input.size(1),
@@ -69,6 +80,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
         output = input.view(batchSize)
       } else {
         output = input.contiguous().view(batchSize)
+        inplace = false
       }
     }
     output
@@ -125,12 +137,57 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
   override def toString(): String = {
     s"${getPrintName}(${size.mkString("x")})"
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
+  }
 }
 
-object Reshape {
+object Reshape extends ModuleSerializable {
   def apply[T: ClassTag](
       size: Array[Int],
       batchMode: Option[Boolean] = None)(implicit ev: TensorNumeric[T]) : Reshape[T] = {
     new Reshape[T](size, batchMode)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val attrMap = context.bigdlModule.getAttrMap
+    val size = DataConverter.getAttributeValue(context, attrMap.get("size")).
+      asInstanceOf[Array[Int]]
+    val batchModeV = DataConverter.getAttributeValue(context, attrMap.get("batchMode")).
+      asInstanceOf[Int]
+    var batchMode : Option[Boolean] = None
+    if (batchModeV == 1) {
+      batchMode = Some(false)
+    } else if (batchModeV == 2) {
+      batchMode = Some(true)
+    }
+    Reshape(size, batchMode).asInstanceOf[AbstractModule[Activity, Activity, T]]
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                           reshapeBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+
+    val reshape = context.moduleData.module.asInstanceOf[Reshape[T]]
+
+    val sizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, sizeBuilder, reshape.size,
+      universe.typeOf[Array[Int]])
+    reshapeBuilder.putAttr("size", sizeBuilder.build)
+
+    var batchMode = 0
+    if (reshape.batchMode != None) {
+      batchMode = if (reshape.batchMode.get == false) 1 else 2
+    }
+    val batchModeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, batchModeBuilder, batchMode,
+      universe.typeOf[Int])
+    reshapeBuilder.putAttr("batchMode", batchModeBuilder.build)
   }
 }

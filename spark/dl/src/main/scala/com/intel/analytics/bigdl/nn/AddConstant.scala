@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
 class AddConstant[T: ClassTag](
    val constant_scalar: Double,
    val inplace: Boolean = false
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val scalar = ev.fromType[Double](constant_scalar)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -74,6 +74,13 @@ class AddConstant[T: ClassTag](
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), constant_scalar, inplace)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
   }
 }
 

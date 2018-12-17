@@ -162,7 +162,7 @@ class LSTMSpec  extends TorchSpec {
       labels.setValue(1, i, rdmLabel)
     }
 
-//    println(input)
+    //    println(input)
     val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()

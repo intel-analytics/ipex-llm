@@ -77,6 +77,33 @@ class UnsqueezeSpec extends TorchSpec {
     println("Test case : Unsqueeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
+  "A Unsqueeze(-2)" should "generate correct output and grad" in {
+    torchCheck()
+    val layer = new Unsqueeze[Double](-2)
+    val input = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 2, 1).apply1(_ => Random.nextDouble())
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.Unsqueeze(1)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+
+    println("Test case : Unsqueeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
   "A Unsqueeze(4, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](4, 3)
@@ -102,5 +129,11 @@ class UnsqueezeSpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : Unsqueeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Unsqueeze(0)" should "generate correct output and grad" in {
+    val layer = new Unsqueeze[Double](0)
+    val input = Tensor[Double](2, 2).rand()
+    layer.forward(input).size() should be(Array(2, 2, 1))
   }
 }

@@ -125,6 +125,16 @@ object ModelValidator {
                 ResNetPreprocessor.rdd(valPath, param.batchSize, sc))
           }
 
+        case BigDlModel =>
+          param.modelName match {
+            case "resnet" =>
+              (Module.loadModule[Float](param.modelPath),
+                ResNetPreprocessor.rdd(valPath, param.batchSize, sc, BigDlModel))
+            case "vgg16" =>
+              (Module.loadModule[Float](param.modelPath),
+                VGGPreprocessor.rdd(valPath, param.batchSize, sc))
+          }
+
         case _ => throw new IllegalArgumentException(s"${ param.modelType } is not" +
           s"supported in this example, please use alexnet/inception/resnet")
       }

@@ -30,8 +30,6 @@ object BlockManagerWrapper {
                 bytes: ByteBuffer,
                 level: StorageLevel): Unit = {
     require(bytes != null, "Bytes is null")
-    val blockManager = SparkEnv.get.blockManager
-    blockManager.removeBlock(blockId)
     putBytesFn(blockId, new ChunkedByteBuffer(bytes), level)
   }
 
@@ -50,14 +48,52 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.removeBlock(blockId)
   }
 
-  def byteBufferConvert(chunkedByteBuffer: ChunkedByteBuffer): ByteBuffer = {
-    ByteBuffer.wrap(chunkedByteBuffer.toArray)
+  def getLocalBytes(blockId: BlockId): Option[ByteBuffer] = {
+    getLocalBytesFn(blockId)
+  }
+
+  def getLocalOrRemoteBytes(blockId: BlockId): Option[ByteBuffer] = {
+    val maybeLocalBytes = getLocalBytesFn(blockId)
+    if (maybeLocalBytes.isDefined) {
+      maybeLocalBytes
+    } else {
+      SparkEnv.get.blockManager.getRemoteBytes(blockId).map(_.toByteBuffer)
+    }
   }
 
   def unlock(blockId : BlockId): Unit = {
     val blockInfoManager = SparkEnv.get.blockManager.blockInfoManager
-    if(blockInfoManager.get(blockId).isDefined) {
-      blockInfoManager.unlock(blockId)
+    if (blockInfoManager.get(blockId).isDefined) {
+      unlockFn(blockId)
+    }
+  }
+
+  private val getLocalBytesFn: (BlockId) => Option[ByteBuffer] = {
+    val bmClass = classOf[BlockManager]
+    val getLocalBytesMethod = bmClass.getMethod("getLocalBytes", classOf[BlockId])
+
+    // Spark versions before 2.2.0 declare:
+    // def getLocalBytes(blockId: BlockId): Option[ChunkedByteBuffer]
+    // Spark 2.2.0+ declares:
+    // def getLocalBytes(blockId: BlockId): Option[BlockData]
+    // Because the latter change happened in the commit that introduced BlockData,
+    // and because you can't discover the generic type of the return type by reflection,
+    // distinguish the cases by seeing if BlockData exists.
+    try {
+      val blockDataClass = Class.forName("org.apache.spark.storage.BlockData")
+      // newer method, apply reflection to transform BlockData after invoking
+      val toByteBufferMethod = blockDataClass.getMethod("toByteBuffer")
+      (blockId: BlockId) =>
+        getLocalBytesMethod.invoke(SparkEnv.get.blockManager, blockId)
+          .asInstanceOf[Option[_]]
+          .map(blockData => toByteBufferMethod.invoke(blockData).asInstanceOf[ByteBuffer])
+    } catch {
+      case _: ClassNotFoundException =>
+        // older method, can be invoked directly
+        (blockId: BlockId) =>
+          getLocalBytesMethod.invoke(SparkEnv.get.blockManager, blockId)
+            .asInstanceOf[Option[ChunkedByteBuffer]]
+            .map(_.toByteBuffer)
     }
   }
 
@@ -97,6 +133,29 @@ object BlockManagerWrapper {
         (blockId: BlockId, bytes: ChunkedByteBuffer, level: StorageLevel) =>
           putBytesMethod.invoke(SparkEnv.get.blockManager,
             blockId, bytes, level, JBoolean.TRUE, JBoolean.FALSE, null)
+    }
+  }
+
+  private val unlockFn: (BlockId) => Unit = {
+    val bimClass = classOf[BlockInfoManager]
+    // Spark 2.0.0-2.0.2, 2.1.0-2.1.1 declare:
+    // def unlock(blockId: BlockId): Unit
+    val unlockMethod =
+      try {
+        bimClass.getMethod("unlock", classOf[BlockId])
+      } catch {
+        case _: NoSuchMethodException =>
+          // But 2.0.3+, 2.1.2+, 2.2.0+ declare:
+          // def unlock(blockId: BlockId, taskAttemptId: Option[TaskAttemptId] = None): Unit
+          bimClass.getMethod("unlock", classOf[BlockId], classOf[Option[_]])
+      }
+    unlockMethod.getParameterTypes.length match {
+      case 1 =>
+        (blockId: BlockId) =>
+          unlockMethod.invoke(SparkEnv.get.blockManager.blockInfoManager, blockId)
+      case 2 =>
+        (blockId: BlockId) =>
+          unlockMethod.invoke(SparkEnv.get.blockManager.blockInfoManager, blockId, None)
     }
   }
 

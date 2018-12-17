@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.tensorflow
+import org.tensorflow.framework.GraphDef
 import org.tensorflow.util.Event
 
 /**
@@ -36,7 +37,7 @@ private[bigdl] class FileWriter(val logDirectory : String, flushMillis: Int = 10
   if (!fs.exists(logPath)) fs.mkdirs(logPath)
 
   private val eventWriter = new EventWriter(logDirectory, flushMillis, fs)
-  Engine.default.invoke(() => eventWriter.run())
+  Engine.io.invoke(() => eventWriter.run())
 
   /**
    * Adds a Summary protocol buffer to the event file.
@@ -48,6 +49,12 @@ private[bigdl] class FileWriter(val logDirectory : String, flushMillis: Int = 10
   def addSummary(summary: tensorflow.framework.Summary, globalStep: Long): this.type = {
     val event = Event.newBuilder().setSummary(summary).build()
     addEvent(event, globalStep)
+    this
+  }
+
+  def addGraphDef(graph: GraphDef): this.type = {
+    val event = Event.newBuilder().setGraphDef(graph.toByteString).build()
+    eventWriter.addEvent(event)
     this
   }
 

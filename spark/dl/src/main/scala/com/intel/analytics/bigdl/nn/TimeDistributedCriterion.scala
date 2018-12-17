@@ -30,12 +30,16 @@ import scala.reflect.ClassTag
  * Apply Any Provided Criterion to every temporal slice of an input.
  *
  * @param critrn embedded criterion
- * @param sizeAverage whether to divide the sequence length
+ * @param sizeAverage whether to divide the length of input along dimension.
+ * @param dimension to compute criterion loss along the input and target dimension
+ *                  if sizeAverage=true, and dimension=1, it means to divide the batch size;
+ *                  if sizeAverage=true, and dimension=2, it means to divide the sequence length
  */
 
 class TimeDistributedCriterion[T : ClassTag](
   val critrn : TensorCriterion[T],
-  val sizeAverage: Boolean = false)
+  val sizeAverage: Boolean = false,
+  val dimension: Int = 2)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private var fInput: Tensor[T] = Tensor[T]()
@@ -46,7 +50,6 @@ class TimeDistributedCriterion[T : ClassTag](
 
   @transient
   protected var results: Array[Future[Unit]] = _
-
 
   /**
    * Clone N criterions; N depends on the time dimension of the input
@@ -65,17 +68,17 @@ class TimeDistributedCriterion[T : ClassTag](
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     /**
      * Take each time slice of input and target, and add up all outputs of slices
-     * For example
+     * Example with dimension=2:
      * input.size = [B, T, D] => fInput.size = [B, D]
      * target.size = [B, T] => fTarget.size = [B]
-     * If sizeAverage is true, the output is averaged through time dimension
+     * If sizeAverage is true, the output is averaged through time dim
      */
-    val timeDim = 2
-    require(input.size(timeDim) == target.size(timeDim),
-      s"target should have as many elements as input")
+    require(input.size(dimension) == target.size(dimension),
+      "target should have as many elements as input, " +
+        s"input ${input.size(dimension)}, target ${target.size(dimension)}")
 
     output = ev.fromType[Int](0)
-    val nstep = input.size(timeDim)
+    val nstep = input.size(dimension)
     extend(nstep)
 
     if (results == null || results.length != nstep) {
@@ -86,8 +89,8 @@ class TimeDistributedCriterion[T : ClassTag](
     while (i < nstep) {
       val _i = i + 1
       results(i) = Engine.model.invoke(() => {
-        fInput = input.select(timeDim, _i)
-        fTarget = target.select(timeDim, _i)
+        fInput = input.select(dimension, _i)
+        fTarget = target.select(dimension, _i)
         cells(_i - 1).updateOutput(fInput, fTarget)
       })
       i += 1
@@ -107,22 +110,22 @@ class TimeDistributedCriterion[T : ClassTag](
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     /**
      * Take each time slice of input and target, and calculate gradInput of each slice
-     * If sizeAverage is true, the gradInput is also averaged through time dimension
+     * If sizeAverage is true, the gradInput is also averaged through dimension
      */
-    val timeDim = 2
-    require(input.size(timeDim) == target.size(timeDim),
-      s"target should have as many elements as input")
+    require(input.size(dimension) == target.size(dimension),
+      s"target should have as many elements as input, " +
+        s"input ${input.size(dimension)}, target ${target.size(dimension)}")
     gradInput.resizeAs(input).zero()
 
-    val nstep = input.size(timeDim)
+    val nstep = input.size(dimension)
 
     var i = 0
     while (i < nstep) {
       val _i = i + 1
       results(i) = Engine.model.invoke(() => {
-        fInput = input.select(timeDim, _i)
-        fTarget = target.select(timeDim, _i)
-        _gradInput = gradInput.select(timeDim, _i)
+        fInput = input.select(dimension, _i)
+        fTarget = target.select(dimension, _i)
+        _gradInput = gradInput.select(dimension, _i)
         _gradInput.copy(cells(_i - 1).updateGradInput(fInput, fTarget).toTensor[T])
         if (sizeAverage) {
           _gradInput = _gradInput.div(ev.fromType[Int](nstep))
@@ -139,8 +142,8 @@ class TimeDistributedCriterion[T : ClassTag](
 
 object TimeDistributedCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-    critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false)
+    critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false, dimension: Int = 2)
     (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
-    new TimeDistributedCriterion[T](critrn, sizeAverage)
+    new TimeDistributedCriterion[T](critrn, sizeAverage, dimension)
   }
 }

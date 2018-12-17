@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.example.MLPipeline
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, _}
+import com.intel.analytics.bigdl.dlframes.DLClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
@@ -26,7 +27,6 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLClassifier, DLModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
@@ -37,7 +37,6 @@ import org.apache.spark.sql.SQLContext
 object DLClassifierLeNet {
 
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
   def main(args: Array[String]): Unit = {
     val inputs = Array[String]("Feature data", "Label data")
@@ -49,10 +48,10 @@ object DLClassifierLeNet {
       val sqLContext = SQLContext.getOrCreate(sc)
       Engine.init
 
-      val trainData = param.folder + "/train-images.idx3-ubyte"
-      val trainLabel = param.folder + "/train-labels.idx1-ubyte"
-      val validationData = param.folder + "/t10k-images.idx3-ubyte"
-      val validationLabel = param.folder + "/t10k-labels.idx1-ubyte"
+      val trainData = param.folder + "/train-images-idx3-ubyte"
+      val trainLabel = param.folder + "/train-labels-idx1-ubyte"
+      val validationData = param.folder + "/t10k-images-idx3-ubyte"
+      val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
       val trainSet = DataSet.array(load(trainData, trainLabel), sc) ->
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(1)
@@ -71,8 +70,9 @@ object DLClassifierLeNet {
       val estimator = new DLClassifier[Float](model, criterion, featureSize)
         .setFeaturesCol(inputs(0))
         .setLabelCol(inputs(1))
-        .setBatchSize(50)
-      val transformer = estimator.fit(trainingDF).asInstanceOf[DLModel[Float]]
+        .setBatchSize(param.batchSize)
+        .setMaxEpoch(param.maxEpoch)
+      val transformer = estimator.fit(trainingDF)
 
       val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(1)

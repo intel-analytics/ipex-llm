@@ -37,7 +37,6 @@ class BytesToGreyImg(row: Int, col: Int)
   override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledGreyImage] = {
     prev.map(rawData => {
       require(row * col == rawData.data.length)
-      require(rawData.label >= 1)
       buffer.setLabel(rawData.label).copy(rawData.data, 255.0f)
     })
   }

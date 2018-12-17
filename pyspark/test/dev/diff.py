@@ -29,7 +29,7 @@ scala_to_python = {"Graph": "Model"}
 
 def extract_scala_class(class_path):
     exclude_key_words = set(["*", "abstract", "Const", "Fill", "Shape",
-                             "SplitAndSelect", "StrideSlice"])
+                             "SplitAndSelect", "StrideSlice", "Scheduler", "StaticGraph", "DynamicGraph", "DynamicContainer"])   # noqa
     include_key_words = set(["Module", "Criterion", "Container", "Cell", "TensorNumeric"])  # noqa
     content = "\n".join([line for line in open(class_path).readlines() if all([key not in line for key in exclude_key_words])])  # noqa
     match = re.search(r"class ([\w]+)[^{]+", content)
@@ -59,15 +59,15 @@ def get_python_classes(nn_root):
 scala_layers = get_scala_classes(scala_nn_root)
 python_layers = get_python_classes(python_nn_root)
 
-print "scala_layers: {0}, {1}".format(len(scala_layers), scala_layers)
+print("scala_layers: {0}, {1}".format(len(scala_layers), scala_layers))
 print("\n")
-print "python_layers: {0}, {1}".format(len(python_layers), python_layers)
+print("python_layers: {0}, {1}".format(len(python_layers), python_layers))
 
-print "In scala, not in python: ",
+print("In scala, not in python: "),
 diff_count = 0
 for name in scala_layers:
     if name not in python_layers and scala_to_python[name] not in python_layers:
-        print name,
+        print(name),
         diff_count += 1
 
 if diff_count > 0:

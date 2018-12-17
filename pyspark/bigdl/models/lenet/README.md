@@ -3,7 +3,12 @@
 LeNet5 is a classical CNN model used in digital number classification. For detail information,
 please refer to <http://yann.lecun.com/exdb/lenet/>.
 
+## Install dependencies
+ * [Install dependencies](../../../README.md#install.dependencies)
+
 ## How to run this example:
+Please note that due to some permission issue, this example **cannot** be run on Windows.
+
 
 Program would download the mnist data into ```/tmp/mnist``` automatically by default.
 
@@ -21,7 +26,6 @@ We would train a LeNet model in spark local mode with the following commands and
 
 ```
     BigDL_HOME=...
-
     SPARK_HOME=...
     MASTER=local[*]
     PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
@@ -34,18 +38,20 @@ We would train a LeNet model in spark local mode with the following commands and
         --total-executor-cores 2  \
         --executor-cores 2  \
         --executor-memory 4g \
-        --conf spark.akka.frameSize=64 \
         --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
         ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
-        --action train
+        --action train \
+        --dataPath /tmp/mnist
  ```
 
 
 * ```--action``` it can be train or test.
+
+* ```--dataPath``` option can be used to set the path for downloading mnist data, the default value is /tmp/mnist. Make sure that you have write permission to the specified path.
 
 * ```--batchSize``` option can be used to set batch size, the default value is 128.
 
@@ -64,5 +70,9 @@ INFO  DistriOptimizer$:247 - [Epoch 1 0/60000][Iteration 1][Wall Clock 0.0s] Tra
 
 INFO  DistriOptimizer$:522 - Top1Accuracy is Accuracy(correct: 9572, count: 10000, accuracy: 0.9572)
 
+```
 
+Or you can train a LeNet model directly in shell after installing BigDL from pip:
+```
+python ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
 ```

@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  *                    applied to the bias.
  */
 @SerialVersionUID(5288662921102331388L)
-class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
+class SpatialConvolutionMap[T: ClassTag](
   val connTable: Tensor[T],
   val kW: Int, // The kernel width of the convolution
   val kH: Int, // The kernel height of the convolution
@@ -86,14 +86,18 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 3 || input.nDimension() == 4,
-      "3D or 4D(batch mode) tensor expected")
+      "3D or 4D(batch mode) tensor expected" +
+        s"input dimension ${input.nDimension()}")
     val dimw = if (input.nDimension() == 4) 4 else 3
     val dimh = if (input.nDimension() == 4) 3 else 2
     val dimc = if (input.nDimension() == 4) 2 else 1
     val nbatch = if (input.nDimension() == 4) input.size(1) else 1
-    require(input.size(dimc) >= nInputPlane, "invalid number of input planes")
+    require(input.size(dimc) >= nInputPlane, "invalid number of input planes" +
+      s"input number ${input.size(dimc)}")
     require(input.size(dimw) >= kW && input.size(dimh) >= kH,
-      "input smaller than kernel size")
+      "input smaller than kernel size" +
+        s"input size (${input.size(dimw)},${input.size(dimh)}) " +
+        s"kernel size (${kW},${kH})")
 
     val inputW = input.size(dimw)
     val inputH = input.size(dimh)
@@ -289,19 +293,9 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-  }
-
   def decayParameters(decay: T): Unit = {
     weight.apply1(ev.minus(_, decay))
     bias.apply1(ev.minus(_, decay))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
   }
 }
 

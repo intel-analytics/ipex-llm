@@ -16,41 +16,54 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * Transpose input along specified dimensions
  * @param permutations dimension pairs that need to swap
  */
 @SerialVersionUID(8543726779794064339L)
-class Transpose[@specialized(Float, Double) T: ClassTag](
-  val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Transpose[T: ClassTag](
+  val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T])
+  extends AbstractModule[Tensor[_], Tensor[_], T] {
 
-  var buffer: Tensor[T] = _
+  var buffer: Tensor[_] = _
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: Tensor[_]): Tensor[_] = {
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
+    }
     var i = 0
     buffer = input
     while (i < permutations.length) {
       buffer = buffer.transpose(permutations(i)._1, permutations(i)._2)
       i += 1
     }
-    output.resizeAs(buffer).copy(buffer)
+    output.resizeAs(buffer).asInstanceOf[Tensor[NumericWildcard]]
+      .copy(buffer.asInstanceOf[Tensor[NumericWildcard]])
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[_], gradOutput: Tensor[_]): Tensor[_] = {
+    if (gradInput.getType() != input.getType()) {
+      gradInput = input.emptyInstance()
+    }
     var i = permutations.length - 1
     buffer = gradOutput
     while (i >= 0) {
       buffer = buffer.transpose(permutations(i)._1, permutations(i)._2)
       i -= 1
     }
-    gradInput.resizeAs(buffer).copy(buffer)
+    gradInput.resizeAs(buffer).asInstanceOf[Tensor[NumericWildcard]]
+      .copy(buffer.asInstanceOf[Tensor[NumericWildcard]])
     gradInput
   }
 
@@ -63,9 +76,61 @@ class Transpose[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object Transpose {
+object Transpose extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) : Transpose[T] = {
     new Transpose[T](permutations)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val attrMap = context.bigdlModule.getAttrMap
+
+    val size = DataConverter.
+      getAttributeValue(context, attrMap.get("size")).
+      asInstanceOf[Int]
+
+    val permutations = new Array[(Int, Int)](size)
+
+    var i = 0
+
+    while (i < size) {
+      val permutation = DataConverter.
+        getAttributeValue(context, attrMap.get(s"permutation_$i")).
+        asInstanceOf[Array[Int]]
+      permutations(i) = (permutation(0), permutation(1))
+      i += 1
+    }
+
+    Transpose(permutations).asInstanceOf[AbstractModule[Activity,
+      Activity, T]]
+
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              transposeBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    val transpose = context.moduleData.module.
+      asInstanceOf[Transpose[T]]
+
+    val size = transpose.permutations.length
+
+    val sizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, sizeBuilder, size, universe.typeOf[Int])
+    transposeBuilder.putAttr("size", sizeBuilder.build)
+
+    var i = 0
+
+    while (i < size) {
+      val nextPermutationBuilder = AttrValue.newBuilder
+      val arr : Array[Int] = Array(transpose.permutations(i)._1,
+        transpose.permutations(i)._2)
+      DataConverter.setAttributeValue(context, nextPermutationBuilder,
+        arr, universe.typeOf[Array[Int]])
+      transposeBuilder.putAttr(s"permutation_$i", nextPermutationBuilder.build)
+      i += 1
+    }
+
   }
 }

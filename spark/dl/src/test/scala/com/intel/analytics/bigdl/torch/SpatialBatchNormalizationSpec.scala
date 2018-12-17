@@ -17,12 +17,13 @@
 package com.intel.analytics.bigdl.torch
 
 import breeze.numerics.abs
-import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialBatchNormalization}
+import com.intel.analytics.bigdl.nn.{BatchNormalization, GradientChecker, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialBatchNormalizationSpec extends TorchSpec {
@@ -102,15 +103,11 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
     })
 
     gradInputTorch.map(gradInput, (v1, v2) => {
-      if (abs(v1 - v2) != 0) println(s"$v1 $v2")
+      assert(abs(v1 - v2) == 0)
       v1
     })
 
-    gradparametersTorch.map(gradparameters, (v1, v2) => {
-      if (abs(v1 - v2) != 0) println(s"$v1 $v2")
-      v1
-    })
-
+    gradparametersTorch.almostEqual(gradparameters, 1e-10)
   }
 
   "A SpatialBatchNormalization evaluating" should "generate correct output" in {
@@ -193,31 +190,5 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
       assert(abs(v1 - v2) == 0)
       v1
     })
-
   }
-
-  "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
-    "for input" in {
-    torchCheck()
-    val seed = 100
-    RNG.setSeed(seed)
-    val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
-    val input = Tensor[Double](16, 3, 4, 4).apply1(e => Random.nextDouble())
-
-    val checker = new GradientChecker(1e-4)
-    checker.checkLayer[Double](sbn, input, 1e-3) should be(true)
-  }
-
-  "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
-    "for weight" in {
-    torchCheck()
-    val seed = 100
-    RNG.setSeed(seed)
-    val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
-    val input = Tensor[Double](16, 3, 4, 4).apply1(e => Random.nextDouble())
-
-    val checker = new GradientChecker(1e-4)
-    checker.checkWeight[Double](sbn, input, 1e-3) should be(true)
-  }
-
 }

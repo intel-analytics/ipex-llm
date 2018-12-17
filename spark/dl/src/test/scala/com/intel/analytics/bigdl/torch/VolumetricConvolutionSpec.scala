@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 
 import scala.util.Random
 
@@ -348,6 +350,135 @@ class VolumetricConvolutionSpec extends TorchSpec {
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](layer, input, 1e-3) should be(true)
+  }
+
+  "VolumetricConvolution L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+
+    val seed = 100
+    RNG.setSeed(seed)
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
+    val int = (outt - 1) * st + kt - padT * 2
+    val ini = (outi - 1) * si + ki - padW * 2
+    val inj = (outj - 1) * sj + kj - padH * 2
+    val batch = 3
+
+    val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
+
+
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val criterion = new MSECriterion[Double]
+
+    val labels = Tensor[Double](1296).rand()
+
+    val model1 = Sequential()
+      .add(VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
+        padT, padW, padH))
+      .add(Sigmoid())
+    val (weights1, grad1) = model1.getParameters()
+
+    val model2 = Sequential()
+      .add(VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
+        padT, padW, padH,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
+      .add(Sigmoid())
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
+  }
+
+  "A VolumetricConvolution layer" should "work with SAME padding" in {
+    import tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 1
+    val kH = 1
+    val kT = 1
+    val dT = 2
+    val dW = 2
+    val dH = 2
+    val padW = -1
+    val padH = -1
+    val padT = -1
+    val layer = new VolumetricConvolution(nInputPlane, nOutputPlane,
+      kT, kW, kH, dT, dW, dH, padT, padW, padH)
+
+    val inputData = Array(
+      0.0f, 1.0f, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+      20, 21, 22, 23, 24, 25, 26
+    )
+
+    val kernelData = Array(
+      1.0f
+    )
+
+    val biasData = Array(0.0f)
+
+    layer.weight.copy(Tensor(Storage(kernelData), 1, Array(nOutputPlane,
+      nInputPlane, kT, kH, kW)))
+    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor(Storage(inputData), 1, Array(1, 3, 3, 3))
+    val output = layer.updateOutput(input)
+    val gradInput = layer.backward(input, output)
+    output.storage().array() should be (Array(0.0f, 2, 6, 8, 18, 20, 24, 26))
+  }
+
+  "VolumetricConvolution computeOutputShape" should "work properly" in {
+    val layer = VolumetricConvolution[Float](3, 8, 2, 1, 2)
+    TestUtils.compareOutputShape(layer, Shape(3, 24, 28, 32)) should be (true)
   }
 }
 

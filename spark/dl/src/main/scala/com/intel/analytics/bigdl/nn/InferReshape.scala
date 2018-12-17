@@ -45,13 +45,14 @@ import scala.reflect.ClassTag
  * @param batchMode whether in batch mode
  * @tparam T Numeric type ([[Float]] and [[Double]] are allowed)
  */
-class InferReshape[@specialized(Float, Double) T: ClassTag](
+class InferReshape[T: ClassTag](
   size: Array[Int], var batchMode: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var inferedSizes: Array[Int] = _
   private var startIndex = 0
   private var inferIndex = -1
   private var subTotal = 1
+  private var inPlace = true
 
   init()
 
@@ -84,7 +85,9 @@ class InferReshape[@specialized(Float, Double) T: ClassTag](
       }
       i += 1
     }
-    require(total <= input.nElement(), "inferred size dim product must be <= total input #elements")
+    require(total <= input.nElement(), "inferred size " +
+      s"dim product must be <= total input #elements" +
+      s"dim product($total) input(${input.nElement()})")
     if (inferIndex != -1) {
       inferedSizes(inferIndex) = input.nElement() / total
       if (batchMode) inferedSizes(inferIndex) = inferedSizes(inferIndex) / input.size(1)
@@ -98,6 +101,7 @@ class InferReshape[@specialized(Float, Double) T: ClassTag](
       output = input.view(inferedSizes)
     } else {
       output = input.contiguous().view(inferedSizes)
+      inPlace = false
     }
     output
   }
@@ -152,6 +156,13 @@ class InferReshape[@specialized(Float, Double) T: ClassTag](
     s"${getPrintName}(${
       size.mkString("x")
     })"
+  }
+
+  override def clearState(): this.type = {
+    if (!inPlace) {
+      super.clearState()
+    }
+    this
   }
 }
 

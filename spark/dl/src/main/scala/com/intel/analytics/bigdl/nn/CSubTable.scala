@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
@@ -28,20 +28,30 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID( - 7694575573537075609L)
 class CSubTable[T: ClassTag]()(
-  implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
+  implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[_], T]{
 
-  override def updateOutput(input: Table): Tensor[T] = {
-    output.resizeAs(input(1)).copy(input(1))
-    output.add(ev.fromType(-1), input(2))
+  override def updateOutput(input: Table): Tensor[_] = {
+    val firstInput = input[Tensor[NumericWildcard]](1)
+    if (output.getType() != firstInput.getType()) {
+      output = firstInput.emptyInstance()
+    }
+    output.asInstanceOf[Tensor[NumericWildcard]].resizeAs(firstInput).copy(firstInput)
+    output.asInstanceOf[Tensor[NumericWildcard]].sub(input[Tensor[NumericWildcard]](2))
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
-    if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T]())
-    if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T]())
+  override def updateGradInput(input: Table, gradOutput: Tensor[_]) : Table = {
+    val firstInput = input[Tensor[NumericWildcard]](1)
+    val secondInput = input[Tensor[NumericWildcard]](2)
 
-    gradInput[Tensor[T]](1).resizeAs(input(1)).copy(gradOutput)
-    gradInput[Tensor[T]](2).resizeAs(input(2)).copy(gradOutput).mul(ev.fromType(-1))
+    if (!gradInput.contains(1)) gradInput.insert(1, firstInput.emptyInstance())
+    if (!gradInput.contains(2)) gradInput.insert(2, firstInput.emptyInstance())
+
+    gradInput[Tensor[NumericWildcard]](1)
+      .resizeAs(firstInput).copy(gradOutput.asInstanceOf[Tensor[NumericWildcard]])
+    gradInput[Tensor[NumericWildcard]](2)
+      .resizeAs(secondInput).copy(gradOutput.asInstanceOf[Tensor[NumericWildcard]])
+      .mul(ev.fromType(-1))
     gradInput
   }
 

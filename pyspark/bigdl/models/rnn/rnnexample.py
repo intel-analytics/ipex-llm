@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-# Still in experimental stage!
 
 import itertools
 import re
@@ -153,6 +152,8 @@ if __name__ == "__main__":
 
     sc = SparkContext(appName="simplernn_example",
                       conf=create_spark_conf())
+    redire_spark_logs()
+    show_bigdl_info_logs()
     init_engine()
 
     (train_rdd, val_rdd, vob_size) = prepare_data(sc, folder, vob_size, training_split)

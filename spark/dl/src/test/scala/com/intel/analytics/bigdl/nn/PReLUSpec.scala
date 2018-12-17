@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
@@ -47,5 +48,13 @@ class PReLUSpec extends FlatSpec with Matchers {
 
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
 
+  }
+}
+
+class PReLUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val preLu = PReLU[Float](2).setName("preLu")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(preLu, input)
   }
 }

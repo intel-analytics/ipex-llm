@@ -19,6 +19,18 @@
       <includes>
           <include>classes.lst</include>
           <include>img_class.lst</include>
+          <include>download.sh</include>
+          <include>flickr.urls</include>
+          <include>run.example.sh</include>
+          <include>dump_tf_graph.py</include>
+          <include>launch-dataproc.sh</include>
+          <include>export_tf_checkpoint.py</include>
+          <include>pyspark-with-bigdl.sh</include>
+          <include>spark-submit-with-bigdl.sh</include>
+          <include>jupyter-with-bigdl.sh</include>
+          <include>spark-shell-with-bigdl.sh</include>
+          <include>python_package.sh</include>
+          <include>requirements.txt</include>
       </includes>
     </fileSet>
     <fileSet>

@@ -27,21 +27,17 @@ from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
 from bigdl.nn.layer import Model
+from bigdl.util.common import JTensor
+from bigdl.util.common import callBigDlFunc
+import os
 
-def convert(input_ops, output_ops, byte_order, bigdl_type):
-    """
-    Convert tensorflow model to bigdl model
-    :param input_ops: operation list used for input, should be placeholders
-    :param output_ops: operations list used for output
-    :param sess: current tensorflow session
-    :return: bigdl model
-    """
-    sess = tf.Session()
-    init = tf.global_variables_initializer()
-    sess.run(init)
+def get_path(output_name, sess=None):
 
-    input_names = map(lambda x: x.name.split(":")[0], input_ops)
-    output_names = map(lambda x: x.name.split(":")[0], output_ops)
+    if sess is None:
+        sess = tf.Session()
+        init = tf.global_variables_initializer()
+        sess.run(init)
+
     temp = tempfile.mkdtemp()
 
     saver = tf.train.Saver()
@@ -50,10 +46,30 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
 
     merge_checkpoint(temp + '/model.pbtxt',
                      temp + '/model.chkp',
-                     output_names,
+                     [output_name],
                      temp + '/model.pb', sess)
+    return temp + '/model.pb'
 
-    model = Model.load_tensorflow(temp + '/model.pb', input_names, output_names, byte_order, bigdl_type)
+
+
+def convert(input_ops, output_ops, byte_order, bigdl_type):
+    """
+    Convert tensorflow model to bigdl model
+    :param input_ops: operation list used for input, should be placeholders
+    :param output_ops: operations list used for output
+    :return: bigdl model
+    """
+
+    input_names = map(lambda x: x.name.split(":")[0], input_ops)
+    output_names = map(lambda x: x.name.split(":")[0], output_ops)
+    temp = tempfile.mkdtemp()
+
+    dump_model(path=temp)
+    model_path = temp + '/model.pb'
+    bin_path = temp + '/model.bin'
+
+    model = Model.load_tensorflow(model_path, input_names, output_names,
+                                  byte_order, bin_path, bigdl_type)
 
     try:
         shutil.rmtree(temp)
@@ -62,6 +78,91 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
             raise
 
     return model
+
+
+def export_checkpoint(checkpoint_path):
+    """
+    Export variable tensors from the checkpoint files.
+
+    :param checkpoint_path: tensorflow checkpoint path
+    :return: dictionary of tensor. The key is the variable name and the value is the numpy
+    """
+    reader = tf.train.NewCheckpointReader(checkpoint_path)
+
+    # Get tensor name list
+    tensor_names = filter(lambda n: n!='global_step',
+                          reader.get_variable_to_shape_map().keys())
+    # Prepare key-value dictionary
+    tensors = {}
+    for tn in tensor_names:
+        tensors[tn] = reader.get_tensor(tn)
+
+    return tensors
+
+
+def save_variable_bigdl(tensors, target_path, bigdl_type="float"):
+    """
+    Save a variable dictionary to a Java object file, so it can be read by BigDL
+
+    :param tensors: tensor dictionary
+    :param target_path: where is the Java object file store
+    :param bigdl_type: model variable numeric type
+    :return: nothing
+    """
+    import numpy as np
+    jtensors = {}
+    for tn in tensors.keys():
+        if not isinstance(tensors[tn], np.ndarray):
+            value = np.array(tensors[tn])
+        else:
+            value = tensors[tn]
+        jtensors[tn] = JTensor.from_ndarray(value)
+        
+    callBigDlFunc(bigdl_type, "saveTensorDictionary", jtensors, target_path)
+
+
+def dump_model(path, graph=None, sess=None, ckpt_file=None, bigdl_type="float"):
+    """
+    Dump a tensorflow model to files. The graph will be dumped to path/model.pb, and the checkpoint will
+    be dumped to path/model.bin
+    
+    :param path: dump folder path
+    :param sess: if user pass in session, we assume that the variable of the graph in the session
+    has been inited
+    :param graph: tensorflow graph. Default use the default graph of the session
+    :param bigdl_type: model variable numeric type
+    :return: nothing
+    """
+    if not os.path.isdir(path):
+        raise ValueError("Folder " + path + " does not exist")
+
+    temp = None
+    if ckpt_file is None:
+        if sess is None:
+            sess = tf.Session()
+            init = tf.global_variables_initializer()
+            sess.run(init)
+            temp = tempfile.mkdtemp()
+            ckpt_file = temp
+        # dump checkpoint to temp files
+        saver = tf.train.Saver()
+        saver.save(sess, ckpt_file)
+
+    # generate bin files
+    tensors = export_checkpoint(ckpt_file)
+    save_variable_bigdl(tensors, path + "/model.bin", bigdl_type)
+
+    # dump grap to pb file
+    graph = sess.graph if graph is None else graph
+    with gfile.GFile(path + "/model.pb", "wb") as f:
+        f.write(graph.as_graph_def().SerializeToString())
+    if temp is not None:
+        try:
+            shutil.rmtree(temp)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+
 
 def merge_checkpoint(input_graph,
                      checkpoint,

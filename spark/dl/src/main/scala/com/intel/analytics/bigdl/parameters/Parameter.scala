@@ -65,7 +65,7 @@ object SerializerInstance {
     }
   }
 
-  def serialize[T: ClassTag](data: ByteBuffer): CompressedTensor[T] = {
+  def create[T: ClassTag](data: ByteBuffer): CompressedTensor[T] = {
     pm.toLowerCase() match {
       case "fp16" => new FP16CompressedTensor[T](data)
       case _ => throw new IllegalArgumentException("Unsupported parameter type")

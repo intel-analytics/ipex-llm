@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import breeze.numerics.abs
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
@@ -91,8 +91,8 @@ class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
   "SmoothL1CriterionWithWeights with sigma 1 and without weights" should
     "have the same result as SmoothL1Criterion" in {
     val targetNoWeight = Tensor(Storage(targetArr.map(x => x.toFloat)))
-    val smcod = new SmoothL1CriterionWithWeights[Float](1f, input.nElement())
-    val smc = new SmoothL1Criterion[Float](true)
+    val smcod = SmoothL1CriterionWithWeights[Float](1f, input.nElement())
+    val smc = SmoothL1Criterion[Float](true)
     val out1 = smcod.forward(input, new Table().insert(targetNoWeight))
     val out2 = smc.forward(input, targetNoWeight)
     assert(abs(out1 - out2) < 1e-6)
@@ -103,5 +103,21 @@ class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
       assert(abs(v1 - v2) < 1e-6)
       v1
     })
+  }
+
+  "a SmoothL1CriterionWithWeights of object detection with num==0" should
+    "generate correct loss and grad" in {
+    val label = T()
+    label.insert(target(1))
+    val smcod = SmoothL1CriterionWithWeights[Float](1f)
+    val smc = SmoothL1Criterion[Float](true)
+    smcod.forward(input, label)
+    smc.forward(input, target(1))
+
+    smcod.output should be(smc.output)
+    smcod.backward(input, label)
+    smc.backward(input, target(1))
+
+    smc.gradInput should be (smcod.gradInput)
   }
 }

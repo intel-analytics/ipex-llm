@@ -34,7 +34,7 @@ class CAddTableSpec extends TorchSpec {
     ctable.add(new Linear(5, 3))
     ctable.add(new Linear(5, 3))
     model.add(ctable)
-    model.add(new CAddTable())
+    model.add(CAddTable())
     val input = Tensor[Double](5).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](3).apply1(_ => Random.nextDouble())
 
@@ -70,7 +70,7 @@ class CAddTableSpec extends TorchSpec {
     ctable.add(new Linear(5, 3))
     ctable.add(new Linear(5, 3))
     model.add(ctable)
-    model.add(new CAddTable(true))
+    model.add(CAddTable(true))
     val input = Tensor[Double](5).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](3).apply1(_ => Random.nextDouble())
 

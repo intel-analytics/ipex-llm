@@ -25,15 +25,20 @@ BIGDL_PYTHON_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../../pyspark; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 2)); then
-  echo "Bad parameters. Uasge: release.sh mac spark_2.x"
+  echo "Bad parameters. Usage: release.sh mac spark_2.x"
   exit -1
 fi
 
 platform=$1
 spark_profile=$2
 quick=$3
-
+input_version=$4
 bigdl_version=$(python -c "exec(open('$BIGDL_DIR/pyspark/bigdl/version.py').read()); print(__version__)")
+
+if [ "$input_version" != "$bigdl_version" ]; then
+   echo "Not the proposed version: $bigdl_version"
+   exit -1
+fi
 
 cd ${BIGDL_DIR}
 if [ "$platform" ==  "mac" ]; then
@@ -61,6 +66,13 @@ sdist_command="python setup.py sdist"
 echo "packing source code: ${sdist_command}"
 $sdist_command
 
+if [ -d "${BIGDL_DIR}/pyspark/build" ]; then
+   rm -r ${BIGDL_DIR}/pyspark/build
+fi
+
+if [ -d "${BIGDL_DIR}/pyspark/dist" ]; then
+   rm -r ${BIGDL_DIR}/pyspark/dist
+fi
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution:   $wheel_command"
 ${wheel_command}
@@ -68,4 +80,4 @@ ${wheel_command}
 upload_command="twine upload dist/BigDL-${bigdl_version}-py2.py3-none-${verbose_pname}.whl"
 echo "Please manually upload with this command:  $upload_command"
 
-
+$upload_command

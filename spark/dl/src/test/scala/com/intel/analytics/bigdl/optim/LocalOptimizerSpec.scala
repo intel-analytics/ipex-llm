@@ -19,8 +19,12 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.tensor.{DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
@@ -83,7 +87,7 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
     new Iterator[MiniBatch[Float]] {
       var i = 0
 
-      override def hasNext: Boolean = true
+      override def hasNext: Boolean = train || i < totalSize
 
       override def next(): MiniBatch[Float] = {
         i += 1
@@ -95,19 +99,32 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
 
 object LocalOptimizerSpecModel {
   def creModel : Module[Float] = {
-    val mlp = new Sequential[Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new LogSoftMax)
-    mlp
+    new Sequential[Float]
+      .add(new Linear(4, 2))
+      .add(new LogSoftMax)
   }
 
   def mseModel : Module[Float] = {
-    val mlp = new Sequential[Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new Sigmoid)
-    mlp.add(new Linear(2, 1))
-    mlp.add(new Sigmoid)
-    mlp
+    new Sequential[Float]
+      .add(new Linear(4, 2))
+      .add(new Sigmoid)
+      .add(new Linear(2, 1))
+      .add(new Sigmoid)
+  }
+
+  def mlpModel : Module[Float] = {
+    Sequential[Float]()
+      .add(Linear[Float](4, 4).setName("fc_1"))
+      .add(Sigmoid[Float]())
+      .add(Linear[Float](4, 1).setName("fc_2"))
+      .add(Sigmoid[Float]())
+  }
+
+  def dnnModel: Module[Float] = {
+    new nn.mkldnn.Sequential()
+      .add(nn.mkldnn.Input(Array(4, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Linear(4, 2))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(4, 2), Memory.Format.nc)))
   }
 }
 
@@ -116,8 +133,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
   import LocalOptimizerSpecModel._
   import DummyDataSet._
 
-  val nodeNumber = 1
-  val coreNumber = 4
+  private val nodeNumber = 1
+  private val coreNumber = 4
 
   before {
     System.setProperty("bigdl.localMode", "true")
@@ -126,6 +143,89 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
   after {
     System.clearProperty("bigdl.localMode")
+  }
+
+  "LocalOptimizer" should "train all minibatches per epoch" in {
+    val numSamples = 64
+    val numClasses = 3
+    val height = 32
+    val width = 32
+    val images = Array.tabulate(64) { i =>
+      val image = new LabeledBGRImage(width, height)
+      image.setLabel((i % numClasses).toFloat + 1F)
+      val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, width, height))
+      tensor.rand()
+      image
+    }
+
+    val dataSet = DataSet.array(images)
+
+    val batchSize = 16
+    val toTensor = new BGRImgToBatch(batchSize)
+    val nn = new Sequential[Float]()
+      .add(new Reshape(Array(3 * height * width)))
+      .add(new Linear(3 * height * width, numClasses))
+      .add(new LogSoftMax[Float]())
+    val sampleDataSet = (dataSet -> toTensor).asInstanceOf[LocalDataSet[MiniBatch[Float]]]
+    val batchDataSet = DataSet.array(sampleDataSet.data(train = false).toArray)
+    assert(sampleDataSet.size() == numSamples)
+    assert(batchDataSet.size() == numSamples / batchSize)
+
+    Seq(sampleDataSet, batchDataSet).foreach { dataset =>
+      RandomGenerator.RNG.setSeed(10)
+      val maxEpochs = 2
+      val logdir = com.google.common.io.Files.createTempDir()
+      val trainSummary = TrainSummary(logdir.getPath, "minibatch-test")
+      val optimMethod = new SGD[Float]()
+      val optimizer = new LocalOptimizer(
+        nn,
+        dataset,
+        ClassNLLCriterion[Float]())
+        .setOptimMethod(optimMethod)
+        .setTrainSummary(trainSummary)
+        .setEndWhen(Trigger.maxEpoch(maxEpochs))
+      val model = optimizer.optimize()
+      val losses = trainSummary.readScalar("Loss")
+      trainSummary.close()
+      val iterations = optimMethod.state[Option[Int]]("neval").get
+
+      iterations should be (maxEpochs * (dataset.data(train = false).length / nodeNumber))
+    }
+  }
+
+  it should "not train model with duplicate layers" in {
+    val m = Sequential[Float]()
+    val l1 = Linear[Float](2, 3)
+    val l2 = Identity[Float]()
+    val c = Sequential[Float]()
+    m.add(l1).add(c)
+    c.add(l1).add(l2)
+
+    intercept[IllegalArgumentException] {
+      val optimizer = new LocalOptimizer(
+        m,
+        creDataSet,
+        ClassNLLCriterion[Float]()
+      )
+    }
+  }
+
+  it should "not set model with duplicate layers" in {
+    val m = Sequential[Float]()
+    val l1 = Linear[Float](2, 3)
+    val l2 = Identity[Float]()
+    val c = Sequential[Float]()
+    m.add(l1).add(c)
+    c.add(l1).add(l2)
+
+    val optimizer = new LocalOptimizer(
+      c,
+      creDataSet,
+      ClassNLLCriterion[Float]()
+    )
+    intercept[IllegalArgumentException] {
+      optimizer.setModel(m)
+    }
   }
 
   "Train model with CrossEntropy and SGD" should "be good" in {
@@ -228,6 +328,25 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     test.toTensor[Float].max(1)._2.valueAt(1, 2) should be(2.0)
   }
 
+  "Train model with multi optimMethods" should "be good" in {
+    RandomGenerator.RNG.setSeed(1000)
+
+    val optimizer = new LocalOptimizer[Float](
+      mlpModel,
+      mseDataSet,
+      MSECriterion[Float]()
+    ).setOptimMethods(Map("fc_1" -> new LBFGS[Float](), "fc_2" -> new LBFGS[Float]()))
+
+    val result = optimizer.optimize()
+    val test = result.forward(Tensor[Float](Storage[Float](
+      Array[Float](
+        0, 1, 0, 1,
+        1, 0, 1, 0
+      )), storageOffset = 1, size = Array(2, 4)))
+    test.toTensor[Float].valueAt(1, 1) < 0.5 should be(true)
+    test.toTensor[Float].valueAt(2, 1) > 0.5 should be(true)
+  }
+
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(1000)
     val optimizer = new LocalOptimizer[Float](
@@ -274,6 +393,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
       mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
+    optimizer.setValidation(Trigger.everyEpoch, mseDataSet, Array(new Top1Accuracy[Float]()))
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
 
@@ -286,5 +406,53 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val modelRef = optimizerRef.optimize()
     val weightRef = modelRef.getParameters()._1
     weight should be(weightRef)
+  }
+
+  "Train model with CrossEntropy and SGD" should "be good with constant clipping" in {
+    val _learningRate = 20.0
+    val optimizationMethod = new SGD[Float](learningRate = _learningRate)
+    val optimizer = new LocalOptimizer[Float](
+      creModel,
+      creDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
+    ).setConstantGradientClipping(0.0, 0.0)
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setOptimMethod(optimizationMethod)
+
+
+    val model = optimizer.optimize()
+    val newG = model.getParameters()._2
+
+    assert(newG.sumSquare() == 0, "gradient should be 0")
+  }
+
+  "Train model with CrossEntropy and SGD" should "be good with l2norm clipping" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val linear = Linear[Float](4, 2)
+    val _learningRate = 0.0
+    val optimizationMethod = new SGD[Float](learningRate = _learningRate)
+    val optimizer = new LocalOptimizer[Float](
+      linear,
+      creDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
+    ).setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod)
+
+    val model = optimizer.optimize()
+    val gradient = model.getParameters()._2.clone()
+    val scale = math.sqrt(gradient.sumSquare()) / 0.03
+    val expectedG = gradient.clone().div(scale.toFloat)
+
+    val optimizationMethod2 = new SGD[Float](learningRate = _learningRate)
+    linear.getParameters()._1.fill(2.5f)
+    val optimizer2 = new LocalOptimizer[Float](linear, creDataSet,
+      new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Float]])
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod2)
+      .setGradientClippingByl2Norm(0.03)
+
+    val model2 = optimizer2.optimize()
+    val newG = model2.getParameters()._2
+    assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
   }
 }

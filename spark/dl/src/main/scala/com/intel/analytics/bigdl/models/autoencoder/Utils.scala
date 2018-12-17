@@ -33,7 +33,8 @@ object Utils {
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     batchSize: Int = 150,
-    maxEpoch: Int = 10
+    maxEpoch: Int = 10,
+    graphModel: Boolean = false
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Autoencoder on MNIST") {
@@ -55,6 +56,9 @@ object Utils {
     opt[Int]('e', "maxEpoch")
       .text("max epoch")
       .action((x, c) => c.copy(maxEpoch = x))
+    opt[Unit]('g', "graphModel")
+      .text("use graph model")
+      .action((x, c) => c.copy(graphModel = true))
   }
 
   private[bigdl] def load(featureFile: Path, labelFile: Path): Array[ByteRecord] = {

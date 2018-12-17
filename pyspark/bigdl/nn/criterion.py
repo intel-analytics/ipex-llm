@@ -103,13 +103,14 @@ class ClassNLLCriterion(Criterion):
     classes. If provided, the optional argument weights should be a 1D Tensor assigning weight to
     each of the classes. This is particularly useful when you have an unbalanced training set.
 
-    The input given through a forward() is expected to contain log-probabilities of each class:
-    input has to be a 1D Tensor of size n. Obtaining log-probabilities in a neural network is easily
-    achieved by adding a LogSoftMax layer in the last layer of your neural network. You may use
-    CrossEntropyCriterion instead, if you prefer not to add an extra layer to your network. This
-    criterion expects a class index (1 to the number of class) as target when calling
-    forward(input, target) and backward(input, target).
+    The input given through a forward() is expected to contain log-probabilities/probabilities of
+    each class: input has to be a 1D Tensor of size n. Obtaining log-probabilities/probabilities
+    in a neural network is easily achieved by adding a LogSoftMax/SoftMax layer in the last layer
+    of your neural network. You may use CrossEntropyCriterion instead, if you prefer not to add an
+    extra layer to your network. This criterion expects a class index (1 to the number of class) as
+    target when calling forward(input, target) and backward(input, target).
 
+    In the log-probabilities case,
     The loss can be described as:
         loss(x, class) = -x[class]
     or in the case of the weights argument it is specified as follows:
@@ -124,14 +125,18 @@ class ClassNLLCriterion(Criterion):
     By default, the losses are averaged over observations for each minibatch. However, if the field
     sizeAverage is set to false, the losses are instead summed for each minibatch.
 
+    In particular, when weights=None, size_average=True and logProbAsInput=False, this is same as
+    `sparse_categorical_crossentropy` loss in keras.
+
 
     :param weights: weights of each class
     :param size_average: whether to average or not
+    :param logProbAsInput: indicating whether to accept log-probabilities or probabilities as input.
 
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
-    >>> classNLLCriterion = ClassNLLCriterion(weights,True)
+    >>> classNLLCriterion = ClassNLLCriterion(weights, True, True)
     creating: createClassNLLCriterion
     >>> classNLLCriterion = ClassNLLCriterion()
     creating: createClassNLLCriterion
@@ -140,10 +145,11 @@ class ClassNLLCriterion(Criterion):
     def __init__(self,
                  weights=None,
                  size_average=True,
+                 logProbAsInput=True,
                  bigdl_type="float"):
         super(ClassNLLCriterion, self).__init__(None, bigdl_type,
                                                 JTensor.from_ndarray(weights),
-                                                size_average)
+                                                size_average, logProbAsInput)
 
 
 class MSECriterion(Criterion):
@@ -210,6 +216,27 @@ class ClassSimplexCriterion(Criterion):
                                                     n_classes)
 
 
+class CosineDistanceCriterion(Criterion):
+
+    """
+    Creates a criterion that measures the loss given an input and target,
+    Loss = 1 - cos(x, y)
+
+
+    >>> cosineDistanceCriterion = CosineDistanceCriterion(True)
+    creating: createCosineDistanceCriterion
+    >>> cosineDistanceCriterion.forward(np.array([1.0, 2.0, 3.0, 4.0, 5.0]),
+    ...                                   np.array([5.0, 4.0, 3.0, 2.0, 1.0]))
+    0.07272728
+    """
+
+    def __init__(self,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(CosineDistanceCriterion, self).__init__(None, bigdl_type,
+                                                      size_average)
+
+
 class CosineEmbeddingCriterion(Criterion):
 
     """
@@ -256,6 +283,15 @@ class DistKLDivCriterion(Criterion):
         super(DistKLDivCriterion, self).__init__(None, bigdl_type,
                                                  size_average)
 
+class CategoricalCrossEntropy(Criterion):
+    """
+    This criterion is same with cross entropy criterion, except it takes a one-hot format target
+    tensor
+    >>> cce = CategoricalCrossEntropy()
+    creating: createCategoricalCrossEntropy
+    """
+    def __init__(self, bigdl_type="float"):
+        super(CategoricalCrossEntropy, self).__init__(None, bigdl_type)
 
 class HingeEmbeddingCriterion(Criterion):
 
@@ -323,22 +359,27 @@ class MarginCriterion(Criterion):
     Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
     between input x (a Tensor of dimension 1) and output y.
 
+    When margin = 1, size_average = True and squared = False, this is the same as hinge loss in keras;
+    When margin = 1, size_average = False and squared = True, this is the same as squared_hinge loss in keras.
 
     :param margin: if unspecified, is by default 1.
     :param size_average: size average in a mini-batch
+    :param squared: whether to calculate the squared hinge loss
 
 
-    >>> marginCriterion = MarginCriterion(1e-5, True)
+    >>> marginCriterion = MarginCriterion(1e-5, True, False)
     creating: createMarginCriterion
     '''
 
     def __init__(self,
                  margin=1.0,
                  size_average=True,
+                 squared=False,
                  bigdl_type="float"):
         super(MarginCriterion, self).__init__(None, bigdl_type,
                                               margin,
-                                              size_average)
+                                              size_average,
+                                              squared)
 
 
 class MarginRankingCriterion(Criterion):
@@ -443,6 +484,31 @@ class ParallelCriterion(Criterion):
         self.value.add(criterion.value, weight)
         return self
 
+class KLDCriterion(Criterion):
+
+    '''
+    Computes the KL-divergence of the input normal distribution to a standard normal distribution.
+    The input has to be a table. The first element of input is the mean of the distribution,
+    the second element of input is the log_variance of the distribution. The input distribution is
+    assumed to be diagonal.
+    >>> KLDCriterion = KLDCriterion(True)
+    creating: createKLDCriterion
+    '''
+
+    def __init__(self, size_average=True, bigdl_type="float"):
+        super(KLDCriterion, self).__init__(None, bigdl_type, size_average)
+
+
+class GaussianCriterion(Criterion):
+
+    '''
+    Computes the log-likelihood of a sample x given a Gaussian distribution p.
+    >>> GaussianCriterion = GaussianCriterion()
+    creating: createGaussianCriterion
+    '''
+
+    def __init__(self, bigdl_type="float"):
+        super(GaussianCriterion, self).__init__(None, bigdl_type)
 
 class SmoothL1Criterion(Criterion):
 
@@ -530,6 +596,29 @@ class SoftmaxWithCriterion(Criterion):
                                                    ignore_label,
                                                    normalize_mode)
 
+class TimeDistributedMaskCriterion(Criterion):
+    '''
+    This class is intended to support inputs with 3 or more dimensions.
+    Apply Any Provided Criterion to every temporal slice of an input.
+    In addition, it supports padding mask.
+
+    eg. if the target is [ [-1, 1, 2, 3, -1], [5, 4, 3, -1, -1] ],
+      and set the paddingValue property to -1, then the loss of -1 would not
+      be accumulated and the loss is only divided by 6 (ont including the amount of
+      -1, in this case, we are only interested in 1, 2, 3, 5, 4, 3)
+
+    :param criterion: embedded criterion
+    :param padding_value: padding value
+
+
+    >>> td = TimeDistributedMaskCriterion(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createTimeDistributedMaskCriterion
+    '''
+
+    def __init__(self, criterion, padding_value=0, bigdl_type="float"):
+        super(TimeDistributedMaskCriterion, self).__init__(
+            None, bigdl_type, criterion, padding_value)
 
 class TimeDistributedCriterion(Criterion):
     '''
@@ -730,6 +819,161 @@ class L1Cost(Criterion):
     def __init__(self,
                  bigdl_type="float"):
         super(L1Cost, self).__init__(None, bigdl_type)
+
+class CosineProximityCriterion(Criterion):
+
+    '''
+    compute the negative of the mean cosine proximity between predictions and targets.
+```
+   x'(i) = x(i) / sqrt(max(sum(x(i)^2), 1e-12))
+   y'(i) = y(i) / sqrt(max(sum(x(i)^2), 1e-12))
+   cosine_proximity(x, y) = sum_i(-1 * x'(i) * y'(i))
+```
+
+    >>> cosineProximityCriterion = CosineProximityCriterion()
+    creating: createCosineProximityCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(CosineProximityCriterion, self).__init__(None, bigdl_type)
+
+class MeanAbsolutePercentageCriterion(Criterion):
+
+    '''
+    This method is same as `mean_absolute_percentage_error` loss in keras.
+    It caculates diff = K.abs((y - x) / K.clip(K.abs(y), K.epsilon(), Double.MaxValue))
+    and return 100 * K.mean(diff) as output. Here, the x and y can have or not have a batch.
+    >>> error = MeanAbsolutePercentageCriterion()
+    creating: createMeanAbsolutePercentageCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanAbsolutePercentageCriterion, self).__init__(None, bigdl_type)
+
+class MeanSquaredLogarithmicCriterion(Criterion):
+
+    '''
+    This method is same as `mean_squared_logarithmic_error` loss in keras.
+    It calculates: first_log = K.log(K.clip(y, K.epsilon(),  Double.MaxValue) + 1.)
+    second_log = K.log(K.clip(x, K.epsilon(),  Double.MaxValue) + 1.)
+    and output K.mean(K.square(first_log - second_log)). Here, the x and y can have or not have a batch.
+    >>> error = MeanSquaredLogarithmicCriterion()
+    creating: createMeanSquaredLogarithmicCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanSquaredLogarithmicCriterion, self).__init__(None, bigdl_type)
+
+class KullbackLeiblerDivergenceCriterion(Criterion):
+
+    '''
+    compute Kullback Leibler DivergenceCriterion error for intput and target
+    This method is same as `kullback_leibler_divergence` loss in keras. Loss calculated as:
+    y_true = K.clip(input, K.epsilon(), 1)
+    y_pred = K.clip(target, K.epsilon(), 1)
+    and output K.sum(y_true * K.log(y_true / y_pred), axis=-1)
+
+    >>> error = KullbackLeiblerDivergenceCriterion()
+    creating: createKullbackLeiblerDivergenceCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(KullbackLeiblerDivergenceCriterion, self).__init__(None, bigdl_type)
+
+class PoissonCriterion(Criterion):
+
+    '''
+    compute Poisson error for input and target, loss calculated as:
+    mean(input - target * K.log(input + K.epsilon()), axis=-1)
+    >>> error = PoissonCriterion()
+    creating: createPoissonCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(PoissonCriterion, self).__init__(None, bigdl_type)
+
+class TransformerCriterion(Criterion):
+    '''
+    The criterion that takes two modules to transform input and target, and take
+    one criterion to compute the loss with the transformed input and target.
+    
+    This criterion can be used to construct complex criterion. For example, the
+    `inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
+    and we can use the networks' output to compute the high-level feature
+    reconstruction loss, which is commonly used in areas like neural style transfer
+    (https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
+    .etc.
+    
+    >>> trans = TransformerCriterion(MSECriterion())
+    creating: createMSECriterion
+    creating: createTransformerCriterion
+    '''
+
+    def __init__(self,
+                 criterion,
+                 input_transformer = None,
+                 target_transformer = None,
+                 bigdl_type="float"):
+        super(TransformerCriterion, self).__init__(None,
+                                                   bigdl_type,
+                                                   criterion,
+                                                   input_transformer,
+                                                   target_transformer)
+
+class DotProductCriterion(Criterion):
+    '''
+    Compute the dot product of input and target tensor.
+    Input and target are required to have the same size.
+    :param size_average: whether to average over each observations in the same batch
+    
+    >>> dp =DotProductCriterion(False)
+    creating: createDotProductCriterion
+    '''
+
+    def __init__(self,
+                 size_average = False,
+                 bigdl_type="float"):
+        super(DotProductCriterion, self).__init__(None,
+                                                  bigdl_type,
+                                                  size_average)
+
+class PGCriterion(Criterion):
+    '''
+    The Criterion to compute the negative policy gradient given a
+    multinomial distribution and the sampled action and reward.
+
+    The input to this criterion should be a 2-D tensor representing
+    a batch of multinomial distribution, the target should also be
+    a 2-D tensor with the same size of input, representing the sampled
+    action and reward/advantage with the index of non-zero element in the vector
+    represents the sampled action and the non-zero element itself represents
+    the reward. If the action is space is large, you should consider using
+    SparseTensor for target.
+    
+    The loss computed is simple the standard policy gradient,
+
+      loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
+
+    where R_{n} is the reward vector, and P_{n} is the input distribution.
+
+    :param sizeAverage whether to average over each observations in the same batch
+                           
+    >>> pg = PGCriterion()
+    creating: createPGCriterion
+    '''
+
+    def __init__(self,
+                 sizeAverage = False,
+                 bigdl_type="float"):
+        super(PGCriterion, self).__init__(None,
+                                          bigdl_type,
+                                          sizeAverage)
+
 
 def _test():
     import doctest

@@ -17,10 +17,14 @@
 package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.math.abs
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
@@ -265,5 +269,87 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     val input = Tensor[Float](1, 3, 3).rand()
     val checker = new GradientChecker(1e-4, 1e-2)
     checker.checkLayer[Float](module, input) should be(true)
+  }
+
+  "A SpatialAvgPooling with globalpooling" should "work properly" in {
+    val module = new SpatialAveragePooling[Float](2, 2, globalPooling = true)
+    val input = Tensor[Float](1, 3, 3).rand()
+    val module2 = new SpatialAveragePooling[Float](3, 3)
+    module.forward(input) should be (module2.forward(input))
+  }
+
+  "A SpatialAveragePooling" should "work with SAME padding using NCHW format" in {
+    import tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = -1
+    val padH = -1
+    val layer = new SpatialAveragePooling(kW, kH, dW, dH, padW, padH, countIncludePad = false)
+
+    val inputData = Array(
+      1.0f, 2, 3, 4
+    )
+
+    val input = Tensor(Storage(inputData), 1, Array(1, 2, 2))
+    val output = layer.updateOutput(input)
+    val gradInput = layer.backward(input, output)
+    output.storage().array() should be (Array(2.5f, 3, 3.5, 4))
+    gradInput.storage().array() should be (Array(0.625f, 2.125, 2.375, 7.875))
+  }
+
+  "A SpatialAveragePooling with NHWC format" should "generate correct output and gradInput" in {
+
+    import tensor.TensorNumericMath.TensorNumeric.NumericDouble
+    case class Pooling(kW: Int, kH: Int, dW: Int, dH: Int, pW: Int, pH: Int)
+
+    val params = for (kernel <- 1 to 5;
+                      stride <- 1 to 5;
+                      padding <- -1 to kernel / 2) yield {
+      Pooling(kernel, kernel, stride, stride, padding, padding)
+    }
+
+    for (param <- params) {
+      println(param)
+
+      val module = new SpatialAveragePooling(param.kW, param.kH, param.dW, param.dH,
+        param.pW, param.pH)
+      val moduleNHWC = new SpatialAveragePooling(param.kW, param.kH, param.dW, param.dH,
+        param.pW, param.pH, format = DataFormat.NHWC)
+
+      val input = Tensor(2, 4, 10, 10).randn()
+
+      val inputNHWC = Tensor(input.size()).copy(input)
+        .transpose(2, 4).transpose(2, 3).contiguous()
+
+      val expectedOutput = module.forward(input)
+      val expectedGrad = module.backward(input, expectedOutput)
+
+      var output = moduleNHWC.forward(inputNHWC)
+      var gradInput = moduleNHWC.backward(inputNHWC, output)
+      output = output.transpose(2, 4).transpose(3, 4)
+      gradInput = gradInput.transpose(2, 4).transpose(3, 4)
+      expectedOutput.map(output, (v1, v2) => {
+        assert(abs(v1 - v2) < 1e-6)
+        v1
+      })
+
+      expectedGrad.map(gradInput, (v1, v2) => {
+        assert(abs(v1 - v2) < 1e-6)
+        v1
+      })
+
+    }
+  }
+}
+
+class SpatialAveragePoolingSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialAveragePooling = new SpatialAveragePooling[Float](3, 2, 2, 1).
+      setName("spatialAveragePooling")
+    val input = Tensor[Float](1, 4, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialAveragePooling, input)
   }
 }

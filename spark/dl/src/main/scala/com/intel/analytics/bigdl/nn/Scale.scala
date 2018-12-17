@@ -16,10 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -34,8 +37,8 @@ import scala.reflect.ClassTag
 class Scale[T: ClassTag](val size: Array[Int])
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T] {
 
-  private val cmul = new CMul[T](size)
-  private val cadd = new CAdd[T](size)
+  private[bigdl] var cmul = new CMul[T](size)
+  private[bigdl] var cadd = new CAdd[T](size)
 
   /**
    * Computes the output using the current parameter set of the class and input. This function
@@ -70,15 +73,39 @@ class Scale[T: ClassTag](val size: Array[Int])
       Array(cmul.parameters()._2(0), cadd.parameters()._2(0)))
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> cmul.weight, "bias" -> cadd.bias,
-      "gradWeight" -> cmul.gradWeight, "gradBias" -> cadd.gradBias))
-  }
-
   override def toString: String = "nn.Scale"
 }
 
-object Scale {
+object Scale extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])
     (implicit ev: TensorNumeric[T]): Scale[T] = new Scale[T](size)
+
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val scale = super.doLoadModule(context).asInstanceOf[Scale[T]]
+    val attrMap = context.bigdlModule.getAttrMap
+    val cmul = attrMap.get("cmul")
+    scale.cmul = DataConverter.getAttributeValue(context, cmul).asInstanceOf[CMul[T]]
+    val cadd = attrMap.get("cadd")
+    scale.cadd = DataConverter.getAttributeValue(context, cadd).asInstanceOf[CAdd[T]]
+    scale
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                            scaleBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    val scale = context.moduleData.module.asInstanceOf[Scale[T]]
+    super.doSerializeModule(context, scaleBuilder)
+
+    val cmulBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, cmulBuilder,
+      scale.cmul, ModuleSerializer.abstractModuleType)
+    scaleBuilder.putAttr("cmul", cmulBuilder.build)
+
+    val caddBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, caddBuilder,
+      scale.cadd, ModuleSerializer.abstractModuleType)
+    scaleBuilder.putAttr("cadd", caddBuilder.build)
+
+  }
 }

@@ -15,18 +15,23 @@
 #
 
 
+import multiprocessing
 import os
 import sys
 from distutils.dir_util import mkpath
+
+from py4j.java_gateway import JavaObject
+from pyspark.rdd import RDD
 
 from bigdl.util.common import DOUBLEMAX
 from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
-from bigdl.util.common import get_spark_context
+from bigdl.util.common import get_node_and_core_number
+from bigdl.util.common import init_engine
 from bigdl.util.common import to_list
-
+from bigdl.dataset.dataset import *
 
 if sys.version >= '3':
     long = int
@@ -82,6 +87,40 @@ class Loss(JavaValue):
         if cri is None:
             cri = ClassNLLCriterion()
         JavaValue.__init__(self, None, bigdl_type, cri)
+
+class HitRatio(JavaValue):
+    """
+    Hit Ratio(HR) used in recommandation application.
+    HR intuitively measures whether the test item is present on the top-k list.
+
+    >>> hr10 = HitRatio(k = 10)
+    creating: createHitRatio
+    """
+    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+        """
+        Create hit ratio validation method.
+
+        :param k: top k
+        :param neg_num: number of negative items.
+        """
+        JavaValue.__init__(self, None, bigdl_type, k, neg_num)
+
+class NDCG(JavaValue):
+    """
+    Normalized Discounted Cumulative Gain(NDCG).
+    NDCG accounts for the position of the hit by assigning higher scores to hits at top ranks.
+
+    >>> ndcg = NDCG(k = 10)
+    creating: createNDCG
+    """
+    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+        """
+        Create NDCG validation method.
+
+        :param k: top k
+        :param neg_num: number of negative items.
+        """
+        JavaValue.__init__(self, None, bigdl_type, k, neg_num)
 
 class MAE(JavaValue):
     """
@@ -222,9 +261,8 @@ class Poly(JavaValue):
     Calculation: base_lr (1 - iter/max_iteration) ^ (power)
 
 
-    :param power:
-    :param max_iteration:
-
+    :param power: coeffient of decay, refer to calculation formula
+    :param max_iteration: max iteration when lr becomes zero
 
     >>> poly = Poly(0.5, 2)
     creating: createPoly
@@ -313,7 +351,76 @@ class Plateau(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
                            cooldown, min_lr)
 
-class SGD(JavaValue):
+class Warmup(JavaValue):
+    """
+    A learning rate gradual increase policy, where the effective learning rate
+    increase delta after each iteration.
+    Calculation: base_lr + delta * iteration
+
+    :param delta: increase amount after each iteration
+
+    >>> warmup = Warmup(0.05)
+    creating: createWarmup
+    """
+    def __init__(self, delta, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, delta)
+
+class SequentialSchedule(JavaValue):
+    """
+    Stack several learning rate schedulers.
+
+    :param iterationPerEpoch: iteration numbers per epoch
+
+    >>> sequentialSchedule = SequentialSchedule(5)
+    creating: createSequentialSchedule
+    >>> poly = Poly(0.5, 2)
+    creating: createPoly
+    >>> test = sequentialSchedule.add(poly, 5)
+
+
+
+    """
+    def __init__(self, iteration_per_epoch, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
+
+    def add(self, scheduler, max_iteration, bigdl_type="float"):
+        """
+        Add a learning rate scheduler to the contained `schedules`
+
+        :param scheduler: learning rate scheduler to be add
+        :param max_iteration: iteration numbers this scheduler will run
+        """
+        return callBigDlFunc(bigdl_type, "addScheduler", self.value, scheduler, max_iteration)
+
+class OptimMethod(JavaValue):
+
+    def __init__(self, jvalue, bigdl_type, *args):
+        if (jvalue):
+            assert(type(jvalue) == JavaObject)
+            self.value = jvalue
+        else:
+            self.value = callBigDlFunc(
+                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.bigdl_type = bigdl_type
+
+    @staticmethod
+    def load(path, bigdl_type="float"):
+        """
+        load optim method
+        :param path: file path
+        """
+        return callBigDlFunc(bigdl_type, "loadOptimMethod", path)
+
+    def save(self, path, overWrite):
+        """
+        save OptimMethod
+        :param path      path
+        :param overWrite whether to overwrite
+        """
+        method=self.value
+        return callBigDlFunc(self.bigdl_type, "saveOptimMethod", method, path, overWrite)
+
+class SGD(OptimMethod):
     """
     A plain implementation of SGD
 
@@ -340,12 +447,12 @@ class SGD(JavaValue):
                  learningrates=None,
                  weightdecays=None,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay,
+        super(SGD, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay,
                            momentum, dampening, nesterov,
                            leaningrate_schedule if (leaningrate_schedule) else Default(),
                            JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays))
 
-class Adagrad(JavaValue):
+class Adagrad(OptimMethod):
     """
     An implementation of Adagrad. See the original paper:
     http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
@@ -361,9 +468,9 @@ class Adagrad(JavaValue):
                  learningrate_decay=0.0,
                  weightdecay=0.0,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay)
+        super(Adagrad, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay)
 
-class LBFGS(JavaValue):
+class LBFGS(OptimMethod):
     """
     This implementation of L-BFGS relies on a user-provided line
     search function (state.lineSearch). If this function is not
@@ -400,10 +507,10 @@ class LBFGS(JavaValue):
                  bigdl_type="float"):
         if linesearch or linesearch_options:
             raise ValueError('linesearch and linesearch_options must be None in LBFGS')
-        JavaValue.__init__(self, None, bigdl_type, max_iter, max_eval, tolfun, tolx,
-                           ncorrection, learningrate, verbose, linesearch, linesearch_options)
+        super(LBFGS, self).__init__(None, bigdl_type, max_iter, max_eval, tolfun, tolx,
+                       ncorrection, learningrate, verbose, linesearch, linesearch_options)
 
-class Adadelta(JavaValue):
+class Adadelta(OptimMethod):
     """
     Adadelta implementation for SGD: http://arxiv.org/abs/1212.5701
 
@@ -416,9 +523,9 @@ class Adadelta(JavaValue):
                  decayrate = 0.9,
                  epsilon = 1e-10,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, decayrate, epsilon)
+        super(Adadelta, self).__init__(None, bigdl_type, decayrate, epsilon)
 
-class Adam(JavaValue):
+class Adam(OptimMethod):
     """
     An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
     :param learningrate learning rate
@@ -426,7 +533,7 @@ class Adam(JavaValue):
     :param beta1 first moment coefficient
     :param beta2 second moment coefficient
     :param epsilon for numerical stability
-    >>> adagrad = Adam()
+    >>> adam = Adam()
     creating: createAdam
     """
     def __init__(self,
@@ -436,10 +543,68 @@ class Adam(JavaValue):
                  beta2 = 0.999,
                  epsilon = 1e-8,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay,
+        super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
                            beta1, beta2, epsilon)
 
-class Adamax(JavaValue):
+class ParallelAdam(OptimMethod):
+    """
+    An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
+    :param learningrate learning rate
+    :param learningrate_decay learning rate decay
+    :param beta1 first moment coefficient
+    :param beta2 second moment coefficient
+    :param epsilon for numerical stability
+    >>> init_engine()
+    >>> pAdam = ParallelAdam()
+    creating: createParallelAdam
+    """
+    def __init__(self,
+                 learningrate = 1e-3,
+                 learningrate_decay = 0.0,
+                 beta1 = 0.9,
+                 beta2 = 0.999,
+                 epsilon = 1e-8,
+                 parallel_num = -1,
+                 bigdl_type="float"):
+        if parallel_num == -1:
+            parallel_num = get_node_and_core_number()[1]
+        super(ParallelAdam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
+                                   beta1, beta2, epsilon, parallel_num)
+
+class Ftrl(OptimMethod):
+    """
+    An implementation of Ftrl https://www.eecs.tufts.edu/~dsculley/papers/ad-click-prediction.pdf.
+    Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
+
+    :param learningrate learning rate
+    :param learningrate_power double, must be less or equal to zero. Default is -0.5.
+    :param initial_accumulator_value double, the starting value for accumulators,
+        require zero or positive values.
+    :param l1_regularization_strength double, must be greater or equal to zero. Default is zero.
+    :param l2_regularization_strength double, must be greater or equal to zero. Default is zero.
+    :param l2_shrinkage_regularization_strength double, must be greater or equal to zero.
+        Default is zero. This differs from l2RegularizationStrength above. L2 above is a
+        stabilization penalty, whereas this one is a magnitude penalty.
+    >>> ftrl = Ftrl()
+    creating: createFtrl
+    >>> ftrl2 = Ftrl(1e-2, -0.1, 0.2, 0.3, 0.4, 0.5)
+    creating: createFtrl
+    """
+    def __init__(self,
+                 learningrate = 1e-3,
+                 learningrate_power = -0.5,
+                 initial_accumulator_value = 0.1,
+                 l1_regularization_strength = 0.0,
+                 l2_regularization_strength = 0.0,
+                 l2_shrinkage_regularization_strength = 0.0,
+                 bigdl_type="float"):
+        super(Ftrl, self).__init__(None, bigdl_type, learningrate, learningrate_power,
+                                   initial_accumulator_value,
+                                   l1_regularization_strength,
+                                   l2_regularization_strength,
+                                   l2_shrinkage_regularization_strength)
+
+class Adamax(OptimMethod):
     """
     An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
     :param learningrate learning rate
@@ -455,9 +620,9 @@ class Adamax(JavaValue):
                  beta2 = 0.999,
                  epsilon = 1e-38,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, beta1, beta2, epsilon)
+        super(Adamax, self).__init__(None, bigdl_type, learningrate, beta1, beta2, epsilon)
 
-class RMSprop(JavaValue):
+class RMSprop(OptimMethod):
     """
     An implementation of RMSprop
     :param learningrate learning rate
@@ -473,7 +638,7 @@ class RMSprop(JavaValue):
                  decayrate = 0.99,
                  epsilon = 1e-8,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
+        super(RMSprop, self).__init__(None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
 
 class MultiStep(JavaValue):
     """
@@ -491,51 +656,7 @@ class MultiStep(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, step_sizes, gamma)
 
 
-class Optimizer(JavaValue):
-    """
-    An optimizer is in general to minimize any function with respect
-    to a set of parameters. In case of training a neural network,
-    an optimizer tries to minimize the loss of the neural net with
-    respect to its weights/biases, over the training set.
-    """
-    def __init__(self,
-                 model,
-                 training_rdd,
-                 criterion,
-                 end_trigger,
-                 batch_size,
-                 optim_method=None,
-                 bigdl_type="float"):
-       """
-       Create an optimizer.
-
-
-       :param model: the neural net model
-       :param training_rdd: the training dataset
-       :param criterion: the loss function
-       :param optim_method: the algorithm to use for optimization, 
-          e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
-       :param end_trigger: when to end the optimization
-       :param batch_size: training batch size
-       """
-       JavaValue.__init__(self, None, bigdl_type, model.value,
-                           training_rdd, criterion,
-                          optim_method if optim_method else SGD(), end_trigger, batch_size)
-
-    def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
-        """
-        Configure validation settings.
-
-
-        :param batch_size: validation batch size
-        :param val_rdd: validation dataset
-        :param trigger: validation interval
-        :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
-        """
-        if val_method is None:
-            val_method = [Top1Accuracy()]
-        callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
-                      trigger, val_rdd, to_list(val_method))
+class BaseOptimizer(JavaValue):
 
     def set_model(self, model):
         """
@@ -546,8 +667,18 @@ class Optimizer(JavaValue):
         """
         self.value.setModel(model.value)
 
+    def set_criterion(self, criterion):
+        """
+        set new criterion, for optimizer reuse
+
+        :param criterion: new criterion
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "setCriterion", self.value,
+                      criterion)
+
     def set_checkpoint(self, checkpoint_trigger,
-                      checkpoint_path, isOverWrite=True):
+                       checkpoint_path, isOverWrite=True):
         """
         Configure checkpoint settings.
 
@@ -561,12 +692,37 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setCheckPoint", self.value,
                       checkpoint_trigger, checkpoint_path, isOverWrite)
 
+    def set_gradclip_const(self, min_value, max_value):
+        """
+        Configure constant clipping settings.
+
+
+        :param min_value: the minimum value to clip by
+        :param max_value: the maxmimum value to clip by
+        """
+        callBigDlFunc(self.bigdl_type, "setConstantClip", self.value, min_value, max_value)
+
+    def set_gradclip_l2norm(self, clip_norm):
+        """
+        Configure L2 norm clipping settings.
+
+
+        :param clip_norm: gradient L2-Norm threshold
+        """
+        callBigDlFunc(self.bigdl_type, "setL2NormClip", self.value, clip_norm)
+
+    def disable_gradclip(self):
+        """
+        disable clipping.
+        """
+        callBigDlFunc(self.bigdl_type, "disableClip", self.value)
+
     # return a module
     def optimize(self):
         """
         Do an optimization.
         """
-        jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
+        jmodel = callJavaFunc(self.value.optimize)
         from bigdl.nn.layer import Layer
         return Layer.of(jmodel)
 
@@ -607,6 +763,225 @@ class Optimizer(JavaValue):
         """
         print("Loading input ...")
         self.value.prepareInput()
+
+    def set_end_when(self, end_when):
+        """
+        When to stop, passed in a [[Trigger]]
+        """
+        self.value.setEndWhen(end_when.value)
+        return self
+
+
+class Optimizer(BaseOptimizer):
+
+    # NOTE: This is a deprecated method, you should use `create` method instead.
+    def __init__(self,
+                 model,
+                 training_rdd,
+                 criterion,
+                 end_trigger,
+                 batch_size,
+                 optim_method=None,
+                 bigdl_type="float"):
+        """
+        Create a distributed optimizer.
+
+
+        :param model: the neural net model
+        :param training_rdd: the training dataset
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        """
+        self.pvalue = DistriOptimizer(model,
+                                      training_rdd,
+                                      criterion,
+                                      end_trigger,
+                                      batch_size,
+                                      optim_method,
+                                      bigdl_type)
+        self.value = self.pvalue.value
+        self.bigdl_type = self.pvalue.bigdl_type
+
+    @staticmethod
+    def create(model,
+               training_set,
+               criterion,
+               end_trigger=None,
+               batch_size=32,
+               optim_method=None,
+               cores=None,
+               bigdl_type="float"):
+        """
+        Create an optimizer.
+        Depend on the input type, the returning optimizer can be a local optimizer \
+        or a distributed optimizer.
+
+        :param model: the neural net model
+        :param training_set: (features, label) for local mode. RDD[Sample] for distributed mode.
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization. default value is MapEpoch(1)
+        :param batch_size: training batch size
+        :param cores: This is for local optimizer only and use total physical cores as the default value
+        """
+        if not end_trigger:
+            end_trigger = MaxEpoch(1)
+        if not optim_method:
+            optim_method = SGD()
+        if isinstance(training_set, RDD) or isinstance(training_set, DataSet):
+            return DistriOptimizer(model=model,
+                                   training_rdd=training_set,
+                                   criterion=criterion,
+                                   end_trigger=end_trigger,
+                                   batch_size=batch_size,
+                                   optim_method=optim_method,
+                                   bigdl_type=bigdl_type)
+        elif isinstance(training_set, tuple) and len(training_set) == 2:
+            x, y = training_set
+            return LocalOptimizer(X=x,
+                                  Y=y,
+                                  model=model,
+                                  criterion=criterion,
+                                  end_trigger=end_trigger,
+                                  batch_size=batch_size,
+                                  optim_method=optim_method,
+                                  cores=cores,
+                                  bigdl_type="float")
+        else:
+            raise Exception("Not supported training set: %s" % type(training_set))
+
+    def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
+        """
+        Configure validation settings.
+
+
+        :param batch_size: validation batch size
+        :param val_rdd: validation dataset
+        :param trigger: validation interval
+        :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
+        """
+        if val_method is None:
+            val_method = [Top1Accuracy()]
+        func_name = "setValidation"
+        if isinstance(val_rdd, DataSet):
+            func_name = "setValidationFromDataSet"
+        callBigDlFunc(self.bigdl_type, func_name, self.value, batch_size,
+                      trigger, val_rdd, to_list(val_method))
+
+    def set_traindata(self, training_rdd, batch_size):
+        """
+        Set new training dataset, for optimizer reuse
+
+        :param training_rdd: the training dataset
+        :param batch_size: training batch size
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "setTrainData", self.value,
+                     training_rdd, batch_size)
+
+
+
+class DistriOptimizer(Optimizer):
+    def __init__(self,
+                 model,
+                 training_rdd,
+                 criterion,
+                 end_trigger,
+                 batch_size,
+                 optim_method=None,
+                 bigdl_type="float"):
+        """
+        Create an optimizer.
+
+
+        :param model: the neural net model
+        :param training_data: the training dataset
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        """
+        if not optim_method:
+            optim_methods = {model.name(): SGD()}
+        elif isinstance(optim_method, OptimMethod):
+            optim_methods = {model.name(): optim_method}
+        elif isinstance(optim_method, JavaObject):
+            optim_methods = {model.name(): OptimMethod(optim_method, bigdl_type)}
+        else:
+            optim_methods = optim_method
+        if isinstance(training_rdd, RDD):
+            JavaValue.__init__(self, None, bigdl_type, model.value,
+                               training_rdd, criterion,
+                               optim_methods, end_trigger, batch_size)
+        elif isinstance(training_rdd, DataSet):
+            self.bigdl_type = bigdl_type
+            self.value = callBigDlFunc(self.bigdl_type, "createDistriOptimizerFromDataSet",
+                                       model.value, training_rdd, criterion,
+                                       optim_methods, end_trigger, batch_size)
+
+
+class LocalOptimizer(BaseOptimizer):
+    """
+    Create an optimizer.
+
+
+    :param model: the neural net model
+    :param X: the training features which is an ndarray or list of ndarray
+    :param Y: the training label which is an ndarray
+    :param criterion: the loss function
+    :param optim_method: the algorithm to use for optimization,
+       e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+    :param end_trigger: when to end the optimization
+    :param batch_size: training batch size
+    :param cores: by default is the total physical cores.
+    """
+    def __init__(self,
+                 X,
+                 Y,
+                 model,
+                 criterion,
+                 end_trigger,
+                 batch_size,
+                 optim_method=None,
+                 cores=None,
+                 bigdl_type="float"):
+        if not optim_method:
+            optim_methods = {model.name(): SGD()}
+        elif isinstance(optim_method, OptimMethod):
+            optim_methods = {model.name(): optim_method}
+        elif isinstance(optim_method, JavaObject):
+            optim_methods = {model.name(): OptimMethod(optim_method, bigdl_type)}
+        else:
+            optim_methods = optim_method
+        if cores is None:
+            cores = multiprocessing.cpu_count()
+        JavaValue.__init__(self, None, bigdl_type,
+                           [JTensor.from_ndarray(X) for X in to_list(X)],
+                           JTensor.from_ndarray(Y),
+                           model.value,
+                           criterion,
+                           optim_methods, end_trigger, batch_size, cores)
+
+    def set_validation(self, batch_size, X_val, Y_val, trigger, val_method=None):
+        """
+        Configure validation settings.
+
+        :param batch_size: validation batch size
+        :param X_val: features of validation dataset
+        :param Y_val: label of validation dataset
+        :param trigger: validation interval
+        :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
+        """
+        if val_method is None:
+            val_method = [Top1Accuracy()]
+        callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
+                      trigger, [JTensor.from_ndarray(X) for X in to_list(X_val)],
+                      JTensor.from_ndarray(Y_val), to_list(val_method))
 
 
 class TrainSummary(JavaValue, ):
@@ -710,6 +1085,16 @@ class L1L2Regularizer(JavaValue):
     def __init__(self, l1, l2, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, l1, l2)
 
+class ActivityRegularization(JavaValue):
+    """
+    Apply both L1 and L2 regularization
+
+    :param l1 l1 regularization rate
+    :param l2 l2 regularization rate
+
+    """
+    def __init__(self, l1, l2, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l1, l2)
 
 class L1Regularizer(JavaValue):
     """

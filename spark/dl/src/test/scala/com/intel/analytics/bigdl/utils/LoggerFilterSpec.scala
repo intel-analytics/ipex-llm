@@ -123,11 +123,11 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     {
       val pattern = s".*INFO.*DistriOptimizer.* - " + "" +
-        s"\\[Epoch 1 50/100\\]\\[Iteration 2\\]\\[Wall Clock .*\\] " +
+        s"\\[Epoch 1 100/100\\]\\[Iteration 2\\]\\[Wall Clock .*\\] " +
         s"Epoch finished. Wall clock time is .*ms"
 
       val lastLine = allString.split('\n').last
-      require(lastLine.matches(pattern), s"output can't matchs the specific output")
+      require(lastLine.matches(pattern), s"output can't match the specific output")
     }
 
   }

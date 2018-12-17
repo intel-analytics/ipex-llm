@@ -29,6 +29,7 @@ import scala.reflect.ClassTag
  * This layer is a particular case of a convolution, where the width of the convolution would be 1.
  * Input should be a 1D or 2D tensor filled with indices. Indices are corresponding to the position
  * in weight. For each index element of input, it outputs the selected index part of weight.
+ * Elements of input should be in range of (1, nIndex)
  * This layer is often used in word embedding.
  * @param nIndex Indices of input row
  * @param nOutput the last dimension size of output
@@ -39,6 +40,8 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param maskZero: if maskZero is set to true, the input whose value equals `paddingValue`
+ *                the output will be masked to zero vector.
  */
 @SerialVersionUID( - 4832171200145114633L)
 class LookupTable[T: ClassTag]
@@ -46,12 +49,13 @@ class LookupTable[T: ClassTag]
   val maxNorm: Double = Double.MaxValue,
   val normType: Double = 2.0,
   shouldScaleGradByFreq: Boolean = false,
-  var wRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  val maskZero: Boolean = false
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val weight = Tensor[T](nIndex, nOutput)
-  val gradWeight = Tensor[T](nIndex, nOutput).zero()
+  var weight = Tensor[T](nIndex, nOutput)
+  var gradWeight = Tensor[T](nIndex, nOutput).zero()
 
   private var inputBuffer = Tensor[T]()
   private var normBuffer = Tensor[T]()
@@ -164,16 +168,29 @@ class LookupTable[T: ClassTag]
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (maskZero && paddingValue != 0) {
+      weight.select(1, paddingValue.toInt).zero()
+    }
     require(input.dim() == 1 || input.dim() == 2,
-      "LookupTable: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      s"LookupTable: ${ErrorInfo.constrainInputAsVectorOrBatch}, input dim [${input.dim()}]"  )
     renorm(input)
     inputBuffer = input.contiguous()
-    if (inputBuffer.dim() == 1) {
-      output.index(1, inputBuffer, weight)
-    } else if (inputBuffer.dim() == 2) {
-      output.index(1, inputBuffer.view(inputBuffer.nElement()), weight)
-      output = output.view(inputBuffer.size(1), inputBuffer.size(2), weight.size(2))
+    try {
+      if (inputBuffer.dim() == 1) {
+        output.index(1, inputBuffer, weight)
+      } else if (inputBuffer.dim() == 2) {
+        output.index(1, inputBuffer.view(inputBuffer.nElement()), weight)
+        output = output.view(inputBuffer.size(1), inputBuffer.size(2), weight.size(2))
+      }
+    } catch {
+      case e: IllegalArgumentException =>
+        throw new IllegalArgumentException(
+          s"LookupTable updateOutput get exception:${e.getMessage}\n" +
+          s"please ensure elements of your input will not exceed ${nIndex}")
+      case e: Exception =>
+        throw e
     }
+
     output
   }
 
@@ -188,7 +205,7 @@ class LookupTable[T: ClassTag]
     inputBuffer = input.contiguous()
     require(gradWeight.isContiguous(), "LookupTable: gradWeight must be contiguous")
     require(inputBuffer.dim() == 1 || inputBuffer.dim() == 2,
-      "LookupTable: input must be a vector or matrix")
+      s"LookupTable: input must be a vector or matrix, input dim ${inputBuffer.dim()}" )
 
     if (inputBuffer.dim() == 2) {
       inputBuffer.view(inputBuffer.nElement())
@@ -237,19 +254,17 @@ class LookupTable[T: ClassTag]
   }
 
   override def toString(): String = {
-    s"${getPrintName}($nIndex, $nOutput, $paddingValue, $maxNorm, $normType)"
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
+    val s = s"${getPrintName}" +
+      s"(nIndex=$nIndex,nOutput=$nOutput,paddingValue=$paddingValue,normType=$normType"
+    if (maxNorm == Double.MaxValue) {
+      s + ")"
+    } else {
+      s + s" ,maxNorm=$maxNorm)"
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def clearState() : this.type = {
@@ -289,11 +304,12 @@ object LookupTable {
     nIndex: Int, nOutput: Int,
     paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
     normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
-    wRegularizer: Regularizer[T] = null
+    wRegularizer: Regularizer[T] = null,
+    maskZero: Boolean = false
   )
    (implicit ev: TensorNumeric[T]): LookupTable[T] =
     new LookupTable[T](nIndex, nOutput, paddingValue,
-      maxNorm, normType, shouldScaleGradByFreq, wRegularizer)
+      maxNorm, normType, shouldScaleGradByFreq, wRegularizer, maskZero)
 }
 
 

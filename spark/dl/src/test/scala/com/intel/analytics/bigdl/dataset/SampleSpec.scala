@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -59,6 +60,183 @@ class SampleSpec extends FlatSpec with Matchers {
 
     MiniBatch[T](samples(0).numFeature(), samples(0).numLabel(),
       Some(featureParam), Some(labelParam)).set(samples)
+  }
+
+  "Get feature and label from single sample" should "work fine" in {
+    val feature = Tensor[Float](2, 2).fill(1.0f)
+    val label = Tensor[Float](2).fill(1.0f)
+    val sample = ArraySample(feature, label)
+
+    val fetchedFeature = sample.feature()
+
+    val fetchedLabel = sample.label()
+
+    fetchedFeature should be (feature)
+
+    fetchedLabel should be (label)
+  }
+
+  "Get label from single sample without label" should "work fine" in {
+    val feature = Tensor[Float](2, 2).fill(1.0f)
+    val sample = ArraySample(feature)
+    val fetchedFeature = sample.feature()
+
+    val fetchedLabel = sample.label()
+
+    fetchedFeature should be (feature)
+
+    fetchedLabel should be (null)
+  }
+
+  "Get feature and label from multiple samples" should "work fine" in {
+    val feature1 = Tensor[Float](2, 2).fill(1.0f)
+    val label1 = Tensor[Float](2).fill(1.0f)
+
+    val feature2 = Tensor[Float](2, 2).fill(2.0f)
+
+    val sample = ArraySample(Array(feature1, feature2), Array(label1))
+
+    val fetchedFeature1 = sample.feature(0)
+
+    val fetchedLabel1 = sample.label(0)
+
+    val fetchedFeature2 = sample.feature(1)
+
+    val fetchedLabel2 = sample.label(1)
+
+    fetchedFeature1 should be (feature1)
+
+    fetchedLabel1 should be (label1)
+
+    fetchedFeature2 should be (feature2)
+
+    fetchedLabel2 should be (null)
+
+  }
+
+  "Get feature and label from TensorSample" should "work properly" in {
+    val feature1 = Tensor[Float](2, 2).fill(1.0f)
+    val label1 = Tensor[Float](2).fill(1.0f)
+
+    val feature2 = Tensor[Float](2, 2).fill(2.0f)
+
+    val sample = TensorSample(Array(feature1, feature2), Array(label1))
+
+    val fetchedFeature1 = sample.feature(0)
+
+    val fetchedLabel1 = sample.label(0)
+
+    val fetchedFeature2 = sample.feature(1)
+
+    val fetchedLabel2 = sample.label(1)
+
+    fetchedFeature1 should be (feature1)
+
+    fetchedLabel1 should be (label1)
+
+    fetchedFeature2 should be (feature2)
+
+    fetchedLabel2 should be (null)
+
+  }
+
+  "create Sample" should "work fine" in {
+    val st1 = Tensor.sparse(Tensor.range(1, 10, 1))
+    val st2 = Tensor.sparse(Tensor.range(1, 10, 1))
+    val dt1 = Tensor.range(1, 10, 1)
+    val dt2 = Tensor.range(1, 10, 1)
+    val label1 = Tensor(1).fill(1)
+    val label2 = Tensor(1).fill(2)
+
+    Sample(st1)
+    Sample(dt1)
+    Sample(Array(st1, st2))
+    Sample(Array(dt1, st2))
+    Sample(Array(dt1, dt2))
+
+    Sample(st1, label1)
+    Sample(dt1, label1)
+    Sample(dt1, 1f)
+    Sample(st1, 1f)
+    Sample(Array(st1, st2), label1)
+    Sample(Array(dt1, st2), label1)
+    Sample(Array(dt1, dt2), label1)
+
+    Sample(Array(st1, st2), Array(label1, label2))
+    Sample(Array(dt1, st2), Array(label1, label2))
+    Sample(Array(dt1, dt2), Array(label1, label2))
+  }
+
+  "Hashcode" should "work fine" in {
+    val sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    println(sample1.hashCode())
+
+    val sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    println(sample2.hashCode())
+
+    val sample3 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    println(sample3.hashCode())
+
+    val sample4 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    println(sample4.hashCode())
+
+    val sample5 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    println(sample5.hashCode())
+  }
+
+  "equals" should "work fine" in {
+    var sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    var sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    sample1.equals(sample2) should be(true)
+  }
+
+  "equals" should "work fine2" in {
+    var sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    var  sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(2))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(2, 7, 1))
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Array(Tensor[Float](3, 2).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 2f)
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    sample1.equals(sample2) should be (false)
+
   }
 
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {

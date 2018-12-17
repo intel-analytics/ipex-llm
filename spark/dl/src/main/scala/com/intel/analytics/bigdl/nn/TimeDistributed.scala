@@ -21,7 +21,10 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -34,15 +37,22 @@ import scala.reflect.ClassTag
  * The input data format is [Batch, Time, Other dims]. For the contained layer, it must not change
  * the Other dims length.
  *
+ * @param maskZero: if `maskZero` is set to true, if the input including zero vectors, the
+ *                corresponding output will be set to zero vecotrs.
  * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
-class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
+class TimeDistributed[T : ClassTag] (
+  val layer: AbstractModule[Tensor[T], Tensor[T], T],
+  maskZero: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private var inputSize: Array[Int] = _
   private var gradOutputSize: Array[Int] = _
   private var outputSize: Array[Int] = _
+  private var maskBuffer: Tensor[T] = _
+  private var indexBuffer: Tensor[T] = _
+  private var inputBuffer: Tensor[T] = _
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
@@ -96,10 +106,31 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     val _inputSize = input.size
     combine(_inputSize, inputSize)
     input.resize(inputSize)
-    val _output = layer.updateOutput(input).toTensor[T]
+    val _output = layer.forward(input).toTensor[T]
     split(_output.size, outputSize, _inputSize(0), _inputSize(1))
     input.resize(_inputSize)
     output.set(_output).resize(outputSize)
+
+    if (maskZero) {
+      if (maskBuffer == null) {
+        maskBuffer = Tensor()
+      }
+      if (indexBuffer == null) {
+        indexBuffer = Tensor()
+      }
+      if (inputBuffer == null) {
+        inputBuffer = Tensor()
+      }
+      inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)._1
+      for (i <- 1 to maskBuffer.size(1)) {
+        for (j <- 1 to maskBuffer.size(2)) {
+          if (maskBuffer(Array(i, j, 1)) == ev.zero) {
+            output.select(1, i).select(1, j).zero()
+          }
+        }
+      }
+    }
+
     output
   }
 
@@ -129,15 +160,35 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     gradOutput.resize(_gradOutputSize)
   }
 
-  /**
-   * If the module has parameters, this will zero the accumulation of the gradients with respect
-   * to these parameters. Otherwise, it does nothing.
-   */
-  override def zeroGradParameters(): Unit = {
-    layer.zeroGradParameters()
-  }
+  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val before = System.nanoTime
+    if (gradOutputSize == null) {
+      gradOutputSize = new Array[Int](gradOutput.size.length - 1)
+    }
 
-  override def updateParameters(learningRate: T): Unit = layer.updateParameters(learningRate)
+    val _inputSize = input.size
+    val _gradOutputSize = gradOutput.size
+    combine(_gradOutputSize, gradOutputSize)
+    input.resize(inputSize)
+    gradOutput.resize(gradOutputSize)
+    val _gradInput = layer.backward(input, gradOutput).toTensor[T]
+    gradInput.set(_gradInput).resize(_inputSize)
+    input.resize(_inputSize)
+    gradOutput.resize(_gradOutputSize)
+
+    if (maskZero) {
+      for (i <- 1 to maskBuffer.size(1)) {
+        for (j <- 1 to maskBuffer.size(2)) {
+          if (maskBuffer(Array(i, j, 1)) == ev.zero) {
+            gradInput.select(1, i).select(1, j).zero()
+          }
+        }
+      }
+    }
+    backwardTime += System.nanoTime - before
+
+    gradInput
+  }
 
   override def reset(): Unit = layer.reset()
 
@@ -154,10 +205,25 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     super.checkEngineType()
   }
 
-  override def resetTimes(): Unit = layer.resetTimes()
+  override def resetTimes(): Unit = {
+    super.resetTimes()
+    layer.resetTimes()
+  }
 
   override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
-    layer.getTimes()
+    val timeBuffer =
+      new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
+    var modulesForwardTime = 0L
+    var modulesBackwardTime = 0L
+    layer.getTimes.foreach(x => {
+      timeBuffer.append(x)
+      modulesForwardTime += x._2
+      modulesBackwardTime += x._3
+    })
+    timeBuffer.append((this,
+      this.forwardTime - modulesForwardTime,
+      this.backwardTime - modulesBackwardTime))
+    timeBuffer.toArray
   }
 
   override def evaluate(): TimeDistributed.this.type = {
@@ -174,31 +240,13 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = layer.parameters()
 
   /**
-   * This method compact all parameters and gradients of the model into two tensors. So it's easier
-   * to use optim method
-   *
-   * @return
-   */
-  override def getParameters(): (Tensor[T], Tensor[T]) = layer.getParameters()
-
-  /**
    * This method will return a table indicating the name and corresponding parameters.
    * @return Table
    */
   override def getParametersTable(): Table = layer.getParametersTable()
 
-  /**
-   * Copy the useful running status from src to this.
-   *
-   * The subclass should override this method if it has some parameters besides weight and bias.
-   * Such as runningMean and runningVar of BatchNormalization.
-   *
-   * @param src source Module
-   * @return this
-   */
-  override def copyStatus(src: Module[T]): TimeDistributed.this.type = {
-    layer.copyStatus(src)
-    this
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    layer.getExtraParameter()
   }
 
   override def clearState(): TimeDistributed.this.type = {
@@ -207,6 +255,9 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     inputSize = null
     gradOutputSize = null
     outputSize = null
+    maskBuffer = null
+    inputBuffer = null
+    indexBuffer = null
     this
   }
 
@@ -228,11 +279,29 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
       layer, inputSize, gradOutputSize, outputSize)
     state.filter(_ != null).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def toString(): String = s"${getPrintName}${layer}"
 }
 
-object TimeDistributed {
-  def apply[@specialized(Float, Double) T: ClassTag](layer: TensorModule[T])
-    (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
-    new TimeDistributed[T](layer)
+object TimeDistributed extends ModuleSerializable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    layer: AbstractModule[Tensor[T], Tensor[T], T],
+    maskZero: Boolean = false
+  )(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
+    new TimeDistributed[T](layer, maskZero)
+  }
+  // To make ti compatible with release 0.4
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val layerAttr = attrMap.get("layer")
+    val layer = DataConverter.getAttributeValue(context, layerAttr).
+      asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    var maskZero = false
+    if (attrMap.containsKey("maskZero")) {
+      maskZero = DataConverter.getAttributeValue(context, attrMap.get("maskZero")).
+        asInstanceOf[Boolean]
+    }
+    TimeDistributed(layer, maskZero)
   }
 }

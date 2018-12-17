@@ -2,16 +2,16 @@
 This example demonstrates how to use BigDL to train and evaluate [Inception v1](https://arxiv.org/abs/1409.4842) architecture on the [ImageNet](http://image-net.org/index) data.
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code. We
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code. We
 will release a pre-build package soon.
 
 ## Prepare the data
 You can download imagenet-2012 data from <http://image-net.org/download-images>.
  
 After you download the files(**ILSVRC2012_img_train.tar** and **ILSVRC2012_img_val.tar**), 
-run the follow commands to prepare the data.
+run the following commands to prepare the data.
 
-classes.lst and img_class.lst used below can be found at bigdl_folder/scripts folder
+classes.lst and img_class.lst used below can be found in the current folder.
 ```bash
 mkdir train
 mv ILSVRC2012_img_train.tar train/
@@ -30,16 +30,17 @@ cat img_class.lst | while read PARAM; do mv ${PARAM/ n[0-9]*/} ${PARAM/ILSVRC*JP
 rm ILSVRC2012_img_val.tar
 ```
 
-Now all the images belong to the same category are moved to the same folder.
+Now all the images belonging to the same category are moved to the same folder.
 
 This command will transform the images into hadoop sequence files, which are 
 more suitable for a distributed training.
 
-Bigdl has different versions, bigdl-VERSION-jar-with-dependencies-and-spark.jar used in the following command is a general name.
-Please update it according to your bigdl version.  
+Bigdl has different versions, bigdl-VERSION-jar-with-dependencies.jar used in the following command is a general name.
+Please update it according to your bigdl version. It can be found in the **lib** folder of the distributed package.
+If you build from source, it can be found in the **dist/lib** folder.
 
 ```bash
-java -cp bigdl_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
+spark-submit --class com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f imagenet_folder -o output_folder -p cores_number
 ```
 
 It will generate the hadoop sequence files in the output folder.
@@ -80,7 +81,7 @@ In the above commands
 * -f: where you put your ImageNet data, it should be a hdfs folder
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
-model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
+model.#iteration_number, and train state will be named as optimMethod.#iteration_number. Note that if
 there are some files already exist in the folder, the old file will not be overwrite for the
 safety of your model files.
 * --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number *
@@ -89,6 +90,11 @@ core_number. In this example, node_number is 1 and the mini-batch size is sugges
 policy.
 * --weightDecay: weight decay.
 * --checkpointIteration: the checkpoint interval in iteration.
+* --maxLr: optional. Max learning rate after warm up. It has to be set together with warmupEpoch.
+* --warmupEpoch: optional. Epoch numbers need to take to increase learning rate from learningRate to maxLR.
+* --gradientL2NormThreshold: optional. Gradient L2-Norm threshold used for norm2 gradient clipping.
+* --gradientMin: optional. Max gradient clipping by value, used in constant gradient clipping.
+* --gradientMax: optional. Min gradient clipping by value, used in constant gradient clipping.
 
 ## Test the Model
 * Spark standalone, example command

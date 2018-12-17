@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule, IdentityOutputShape}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
@@ -39,7 +39,8 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 877259619727212424L)
 class PReLU[T: ClassTag](
   val nOutputPlane: Int = 0)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T]
+    with Initializable {
 
   val weight = if (nOutputPlane == 0) {
     Tensor[T](1)
@@ -136,7 +137,9 @@ class PReLU[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isContiguous(), "input must be contiguous")
     require(gradOutput.isContiguous(), "gradOuput must be contiguous")
-    require(input.nElement() == gradOutput.nElement())
+    require(input.nElement() == gradOutput.nElement(),
+      "input and gradoutput size should be equal" +
+      s"input ${input.nElement()}, gradOutput ${gradOutput.nElement()}")
     gradInput.resizeAs(input)
 
     if (nOutputPlane == 0) {
@@ -280,16 +283,8 @@ class PReLU[T: ClassTag](
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def toString(): String = {

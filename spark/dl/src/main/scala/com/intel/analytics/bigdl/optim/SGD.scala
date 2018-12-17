@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -44,7 +45,8 @@ class SGD[@specialized(Float, Double) T: ClassTag](
   var nesterov: Boolean = false,
   var learningRateSchedule: LearningRateSchedule = Default(),
   var learningRates: Tensor[T] = null,
-  var weightDecays: Tensor[T] = null)(implicit ev: TensorNumeric[T])
+  var weightDecays: Tensor[T] = null
+  )(implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
   import SGD._
@@ -211,6 +213,13 @@ object SGD {
     def updateHyperParameter(config : Table, state : Table) : Unit = {}
 
     var currentRate : Double = 0.0
+
+    // iteration numbers needed to be excluded for a new learningRateSchedule
+    private[SGD] var excludeIterations : Int = 0
+    // epoch numbers needed to be excluded for a new learningRateSchedule
+    private[SGD] var excludeEpochs: Int = 0
+    // accumulated iteration numbers of a new learningRateSchedule
+    private[SGD] var maxIterations: Int = 0
   }
 
   /**
@@ -223,7 +232,7 @@ object SGD {
    */
   case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val epoch = state[Int]("epoch")
+      val epoch = state[Int]("epoch") - excludeEpochs
       for (r <- regimes) {
         if (epoch >= r.startEpoch && epoch <= r.endEpoch) {
           config.add(r.config)
@@ -233,7 +242,7 @@ object SGD {
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val epoch = optimMethod.state[Int]("epoch")
+      val epoch = optimMethod.state[Int]("epoch") - excludeEpochs
       for (r <- regimes) {
         if (epoch >= r.startEpoch && epoch <= r.endEpoch) {
           val config = r.config
@@ -279,13 +288,15 @@ object SGD {
    * @param maxIteration max iteration when lr becomes zero
    */
   case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
+
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      val clr = if (nevals > maxIteration) {
+      val polyIter = nevals // fix: should have no exclude iterations.
+      val clr = if (polyIter > maxIteration) {
         0.0
       } else {
-        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+        -lr * math.pow(1.0 - polyIter.toDouble / maxIteration, power)
       }
       println(s"iteration is : ${nevals}. current learning rate is $clr")
       state("evalCounter") = nevals + 1
@@ -293,18 +304,20 @@ object SGD {
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val lr = optimMethod.learningRate
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
-      val clr = if (nevals > maxIteration) {
+      val lr = optimMethod.learningRate
+      val polyIter = nevals // fix: should have no exclude iterations.
+      val clr = if (polyIter > maxIteration) {
         0.0
       } else {
-        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+        -lr * math.pow(1.0 - polyIter.toDouble / maxIteration, power)
       }
       println(s"iteration is : ${nevals}. current learning rate is $clr")
       optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
     }
   }
+
   /**
    * A learning rate decay policy, where the effective learning rate
    * is calculated as base_lr * gamma `^` (floor(iter / stepSize))
@@ -315,11 +328,10 @@ object SGD {
 
   case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
-      var clr = -lr
+      var clr = - config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       var i = 0
-      while(i < nevals / stepSize) {
+      while(i < (nevals - excludeIterations) / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -328,11 +340,10 @@ object SGD {
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val lr = optimMethod.learningRate
-      var clr = -lr
+      var clr = - optimMethod.learningRate
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
       var i = 0
-      while(i < nevals / stepSize) {
+      while(i < (nevals - excludeIterations) / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -348,11 +359,11 @@ object SGD {
    */
   case class MultiStep(stepSizes : Array[Int], gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
-      var clr = -lr
+      var clr = - config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       var currentStep = 0
-      while (currentStep < stepSizes.length && nevals >= stepSizes(currentStep)) {
+      while (currentStep < stepSizes.length &&
+        (nevals - excludeIterations) >= stepSizes(currentStep)) {
         clr *= gamma
         currentStep += 1
       }
@@ -361,14 +372,15 @@ object SGD {
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val lr = optimMethod.learningRate
-      var clr = -lr
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      var clr = - optimMethod.learningRate
       var currentStep = 0
-      while (currentStep < stepSizes.length && nevals >= stepSizes(currentStep)) {
+      while (currentStep < stepSizes.length &&
+        (nevals - excludeIterations) >= stepSizes(currentStep)) {
         clr *= gamma
         currentStep += 1
       }
+
       optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
     }
@@ -384,20 +396,19 @@ object SGD {
    */
   case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-1)
-      var clr = -lr
+      var clr = - config.get[Double]("learningRate").getOrElse(1e-1)
       val epoch = state[Int]("epoch")
-      val decay = decayType(epoch)
+      val decay = decayType(epoch - excludeEpochs)
       clr = clr * math.pow(0.1, decay)
       config("clr") = clr
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val lr = optimMethod.learningRate
-      var clr = -lr
+      var clr = - optimMethod.learningRate
       val epoch = optimMethod.state[Int]("epoch")
-      val decay = decayType(epoch)
+      val decay = decayType(epoch - excludeEpochs)
       clr = clr * math.pow(0.1, decay)
+
       currentRate = clr
     }
   }
@@ -411,11 +422,10 @@ object SGD {
    */
   case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
-      var clr = -lr
+      var clr = - config.get[Double]("learningRate").getOrElse(1e-3)
       val epoch = state[Int]("epoch")
       var i = 0
-      while(i < epoch / stepSize) {
+      while(i < (epoch - excludeEpochs) / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -423,11 +433,10 @@ object SGD {
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val lr = optimMethod.learningRate
-      var clr = -lr
+      var clr = - optimMethod.learningRate
       val epoch = optimMethod.state[Int]("epoch")
       var i = 0
-      while(i < epoch / stepSize) {
+      while(i < (epoch - excludeEpochs) / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -449,9 +458,9 @@ object SGD {
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
       val lr = optimMethod.learningRate
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
-      val p = nevals / decay_step
-      optimMethod.state("evalCounter") = nevals + 1
+      val p = (nevals - excludeIterations) / decay_step
       val clr = -lr * math.exp(-gamma * p)
+      optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
     }
   }
@@ -469,7 +478,7 @@ object SGD {
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
       val lr = optimMethod.learningRate
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
-      var p = nevals / decayStep.toDouble
+      var p = (nevals - excludeIterations) / decayStep.toDouble
       if (stairCase) {
         p = p.floor
       }
@@ -493,7 +502,7 @@ object SGD {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      config("clr") = -lr / (1 + nevals * lrd)
+      config("clr") = -lr / (1 + (nevals - excludeIterations) * lrd)
       state("evalCounter") = nevals + 1
     }
 
@@ -501,7 +510,8 @@ object SGD {
       val lr = optimMethod.learningRate
       val lrd = optimMethod.learningRateDecay
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
-      currentRate = -lr / (1 + nevals * lrd)
+      currentRate = -lr / (1 + (nevals - excludeIterations) * lrd)
+
       optimMethod.state("evalCounter") = nevals + 1
     }
   }
@@ -553,8 +563,8 @@ object SGD {
      * @param optimMethod init optiMethod.
      */
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val epoch = optimMethod.state[Int]("epoch")
-      if (epoch == 1) currentRate = -optimMethod.learningRate
+      val epoch = optimMethod.state[Int]("epoch") - excludeEpochs
+      if (epoch == 1) currentRate = - optimMethod.learningRate
       if (epoch == curEpoch) return
       curEpoch = epoch
       val current = optimMethod.state.get[Float](monitor)
@@ -579,4 +589,102 @@ object SGD {
     }
   }
 
+  /**
+   * A learning rate gradual increase policy, where the effective learning rate
+   * increase delta after each iteration.
+   * Calculation: base_lr + delta * iteration
+   *
+   * @param delta increase amount after each iteration
+   */
+  case class Warmup(delta: Double) extends LearningRateSchedule {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      val nevals = state.get[Int]("evalCounter").getOrElse(0)
+      val clr = - lr - delta * nevals
+      config("clr") = clr
+      state("evalCounter") = nevals + 1
+    }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val lr = optimMethod.learningRate
+      val clr = - lr - delta * (nevals - excludeIterations)
+      currentRate = clr
+      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      optimMethod.state("evalCounter") = nevals + 1
+    }
+  }
+
+  /**
+   * Stack several learning rate schedulers.
+   *
+   * @param iterationPerEpoch iteration numbers per epoch
+   */
+  case class SequentialSchedule(iterationPerEpoch: Int) extends LearningRateSchedule {
+    val schedules: ArrayBuffer[LearningRateSchedule] = ArrayBuffer[LearningRateSchedule]()
+    var cur: Int = 0
+
+    /**
+     * Add a learning rate scheduler to the contained `schedules`
+     *
+     * @param schedule learning rate scheduler to be add
+     * @param maxIteration iteration numbers this scheduler will run
+     * @return this container
+     */
+    def add(schedule: LearningRateSchedule, maxIteration: Int):
+      this.type = {
+      schedule.excludeIterations = if (schedules.isEmpty) 0 else schedules.last.maxIterations
+      schedule.maxIterations = schedule.excludeIterations + maxIteration
+      schedule.excludeEpochs = schedule.excludeIterations / iterationPerEpoch
+      schedules += schedule
+      this
+    }
+
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val nevals = state.get[Int]("evalCounter").getOrElse(0)
+
+      if (nevals > schedules(cur).maxIterations) {
+        config("learningRate") = - currentRate
+        cur += 1
+      }
+      schedules(cur).updateHyperParameter(config, state)
+    }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+
+      if (nevals > schedules(cur).maxIterations) {
+        optimMethod.learningRate = - currentRate
+        cur += 1
+      }
+      schedules(cur).updateHyperParameter(optimMethod)
+      currentRate = schedules(cur).currentRate
+    }
+  }
+
+  /**
+   * Learning rate schedule based on warm up Iterations
+   * @param warmUpIteration  Warm up iteration number
+   * @param warmUpDelta Warm up dealta value applied to warm up iteration
+   * @param decayType A function to calculate decay on epochs
+   */
+  case class EpochDecayWithWarmUp(
+    warmUpIteration: Int,
+    warmUpDelta: Double,
+    decayType: (Int) => Double) extends LearningRateSchedule {
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val clr = if (nevals < warmUpIteration) {
+        - lr - warmUpDelta * nevals
+      } else {
+        val epoch = optimMethod.state[Int]("epoch")
+        val decay = decayType(epoch)
+        val maxLr = lr + warmUpDelta * warmUpIteration
+        - maxLr * math.pow(0.1, decay)
+      }
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
+  }
 }

@@ -17,8 +17,11 @@
 package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -43,7 +46,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
             kernalW, kernalH,
             1,
             withPeephole = false)))
-     .add(View(hiddenSize * kernalH * kernalW))
+//     .add(View(hiddenSize * kernalH * kernalW))
 
     val input = Tensor[Double](batchSize, seqLength, inputSize, kernalW, kernalH).rand
     val output = model.forward(input).toTensor[Double]
@@ -329,54 +332,55 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       -0.06827257, 0.115748845, 0.14643653, -0.13591826
     )
     val weights = model.getParameters()._1
+    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
 
-    val weightsOri = new ArrayBuffer[Tensor[Double]]()
-    val weightsNew = new ArrayBuffer[Tensor[Double]]()
-
-    val sizeI = hiddenSize * inputSize * 3 * 3
-    val sizeH = hiddenSize * hiddenSize * 3 * 3
-    var next = 0
-    for(i <- 0 until 4) {
-      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
-        Array(1, hiddenSize, inputSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
-      next += sizeI
-      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
-        Array(1, hiddenSize))
-      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
-      next += hiddenSize
-      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
-        Array(1, hiddenSize, hiddenSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
-      next += sizeH
-    }
-
-    // weightsOri(0) -----> forgetGatei2g.weight
-    // weightsOri(3) -----> inputGatei2g.weight
-    // weightsOri(6) -----> hiddeni2g.weight
-    // weightsOri(9) -----> outputGatei2g.weight
-    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
-    val joinWeights = JoinTable[Double](2, 5)
-    weightsNew += joinWeights.forward(weightsTable)
-
-    // weightsOri(1) -----> forgetGatei2g.bias
-    // weightsOri(4) -----> inputGatei2g.bias
-    // weightsOri(7) -----> hiddeni2g.bias
-    // weightsOri(10) -----> outputGatei2g.bias
-    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
-    val joinBias = JoinTable[Double](1, 1)
-    weightsNew += joinBias.forward(biasTable)
-
-    // weightsOri(2) -----> forgetGateh2g
-    // weightsOri(5) -----> inputGateh2g
-    // weightsOri(8) -----> hiddenh2h
-    // weightsOri(11) -----> outputGateh2g
-    weightsNew += weightsOri(2)
-    weightsNew += weightsOri(5)
-    weightsNew += weightsOri(8)
-    weightsNew += weightsOri(11)
-
-    weights.copy(Module.flatten[Double](weightsNew.toArray))
+//    val weightsOri = new ArrayBuffer[Tensor[Double]]()
+//    val weightsNew = new ArrayBuffer[Tensor[Double]]()
+//
+//    val sizeI = hiddenSize * inputSize * 3 * 3
+//    val sizeH = hiddenSize * hiddenSize * 3 * 3
+//    var next = 0
+//    for(i <- 0 until 4) {
+//      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+//        Array(1, hiddenSize, inputSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+//      next += sizeI
+//      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+//        Array(1, hiddenSize))
+//      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+//      next += hiddenSize
+//      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+//        Array(1, hiddenSize, hiddenSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+//      next += sizeH
+//    }
+//
+//    // weightsOri(0) -----> forgetGatei2g.weight
+//    // weightsOri(3) -----> inputGatei2g.weight
+//    // weightsOri(6) -----> hiddeni2g.weight
+//    // weightsOri(9) -----> outputGatei2g.weight
+//    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+//    val joinWeights = JoinTable[Double](2, 5)
+//    weightsNew += joinWeights.forward(weightsTable)
+//
+//    // weightsOri(1) -----> forgetGatei2g.bias
+//    // weightsOri(4) -----> inputGatei2g.bias
+//    // weightsOri(7) -----> hiddeni2g.bias
+//    // weightsOri(10) -----> outputGatei2g.bias
+//    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+//    val joinBias = JoinTable[Double](1, 1)
+//    weightsNew += joinBias.forward(biasTable)
+//
+//    // weightsOri(2) -----> forgetGateh2g
+//    // weightsOri(5) -----> inputGateh2g
+//    // weightsOri(8) -----> hiddenh2h
+//    // weightsOri(11) -----> outputGateh2g
+//    weightsNew += weightsOri(2)
+//    weightsNew += weightsOri(5)
+//    weightsNew += weightsOri(8)
+//    weightsNew += weightsOri(11)
+//
+//    weights.copy(Module.flatten[Double](weightsNew.toArray))
 
     val output = model.forward(input)
     val gradInput = model.backward(input, output).asInstanceOf[Tensor[Double]]
@@ -440,7 +444,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
-  "A ConvLSTMPeepwhole " should "generate corrent output2 when batch != 1" in {
+  "A ConvLSTMPeepwhole " should "generate corrent output when batch != 1" in {
     val hiddenSize = 4
     val inputSize = 2
     val seqLength = 2
@@ -630,42 +634,43 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       -0.11207754, 0.042513624, -0.05665606, -0.015827265, 0.12174054
     )
     val weights = model.getParameters()._1
+    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
 
-    val weightsOri = new ArrayBuffer[Tensor[Double]]()
-    val weightsNew = new ArrayBuffer[Tensor[Double]]()
-
-    val sizeI = hiddenSize * inputSize * 3 * 3
-    val sizeH = hiddenSize * hiddenSize * 3 * 3
-    var next = 0
-    for(i <- 0 until 4) {
-      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
-        Array(1, hiddenSize, inputSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
-      next += sizeI
-      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
-        Array(1, hiddenSize))
-      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
-      next += hiddenSize
-      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
-        Array(1, hiddenSize, hiddenSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
-      next += sizeH
-    }
-
-    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
-    val joinWeights = JoinTable[Double](2, 5)
-    weightsNew += joinWeights.forward(weightsTable)
-
-    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
-    val joinBias = JoinTable[Double](1, 1)
-    weightsNew += joinBias.forward(biasTable)
-
-    weightsNew += weightsOri(2)
-    weightsNew += weightsOri(5)
-    weightsNew += weightsOri(8)
-    weightsNew += weightsOri(11)
-
-    weights.copy(Module.flatten[Double](weightsNew.toArray))
+//    val weightsOri = new ArrayBuffer[Tensor[Double]]()
+//    val weightsNew = new ArrayBuffer[Tensor[Double]]()
+//
+//    val sizeI = hiddenSize * inputSize * 3 * 3
+//    val sizeH = hiddenSize * hiddenSize * 3 * 3
+//    var next = 0
+//    for(i <- 0 until 4) {
+//      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+//        Array(1, hiddenSize, inputSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+//      next += sizeI
+//      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+//        Array(1, hiddenSize))
+//      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+//      next += hiddenSize
+//      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+//        Array(1, hiddenSize, hiddenSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+//      next += sizeH
+//    }
+//
+//    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+//    val joinWeights = JoinTable[Double](2, 5)
+//    weightsNew += joinWeights.forward(weightsTable)
+//
+//    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+//    val joinBias = JoinTable[Double](1, 1)
+//    weightsNew += joinBias.forward(biasTable)
+//
+//    weightsNew += weightsOri(2)
+//    weightsNew += weightsOri(5)
+//    weightsNew += weightsOri(8)
+//    weightsNew += weightsOri(11)
+//
+//    weights.copy(Module.flatten[Double](weightsNew.toArray))
 
     val output = model.forward(input)
     val gradInput = model.backward(input, output).asInstanceOf[Tensor[Double]]
@@ -726,5 +731,431 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       assert(abs(v1 - v2) < 1e-6)
       v1
     })
+  }
+
+  // Tested with torch convlstm
+  "A ConvLSTMPeepwhole " should "return expected hidden and cell state when batch != 1" in {
+    val hiddenSize = 4
+    val inputSize = 2
+    val seqLength = 2
+    val batchSize = 3
+
+    val inputData = Array(
+      0.7379243471309989, 0.19769034340444613, 0.7553588318460729, 0.04613053826696778,
+      0.5252748330906923, 0.3243104024273151, 0.8989024506441619, 0.6712812402234619,
+      0.15323104849092073, 0.10185090916201034, 0.5226652689296567, 0.2899686031416233,
+
+      0.511326269557182, 0.49001743514565177, 0.1984377134313693, 0.7480165633318978,
+      0.6211121942699456, 0.6036424737237795, 0.1592963148948352, 0.26366166406420644,
+      0.7005873221417939, 0.35208052461842276, 0.725171953811403, 0.5044467614524997,
+
+      0.523452964024349, 0.7937875951399342, 0.6943424385328354, 0.8522757484294406,
+      0.2271578105064339, 0.5126336840147973, 0.6541267785298224, 0.3414006259681709,
+      0.4863876223334871, 0.9055057744040688, 0.8798793872101478, 0.41524602527888876,
+
+      0.8876018988857928, 0.2600152644808019, 0.8634521212917783, 0.2153581486704762,
+      0.4154146887274315, 0.89663329916328, 0.5406127724020381, 0.5893982389701549,
+      0.19306165705001244, 0.45133332543350857, 0.9714792090557134, 0.38498402005236265,
+
+      0.006891668205946, 0.5828297372808069, 0.5688474525455758, 0.8823143009035355,
+      0.6887655121242025, 0.0027582524956907273, 0.9663642226218756, 0.4108958429337164,
+      0.13044029438378613, 0.7476518446247042, 0.27181284499242064, 0.2943235571195709,
+
+      0.5604631859123652, 0.038323627725658116, 0.7603531593097606, 0.27194849168888424,
+      0.7267936284527879, 0.9052766088556446, 0.02837551118315562, 0.4574005827539791,
+      0.7973179561393601, 0.9980165989408478, 0.25069973544723445, 0.7113158573554784,
+
+      0.11561652478927409, 0.6416543947530068, 0.4621700648670196, 0.029251147823290524,
+      0.43078782880788635, 0.25593904336252427, 0.7192673207531932, 0.1756512226290753,
+      0.8578302327025378, 0.7098735179715736, 0.5881799635556655, 0.3308673021852163,
+
+      0.6190265867439853, 0.04932089904003756, 0.6528462133452869, 0.9606073952644223,
+      0.5669727867139613, 0.30551745863715773, 0.6397990914737653, 0.4658329782779089,
+      0.5963362791762975, 0.7691666538081872, 0.3162174933237236, 0.4259981344604039,
+
+      0.3141262752374987, 0.1977960342228966, 0.5334056420410246, 0.40966136495594996,
+      0.757202109971997, 0.913316506797173, 0.6599946668051349, 0.3938817528802213,
+      0.5209422302691442, 0.6422317952685995, 0.17747939441294336, 0.8074452051580658,
+
+      0.3944410584066397, 0.2527031847980983, 0.39527449481971033, 0.0928484214334575,
+      0.4852964142206313, 0.25068274731805196, 0.08329386976314157, 0.4681014271865992,
+      0.860995719082069, 0.01158601045989438, 0.31712803268106715, 0.2617924245499301,
+
+      0.934104253955566, 0.24448283400001236, 0.9842141116573005, 0.7934911952785096,
+      0.17490418077955516, 0.11254306305960093, 0.20896334129728766, 0.2764503640807836,
+      0.24782820561381746, 0.7664813069795481, 0.4206320455881154, 0.6306966327857411,
+
+      0.33697752771986067, 0.7870030511736112, 0.9097909928901393, 0.41198674582123507,
+      0.25120817362250203, 0.17776223144093362, 0.49757005026260037, 0.28573572832782146,
+      0.8807161778981778, 0.10209784975052816, 0.37642364632639536, 0.6049083416711989)
+    val input = Tensor[Double](inputData, Array(batchSize, seqLength, inputSize, 3, 4))
+
+    val rec = Recurrent[Double]()
+    val model = Sequential[Double]()
+      .add(rec
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+
+    val weightData = Array(
+      -0.0697708, 0.187022, 0.08511595, 0.096392, 0.004365, -0.181258, 0.0446674,
+      -0.1335725, -0.20553963, -0.06138988, -0.07350091, 0.21952641, -0.20255956, -0.010300428,
+      -0.038676325, 0.1958987, -0.13511689, -0.101483345, -0.125394, 0.21549562, 0.009512273,
+      0.22363727, -0.12906058, -0.1364867, -0.096433975, 0.05142183, 0.0600333, 0.104275264,
+      -0.23061629, -0.14527707, 0.011904705, -0.13122521, -0.028477365, -0.17441525, -0.22748822,
+      0.089772895, 0.047597, -0.12802905, 0.023593059, 0.047630176, -0.0041123535, 0.15042211,
+      0.22905788, 0.16112402, 0.17447555, -0.17807686, -0.1150537, -0.112298205, -0.09767061,
+      -0.06547484, -0.059544224, -0.068848155, 0.017608726, -0.0486288, 0.040728, 0.0032547752,
+      -0.062271275, -0.07636171, -0.090193786, -0.1757421, -0.029310212, -0.055856735, 0.2138684,
+      0.08065, -0.14784653, -0.11130823, 0.15752073, 0.0417686, 0.07667526, -0.08721331,
+      0.12652178, -0.22656773, 0.028447477, 0.059678376, 0.097432226, 0.07587893, 0.018427523,
+      0.07969191, -0.16021226, 0.15130767, 0.16185403, 0.09212428, -0.009819705, -0.09506356,
+      0.1286456, -0.08805564, 0.046685345, 0.12232006, -0.100213096, -0.15668556, 0.07114366,
+      0.095224895, -0.124568574, 0.06927875, 0.0905962, -0.035104837, 0.15567762, -0.043663125,
+      -0.07430526, -0.055192, 0.01406816, -0.082332, -0.09430171, -0.1095887, -0.07151577,
+      -0.02634421, -0.06150073, 0.11257642, 0.14980435, -0.062605076, -0.12603457, -0.15501663,
+      0.02251482, -0.08227526, 0.13384429, 0.024052791, 0.13748798, -0.08544985, -0.036989275,
+      0.026403576, -0.136615, 0.05420539, 0.16269544, 0.035181798, 0.15763186, -0.1604577,
+      0.1537655, 0.02734131, -0.048081715, 0.100141905, 0.028017784, 0.08105907, 0.019959895,
+      0.13988869, 0.16058885, -0.003570326, 0.06591913, -0.10256911, 0.13575412, 0.04774964,
+      -0.017293347, -0.048617315, 0.15695612, 0.15765312, -0.047396783, -0.16620952, 0.0025890507,
+      -0.13422322, -0.03875675, -0.075357996, 0.113039605, 0.13345407, 0.09567941, -0.003772,
+      0.07441882, 0.04021747, 0.12041045, -0.042105403, -0.027613033, 0.15320867, -0.12912026,
+      -0.081750855, -0.0344171, -0.15512398, 0.15219747, 0.036528654, -0.012755581, 0.098534,
+      -0.07061299, 0.02883929, 0.14481406, -0.051582605, 0.10316327, 0.085615724, 0.06536975,
+      -0.054357443, 0.02749899, -0.013213737, 0.057099275, 0.15802467, -0.05081968, -0.07198317,
+      0.11493357, -0.0012803806, 0.11840431, 0.10919253, -0.10307259, 0.087982856, 0.06715956,
+      0.03439658, -0.1251883, -0.16122015, 0.11468333, 0.15124878, -0.040252376, 0.13959402,
+      -0.018218568, -0.03417238, -0.07071258, 0.15031807, -0.09312864, -0.014361585, 0.009083145,
+      0.07651518, -0.030849354, 0.053097464, 0.02317304, -0.0126761, -0.10731614, 0.08843881,
+      -0.058363467, -0.07192067, 0.13913071, -0.07697743, 0.15923063, -0.08419231, 0.017478677,
+      -0.08418075, -0.057064693, 0.0024510117, -0.20928818, -0.22167638, -0.038345862, 0.03438525,
+      0.11347725, -0.12304, 0.026768617, 0.045132592, 0.091074154, 0.13448715, 0.11804616,
+      -0.22657603, -0.016182138, -0.1331919, 0.05141501, 0.015872177, -0.12630826, 0.21568011,
+      -0.10292801, 0.13611461, -0.08374142, -0.22699684, 0.16571483, -0.098663375, -0.018467197,
+      -0.15427141, -0.15015155, 0.10223335, -0.14016786, -0.10880828, -0.21908437, 0.14608948,
+      0.07250339, 0.06662375, -0.18800929, 0.11404393, 0.13704747, 0.14116052, 0.10486333,
+      -0.010664585, -0.11811825, -0.1724059, 0.15996984, -0.17623067, -0.055978876, -0.10195447,
+      -0.17426933, 0.009317461, -0.23025058, -0.22655061, 0.1504219, -0.22794038, 0.19736658,
+      -0.076756656, -0.16812365, -0.22800718, 0.17344427, -0.12931758, 0.10014104, -0.13550109,
+      -0.23511806, -0.06651987, 0.19619618, 0.097913995, 0.14484589, -0.20718974, 0.20920905,
+      0.18459858, -0.008639049, -0.22041525, 0.08012527, 0.14633249, -0.024920763, -0.18607515,
+      0.07662353, -0.15454617, 0.067585476, 0.05524932, -0.15291865, 0.12737663, 0.05814569,
+      -0.11415055, 0.11919394, -0.06319863, 0.1465731, 0.054857183, -0.15075083, 0.090675876,
+      0.1525343, -0.0066932747, -0.048541967, 0.06132587, -0.079331905, 0.11314261, 0.14027406,
+      -0.0266242, -0.016292417, 0.07795509, 0.020753743, -0.10986114, 0.10756251, 0.02036946,
+      0.026220735, -0.11005689, 0.10311518, 0.07109452, -0.09970161, 0.068307705, 0.11119034,
+      -0.06424175, -0.0012396448, -0.11550802, -0.06943571, -0.110153, -0.041444167, -0.12524629,
+      0.15868594, 0.008897657, -0.10843479, 0.15759167, -0.09669543, -0.08299825, -0.0937801,
+      -0.020804988, -0.08680972, 0.083160855, 0.029616985, -0.017982747, 0.0037287925, 0.097527005,
+      0.09538205, -0.0932, -0.097054094, 0.10397664, 0.12322543, -0.06448696, -0.12847184,
+      0.050058555, 0.09502069, 0.08681986, -0.14003497, 0.03627888, -0.075629145, -0.095788166,
+      -0.08410784, 0.13308963, -0.007147816, -0.16363329, 0.12797672, 0.124641, -0.05630061,
+      0.0064241965, 0.077181205, -0.1251426, 0.08616565, 0.1477562, -0.04511368, 0.029885028,
+      0.057127535, -0.08563146, 0.13729702, -0.10859255, -0.102196366, 0.008430395, -0.0945447,
+      0.10205625, -0.07343792, 0.16189432, -0.1300748, 0.08548705, 0.16390403, -0.02669807,
+      -0.058629803, -0.05904906, -0.016605929, 0.14874554, 0.014934211, -0.09052281, 0.0579616,
+      -0.041529182, 0.09614261, 0.15888576, -0.11366321, -0.102919176, -0.1167308, -0.011413716,
+      0.07176415, -0.03216456, -0.063260436, 0.059609246, 0.16423965, 0.0052398313, 0.1286797,
+      -0.0381152, -0.009582818, 0.004786132, -0.1019815, 0.043783717, 0.05244485, -0.06435464,
+      -0.16259833, -0.100482024, 0.0587321, -0.052555863, 0.032503795, -0.1606384, -0.14574,
+      -0.05185242, -0.08184071, 0.15766397, 0.09867271, 0.08309498, -0.15646282, 0.15911676,
+      -0.008041214, -0.07785257, 0.06866316, -0.07157379, 0.13319956, -0.066218115, 0.0138255,
+      -0.076073825, -0.14936924, 0.10676395, -0.4842985, 0.083836384, -0.21565008, -0.2306193,
+      0.0017399695, -0.07744393, -0.2044993, -0.21714376, 0.0077707577, 0.14650588, 0.19233301,
+      -0.04317506, -0.058397546, 0.15633541, -0.115028, -0.044130307, 0.063888475, 0.21123467,
+      0.20039539, -0.045635425, 0.040344927, -0.12061099, 0.13238785, -0.11554383, 0.012527357,
+      -0.04936022, -0.223834, 0.2067501, 0.035001267, -0.121593, 0.08469669, -0.15821323,
+      0.013301196, 0.19869077, -0.18677086, -0.09790556, 0.18662173, -0.216591, 0.13041325,
+      0.13628985, 0.042848308, -0.031125685, -0.22374651, -0.087204315, 0.05124186, -0.22576457,
+      0.014185649, -0.0899537, -0.015126135, -0.10904176, -0.212513, -0.19453013, 0.0071554612,
+      -0.07960433, -0.20750536, -0.22908148, 0.066988595, -0.11946863, -0.20373446, -0.03756,
+      -0.15693687, 0.015695922, -0.19193731, 0.035843078, 0.07994549, 0.025597025, -0.10725631,
+      -0.11276663, -0.1882937, 0.019561082, 0.0135140605, 0.041632164, 0.0010907603, -0.06264914,
+      -0.016213655, 0.0937373, 0.094795, -0.1173104, -0.21944033, -0.09396857, 0.13556847,
+      -0.09024931, 0.1276821, -2.7715965E-4, 0.12017726, 0.13998412, 0.13809435, 0.16587347,
+      0.04789949, -0.08513931, 0.07294201, -0.08220003, -0.15560868, 0.14816408, -0.09582949,
+      0.051776934, -0.011485172, 0.14832942, 0.10104054, 0.080303155, 0.0034141147, 0.14833276,
+      0.09612207, 0.11273294, 0.13111332, -0.00879518, -0.1397018, -0.10093753, -0.00945932,
+      -0.032682095, -0.14018348, 0.050238717, 0.09185889, -0.14419281, 0.09613244, -0.13719763,
+      0.04358094, -0.15398286, -0.116741166, -0.11954482, 0.14914127, -0.126483, -0.026603939,
+      0.15768388, 0.06356159, 0.05631903, 0.0101217795, 0.15248485, -0.14745563, -0.0145869935,
+      0.0382958, 0.057202652, -0.14191794, 0.059604887, 0.011006361, -0.07016107, 0.076446384,
+      0.013760659, -0.068240955, 0.0037634, 0.12695941, 0.041081227, 0.10223117, 0.11603621,
+      -0.06294605, -0.010134418, -0.006934982, 0.11731349, -0.10002373, 0.14468494, 0.006046706,
+      -0.11748926, -0.13269922, 0.08922616, 0.076726876, 0.079133116, -0.13795392, 0.05776867,
+      -0.12632991, -0.16351144, -0.067499354, 0.047223303, 0.063164465, -0.0149828065, -0.031813424,
+      -0.08393954, -0.067819, 0.081516, -0.1065244, 0.14492081, 0.11396905, -0.10664382,
+      -0.0098184915, 0.08660889, -0.16464078, 0.07709077, -0.1493178, 0.017629929, 0.08108806,
+      -0.057861995, 0.05144662, -0.019507658, 0.098744385, 0.14157839, -0.101155385, -0.1155548,
+      -0.1539434, 0.07039324, -0.015811022, 0.15094946, -0.16115923, 0.116900794, 0.11721963,
+      0.020760974, 0.0040808455, -0.0896887, 0.013347261, 0.11278092, -0.07966485, -0.094330534,
+      -0.15664604, 0.015197758, 0.12119024, -0.05060158, 0.06654976, -0.13198644, -0.1457269,
+      -0.13899888, 0.038908076, -0.13269305, -0.11445787, 0.021789772, 0.027084751, 0.01323522,
+      -0.12667863, 0.026683968, 0.04916361, 0.0086855, 0.15367854, 0.031549584, -0.0036370864,
+      0.08499007, -0.10802871, 0.03548985, -0.17660856, -0.068241306, 0.15097389, 0.16520916,
+      0.024556529, 0.0017257226, 0.17331718, 0.196117, 0.19437543, 0.19648184, -0.1331118,
+      -0.21632133, -0.18020143, 0.12856491, 0.1344524, 0.11382166, 0.064181186, 0.14279565,
+      -0.08350899, -0.2256594, -0.13126723, 0.043258272, -0.021165192, 0.089386486, -0.09204444,
+      -0.0960608, -0.037649803, 0.22336064, -0.031554904, 0.124656096, -0.025671339, -0.1065685,
+      0.0453102, -1.68393E-5, 0.22479524, 0.046631828, 0.007860622, -0.22629729, -0.13721013,
+      0.22810946, -0.12107487, 0.022246245, 0.17803338, 0.2083739, 0.18673882, -0.1917718,
+      0.07565709, 0.120346785, -0.14759375, -0.1377154, 0.038963128, 0.22792713, -0.2159763,
+      -0.006619736, 0.2313753, -0.04800687, -0.1518908, 0.18948461, 0.1076321, -0.11479616,
+      -0.0212803, 0.14886868, -0.22150691, 0.089185275, -0.040394045, 0.13415302, 0.21480684,
+      0.0878023, 0.106930904, -0.18570949, -0.013600573, 0.11532847, 0.11659276, 0.112827145,
+      -0.1062416, 0.066263296, -0.08610482, 0.105527066, -0.058957383, -0.15528603, -0.009521967,
+      0.011328606, -0.06197259, -0.13204348, 0.08675131, -0.113543, -0.01445269, 0.02258719,
+      -0.008030752, -0.093486756, -0.07264881, 0.09213272, 0.07619277, 0.16032794, -0.026074272,
+      0.066076815, -0.10525776, 0.16016503, 0.03144442, -0.023126643, 0.05451808, 0.022852356,
+      -0.096872106, -0.030566314, -0.16589479, 0.0905115, -0.1473723, -0.12166525, 0.078377604,
+      0.13821222, -0.078764655, 0.14731602, -0.08815969, -0.0236424, -0.0355236, -0.09844407,
+      -0.012984, 0.047678906, -0.038449008, 0.08535368, 0.15068671, -0.008833185, -0.09007217,
+      0.112541415, -0.06900989, -0.102243155, -0.050330114, -0.13928314, -0.041724514, 0.054797813,
+      -0.16646549, 0.13796, 0.12394269, 0.020277899, -0.013631716, -0.09424963, -0.13880578,
+      0.08686539, -0.15236098, 0.05722864, -0.02671615, -0.06085055, 0.09522983, -0.03990184,
+      -0.06986189, -0.014213024, -0.1377847, 0.08251909, 0.0143873375, -0.0860864, -0.0640099,
+      -0.06048214, -0.030843036, 0.10346391, -0.14285919, 0.1575129, 0.11078764, -0.09553229,
+      -0.15557009, -0.039680153, -0.02489069, 0.03813003, 0.1080799, 0.07591443, 0.1631084,
+      0.04714953, -0.10192201, -0.12497483, 0.038626827, -0.07361671, -0.097818114, -0.14928903,
+      -0.14453772, 0.10313048, 0.11320499, -0.063832685, 0.011636197, -0.16415314, -0.142816,
+      0.041214544, -0.119791135, 0.10883034, -0.14729027, -0.122481905, 0.08507194, -0.088145964,
+      -0.015075706, 0.06492, -0.16094309, 0.12339206, 0.011586048, 0.1321518, -0.05177626,
+      0.033773363, -0.13636817, 0.013378032, -0.003163873, 0.02471618, -0.13203168, 0.07989189,
+      -0.054477777, 0.059936292, -0.077277765, 0.019922124, -0.15395634, 0.0088137, 0.036947053,
+      -0.11207754, 0.042513624, -0.05665606, -0.015827265, 0.12174054
+    )
+    val weights = model.getParameters()._1
+    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
+
+//        val weightsOri = new ArrayBuffer[Tensor[Double]]()
+//        val weightsNew = new ArrayBuffer[Tensor[Double]]()
+//
+//        val sizeI = hiddenSize * inputSize * 3 * 3
+//        val sizeH = hiddenSize * hiddenSize * 3 * 3
+//        var next = 0
+//        for(i <- 0 until 4) {
+//          val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+//            Array(1, hiddenSize, inputSize, 3, 3))
+//          weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+//          next += sizeI
+//          val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+//            Array(1, hiddenSize))
+//          weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+//          next += hiddenSize
+//          val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+//            Array(1, hiddenSize, hiddenSize, 3, 3))
+//          weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+//          next += sizeH
+//        }
+//
+//        val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+//        val joinWeights = JoinTable[Double](2, 5)
+//        weightsNew += joinWeights.forward(weightsTable)
+//
+//        val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+//        val joinBias = JoinTable[Double](1, 1)
+//        weightsNew += joinBias.forward(biasTable)
+//
+//        weightsNew += weightsOri(2)
+//        weightsNew += weightsOri(5)
+//        weightsNew += weightsOri(8)
+//        weightsNew += weightsOri(11)
+//
+//        weights.copy(Module.flatten[Double](weightsNew.toArray))
+    val expectedCellData = Array(
+      -0.14987348457222294, -0.22105992474941866, -0.3387238605194439, -0.39446403835780186,
+      -0.316453669906271, -0.37140873935818197, -0.4794204029633373, -0.43318998938865677,
+      -0.31715138375541807, -0.36546697609966056, -0.36668646927670884, -0.2531378632113071,
+
+      0.12164367622452013, 0.06375662877054206, 0.10558023052572624, 0.09296068067631055,
+      0.10350287214650072, -0.043105084379426555, -0.002532373132315092, -0.017107651118940928,
+      0.0783054058646045, 0.09983730266019218, 0.15692887903321268, 0.0010369583032553142,
+
+
+      -0.11568265586055029, -0.05157072657958458, -0.030545098446643958, 0.07097465680094239,
+      -0.19039540889885484, -0.19104510993259888, -0.02513773533630481, 0.033952703953675126,
+      -0.22412212420921007, -0.24804429480520482, -0.12672816312820606, -0.022755560537669244,
+
+
+      -0.30986135292585515, -0.4251493103752495, -0.2889602199722825, -0.17273356360945663,
+      -0.3580787788172773, -0.5158149093281363, -0.5032594569503482, -0.27377998399438014,
+      -0.14520932544812054, -0.3487598323162634, -0.36089232520218323, -0.3875967229666661,
+
+
+      -0.10052985037535103, -0.30405218242711163, -0.18654948355613826, -0.27308495250404397,
+      -0.3780858084639802, -0.348063759578918, -0.5343725340433997, -0.3798054993937692,
+      -0.2756440427688284, -0.38768793305018395, -0.3235976734640538, -0.24045597962433007,
+
+
+      0.0341441391957715, 5.299130157097875E-4, 0.15185104088503992, 0.08317049353052722,
+      0.11869821799103805, -0.015495938546971158, -0.03628157899463032, 0.03548216233650562,
+      0.16615806661829663, 0.11809127970778976, 0.022987783943591498, 0.053172762021747644,
+
+
+      -0.1608682545104523, 0.05471790389217375, -0.05140250835841573, 0.012483754945225009,
+      -0.19132561788613034, -0.11758276843982571, -0.04001330599272664, -0.06993179715262401,
+      -0.18292331023592934, -0.23018407727971535, -0.04965212591333139, -0.06706774082467053,
+
+
+      -0.20722497302489531, -0.3163177647903549, -0.20047416971047505, -0.09940467310699157,
+      -0.40391310591443685, -0.3453615998739744, -0.3436142871456762, -0.30579940792439053,
+      -0.21393999767341623, -0.38632194331237324, -0.338132501410083, -0.2799806913472954,
+
+
+      -0.2982647860718788, -3.718604397006525E-4, -0.2748632767327928, -0.3613061886167156,
+      -0.35767327847568825, -0.4899646165682648, -0.4672077926890158, -0.37567367161152376,
+      -0.1962868448170617, -0.3926117801022085, -0.2074747021487374, -0.3643094309050142,
+
+
+      0.15985278516427298, 0.11449180058788376, 0.11367214355435092, 0.10212329736136479,
+      0.11600188662627217, -0.08044840449625897, 0.042658116444042354, -0.06944713691444436,
+      0.15348701605457232, -0.02271487773115937, 0.13052044218592151, 0.10538763744284842,
+
+
+      0.06161551500417564, -0.1439853127761765, -0.03235769175109047, 0.05306321317925293,
+      -0.023773273902641757, -0.18127460458925815, -0.08972730903797148, 0.10524359137085819,
+      -0.22209026327385234, 0.015056602926191405, -0.19742347876502547, 0.01990844614402051,
+
+
+      -0.18828070103927522, -0.21929051591262086, -0.3450388474490299, -0.21525044509990426,
+      -0.36115984252761013, -0.30653256673883555, -0.4084202398086612, -0.3277215031561226,
+      -0.1867237630660016, -0.3244769101591504, -0.23294822238292623, -0.26057123158689666
+    )
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val state = rec.getHiddenState()
+    val hiddenState = state.toTable.apply(1).asInstanceOf[Tensor[Double]]
+    val cell = state.toTable.apply(2).asInstanceOf[Tensor[Double]]
+    hiddenState.map(output.select(2, seqLength), (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
+
+    cell.map(Tensor[Double](expectedCellData, Array(batchSize, hiddenSize, 3, 4)),
+      (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-10)
+      v1
+    })
+
+    rec.setHiddenState(state)
+    model.forward(input)
+  }
+
+  "A ConvLSTMPeepwhole " should "with set state should generate different output" in {
+    val hiddenSize = 4
+    val inputSize = 2
+    val seqLength = 2
+    val batchSize = 3
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 4).rand()
+
+    val seed = 890
+    RNG.setSeed(seed)
+    val rec = Recurrent[Double]()
+    val model = Sequential[Double]()
+      .add(rec
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+
+    RNG.setSeed(890)
+    val rec2 = Recurrent[Double]()
+    val model2 = Sequential[Double]()
+      .add(rec2
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+
+    rec2.setHiddenState(T(Tensor[Double](batchSize, hiddenSize, 3, 4).rand,
+      Tensor[Double](batchSize, hiddenSize, 3, 4).rand))
+    val output2 = model2.forward(input).asInstanceOf[Tensor[Double]]
+
+    output.map(output2,
+      (v1, v2) => {
+        assert(abs(v1 - v2) != 0)
+        v1
+      })
+  }
+
+  "ConvLSTMPeephole L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+
+    val hiddenSize = 5
+    val inputSize = 3
+    val seqLength = 4
+    val batchSize = 1
+    val kernalW = 3
+    val kernalH = 3
+
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val criterion = new TimeDistributedCriterion[Double](new MSECriterion[Double])
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
+    val labels = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3).rand
+
+    val rec = Recurrent[Double]()
+    val model1 = Sequential[Double]()
+      .add(rec
+        .add(ConvLSTMPeephole[Double](
+          inputSize,
+          hiddenSize,
+          kernalW, kernalH,
+          1,
+          withPeephole = true)))
+
+    val (weights1, grad1) = model1.getParameters()
+
+    val model2 = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .add(ConvLSTMPeephole[Double](
+          inputSize,
+          hiddenSize,
+          kernalW, kernalH,
+          1,
+          wRegularizer = L2Regularizer(0.1),
+          uRegularizer = L2Regularizer(0.1),
+          bRegularizer = L2Regularizer(0.1),
+          cRegularizer = L2Regularizer(0.1),
+          withPeephole = true)))
+
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
   }
 }

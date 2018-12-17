@@ -32,7 +32,10 @@ class DistKLDivCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverag
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
-      "DistKLDivCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
+      "DistKLDivCriterion:  " +
+        ErrorInfo.constrainInputSizeSameAsTarget +
+        s"input dim:${input.dim()}, " +
+        s"target dim:${target.dim()}" )
 
     var sum: T = ev.zero
     // todo: the performance of contiguous tensor should be optimized
@@ -51,7 +54,10 @@ class DistKLDivCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverag
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
-      "DistKLDivCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
+      s"DistKLDivCriterion:  " +
+        s"${ErrorInfo.constrainInputSizeSameAsTarget}, " +
+        s"input dim:${input.dim()}, " +
+        s"target dim:${target.dim()}" )
 
     val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else -1.0)
     gradInput.resizeAs(input)

@@ -104,7 +104,7 @@ class LookupTableSpec extends TorchSpec {
     input(Array(4)) = 9
     input(Array(5)) = 4
 
-    val gradOutput = Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](5, 4).rand()
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LookupTable(9, 4, 2, 0.1)\n" +
@@ -113,7 +113,7 @@ class LookupTableSpec extends TorchSpec {
       "while i < 10 do\n" +
       "output = module:forward(input:int())\n" +
       "module._count:zero()\n" +
-      "_gradInput = module:backward(input:int(), output)\n" +
+      "_gradInput = module:backward(input:int(), gradOutput)\n" +
       "i = i + 1\n" +
       "end\n" +
       "gradInput = _gradInput:double()\n" +
@@ -135,7 +135,7 @@ class LookupTableSpec extends TorchSpec {
     var i = 0
     while (i < 10) {
       output = module.forward(input)
-      gradInput = module.backward(input, output)
+      gradInput = module.backward(input, gradOutput)
       i += 1
     }
     val weight = module.weight

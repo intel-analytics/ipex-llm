@@ -1,9 +1,9 @@
-# Running LeNet5 Model as a local Java/Scala program
+# Running LeNet5 Model as a local Scala program
 
 This example shows how to run training, prediction and testing with LeNet5  model on local JVM with BigDL. Lenet5 is a classical CNN model used in digital number classification. For detail information,
 please refer to <http://yann.lecun.com/exdb/lenet/>.
 
-To run the BigDL model as a local Java/Scala program without Spark, user needs to set Java property `bigdl.localMode` to `true`. If user wants to specify how many cores to be used for training/testing/prediction, he needs to set Java property `bigdl.coreNumber` to the core number. User can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Java/Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when runing the program. In this example, we use the former way to set these Java properties. 
+To run the BigDL model as a local Scala program without Spark, user needs to set JVM property `bigdl.localMode` to `true`. If user wants to specify how many cores to be used for training/testing/prediction, he needs to set JVM property `bigdl.coreNumber` to the core number. User can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when runing the program. In this example, we use the former way to set these JVM properties. 
 
 ## Prepare MNIST Data
 You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the
@@ -16,12 +16,12 @@ There're four files. **train-images-idx3-ubyte** contains train images,
 
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code.
 
 ## Train the Model
 Example command
 ```
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Train \
 -f path_to_mnist_folder \
 -c core_number \
@@ -45,7 +45,7 @@ use the model to do a validation.
 
 Example command
 ```
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Test \
 -f path_to_mnist_folder \
 --model ./model/model.iteration \
@@ -63,7 +63,7 @@ The above commands will use the model in specified path(--checkpoint)to do a pre
 
 Example command
 ```
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Predict \
 -f path_to_mnist_folder \
 -c core_number \

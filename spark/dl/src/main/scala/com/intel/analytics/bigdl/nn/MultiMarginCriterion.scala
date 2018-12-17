@@ -43,7 +43,9 @@ class MultiMarginCriterion[@specialized(Float, Double) T: ClassTag](val p: Int =
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nDimension() == 1 || input.nDimension() == 2,
-    "MultiMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
+    "MultiMarginCriterion: " +
+      ErrorInfo.constrainInputAsVectorOrBatch +
+      s"input dimension ${input.nDimension()}")
 
     val (nframe, dim) = if (input.nDimension() == 1) {
       (1, input.size(1))
@@ -98,12 +100,18 @@ class MultiMarginCriterion[@specialized(Float, Double) T: ClassTag](val p: Int =
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 1 || input.nDimension() == 2,
-    "MultiMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
+    "MultiMarginCriterion: " +
+      ErrorInfo.constrainInputAsVectorOrBatch +
+      s"input dimension ${input.nDimension()}")
     val (nframe, dim) = if (input.nDimension() == 1) {
       (1, input.size(1))
     } else {
       require(target.nDimension() == 1 && target.size(1) == input.size(1),
-      "MultiMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
+      "MultiMarginCriterion: " +
+        ErrorInfo.constrainInputSizeSameAsTarget +
+        s"target dimension ${target.nDimension()}, " +
+        s"target size[1] ${target.size(1)}, " +
+        s"input size[1] ${input.size(1)}")
       (input.size(1), input.size(2))
     }
     val g = ev.fromType(if (sizeAverage)  1.0/(nframe*dim) else 1.0/(dim))

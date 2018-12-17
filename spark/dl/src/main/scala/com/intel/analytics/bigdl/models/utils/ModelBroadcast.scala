@@ -16,93 +16,261 @@
 
 package com.intel.analytics.bigdl.models.utils
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+import java.util.UUID
+
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.Util._
+import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
- * ModelBroadcast is used to broadcast model when doing model inference.
- * Note: do not use it in model training since the broadcast models share weights and biases
- * It shortens the broadcast time, which is especially useful when the model size is large
- * @tparam T data type
+ * ModelBroadcast is used to broadcast model
  */
-class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
-
-  private var broadcastModel: Broadcast[Module[T]] = _
-  private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
+trait ModelBroadcast[T] extends Serializable {
+  private val _uuid = UUID.randomUUID().toString
 
   /**
-   * broadcast the model
-   * first get and clear the weight and bias parameters from the model
-   * then broadcast the parameters and model(without parameters) separately
+   * Broadcast the model
    * @param sc    SparkContext
    * @param model model to broadcast
    * @return this
    */
-  def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    val bcModel = model.cloneModule()
-    val weightsBias = getAndClearWeightBias(bcModel.parameters())
-    broadcastModel = sc.broadcast(bcModel)
-    broadcastParameters = sc.broadcast(weightsBias)
+  def broadcast(sc: SparkContext, model: Module[T]): this.type
+
+  /**
+   * Get the broadcast model on worker
+   *
+   * @param initGradient If create a tensor for gradient when fetch the model. Please note that
+   *                     the gradient is not needed in model inference
+   * @return model
+   */
+  def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T]
+
+  def uuid(): String = _uuid
+}
+
+object ModelBroadcast {
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModelBroadcast[T] = {
+    if (System.getProperty("bigdl.ModelBroadcastFactory") != null) {
+      val cls = Class.forName(System.getProperty("bigdl.ModelBroadcastFactory"))
+      cls.getConstructors()(0).newInstance().asInstanceOf[ModelBroadcastFactory].create()
+    } else {
+      new DefaultModelBroadcastFactory().create()
+    }
+  }
+}
+
+/**
+ * ModelBroadcast is used to broadcast model.
+ *
+ * Note: If you want to use this to broadcast training model, please use value(true) to get
+ * the model. And before broadcasting please make sure the model's parameter is compacted.
+ *
+ * @tparam T data type
+ * @param applyProtoBuffer it will use proto buffer serialization for broadcasting if set true
+ */
+private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = false)
+  (implicit ev: TensorNumeric[T]) extends ModelBroadcast[T] {
+
+  private var broadcastModel: Broadcast[ModelInfo[T]] = _
+  private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
+  private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
+
+  /**
+   * broadcast the model
+   * first get and clear Const values from the model
+   * then get and clear the weight and bias parameters from the model
+   * finally broadcast Const values, the parameters and model(without parameters) separately
+   * @param sc    SparkContext
+   * @param model model to broadcast
+   * @return this
+   */
+  override def broadcast(sc: SparkContext, model: Module[T]): this.type = {
+    CachedModels.deleteAll(uuid) // delete the models on driver
+
+    if (applyProtoBuffer) {
+      broadcastModel = sc.broadcast(ModelInfo(uuid, model))
+    } else {
+      // broadcast Consts
+      if (model.isInstanceOf[Container[_, _, T]]) {
+        val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
+        // TODO: broadcast Const, model structure and weight in the same broadcast.
+        broadcastConsts = sc.broadcast(moduleConsts)
+      }
+      // broadcast weight and model
+      val weightsBias = getAndClearWeightBias(model.parameters())
+      broadcastModel = sc.broadcast(ModelInfo[T](uuid, model))
+      broadcastParameters = sc.broadcast(weightsBias)
+
+      // For quantized model if we don't clone weightsBias, the original model will be released also
+      // when we delete all models used in `ModelBroadcast`.
+      putWeightBias(SerializationUtils.clone(weightsBias), model)
+      initGradWeightBias(weightsBias, model)
+    }
     this
   }
 
   /**
    * get the broadcast model
    * put the weight and bias back to the model
+   *
+   * @param initGradient If create a tensor for gradient when fetch the model. Please note that
+   *                     the gradient is not needed in model inference
    * @return model
    */
-  def value(): Module[T] = {
-    val localModel = broadcastModel.value.cloneModule()
-    putWeightBias(broadcastParameters.value, localModel)
-    localModel
+  override def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
+    CachedModels.deleteAll(uuid)
+    if (applyProtoBuffer) {
+      val localModel = broadcastModel.value.model.clone(false)
+      val uuid = broadcastModel.value.uuid
+      CachedModels.add(uuid, localModel)
+
+      if (initGradient) {
+        initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
+      }
+      localModel
+    } else {
+      val localModel = broadcastModel.value.model.cloneModule()
+      val uuid = broadcastModel.value.uuid
+      CachedModels.add(uuid, localModel)
+
+      val parameters = if (shareWeight) {
+        broadcastParameters.value
+      } else {
+        SerializationUtils.clone(broadcastParameters.value)
+      }
+
+      // share weight
+      putWeightBias(parameters, localModel)
+      // share Consts
+      if (localModel.isInstanceOf[Container[_, _, T]] && broadcastConsts.value.nonEmpty) {
+        putConsts(localModel.asInstanceOf[Container[_, _, T]], broadcastConsts.value)
+      }
+      // init gradient
+      if (initGradient) {
+        initGradWeightBias(broadcastParameters.value, localModel)
+      }
+      localModel
+    }
   }
 
-
-  private def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
   : Array[Tensor[T]] = {
-    var i = 0
-    val weightsBias = new Array[Tensor[T]](parameters._1.length)
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        val wb = parameters._1(i)
-        weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
-          wb.storageOffset(), wb.size(), wb.stride())
+    if (parameters._1.length != 0) {
+      var i = 0
+      val weightsBias = new Array[Tensor[T]](parameters._1.length)
+      val isQuantized = parameters._1.exists(_.getTensorType == QuantizedType)
+      val (isCompacted, storage) = if (!isQuantized) {
+        val storage = Storage(parameters._1(0).storage.array())
+        (parameters._1.map(_.nElement()).sum == storage.length(), storage)
+      } else {
+        (false, null)
       }
-      i += 1
-    }
-    i = 0
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        parameters._1(i).set()
-      }
-      if (parameters._2(i) != null) {
-        parameters._2(i).set()
-      }
-      i += 1
-    }
-    weightsBias
-  }
 
-  private def putWeightBias(broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T]): Unit = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(broadcastWeightBias(i))
+      // get weight and bias
+      while (i < parameters._1.length) {
+        if (parameters._1(i) != null) {
+          val wb = parameters._1(i)
+          wb.getTensorType match {
+            case QuantizedType =>
+              val quantTensor = wb.asInstanceOf[QuantizedTensor[T]]
+              weightsBias(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
+                quantTensor.minOfRow, quantTensor.sumOfRow, quantTensor.size(), quantTensor.params)
+            case _ =>
+              weightsBias(i) = if (isCompacted) {
+                Tensor[T](storage, wb.storageOffset(), wb.size(), wb.stride())
+              } else {
+                Tensor[T](Storage(wb.storage().array()), wb.storageOffset(), wb.size(), wb.stride())
+              }
+          }
+          i += 1
+        }
       }
-      i += 1
+      weightsBias
+    } else {
+      // just return an empty array when parameters is empty.
+      Array()
     }
   }
 }
 
+private[bigdl] class ModelInfo[T: ClassTag](val uuid: String, @transient var model: Module[T])(
+  implicit ev: TensorNumeric[T]) extends Serializable {
+  @throws(classOf[IOException])
+  private def writeObject(out: ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    val cloned = model.cloneModule()
+    out.writeObject(cloned)
+    CachedModels.add(uuid, cloned)
+  }
 
-object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag]()(implicit ev: TensorNumeric[T])
-  : ModelBroadcast[T] = new ModelBroadcast
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    model = in.readObject().asInstanceOf[Module[T]]
+    CachedModels.add(uuid, model)
+  }
+}
+
+private[bigdl] object ModelInfo {
+  def apply[T: ClassTag](uuid: String, model: Module[T])(
+    implicit ev: TensorNumeric[T]): ModelInfo[T] = new ModelInfo[T](uuid, model)
+}
+
+private[bigdl] object CachedModels {
+  import java.util.concurrent.ConcurrentHashMap
+
+  import scala.collection._
+  import scala.collection.convert.decorateAsScala._
+  import scala.language.existentials
+
+  type Modles = ArrayBuffer[Module[_]]
+
+  private val cachedModels: concurrent.Map[String, Modles] =
+    new ConcurrentHashMap[String, Modles]().asScala
+
+  def add[T: ClassTag](uuid: String, model: Module[T])( implicit ev: TensorNumeric[T]): Unit =
+    CachedModels.synchronized {
+      val models = cachedModels.get(uuid) match {
+        case Some(values) => values += model.asInstanceOf[Module[_]]
+        case _ => ArrayBuffer(model.asInstanceOf[Module[_]])
+      }
+      cachedModels.put(uuid, models.asInstanceOf[Modles])
+    }
+
+  def deleteAll[T: ClassTag](currentKey: String)(implicit ev: TensorNumeric[T]): Unit =
+    CachedModels.synchronized {
+      val keys = cachedModels.keys
+      for (key <- keys) {
+        if (key != currentKey) {
+          val models = cachedModels(key)
+          for (model <- models) {
+            model.release()
+          }
+          cachedModels.remove(key)
+        }
+      }
+    }
+
+  def deleteKey[T: ClassTag](key: String)(implicit ev: TensorNumeric[T]): Unit =
+    CachedModels.synchronized {
+      val keys = cachedModels.keys
+      for (k <- keys) {
+        if (k == key) {
+          val models = cachedModels(key)
+          for (model <- models) {
+            model.release()
+          }
+          cachedModels.remove(key)
+        }
+      }
+  }
 }

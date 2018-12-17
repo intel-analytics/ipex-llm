@@ -51,7 +51,7 @@ class Bilinear[T: ClassTag](
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
     s"Bilinear: inputSize1 and inputSize2 and outputSize should be positive integer numbers," +
-      "but got inputSize1 $inputSize1, inputSize2 $inputSize2, outputSize $outputSize")
+      s"but got inputSize1 $inputSize1, inputSize2 $inputSize2, outputSize $outputSize")
 
   val weight = Tensor[T](outputSize, inputSize1, inputSize2)
   val bias: Tensor[T] = if (biasRes) Tensor[T](outputSize) else null
@@ -83,9 +83,14 @@ class Bilinear[T: ClassTag](
     val res2 = input[Tensor[T]](2)
 
     require(res1.nDimension() == 2 && res2.nDimension() == 2 && res1.size(1) == res2.size(1),
-      "Bilinear: input Tensors should be two-dimensional and have the same number of rows")
+      "Bilinear: input Tensors should be two-dimensional and" +
+        " have the same number of rows, " +
+        s"res1[ ${res1.nDimension()}, ${res1.size(1)}]," +
+        s" res2[ ${res2.nDimension()}, ${res2.size(1)} ]")
     require(res1.size(2) == weight.size(2) && res2.size(2) == weight.size(3),
-      "Bilinear: dimensionality of first input and second input is erroneous")
+      "Bilinear: dimensionality of first input and second input is erroneous," +
+        s" first ${res1.size(2)}, " +
+        s"second ${res2.size(2)}")
 
     // set up buffer
     buff2.resizeAs(res2)
@@ -189,11 +194,6 @@ class Bilinear[T: ClassTag](
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
-
   override def clearState(): this.type = {
     super.clearState()
     buff1.set()
@@ -206,15 +206,6 @@ class Bilinear[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
     }
   }
 

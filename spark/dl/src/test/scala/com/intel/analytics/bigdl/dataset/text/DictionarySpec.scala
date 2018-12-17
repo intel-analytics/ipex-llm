@@ -20,27 +20,16 @@ import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.io.Source
 
-class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-
-  before {
-    val nodeNumber = 1
-    val coreNumber = 1
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("DictionarySpec")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class DictionarySpec extends SparkContextLifeCycle with Matchers {
+  override def nodeNumber: Int = 1
+  override def coreNumber: Int = 1
+  override def appName: String = "DictionarySpec"
 
   "DictionarySpec" should "creates dictionary correctly on Spark" in {
     val tmpFile = java.io.File
@@ -52,7 +41,7 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val sentences = Array(sentence1, sentence2, sentence3)
 
-    new PrintWriter(tmpFile) {
+    new PrintWriter(tmpFile, "UTF-8") {
       write(sentences.mkString("\n")); close
     }
 
@@ -82,11 +71,11 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val sentences = Array(sentence1, sentence2, sentence3)
 
-    new PrintWriter(tmpFile) {
+    new PrintWriter(tmpFile, "UTF-8") {
       write(sentences.mkString("\n")); close
     }
 
-    val logData = Source.fromFile(tmpFile).getLines().toArray
+    val logData = Source.fromFile(tmpFile, "UTF-8").getLines().toArray
     val tokens = DataSet.array(logData
       .filter(!_.isEmpty)).transform(SentenceTokenizer())
     val output = tokens.toLocal().data(train = false)

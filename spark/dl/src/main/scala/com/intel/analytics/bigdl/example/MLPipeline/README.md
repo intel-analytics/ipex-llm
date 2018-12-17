@@ -42,7 +42,7 @@ Command to run the example in Spark local mode:
 spark-submit \
 --master local[physcial_core_number] \
 --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet \
-./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size
 ```
@@ -52,9 +52,9 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet  \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size
 ```
@@ -64,9 +64,9 @@ Command to run the example in Spark yarn mode:
 --deploy-mode client \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet  \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size
 ```

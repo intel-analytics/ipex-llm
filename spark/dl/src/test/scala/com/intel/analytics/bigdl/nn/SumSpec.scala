@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class SumSpec extends FlatSpec with Matchers {
 
@@ -45,5 +48,19 @@ class SumSpec extends FlatSpec with Matchers {
     val expect = Tensor[Float](T(T(3.0f), T(7.0f)))
 
     layer.forward(input) should be(expect)
+  }
+
+  "sum" should "be correct when squeeze on vector" in {
+    val vector = Tensor[Int](T(1, 2, 3))
+    val sum = Sum[Int](dimension = 1, squeeze = true)
+    sum.forward(vector) should be(Tensor.scalar(6))
+  }
+}
+
+class SumSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val sum = Sum[Float](2).setName("sum")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(sum, input)
   }
 }

@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class PackSpec extends FlatSpec with Matchers {
@@ -89,5 +92,40 @@ class PackSpec extends FlatSpec with Matchers {
     gradInput1 should be(input)
     gradInput2 should be(input)
     gradInput3 should be(input)
+  }
+
+  "Pack" should "work with tensor input" in {
+    val module1 = new Pack[Double](1)
+
+    val input1 = Tensor[Double](2, 2)
+    input1(Array(1, 1)) = 1
+    input1(Array(1, 2)) = 2
+    input1(Array(2, 1)) = 3
+    input1(Array(2, 2)) = 4
+
+    val output1 = module1.forward(input1)
+
+    val expectOutput1 = Tensor[Double](1, 2, 2)
+    expectOutput1(Array(1, 1, 1)) = 1
+    expectOutput1(Array(1, 1, 2)) = 2
+    expectOutput1(Array(1, 2, 1)) = 3
+    expectOutput1(Array(1, 2, 2)) = 4
+
+    val gradInput1 = module1.backward(input1, output1)
+
+    output1 should be(expectOutput1)
+    gradInput1 should be(input1)
+  }
+}
+
+class PackSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val pack = new Pack[Float](1).setName("pack")
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input = T()
+    input(1.0f) = input1
+    input(2.0f) = input2
+    runSerializationTest(pack, input)
   }
 }

@@ -17,10 +17,11 @@
 package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
@@ -113,8 +114,8 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
       featurePaddingParam: Option[PaddingParam[T]] = None,
       labelPaddingParam: Option[PaddingParam[T]] = None) extends MiniBatch[T]{
   require(inputData.length > 0, "Input data in MiniBatch is empty.")
-  private var batchSize = 0
-  private var unlabeled = false
+  protected var batchSize = 0
+  protected var unlabeled = false
 
   val (featurePadding, featurePaddingStrategy) = if (featurePaddingParam.isDefined) {
     (featurePaddingParam.get.paddingTensor, featurePaddingParam.get.paddingStrategy)
@@ -572,4 +573,192 @@ case class FixedLength(fixedLength: Array[Int]) extends PaddingStrategy {
     }
     sizes
   }
+}
+
+/**
+ * SparseMiniBatch is a MiniBatch type for TensorSample. And SparseMiniBatch could
+ * deal with SparseTensors in TensorSample.
+ *
+ * @param inputData           a set of input tensor
+ * @param targetData          a set of target tensor
+ * @param ev$1
+ * @param ev
+ * @tparam T Numeric type
+ */
+class SparseMiniBatch[T: ClassTag](
+      inputData: Array[Tensor[T]],
+      targetData: Array[Tensor[T]])(
+      implicit ev: TensorNumeric[T]) extends ArrayTensorMiniBatch[T](inputData, targetData) {
+  private var input: Activity = null
+  private var target: Activity = null
+
+  override def getInput(): Activity = {
+    if (null == input) {
+      require(!inputData.exists(_ == null), "SparseMiniBatch.getInput: " +
+        "data didn't fill in this miniBatch")
+      input = if (inputData.length == 1) {
+        inputData.head
+      } else {
+        T.array(inputData.map(_.asInstanceOf[Any]))
+      }
+    }
+
+    input
+  }
+
+  override def getTarget(): Activity = {
+    if (null == target && targetData.length != 0) {
+      require(!targetData.exists(_ == null), "SparseMiniBatch.getInput: " +
+        "data didn't fill in this miniBatch")
+      target = if (targetData.length == 1) {
+        targetData.head
+      } else {
+        T.array(targetData.map(_.asInstanceOf[Any]))
+      }
+    }
+
+    target
+  }
+
+  private def initTensor(sample: Tensor[_]): Tensor[_] = sample match {
+    case s if s.getTensorType == SparseType =>
+      s.getType() match {
+        case tpe if tpe == BooleanType =>
+          Tensor.sparse[Boolean](Array(batchSize) ++ s.size())
+        case tpe if tpe == CharType =>
+          Tensor.sparse[Char](Array(batchSize) ++ s.size())
+        case tpe if tpe == StringType =>
+          Tensor.sparse[String](Array(batchSize) ++ s.size())
+        case tpe if tpe == IntType =>
+          Tensor.sparse[Int](Array(batchSize) ++ s.size())
+        case tpe if tpe == ShortType =>
+          Tensor.sparse[Short](Array(batchSize) ++ s.size())
+        case tpe if tpe == LongType =>
+          Tensor.sparse[Long](Array(batchSize) ++ s.size())
+        case tpe if tpe == FloatType =>
+          Tensor.sparse[Float](Array(batchSize) ++ s.size())
+        case tpe if tpe == DoubleType =>
+          Tensor.sparse[Double](Array(batchSize) ++ s.size())
+      }
+    case s if s.getTensorType == DenseType =>
+      s.getType() match {
+        case tpe if tpe == BooleanType =>
+          Tensor[Boolean](Array(batchSize) ++ s.size())
+        case tpe if tpe == CharType =>
+          Tensor[Char](Array(batchSize) ++ s.size())
+        case tpe if tpe == StringType =>
+          Tensor[String](Array(batchSize) ++ s.size())
+        case tpe if tpe == IntType =>
+          Tensor[Int](Array(batchSize) ++ s.size())
+        case tpe if tpe == ShortType =>
+          Tensor[Short](Array(batchSize) ++ s.size())
+        case tpe if tpe == LongType =>
+          Tensor[Long](Array(batchSize) ++ s.size())
+        case tpe if tpe == FloatType =>
+          Tensor[Float](Array(batchSize) ++ s.size())
+        case tpe if tpe == DoubleType =>
+          Tensor[Double](Array(batchSize) ++ s.size())
+      }
+    case s =>
+      throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported feature type " +
+        s"${s.getTensorType}")
+  }
+
+  def init(features: Array[Tensor[T]], labels: Array[Tensor[T]]): Unit = {
+    features.zipWithIndex.foreach { case (feature, index) =>
+      inputData(index) = initTensor(feature).asInstanceOf[Tensor[T]]
+    }
+    labels.zipWithIndex.foreach { case (label, index) =>
+      targetData(index) = initTensor(label).asInstanceOf[Tensor[T]]
+    }
+  }
+
+  override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
+    require(samples.length > 0, "samples is empty")
+    require(samples(0).isInstanceOf[TensorSample[T]])
+    val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
+    require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
+      s"match mini batch size, excepted ${size()} got ${samples.length}")
+    val features = _samples.map(_.features)
+    val labels = _samples.map(_.labels)
+    if (batchSize == 0) {
+      batchSize = samples.length // set a batchSize when set data.
+      unlabeled = samples.head.numLabel() == 0
+      init(features.head, labels.head)
+    }
+
+    var i = 0
+    while (i < inputData.length) {
+      SparseMiniBatch.batch(1, features.map(_.apply(i)), inputData(i))
+      i += 1
+    }
+
+    if (!unlabeled) {
+      var j = 0
+      while (j < targetData.length) {
+        SparseMiniBatch.batch(1, labels.map(_.apply(j)), targetData(j))
+        j += 1
+      }
+    }
+
+    this
+  }
+}
+
+object SparseMiniBatch{
+  def apply[T: ClassTag](
+      nInputs: Int,
+      nTargets: Int)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    new SparseMiniBatch[T](new Array[Tensor[T]](nInputs), new Array[Tensor[T]](nTargets))
+  }
+
+  /**
+   * Batch a seq of tensors to a big tensor.
+   * @param dim apply batch on which dimension
+   * @param tensors a seq of tensors
+   * @param res result tensor
+   * @param ev
+   * @tparam T
+   */
+  private[bigdl] def batch[T: ClassTag](
+      dim: Int,
+      tensors: Seq[Tensor[T]],
+      res: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+    if (res.getTensorType == SparseType) {
+      Tensor.sparseConcat(dim, tensors, res)
+    } else if (res.getTensorType == DenseType) {
+      denseBatch(dim, tensors, res)
+    } else {
+      throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported tensor type " +
+        s"${res.getTensorType}")
+    }
+  }
+
+  private def denseBatch[T: ClassTag](
+        dim: Int,
+        tensors: Seq[Tensor[T]],
+        result: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val tensorSize = tensors.head.size()
+
+    val (pre, next) = tensorSize.splitAt(dim - 1)
+    val size = ArrayBuffer[Int]()
+    size ++= pre
+    size += tensors.length
+    size ++= next
+
+    result.resize(size.toArray)
+
+    var i = 0
+    while (i < tensors.length) {
+      val current = tensors(i)
+      val target = result.select(dim, i + 1)
+
+      target.copy(current)
+
+      i += 1
+    }
+    result
+
+  }
+
 }

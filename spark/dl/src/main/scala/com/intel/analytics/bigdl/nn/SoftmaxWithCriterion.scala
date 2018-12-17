@@ -73,8 +73,10 @@ class SoftmaxWithCriterion[@specialized(Float, Double) T: ClassTag](ignoreLabel:
         if (ignoreLabel.isEmpty || ignoreLabel.get != curTarget) {
           assert(curTarget >= 1 && curTarget <= nClasses,
             s"curTarget $curTarget is out of range 1 to ${ nClasses } ")
-          loss = ev.minus(loss,
-            ev.log(probData(i * dim + (curTarget - 1) * innerNum + j)))
+          // avoid log(0)
+          val prob = ev.max(probData(i * dim + (curTarget - 1) * innerNum + j),
+            ev.fromType(Double.MinPositiveValue))
+          loss = ev.minus(loss, ev.log(prob))
           count = count + 1
         }
         j += 1

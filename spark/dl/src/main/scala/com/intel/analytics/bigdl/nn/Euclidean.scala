@@ -60,7 +60,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
     require(input.dim() == 1 || input.dim() == 2,
-      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch +
+      s"input dim ${input.dim()}")
 
     if (input.dim() == 1) {
       if (input.isContiguous()) {
@@ -99,10 +100,11 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch +
+    s"input dim ${input.dim()}")
 
     if (!fastBackward) {
-      updateOutput(input)
+      forward(input)
     }
     // to prevent div by zero (NaN) bugs
     outputBuffer.resizeAs(output).copy(output).add(ev.fromType(0.0000001))
@@ -147,10 +149,6 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     s"${getPrintName}($inputSize, $outputSize)"
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     inputBuffer.set()
@@ -164,10 +162,6 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Euclidean[T]]

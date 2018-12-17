@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spark_bigdl</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.8.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,11 +34,17 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.0.0</version>
+            <version>3.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.9.9</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
@@ -58,6 +64,10 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -67,18 +77,10 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.bigdl.native</groupId>
-            <artifactId>${mkl-java-os-version}</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
-            <exclusions>
-                <!-- We already copy the dynamic lib files of this project to mkl-java, so we
-                need not the dependency, which will break assembly step.
-                 -->
-                <exclusion>
-                    <groupId>com.intel.analytics.bigdl.native</groupId>
-                    <artifactId>bigdl-native</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.intel.analytics.bigdl.core.dist</groupId>
+            <artifactId>all</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+            <scope>${bigdl-core-all-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -100,7 +102,7 @@
         <dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>breeze_${scala.major.version}</artifactId>
-            <version>0.11.2</version>
+            <version>${breeze.version}</version>
             <exclusions>
                 <!-- This is included as a compile-scoped dependency by jtransforms, which is
                      a dependency of breeze. -->
@@ -118,6 +120,11 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.major.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId> <version>0.9.9-RC1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -175,11 +182,6 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <artifactSet>
-                        <includes>
-                            <include>com.google.protobuf</include>
-                        </includes>
-                    </artifactSet>
                     <filters>
                         <filter>
                             <artifact>com.google.protobuf</artifact>
@@ -193,34 +195,45 @@
                             <pattern>com.google.protobuf</pattern>
                             <shadedPattern>com.intel.analytics.bigdl.shaded.protobuf</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>org.tensorflow.framework</pattern>
+                            <shadedPattern>com.intel.analytics.bigdl.shaded.tensorflow.framework</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
                     <execution>
+                        <id>shade</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.protobuf</include>
+                                    <include>org.tensorflow.framework</include>
+                                </includes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>without-spark</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>without-spark</id>
-                        <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
                     <execution>
                         <id>with-spark</id>
                         <configuration>
@@ -260,6 +273,7 @@
                     <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
                     <configLocation>${project.parent.parent.basedir}/scalastyle_config.xml</configLocation>
                     <outputFile>${project.build.directory}/stylecheck/scalastyle-output.xml</outputFile>
+                    <inputEncoding>UTF-8</inputEncoding>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
                 <executions>
@@ -291,6 +305,21 @@
     </reporting>
 
     <profiles>
+        <profile>
+            <id>per_platform</id>
+            <properties>
+              <bigdl-core-all-scope>provided</bigdl-core-all-scope>
+            </properties>
+            <dependencies>
+              <dependency>
+                <groupId>com.intel.analytics.bigdl.core.dist</groupId>
+                <artifactId>${os-flag}</artifactId>
+                <version>0.8.0-SNAPSHOT</version>
+                <type>pom</type>
+              </dependency>
+            </dependencies>
+        </profile>
+
         <profile>
             <id>parallel-tests</id>
             <properties>

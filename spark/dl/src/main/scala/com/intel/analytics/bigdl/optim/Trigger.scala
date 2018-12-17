@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Table
  * and a corresponding action will be taken when the timespot(s)
  * is reached.
  */
-trait Trigger {
+trait Trigger extends Serializable {
   def apply(state: Table): Boolean
 }
 
@@ -123,5 +123,33 @@ object Trigger {
       }
     }
   }
+
+  /**
+   * A trigger contains other triggers and triggers when all of them trigger (logical AND)
+   * @param first first trigger
+   * @param others others triggers
+   */
+  def and(first : Trigger, others : Trigger*): Trigger = {
+    new Trigger() {
+      override def apply(state: Table): Boolean = {
+        first.apply(state) && others.forall(_.apply(state))
+      }
+    }
+  }
+
+  /**
+   * A trigger contains other triggers and triggers when any of them trigger (logical OR)
+   * @param first first trigger
+   * @param others others triggers
+   */
+  def or(first : Trigger, others : Trigger*): Trigger = {
+    new Trigger() {
+      override def apply(state: Table): Boolean = {
+        first.apply(state) || others.exists(_.apply(state))
+      }
+    }
+  }
+
+
 }
 

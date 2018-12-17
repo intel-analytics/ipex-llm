@@ -20,6 +20,7 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.ByteRecord
+import com.intel.analytics.bigdl.utils.File
 import scopt.OptionParser
 
 import scala.collection.mutable.ArrayBuffer
@@ -40,7 +41,10 @@ object Utils {
     weightDecay: Double = 1e-4,
     momentum: Double = 0.9,
     dampening: Double = 0.0,
-    nesterov: Boolean = true)
+    nesterov: Boolean = true,
+    graphModel: Boolean = false,
+    warmupEpoch: Int = 0,
+    maxLr: Double = 0.0)
 
   val trainParser = new OptionParser[TrainParams]("BigDL ResNet Example") {
     head("Train ResNet model on single node")
@@ -89,15 +93,45 @@ object Utils {
     opt[Boolean]("nesterov")
       .text("nesterov of ResNet; default is trye")
       .action((x, c) => c.copy(nesterov = x))
+    opt[Unit]('g', "graphModel")
+      .text("use graph model")
+      .action((x, c) => c.copy(graphModel = true))
+    opt[Int]("warmupEpoch")
+      .text("warmup epoch")
+      .action((x, c) => c.copy(warmupEpoch = x))
+    opt[Double]("maxLr")
+      .text("maxLr")
+      .action((x, c) => c.copy(maxLr = x))
+  }
+
+  case class TestParams(
+    folder: String = "./",
+    model: String = "",
+    batchSize: Int = 128
+  )
+
+  val testParser = new OptionParser[TestParams]("BigDL ResNet on Cifar10 Test Example") {
+    opt[String]('f', "folder")
+      .text("the location of Cifar10 dataset")
+      .action((x, c) => c.copy(folder = x))
+
+    opt[String]('m', "model")
+      .text("the location of model snapshot")
+      .action((x, c) => c.copy(model = x))
+      .required()
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
   }
 
   private[bigdl] def loadTrain(dataFile: String): Array[ByteRecord] = {
     val allFiles = Array(
-      Paths.get(dataFile, "data_batch_1.bin"),
-      Paths.get(dataFile, "data_batch_2.bin"),
-      Paths.get(dataFile, "data_batch_3.bin"),
-      Paths.get(dataFile, "data_batch_4.bin"),
-      Paths.get(dataFile, "data_batch_5.bin")
+      dataFile + "/data_batch_1.bin",
+      dataFile + "/data_batch_2.bin",
+      dataFile + "/data_batch_3.bin",
+      dataFile + "/data_batch_4.bin",
+      dataFile + "/data_batch_5.bin"
     )
 
     val result = new ArrayBuffer[ByteRecord]()
@@ -107,19 +141,30 @@ object Utils {
 
   private[bigdl] def loadTest(dataFile: String): Array[ByteRecord] = {
     val result = new ArrayBuffer[ByteRecord]()
-    val testFile = Paths.get(dataFile, "test_batch.bin")
+    val testFile = dataFile + "/test_batch.bin"
     load(testFile, result)
     result.toArray
   }
 
-  private[bigdl] def load(featureFile: Path, result : ArrayBuffer[ByteRecord]): Unit = {
+  /**
+   * load cifar data.
+   * read cifar from hdfs if data folder starts with "hdfs:", otherwise form local file.
+   * @param featureFile
+   * @param result
+   */
+  private[bigdl] def load(featureFile: String, result : ArrayBuffer[ByteRecord]): Unit = {
     val rowNum = 32
     val colNum = 32
     val imageOffset = rowNum * colNum * 3 + 1
     val channelOffset = rowNum * colNum
     val bufferOffset = 8
 
-    val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(featureFile))
+    val featureBuffer = if (featureFile.startsWith(File.hdfsPrefix)) {
+      ByteBuffer.wrap(File.readHdfsByte(featureFile))
+    } else {
+      ByteBuffer.wrap(Files.readAllBytes(Paths.get(featureFile)))
+    }
+
     val featureArray = featureBuffer.array()
     val featureCount = featureArray.length / (rowNum * colNum * 3 + 1)
 

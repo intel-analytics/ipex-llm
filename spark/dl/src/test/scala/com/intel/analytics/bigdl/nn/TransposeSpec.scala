@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class TransposeSpec extends FlatSpec with Matchers {
   "A Transpose Module " should "generate correct output" in {
@@ -76,5 +79,13 @@ class TransposeSpec extends FlatSpec with Matchers {
       a should be (b)
     }
 
+  }
+}
+
+class TransposeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val transpose = Transpose[Float](Array((1, 2))).setName("transpose")
+    val input = Tensor[Float]().resize(Array(2, 3)).apply1(_ => Random.nextFloat())
+    runSerializationTest(transpose, input)
   }
 }

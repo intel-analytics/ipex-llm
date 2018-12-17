@@ -16,7 +16,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LogSigmoidSpec extends FlatSpec with Matchers {
@@ -68,5 +71,13 @@ class LogSigmoidSpec extends FlatSpec with Matchers {
     module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     gradInput should be(expectedGrad)
+  }
+}
+
+class LogSigmoidSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val logSigmoid = LogSigmoid[Float]().setName("logSigmoid")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(logSigmoid, input)
   }
 }

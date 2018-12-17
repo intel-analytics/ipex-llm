@@ -38,7 +38,7 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 @SerialVersionUID(8888147326550637025L)
-class CMul[@specialized(Float, Double) T: ClassTag](
+class CMul[T: ClassTag](
   val size: Array[Int],
   var wRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
@@ -82,7 +82,15 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   }
 
   private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
-    val (innerNum, outerNum) = Utils.getInnerOuterNum(dim, output)
+    val multiplyDimSize = expand.size(dim)
+    var dimOfOutput : Int = 1
+    while(output.size(dimOfOutput) != multiplyDimSize) {
+
+      dimOfOutput += 1
+      require(dimOfOutput <= output.dim(), s"OutOfBound : " +
+        s"Output does not have a dimension of $multiplyDimSize elements")
+    }
+    val (innerNum, outerNum) = Utils.getInnerOuterNum(dimOfOutput, output)
     val weightData = expand.storage().array()
     val weightOffset = expand.storageOffset() - 1
     var outer = 0
@@ -155,20 +163,8 @@ class CMul[@specialized(Float, Double) T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def clearState(): this.type = {

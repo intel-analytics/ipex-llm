@@ -18,21 +18,43 @@ package com.intel.analytics.bigdl.nn.tf
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class FillSpec extends FlatSpec with Matchers {
 
   "Fill forward" should "be correct" in {
-    val layer = Fill(0.1)
-    val shape = Tensor(T(2.0f, 3.0f))
-    layer.forward(shape) should be(Tensor(T(T(0.1f, 0.1f, 0.1f), T(0.1f, 0.1f, 0.1f))))
+    val layer = Fill()
+    val shape = Tensor[Int](T(2, 3))
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
+    layer.forward(T(shape, value)) should be(Tensor(T(T(0.1f, 0.1f, 0.1f), T(0.1f, 0.1f, 0.1f))))
+  }
+
+  "Fill forward scalar" should "be correct" in {
+    val layer = Fill[Double]()
+    val shape = Tensor[Int]()
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
+    layer.forward(T(shape, value)) should be(Tensor.scalar[Float](0.1f))
   }
 
   "Fill backward" should "be correct" in {
-    val layer = Fill(0.1)
-    val shape = Tensor(T(2.0f, 3.0f))
+    val layer = Fill()
+    val shape = Tensor[Int](T(2, 3))
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
     val gradOutput = Tensor(2, 3).rand()
-    layer.forward(shape) should be(Tensor(T(T(0.1f, 0.1f, 0.1f), T(0.1f, 0.1f, 0.1f))))
-    layer.backward(shape, gradOutput) should be(Tensor(T(0.0f, 0.0f)))
+    layer.forward(T(shape, value)) should be(Tensor(T(T(0.1f, 0.1f, 0.1f), T(0.1f, 0.1f, 0.1f))))
+    val gradInput = layer.backward(T(shape, value), gradOutput)
+    gradInput[Tensor[Int]](1) should be (Tensor[Int](2))
+    gradInput[Tensor[Float]](2) should be (Tensor[Float](Array(0.0f), Array[Int]()))
+  }
+}
+
+class FillSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val fill = Fill[Float]().setName("fill")
+    val shape = Tensor[Int](T(2, 3))
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
+    val input = T(shape, value)
+    runSerializationTest(fill, input)
   }
 }

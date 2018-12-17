@@ -30,7 +30,8 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(8169462538025916360L)
 class ReLU6[T: ClassTag](inplace: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends HardTanh[T](0, 6, inplace) {
+  (implicit ev: TensorNumeric[T])
+  extends HardTanh[T](0, 6, inplace) {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     super.updateOutput(input)
@@ -39,11 +40,19 @@ class ReLU6[T: ClassTag](inplace: Boolean = false)
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     super.updateGradInput(input, gradOutput)
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
+  }
 }
 
 object ReLU6 {
   def apply[@specialized(Float, Double) T: ClassTag](
-      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : ReLU6[T] = {
+      inplace: Boolean = false)
+      (implicit ev: TensorNumeric[T]): ReLU6[T] = {
     new ReLU6[T]()
   }
 }

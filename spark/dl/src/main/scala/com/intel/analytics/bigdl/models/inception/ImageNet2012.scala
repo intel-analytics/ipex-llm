@@ -19,8 +19,11 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.dataset.image._
+import com.intel.analytics.bigdl.dataset.image.{BGRImgCropper, BGRImgNormalizer, BytesToBGRImg, CropCenter, CropRandom, MTLabeledBGRImgToBatch, HFlip => DatasetHFlip}
+import com.intel.analytics.bigdl.transform.vision.image._
+import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 object ImageNet2012 {
   def apply(
@@ -30,18 +33,35 @@ object ImageNet2012 {
     batchSize : Int,
     nodeNumber: Int,
     coresPerNode: Int,
-    classNumber: Int,
-    size: Int
+    classNumber: Int
   )
   : DataSet[MiniBatch[Float]] = {
-    DataSet.SeqFileFolder.files(path, sc, classNumber).transform(
-      MTLabeledBGRImgToBatch[ByteRecord](
+    DataSet.SeqFileFolder.filesToImageFeatureDataset(path, sc, classNumber).transform(
+      MTImageFeatureToBatch(
         width = imageSize,
         height = imageSize,
         batchSize = batchSize,
-        transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize)
-          -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
-      ))
+        transformer = PixelBytesToMat() ->
+          Resize(256, 256) ->
+          RandomCropper(224, 224, true, CropRandom) ->
+          ChannelNormalize(123, 117, 104) ->
+          MatToTensor[Float](), toRGB = false
+      )
+    )
+  }
+
+  def rdd(path: String, batchSize: Int, sc: SparkContext, imageSize : Int)
+  : DataSet[MiniBatch[Float]] = {
+    val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, 1000)
+    val transfomer = PixelBytesToMat() ->
+      RandomCrop(imageSize, imageSize) ->
+      RandomTransformer(HFlip(), 0.5) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor[Float]() ->
+      ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label)) ->
+      ImageFeatureToMiniBatch[Float](batchSize)
+    val data = DataSet.imageFrame(imageFrame).transform(transfomer)
+    data
   }
 }
 
@@ -53,18 +73,37 @@ object ImageNet2012Val {
      batchSize : Int,
      nodeNumber: Int,
      coresPerNode: Int,
-     classNumber: Int,
-     size: Int
+     classNumber: Int
    )
    : DataSet[MiniBatch[Float]] = {
-     DataSet.SeqFileFolder.files(path, sc, classNumber).transform(
-       MTLabeledBGRImgToBatch[ByteRecord](
+
+     DataSet.SeqFileFolder.filesToImageFeatureDataset(path, sc, 1000).transform(
+       MTImageFeatureToBatch(
          width = imageSize,
          height = imageSize,
          batchSize = batchSize,
-         transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize, CropCenter)
-           -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
-       ))
+         transformer = PixelBytesToMat() ->
+           Resize(256, 256) ->
+           RandomCropper(224, 224, false, CropCenter) ->
+           ChannelNormalize(123, 117, 104) ->
+           MatToTensor[Float](), toRGB = false
+       )
+     )
    }
+
+  def rdd(path: String, batchSize: Int, sc: SparkContext, imageSize : Int)
+  : DataSet[MiniBatch[Float]] = {
+    val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, 1000)
+    val transfomer = PixelBytesToMat() ->
+      CenterCrop(imageSize, imageSize) ->
+      RandomTransformer(HFlip(), 0.5) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor[Float]() ->
+      ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label)) ->
+      ImageFeatureToMiniBatch[Float](batchSize)
+    val data = DataSet.imageFrame(imageFrame).transform(transfomer)
+    data
+  }
+
  }
 

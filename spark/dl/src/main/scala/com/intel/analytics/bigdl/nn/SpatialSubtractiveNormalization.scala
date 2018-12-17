@@ -16,10 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -49,10 +52,13 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   if (kernel == null) kernel = Tensor.ones[T](9, 9)
 
   private val kdim = kernel.nDimension()
-  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D")
-  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions")
+  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D" +
+    s"averaging kernel dimension $kdim")
+  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions" +
+    s"averaging kernel dimension ${kernel.size(1)}")
   if (kdim == 2) {
-    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions")
+    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions" +
+      s"averaging kernel dimension ${kernel.size(2)}")
   }
 
   kernel.div(ev.times(kernel.sum(), ev.fromType[Int](nInputPlane)))
@@ -65,7 +71,7 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   }
 
   // create convolutional mean extractor
-  val meanestimator = new Sequential[T]()
+  private var meanestimator = new Sequential[T]()
   meanestimator.add(new SpatialZeroPadding(padW, padW, padH, padH))
   if (kdim == 2) {
     meanestimator.add(new SpatialConvolution(nInputPlane, 1, kernel.size(2), kernel.size(1)))
@@ -92,8 +98,8 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   }
 
   // other operation
-  private val subtractor = new CSubTable()
-  private val divider = new CDivTable()
+  private var subtractor = new CSubTable()
+  private var divider = new CDivTable()
 
   // coefficient array, to adjust side effects
   private var coef = Tensor(1, 1, 1)
@@ -110,20 +116,20 @@ class SpatialSubtractiveNormalization[T: ClassTag](
       if (dim == 4) {
         // batch mode
         ones.resizeAs(input(1)).fill(ev.fromType[Int](1))
-        val _coef = meanestimator.updateOutput(ones).toTensor[T]
+        val _coef = meanestimator.forward(ones).toTensor[T]
         val size = Array(input.size(1)) ++ _coef.size()
         coef = coef.resizeAs(_coef).copy(_coef).view(Array(1) ++ _coef.size()).expand(size)
       } else {
         ones.resizeAs(input).fill(ev.fromType[Int](1))
-        val _coef = meanestimator.updateOutput(ones).toTensor[T]
+        val _coef = meanestimator.forward(ones).toTensor[T]
         coef.resizeAs(_coef).copy(_coef)
       }
     }
 
     // compute mean
-    localsums = meanestimator.updateOutput(input).toTensor[T]
-    adjustedsums = divider.updateOutput(T(localsums, coef))
-    output = subtractor.updateOutput(T(input, adjustedsums))
+    localsums = meanestimator.forward(input).toTensor[T]
+    adjustedsums = divider.forward(T(localsums, coef)).asInstanceOf[Tensor[T]]
+    output = subtractor.forward(T(input, adjustedsums)).asInstanceOf[Tensor[T]]
 
     output
   }
@@ -185,11 +191,60 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   }
 }
 
-object SpatialSubtractiveNormalization {
+object SpatialSubtractiveNormalization extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int = 1,
       kernel: Tensor[T] = null)(
       implicit ev: TensorNumeric[T]) : SpatialSubtractiveNormalization[T] = {
     new SpatialSubtractiveNormalization[T](nInputPlane, kernel)
+  }
+
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val spatialSubtractiveNormModule = super.doLoadModule(context).
+      asInstanceOf[SpatialSubtractiveNormalization[T]]
+
+    val attrMap = context.bigdlModule.getAttrMap
+
+    spatialSubtractiveNormModule.meanestimator = DataConverter.
+      getAttributeValue(context, attrMap.get("meanestimator")).
+      asInstanceOf[Sequential[T]]
+
+    spatialSubtractiveNormModule.subtractor = DataConverter.
+      getAttributeValue(context, attrMap.get("subtractor")).
+      asInstanceOf[CSubTable[T]]
+
+    spatialSubtractiveNormModule.divider = DataConverter.
+      getAttributeValue(context, attrMap.get("divider")).
+      asInstanceOf[CDivTable[T]]
+
+    spatialSubtractiveNormModule
+  }
+
+  override def doSerializeModule[T: ClassTag](contetxt: SerializeContext[T],
+                                            subtractiveNormBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(contetxt, subtractiveNormBuilder)
+    val spatialSubtractiveNormaModule = contetxt.moduleData.module.
+      asInstanceOf[SpatialSubtractiveNormalization[T]]
+
+    val meanestimatorBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(contetxt, meanestimatorBuilder,
+      spatialSubtractiveNormaModule.meanestimator,
+      ModuleSerializer.tensorModuleType)
+    subtractiveNormBuilder.putAttr("meanestimator", meanestimatorBuilder.build)
+
+
+    val thresholderBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(contetxt, thresholderBuilder,
+      spatialSubtractiveNormaModule.subtractor, ModuleSerializer.tensorModuleType)
+    subtractiveNormBuilder.putAttr("subtractor", thresholderBuilder.build)
+
+    val dividerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(contetxt, dividerBuilder,
+      spatialSubtractiveNormaModule.divider, ModuleSerializer.tensorModuleType)
+    subtractiveNormBuilder.putAttr("divider", dividerBuilder.build)
+
   }
 }

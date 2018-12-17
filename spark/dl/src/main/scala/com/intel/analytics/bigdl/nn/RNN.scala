@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -36,6 +37,8 @@ import scala.reflect.ClassTag
  * @param inputSize input size
  * @param hiddenSize hidden layer size
  * @param activation activation function f for non-linearity
+ * @param isInputWithBias boolean
+ * @param isHiddenWithBias boolean
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -44,39 +47,37 @@ import scala.reflect.ClassTag
             applied to the bias.
  */
 class RnnCell[T : ClassTag] (
-  inputSize: Int = 4,
-  hiddenSize: Int = 3,
+  val inputSize: Int = 4,
+  val hiddenSize: Int = 3,
   activation: TensorModule[T],
+  val isInputWithBias: Boolean = true,
+  val isHiddenWithBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](Array(hiddenSize)) {
+  extends Cell[T](Array(hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)) {
 
-  val parallelTable = ParallelTable[T]()
-  val i2h = Identity[T]()
-  val h2h = Linear[T](hiddenSize, hiddenSize,
-    wRegularizer = uRegularizer)
-  parallelTable.add(i2h)
-  parallelTable.add(h2h)
-  val cAddTable = CAddTable[T](false)
+  override var preTopology: TensorModule[T] =
+    Linear[T](inputSize,
+      hiddenSize,
+      wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer,
+      withBias = isInputWithBias)
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
-    TimeDistributed[T](
-      Linear[T](inputSize,
-        hiddenSize,
-        wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
-    .asInstanceOf[AbstractModule[Activity, Activity, T]]
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  override var cell: AbstractModule[Activity, Activity, T] =
-    Sequential[T]()
-    .add(parallelTable)
-    .add(cAddTable)
-    .add(activation)
-    .add(ConcatTable()
-      .add(Identity[T]())
-      .add(Identity[T]()))
+  def buildModel(): Graph[T] = {
+    val i2h = Input()
+    val h2h = Linear[T](hiddenSize, hiddenSize,
+      wRegularizer = uRegularizer, withBias = isHiddenWithBias).inputs()
+    val add = CAddTable[T](false).inputs(i2h, h2h)
+    val activate = activation.inputs(add)
+    val out1 = Identity[T].inputs(activate)
+    val out2 = Identity[T].inputs(activate)
+    Graph(Array(i2h, h2h), Array(out1, out2))
+  }
 
   /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
@@ -99,16 +100,12 @@ class RnnCell[T : ClassTag] (
     case that: RnnCell[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        parallelTable == that.parallelTable &&
-        i2h == that.i2h &&
-        h2h == that.h2h &&
-        cAddTable == that.cAddTable &&
         cell == that.cell
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), parallelTable, i2h, h2h, cAddTable, cell)
+    val state = Seq(super.hashCode(), cell)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
@@ -118,10 +115,20 @@ object RnnCell {
     inputSize: Int = 4,
     hiddenSize: Int = 3,
     activation: TensorModule[T],
+    isInputWithBias: Boolean = true,
+    isHiddenWithBias: Boolean = true,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null)
    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
-    new RnnCell[T](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
+    new RnnCell[T](
+      inputSize,
+      hiddenSize,
+      activation,
+      isInputWithBias,
+      isHiddenWithBias,
+      wRegularizer,
+      uRegularizer,
+      bRegularizer)
   }
 }
