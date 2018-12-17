@@ -41,7 +41,7 @@ private[zoo] object LayerWrapperByForward {
      singleShape: Shape)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     // There's no batch dimension in `Parameter`
     val enrichShape = if (! isConcreteShape(singleShape)) {
-      List(2) ++ KerasUtils.removeBatch(singleShape).toSingle()
+      List(1) ++ KerasUtils.removeBatch(singleShape).toSingle()
     } else {
       singleShape.toSingle()
     }
