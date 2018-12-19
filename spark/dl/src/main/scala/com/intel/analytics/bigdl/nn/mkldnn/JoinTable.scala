@@ -34,7 +34,7 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     var i = 1
     while(i < inputs.length) {
       val curShape = inputs(i).shape
-      require(layout == inputs(i).layout, "layout not match")
+      // require(layout == inputs(i).layout, "layout not match")
       require(totalShape.length == curShape.length, "tensor dimension not match")
       // require(inputs(i).isInstanceOf[NativeData], "memory should be native")
       var j = 0

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.util.Random
@@ -35,6 +36,34 @@ class AvgPoolingSpec extends BigDLSpecHelper {
     val pool = AvgPooling(3, 3, 2, 2, padH = pad, padW = pad)
     RNG.setSeed(100)
     val layer = SpatialAveragePooling[Float](3, 3, 2, 2, padH = pad, padW = pad).ceil()
+
+    val output2 = layer.forward(input).toTensor[Float]
+
+    val seq = Sequential()
+    seq.add(ReorderMemory(HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw),
+      HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw)))
+    seq.add(pool)
+    seq.add(ReorderMemory(HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw),
+      HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw)))
+    seq.compile(Phase.TrainingPhase, Array(HeapData(Array(batchSize, 480, 28, 28),
+      Memory.Format.nchw)))
+    val output1 = seq.forward(input)
+    output1 should be(output2)
+
+    val grad2 = layer.backward(input, output2).toTensor[Float]
+    val grad1 = seq.backward(input, output2)
+    grad1 should be(grad2)
+  }
+
+  "Convert average pooling with ceilMode to dnn layer" should "be correct" in {
+    val batchSize = 2
+    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(100)
+    val layer = SpatialAveragePooling[Float](3, 3, 2, 2).ceil()
+
+    val irelement = BlasToIR[Float].convertLayer(layer)
+    val pool = IRToDnn[Float].convertLayer(irelement)
 
     val output2 = layer.forward(input).toTensor[Float]
 

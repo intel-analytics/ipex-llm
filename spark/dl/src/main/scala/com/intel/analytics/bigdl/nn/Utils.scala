@@ -528,7 +528,8 @@ object Utils {
     kH: Int,
     kW: Int,
     padH: Int,
-    padW: Int
+    padW: Int,
+    ceilMode: Boolean = false
   ): (Int, Int, Int, Int, Int, Int) = {
     // compute padding left, right, top and bottom
     var pad_t = padH
@@ -540,9 +541,13 @@ object Utils {
     var owidth = 0
     var odepth = 0
 
-    oheight = math.ceil(1.0 * (inputHeight - kH + 2 * padH) / dH).toInt + 1
-    owidth = math.ceil(1.0 * (inputWidth - kW + 2 * padW) / dW).toInt + 1
-
+    if (ceilMode) {
+      oheight = math.ceil(1.0 * (inputHeight - kH + 2 * padH) / dH).toInt + 1
+      owidth = math.ceil(1.0 * (inputWidth - kW + 2 * padW) / dW).toInt + 1
+    } else {
+      oheight = math.floor(1.0 * (inputHeight - kH + 2 * padH) / dH).toInt + 1
+      owidth = math.floor(1.0 * (inputWidth - kW + 2 * padW) / dW).toInt + 1
+    }
     if (padH != 0 || padW != 0 || kH == 1 || kW == 1) {
       if ((oheight - 1) * dH >= inputHeight + padH) oheight -= 1
       if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
