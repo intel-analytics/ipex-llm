@@ -143,11 +143,20 @@ object WordEmbedding {
       trainable, shape)
   }
 
+  /**
+   * Prepare embedding weights from embeddingFile given wordIndex.
+   *
+   * @param randomizeUnknown Boolean. Whether to randomly initialize words that don't exist in
+   *                         embedding_file. Default is false and in this case corresponding entries
+   *                         to unknown words will be zero vectors.
+   * @param normalize Boolean. Whether to normalize word vectors. Default is false.
+   * @return Embedding input dim, output dim and pretrained weights.
+   */
   def prepareEmbedding[@specialized(Float, Double) T: ClassTag](
       embeddingFile: String,
       wordIndex: Map[String, Int],
-      randomizeUnknownWords: Boolean = false,
-      normalizeEmbedding: Boolean = false)
+      randomizeUnknown: Boolean = false,
+      normalize: Boolean = false)
     (implicit ev: TensorNumeric[T]): (Int, Int, Tensor[T]) = {
     require(new File(embeddingFile).exists(),
       s"embeddingFile $embeddingFile doesn't exist. Please check your file path.")
@@ -163,7 +172,7 @@ object WordEmbedding {
     else calcInputDimFromWordIndex(wordIndex)
     val outputDim = getOutputDimFromEmbeddingFile(embeddingFile)
     val embeddingMatrix = buildEmbeddingMatrix[T](indexVec, inputDim,
-      outputDim, randomizeUnknownWords, normalizeEmbedding)
+      outputDim, randomizeUnknown, normalize)
     (inputDim, outputDim, embeddingMatrix)
   }
 
@@ -244,16 +253,16 @@ object WordEmbedding {
       indexVec: Map[Int, Array[T]],
       inputDim: Int,
       outputDim: Int,
-      randomizeUnknownWords: Boolean = false,
-      normalizeEmbedding: Boolean = false)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+      randomizeUnknown: Boolean = false,
+      normalize: Boolean = false)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val weights = Tensor[T](inputDim, outputDim).zero()
     for (i <- 1 until inputDim) {
       if (indexVec.get(i).isDefined) {
-        val vec = if (normalizeEmbedding) normalizeVector(indexVec(i)) else indexVec(i)
+        val vec = if (normalize) normalizeVector(indexVec(i)) else indexVec(i)
         weights.narrow(1, i + 1, 1).copy(Tensor[T](vec, Array(outputDim)))
       }
-      else if (randomizeUnknownWords) {
-        val vec = if (normalizeEmbedding) normalizeVector(randomVector(outputDim))
+      else if (randomizeUnknown) {
+        val vec = if (normalize) normalizeVector(randomVector(outputDim))
         else randomVector(outputDim)
         weights.narrow(1, i + 1, 1).copy(Tensor[T](vec, Array(outputDim)))
       }
