@@ -161,6 +161,7 @@ object KerasUtils {
       case "kullback_leibler_divergence" => KullbackLeiblerDivergence[T]()
       case "cosine_proximity" => CosineProximity[T]()
       case "poisson" => Poisson[T]()
+      case "rank_hinge" => RankHinge[T]()
       case _ => throw new IllegalArgumentException(s"Unsupported loss: $loss")
     }
   }
