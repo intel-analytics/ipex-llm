@@ -122,12 +122,34 @@ class WordEmbedding(ZooKerasLayer):
                         "glove.6B.300d.txt", "glove.42B.300d.txt", "glove.840B.300d.txt".
                         You can download them from: https://nlp.stanford.edu/projects/glove/.
 
-        # Returns
+        # Return
         Dictionary of word (string) and its corresponding index (int) obtained from
         the given embedding file.
         """
         return callBigDlFunc(bigdl_type, "wordEmbeddingGetWordIndex",
                              embedding_file)
+
+
+def prepare_embedding(embedding_file, word_index=None,
+                      randomize_unknown=False, normalize=False):
+    """
+    Prepare embedding weights from embedding_file given word_index.
+
+    # Arguments
+    embedding_file and word_index: See WordEmbedding.
+    randomize_unknown: Boolean. Whether to randomly initialize words that don't exist in
+                       embedding_file. Default is False and in this case corresponding entries
+                       to unknown words will be zero vectors.
+    normalize: Boolean. Whether to normalize word vectors. Default is False.
+
+    # Return
+    Pretrained embedding weights as a numpy array.
+    """
+    return callBigDlFunc("float", "prepareEmbedding",
+                         embedding_file,
+                         word_index,
+                         randomize_unknown,
+                         normalize).to_ndarray()
 
 
 class SparseEmbedding(ZooKerasLayer):
