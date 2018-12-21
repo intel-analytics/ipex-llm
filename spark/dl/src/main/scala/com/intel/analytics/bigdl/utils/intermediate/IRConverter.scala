@@ -22,38 +22,63 @@ import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, InputWrapper, Output}
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Module, utils}
-import com.intel.analytics.bigdl.utils.{MklBlas, MklDnn, Node}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Node}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
 private[bigdl] class IRConverter[T: ClassTag](IRgraph: IRGraph[T])(implicit ev: TensorNumeric[T]) {
+  private val allNodes = new ArrayBuffer[Node[IRElement[T]]]
+  private val irInputs = IRgraph.inputs.toArray
+  private val irOutputs = IRgraph.outputs.toArray
+
+  init()
+  private def init() : Unit = {
+    getNodes(irInputs, allNodes)
+    // reminder: some output nodes may not be searched from inputs
+    irOutputs.foreach(node => {
+      if (!allNodes.contains(node)) allNodes.append(node)
+    })
+  }
+
+
+  private def getNodes(inputs: Seq[Node[IRElement[T]]],
+                       nodesBuffer: ArrayBuffer[Node[IRElement[T]]]): Unit = {
+    if (inputs.length == 0) return
+    inputs.foreach(node => {
+      if (!nodesBuffer.contains(node)) {
+        nodesBuffer.append(node)
+        getNodes(node.nextNodes, nodesBuffer)
+      }
+    })
+  }
+
   /**
-   * convert IRgraph to blas or dnn graph.
-   * @param dnnMode If dnnMode = true, it means ir graph must be converted to dnn graph
-   * @return
+   * convert IRgraph to blas or dnn graph according to engine type
+   * @return dnn graph or blas graph converted from ir graph
    */
   def toGraph(dnnMode: Boolean = false) : Graph[T] = {
-    if (utils.Engine.getEngineType() == MklBlas && !dnnMode) {
-      require(IRToBlas[T].convertingCheck(IRgraph.allNodes.toArray),
-        "IR graph can not convert to Blas layer")
+    if (utils.Engine.getEngineType() == MklBlas) {
+      require(IRToBlas[T].convertingCheck(allNodes.toArray),
+        "IR graph can not be converted to Blas layer")
       toBlasGraph()
-    } else {
+    } else if (utils.Engine.getEngineType() == MklDnn) {
       require(ev.getType() == FloatType, "Mkldnn engine only supports float data")
-      utils.Engine.setEngineType(MklDnn)
       require(IRToDnn[Float].convertingCheck(
-        IRgraph.allNodes.toArray.asInstanceOf[Array[Node[IRElement[Float]]]]),
-        "IR graph can not convert to Dnn layer")
+        allNodes.toArray.asInstanceOf[Array[Node[IRElement[Float]]]]),
+        "IR graph can not be converted to Dnn layer")
       toDnnGraph()
-    }
+    } else throw new UnsupportedOperationException(
+      s"Only support engineType mkldnn/mklblas, but get ${Engine.getEngineType()}")
   }
 
   private def toDnnGraph(): Graph[T] = {
     val nodeMap = IRToDnn[Float].convert(
-      IRgraph.allNodes.toArray.asInstanceOf[Array[Node[IRElement[Float]]]])
-    val inputs = IRgraph.inputs.toArray.map(
+      allNodes.toArray.asInstanceOf[Array[Node[IRElement[Float]]]])
+    val inputs = irInputs.map(
       n => nodeMap.get(n.asInstanceOf[Node[IRElement[Float]]]).get)
-    val outputs = IRgraph.outputs.toArray.map(
+    val outputs = irOutputs.map(
       n => nodeMap.get(n.asInstanceOf[Node[IRElement[Float]]]).get)
 
     // add input node for dnn graph
@@ -77,9 +102,9 @@ private[bigdl] class IRConverter[T: ClassTag](IRgraph: IRGraph[T])(implicit ev: 
   }
 
   private def toBlasGraph(): Graph[T] = {
-    val nodeMap = IRToBlas[T].convert(IRgraph.allNodes.toArray)
-    val inputs = IRgraph.inputs.toArray.map(n => nodeMap.get(n).get)
-    val outputs = IRgraph.outputs.toArray.map(n => nodeMap.get(n).get)
+    val nodeMap = IRToBlas[T].convert(allNodes.toArray)
+    val inputs = irInputs.map(n => nodeMap.get(n).get)
+    val outputs = irOutputs.map(n => nodeMap.get(n).get)
 
     Graph.dynamic(inputs, outputs, IRgraph.variables, IRgraph.generateBackward)
   }

@@ -32,17 +32,12 @@ class SoftMax() extends MklDnnLayer {
   @transient private var modelPhase: Phase = null
 
   private def initPhase(phase: Phase): Unit = {
-    if (phase != null) modelPhase = phase
-    (isTraining(), modelPhase) match {
-      case (true, InferencePhase) =>
-        train = false
-      case (false, TrainingPhase) =>
-        train = true
-      case (true, null) =>
+    if (phase != null) return modelPhase = phase
+    isTraining() match {
+      case true =>
         modelPhase = TrainingPhase
-      case (false, null) =>
+      case false =>
         modelPhase = InferencePhase
-      case _ =>
     }
   }
 

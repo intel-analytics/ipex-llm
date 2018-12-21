@@ -61,28 +61,7 @@ private[bigdl] class IRGraph[T: ClassTag](
   require(outputFormats.length == outputs.length, s"IRGraph: outputFormats" +
     s"length ${inputFormats.length} should be same with input nodes length ${outputs.length}")
 
-  val allNodes = new ArrayBuffer[Node[IRElement[T]]]
   private var graph: Graph[T] = null
-
-  init()
-  private def init() : Unit = {
-    getNodes(inputs, allNodes)
-    // reminder: some output nodes may not be searched from inputs
-    outputs.foreach(node => {
-      if (!allNodes.contains(node)) allNodes.append(node)
-    })
-  }
-
-  private def getNodes(inputs: Seq[Node[IRElement[T]]],
-                       nodesBuffer: ArrayBuffer[Node[IRElement[T]]]): Unit = {
-    if (inputs.length == 0) return
-    inputs.foreach(node => {
-      if (!nodesBuffer.contains(node)) {
-        nodesBuffer.append(node)
-        getNodes(node.nextNodes, nodesBuffer)
-      }
-    })
-  }
 
   override def updateOutput(input: Activity): Activity = {
     if (graph == null) {
@@ -125,9 +104,9 @@ private[bigdl] class IRGraph[T: ClassTag](
   }
 
   /**
-    * Set the module to evaluate mode
-    * @return
-    */
+   * Set the module to evaluate mode
+   * @return
+   */
   override def evaluate(): this.type = {
     train = false
     graph.evaluate()
@@ -142,10 +121,10 @@ private[bigdl] class IRGraph[T: ClassTag](
       } else {
         val tensors = input.toTable
         require(tensors.length() == inputFormats.length, s"table input length " +
-          s"${tensors.length()} should be same with inputFormats length ${inputFormats.length}")
+          s"${tensors.length()} should be the same with inputFormats length ${inputFormats.length}")
         tensors.foreach(t => {
           require(t._2.isInstanceOf[Tensor[T]],
-            "Only support input just contains tensor, but here get Table in input")
+            "Only support input with tensor type, table not supported")
           val t1 = t._1.asInstanceOf[Int] // starts from 1
           val t2 = t._2.asInstanceOf[Tensor[T]]
           inputMemory(t1 - 1) = HeapData(t2.size(), inputFormats(t1 - 1))
