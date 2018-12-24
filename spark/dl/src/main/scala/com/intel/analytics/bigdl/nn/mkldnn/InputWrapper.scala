@@ -41,7 +41,7 @@ private[bigdl] class InputWrapper extends MklDnnLayer {
     inputLayer.initBwdPrimitives(grads, phase)
     _gradInputFormats = inputLayer.gradInputFormats()
     _gradOutputFormats = inputLayer.gradOutputFormats()
-    (_gradInputFormats, _gradOutputFormats)
+    (_gradOutputFormats, _gradInputFormats)
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {

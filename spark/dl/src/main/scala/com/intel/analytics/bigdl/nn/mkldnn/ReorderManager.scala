@@ -109,4 +109,8 @@ private[mkldnn] class ReorderManager() {
       case _ => throw new UnsupportedOperationException("Not support such memory format")
     }
   }
+
+  def release(): Unit = {
+    reorders.values.foreach(_.release())
+  }
 }

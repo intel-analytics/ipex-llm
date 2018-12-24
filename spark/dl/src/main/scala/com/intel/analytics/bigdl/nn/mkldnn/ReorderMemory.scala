@@ -45,6 +45,7 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     shape.foreach(s => name += s.toString + ",")
     name
   }
+
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = if (inputFormat == null) inputs else Array(inputFormat)
     require(_inputFormats.length == 1, "Only accept one tensor as input")
@@ -84,6 +85,11 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 
     // recover to original data
     output = initTensor(realOutput(0))
+
+    if (outputLayout == Memory.Format.nhwc && realOutput(0).isInstanceOf[HeapData]) {
+      output.toTensor[Float].resize(_outputFormats(0).shape)
+    }
+
     (_inputFormats, _outputFormats)
   }
 
@@ -96,7 +102,6 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
   }
   override def updateOutput(input: Activity): Activity = {
     output = super.updateOutput(input)
-    output.toTensor[Float].resize(_outputFormats(0).shape)
     output
   }
 
@@ -140,12 +145,16 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 
     updateGradInputPrimitives = Array(bwdReorderPrim)
     gradInput = initTensor(realgradInput(0))
+
+    if (gradInputLayout == Memory.Format.nhwc && realgradInput(0).isInstanceOf[HeapData]) {
+      gradInput.toTensor[Float].resize(_gradInputFormats(0).shape)
+    }
+
     (_gradOutputFormats, _gradInputFormats)
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     gradInput = super.updateGradInput(input, gradOutput)
-    gradInput.toTensor[Float].resize(_gradInputFormats(0).shape)
     gradInput
   }
 

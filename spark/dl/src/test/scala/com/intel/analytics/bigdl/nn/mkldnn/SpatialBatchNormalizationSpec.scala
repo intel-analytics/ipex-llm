@@ -348,7 +348,8 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val gradInput = bn.backward(input, gradOutput)
     val nnGradInput = nnBn.backward(input, gradOutput)
 
-    Equivalent.nearequals(Tools.dense(gradInput).toTensor, nnGradInput.toTensor) should be (true)
+    Equivalent.nearequals(Tools.dense(gradInput).toTensor, nnGradInput.toTensor,
+      1e-3) should be (true)
     Equivalent.nearequals(Tools.dense(gradWeight(0)).toTensor, nnGradWeight, 1e-3) should be (true)
   }
 
