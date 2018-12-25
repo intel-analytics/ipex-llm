@@ -462,7 +462,8 @@ object DistriOptimizer extends AbstractOptimizer {
           models,
           driverState,
           validationSummary,
-          _header
+          _header,
+          parameters
         )
 
         trainSummary.foreach { summary =>
