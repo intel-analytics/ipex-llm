@@ -129,6 +129,22 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     hash = hash * seed + module.hashCode()
     hash
   }
+
+  override def training(): this.type = {
+    train = true
+    module.training()
+    this
+  }
+
+  /**
+   * Set the module to evaluate mode
+   * @return
+   */
+  override def evaluate(): this.type = {
+    train = false
+    module.evaluate()
+    this
+  }
 }
 
 
