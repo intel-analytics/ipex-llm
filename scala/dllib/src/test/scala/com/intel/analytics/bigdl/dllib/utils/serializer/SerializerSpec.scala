@@ -65,7 +65,9 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.nn.mkldnn.Dropout",
     "com.intel.analytics.bigdl.nn.mkldnn.DnnGraph",
     "com.intel.analytics.bigdl.nn.mkldnn.BlasWrapper",
-    "com.intel.analytics.bigdl.nn.mkldnn.Output"
+    "com.intel.analytics.bigdl.nn.mkldnn.Output",
+    "com.intel.analytics.bigdl.nn.mkldnn.InputWrapper",
+    "com.intel.analytics.bigdl.utils.intermediate.IRGraph"
   )
 
   // Maybe one serial test class contains multiple module test

@@ -29,9 +29,21 @@ class SoftMax() extends MklDnnLayer {
 
   @transient private var updateOutputTensors: Array[Tensor[Float]] = _
   @transient private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var modelPhase: Phase = null
+
+  private def initPhase(phase: Phase): Unit = {
+    if (phase != null) return modelPhase = phase
+    isTraining() match {
+      case true =>
+        modelPhase = TrainingPhase
+      case false =>
+        modelPhase = InferencePhase
+    }
+  }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    phase match {
+    initPhase(phase)
+    modelPhase match {
       case TrainingPhase =>
         _inputFormats = inputs.clone()
         _outputFormats = inputs.clone()
