@@ -15,13 +15,19 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Engine._
+import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRGraph}
 import com.intel.analytics.bigdl.utils.{Node, Util}
+import com.intel.analytics.bigdl.optim.DistriOptimizer._
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -146,5 +152,60 @@ class StaticGraph[T: ClassTag](
 
     gradInput = fetchModelGradInput()
     gradInput
+  }
+
+  private var inputFormats: Seq[Int] = null
+  private var outputFormats: Seq[Int] = null
+
+  /**
+   * set input formats for graph
+   * @param formats
+   * @return
+   */
+  def setInputFormats(formats: Seq[Int]): this.type = {
+    inputFormats = formats
+    this
+  }
+
+  /**
+   * set output formats for graph
+   * @param formats
+   * @return
+   */
+  def setOutputFormats(formats: Seq[Int]): this.type = {
+    outputFormats = formats
+    this
+  }
+
+  /**
+   * convert static graph to ir graph and build according to engine type
+   * @return
+   */
+  def toIRgraph() : IRGraph[T] = {
+    val inFormats = if (inputFormats == null) {
+      logger.warn(s"Please set input formats for graph model, otherwise we" +
+        s"will use default input format NCHW")
+      Seq(Memory.Format.nchw)
+    } else inputFormats
+
+    val outFormats = if (outputFormats == null) {
+      logger.warn(s"Please set output formats for graph model, otherwise we" +
+        s"will use default output format NC")
+      Seq(Memory.Format.nc)
+    } else outputFormats
+
+    val allNodes = forwardExecution
+    if (!BlasToIR[T].convertingCheck(allNodes)) return null
+    inFormats.foreach(in => if (in == Memory.Format.nhwc) return null)
+
+    val nodeMap = BlasToIR[T].convert(allNodes)
+    val inputNodes = inputs.toArray.map(n => nodeMap.get(n).get)
+    val outputNodes = outputs.toArray.map(n => nodeMap.get(n).get)
+
+    val inputsIR = inputs.toArray.map(n => nodeMap.get(n).get)
+    val outputsIR = outputs.toArray.map(n => nodeMap.get(n).get)
+
+    val model = IRGraph(inputsIR, outputsIR, variables, true, inFormats, outFormats)
+    model.build()
   }
 }
