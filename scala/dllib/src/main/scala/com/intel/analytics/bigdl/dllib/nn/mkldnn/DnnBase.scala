@@ -51,13 +51,13 @@ trait MklDnnModule extends MklDnnModuleHelper {
   private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData], phase: Phase): Array[MemoryData]
   = grad
 
-  private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData])
+  private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData])
   : (Array[MemoryData], Array[MemoryData]) = initFwdPrimitives(inputs, null)
 
-  private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData])
+  private[bigdl] def initBwdPrimitives(grad: Array[MemoryData])
   : (Array[MemoryData], Array[MemoryData]) = initBwdPrimitives(grad, null)
 
-  private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData])
+  private[bigdl] def initGradWPrimitives(grad: Array[MemoryData])
   : Array[MemoryData] = initGradWPrimitives(grad, null)
 
   private[mkldnn] def inputFormats(): Array[MemoryData]
@@ -238,7 +238,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     _gradInputFormats
   }
 
-  override private[mkldnn] def outputFormats() = {
+  override private[bigdl] def outputFormats() = {
     require(_outputFormats != null, "You should call initFwdPrimitives first")
     _outputFormats
   }
