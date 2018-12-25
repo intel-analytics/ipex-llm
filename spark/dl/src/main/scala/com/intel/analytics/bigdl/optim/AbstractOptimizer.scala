@@ -96,7 +96,8 @@ abstract class AbstractOptimizer {
     models: RDD[Cache[T]],
     state: Table,
     validationSummary: Option[ValidationSummary],
-    header: String): Unit = {
+    header: String,
+    parameters: Map[String, AllReduceParameter[T]] = null): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -116,6 +117,14 @@ abstract class AbstractOptimizer {
       val cached = modelIter.next()
       val vMethodsArr = cached.localMethods
       val workingModels = cached.localModels
+
+      // update with latest weight for validation
+      if (parameters != null) {
+        val weightsResults = parameters.values.map(p =>
+          p.getWeights(cached.modelWeights.head.narrow(1, p.paramOffset, p.size))
+        ).toArray
+        weightsResults.foreach(_.waitResult())
+      }
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
