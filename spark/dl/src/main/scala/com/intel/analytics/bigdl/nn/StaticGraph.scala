@@ -15,19 +15,16 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine._
 import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRGraph}
 import com.intel.analytics.bigdl.utils.{Node, Util}
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -154,8 +151,8 @@ class StaticGraph[T: ClassTag](
     gradInput
   }
 
-  private var inputFormats: Seq[Int] = null
-  private var outputFormats: Seq[Int] = null
+  private var inputsFormats: Seq[Int] = null
+  private var outputsFormats: Seq[Int] = null
 
   /**
    * set input formats for graph
@@ -163,7 +160,7 @@ class StaticGraph[T: ClassTag](
    * @return
    */
   def setInputFormats(formats: Seq[Int]): this.type = {
-    inputFormats = formats
+    inputsFormats = formats
     this
   }
 
@@ -173,30 +170,33 @@ class StaticGraph[T: ClassTag](
    * @return
    */
   def setOutputFormats(formats: Seq[Int]): this.type = {
-    outputFormats = formats
+    outputsFormats = formats
     this
   }
 
   /**
    * convert static graph to ir graph and build according to engine type
-   * @return
+   * @return return ir graph if converted successfully, otherwise null
    */
   def toIRgraph() : IRGraph[T] = {
-    val inFormats = if (inputFormats == null) {
-      logger.warn(s"Please set input formats for graph model, otherwise we" +
-        s"will use default input format NCHW")
+    val inFormats = if (inputsFormats == null) {
+      logger.warn("Input formats NCHW by default, Please set explicitly if needed")
       Seq(Memory.Format.nchw)
-    } else inputFormats
+    } else inputsFormats
 
-    val outFormats = if (outputFormats == null) {
-      logger.warn(s"Please set output formats for graph model, otherwise we" +
-        s"will use default output format NC")
+    val outFormats = if (outputsFormats == null) {
+      logger.warn("Output formats NC by default, Please set explicitly if needed")
       Seq(Memory.Format.nc)
-    } else outputFormats
+    } else outputsFormats
 
     val allNodes = forwardExecution
     if (!BlasToIR[T].convertingCheck(allNodes)) return null
-    inFormats.foreach(in => if (in == Memory.Format.nhwc) return null)
+    inFormats.foreach(in =>
+      if (in == Memory.Format.nhwc) {
+        logger.warn("Not support NHWC in IRGraph")
+        return null
+      }
+    )
 
     val nodeMap = BlasToIR[T].convert(allNodes)
     val inputNodes = inputs.toArray.map(n => nodeMap.get(n).get)
