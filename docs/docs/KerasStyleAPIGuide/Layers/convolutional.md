@@ -286,3 +286,200 @@ Output is
    [0.31527168 0.31527168 0.8778964  0.8778964 ]
    [0.31527168 0.31527168 0.8778964  0.8778964 ]]]]
 ```
+
+---
+## **UpSampling3D**
+UpSampling layer for 3D inputs.
+
+Repeats the 1st, 2nd and 3rd dimensions of the data by the specified size.
+
+Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+
+The input of this layer should be 5D.
+
+**Scala:**
+```scala
+UpSampling3D(size = (2, 2, 2), dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+UpSampling3D(size=(2, 2, 2), dim_ordering="th", input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `size`: Length 3. UpSampling factors for dim1, dim2 and dim3. Default is (2, 2, 2).
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.UpSampling3D
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(UpSampling3D[Float]((2, 2, 2), inputShape = Shape(1, 1, 2, 2)))
+val input = Tensor[Float](1, 1, 1, 2, 2).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+0.05876646      0.8743367
+-0.15551122     0.9405281
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x1x2x2]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,1,.,.) =
+0.05876646      0.05876646      0.8743367       0.8743367
+0.05876646      0.05876646      0.8743367       0.8743367
+-0.15551122     -0.15551122     0.9405281       0.9405281
+-0.15551122     -0.15551122     0.9405281       0.9405281
+
+(1,1,2,.,.) =
+0.05876646      0.05876646      0.8743367       0.8743367
+0.05876646      0.05876646      0.8743367       0.8743367
+-0.15551122     -0.15551122     0.9405281       0.9405281
+-0.15551122     -0.15551122     0.9405281       0.9405281
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x2x4x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.models import Sequential
+from zoo.pipeline.api.keras.layers import UpSampling3D
+
+model = Sequential()
+model.add(UpSampling3D((2, 2, 2), input_shape=(1, 1, 2, 2)))
+input = np.random.random([1, 1, 1, 2, 2])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[[0.01897243 0.87927954]
+-    [0.13656585 0.3003842 ]]]]]
+```
+Output is
+```python
+[[[[[0.01897243 0.01897243 0.87927955 0.87927955]
+-    [0.01897243 0.01897243 0.87927955 0.87927955]
+-    [0.13656585 0.13656585 0.3003842  0.3003842 ]
+-    [0.13656585 0.13656585 0.3003842  0.3003842 ]]
+-
+-   [[0.01897243 0.01897243 0.87927955 0.87927955]
+-    [0.01897243 0.01897243 0.87927955 0.87927955]
+-    [0.13656585 0.13656585 0.3003842  0.3003842 ]
+-    [0.13656585 0.13656585 0.3003842  0.3003842 ]]]]]
+```
+
+---
+## **AtrousConvolution1D**
+Applies an atrous convolution operator for filtering neighborhoods of 1-D inputs.
+
+A.k.a dilated convolution or convolution with holes.
+
+Bias will be included in this layer.
+
+Border mode currently supported for this layer is 'valid'.
+
+You can also use `AtrousConv1D` as an alias of this layer.
+
+The input of this layer should be 3D.
+
+**Scala:**
+```scala
+AtrousConvolution1D(nbFilter, filterLength, init = "glorot_uniform", activation = null, subsampleLength = 1, atrousRate = 1, wRegularizer = null, bRegularizer = null, inputShape = null)
+```
+**Python:**
+```python
+AtrousConvolution1D(nb_filter, filter_length, init="glorot_uniform", activation=None, border_mode='valid', subsample_length=1, atrous_rate=1, W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution kernels to use.
+* `filterLength`: The extension (spatial or temporal) of each filter.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'glorot_uniform'.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
+* `subsampleLength`: Factor by which to subsample output. Integer. Default is 1.
+* `atrousRate`: Factor for kernel dilation. Also called filter_dilation elsewhere. Integer. Default is 1.
+* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.AtrousConvolution1D
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(AtrousConvolution1D[Float](8, 3, inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+-0.18186663     -0.43034658     0.26391524      -1.4132749
+-0.17445838     1.3798479       0.1737039       1.152537
+0.27590567      0.009284354     -0.80261934     -0.9434588
+
+(2,.,.) =
+-0.20791245     0.21988653      0.8744776       0.2940677
+0.07080339      0.51823103      -0.46097854     -0.037812505
+0.35226902      0.79622966      0.011483789     0.88822025
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+0.026210725     1.2229221       0.45232815      -1.0826558      0.849349        0.086645454     0.041758537     0.3721839
+
+(2,.,.) =
+-0.14264873     0.060507685     -0.217965       0.42317814      0.17935039      -0.05465065     -0.6533742      -0.009769946
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x1x8]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.models import Sequential
+from zoo.pipeline.api.keras.layers import AtrousConvolution1D
+
+model = Sequential()
+model.add(AtrousConvolution1D(8, 3, input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.44706076 0.5902202  0.3784323  0.4098717 ]
+  [0.74646876 0.98997355 0.64164388 0.61591103]
+  [0.88695659 0.16591123 0.6575717  0.55897158]]
+
+ [[0.51990872 0.82065542 0.18409799 0.99078291]
+  [0.03853884 0.0781884  0.82290244 0.99992993]
+  [0.02394716 0.10870804 0.17077537 0.77893951]]]
+```
+Output is
+```python
+[[[-0.09361145  0.48225394 -0.3777458  -0.84651476  0.3678655
+   -0.02871403  1.0220621   0.7548751 ]]
+
+ [[-0.0299319   0.37761992 -0.08759689 -0.01757497 -0.01414538
+   -0.2547227   0.70025307  0.49045497]]]
+```
