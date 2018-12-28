@@ -17,8 +17,8 @@
 package com.intel.analytics.zoo.feature.image
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample}
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.feature.common.Preprocessing
 import org.apache.commons.io.FileUtils
@@ -76,7 +76,7 @@ abstract class ImageSet {
   /**
    * Convert ImageSet to DataSet of Sample.
    */
-  def toDataSet[T: ClassTag]: DataSet[Sample[T]]
+  def toDataSet[T: ClassTag](): DataSet[Sample[T]]
 }
 
 class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
@@ -93,7 +93,8 @@ class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
     ImageFrame.array(array)
   }
 
-  override def toDataSet[T: ClassTag]: DataSet[Sample[T]] = {
+  override def toDataSet[T: ClassTag](): DataSet[Sample[T]] = {
+
     DataSet.array(array.map(_[Sample[T]](ImageFeature.sample)))
   }
 }
@@ -112,10 +113,11 @@ class DistributedImageSet(var rdd: RDD[ImageFeature]) extends ImageSet {
     ImageFrame.rdd(rdd)
   }
 
-  override def toDataSet[T: ClassTag]: DataSet[Sample[T]] = {
+  override def toDataSet[T: ClassTag](): DataSet[Sample[T]] = {
     DataSet.rdd(rdd.map(_[Sample[T]](ImageFeature.sample)))
   }
 }
+
 
 object ImageSet {
 
