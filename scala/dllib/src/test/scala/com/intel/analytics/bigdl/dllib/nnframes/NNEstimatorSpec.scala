@@ -52,7 +52,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   before {
     Random.setSeed(42)
     RNG.setSeed(42)
-    val conf = Engine.createSparkConf().setAppName("Test NNEstimator").setMaster("local[1]")
+    val conf = Engine.createSparkConf().setAppName("Test NNEstimator").setMaster("local[2]")
     sc = NNContext.initNNContext(conf)
     sqlContext = new SQLContext(sc)
     smallData = NNEstimatorSpec.generateTestInput(
@@ -88,7 +88,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       NNEstimator(model, criterion),
       NNEstimator(model, criterion, Array(6), Array(1)),
       NNEstimator(model, criterion, SeqToTensor(Array(6)), ScalarToTensor())
-    ).foreach(e => e.setEndWhen(Trigger.maxIteration(1)).fit(df))
+    ).foreach(e => e.setEndWhen(Trigger.maxIteration(1)).setBatchSize(2).fit(df))
   }
 
   "An NNEstimator" should "get reasonable accuracy" in {
@@ -245,7 +245,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = NNEstimator(model, criterion, Array(6), Array(1))
-      .setBatchSize(51)
+      .setBatchSize(52)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -497,7 +497,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("abc", "la")
     val estimator = NNEstimator( model, criterion, Array(6), Array(1))
-      .setBatchSize(31)
+      .setBatchSize(32)
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.123)
       .setLearningRateDecay(0.432)
