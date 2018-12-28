@@ -28,13 +28,14 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
 import com.intel.analytics.zoo.feature.common.{Preprocessing, _}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import org.apache.hadoop.fs.Path
+import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
-import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper,
-  VectorCompatibility}
+import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper, VectorCompatibility}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.json4s.JsonDSL._
@@ -44,6 +45,9 @@ import scala.reflect.ClassTag
 
 private[nnframes] trait HasBatchSize extends Params {
 
+  /**
+   * Global batch size across the cluster.
+   */
   final val batchSize: IntParam = new IntParam(this, "batchSize", "batchSize")
 
   def getBatchSize: Int = $(batchSize)
@@ -192,6 +196,9 @@ class NNEstimator[T: ClassTag] private[zoo] (
 
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
+  /**
+   * Set global batch size across the cluster. Global batch size = Batch per thread * num of cores.
+   */
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
   def setEndWhen(trigger: Trigger): this.type = set(endWhen, trigger)
@@ -565,10 +572,16 @@ class NNModel[T: ClassTag] private[zoo] (
   extends DLTransformerBase[NNModel[T]] with NNParams[T]
     with HasBatchSize with MLWritable {
 
+  @transient
+  private val logger = Logger.getLogger(getClass)
+
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
+  /**
+   * Set global batch size across the cluster. Global batch size = Batch per thread * num of cores.
+   */
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
   /**
@@ -589,9 +602,21 @@ class NNModel[T: ClassTag] private[zoo] (
 
     val sc = dataFrame.sqlContext.sparkContext
     val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model.evaluate())
-    val localBatchSize = $(batchSize)
+    // note that here we use batch per thread, but not batch per partition. For inference,
+    // GlobalBatchSize = batchPerThread * coreNumber() appears to be more intuitive for the users
+    val totalNumCores = EngineRef.getCoreNumber() * EngineRef.getNodeNumber()
+    val batchPerThread = Math.ceil($(batchSize).toDouble / totalNumCores).toInt
+    if ($(batchSize) % totalNumCores != 0) {
+      logger.warn(s"Global batch size (${$(batchSize)}) cannot be divided by total core number" +
+        s"($totalNumCores). Setting batch per thread as ($batchPerThread), and actual Global" +
+        s" batch size is updated to ${totalNumCores * batchPerThread}")
+    } else {
+      logger.info(s"Batch per thread: $batchPerThread; Total number of cores: $totalNumCores;" +
+        s" Global batch size: ${batchPerThread * totalNumCores}")
+    }
+
     val featureTransformersBC = sc.broadcast($(samplePreprocessing))
-    val toBatchBC = sc.broadcast(SampleToMiniBatch[T](localBatchSize))
+    val toBatchBC = sc.broadcast(SampleToMiniBatch[T](batchPerThread, partitionNum = Some(1)))
 
     // concat the prediction and other columns in DF. avoid zip between RDD
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
@@ -599,7 +624,7 @@ class NNModel[T: ClassTag] private[zoo] (
       val featureSteps = featureTransformersBC.value.cloneTransformer()
       val toBatch = toBatchBC.value.cloneTransformer()
 
-      rowIter.grouped(localBatchSize).flatMap { rowBatch =>
+      rowIter.grouped(batchPerThread).flatMap { rowBatch =>
         val featureSeq = rowBatch.map(r => featureFunc(r, featureColIndex))
         val samples = featureSteps(featureSeq.iterator)
         val predictions = toBatch(samples).flatMap { batch =>
