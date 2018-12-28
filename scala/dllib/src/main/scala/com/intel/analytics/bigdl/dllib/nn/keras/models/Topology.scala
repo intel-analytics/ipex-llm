@@ -247,7 +247,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    * Convert ImageSet to DataSet of MiniBatch.
    */
   private def toDataSet(x: ImageSet, batchSize: Int): DataSet[MiniBatch[T]] = {
-    if (x != null) x.toDataSet[T] -> SampleToMiniBatch[T](batchSize)
+    if (x != null) x.toDataSet[T]() -> SampleToMiniBatch[T](batchSize)
     else null
   }
 
