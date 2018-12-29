@@ -20,7 +20,8 @@ import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.utils.{Engine, Shape}
+import com.intel.analytics.bigdl.utils.{Engine, Shape, Table}
+import com.intel.analytics.zoo.pipeline.api.keras.optimizers.Adam
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -84,3 +85,8 @@ object EngineRef {
   }
 }
 
+object SGDRef {
+  def getstate[T: ClassTag](instance: Adam[T]): Table = {
+    KerasUtils.invokeMethod(instance, "state").asInstanceOf[Table]
+  }
+}

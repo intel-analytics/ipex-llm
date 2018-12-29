@@ -39,6 +39,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, Top5Accuracy}
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.keras.objectives._
+import com.intel.analytics.zoo.pipeline.api.keras.optimizers.Adam
 import org.apache.spark.api.java.JavaRDD
 import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.text.TextSet
@@ -955,6 +956,17 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def createAUC(thresholdNum: Int): ValidationMethod[T] = {
     new AUC[T](thresholdNum)
+  }
+
+  def createZooKerasAdam(
+      lr: Double = 1e-3,
+      beta_1: Double = 0.9,
+      beta_2: Double = 0.999,
+      epsilon: Double = 1e-8,
+      decay: Double = 0.0,
+      schedule: SGD.LearningRateSchedule = SGD.Default()
+      ): Adam[T] = {
+    new Adam[T](lr, beta_1, beta_2, epsilon, decay, schedule)
   }
 
   def createZooKerasHardShrink(
