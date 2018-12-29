@@ -28,6 +28,7 @@ from pyspark.sql.types import *
 
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes import *
+from zoo.pipeline.api.keras.optimizers import Adam as KAdam
 from zoo.feature.common import *
 from zoo.feature.image import *
 from zoo.util.tf import *
@@ -219,6 +220,21 @@ class TestNNClassifer():
             res = nnModel.transform(df)
             assert type(res).__name__ == 'DataFrame'
             assert res.select("features", "label", "tt").count() == 4
+
+    def test_nnEstimator_fit_with_adam_lr_schedile(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        df = self.get_estimator_df()
+        nnModel = NNEstimator(model, criterion, SeqToTensor([2]), SeqToTensor([2])) \
+            .setBatchSize(4) \
+            .setLearningRate(0.01).setMaxEpoch(1) \
+            .setPredictionCol("tt") \
+            .setOptimMethod(KAdam(
+                schedule=Plateau("Loss", factor=0.1, patience=2, mode="min", epsilon=0.01,
+                                 cooldown=0, min_lr=1e-15))) \
+            .fit(df)
+        res = nnModel.transform(df)
+        assert type(res).__name__ == 'DataFrame'
 
     def test_nnEstimator_create_with_feature_size(self):
         model = Sequential().add(Linear(2, 2))
