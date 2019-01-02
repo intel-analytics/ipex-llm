@@ -176,3 +176,83 @@ Output is
    [0.29213452, 0.5       , 0.5       , 0.5       ],
    [0.5       , 0.3264643 , 0.5       , 0.14861017]]]
 ```
+
+---
+## **RReLU**
+Applies the randomized leaky rectified linear unit element-wise to the input.
+
+f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
+
+In the training mode, negative inputs are multiplied by a factor drawn from a uniform random distribution U(l, u).
+
+In the evaluation mode, a RReLU behaves like a LeakyReLU with a constant mean factor a = (l + u) / 2.
+
+If l == u, a RReLU essentially becomes a LeakyReLU.
+
+Regardless of operating in in-place mode a RReLU will internally allocate an input-sized noise tensor to store random factors for negative inputs.
+
+For reference, see [Empirical Evaluation of Rectified Activations in Convolutional Network](http://arxiv.org/abs/1505.00853).
+
+**Scala:**
+```scala
+RReLU(lower = 1.0/8, upper = 1.0/3, inputShape = null)
+```
+**Python:**
+```python
+RReLU(lower=1.0/8, upper=1.0/3, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `lower`: Lower boundary of the uniform random distribution. Default is 1.0/8.
+* `upper`: Upper boundary of the uniform random distribution. Default is 1.0/3.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.RReLU
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(RReLU[Float](inputShape = Shape(1, 4)))
+val input = Tensor[Float](1, 1, 4).rand()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.94700974      0.10242243      0.36114395      0.054554284
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+0.94700974      0.10242243      0.36114395      0.054554284
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import RReLU
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(RReLU(input_shape = (1,4)))
+input = np.random.random([1, 1, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[0.13629929, 0.45604206, 0.89164672, 0.15428345]]])
+```
+Ouput is:
+```python
+array([[[0.1362993 , 0.45604205, 0.89164674, 0.15428345]]], dtype=float32)
+```
