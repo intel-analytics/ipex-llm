@@ -223,9 +223,14 @@ be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow
 
 ## TFOptimizer
 TFOptimizer is the class that does all the hard work in distributed training, such as model
-distribution and parameter synchronization. It takes the **loss** (a scalar tensor) as input and runs
+distribution and parameter synchronization. There are two ways to create a TFOptimizer.
+
+The `from_loss` API takes the **loss** (a scalar tensor) as input and runs
 stochastic gradient descent using the given **optimMethod** on all the **Variables** that contributing
 to this loss.
+
+The `from_keras` API takes a compiled **Keras Model** and a **TFDataset** and runs stochastic gradient
+descent using the loss function, optimizer and metrics specified by the Keras model.
 
 __Note__: This feature currently requires __tensorflow 1.10__ and OS is one of the following 64-bit systems.
 __Ubuntu 16.04 or later__, __macOS 10.12.6 or later__ and __Windows 7 or later__.
@@ -235,8 +240,23 @@ be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow
 
 **Python**
 ```python
-optimizer = TFOptimizer(loss, Adam(1e-3))
-optimizer.set_train_summary(TrainSummary("/tmp/az_lenet", "lenet"))
+loss = ...
+optimizer = TFOptimizer.from_loss(loss, Adam(1e-3))
+optimizer.optimize(end_trigger=MaxEpoch(5))
+```
+
+For Keras model:
+
+```python
+
+
+model = Model(inputs=..., outputs=...)
+
+model.compile(optimizer='rmsprop',
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy'])
+
+optimizer = TFOptimizer.from_keras(model, dataset)
 optimizer.optimize(end_trigger=MaxEpoch(5))
 ```
 
@@ -254,6 +274,15 @@ TFPredictor takes a list of TensorFlow tensors as the model outputs and feed all
  
 **Python**
 ```python
-predictor = TFPredictor(sess, [logits])
+logist = ...
+predictor = TFPredictor.from_outputs(sess, [logits])
+predictions_rdd = predictor.predict()
+```
+
+For Keras model:
+```python
+model = Model(inputs=..., outputs=...)
+model.load_weights("/tmp/mnist_keras.h5")
+predictor = TFPredictor.from_keras(model, dataset)
 predictions_rdd = predictor.predict()
 ```
