@@ -5,7 +5,7 @@ This layer can be built multiple times.
 
 **Scala:**
 ```scala
-KerasLayerWrapper(torchLayer, inputShape = Null)
+KerasLayerWrapper(torchLayer, inputShape = null)
 ```
 **Python:**
 ```python
@@ -15,7 +15,7 @@ KerasLayerWrapper(torch_layer, input_shape=None)
 **Parameters:**
 
 * `torchLayer`: a torch style layer.
-* `inputShape`: A Single Shape, does not include the batch dimension.i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala

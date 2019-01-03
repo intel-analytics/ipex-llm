@@ -83,10 +83,6 @@ f(x) = minValue, if x < minValue
 
 f(x) = x, otherwise
 
-When you use this layer as the first layer of a model, you need to provide the argument input_shape (a shape tuple, does not include the batch dimension).
-
-Remark: This layer is from Torch and wrapped in Keras style.
-
 **Scala:**
 ```scala
 HardTanh(minValue = -1, maxValue = 1, inputShape = null)
@@ -100,7 +96,7 @@ HardTanh(min_value=-1, max_value=1, input_shape=None, name=None)
 
 * `minValue`: The minimum threshold value. Default is -1.
 * `maxValue`: The maximum threshold value. Default is 1.
-* `inputShape`: A Single Shape, does not include the batch dimension.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
@@ -172,9 +168,9 @@ Output is
   [0.5       , 0.36521357, 0.4255163 , 0.5       ],
   [0.29155496, 0.5       , 0.5       , 0.05688166]],
 
-  [[0.5       , 0.36454257, 0.5       , 0.5       ],
-   [0.29213452, 0.5       , 0.5       , 0.5       ],
-   [0.5       , 0.3264643 , 0.5       , 0.14861017]]]
+ [[0.5       , 0.36454257, 0.5       , 0.5       ],
+  [0.29213452, 0.5       , 0.5       , 0.5       ],
+  [0.5       , 0.3264643 , 0.5       , 0.14861017]]]
 ```
 
 ---

@@ -767,8 +767,8 @@ ZeroPadding3D(padding=(1, 1, 1), dim_ordering="th", input_shape=None, name=None)
 **Parameters:**
 
 * `padding`: Int array of length 3. How many zeros to add at the beginning and end of the 3 padding dimensions. Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
-* `dimOrdering`: Format of the input data. Either "CHANNEL_FIRST" (dimOrdering='th') or "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
-* `inputShape`: A Single Shape, does not include the batch dimension.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
