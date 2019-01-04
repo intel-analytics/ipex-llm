@@ -236,6 +236,11 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       bRegularizer, bias, toScalaShape(inputShape))
   }
 
+  def createZooKerasGetShape(
+      inputShape: JList[Int] = null): GetShape[T] = {
+    new GetShape(toScalaShape(inputShape))
+  }
+
   def createZooKerasEmbedding(
       inputDim: Int,
       outputDim: Int,
