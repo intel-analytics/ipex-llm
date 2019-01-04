@@ -340,6 +340,26 @@ class Dense(ZooKerasLayer):
                                     **kwargs)
 
 
+class GetShape(ZooKerasLayer):
+    """
+    GetShape gets the value of input_shape.
+    For example, if input_shape = (2, 3, 4),
+    then output will be (2, 3, 4).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    >>> getShape = GetShape(input_shape=(3, 4, 5))
+    creating: createZooKerasGetShape
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(GetShape, self).__init__(None,
+                                       list(input_shape) if input_shape else None,
+                                       **kwargs)
+
+
 class SparseDense(ZooKerasLayer):
     """
     SparseDense is the sparse version of layer Dense. SparseDense has two different from Dense:
