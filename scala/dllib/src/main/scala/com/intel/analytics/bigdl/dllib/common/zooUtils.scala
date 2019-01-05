@@ -19,7 +19,6 @@ package com.intel.analytics.zoo.common
 import java.io._
 
 import com.intel.analytics.bigdl.utils.File
-import com.intel.analytics.zoo.common.NNContext.getClass
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.log4j.Logger
 
@@ -58,7 +57,6 @@ private[zoo] object Utils {
       + errMessage)
     throw new AnalyticsZooException(errMessage, cause)
   }
-
 }
 
 class AnalyticsZooException(message: String, cause: Throwable)
