@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -39,37 +39,47 @@ private[zoo] object LayerWrapperByForward {
 
   private def singleShapeDummyValue[T: ClassTag](
      singleShape: Shape)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    // There's no batch dimension in `Parameter`
-    val enrichShape = if (! isConcreteShape(singleShape)) {
-      List(1) ++ KerasUtils.removeBatch(singleShape).toSingle()
-    } else {
-      singleShape.toSingle()
+    val newShape = new Array[Int](singleShape.toSingle().length)
+    singleShape.toSingle().copyToArray(newShape)
+    for (i <- 0 until newShape.length) {
+      if (newShape(i) == -1) {
+        newShape(i) = 1
+      }
     }
-    Tensor[T](enrichShape.toArray).fill(ev.one)
+    Tensor[T](newShape).fill(ev.one)
+  }
+
+  private def shapeDummyValue[T: ClassTag](shape: Shape)
+    (implicit ev: TensorNumeric[T]): Activity = {
+    if (shape.isInstanceOf[SingleShape]) return singleShapeDummyValue(shape)
+    T.array(shape.toMulti().map(shapeDummyValue(_)).toArray)
   }
 
   private def isConcreteShape(shape: Shape): Boolean = {
-    shape match {
-      case s: SingleShape => s.toSingle().forall(_ > 0)
-      case m: MultiShape => m.toMulti().forall(isConcreteShape(_))
+    if (shape.isInstanceOf[SingleShape]) return shape.toSingle().forall(_ > 0)
+    shape.toMulti().forall(isConcreteShape(_))
+  }
+
+  private def getShape[T: ClassTag](output: Activity, addBatch: Boolean)
+                                   (implicit ev: TensorNumeric[T]): Shape = {
+    var shape: Shape = null
+    if (output.isTensor) {
+      val outSize = output.toTensor[T].size()
+      shape = if (!addBatch) {
+        Shape(outSize)
+      } else {
+        KerasUtils.addBatch(Shape(outSize.slice(1, outSize.length)))
+      }
+      return shape
     }
+    MultiShape(output.toTable.toSeq[Activity].map(d => getShape(d, addBatch)).toList)
   }
 
   def computeOutputShape[T: ClassTag](torchLayer: AbstractModule[Activity, Activity, T],
                          calcInputShape: Shape)(implicit ev: TensorNumeric[T]): Shape = {
-    val input: Activity = calcInputShape match {
-      case s: SingleShape => singleShapeDummyValue(s)
-      case m: MultiShape =>
-        T.array(m.toMulti().map(singleShapeDummyValue(_)).toArray)
-    }
+    val input = shapeDummyValue(calcInputShape)
     val dummyOutTensor = torchLayer.cloneModule().forward(input)
-    require(dummyOutTensor.isTensor, "We only support single output for now but got a Table")
-    val outSize = dummyOutTensor.toTensor.size()
-    if (isConcreteShape(calcInputShape)) {
-      Shape(outSize)
-    } else {
-      KerasUtils.addBatch(Shape(outSize.slice(1, outSize.length)))
-    }
+    getShape(dummyOutTensor, !isConcreteShape(calcInputShape))
   }
 }
 

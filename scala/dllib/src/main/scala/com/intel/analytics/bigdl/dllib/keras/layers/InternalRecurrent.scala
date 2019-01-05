@@ -39,6 +39,41 @@ class InternalRecurrent[T: ClassTag](
     }
     this
   }
+
+  def getHiddenShape(): Array[Int] = {
+    this.topology.hiddensShape
+  }
+
+  // get gradient hidden state at the first time step
+  def getGradHiddenState(): Activity = {
+    require(cells != null && cells(0).gradInput != null,
+      "getGradHiddenState need to be called after backward")
+    cells(0).gradInput.toTable(hidDim)
+  }
+
+  protected var initGradHiddenState: Activity = null
+  // set gradient hiddent state at the last time step
+  def setGradHiddenState(gradHiddenState: Activity): Unit = {
+    initGradHiddenState = gradHiddenState
+  }
+
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (initGradHiddenState != null) gradHidden = initGradHiddenState
+    super.accGradParameters(input, gradOutput)
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    if (initGradHiddenState != null) gradHidden = initGradHiddenState
+    super.updateGradInput(input, gradOutput)
+  }
+
+  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val st = System.nanoTime
+    gradInput = updateGradInput(input, gradOutput)
+    accGradParameters(input, gradOutput)
+    this.backwardTime = System.nanoTime - st
+    gradInput
+  }
 }
 
 object InternalRecurrent extends ContainerSerializable {
