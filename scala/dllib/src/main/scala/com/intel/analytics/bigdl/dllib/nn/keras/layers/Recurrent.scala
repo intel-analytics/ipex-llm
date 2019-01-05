@@ -17,7 +17,7 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.{Reverse, Select => TSelect}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{Recurrent => BKerasRecurrent}
 import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -34,14 +34,36 @@ abstract class Recurrent[T: ClassTag](
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BKerasRecurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
+  val rec = new InternalRecurrent[T]()
+
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     if (goBackwards) model.add(Reverse(2))
-    val rec = new InternalRecurrent[T]()
     rec.add(buildCell(input))
     model.add(rec)
     if (!returnSequences) model.add(TSelect(2, -1))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
+
+  def getHiddenShape(): Array[Int] = {
+    require(this.isBuilt(), "Cannot getHiddenShape before call doBuild!")
+    rec.getHiddenShape()
+  }
+
+  def getHiddenState(): Activity = {
+    rec.getHiddenState()
+  }
+
+  def setHiddenState(hiddenState: Activity): Unit = {
+    rec.setHiddenState(hiddenState)
+  }
+
+  def getGradHiddenState(): Activity = {
+    rec.getGradHiddenState()
+  }
+
+  def setGradHiddenState(gradHiddenState: Activity): Unit = {
+    rec.setGradHiddenState(gradHiddenState)
   }
 }
