@@ -73,7 +73,7 @@ class OptimizersSpec extends FlatSpec with Matchers with BeforeAndAfter {
           schedule = schedule
         ))
         .setBatchSize(20)
-        .setMaxEpoch(10)
+        .setMaxEpoch(2)
 
       val nnModel = classifier.fit(df)
       nnModel.isInstanceOf[NNClassifierModel[_]] should be(true)
