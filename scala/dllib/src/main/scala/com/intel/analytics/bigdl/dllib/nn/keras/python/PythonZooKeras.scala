@@ -43,6 +43,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.optimizers.Adam
 import org.apache.spark.api.java.JavaRDD
 import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.text.TextSet
+import com.intel.analytics.zoo.models.common.ZooModel
 import com.intel.analytics.zoo.pipeline.api.Predictable
 import com.intel.analytics.zoo.pipeline.api.net.GraphNet
 
@@ -794,6 +795,12 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     TimeDistributed(layer, toScalaShape(inputShape))
   }
 
+  def createZooKerasTimeDistributed(
+      layer: ZooModel[Activity, Activity, T],
+      inputShape: JList[Int]): TimeDistributed[T] = {
+    TimeDistributed(layer, toScalaShape(inputShape))
+  }
+
   def createZooKerasBidirectional(
       layer: com.intel.analytics.bigdl.nn.keras.Recurrent[T],
       mergeMode: String = "concat",
@@ -1163,6 +1170,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     BinaryCrossEntropy[T](
       if (weights == null) null else toTensor(weights),
       sizeAverage)
+  }
+
+  def createZooKerasRankHinge(margin: Double = 1.0): RankHinge[T] = {
+    RankHinge[T](margin)
   }
 
   def createZooKerasAccuracy(
