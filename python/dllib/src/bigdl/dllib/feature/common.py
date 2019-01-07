@@ -22,6 +22,69 @@ if sys.version >= '3':
     unicode = str
 
 
+class Relation(object):
+    """
+    It represents the relationship between two items.
+    """
+    def __init__(self, id1, id2, label, bigdl_type="float"):
+        self.id1 = id1
+        self.id2 = id2
+        self.label = int(label)
+        self.bigdl_type = bigdl_type
+
+    def __reduce__(self):
+        return Relation, (self.id1, self.id2, self.label)
+
+    def __str__(self):
+        return "Relation [id1: %s, id2: %s, label: %s]" % (
+            self.id1, self.id2, self.label)
+
+    def to_tuple(self):
+        return self.id1, self.id2, self.label
+
+
+class Relations(object):
+    @staticmethod
+    def read(path, sc=None, min_partitions=1, bigdl_type="float"):
+        """
+        Read relations from csv or txt file.
+        Each record is supposed to contain the following three fields in order:
+        id1(string), id2(string) and label(int).
+
+        For csv file, it should be without header.
+        For txt file, each line should contain one record with fields separated by comma.
+
+        :param path: The path to the relations file, which can either be a local file path
+                     or HDFS path.
+        :param sc: An instance of SparkContext.
+                   If specified, return RDD of Relation.
+                   Default is None and in this case return list of Relation.
+        :param min_partitions: Int. A suggestion value of the minimal partition number for input
+                               texts. Only need to specify this when sc is not None. Default is 1.
+        """
+        if sc:
+            jvalue = callBigDlFunc(bigdl_type, "readRelations", path, sc, min_partitions)
+            res = jvalue.map(lambda x: Relation(str(x[0]), str(x[1]), int(x[2])))
+        else:
+            jvalue = callBigDlFunc(bigdl_type, "readRelations", path)
+            res = [Relation(str(x[0]), str(x[1]), int(x[2])) for x in jvalue]
+        return res
+
+    @staticmethod
+    def read_parquet(path, sc, bigdl_type="float"):
+        """
+        Read relations from parquet file.
+        Schema should be the following:
+        "id1"(string), "id2"(string) and "label"(int).
+
+        :param path: The path to the parquet file.
+        :param sc: An instance of SparkContext.
+        :return: RDD of Relation.
+        """
+        jvalue = callBigDlFunc(bigdl_type, "readRelationsParquet", path, sc)
+        return jvalue.map(lambda x: Relation(str(x[0]), str(x[1]), int(x[2])))
+
+
 class Preprocessing(JavaValue):
     """
     Preprocessing defines data transform action during feature preprocessing. Python wrapper for
