@@ -106,7 +106,7 @@ class TextFeature extends Serializable {
    * Get the identifier of the TextFeature.
    * Return null if it doesn't exist.
    */
-  def uri(): String = apply[String](TextFeature.uri)
+  def getURI: String = apply[String](TextFeature.uri)
 
   /**
    * Get the tokens of the TextFeature.
