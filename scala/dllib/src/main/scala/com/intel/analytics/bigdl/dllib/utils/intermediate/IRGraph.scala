@@ -89,8 +89,9 @@ private[bigdl] class IRGraph[T: ClassTag](
     graph.accGradParameters(input, gradOutput)
   }
 
-  def build(dnnMode: Boolean = false): Unit = {
-    graph = new IRConverter[T](this).toGraph(dnnMode)
+  def build(): this.type = {
+    graph = new IRConverter[T](this).toGraph()
+    this
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
