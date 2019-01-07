@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Shape}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -367,6 +367,10 @@ class Threshold[T: ClassTag](
       require(value <= threshold, "in-place processing requires value (" +
         value + "') not exceed threshold (" + threshold + ")")
     }
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
   }
 
   override def equals(obj: Any): Boolean = {

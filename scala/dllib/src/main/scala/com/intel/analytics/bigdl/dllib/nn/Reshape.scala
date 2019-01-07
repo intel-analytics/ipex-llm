@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -143,6 +144,17 @@ class Reshape[T: ClassTag](
       super.clearState()
     }
     this
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    val output = if ((batchMode.nonEmpty && !batchMode.get) ||
+        (input.product == nElement && batchMode.isEmpty && input(0) != 1)) {
+      size
+    } else {
+      Array(input(0)) ++ batchSize.slice(1, batchSize.length)
+    }
+    Shape(output)
   }
 }
 
