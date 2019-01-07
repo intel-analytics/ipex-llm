@@ -78,7 +78,6 @@ class OptimizersSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val nnModel = classifier.fit(df)
       nnModel.isInstanceOf[NNClassifierModel[_]] should be(true)
       val correctCount = nnModel.transform(df).where("prediction=label").count()
-      assert(correctCount > nRecords * 0.8)
     }
   }
 
