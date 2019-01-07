@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.nn.quantized.StorageManager
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Table, Util}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -44,8 +44,9 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Engine.init(nodeNumber, coreNumber, false)
     subModelNumber = Engine.getEngineType match {
       case MklBlas => coreNumber
-      case _ => throw new IllegalArgumentException
+      case MklDnn => 1
     }
+
   }
 
   after {
