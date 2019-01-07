@@ -63,6 +63,8 @@ def to_bigdl_criterion(criterion):
         return Poisson()
     elif criterion == "cosine_proximity" or criterion == "cosine":
         return CosineProximity()
+    elif criterion == "rank_hinge":
+        return RankHinge()
     else:
         raise TypeError("Unsupported loss: %s" % criterion)
 
