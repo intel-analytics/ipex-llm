@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.quantized.QuantizedModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.Util._
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Util}
 import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
@@ -56,7 +56,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
-    case _ => throw new IllegalArgumentException
+    case MklDnn => 1
   }
 
   // we should clone a new model which has no impact to origin model
