@@ -25,7 +25,7 @@ class DistributedSynchronizerSpec extends FlatSpec with Matchers with BeforeAndA
   var sc: SparkContext = null
 
   before {
-    val conf = Engine.createSparkConf().setAppName("test synchronizer").setMaster("local[*]")
+    val conf = Engine.createSparkConf().setAppName("test synchronizer").setMaster("local[4]")
       .set("spark.rpc.message.maxSize", "200")
     sc = new SparkContext(conf)
     Engine.init
