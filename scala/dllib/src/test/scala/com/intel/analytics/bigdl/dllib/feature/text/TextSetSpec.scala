@@ -239,7 +239,7 @@ class TextSetSpec extends ZooSpecHelper {
     require(pairSet.isDistributed)
     val pairFeatures = pairSet.toDistributed().rdd.collect()
     require(pairFeatures.length == 2)
-    require(pairFeatures.map(_.uri()).toSet == Set("Q2A2A1", "Q2A2A3"))
+    require(pairFeatures.map(_.getURI).toSet == Set("Q2A2A1", "Q2A2A3"))
     pairFeatures.foreach(feature => {
       val sample = feature.getSample
       require(sample.feature().size().sameElements(Array(2, 9)))
@@ -251,19 +251,19 @@ class TextSetSpec extends ZooSpecHelper {
 
     val listSet = TextSet.fromRelationLists(relationsRDD, qSet, aSet)
     require(listSet.isDistributed)
-    val listFeatures = listSet.toDistributed().rdd.collect().sortBy(_.uri().length)
+    val listFeatures = listSet.toDistributed().rdd.collect().sortBy(_.getURI.length)
     require(listFeatures.length == 2)
     val listFeature1 = listFeatures(0)
-    require(listFeature1.uri() == "Q1A1")
+    require(listFeature1.getURI == "Q1A1")
     val sample1 = listFeature1.getSample
     require(sample1.feature().size().sameElements(Array(1, 9)))
     require(sample1.feature().reshape(Array(9)).toArray().sameElements(qIndices ++ aIndices))
     require(sample1.label().size().sameElements(Array(1, 1)))
     require(sample1.label().reshape(Array(1)).toArray().sameElements(Array(1.0f)))
     val listFeature2 = listFeatures(1)
-    require(listFeature2.uri().startsWith("Q2"))
-    require(listFeature2.uri().contains("A1") && listFeature2.uri().contains("A2") &&
-      listFeature2.uri().contains("A3"))
+    require(listFeature2.getURI.startsWith("Q2"))
+    require(listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
+      listFeature2.getURI.contains("A3"))
     val sample2 = listFeature2.getSample
     require(sample2.feature().size().sameElements(Array(3, 9)))
     require(sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
