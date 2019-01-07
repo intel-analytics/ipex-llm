@@ -80,7 +80,8 @@ class TextSet(JavaValue):
         """
         return callBigDlFunc(self.bigdl_type, "textSetGetWordIndex", self.value)
 
-    def generate_word_index_map(self, remove_topN=0, max_words_num=-1):
+    def generate_word_index_map(self, remove_topN=0, max_words_num=-1,
+                                min_freq=1, existing_map=None):
         """
         Generate word_index map based on sorted word frequencies in descending order.
         Return the result dictionary, which can also be retrieved by 'get_word_index()'.
@@ -90,7 +91,7 @@ class TextSet(JavaValue):
         :return: Dictionary {word: id}
         """
         return callBigDlFunc(self.bigdl_type, "textSetGenerateWordIndexMap", self.value,
-                             remove_topN, max_words_num)
+                             remove_topN, max_words_num, min_freq, existing_map)
 
     def get_texts(self):
         """
@@ -100,6 +101,16 @@ class TextSet(JavaValue):
                  RDD of String for DistributedTextSet.
         """
         return callBigDlFunc(self.bigdl_type, "textSetGetTexts", self.value)
+
+    def get_uris(self):
+        """
+        Get the identifiers of a TextSet.
+        If a text doesn't have a uri, its corresponding position will be None.
+
+        :return: List of String for LocalTextSet.
+                 RDD of String for DistributedTextSet.
+        """
+        return callBigDlFunc(self.bigdl_type, "textSetGetURIs", self.value)
 
     def get_labels(self):
         """
@@ -166,7 +177,7 @@ class TextSet(JavaValue):
         jvalue = callBigDlFunc(self.bigdl_type, "textSetNormalize", self.value)
         return TextSet(jvalue=jvalue)
 
-    def word2idx(self, remove_topN=0, max_words_num=-1):
+    def word2idx(self, remove_topN=0, max_words_num=-1, min_freq=1, existing_map=None):
         """
         Map word tokens to indices.
         Result index will start from 1 and corresponds to the occurrence frequency of each word
@@ -180,11 +191,19 @@ class TextSet(JavaValue):
                             Default is 0, namely remove nothing.
         :param max_words_num: Int. The maximum number of words to be taken into consideration.
                               Default is -1, namely all words will be considered.
+        :param min_freq: Positive int. Only those words with frequency >= min_freq will be taken
+                         into consideration.
+                         Default is 1, namely all words that occur will be considered.
+        :param existing_map: Existing map of word index if any.
+                             Default is None and in this case a new map with index starting
+                             from 1 will be generated.
+                             If not None, then the generated map will preserve the word index in
+                             existing_map and assign subsequent indices to new words.
 
         :return: TextSet after word2idx.
         """
         jvalue = callBigDlFunc(self.bigdl_type, "textSetWord2idx", self.value,
-                               remove_topN, max_words_num)
+                               remove_topN, max_words_num, min_freq, existing_map)
         return TextSet(jvalue=jvalue)
 
     def shape_sequence(self, len, trunc_mode="pre", pad_element=0):
@@ -219,6 +238,7 @@ class TextSet(JavaValue):
     def read(cls, path, sc=None, min_partitions=1, bigdl_type="float"):
         """
         Read text files as TextSet.
+
         If sc is defined, read texts as DistributedTextSet from local file system or HDFS.
         If sc is None, read texts as LocalTextSet from local file system.
 
@@ -243,6 +263,102 @@ class TextSet(JavaValue):
         :return: TextSet.
         """
         jvalue = callBigDlFunc(bigdl_type, "readTextSet", path, sc, min_partitions)
+        return TextSet(jvalue=jvalue)
+
+    @classmethod
+    def read_csv(cls, path, sc=None, min_partitions=1, bigdl_type="float"):
+        """
+        Read texts from csv file.
+        Each record is supposed to contain the following two fields in order:
+        id(string) and text(string).
+        Note that the csv file should be without header.
+
+        If sc is defined, read texts as DistributedTextSet from local file system or HDFS.
+        If sc is None, read texts as LocalTextSet from local file system.
+
+        :param path: The path to the csv file.
+        :param sc: An instance of SparkContext.
+                   If specified, texts will be read as a DistributedTextSet.
+                   Default is None and in this case texts will be read as a LocalTextSet.
+        :param min_partitions: Int. A suggestion value of the minimal partition number for input
+                               texts. Only need to specify this when sc is not None. Default is 1.
+
+        :return: TextSet.
+        """
+        jvalue = callBigDlFunc(bigdl_type, "textSetReadCSV", path, sc, min_partitions)
+        return TextSet(jvalue=jvalue)
+
+    @classmethod
+    def read_parquet(cls, path, sc, bigdl_type="float"):
+        """
+        Read texts from parquet file.
+        Schema should be the following:
+        "id"(string) and "text"(string).
+
+        :param path: The path to the parquet file.
+        :param sc: An instance of SparkContext.
+
+        :return: DistributedTextSet.
+        """
+        jvalue = callBigDlFunc(bigdl_type, "textSetReadParquet", path, sc)
+        return DistributedTextSet(jvalue=jvalue)
+
+    @classmethod
+    def from_relation_pairs(cls, relations, corpus1, corpus2, bigdl_type="float"):
+        """
+        Used to generate a TextSet for pairwise training.
+
+        This method does the following:
+        1. Generate all RelationPairs: (id1, id2Positive, id2Negative) from Relations.
+        2. Join RelationPairs with corpus to transform id to indexedTokens.
+        Note: Make sure that the corpus has been transformed by SequenceShaper and WordIndexer.
+        3. For each pair, generate a TextFeature having Sample with:
+        - feature of shape (2, text1Length + text2Length).
+        - label of value [1 0] as the positive relation is placed before the negative one.
+
+        :param relations: List or RDD of Relation.
+        :param corpus1: TextSet that contains all id1 in relations. For each TextFeature in corpus1,
+                        text must have been transformed to indexedTokens of the same length.
+        :param corpus2: TextSet that contains all id2 in relations. For each TextFeature in corpus2,
+                        text must have been transformed to indexedTokens of the same length.
+        Note that if relations is a list, then corpus1 and corpus2 must both be LocalTextSet.
+        If relations is RDD, then corpus1 and corpus2 must both be DistributedTextSet.
+
+        :return: TextSet.
+        """
+        if isinstance(relations, RDD):
+            relations = relations.map(lambda x: x.to_tuple())
+        jvalue = callBigDlFunc(bigdl_type, "textSetFromRelationPairs", relations, corpus1, corpus2)
+        return TextSet(jvalue=jvalue)
+
+    @classmethod
+    def from_relation_lists(cls, relations, corpus1, corpus2, bigdl_type="float"):
+        """
+        Used to generate a TextSet for ranking.
+
+        This method does the following:
+        1. For each id1 in relations, find the list of id2 with corresponding label that
+        comes together with id1.
+        In other words, group relations by id1.
+        2. Join with corpus to transform each id to indexedTokens.
+        Note: Make sure that the corpus has been transformed by SequenceShaper and WordIndexer.
+        3. For each list, generate a TextFeature having Sample with:
+        - feature of shape (list_length, text1_length + text2_length).
+        - label of shape (list_length, 1).
+
+        :param relations: List or RDD of Relation.
+        :param corpus1: TextSet that contains all id1 in relations. For each TextFeature in corpus1,
+                        text must have been transformed to indexedTokens of the same length.
+        :param corpus2: TextSet that contains all id2 in relations. For each TextFeature in corpus2,
+                        text must have been transformed to indexedTokens of the same length.
+        Note that if relations is a list, then corpus1 and corpus2 must both be LocalTextSet.
+        If relations is RDD, then corpus1 and corpus2 must both be DistributedTextSet.
+
+        :return: TextSet.
+        """
+        if isinstance(relations, RDD):
+            relations = relations.map(lambda x: x.to_tuple())
+        jvalue = callBigDlFunc(bigdl_type, "textSetFromRelationLists", relations, corpus1, corpus2)
         return TextSet(jvalue=jvalue)
 
 
