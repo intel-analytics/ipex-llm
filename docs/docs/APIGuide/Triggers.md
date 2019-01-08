@@ -103,9 +103,11 @@ s reached.
 ```
 **Python:**
 ```python
-  trigger = And(MinLoss(0.01), MaxEpoch(2))
+  trigger = TriggerAnd(MinLoss(0.01), MaxEpoch(2))
 ``` 
-A trigger contains other triggers and triggers when all of them trigger (logical AND)
+A trigger contains other triggers and triggers when all of them trigger (logical AND).
+
+For example, TriggerAnd(MinLoss(0.01), MaxEpoch(2)), means optimizer should stop when loss < 0.01 and epoch > 2.
 
 ---
 ## Or
@@ -115,6 +117,8 @@ A trigger contains other triggers and triggers when all of them trigger (logical
 ```
 **Python:**
 ```python
-  trigger = Or(MinLoss(0.01), MaxEpoch(2))
+  trigger = TriggerOr(MinLoss(0.01), MaxEpoch(2))
 ``` 
 A trigger contains other triggers and triggers when all of them trigger (logical OR)
+
+For example, TriggerOr(MinLoss(0.01), MaxEpoch(2)), means optimizer should stop when loss < 0.01 or epoch > 2.
