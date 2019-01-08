@@ -253,15 +253,15 @@ class MinLoss(JavaValue):
         """
         JavaValue.__init__(self, None, bigdl_type, min)
 
-class And(JavaValue):
+class TriggerAnd(JavaValue):
     """
     A trigger contains other triggers and triggers when all of them trigger (logical AND)
 
 
-    >>> a = And(MinLoss(0.1), MaxEpoch(2))
+    >>> a = TriggerAnd(MinLoss(0.1), MaxEpoch(2))
     creating: createMinLoss
     creating: createMaxEpoch
-    creating: createAnd
+    creating: createTriggerAnd
     """
     def __init__(self, first, *other):
         """
@@ -273,15 +273,15 @@ class And(JavaValue):
         """
         JavaValue.__init__(self, None, "float", first, list(other))
 
-class Or(JavaValue):
+class TriggerOr(JavaValue):
     """
     A trigger contains other triggers and triggers when any of them trigger (logical OR)
 
 
-    >>> o = Or(MinLoss(0.1), MaxEpoch(2))
+    >>> o = TriggerOr(MinLoss(0.1), MaxEpoch(2))
     creating: createMinLoss
     creating: createMaxEpoch
-    creating: createOr
+    creating: createTriggerOr
     """
     def __init__(self, first, *other):
         """
