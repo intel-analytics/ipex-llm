@@ -2069,11 +2069,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Trigger.minLoss(min)
   }
 
-  def createAnd(first: Trigger, others: JList[Trigger]): Trigger = {
+  def createTriggerAnd(first: Trigger, others: JList[Trigger]): Trigger = {
     Trigger.and(first, others.asScala: _*)
   }
 
-  def createOr(first: Trigger, others: JList[Trigger]): Trigger = {
+  def createTriggerOr(first: Trigger, others: JList[Trigger]): Trigger = {
     Trigger.or(first, others.asScala: _*)
   }
 
