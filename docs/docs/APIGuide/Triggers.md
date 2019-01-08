@@ -107,7 +107,7 @@ s reached.
 ``` 
 A trigger contains other triggers and triggers when all of them trigger (logical AND). 
 
-For example, TriggerAnd(MinLoss(0.01), MaxEpoch(2)), means optimizer should stop when loss < 0.01 and epoch > 2.
+For example, TriggerAnd(MinLoss(0.01), MaxEpoch(2)), means training should stop when loss < 0.01 and epoch > 2.
 
 ---
 ## Or
@@ -121,4 +121,4 @@ For example, TriggerAnd(MinLoss(0.01), MaxEpoch(2)), means optimizer should stop
 ``` 
 A trigger contains other triggers and triggers when all of them trigger (logical OR). 
 
-For example, TriggerOr(MinLoss(0.01), MaxEpoch(2)), means optimizer should stop when loss < 0.01 or epoch > 2.
+For example, TriggerOr(MinLoss(0.01), MaxEpoch(2)), means training should stop when loss < 0.01 or epoch > 2.
