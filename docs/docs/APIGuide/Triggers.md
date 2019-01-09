@@ -95,3 +95,30 @@ s reached.
  A trigger that triggers an action when training loss
  less than "min" loss
 
+---
+## And
+**Scala:**
+```scala
+  val trigger = Trigger.and(Trigger.minLoss(0.01), Trigger.maxEpoch(2))
+```
+**Python:**
+```python
+  trigger = TriggerAnd(MinLoss(0.01), MaxEpoch(2))
+``` 
+A trigger contains other triggers and triggers when all of them trigger (logical AND). 
+
+For example, TriggerAnd(MinLoss(0.01), MaxEpoch(2)), means training should stop when loss < 0.01 and epoch > 2.
+
+---
+## Or
+**Scala:**
+```scala
+  val trigger = Trigger.and(Trigger.minLoss(0.01), Trigger.maxEpoch(2))
+```
+**Python:**
+```python
+  trigger = TriggerOr(MinLoss(0.01), MaxEpoch(2))
+``` 
+A trigger contains other triggers and triggers when all of them trigger (logical OR). 
+
+For example, TriggerOr(MinLoss(0.01), MaxEpoch(2)), means training should stop when loss < 0.01 or epoch > 2.
