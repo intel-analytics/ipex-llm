@@ -715,7 +715,7 @@ class DistriOptimizer[T: ClassTag] (
    * @param reserve whether to reserve optim method for each worker
    * @return
    */
-  def reserveOptim(reserve: Boolean): this.type = {
+  override def reserveOptim(reserve: Boolean): this.type = {
     reserveOptimMethod = reserve
     this
   }
