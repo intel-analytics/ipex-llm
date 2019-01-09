@@ -58,4 +58,3 @@ object SplitTensor {
     new SplitTensor[T](dimension, num, inputShape)
   }
 }
-
