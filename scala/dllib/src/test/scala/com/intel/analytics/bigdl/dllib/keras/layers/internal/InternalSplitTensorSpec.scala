@@ -46,7 +46,6 @@ class InternalSplitTensorpec extends FlatSpec with Matchers {
   }
 }
 
-
 class InternalSplitTensorSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = new InternalSplitTensor[Float](2, 2).setName("InternalSplitTensor")
