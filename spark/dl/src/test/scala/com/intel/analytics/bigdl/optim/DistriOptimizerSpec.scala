@@ -911,7 +911,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     optimizer
         .setOptimMethod(optimMethod)
-        .reserveOptim()
+        .reserveOptim(true)
         .setEndWhen(Trigger.maxIteration(3))
     val model = optimizer.optimize()
     val optim1 = optimizer.previousOptim.collect()

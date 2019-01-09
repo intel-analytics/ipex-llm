@@ -707,6 +707,14 @@ class DistriOptimizer[T: ClassTag] (
    * If you want to reserve optimMethod for each worker, and reuse those methods in
    * next training task, you can call it.
    */
+
+  /**
+   * If you want to reserve optimMethod for each worker and reuse those methods in
+   * next training task, please set reserve = true
+   * Otherwise, if just using optimMethod you set in optimizer, please set reserve = false
+   * @param reserve whether to reserve optim method for each worker
+   * @return
+   */
   def reserveOptim(reserve: Boolean): this.type = {
     reserveOptimMethod = reserve
     this
