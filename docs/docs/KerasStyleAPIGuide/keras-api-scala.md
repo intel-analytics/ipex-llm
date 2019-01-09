@@ -121,7 +121,7 @@ val model = Model[Float](Array(input1, input2), output)
 
 ---
 ## **Layers**
-See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
+See [here](Layers/core.md) for all the available layers for the Keras-Style API.
 
 To set the name of a layer, call the method `setName(name)` of the layer.
 
