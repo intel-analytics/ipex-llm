@@ -69,6 +69,7 @@ function deploy {
 deploy 2.1.1 SPARK_2.1 '-P spark_2.x'
 deploy 2.2.0 SPARK_2.2 '-P spark_2.x'
 deploy 2.3.1 SPARK_2.3 '-P spark_2.x'
+deploy 2.4.0 SPARK_2.4 '-P spark_2.x'
 
 mv dl/pom.xml.origin dl/pom.xml
 mv spark-version/1.5-plus/pom.xml.origin spark-version/1.5-plus/pom.xml
