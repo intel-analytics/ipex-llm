@@ -179,6 +179,7 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
 
   override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
     require(samples.length > 0, "samples is empty")
+
     require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
     val resize = batchSize != samples.length || featurePaddingParam.isDefined ||
@@ -677,12 +678,14 @@ class SparseMiniBatch[T: ClassTag](
     require(samples.length > 0, "samples is empty")
     require(samples(0).isInstanceOf[TensorSample[T]])
     val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
+
     require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
     val features = _samples.map(_.features)
     val labels = _samples.map(_.labels)
     if (batchSize == 0) {
       batchSize = samples.length // set a batchSize when set data.
+
       unlabeled = samples.head.numLabel() == 0
       init(features.head, labels.head)
     }

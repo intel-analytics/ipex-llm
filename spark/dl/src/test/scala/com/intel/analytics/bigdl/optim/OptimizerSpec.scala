@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, Samp
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
+import com.intel.analytics.bigdl.optim.TriggerType.TriggerType
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
 import org.apache.spark.SparkContext
@@ -163,6 +164,10 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
 
     def createDummyTrigger(triggerBoolRes : Boolean) : Trigger = new Trigger {
+      override def getTriggerType(): TriggerType = TriggerType.Anonymous
+
+      override def getTriggerValue(): Any = triggerBoolRes
+
       override def apply(state: Table): Boolean = triggerBoolRes
     }
 

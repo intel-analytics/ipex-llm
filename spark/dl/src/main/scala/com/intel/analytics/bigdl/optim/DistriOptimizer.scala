@@ -183,7 +183,10 @@ object DistriOptimizer extends AbstractOptimizer {
     var lossArray = new Array[Double](_subModelNumber)
 
     var epochStart = System.nanoTime()
+
     var dataRDD = dataset.data(train = true)
+
+    logger.debug("------------new loop starting-------------")
 
     while (!endWhen(driverState)) {
       val lossSum = sc.accumulator(0.0, "loss sum")
@@ -543,16 +546,23 @@ object DistriOptimizer extends AbstractOptimizer {
       case _ => throw new IllegalArgumentException
     }
 
-    require(dataset.originRDD().partitions.length == nodeNumber,
-      s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
-        s" is not equal to configured node number ${nodeNumber}")
+    if(DataSet.declineRepartitionedRdd) {
+      require(dataset.originRDD().partitions.length == nodeNumber,
+        s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
+          s" is not equal to configured node number ${nodeNumber}")
+    } else {
+      require(dataset.originRDD().partitions.length % nodeNumber == 0,
+        s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
+          s" must be multiple times of configured node number ${nodeNumber}")
+    }
 
 
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
 
-    val models = dataset.originRDD().mapPartitions(_ => {
+//    val models = dataset.originRDD().mapPartitions(_ => {
+    val models = sc.parallelize(Seq(1 to nodeNumber), nodeNumber).mapPartitions(_ => {
       val partitionId = TaskContext.getPartitionId
       val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value
@@ -737,7 +747,7 @@ class DistriOptimizer[T: ClassTag] (
 
   override def optimize(): Module[T] = {
 
-    val distDataset = dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    val originalDataset = dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]]
 
     optimMethods.values.foreach { optimMethod =>
       optimMethod.clearHistory()
@@ -754,145 +764,174 @@ class DistriOptimizer[T: ClassTag] (
     state("maxDropPercentage") = maxDropPercentage
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(_model)
 
+
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
 
-    val partitionNum = distDataset.originRDD().partitions.length
-    val modelParameters = model.getParameters()
-    // subModuleName -> (storageOffset, length, AllReduceParameter)
-    val parameters = if (optimMethods.size != 1) {
-      val p = optimMethods.map{case (subModuleName, optimMethods) =>
-        val subModule = model(subModuleName)
-        require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
-        val subModuleWeights = subModule.get.getParameters()._1
-        (subModuleName, subModuleWeights)
-      }
-      val sortedWeights = p.values.toArray.sortWith((a, b) => a.storageOffset() < b.storageOffset())
-      val compactWeights = Module.isCompact(sortedWeights)
-      require(modelParameters._1 == compactWeights,
-        s"DistriOptimizer: All subModules should have an OptimMethod.")
-      p.map{case (subModuleName, weights) =>
-        (subModuleName, AllReduceParameter.newParameter[T](
-          partitionNum, weights.nElement(), weights.storageOffset()))
-      }
-    } else if (optimMethods.contains(model.getName())) {
-      Map(model.getName() -> AllReduceParameter.newParameter[T](
-        partitionNum, modelParameters._1.nElement()))
-    } else {
-      throw new IllegalArgumentException(s"${model.getName()} doesn't " +
-        s"have corresponding OptimMethod")
+    val triggerType = endWhen.getTriggerType()
+    val loopValue: Int = triggerType match {
+      case TriggerType.MaxEpoch | TriggerType.MaxIteration => endWhen.getTriggerValue().asInstanceOf[Int]
+      case _ => Integer.MAX_VALUE
     }
 
-    prepareInput()
+    val distDatasets = originalDataset.getSplits()
+    DistriOptimizer.logger.debug(s"total split number of input data is ${distDatasets.length}")
+    for (i <- 0 until distDatasets.length) {
+      val distDataset = distDatasets(i)
+      DistriOptimizer.logger.debug(s"current dataset has ${distDataset.originRDD().partitions.length} partitions")
+      require(distDataset != null, s"input dataSet cannot create enough splits")
+//      distDataset.originRDD().repartition(Engine.nodeNumber())
+      val partitionNum = distDataset.originRDD().partitions.length
+      val modelParameters = model.getParameters()
+      // subModuleName -> (storageOffset, length, AllReduceParameter)
+      val parameters = if (optimMethods.size != 1) {
+        val p = optimMethods.map { case (subModuleName, optimMethods) =>
+          val subModule = model(subModuleName)
+          require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+          val subModuleWeights = subModule.get.getParameters()._1
+          (subModuleName, subModuleWeights)
+        }
+        val sortedWeights = p.values.toArray.sortWith((a, b) => a.storageOffset() < b.storageOffset())
+        val compactWeights = Module.isCompact(sortedWeights)
+        require(modelParameters._1 == compactWeights,
+          s"DistriOptimizer: All subModules should have an OptimMethod.")
+        p.map { case (subModuleName, weights) =>
+          (subModuleName, AllReduceParameter.newParameter[T](
+            partitionNum, weights.nElement(), weights.storageOffset()))
+        }
+      } else if (optimMethods.contains(model.getName())) {
+        Map(model.getName() -> AllReduceParameter.newParameter[T](
+          partitionNum, modelParameters._1.nElement()))
+      } else {
+        throw new IllegalArgumentException(s"${model.getName()} doesn't " +
+          s"have corresponding OptimMethod")
+      }
 
-    val modelsAndBroadcast = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
-      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
-      optimMethods, parameterProcessors)
-    models = modelsAndBroadcast._1
-    modelBroadcast = modelsAndBroadcast._2
+      if (!distDataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].isCached) {
+        DistriOptimizer.logger.info("caching training rdd ...")
+        DistriOptimizer.prepareInput(distDataset, this.validationDataSet)
+      }
 
-    if (checkpointPath.isDefined) {
-      val file = checkpointPath.get + "/" +
-        new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
-      new File(file).mkdir()
-      checkpointPath = Some(file)
-    }
+      val modelsAndBroadcast = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
+        nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
+        optimMethods, parameterProcessors)
+      models = modelsAndBroadcast._1
+      modelBroadcast = modelsAndBroadcast._2
 
-    var retryNum = 0
-    val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
-    val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
-    var lastFailureTimestamp = System.nanoTime()
+      if (checkpointPath.isDefined) {
+        val file = checkpointPath.get + "/" +
+          new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
+        new File(file).mkdir()
+        checkpointPath = Some(file)
+      }
 
-    while (retryNum < maxRetry) {
-      try {
-        DistriOptimizer.optimize(
-          model,
-          distDataset,
-          coresPerNode,
-          state,
-          endWhen,
-          metrics,
-          models,
-          optimMethods,
-          parameters,
-          validationTrigger,
-          validationDataSet,
-          validationMethods,
-          checkpointTrigger,
-          checkpointPath,
-          trainSummary,
-          validationSummary,
-          isOverWrite,
-          parameterProcessors.toArray
-        )
-        retryNum = Int.MaxValue
-      } catch {
-        case e: IllegalArgumentException =>
-          throw e
-        case t: Throwable =>
-          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-          if (checkpointPath.isDefined) {
-            /* To avoid retry number is used up by first few exceptions, we count time here.
+      var retryNum = 0
+      val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
+      val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
+      var lastFailureTimestamp = System.nanoTime()
+
+      while (retryNum < maxRetry) {
+        try {
+          DistriOptimizer.optimize(
+            model,
+            distDataset,
+            coresPerNode,
+            state,
+            endWhen,
+            metrics,
+            models,
+            optimMethods,
+            parameters,
+            validationTrigger,
+            validationDataSet,
+            validationMethods,
+            checkpointTrigger,
+            checkpointPath,
+            trainSummary,
+            validationSummary,
+            isOverWrite,
+            parameterProcessors.toArray
+          )
+          retryNum = Int.MaxValue
+        } catch {
+          case e: IllegalArgumentException =>
+            throw e
+          case t: Throwable =>
+            DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+            if (checkpointPath.isDefined) {
+              /* To avoid retry number is used up by first few exceptions, we count time here.
              * If exception exceeds maxRetry times in maxRetry*retryTimeInterval seconds,
              * we will give up retry Or we will reset retryNum
              */
-            if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
-              retryNum += 1
-              if (retryNum == maxRetry) {
-                throw t
-              }
-            } else {
-              retryNum = 1
-            }
-            DistriOptimizer.logger.info(s"Retrying $retryNum times")
-            lastFailureTimestamp = System.nanoTime()
-
-            val modelFile = getLatestFile(checkpointPath.get, "model")
-            clearState()
-            models.unpersist()
-            val newModel = if (modelFile != null) {
-              DistriOptimizer.logger.info("Model recover from last snapshot")
-              Module.load[T](modelFile)
-            } else {
-              DistriOptimizer.logger.info("Model recover from origin model")
-              model
-            }
-            optimMethods = optimMethods.map { case (moduleName, optimMethod) =>
-              val methodFile = getLatestFile(checkpointPath.get, s"optimMethod-$moduleName")
-
-              val newOptimMethod = if (methodFile != null) {
-                DistriOptimizer.logger.info(s"$moduleName's OptimMethod recover from last snapshot")
-                OptimMethod.load[T](methodFile)
+              if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
+                retryNum += 1
+                if (retryNum == maxRetry) {
+                  throw t
+                }
               } else {
-                DistriOptimizer.logger.info(s"$moduleName's OptimMethod recover from origin model")
-                optimMethod
+                retryNum = 1
               }
-              newOptimMethod.clearHistory()
-              (moduleName, newOptimMethod)
+              DistriOptimizer.logger.info(s"Retrying $retryNum times")
+              lastFailureTimestamp = System.nanoTime()
+
+              val modelFile = getLatestFile(checkpointPath.get, "model")
+              clearState()
+              models.unpersist()
+              val newModel = if (modelFile != null) {
+                DistriOptimizer.logger.info("Model recover from last snapshot")
+                Module.load[T](modelFile)
+              } else {
+                DistriOptimizer.logger.info("Model recover from origin model")
+                model
+              }
+              optimMethods = optimMethods.map { case (moduleName, optimMethod) =>
+                val methodFile = getLatestFile(checkpointPath.get, s"optimMethod-$moduleName")
+
+                val newOptimMethod = if (methodFile != null) {
+                  DistriOptimizer.logger.info(s"$moduleName's OptimMethod recover from last snapshot")
+                  OptimMethod.load[T](methodFile)
+                } else {
+                  DistriOptimizer.logger.info(s"$moduleName's OptimMethod recover from origin model")
+                  optimMethod
+                }
+                newOptimMethod.clearHistory()
+                (moduleName, newOptimMethod)
+              }
+              val modelsAndBroadcast = DistriOptimizer.initThreadModels(newModel, distDataset,
+                criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters,
+                validationMethods, optimMethods, parameterProcessors)
+              models = modelsAndBroadcast._1
+              modelBroadcast = modelsAndBroadcast._2
+            } else {
+              throw t
             }
-            val modelsAndBroadcast = DistriOptimizer.initThreadModels(newModel, distDataset,
-              criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters,
-              validationMethods, optimMethods, parameterProcessors)
-            models = modelsAndBroadcast._1
-            modelBroadcast = modelsAndBroadcast._2
-          } else {
-            throw t
-          }
+        }
+      }
+
+      DistriOptimizer.getModel(models, parameters, model)
+
+      // Reset some internal states, so this or other optimizers can run optimize again
+      clearState()
+
+      // unpersist the model because the next time optimize is called, new `models` will be
+      // created
+      shutdown()
+      models.unpersist()
+      distDataset.unpersist()
+      // todo for each loop, we should add the MaxEpoch ,thus cause confusing output logs. And we should consider new And/Or trigger now.
+      triggerType match {
+        case TriggerType.MaxEpoch => {
+          endWhen = Trigger.maxEpoch(if (loopValue < (Integer.MAX_VALUE / (i + 2))) (i + 2)*loopValue else Integer.MAX_VALUE)
+        }
+        case TriggerType.MaxIteration => {
+          endWhen = Trigger.maxIteration(if (loopValue < (Integer.MAX_VALUE / (i + 2))) (i + 2)*loopValue else Integer.MAX_VALUE)
+        }
+        case _ =>
       }
     }
-
-    DistriOptimizer.getModel(models, parameters, model)
-
-    // Reset some internal states, so this or other optimizers can run optimize again
-    clearState()
-
-    // unpersist the model because the next time optimize is called, new `models` will be
-    // created
-    shutdown()
-    models.unpersist()
-
     model
   }
+
 
   private def getLatestFile(path: String, fileName: String): String = {
     val fl = new java.io.File(path)

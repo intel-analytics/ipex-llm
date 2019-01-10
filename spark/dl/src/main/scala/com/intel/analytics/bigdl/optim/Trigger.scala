@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.optim.TriggerType.TriggerType
 import com.intel.analytics.bigdl.utils.Table
 
 /**
@@ -24,7 +25,19 @@ import com.intel.analytics.bigdl.utils.Table
  * is reached.
  */
 trait Trigger extends Serializable {
+
   def apply(state: Table): Boolean
+
+  def getTriggerType(): TriggerType
+
+  def getTriggerValue(): Any
+}
+
+object TriggerType extends Enumeration {
+
+  type TriggerType = Value
+
+  val EveryEpoch, SeveralIteration, MaxEpoch, MaxIteration, MaxScore, MinLoss, And, Or, Anonymous = Value
 }
 
 object Trigger {
@@ -37,6 +50,13 @@ object Trigger {
   def everyEpoch: Trigger = {
     new Trigger() {
       private var lastEpoch = -1
+
+      override def getTriggerType(): TriggerType = TriggerType.EveryEpoch
+
+      override def getTriggerValue(): Any = {
+        val value = lastEpoch
+        value
+      }
 
       override def apply(state: Table): Boolean = {
         if (lastEpoch == -1) {
@@ -62,6 +82,10 @@ object Trigger {
    */
   def severalIteration(interval: Int): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.SeveralIteration
+
+      override def getTriggerValue(): Any = interval
+
       override def apply(state: Table): Boolean = {
         val curIteration = state[Int]("neval")
         curIteration != 0 && curIteration % interval == 0
@@ -78,6 +102,10 @@ object Trigger {
    */
   def maxEpoch(max: Int): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.MaxEpoch
+
+      override def getTriggerValue(): Any = max
+
       override def apply(state: Table): Boolean = {
         state[Int]("epoch") > max
       }
@@ -94,6 +122,10 @@ object Trigger {
    */
   def maxIteration(max: Int): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.MaxIteration
+
+      override def getTriggerValue(): Any = max
+
       override def apply(state: Table): Boolean = {
         state[Int]("neval") > max
       }
@@ -106,6 +138,10 @@ object Trigger {
    */
   def maxScore(max: Float): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.MaxScore
+
+      override def getTriggerValue(): Any = max
+
       override def apply(state: Table): Boolean = {
         state[Float]("score") > max
       }
@@ -118,6 +154,10 @@ object Trigger {
    */
   def minLoss(min: Float): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.MinLoss
+
+      override def getTriggerValue(): Any = min
+
       override def apply(state: Table): Boolean = {
         state[Float]("Loss") < min
       }
@@ -131,6 +171,11 @@ object Trigger {
    */
   def and(first : Trigger, others : Trigger*): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.And
+
+      override def getTriggerValue(): Any =
+        Seq(first.getTriggerValue(), others.map(_.getTriggerValue())::Nil)
+
       override def apply(state: Table): Boolean = {
         first.apply(state) && others.forall(_.apply(state))
       }
@@ -144,6 +189,11 @@ object Trigger {
    */
   def or(first : Trigger, others : Trigger*): Trigger = {
     new Trigger() {
+      override def getTriggerType(): TriggerType = TriggerType.Or
+
+      override def getTriggerValue(): Any =
+        Seq(first.getTriggerValue(), others.map(_.getTriggerValue())::Nil)
+
       override def apply(state: Table): Boolean = {
         first.apply(state) || others.exists(_.apply(state))
       }

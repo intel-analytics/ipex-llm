@@ -635,6 +635,7 @@ object Optimizer {
           batchSize: Int,
           miniBatchImpl: MiniBatch[T]
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+
     new DistriOptimizer[T](
       _model = model,
       _dataset = (DataSet.rdd(sampleRDD) ->
