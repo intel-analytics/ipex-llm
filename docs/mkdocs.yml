@@ -95,9 +95,9 @@ pages:
 #    - Dropout Layers: Keras2StyleAPIGuide/Layers/dropout.md
 #    - Advanced Activations: Keras2StyleAPIGuide/Layers/advanced-activation.md
 #    - Layer Wrappers: Keras2StyleAPIGuide/Layers/wrappers.md
-  - Optimization:
-    - Train, evaluate or predict a model: Keras2StyleAPIGuide/Optimization/training.md
-    - Optimizers: Keras2StyleAPIGuide/Optimization/optimizer.md
-    - Losses: Keras2StyleAPIGuide/Optimization/loss.md
+#  - Optimization:
+#    - Train, evaluate or predict a model: Keras2StyleAPIGuide/Optimization/training.md
+#    - Optimizers: Keras2StyleAPIGuide/Optimization/optimizer.md
+#    - Losses: Keras2StyleAPIGuide/Optimization/loss.md
 - Powered by: powered-by.md
 - FAQ and Known Issues: known-issues.md
