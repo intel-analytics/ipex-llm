@@ -1178,7 +1178,8 @@ object Tensor {
   /**
    * Create a SparseTensor.
    *
-   * @param indices dimension-D array to describe the indices of values.
+   * @param indices dimension-D array to describe the indices of values,
+   *                should be zero-based and ascending.
    * @param values non-zero values in this SparseTensor.
    * @param shape shape
    * @param ev
@@ -1196,7 +1197,8 @@ object Tensor {
   /**
    * Create a SparseTensor.
    *
-   * @param indices dimension-D array to describe the indices of values.
+   * @param indices dimension-D array to describe the indices of values,
+   *                should be zero-based and ascending.
    * @param values non-zero values in this SparseTensor.
    * @param shape shape
    * @param ev
@@ -1214,7 +1216,8 @@ object Tensor {
   /**
    * Create a SparseTensor.
    *
-   * @param indices dimension-D array to describe the indices of values.
+   * @param indices dimension-D array to describe the indices of values,
+   *                should be zero-based and ascending.
    * @param values non-zero values in this SparseTensor.
    * @param shape shape
    * @param dimension dimension
@@ -1234,7 +1237,8 @@ object Tensor {
   /**
    * Create a SparseTensor.
    *
-   * @param indices dimension-D array to describe the indices of values.
+   * @param indices dimension-D array to describe the indices of values,
+   *                should be zero-based and ascending.
    * @param values non-zero values in this SparseTensor.
    * @param shape shape
    * @param dimension dimension
