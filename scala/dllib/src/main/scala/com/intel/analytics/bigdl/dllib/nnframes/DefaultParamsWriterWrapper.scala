@@ -19,7 +19,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.DefaultParamsReader.Metadata
 import org.apache.spark.ml.util.{DefaultParamsReader, DefaultParamsWriter}
-import org.json4s.{JObject, JValue}
+import org.json4s.jackson.JsonMethods.{compact, render}
+import org.json4s.{DefaultFormats, JObject, JValue}
 
 
 object DefaultParamsWriterWrapper {
@@ -37,6 +38,17 @@ object DefaultParamsWriterWrapper {
   }
 
   def getAndSetParams(instance: Params, metadata: Metadata): Unit = {
-    DefaultParamsReader.getAndSetParams(instance, metadata)
+    implicit val format = DefaultFormats
+    metadata.params match {
+      case JObject(pairs) =>
+        pairs.foreach { case (paramName, jsonValue) =>
+          val param = instance.getParam(paramName)
+          val value = param.jsonDecode(compact(render(jsonValue)))
+          instance.set(param, value)
+        }
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Cannot recognize JSON metadata: ${metadata.metadataJson}.")
+    }
   }
 }
