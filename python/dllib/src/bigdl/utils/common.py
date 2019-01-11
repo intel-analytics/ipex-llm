@@ -228,7 +228,8 @@ class JTensor(object):
         :param a_ndarray non-zero elements in this SparseTensor
         :param i_ndarray zero-based indices for non-zero element
                          i_ndarray's shape should be (shape.size, a_ndarray.size)
-                         And the i-th non-zero elements indices is i_ndarray[:, 1]
+                         And the i-th non-zero elements indices is i_ndarray[:, 1],
+                         should be zero-based and ascending;
         :param shape     shape as a DenseTensor.
 
         >>> import numpy as np
