@@ -33,7 +33,6 @@ import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, getModel}
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
@@ -73,7 +72,7 @@ object DistriOptimizer extends AbstractOptimizer {
     localStates: Array[Table],
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
-    optimMethods: Map[String, OptimMethod[T]],
+    var optimMethods: Map[String, OptimMethod[T]],
     parameterSynchronizer: DistriParameterSynchronizer[T] = null
   )
 
@@ -700,6 +699,40 @@ class DistriOptimizer[T: ClassTag] (
    DistriOptimizer.clearState(models)
   }
 
+
+  // By default, optimMethod internal state for each worker will not be reserved and reuse.
+  private var reserveOptimMethod = false
+  private[bigdl] var previousOptim: RDD[Map[String, OptimMethod[T]]] = null
+  /**
+   * If you want to reserve optimMethod for each worker, and reuse those methods in
+   * next training task, you can call it.
+   */
+
+  /**
+   * If you want to reserve optimMethod for each worker and reuse those methods in
+   * next training task, please set reserve = true
+   * Otherwise, if just using optimMethod you set in optimizer, please set reserve = false
+   * @param reserve whether to reserve optim method for each worker
+   * @return
+   */
+  override def reserveOptim(reserve: Boolean): this.type = {
+    reserveOptimMethod = reserve
+    this
+  }
+
+  // replace optim methods with previous
+  private def resetOptimMethods[T: ClassTag](
+    models: RDD[DistriOptimizer.Cache[T]],
+    previousOptimMethods: RDD[Map[String, OptimMethod[T]]]):
+    RDD[DistriOptimizer.Cache[T]] = {
+      models.zipPartitions(previousOptimMethods) { (m1, m2) => {
+        val cache = m1.next()
+        cache.optimMethods = m2.next()
+        Iterator(cache)
+      }
+    }
+  }
+
   private def endEpoch(): Unit = {
     DistriOptimizer.endEpoch(optimMethods)
   }
@@ -788,7 +821,13 @@ class DistriOptimizer[T: ClassTag] (
     val modelsAndBroadcast = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
       optimMethods, parameterProcessors)
-    models = modelsAndBroadcast._1
+
+    models = if (reserveOptimMethod && previousOptim != null) {
+      // replace optimMethods with previous ones
+      resetOptimMethods(modelsAndBroadcast._1, previousOptim)
+    } else {
+      modelsAndBroadcast._1
+    }
     modelBroadcast = modelsAndBroadcast._2
 
     if (checkpointPath.isDefined) {
@@ -889,6 +928,14 @@ class DistriOptimizer[T: ClassTag] (
     // unpersist the model because the next time optimize is called, new `models` will be
     // created
     shutdown()
+
+    // reserve optimMethod internal state for each worker if need
+    if (reserveOptimMethod) {
+      previousOptim = models.map(m => m.optimMethods).cache()
+      previousOptim.count()
+    } else {
+      if (previousOptim != null) previousOptim.unpersist()
+    }
     models.unpersist()
 
     model
