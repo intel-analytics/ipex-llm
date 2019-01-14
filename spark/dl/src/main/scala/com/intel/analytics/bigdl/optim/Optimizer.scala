@@ -466,6 +466,11 @@ abstract class Optimizer[T: ClassTag, D](
    * shutdown the optimizer, which will release the native resources if exists.
    */
   private[optim] def shutdown(): Unit = {}
+
+  def reserveOptim(reserve: Boolean): this.type = {
+    throw new UnsupportedOperationException(
+      "Only support DistriOptimizer to reserve optim methods for each worker")
+  }
 }
 
 object Optimizer {
