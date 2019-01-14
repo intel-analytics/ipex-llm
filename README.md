@@ -1,5 +1,10 @@
-# Analytics Zoo
-*A unified analytics + AI platform for __distributed TensorFlow, Keras and BigDL on Apache Spark__*
+<div align="center">
+   <p align="center"> <img src="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/img/logo.jpg" height=240px； weight=320px；"><br></p>
+</div>
+      
+### A unified analytics + AI platform for *__distributed TensorFlow, Keras and BigDL on Apache Spark__*
+
+
 
 ---
 
