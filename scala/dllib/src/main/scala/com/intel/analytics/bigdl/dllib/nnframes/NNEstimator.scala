@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
 import com.intel.analytics.zoo.feature.common.{Preprocessing, _}
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
@@ -735,6 +736,7 @@ object NNModel extends MLReadable[NNModel[_]] {
   }
 
   private[nnframes] def getMetaAndModel(path: String, sc: SparkContext) = {
+    Net // this is necessary to load Net and register the serializer
     val meta = DefaultParamsWriterWrapper.loadMetadata(path, sc)
     val (modulePath, weightPath) =
       new Path(path, "module").toString -> new Path(path, "weight").toString
