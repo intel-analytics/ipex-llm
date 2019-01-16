@@ -96,13 +96,12 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
     val batch = _inputSize(0)
     val steps = _inputSize(1)
 
-    if (outputSize == null) {
-      val combinedShape = _output.size()
-      require(combinedShape(0) == batch * steps,
-        s"combined batch: ${combinedShape(0)} should match ${batch} * ${steps}")
-      val splitedShape = Array(batch, steps) ++ combinedShape.drop(1)
-      outputSize = splitedShape
-    }
+    val combinedShape = _output.size()
+    require(combinedShape(0) == batch * steps,
+      s"combined batch: ${combinedShape(0)} should match ${batch} * ${steps}")
+    val splitedShape = Array(batch, steps) ++ combinedShape.drop(1)
+    outputSize = splitedShape
+
     input.resize(_inputSize)
     output.set(_output).resize(outputSize)
 
