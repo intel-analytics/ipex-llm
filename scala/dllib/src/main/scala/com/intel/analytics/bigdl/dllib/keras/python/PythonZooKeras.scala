@@ -1099,7 +1099,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       alignCorners: Boolean,
       dimOrdering: String = "th",
       inputShape: JList[Int] = null): ResizeBilinear[T] = {
-    ResizeBilinear(outputHeight, outputWidth, alignCorners, dimOrdering)
+    ResizeBilinear(outputHeight, outputWidth, alignCorners, dimOrdering, toScalaShape(inputShape))
   }
 
   def connectInputs(module: AbstractModule[Activity, Activity, T],
