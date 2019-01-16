@@ -225,3 +225,103 @@ Output is
    [0.         0.         0.         0.        ]
    [0.         0.         0.         0.        ]]]]
 ```
+
+---
+## **GaussianNoise**
+Apply additive zero-centered Gaussian noise.
+
+This is useful to mitigate overfitting (you could see it as a form of random data augmentation).
+
+Gaussian Noise is a natural choice as corruption process for real valued inputs.
+
+As it is a regularization layer, it is only active at training time.
+
+**Scala:**
+```scala
+GaussianNoise(sigma, inputShape = null)
+```
+**Python:**
+```python
+GaussianNoise(sigma, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `sigma`: Standard deviation of the noise distribution.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.GaussianNoise
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(GaussianNoise[Float](0.6, inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+-0.57896155     -0.19616802     1.7000706       -2.2136402
+0.2245884       -0.167104       0.08521592      -0.31111532
+-1.2676435      1.9858241       -0.27946314     -0.72280097
+
+(2,.,.) =
+1.263968        -0.1366611      0.7511876       -0.42096275
+-0.2524562      -2.082302       -1.3312799      0.035666652
+-1.6895409      -0.8562052      0.69322604      -0.080461726
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+-0.25664312     0.1474515       2.066732        -1.5476861
+0.34144306      1.1049318       0.4146787       -0.15529981
+-1.3980585      2.0075183       0.09995845      -0.9865419
+
+(2,.,.) =
+0.8450401       0.0076646805    0.5062498       -0.5671178
+0.89790833      -2.1620805      -1.5945435      -0.74607164
+-1.7677919      -0.6946467      0.35671985      0.9388765
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import GaussianNoise
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(GaussianNoise(0.6, input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[0.87836839, 0.29835789, 0.99199298, 0.61462649],
+        [0.24045628, 0.9334569 , 0.69817451, 0.80795268],
+        [0.82978091, 0.32160601, 0.97033687, 0.34726345]],
+
+       [[0.11581215, 0.2012782 , 0.89101947, 0.24642749],
+        [0.51231345, 0.47586449, 0.53419205, 0.71586367],
+        [0.88794988, 0.20960408, 0.46741968, 0.31609195]]])
+```
+Output is
+```python
+array([[[ 0.9021132 ,  0.05798048,  0.9235187 ,  0.8105377 ],
+        [ 0.82122934,  0.87509984,  1.3449373 ,  0.115228  ],
+        [ 0.2612275 ,  0.02238336,  0.8971698 ,  0.3349191 ]],
+
+       [[-0.7950512 , -0.4547084 ,  1.6517348 ,  1.5761411 ],
+        [ 0.9232183 ,  0.33405185,  0.6043875 ,  0.54677534],
+        [ 1.4350419 , -1.4409285 , -0.31246042,  0.5502143 ]]],
+      dtype=float32)
+```
