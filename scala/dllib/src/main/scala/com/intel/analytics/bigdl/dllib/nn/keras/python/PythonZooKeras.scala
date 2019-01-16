@@ -1229,14 +1229,14 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def createZooKerasRNNEncoder(rnns: JList[Recurrent[T]],
     embedding: KerasLayer[Tensor[T], Tensor[T], T] = null,
-    inputShape: Shape = null): RNNEncoder[T] = {
-    RNNEncoder(rnns.asScala.toArray, embedding, inputShape)
+    inputShape: JList[Int] = null): RNNEncoder[T] = {
+    RNNEncoder(rnns.asScala.toArray, embedding, toScalaShape(inputShape))
   }
 
   def createZooKerasRNNDecoder(rnns: JList[Recurrent[T]],
     embedding: KerasLayer[Tensor[T], Tensor[T], T] = null,
-    inputShape: Shape = null): RNNDecoder[T] = {
-    RNNDecoder(rnns.asScala.toArray, embedding, inputShape)
+    inputShape: JList[Int] = null): RNNDecoder[T] = {
+    RNNDecoder(rnns.asScala.toArray, embedding, toScalaShape(inputShape))
   }
 
   def createZooKerasBridge(bridgeType: String, decoderHiddenSize: Int,
