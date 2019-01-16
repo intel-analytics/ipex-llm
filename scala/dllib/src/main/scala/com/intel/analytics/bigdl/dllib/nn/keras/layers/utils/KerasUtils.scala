@@ -206,7 +206,7 @@ object KerasUtils {
     if (shape.isInstanceOf[SingleShape]) {
       Shape((List(-1) ++ shape.toSingle()).toArray)
     } else {
-      Shape(shape.toMulti().map {addBatch})
+      MultiShape(shape.toMulti().map {addBatch})
     }
   }
 
@@ -217,7 +217,7 @@ object KerasUtils {
     if (shape.isInstanceOf[SingleShape]) {
       Shape(shape.toSingle().slice(1, shape.toSingle().length).toArray)
     } else {
-      Shape(shape.toMulti().map {removeBatch})
+      MultiShape(shape.toMulti().map {removeBatch})
     }
   }
 
