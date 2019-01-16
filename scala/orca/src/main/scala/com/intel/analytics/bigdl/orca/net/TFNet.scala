@@ -28,7 +28,7 @@ import com.intel.analytics.zoo.pipeline.api.{Predictable, Predictor}
 import com.intel.analytics.zoo.pipeline.api.net.TFNet.TFGraphHolder
 import org.apache.spark.rdd.RDD
 import org.tensorflow.framework.GraphDef
-import org.tensorflow.types.UInt8
+import org.tensorflow.types.{TFBool, UInt8}
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
@@ -86,6 +86,12 @@ class TFNet(private val graphDef: TFGraphHolder,
     }
     def createTFTensor(shape: Array[Long], buffer: DoubleBuffer): TTensor[_] = {
       val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
+      tensorList = TFTensor :: tensorList
+      return TFTensor
+    }
+
+    def createBoolTFTensor(shape: Array[Long], bytes: ByteBuffer): TTensor[_] = {
+      val TFTensor : TTensor[_] = TTensor.create(classOf[java.lang.Boolean], shape, bytes)
       tensorList = TFTensor :: tensorList
       return TFTensor
     }
@@ -457,6 +463,7 @@ class TFNet(private val graphDef: TFGraphHolder,
   private def name2type(name: String): DataType = {
     val Array(op, idx) = name.split(":")
     val operation = graph.operation(op)
+    if (operation == null) throw new Exception(s"Operation $op not found")
     val output = operation.output(idx.toInt)
     output.dataType()
   }
@@ -498,6 +505,9 @@ class TFNet(private val graphDef: TFGraphHolder,
     } else if (dataType == DataType.DOUBLE) {
       val buffer = DoubleBuffer.wrap(TFNet.floatToDouble(arr), offset, length)
       tensorManager.createTFTensor(shape, buffer)
+    } else if (dataType == DataType.BOOL) {
+      val buffer = ByteBuffer.wrap(TFNet.floatToBool(arr), offset, length)
+      tensorManager.createBoolTFTensor(shape, buffer)
     } else {
       throw new Exception(s"data type ${dataType} are not supported")
     }
@@ -711,6 +721,16 @@ object TFNet {
     var i = 0
     while (i < array.length) {
       result(i) = array(i).toByte
+      i = i + 1
+    }
+    result
+  }
+
+  private def floatToBool(array: Array[Float]): Array[Byte] = {
+    val result = new Array[Byte](array.length)
+    var i = 0
+    while (i < array.length) {
+      result(i) = if (array(i) == 0.0) 0.toByte else 1.toByte
       i = i + 1
     }
     result

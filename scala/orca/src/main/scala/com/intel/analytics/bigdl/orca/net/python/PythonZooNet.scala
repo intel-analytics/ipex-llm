@@ -108,8 +108,8 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     TFNet(path)
   }
 
-  def createTFTrainingHelper(modelPath: String): TFTrainingHelper = {
-    TFTrainingHelper(modelPath)
+  def createTFTrainingHelper(modelPath: String, config: Array[Byte] = null): TFTrainingHelper = {
+    TFTrainingHelper(modelPath, config)
   }
 
   def createIdentityCriterion(): IdentityCriterion = {
@@ -127,50 +127,6 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                         batchSize: Int = 32): TFOptimizer = {
     new TFOptimizer(modelPath, optimMethod,
       toJSample(x).asInstanceOf[RDD[JSample[Float]]], batchSize)
-  }
-
-  def trainTFNet(modelPath: String,
-                 optimMethod: OptimMethod[Float],
-                 x: JavaRDD[Sample],
-                 batchSize: Int = 32,
-                 endTrigger: Trigger = Trigger.maxEpoch(1)): JList[JTensor] = {
-    val (model, meta) = NetUtils.processTFFolder(modelPath)
-
-    val folderPath = Path(modelPath)
-    val trainingMetaPath = folderPath / Path("training_meta.json")
-
-    val jsonStr = Source.fromFile(trainingMetaPath.jfile).getLines().mkString
-    import org.json4s._
-    import org.json4s.jackson.JsonMethods._
-    implicit val formats = DefaultFormats
-
-    val trainingMeta = parse(jsonStr).camelizeKeys.extract[TrainMeta]
-
-    val newMeta = Meta(
-      (meta.inputNames.toSeq ++: trainingMeta.variables.toSeq).toArray,
-      meta.outputNames)
-    val graphDef = TFNet.parseGraph(model)
-    val tfnet = TFNet(graphDef, model, newMeta, TFNet.defaultSessionConfig.toByteArray())
-
-
-    val trainer = new TFTrainingHelper(tfnet,
-      trainingMeta.inputNames,
-      trainingMeta.outputNames,
-      trainingMeta.variables,
-      trainingMeta.gradVariables)
-
-
-
-    import scala.collection.JavaConverters._
-    val optimizer = Optimizer(trainer,
-      toJSample(x).asInstanceOf[RDD[JSample[Float]]], new IdentityCriterion(), batchSize)
-
-    optimizer.setOptimMethod(optimMethod)
-    optimizer.setEndWhen(endTrigger)
-    optimizer.optimize()
-
-    trainer.parameters()._1
-      .map(t => toJTensor(t.asInstanceOf[Tensor[T]])).toVector.asJava
   }
 
 }
