@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Shape}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.common.NNContext
@@ -450,6 +450,26 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val result = nnModel.transform(data).rdd.map(_.getSeq[Double](2).head).collect()
 
     result2 shouldEqual result
+  }
+
+  "An NNModel" should "support save/load keras model" in {
+    val modelLocation = getClass.getClassLoader.getResource("models/nnframes_keras").getFile
+    /**   code to generate model
+     *  import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Embedding, Input}
+     *  import com.intel.analytics.zoo.pipeline.api.keras.models.Model
+     *  val input = Input(inputShape = Shape(6))
+     *  val output = Dense(2).inputs(input)
+     *  val module = Model(input, output)
+     *  val nnModel = NNModel(module, Array(6)).setBatchSize(10)
+     *  nnModel.write.overwrite().save(modelLocation)
+     */
+    var appSparkVersion = org.apache.spark.SPARK_VERSION
+    if (appSparkVersion.trim.startsWith("2")) {
+      val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
+      NNModel.load(modelLocation).setBatchSize(8) // try load multiple times.
+      val loadedModel = NNModel.load(modelLocation).setBatchSize(8)
+      loadedModel.transform(data).collect()
+    }
   }
 
   "An NNEstimator" should "supports deep copy" in {
