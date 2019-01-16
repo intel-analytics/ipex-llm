@@ -84,7 +84,7 @@ def export_tf(sess, folder, inputs, outputs,
     non_placeholder_input_names = []
     type_enums = []
     for input_tensor in inputs:
-        if input_tensor.op.type != "Placeholder":
+        if input_tensor.op.type not in ["Placeholder", "PlaceholderWithDefault"]:
             non_placeholder_input_names.append(input_tensor.name)
             type_enums.append(input_tensor.dtype.as_datatype_enum)
 
