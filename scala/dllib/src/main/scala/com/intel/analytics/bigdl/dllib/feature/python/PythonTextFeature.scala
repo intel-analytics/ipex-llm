@@ -110,10 +110,12 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
     SequenceShaper(len, toScalaTruncMode(truncMode), padElement)
   }
 
-  private def toScalaTruncMode(str: String): TruncMode = {
-    str.toLowerCase() match {
+  private def toScalaTruncMode(truncMode: String): TruncMode = {
+    truncMode.toLowerCase() match {
       case "pre" => TruncMode.pre
       case "post" => TruncMode.post
+      case _ => throw new IllegalArgumentException(s"Unsupported truncMode $truncMode, " +
+        s"please use pre or post")
     }
   }
 

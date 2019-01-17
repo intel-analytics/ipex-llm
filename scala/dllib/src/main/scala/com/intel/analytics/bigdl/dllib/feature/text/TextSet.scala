@@ -229,21 +229,22 @@ object TextSet {
   }
 
   /**
-   * Read text files as TextSet.
-   * If sc is defined, read texts as DistributedTextSet from local file system or HDFS.
-   * If sc is null, read texts as LocalTextSet from local file system.
+   * Read text files with labels from a directory.
    *
-   * @param path String. Folder path to texts. The folder structure is expected to be the following:
-   *             path
-   *                ├── dir1 - text1, text2, ...
-   *                ├── dir2 - text1, text2, ...
-   *                └── dir3 - text1, text2, ...
-   *             Under the target path, there ought to be N subdirectories (dir1 to dirN). Each
-   *             subdirectory represents a category and contains all texts that belong to such
-   *             category. Each category will be a given a label according to its position in the
-   *             ascending order sorted among all subdirectories.
-   *             All texts will be given a label according to the subdirectory where it is located.
-   *             Labels start from 0.
+   * The directory structure is expected to be the following:
+   * path
+   *   ├── dir1 - text1, text2, ...
+   *   ├── dir2 - text1, text2, ...
+   *   └── dir3 - text1, text2, ...
+   * Under the target path, there ought to be N subdirectories (dir1 to dirN). Each
+   * subdirectory represents a category and contains all texts that belong to such
+   * category. Each category will be a given a label according to its position in the
+   * ascending order sorted among all subdirectories.
+   * All texts will be given a label according to the subdirectory where it is located.
+   * Labels start from 0.
+   *
+   * @param path The folder path to texts. Local file system and HDFS are supported.
+   *             If you want to read from HDFS, sc needs to be specified.
    * @param sc An instance of SparkContext.
    *           If specified, texts will be read as a DistributedTextSet.
    *           Default is null and in this case texts will be read as a LocalTextSet.
@@ -292,15 +293,12 @@ object TextSet {
   }
 
   /**
-   * Read texts from csv file.
+   * Read texts with id from csv file.
    * Each record is supposed to contain the following two fields in order:
    * id(String) and text(String).
    *
-   * Note that the csv file should be without header.
-   * If sc is defined, read texts as DistributedTextSet from local file system or HDFS.
-   * If sc is null, read texts as LocalTextSet from local file system.
-   *
-   * @param path The path to the csv file.
+   * @param path The path to the csv file. Local file system and HDFS are supported.
+   *             If you want to read from HDFS, sc needs to be specified.
    * @param sc An instance of SparkContext.
    *           If specified, texts will be read as a DistributedTextSet.
    *           Default is null and in this case texts will be read as a LocalTextSet.
@@ -327,7 +325,7 @@ object TextSet {
   }
 
   /**
-   * Read texts from parquet file.
+   * Read texts with id from parquet file.
    * Schema should be the following:
    * "id"(String) and "text"(String).
    *
