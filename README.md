@@ -18,7 +18,7 @@ __Analytics Zoo__ provides a unified analytics + AI platform that seamlessly uni
 In addition, Analytics Zoo also provides a rich set of analytics and AI support for the end-to-end pipeline, including:
 - *Easy-to-use abstractions and APIs* (e.g., transfer learning support, autograd operations, Spark DataFrame and ML pipeline support, online model serving API, etc.) 
 - *Common feature engineering operations* (for image, text, 3D image, etc.)
-- *Built-in deep learning models* (e.g., object detection, image classification, text classification, recommendation, etc.) 
+- *Built-in deep learning models* (e.g., object detection, image classification, text classification, recommendation, anomaly detection, text matching, etc.) 
 - *Reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image similarity, etc.)
 
 ## How to use Analytics Zoo?
@@ -50,6 +50,8 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
   - [Image classification API](#image-classification-api): high-level API and pretrained models (e.g., VGG, Inception, ResNet, MobileNet, etc.) for *image classification*
   - [Text classification API](#text-classification-api): high-level API and pre-defined models (using CNN, LSTM, etc.) for *text classification*
   - [Recommedation API](#recommendation-api): high-level API and pre-defined models (e.g., Neural Collaborative Filtering, Wide and Deep Learning, etc.) for *recommendation*
+  - [Anomaly detection API](#anomaly-detection-api): high-level API and pre-defined models based on LSTM for *anomaly detection*
+  - [Text matching API](#text-matching-api): high-level API and pre-defined KNRM model for *text matching*
   
 - [Reference use cases](#reference-use-cases): a collection of end-to-end *reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image augmentation, object detection, variational autoencoder, etc.)
 
@@ -249,7 +251,7 @@ List<List<JTensor>> result = model.predict(inputs);
 ```
 
 ## _Built-in deep learning models_
-Analytics Zoo provides several built-in deep learning models that you can use for a variety of problem types, such as *object detection*, *image classification*, *text classification*, *recommendation*, etc.
+Analytics Zoo provides several built-in deep learning models that you can use for a variety of problem types, such as *object detection*, *image classification*, *text classification*, *recommendation*, *anomaly detection*, *text matching*, etc.
 
 ### _Object detection API_
 Using *Analytics Zoo Object Detection API* (including a set of pretrained detection models such as SSD and Faster-RCNN), you can easily build your object detection applications (e.g., localizing and identifying multiple objects in images and videos), as illustrated below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/object-detection/))
@@ -286,6 +288,12 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 
 ### _Recommendation API_
 *Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for recommendations. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/recommendation/))
+
+### _Anomaly Detection API_
+*Analytics Zoo Anomaly Detection API* provides a set of pre-defined models based on LSTM to detect anomalies for time series data. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/anomaly-detection/))
+
+### _Text matching API_
+*Analytics Zoo Text Matching API* provides pre-defined KNRM model for ranking or classification. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/text-matching/))
 
 ## _Reference use cases_
 Analytics Zoo provides a collection of end-to-end reference use cases, including *time series anomaly detection*, *sentiment analysis*, *fraud detection*, *image similarity*, etc. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/usercases-overview/))

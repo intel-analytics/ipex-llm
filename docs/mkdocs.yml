@@ -40,6 +40,7 @@ pages:
     - Image Classification API: ProgrammingGuide/image-classification.md
     - Text Classification API: ProgrammingGuide/text-classification.md
     - Recommendation API: ProgrammingGuide/recommendation.md
+    - Text Matching API: ProgrammingGuide/text-matching.md
   - Reference Use Cases:
     - Use Cases: ProgrammingGuide/usercases-overview.md
     - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
@@ -54,6 +55,7 @@ pages:
     - Inference: APIGuide/PipelineAPI/inference.md
   - Feature Engineering:
     - FeatureSet: APIGuide/FeatureEngineering/featureset.md
+    - Relation: APIGuide/FeatureEngineering/relation.md
     - Image: APIGuide/FeatureEngineering/image.md
     - Text: APIGuide/FeatureEngineering/text.md
   - Models:
@@ -61,6 +63,7 @@ pages:
     - Image Classification: APIGuide/Models/image-classification.md
     - Text Classification: APIGuide/Models/text-classification.md
     - Recommendation: APIGuide/Models/recommendation.md
+    - Text Matching: APIGuide/Models/text-matching.md
 - Keras-Style API Guide:
   - Python Guide: KerasStyleAPIGuide/keras-api-python.md
   - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
