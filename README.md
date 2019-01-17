@@ -33,14 +33,14 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
 ---
 
 ## Overview
-- [Distributed Tensorflow and Keras on Spark/BigDL](#distributed-tensorflow-and-keras-on-sparkbigdl)
+- [Distributed TensorFlow and Keras on Spark/BigDL](#distributed-tensorflow-and-keras-on-sparkbigdl)
   - Data wrangling and analysis using PySpark
   - Deep learning model development using TensorFlow or Keras
   - Distributed training/inference on Spark and BigDL
   - All within a single unified pipeline and in a user-transparent fashion!
 
 - [High level abstractions and APIs](#high-level-abstractions-and-apis)
-  - [Transfer learning](#transfer-learning): customize pretained model for *feature extraction or fine-tuning*
+  - [Transfer learning](#transfer-learning): customize pretrained model for *feature extraction or fine-tuning*
   - [`autograd`](#autograd): build custom layer/loss using *auto differentiation operations* 
   - [`nnframes`](#nnframes): native deep learning support in *Spark DataFrames and ML Pipelines*
   - [Model serving](#model-serving): productionize *model serving and inference* using [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) APIs
@@ -55,7 +55,7 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
   
 - [Reference use cases](#reference-use-cases): a collection of end-to-end *reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image augmentation, object detection, variational autoencoder, etc.)
 
-## _Distributed Tensorflow and Keras on Spark/BigDL_
+## _Distributed TensorFlow and Keras on Spark/BigDL_
 To make it easy to build and productionize the deep learning applications for Big Data, Analytics Zoo provides a unified analytics + AI platform that seamlessly unites Spark, TensorFlow, Keras and BigDL programs into an integrated pipeline (as illustrated below), which can then transparently run on a large-scale Hadoop/Spark clusters for distributed training and inference. (Please see more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/tensorflow/)).
 
 1. Data wrangling and analysis using PySpark
@@ -71,7 +71,7 @@ To make it easy to build and productionize the deep learning applications for Bi
      .map(lambda image_label: decode_to_ndarrays(image_label))
 
    #TFDataset represents a distributed set of elements,
-   #in which each element contains one or more Tensorflow Tensor objects. 
+   #in which each element contains one or more TensorFlow Tensor objects. 
    dataset = TFDataset.from_rdd(train_rdd,
                                 names=["features", "labels"],
                                 shapes=[[28, 28, 1], [1]],
@@ -160,7 +160,7 @@ Using the high level transfer learning APIs, you can easily customize pretrained
    ```
 
 ### _`autograd`_
-`autograd` provides automatic differentiation for math operations, so that you can easily build your own *custom loss and layer* (in both Python and Scala), as illustracted below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/autograd/))
+`autograd` provides automatic differentiation for math operations, so that you can easily build your own *custom loss and layer* (in both Python and Scala), as illustrated below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/autograd/))
 
 1. Define model using Keras-style API and `autograd` 
    ```python
@@ -230,7 +230,7 @@ Using the high level transfer learning APIs, you can easily customize pretrained
    
 
 ### _Model Serving_
-Using the [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) model serving API, you can productionize model serving and infernece in any Java based frameworks (e.g., [Spring Framework](https://spring.io), Apache [Storm](http://storm.apache.org), [Kafka](http://kafka.apache.org) or [Flink](http://flink.apache.org), etc.), as illustrated below:
+Using the [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) model serving API, you can productionize model serving and inference in any Java based frameworks (e.g., [Spring Framework](https://spring.io), Apache [Storm](http://storm.apache.org), [Kafka](http://kafka.apache.org) or [Flink](http://flink.apache.org), etc.), as illustrated below:
 
 ```python
 import com.intel.analytics.zoo.pipeline.inference.AbstractInferenceModel;
@@ -289,7 +289,7 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 ### _Recommendation API_
 *Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for recommendations. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/recommendation/))
 
-### _Anomaly Detection API_
+### _Anomaly detection API_
 *Analytics Zoo Anomaly Detection API* provides a set of pre-defined models based on LSTM to detect anomalies for time series data. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/anomaly-detection/))
 
 ### _Text matching API_
