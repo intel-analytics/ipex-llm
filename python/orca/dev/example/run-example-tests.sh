@@ -51,6 +51,7 @@ else
     -P analytics-zoo-models
 fi
 
+
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 2g \
@@ -302,9 +303,36 @@ now=$(date "+%s")
 time6=$((now-start))
 echo "#6 tensorflow time used:$time6 seconds"
 
+echo "#7 start example test for anomalydetection"
+if [ -f analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv ]
+then
+    echo "analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv \
+    -P analytics-zoo-data/data/NAB/nyc_taxi/
+fi
+#timer
+start=$(date "+%s")
+${SPARK_HOME}/bin/spark-submit \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/anomalydetection/anomaly_detection.py \
+    --jars ${ANALYTICS_ZOO_JAR} \
+    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/anomalydetection/anomaly_detection.py \
+    --nb_epoch 1 \
+    --input_dir analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv
+now=$(date "+%s")
+time7=$((now-start))
+echo "#7 anomalydetection time used:$time7 seconds"
+
+
 echo "#1 textclassification time used:$time1 seconds"
 echo "#2 customized loss and layer time used:$time2 seconds"
 echo "#3 image-classification time used:$time3 seconds"
 echo "#4 object-detection loss and layer time used:$time4 seconds"
 echo "#5 nnframes time used:$time5 seconds"
 echo "#6 tensorflow time used:$time6 seconds"
+echo "#7 anomalydetection time used:$time7 seconds"
