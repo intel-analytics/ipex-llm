@@ -18,58 +18,212 @@ package com.intel.analytics.zoo.pipeline.inference
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import java.lang.{Float => JFloat, Integer => JInt}
+import java.util
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, Table}
+import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 
 import scala.collection.JavaConverters._
 
 class InferenceModel(private var supportedConcurrentNum: Int = 1,
-                     private var originalModel: FloatInferenceModel = null,
+                     private var originalModel: AbstractModel = null,
                      private[inference] var modelQueue:
-                     LinkedBlockingQueue[FloatInferenceModel] = null)
+                     LinkedBlockingQueue[AbstractModel] = null)
   extends InferenceSupportive with Serializable {
-  this.modelQueue = new LinkedBlockingQueue[FloatInferenceModel](supportedConcurrentNum)
+  this.modelQueue = new LinkedBlockingQueue[AbstractModel](supportedConcurrentNum)
   this.originalModel match {
     case null =>
     case _ => offerModelQueue()
   }
 
-  def doLoad(modelPath: String, weightPath: String): Unit = {
+  /**
+   * loads a bigdl, analytics-zoo model
+   * @param modelPath the file path of the model
+   * @param weightPath the file path of the weights
+   */
+  def doLoad(modelPath: String, weightPath: String = null): Unit = {
     clearModelQueue()
-    this.originalModel =
-      InferenceModelFactory.loadFloatInferenceModel(modelPath, weightPath)
+    this.originalModel = InferenceModelFactory.loadFloatModel(modelPath, weightPath)
     offerModelQueue()
   }
 
+  /**
+   * loads a caffe model
+   * @param modelPath the path of the prototxt file
+   * @param weightPath the path of the caffemodel file
+   */
   def doLoadCaffe(modelPath: String, weightPath: String): Unit = {
     clearModelQueue()
-    this.originalModel =
-      InferenceModelFactory.loadFloatInferenceModelForCaffe(modelPath, weightPath)
+    this.originalModel = InferenceModelFactory.loadFloatModelForCaffe(modelPath, weightPath)
     offerModelQueue()
   }
 
+  /**
+   * loads a TF model as TFNet
+   * @param modelPath the path of the tensorflow model file
+   */
+  def doLoadTF(modelPath: String): Unit = {
+    doLoadTF(modelPath, "tensorflow", null)
+  }
+
+  /**
+   * loads a TF model as OpenVINO
+   * @param modelPath the path of the tensorflow model
+   * @param modelType the type of the tensorflow model,
+   *                  please refer to [[ModelType]]
+   *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
+   *                  rfcn_resnet101_coco, ssd_inception_v2_coco
+   */
+  def doLoadTF(modelPath: String, modelType: String): Unit = {
+    doLoadTF(modelPath, "openvino", modelType)
+  }
+
+  /**
+   * loads a TF model as specified backend
+   * @param modelPath the path of the tensorflow model
+   * @param backend the backend of the tensorflow model, e.g. "tensorflow", "openvino"
+   * @param modelType the type of the tensorflow model,
+   *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
+   *                  rfcn_resnet101_coco, ssd_inception_v2_coco
+   */
+  def doLoadTF(modelPath: String, backend: String, modelType: String): Unit = {
+    backend.toLowerCase match {
+      case "tensorflow" | "tf" => doLoadTF(modelPath, 1, 1, true)
+      case "openvino" | "ov" => doLoadTF(modelPath, modelType, null, null)
+    }
+  }
+
+  /**
+   * loads a TF model as TFNet
+   * @param modelPath the path of the tensorflow model
+   * @param intraOpParallelismThreads the num of intraOpParallelismThreads
+   * @param interOpParallelismThreads the num of interOpParallelismThreads
+   * @param usePerSessionThreads whether to perSessionThreads
+   */
   def doLoadTF(modelPath: String,
                intraOpParallelismThreads: Int,
                interOpParallelismThreads: Int,
                usePerSessionThreads: Boolean): Unit = {
+    doLoadTensorflowModel(
+      modelPath,
+      intraOpParallelismThreads,
+      interOpParallelismThreads,
+      usePerSessionThreads)
+  }
+
+  /**
+   * loads a TF model as OpenVINO
+   *
+   * @param modelPath the path of the tensorflow model
+   * @param modelType the type of the tensorflow model,
+   *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
+   *                  rfcn_resnet101_coco, ssd_inception_v2_coco
+   * @param pipelineConfigPath the path of the pipeline configure file
+   * @param extensionsConfigPath the path of the extensions configure file
+   */
+  def doLoadTF(modelPath: String,
+               modelType: String,
+               pipelineConfigPath: String,
+               extensionsConfigPath: String): Unit = {
+    doLoadTensorflowModelAsOpenVINO(
+      modelPath,
+      modelType,
+      pipelineConfigPath,
+      extensionsConfigPath,
+      DeviceType.CPU
+    )
+  }
+
+  /**
+   * loads a openvino IR
+   * @param modelPath the path of openvino ir xml file
+   * @param weightPath the path of openvino ir bin file
+   */
+  def doLoadOpenVINO(modelPath: String, weightPath: String): Unit = {
+    if (supportedConcurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"supportedConcurrentNum is $supportedConcurrentNum > 1, " +
+        s"openvino model does not support shared weights model copies")
+    }
     clearModelQueue()
     this.originalModel =
-      InferenceModelFactory.loadFloatInferenceModelForTF(modelPath,
+      InferenceModelFactory.loadOpenVINOModelForIR(modelPath, weightPath, DeviceType.CPU)
+    offerModelQueue()
+  }
+
+  private def doLoadTensorflowModel(modelPath: String,
+                                    intraOpParallelismThreads: Int,
+                                    interOpParallelismThreads: Int,
+                                    usePerSessionThreads: Boolean): Unit = {
+    clearModelQueue()
+    this.originalModel =
+      InferenceModelFactory.loadFloatModelForTF(modelPath,
         intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
     offerModelQueue()
   }
 
+  private def doLoadTensorflowModelAsOpenVINO(modelPath: String,
+                                              modelType: String,
+                                              pipelineConfigPath: String,
+                                              extensionsConfigPath: String,
+                                              deviceType: DeviceTypeEnumVal): Unit = {
+    if (supportedConcurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"supportedConcurrentNum is $supportedConcurrentNum > 1, " +
+        s"openvino model does not support shared weights model copies")
+    }
+    clearModelQueue()
+    this.originalModel = InferenceModelFactory.loadOpenVINOModelForTF(
+      modelPath, modelType, pipelineConfigPath, extensionsConfigPath, deviceType)
+    offerModelQueue()
+  }
+
+  /**
+   * reloads the bigdl, analytics-zoo model
+   * @param modelPath the file path of the model
+   * @param weightPath the file path of the weights
+   */
   def doReload(modelPath: String, weightPath: String): Unit = {
     clearModelQueue()
     doLoad(modelPath, weightPath)
   }
 
+  @deprecated
+  def doPredict(input: JList[JFloat], shape: JList[JInt]): JList[JFloat] = {
+    timing("model predict") {
+      val inputTensor = new JTensor(input, shape)
+      val inputList = util.Arrays.asList({
+        inputTensor
+      })
+      val inputs = util.Arrays.asList({
+        inputList
+      })
+      val results = predict(inputs)
+      results.get(0).get(0).getData.toList.asJava.asInstanceOf[JList[JFloat]]
+    }
+  }
+
+  /**
+   * predicts the inference result
+   * @param inputs the input tensor with batch
+   * @return the output tensor with batch
+   */
+  def doPredict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
+    timing(s"model predict for batch ${inputs.size()}") {
+      val batchSize = inputs.size()
+      require(batchSize > 0, "inputs size should > 0")
+      predict(inputs)
+    }
+  }
+
+  /**
+   * predicts the inference result
+   * @param inputActivity the input activity
+   * @return the output activity
+   */
   def doPredict(inputActivity: Activity): Activity = {
-    var model: FloatInferenceModel = null
+    var model: AbstractModel = null
     try {
       model = modelQueue.take
     } catch {
@@ -83,53 +237,37 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
     }
   }
 
-  @deprecated
-  def doPredict(input: JList[JFloat], shape: JList[JInt]): JList[JFloat] = {
-    timing("model predict") {
-      val inputArray = new Array[Float](input.size())
-      for (i <- 0 until input.size()) {
-        inputArray(i) = input.get(i)
-      }
-      val shapeArray = new Array[Int](shape.size())
-      for (i <- 0 until shape.size()) {
-        shapeArray(i) = shape.get(i)
-      }
-      val inputTensor = Tensor[Float](inputArray, shapeArray)
-      val result = doPredict(inputTensor)
-      result.asInstanceOf[Tensor[Float]].toArray().toList.asJava.asInstanceOf[JList[JFloat]]
+  private def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
+    var model: AbstractModel = null
+    try {
+      model = modelQueue.take
+    } catch {
+      case e: InterruptedException => throw new InferenceRuntimeException("no model available", e);
     }
-  }
-
-  def doPredict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    timing(s"model predict for batch ${inputs.size()}") {
-      val batchSize = inputs.size()
-      require(batchSize > 0, "inputs size should > 0")
-
-      val inputActivity = transferListOfActivityToActivityOfBatch(inputs, batchSize)
-      val result: Activity = doPredict(inputActivity)
-
-      val outputs = result.isTensor match {
-        case true =>
-          val outputTensor = result.toTensor[Float]
-          transferBatchTensorToJListOfJListOfJTensor(outputTensor, batchSize)
-        case false =>
-          val outputTable: Table = result.toTable
-          transferBatchTableToJListOfJListOfJTensor(outputTable, batchSize)
-      }
-      outputs
+    try {
+      model.predict(inputs)
+    } finally {
+      modelQueue.offer(model)
     }
   }
 
   private def clearModelQueue(): Unit = {
-    this.originalModel = null
+    this.originalModel match {
+      case null =>
+      case _ => this.originalModel.release(); this.originalModel = null
+    }
+    List.range(0, this.modelQueue.size()).map(i => {
+      val model = this.modelQueue.take
+      this.modelQueue.remove(model)
+      model.release()
+    })
     this.modelQueue.clear()
   }
 
   private def offerModelQueue(): Unit = {
     require(this.originalModel != null, "original model can not be null")
     require(this.supportedConcurrentNum > 0, "supported concurrent number should > 0")
-    val models = InferenceModelFactory.
-      cloneSharedWeightsModelsIntoArray(this.originalModel, this.supportedConcurrentNum)
+    val models = this.originalModel.copy(supportedConcurrentNum)
     models.map(this.modelQueue.offer(_))
   }
 
@@ -145,10 +283,12 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
     System.setProperty("bigdl.coreNumber", System.getProperty("bigdl.coreNumber", "1"))
     Engine.init
     this.supportedConcurrentNum = in.readInt
-    this.originalModel = in.readObject.asInstanceOf[FloatInferenceModel]
-    this.modelQueue = new LinkedBlockingQueue[FloatInferenceModel](supportedConcurrentNum)
+    this.originalModel = in.readObject.asInstanceOf[FloatModel]
+    this.modelQueue = new LinkedBlockingQueue[AbstractModel](supportedConcurrentNum)
     offerModelQueue()
   }
+
+  def getOriginalModel: AbstractModel = originalModel
 
   override def toString: String =
     s"InferenceModel($supportedConcurrentNum, $originalModel, $modelQueue)"

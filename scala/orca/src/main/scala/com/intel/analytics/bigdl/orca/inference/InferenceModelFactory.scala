@@ -16,95 +16,51 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.optim.LocalPredictor
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.pipeline.api.net.TFNet
-
-import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
+import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 
 object InferenceModelFactory {
 
-  def loadFloatInferenceModel(modelPath: String): FloatInferenceModel = {
-    loadFloatInferenceModel(modelPath, null)
+  def loadFloatModel(modelPath: String): FloatModel = {
+    loadFloatModel(modelPath, null)
   }
 
-  def loadFloatInferenceModel(modelPath: String, weightPath: String)
-  : FloatInferenceModel = {
+  def loadFloatModel(modelPath: String, weightPath: String)
+  : FloatModel = {
     val model = ModelLoader.loadFloatModel(modelPath, weightPath)
     model.evaluate()
-    new FloatInferenceModel(model)
+    new FloatModel(model)
   }
 
-  def loadFloatInferenceModelForCaffe(modelPath: String, weightPath: String)
-  : FloatInferenceModel = {
+  def loadFloatModelForCaffe(modelPath: String, weightPath: String): FloatModel = {
     val model = ModelLoader.loadFloatModelForCaffe(modelPath, weightPath)
     model.evaluate()
-    new FloatInferenceModel(model)
+    new FloatModel(model)
   }
 
-  def loadFloatInferenceModelForTF(modelPath: String,
-                                   intraOpParallelismThreads: Int = 1,
-                                   interOpParallelismThreads: Int = 1,
-                                   usePerSessionThreads: Boolean = true): FloatInferenceModel = {
+  def loadFloatModelForTF(modelPath: String,
+                          intraOpParallelismThreads: Int = 1,
+                          interOpParallelismThreads: Int = 1,
+                          usePerSessionThreads: Boolean = true): FloatModel = {
     val sessionConfig = TFNet.SessionConfig(intraOpParallelismThreads,
       interOpParallelismThreads, usePerSessionThreads)
     val model = ModelLoader.loadFloatModelForTF(modelPath, sessionConfig)
     model.evaluate()
-    new FloatInferenceModel(model)
+    new FloatModel(model)
   }
 
-  def cloneSharedWeightsModelsIntoArray(originalModel: FloatInferenceModel,
-                                                num: Int): Array[FloatInferenceModel] = {
-    var modelList = ArrayBuffer[FloatInferenceModel]()
-    val emptyModel = originalModel.model.cloneModule()
-    clearWeightsBias(emptyModel)
-    var i = 0
-    while (i < num) {
-      val clonedModel = emptyModel.cloneModule
-      val newModel = makeUpModel(clonedModel, originalModel.model.getWeightsBias)
-      modelList.append(newModel)
-      i += 1
-    }
-    modelList.toArray
+  def loadOpenVINOModelForTF(modelPath: String,
+                             modelType: String,
+                             pipelineConfigPath: String,
+                             extensionsConfigPath: String,
+                             deviceType: DeviceTypeEnumVal): OpenVINOModel = {
+    OpenVinoInferenceSupportive.loadTensorflowModel(
+      modelPath, modelType, pipelineConfigPath, extensionsConfigPath, deviceType)
   }
 
-  private def clearTensor[T: ClassTag](tensors: Array[Tensor[T]])
-                                      (implicit ev: TensorNumeric[T]): Unit = {
-    var i = 0
-    while (i < tensors.length) {
-      if (tensors(i) != null) {
-        tensors(i).set()
-      }
-      i += 1
-    }
-  }
-
-  private def clearWeightsBias(model: Module[Float]): Unit = {
-    clearTensor(model.parameters()._1)
-    clearTensor(model.parameters()._2)
-  }
-
-  private def putWeightsBias(weightBias: Array[Tensor[Float]],
-                             localModel: Module[Float]): Module[Float] = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(weightBias(i))
-      }
-      i += 1
-    }
-    localModel
-  }
-
-  private def makeUpModel(model: Module[Float], weightBias: Array[Tensor[Float]]):
-  FloatInferenceModel = {
-    val newModel = model.cloneModule()
-    putWeightsBias(weightBias, newModel)
-    newModel.evaluate()
-    new FloatInferenceModel(newModel)
+  def loadOpenVINOModelForIR(modelFilePath: String,
+                             weightFilePath: String,
+                             deviceType: DeviceTypeEnumVal): OpenVINOModel = {
+    OpenVinoInferenceSupportive.loadOpenVinoIR(modelFilePath, weightFilePath, deviceType)
   }
 }
