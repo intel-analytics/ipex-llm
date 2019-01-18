@@ -29,12 +29,13 @@ import scala.reflect.ClassTag
 class Add extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
     , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
       new CAddTable[T, Float]()
     } else if (t == DataType.DT_INT32) {
       new CAddTable[T, Int]()
+    } else if (t == DataType.DT_DOUBLE) {
+      new CAddTable[T, Double]()
     } else {
       throw new UnsupportedOperationException(s"Not support numeric type $t")
     }
