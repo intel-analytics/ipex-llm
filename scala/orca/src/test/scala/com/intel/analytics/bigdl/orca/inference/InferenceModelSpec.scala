@@ -32,7 +32,7 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
   val modelPath = resource.getPath + "/caffe/test_persist.prototxt"
   val weightPath = resource.getPath + "/caffe/test_persist.caffemodel"
 
-  var floatInferenceModel: FloatInferenceModel = _
+  var floatInferenceModel: FloatModel = _
 
   val inputTensor1 = Tensor[Float](3, 5, 5).rand()
   val inputTensor2 = Tensor[Float](3, 5, 5).rand()
@@ -48,8 +48,7 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
   val inputTensorList = util.Arrays.asList(inputTensorList1, inputTensorList2, inputTensorList3)
 
   before {
-    floatInferenceModel = InferenceModelFactory.
-      loadFloatInferenceModelForCaffe(modelPath, weightPath)
+    floatInferenceModel = InferenceModelFactory.loadFloatModelForCaffe(modelPath, weightPath)
   }
 
   after {
@@ -67,15 +66,17 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
 
     val begin2 = System.currentTimeMillis()
     val fModels = List.range(0, supportedConcurrentNum).map(i => InferenceModelFactory.
-      loadFloatInferenceModelForCaffe(modelPath, weightPath))
+      loadFloatModelForCaffe(modelPath, weightPath))
     val end2 = System.currentTimeMillis()
     val time2 = end2 - begin2
 
     println(s"load $supportedConcurrentNum shared wights models used $time1 ms," +
       s"load $supportedConcurrentNum single models used $time2 ms.")
 
-    val weightsForAModel1 = aModel.modelQueue.take().model.getWeightsBias()(0).storage()
-    val weightsForAModel2 = aModel.modelQueue.take().model.getWeightsBias()(0).storage()
+    val weightsForAModel1 = aModel.modelQueue.take().asInstanceOf[FloatModel].
+      model.getWeightsBias()(0).storage()
+    val weightsForAModel2 = aModel.modelQueue.take().asInstanceOf[FloatModel].
+      model.getWeightsBias()(0).storage()
     assert(weightsForAModel1 == weightsForAModel2)
 
     val weightsForFModel1 = fModels(0).model.getWeightsBias()(0).storage()
@@ -104,8 +105,10 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     val aModel2 = in4AModel.readObject.asInstanceOf[InferenceModel]
     in4AModel.close()
 
-    val weightsForAModel3 = aModel2.modelQueue.take().model.getWeightsBias()(0).storage()
-    val weightsForAModel4 = aModel2.modelQueue.take().model.getWeightsBias()(0).storage()
+    val weightsForAModel3 = aModel2.modelQueue.take().asInstanceOf[FloatModel]
+      .model.getWeightsBias()(0).storage()
+    val weightsForAModel4 = aModel2.modelQueue.take().asInstanceOf[FloatModel]
+      .model.getWeightsBias()(0).storage()
     assert(weightsForAModel3 == weightsForAModel4)
 
     val inputTensor = Tensor[Float](3, 5, 5).rand()
@@ -159,15 +162,17 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
 
     val begin2 = System.currentTimeMillis()
     val fModels = List.range(0, supportedConcurrentNum).map(i => InferenceModelFactory.
-      loadFloatInferenceModelForCaffe(modelPath, weightPath))
+      loadFloatModelForCaffe(modelPath, weightPath))
     val end2 = System.currentTimeMillis()
     val time2 = end2 - begin2
 
     println(s"load $supportedConcurrentNum shared wights models used $time1 ms," +
       s"load $supportedConcurrentNum single models used $time2 ms.")
 
-    val weightsForAModel1 = aModel.modelQueue.take().model.getWeightsBias()(0).storage()
-    val weightsForAModel2 = aModel.modelQueue.take().model.getWeightsBias()(0).storage()
+    val weightsForAModel1 = aModel.modelQueue.take().asInstanceOf[FloatModel]
+      .model.getWeightsBias()(0).storage()
+    val weightsForAModel2 = aModel.modelQueue.take().asInstanceOf[FloatModel]
+      .model.getWeightsBias()(0).storage()
     assert(weightsForAModel1 == weightsForAModel2)
 
     val weightsForFModel1 = fModels(0).model.getWeightsBias()(0).storage()
@@ -196,8 +201,10 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     val aModel2 = in4AModel.readObject.asInstanceOf[TestAbstractInferenceModel]
     in4AModel.close()
 
-    val weightsForAModel3 = aModel2.modelQueue.take().model.getWeightsBias()(0).storage()
-    val weightsForAModel4 = aModel2.modelQueue.take().model.getWeightsBias()(0).storage()
+    val weightsForAModel3 = aModel2.modelQueue.take().asInstanceOf[FloatModel]
+      .model.getWeightsBias()(0).storage()
+    val weightsForAModel4 = aModel2.modelQueue.take().asInstanceOf[FloatModel]
+      .model.getWeightsBias()(0).storage()
     assert(weightsForAModel3 == weightsForAModel4)
 
     val currentNum = 10
