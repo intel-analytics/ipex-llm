@@ -92,4 +92,9 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
   public List<List<JTensor>> predict(List<JTensor>[] inputs) {
     return predict(Arrays.asList(inputs));
   }
+
+  @Override
+  public String toString() {
+    return super.toString();
+  }
 }
