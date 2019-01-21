@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.math.tanh
 import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -57,6 +58,10 @@ class Tanh[T: ClassTag](
     super.clearState()
     buffer.set()
     this
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
   }
 }
 

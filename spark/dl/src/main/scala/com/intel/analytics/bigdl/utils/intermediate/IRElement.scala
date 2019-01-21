@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-sealed class IROperator[T: ClassTag] {
+sealed class IROperator[T: ClassTag] extends Serializable {
   val tag: ClassTag[T] = scala.reflect.classTag[T]
   val numerics: TensorNumeric[T] = tag match {
     case ClassTag.Float => TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
@@ -132,7 +132,7 @@ private[bigdl] class IRElement[T: ClassTag](
   val name: String,
   val op: IROperator[T],
   private var weights: Tensor[T] = null,
-  private var gradWeights: Tensor[T] = null) {
+  private var gradWeights: Tensor[T] = null) extends Serializable {
 
   /**
    * set weight and bias

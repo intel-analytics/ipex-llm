@@ -41,7 +41,7 @@ import scala.reflect.ClassTag
  *  values     = Array(1, 4, 2, 3)
  *  shape      = Array(3, 4)
  *
- * @param _indices non-zero elements' indices
+ * @param _indices non-zero elements' indices, should be zero-based and ascending.
  * @param _values values of the non-zero elements
  * @param _storageOffset storageOffset, both _values and _indices's storage offset.
  * @param _nElement number of non-zero elements

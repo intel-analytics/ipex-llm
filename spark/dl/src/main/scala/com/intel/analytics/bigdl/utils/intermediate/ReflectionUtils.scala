@@ -81,8 +81,14 @@ private[bigdl] object ReflectionUtils {
     if (blasLayer.parameters() != null) {
       val params = blasLayer.getParameters()
       val params2 = layer.getParameters()
-      if (params2._1 != null) params._1.copy(params2._1)
-      if (params2._2 != null) params._2.copy(params2._2)
+      if (params2._1 != null) {
+        params._1.copy(params2._1)
+        layer.setWeights(params._1)
+      }
+      if (params2._2 != null) {
+        params._2.copy(params2._2)
+        layer.setGradWeights(params._2)
+      }
     }
 
     if (layer.getName() != "") blasLayer.setName(layer.getName())

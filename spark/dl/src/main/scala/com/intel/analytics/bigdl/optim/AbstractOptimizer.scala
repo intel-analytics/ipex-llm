@@ -96,7 +96,8 @@ abstract class AbstractOptimizer {
     models: RDD[Cache[T]],
     state: Table,
     validationSummary: Option[ValidationSummary],
-    header: String): Unit = {
+    header: String,
+    parameters: Map[String, AllReduceParameter[T]] = null): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -112,10 +113,19 @@ abstract class AbstractOptimizer {
       case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
+    val start = System.nanoTime()
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
       val vMethodsArr = cached.localMethods
       val workingModels = cached.localModels
+
+      // update with latest weight for validation
+      if (parameters != null) {
+        val weightsResults = parameters.values.map(p =>
+          p.getWeights(cached.modelWeights.head.narrow(1, p.paramOffset, p.size))
+        ).toArray
+        weightsResults.foreach(_.waitResult())
+      }
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
@@ -148,6 +158,12 @@ abstract class AbstractOptimizer {
         l + r
       }
     }).zip(vMethods)
+
+    val validateTime = (System.nanoTime() - start) / 1e9f
+    val count = results(0)._1.result()._2.toFloat
+    // print validation throughput
+    logger.info(s"$header validate model throughput is ${count / validateTime} records/second")
+
     results.foreach(r => {
       logger.info(s"$header ${r._2} is ${r._1}")
     })
