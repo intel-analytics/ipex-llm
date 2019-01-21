@@ -16,6 +16,7 @@
 
 import sys
 
+from bigdl.util.common import INTMIN
 from ..engine.topology import ZooKerasLayer
 
 if sys.version >= '3':
@@ -495,3 +496,25 @@ class Highway(ZooKerasLayer):
                                       bias,
                                       list(input_shape) if input_shape else None,
                                       **kwargs)
+
+
+class Max(ZooKerasLayer):
+    """
+    Applies a max operation over dimension `dim`
+
+    # Arguments
+    dim: max along this dimension
+    num_input_dims: Optional. If in a batch model, set to the inputDims.
+    return_value: Optional. Config whether return value or indices
+    input_shape: A shape tuple, not including batch.
+
+    >>> max = Max(dim=1, input_shape=(3, 5))
+    creating: createZooKerasMax
+    """
+    def __init__(self, dim, num_input_dims=INTMIN, return_value=True, input_shape=None, **kwargs):
+        super(Max, self).__init__(None,
+                                  dim,
+                                  num_input_dims,
+                                  return_value,
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)

@@ -45,6 +45,10 @@ class Embedding(ZooKerasLayer):
              Otherwise, 'weights' will override 'init' to take effect.
     trainable: Whether this layer is trainable or not. Default is True.
     input_length: Positive int. The sequence length of each input.
+    mask_zero: if maskZero is set to true, the input whose value equals `paddingValue`
+    the output will be masked to zero vector.
+    padding_value: padding value, default 0
+    zero_based_id: default True and input should be 0 based. Otherwise need to be 1 base
     name: String to set the name of the layer.
           If not specified, its name will by default to be a generated string.
 
@@ -56,7 +60,8 @@ class Embedding(ZooKerasLayer):
     creating: createZooKerasEmbedding
     """
     def __init__(self, input_dim, output_dim, init="uniform", weights=None, trainable=True,
-                 input_length=None, W_regularizer=None, input_shape=None, **kwargs):
+                 input_length=None, W_regularizer=None, input_shape=None, mask_zero=False,
+                 padding_value=0, zero_based_id=True, **kwargs):
         if input_length:
             input_shape = (input_length, )
         super(Embedding, self).__init__(None,
@@ -67,6 +72,9 @@ class Embedding(ZooKerasLayer):
                                         trainable,
                                         W_regularizer,
                                         list(input_shape) if input_shape else None,
+                                        mask_zero,
+                                        padding_value,
+                                        zero_based_id,
                                         **kwargs)
 
 
