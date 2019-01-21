@@ -52,6 +52,7 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
     - [Recommedation API](#recommendation-api): high-level API and pre-defined models (e.g., Neural Collaborative Filtering, Wide and Deep Learning, etc.) for *recommendation*
     - [Anomaly detection API](#anomaly-detection-api): high-level API and pre-defined models based on LSTM for *anomaly detection*
     - [Text matching API](#text-matching-api): high-level API and pre-defined KNRM model for *text matching*
+    - [Sequence to Sequence API](#sequence-to-sequence-api): high-level API and pre-defined models for *sequence to sequence*
 
 - [Reference use cases](#reference-use-cases): a collection of end-to-end *reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image augmentation, object detection, variational autoencoder, etc.)
 
@@ -295,6 +296,9 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 
 ### _Text matching API_
 *Analytics Zoo Text Matching API* provides pre-defined KNRM model for ranking or classification. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/text-matching/))
+
+### _Sequence to Sequence API_
+*Analytics Zoo Sequence to Sequence API* provides a set of pre-defined models based on Recurrent neural network for sequence to sequence problems. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/seq2seq/))
 
 ## _Reference use cases_
 Analytics Zoo provides a collection of end-to-end reference use cases, including *time series anomaly detection*, *sentiment analysis*, *fraud detection*, *image similarity*, etc. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/usercases-overview/))

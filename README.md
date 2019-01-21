@@ -295,5 +295,8 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 ### _Text matching API_
 *Analytics Zoo Text Matching API* provides pre-defined KNRM model for ranking or classification. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/text-matching/))
 
+### _Sequence to Sequence API_
+*Analytics Zoo Sequence to Sequence API* provides a set of pre-defined models based on Recurrent neural network for sequence to sequence problems. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/seq2seq/))
+
 ## _Reference use cases_
 Analytics Zoo provides a collection of end-to-end reference use cases, including *time series anomaly detection*, *sentiment analysis*, *fraud detection*, *image similarity*, etc. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/usercases-overview/))

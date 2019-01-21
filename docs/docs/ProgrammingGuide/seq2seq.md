@@ -126,3 +126,8 @@ result = model.infer(input, start_sign, max_seq_len, stop_sign, build_output)
 * `max_seq_len`: max sequence length for final output
 * `stop_sign`: a ndarray that indicates model should stop infer further if current output is the same with stopSign
 * `build_output`: Feeding model output to buildOutput to generate final result
+---
+## **Examples**
+We provide an example to train the Seq2seq model on a QA dataset and uses the model to do prediction.
+
+See [here](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/chatbot) for the Scala example.

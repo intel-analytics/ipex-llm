@@ -140,6 +140,8 @@ val seq2seq = Seq2seq(encoder,
 * `bridge` connect encoder and decoder, you can input `null`
 * `generator` Feeding decoder output to generator to generate final result, `null` is supported
 
+See [here](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/chatbot) for the Scala example that trains the Seq2seq model and uses the model to do prediction.
+
 **Python**
 ```python
 seq2seq = Seq2seq(encoder, decoder, input_shape, output_shape, bridge,
