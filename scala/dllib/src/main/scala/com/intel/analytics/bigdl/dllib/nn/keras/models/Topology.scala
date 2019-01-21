@@ -238,8 +238,18 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   /**
    * Convert RDD of Sample to DataSet of MiniBatch.
    */
-  private def toDataSet(x: RDD[Sample[T]], batchSize: Int): DataSet[MiniBatch[T]] = {
-    if (x != null) DataSet.rdd(x) -> SampleToMiniBatch[T](batchSize)
+  private def toDataSet(x: RDD[Sample[T]], batchSize: Int,
+    featurePaddingParam: PaddingParam[T] = null,
+    labelPaddingParam: PaddingParam[T] = null): DataSet[MiniBatch[T]] = {
+    val _featurePaddingParam = if (featurePaddingParam != null) {
+      Some(featurePaddingParam)
+    } else None
+    val _labelPaddingParam = if (labelPaddingParam != null) {
+      Some(labelPaddingParam)
+    } else None
+
+    if (x != null) DataSet.rdd(x) -> SampleToMiniBatch[T](batchSize, _featurePaddingParam,
+      _labelPaddingParam)
     else null
   }
 
@@ -294,6 +304,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       case dis: InternalDistriOptimizer[T] =>
         dis.setTrainData(x)
     }
+
     internalOptimizer.optimize()
   }
 
@@ -330,9 +341,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: RDD[Sample[T]],
       batchSize: Int = 32,
       nbEpoch: Int = 10,
-      validationData: RDD[Sample[T]] = null)(implicit ev: TensorNumeric[T]): Unit = {
+      validationData: RDD[Sample[T]] = null,
+      featurePaddingParam: PaddingParam[T] = null,
+      labelPaddingParam: PaddingParam[T] = null)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
-    this.fit(toDataSet(x, batchSize), nbEpoch, toDataSet(validationData, batchSize))
+    this.fit(toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam),
+      nbEpoch, toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam))
   }
 
   /**
