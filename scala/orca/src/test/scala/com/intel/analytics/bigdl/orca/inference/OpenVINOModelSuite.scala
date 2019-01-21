@@ -144,7 +144,6 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
       fasterrcnnWeightFilePath)
     fasterrcnnInferenceModel2.doLoadTF(
       faserrcnnFrozenModelFilePath,
-      null,
       faserrcnnPipelineConfigFilePath,
       faserrcnnExtensionsConfigFilePath)
   }
@@ -228,7 +227,6 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     val maskrcnnModel2: InferenceModel = new InferenceModel(3)
     maskrcnnModel1.doLoadTF(
       maskrcnnFrozenModelFilePath,
-      null,
       maskrcnnPipelineConfigFilePath,
       maskrcnnExtensionsConfigFilePath)
     assert(maskrcnnModel1.getOriginalModel != null)
@@ -240,7 +238,6 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     val ssdModel2: InferenceModel = new InferenceModel(3)
     ssdModel1.doLoadTF(
       ssdFrozenModelFilePath,
-      null,
       ssdPipelineConfigFilePath,
       ssdExtensionsConfigFilePath)
     assert(ssdModel1.getOriginalModel != null)
