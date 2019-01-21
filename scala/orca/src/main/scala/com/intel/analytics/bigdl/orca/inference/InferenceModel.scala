@@ -70,12 +70,12 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
   }
 
   /**
-    * loads a TF model as TFNet
-    * @param modelPath the path of the tensorflow model
-    * @param intraOpParallelismThreads the num of intraOpParallelismThreads
-    * @param interOpParallelismThreads the num of interOpParallelismThreads
-    * @param usePerSessionThreads whether to perSessionThreads
-    */
+   * loads a TF model as TFNet
+   * @param modelPath the path of the tensorflow model
+   * @param intraOpParallelismThreads the num of intraOpParallelismThreads
+   * @param interOpParallelismThreads the num of interOpParallelismThreads
+   * @param usePerSessionThreads whether to perSessionThreads
+   */
   def doLoadTF(modelPath: String,
                intraOpParallelismThreads: Int,
                interOpParallelismThreads: Int,
@@ -100,12 +100,12 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
   }
 
   /**
-    * loads a TF model as OpenVINO
-    *
-    * @param modelPath the path of the tensorflow model
-    * @param pipelineConfigPath the path of the pipeline configure file
-    * @param extensionsConfigPath the path of the extensions configure file
-    */
+   * loads a TF model as OpenVINO
+   *
+   * @param modelPath the path of the tensorflow model
+   * @param pipelineConfigPath the path of the pipeline configure file
+   * @param extensionsConfigPath the path of the extensions configure file
+   */
   def doLoadTF(modelPath: String,
                pipelineConfigPath: String,
                extensionsConfigPath: String): Unit = {
