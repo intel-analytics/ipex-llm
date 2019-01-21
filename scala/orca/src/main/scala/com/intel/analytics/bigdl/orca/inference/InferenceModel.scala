@@ -66,43 +66,16 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
    * @param modelPath the path of the tensorflow model file
    */
   def doLoadTF(modelPath: String): Unit = {
-    doLoadTF(modelPath, "tensorflow", null)
+    doLoadTensorflowModel(modelPath, 1, 1, true)
   }
 
   /**
-   * loads a TF model as OpenVINO
-   * @param modelPath the path of the tensorflow model
-   * @param modelType the type of the tensorflow model,
-   *                  please refer to [[ModelType]]
-   *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
-   *                  rfcn_resnet101_coco, ssd_inception_v2_coco
-   */
-  def doLoadTF(modelPath: String, modelType: String): Unit = {
-    doLoadTF(modelPath, "openvino", modelType)
-  }
-
-  /**
-   * loads a TF model as specified backend
-   * @param modelPath the path of the tensorflow model
-   * @param backend the backend of the tensorflow model, e.g. "tensorflow", "openvino"
-   * @param modelType the type of the tensorflow model,
-   *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
-   *                  rfcn_resnet101_coco, ssd_inception_v2_coco
-   */
-  private def doLoadTF(modelPath: String, backend: String, modelType: String): Unit = {
-    backend.toLowerCase match {
-      case "tensorflow" | "tf" => doLoadTF(modelPath, 1, 1, true)
-      case "openvino" | "ov" => doLoadTF(modelPath, modelType, null, null)
-    }
-  }
-
-  /**
-   * loads a TF model as TFNet
-   * @param modelPath the path of the tensorflow model
-   * @param intraOpParallelismThreads the num of intraOpParallelismThreads
-   * @param interOpParallelismThreads the num of interOpParallelismThreads
-   * @param usePerSessionThreads whether to perSessionThreads
-   */
+    * loads a TF model as TFNet
+    * @param modelPath the path of the tensorflow model
+    * @param intraOpParallelismThreads the num of intraOpParallelismThreads
+    * @param interOpParallelismThreads the num of interOpParallelismThreads
+    * @param usePerSessionThreads whether to perSessionThreads
+    */
   def doLoadTF(modelPath: String,
                intraOpParallelismThreads: Int,
                interOpParallelismThreads: Int,
@@ -116,11 +89,23 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * loads a TF model as OpenVINO
-   *
    * @param modelPath the path of the tensorflow model
-   * @param pipelineConfigPath the path of the pipeline configure file
-   * @param extensionsConfigPath the path of the extensions configure file
+   * @param modelType the type of the tensorflow model,
+   *                  please refer to [[ModelType]]
+   *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
+   *                  rfcn_resnet101_coco, ssd_inception_v2_coco
    */
+  def doLoadTF(modelPath: String, modelType: String): Unit = {
+    doLoadTensorflowModelAsOpenVINO(modelPath, modelType, null, null, DeviceType.CPU)
+  }
+
+  /**
+    * loads a TF model as OpenVINO
+    *
+    * @param modelPath the path of the tensorflow model
+    * @param pipelineConfigPath the path of the pipeline configure file
+    * @param extensionsConfigPath the path of the extensions configure file
+    */
   def doLoadTF(modelPath: String,
                pipelineConfigPath: String,
                extensionsConfigPath: String): Unit = {
