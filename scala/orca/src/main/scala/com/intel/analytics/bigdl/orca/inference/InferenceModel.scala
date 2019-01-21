@@ -89,7 +89,7 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
    *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
    *                  rfcn_resnet101_coco, ssd_inception_v2_coco
    */
-  def doLoadTF(modelPath: String, backend: String, modelType: String): Unit = {
+  private def doLoadTF(modelPath: String, backend: String, modelType: String): Unit = {
     backend.toLowerCase match {
       case "tensorflow" | "tf" => doLoadTF(modelPath, 1, 1, true)
       case "openvino" | "ov" => doLoadTF(modelPath, modelType, null, null)
@@ -118,19 +118,15 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
    * loads a TF model as OpenVINO
    *
    * @param modelPath the path of the tensorflow model
-   * @param modelType the type of the tensorflow model,
-   *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
-   *                  rfcn_resnet101_coco, ssd_inception_v2_coco
    * @param pipelineConfigPath the path of the pipeline configure file
    * @param extensionsConfigPath the path of the extensions configure file
    */
   def doLoadTF(modelPath: String,
-               modelType: String,
                pipelineConfigPath: String,
                extensionsConfigPath: String): Unit = {
     doLoadTensorflowModelAsOpenVINO(
       modelPath,
-      modelType,
+      null,
       pipelineConfigPath,
       extensionsConfigPath,
       DeviceType.CPU
