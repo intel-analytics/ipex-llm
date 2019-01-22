@@ -230,7 +230,7 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
       maskrcnnPipelineConfigFilePath,
       maskrcnnExtensionsConfigFilePath)
     assert(maskrcnnModel1.getOriginalModel != null)
-    maskrcnnModel2.doLoadTF(maskrcnnFrozenModelFilePath, "openvino", "mask_rcnn_inception_v2_coco")
+    maskrcnnModel2.doLoadTF(maskrcnnFrozenModelFilePath, "mask_rcnn_inception_v2_coco")
     assert(maskrcnnModel2.getOriginalModel != null)
     println(maskrcnnModel1.getOriginalModel, maskrcnnModel2.getOriginalModel)
 
@@ -241,8 +241,7 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
       ssdPipelineConfigFilePath,
       ssdExtensionsConfigFilePath)
     assert(ssdModel1.getOriginalModel != null)
-    ssdModel2.doLoadTF(ssdFrozenModelFilePath, "openvino",
-      "ssd_inception_v2_coco")
+    ssdModel2.doLoadTF(ssdFrozenModelFilePath, "ssd_inception_v2_coco")
     assert(ssdModel2.getOriginalModel != null)
     println(ssdModel1.getOriginalModel, ssdModel2.getOriginalModel)
   }
