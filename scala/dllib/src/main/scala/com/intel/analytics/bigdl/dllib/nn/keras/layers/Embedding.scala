@@ -113,7 +113,7 @@ object Embedding {
     inputLength: Int = -1,
     maskZero: Boolean = false,
     paddingValue: Int = 0,
-    zeroBasedId: Boolean = false
+    zeroBasedId: Boolean = true
       )(implicit ev: TensorNumeric[T]): Embedding[T] = {
     // Remark: It is possible that inputShape is specified in Input node or layer.
     val shape = if (inputLength > 0) Shape(inputLength) else null
