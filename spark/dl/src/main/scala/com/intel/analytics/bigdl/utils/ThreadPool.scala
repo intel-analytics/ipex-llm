@@ -48,7 +48,15 @@ class ThreadPool(private var poolSize: Int) {
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
     if (poolSize == 1) {
-      threadPool = MoreExecutors.sameThreadExecutor()
+      threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
+        override def newThread(r: Runnable): Thread = {
+          val t = Executors.defaultThreadFactory().newThread(r)
+          t.setName("single-thread-computing")
+          t.setDaemon(true)
+          t
+        }
+      })
+
       singleThreadPool
     } else {
       new ExecutionContext {
@@ -56,6 +64,7 @@ class ThreadPool(private var poolSize: Int) {
         threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
+            t.setName("default-thread-computing")
             t.setDaemon(true)
             t
           }
@@ -81,7 +90,8 @@ class ThreadPool(private var poolSize: Int) {
   def setMKLThread(size: Int): this.type = this.synchronized {
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
-      ThreadPool.setThreadsOfBackend(size)
+      require(MKL.isMKLLoaded)
+      MKL.setNumThreads(size)
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
