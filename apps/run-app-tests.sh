@@ -202,10 +202,10 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading images"
-   
+
    wget $FTP_URI/analytics-zoo-data/imageClassification.tar.gz -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity
    tar -zxvf ${ANALYTICS_ZOO_HOME}/apps/image-similarity/imageClassification.tar.gz -C ${ANALYTICS_ZOO_HOME}/apps/image-similarity
-   
+
    echo "Finished downloading images"
 fi
  FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/deploy_googlenet_places365.prototxt"
@@ -214,9 +214,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading places365 deploy model"
-   
+
    wget https://raw.githubusercontent.com/CSAILVision/places365/master/deploy_googlenet_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
-   
+
    echo "Finished downloading model"
 fi
  FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/googlenet_places365.caffemodel"
@@ -225,9 +225,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading places365 weight model"
-   
+
    wget http://places2.csail.mit.edu/models_places365/googlenet_places365.caffemodel -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
-   
+
    echo "Finished downloading model"
 fi
  FILENAME=" ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/deploy_vgg16_places365.prototxt"
@@ -236,9 +236,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading VGG deploy model"
-   
+
    wget https://raw.githubusercontent.com/CSAILVision/places365/master/deploy_vgg16_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
-   
+
    echo "Finished downloading model"
 fi
  FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/vgg16_hybrid1365.caffemodel"
@@ -247,9 +247,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading VGG weight model"
-   
+
    wget $FTP_URI/analytics-zoo-models/image-classification/vgg16_places365.caffemodel -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
-   
+
    echo "Finished downloading model"
 fi
  ${SPARK_HOME}/bin/spark-submit \
@@ -470,7 +470,13 @@ start=$(date "+%s")
  ModelPath="${ANALYTICS_ZOO_HOME}/apps/tfnet/models/"
  rm -rf "$ModelPath"
  echo "Downloading model"
- git clone https://github.com/tensorflow/models/ ${ANALYTICS_ZOO_HOME}/apps/tfnet/models
+ mkdir -p ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets
+ touch ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/__init__.py
+ touch ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/inception.py
+ echo "from nets.inception_v1 import inception_v1" >> ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/inception.py
+ echo "from nets.inception_v1 import inception_v1_arg_scope" >> ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/inception.py
+ wget https://raw.githubusercontent.com/tensorflow/models/master/research/slim/nets/inception_utils.py -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/
+ wget https://raw.githubusercontent.com/tensorflow/models/master/research/slim/nets/inception_v1.py -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/
  echo "Finished downloading model"
  FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint/inception_v1.ckpt"
 if [ -f "$FILENAME" ]
