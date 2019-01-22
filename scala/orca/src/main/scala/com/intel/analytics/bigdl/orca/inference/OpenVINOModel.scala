@@ -45,7 +45,7 @@ class OpenVINOModel(var executableNetworkReference: Long = -1,
         (transferBatchTableToJListOfJListOfJTensor(inputTable, batchSize), batchSize)
       case false =>
         val inputTensor = inputActivity.toTensor[Float]
-        val batchSize = 1
+        val batchSize = inputTensor.size(1)
         (transferBatchTensorToJListOfJListOfJTensor(inputTensor, batchSize), batchSize)
     }
     val outputs = predict(inputList)
