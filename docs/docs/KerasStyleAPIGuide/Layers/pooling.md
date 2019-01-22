@@ -232,7 +232,139 @@ Output is:
 ```
 
 ---
+## **GlobalMaxPooling3D**
+Applies global max pooling operation for 3D data.
+
+Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+
+Border mode currently supported for this layer is 'valid'.
+
+The input of this layer should be 5D, i.e. (batch_size, spatial_dim1, spatial_dim2, spatial_dim3, channels).
+The output of this layer should be 2D, i.e. (batch_size, channels).
+
+**Scala:**
+```scala
+GlobalMaxPooling3D(dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+GlobalMaxPooling3D(dim_ordering="th", input_shape=None, name=None)
+```
+
+Parameters:
+
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+**Scala example:**
+
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.GlobalMaxPooling3D
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(GlobalMaxPooling3D[Float](inputShape = Shape(2, 2, 2, 3)))
+val input = Tensor[Float](2, 2, 2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+0.50938565	1.6374807	0.8158744
+-0.3293317	-0.17766304	0.9067782
+
+(1,1,2,.,.) =
+1.5450556	-1.0339675	0.056255028
+-0.8867852	-0.05401365	-0.9615863
+
+(1,2,1,.,.) =
+-0.98946816	0.21851462	-0.4431965
+-0.7591889	1.1842074	0.98533714
+
+(1,2,2,.,.) =
+-0.12944926	0.58315176	-1.5754528
+-0.93392104	-0.38259965	0.3566876
+
+(2,1,1,.,.) =
+-0.1219873	-0.06568	0.5519306
+0.32932717	1.4409258	0.68309426
+
+(2,1,2,.,.) =
+-1.4289209	0.47897565	-1.0722001
+-0.64675856	0.7097152	0.31949154
+
+(2,2,1,.,.) =
+-0.89986056	-0.13643691	0.69211197
+0.08849494	0.8695818	1.5527223
+
+(2,2,2,.,.) =
+1.3823601	0.36978078	0.10262361
+0.05734055	-0.41569084	0.009035309
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+1.6374807	1.1842074
+1.4409258	1.5527223
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.models import Sequential
+from zoo.pipeline.api.keras.layers import GlobalMaxPooling3D
+
+model = Sequential()
+model.add(GlobalMaxPooling3D(input_shape = (2, 2, 2, 3)))
+input = np.random.random([2, 2, 2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+      [[[[[ 0.8402289  0.11503692 0.27831015]
+          [ 0.45756199 0.15043262 0.78778086]]
+
+         [[ 0.37076324 0.65032926 0.74508221]
+          [ 0.32223229 0.81980455 0.14822856]]]
+
+
+        [[[ 0.72858223 0.04609062 0.86802821]
+          [ 0.22619071 0.23091766 0.68856216]]
+
+         [[ 0.54321111 0.94913088 0.59588331]
+          [ 0.90821291 0.42860528 0.39355229]]]]
+
+
+
+       [[[[ 0.06834657 0.41250882 0.55612858]
+          [ 0.72871084 0.59139003 0.83317638]]
+
+         [[ 0.99382906 0.24782635 0.27295274]
+          [ 0.65663701 0.7994264  0.73672449]]]
+
+
+        [[[ 0.11487664 0.74224294 0.39289158]
+          [ 0.34253228 0.47903629 0.66238715]]
+
+         [[ 0.13219379 0.12541975 0.93002441]
+          [ 0.58895306 0.38519765 0.27216034]]]]]
+```
+Output is:
+```python
+[[ 0.84022892  0.94913089]
+ [ 0.99382907  0.93002439]]
+```
+
+---
 ## **AveragePooling2D**
+
 Average pooling operation for spatial data.
 
 The input of this layer should be 4D.

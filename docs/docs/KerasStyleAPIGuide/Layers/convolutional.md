@@ -95,6 +95,173 @@ Output is
 ```
 
 ---
+## **Convolution2D**
+Applies a 2D convolution over an input image composed of several input planes.
+
+You can also use `Conv2D` as an alias of this layer.
+
+The input of this layer should be 4D, i.e. (samples, channels, rows, cols).
+The output of this layer should be 4D, i.e. (samples, filters, new_rows, new_cols).
+
+**Scala:**
+```scala
+Convolution2D(nbFilter, nbRow, nbCol, init = "glorot_uniform", activation = null, borderMode = "valid", subsample = (1, 1), dimOrdering = "th", wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+Convolution2D(nb_filter, nb_row, nb_col, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution filters to use.
+* `nbRow`: Number of rows in the convolution kernel.
+* `nbCol`: Number of columns in the convolution kernel.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'glorot_uniform'.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
+* `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
+* `subsample`: Length 2 corresponding to the step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Convolution2D
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(Convolution2D[Float](4, 2, 2, activation = "relu", inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+0.8852683 -0.81495345 -1.2799169  0.9779215
+1.1456866 -0.10803124 -0.44350016 -1.7670554
+-0.9059258  -0.08115104 -0.888267 1.8203543
+
+(1,2,.,.) =
+-0.69458634 0.31331652  1.4600077 -0.93392456
+1.4808512 0.2082488 -0.008410408  0.013914147
+0.86024827  1.124567  0.28874534  -0.4866409
+
+(2,1,.,.) =
+-0.020653103  0.8077344 -0.9391865  0.2743323
+0.09707443  -0.1877453  2.3798819 1.71017
+0.14860597  0.8954743 2.0009918 1.0548053
+
+(2,2,.,.) =
+-0.06750481 -2.1010966  -0.51831937 -0.40519416
+1.2983296 1.9960507 0.31097296  -1.0400984
+-0.20703147 0.32478333  -0.5247251  1.2356688
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+0.49652004  0.62284863  0.0
+1.2256577 0.11462581  0.761484
+
+(1,2,.,.) =
+0.0 0.0 1.6321466
+0.69082737  0.10713227  0.0
+
+(1,3,.,.) =
+0.0 0.0 1.0226117
+0.0 0.0 0.0
+
+(1,4,.,.) =
+0.017812707 0.044630717 0.0
+0.0 0.0 0.0
+
+(2,1,.,.) =
+0.0 0.79017955  0.0
+1.1551664 0.0 0.0
+
+(2,2,.,.) =
+0.0 0.0 0.0
+0.0 0.9762883 0.0
+
+(2,3,.,.) =
+0.0 0.0 0.0
+0.0 0.0 0.0
+
+(2,4,.,.) =
+0.0 0.0 0.1633394
+0.66279346  0.07180607  1.7188346
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import Convolution2D
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(Convolution2D(4, 2, 2, input_shape=(2, 3, 4)))
+input = np.random.random([2, 2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[[ 0.70766604,  0.56604946,  0.89172683,  0.35057259],
+         [ 0.89700606,  0.71675588,  0.92357667,  0.73319623],
+         [ 0.38198447,  0.66954234,  0.46397678,  0.81329758]],
+
+        [[ 0.86972625,  0.16386155,  0.73140259,  0.07359015],
+         [ 0.43441431,  0.16852341,  0.15025034,  0.34109183],
+         [ 0.89670592,  0.06335869,  0.72356566,  0.54245763]]],
+
+
+       [[[ 0.37727322,  0.14688331,  0.06249512,  0.29553298],
+         [ 0.50554043,  0.33364744,  0.95334248,  0.40551935],
+         [ 0.81317402,  0.59253283,  0.8249684 ,  0.80419637]],
+
+        [[ 0.71737738,  0.09376579,  0.3793706 ,  0.91432729],
+         [ 0.34433954,  0.74886398,  0.97859311,  0.9538775 ],
+         [ 0.45521369,  0.79446047,  0.35239537,  0.12803574]]]])
+```
+Output is
+```python
+array([[[[ 0.0732559 ,  0.70261478,  0.16962567],
+         [ 0.3641817 ,  0.56304729,  0.71597064]],
+
+        [[-0.5932048 , -0.04155506, -0.49025974],
+         [-0.57992101, -0.00230447, -0.33811107]],
+
+        [[ 0.13634545,  0.27157408, -0.01450583],
+         [ 0.34469086,  0.46334854,  0.55308509]],
+
+        [[-0.01247289,  0.69034004, -0.01554111],
+         [ 0.07790593,  0.09984782,  0.1278697 ]]],
+
+
+       [[[ 0.02547407,  0.64045584,  0.21886043],
+         [ 0.43482357,  0.45493811,  0.26216859]],
+
+        [[-0.39469361, -0.34455007, -0.2396858 ],
+         [-0.15447566, -0.35714447, -0.44134659]],
+
+        [[ 0.30956799,  0.9154281 ,  0.75450832],
+         [ 0.37207305,  0.55432665, -0.29964659]],
+
+        [[-0.48307419, -0.29406634, -0.29416537],
+         [ 0.0138942 ,  0.26592475,  0.38921899]]]], dtype=float32)
+```
+
+---
 ## **AtrousConvolution2D**
 Applies an atrous convolution operator for filtering windows of 2-D inputs.
 
@@ -855,6 +1022,96 @@ Output is
     [0.        , 0.        , 0.        , 0.        ]]]]]
 ```
 
+---
+## **Cropping1D**
+Cropping layer for 1D input (e.g. temporal sequence).
+
+It crops along the time dimension (axis 1). 
+
+The input of this layer should be 3D, i.e. (batch, axis_to_crop, features).
+The output of this layer should be 3D, i.e. (batch, cropped_axis, features).
+
+**Scala:**
+```scala
+Cropping1D(cropping = (1, 1), inputShape = null)
+```
+**Python:**
+```python
+Cropping1D(cropping=(1, 1), input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `cropping`: Length 2. How many units should be trimmed off at the beginning and end of the cropping dimension. Default is (1, 1).
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Cropping1D
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(Cropping1D[Float]((1, 1), inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.06297628	-0.8408224	0.21813048	-0.14371997
+0.9278932	0.069493145	-0.2900171	0.536517
+3.430168	-0.53643423	0.12677099	0.3572487
+
+(2,.,.) =
+1.493348	-1.1703341	-0.37385875	-0.239736
+0.33984247	-0.6005885	1.2722077	-0.5043763
+0.012092848	0.40293974	0.61356264	2.4283617
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+0.9278932	0.069493145	-0.2900171	0.536517
+
+(2,.,.) =
+0.33984247	-0.6005885	1.2722077	-0.5043763
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x1x4]
+```
+
+**Python example:**
+```python
+from zoo.pipeline.api.keras.layers import Cropping1D
+from zoo.pipeline.api.keras.models import Sequential
+import numpy as np
+
+model = Sequential()
+model.add(Cropping1D(input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[ 0.12013423,  0.21359734,  0.92871231,  0.92152503],
+        [ 0.3649771 ,  0.39968689,  0.92007275,  0.16493056],
+        [ 0.11018303,  0.7591447 ,  0.35932136,  0.97727728]],
+
+       [[ 0.06645696,  0.21909036,  0.01219254,  0.46561466],
+        [ 0.64316144,  0.53577975,  0.38302965,  0.56807556],
+        [ 0.25223652,  0.23857826,  0.1884081 ,  0.42532243]]])
+```
+Output is:
+```python
+array([[[ 0.36497709,  0.3996869 ,  0.92007273,  0.16493057]],
+
+       [[ 0.64316142,  0.53577977,  0.38302964,  0.56807554]]], dtype=float32)
+```
 
 ---
 ## **Cropping2D**

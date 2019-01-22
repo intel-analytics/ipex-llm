@@ -95,6 +95,144 @@ Output is
  [ 2.331141   -0.84687066]]
  ```
 
+## **SoftShrink**
+Applies the soft shrinkage function element-wise to the input.
+
+When you use this layer as the first layer of a model, you need to provide
+the argument inputShape (a Single Shape, does not include the batch dimension).
+
+Remark: This layer is from Torch and wrapped in Keras style.
+
+
+**Scala:**
+```scala
+SoftShrink(value = 0.5, inputShape = null)
+```
+**Python:**
+```python
+SoftShrink(value = 0.5, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `value`: value The threshold value. Default is 0.5.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a `Shape` object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.layers.SoftShrink
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(SoftShrink[Float](0.6, inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+-0.36938807	0.023556225	-1.1655436	-0.34449077
+0.9444338	-0.086538695	-1.0425501	1.364976
+-1.2563878	-0.1842559	0.43428117	1.0756494
+
+(1,2,.,.) =
+-0.19888283	1.251872	0.114836805	-0.6208773
+0.0051822234	-0.8998633	0.06937465	-0.3929931
+-0.1058129	0.6945743	-0.40083578	-0.6252444
+
+(2,1,.,.) =
+-0.9899709	-0.77926594	-0.15497442	-0.15031165
+-0.6028622	0.86623466	-2.1543107	0.41970536
+-0.8215522	0.3014275	-0.32184362	0.14445356
+
+(2,2,.,.) =
+0.74701905	0.10044397	-0.40519297	0.03822808
+0.30726334	0.27862388	1.731753	0.032177072
+-1.3476961	-0.2294767	0.99794704	0.7398458
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+0.0	0.0	-0.56554353	0.0
+0.34443378	0.0	-0.44255006	0.764976
+-0.6563878	0.0	0.0	0.47564936
+
+(1,2,.,.) =
+0.0	0.6518719	0.0	-0.020877302
+0.0	-0.29986328	0.0	0.0
+0.0	0.09457427	0.0	-0.025244355
+
+(2,1,.,.) =
+-0.3899709	-0.17926592	0.0	0.0
+-0.0028621554	0.26623464	-1.5543107	0.0
+-0.2215522	0.0	0.0	0.0
+
+(2,2,.,.) =
+0.14701903	0.0	0.0	0.0
+0.0	0.0	1.131753	0.0
+-0.74769604	0.0	0.397947	0.13984579
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import SoftShrink
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(SoftShrink(0.6, input_shape=(2, 3, 4)))
+input = np.random.random([2, 2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[[ 0.43421006,  0.28394451,  0.15221226,  0.47268966],
+         [ 0.22426224,  0.24855662,  0.790498  ,  0.67767582],
+         [ 0.14879562,  0.56077882,  0.61470262,  0.94875862]],
+
+        [[ 0.72404932,  0.89780875,  0.08456734,  0.01303937],
+         [ 0.25023568,  0.45392504,  0.587254  ,  0.51164461],
+         [ 0.12277567,  0.05571182,  0.17076456,  0.71660884]]],
+
+
+       [[[ 0.06369975,  0.85395557,  0.35752425,  0.606633  ],
+         [ 0.67640252,  0.86861737,  0.18040722,  0.55467108],
+         [ 0.24102058,  0.37580645,  0.81601612,  0.56513788]],
+
+        [[ 0.8461435 ,  0.65668365,  0.17969807,  0.51602926],
+         [ 0.86191073,  0.34245714,  0.62795207,  0.36706125],
+         [ 0.80344028,  0.81056003,  0.80959083,  0.15366483]]]])
+```
+Output is
+```python
+array([[[[ 0.        ,  0.        ,  0.        ,  0.        ],
+         [ 0.        ,  0.        ,  0.19049799,  0.07767582],
+         [ 0.        ,  0.        ,  0.01470262,  0.34875858]],
+
+        [[ 0.12404931,  0.29780871,  0.        ,  0.        ],
+         [ 0.        ,  0.        ,  0.        ,  0.        ],
+         [ 0.        ,  0.        ,  0.        ,  0.1166088 ]]],
+
+
+       [[[ 0.        ,  0.25395554,  0.        ,  0.00663298],
+         [ 0.07640249,  0.26861733,  0.        ,  0.        ],
+         [ 0.        ,  0.        ,  0.21601611,  0.        ]],
+
+        [[ 0.24614346,  0.05668366,  0.        ,  0.        ],
+         [ 0.26191074,  0.        ,  0.02795208,  0.        ],
+         [ 0.20344025,  0.21056002,  0.20959079,  0.        ]]]], dtype=float32)
+
+ ```
+
 ---
 ## **Reshape**
 Reshapes an output to a certain shape.
@@ -683,6 +821,100 @@ Output is
 ```python
 [[0.4984534 , 0.80796176, 0.5940285 ],
  [0.4429006 , 0.55647826, 0.9063563 ]]
+```
+
+---
+## **Mul**
+Multiply a single scalar factor to the incoming data
+
+**Scala:**
+```scala
+Mul(inputShape = null)
+```
+**Python:**
+```python
+Mul(input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Mul
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(Mul[Float](inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+-1.2316265  -2.008802 -1.3908259  -0.61135375
+-0.48992255 0.1786112 0.18872596  0.49621895
+-0.6931602  -0.919745 -0.09019699 -0.41218707
+
+(2,.,.) =
+-0.3135355  -0.4385771  -0.3317269  1.0412029
+-0.8859662  0.17758773  -0.73779273 -0.4445366
+0.3921595 1.6923207 0.014470488 0.4044164
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+-0.59036994 -0.9629025  -0.6666808  -0.29304734
+-0.2348403  0.0856158 0.09046422  0.23785843
+-0.33226058 -0.44087213 -0.043235175  -0.19757845
+
+(2,.,.) =
+-0.15029064 -0.21022828 -0.15901053 0.49909195
+-0.42468053 0.0851252 -0.3536548  -0.21308492
+0.18797839  0.81119984  0.006936308 0.19385365
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import Mul
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(Mul(input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[ 0.22607292,  0.59806062,  0.19428923,  0.22928606],
+        [ 0.13804536,  0.1615547 ,  0.52824658,  0.52794904],
+        [ 0.4049169 ,  0.94109084,  0.58158453,  0.78368633]],
+
+       [[ 0.86233305,  0.47995805,  0.80430949,  0.9931171 ],
+        [ 0.35179631,  0.33615276,  0.87756877,  0.73560288],
+        [ 0.29775703,  0.11404466,  0.77695536,  0.97580018]]])
+```
+Output is
+```python
+array([[[-0.22486402, -0.59486258, -0.1932503 , -0.22805998],
+        [-0.13730718, -0.1606908 , -0.52542186, -0.52512592],
+        [-0.40275168, -0.93605846, -0.57847458, -0.77949566]],
+
+       [[-0.85772187, -0.47739154, -0.80000854, -0.9878065 ],
+        [-0.34991512, -0.33435524, -0.87287611, -0.73166931],
+        [-0.29616481, -0.11343482, -0.77280068, -0.97058219]]], dtype=float32)
 ```
 
 ---
@@ -1397,6 +1629,93 @@ array([[[ 0.06560206,  0.38629526, -0.23159817],
         [ 0.56584346,  0.24625483,  0.6698097 ]]], dtype=float32)
 ```
 
+---
+## **RepeatVector**
+Repeats the input n times.
+
+The input of this layer should be 2D, i.e. (num_samples, features).
+The output of thi layer should be 3D, i.e. (num_samples, n, features).
+
+**Scala:**
+```scala
+RepeatVector(n, inputShape = null)
+```
+**Python:**
+```python
+RepeatVector(n, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `n`: Repetition factor. Integer.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.RepeatVector
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(RepeatVector[Float](4, inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+-0.31839952 -0.3495366  0.542486
+-0.54981124 -0.8428188  0.8225184
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+-0.31839952 -0.3495366  0.542486
+-0.31839952 -0.3495366  0.542486
+-0.31839952 -0.3495366  0.542486
+-0.31839952 -0.3495366  0.542486
+
+(2,.,.) =
+-0.54981124 -0.8428188  0.8225184
+-0.54981124 -0.8428188  0.8225184
+-0.54981124 -0.8428188  0.8225184
+-0.54981124 -0.8428188  0.8225184
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import RepeatVector
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(RepeatVector(4, input_shape=(3, )))
+input = np.random.random([2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[ 0.90715922,  0.54594769,  0.53952404],
+       [ 0.08989831,  0.07265549,  0.45830114]])
+```
+Output is
+```python
+array([[[ 0.90715921,  0.54594767,  0.53952402],
+        [ 0.90715921,  0.54594767,  0.53952402],
+        [ 0.90715921,  0.54594767,  0.53952402],
+        [ 0.90715921,  0.54594767,  0.53952402]],
+
+       [[ 0.08989831,  0.07265549,  0.45830116],
+        [ 0.08989831,  0.07265549,  0.45830116],
+        [ 0.08989831,  0.07265549,  0.45830116],
+        [ 0.08989831,  0.07265549,  0.45830116]]], dtype=float32)
+```
 ---
 ## **GaussianSampler**
 Takes {mean, log_variance} as input and samples from the Gaussian distribution.

@@ -90,6 +90,94 @@ Output is:
 ```
 
 ---
+## **LSTM**
+Long Short Term Memory unit architecture.
+
+The input of this layer should be 3D, i.e. (batch, time steps, input dim).
+
+**Scala:**
+```scala
+LSTM(outputDim, activation = "tanh", innerActivation = "hard_sigmoid", returnSequences = false, goBackwards = false, wRegularizer = null, uRegularizer = null, bRegularizer = null, inputShape = null)
+```
+**Python:**
+```python
+LSTM(output_dim, activation="tanh", inner_activation="hard_sigmoid", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None, input_shape=None, name=None)
+```
+
+Parameters:
+
+* `outputDim`: Hidden unit size. Dimension of internal projections and final output.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is 'tanh'.
+* `innerActivation`: String representation of the activation function for inner cells. See [here](activation/#available-activations) for available activation strings. Default is 'hard_sigmoid'.
+* `returnSequences`: Whether to return the full sequence or only return the last output in the output sequence. Default is false.
+* `goBackwards`: Whether the input sequence will be processed backwards. Default is false.
+* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `uRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied the recurrent weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.layers.LSTM
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(LSTM[Float](8, inputShape = Shape(2, 3)))
+val input = Tensor[Float](2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.6857518	0.21570909	-0.019308459
+0.17754157	0.25172755	-1.189466
+
+(2,.,.) =
+0.23807438	1.6879119	-0.36335373
+0.9826865	0.49549296	0.8100107
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+0.13552098	-0.043483295	-0.10553853	0.19386405	0.18295142	0.037892513	-0.05510225	-0.2420117
+-0.04152686	-0.13908584	0.18151914	0.14170776	0.15598273	0.18968433	-0.042683482	-0.05782121
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x8]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import LSTM
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(LSTM(8, input_shape = (2, 3)))
+input = np.random.random([2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[ 0.67619723,  0.5168176 ,  0.8093504 ],
+        [ 0.93787417,  0.53016934,  0.51934568]],
+
+       [[ 0.57334472,  0.40007739,  0.65670337],
+        [ 0.74457042,  0.15209156,  0.02015092]]])
+```
+Output is:
+```python
+array([[-0.01563799,  0.16000053, -0.20192699,  0.08859081, -0.14184587,
+         0.11160418,  0.19090165,  0.03475797],
+       [-0.02395577,  0.10148412, -0.13211192,  0.05772379, -0.16488783,
+         0.13513438,  0.15624164,  0.02866406]], dtype=float32)
+```
+
+---
 ## **GRU**
 Gated Recurrent Unit architecture.
 

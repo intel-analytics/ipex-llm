@@ -91,6 +91,108 @@ array([[[1.1523907 , 0.7672588 , 0.        , 0.6953831 ],
 ```
 
 ---
+## **GaussianDropout**
+Apply multiplicative 1-centered Gaussian noise.
+
+As it is a regularization layer, it is only active at training time.
+
+**Scala:**
+```scala
+GaussianDropout(p, inputShape = null)
+```
+**Python:**
+```python
+GaussianDropout(p, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `p`: Drop probability (as with 'Dropout'). The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.GaussianDropout
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(GaussianDropout[Float](0.45, inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+1.8969221   2.454179    -0.26737544 0.86235714
+-0.61781764 -0.48739514 0.2337097   1.0086832
+1.7666794   -1.120229   -0.28245732 0.845279
+
+(2,.,.) =
+1.2763704   -0.3854067  0.0061038486    0.931373
+0.67848265  -3.098805   -0.1240183  0.36834922
+0.9772534   -0.639048   -0.078967154    1.4179249
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+1.8251847   4.3458977   -0.6353459  -0.10734326
+-0.4009521  -0.5479114  0.1226105   2.0534828
+-0.03313    -2.271632   0.122886114 -0.44396263
+
+(2,.,.) =
+0.45101312  -0.48233575 0.008046541 2.2945886
+1.3415622   -1.9070724  -0.1681036  0.60575134
+0.88338673  -1.4186113  -0.012104415    0.3102114
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.layers import GaussianDropout
+from zoo.pipeline.api.keras.models import Sequential
+
+model = Sequential()
+model.add(GaussianDropout(0.45, input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+array([[[ 0.55167758,  0.07427833,  0.59777983,  0.86986969],
+        [ 0.53097779,  0.4174687 ,  0.58065922,  0.73479602],
+        [ 0.43731939,  0.64465237,  0.32946076,  0.59878638]],
+
+       [[ 0.26428987,  0.29575131,  0.36229906,  0.66938424],
+        [ 0.74325536,  0.08672916,  0.35460851,  0.00122828],
+        [ 0.27095285,  0.09442922,  0.02280022,  0.68735133]]])
+```
+Output is
+```python
+array([[[  1.29282939e+00,   7.24226162e-02,   5.17048061e-01,
+           8.93751144e-01],
+        [  5.48077464e-01,  -1.90222517e-01,   4.40389782e-01,
+           1.86340976e+00],
+        [  4.28632259e-01,   1.25118005e+00,   4.43376899e-01,
+           1.07255065e+00]],
+
+       [[ -4.06714790e-02,   9.10973027e-02,   1.28347218e+00,
+           1.03069496e+00],
+        [  2.37148595e+00,   3.56667452e-02,   1.25722930e-01,
+           1.17819163e-05],
+        [  3.79356921e-01,   8.55060294e-02,   3.33660096e-02,
+           3.40193957e-02]]], dtype=float32)
+```
+
+---
 ## **SpatialDropout2D**
 Spatial 2D version of Dropout.
 
