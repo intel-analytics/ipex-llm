@@ -780,7 +780,7 @@ class ResizeBilinear(ZooKerasLayer):
     creating: createZooKerasResizeBilinear
     """
     def __init__(self, output_height, output_width, align_corner=False,
-                 dim_ordering="th", input_shape=(2, 3, 5, 7), **kwargs):
+                 dim_ordering="th", input_shape=None, **kwargs):
         super(ResizeBilinear, self).__init__(None,
                                              output_height,
                                              output_width,
