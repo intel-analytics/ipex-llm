@@ -1,4 +1,4 @@
-package com.intel.analytics.zoo.apps.recommendation.interence
+package com.intel.analytics.zoo.apps.recommendation.inference
 
 
 object SimpleScalaDriver {

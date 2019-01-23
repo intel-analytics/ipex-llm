@@ -6,9 +6,9 @@ import com.intel.analytics.zoo.pipeline.inference.JTensor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NueralCFModel extends AbstractInferenceModel {
+public class NueralCFJModel extends AbstractInferenceModel {
 
-    public NueralCFModel(){
+    public NueralCFJModel(){
 
     }
 

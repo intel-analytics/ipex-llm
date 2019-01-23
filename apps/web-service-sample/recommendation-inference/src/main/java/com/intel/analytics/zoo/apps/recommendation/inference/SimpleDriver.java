@@ -11,7 +11,7 @@ public class SimpleDriver {
 
         String modelPath = System.getProperty("MODEL_PATH", "./models/ncf.bigdl");
 
-        NueralCFModel rcm = new NueralCFModel();
+        NueralCFJModel rcm = new NueralCFJModel();
 
         rcm.load(modelPath);
 
