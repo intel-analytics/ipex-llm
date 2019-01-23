@@ -1,3 +1,70 @@
+## **Masking**
+Use a mask value to skip timesteps for a sequence.
+
+**Scala:**
+```scala
+Masking(maskValue = 0.0, inputShape = null)
+```
+**Python:**
+```python
+Masking(mask_value=0.0, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `maskValue`: Mask value. For each timestep in the input (the second dimension), if all the values in the input at that timestep are equal to 'maskValue', then the timestep will be masked (skipped) in all downstream layers.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Masking
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(Masking[Float](inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+1.4539868       1.5623108       -1.4101523
+0.77073747      -0.18994702     2.2574463
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+1.4539868       1.5623108       -1.4101523
+0.77073747      -0.18994702     2.2574463
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Masking
+
+model = Sequential()
+model.add(Masking(input_shape=(3, )))
+input = np.random.random([2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[0.31542103 0.20640659 0.22282763]
+ [0.99352167 0.90135718 0.24504717]]
+```
+Output is
+```python
+[[0.31542102 0.2064066  0.22282763]
+ [0.9935217  0.9013572  0.24504717]]
+```
+
+---
 ## **SparseDense**
 SparseDense is the sparse version of layer Dense. SparseDense has two different from Dense:
 firstly, SparseDense's input Tensor is a SparseTensor. Secondly, SparseDense doesn't backward
