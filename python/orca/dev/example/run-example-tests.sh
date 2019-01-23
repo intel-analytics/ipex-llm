@@ -30,28 +30,6 @@ else
     tar zxf analytics-zoo-data/data/20news-18828.tar.gz -C analytics-zoo-data/data/
 fi
 
-echo "check if model directory exists"
-if [ ! -d analytics-zoo-models ]
-then
-    mkdir analytics-zoo-models
-fi
-
-if [ -f analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model ]
-then
-    echo "analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model already exists"
-else
-    wget $FTP_URI/analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model\
-    -P analytics-zoo-models
-fi
-if [ -f analytics-zoo-models/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model ]
-then
-    echo "analytics-zoo-models/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model already exists"
-else
-    wget $FTP_URI/analytics-zoo-models/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model \
-    -P analytics-zoo-models
-fi
-
-
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 2g \
@@ -64,7 +42,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --nb_epoch 1 \
     --data_path analytics-zoo-data/data/20news-18828 \
     --embedding_path analytics-zoo-data/data/glove.6B
-
 
 now=$(date "+%s")
 time1=$((now-start))
@@ -88,6 +65,21 @@ time2=$((now-start))
 echo "#3 start example test for image-classification"
 #timer
 start=$(date "+%s")
+
+echo "check if model directory exists"
+if [ ! -d analytics-zoo-models ]
+then
+    mkdir analytics-zoo-models
+fi
+
+if [ -f analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model ]
+then
+    echo "analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model already exists"
+else
+    wget $FTP_URI/analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model\
+    -P analytics-zoo-models
+fi
+
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 20g \
@@ -106,6 +98,15 @@ time3=$((now-start))
 echo "#4 start example test for object-detection"
 #timer
 start=$(date "+%s")
+
+if [ -f analytics-zoo-models/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model ]
+then
+    echo "analytics-zoo-models/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model already exists"
+else
+    wget $FTP_URI/analytics-zoo-models/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model \
+    -P analytics-zoo-models
+fi
+
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 20g \
@@ -328,6 +329,41 @@ now=$(date "+%s")
 time7=$((now-start))
 echo "#7 anomalydetection time used:$time7 seconds"
 
+echo "#8 start example test for qaranker"
+#timer
+start=$(date "+%s")
+
+if [ -f analytics-zoo-data/data/glove.6B.zip ]
+then
+    echo "analytics-zoo-data/data/glove.6B.zip already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip -P analytics-zoo-data/data
+    unzip -q analytics-zoo-data/data/glove.6B.zip -d analytics-zoo-data/data/glove.6B
+fi
+if [ -f analytics-zoo-data/data/WikiQAProcessed.zip ]
+then
+    echo "analytics-zoo-data/data/WikiQAProcessed.zip already exists"
+else
+    wget https://s3.amazonaws.com/analytics-zoo-data/WikiQAProcessed.zip -P analytics-zoo-data/data
+    unzip analytics-zoo-data/data/WikiQAProcessed.zip -d analytics-zoo-data/data/
+fi
+
+${SPARK_HOME}/bin/spark-submit \
+    --master ${MASTER} \
+    --driver-memory 3g \
+    --executor-memory 3g \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/qaranker/qa_ranker.py \
+    --jars ${ANALYTICS_ZOO_JAR} \
+    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/qaranker/qa_ranker.py \
+    --nb_epoch 2 \
+    --data_path analytics-zoo-data/data/WikiQAProcessed \
+    --embedding_file analytics-zoo-data/data/glove.6B/glove.6B.50d.txt
+
+now=$(date "+%s")
+time8=$((now-start))
+
 
 echo "#1 textclassification time used:$time1 seconds"
 echo "#2 customized loss and layer time used:$time2 seconds"
@@ -336,3 +372,4 @@ echo "#4 object-detection loss and layer time used:$time4 seconds"
 echo "#5 nnframes time used:$time5 seconds"
 echo "#6 tensorflow time used:$time6 seconds"
 echo "#7 anomalydetection time used:$time7 seconds"
+echo "#8 qaranker time used:$time8 seconds"
