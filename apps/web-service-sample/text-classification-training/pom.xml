@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.zoo</groupId>
-            <artifactId>analytics-zoo-bigdl_0.6.0-spark_2.3.1</artifactId>
+            <artifactId>analytics-zoo-bigdl_0.7.2-spark_2.3.1</artifactId>
             <version>0.4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
