@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ThreadPoolSpec extends FlatSpec with Matchers {
 
-  "mkldnn backend" should "not bind all java threads to the first core" in {
+  "mkldnn backend" should "create omp threads and bind correctly" in {
     com.intel.analytics.bigdl.mkl.MklDnn.isLoaded
     System.setProperty("bigdl.engineType", "mkldnn")
     val poolSize = 1
@@ -59,7 +59,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   }
 
-  "mkldnn thread" should "not influence other threads" in {
+  "mkldnn thread affinity binding" should "not influence other threads" in {
     System.setProperty("bigdl.engineType", "mkldnn")
     System.setProperty("bigdl.localMode", "true")
     Engine.init
