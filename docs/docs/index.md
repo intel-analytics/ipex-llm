@@ -101,7 +101,7 @@ To make it easy to build and productionize the deep learning applications for Bi
    from zoo.pipeline.api.net import TFOptimizer
    from bigdl.optim.optimizer import MaxIteration, Adam, MaxEpoch, TrainSummary
 
-   optimizer = TFOptimizer(loss, Adam(1e-3))
+   optimizer = TFOptimizer.from_loss(loss, Adam(1e-3))
    optimizer.set_train_summary(TrainSummary("/tmp/az_lenet", "lenet"))
    optimizer.optimize(end_trigger=MaxEpoch(5))
 ```
