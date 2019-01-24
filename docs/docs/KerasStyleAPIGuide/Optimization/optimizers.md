@@ -78,7 +78,7 @@ Parameters:
 
 ## Adam
 
-An implementation of Adam optimization, first-order gradient-based optimization of stochastic  objective  functions. http://arxiv.org/pdf/1412.6980.pdf
+An implementation of Adam optimization, first-order gradient-based optimization of stochastic  objective  functions. <http://arxiv.org/pdf/1412.6980.pdf>
 
 **Scala:**
 ```scala
@@ -108,7 +108,7 @@ Parameters:
 
 ## Adamax
 
-An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
+An implementation of Adamax: <http://arxiv.org/pdf/1412.6980.pdf>
 
 **Scala:**
 ```scala
@@ -138,7 +138,7 @@ Parameters:
 
 *AdaDelta* implementation for *SGD* 
 It has been proposed in `ADADELTA: An Adaptive Learning Rate Method`.
-http://arxiv.org/abs/1212.5701.
+<http://arxiv.org/abs/1212.5701.>
 
 **Scala:**
 ```scala
@@ -187,7 +187,7 @@ Parameters:
 
 ## Rmsprop
 
-An implementation of RMSprop (Reference: http://arxiv.org/pdf/1308.0850v5.pdf, Sec 4.2)
+An implementation of RMSprop (Reference: <http://arxiv.org/pdf/1308.0850v5.pdf>, Sec 4.2)
 
 **Scala:**
 ```scala

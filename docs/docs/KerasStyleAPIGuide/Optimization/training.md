@@ -153,4 +153,3 @@ Parameters:
         When distributed is False the total batch size is batch_per_thread * numOfCores.
 * `zero_based_label`: Boolean. Whether result labels start from 0.
                       Default is True. If False, result labels start from 1.
-

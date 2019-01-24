@@ -4,7 +4,7 @@ An objective function (or loss function, or optimization score function) is one 
 
 **Scala:**
 
-```scala"
+```scala
 model.compile(loss = "mean_squared_error", optimizer = "sgd")
 ```
 
