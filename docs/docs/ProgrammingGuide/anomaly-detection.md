@@ -7,7 +7,7 @@ A sequence of values (e.g., last 50 hours) leading to the current time are used 
 2. Models are defined base on LSTM.
 
 ---
-## **Build a AnomalyDetction model**
+## **Build an AnomalyDetction model**
 You can call the following API in Scala and Python respectively to create an `AnomalyDetrctor` model
 
 **Scala**

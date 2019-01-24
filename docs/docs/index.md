@@ -15,7 +15,7 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
 
 - *Easy-to-use abstractions and APIs* (e.g., transfer learning support, autograd operations, Spark DataFrame and ML pipeline support, online model serving API, etc.) 
 - *Common feature engineering operations* (for image, text, 3D image, etc.)
-- *Built-in deep learning models* (e.g., object detection, image classification, text classification, recommendation, anomaly detection, text matching, etc.)
+- *Built-in deep learning models* (e.g., object detection, image classification, text classification, recommendation, anomaly detection, text matching, sequence to sequence etc.)
 - *Reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image similarity, etc.)
 
 ## How to use Analytics Zoo?
@@ -49,10 +49,10 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
     - [Object detection API](#object-detection-api): high-level API and pretrained models (e.g., SSD and Faster-RCNN) for *object detection*
     - [Image classification API](#image-classification-api): high-level API and pretrained models (e.g., VGG, Inception, ResNet, MobileNet, etc.) for *image classification*
     - [Text classification API](#text-classification-api): high-level API and pre-defined models (using CNN, LSTM, etc.) for *text classification*
-    - [Recommedation API](#recommendation-api): high-level API and pre-defined models (e.g., Neural Collaborative Filtering, Wide and Deep Learning, etc.) for *recommendation*
+    - [Recommendation API](#recommendation-api): high-level API and pre-defined models (e.g., Neural Collaborative Filtering, Wide and Deep Learning, etc.) for *recommendation*
     - [Anomaly detection API](#anomaly-detection-api): high-level API and pre-defined models based on LSTM for *anomaly detection*
     - [Text matching API](#text-matching-api): high-level API and pre-defined KNRM model for *text matching*
-    - [Sequence to Sequence API](#sequence-to-sequence-api): high-level API and pre-defined models for *sequence to sequence*
+    - [Sequence to sequence API](#sequence-to-sequence-api): high-level API and pre-defined models for *sequence to sequence*
 
 - [Reference use cases](#reference-use-cases): a collection of end-to-end *reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image augmentation, object detection, variational autoencoder, etc.)
 
@@ -253,7 +253,7 @@ List<List<JTensor>> result = model.predict(inputs);
 ```
 
 ## _Built-in deep learning models_
-Analytics Zoo provides several built-in deep learning models that you can use for a variety of problem types, such as *object detection*, *image classification*, *text classification*, *recommendation*, *anomaly detection*, *text matching*, etc.
+Analytics Zoo provides several built-in deep learning models that you can use for a variety of problem types, such as *object detection*, *image classification*, *text classification*, *recommendation*, *anomaly detection*, *text matching*, *sequence to sequence*,  etc.
 
 ### _Object detection API_
 Using *Analytics Zoo Object Detection API* (including a set of pretrained detection models such as SSD and Faster-RCNN), you can easily build your object detection applications (e.g., localizing and identifying multiple objects in images and videos), as illustrated below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/object-detection/))
@@ -297,7 +297,7 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 ### _Text matching API_
 *Analytics Zoo Text Matching API* provides pre-defined KNRM model for ranking or classification. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/text-matching/))
 
-### _Sequence to Sequence API_
+### _Sequence to sequence API_
 *Analytics Zoo Sequence to Sequence API* provides a set of pre-defined models based on Recurrent neural network for sequence to sequence problems. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/seq2seq/))
 
 ## _Reference use cases_

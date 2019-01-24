@@ -40,10 +40,10 @@ pages:
     - Image Classification API: ProgrammingGuide/image-classification.md
     - Text Classification API: ProgrammingGuide/text-classification.md
     - Recommendation API: ProgrammingGuide/recommendation.md
+    - Anomaly Detection API: ProgrammingGuide/anomaly-detection.md
     - Text Matching API: ProgrammingGuide/text-matching.md
-  - Reference Use Cases:
-    - Use Cases: ProgrammingGuide/usercases-overview.md
-    - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
+    - Sequence to Sequence API: ProgrammingGuide/seq2seq.md
+  - Reference Use Cases: ProgrammingGuide/usercases-overview.md
 - White Paper:
   - BigDL: wp-bigdl.md
 - API Guide:
@@ -63,7 +63,9 @@ pages:
     - Image Classification: APIGuide/Models/image-classification.md
     - Text Classification: APIGuide/Models/text-classification.md
     - Recommendation: APIGuide/Models/recommendation.md
+    - Anomaly Detection: APIGuide/Models/anomaly-detection.md
     - Text Matching: APIGuide/Models/text-matching.md
+    - Sequence to Sequence: APIGuide/Models/seq2seq.md
 - Keras-Style API Guide:
   - Python Guide: KerasStyleAPIGuide/keras-api-python.md
   - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
