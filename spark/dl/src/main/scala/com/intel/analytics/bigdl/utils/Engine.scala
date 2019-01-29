@@ -233,7 +233,7 @@ object Engine {
   // We will only use the `threadPool` in ThreadPool, which is a ExecutorService.
   // For `context` in ThreadPool, it is the called thread when poolSize is 1.
   // So many usages of that thread, we will not change it for now.
-  val computing: ThreadPool = new ThreadPool(1)
+  val dnnComputing: ThreadPool = new ThreadPool(1)
 
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
@@ -339,7 +339,6 @@ object Engine {
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
       _default = new ThreadPool(defaultPoolSize)
     }
-    _default.setMKLThread(1)
 
     // for dnn model we should set the pool size to 1 also.
     // otherwise, it will downgrade the performance and
@@ -355,9 +354,9 @@ object Engine {
     // only effects the `threadPool` and `computing.invoke/invokeAndWait` will not
     // be effected. And affinity will not effect the other threads except
     // this thread and the omp threads forked from computing.
-    computing.invokeAndWait2((0 until 1).map(_ => () => {
-      ThreadPool.setThreadsOfBackend(MKL.getMklNumThreads)
-    }))
+    if (engineType == MklDnn) {
+      dnnComputing.setMKLThreadOfMklDnnBackend(MKL.getMklNumThreads)
+    }
   }
 
   /**

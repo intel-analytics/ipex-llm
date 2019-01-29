@@ -52,12 +52,12 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val gradOutput = Tensor[Float](outputShape).rand(-1, 1)
 
     // we need to compile the model in the invokeAndWait2 threads.
-    Engine.default.invokeAndWait2((0 until 1).map(i =>
+    Engine.dnnComputing.invokeAndWait2((0 until 1).map(i =>
       () => {
         model.compile(TrainingPhase)
       }))
 
-    Engine.default.invokeAndWait2((0 until 1).map(i =>
+    Engine.dnnComputing.invokeAndWait2((0 until 1).map(i =>
       () => {
         println(s"${Thread.currentThread().getId}")
         model.training()
@@ -69,7 +69,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     ), Long.MaxValue)
 
     for (i <- 0 until 3) {
-      Engine.default.invokeAndWait2((0 until 1).map(i =>
+      Engine.dnnComputing.invokeAndWait2((0 until 1).map(i =>
         () => {
           println(s"${Thread.currentThread().getId}")
           model.training()

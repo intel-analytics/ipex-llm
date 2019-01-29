@@ -33,6 +33,7 @@ import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.utils.intermediate.IRGraph
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
@@ -255,19 +256,19 @@ object DistriOptimizer extends AbstractOptimizer {
               val localCriterion = cached.localCriterions(i)
               val input = miniBatchBuffer(i).getInput()
               val target = miniBatchBuffer(i).getTarget()
-              Engine.getEngineType() match {
-                case MklBlas =>
+
+              if (Engine.getEngineType() == MklBlas || localModel.isInstanceOf[IRGraph[T]]) {
+                val output = localModel.forward(input)
+                lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
+                val errors = localCriterion.backward(output, target)
+                localModel.backward(input, errors)
+              } else {
+                Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
                   val output = localModel.forward(input)
                   lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
                   val errors = localCriterion.backward(output, target)
                   localModel.backward(input, errors)
-                case MklDnn =>
-                  Engine.computing.invokeAndWait2(Array(0).map(_ => () => {
-                    val output = localModel.forward(input)
-                    lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
-                    val errors = localCriterion.backward(output, target)
-                    localModel.backward(input, errors)
-                  }))
+                }))
               }
               cached.moduleTimeList(i + pre) = System.nanoTime() - trainStart + weightSyncTime
               i
@@ -580,8 +581,8 @@ object DistriOptimizer extends AbstractOptimizer {
       Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
-        if (Engine.getEngineType() == MklDnn) {
-          Engine.computing.invokeAndWait2((0 until _subModelNumber).map(i =>
+        if (Engine.getEngineType() == MklDnn && !localModel.isInstanceOf[IRGraph[T]]) {
+          Engine.dnnComputing.invokeAndWait2((0 until _subModelNumber).map(i =>
             () => {
               localModel match {
                 case container: MklDnnContainer => container.compile(TrainingPhase)

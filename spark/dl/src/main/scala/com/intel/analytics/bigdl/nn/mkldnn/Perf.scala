@@ -86,7 +86,7 @@ object Perf {
 
       val criterion = CrossEntropyCriterion()
 
-      Engine.computing.invokeAndWait2(Array(1).map(_ => () => {
+      Engine.dnnComputing.invokeAndWait2(Array(1).map(_ => () => {
         if (training) {
           if (model.isInstanceOf[MklDnnContainer]) {
             model.asInstanceOf[MklDnnContainer]
@@ -110,7 +110,7 @@ object Perf {
       while (iteration < iterations) {
         val start = System.nanoTime()
 
-        Engine.computing.invokeAndWait2(Array(1).map(_ => () => {
+        Engine.dnnComputing.invokeAndWait2(Array(1).map(_ => () => {
           val output = model.forward(input)
 
           if (training) {

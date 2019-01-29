@@ -35,10 +35,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
         Affinity.getAffinity()
       })).map(_.get()).toArray
 
-    threadPool.invokeAndWait2((0 until poolSize).map(i =>
-      () => {
-        ThreadPool.setThreadsOfBackend(MKL.getNumThreads)
-      }))
+    threadPool.setMKLThreadOfMklDnnBackend(ompSize)
 
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
