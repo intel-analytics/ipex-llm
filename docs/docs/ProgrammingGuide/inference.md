@@ -3,16 +3,17 @@
 ## Overview
 
 Inference is a package in Analytics Zoo aiming to provide high level APIs to speed-up development. It 
-allows user to conveniently use pre-trained models from Analytics Zoo, Tensorflow and Caffe.
-Inference provides multiple Java/Scala interfaces.
-
+allows user to conveniently use pre-trained models from Analytics Zoo, Caffe, Tensorflow and OpenVINO Intermediate Representation(IR).
+Inference provides multiple Scala interfaces.
 
 
 ## Highlights
 
-1. Easy-to-use java/scala API for loading and prediction with deep learning models.
+1. Easy-to-use APIs for loading and prediction with deep learning models of Analytics Zoo, Caffe, Tensorflow and OpenVINO Intermediate Representation(IR).
 
-2. Support transformation of various input data type, thus supporting future prediction tasks
+2. Support transformation of various input data type, thus supporting future prediction tasks.
+
+3. Transparently support the OpenVINO toolkit, which deliver a significant boost for inference speed ([up to 19.9x](https://software.intel.com/en-us/blogs/2018/05/15/accelerate-computer-vision-from-edge-to-cloud-with-openvino-toolkit)).
 
 ## Java Example
 
@@ -35,15 +36,15 @@ List<List<JTensor>> result = model.predict(inputList);
 ## Scala Example
 
 ```scala
-import com.intel.analytics.zoo.pipeline.inference.FloatInferenceModel
+import com.intel.analytics.zoo.pipeline.inference.InferenceModel
 
-class TextClassificationModel(var model: AbstractModule[Activity, Activity, Float],
-                                @transient var predictor: LocalPredictor[Float]) extends FloatInferenceModel {
-                                
+class TextClassificationModel extends InferenceModel {
+
 }
 
-TextClassificationModel model = new TextClassificationModel(model, predictor)
-val result = model.predict(inputList)
+val model = new TextClassificationModel()
+model.doLoad(modelPath, weightPath)
+val result = model.doPredict(inputList)
 
 ```
 
