@@ -59,6 +59,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
   "mkldnn thread affinity binding" should "not influence other threads" in {
     System.setProperty("bigdl.engineType", "mkldnn")
     System.setProperty("bigdl.localMode", "true")
+    Engine.reset
     Engine.init
 
     Engine.default.invokeAndWait( (0 until Engine.default.getPoolSize).map(i => () => {
