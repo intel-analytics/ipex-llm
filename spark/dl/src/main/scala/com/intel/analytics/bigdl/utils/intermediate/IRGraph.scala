@@ -67,10 +67,8 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("forward not supported, Please build graph first")
     }
-    Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
-      initFwdPrimitives(input)
-      output = graph.updateOutput(input)
-    }))
+    initFwdPrimitives(input)
+    output = graph.updateOutput(input)
     output
   }
 
@@ -78,10 +76,8 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
-      initBwdPrimitives()
-      gradInput = graph.updateGradInput(input, gradOutput)
-    }))
+    initBwdPrimitives()
+    gradInput = graph.updateGradInput(input, gradOutput)
     gradInput
   }
 
@@ -89,10 +85,8 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
-      initGradWPrimitives()
-      graph.accGradParameters(input, gradOutput)
-    }))
+    initGradWPrimitives()
+    graph.accGradParameters(input, gradOutput)
   }
 
   def build(): this.type = {
