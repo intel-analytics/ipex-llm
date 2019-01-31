@@ -255,10 +255,20 @@ object DistriOptimizer extends AbstractOptimizer {
               val localCriterion = cached.localCriterions(i)
               val input = miniBatchBuffer(i).getInput()
               val target = miniBatchBuffer(i).getTarget()
-              val output = localModel.forward(input)
-              lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
-              val errors = localCriterion.backward(output, target)
-              localModel.backward(input, errors)
+
+              if (Engine.getEngineType() == MklBlas) {
+                val output = localModel.forward(input)
+                lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
+                val errors = localCriterion.backward(output, target)
+                localModel.backward(input, errors)
+              } else {
+                Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+                  val output = localModel.forward(input)
+                  lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
+                  val errors = localCriterion.backward(output, target)
+                  localModel.backward(input, errors)
+                }))
+              }
               cached.moduleTimeList(i + pre) = System.nanoTime() - trainStart + weightSyncTime
               i
             }
@@ -570,12 +580,16 @@ object DistriOptimizer extends AbstractOptimizer {
       Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
-        localModel match {
-          case container: MklDnnContainer => container.compile(TrainingPhase)
-          case graph: DnnGraph => graph.compile(TrainingPhase)
-          case _ =>
+        if (Engine.getEngineType() == MklDnn) {
+          Engine.dnnComputing.invokeAndWait2((0 until _subModelNumber).map(i =>
+            () => {
+              localModel match {
+                case container: MklDnnContainer => container.compile(TrainingPhase)
+                case graph: DnnGraph => graph.compile(TrainingPhase)
+                case _ =>
+              }
+            }))
         }
-        // differentiate partition models from each other by partition ID
         setModelId(localModel, partitionId)
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
