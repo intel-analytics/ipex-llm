@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.mkldnn.{Equivalent, HeapData}
 import com.intel.analytics.bigdl.{Module, nn, utils}
 import com.intel.analytics.bigdl.nn.{Graph, Reshape, StaticGraph}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -85,8 +85,9 @@ class IRGraphSpec extends BigDLSpecHelper {
   }
 
   "Convert IRgraph to Dnn or Blas Graph" should "be correct" in {
-    val input = Tensor[Float](2, 1, 28, 28).rand()
-    val gradOutput = Tensor[Float](2, 50, 4, 4).rand()
+    RandomGenerator.RNG.setSeed(1000)
+    val input = Tensor[Float](2, 1, 28, 28).rand(-1, 1)
+    val gradOutput = Tensor[Float](2, 50, 4, 4).rand(-1, 1)
 
     RandomGenerator.RNG.setSeed(1000)
     utils.Engine.setEngineType(MklBlas)
@@ -102,13 +103,14 @@ class IRGraphSpec extends BigDLSpecHelper {
     val outDnn = irDnn.forward(input)
     val gradInputDnn = irDnn.backward(input, gradOutput).toTensor[Float]
 
-    outDnn should be(outBlas)
-    gradInputDnn should be(gradInputBlas)
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
   }
 
   "Convert IRgraph to Dnn or Blas Graph with 2 dimentions output" should "be correct" in {
-    val input = Tensor[Float](2, 1, 28, 28).rand()
-    val gradOutput = Tensor[Float](2, 10).rand()
+    RandomGenerator.RNG.setSeed(1000)
+    val input = Tensor[Float](2, 1, 28, 28).rand(-1, 1)
+    val gradOutput = Tensor[Float](2, 10).rand(-1, 1)
     RandomGenerator.RNG.setSeed(1000)
     utils.Engine.setEngineType(MklBlas)
     val irBlas = modelIR2()
@@ -123,13 +125,15 @@ class IRGraphSpec extends BigDLSpecHelper {
     val outDnn = irDnn.forward(input)
     val gradInputDnn = irDnn.backward(input, gradOutput).toTensor[Float]
 
-    outDnn should be(outBlas)
-    gradInputDnn should be(gradInputBlas)
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
   }
 
   "Convert IRgraph with two inputs to Dnn or Blas Graph" should "be correct" in {
-    val input = T(Tensor[Float](2, 1, 28, 28).rand(), Tensor[Float](2, 4).rand())
-    val gradOutput = Tensor[Float](2, 14).rand()
+    RandomGenerator.RNG.setSeed(1000)
+    val input = T(Tensor[Float](2, 1, 28, 28).rand(-1, 1), Tensor[Float](2, 4)
+      .rand(-1, 1))
+    val gradOutput = Tensor[Float](2, 14).rand(-1, 1)
 
     RandomGenerator.RNG.setSeed(1000)
     utils.Engine.setEngineType(MklBlas)
@@ -145,8 +149,10 @@ class IRGraphSpec extends BigDLSpecHelper {
     val outDnn = irDnn.forward(input)
     val gradInputDnn = irDnn.backward(input, gradOutput).toTable
 
-    outDnn should be(outBlas)
-    gradInputDnn.get[Tensor[Float]](1) should be(gradInputBlas.get[Tensor[Float]](1))
-    gradInputDnn.get[Tensor[Float]](2) should be(gradInputBlas.get[Tensor[Float]](2))
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.get[Tensor[Float]](1).get,
+      gradInputBlas.get[Tensor[Float]](1).get, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.get[Tensor[Float]](2).get,
+      gradInputBlas.get[Tensor[Float]](2).get, 1e-4) should be (true)
   }
 }

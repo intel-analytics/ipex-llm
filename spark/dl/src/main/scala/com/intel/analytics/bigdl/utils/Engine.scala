@@ -220,8 +220,20 @@ object Engine {
   // Thread pool for layer use
   @volatile private var _model: ThreadPool = new ThreadPool(1)
 
-  // Thread pool for read data
-  @volatile private var _io: ThreadPool = null
+  // This thread is mainly for mkldnn library.
+  // Because if we use the parent thread directly, there will be two bugs,
+  //   1. The child threads forked from parent thread will be bound to core 0
+  //      because of the affinity settings.
+  //   2. The native thread has some unknown thread local variables. So if
+  //      the parent thread exits and is recreated, such as the thread from
+  //      Executors.newFixedThreadPool. The whole app will be segment fault.
+  // The parent thread means the main thread (Local Mode) or worker thread of
+  // `mapPartition` (Distributed Mode).
+  // --------------------------------------------------------------------------
+  // We will only use the `threadPool` in ThreadPool, which is a ExecutorService.
+  // For `context` in ThreadPool, it is the called thread when poolSize is 1.
+  // So many usages of that thread, we will not change it for now.
+  val dnnComputing: ThreadPool = new ThreadPool(1)
 
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
@@ -321,23 +333,11 @@ object Engine {
     _default
   }
 
-  private[bigdl] def io: ThreadPool = {
-    if (_io == null) {
-      throw new IllegalStateException(s"Engine.init: Thread engine is not " +
-        s"initialized. $NOT_INIT_ERROR")
-    }
-    _io
-  }
-
   private def initThreadPool(core : Int) : Unit = {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
       (core * 50).toString).toInt
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
       _default = new ThreadPool(defaultPoolSize)
-    }
-
-    if (_io == null) {
-      _io = new ThreadPool(core * 50)
     }
 
     // for dnn model we should set the pool size to 1 also.
@@ -350,7 +350,13 @@ object Engine {
     }
     _model.setMKLThread(MKL.getMklNumThreads)
 
-    ThreadPool.setThreadsOfBackend(MKL.getMklNumThreads)
+    // do two things, set number of threads for omp thread pool and set the affinity
+    // only effects the `threadPool` and `computing.invoke/invokeAndWait` will not
+    // be effected. And affinity will not effect the other threads except
+    // this thread and the omp threads forked from computing.
+    if (engineType == MklDnn) {
+      dnnComputing.setMKLThreadOfMklDnnBackend(MKL.getMklNumThreads)
+    }
   }
 
   /**
@@ -545,9 +551,7 @@ object Engine {
     val threadsNumber = System.getProperty("bigdl.mklNumThreads", default.toString)
     System.setProperty("bigdl.mklNumThreads", s"$threadsNumber")
 
-
     System.setProperty("bigdl.disable.mklBlockTime", "true")
     System.setProperty("bigdl.coreNumber", "1")
-    System.setProperty("bigdl.utils.Engine.defaultPoolSize", "1")
   }
 }
