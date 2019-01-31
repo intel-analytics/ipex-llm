@@ -131,7 +131,7 @@ class IRGraphSpec extends BigDLSpecHelper {
 
   "Convert IRgraph with two inputs to Dnn or Blas Graph" should "be correct" in {
     RandomGenerator.RNG.setSeed(1000)
-    val input = T(Tensor[Float](2, 1, 28, 28).rand(), Tensor[Float](2, 4)
+    val input = T(Tensor[Float](2, 1, 28, 28).rand(-1, 1), Tensor[Float](2, 4)
       .rand(-1, 1))
     val gradOutput = Tensor[Float](2, 14).rand(-1, 1)
 
