@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
-import com.google.common.util.concurrent.MoreExecutors
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import com.intel.analytics.bigdl.mkl.{MklDnn => BackendMklDnn}
@@ -48,7 +47,15 @@ class ThreadPool(private var poolSize: Int) {
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
     if (poolSize == 1) {
-      threadPool = MoreExecutors.sameThreadExecutor()
+      threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
+        override def newThread(r: Runnable): Thread = {
+          val t = Executors.defaultThreadFactory().newThread(r)
+          t.setName("single-thread-computing")
+          t.setDaemon(true)
+          t
+        }
+      })
+
       singleThreadPool
     } else {
       new ExecutionContext {
@@ -56,6 +63,7 @@ class ThreadPool(private var poolSize: Int) {
         threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
+            t.setName("default-thread-computing")
             t.setDaemon(true)
             t
           }
@@ -79,12 +87,29 @@ class ThreadPool(private var poolSize: Int) {
    * @return
    */
   def setMKLThread(size: Int): this.type = this.synchronized {
+    require(MKL.isMKLLoaded)
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
-      ThreadPool.setThreadsOfBackend(size)
+      MKL.setNumThreads(size)
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
+    this
+  }
+
+  def setMKLThreadOfMklDnnBackend(size: Int): this.type = this.synchronized {
+    mklPoolSize = Some(size)
+
+
+    this.invokeAndWait2((0 until 1).map(_ => () => {
+      require(MKL.isMKLLoaded)
+      require(BackendMklDnn.isLoaded)
+
+      MKL.setNumThreads(size)
+      BackendMklDnn.setNumThreads(size)
+      Affinity.setOmpAffinity()
+    }))
+
     this
   }
 
@@ -214,15 +239,5 @@ object ThreadPool {
   }
 
   private val logger = Logger.getLogger(getClass)
-
-  def setThreadsOfBackend(size: Int): Unit = {
-    require(MKL.isMKLLoaded)
-    MKL.setNumThreads(size)
-    if (System.getProperty("bigdl.engineType") == "mkldnn") {
-      require(BackendMklDnn.isLoaded)
-      BackendMklDnn.setNumThreads(size)
-      Affinity.setOmpAffinity()
-    }
-  }
 }
 
