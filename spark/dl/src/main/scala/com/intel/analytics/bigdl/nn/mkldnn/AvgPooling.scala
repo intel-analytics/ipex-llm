@@ -33,8 +33,8 @@ class AvgPooling(
   @transient private var fwdPD: Long = _
 
   // reminder: ceilMode default value is true,
-  // but in blas SpatailMaxPooling, default ceilMode is false
-  var ceilMode = true
+  // but in blas SpatialMaxPooling, default ceilMode is false
+  private var ceilMode = true
 
   /**
    * set ceil mode

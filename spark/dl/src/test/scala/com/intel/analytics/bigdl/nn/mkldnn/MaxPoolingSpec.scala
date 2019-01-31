@@ -30,14 +30,13 @@ class MaxPoolingSpec extends BigDLSpecHelper {
   "Max Pooling test1" should "be correct" in {
     val batchSize = 2
     val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
 
     val pad = -1
     RNG.setSeed(100)
     val pool = MaxPooling(3, 3, 2, 2, padH = pad, padW = pad)
     RNG.setSeed(100)
     val layer = SpatialMaxPooling[Float](3, 3, 2, 2, padH = pad, padW = pad).ceil()
-
-    val output2 = layer.forward(input).toTensor[Float]
 
     val seq = Sequential()
     seq.add(ReorderMemory(HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw),
@@ -47,7 +46,21 @@ class MaxPoolingSpec extends BigDLSpecHelper {
       HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw)))
     seq.compile(Phase.TrainingPhase, Array(HeapData(Array(batchSize, 480, 28, 28),
       Memory.Format.nchw)))
+
+    for (i <- 0 to 3) {
+      input.rand()
+      gradOutput.rand()
+
+      seq.forward(input)
+      seq.backward(input, gradOutput)
+
+      layer.forward(input)
+      layer.backward(input, gradOutput)
+    }
+
     val output1 = seq.forward(input)
+    val output2 = layer.forward(input).toTensor[Float]
+
     output1 should be(output2)
 
     val grad2 = layer.backward(input, output2).toTensor[Float]
@@ -58,14 +71,13 @@ class MaxPoolingSpec extends BigDLSpecHelper {
   "Convert max pooling with ceilMode to dnn layer" should "be correct" in {
     val batchSize = 2
     val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
 
     RNG.setSeed(100)
     val layer = SpatialMaxPooling[Float](3, 3, 2, 2).ceil()
 
     val irelement = BlasToIR[Float].convertLayer(layer)
     val pool = IRToDnn[Float].convertLayer(irelement)
-
-    val output2 = layer.forward(input).toTensor[Float]
 
     val seq = Sequential()
     seq.add(ReorderMemory(HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw),
@@ -75,7 +87,20 @@ class MaxPoolingSpec extends BigDLSpecHelper {
       HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw)))
     seq.compile(Phase.TrainingPhase, Array(HeapData(Array(batchSize, 480, 28, 28),
       Memory.Format.nchw)))
+
+    for (i <- 0 to 3) {
+      input.rand()
+      gradOutput.rand()
+
+      seq.forward(input)
+      seq.backward(input, gradOutput)
+
+      layer.forward(input)
+      layer.backward(input, gradOutput)
+    }
+
     val output1 = seq.forward(input)
+    val output2 = layer.forward(input).toTensor[Float]
     output1 should be(output2)
 
     val grad2 = layer.backward(input, output2).toTensor[Float]
@@ -86,6 +111,7 @@ class MaxPoolingSpec extends BigDLSpecHelper {
   "Max Pooling test2" should "be correct" in {
     val batchSize = 2
     val input = Tensor[Float](batchSize, 64, 112, 112).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
 
     RNG.setSeed(100)
     val pool = MaxPooling(3, 3, 2, 2)
