@@ -145,6 +145,9 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     module.evaluate()
     this
   }
+
+  override def release(): Unit = module.release()
+
 }
 
 
