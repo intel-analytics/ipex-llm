@@ -73,7 +73,7 @@ class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
 
       override def next(): MiniBatch[Float] = {
         val count = new AtomicInteger(0)
-        val batch = Engine.io.invokeAndWait((0 until parallelism).map(tid => () => {
+        val batch = Engine.default.invokeAndWait((0 until parallelism).map(tid => () => {
           var position = 0
           var record = 0
           while (iterators(tid).hasNext && {

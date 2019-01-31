@@ -140,7 +140,15 @@ abstract class AbstractOptimizer {
               val miniBatch = batch.slice(offset, length)
               val input = miniBatch.getInput()
               val target = miniBatch.getTarget()
-              val output = workingModels(b).forward(input)
+              if (Engine.getEngineType() == MklDnn) {
+                Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+                  workingModels(b).forward(input)
+                }))
+              } else {
+                workingModels(b).forward(input)
+              }
+
+              val output = workingModels(b).output
               val validatMethods = vMethodsArr(b).get
               validatMethods.map(validation => {
                 validation(output, target)
