@@ -85,8 +85,9 @@ class IRGraphSpec extends BigDLSpecHelper {
   }
 
   "Convert IRgraph to Dnn or Blas Graph" should "be correct" in {
-    val input = Tensor[Float](2, 1, 28, 28).rand()
-    val gradOutput = Tensor[Float](2, 50, 4, 4).rand()
+    RandomGenerator.RNG.setSeed(1000)
+    val input = Tensor[Float](2, 1, 28, 28).rand(-1, 1)
+    val gradOutput = Tensor[Float](2, 50, 4, 4).rand(-1, 1)
 
     RandomGenerator.RNG.setSeed(1000)
     utils.Engine.setEngineType(MklBlas)
@@ -107,8 +108,9 @@ class IRGraphSpec extends BigDLSpecHelper {
   }
 
   "Convert IRgraph to Dnn or Blas Graph with 2 dimentions output" should "be correct" in {
-    val input = Tensor[Float](2, 1, 28, 28).rand()
-    val gradOutput = Tensor[Float](2, 10).rand()
+    RandomGenerator.RNG.setSeed(1000)
+    val input = Tensor[Float](2, 1, 28, 28).rand(-1, 1)
+    val gradOutput = Tensor[Float](2, 10).rand(-1, 1)
     RandomGenerator.RNG.setSeed(1000)
     utils.Engine.setEngineType(MklBlas)
     val irBlas = modelIR2()
@@ -128,8 +130,10 @@ class IRGraphSpec extends BigDLSpecHelper {
   }
 
   "Convert IRgraph with two inputs to Dnn or Blas Graph" should "be correct" in {
-    val input = T(Tensor[Float](2, 1, 28, 28).rand(), Tensor[Float](2, 4).rand())
-    val gradOutput = Tensor[Float](2, 14).rand()
+    RandomGenerator.RNG.setSeed(1000)
+    val input = T(Tensor[Float](2, 1, 28, 28).rand(), Tensor[Float](2, 4)
+      .rand(-1, 1))
+    val gradOutput = Tensor[Float](2, 14).rand(-1, 1)
 
     RandomGenerator.RNG.setSeed(1000)
     utils.Engine.setEngineType(MklBlas)
