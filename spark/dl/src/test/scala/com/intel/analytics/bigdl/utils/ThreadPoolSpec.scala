@@ -24,7 +24,6 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   "mkldnn backend" should "create omp threads and bind correctly" in {
     com.intel.analytics.bigdl.mkl.MklDnn.isLoaded
-    System.setProperty("bigdl.engineType", "mkldnn")
     val poolSize = 1
     val ompSize = 4
 
@@ -48,7 +47,6 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
       Affinity.setAffinity(affinities(i))
     }))
 
-    System.clearProperty("bigdl.engineType")
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
         Affinity.getAffinity.zipWithIndex.foreach(ai => ai._1 should be (ai._2))
@@ -57,37 +55,22 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
   }
 
   "mkldnn thread affinity binding" should "not influence other threads" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
-    System.setProperty("bigdl.localMode", "true")
-    Engine.reset
-    Engine.init
+    val poolSize = 1
+    val ompSize = 4
 
-    Engine.default.invokeAndWait( (0 until Engine.default.getPoolSize).map(i => () => {
-      Affinity.getAffinity.zipWithIndex.foreach(ai => ai._1 should be (ai._2))
-    }))
+    val threadPool = new ThreadPool(poolSize)
+    threadPool.setMKLThreadOfMklDnnBackend(ompSize)
 
-    // backup the affinities
-    val affinities = Engine.default.invokeAndWait2( (0 until Engine.default.getPoolSize).map(i =>
+    threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
-        println(Affinity.getAffinity.mkString("\t"))
-        Affinity.getAffinity()
-      })).map(_.get()).toArray
+        Affinity.getAffinity.length should be (1)
+        Affinity.getAffinity.head should be (0)
+      }))
 
-    Engine.default.invokeAndWait2( (0 until Engine.default.getPoolSize).map(i => () => {
-      Affinity.getAffinity.length should be (Runtime.getRuntime.availableProcessors())
-      Affinity.getAffinity.zipWithIndex.foreach(ai => ai._1 should be (ai._2))
+    val threadPool2 = new ThreadPool(poolSize)
+    threadPool2.invokeAndWait2( (0 until poolSize).map(i => () => {
+      println(Affinity.getAffinity.mkString("\t"))
+      Affinity.getAffinity.length should not be (1)
     }))
-
-    Engine.default.invokeAndWait( (0 until Engine.default.getPoolSize).map(i => () => {
-      Affinity.getAffinity.zipWithIndex.foreach(ai => ai._1 should be (ai._2))
-    }))
-
-    // set back the affinities
-    Engine.default.invokeAndWait2( (0 until Engine.default.getPoolSize).map( i => () => {
-      Affinity.setAffinity(affinities(i))
-    }))
-
-    System.clearProperty("bigdl.engineType")
-    System.clearProperty("bigdl.localMode")
   }
 }
