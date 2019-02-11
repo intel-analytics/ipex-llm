@@ -788,3 +788,21 @@ class ResizeBilinear(ZooKerasLayer):
                                              dim_ordering,
                                              list(input_shape) if input_shape else None,
                                              **kwargs)
+
+
+class SelectTable(ZooKerasLayer):
+    """
+    Creates a module that takes a list of JTensors as input and outputs the element at index `index`
+
+    # Arguments
+    index: the index to be selected. 0-based index
+    input_shape: a list of shape tuples, not including batch.
+
+    >>> selectTable = SelectTable(0, input_shape=[[2, 3], [5, 7]])
+    creating: createZooKerasSelectTable
+    """
+    def __init__(self, index, input_shape=None, **kwargs):
+        super(SelectTable, self).__init__(None,
+                                          index,
+                                          list(input_shape) if input_shape else None,
+                                          **kwargs)
