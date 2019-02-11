@@ -1255,4 +1255,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     inputShape: JList[Int] = null): Max[T] = {
     Max[T](dim, numInputDims, returnValue, toScalaShape(inputShape))
   }
+
+  def createZooKerasSelectTable(
+    index: Int,
+    inputShape: JList[JList[Int]] = null): SelectTable[T] = {
+    SelectTable[T](index, toScalaMultiShape(inputShape))
+  }
 }
