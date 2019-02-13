@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 
 MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytics-zoo
 
@@ -42,7 +42,7 @@ ENV JAVA_HOME                           /opt/jdk
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update && \
-    apt-get install -y --force-yes vim curl nano wget unzip maven git
+    apt-get install -y apt-utils vim curl nano wget unzip maven git
 #java
 RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
     gunzip jdk-8u152-linux-x64.tar.gz && \
@@ -50,10 +50,8 @@ RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.
     rm jdk-8u152-linux-x64.tar && \
     ln -s /opt/jdk1.8.0_152 /opt/jdk
 #python
-RUN apt-get install -y --force-yes software-properties-common python-software-properties python-pkg-resources && \
-    add-apt-repository -y ppa:jonathonf/python-2.7 && \
-    apt-get update && \
-    apt-get install -y --force-yes build-essential python python-setuptools python-dev && \
+RUN apt-get install -y python-minimal && \
+    apt-get install -y build-essential python python-setuptools python-dev && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python2 get-pip.py && \
     pip2 install --upgrade setuptools && \
