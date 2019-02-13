@@ -53,8 +53,9 @@ class SpatialConvolution(
     Array (nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
   }
 
-  // !!!important!!! this is for weight conversion. The weights in forward and backward is
-  // different.
+  // !!!important!!! this is for weight and input conversion.
+  // The weight in forward and updateGradInput is different.
+  // The input in updateOutput and accGradParameters is different too.
   // It's `lazy` so the reordermanager need not serialized.
   @transient private lazy val reorderManager = new ReorderManager
 
@@ -63,9 +64,11 @@ class SpatialConvolution(
   private[mkldnn] val gradWeight = new TensorMMap(weightShape)
   private[mkldnn] val gradBias = new TensorMMap(Array(nOutputPlane))
 
+  // The weight maybe have different format between updateOutput and updateGradInput
   private var weightForBackward: DnnTensor[Float] = _
   private var weightForBackwardMemoryData: MemoryData = _
 
+  // The input maybe have different format between updateOutput and accGradParameters
   private var inputForAcc: DnnTensor[Float] = _
   private var inputForAccMemoryData: MemoryData = _
 
@@ -205,7 +208,7 @@ class SpatialConvolution(
       MemoryData.operationWant(forwardPrimDesc, x)
     }
 
-    // by default, the initial weight is oihw / goihw format.
+    // The weight on heap should be oihw or goihw format and should reorder it first when using.
     val defaultWeightLayout = if (nGroup == 1) {
       Memory.Format.oihw
     } else {
@@ -250,8 +253,8 @@ class SpatialConvolution(
     updateWithNewTensor(updateOutputTensors, 0, input)
 
     if (isTraining()) {
-      weight.syncToNative()
-      bias.syncToNative()
+      weight.sync()
+      bias.sync()
     }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
@@ -290,6 +293,7 @@ class SpatialConvolution(
 
     reorderManager.register(weight.heapData, realWei)
 
+    // computing gradient input doesn't need the input
     val srcs = Array(realDiffDst.getPrimitive(runtime), realWei.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realDiffSrc.getPrimitive(runtime))
@@ -307,6 +311,7 @@ class SpatialConvolution(
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    // if needed, reorder manager will reorder the wegiht to mkldnn wants
     weightForBackward = reorderManager.infer(Array(weight.heapData),
       Array(weightForBackwardMemoryData), weight.dense).asInstanceOf[DnnTensor[Float]]
 
@@ -351,18 +356,19 @@ class SpatialConvolution(
         MemoryData.operationWant(gradWeightPrimDesc, x)
       }
 
-    // by default, the initial weight is oihw / goihw format.
+    // gradient weight should be the same format with weight
     val defaultWeightLayout = if (nGroup == 1) {
       Memory.Format.oihw
     } else {
       Memory.Format.goihw
     }
 
-    gradWeight.setMemoryData(
-      HeapData(gradWeight.dense.size(), defaultWeightLayout), realWei, runtime)
-    gradBias.setMemoryData(
-      HeapData(gradBias.dense.size(), Memory.Format.x), bis, runtime)
+    gradWeight.setMemoryData(realWei,
+      HeapData(gradWeight.dense.size(), defaultWeightLayout), runtime)
+    gradBias.setMemoryData(bis,
+      HeapData(gradBias.dense.size(), Memory.Format.x), runtime)
 
+    // save the real input format accGradParameters wants, and register the reorder operation
     inputForAccMemoryData = realSrc
     reorderManager.register(inputFormats()(0), realSrc)
 
@@ -381,8 +387,10 @@ class SpatialConvolution(
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    // if needed, reorder manager will reorder input to mkldnn wants
     inputForAcc = reorderManager.infer(Array(inputFormats()(0)),
       Array(inputForAccMemoryData), input).asInstanceOf[DnnTensor[Float]]
+
     if (updateGradWTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(inputForAcc.asInstanceOf[Tensor[Float]])
@@ -398,8 +406,8 @@ class SpatialConvolution(
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
 
-    gradWeight.syncToHeap()
-    gradBias.syncToHeap()
+    gradWeight.sync()
+    gradBias.sync()
 
     if (null != wRegularizer) {
       wRegularizer.accRegularization(weight.dense, gradWeight.dense, scaleW)
@@ -418,6 +426,7 @@ class SpatialConvolution(
 
   }
 
+  // we need not implement it, because the grad parameters will clean by mkldnn
   override def zeroGradParameters(): Unit = {
   }
 

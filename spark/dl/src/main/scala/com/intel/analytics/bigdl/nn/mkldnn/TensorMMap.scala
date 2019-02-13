@@ -27,12 +27,6 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, FloatType, Tensor}
  * dense tensor to native tensor before `submit`. For the gradient, we should sync the native
  * tensor to dense tensor after `submit`.
  *
- * The `setMemoryData` requires the elements number should be consistent. If the shape is not,
- * it will reshape first.
- *
- * The TensorMMap has another attribute `_memoryData` and will not be determined when the blob created
- * It can be determined when we initialize the primitives.
- *
  * @param _size the shape of Tensor, such as Array(4, 3, 224, 224)
  */
 private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
@@ -44,42 +38,49 @@ private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
     _native.asInstanceOf[DnnTensor[T]]
   }
 
+  // the native DnnTensor. It's allocate at runtime when do primitive initialization.
+  // it has two benefits, the first is the clone will only clone one copy of weights and gradients
+  // before primitive initialized and the second is that we can determined the size, type, format
+  // when do initializing primitive.
   @transient private var _native: DnnTensor[_] = _
+
+  @transient private var _from: MemoryData = null
+  @transient private var _to: MemoryData = null
+  @transient private var _reorder: ReorderMemory = null
+
   @transient private var _heapData: HeapData = null
-  @transient private var _nativeData: NativeData = null
-  @transient private var _reorderForward: ReorderMemory = null
-  @transient private var _reorderBackward: ReorderMemory = null
 
   def heapData: HeapData = _heapData
 
-  /**
-   * it will copy the dense tensor to native tensor before `submit` reads the native tensor
-   */
-  def syncToNative(): Unit = {
-    _reorderForward.forward(this.dense).asInstanceOf[DnnTensor[Float]]
+  def sync(): Unit = {
+    require(_reorder != null && _native != null,
+      "you should initialize the native relevant resources first")
+    _from match {
+      case _: HeapData => _reorder.forward(this.dense)
+      case _: NativeData => _reorder.forward(this.native)
+    }
   }
 
-  /**
-   * it will copy the native tensor to dense tensor after `submit` updates the native tensor
-   */
-  def syncToHeap(): Unit = {
-    _reorderBackward.forward(this.native).asInstanceOf[Tensor[Float]]
-  }
+  def setMemoryData(from: MemoryData, to: MemoryData, runtime: MklDnnRuntime): Unit = {
+    require(_from == null && _to == null, "you only can set once the memory data")
+    _from = from
+    _to = to
 
-  def setMemoryData(dense: HeapData, native: NativeData, runtime: MklDnnRuntime): Unit = {
-    _heapData = dense
-    _nativeData = native
+    _reorder = ReorderMemory(to)
+    _reorder.setRuntime(runtime)
+    _reorder.initFwdPrimitives(Array(_from), InferencePhase)
 
-    _reorderForward = ReorderMemory(_nativeData)
-    _reorderForward.setRuntime(runtime)
-    _reorderForward.initFwdPrimitives(Array(_heapData), InferencePhase)
-
-    this._native = _reorderForward.updateOutput(this.dense).asInstanceOf[DnnTensor[Float]]
-
-    _reorderBackward = ReorderMemory(_heapData)
-    _reorderBackward.setRuntime(runtime)
-    _reorderBackward.initFwdPrimitives(Array(_nativeData), InferencePhase)
-    _reorderBackward.output.toTensor[Float].set(this.dense)
+    _from match {
+      case _: HeapData =>
+        this._native = _reorder.updateOutput(this.dense).asInstanceOf[DnnTensor[Float]]
+        _heapData = _from.asInstanceOf[HeapData]
+      case _: NativeData =>
+        // the native tensor size should be determined by the memory description
+        // other wise will be segment fault
+        this._native = DnnTensor[Float](Memory.GetPaddingShape(_from.getMemoryDescription()))
+        _reorder.output.toTensor[Float].set(this.dense)
+        _heapData = _to.asInstanceOf[HeapData]
+    }
   }
 
   def zero(): Unit = {

@@ -36,6 +36,9 @@ class SerializeModelSpec extends FlatSpec with Matchers {
     model.save(path.toString, true)
     val loaded = Module.load[Float](path.toString)
 
+    val length = Files.size(path) / 1024.0 / 1024.0
+    length should be < 1500.0
+
     println(s"delete the model file ${path.toString}")
     Files.deleteIfExists(path)
   }

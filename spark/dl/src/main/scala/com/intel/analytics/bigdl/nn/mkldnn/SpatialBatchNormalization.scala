@@ -195,10 +195,21 @@ class SpatialBatchNormalization(
     }
 
     if (this.weightAndBias.native == null) {
-      this.runningMean.setMemoryData(HeapData(this.runningMean.size(), Memory.Format.x),
-        runningMean, runtime)
-      this.runningVariance.setMemoryData(HeapData(this.runningVariance.size(), Memory.Format.x),
-        runningVariance, runtime)
+      if (phase == InferencePhase) {
+        this.runningMean.setMemoryData(
+          HeapData(this.runningMean.size(), Memory.Format.x), runningMean, runtime)
+        this.runningVariance.setMemoryData(
+          HeapData(this.runningVariance.size(), Memory.Format.x), runningVariance, runtime)
+        // for inference, we must copy the heap memory to native first.
+        this.runningMean.sync()
+        this.runningVariance.sync()
+      } else {
+        this.runningMean.setMemoryData(runningMean,
+          HeapData(this.runningMean.size(), Memory.Format.x), runtime)
+        this.runningVariance.setMemoryData(runningVariance,
+          HeapData(this.runningVariance.size(), Memory.Format.x), runtime)
+      }
+      // for runningMean and runningVariance, we should copy them to native at first
       this.weightAndBias.setMemoryData(HeapData(this.weightAndBias.size(), Memory.Format.x),
         weightAndBias, runtime)
     }
@@ -234,7 +245,7 @@ class SpatialBatchNormalization(
     }
 
     if (this.isTraining()) {
-      weightAndBias.syncToNative()
+      weightAndBias.sync()
     } else {
       // we should re-computing the running mean and running variance.
       // FIXME should do it at `initFwdPrimitives`
@@ -254,8 +265,8 @@ class SpatialBatchNormalization(
       mean.axpby(1, momentum.toFloat, runningMean.native)
       variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
 
-      runningMean.syncToHeap()
-      runningVariance.syncToHeap()
+      runningMean.sync()
+      runningVariance.sync()
     }
 
     output
@@ -299,8 +310,8 @@ class SpatialBatchNormalization(
     updateGradInputPrimitives = Array(primitive)
     gradInput = initTensor(gradInputFormats()(0))
 
-    this.gradWeightAndBias.setMemoryData(
-      HeapData(this.gradWeightAndBias.size(), Memory.Format.x), gradWeightAndBias, runtime)
+    this.gradWeightAndBias.setMemoryData(gradWeightAndBias,
+      HeapData(this.gradWeightAndBias.size(), Memory.Format.x), runtime)
     this.gradWeightAndBias.zero()
 
     (_gradOutputFormats, gradInputFormats())
@@ -325,7 +336,7 @@ class SpatialBatchNormalization(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
-    gradWeightAndBias.syncToHeap()
+    gradWeightAndBias.sync()
 
     gradInput
   }

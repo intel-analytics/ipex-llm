@@ -139,8 +139,8 @@ class Linear(
     updateWithNewTensor(updateOutputTensors, 0, input)
 
     if (isTraining()) {
-      weight.syncToNative()
-      bias.syncToNative()
+      weight.sync()
+      bias.sync()
     }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
@@ -220,9 +220,9 @@ class Linear(
       MemoryData.operationWant(gradWeightPrimDesc, x)
     }
 
-    gradWeight.setMemoryData(HeapData(weightShape, weightLayout), realWei,
+    gradWeight.setMemoryData(realWei, HeapData(weightShape, weightLayout),
       runtime)
-    gradBias.setMemoryData(HeapData(bis.shape, Memory.Format.x), bis, runtime)
+    gradBias.setMemoryData(bis, HeapData(bis.shape, Memory.Format.x), runtime)
 
     gradWeight.zero()
     gradBias.zero()
@@ -274,8 +274,8 @@ class Linear(
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
 
-    gradWeight.syncToHeap()
-    gradBias.syncToHeap()
+    gradWeight.sync()
+    gradBias.sync()
 
     if (null != wRegularizer && scaleW != 0) {
       wRegularizer.accRegularization(weight.dense, gradWeight.dense, scaleW)

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -178,8 +179,8 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val runtime = new MklDnnRuntime
     val reorder = ReorderMemory(to)
     reorder.setRuntime(runtime)
-    reorder.initFwdPrimitives(Array(from), InferencePhase)
-    reorder.initBwdPrimitives(Array(to), InferencePhase)
+    reorder.initFwdPrimitives(Array(from), TrainingPhase)
+    reorder.initBwdPrimitives(Array(to), TrainingPhase)
 
     val input = Tensor[Float](Array(20, 1, 5, 5)).rand(-1, 1)
     val gradOutput = Tensor[Float](Array(24, 1, 5, 5)).rand(-1, 1)
@@ -188,53 +189,45 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     println(output.toTensor[Float].size().mkString("\t")) // here will be broken before fix
 
     // we should check the backward Ohwi8o to oihw
-    val gradInput = reorder.backward(input, gradOutput)
+    val gradInput = reorder.backward(input, output)
 
     println(reorder.gradInput.toTensor[Float].size().mkString("\t"))
 
     output.toTensor[Float].size().deep == Array(24, 1, 5, 5).deep should be (true)
     gradInput.toTensor[Float].size().deep == Array(20, 1, 5, 5).deep should be (true)
+
+    gradInput should be (input)
   }
 
   "lenet conv1" should "work correctly" in {
     val inputShape = Array(4, 1, 28, 28)
     val outputShape = Array(4, 20, 24, 24)
-
-    val model = Sequential()
-      .add(Input(inputShape, Memory.Format.nchw))
-      .add(SpatialConvolution(1, 20, 5, 5))
-      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
-
-    model.compile(TrainingPhase)
-
     val input = Tensor[Float](4, 1, 28, 28).rand(-1, 1)
     val gradOutput = Tensor[Float](outputShape).rand(-1, 1)
 
-    model.forward(input)
-    model.updateGradInput(input, gradOutput)
-    model.accGradParameters(input, gradOutput)
+    val blas = com.intel.analytics.bigdl.nn.SpatialConvolution(1, 20, 5, 5)
+    blas.forward(input)
+    blas.backward(input, gradOutput)
+
+    val dnn = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(SpatialConvolution(1, 20, 5, 5, initWeight = blas.weight, initBias = blas.bias))
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+
+    dnn.compile(TrainingPhase)
+
+    dnn.forward(input)
+    dnn.updateGradInput(input, gradOutput)
+    dnn.accGradParameters(input, gradOutput)
+
+    Equivalent.nearequals(dnn.output.toTensor, blas.output.toTensor, 1e-4) should be (true)
+    Equivalent.nearequals(dnn.gradInput.toTensor, blas.gradInput.toTensor, 1e-4) should be (true)
+
+    Equivalent.nearequals(dnn.getParameters()._1, blas.getParameters()._1, 1e-4) should be (true)
+    Equivalent.nearequals(dnn.getParameters()._2, blas.getParameters()._2, 1e-4) should be (true)
   }
 
-  "conv1" should "work correctly" in {
-    val conv = SpatialConvolution(1, 20, 5, 5)
-
-    val inputShape = Array(4, 1, 28, 28)
-    val outputShape = Array(4, 20, 24, 24)
-    val nativeData1 = NativeData(inputShape, Memory.Format.nChw8c)
-    val nativeData2 = NativeData(outputShape, Memory.Format.nChw8c)
-
-    conv.setRuntime(new MklDnnRuntime)
-    conv.initFwdPrimitives(Array(nativeData1), TrainingPhase)
-    conv.initBwdPrimitives(Array(nativeData2), TrainingPhase)
-    conv.initGradWPrimitives(Array(nativeData2), TrainingPhase)
-
-    val input = DnnTensor[Float](Array(4, 24, 28, 28))
-    val output = DnnTensor[Float](Array(4, 24, 24, 24))
-
-    conv.accGradParameters(input, output)
-  }
-
-  "nchw to nChw8c 2" should "work correctly" in {
+  "nchw to nChw8c" should "work correctly" in {
     val t1Shape = Array(4, 3, 224, 224)
     val t1 = Tensor[Float](4, 3, 224, 224).rand(-1, 1)
     val t1Format = HeapData(t1Shape, Memory.Format.nchw)
@@ -250,17 +243,13 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     reorder.initBwdPrimitives(Array(t2Format), TrainingPhase)
 
     reorder.forward(t1)
-    println(reorder.output.toTensor[Float].size().mkString("\t"))
-
     reorder.backward(t1, reorder.output)
-    println(reorder.gradInput.toTensor[Float].size().mkString("\t"))
 
     val reorder2 = ReorderMemory(t1Format, t2Format)
     reorder2.setRuntime(new MklDnnRuntime)
     reorder2.initFwdPrimitives(Array(t2Format), InferencePhase)
 
     reorder2.forward(reorder.output)
-    println("")
 
     reorder2.output.toTensor[Float] should be (t1)
   }
