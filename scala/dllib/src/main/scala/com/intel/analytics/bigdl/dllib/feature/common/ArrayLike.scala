@@ -23,6 +23,8 @@ private[zoo] abstract class ArrayLike[T: ClassTag] extends Serializable {
   def length: Int = throw new Error()
 
   def apply(i: Int): T = throw new Error()
+
+  def free(): Unit = {}
 }
 
 private[zoo] class ArrayLikeWrapper[T: ClassTag](array: Array[T]) extends ArrayLike[T] {

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.feature.pmem
 
-import com.intel.analytics.bigdl.dataset.ByteRecord
+import com.intel.analytics.bigdl.dataset.{ByteRecord, Sample}
 import com.intel.analytics.zoo.feature.DistributedFeatureSet
 import com.intel.analytics.zoo.feature.common.ArrayLike
 import org.apache.spark.rdd.RDD
@@ -64,6 +64,54 @@ private[zoo] case class ByteRecordArray(records: VarLenBytesArray,
   override def apply(i: Int): ByteRecord = {
     ByteRecord(records.get(i), label(i.toInt))
   }
+  override def free(): Unit = {
+    records.free()
+  }
+}
+
+private[zoo] class SampleConverter(
+    memoryType: MemoryType = PMEM) extends NativeArrayConverter[Sample[Float]] {
+
+  override def getBytesPerRecord(sample: Sample[Float]): Long = {
+    sample.getData().length * 4
+  }
+
+  override def toArray(
+      recordIterator: Iterator[Sample[Float]],
+      countPerPartition: Iterator[(Int, Long)]): Iterator[ArrayLike[Sample[Float]]] = {
+    val count = countPerPartition.next()
+    val nativeArray = new VarLenFloatsArray(count._1, count._2,
+          memoryType = memoryType)
+
+    val featureSizes = new Array[Array[Array[Int]]](count._1)
+    val labelSizes = new Array[Array[Array[Int]]](count._1)
+    var i = 0
+    while(recordIterator.hasNext) {
+      val data = recordIterator.next()
+      nativeArray.set(i, data.getData())
+      featureSizes(i) = data.getFeatureSize()
+      labelSizes(i) = data.getLabelSize()
+      i += 1
+    }
+    Iterator.single(SampleArray(nativeArray, featureSizes, labelSizes))
+  }
+}
+
+private[zoo] case class SampleArray(
+    samples: VarLenFloatsArray,
+    featureSizes: Array[Array[Array[Int]]],
+    labelSizes: Array[Array[Array[Int]]]) extends ArrayLike[Sample[Float]] {
+  override def length: Int = {
+    samples.recordNum
+  }
+
+  override def apply(i: Int): Sample[Float] = {
+    Sample[Float](samples.get(i), featureSizes(i), labelSizes(i))
+  }
+
+  override def free(): Unit = {
+    samples.free()
+  }
 }
 
 object PmemFeatureSet {
@@ -100,6 +148,9 @@ object PmemFeatureSet {
       case t if t == classOf[ByteRecord] =>
         rdd[ByteRecord](data.asInstanceOf[RDD[ByteRecord]],
           new ByteRecordConverter(memoryType)).asInstanceOf[DistributedFeatureSet[T]]
+      case t if t == classOf[Sample[Float]] =>
+        rdd[Sample[Float]](data.asInstanceOf[RDD[Sample[Float]]],
+          new SampleConverter(memoryType)).asInstanceOf[DistributedFeatureSet[T]]
       case _ =>
         throw new IllegalArgumentException(
           s"${implicitly[ClassTag[T]].runtimeClass} is not supported for now")

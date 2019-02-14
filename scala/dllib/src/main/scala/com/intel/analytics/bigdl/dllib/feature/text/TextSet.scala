@@ -35,6 +35,8 @@ import scala.io.Source
 import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.zoo.feature.FeatureSet
+import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
 import org.apache.spark.sql.SQLContext
 
 /**
@@ -224,8 +226,8 @@ object TextSet {
   /**
    * Create a DistributedTextSet from RDD of TextFeature.
    */
-  def rdd(data: RDD[TextFeature]): DistributedTextSet = {
-    new DistributedTextSet(data)
+  def rdd(data: RDD[TextFeature], memoryType: MemoryType = DRAM): DistributedTextSet = {
+    new DistributedTextSet(data, memoryType)
   }
 
   /**
@@ -363,7 +365,8 @@ object TextSet {
   def fromRelationPairs(
       relations: RDD[Relation],
       corpus1: TextSet,
-      corpus2: TextSet): DistributedTextSet = {
+      corpus2: TextSet,
+      memoryType: MemoryType = DRAM): DistributedTextSet = {
     val pairsRDD = Relations.generateRelationPairs(relations)
     require(corpus1.isDistributed, "corpus1 must be a DistributedTextSet")
     require(corpus2.isDistributed, "corpus2 must be a DistributedTextSet")
@@ -391,7 +394,7 @@ object TextSet {
       textFeature(TextFeature.sample) = Sample(feature, label)
       textFeature
     })
-    TextSet.rdd(res)
+    TextSet.rdd(res, memoryType)
   }
 
   /**
@@ -543,7 +546,8 @@ class LocalTextSet(var array: Array[TextFeature]) extends TextSet {
 /**
  * DistributedTextSet is comprised of RDD of TextFeature.
  */
-class DistributedTextSet(var rdd: RDD[TextFeature]) extends TextSet {
+class DistributedTextSet(var rdd: RDD[TextFeature],
+                         memoryType: MemoryType = DRAM) extends TextSet {
 
   override def transform(transformer: Preprocessing[TextFeature, TextFeature]): TextSet = {
     rdd = transformer(rdd)
@@ -563,11 +567,12 @@ class DistributedTextSet(var rdd: RDD[TextFeature]) extends TextSet {
   }
 
   override def toDataSet: DataSet[Sample[Float]] = {
-    DataSet.rdd(rdd.map(_[Sample[Float]](TextFeature.sample)))
+    FeatureSet.rdd(rdd.map(_[Sample[Float]](TextFeature.sample)),
+      memoryType)
   }
 
   override def randomSplit(weights: Array[Double]): Array[TextSet] = {
-    rdd.randomSplit(weights).map(TextSet.rdd)
+    rdd.randomSplit(weights).map(v => TextSet.rdd(v, this.memoryType))
   }
 
   override def generateWordIndexMap(
