@@ -26,10 +26,10 @@ if sys.version >= '3':
 class ConvLSTM2D(ZooKerasLayer):
     """
     Convolutional LSTM.
-    Data format currently supported for this layer is dim_ordering='th' (Channel First).
-    Border mode currently supported for this layer is 'same'.
+    Note that currently only 'same' padding is supported.
     The convolution kernel for this layer is a square kernel with equal strides 'subsample'.
-    The input of this layer should be 5D.
+    The input of this layer should be 5D, i.e. (samples, time, channels, rows, cols) and
+    dim_ordering='th' (Channel First) is expected.
 
     When you use this layer as the first layer of a model, you need to provide the argument
     input_shape (a shape tuple, does not include the batch dimension).
