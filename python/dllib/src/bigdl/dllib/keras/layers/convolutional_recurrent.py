@@ -87,3 +87,60 @@ class ConvLSTM2D(ZooKerasLayer):
                                          go_backwards,
                                          list(input_shape) if input_shape else None,
                                          **kwargs)
+
+
+class ConvLSTM3D(ZooKerasLayer):
+    """
+    Convolutional LSTM for 3D input.
+    Note that currently only 'same' padding is supported.
+    The convolution kernel for this layer is a cubic kernel with equal strides for all dimensions.
+    The input of this layer should be 6D, i.e. (samples, time, channels, dim1, dim2, dim3),
+    and 'CHANNEL_FIRST' (dimOrdering='th') is expected.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    nb_kernel: Length of the first, second and third dimensions in the convolution kernel.
+               Cubic kernel.
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    border_mode: Only 'same' is supported for now.
+    subsample: Tuple of length 3. Factor by which to subsample output.
+               Also called strides elsewhere. Default is (1, 1, 1).
+               Only support subsample[0] equal to subsample[1] equal to subsample[2] for now.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices.
+                   Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    return_sequences: Whether to return the full sequence or only return the last output
+                      in the output sequence. Default is False.
+    go_backwards: Whether the input sequence will be processed backwards. Default is False.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
+
+    >>> convlstm3d = ConvLSTM3D(10, 4, input_shape=(8, 4, 10, 32, 32))
+    creating: createZooKerasConvLSTM3D
+    """
+    def __init__(self, nb_filter, nb_kernel, dim_ordering="th", border_mode="same",
+                 subsample=(1, 1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None,
+                 return_sequences=False, go_backwards=False, input_shape=None, **kwargs):
+        if dim_ordering != "th":
+            raise ValueError("For ConvLSTM3D, only dim_ordering='th' is supported for now")
+        if border_mode != "same":
+            raise ValueError("For ConvLSTM3D, only border_mode='same' is supported for now")
+        if subsample[0] != subsample[1] or subsample[1] != subsample[2]:
+            raise ValueError("For ConvLSTM3D, only equal strides is supported for now")
+        super(ConvLSTM3D, self).__init__(None,
+                                         nb_filter,
+                                         nb_kernel,
+                                         subsample[0],
+                                         W_regularizer,
+                                         U_regularizer,
+                                         b_regularizer,
+                                         return_sequences,
+                                         go_backwards,
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
