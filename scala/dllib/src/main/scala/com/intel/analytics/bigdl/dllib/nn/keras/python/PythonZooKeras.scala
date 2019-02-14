@@ -646,6 +646,20 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       returnSequences, goBackwards, toScalaShape(inputShape))
   }
 
+  def createZooKerasConvLSTM3D(
+      nbFilter: Int,
+      nbKernel: Int,
+      subsample: Int = 1,
+      wRegularizer: Regularizer[T] = null,
+      uRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null,
+      returnSequences: Boolean = false,
+      goBackwards: Boolean = false,
+      inputShape: JList[Int] = null): ConvLSTM3D[T] = {
+    ConvLSTM3D(nbFilter, nbKernel, subsample, wRegularizer, uRegularizer, bRegularizer,
+      returnSequences, goBackwards, toScalaShape(inputShape))
+  }
+
   def createZooKerasLocallyConnected1D(
       nbFilter: Int,
       filterLength: Int,
