@@ -387,7 +387,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       nbEpoch: Int,
       validationData: TextSet)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
-    this.fit(toDataSet(x, batchSize), nbEpoch, toDataSet(validationData, batchSize))
+    val dataset = x.toDataSet
+    this.fit((dataset -> SampleToMiniBatch[Float](batchSize)).asInstanceOf[DataSet[MiniBatch[T]]],
+      nbEpoch, toDataSet(validationData, batchSize))
+    if (x.isDistributed) {
+      dataset.toDistributed().unpersist()
+    }
   }
 
   def fit(
