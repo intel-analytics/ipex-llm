@@ -16,10 +16,12 @@
 
 package com.intel.analytics.zoo.feature.pmem
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.examples.inception.ImageNet2012
+import com.intel.analytics.zoo.feature.FeatureSet
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import org.apache.spark.SparkContext
 
@@ -127,5 +129,20 @@ class NativeSpec extends ZooSpecHelper {
     val data = imageNet.data(train = false)
     assert(data.count() == 3)
     data.collect()
+  }
+
+  "getting data in FeatureSet" should "be right" in {
+    val samples = sc.range(1, 10).map(v =>
+      Sample[Float](Tensor[Float].range(v, v + 5), v))
+    val featureSet = FeatureSet.rdd(samples, memoryType = DIRECT)
+    featureSet.shuffle()
+    val dataIter = featureSet.data(false)
+    val data = dataIter.mapPartitions(v =>
+      v.map(s => (s.feature(), s.label().valueAt(1)))
+    ).collect()
+    data.map(_._2.toInt).sorted should be(Array.range(1, 10))
+    data.foreach(d =>
+      d._1 should be(Tensor[Float].range(d._2, d._2 + 5))
+    )
   }
 }
