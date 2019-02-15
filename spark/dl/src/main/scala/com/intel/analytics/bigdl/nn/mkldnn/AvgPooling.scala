@@ -32,6 +32,28 @@ class AvgPooling(
   @transient private var paddingBR: Array[Int] = _
   @transient private var fwdPD: Long = _
 
+  // reminder: ceilMode default value is true,
+  // but in blas SpatialMaxPooling, default ceilMode is false
+  private var ceilMode = true
+
+  /**
+   * set ceil mode
+   * @return this
+   */
+  def ceil(): AvgPooling = {
+    ceilMode = true
+    this
+  }
+
+  /**
+   * set floor mode
+   * @return this
+   */
+  def floor(): AvgPooling = {
+    ceilMode = false
+    this
+  }
+
   private val algKind = if (padH == -1 && padW == -1) {
     AlgKind.PoolingAvgIncludePadding
   } else {
@@ -50,7 +72,7 @@ class AvgPooling(
       val sizes = Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
       (sizes(0), sizes(1), sizes(2), sizes(3), sizes(4), sizes(5))
     } else {
-      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
+      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW, ceilMode)
     }
 
     paddingTL = Array(pt, pl)
