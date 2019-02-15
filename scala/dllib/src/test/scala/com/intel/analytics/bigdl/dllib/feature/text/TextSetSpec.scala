@@ -30,6 +30,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.objectives.{RankHinge, SparseCategoricalCrossEntropy}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
+import com.intel.analytics.zoo.feature.text.TextFeature
 
 import scala.collection.immutable.HashSet
 
@@ -252,6 +253,143 @@ class TextSetSpec extends ZooSpecHelper {
     val listSet = TextSet.fromRelationLists(relationsRDD, qSet, aSet)
     require(listSet.isDistributed)
     val listFeatures = listSet.toDistributed().rdd.collect().sortBy(_.getURI.length)
+    require(listFeatures.length == 2)
+    val listFeature1 = listFeatures(0)
+    require(listFeature1.getURI == "Q1A1")
+    val sample1 = listFeature1.getSample
+    require(sample1.feature().size().sameElements(Array(1, 9)))
+    require(sample1.feature().reshape(Array(9)).toArray().sameElements(qIndices ++ aIndices))
+    require(sample1.label().size().sameElements(Array(1, 1)))
+    require(sample1.label().reshape(Array(1)).toArray().sameElements(Array(1.0f)))
+    val listFeature2 = listFeatures(1)
+    require(listFeature2.getURI.startsWith("Q2"))
+    require(listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
+      listFeature2.getURI.contains("A3"))
+    val sample2 = listFeature2.getSample
+    require(sample2.feature().size().sameElements(Array(3, 9)))
+    require(sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
+      ++ qIndices ++ aIndices ++ qIndices ++ aIndices))
+    require(sample2.label().size().sameElements(Array(3, 1)))
+    require(sample2.label().reshape(Array(3)).toArray().sorted
+      .sameElements(Array(0.0f, 0.0f, 1.0f)))
+
+    val gloveDir = getClass.getClassLoader.getResource("glove.6B").getPath
+    val embeddingFile = gloveDir + "/glove.6B.50d.txt"
+    val knrm = KNRM[Float](3, 6, embeddingFile)
+    val model = Sequential().add(TimeDistributed(knrm, inputShape = Shape(2, 9)))
+    model.compile(optimizer = new SGD[Float](), loss = RankHinge[Float]())
+    model.fit(pairSet, batchSize = 2, nbEpoch = 2)
+    knrm.evaluateNDCG(listSet, 3)
+    knrm.evaluateNDCG(listSet, 5)
+    knrm.evaluateMAP(listSet)
+  }
+
+  "Array TextSet from relation pairs and lists with training and validation" should
+    "work properly" in {
+    val relations = Array(Relation("Q1", "A1", 1), Relation("Q1", "A2", 0),
+      Relation("Q2", "A1", 0), Relation("Q2", "A2", 1),
+      Relation("Q2", "A3", 0))
+    val qIndices = Array(1.0f, 2.0f, 3.0f)
+    val q1 = TextFeature(null, uri = "Q1")
+    q1(TextFeature.indexedTokens) = qIndices
+    val q2 = TextFeature(null, uri = "Q2")
+    q2(TextFeature.indexedTokens) = qIndices
+    val qSet = TextSet.array(Array(q1, q2))
+    val aIndices = Array(2.0f, 2.0f, 3.0f, 5.0f, 4.0f, 0.0f)
+    val a1 = TextFeature(null, uri = "A1")
+    a1(TextFeature.indexedTokens) = aIndices
+    val a2 = TextFeature(null, uri = "A2")
+    a2(TextFeature.indexedTokens) = aIndices
+    val a3 = TextFeature(null, uri = "A3")
+    a3(TextFeature.indexedTokens) = aIndices
+    val aSet = TextSet.array(Array(a1, a2, a3))
+    val pairSet = TextSet.fromRelationPairs(relations, qSet, aSet)
+    require(pairSet.isLocal)
+    val pairFeatures = pairSet.toLocal().array
+    require(pairFeatures.length == 3)
+    require(pairFeatures.map(_.getURI).toSet == Set("Q1A1A2", "Q2A2A1", "Q2A2A3"))
+
+    for(feature <- pairFeatures) {
+      val sample = feature.getSample
+      require(sample.feature().size().sameElements(Array(2, 9)))
+      require(sample.feature().reshape(Array(18)).toArray().sameElements(
+        qIndices ++ aIndices ++ qIndices ++ aIndices))
+      require(sample.label().size().sameElements(Array(2, 1)))
+      require(sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
+    }
+
+    val listSet = TextSet.fromRelationLists(relations, qSet, aSet)
+    require(listSet.isLocal)
+    val listFeatures = listSet.toLocal().array.sortBy(_.getURI.length)
+    require(listFeatures.length == 2)
+    val listFeature1 = listFeatures(0)
+    require(listFeature1.getURI.startsWith("Q1"))
+    require(listFeature1.getURI.contains("A1") && listFeature1.getURI.contains("A2"))
+    val sample1 = listFeature1.getSample
+    require(sample1.feature().size().sameElements(Array(2, 9)))
+    require(sample1.feature().reshape(Array(18)).toArray()
+      .sameElements(qIndices ++ aIndices ++ qIndices ++ aIndices))
+    require(sample1.label().size().sameElements(Array(2, 1)))
+    require(sample1.label().reshape(Array(2)).toArray().sorted.
+      sameElements(Array(0.0f, 1.0f)))
+    val listFeature2 = listFeatures(1)
+    require(listFeature2.getURI.startsWith("Q2"))
+    require(listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
+      listFeature2.getURI.contains("A3"))
+    val sample2 = listFeature2.getSample
+    require(sample2.feature().size().sameElements(Array(3, 9)))
+    require(sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
+      ++ qIndices ++ aIndices ++ qIndices ++ aIndices))
+    require(sample2.label().size().sameElements(Array(3, 1)))
+    require(sample2.label().reshape(Array(3)).toArray().sorted
+      .sameElements(Array(0.0f, 0.0f, 1.0f)))
+
+    val gloveDir = getClass.getClassLoader.getResource("glove.6B").getPath
+    val embeddingFile = gloveDir + "/glove.6B.50d.txt"
+    val knrm = KNRM[Float](3, 6, embeddingFile)
+    val model = Sequential().add(TimeDistributed(knrm, inputShape = Shape(2, 9)))
+    model.compile(optimizer = new SGD[Float](), loss = RankHinge[Float]())
+    model.fit(pairSet, batchSize = 2, nbEpoch = 2)
+    knrm.evaluateNDCG(listSet, 3)
+    knrm.evaluateNDCG(listSet, 5)
+    knrm.evaluateMAP(listSet)
+  }
+
+  "Array2 TextSet from relation pairs and lists with training and validation" should
+    "work properly" in {
+    val relations = Array(Relation("Q1", "A1", 1), Relation("Q2", "A1", 0), Relation("Q2", "A2", 1),
+      Relation("Q2", "A3", 0))
+    val qIndices = Array(1.0f, 2.0f, 3.0f)
+    val q1 = TextFeature(null, uri = "Q1")
+    q1(TextFeature.indexedTokens) = qIndices
+    val q2 = TextFeature(null, uri = "Q2")
+    q2(TextFeature.indexedTokens) = qIndices
+    val qSet = TextSet.array(Array(q1, q2))
+    val aIndices = Array(2.0f, 2.0f, 3.0f, 5.0f, 4.0f, 0.0f)
+    val a1 = TextFeature(null, uri = "A1")
+    a1(TextFeature.indexedTokens) = aIndices
+    val a2 = TextFeature(null, uri = "A2")
+    a2(TextFeature.indexedTokens) = aIndices
+    val a3 = TextFeature(null, uri = "A3")
+    a3(TextFeature.indexedTokens) = aIndices
+    val aSet = TextSet.array(Array(a1, a2, a3))
+    val pairSet = TextSet.fromRelationPairs(relations, qSet, aSet)
+    require(pairSet.isLocal)
+    val pairFeatures = pairSet.toLocal().array
+    require(pairFeatures.length == 2)
+    require(pairFeatures.map(_.getURI).toSet == Set("Q2A2A1", "Q2A2A3"))
+    pairFeatures.foreach(feature => {
+      val sample = feature.getSample
+      require(sample.feature().size().sameElements(Array(2, 9)))
+      require(sample.feature().reshape(Array(18)).toArray().sameElements(
+        qIndices ++ aIndices ++ qIndices ++ aIndices))
+      require(sample.label().size().sameElements(Array(2, 1)))
+      require(sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
+    })
+
+    val listSet = TextSet.fromRelationLists(relations, qSet, aSet)
+    require(listSet.isLocal)
+    val listFeatures = listSet.toLocal().array.sortBy(_.getURI.length)
     require(listFeatures.length == 2)
     val listFeature1 = listFeatures(0)
     require(listFeature1.getURI == "Q1A1")
