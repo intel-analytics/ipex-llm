@@ -41,6 +41,23 @@ class DnnGraph(
   private var inputCache: Array[Activity] = _
   private var backId2ForwardId: Array[Int] = _
 
+  /**
+   * Batch size may change when model prediction, but output size of dnn layers will not be changed.
+   * So we have to compare batchSize for input and output, and do some change if not the same.
+   * @param input
+   * @param output
+   * @return
+   */
+  private def getRealOutput(input: Activity, output: Activity): Activity = {
+    if (input.isTensor && output.isTensor) {
+      val in = input.toTensor[Float]
+      val out = output.toTensor[Float]
+      require(in.nDimension() == 4,
+        s"only support input with 4 dimension, but get ${in.nDimension()}")
+      if (in.size(1) != out.size(1)) out.narrow(1, 1, in.size(1)) else output
+    } else output
+  }
+
   @transient protected lazy val reorderManager = new ReorderManager()
 
   if (enableExcludeChecking) {
@@ -59,7 +76,7 @@ class DnnGraph(
       i += 1
     }
     output = dummyOutput.element.output
-    output
+    getRealOutput(input, output)
   }
 
   override def backward(input: Activity, gradOutput: Activity): Activity = {
@@ -84,7 +101,7 @@ class DnnGraph(
       i += 1
     }
     gradInput = fetchModelGradInput()
-    gradInput
+    getRealOutput(input, gradInput)
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
