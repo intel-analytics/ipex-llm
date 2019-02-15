@@ -195,7 +195,7 @@ class SpatialBatchNormalization(
     }
 
     if (this.weightAndBias.native == null) {
-      if (phase == InferencePhase) {
+      if (modelPhase == InferencePhase) {
         this.runningMean.setMemoryData(
           HeapData(this.runningMean.size(), Memory.Format.x), runningMean, runtime)
         this.runningVariance.setMemoryData(
@@ -212,12 +212,8 @@ class SpatialBatchNormalization(
       // for runningMean and runningVariance, we should copy them to native at first
       this.weightAndBias.setMemoryData(HeapData(this.weightAndBias.size(), Memory.Format.x),
         weightAndBias, runtime)
-    }
-
-    (isTraining(), phase) match {
-      case (true, InferencePhase) => train = false
-      case (false, TrainingPhase) => train = true
-      case _ =>
+    } else {
+      this.weightAndBias.sync()
     }
 
     (inputFormats(), outputFormats())

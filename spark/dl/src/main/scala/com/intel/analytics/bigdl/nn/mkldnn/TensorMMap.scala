@@ -78,6 +78,8 @@ private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
         // the native tensor size should be determined by the memory description
         // other wise will be segment fault
         this._native = DnnTensor[Float](Memory.GetPaddingShape(_from.getMemoryDescription()))
+        // the native initialize value should be all zeros.
+        this._native.zero()
         _reorder.output.toTensor[Float].set(this.dense)
         _heapData = _to.asInstanceOf[HeapData]
     }
