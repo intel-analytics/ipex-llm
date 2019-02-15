@@ -118,13 +118,19 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
   private def fromSpatialMaxPooling(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialMaxPooling[Float]]
     require(t.format == DataFormat.NCHW, "Dnn SpatialMaxPooling only supports NCHW")
-    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "MaxPooling"))
+    val layer = ReflectionUtils.reflectFromIR(
+      node, Class.forName(prefix + "MaxPooling")).asInstanceOf[MaxPooling]
+    if (t.ceilMode) layer.ceil() else layer.floor()
+    layer
   }
 
   private def fromSpatialAveragePooling(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialAveragePooling[Float]]
     require(t.format == DataFormat.NCHW, "Dnn SpatialAveragePooling only supports NCHW")
-    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "AvgPooling"))
+    val layer = ReflectionUtils.reflectFromIR(
+      node, Class.forName(prefix + "AvgPooling")).asInstanceOf[AvgPooling]
+    if (t.ceilMode) layer.ceil() else layer.floor()
+    layer
   }
 
   private def fromSpatialCrossMapLRN(node: IRElement[Float]) : Module[Float] = {

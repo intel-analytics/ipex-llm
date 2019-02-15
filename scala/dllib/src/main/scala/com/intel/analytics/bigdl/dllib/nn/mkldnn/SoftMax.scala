@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{MklDnn, PropKind, Stream => DnnStream}
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn, PropKind, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -41,12 +41,21 @@ class SoftMax() extends MklDnnLayer {
     }
   }
 
+  private def format(shape: Array[Int]): Int = {
+    shape.length match {
+      case 2 => Memory.Format.nc
+      case 4 => Memory.Format.nchw
+      case _ => throw new UnsupportedOperationException(s"${getName()} unsupported input shape")
+    }
+  }
+
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     initPhase(phase)
     modelPhase match {
       case TrainingPhase =>
-        _inputFormats = inputs.clone()
-        _outputFormats = inputs.clone()
+        _inputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
+        _outputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
+
         (_inputFormats, _outputFormats)
       case InferencePhase =>
         val axis = inputs(0).shape.length match {

@@ -40,7 +40,7 @@ case class IRSpatialMaxPooling[T: ClassTag](
             kW: Int, kH: Int,
             dW: Int = 1, dH: Int = 1,
             padW: Int = 0, padH: Int = 0,
-            format: DataFormat = DataFormat.NCHW) extends IROperator[T]
+            format: DataFormat = DataFormat.NCHW, ceilMode: Boolean = false) extends IROperator[T]
 
 case class IRSpatialAveragePooling[T: ClassTag](
             kW: Int, kH: Int,
