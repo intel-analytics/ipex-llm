@@ -30,7 +30,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import java.io.PrintWriter
 
@@ -398,6 +398,55 @@ object TextSet {
   }
 
   /**
+   * Generate a TextSet for pairwise training using Relation array.
+   *
+   * @param relations Array of [[Relation]].
+   * @param corpus1 LocalTextSet that contains all [[Relation.id1]]. For each TextFeature
+   *                in corpus1, text must have been transformed to indexedTokens of the same length.
+   * @param corpus2 LocalTextSet that contains all [[Relation.id2]]. For each TextFeature
+   *                in corpus2, text must have been transformed to indexedTokens of the same length.
+   * @return LocalTextSet.
+   */
+  def fromRelationPairs(
+      relations: Array[Relation],
+      corpus1: TextSet,
+      corpus2: TextSet): LocalTextSet = {
+    val pairsArray = Relations.generateRelationPairs(relations)
+    require(corpus1.isLocal, "corpus1 must be a LocalTextSet")
+    require(corpus2.isLocal, "corpus2 must be a LocalTextSet")
+    val mapText1: MMap[String, Array[Float]] = MMap()
+    val mapText2: MMap[String, Array[Float]] = MMap()
+    val arrayText1 = corpus1.toLocal().array
+    val arrayText2 = corpus2.toLocal().array
+    for (text <- arrayText1) {
+      val indices = text.getIndices
+      require(indices != null,
+        "corpus1 haven't been transformed from word to index yet, please word2idx first")
+      mapText1(text.getURI) = indices
+    }
+    for (text <- arrayText2) {
+      val indices = text.getIndices
+      require(indices != null,
+        "corpus2 haven't been transformed from word to index yet, please word2idx first")
+      mapText2(text.getURI) = indices
+    }
+    val res = pairsArray.map(x => {
+      val indices1 = mapText1.get(x.id1).get
+      val indices2Pos = mapText2.get(x.id2Positive).get
+      val indices2Neg = mapText2.get(x.id2Negative).get
+      require(indices2Neg.length == indices2Pos.length,
+        "corpus2 contains texts with different lengths, please shapeSequence first")
+      val textFeature = TextFeature(null, x.id1 + x.id2Positive + x.id2Negative)
+      val pairedIndices = indices1 ++ indices2Pos ++ indices1 ++ indices2Neg
+      val feature = Tensor(pairedIndices, Array(2, indices1.length + indices2Pos.length))
+      val label = Tensor(Array(1.0f, 0.0f), Array(2, 1))
+      textFeature(TextFeature.sample) = Sample(feature, label)
+      textFeature
+    })
+    TextSet.array(res)
+  }
+
+  /**
    * Used to generate a TextSet for ranking.
    *
    * This method does the following:
@@ -448,6 +497,66 @@ object TextSet {
       textFeature
     })
     TextSet.rdd(res)
+  }
+
+  /**
+   * Generate a TextSet for ranking using Relation array.
+   *
+   * @param relations Array of [[Relation]].
+   * @param corpus1 LocalTextSet that contains all [[Relation.id1]]. For each TextFeature
+   *                in corpus1, text must have been transformed to indexedTokens of the same length.
+   * @param corpus2 LocalTextSet that contains all [[Relation.id2]]. For each TextFeature
+   *                in corpus2, text must have been transformed to indexedTokens of the same length.
+   * @return LocalTextSet.
+   */
+  def fromRelationLists(
+      relations: Array[Relation],
+      corpus1: TextSet,
+      corpus2: TextSet): LocalTextSet = {
+    require(corpus1.isLocal, "corpus1 must be a LocalTextSet")
+    require(corpus2.isLocal, "corpus2 must be a LocalTextSet")
+    val mapText1: MMap[String, Array[Float]] = MMap()
+    val mapText2: MMap[String, Array[Float]] = MMap()
+    val arrayText1 = corpus1.toLocal().array
+    val arrayText2 = corpus2.toLocal().array
+    for (text <- arrayText1) {
+      val indices = text.getIndices
+      require(indices != null,
+        "corpus1 haven't been transformed from word to index yet, please word2idx first")
+      mapText1(text.getURI) = indices
+    }
+    for (text <- arrayText2) {
+      val indices = text.getIndices
+      require(indices != null,
+        "corpus2 haven't been transformed from word to index yet, please word2idx first")
+      mapText2(text.getURI) = indices
+    }
+    val text1Map: MMap[String, ArrayBuffer[(String, Int)]] = MMap()
+    for(rel <- relations) {
+      if (! text1Map.contains(rel.id1)) {
+        val id2Array: ArrayBuffer[(String, Int)] = ArrayBuffer()
+        id2Array.append((rel.id2, rel.label))
+        text1Map(rel.id1) = id2Array
+      }
+      else {
+        val id2Array = text1Map.get(rel.id1).get
+        id2Array.append((rel.id2, rel.label))
+      }
+    }
+    val features: ArrayBuffer[TextFeature] = ArrayBuffer()
+    for((id1, id2LabelArray) <- text1Map) {
+      val id2ArrayLength = id2LabelArray.length
+      val textFeature = TextFeature(null, uri = id1 ++ id2LabelArray.map(_._1).mkString(""))
+      val indices2Array = id2LabelArray.map(x => {mapText2.get(x._1.toString).get})
+      val indices1 = mapText1.get(id1).get
+      val data = indices2Array.flatMap(indices1 ++ _).toArray
+      val feature = Tensor(data,
+        Array(id2ArrayLength, indices1.length + indices2Array.head.length))
+      val label = Tensor(id2LabelArray.toArray.map(_._2.toFloat), Array(id2ArrayLength, 1))
+      textFeature(TextFeature.sample) = Sample(feature, label)
+      features.append(textFeature)
+    }
+    TextSet.array(features.toArray)
   }
 
   /**

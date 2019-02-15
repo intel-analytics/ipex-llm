@@ -20,6 +20,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
+import scala.collection.mutable.{Map => MMap, ArrayBuffer}
 import scala.io.Source
 
 object Relations {
@@ -95,6 +96,47 @@ object Relations {
       val negIDs = x._2._2.flatten.toArray.map(_.id2)
       posIDs.flatMap(y => negIDs.map(z => RelationPair(x._1, y, z)))
     })
+  }
+
+  /**
+   * generateRelationPairs for Relation array
+   */
+  def generateRelationPairs(relations: Array[Relation]): Array[RelationPair] = {
+    val relSet: MMap[String, MMap[Int, ArrayBuffer[String]]] = MMap()
+    val pairList: ArrayBuffer[RelationPair] = ArrayBuffer()
+    for (relation <- relations) {
+      if (! relSet.contains(relation.id1)) {
+        val id2Array: ArrayBuffer[String] = ArrayBuffer()
+        id2Array.append(relation.id2)
+        relSet(relation.id1) = MMap(relation.label -> id2Array)
+      }
+      else {
+        val labelMap = relSet.get(relation.id1).get
+        if (! labelMap.contains(relation.label)) {
+          val id2Array: ArrayBuffer[String] = ArrayBuffer()
+          id2Array.append(relation.id2)
+          labelMap(relation.label) = id2Array
+          relSet(relation.id1) = labelMap
+        }
+        else {
+          labelMap.get(relation.label).get.append(relation.id2)
+        }
+      }
+    }
+
+    for((id1, labelMap) <- relSet) {
+      if (labelMap.contains(0) && labelMap.contains(1)) {
+        val negatives = labelMap.get(0).get.toArray
+        val positives = labelMap.get(1).get.toArray
+        for (id2Positive <- positives) {
+          for (id2Negative <- negatives) {
+            val pair = RelationPair(id1, id2Positive, id2Negative)
+            pairList.append(pair)
+          }
+        }
+      }
+    }
+    pairList.toArray
   }
 }
 
