@@ -328,6 +328,10 @@ class TextSet(JavaValue):
         """
         if isinstance(relations, RDD):
             relations = relations.map(lambda x: x.to_tuple())
+        elif isinstance(relations, list):
+            relations = [relation.to_tuple() for relation in relations]
+        else:
+            raise TypeError("relations should be RDD or list of Relation")
         jvalue = callBigDlFunc(bigdl_type, "textSetFromRelationPairs", relations, corpus1, corpus2)
         return TextSet(jvalue=jvalue)
 
@@ -358,6 +362,10 @@ class TextSet(JavaValue):
         """
         if isinstance(relations, RDD):
             relations = relations.map(lambda x: x.to_tuple())
+        elif isinstance(relations, list):
+            relations = [relation.to_tuple() for relation in relations]
+        else:
+            raise TypeError("relations should be RDD or list of Relation")
         jvalue = callBigDlFunc(bigdl_type, "textSetFromRelationLists", relations, corpus1, corpus2)
         return TextSet(jvalue=jvalue)
 
