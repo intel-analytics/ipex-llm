@@ -97,7 +97,7 @@ Analytics Zoo has many pre-defined image processing transformers built on top of
 * `ImageExpand`: Expand image, fill the blank part with the meanR, meanG, meanB
 * `ImageFiller`: Fill part of image with certain pixel value
 * `ImageHFlip`: Flip the image horizontally
-* `ImageRandomTransformer`: It is a wrapper for transformers to control the transform probability
+* `ImageRandomPreprocessing`: It is a wrapper for transformers to control the transform probability
 * `ImageBytesToMat`: Transform byte array(original image file in byte) to OpenCVMat
 * `ImageMatToFloats`: Transform OpenCVMat to float array, note that in this transformer, the mat is released.
 * `ImageMatToTensor`: Transform opencv mat to tensor, note that in this transformer, the mat is released.
@@ -141,6 +141,7 @@ which can be used by the following prediction or training tasks.
 
 ```python
 from zoo.feature.image.imagePreprocessing import *
+from zoo.feature.common import ChainedPreprocessing
 
 img_aug = ChainedPreprocessing([ImageBytesToMat(),
       ImageColorJitter(),
