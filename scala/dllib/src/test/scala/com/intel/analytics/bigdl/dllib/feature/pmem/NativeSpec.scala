@@ -133,7 +133,7 @@ class NativeSpec extends ZooSpecHelper {
 
   "getting data in FeatureSet" should "be right" in {
     val samples = sc.range(1, 10).map(v =>
-      Sample[Float](Tensor[Float].range(v, v + 5), v))
+      Sample[Float](Tensor[Float].range(v, v + 5), v)).setName("Example Sample")
     val featureSet = FeatureSet.rdd(samples, memoryType = DIRECT)
     featureSet.shuffle()
     val dataIter = featureSet.data(false)
