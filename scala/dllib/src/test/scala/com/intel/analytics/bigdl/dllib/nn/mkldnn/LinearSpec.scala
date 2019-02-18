@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -52,6 +54,55 @@ class LinearSpec extends FlatSpec with Matchers {
 
     Tools.dense(output) should be (nnOutput)
   }
+
+  "Dnn Linear with regularizer" should "work correctly" in {
+    val inputSize = 2048
+    val outputSize = 1000
+    val batchSize = 2
+
+    RNG.setSeed(1000)
+    val inputFormat = HeapData(Array(batchSize, inputSize), Memory.Format.nc)
+    val outputFormat = HeapData(Array(batchSize, outputSize), Memory.Format.nc)
+    val input = Tensor[Float](batchSize, inputSize).rand()
+    val gradOutput = Tensor[Float](batchSize, outputSize).rand()
+
+    val initWeight = Tensor[Float](outputSize, inputSize).rand()
+    val initBias = Tensor[Float](outputSize).rand()
+
+    val wRegularizer = L2Regularizer(1e-4)
+    val bRegularizer = L2Regularizer(1e-4)
+
+    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+
+    linear.setRuntime(new MklDnnRuntime)
+    linear.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    linear.initBwdPrimitives(Array(outputFormat), TrainingPhase)
+    linear.initGradWPrimitives(Array(outputFormat), TrainingPhase)
+
+    for (i <- 0 to 3) {
+      linear.zeroGradParameters()
+      nnLinear.zeroGradParameters()
+
+      nnLinear.forward(input)
+      nnLinear.backward(input, gradOutput)
+      linear.forward(input)
+      linear.backward(input, gradOutput)
+    }
+
+    Tools.dense(linear.output) should be (nnLinear.output)
+    Tools.dense(linear.gradInput) should be (nnLinear.gradInput)
+
+    val p1 = linear.getParameters()
+    val p2 = linear.getParameters()
+
+    p1._1 should be (p2._1)
+    p1._2 should be (p2._2)
+  }
+
+
 
   "linear updateOutput multi times" should "work correctly" in {
     val inputSize = 2

@@ -16,9 +16,6 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
-import java.util.List
-
-import breeze.linalg.reverse
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.{Graph, SpatialMaxPooling, keras}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
@@ -26,9 +23,6 @@ import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Node, T}
-
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -52,9 +46,7 @@ private[bigdl] class IRGraph[T: ClassTag](
     val outputFormats: Seq[Int] = Seq(Memory.Format.nc))
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] with Serializable {
 
-  @transient private var initFwd: Boolean = false
-  @transient private var initBwd: Boolean = false
-  @transient private var initAcc: Boolean = false
+  @transient private var initPrim: Boolean = false
 
   require(inputFormats.length == inputs.length, s"IRGraph: inputFormats" +
     s"length ${inputFormats.length} should be same with input nodes length ${inputs.length}")
@@ -67,7 +59,7 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("forward not supported, Please build graph first")
     }
-    initFwdPrimitives(input)
+    initPrimitives(input)
     output = graph.updateOutput(input)
     output
   }
@@ -76,7 +68,6 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    initBwdPrimitives()
     gradInput = graph.updateGradInput(input, gradOutput)
     gradInput
   }
@@ -85,7 +76,6 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    initGradWPrimitives()
     graph.accGradParameters(input, gradOutput)
   }
 
@@ -114,11 +104,26 @@ private[bigdl] class IRGraph[T: ClassTag](
     this
   }
 
-  private def initFwdPrimitives(input: Activity): Unit = {
-    if (!initFwd && graph.isInstanceOf[DnnGraph]) {
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    graph.getExtraParameter()
+  }
+
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    graph.getTimes()
+  }
+
+  override def resetTimes(): Unit = {
+    graph.resetTimes()
+  }
+
+  private def initPrimitives(input: Activity): Unit = {
+    if (!initPrim && graph.isInstanceOf[DnnGraph]) {
       val inputMemory = new Array[MemoryData](inputFormats.length)
       if (input.isInstanceOf[Tensor[T]]) {
-        inputMemory(0) = HeapData(input.toTensor[T].size(), inputFormats(0))
+        // todo: handle for 3 dimensions, expand 3 dims to 4 dims
+        val size = input.toTensor[T].size()
+        val sizeNew = if (size.length == 3)  Array(size(0), 1, size(1), size(2)) else size
+        inputMemory(0) = HeapData(sizeNew, inputFormats(0))
       } else {
         val tensors = input.toTable
         require(tensors.length() == inputFormats.length, s"table input length " +
@@ -134,23 +139,11 @@ private[bigdl] class IRGraph[T: ClassTag](
       val dnnGraph = graph.asInstanceOf[DnnGraph]
       dnnGraph.setRuntime(new MklDnnRuntime())
       dnnGraph.initFwdPrimitives(inputMemory)
-      initFwd = true
-    }
-  }
-
-  private def initBwdPrimitives(): Unit = {
-    if (!initBwd && graph.isInstanceOf[DnnGraph]) {
-      val dnnGraph = graph.asInstanceOf[DnnGraph]
-      dnnGraph.initBwdPrimitives(dnnGraph.outputFormats())
-      initBwd = true
-    }
-  }
-
-  private def initGradWPrimitives(): Unit = {
-    if (!initAcc && graph.isInstanceOf[DnnGraph]) {
-      val dnnGraph = graph.asInstanceOf[DnnGraph]
-      dnnGraph.initGradWPrimitives(dnnGraph.outputFormats())
-      initAcc = true
+      if (dnnGraph.isTraining()) {
+        dnnGraph.initBwdPrimitives(dnnGraph.outputFormats())
+        dnnGraph.initGradWPrimitives(dnnGraph.outputFormats())
+      }
+      initPrim = true
     }
   }
 }
