@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn._
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
@@ -37,6 +38,8 @@ class SpatialConvolution(
   val padH: Int = 0,
   val nGroup: Int = 1,
   val propagateBack: Boolean = true,
+  var wRegularizer: Regularizer[Float] = null,
+  var bRegularizer: Regularizer[Float] = null,
   val initWeight: Tensor[Float] = null,
   val initBias: Tensor[Float] = null,
   val initGradWeight: Tensor[Float] = null,
@@ -393,6 +396,13 @@ class SpatialConvolution(
 
     gradWeight.syncToHeap()
     gradBias.syncToHeap()
+
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight.dense, gradWeight.dense, scaleW)
+    }
+    if (withBias && null != bRegularizer) {
+      bRegularizer.accRegularization(bias.dense, gradBias.dense, scaleB)
+    }
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -449,6 +459,8 @@ object SpatialConvolution {
     padH: Int = 0,
     nGroup: Int = 1,
     propagateBack: Boolean = true,
+    wRegularizer: Regularizer[Float] = null,
+    bRegularizer: Regularizer[Float] = null,
     initWeight: Tensor[Float] = null,
     initBias: Tensor[Float] = null,
     initGradWeight: Tensor[Float] = null,
@@ -456,7 +468,7 @@ object SpatialConvolution {
     withBias: Boolean = true,
     format: DataFormat = DataFormat.NCHW): SpatialConvolution = {
     new SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW,
-      dH, padW, padH, nGroup, propagateBack,
+      dH, padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
       initWeight, initBias, initGradWeight, initGradBias, withBias, format)
   }
 }
