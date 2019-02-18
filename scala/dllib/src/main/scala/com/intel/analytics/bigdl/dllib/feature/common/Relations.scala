@@ -111,7 +111,7 @@ object Relations {
         relSet(relation.id1) = MMap(relation.label -> id2Array)
       }
       else {
-        val labelMap = relSet.get(relation.id1).get
+        val labelMap = relSet(relation.id1)
         if (! labelMap.contains(relation.label)) {
           val id2Array: ArrayBuffer[String] = ArrayBuffer()
           id2Array.append(relation.id2)
@@ -119,15 +119,15 @@ object Relations {
           relSet(relation.id1) = labelMap
         }
         else {
-          labelMap.get(relation.label).get.append(relation.id2)
+          labelMap(relation.label).append(relation.id2)
         }
       }
     }
 
-    for((id1, labelMap) <- relSet) {
+    for ((id1, labelMap) <- relSet) {
       if (labelMap.contains(0) && labelMap.contains(1)) {
-        val negatives = labelMap.get(0).get.toArray
-        val positives = labelMap.get(1).get.toArray
+        val negatives = labelMap(0).toArray
+        val positives = labelMap(1).toArray
         for (id2Positive <- positives) {
           for (id2Negative <- negatives) {
             val pair = RelationPair(id1, id2Positive, id2Negative)

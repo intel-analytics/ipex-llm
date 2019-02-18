@@ -532,14 +532,14 @@ object TextSet {
       mapText2(text.getURI) = indices
     }
     val text1Map: MMap[String, ArrayBuffer[(String, Int)]] = MMap()
-    for(rel <- relations) {
+    for (rel <- relations) {
       if (! text1Map.contains(rel.id1)) {
         val id2Array: ArrayBuffer[(String, Int)] = ArrayBuffer()
         id2Array.append((rel.id2, rel.label))
         text1Map(rel.id1) = id2Array
       }
       else {
-        val id2Array = text1Map.get(rel.id1).get
+        val id2Array = text1Map(rel.id1)
         id2Array.append((rel.id2, rel.label))
       }
     }
@@ -547,8 +547,8 @@ object TextSet {
     for((id1, id2LabelArray) <- text1Map) {
       val id2ArrayLength = id2LabelArray.length
       val textFeature = TextFeature(null, uri = id1 ++ id2LabelArray.map(_._1).mkString(""))
-      val indices2Array = id2LabelArray.map(x => {mapText2.get(x._1.toString).get})
-      val indices1 = mapText1.get(id1).get
+      val indices2Array = id2LabelArray.map(x => {mapText2(x._1.toString)})
+      val indices1 = mapText1(id1)
       val data = indices2Array.flatMap(indices1 ++ _).toArray
       val feature = Tensor(data,
         Array(id2ArrayLength, indices1.length + indices2Array.head.length))
