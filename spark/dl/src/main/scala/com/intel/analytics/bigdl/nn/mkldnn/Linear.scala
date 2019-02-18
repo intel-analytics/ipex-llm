@@ -109,6 +109,9 @@ class Linear(
     weight.setMemoryData(HeapData(weightShape, weightLayout), realWei, runtime)
     bias.setMemoryData(HeapData(bis.shape, Memory.Format.x), bis, runtime)
 
+    weight.sync()
+    bias.sync()
+
     val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
       bis.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)

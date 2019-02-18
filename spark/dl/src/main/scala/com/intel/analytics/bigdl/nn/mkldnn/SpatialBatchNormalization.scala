@@ -212,9 +212,8 @@ class SpatialBatchNormalization(
       // for runningMean and runningVariance, we should copy them to native at first
       this.weightAndBias.setMemoryData(HeapData(this.weightAndBias.size(), Memory.Format.x),
         weightAndBias, runtime)
-    } else {
-      this.weightAndBias.sync()
     }
+    this.weightAndBias.sync()
 
     (inputFormats(), outputFormats())
   }

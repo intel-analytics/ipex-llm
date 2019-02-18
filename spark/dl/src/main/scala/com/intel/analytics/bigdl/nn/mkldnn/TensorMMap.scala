@@ -61,6 +61,16 @@ private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
     }
   }
 
+  /**
+    * set the dense <-> native map, maintain the format to reorder
+    *
+    * Note, it will only create the native tensor based on the size and will not
+    * do the reorder. So you should call `sync()` by manual.
+    *
+    * @param from the source tensor memory data, could be HeapData or NativeData
+    * @param to the dest tensor memory data, could be HeapData or NativeData
+    * @param runtime the mkldnn runtime for reorder operation
+    */
   def setMemoryData(from: MemoryData, to: MemoryData, runtime: MklDnnRuntime): Unit = {
     require(_from == null && _to == null, "you only can set once the memory data")
     _from = from
@@ -72,7 +82,7 @@ private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
 
     _from match {
       case _: HeapData =>
-        this._native = _reorder.updateOutput(this.dense).asInstanceOf[DnnTensor[Float]]
+        this._native = _reorder.output.asInstanceOf[DnnTensor[Float]]
         _heapData = _from.asInstanceOf[HeapData]
       case _: NativeData =>
         // the native tensor size should be determined by the memory description

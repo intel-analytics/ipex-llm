@@ -220,6 +220,9 @@ class SpatialConvolution(
     bias.setMemoryData(HeapData(bias.dense.size(), Memory.Format.x),
       bis, runtime)
 
+    weight.sync()
+    bias.sync()
+
     val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
       bis.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
