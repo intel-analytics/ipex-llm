@@ -104,7 +104,7 @@ class DistributedFeatureSet[T: ClassTag]
   }
 
   override def unpersist(): Unit = {
-    FeatureSet.logger.info("Releasing data in AEP")
+    FeatureSet.logger.info(s"Unpersisting ${buffer.name}.")
     buffer.map(_.free()).count()
     buffer.unpersist()
     indexes.unpersist()
@@ -116,7 +116,7 @@ object DRAMFeatureSet {
   def rdd[T: ClassTag](data: RDD[T]): DistributedFeatureSet[T] = {
     val arrayLikeRDD = data.mapPartitions(iter => {
         Iterator.single(new ArrayLikeWrapper(iter.toArray))
-      }).setName(s"cached feature set: ${data.name} in DRAM with PARTITIONED Strategy" )
+      }).setName(s"cached feature set: ${data.name} in DRAM" )
       .cache().asInstanceOf[RDD[ArrayLike[T]]]
     new DistributedFeatureSet[T](arrayLikeRDD)
   }
@@ -129,7 +129,7 @@ object FeatureSet {
       dataStrategy: DataStrategy = PARTITIONED): DistributedFeatureSet[T] = {
     if (dataStrategy == PARTITIONED) {
       val nodeNumber = EngineRef.getNodeNumber()
-      val repartitionedData = data.coalesce(nodeNumber, true)
+      val repartitionedData = data.coalesce(nodeNumber, true).setName(data.name)
       memoryType match {
         case DRAM =>
           DRAMFeatureSet.rdd(repartitionedData)

@@ -393,7 +393,7 @@ object TextSet {
       val label = Tensor(Array(1.0f, 0.0f), Array(2, 1))
       textFeature(TextFeature.sample) = Sample(feature, label)
       textFeature
-    })
+    }).setName("Pairwise Training Set")
     TextSet.rdd(res, memoryType)
   }
 
@@ -495,7 +495,7 @@ object TextSet {
       val label = Tensor(x.map(_._3.toFloat), Array(text2Array.length, 1))
       textFeature(TextFeature.sample) = Sample(feature, label)
       textFeature
-    })
+    }).setName("Listwise Evaluation Set")
     TextSet.rdd(res)
   }
 
@@ -676,7 +676,8 @@ class DistributedTextSet(var rdd: RDD[TextFeature],
   }
 
   override def toDataSet: DataSet[Sample[Float]] = {
-    FeatureSet.rdd(rdd.map(_[Sample[Float]](TextFeature.sample)),
+    FeatureSet.rdd(rdd.map(_[Sample[Float]](TextFeature.sample))
+      .setName(s"Samples in ${rdd.name}"),
       memoryType)
   }
 
