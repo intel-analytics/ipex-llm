@@ -38,11 +38,11 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def mapInit(): Unit = {
     IR2DnnMap("IRSpatialConvolution") = fromSpatialConvolution
+    IR2DnnMap("IRSpatialShareConvolution") = fromSpatialShareConvolution
     IR2DnnMap("IRSpatialMaxPooling") = fromSpatialMaxPooling
     IR2DnnMap("IRSpatialAveragePooling") = fromSpatialAveragePooling
     IR2DnnMap("IRSpatialBatchNormalization") = fromSpatialBatchNormalization
     IR2DnnMap("IRSpatialCrossMapLRN") = fromSpatialCrossMapLRN
-    IR2DnnMap("IRLinear") = fromLinear
     IR2DnnMap("IRReLU") = fromReLU
     IR2DnnMap("IRJoinTable") = fromJoinTable
     IR2DnnMap("IRGeneralModule") = fromBlasModule
@@ -109,8 +109,12 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def fromSpatialConvolution(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialConvolution[Float]]
-    require(t.wRegularizer == null && t.bRegularizer == null,
-      "Dnn SpatialConvolution can not support Regularizer")
+    require(t.format == DataFormat.NCHW, "Dnn SpatialConvolution only supports NCHW")
+    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
+  }
+
+  private def fromSpatialShareConvolution(node: IRElement[Float]) : Module[Float] = {
+    val t = node.getOp().asInstanceOf[IRSpatialShareConvolution[Float]]
     require(t.format == DataFormat.NCHW, "Dnn SpatialConvolution only supports NCHW")
     ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
   }
@@ -171,13 +175,6 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     layer
   }
 
-  private def fromLinear(node: IRElement[Float]) : Module[Float] = {
-    val t = node.getOp().asInstanceOf[IRLinear[Float]]
-    require(t.wRegularizer == null && t.bRegularizer == null,
-      "Dnn Linear can not support Regularizer")
-    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "Linear"))
-  }
-
   private def fromBlasModule(node: IRElement[Float]) : Module[Float] = {
     BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
   }
@@ -190,8 +187,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     try {
       layer.getOp() match {
         case conv: IRSpatialConvolution[Float] =>
-          require(conv.wRegularizer == null
-            && conv.bRegularizer == null && conv.format == DataFormat.NCHW)
+          require(conv.format == DataFormat.NCHW)
         case maxPool: IRSpatialMaxPooling[Float] =>
           require(maxPool.format == DataFormat.NCHW)
         case avgPool: IRSpatialAveragePooling[Float] =>
@@ -200,8 +196,6 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
           require(sbn.dataFormat == DataFormat.NCHW)
         case lrn: IRSpatialCrossMapLRN[Float] =>
           require(lrn.format == DataFormat.NCHW)
-        case linear: IRLinear[Float] =>
-          require(linear.wRegularizer == null && linear.bRegularizer == null)
         case join: IRJoinTable[Float] =>
           require(join.nInputDims == 0)
         case _ => null

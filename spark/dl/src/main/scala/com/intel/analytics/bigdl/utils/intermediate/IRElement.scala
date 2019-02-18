@@ -70,7 +70,7 @@ case class IRSpatialShareConvolution[T: ClassTag](
             wRegularizer: Regularizer[T] = null, bRegularizer: Regularizer[T] = null,
             initWeight: Tensor[T] = null, initBias: Tensor[T] = null,
             initGradWeight: Tensor[T] = null, initGradBias: Tensor[T] = null,
-            withBias: Boolean = true) extends IROperator[T]
+            withBias: Boolean = true, format: DataFormat = DataFormat.NCHW) extends IROperator[T]
 
 case class IRSpatialBatchNormalization[T: ClassTag](
             nOutput: Int, eps: Double = 1e-5, momentum: Double = 0.1,

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -65,10 +66,8 @@ class View[T: ClassTag](val sizes: Array[Int])(
 
   def getNumInputDims(): Int = numInputDims
 
-  private def batchSize(
-    input: Tensor[T], size: Array[Int], numberInputDims: Int, numElements: Int): Int = {
-    val ind = input.nDimension()
-    val isz = input.size()
+  private def batchSize(ind: Int, isz: Array[Int],
+                    size: Array[Int], numberInputDims: Int, numElements: Int) : Int = {
     val maxDim = if (numberInputDims == 0) ind else numberInputDims
 
     var ine = 1
@@ -99,7 +98,7 @@ class View[T: ClassTag](val sizes: Array[Int])(
       i -= 1
     }
 
-    if (bse == 1 && (numberInputDims == 0 || input.nDimension() <= numberInputDims)) {
+    if (bse == 1 && (numberInputDims == 0 || ind <= numberInputDims)) {
       -1
     } else {
       bse
@@ -107,7 +106,8 @@ class View[T: ClassTag](val sizes: Array[Int])(
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    val bse = batchSize(input, this.sizes, this.numInputDims, this.numElements)
+    val bse = batchSize(input.nDimension(), input.size(), this.sizes,
+      this.numInputDims, this.numElements)
     if (bse != -1) {
       val newSizes = new Array[Int](this.sizes.length + 1)
       newSizes(0) = bse
@@ -129,6 +129,20 @@ class View[T: ClassTag](val sizes: Array[Int])(
 
   override def toString(): String = {
     s"${getPrintName}(${sizes.mkString("x")})"
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    val bse = batchSize(input.length, input, this.sizes, this.numInputDims, this.numElements)
+
+    if (bse != -1) {
+      val newSizes = new Array[Int](this.sizes.length + 1)
+      newSizes(0) = bse
+      System.arraycopy(this.sizes, 0, newSizes, 1, this.sizes.length)
+      Shape(newSizes)
+    } else {
+      Shape(this.sizes)
+    }
   }
 }
 
