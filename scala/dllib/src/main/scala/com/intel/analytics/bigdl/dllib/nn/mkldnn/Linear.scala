@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor._
 
 import scala.collection.mutable.ArrayBuffer
@@ -26,6 +27,8 @@ import scala.collection.mutable.ArrayBuffer
 class Linear(
   val inputSize: Int,
   val outputSize: Int,
+  var wRegularizer: Regularizer[Float] = null,
+  var bRegularizer: Regularizer[Float] = null,
   private val initWeight: Tensor[Float] = null,
   private val initBias: Tensor[Float] = null,
   private val initGradWeight: Tensor[Float] = null,
@@ -268,6 +271,13 @@ class Linear(
 
     gradWeight.syncToHeap()
     gradBias.syncToHeap()
+
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight.dense, gradWeight.dense, scaleW)
+    }
+    if (null != bRegularizer && scaleB != 0) {
+      bRegularizer.accRegularization(bias.dense, gradBias.dense, scaleB)
+    }
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -293,10 +303,13 @@ object Linear {
     inputSize: Int,
     outputSize: Int,
     withBias: Boolean = true,
+    wRegularizer: Regularizer[Float] = null,
+    bRegularizer: Regularizer[Float] = null,
     initWeight: Tensor[Float] = null,
     initBias: Tensor[Float] = null,
     initGradWeight: Tensor[Float] = null,
     initGradBias: Tensor[Float] = null): Linear = {
-    new Linear(inputSize, outputSize, initWeight, initBias, initGradWeight, initGradBias)
+    new Linear(inputSize, outputSize, wRegularizer,
+      bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
   }
 }
