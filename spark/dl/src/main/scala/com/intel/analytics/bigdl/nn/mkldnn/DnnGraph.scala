@@ -119,17 +119,6 @@ class DnnGraph(
     }
   }
 
-  override def populateModules(): Unit = {
-    modules.appendAll(
-      forwardGraph.topologySort
-        // todo: convert control dep node to edge
-        .filterNot(_.element.isInstanceOf[ControlDependency[Float]])
-        .filter(n => !n.eq(dummyOutput)).map(_.element)
-        .reverse
-    )
-    checkDuplicate()
-  }
-
   override def buildBackwardGraph(): this.type = {
     super.buildBackwardGraph()
     inputCache = new Array[Activity](forwardExecution.length)
@@ -398,6 +387,17 @@ class DnnGraph(
     }
     _gradOutputFormatsForWeight = firstRealGradOutputFormats
     firstRealGradOutputFormats
+  }
+
+  override def populateModules(): Unit = {
+    modules.appendAll(
+      forwardGraph.topologySort
+        // todo: convert control dep node to edge
+        .filterNot(_.element.isInstanceOf[ControlDependency[Float]])
+        .filter(n => !n.eq(dummyOutput)).map(_.element)
+        .reverse
+    )
+    checkDuplicate()
   }
 }
 

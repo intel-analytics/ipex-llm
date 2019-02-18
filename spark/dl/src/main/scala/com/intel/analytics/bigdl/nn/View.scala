@@ -66,7 +66,7 @@ class View[T: ClassTag](val sizes: Array[Int])(
 
   def getNumInputDims(): Int = numInputDims
 
-  private def batch(ind: Int, isz: Array[Int],
+  private def batchSize(ind: Int, isz: Array[Int],
                     size: Array[Int], numberInputDims: Int, numElements: Int) : Int = {
     val maxDim = if (numberInputDims == 0) ind else numberInputDims
 
@@ -105,13 +105,9 @@ class View[T: ClassTag](val sizes: Array[Int])(
     }
   }
 
-  private def batchSize(
-    input: Tensor[T], size: Array[Int], numberInputDims: Int, numElements: Int): Int = {
-    batch(input.nDimension(), input.size(), size, numberInputDims, numElements)
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    val bse = batchSize(input, this.sizes, this.numInputDims, this.numElements)
+    val bse = batchSize(input.nDimension(), input.size(), this.sizes,
+      this.numInputDims, this.numElements)
     if (bse != -1) {
       val newSizes = new Array[Int](this.sizes.length + 1)
       newSizes(0) = bse
@@ -137,7 +133,7 @@ class View[T: ClassTag](val sizes: Array[Int])(
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    val bse = batch(input.length, input, this.sizes, this.numInputDims, this.numElements)
+    val bse = batchSize(input.length, input, this.sizes, this.numInputDims, this.numElements)
 
     if (bse != -1) {
       val newSizes = new Array[Int](this.sizes.length + 1)
