@@ -484,8 +484,6 @@ trait ModuleSerializable extends Loadable with Savable{
 
     modelBuilder.addAllOutputScales(outputScalesAttrList.toIterable.asJava)
     modelBuilder.setOutputDimMasks(outputMasks)
-
-    modelBuilder
   }
 
 
