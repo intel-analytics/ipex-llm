@@ -1313,6 +1313,82 @@ public final class Bigdl {
      */
     com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder getParametersOrBuilder(
         int index);
+
+    /**
+     * <code>int32 inputDimMasks = 17;</code>
+     */
+    int getInputDimMasks();
+
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> 
+        getInputScalesList();
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    com.intel.analytics.bigdl.serialization.Bigdl.AttrValue getInputScales(int index);
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    int getInputScalesCount();
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+        getInputScalesOrBuilderList();
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder getInputScalesOrBuilder(
+        int index);
+
+    /**
+     * <code>int32 outputDimMasks = 19;</code>
+     */
+    int getOutputDimMasks();
+
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> 
+        getOutputScalesList();
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    com.intel.analytics.bigdl.serialization.Bigdl.AttrValue getOutputScales(int index);
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    int getOutputScalesCount();
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+        getOutputScalesOrBuilderList();
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder getOutputScalesOrBuilder(
+        int index);
+
+    /**
+     * <pre>
+     * reserve a spot for testing
+     * </pre>
+     *
+     * <code>string protobufTest = 99;</code>
+     */
+    java.lang.String getProtobufTest();
+    /**
+     * <pre>
+     * reserve a spot for testing
+     * </pre>
+     *
+     * <code>string protobufTest = 99;</code>
+     */
+    com.google.protobuf.ByteString
+        getProtobufTestBytes();
   }
   /**
    * Protobuf type {@code com.intel.analytics.bigdl.serialization.BigDLModule}
@@ -1338,6 +1414,11 @@ public final class Bigdl {
       id_ = 0;
       hasParameters_ = false;
       parameters_ = java.util.Collections.emptyList();
+      inputDimMasks_ = 0;
+      inputScales_ = java.util.Collections.emptyList();
+      outputDimMasks_ = 0;
+      outputScales_ = java.util.Collections.emptyList();
+      protobufTest_ = "";
     }
 
     @java.lang.Override
@@ -1508,6 +1589,40 @@ public final class Bigdl {
                   input.readMessage(com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.parser(), extensionRegistry));
               break;
             }
+            case 136: {
+
+              inputDimMasks_ = input.readInt32();
+              break;
+            }
+            case 146: {
+              if (!((mutable_bitField0_ & 0x00020000) == 0x00020000)) {
+                inputScales_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue>();
+                mutable_bitField0_ |= 0x00020000;
+              }
+              inputScales_.add(
+                  input.readMessage(com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.parser(), extensionRegistry));
+              break;
+            }
+            case 152: {
+
+              outputDimMasks_ = input.readInt32();
+              break;
+            }
+            case 162: {
+              if (!((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
+                outputScales_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue>();
+                mutable_bitField0_ |= 0x00080000;
+              }
+              outputScales_.add(
+                  input.readMessage(com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.parser(), extensionRegistry));
+              break;
+            }
+            case 794: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              protobufTest_ = s;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1527,6 +1642,12 @@ public final class Bigdl {
         }
         if (((mutable_bitField0_ & 0x00008000) == 0x00008000)) {
           parameters_ = java.util.Collections.unmodifiableList(parameters_);
+        }
+        if (((mutable_bitField0_ & 0x00020000) == 0x00020000)) {
+          inputScales_ = java.util.Collections.unmodifiableList(inputScales_);
+        }
+        if (((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
+          outputScales_ = java.util.Collections.unmodifiableList(outputScales_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -2187,6 +2308,136 @@ public final class Bigdl {
       return parameters_.get(index);
     }
 
+    public static final int INPUTDIMMASKS_FIELD_NUMBER = 17;
+    private int inputDimMasks_;
+    /**
+     * <code>int32 inputDimMasks = 17;</code>
+     */
+    public int getInputDimMasks() {
+      return inputDimMasks_;
+    }
+
+    public static final int INPUTSCALES_FIELD_NUMBER = 18;
+    private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> inputScales_;
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> getInputScalesList() {
+      return inputScales_;
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+        getInputScalesOrBuilderList() {
+      return inputScales_;
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    public int getInputScalesCount() {
+      return inputScales_.size();
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue getInputScales(int index) {
+      return inputScales_.get(index);
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+     */
+    public com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder getInputScalesOrBuilder(
+        int index) {
+      return inputScales_.get(index);
+    }
+
+    public static final int OUTPUTDIMMASKS_FIELD_NUMBER = 19;
+    private int outputDimMasks_;
+    /**
+     * <code>int32 outputDimMasks = 19;</code>
+     */
+    public int getOutputDimMasks() {
+      return outputDimMasks_;
+    }
+
+    public static final int OUTPUTSCALES_FIELD_NUMBER = 20;
+    private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> outputScales_;
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> getOutputScalesList() {
+      return outputScales_;
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+        getOutputScalesOrBuilderList() {
+      return outputScales_;
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    public int getOutputScalesCount() {
+      return outputScales_.size();
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue getOutputScales(int index) {
+      return outputScales_.get(index);
+    }
+    /**
+     * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+     */
+    public com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder getOutputScalesOrBuilder(
+        int index) {
+      return outputScales_.get(index);
+    }
+
+    public static final int PROTOBUFTEST_FIELD_NUMBER = 99;
+    private volatile java.lang.Object protobufTest_;
+    /**
+     * <pre>
+     * reserve a spot for testing
+     * </pre>
+     *
+     * <code>string protobufTest = 99;</code>
+     */
+    public java.lang.String getProtobufTest() {
+      java.lang.Object ref = protobufTest_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        protobufTest_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * reserve a spot for testing
+     * </pre>
+     *
+     * <code>string protobufTest = 99;</code>
+     */
+    public com.google.protobuf.ByteString
+        getProtobufTestBytes() {
+      java.lang.Object ref = protobufTest_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        protobufTest_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2249,6 +2500,21 @@ public final class Bigdl {
       }
       for (int i = 0; i < parameters_.size(); i++) {
         output.writeMessage(16, parameters_.get(i));
+      }
+      if (inputDimMasks_ != 0) {
+        output.writeInt32(17, inputDimMasks_);
+      }
+      for (int i = 0; i < inputScales_.size(); i++) {
+        output.writeMessage(18, inputScales_.get(i));
+      }
+      if (outputDimMasks_ != 0) {
+        output.writeInt32(19, outputDimMasks_);
+      }
+      for (int i = 0; i < outputScales_.size(); i++) {
+        output.writeMessage(20, outputScales_.get(i));
+      }
+      if (!getProtobufTestBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 99, protobufTest_);
       }
       unknownFields.writeTo(output);
     }
@@ -2332,6 +2598,25 @@ public final class Bigdl {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(16, parameters_.get(i));
       }
+      if (inputDimMasks_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(17, inputDimMasks_);
+      }
+      for (int i = 0; i < inputScales_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(18, inputScales_.get(i));
+      }
+      if (outputDimMasks_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(19, outputDimMasks_);
+      }
+      for (int i = 0; i < outputScales_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(20, outputScales_.get(i));
+      }
+      if (!getProtobufTestBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(99, protobufTest_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -2392,6 +2677,16 @@ public final class Bigdl {
           == other.getHasParameters());
       result = result && getParametersList()
           .equals(other.getParametersList());
+      result = result && (getInputDimMasks()
+          == other.getInputDimMasks());
+      result = result && getInputScalesList()
+          .equals(other.getInputScalesList());
+      result = result && (getOutputDimMasks()
+          == other.getOutputDimMasks());
+      result = result && getOutputScalesList()
+          .equals(other.getOutputScalesList());
+      result = result && getProtobufTest()
+          .equals(other.getProtobufTest());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -2455,6 +2750,20 @@ public final class Bigdl {
         hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
         hash = (53 * hash) + getParametersList().hashCode();
       }
+      hash = (37 * hash) + INPUTDIMMASKS_FIELD_NUMBER;
+      hash = (53 * hash) + getInputDimMasks();
+      if (getInputScalesCount() > 0) {
+        hash = (37 * hash) + INPUTSCALES_FIELD_NUMBER;
+        hash = (53 * hash) + getInputScalesList().hashCode();
+      }
+      hash = (37 * hash) + OUTPUTDIMMASKS_FIELD_NUMBER;
+      hash = (53 * hash) + getOutputDimMasks();
+      if (getOutputScalesCount() > 0) {
+        hash = (37 * hash) + OUTPUTSCALES_FIELD_NUMBER;
+        hash = (53 * hash) + getOutputScalesList().hashCode();
+      }
+      hash = (37 * hash) + PROTOBUFTEST_FIELD_NUMBER;
+      hash = (53 * hash) + getProtobufTest().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2604,6 +2913,8 @@ public final class Bigdl {
                 .alwaysUseFieldBuilders) {
           getSubModulesFieldBuilder();
           getParametersFieldBuilder();
+          getInputScalesFieldBuilder();
+          getOutputScalesFieldBuilder();
         }
       }
       public Builder clear() {
@@ -2663,6 +2974,24 @@ public final class Bigdl {
         } else {
           parametersBuilder_.clear();
         }
+        inputDimMasks_ = 0;
+
+        if (inputScalesBuilder_ == null) {
+          inputScales_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00020000);
+        } else {
+          inputScalesBuilder_.clear();
+        }
+        outputDimMasks_ = 0;
+
+        if (outputScalesBuilder_ == null) {
+          outputScales_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00080000);
+        } else {
+          outputScalesBuilder_.clear();
+        }
+        protobufTest_ = "";
+
         return this;
       }
 
@@ -2744,6 +3073,27 @@ public final class Bigdl {
         } else {
           result.parameters_ = parametersBuilder_.build();
         }
+        result.inputDimMasks_ = inputDimMasks_;
+        if (inputScalesBuilder_ == null) {
+          if (((bitField0_ & 0x00020000) == 0x00020000)) {
+            inputScales_ = java.util.Collections.unmodifiableList(inputScales_);
+            bitField0_ = (bitField0_ & ~0x00020000);
+          }
+          result.inputScales_ = inputScales_;
+        } else {
+          result.inputScales_ = inputScalesBuilder_.build();
+        }
+        result.outputDimMasks_ = outputDimMasks_;
+        if (outputScalesBuilder_ == null) {
+          if (((bitField0_ & 0x00080000) == 0x00080000)) {
+            outputScales_ = java.util.Collections.unmodifiableList(outputScales_);
+            bitField0_ = (bitField0_ & ~0x00080000);
+          }
+          result.outputScales_ = outputScales_;
+        } else {
+          result.outputScales_ = outputScalesBuilder_.build();
+        }
+        result.protobufTest_ = protobufTest_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2896,6 +3246,68 @@ public final class Bigdl {
               parametersBuilder_.addAllMessages(other.parameters_);
             }
           }
+        }
+        if (other.getInputDimMasks() != 0) {
+          setInputDimMasks(other.getInputDimMasks());
+        }
+        if (inputScalesBuilder_ == null) {
+          if (!other.inputScales_.isEmpty()) {
+            if (inputScales_.isEmpty()) {
+              inputScales_ = other.inputScales_;
+              bitField0_ = (bitField0_ & ~0x00020000);
+            } else {
+              ensureInputScalesIsMutable();
+              inputScales_.addAll(other.inputScales_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.inputScales_.isEmpty()) {
+            if (inputScalesBuilder_.isEmpty()) {
+              inputScalesBuilder_.dispose();
+              inputScalesBuilder_ = null;
+              inputScales_ = other.inputScales_;
+              bitField0_ = (bitField0_ & ~0x00020000);
+              inputScalesBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getInputScalesFieldBuilder() : null;
+            } else {
+              inputScalesBuilder_.addAllMessages(other.inputScales_);
+            }
+          }
+        }
+        if (other.getOutputDimMasks() != 0) {
+          setOutputDimMasks(other.getOutputDimMasks());
+        }
+        if (outputScalesBuilder_ == null) {
+          if (!other.outputScales_.isEmpty()) {
+            if (outputScales_.isEmpty()) {
+              outputScales_ = other.outputScales_;
+              bitField0_ = (bitField0_ & ~0x00080000);
+            } else {
+              ensureOutputScalesIsMutable();
+              outputScales_.addAll(other.outputScales_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.outputScales_.isEmpty()) {
+            if (outputScalesBuilder_.isEmpty()) {
+              outputScalesBuilder_.dispose();
+              outputScalesBuilder_ = null;
+              outputScales_ = other.outputScales_;
+              bitField0_ = (bitField0_ & ~0x00080000);
+              outputScalesBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getOutputScalesFieldBuilder() : null;
+            } else {
+              outputScalesBuilder_.addAllMessages(other.outputScales_);
+            }
+          }
+        }
+        if (!other.getProtobufTest().isEmpty()) {
+          protobufTest_ = other.protobufTest_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -5040,6 +5452,627 @@ public final class Bigdl {
           parameters_ = null;
         }
         return parametersBuilder_;
+      }
+
+      private int inputDimMasks_ ;
+      /**
+       * <code>int32 inputDimMasks = 17;</code>
+       */
+      public int getInputDimMasks() {
+        return inputDimMasks_;
+      }
+      /**
+       * <code>int32 inputDimMasks = 17;</code>
+       */
+      public Builder setInputDimMasks(int value) {
+        
+        inputDimMasks_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 inputDimMasks = 17;</code>
+       */
+      public Builder clearInputDimMasks() {
+        
+        inputDimMasks_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> inputScales_ =
+        java.util.Collections.emptyList();
+      private void ensureInputScalesIsMutable() {
+        if (!((bitField0_ & 0x00020000) == 0x00020000)) {
+          inputScales_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue>(inputScales_);
+          bitField0_ |= 0x00020000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.intel.analytics.bigdl.serialization.Bigdl.AttrValue, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder, com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> inputScalesBuilder_;
+
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> getInputScalesList() {
+        if (inputScalesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(inputScales_);
+        } else {
+          return inputScalesBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public int getInputScalesCount() {
+        if (inputScalesBuilder_ == null) {
+          return inputScales_.size();
+        } else {
+          return inputScalesBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue getInputScales(int index) {
+        if (inputScalesBuilder_ == null) {
+          return inputScales_.get(index);
+        } else {
+          return inputScalesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder setInputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue value) {
+        if (inputScalesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureInputScalesIsMutable();
+          inputScales_.set(index, value);
+          onChanged();
+        } else {
+          inputScalesBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder setInputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder builderForValue) {
+        if (inputScalesBuilder_ == null) {
+          ensureInputScalesIsMutable();
+          inputScales_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          inputScalesBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder addInputScales(com.intel.analytics.bigdl.serialization.Bigdl.AttrValue value) {
+        if (inputScalesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureInputScalesIsMutable();
+          inputScales_.add(value);
+          onChanged();
+        } else {
+          inputScalesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder addInputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue value) {
+        if (inputScalesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureInputScalesIsMutable();
+          inputScales_.add(index, value);
+          onChanged();
+        } else {
+          inputScalesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder addInputScales(
+          com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder builderForValue) {
+        if (inputScalesBuilder_ == null) {
+          ensureInputScalesIsMutable();
+          inputScales_.add(builderForValue.build());
+          onChanged();
+        } else {
+          inputScalesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder addInputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder builderForValue) {
+        if (inputScalesBuilder_ == null) {
+          ensureInputScalesIsMutable();
+          inputScales_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          inputScalesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder addAllInputScales(
+          java.lang.Iterable<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> values) {
+        if (inputScalesBuilder_ == null) {
+          ensureInputScalesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, inputScales_);
+          onChanged();
+        } else {
+          inputScalesBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder clearInputScales() {
+        if (inputScalesBuilder_ == null) {
+          inputScales_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00020000);
+          onChanged();
+        } else {
+          inputScalesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public Builder removeInputScales(int index) {
+        if (inputScalesBuilder_ == null) {
+          ensureInputScalesIsMutable();
+          inputScales_.remove(index);
+          onChanged();
+        } else {
+          inputScalesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder getInputScalesBuilder(
+          int index) {
+        return getInputScalesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder getInputScalesOrBuilder(
+          int index) {
+        if (inputScalesBuilder_ == null) {
+          return inputScales_.get(index);  } else {
+          return inputScalesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+           getInputScalesOrBuilderList() {
+        if (inputScalesBuilder_ != null) {
+          return inputScalesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(inputScales_);
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder addInputScalesBuilder() {
+        return getInputScalesFieldBuilder().addBuilder(
+            com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder addInputScalesBuilder(
+          int index) {
+        return getInputScalesFieldBuilder().addBuilder(
+            index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue inputScales = 18;</code>
+       */
+      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder> 
+           getInputScalesBuilderList() {
+        return getInputScalesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.intel.analytics.bigdl.serialization.Bigdl.AttrValue, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder, com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+          getInputScalesFieldBuilder() {
+        if (inputScalesBuilder_ == null) {
+          inputScalesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              com.intel.analytics.bigdl.serialization.Bigdl.AttrValue, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder, com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder>(
+                  inputScales_,
+                  ((bitField0_ & 0x00020000) == 0x00020000),
+                  getParentForChildren(),
+                  isClean());
+          inputScales_ = null;
+        }
+        return inputScalesBuilder_;
+      }
+
+      private int outputDimMasks_ ;
+      /**
+       * <code>int32 outputDimMasks = 19;</code>
+       */
+      public int getOutputDimMasks() {
+        return outputDimMasks_;
+      }
+      /**
+       * <code>int32 outputDimMasks = 19;</code>
+       */
+      public Builder setOutputDimMasks(int value) {
+        
+        outputDimMasks_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 outputDimMasks = 19;</code>
+       */
+      public Builder clearOutputDimMasks() {
+        
+        outputDimMasks_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> outputScales_ =
+        java.util.Collections.emptyList();
+      private void ensureOutputScalesIsMutable() {
+        if (!((bitField0_ & 0x00080000) == 0x00080000)) {
+          outputScales_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue>(outputScales_);
+          bitField0_ |= 0x00080000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.intel.analytics.bigdl.serialization.Bigdl.AttrValue, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder, com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> outputScalesBuilder_;
+
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> getOutputScalesList() {
+        if (outputScalesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(outputScales_);
+        } else {
+          return outputScalesBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public int getOutputScalesCount() {
+        if (outputScalesBuilder_ == null) {
+          return outputScales_.size();
+        } else {
+          return outputScalesBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue getOutputScales(int index) {
+        if (outputScalesBuilder_ == null) {
+          return outputScales_.get(index);
+        } else {
+          return outputScalesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder setOutputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue value) {
+        if (outputScalesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureOutputScalesIsMutable();
+          outputScales_.set(index, value);
+          onChanged();
+        } else {
+          outputScalesBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder setOutputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder builderForValue) {
+        if (outputScalesBuilder_ == null) {
+          ensureOutputScalesIsMutable();
+          outputScales_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          outputScalesBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder addOutputScales(com.intel.analytics.bigdl.serialization.Bigdl.AttrValue value) {
+        if (outputScalesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureOutputScalesIsMutable();
+          outputScales_.add(value);
+          onChanged();
+        } else {
+          outputScalesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder addOutputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue value) {
+        if (outputScalesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureOutputScalesIsMutable();
+          outputScales_.add(index, value);
+          onChanged();
+        } else {
+          outputScalesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder addOutputScales(
+          com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder builderForValue) {
+        if (outputScalesBuilder_ == null) {
+          ensureOutputScalesIsMutable();
+          outputScales_.add(builderForValue.build());
+          onChanged();
+        } else {
+          outputScalesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder addOutputScales(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder builderForValue) {
+        if (outputScalesBuilder_ == null) {
+          ensureOutputScalesIsMutable();
+          outputScales_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          outputScalesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder addAllOutputScales(
+          java.lang.Iterable<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValue> values) {
+        if (outputScalesBuilder_ == null) {
+          ensureOutputScalesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, outputScales_);
+          onChanged();
+        } else {
+          outputScalesBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder clearOutputScales() {
+        if (outputScalesBuilder_ == null) {
+          outputScales_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00080000);
+          onChanged();
+        } else {
+          outputScalesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public Builder removeOutputScales(int index) {
+        if (outputScalesBuilder_ == null) {
+          ensureOutputScalesIsMutable();
+          outputScales_.remove(index);
+          onChanged();
+        } else {
+          outputScalesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder getOutputScalesBuilder(
+          int index) {
+        return getOutputScalesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder getOutputScalesOrBuilder(
+          int index) {
+        if (outputScalesBuilder_ == null) {
+          return outputScales_.get(index);  } else {
+          return outputScalesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+           getOutputScalesOrBuilderList() {
+        if (outputScalesBuilder_ != null) {
+          return outputScalesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(outputScales_);
+        }
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder addOutputScalesBuilder() {
+        return getOutputScalesFieldBuilder().addBuilder(
+            com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder addOutputScalesBuilder(
+          int index) {
+        return getOutputScalesFieldBuilder().addBuilder(
+            index, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .com.intel.analytics.bigdl.serialization.AttrValue outputScales = 20;</code>
+       */
+      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder> 
+           getOutputScalesBuilderList() {
+        return getOutputScalesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.intel.analytics.bigdl.serialization.Bigdl.AttrValue, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder, com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder> 
+          getOutputScalesFieldBuilder() {
+        if (outputScalesBuilder_ == null) {
+          outputScalesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              com.intel.analytics.bigdl.serialization.Bigdl.AttrValue, com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.Builder, com.intel.analytics.bigdl.serialization.Bigdl.AttrValueOrBuilder>(
+                  outputScales_,
+                  ((bitField0_ & 0x00080000) == 0x00080000),
+                  getParentForChildren(),
+                  isClean());
+          outputScales_ = null;
+        }
+        return outputScalesBuilder_;
+      }
+
+      private java.lang.Object protobufTest_ = "";
+      /**
+       * <pre>
+       * reserve a spot for testing
+       * </pre>
+       *
+       * <code>string protobufTest = 99;</code>
+       */
+      public java.lang.String getProtobufTest() {
+        java.lang.Object ref = protobufTest_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          protobufTest_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * reserve a spot for testing
+       * </pre>
+       *
+       * <code>string protobufTest = 99;</code>
+       */
+      public com.google.protobuf.ByteString
+          getProtobufTestBytes() {
+        java.lang.Object ref = protobufTest_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          protobufTest_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * reserve a spot for testing
+       * </pre>
+       *
+       * <code>string protobufTest = 99;</code>
+       */
+      public Builder setProtobufTest(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        protobufTest_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * reserve a spot for testing
+       * </pre>
+       *
+       * <code>string protobufTest = 99;</code>
+       */
+      public Builder clearProtobufTest() {
+        
+        protobufTest_ = getDefaultInstance().getProtobufTest();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * reserve a spot for testing
+       * </pre>
+       *
+       * <code>string protobufTest = 99;</code>
+       */
+      public Builder setProtobufTestBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        protobufTest_ = value;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -22144,7 +23177,7 @@ public final class Bigdl {
     java.lang.String[] descriptorData = {
       "\n\013bigdl.proto\022\'com.intel.analytics.bigdl" +
       ".serialization\032\031google/protobuf/any.prot" +
-      "o\"\206\006\n\013BigDLModule\022\014\n\004name\030\001 \001(\t\022H\n\nsubMo" +
+      "o\"\336\007\n\013BigDLModule\022\014\n\004name\030\001 \001(\t\022H\n\nsubMo" +
       "dules\030\002 \003(\01324.com.intel.analytics.bigdl." +
       "serialization.BigDLModule\022D\n\006weight\030\003 \001(" +
       "\01324.com.intel.analytics.bigdl.serializat" +
@@ -22161,105 +23194,110 @@ public final class Bigdl {
       "igdl.serialization.Shape\022\025\n\rhasParameter" +
       "s\030\017 \001(\010\022H\n\nparameters\030\020 \003(\01324.com.intel." +
       "analytics.bigdl.serialization.BigDLTenso" +
-      "r\032_\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022A\n\005value\030\002 \001",
-      "(\01322.com.intel.analytics.bigdl.serializa" +
-      "tion.AttrValue:\0028\001\"g\n\nInitMethod\022K\n\nmeth" +
-      "odType\030\001 \001(\01627.com.intel.analytics.bigdl" +
-      ".serialization.InitMethodType\022\014\n\004data\030\002 " +
-      "\003(\001\"\326\002\n\013BigDLTensor\022C\n\010datatype\030\001 \001(\01621." +
-      "com.intel.analytics.bigdl.serialization." +
-      "DataType\022\014\n\004size\030\002 \003(\005\022\016\n\006stride\030\003 \003(\005\022\016" +
-      "\n\006offset\030\004 \001(\005\022\021\n\tdimension\030\005 \001(\005\022\021\n\tnEl" +
-      "ements\030\006 \001(\005\022\020\n\010isScalar\030\007 \001(\010\022G\n\007storag" +
-      "e\030\010 \001(\01326.com.intel.analytics.bigdl.seri",
-      "alization.TensorStorage\022\n\n\002id\030\t \001(\005\022G\n\nt" +
-      "ensorType\030\n \001(\01623.com.intel.analytics.bi" +
-      "gdl.serialization.TensorType\"\352\001\n\rTensorS" +
-      "torage\022C\n\010datatype\030\001 \001(\01621.com.intel.ana" +
-      "lytics.bigdl.serialization.DataType\022\022\n\nf" +
-      "loat_data\030\002 \003(\002\022\023\n\013double_data\030\003 \003(\001\022\021\n\t" +
-      "bool_data\030\004 \003(\010\022\023\n\013string_data\030\005 \003(\t\022\020\n\010" +
-      "int_data\030\006 \003(\005\022\021\n\tlong_data\030\007 \003(\003\022\022\n\nbyt" +
-      "es_data\030\010 \003(\014\022\n\n\002id\030\t \001(\005\"u\n\013Regularizer" +
-      "\022Q\n\017regularizerType\030\001 \001(\01628.com.intel.an",
-      "alytics.bigdl.serialization.RegularizerT" +
-      "ype\022\023\n\013regularData\030\002 \003(\001\"\224\016\n\tAttrValue\022C" +
-      "\n\010dataType\030\001 \001(\01621.com.intel.analytics.b" +
-      "igdl.serialization.DataType\022\017\n\007subType\030\002" +
-      " \001(\t\022\024\n\nint32Value\030\003 \001(\005H\000\022\024\n\nint64Value" +
-      "\030\004 \001(\003H\000\022\024\n\nfloatValue\030\005 \001(\002H\000\022\025\n\013double" +
-      "Value\030\006 \001(\001H\000\022\025\n\013stringValue\030\007 \001(\tH\000\022\023\n\t" +
-      "boolValue\030\010 \001(\010H\000\022P\n\020regularizerValue\030\t " +
-      "\001(\01324.com.intel.analytics.bigdl.serializ" +
-      "ation.RegularizerH\000\022K\n\013tensorValue\030\n \001(\013",
-      "24.com.intel.analytics.bigdl.serializati" +
-      "on.BigDLTensorH\000\022Q\n\023variableFormatValue\030" +
-      "\013 \001(\01622.com.intel.analytics.bigdl.serial" +
-      "ization.VarFormatH\000\022N\n\017initMethodValue\030\014" +
-      " \001(\01323.com.intel.analytics.bigdl.seriali" +
-      "zation.InitMethodH\000\022P\n\020bigDLModuleValue\030" +
-      "\r \001(\01324.com.intel.analytics.bigdl.serial" +
-      "ization.BigDLModuleH\000\022R\n\021nameAttrListVal" +
-      "ue\030\016 \001(\01325.com.intel.analytics.bigdl.ser" +
-      "ialization.NameAttrListH\000\022S\n\narrayValue\030",
-      "\017 \001(\0132=.com.intel.analytics.bigdl.serial" +
-      "ization.AttrValue.ArrayValueH\000\022S\n\017dataFo" +
-      "rmatValue\030\020 \001(\01628.com.intel.analytics.bi" +
-      "gdl.serialization.InputDataFormatH\000\022+\n\013c" +
-      "ustomValue\030\021 \001(\0132\024.google.protobuf.AnyH\000" +
-      "\022?\n\005shape\030\022 \001(\0132..com.intel.analytics.bi" +
-      "gdl.serialization.ShapeH\000\032\242\006\n\nArrayValue" +
-      "\022\014\n\004size\030\001 \001(\005\022C\n\010datatype\030\002 \001(\01621.com.i" +
+      "r\022\025\n\rinputDimMasks\030\021 \001(\005\022G\n\013inputScales\030",
+      "\022 \003(\01322.com.intel.analytics.bigdl.serial" +
+      "ization.AttrValue\022\026\n\016outputDimMasks\030\023 \001(" +
+      "\005\022H\n\014outputScales\030\024 \003(\01322.com.intel.anal" +
+      "ytics.bigdl.serialization.AttrValue\022\024\n\014p" +
+      "rotobufTest\030c \001(\t\032_\n\tAttrEntry\022\013\n\003key\030\001 " +
+      "\001(\t\022A\n\005value\030\002 \001(\01322.com.intel.analytics" +
+      ".bigdl.serialization.AttrValue:\0028\001\"g\n\nIn" +
+      "itMethod\022K\n\nmethodType\030\001 \001(\01627.com.intel" +
+      ".analytics.bigdl.serialization.InitMetho" +
+      "dType\022\014\n\004data\030\002 \003(\001\"\326\002\n\013BigDLTensor\022C\n\010d",
+      "atatype\030\001 \001(\01621.com.intel.analytics.bigd" +
+      "l.serialization.DataType\022\014\n\004size\030\002 \003(\005\022\016" +
+      "\n\006stride\030\003 \003(\005\022\016\n\006offset\030\004 \001(\005\022\021\n\tdimens" +
+      "ion\030\005 \001(\005\022\021\n\tnElements\030\006 \001(\005\022\020\n\010isScalar" +
+      "\030\007 \001(\010\022G\n\007storage\030\010 \001(\01326.com.intel.anal" +
+      "ytics.bigdl.serialization.TensorStorage\022" +
+      "\n\n\002id\030\t \001(\005\022G\n\ntensorType\030\n \001(\01623.com.in" +
+      "tel.analytics.bigdl.serialization.Tensor" +
+      "Type\"\352\001\n\rTensorStorage\022C\n\010datatype\030\001 \001(\016" +
+      "21.com.intel.analytics.bigdl.serializati",
+      "on.DataType\022\022\n\nfloat_data\030\002 \003(\002\022\023\n\013doubl" +
+      "e_data\030\003 \003(\001\022\021\n\tbool_data\030\004 \003(\010\022\023\n\013strin" +
+      "g_data\030\005 \003(\t\022\020\n\010int_data\030\006 \003(\005\022\021\n\tlong_d" +
+      "ata\030\007 \003(\003\022\022\n\nbytes_data\030\010 \003(\014\022\n\n\002id\030\t \001(" +
+      "\005\"u\n\013Regularizer\022Q\n\017regularizerType\030\001 \001(" +
+      "\01628.com.intel.analytics.bigdl.serializat" +
+      "ion.RegularizerType\022\023\n\013regularData\030\002 \003(\001" +
+      "\"\224\016\n\tAttrValue\022C\n\010dataType\030\001 \001(\01621.com.i" +
       "ntel.analytics.bigdl.serialization.DataT" +
-      "ype\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013\n\003flt\030\005 \003",
-      "(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n\007boolean\030" +
-      "\010 \003(\010\022I\n\013Regularizer\030\t \003(\01324.com.intel.a" +
-      "nalytics.bigdl.serialization.Regularizer" +
-      "\022D\n\006tensor\030\n \003(\01324.com.intel.analytics.b" +
-      "igdl.serialization.BigDLTensor\022J\n\016variab" +
-      "leFormat\030\013 \003(\01622.com.intel.analytics.big" +
-      "dl.serialization.VarFormat\022G\n\ninitMethod" +
-      "\030\014 \003(\01323.com.intel.analytics.bigdl.seria" +
-      "lization.InitMethod\022I\n\013bigDLModule\030\r \003(\013" +
-      "24.com.intel.analytics.bigdl.serializati",
-      "on.BigDLModule\022K\n\014nameAttrList\030\016 \003(\01325.c" +
-      "om.intel.analytics.bigdl.serialization.N" +
-      "ameAttrList\022L\n\ndataFormat\030\017 \003(\01628.com.in" +
+      "ype\022\017\n\007subType\030\002 \001(\t\022\024\n\nint32Value\030\003 \001(\005",
+      "H\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n\nfloatValue\030\005" +
+      " \001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001H\000\022\025\n\013stringV" +
+      "alue\030\007 \001(\tH\000\022\023\n\tboolValue\030\010 \001(\010H\000\022P\n\020reg" +
+      "ularizerValue\030\t \001(\01324.com.intel.analytic" +
+      "s.bigdl.serialization.RegularizerH\000\022K\n\013t" +
+      "ensorValue\030\n \001(\01324.com.intel.analytics.b" +
+      "igdl.serialization.BigDLTensorH\000\022Q\n\023vari" +
+      "ableFormatValue\030\013 \001(\01622.com.intel.analyt" +
+      "ics.bigdl.serialization.VarFormatH\000\022N\n\017i" +
+      "nitMethodValue\030\014 \001(\01323.com.intel.analyti",
+      "cs.bigdl.serialization.InitMethodH\000\022P\n\020b" +
+      "igDLModuleValue\030\r \001(\01324.com.intel.analyt" +
+      "ics.bigdl.serialization.BigDLModuleH\000\022R\n" +
+      "\021nameAttrListValue\030\016 \001(\01325.com.intel.ana" +
+      "lytics.bigdl.serialization.NameAttrListH" +
+      "\000\022S\n\narrayValue\030\017 \001(\0132=.com.intel.analyt" +
+      "ics.bigdl.serialization.AttrValue.ArrayV" +
+      "alueH\000\022S\n\017dataFormatValue\030\020 \001(\01628.com.in" +
       "tel.analytics.bigdl.serialization.InputD" +
-      "ataFormat\022$\n\006custom\030\020 \003(\0132\024.google.proto" +
-      "buf.Any\022=\n\005shape\030\021 \003(\0132..com.intel.analy" +
-      "tics.bigdl.serialization.ShapeB\007\n\005value\"" +
-      "\314\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\022M\n\004attr\030\002" +
-      " \003(\0132?.com.intel.analytics.bigdl.seriali" +
-      "zation.NameAttrList.AttrEntry\032_\n\tAttrEnt",
-      "ry\022\013\n\003key\030\001 \001(\t\022A\n\005value\030\002 \001(\01322.com.int" +
-      "el.analytics.bigdl.serialization.AttrVal" +
-      "ue:\0028\001\"\332\001\n\005Shape\022K\n\tshapeType\030\001 \001(\01628.co" +
-      "m.intel.analytics.bigdl.serialization.Sh" +
-      "ape.ShapeType\022\r\n\005ssize\030\002 \001(\005\022\022\n\nshapeVal" +
-      "ue\030\003 \003(\005\022=\n\005shape\030\004 \003(\0132..com.intel.anal" +
-      "ytics.bigdl.serialization.Shape\"\"\n\tShape" +
-      "Type\022\n\n\006SINGLE\020\000\022\t\n\005MULTI\020\001*\260\001\n\tVarForma" +
-      "t\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_" +
-      "D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW",
-      "_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP_OUT_IN_KW_" +
-      "KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017OUT_IN_KT_K" +
-      "H_KW\020\t*\253\001\n\016InitMethodType\022\030\n\024EMPTY_INITI" +
-      "ALIZATION\020\000\022\022\n\016RANDOM_UNIFORM\020\001\022\030\n\024RANDO" +
-      "M_UNIFORM_PARAM\020\002\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005" +
-      "ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007" +
-      "\022\022\n\016BILINEARFILLER\020\010*L\n\017RegularizerType\022" +
-      "\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Regularizer\020\001\022" +
-      "\021\n\rL2Regularizer\020\002*%\n\017InputDataFormat\022\010\n" +
-      "\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTensorType\022\t\n\005DENSE",
-      "\020\000\022\t\n\005QUANT\020\001*\210\002\n\010DataType\022\t\n\005INT32\020\000\022\t\n" +
-      "\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STRIN" +
-      "G\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022\t\n\005SHORT\020\007\022\t\n\005BY" +
-      "TES\020\010\022\017\n\013REGULARIZER\020\t\022\n\n\006TENSOR\020\n\022\023\n\017VA" +
-      "RIABLE_FORMAT\020\013\022\016\n\nINITMETHOD\020\014\022\n\n\006MODUL" +
-      "E\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022\017\n\013ARRAY_VALUE\020\017" +
-      "\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUSTOM\020\021\022\t\n\005SHAPE\020\022" +
-      "b\006proto3"
+      "ataFormatH\000\022+\n\013customValue\030\021 \001(\0132\024.googl",
+      "e.protobuf.AnyH\000\022?\n\005shape\030\022 \001(\0132..com.in" +
+      "tel.analytics.bigdl.serialization.ShapeH" +
+      "\000\032\242\006\n\nArrayValue\022\014\n\004size\030\001 \001(\005\022C\n\010dataty" +
+      "pe\030\002 \001(\01621.com.intel.analytics.bigdl.ser" +
+      "ialization.DataType\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030" +
+      "\004 \003(\003\022\013\n\003flt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007" +
+      " \003(\t\022\017\n\007boolean\030\010 \003(\010\022I\n\013Regularizer\030\t \003" +
+      "(\01324.com.intel.analytics.bigdl.serializa" +
+      "tion.Regularizer\022D\n\006tensor\030\n \003(\01324.com.i" +
+      "ntel.analytics.bigdl.serialization.BigDL",
+      "Tensor\022J\n\016variableFormat\030\013 \003(\01622.com.int" +
+      "el.analytics.bigdl.serialization.VarForm" +
+      "at\022G\n\ninitMethod\030\014 \003(\01323.com.intel.analy" +
+      "tics.bigdl.serialization.InitMethod\022I\n\013b" +
+      "igDLModule\030\r \003(\01324.com.intel.analytics.b" +
+      "igdl.serialization.BigDLModule\022K\n\014nameAt" +
+      "trList\030\016 \003(\01325.com.intel.analytics.bigdl" +
+      ".serialization.NameAttrList\022L\n\ndataForma" +
+      "t\030\017 \003(\01628.com.intel.analytics.bigdl.seri" +
+      "alization.InputDataFormat\022$\n\006custom\030\020 \003(",
+      "\0132\024.google.protobuf.Any\022=\n\005shape\030\021 \003(\0132." +
+      ".com.intel.analytics.bigdl.serialization" +
+      ".ShapeB\007\n\005value\"\314\001\n\014NameAttrList\022\014\n\004name" +
+      "\030\001 \001(\t\022M\n\004attr\030\002 \003(\0132?.com.intel.analyti" +
+      "cs.bigdl.serialization.NameAttrList.Attr" +
+      "Entry\032_\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022A\n\005value" +
+      "\030\002 \001(\01322.com.intel.analytics.bigdl.seria" +
+      "lization.AttrValue:\0028\001\"\332\001\n\005Shape\022K\n\tshap" +
+      "eType\030\001 \001(\01628.com.intel.analytics.bigdl." +
+      "serialization.Shape.ShapeType\022\r\n\005ssize\030\002",
+      " \001(\005\022\022\n\nshapeValue\030\003 \003(\005\022=\n\005shape\030\004 \003(\0132" +
+      "..com.intel.analytics.bigdl.serializatio" +
+      "n.Shape\"\"\n\tShapeType\022\n\n\006SINGLE\020\000\022\t\n\005MULT" +
+      "I\020\001*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007D" +
+      "EFAULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_I" +
+      "N\020\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022" +
+      "\023\n\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020" +
+      "\010\022\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodTyp" +
+      "e\022\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UN" +
+      "IFORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRAN",
+      "DOM_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CON" +
+      "ST\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017" +
+      "RegularizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\r" +
+      "L1Regularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017In" +
+      "putDataFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTen" +
+      "sorType\022\t\n\005DENSE\020\000\022\t\n\005QUANT\020\001*\210\002\n\010DataTy" +
+      "pe\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006D" +
+      "OUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022" +
+      "\t\n\005SHORT\020\007\022\t\n\005BYTES\020\010\022\017\n\013REGULARIZER\020\t\022\n" +
+      "\n\006TENSOR\020\n\022\023\n\017VARIABLE_FORMAT\020\013\022\016\n\nINITM",
+      "ETHOD\020\014\022\n\n\006MODULE\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022" +
+      "\017\n\013ARRAY_VALUE\020\017\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUS" +
+      "TOM\020\021\022\t\n\005SHAPE\020\022b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -22279,7 +23317,7 @@ public final class Bigdl {
     internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_descriptor,
-        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", "Train", "NamePostfix", "Id", "InputShape", "OutputShape", "HasParameters", "Parameters", });
+        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", "Train", "NamePostfix", "Id", "InputShape", "OutputShape", "HasParameters", "Parameters", "InputDimMasks", "InputScales", "OutputDimMasks", "OutputScales", "ProtobufTest", });
     internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_AttrEntry_descriptor =
       internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_descriptor.getNestedTypes().get(0);
     internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_AttrEntry_fieldAccessorTable = new

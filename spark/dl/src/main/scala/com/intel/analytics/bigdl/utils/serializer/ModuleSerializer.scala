@@ -119,7 +119,7 @@ object ModuleSerializer extends ModuleSerializable{
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     try {
       val model = context.bigdlModule
-      val deSerializer = if (serializerMaps.contains(model.getModuleType)) {
+      val deserializer = if (serializerMaps.contains(model.getModuleType)) {
         serializerMaps(model.getModuleType)
       } else {
         val attrMap = model.getAttrMap
@@ -145,8 +145,8 @@ object ModuleSerializer extends ModuleSerializable{
           }
         }
       }
-      deSerializer.setCopyWeightAndBias(context.copyWeightAndBias).
-        loadModule(context)
+      deserializer.setCopyWeightAndBias(context.copyWeightAndBias).loadModule(context)
+
     } catch {
       case e: Exception =>
         throw new RuntimeException(

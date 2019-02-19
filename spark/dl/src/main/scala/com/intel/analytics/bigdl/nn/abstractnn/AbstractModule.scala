@@ -36,6 +36,7 @@ import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -55,16 +56,16 @@ abstract class TensorModule[T: ClassTag]
  * @tparam B Output data type
  * @tparam T The numeric type in this module parameters.
  */
+
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable with InferShape{
 
   // ================================= Public APIs =============================================
-
-
   /**
    * The cached output. So we don't compute it again when need it
    */
   var output: B = Activity.allocate[B, T]()
+
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
@@ -907,6 +908,20 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   // ================================= Internal APIs ===========================================
 
+  private var protobufTest : String = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+
+  final private[bigdl] def getProtobufTest : String = protobufTest
+
+  final private[bigdl] def setProtobufTest(newVal : String) : Unit =
+    this.protobufTest = newVal
+
+  /*
+  TODO:
+   */
+
+  // END
+
+
   private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
 
   final private[bigdl] def getNamePostfix : String = namePostfix
@@ -1181,5 +1196,61 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       }
     }
   }
+
+
+  // this three variables are for mkldnn int8. because container maybe have more than 1 Tensor
+  // output, so use a mutable ArrayBuffer[Float] to handle the ConcatTable, Graph and so on
+  // mask == 0 means we use single scales, which will get the max of whole tensor (in/out).
+  // scalesOfInput will maintain the max value of input tensor
+  // scalesOfOutput will maintain the max value of output tensor
+  var scalesOfInput: Int8ScalesAndMask = new Int8ScalesAndMask(Int8ScalesAndMask.SINGLE_SCALE)
+  var scalesOfOutput: Int8ScalesAndMask = new Int8ScalesAndMask(Int8ScalesAndMask.SINGLE_SCALE)
+
+  def getScalesOfInput() : Int8ScalesAndMask = scalesOfInput
+  def setScalesOfInput(newScales : Int8ScalesAndMask) : Unit = {
+    scalesOfInput = newScales
+  }
+  def getScalesOfOutput() : Int8ScalesAndMask = scalesOfOutput
+  def setScalesOfOutput(newScales : Int8ScalesAndMask): Unit = {
+    scalesOfOutput = newScales
+  }
+
 }
+
+class Int8ScalesAndMask(val mask: Int) extends Serializable {
+  private val _scales: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
+
+  def scales: ArrayBuffer[Array[Float]] = _scales
+
+  def set(scales: Array[Array[Float]]): Unit = {
+    _scales.clear()
+    scales.foreach(append)
+  }
+
+  def get(): Array[Array[Float]] = {
+    _scales.toArray
+  }
+
+  def getMask() : Int = mask
+
+  def append(scale: Array[Float]): Unit = {
+    _scales.append(scale)
+  }
+
+  def update(scale: Array[Float], index: Int): Unit = {
+    if (scales.length - 1 < index) {
+      scales.append(scale)
+    }
+
+    scales(index).indices.foreach(i =>
+      if (scale(i) > scales(index)(i)) {
+        scales(index)(i) = scale(i)
+      })
+  }
+}
+
+object Int8ScalesAndMask {
+  val SINGLE_SCALE = 0
+}
+
 

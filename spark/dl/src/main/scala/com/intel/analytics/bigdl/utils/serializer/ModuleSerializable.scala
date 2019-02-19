@@ -15,7 +15,9 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+
 import java.lang.reflect.Field
+import scala.collection.JavaConverters._
 
 import com.intel.analytics.bigdl.nn.Container
 
@@ -85,7 +87,6 @@ trait ModuleSerializable extends Loadable with Savable{
 
     // step2 : module specific logic to load module, either default, cell, container or graph
     val moduleId = context.bigdlModule.getId
-
     val storages = context.storages
 
     val module = if (storages.contains(moduleId)) {
@@ -121,6 +122,7 @@ trait ModuleSerializable extends Loadable with Savable{
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams.map(_.size).sum)
     var i = 0
+
     constructorFullParams.foreach(map => {
       map.foreach(param => {
         val name = param.name.decodedName.toString
@@ -218,6 +220,7 @@ trait ModuleSerializable extends Loadable with Savable{
     val fullParams = getCostructorMirror(cls).symbol.paramss
     val constructorParams = fullParams(0)
     constructorParams.foreach(param => {
+
       val paramName = param.name.decodedName.toString
       var ptype = param.typeSignature
       val attrBuilder = AttrValue.newBuilder
@@ -237,23 +240,32 @@ trait ModuleSerializable extends Loadable with Savable{
       })
   }
 
+  /*
+   * Re-create BigDL module by deserializing protobuf context.
+   * @param DeserializeContext: Deserialization context
+   * @param AbstractModule: The BigDL module to be re-created
+   * @return ModuleData: Tuple3 contains information of current module and modules adjacent to it
+   */
   protected def createBigDLModule[T: ClassTag](context: DeserializeContext,
                                                module : AbstractModule[Activity, Activity, T])
-                                              (implicit ev: TensorNumeric[T])
-  : ModuleData[T] = {
+                                              (implicit ev: TensorNumeric[T]): ModuleData[T] = {
     val model = context.bigdlModule
     val preModules = model.getPreModulesList.asScala
     val nextModules = model.getNextModulesList.asScala
     val bigDLModule = ModuleData(module, preModules, nextModules)
+
     if (model.getName != "") {
       module.setName(model.getName)
     }
+
     module.setNamePostfix(model.getNamePostfix)
+
     if (model.getTrain) {
       module.training()
     } else {
       module.evaluate()
     }
+
     module.inputShapeValue = ShapeConverter.shapeToBigDL(context, model, "input")
     module.outputShapeValue = ShapeConverter.shapeToBigDL(context, model, "output")
 
@@ -261,12 +273,23 @@ trait ModuleSerializable extends Loadable with Savable{
     if (_copyWeightAndBias && context.bigdlModule.getSubModulesCount == 0) {
       copy2BigDL(context, bigDLModule)
     }
+
+    // Load scale and mask of input and output into BigDL Module from protobuf definition
+    loadScaleAndMask(context, module)
+
     bigDLModule
   }
 
-  protected def createSerializeBigDLModule[T: ClassTag](
-    modelBuilder : BigDLModule.Builder, context: SerializeContext[T])(implicit ev: TensorNumeric[T])
-  : SerializeResult = {
+
+  /*
+   * Create BigDL model's protobuf definition by serializing BigDL Module object
+   * @param BigDLModule.Builder: BigDL model builder of protobuf definition
+   * @param SerializeContext: Serialized context of BigDL module
+   * @return SerializeResult:
+   */
+  protected def createSerializeBigDLModule[T: ClassTag](modelBuilder : BigDLModule.Builder,
+                                      context: SerializeContext[T])
+                                    (implicit ev: TensorNumeric[T]): SerializeResult = {
     val module = context.moduleData
     module.pre.foreach(pre => modelBuilder.addPreModules(pre))
     module.next.foreach(next => modelBuilder.addNextModules(next))
@@ -288,6 +311,10 @@ trait ModuleSerializable extends Loadable with Savable{
     if (_copyWeightAndBias && !module.isInstanceOf[Container[_, _, _]]) {
       copyFromBigDL(context, modelBuilder)
     }
+
+    // Save scales and mask of input and output into BigDL model's protobuf definition
+    saveScaleAndMask(context, modelBuilder)
+
     SerializeResult(modelBuilder, context.storages)
   }
 
@@ -356,12 +383,44 @@ trait ModuleSerializable extends Loadable with Savable{
   }
 
   /**
-   * copy BigDL module data (weight and bias if exist) to BigDL Model to be persisted
+    * Deserialize scales and mask of input and output from protobuf context
+    * and load them into BigDL Module object
+    * @param context deserialized context
+    * @param module  bigDL Module with relationships
+    */
+  private def loadScaleAndMask[T: ClassTag](context: DeserializeContext,
+                                            module: AbstractModule[Activity, Activity, T])
+                                           (implicit ev: TensorNumeric[T]): Unit = {
+
+    val protobufModel = context.bigdlModule
+    module.setProtobufTest(protobufModel.getProtobufTest)
+
+    // Extract ArrayValue for each AttrValue, and then get FltList as input scales
+    val inputScales = protobufModel.getInputScalesList.iterator().asScala
+      .map((attr : AttrValue) => {
+        attr.getArrayValue.getFltList.asScala.toArray.map(_.asInstanceOf[Float])
+      })
+
+    // Extract ArrayValue for each AttrValue, and then get FltList as output scales
+    val outputScales = protobufModel.getOutputScalesList.iterator().asScala
+      .map((attr : AttrValue) => {
+        attr.getArrayValue.getFltList.asScala.toArray.map(_.asInstanceOf[Float])
+      })
+
+    module.getScalesOfInput().set(inputScales.toArray)
+    module.getScalesOfOutput().set(outputScales.toArray)
+  }
+
+
+
+  /**
+   * Copy BigDL module data (weight and bias if exist) into BigDL Model's protobuf definition
    * @param modelBuilder serialized module builder
    * @param context  serialization context
    */
   protected def copyFromBigDL[T: ClassTag](context : SerializeContext[T],
     modelBuilder : BigDLModule.Builder)(implicit ev : TensorNumeric[T]) : Unit = {
+
     val parameters = context.moduleData.module.parameters
     if (parameters != null && parameters._1 != null) {
       modelBuilder.setHasParameters(true)
@@ -372,6 +431,63 @@ trait ModuleSerializable extends Loadable with Savable{
       })
     }
   }
+
+
+  /**
+    * Copy BigDL module data (weight and bias if exist) into BigDL Model's protobuf definition
+    * @param modelBuilder serialized module builder
+    * @param context  serialization context
+    */
+  protected def saveScaleAndMask[T: ClassTag](context : SerializeContext[T],
+                                      modelBuilder : BigDLModule.Builder)
+                                     (implicit ev : TensorNumeric[T]) : Unit = {
+
+    val module = context.moduleData
+    modelBuilder.setProtobufTest(module.module.getProtobufTest)
+
+    // Save scale and mask of input into BigDL model builder
+    val inputScales : Array[Array[Float]] = module.module.getScalesOfInput().get()
+    val inputMasks : Int = module.module.getScalesOfInput().getMask()
+
+
+    val inputScalesAttrList = inputScales.map((arry : Array[Float]) => {
+      val tempAttrValBuilder = AttrValue.newBuilder()
+      tempAttrValBuilder.setDataType(DataType.ARRAY_VALUE)
+
+      val tempArryValBuilder = ArrayValue.newBuilder()
+      tempArryValBuilder.setSize(arry.length)
+      tempArryValBuilder.setDatatype(DataType.FLOAT)
+
+      arry.foreach(tempArryValBuilder.addFlt)
+      tempAttrValBuilder.setArrayValue(tempArryValBuilder).build()
+    })
+
+    modelBuilder.addAllInputScales(inputScalesAttrList.toIterable.asJava)
+    modelBuilder.setInputDimMasks(inputMasks)
+
+
+    // Save scale and mask of output into BigDL model builder
+    val outputScales : Array[Array[Float]] = module.module.getScalesOfOutput().get()
+    val outputMasks : Int = module.module.getScalesOfOutput().getMask()
+
+    val outputScalesAttrList = outputScales.map((arry : Array[Float]) => {
+      val tempAttrValBuilder = AttrValue.newBuilder()
+      tempAttrValBuilder.setDataType(DataType.ARRAY_VALUE)
+
+      val tempArryValBuilder = ArrayValue.newBuilder()
+      tempArryValBuilder.setSize(arry.length)
+      tempArryValBuilder.setDatatype(DataType.FLOAT)
+
+      arry.foreach(tempArryValBuilder.addFlt)
+      tempAttrValBuilder.setArrayValue(tempArryValBuilder).build()
+    })
+
+    modelBuilder.addAllOutputScales(outputScalesAttrList.toIterable.asJava)
+    modelBuilder.setOutputDimMasks(outputMasks)
+
+    modelBuilder
+  }
+
 
 }
 
