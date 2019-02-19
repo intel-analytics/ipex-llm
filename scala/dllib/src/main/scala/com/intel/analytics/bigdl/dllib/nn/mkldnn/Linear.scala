@@ -34,10 +34,10 @@ class Linear(
   private val initGradWeight: Tensor[Float] = null,
   private val initGradBias: Tensor[Float] = null) extends MklDnnLayer with Initializable {
 
-  private[mkldnn] val weight: Blob = new Blob(Array(outputSize, inputSize))
-  private[mkldnn] val bias: Blob = new Blob(Array(outputSize))
-  private[mkldnn] val gradWeight: Blob = new Blob(Array(outputSize, inputSize))
-  private[mkldnn] val gradBias: Blob = new Blob(Array(outputSize))
+  private[mkldnn] val weight: TensorMMap = new TensorMMap(Array(outputSize, inputSize))
+  private[mkldnn] val bias: TensorMMap = new TensorMMap(Array(outputSize))
+  private[mkldnn] val gradWeight: TensorMMap = new TensorMMap(Array(outputSize, inputSize))
+  private[mkldnn] val gradBias: TensorMMap = new TensorMMap(Array(outputSize))
 
   @transient private var forwardPrimDesc: Long = 0L
 
@@ -58,26 +58,24 @@ class Linear(
   override def reset(): Unit = {
     if (initWeight == null) {
       weightInitMethod.init(weight.dense, VariableFormat.OUT_IN)
-      weight.syncToNative()
     } else {
-      weight.copy(initWeight)
+      weight.dense.copy(initWeight)
     }
 
     if (initBias == null) {
       biasInitMethod.init(bias.dense, VariableFormat.ONE_D)
-      bias.syncToNative()
     } else {
-      bias.copy(initBias)
+      bias.dense.copy(initBias)
     }
-
-    gradWeight.zero()
-    gradBias.zero()
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    val weightShape = inputs(0).shape.length match {
-      case 4 => Array(weight.size(1)) ++ inputs(0).shape.slice(1, 4)
-      case _ => weight.size()
+    val (weightShape, weightLayout) = inputs(0).shape.length match {
+      case 4 =>
+        (Array(weight.size(1)) ++ inputs(0).shape.slice(1, 4),
+          Memory.Format.oihw)
+      case 2 => (weight.size(), Memory.Format.nc)
+      case 1 => (weight.size(), Memory.Format.x)
     }
 
     val inputShape = inputs(0).shape
@@ -108,8 +106,11 @@ class Linear(
     require(weight.size().product == realWei.shape.product,
       s"${getName} weight shape is not correct.")
 
-    weight.setMemoryData(realWei)
-    bias.setMemoryData(bis)
+    weight.setMemoryData(HeapData(weightShape, weightLayout), realWei, runtime)
+    bias.setMemoryData(HeapData(bis.shape, Memory.Format.x), bis, runtime)
+
+    weight.sync()
+    bias.sync()
 
     val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
       bis.getPrimitive(runtime))
@@ -121,7 +122,7 @@ class Linear(
 
     updateOutputMemoryPrimitives = srcs ++ dsts
     updateOutputPrimitives = Array(primitive)
-    output = initTensor(dst)
+    output = initTensor(realDst)
 
     _inputFormats = Array(realSrc)
     _outputFormats = Array(realDst)
@@ -141,8 +142,8 @@ class Linear(
     updateWithNewTensor(updateOutputTensors, 0, input)
 
     if (isTraining()) {
-      weight.syncToNative()
-      bias.syncToNative()
+      weight.sync()
+      bias.sync()
     }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
@@ -195,9 +196,12 @@ class Linear(
 
   override private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData],
     phase: Phase): Array[MemoryData] = {
-    val weightShape = inputFormats()(0).shape.length match {
-      case 4 => Array(weight.size(1)) ++ inputFormats()(0).shape.slice(1, 4)
-      case _ => weight.size()
+    val (weightShape, weightLayout) = inputFormats()(0).shape.length match {
+      case 4 =>
+        (Array(weight.size(1)) ++ inputFormats()(0).shape.slice(1, 4),
+          Memory.Format.oihw)
+      case 2 => (weight.size(), Memory.Format.nc)
+      case 1 => (weight.size(), Memory.Format.x)
     }
 
     val inputShape = inputFormats()(0).shape
@@ -219,8 +223,12 @@ class Linear(
       MemoryData.operationWant(gradWeightPrimDesc, x)
     }
 
-    gradWeight.setMemoryData(realWei)
-    gradBias.setMemoryData(bis)
+    gradWeight.setMemoryData(realWei, HeapData(weightShape, weightLayout),
+      runtime)
+    gradBias.setMemoryData(bis, HeapData(bis.shape, Memory.Format.x), runtime)
+
+    gradWeight.zero()
+    gradBias.zero()
 
     val srcs = Array(inputFormats()(0).getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -269,8 +277,8 @@ class Linear(
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
 
-    gradWeight.syncToHeap()
-    gradBias.syncToHeap()
+    gradWeight.sync()
+    gradBias.sync()
 
     if (null != wRegularizer && scaleW != 0) {
       wRegularizer.accRegularization(weight.dense, gradWeight.dense, scaleW)
@@ -282,11 +290,6 @@ class Linear(
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
     (Array(weight.dense, bias.dense), Array(gradWeight.dense, gradBias.dense))
-  }
-
-  override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
-    (Array(weight.memoryData(), bias.memoryData()),
-      Array(gradWeight.memoryData(), gradBias.memoryData()))
   }
 
   override def zeroGradParameters(): Unit = {
