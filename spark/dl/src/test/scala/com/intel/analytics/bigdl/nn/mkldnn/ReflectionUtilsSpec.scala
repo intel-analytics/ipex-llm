@@ -41,24 +41,26 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
 
     val inputShape = Array(2, 2, 23, 23)
     val outShape = Array(2, 4, 6, 6)
-    modelDnn.setRuntime(new MklDnnRuntime)
-    modelDnn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
-    modelDnn.initBwdPrimitives(Array(HeapData(outShape, Memory.Format.nchw)), TrainingPhase)
-    modelDnn.initGradWPrimitives(Array(HeapData(outShape, Memory.Format.nchw)), TrainingPhase)
+
+    val seq = Sequential()
+        .add(Input(inputShape, Memory.Format.nchw))
+        .add(modelDnn)
+        .add(Output(Memory.Format.nchw))
+    seq.compile(TrainingPhase)
 
     val input = Tensor[Float](inputShape).rand()
     val gradOutput = Tensor[Float](outShape).rand()
 
     val out = model1.forward(input).toTensor[Float]
     val out1 = modelBlas.forward(input).toTensor[Float]
-    val out2 = modelDnn.forward(input).toTensor[Float]
+    val out2 = seq.forward(input).toTensor[Float]
 
     out should be(out1)
     Equivalent.nearequals(out1, Tools.dense(out2).toTensor[Float], 1e-4) should be(true)
 
     val grad = model1.backward(input, gradOutput)
     val grad1 = modelBlas.backward(input, gradOutput)
-    val grad2 = modelDnn.backward(input, gradOutput)
+    val grad2 = seq.backward(input, gradOutput)
 
     val gradWeight1 = modelDnn.getParameters()._2
     val gradWeight2 = modelBlas.getParameters()._2

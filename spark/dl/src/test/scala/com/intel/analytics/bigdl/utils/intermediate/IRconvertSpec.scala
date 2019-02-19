@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, Input, Output}
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, Equivalent, Input, Output}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils._
@@ -92,13 +92,13 @@ class IRconvertSpec extends BigDLSpecHelper {
     val outDnn = dnn.forward(input)
     val gradInputDnn = dnn.backward(input, gradOutput).toTensor[Float]
 
-    outDnn should be(outBlas)
-    gradInputDnn should be(gradInputBlas)
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
 
     val p1 = dnn.getParameters()
     val p2 = blas.getParameters()
-    p1._1.almostEqual(p2._1, 1e-6) should be(true)
-    p1._2 almostEqual(p2._2, 1e-6) should be(true)
+    Equivalent.nearequals(p1._1, p1._1, 1e-4) should be (true)
+    Equivalent.nearequals(p1._2, p1._2, 1e-4) should be (true)
   }
 
   "Convert IRgraph to Dnn or Blas Graph" should "be correct" in {
@@ -130,13 +130,14 @@ class IRconvertSpec extends BigDLSpecHelper {
     val outDnn = dnn.forward(input)
     val gradInputDnn = dnn.backward(input, gradOutput).toTensor[Float]
 
-    outDnn should be(outBlas)
-    gradInputDnn should be(gradInputBlas)
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
 
     val p1 = dnn.getParameters()
     val p2 = blas.getParameters()
-    p1._1.almostEqual(p2._1, 1e-6) should be(true)
-    p1._2 almostEqual(p2._2, 1e-4) should be(true)
+
+    Equivalent.nearequals(p1._1, p1._1, 1e-4) should be (true)
+    Equivalent.nearequals(p1._2, p1._2, 1e-4) should be (true)
   }
 
   "Convert IRgraph to Dnn or Blas Graph with 2 dimentions output" should "be correct" in {
@@ -168,12 +169,13 @@ class IRconvertSpec extends BigDLSpecHelper {
     val outDnn = dnn.forward(input)
     val gradInputDnn = dnn.backward(input, gradOutput).toTensor[Float]
 
-    outDnn should be(outBlas)
-    gradInputDnn should be(gradInputBlas)
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
 
     val p1 = dnn.getParameters()
     val p2 = blas.getParameters()
-    p1._1.almostEqual(p2._1, 1e-4) should be(true)
-    p1._2 almostEqual(p2._2, 1e-4) should be(true)
+
+    Equivalent.nearequals(p1._1, p1._1, 1e-4) should be (true)
+    Equivalent.nearequals(p1._2, p1._2, 1e-4) should be (true)
   }
 }

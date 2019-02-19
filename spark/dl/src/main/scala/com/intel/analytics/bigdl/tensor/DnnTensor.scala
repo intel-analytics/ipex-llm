@@ -148,6 +148,10 @@ class DnnTensor[T: ClassTag](
 
     hash
   }
+
+  override def toString(): String = {
+    Tensor[Float]().resize(this.size()).copy(this.asInstanceOf[Tensor[Float]]).toString
+  }
 }
 
 object DnnTensor {
