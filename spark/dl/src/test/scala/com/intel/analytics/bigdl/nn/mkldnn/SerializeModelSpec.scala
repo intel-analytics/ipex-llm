@@ -20,24 +20,28 @@ import java.io.File
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.nn.mkldnn.models.Vgg_16
+import com.intel.analytics.bigdl.nn.mkldnn.ResNet.DatasetType.ImageNet
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class SerializeModelSpec extends FlatSpec with Matchers {
 
   "Save a model" should "work correctly" in {
     val identity = System.identityHashCode(this).toString
-    val name = "vgg_16." + identity
+    val name = "resnet_50." + identity
     val tmpdir = System.getProperty("java.io.tmpdir")
     val path = Paths.get(tmpdir, name).toAbsolutePath
 
-    val model = Vgg_16(32, 1000)
+    // do not use vgg16 model, the vgg16 model will set Xavier to average
+    // mode, which will influence other test cases because of Xavier is a
+    // case object.
+    val model = ResNet(32, 1000, T("depth" -> 50, "dataSet" -> ImageNet))
     println(s"generate the model file ${path.toString}")
     model.save(path.toString, true)
     val loaded = Module.load[Float](path.toString)
 
     val length = Files.size(path) / 1024.0 / 1024.0
-    length should be < 1500.0
+    length should be < 300.0
 
     println(s"delete the model file ${path.toString}")
     Files.deleteIfExists(path)
