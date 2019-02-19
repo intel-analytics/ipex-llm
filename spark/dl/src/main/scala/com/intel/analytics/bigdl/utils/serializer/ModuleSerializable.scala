@@ -393,22 +393,27 @@ trait ModuleSerializable extends Loadable with Savable{
                                            (implicit ev: TensorNumeric[T]): Unit = {
 
     val protobufModel = context.bigdlModule
-    module.setProtobufTest(protobufModel.getProtobufTest)
 
     // Extract ArrayValue for each AttrValue, and then get FltList as input scales
     val inputScales = protobufModel.getInputScalesList.iterator().asScala
-      .map((attr : AttrValue) => {
-        attr.getArrayValue.getFltList.asScala.toArray.map(_.asInstanceOf[Float])
-      })
+      .map(attrValueToFloatArray)
 
     // Extract ArrayValue for each AttrValue, and then get FltList as output scales
     val outputScales = protobufModel.getOutputScalesList.iterator().asScala
-      .map((attr : AttrValue) => {
-        attr.getArrayValue.getFltList.asScala.toArray.map(_.asInstanceOf[Float])
-      })
+      .map(attrValueToFloatArray)
 
     module.getScalesOfInput().set(inputScales.toArray)
     module.getScalesOfOutput().set(outputScales.toArray)
+  }
+
+
+  /**
+    * Convert Attr Value object to Array of Float
+    * @param AttrValue
+    * @return Array[Float]
+    */
+  def attrValueToFloatArray(attr: AttrValue): Array[Float] = {
+    attr.getArrayValue.getFltList.asScala.toArray.map(_.asInstanceOf[Float])
   }
 
 
@@ -443,24 +448,13 @@ trait ModuleSerializable extends Loadable with Savable{
                                      (implicit ev : TensorNumeric[T]) : Unit = {
 
     val module = context.moduleData
-    modelBuilder.setProtobufTest(module.module.getProtobufTest)
 
     // Save scale and mask of input into BigDL model builder
     val inputScales : Array[Array[Float]] = module.module.getScalesOfInput().get()
     val inputMasks : Int = module.module.getScalesOfInput().getMask()
 
 
-    val inputScalesAttrList = inputScales.map((arry : Array[Float]) => {
-      val tempAttrValBuilder = AttrValue.newBuilder()
-      tempAttrValBuilder.setDataType(DataType.ARRAY_VALUE)
-
-      val tempArryValBuilder = ArrayValue.newBuilder()
-      tempArryValBuilder.setSize(arry.length)
-      tempArryValBuilder.setDatatype(DataType.FLOAT)
-
-      arry.foreach(tempArryValBuilder.addFlt)
-      tempAttrValBuilder.setArrayValue(tempArryValBuilder).build()
-    })
+    val inputScalesAttrList = inputScales.map(floatArrayToAttrValue)
 
     modelBuilder.addAllInputScales(inputScalesAttrList.toIterable.asJava)
     modelBuilder.setInputDimMasks(inputMasks)
@@ -470,20 +464,28 @@ trait ModuleSerializable extends Loadable with Savable{
     val outputScales : Array[Array[Float]] = module.module.getScalesOfOutput().get()
     val outputMasks : Int = module.module.getScalesOfOutput().getMask()
 
-    val outputScalesAttrList = outputScales.map((arry : Array[Float]) => {
-      val tempAttrValBuilder = AttrValue.newBuilder()
-      tempAttrValBuilder.setDataType(DataType.ARRAY_VALUE)
-
-      val tempArryValBuilder = ArrayValue.newBuilder()
-      tempArryValBuilder.setSize(arry.length)
-      tempArryValBuilder.setDatatype(DataType.FLOAT)
-
-      arry.foreach(tempArryValBuilder.addFlt)
-      tempAttrValBuilder.setArrayValue(tempArryValBuilder).build()
-    })
+    val outputScalesAttrList = outputScales.map(floatArrayToAttrValue)
 
     modelBuilder.addAllOutputScales(outputScalesAttrList.toIterable.asJava)
     modelBuilder.setOutputDimMasks(outputMasks)
+  }
+
+
+  /**
+    * Convert an array of float into an attr value object
+    * @param Array[Float]
+    * @return AttrValue
+    */
+  private def floatArrayToAttrValue(arry : Array[Float]) : AttrValue = {
+    val tempAttrValBuilder = AttrValue.newBuilder()
+    tempAttrValBuilder.setDataType(DataType.ARRAY_VALUE)
+
+    val tempArryValBuilder = ArrayValue.newBuilder()
+    tempArryValBuilder.setSize(arry.length)
+    tempArryValBuilder.setDatatype(DataType.FLOAT)
+
+    arry.foreach(tempArryValBuilder.addFlt)
+    tempAttrValBuilder.setArrayValue(tempArryValBuilder).build()
   }
 
 

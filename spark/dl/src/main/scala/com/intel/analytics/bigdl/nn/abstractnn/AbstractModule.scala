@@ -36,7 +36,6 @@ import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -907,20 +906,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   // ================================= Internal APIs ===========================================
-
-  private var protobufTest : String = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
-
-  final private[bigdl] def getProtobufTest : String = protobufTest
-
-  final private[bigdl] def setProtobufTest(newVal : String) : Unit =
-    this.protobufTest = newVal
-
-  /*
-  TODO:
-   */
-
-  // END
-
 
   private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
 
