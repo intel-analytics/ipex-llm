@@ -434,7 +434,7 @@ trait ModuleSerializable extends Loadable with Savable{
 
 
   /**
-    * Copy BigDL module data (weight and bias if exist) into BigDL Model's protobuf definition
+    * Copy scales and mask of BigDL module into BigDL Model's protobuf definition
     * @param modelBuilder serialized module builder
     * @param context  serialization context
     */
