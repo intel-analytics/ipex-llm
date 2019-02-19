@@ -1217,40 +1217,5 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
 }
 
-class Int8ScalesAndMask(val mask: Int) extends Serializable {
-  private val _scales: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
-
-  def scales: ArrayBuffer[Array[Float]] = _scales
-
-  def set(scales: Array[Array[Float]]): Unit = {
-    _scales.clear()
-    scales.foreach(append)
-  }
-
-  def get(): Array[Array[Float]] = {
-    _scales.toArray
-  }
-
-  def getMask() : Int = mask
-
-  def append(scale: Array[Float]): Unit = {
-    _scales.append(scale)
-  }
-
-  def update(scale: Array[Float], index: Int): Unit = {
-    if (scales.length - 1 < index) {
-      scales.append(scale)
-    }
-
-    scales(index).indices.foreach(i =>
-      if (scale(i) > scales(index)(i)) {
-        scales(index)(i) = scale(i)
-      })
-  }
-}
-
-object Int8ScalesAndMask {
-  val SINGLE_SCALE = 0
-}
 
 
