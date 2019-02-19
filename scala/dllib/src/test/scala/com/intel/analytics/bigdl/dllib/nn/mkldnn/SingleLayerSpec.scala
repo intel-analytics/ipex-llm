@@ -72,11 +72,13 @@ class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val conv = SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName(name)
-    conv.setRuntime(new MklDnnRuntime)
-    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    Tools.compare(prototxt, conv, inputShape, outputShape)
+    val seq = Sequential()
+        .add(Input(inputShape, Memory.Format.nchw))
+        .add(conv)
+        .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+    seq.compile(TrainingPhase)
+
+    Tools.compare(prototxt, seq, inputShape, outputShape, 1e-6)
   }
 
   "convolution2" should "work correctly" in {
@@ -131,6 +133,7 @@ class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val conv = SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName(name)
     val seq = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
       .add(conv)
       .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
 
