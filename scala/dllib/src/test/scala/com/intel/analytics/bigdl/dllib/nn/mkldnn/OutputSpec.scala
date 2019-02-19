@@ -58,12 +58,12 @@ class OutputSpec extends BigDLSpecHelper {
     val out1 = modelBlas.forward(input)
     val out2 = modelDnn.forward(input)
 
-    out1 should be(out2)
+    Equivalent.nearequals(out1.toTensor[Float], out2.toTensor[Float], 1e-6)
 
     val grad1 = modelBlas.backward(input, gradOutput)
     val grad2 = modelDnn.backward(input, gradOutput).toTensor[Float]
 
-    grad1 should be(grad2)
+    Equivalent.nearequals(grad1.toTensor[Float], grad2.toTensor[Float], 1e-6)
 
     val weight1 = modelBlas.getParameters()._1
     val weight2 = modelDnn.getParameters()._1
@@ -71,7 +71,7 @@ class OutputSpec extends BigDLSpecHelper {
     val gradWeight1 = modelBlas.getParameters()._2
     val gradWeight2 = modelDnn.getParameters()._2
 
-    weight1 should be(weight2)
-    gradWeight1 should be(gradWeight2)
+    Equivalent.nearequals(weight1.toTensor[Float], weight2.toTensor[Float], 1e-6)
+    Equivalent.nearequals(gradWeight1.toTensor[Float], gradWeight2.toTensor[Float], 1e-6)
   }
 }

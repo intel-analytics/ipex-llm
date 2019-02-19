@@ -52,11 +52,11 @@ class SpatialBatchNormalization(
   private val mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
   private val variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
 
-  private[mkldnn] val runningMean = new Blob(Array(nOutput))
-  private[mkldnn] val runningVariance = new Blob(Array(nOutput))
+  private[mkldnn] val runningMean = new TensorMMap(Array(nOutput))
+  private[mkldnn] val runningVariance = new TensorMMap(Array(nOutput))
   // TODO we should make it private. Currently, ResNet50 will use it out of this scope.
-  val weightAndBias = new Blob(Array(nOutput * 2))
-  val gradWeightAndBias = new Blob(Array(nOutput * 2))
+  val weightAndBias = new TensorMMap(Array(nOutput * 2))
+  val gradWeightAndBias = new TensorMMap(Array(nOutput * 2))
 
   var scaleFactor: Float = 0.0f
   var biasFactor: Float = 0.0f
@@ -86,16 +86,14 @@ class SpatialBatchNormalization(
       biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
 
-    weightAndBias.copy(init.view(2 * nOutput))
+    weightAndBias.dense.copy(init.view(2 * nOutput))
 
     val zeros = Tensor[Float](Array(nOutput)).fill(0)
     mean.copy(zeros)
     variance.copy(zeros)
 
-    runningMean.zero()
-    runningVariance.zero()
-
-    gradWeightAndBias.zero()
+    runningMean.copy(zeros)
+    runningVariance.copy(zeros)
   }
 
   private object Index extends Serializable {
@@ -196,6 +194,27 @@ class SpatialBatchNormalization(
       updateOutputTensors = null
     }
 
+    if (this.weightAndBias.native == null) {
+      if (modelPhase == InferencePhase) {
+        this.runningMean.setMemoryData(
+          HeapData(this.runningMean.size(), Memory.Format.x), runningMean, runtime)
+        this.runningVariance.setMemoryData(
+          HeapData(this.runningVariance.size(), Memory.Format.x), runningVariance, runtime)
+        // for inference, we must copy the heap memory to native first.
+        this.runningMean.sync()
+        this.runningVariance.sync()
+      } else {
+        this.runningMean.setMemoryData(runningMean,
+          HeapData(this.runningMean.size(), Memory.Format.x), runtime)
+        this.runningVariance.setMemoryData(runningVariance,
+          HeapData(this.runningVariance.size(), Memory.Format.x), runtime)
+      }
+      // for runningMean and runningVariance, we should copy them to native at first
+      this.weightAndBias.setMemoryData(HeapData(this.weightAndBias.size(), Memory.Format.x),
+        weightAndBias, runtime)
+    }
+    this.weightAndBias.sync()
+
     (inputFormats(), outputFormats())
   }
 
@@ -221,7 +240,7 @@ class SpatialBatchNormalization(
     }
 
     if (this.isTraining()) {
-      weightAndBias.syncToNative()
+      weightAndBias.sync()
     } else {
       // we should re-computing the running mean and running variance.
       // FIXME should do it at `initFwdPrimitives`
@@ -241,8 +260,8 @@ class SpatialBatchNormalization(
       mean.axpby(1, momentum.toFloat, runningMean.native)
       variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
 
-      runningMean.syncToHeap()
-      runningVariance.syncToHeap()
+      runningMean.sync()
+      runningVariance.sync()
     }
 
     output
@@ -286,6 +305,10 @@ class SpatialBatchNormalization(
     updateGradInputPrimitives = Array(primitive)
     gradInput = initTensor(gradInputFormats()(0))
 
+    this.gradWeightAndBias.setMemoryData(gradWeightAndBias,
+      HeapData(this.gradWeightAndBias.size(), Memory.Format.x), runtime)
+    this.gradWeightAndBias.zero()
+
     (_gradOutputFormats, gradInputFormats())
   }
 
@@ -308,7 +331,7 @@ class SpatialBatchNormalization(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
-    gradWeightAndBias.syncToHeap()
+    gradWeightAndBias.sync()
 
     gradInput
   }
@@ -326,11 +349,6 @@ class SpatialBatchNormalization(
 
   override def getExtraParameter(): Array[Tensor[Float]] = {
     Array(runningMean.dense, runningVariance.dense)
-  }
-
-  override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
-    (Array(NativeData(weightAndBias.size(), Memory.Format.x)),
-    Array(NativeData(gradWeightAndBias.size(), Memory.Format.x)))
   }
 
   override def toString(): String = {

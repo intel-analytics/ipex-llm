@@ -348,7 +348,8 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val gradInput = bn.backward(input, gradOutput)
     val nnGradInput = nnBn.backward(input, gradOutput)
 
-    Equivalent.nearequals(Tools.dense(gradInput).toTensor, nnGradInput.toTensor) should be (true)
+    Equivalent.nearequals(Tools.dense(gradInput).toTensor, nnGradInput.toTensor,
+      1e-3) should be (true)
     Equivalent.nearequals(Tools.dense(gradWeight(0)).toTensor, nnGradWeight, 1e-3) should be (true)
   }
 
@@ -452,6 +453,39 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     model2.forward(input)
 
     model1.output should be (model2.output)
+  }
+
+  "bn train and evaluate" should "work correctly" in {
+    val batchSize = 2
+    RNG.setSeed(100)
+    val input = Tensor(100, 1, 10, 10).fill(1.0f)
+    val gradOutput = Tensor[Float]().resizeAs(input).fill(0.5f)
+    val (channel, height, width) = (1, 10, 10)
+
+    val initWeight = Tensor(channel).fill(0.3f)
+    val initBias = Tensor(channel).fill(0)
+
+    val bn = SpatialBatchNormalization(1, 1e-3, initWeight = initWeight, initBias = initBias)
+
+    val runningMean = Tensor[Float](1).fill(1.0f)
+    val runningVariance = Tensor[Float](1).fill(0.0f)
+
+    val inputShape = Array(100, 1, 10, 10)
+    bn.setRuntime(new MklDnnRuntime)
+    bn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    bn.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    bn.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    bn.forward(input)
+    bn.backward(input, gradOutput)
+    bn.runningMean.dense should be (runningMean)
+    bn.runningVariance.dense should be (runningVariance)
+
+    bn.evaluate()
+    bn.forward(input)
+
+    bn.runningMean.dense should be (runningMean)
+    bn.runningVariance.dense should be (runningVariance)
   }
 
   "a simple bach norm" should "work correctly" in {
