@@ -62,15 +62,15 @@ private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
   }
 
   /**
-    * set the dense <-> native map, maintain the format to reorder
-    *
-    * Note, it will only create the native tensor based on the size and will not
-    * do the reorder. So you should call `sync()` by manual.
-    *
-    * @param from the source tensor memory data, could be HeapData or NativeData
-    * @param to the dest tensor memory data, could be HeapData or NativeData
-    * @param runtime the mkldnn runtime for reorder operation
-    */
+   * set the dense <-> native map, maintain the format to reorder
+   *
+   * Note, it will only create the native tensor based on the size and will not
+   * do the reorder. So you should call `sync()` by manual.
+   *
+   * @param from the source tensor memory data, could be HeapData or NativeData
+   * @param to the dest tensor memory data, could be HeapData or NativeData
+   * @param runtime the mkldnn runtime for reorder operation
+   */
   def setMemoryData(from: MemoryData, to: MemoryData, runtime: MklDnnRuntime): Unit = {
     require(_from == null && _to == null, "you only can set once the memory data")
     _from = from
