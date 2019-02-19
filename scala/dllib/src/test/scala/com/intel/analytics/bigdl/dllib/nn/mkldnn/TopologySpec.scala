@@ -274,6 +274,7 @@ class TopologySpec extends FlatSpec with Matchers {
     val conv2 = SpatialConvolution(nInput, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName("conv2")
     val model = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
       .add(ConcatTable().add(conv2).add(conv1))
       .add(CAddTable().setName("eltwise"))
       .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
@@ -396,6 +397,7 @@ class TopologySpec extends FlatSpec with Matchers {
     val outputShape = Array(4, 64, 56, 56)
 
     val model = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
       .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = true).setName("conv1"))
       .add(ReLU().setName("conv1_relu"))
       .add(MaxPooling(3, 3, 2, 2).setName("pool1"))
@@ -996,6 +998,7 @@ class TopologySpec extends FlatSpec with Matchers {
       iChannels = 64
 
       Sequential()
+        .add(Input(inputShape, Memory.Format.nchw))
         .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3).setName("conv1").setReLU(true))
         .add(ReLU().setName("conv1_relu"))
         .add(MaxPooling(3, 3, 2, 2).setName("pool1"))

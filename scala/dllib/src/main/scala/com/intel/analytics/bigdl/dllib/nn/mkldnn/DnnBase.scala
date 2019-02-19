@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.DynamicContainer
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
@@ -83,9 +83,9 @@ trait MklDnnModuleHelper {
   protected def initTensor(format: MemoryData): Tensor[Float] = {
     format match {
       case d: NativeData =>
-        DnnTensor[Float](d.shape)
+        DnnTensor[Float](Memory.GetPaddingShape(format.getMemoryDescription()))
       case d: HeapData =>
-        Tensor[Float](d.shape)
+        Tensor[Float](Memory.GetPaddingShape(format.getMemoryDescription()))
       case _ => throw new UnsupportedOperationException("memory format is not supported")
     }
   }
@@ -260,10 +260,6 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     }
   }
 
-  def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
-    (null, null)
-  }
-
   override def release(): Unit = {
     val tensors: ArrayBuffer[DnnTensor[Float]] = ArrayBuffer.empty
     List(output, gradInput).filter(_ != null).foreach { t =>
@@ -368,5 +364,10 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
     }
     modules.filter(_.isInstanceOf[MklDnnContainer])
       .map { case mc: MklDnnContainer => mc.freeze() }
+  }
+
+  override def release(): Unit = {
+    super.release()
+    reorderManager.release()
   }
 }

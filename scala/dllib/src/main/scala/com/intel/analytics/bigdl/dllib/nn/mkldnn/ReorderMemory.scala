@@ -45,6 +45,18 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     shape.foreach(s => name += s.toString + ",")
     name
   }
+
+  private def reshapeOutputIfNeeded(format: MemoryData, tensor: Tensor[Float]): Unit = {
+    // must pay attention to the shape of tensor when format is nhwc,
+    // the Tensor's shape in BigDL always be relevant with the format, such as
+    // [4, 3, 224, 224] will be nchw and [4, 224, 224, 3] will be nhwc.
+    // but for mkldnn, it always uses the nchw format shape, library will use
+    // correct shape by the format.
+    if (format.layout == Memory.Format.nhwc && format.isInstanceOf[HeapData]) {
+      tensor.toTensor[Float].resize(format.shape)
+    }
+  }
+
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = if (inputFormat == null) inputs else Array(inputFormat)
     require(_inputFormats.length == 1, "Only accept one tensor as input")
@@ -84,6 +96,9 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 
     // recover to original data
     output = initTensor(realOutput(0))
+
+    reshapeOutputIfNeeded(_outputFormats(0), output.toTensor[Float])
+
     (_inputFormats, _outputFormats)
   }
 
@@ -96,7 +111,6 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
   }
   override def updateOutput(input: Activity): Activity = {
     output = super.updateOutput(input)
-    output.toTensor[Float].resize(_outputFormats(0).shape)
     output
   }
 
@@ -140,12 +154,14 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 
     updateGradInputPrimitives = Array(bwdReorderPrim)
     gradInput = initTensor(realgradInput(0))
+
+    reshapeOutputIfNeeded(_gradInputFormats(0), gradInput.toTensor[Float])
+
     (_gradOutputFormats, _gradInputFormats)
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     gradInput = super.updateGradInput(input, gradOutput)
-    gradInput.toTensor[Float].resize(_gradInputFormats(0).shape)
     gradInput
   }
 
