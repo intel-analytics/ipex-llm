@@ -27,7 +27,7 @@ import scala.util.Random
 class ConvLSTM3DSpec extends ZooSpecHelper {
 
   "ConvLSTM3D" should "forward and backward properly with correct output shape" in {
-    val layer = ConvLSTM3D[Float](10, 3, inputShape = Shape(5, 4, 8, 10, 12))
+    val layer = ConvLSTM3D[Float](10, 3, inputShape = Shape(5, 4, 8, 10, 12), borderMode = "same")
     layer.build(Shape(-1, 5, 4, 8, 10, 12))
     val input = Tensor[Float](Array(3, 5, 4, 8, 10, 12)).rand()
     val output = layer.forward(input)
@@ -40,7 +40,7 @@ class ConvLSTM3DSpec extends ZooSpecHelper {
   "ConvLSTM3D return sequences and go backwards" should "forward and backward " +
     "properly with correct output shape" in {
     val layer = ConvLSTM3D[Float](12, 4, returnSequences = true, goBackwards = true,
-      inputShape = Shape(20, 3, 12, 12, 12))
+      borderMode = "same", inputShape = Shape(20, 3, 12, 12, 12))
     layer.build(Shape(-1, 20, 3, 12, 12, 12))
     val input = Tensor[Float](Array(4, 20, 3, 12, 12, 12)).rand()
     val output = layer.forward(input)
@@ -50,14 +50,22 @@ class ConvLSTM3DSpec extends ZooSpecHelper {
     val gradInput = layer.backward(input, output)
   }
 
-  "ConvLSTM3D" should "be the same as BigDL" in {
+  "ConvLSTM3D with same padding" should "be the same as BigDL" in {
     val blayer = com.intel.analytics.bigdl.nn.Recurrent[Float]()
       .add(ConvLSTMPeephole3D[Float](4, 4, 2, 2, withPeephole = false))
-    val zlayer = ConvLSTM3D[Float](4, 2, returnSequences = true,
+    val zlayer = ConvLSTM3D[Float](4, 2, returnSequences = true, borderMode = "same",
       inputShape = Shape(12, 4, 8, 8, 8))
     zlayer.build(Shape(-1, 12, 4, 8, 8, 8))
     val input = Tensor[Float](Array(4, 12, 4, 8, 8, 8)).rand()
     compareOutputAndGradInputSetWeights(blayer, zlayer, input)
+  }
+
+  "ConvLSTM3D with valid padding" should "work" in {
+    val zlayer = ConvLSTM3D[Float](4, 2, returnSequences = true,
+      borderMode = "valid", inputShape = Shape(12, 4, 8, 8, 8))
+    zlayer.build(Shape(-1, 12, 4, 8, 8, 8))
+    val input = Tensor[Float](Array(4, 12, 4, 8, 8, 8)).rand()
+    zlayer.forward(input)
   }
 }
 
