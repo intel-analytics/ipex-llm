@@ -41,6 +41,8 @@ import scala.reflect.ClassTag
  *                 the convolution kernel. Cubic kernel.
  * @param subsample Factor by which to subsample output.
  *                  Also called strides elsewhere. Default is 1.
+ * @param borderMode One of "same" or "valid".
+ *                  Also called padding elsewhere. Default is "valid".
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param uRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
@@ -56,6 +58,7 @@ class ConvLSTM3D[T: ClassTag](
     var nbFilter: Int,
     val nbKernel: Int,
     val subsample: Int = 1,
+    val borderMode: String = "valid",
     var wRegularizer: Regularizer[T] = null,
     var uRegularizer: Regularizer[T] = null,
     var bRegularizer: Regularizer[T] = null,
@@ -64,24 +67,30 @@ class ConvLSTM3D[T: ClassTag](
     var mInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends Recurrent[T] (
   nbFilter, returnSeq, goBackward, mInputShape) with Net {
 
+  require(borderMode.toLowerCase() == "same" || borderMode.toLowerCase() == "valid",
+    s"ConvLSTM2D currently only supports " +
+      s"same and valid, but got padding $borderMode")
+
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 6,
       s"ConvLSTM3D requires 6D input, but got input dim ${input.length}")
-    val outDim1 = KerasUtils.computeConvOutputLength(input(3), nbKernel, "same", subsample)
-    val outDim2 = KerasUtils.computeConvOutputLength(input(4), nbKernel, "same", subsample)
-    val outDim3 = KerasUtils.computeConvOutputLength(input(5), nbKernel, "same", subsample)
+    val outDim1 = KerasUtils.computeConvOutputLength(input(3), nbKernel, borderMode, subsample)
+    val outDim2 = KerasUtils.computeConvOutputLength(input(4), nbKernel, borderMode, subsample)
+    val outDim3 = KerasUtils.computeConvOutputLength(input(5), nbKernel, borderMode, subsample)
     if (returnSequences) Shape(input(0), input(1), nbFilter, outDim1, outDim2, outDim3)
     else Shape(input(0), nbFilter, outDim1, outDim2, outDim3)
   }
 
   override def buildCell(input: Array[Int]): Cell[T] = {
-    ConvLSTMPeephole3D(
+    val paddingValue = if (borderMode.toLowerCase == "same") -1
+    else 0
+    new InternalConvLSTM3D[T](
       inputSize = input(2),
       outputSize = nbFilter,
-      kernelI = nbKernel,
-      kernelC = nbKernel,
+      kernel = nbKernel,
       stride = subsample,
+      padding = paddingValue,
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer,
@@ -94,13 +103,14 @@ object ConvLSTM3D {
     nbFilter: Int,
     nbKernel: Int,
     subsample: Int = 1,
+    borderMode: String = "valid",
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     returnSequences: Boolean = false,
     goBackwards: Boolean = false,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ConvLSTM3D[T] = {
-    new ConvLSTM3D[T](nbFilter, nbKernel, subsample, wRegularizer,
+    new ConvLSTM3D[T](nbFilter, nbKernel, subsample, borderMode, wRegularizer,
       uRegularizer, bRegularizer, returnSequences, goBackwards, inputShape)
   }
 }

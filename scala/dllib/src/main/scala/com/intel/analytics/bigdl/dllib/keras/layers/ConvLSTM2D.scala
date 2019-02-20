@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.{Cell, ConvLSTMPeephole}
+import com.intel.analytics.bigdl.nn.{Cell}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -51,6 +51,8 @@ import scala.reflect.ClassTag
  * @param dimOrdering Format of input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
  * @param subsample Factor by which to subsample output.
  *                  Also called strides elsewhere. Default is 1.
+ * @param borderMode One of "same" or "valid".
+ *                  Also called padding elsewhere. Default is "valid".
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param uRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
@@ -69,6 +71,7 @@ class ConvLSTM2D[T: ClassTag](
    val innerActivation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val dimOrdering: String = "CHANNEL_FIRST",
    val subsample: Int = 1,
+   val borderMode: String = "valid",
    var wRegularizer: Regularizer[T] = null,
    var uRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
@@ -79,24 +82,29 @@ class ConvLSTM2D[T: ClassTag](
 
   require(dimOrdering.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
     s"format CHANNEL_FIRST, but got format $dimOrdering")
+  require(borderMode.toLowerCase() == "same" || borderMode.toLowerCase() == "valid",
+    s"ConvLSTM2D currently only supports " +
+    s"same and valid, but got padding $borderMode")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 5,
       s"ConvLSTM2D requires 5D input, but got input dim ${input.length}")
-    val rows = KerasUtils.computeConvOutputLength(input(3), nbKernel, "same", subsample)
-    val cols = KerasUtils.computeConvOutputLength(input(4), nbKernel, "same", subsample)
+    val rows = KerasUtils.computeConvOutputLength(input(3), nbKernel, borderMode, subsample)
+    val cols = KerasUtils.computeConvOutputLength(input(4), nbKernel, borderMode, subsample)
     if (returnSequences) Shape(input(0), input(1), outputDimension, rows, cols)
     else Shape(input(0), outputDimension, rows, cols)
   }
 
   override def buildCell(input: Array[Int]): Cell[T] = {
-    ConvLSTMPeephole(
+    val paddingValue = if (borderMode.toLowerCase == "same") -1
+    else 0
+    new InternalConvLSTM2D[T](
       inputSize = input(2),
       outputSize = outputDimension,
-      kernelI = nbKernel,
-      kernelC = nbKernel,
+      kernel = nbKernel,
       stride = subsample,
+      padding = paddingValue,
       activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
       innerActivation = innerActivation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
       wRegularizer = wRegularizer,
@@ -114,6 +122,7 @@ object ConvLSTM2D {
     innerActivation: String = "hard_sigmoid",
     dimOrdering: String = "th",
     subsample: Int = 1,
+    borderMode: String = "valid",
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
@@ -123,7 +132,7 @@ object ConvLSTM2D {
     new ConvLSTM2D[T](nbFilter, nbKernel, KerasUtils.getKerasActivation(activation),
       KerasUtils.getKerasActivation(innerActivation),
       KerasUtils.toBigDLFormat5D(dimOrdering),
-      subsample, wRegularizer, uRegularizer, bRegularizer,
+      subsample, borderMode, wRegularizer, uRegularizer, bRegularizer,
       returnSequences, goBackwards, inputShape)
   }
 }

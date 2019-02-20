@@ -16,21 +16,22 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
 
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{BatchNormParams, BigDLWrapperUtils, Cell, Recurrent}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleSerializer, SerializeContext}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{InternalConvLSTM2D, InternalConvLSTM3D}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime._
 
 class InternalRecurrent[T: ClassTag](
-    batchNormParams: BatchNormParams[T] = null,
-    maskZero: Boolean = false
-)(implicit ev: TensorNumeric[T]) extends Recurrent[T](batchNormParams, maskZero) {
+    batchNormParams: BatchNormParams[T] = null
+)(implicit ev: TensorNumeric[T]) extends Recurrent[T](batchNormParams, false) {
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     super.add(module)
@@ -73,6 +74,61 @@ class InternalRecurrent[T: ClassTag](
     accGradParameters(input, gradOutput)
     this.backwardTime = System.nanoTime - st
     gradInput
+  }
+
+  // fix not support "valid" padding issue for convlstm, it would be better fix in BigDL
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    require(input.dim == 3 || input.dim == 5 || input.dim == 6,
+      "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
+        s"current input.dim = ${input.dim}")
+
+    batchSize = input.size(batchDim)
+    times = input.size(timeDim)
+
+    input2Cell = if (preTopology != null) {
+      preTopology.forward(input).toTensor[T]
+    } else {
+      input
+    }
+
+    val hiddenSize = topology.hiddensShape(0)
+    val outputSize = if (topology.isInstanceOf[InternalConvLSTM2D[T]]) {
+      topology.asInstanceOf[InternalConvLSTM2D[T]].getOutputSize(input.size())
+    } else if (topology.isInstanceOf[InternalConvLSTM3D[T]]) {
+      topology.asInstanceOf[InternalConvLSTM3D[T]].getOutputSize(input.size())
+    } else {
+      val sizes = input.size()
+      sizes(2) = hiddenSize
+      sizes
+    }
+    output.resize(outputSize)
+
+    /**
+     * currentInput forms a T() type. It contains two elements, hidden and input.
+     * Each time it will feed the cell with T(hidden, input) (or T(input, hidden) depends on
+     * your hidDim and inputDim), and the cell will give a table output containing two
+     * identical elements T(output, output). One of the elements from the cell output is
+     * the updated hidden. Thus the currentInput will update its hidden element with this output.
+     */
+    var i = 1
+    // Clone N modules along the sequence dimension.
+    initHidden(outputSize.drop(2))
+    cloneCells()
+
+    currentInput(hidDim) = if (initHiddenState != null) initHiddenState
+    else hidden
+
+    while (i <= times) {
+      currentInput(inputDim) = BigDLWrapperUtils.selectCopy(input2Cell, i, stepInput2CellBuf)
+      cells(i - 1).forward(currentInput)
+      val curOutput = cells(i - 1).output
+      currentInput(hidDim) = curOutput[Table](hidDim)
+      i += 1
+    }
+
+    BigDLWrapperUtils.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
+      output)
+    output
   }
 }
 
