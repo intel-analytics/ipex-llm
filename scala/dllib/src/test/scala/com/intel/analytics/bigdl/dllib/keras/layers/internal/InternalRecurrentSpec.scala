@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
@@ -31,57 +30,6 @@ import scala.math._
 import scala.util.Random
 
 class InternalRecurrentSpec extends FlatSpec with Matchers {
-
-  "InternalRecurrent" should "outputs correct hiddens" in {
-    val hiddenSize = 4
-    val batchSize = 3
-    val inputSize = 6
-    val seqLength = 5
-    val seed = 100
-
-    RNG.setSeed(seed)
-    val input = Tensor[Double](Array(batchSize, seqLength, inputSize)).rand()
-    input.select(1, 2).zero()
-
-    val rec = new InternalRecurrent[Double](maskZero = true)
-    val initHidden = T(
-      Tensor[Double](Array(batchSize, hiddenSize)).rand(),
-      Tensor[Double](Array(batchSize, hiddenSize)).rand()
-    )
-    rec.setHiddenState(initHidden)
-
-    val lstm = LSTM[Double](inputSize, hiddenSize)
-    val model = Sequential[Double]()
-      .add(rec
-        .add(lstm))
-
-    model.forward(input)
-
-    lstm.output.toTable[Table](2).toTable[Tensor[Double]](1)
-      .select(1, 2) should be (initHidden[Tensor[Double]](1).select(1, 2))
-  }
-
-  "InternalRecurrent" should "ouputs correclty" in {
-    val hiddenSize = 4
-    val batchSize = 3
-    val inputSize = 6
-    val seqLength = 5
-    val seed = 100
-
-    RNG.setSeed(seed)
-    val input = Tensor[Double](Array(batchSize, seqLength, inputSize)).rand()
-    input.select(1, 2).select(1, seqLength).zero()
-
-    val rec = new InternalRecurrent[Double](maskZero = true)
-
-    val model = Sequential[Double]()
-      .add(rec
-        .add(LSTM[Double](inputSize, hiddenSize)))
-
-    val output = model.forward(input)
-
-    output.toTensor[Double].select(1, 2).select(1, seqLength).abs().max() should be (0)
-  }
 
   "A InternalRecurrent" should "call getTimes correctly" in {
     val hiddenSize = 128
