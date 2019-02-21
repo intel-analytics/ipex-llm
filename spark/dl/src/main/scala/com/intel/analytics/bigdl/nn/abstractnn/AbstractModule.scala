@@ -1181,25 +1181,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       }
     }
   }
-
-
-  // this three variables are for mkldnn int8. because container maybe have more than 1 Tensor
-  // output, so use a mutable ArrayBuffer[Float] to handle the ConcatTable, Graph and so on
-  // mask == 0 means we use single scales, which will get the max of whole tensor (in/out).
-  // scalesOfInput will maintain the max value of input tensor
-  // scalesOfOutput will maintain the max value of output tensor
-  var scalesOfInput: Int8ScalesAndMask = new Int8ScalesAndMask(Int8ScalesAndMask.SINGLE_SCALE)
-  var scalesOfOutput: Int8ScalesAndMask = new Int8ScalesAndMask(Int8ScalesAndMask.SINGLE_SCALE)
-
-  def getScalesOfInput() : Int8ScalesAndMask = scalesOfInput
-  def setScalesOfInput(newScales : Int8ScalesAndMask) : Unit = {
-    scalesOfInput = newScales
-  }
-  def getScalesOfOutput() : Int8ScalesAndMask = scalesOfOutput
-  def setScalesOfOutput(newScales : Int8ScalesAndMask): Unit = {
-    scalesOfOutput = newScales
-  }
-
 }
 
 
