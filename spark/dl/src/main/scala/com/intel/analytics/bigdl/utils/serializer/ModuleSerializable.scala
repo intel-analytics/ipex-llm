@@ -278,7 +278,6 @@ trait ModuleSerializable extends Loadable with Savable{
 
     // Load MKL-DNN INT8 attributes (scales&mask of input&output) into
     // BigDL Module from protobuf definition if the MKL-DNN INT8 flag is ON
-    println("outside loading " + model.getIsMklInt8Enabled)
     if (model.getIsMklInt8Enabled) {
       loadMklInt8Attr(context, module.asInstanceOf[MklInt8Convertible])
     }
@@ -321,7 +320,6 @@ trait ModuleSerializable extends Loadable with Savable{
     // Save MKL-DNN attributes (scales and masks) into model of protobuf definition if
     // the module is with trait of MklInt8COnvertible, and set the MKL-DNN INT8 flag to true
     if (module.module.isInstanceOf[MklInt8Convertible]) {
-      println("correct saving")
       saveMklInt8Attr(context.moduleData.module.asInstanceOf[MklInt8Convertible], modelBuilder)
       modelBuilder.setIsMklInt8Enabled(true)
     } else {
