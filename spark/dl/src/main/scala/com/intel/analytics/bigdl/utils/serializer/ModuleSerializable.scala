@@ -17,12 +17,13 @@ package com.intel.analytics.bigdl.utils.serializer
 
 
 import java.lang.reflect.Field
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Container
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
+import com.intel.analytics.bigdl.nn.mkldnn.MklInt8Convertible
 import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -31,7 +32,7 @@ import com.intel.analytics.bigdl.utils.serializer.converters.{DataConverter, Sha
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
 import com.intel.analytics.bigdl.serialization.Bigdl._
 
-import scala.collection.mutable
+// import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -187,8 +188,10 @@ trait ModuleSerializable extends Loadable with Savable{
     }
 
     getLock.synchronized {
+
       // step 4 : set data types (ClassTag and TensorNumric)
       setDataTypes(context, bigDLModelBuilder)
+
       // step 5 : apply module specific logic to create module
       doSerializeModule(context, bigDLModelBuilder)
     }
@@ -235,7 +238,6 @@ trait ModuleSerializable extends Loadable with Savable{
       field.setAccessible(true)
       val fieldValue = field.get(module)
       DataConverter.setAttributeValue(context, attrBuilder, fieldValue, ptype)
-
       bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
       })
   }
@@ -274,8 +276,12 @@ trait ModuleSerializable extends Loadable with Savable{
       copy2BigDL(context, bigDLModule)
     }
 
-    // Load scale and mask of input and output into BigDL Module from protobuf definition
-    loadScaleAndMask(context, module)
+    // Load MKL-DNN INT8 attributes (scales&mask of input&output) into
+    // BigDL Module from protobuf definition if the MKL-DNN INT8 flag is ON
+    println("outside loading " + model.getIsMklInt8Enabled)
+    if (model.getIsMklInt8Enabled) {
+      loadMklInt8Attr(context, module.asInstanceOf[MklInt8Convertible])
+    }
 
     bigDLModule
   }
@@ -312,8 +318,15 @@ trait ModuleSerializable extends Loadable with Savable{
       copyFromBigDL(context, modelBuilder)
     }
 
-    // Save scales and mask of input and output into BigDL model's protobuf definition
-    saveScaleAndMask(context, modelBuilder)
+    // Save MKL-DNN attributes (scales and masks) into model of protobuf definition if
+    // the module is with trait of MklInt8COnvertible, and set the MKL-DNN INT8 flag to true
+    if (module.module.isInstanceOf[MklInt8Convertible]) {
+      println("correct saving")
+      saveMklInt8Attr(context.moduleData.module.asInstanceOf[MklInt8Convertible], modelBuilder)
+      modelBuilder.setIsMklInt8Enabled(true)
+    } else {
+      modelBuilder.setIsMklInt8Enabled(false)
+    }
 
     SerializeResult(modelBuilder, context.storages)
   }
@@ -325,7 +338,6 @@ trait ModuleSerializable extends Loadable with Savable{
    */
   protected def copy2BigDL[T: ClassTag](context: DeserializeContext, module : ModuleData[T])
                                        (implicit ev: TensorNumeric[T]): Unit = {
-
     if (context.bigdlModule.getHasParameters) {
       copyParameters2BigDL(context, module)
     } else {
@@ -383,13 +395,13 @@ trait ModuleSerializable extends Loadable with Savable{
   }
 
   /**
-    * Deserialize scales and mask of input and output from protobuf context
+    * Deserialize MKL-DNN INT8 attributes from protobuf context
     * and load them into BigDL Module object
     * @param context deserialized context
     * @param module  bigDL Module with relationships
     */
-  private def loadScaleAndMask[T: ClassTag](context: DeserializeContext,
-                                            module: AbstractModule[Activity, Activity, T])
+  private def loadMklInt8Attr[T: ClassTag](context: DeserializeContext,
+                                            module: MklInt8Convertible)
                                            (implicit ev: TensorNumeric[T]): Unit = {
 
     val protobufModel = context.bigdlModule
@@ -402,10 +414,11 @@ trait ModuleSerializable extends Loadable with Savable{
     val outputScales = protobufModel.getOutputScalesList.iterator().asScala
       .map(attrValueToFloatArray)
 
-    module.getScalesOfInput().set(inputScales.toArray)
-    module.getScalesOfOutput().set(outputScales.toArray)
+    module.setInputDimMask(protobufModel.getInputDimMasks)
+    module.setInputScales(inputScales.toArray)
+    module.setOutputDimMask(protobufModel.getOutputDimMasks)
+    module.setOutputScales(outputScales.toArray)
   }
-
 
   /**
     * Convert Attr Value object to Array of Float
@@ -439,19 +452,18 @@ trait ModuleSerializable extends Loadable with Savable{
 
 
   /**
-    * Copy scales and mask of BigDL module into BigDL Model's protobuf definition
+    * Serialize and save MKL DNN INT8 attributes into BigDL Model of protobuf definition
     * @param modelBuilder serialized module builder
     * @param context  serialization context
     */
-  protected def saveScaleAndMask[T: ClassTag](context : SerializeContext[T],
+  protected def saveMklInt8Attr[T: ClassTag](module : MklInt8Convertible,
                                       modelBuilder : BigDLModule.Builder)
                                      (implicit ev : TensorNumeric[T]) : Unit = {
 
-    val module = context.moduleData
 
     // Save scale and mask of input into BigDL model builder
-    val inputScales : Array[Array[Float]] = module.module.getScalesOfInput().get()
-    val inputMasks : Int = module.module.getScalesOfInput().getMask()
+    val inputScales : Array[Array[Float]] = module.getInputScales()
+    val inputMasks : Int = module.getInputDimMask()
 
 
     val inputScalesAttrList = inputScales.map(floatArrayToAttrValue)
@@ -461,8 +473,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
 
     // Save scale and mask of output into BigDL model builder
-    val outputScales : Array[Array[Float]] = module.module.getScalesOfOutput().get()
-    val outputMasks : Int = module.module.getScalesOfOutput().getMask()
+    val outputScales : Array[Array[Float]] = module.getOutputScales()
+    val outputMasks : Int = module.getOutputDimMask()
 
     val outputScalesAttrList = outputScales.map(floatArrayToAttrValue)
 

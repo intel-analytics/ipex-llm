@@ -25,6 +25,7 @@ message BigDLModule
     repeated AttrValue inputScales = 18;
     int32 outputDimMasks = 19;
     repeated AttrValue outputScales = 20;
+    bool isMklInt8Enabled = 21;
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;

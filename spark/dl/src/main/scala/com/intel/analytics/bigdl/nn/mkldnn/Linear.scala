@@ -32,7 +32,8 @@ class Linear(
   private val initWeight: Tensor[Float] = null,
   private val initBias: Tensor[Float] = null,
   private val initGradWeight: Tensor[Float] = null,
-  private val initGradBias: Tensor[Float] = null) extends MklDnnLayer with Initializable {
+  private val initGradBias: Tensor[Float] = null
+) extends MklDnnLayer with Initializable with MklInt8Convertible {
 
   private[mkldnn] val weight: Blob = new Blob(Array(outputSize, inputSize))
   private[mkldnn] val bias: Blob = new Blob(Array(outputSize))
