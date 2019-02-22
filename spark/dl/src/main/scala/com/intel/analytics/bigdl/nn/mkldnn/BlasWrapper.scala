@@ -37,21 +37,24 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   output = module.output
   gradInput = module.gradInput
 
-  private def inferFormats(inputs: Array[MemoryData]): Int = {
-    // reminder: here assume all shapes in inputs should be same
-    inputs.foreach(in =>
-      require(in.shape.length == 2 || in.shape.length == 4,
-      s"only input shape dim 2 and 4 supported, but get ${in.shape.length}"))
-
-    inputs(0).layout match {
-      case Memory.Format.nhwc => Memory.Format.nhwc
-      case Memory.Format.nc => Memory.Format.nc
-      case _ => Memory.Format.nchw
+  // reminder: for dim 3, there may be ntc or tnc, now we just support ntc
+  private def getFormats(dims: Int): Int = {
+    dims match {
+      case 4 => Memory.Format.nchw
+      case 3 => Memory.Format.ntc
+      case 2 => Memory.Format.nc
+      case 1 => Memory.Format.x
+      case _ => throw new UnsupportedOperationException(s"UnSupport dims ${dims}")
     }
   }
 
-  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    // reminder: only support model having implemented computeOutputShape
+  private[mkldnn] var needOutputFormats: Boolean = true
+
+  private def inferInputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
+    inputs.map(in => HeapData(in.shape, getFormats(in.shape.length)))
+  }
+
+  private def inferOutputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
     val inputShape = inputs.map(in => Shape(in.shape))
     val outputShape = if (inputShape.length == 1) {
       List(module.computeOutputShape(inputShape(0)))
@@ -60,18 +63,15 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       val out = module.computeOutputShape(MultiShape(inputShape.toList))
       if (out.isInstanceOf[MultiShape]) out.toMulti() else List(out)
     }
-    val outDim = outputShape(0).toSingle().length
-    require(outDim == 4 || outDim == 2,
-      s"only output shape dim 2 and 4 supported, but get ${outDim}")
+    outputShape.map(in => {
+      val size = in.toSingle().toArray
+      HeapData(size, getFormats(size.length))
+    }).toArray
+  }
 
-    val inputFormats = inferFormats(inputs)
-    val outputFormats = if (outDim == 4) inputFormats else Memory.Format.nc
-
-    val realInputs = inputShape.map(in => HeapData(in.toSingle().toArray, inputFormats))
-    val realOutputs = outputShape.map(in => HeapData(in.toSingle().toArray, outputFormats))
-
-    _inputFormats = realInputs.toArray
-    _outputFormats = realOutputs.toArray
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+    _inputFormats = inferInputFormats(inputs)
+    _outputFormats = if (needOutputFormats) inferOutputFormats(inputs) else null
 
     (_inputFormats, _outputFormats)
   }
@@ -79,7 +79,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
     _gradOutputFormats = _outputFormats
     _gradInputFormats = _inputFormats
-    (_outputFormats, _gradInputFormats)
+    (_gradOutputFormats, _gradInputFormats)
   }
 
   override private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData], phase: Phase) = {

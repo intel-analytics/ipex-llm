@@ -19,7 +19,9 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -163,6 +165,28 @@ class InferReshape[T: ClassTag](
       super.clearState()
     }
     this
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val inputSize = inputShape.toSingle().toArray
+    val outputSize = new ArrayBuffer[Int]()
+    inferedSizes.foreach(outputSize.append(_))
+
+    var total = subTotal
+    var i = 0
+    while (i < size.length) {
+      if (size(i) == 0) { // use the same dim value as input
+        outputSize(i + startIndex) = inputSize(i)
+        total *= inputSize(i)
+      }
+      i += 1
+    }
+    if (inferIndex != -1) {
+      outputSize(inferIndex) = inputSize.product / total
+      if (batchMode) outputSize(inferIndex) = outputSize(inferIndex) / inputSize(0)
+    }
+    if (batchMode) outputSize(0) = inputSize(0)
+    Shape(outputSize.toArray)
   }
 }
 

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Shape}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -61,6 +61,10 @@ class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
     gradInput.resizeAs(output)
     SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results)
     gradInput
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
   }
 }
 

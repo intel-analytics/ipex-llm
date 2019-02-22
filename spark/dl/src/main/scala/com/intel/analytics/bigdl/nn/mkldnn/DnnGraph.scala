@@ -16,16 +16,21 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.util
+
 import breeze.linalg.Axis._1
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
-import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, mkldnn}
+import com.intel.analytics.bigdl.nn.{DetectionOutputSSD, Graph, StaticGraph, mkldnn}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{LayerException, Node, T}
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 
@@ -40,6 +45,7 @@ class DnnGraph(
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var inputCache: Array[Activity] = _
   private var backId2ForwardId: Array[Int] = _
+  private var skipPrimitiveId = new Array[Boolean](forwardExecution.length)
 
   /**
    * Batch size may change when model prediction, but output size of dnn layers will not be changed.
@@ -72,7 +78,11 @@ class DnnGraph(
     var i = 0
     while(i < forwardExecution.length) {
       val node = forwardExecution(i)
-      val nodeInput = findDnnInput(node, input)
+      val nodeInput = if (skipPrimitiveId(i)) {
+        findInput(node, input)
+      } else {
+        findDnnInput(node, input)
+      }
       inputCache(i) = nodeInput
       node.element.forward(nodeInput)
       i += 1
@@ -151,6 +161,57 @@ class DnnGraph(
       i += 1
     }
     this
+  }
+
+  /**
+   * For some blas layer, we may not have to compute its forward primitives
+   */
+  private def skipInitFwdPrimitives() : Unit = {
+    val skipNodesMap = new mutable.HashMap[String, Boolean]()
+    var i = forwardExecution.length - 1
+    while (i >= 0) {
+      val node = forwardExecution(i)
+      if (this.train) {
+        skipPrimitiveId(i) = false
+      } else {
+        skipPrimitiveId(i) = skip(node, skipNodesMap)
+        skipNodesMap(node.element.getName()) = skipPrimitiveId(i)
+      }
+      i -= 1
+    }
+  }
+
+  /**
+    * to determine whether to skip computing primitives for current node
+    * Now, if current node is blaswrapper node and meets one of following cases,
+    * then we will skip computing primitives for this node
+    * case 1: it has no next nodes
+    * case 2: all next nodes are identity node, and those next nodes has no next nodes
+    * case 3: all next nodes are also skip nodes
+    * In some special case, if previous nodes is not blas node, we can not skip this node,
+    * but don't have to compute its output shape.
+    * @param node current node
+    * @return
+    */
+  private def skip(node: ModuleNode[Float],
+                   skipNodesMap: mutable.HashMap[String, Boolean]) : Boolean = {
+    if (node.element.isInstanceOf[BlasWrapper] || node.element.isInstanceOf[Identity]) {
+      if (node.nextNodes.length == 0) return true
+      var isSkip : Boolean = true
+      node.nextNodes.map(n => {
+        if ((skipNodesMap.getOrElse(n.element.getName(), false))
+          || (n.element.isInstanceOf[mkldnn.Identity] && n.nextNodes.length == 0)) {
+        } else isSkip = false
+      })
+      node.prevNodes.map(n =>
+        if (!n.element.isInstanceOf[BlasWrapper]
+          && node.element.isInstanceOf[BlasWrapper] && isSkip) {
+          node.element.asInstanceOf[BlasWrapper].needOutputFormats = false
+         isSkip = false
+        }
+      )
+      isSkip
+    } else false
   }
 
   // change nn identity to mkldnn identity
@@ -333,17 +394,20 @@ class DnnGraph(
   // init forward primitives
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
+    skipInitFwdPrimitives()
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
     for (i <- 0 until forwardExecution.length) {
-      val m = forwardExecution(i)
-      lastOutputFormats = findInputFormats(m, inputs)
-      val realInputAndOutputFormats =
-        m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
-      lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
-        case (o, i) => reorderManager.register(o, i)
+      if (!skipPrimitiveId(i)) {
+        val m = forwardExecution(i)
+        lastOutputFormats = findInputFormats(m, inputs)
+        val realInputAndOutputFormats =
+          m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
+        lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
+          case (o, i) => reorderManager.register(o, i)
+        }
+        if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
       }
-      if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
     }
     _inputFormats = firstRealInputFormats
     _outputFormats = lastOutputFormats
