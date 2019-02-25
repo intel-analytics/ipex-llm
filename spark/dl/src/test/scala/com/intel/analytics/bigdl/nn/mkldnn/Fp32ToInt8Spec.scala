@@ -20,17 +20,16 @@ import java.io.File
 import java.util.UUID
 
 import com.intel.analytics.bigdl.nn.Module
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
-class Fp32ToInt8Spec  extends FlatSpec with Matchers {
+class Fp32ToInt8Spec  extends FlatSpec with Matchers with BeforeAndAfter {
 
   val modelPath: String = "myTestModel" + UUID.randomUUID().toString
   val weightPath: String = "myTestModelWeight" + UUID.randomUUID().toString
 
   "Saving and loading scale and mask" should "work properly" in {
-
 
     val myModel = Linear(3, 4)
 
@@ -72,7 +71,7 @@ class Fp32ToInt8Spec  extends FlatSpec with Matchers {
 
     loadedOutputMask should be (assignedOutputMask)
     loadedOutputScales should be (assignedOutputScales)
-    
+
   }
 
   after {
