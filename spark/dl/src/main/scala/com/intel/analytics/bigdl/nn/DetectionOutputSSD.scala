@@ -280,8 +280,7 @@ class DetectionOutputSSD[T: ClassTag](val nClasses: Int = 21,
     if (isTraining()) {
       return inputShape
     }
-    throw new RuntimeException("Haven't been " +
-      "implemented computeOutputShape for DetectionOutputSSD Inference")
+    throw new RuntimeException("Not support computeOutputShape for DetectionOutputSSD Inference")
   }
 }
 

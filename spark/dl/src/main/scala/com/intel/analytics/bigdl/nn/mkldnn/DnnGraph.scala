@@ -164,35 +164,34 @@ class DnnGraph(
   }
 
   /**
-   * For some blas layer, we may not have to compute its forward primitives
+   * When doing inference, we may not have to compute forward primitives for some blas layers
    */
   private def skipInitFwdPrimitives() : Unit = {
     val skipNodesMap = new mutable.HashMap[String, Boolean]()
-    var i = forwardExecution.length - 1
-    while (i >= 0) {
-      val node = forwardExecution(i)
-      if (this.train) {
-        skipPrimitiveId(i) = false
-      } else {
+    util.Arrays.fill(skipPrimitiveId, 0, skipPrimitiveId.length, false)
+    if (!this.train) {
+      var i = forwardExecution.length - 1
+      while (i >= 0) {
+        val node = forwardExecution(i)
         skipPrimitiveId(i) = skip(node, skipNodesMap)
         skipNodesMap(node.element.getName()) = skipPrimitiveId(i)
+        i -= 1
       }
-      i -= 1
     }
   }
 
   /**
-    * to determine whether to skip computing primitives for current node
-    * Now, if current node is blaswrapper node and meets one of following cases,
-    * then we will skip computing primitives for this node
-    * case 1: it has no next nodes
-    * case 2: all next nodes are identity node, and those next nodes has no next nodes
-    * case 3: all next nodes are also skip nodes
-    * In some special case, if previous nodes is not blas node, we can not skip this node,
-    * but don't have to compute its output shape.
-    * @param node current node
-    * @return
-    */
+   * to determine whether to skip computing primitives for current node
+   * Now, if current node is blaswrapper node and meets one of following cases,
+   * then we will skip computing primitives for this node
+   * case 1: it has no next nodes
+   * case 2: all next nodes are identity node, and those next nodes has no next nodes
+   * case 3: all next nodes are also skip nodes
+   * In some special case, if previous nodes are not blas node, we can not skip this node,
+   * but don't have to compute its output shape.
+   * @param node current node
+   * @return
+   */
   private def skip(node: ModuleNode[Float],
                    skipNodesMap: mutable.HashMap[String, Boolean]) : Boolean = {
     if (node.element.isInstanceOf[BlasWrapper] || node.element.isInstanceOf[Identity]) {

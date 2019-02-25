@@ -44,7 +44,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       case 3 => Memory.Format.ntc
       case 2 => Memory.Format.nc
       case 1 => Memory.Format.x
-      case _ => throw new UnsupportedOperationException(s"UnSupport dims ${dims}")
+      case _ => throw new UnsupportedOperationException(s"UnSupported dims ${dims}")
     }
   }
 

@@ -34,8 +34,14 @@ import com.intel.analytics.bigdl.utils._
 import scala.util.Random
 
 class BlasToDnnSpec extends BigDLSpecHelper {
-  "vgg16 blas to dnn" should "work properly" in {
+  override def doBefore(): Unit = {
     System.setProperty("bigdl.engineType", "mkldnn")
+  }
+
+  override def doAfter(): Unit = {
+    System.setProperty("bigdl.engineType", "mklblas")
+  }
+  "vgg16 blas to dnn" should "work properly" in {
     val batchSize = 2
     val classNum = 1000
     RandomGenerator.RNG.setSeed(1000)
@@ -60,7 +66,6 @@ class BlasToDnnSpec extends BigDLSpecHelper {
   }
 
   "lenet5 blas to dnn" should "work properly" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
     val batchSize = 2
     val seed = 1
     val inputFormat = Memory.Format.nchw
@@ -85,7 +90,6 @@ class BlasToDnnSpec extends BigDLSpecHelper {
   }
 
   "resnet50 blas to dnn" should "work properly" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
     val batchSize = 2
     val classNum = 1000
     RandomGenerator.RNG.setSeed(1000)
