@@ -393,11 +393,11 @@ trait ModuleSerializable extends Loadable with Savable{
   }
 
   /**
-    * Deserialize MKL-DNN INT8 attributes from protobuf context
-    * and load them into BigDL Module object
-    * @param context deserialized context
-    * @param module  bigDL Module with relationships
-    */
+   * Deserialize MKL-DNN INT8 attributes from protobuf context
+   * and load them into BigDL Module object
+   * @param context deserialized context
+   * @param module  bigDL Module with relationships
+   */
   private def loadMklInt8Attr[T: ClassTag](context: DeserializeContext,
                                             module: MklInt8Convertible)
                                            (implicit ev: TensorNumeric[T]): Unit = {
@@ -419,10 +419,10 @@ trait ModuleSerializable extends Loadable with Savable{
   }
 
   /**
-    * Convert Attr Value object to Array of Float
-    * @param AttrValue
-    * @return Array[Float]
-    */
+   * Convert Attr Value object to Array of Float
+   * @param AttrValue
+   * @return Array[Float]
+   */
   def attrValueToFloatArray(attr: AttrValue): Array[Float] = {
     attr.getArrayValue.getFltList.asScala.toArray.map(_.asInstanceOf[Float])
   }
@@ -450,10 +450,10 @@ trait ModuleSerializable extends Loadable with Savable{
 
 
   /**
-    * Serialize and save MKL DNN INT8 attributes into BigDL Model of protobuf definition
-    * @param modelBuilder serialized module builder
-    * @param context  serialization context
-    */
+   * Serialize and save MKL DNN INT8 attributes into BigDL Model of protobuf definition
+   * @param modelBuilder serialized module builder
+   * @param context  serialization context
+   */
   protected def saveMklInt8Attr[T: ClassTag](module : MklInt8Convertible,
                                       modelBuilder : BigDLModule.Builder)
                                      (implicit ev : TensorNumeric[T]) : Unit = {
@@ -482,10 +482,10 @@ trait ModuleSerializable extends Loadable with Savable{
 
 
   /**
-    * Convert an array of float into an attr value object
-    * @param Array[Float]
-    * @return AttrValue
-    */
+   * Convert an array of float into an attr value object
+   * @param Array[Float]
+   * @return AttrValue
+   */
   private def floatArrayToAttrValue(arry : Array[Float]) : AttrValue = {
     val tempAttrValBuilder = AttrValue.newBuilder()
     tempAttrValBuilder.setDataType(DataType.ARRAY_VALUE)
