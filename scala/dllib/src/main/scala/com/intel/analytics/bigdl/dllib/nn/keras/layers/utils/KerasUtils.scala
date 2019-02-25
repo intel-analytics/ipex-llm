@@ -65,7 +65,7 @@ object KerasUtils {
     (implicit ev: TensorNumeric[T]): KerasLayer[Tensor[T], Tensor[T], T] = {
     if (activation == null) { return null }
     if (activation.toLowerCase() == "softmax") {
-      KSoftMax[T]()
+      com.intel.analytics.zoo.pipeline.api.keras.layers.SoftMax[T]()
     } else {
       val torchActivation = getTorchActivation(activation)
       new KerasIdentityWrapper[T](torchActivation)
