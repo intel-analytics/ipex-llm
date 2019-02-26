@@ -51,17 +51,6 @@
             </snapshots>
         </repository>
         <repository>
-            <id>jboss-repo</id>
-            <name>JBoss Repository</name>
-            <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>sonatype</id>
             <name>sonatype repository</name>
             <url>https://oss.sonatype.org/content/groups/public/</url>
