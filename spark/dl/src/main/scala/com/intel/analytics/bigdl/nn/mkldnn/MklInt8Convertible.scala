@@ -150,7 +150,7 @@ trait MklInt8Convertible {
    * @return Unit
    */
   private def updateScalesHelper(scales: ArrayBuffer[Array[Float]],
-                         scale: Array[Float], index: Int): Unit = {
+                                 scale: Array[Float], index: Int): Unit = {
     if (scales.length - 1 < index) {
       scales.append(scale)
     }

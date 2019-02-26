@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Container
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.mkldnn.MklInt8Convertible
 import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -32,7 +32,6 @@ import com.intel.analytics.bigdl.utils.serializer.converters.{DataConverter, Sha
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
 import com.intel.analytics.bigdl.serialization.Bigdl._
 
-// import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -292,9 +291,9 @@ trait ModuleSerializable extends Loadable with Savable{
    * @param SerializeContext: Serialized context of BigDL module
    * @return SerializeResult:
    */
-  protected def createSerializeBigDLModule[T: ClassTag](modelBuilder : BigDLModule.Builder,
-                                      context: SerializeContext[T])
-                                    (implicit ev: TensorNumeric[T]): SerializeResult = {
+  protected def createSerializeBigDLModule[T: ClassTag](
+    modelBuilder : BigDLModule.Builder, context: SerializeContext[T])(implicit ev: TensorNumeric[T])
+  : SerializeResult = {
     val module = context.moduleData
     module.pre.foreach(pre => modelBuilder.addPreModules(pre))
     module.next.foreach(next => modelBuilder.addNextModules(next))

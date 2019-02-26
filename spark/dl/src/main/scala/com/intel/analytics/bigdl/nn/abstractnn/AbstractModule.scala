@@ -55,7 +55,6 @@ abstract class TensorModule[T: ClassTag]
  * @tparam B Output data type
  * @tparam T The numeric type in this module parameters.
  */
-
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable with InferShape{
 
@@ -64,7 +63,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * The cached output. So we don't compute it again when need it
    */
   var output: B = Activity.allocate[B, T]()
-
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
