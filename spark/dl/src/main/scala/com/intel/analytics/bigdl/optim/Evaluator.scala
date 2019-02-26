@@ -16,10 +16,13 @@
 
 package com.intel.analytics.bigdl.optim
 
+import breeze.util.partition
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
+import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -49,14 +52,16 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
    vMethods: Array[ValidationMethod[T]],
    batchSize: Option[Int] = None): Array[(ValidationResult, ValidationMethod[T])] = {
 
-    val modelBroad = ModelBroadcast[T]().broadcast(dataset.sparkContext, model.evaluate())
+    val modelBroad = ModelBroadcast[T]().broadcast(dataset.sparkContext,
+      ConversionUtils.convert(model.evaluate()))
     val partitionNum = dataset.partitions.length
 
     val totalBatch = batchSize.getOrElse(batchPerPartition * partitionNum)
-    val otherBroad = dataset.sparkContext.broadcast(vMethods, SampleToMiniBatch(
-      batchSize = totalBatch, partitionNum = Some(partitionNum)))
+    val rdd = ConversionUtils.coalesce(dataset)
+    val otherBroad = rdd.sparkContext.broadcast(vMethods, SampleToMiniBatch(
+      batchSize = totalBatch, partitionNum = Some(rdd.getNumPartitions)))
 
-    dataset.mapPartitions(partition => {
+    rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
       val localMethod = otherBroad.value._1.map(_.clone())
       val localTransformer = otherBroad.value._2.cloneTransformer()
@@ -71,4 +76,34 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
         left.zip(right).map { case (l, r) => l + r }
     }).zip(vMethods)
   }
+
+  /**
+   * Applies ValidationMethod to the model and rdd dataset.
+   * @param vMethods
+   * @return
+   */
+  private[bigdl] def testMiniBatch(dataset: RDD[MiniBatch[T]],
+           vMethods: Array[ValidationMethod[T]]
+          ): Array[(ValidationResult, ValidationMethod[T])] = {
+
+    val rdd = ConversionUtils.coalesce(dataset)
+    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext,
+      ConversionUtils.convert(model.evaluate()))
+    val otherBroad = rdd.sparkContext.broadcast(vMethods)
+
+
+    rdd.mapPartitions(miniBatch => {
+      val localModel = modelBroad.value()
+      val localMethod = otherBroad.value
+      miniBatch.map(batch => {
+        val output = localModel.forward(batch.getInput())
+        localMethod.map(validation => {
+          validation(output, batch.getTarget())
+        })
+      })
+    }).reduce((left, right) => {
+      left.zip(right).map { case (l, r) => l + r }
+    }).zip(vMethods)
+  }
+
 }

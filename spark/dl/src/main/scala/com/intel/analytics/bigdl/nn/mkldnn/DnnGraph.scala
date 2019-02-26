@@ -409,7 +409,7 @@ class DnnGraph(
   }
 
   // init forward primitives
-  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     skipInitFwdPrimitives()
     fusion()
@@ -433,7 +433,7 @@ class DnnGraph(
   }
 
   // init updateGradInput primitives
-  override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
@@ -453,7 +453,7 @@ class DnnGraph(
   }
 
   // init acc primitives
-  override private[mkldnn] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
     : Array[MemoryData] = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null

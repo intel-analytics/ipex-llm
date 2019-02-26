@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.nn.{Module, _}
@@ -857,6 +857,20 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     batchSize: Option[Int] = None
   ): Array[(ValidationResult, ValidationMethod[T])] = {
     Evaluator(this).test(dataset, vMethods.map(v => v), batchSize)
+  }
+
+
+  /**
+   * use ValidationMethod to evaluate module on the given rdd dataset
+   * @param dataset
+   * @param vMethods
+   * @return
+   */
+  final def evaluate(
+    dataset: RDD[MiniBatch[T]],
+    vMethods: Array[_ <:ValidationMethod[T]]
+  ): Array[(ValidationResult, ValidationMethod[T])] = {
+    Evaluator(this).testMiniBatch(dataset, vMethods.map(v => v))
   }
 
   /**

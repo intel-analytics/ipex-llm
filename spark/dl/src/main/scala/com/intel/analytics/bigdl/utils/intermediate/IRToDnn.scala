@@ -145,8 +145,8 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def fromJoinTable(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRJoinTable[Float]]
-    require(t.nInputDims == 0,
-      s"Dnn JoinTable only supports nInputDims = 0, but get ${t.nInputDims}")
+    require(t.nInputDims <= 0,
+      s"Dnn JoinTable only supports nInputDims <= 0, but get ${t.nInputDims}")
     mkldnn.JoinTable(t.dimension)
   }
 
@@ -197,7 +197,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
         case lrn: IRSpatialCrossMapLRN[Float] =>
           require(lrn.format == DataFormat.NCHW)
         case join: IRJoinTable[Float] =>
-          require(join.nInputDims == 0)
+          require(join.nInputDims <= 0)
         case _ => null
       }
       true

@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFo
 import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Node, T}
+import com.intel.analytics.bigdl.utils._
+
 import scala.reflect.ClassTag
 
 /**
@@ -55,12 +56,19 @@ private[bigdl] class IRGraph[T: ClassTag](
 
   private var graph: Graph[T] = null
 
+  private[bigdl] def isBuild(): Boolean = if (graph == null) false else true
+
   override def updateOutput(input: Activity): Activity = {
     if (graph == null) {
       throw new UnsupportedOperationException("forward not supported, Please build graph first")
     }
-    initPrimitives(input)
-    output = graph.updateOutput(input)
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        initPrimitives(input)
+        graph.updateOutput(input)
+      }))
+    } else graph.updateOutput(input)
+    output = graph.output
     output
   }
 
@@ -68,7 +76,12 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    gradInput = graph.updateGradInput(input, gradOutput)
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        graph.updateGradInput(input, gradOutput)
+      }))
+    } else graph.updateGradInput(input, gradOutput)
+    gradInput = graph.gradInput
     gradInput
   }
 
@@ -76,7 +89,11 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    graph.accGradParameters(input, gradOutput)
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        graph.accGradParameters(input, gradOutput)
+      }))
+    } else graph.accGradParameters(input, gradOutput)
   }
 
   def build(): this.type = {
@@ -87,6 +104,8 @@ private[bigdl] class IRGraph[T: ClassTag](
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     graph.parameters()
   }
+
+  override def getParametersTable(): Table = graph.getParametersTable()
 
   override def training(): this.type = {
     train = true
@@ -137,11 +156,12 @@ private[bigdl] class IRGraph[T: ClassTag](
         })
       }
       val dnnGraph = graph.asInstanceOf[DnnGraph]
+      val phase = if (dnnGraph.isTraining()) Phase.TrainingPhase else Phase.InferencePhase
       dnnGraph.setRuntime(new MklDnnRuntime())
-      dnnGraph.initFwdPrimitives(inputMemory)
+      dnnGraph.initFwdPrimitives(inputMemory, phase)
       if (dnnGraph.isTraining()) {
-        dnnGraph.initBwdPrimitives(dnnGraph.outputFormats())
-        dnnGraph.initGradWPrimitives(dnnGraph.outputFormats())
+        dnnGraph.initBwdPrimitives(dnnGraph.outputFormats(), phase)
+        dnnGraph.initGradWPrimitives(dnnGraph.outputFormats(), phase)
       }
       initPrim = true
     }
