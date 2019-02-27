@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Shape, Table}
 import org.apache.log4j.Logger
 import DetectionOutputSSD.logger
 
@@ -274,6 +274,13 @@ class DetectionOutputSSD[T: ClassTag](val nClasses: Int = 21,
     allIndicesNum = null
     if (null != confPost) confPost.clearState()
     this
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    if (isTraining()) {
+      return inputShape
+    }
+    throw new RuntimeException("Not support computeOutputShape for DetectionOutputSSD Inference")
   }
 }
 

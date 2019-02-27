@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
@@ -74,6 +74,11 @@ class Scale[T: ClassTag](val size: Array[Int])
   }
 
   override def toString: String = "nn.Scale"
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val outputShape = cmul.computeOutputShape(inputShape)
+    cadd.computeOutputShape(outputShape)
+  }
 }
 
 object Scale extends ModuleSerializable {
