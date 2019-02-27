@@ -23,9 +23,9 @@ import tensorflow as tf
 import numpy as np
 
 
-class Model(object):
+class KerasModel(object):
 
-    def __init__(self, model=None):
+    def __init__(self, model):
         self.model = model
         metrics_tensors = [
             self.model.metrics_tensors[m] for m in range(len(self.model.metrics_names) - 1)
@@ -40,6 +40,7 @@ class Model(object):
         self.metrics_tensors = [repeat(x, batch_size[0]) for x in metrics_tensors]
 
         self.tf_optimizer = None
+        self.tf_optimizer_done_epochs = 0
 
     @classmethod
     def from_keras(cls, model):
@@ -114,7 +115,10 @@ class Model(object):
                                                        val_spilt=validation_split, **kwargs)
         else:
             self.tf_optimizer.refresh_weights()
-        self.tf_optimizer.optimize(MaxEpoch(epochs))
+
+        end_epoch = self.tf_optimizer_done_epochs + epochs
+        self.tf_optimizer.optimize(MaxEpoch(end_epoch))
+        self.tf_optimizer_done_epochs = end_epoch
 
     def evaluate(self,
                  x=None,

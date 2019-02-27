@@ -13,3 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from zoo.pipeline.api.net import TFDataset
+from zoo.tfpark.model import KerasModel
