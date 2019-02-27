@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, Tens
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -65,6 +66,18 @@ class Transpose[T: ClassTag](
     gradInput.resizeAs(buffer).asInstanceOf[Tensor[NumericWildcard]]
       .copy(buffer.asInstanceOf[Tensor[NumericWildcard]])
     gradInput
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val inputSize = inputShape.toSingle().toArray
+    var i = 0
+    while (i < permutations.length) {
+      val tmp = inputSize(permutations(i)._1 - 1)
+      inputSize(permutations(i)._1 - 1) = inputSize(permutations(i)._2 - 1)
+      inputSize(permutations(i)._2 - 1) = tmp
+      i += 1
+    }
+    Shape(inputSize)
   }
 
   override def toString(): String = {

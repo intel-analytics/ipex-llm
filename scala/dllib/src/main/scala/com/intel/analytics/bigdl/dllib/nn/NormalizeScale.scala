@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -64,6 +64,11 @@ class NormalizeScale[T: ClassTag](val p: Double, val eps: Double = 1e-10,
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(cmul.weight), Array(cmul.gradWeight))
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val outShape = normalize.computeOutputShape(inputShape)
+    cmul.computeOutputShape(outShape)
   }
 }
 
