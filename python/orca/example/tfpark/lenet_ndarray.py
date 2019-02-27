@@ -18,7 +18,7 @@ import sys
 import tensorflow as tf
 from zoo import init_nncontext
 from bigdl.dataset import mnist
-from zoo.tfpark.model import Model
+from zoo.tfpark import KerasModel
 
 
 def main(max_epoch):
@@ -30,7 +30,7 @@ def main(max_epoch):
     training_images_data = (training_images_data - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
     testing_images_data = (testing_images_data - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
 
-    keras_model = tf.keras.Sequential(
+    model = tf.keras.Sequential(
         [tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
          tf.keras.layers.Dense(64, activation='relu'),
          tf.keras.layers.Dense(64, activation='relu'),
@@ -38,28 +38,28 @@ def main(max_epoch):
          ]
     )
 
-    keras_model.compile(optimizer='rmsprop',
-                        loss='sparse_categorical_crossentropy',
-                        metrics=['accuracy'])
+    model.compile(optimizer='rmsprop',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
 
-    model = Model.from_keras(keras_model)
+    keras_model = KerasModel(model)
 
-    model.fit(training_images_data,
-              training_labels_data,
-              validation_data=(testing_images_data, testing_labels_data),
-              epochs=max_epoch,
-              batch_size=320,
-              distributed=True)
+    keras_model.fit(training_images_data,
+                    training_labels_data,
+                    validation_data=(testing_images_data, testing_labels_data),
+                    epochs=max_epoch,
+                    batch_size=320,
+                    distributed=True)
 
-    result = model.evaluate(testing_images_data, testing_labels_data,
-                            distributed=False, batch_per_thread=80)
+    result = keras_model.evaluate(testing_images_data, testing_labels_data,
+                                  distributed=False, batch_per_thread=80)
 
-    print(model.metrics_names)
+    print(keras_model.metrics_names)
     print(result)
     # >> ['loss', 'acc']
     # >> [0.08865142822265625, 0.9722]
 
-    model.save_weights("/tmp/mnist_keras.h5")
+    keras_model.save_weights("/tmp/mnist_keras.h5")
 
 
 if __name__ == '__main__':

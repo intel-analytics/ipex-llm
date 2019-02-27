@@ -18,7 +18,7 @@ import sys
 import tensorflow as tf
 import numpy as np
 from zoo import init_nncontext
-from zoo.tfpark.model import Model, TFDataset
+from zoo.tfpark import KerasModel, TFDataset
 
 
 def get_data_rdd(dataset, sc):
@@ -44,7 +44,7 @@ def main(max_epoch):
                                  batch_size=320,
                                  val_rdd=testing_rdd)
 
-    keras_model = tf.keras.Sequential(
+    model = tf.keras.Sequential(
         [tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
          tf.keras.layers.Dense(64, activation='relu'),
          tf.keras.layers.Dense(64, activation='relu'),
@@ -52,15 +52,15 @@ def main(max_epoch):
          ]
     )
 
-    keras_model.compile(optimizer='rmsprop',
-                        loss='sparse_categorical_crossentropy',
-                        metrics=['accuracy'])
+    model.compile(optimizer='rmsprop',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
 
-    model = Model.from_keras(keras_model)
+    keras_model = KerasModel(model)
 
-    model.fit(dataset,
-              epochs=max_epoch,
-              distributed=True)
+    keras_model.fit(dataset,
+                    epochs=max_epoch,
+                    distributed=True)
 
     eval_dataset = TFDataset.from_rdd(
         testing_rdd,
