@@ -22,15 +22,33 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.nn.{Module => _, _}
+import com.intel.analytics.bigdl.nn.{Graph, Module => _, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils._
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.models.resnet
-
+import com.intel.analytics.bigdl.utils.intermediate._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 class DnnGraphSpec extends FlatSpec with Matchers {
+
+  def model(size: Array[Int]) : Module[Float] = {
+    val input = mkldnn.Input(size, Memory.Format.nchw).inputs()
+    val conv1 = mkldnn.SpatialConvolution(1, 6, 5, 5).setName("conv1_5x5").inputs(input)
+    val tanh1 = mkldnn.BlasWrapper(Tanh[Float]()).inputs(conv1)
+    val pool1 = mkldnn.MaxPooling(2, 2, 2, 2).inputs(tanh1)
+    val conv2 = BlasWrapper(
+      nn.SpatialConvolution[Float](6, 12, 5, 5)).setName("conv2_5x5").inputs(pool1)
+    val tanh2 = mkldnn.BlasWrapper(Tanh[Float]()).inputs(conv2)
+    val pool2 = mkldnn.MaxPooling(2, 2, 2, 2).inputs(tanh2)
+    val fc1 = mkldnn.Linear(12 * 4 * 4, 100).setName("fc1").inputs(pool2)
+    val tanh3 = mkldnn.BlasWrapper(Tanh[Float]()).inputs(fc1)
+    val fc2 = mkldnn.BlasWrapper(nn.Linear[Float](100, 10)).setName("fc2").inputs(tanh3)
+    val output = mkldnn.BlasWrapper(LogSoftMax[Float]()).inputs(fc2)
+
+    DnnGraph(Seq(input), Seq(output))
+  }
 
   "Dnn vgg16 graph model" should "be correct" in {
     val batchSize = 2
@@ -154,5 +172,18 @@ class DnnGraphSpec extends FlatSpec with Matchers {
       val t2 = p2[Table](k)
       t1 should be(t2)
     }
+  }
+
+  "DnnGraph skip primitives" should "be correct" in {
+    Engine.setEngineType(MklDnn)
+    val batchSize = 2
+    val inputShape = Array(batchSize, 1, 28, 28)
+    val input = Tensor[Float](inputShape).rand()
+
+    val dnn = model(inputShape).asInstanceOf[DnnGraph]
+    dnn.evaluate()
+    dnn.compile(Phase.InferencePhase)
+
+    dnn.forward(input).toTensor[Float]
   }
 }

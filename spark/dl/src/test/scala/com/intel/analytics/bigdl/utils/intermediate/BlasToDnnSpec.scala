@@ -23,18 +23,25 @@ import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.models.vgg.Vgg_16
-import com.intel.analytics.bigdl.nn.StaticGraph
+import com.intel.analytics.bigdl.nn.{Module, StaticGraph}
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.mkldnn.Equivalent
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, Equivalent}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils._
 
 import scala.util.Random
 
 class BlasToDnnSpec extends BigDLSpecHelper {
-  "vgg16 blas to dnn" should "work properly" in {
+  override def doBefore(): Unit = {
     System.setProperty("bigdl.engineType", "mkldnn")
+  }
+
+  override def doAfter(): Unit = {
+    System.setProperty("bigdl.engineType", "mklblas")
+  }
+  "vgg16 blas to dnn" should "work properly" in {
     val batchSize = 2
     val classNum = 1000
     RandomGenerator.RNG.setSeed(1000)
@@ -59,7 +66,6 @@ class BlasToDnnSpec extends BigDLSpecHelper {
   }
 
   "lenet5 blas to dnn" should "work properly" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
     val batchSize = 2
     val seed = 1
     val inputFormat = Memory.Format.nchw
@@ -81,5 +87,35 @@ class BlasToDnnSpec extends BigDLSpecHelper {
 
     Equivalent.nearequals(outDnn, outBlas, 1e-6) should be(true)
     Equivalent.nearequals(gradInputDnn, gradInputBlas, 1e-6) should be(true)
+  }
+
+  "resnet50 blas to dnn" should "work properly" in {
+    val batchSize = 2
+    val classNum = 1000
+    RandomGenerator.RNG.setSeed(1000)
+    val input = Tensor[Float](Array(batchSize, 3, 224, 224)).apply1(_ =>
+      RandomGenerator.RNG.uniform(0.1, 1.0).toFloat)
+    var gradOutput = Tensor[Float](batchSize, classNum).apply1(_ =>
+      RandomGenerator.RNG.uniform(1.0, 1000.0).toFloat)
+
+    val blas = ResNet.graph(classNum,
+      T("shortcutType" -> ShortcutType.B, "depth" -> 50,
+        "optnet" -> false, "dataset" -> DatasetType.ImageNet)).asInstanceOf[StaticGraph[Float]]
+    val irBlas = blas.toIRgraph()
+
+    irBlas.build()
+    val outBlas = blas.forward(input).toTensor[Float]
+    val outDnn = irBlas.forward(input).toTensor[Float]
+
+
+    gradOutput.resizeAs(outBlas).apply1(_ =>
+      RandomGenerator.RNG.uniform(1.0, 1000.0).toFloat)
+
+    val gradInputBlas = blas.backward(input, gradOutput).toTensor[Float]
+
+    val gradInputDnn = irBlas.backward(input, gradOutput).toTensor[Float]
+    val gradInputTensor = Tensor[Float]().resize(gradInputDnn.size()).copy(gradInputDnn)
+
+    Equivalent.nearequals(outDnn, outBlas, 1e-6) should be(true)
   }
 }

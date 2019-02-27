@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -204,6 +204,10 @@ class CMul[T: ClassTag](
 
   override def toString(): String = {
     s"${getPrintName}(${java.util.Arrays.toString(size)})"
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
   }
 }
 

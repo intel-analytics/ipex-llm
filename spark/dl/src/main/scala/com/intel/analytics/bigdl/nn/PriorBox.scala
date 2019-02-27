@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericDouble, NumericFloat}
+import com.intel.analytics.bigdl.utils.{Shape, SingleShape}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
@@ -308,6 +309,27 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
     gradInput = null
     gradInput
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val feature = if (inputShape.isInstanceOf[SingleShape]) {
+      inputShape.toSingle().toArray
+    } else {
+      inputShape.toMulti().toArray.apply(0).toSingle().toArray
+    }
+    val layerW = feature(3)
+    val layerH = feature(2)
+    if (stepW == 0 || stepH == 0) {
+      stepW = imgW / layerW.toFloat
+      stepH = imgH / layerH.toFloat
+    }
+    val dim = layerH * layerW * numPriors * 4
+    val outputSize = if (output.nElement() == 2 * dim && output.dim() == 3 &&
+      output.size(1) == 1 && output.size(2) == 2 && output.size(3) == dim) {
+      output.size()
+    } else Array(1, 2, dim)
+
+    Shape(outputSize)
   }
 }
 
