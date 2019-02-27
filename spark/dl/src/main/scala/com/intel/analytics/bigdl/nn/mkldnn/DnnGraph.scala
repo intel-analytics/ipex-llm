@@ -87,8 +87,8 @@ class DnnGraph(
       node.element.forward(nodeInput)
       i += 1
     }
-    output = dummyOutput.element.output
-    getRealOutput(input, output)
+    output = getRealOutput(input, dummyOutput.element.output)
+    output
   }
 
   override def backward(input: Activity, gradOutput: Activity): Activity = {
@@ -112,8 +112,8 @@ class DnnGraph(
       }
       i += 1
     }
-    gradInput = fetchModelGradInput()
-    getRealOutput(input, gradInput)
+    gradInput = getRealOutput(input, fetchModelGradInput())
+    gradInput
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
