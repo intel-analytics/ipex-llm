@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -175,6 +176,10 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), p, eps)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
   }
 }
 

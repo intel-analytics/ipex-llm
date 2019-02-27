@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, InputWrapper, Output}
+import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Module, utils}
@@ -91,8 +91,11 @@ private[bigdl] class IRConverter[T: ClassTag](IRgraph: IRGraph[T])(implicit ev: 
     // add output node for graph
     val realOutputs = outputs.zipWithIndex.map {
       case (model: Node[Module[Float]], index: Int) =>
-        val node = new Node[Module[Float]](Output(IRgraph.outputFormats(index)))
-        model.add(node)
+        val node = if (model.element.isInstanceOf[BlasWrapper]) {
+          model
+        } else {
+          model.add(new Node[Module[Float]](Output(IRgraph.outputFormats(index))))
+        }
         node
     }
 
