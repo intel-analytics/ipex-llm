@@ -85,6 +85,7 @@ class SpatialConvolution(
 
   private var _relu = false
   private var _sum = false
+  private var _batchNorm = false
 
   def relu: Boolean = _relu
   def setReLU(value: Boolean = true): this.type = {
@@ -95,6 +96,12 @@ class SpatialConvolution(
   def sum: Boolean = _sum
   def setSum(value: Boolean = true): this.type = {
     _sum = value
+    this
+  }
+
+  def batchNorm: Boolean = _batchNorm
+  def setBatchNorm(value: Boolean = true): this.type = {
+    _batchNorm = value
     this
   }
 
@@ -418,6 +425,7 @@ class SpatialConvolution(
     if (withBias && null != bRegularizer) {
       bRegularizer.accRegularization(bias.dense, gradBias.dense, scaleB)
     }
+
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
