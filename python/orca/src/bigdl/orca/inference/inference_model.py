@@ -98,8 +98,12 @@ class InferenceModel(JavaValue):
                           inter_op_parallelism_threads, use_per_session_threads)
         elif backend == "openvino" or backend == "ov":
             if model_type:
-                callBigDlFunc(self.bigdl_type, "inferenceModelOpenVINOLoadTF",
-                              self.value, model_path, model_type)
+                if ov_pipeline_config_path:
+                    callBigDlFunc(self.bigdl_type, "inferenceModelOpenVINOLoadTF",
+                                  self.value, model_path, model_type, ov_pipeline_config_path, None)
+                else:
+                    callBigDlFunc(self.bigdl_type, "inferenceModelOpenVINOLoadTF",
+                                  self.value, model_path, model_type)
             else:
                 if ov_pipeline_config_path is None and ov_extensions_config_path is None:
                     raise Exception("For openvino backend, you must provide either model_type or "
