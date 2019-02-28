@@ -83,8 +83,11 @@ object OpenVinoInferenceSupportive extends InferenceSupportive {
         && extensionsConfigPath != "",
         s"modeltype is not provided, extensionsConfigPath, " +
           s"extensionsConfigPath should be specified")
-      case _ => require(ModelType.isSupported(modelType), s"$modelType not supported, " +
-        s"supported modeltypes are listed: ${ModelType.object_detection_types}")
+      case _ => ModelType.isSupported(modelType) match {
+          case true => logger.info(s"$modelType is supported." )
+          case false => logger.warn(s"$modelType not supported, " +
+            s"supported modeltypes are listed: ${ModelType.object_detection_types}")
+        }
     }
 
     val actualPipelineConfigPath = pipelineConfigPath match {

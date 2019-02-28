@@ -96,7 +96,12 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
    *                  rfcn_resnet101_coco, ssd_inception_v2_coco
    */
   def doLoadTF(modelPath: String, modelType: String): Unit = {
-    doLoadTensorflowModelAsOpenVINO(modelPath, modelType, null, null, DeviceType.CPU)
+    doLoadTensorflowModelAsOpenVINO(
+      modelPath,
+      modelType,
+      null,
+      null,
+      DeviceType.CPU)
   }
 
   /**
@@ -112,6 +117,30 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
     doLoadTensorflowModelAsOpenVINO(
       modelPath,
       null,
+      pipelineConfigPath,
+      extensionsConfigPath,
+      DeviceType.CPU
+    )
+  }
+
+  /**
+   * loads a TF model as OpenVINO
+   *
+   * @param modelPath            the path of the tensorflow model
+   * @param modelType            the type of the tensorflow model,
+   *                             please refer to [[ModelType]]
+   *                             e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
+   *                             rfcn_resnet101_coco, ssd_inception_v2_coco
+   * @param pipelineConfigPath   the path of the pipeline configure file
+   * @param extensionsConfigPath the path of the extensions configure file
+   */
+  def doLoadTF(modelPath: String,
+               modelType: String,
+               pipelineConfigPath: String,
+               extensionsConfigPath: String) : Unit = {
+    doLoadTensorflowModelAsOpenVINO(
+      modelPath,
+      modelType,
       pipelineConfigPath,
       extensionsConfigPath,
       DeviceType.CPU
