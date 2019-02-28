@@ -64,6 +64,10 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadTF(modelPath, pipelineConfigFilePath, extensionsConfigFilePath);
   }
 
+  public void loadTF(String modelPath, String modelType, String pipelineConfigFilePath, String extensionsConfigFilePath) {
+    doLoadTF(modelPath, modelType, pipelineConfigFilePath, extensionsConfigFilePath);
+  }
+
   public void loadOpenVINO(String modelFilePath, String weightFilePath) {
     doLoadOpenVINO(modelFilePath, weightFilePath);
   }
