@@ -22,6 +22,52 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class AccuracySpec extends FlatSpec with Matchers {
 
+  "top1 accuracy for categoricalAccuracy" should "be correct on 2d tensor" in {
+    val output = Tensor[Double](Storage(Array[Double](
+      0, 0, 0, 1,
+      0, 1, 0, 0,
+      1, 0, 0, 0
+    )), 1, Array(3, 4))
+
+    val target = Tensor[Double](Storage(Array[Double](
+      0, 0, 0, 1,
+      0, 0, 1, 0,
+      1, 0, 0, 0
+    )), 1, Array(3, 4))
+    val validation = new CategoricalAccuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(2, 3)
+    result should be(test)
+  }
+
+  "accuracy for binaryAccuracy" should "be correct" in {
+    val output = Tensor(Storage(Array[Double](0.3)), 1, Array(1))
+    val target = Tensor(Storage(Array[Double](0)))
+    val validation = new BinaryAccuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(1, 1)
+    result should be(test)
+  }
+
+  "accuracy for SparseCategoricalAccuracy" should "be correct" in {
+    val output = Tensor(Storage(Array[Double](
+      0, 0, 0, 1,
+      0, 1, 0, 0,
+      1, 0, 0, 0
+    )), 1, Array(3, 4))
+
+    val target = Tensor(Storage(Array[Double](
+      3,
+      1,
+      2
+    )))
+
+    val validation = new Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(2, 3)
+    result should be(test)
+  }
+
   "top1 accuracy using 0-based label" should "be correct on 2d tensor" in {
     val output = Tensor(Storage(Array[Double](
       0, 0, 0, 1,
