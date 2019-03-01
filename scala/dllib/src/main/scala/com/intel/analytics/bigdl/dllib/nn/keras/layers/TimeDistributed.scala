@@ -17,7 +17,8 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, TimeDistributed => BTimeDistributed}
+import com.intel.analytics.bigdl.utils.SingleShape
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -46,39 +47,52 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class TimeDistributed[T: ClassTag](
-    val layer: KerasLayer[Tensor[T], Tensor[T], T],
-    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
+  val layer: KerasLayer[Activity, Tensor[T], T],
+  val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Activity, Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
 
-  private def getInnerInput(input: Array[Int]): Array[Int] = {
-    Array(input(0)) ++ input.slice(2, input.length)
+  private var seqLen: Int = 0
+
+  private def getInnerShape(inputShape: Shape): Shape = {
+    val sizes = inputShape.toSingle().toArray
+    require(sizes.length >= 3,
+      s"TimeDistributed requires at least 3D input, but got input dim ${sizes.length}")
+    if (seqLen != 0) {
+      // in case time dim is singleton
+      if (sizes(1) != 1) seqLen = sizes(1)
+    } else seqLen = sizes(1)
+    Shape(Array(sizes(0)) ++ sizes.drop(2))
+  }
+
+  private def getInnerOutputShape(shape: Shape): Shape = {
+    val sizes = shape.toSingle().toArray
+    Shape(Array(sizes(0), seqLen) ++ sizes.drop(1))
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = {
-    val input = inputShape.toSingle().toArray
-    require(input.length >= 3,
-      s"TimeDistributed requires at least 3D input, but got input dim ${input.length}")
-    val innerInput = getInnerInput(input)
-    val innerOutput = layer.computeOutputShape(Shape(innerInput)).toSingle()
-    val batch = innerOutput.take(1)
-    val steps = List(input(1))
-    val output = batch ++ steps ++ innerOutput.drop(1)
-    Shape(output.toArray)
+    val innerShape = if (inputShape.isInstanceOf[SingleShape]) getInnerShape(inputShape)
+    else {
+      val shapes = inputShape.toMulti()
+      Shape(shapes.map(getInnerShape(_)))
+    }
+
+    val innerOutputShape = layer.computeOutputShape(innerShape)
+    getInnerOutputShape(innerOutputShape)
   }
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    val innerInput = getInnerInput(input)
-    layer.build(Shape(innerInput))
-    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Tensor[T], T] = {
+    val innerShape = if (inputShape.isInstanceOf[SingleShape]) getInnerShape(inputShape)
+    else Shape(inputShape.toMulti().map(getInnerShape(_)))
+    layer.build(innerShape)
+    layer.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
     val timedistributed = InternalTimeDistributed[T](layer)
-    timedistributed.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    timedistributed.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
 object TimeDistributed {
   def apply[@specialized(Float, Double) T: ClassTag](
-      layer: KerasLayer[Tensor[T], Tensor[T], T],
+      layer: KerasLayer[Activity, Tensor[T], T],
       inputShape: Shape = null)(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer, inputShape)
   }
@@ -88,7 +102,7 @@ object TimeDistributed {
       inputShape: Shape)(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     layer.model match {
       case keras: KerasNet[T] =>
-        new TimeDistributed[T](keras.asInstanceOf[KerasLayer[Tensor[T], Tensor[T], T]], inputShape)
+        new TimeDistributed[T](keras.asInstanceOf[KerasLayer[Activity, Tensor[T], T]], inputShape)
       case _ => throw new Exception(s"$layer is not defined in Keras style")
     }
   }

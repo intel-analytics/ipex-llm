@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 
@@ -28,8 +28,9 @@ import scala.reflect.ClassTag
 
 
 /**
- * NB: This implementation is almost the same as "com.intel.analytics.bigdl.nn.Timedistributed"
- * except for some bug fixing. We need to merge this back to BigDL in the next release.
+ * NB: This implementation includes some bug fixes for
+ * "com.intel.analytics.bigdl.nn.Timedistributed". Also it accepts input as Tensor
+ * or Tables whose elements are Tensor. Nested Tables are not supported currently.
  *
  * This layer is intended to apply contained layer to each temporal time slice
  * of input tensor.
@@ -46,11 +47,11 @@ import scala.reflect.ClassTag
  */
 
 private[zoo] class InternalTimeDistributed[T: ClassTag](
-    val layer: AbstractModule[Tensor[T], Tensor[T], T],
+    val layer: AbstractModule[Activity, Tensor[T], T],
     maskZero: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Tensor[T], T] {
 
-  private var inputSize: Array[Int] = _
+  private var internalInputSize: Array[Array[Int]] = _
   private var gradOutputSize: Array[Int] = _
   private var outputSize: Array[Int] = _
   private val timeBuffer =
@@ -59,6 +60,10 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
   private var indexBuffer: Tensor[T] = _
   private var inputBuffer: Tensor[T] = _
 
+  /**
+   * combine: [B, T, D] => [B * T, D]
+   * split:   [B * T, D] => [B, T, D]
+   */
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
       "TimeDistributed: combine method requires src.length == target.length + 1" +
@@ -73,39 +78,57 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
     }
   }
 
-
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim >= 3,
-      "TimeDistributed: input should be at least a 3D Tensor, e.g [batch, time, inputDim]. " +
-        s"Current input.dim = ${input.dim}")
-
-    if (inputSize == null) {
-      inputSize = new Array[Int](input.size.length - 1)
+  private def resizeActivity(input: Activity, targetSizes: Array[Array[Int]]): Unit = {
+    if (input.isTensor) input.toTensor.resize(targetSizes.head)
+    else {
+      input.toTable.foreach { case ((key: Int, value: Tensor[T])) =>
+          value.resize(targetSizes(key - 1))
+      }
     }
+  }
 
-    /**
-     * combine: [B, T, D] => [B * T, D]
-     * split:   [B * T, D] => [B, T, D]
-     */
+  private def getActivitySize(input: Activity): Array[Array[Int]] = {
+    if (input.isTensor) {
+      Array(input.toTensor.size())
+    } else {
+      val sizes = new Array[Array[Int]](input.toTable.length)
+      input.toTable.foreach { case ((key: Int, value: Tensor[T])) =>
+        sizes(key - 1) = (value.size())
+      }
+      sizes
+    }
+  }
 
-    val _inputSize = input.size
-    combine(_inputSize, inputSize)
-    input.resize(inputSize)
+  override def updateOutput(input: Activity): Tensor[T] = {
+    val oriSizes = getActivitySize(input)
+    if (internalInputSize == null) {
+      internalInputSize = new Array[Array[Int]](oriSizes.length)
+      for (i <- 0 until oriSizes.length) {
+        internalInputSize(i) = new Array[Int](oriSizes(i).length - 1)
+      }
+    }
+    for ((srcSizes, tgtSizes) <- oriSizes zip internalInputSize) {
+      combine(srcSizes, tgtSizes)
+    }
+    resizeActivity(input, internalInputSize)
+
     val _output = layer.forward(input).toTensor[T]
 
-    val batch = _inputSize(0)
-    val steps = _inputSize(1)
-
     val combinedShape = _output.size()
-    require(combinedShape(0) == batch * steps,
-      s"combined batch: ${combinedShape(0)} should match ${batch} * ${steps}")
-    val splitedShape = Array(batch, steps) ++ combinedShape.drop(1)
-    outputSize = splitedShape
+    // in case of singleton
+    var i = 0
+    while (i < oriSizes.length && oriSizes(i)(0) * oriSizes(i)(1) != combinedShape(0)) {
+      i += 1
+    }
+    require(i < oriSizes.length,
+      s"combined batch: ${combinedShape(0)} should match ${oriSizes(i)(0)} * ${oriSizes(i)(1)}")
+    outputSize = Array(oriSizes(i)(0), oriSizes(i)(1)) ++ combinedShape.drop(1)
 
-    input.resize(_inputSize)
+    resizeActivity(input, oriSizes)
     output.set(_output).resize(outputSize)
 
     if (maskZero) {
+      require(input.isTensor, "only support mask with tensor")
       if (maskBuffer == null) {
         maskBuffer = Tensor()
       }
@@ -115,7 +138,7 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
       if (inputBuffer == null) {
         inputBuffer = Tensor()
       }
-      inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)._1
+      inputBuffer.resizeAs(input.toTensor).abs(input.toTensor).max(maskBuffer, indexBuffer, 3)._1
       for (i <- 1 to maskBuffer.size(1)) {
         for (j <- 1 to maskBuffer.size(2)) {
           if (maskBuffer(Array(i, j, 1)) == ev.zero) {
@@ -128,59 +151,60 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
     if (gradOutputSize == null) {
       gradOutputSize = new Array[Int](gradOutput.size.length - 1)
     }
-    val _inputSize = input.size
+    val oriSizes = getActivitySize(input)
     val _gradOutputSize = gradOutput.size
     combine(_gradOutputSize, gradOutputSize)
-    input.resize(inputSize)
+    resizeActivity(input, internalInputSize)
     gradOutput.resize(gradOutputSize)
-    val _gradInput = layer.updateGradInput(input, gradOutput).toTensor[T]
-    gradInput.set(_gradInput).resize(_inputSize)
-    input.resize(_inputSize)
-    gradOutput.resize(_gradOutputSize)
-    gradInput
-  }
-
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    val _inputSize = input.size
-    val _gradOutputSize = gradOutput.size
-    input.resize(inputSize)
-    gradOutput.resize(gradOutputSize)
-    layer.accGradParameters(input, gradOutput)
-    input.resize(_inputSize)
-    gradOutput.resize(_gradOutputSize)
-  }
-
-  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val st = System.nanoTime
-    if (gradOutputSize == null) {
-      gradOutputSize = new Array[Int](gradOutput.size.length - 1)
+    val _gradInput = layer.updateGradInput(input, gradOutput)
+    if (_gradInput.isTensor) {
+      gradInput = Tensor()
+      gradInput.toTensor.set(_gradInput.toTensor)
+    } else {
+      gradInput = T()
+      var i = 1
+      while (i <= _gradInput.toTable.length()) {
+        gradInput.toTable.insert(_gradInput.toTable[Tensor[T]](i))
+        i += 1
+      }
     }
 
-    val _inputSize = input.size
-    val _gradOutputSize = gradOutput.size
-    combine(_gradOutputSize, gradOutputSize)
-    input.resize(inputSize)
-    gradOutput.resize(gradOutputSize)
-    val _gradInput = layer.backward(input, gradOutput).toTensor[T]
-    gradInput.set(_gradInput).resize(_inputSize)
-    input.resize(_inputSize)
+    resizeActivity(gradInput, oriSizes)
+    resizeActivity(input, oriSizes)
     gradOutput.resize(_gradOutputSize)
-    backwardTime += System.nanoTime - st
 
     if (maskZero) {
+      require(gradInput.isTensor, "only support mask with Tensor")
       for (i <- 1 to maskBuffer.size(1)) {
         for (j <- 1 to maskBuffer.size(2)) {
           if (maskBuffer(Array(i, j, 1)) == ev.zero) {
-            gradInput.select(1, i).select(1, j).zero()
+            gradInput.toTensor.select(1, i).select(1, j).zero()
           }
         }
       }
     }
+    gradInput
+  }
 
+  override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
+    val oriSizes = getActivitySize(input)
+    val _gradOutputSize = gradOutput.size
+    resizeActivity(input, internalInputSize)
+    gradOutput.resize(gradOutputSize)
+    layer.accGradParameters(input, gradOutput)
+    resizeActivity(input, oriSizes)
+    gradOutput.resize(_gradOutputSize)
+  }
+
+  override def backward(input: Activity, gradOutput: Tensor[T]): Activity = {
+    val st = System.nanoTime
+    updateGradInput(input, gradOutput)
+    accGradParameters(input, gradOutput)
+    backwardTime += System.nanoTime - st
     gradInput
   }
 
@@ -238,7 +262,7 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
   override def clearState(): InternalTimeDistributed.this.type = {
     super.clearState()
     layer.clearState()
-    inputSize = null
+    internalInputSize = null
     gradOutputSize = null
     outputSize = null
     timeBuffer.clear
@@ -255,7 +279,7 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
       super.equals(that) &&
         (that canEqual this) &&
         layer.equals(layer) &&
-        inputSize == that.inputSize &&
+        internalInputSize == that.internalInputSize &&
         gradOutputSize == that.gradOutputSize &&
         outputSize == that.outputSize
     case _ => false
@@ -263,7 +287,7 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
 
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(),
-      layer, inputSize, gradOutputSize, outputSize)
+      layer, internalInputSize, gradOutputSize, outputSize)
     state.filter(_ != null).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
@@ -272,7 +296,7 @@ private[zoo] class InternalTimeDistributed[T: ClassTag](
 
 object InternalTimeDistributed extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
-      layer: AbstractModule[Tensor[T], Tensor[T], T],
+      layer: AbstractModule[Activity, Tensor[T], T],
       maskZero: Boolean = false
   )(implicit ev: TensorNumeric[T]): InternalTimeDistributed[T] = {
     new InternalTimeDistributed[T](layer, maskZero)
@@ -284,7 +308,7 @@ object InternalTimeDistributed extends ModuleSerializable {
     val attrMap = context.bigdlModule.getAttrMap
     val layerAttr = attrMap.get("layer")
     val layer = DataConverter.getAttributeValue(context, layerAttr).
-      asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+      asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
     var maskZero = false
     if (attrMap.containsKey("maskZero")) {
       maskZero = DataConverter.getAttributeValue(context, attrMap.get("maskZero")).

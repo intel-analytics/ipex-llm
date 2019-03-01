@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.{nn => bnn}
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.{InternalCAddTable, InternalMM}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.{InternalCAddTable, InternalCMulTable, InternalExpand, InternalMM}
 import com.intel.analytics.zoo.pipeline.api.keras.models._
 
 import scala.reflect.ClassTag
@@ -262,8 +262,17 @@ object AutoGrad {
       axes: List[Int] = null)(implicit ev: TensorNumeric[T]): Variable[T] = {
     require(x.getOutputShape().isInstanceOf[SingleShape], "Only accept single shape")
     require(y.getOutputShape().isInstanceOf[SingleShape], "Only accept single shape")
-    val xShape = x.getOutputShape().toSingle().toArray
-    val yShape = y.getOutputShape().toSingle().toArray
+    var xx = x
+    var yy = y
+    var yShape = yy.getOutputShape().toSingle()
+    var xShape = xx.getOutputShape().toSingle()
+    if (yShape.size > xShape.size) {
+      xx = AutoGrad.expandDims(x, 0)
+    } else if (yShape.size < xShape.size) {
+      yy = AutoGrad.expandDims(y, 0)
+    }
+    xShape = xx.getOutputShape().toSingle()
+    yShape = yy.getOutputShape().toSingle()
     var transposeX = false
     var transposeY = false
     var left = 0
@@ -271,11 +280,14 @@ object AutoGrad {
     if (xShape.length == 2 && yShape.length == 2) {
       left = 0
       right = 1
-      } else if ((xShape.length == 3 && yShape.length == 3)) {
+    } else if (xShape.length == 3 && yShape.length == 3) {
       left = 1
       right = 2
-      } else {
-        throw new IllegalArgumentException(s"Only support 2D and 3D input for now," +
+    } else if (xShape.length == 4 && yShape.length == 4) {
+      left = 2
+      right = 3
+    } else if (xShape.length > 4 && yShape.length > 4) {
+        throw new IllegalArgumentException(s"Only support 2D/3D/4D input for now," +
           s"but got [${xShape.mkString(",")}] and [${xShape.mkString(",")}]")
       }
     if (axes != null) {
@@ -288,11 +300,13 @@ object AutoGrad {
       transposeY = if (axes(1) == yShape.length - 1) {true} else {false}
     }
 
-
     val mm = InternalMM[T](transA = transposeX,
       transB = transposeY)
     val kmm = new KerasLayerWrapper[T](mm.asInstanceOf[AbstractModule[Activity, Activity, T]])
-    kmm.from(x, y)
+
+    if (xShape.length > 3 || yShape.length > 3) {
+      TimeDistributed(kmm.asInstanceOf[KerasLayer[Activity, Tensor[T], T]]).from(xx, yy)
+    } else kmm.from(xx, yy)
   }
 
   /**
@@ -432,7 +446,7 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
 
   def *(a: Variable[T]): Variable[T] = {
     val o =
-      new KerasLayerWrapper[T](bnn.CMulTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](InternalCMulTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     val (x, y) = broadcast(this, a)
     Variable(o.inputs(Array(x.node, y.node)))
   }
@@ -527,32 +541,30 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
 
     var yShape = yy.getOutputShape().toSingle()
     var xShape = xx.getOutputShape().toSingle()
+
     if (yShape.size > xShape.size) {
-      xx = AutoGrad.expandDims(x, 0)
+      xx = AutoGrad.expandDims(xx, 0)
+      xShape = xx.getOutputShape().toSingle()
     } else if (yShape.size < xShape.size) {
-      yy = AutoGrad.expandDims(y, 0)
+      yy = AutoGrad.expandDims(yy, 0)
+      yShape = yy.getOutputShape().toSingle()
     }
-    yShape = yy.getOutputShape().toSingle()
-    xShape = xx.getOutputShape().toSingle()
+
     require(xShape.size == yShape.size,
       s"The two variables should have the same dims," +
         s"but got: ${x.getOutputShape().toSingle().mkString(",")}" +
         s"and ${y.getOutputShape().toSingle().mkString(",")}")
 
-    var i = yShape.length - 1
-    while (i >= 1) { // Ignore the batch dim
-      if (yShape(i) != xShape(i)) {
-        if (yShape(i) == 1) {
-          yy = yy.replicate(i, xShape(i))
-        } else if (xShape(i) == 1) {
-          xx = xx.replicate(i, yShape(i))
-        } else {
-          throw new IllegalArgumentException(
-            s"Shape mismatch: x - ${xShape}, y -${yShape}")
-        }
-      }
-      i -= 1
+    // Ignore the batch dim
+    val xElements = xShape.drop(1).reduceLeft(_+_)
+    val yElements = yShape.drop(1).reduceLeft(_+_)
+    // should not expand batch dim here as it's -1
+    if (xElements < yElements) {
+      xx = xx.expand(yShape)
+    } else if (xElements > yElements) {
+      yy = yy.expand(xShape)
     }
+
     (xx, yy)
   }
   // scalastyle:on
@@ -562,6 +574,17 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
       new KerasLayerWrapper[T](
         bnn.Replicate[T](dim = axis + 1,
           nFeatures = times).asInstanceOf[AbstractModule[Activity, Activity, T]])
+    Variable(o.inputs(this.node))
+  }
+
+  /**
+   * Expand variable to configured size
+   * @param sizes target variable sizes, dim whose size is -1 will be ignored
+   */
+  def expand(sizes: List[Int]): Variable[T] = {
+    val o =
+      new KerasLayerWrapper[T](
+        InternalExpand[T](sizes.toArray).asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(this.node))
   }
 

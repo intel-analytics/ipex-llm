@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -39,7 +40,6 @@ private[zoo] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
     val tensorStride = input.stride()
     val tensorSize = input.size()
 
-    // check if need batch dim
     var i = 0
     while (i < tensorDim) {
       if (tgtSizes(i) != -1) {
@@ -63,16 +63,33 @@ private[zoo] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
     val tensorSize = input.size()
 
     gradInput = Tensor[T](tensorSize)
-
+    val expandDim = new ArrayBuffer[Int]()
     var i = 0
     while (i < tensorDim) {
       if (tgtSizes(i) != -1) {
-        if (tensorSize(i) == 1) {
-          gradOutput.split(i + 1).foreach(gradInput.add(_))
+        if (tensorSize(i) == 1 && tgtSizes(i) != 1) {
+          expandDim.append(i + 1)
         }
       }
       i += 1
     }
+
+    i = expandDim.size - 1
+    val sizes = gradOutput.size()
+    var _gradOutput = gradOutput
+    while (i >= 0) {
+      var start = 1
+      sizes(expandDim(i) - 1) = 1
+      val _gradInput = Tensor[T](sizes)
+      while (start <= gradOutput.size(expandDim(i))) {
+        val x = _gradOutput.narrow(expandDim(i), start, 1)
+        _gradInput.add(x)
+        start += 1
+      }
+      _gradOutput = _gradInput
+      i -= 1
+    }
+    gradInput = _gradOutput
     gradInput
   }
 
