@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
 import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, Top5Accuracy => ZooTop5Accuracy}
+import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy, Top5Accuracy => ZooTop5Accuracy}
 import com.intel.analytics.zoo.pipeline.api.keras.models.KerasNet
 import com.intel.analytics.zoo.pipeline.api.keras.objectives._
 import org.apache.spark.rdd.RDD
@@ -178,15 +178,26 @@ object KerasUtils {
     }
   }
 
-  def toBigDLMetrics[T: ClassTag](metrics: List[String])
+  private def mappingForAcc[T: ClassTag](loss: String)(implicit ev: TensorNumeric[T])
+  : ValidationMethod[T] = {
+    loss.toLowerCase() match {
+      case "sparse_categorical_crossentropy" => new SparseCategoricalAccuracy[T]()
+      case "categorical_crossentropy" => new CategoricalAccuracy[T]()
+      case "binary_crossentropy" => new BinaryAccuracy[T]()
+      case _ => throw new IllegalArgumentException(
+        s"Unsupported metric: accuracy and loss: ${loss} combination")
+    }
+  }
+
+  def toBigDLMetrics[T: ClassTag](metrics: List[String], loss: String)
     (implicit ev: TensorNumeric[T]): List[ValidationMethod[T]] = {
     if (metrics == null) {
       null
     } else {
       metrics.map { metric =>
         metric.toLowerCase() match {
-          case "accuracy" => new Accuracy[T]()
-          case "acc" => new Accuracy[T]()
+          case "accuracy" => mappingForAcc(loss)
+          case "acc" => mappingForAcc(loss)
           case "top5accuracy" => new ZooTop5Accuracy[T]()
           case "top5acc" => new ZooTop5Accuracy[T]()
           case "mae" => new MAE[T]()

@@ -127,7 +127,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       metrics: List[String])(implicit ev: TensorNumeric[T]): Unit = {
     this.compile(KerasUtils.toBigDLOptimMethod[T](optimizer),
       KerasUtils.toBigDLCriterion[T](loss),
-      KerasUtils.toBigDLMetrics[T](metrics))
+      KerasUtils.toBigDLMetrics[T](metrics, loss))
   }
 
   def compile(

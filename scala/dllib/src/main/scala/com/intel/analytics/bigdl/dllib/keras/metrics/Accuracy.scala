@@ -18,6 +18,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.metrics
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.{AccuracyResult, Top1Accuracy, ValidationResult, Top5Accuracy => BigDLTop5Accuracy}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -31,6 +32,7 @@ import scala.reflect.ClassTag
  *                       Note that this only takes effect for multi-class classification.
  *                       For binary classification, labels ought to be 0 or 1.
  */
+@deprecated("use SparseCategoricalAccuracy, CategoricalAccuracy or BinaryAccuracy instead", "0.5.0")
 class Accuracy[T: ClassTag](
     val zeroBasedLabel: Boolean = true)(implicit ev: TensorNumeric[T])
   extends Top1Accuracy[T] {
@@ -46,6 +48,50 @@ class Accuracy[T: ClassTag](
     else {
       super.apply(output, target)
     }
+  }
+}
+
+/**
+ * Measures top1 accuracy for multi-class classification with sparse target and zero-base index.
+ *
+ */
+class SparseCategoricalAccuracy[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends
+  Top1Accuracy[T] {
+  override def apply(output: Activity, target: Activity):
+  ValidationResult = {
+    super.apply(output, target.toTensor[T].clone().add(ev.fromType(1.0f)))
+  }
+}
+
+
+/**
+ * Measures top1 accuracy for binary classification with zero-base index.
+ *
+ */
+class BinaryAccuracy[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Top1Accuracy[T]
+
+
+/**
+ * Measures top1 accuracy for multi-class with "one-hot" target.
+ *
+ */
+class CategoricalAccuracy[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends
+  Top1Accuracy[T] {
+  override def apply(output: Activity, target: Activity):
+  ValidationResult = {
+    val _target = target.toTensor[T]
+    val _output = output.toTensor[T]
+
+    require(_target.dim() == 2, "Target should have 2 dims with one-hot encoding")
+    require(_target.size().deep == _output.size().deep,
+      s"${_target.size()} == ${_output.size()}")
+
+    val bigdlTarget = if (_target.dim() == 2) {
+      _target.max(2)._2
+    } else {
+      _target.max(1)._2
+    }
+    super.apply(output, bigdlTarget)
   }
 }
 
