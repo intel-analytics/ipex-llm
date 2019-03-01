@@ -634,7 +634,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       innerActivation: String = "hard_sigmoid",
       dimOrdering: String = "th",
       subsample: Int = 1,
-      borderMode: String = "same",
+      borderMode: String = "valid",
       wRegularizer: Regularizer[T] = null,
       uRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null,
@@ -650,7 +650,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       nbFilter: Int,
       nbKernel: Int,
       subsample: Int = 1,
-      borderMode: String = "same",
+      borderMode: String = "valid",
       wRegularizer: Regularizer[T] = null,
       uRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null,
@@ -810,7 +810,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   }
 
   def createZooKerasTimeDistributed(
-      layer: KerasLayer[Tensor[T], Tensor[T], T],
+      layer: KerasLayer[Activity, Tensor[T], T],
       inputShape: JList[Int] = null): TimeDistributed[T] = {
     TimeDistributed(layer, toScalaShape(inputShape))
   }

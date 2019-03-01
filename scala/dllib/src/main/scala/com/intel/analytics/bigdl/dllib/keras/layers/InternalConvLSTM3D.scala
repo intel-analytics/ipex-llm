@@ -209,7 +209,8 @@ class InternalConvLSTM3D[T : ClassTag](val inputSize: Int,
   def getOutputSize(sizes: Array[Int]): Array[Int] = {
     val conv = InternalTimeDistributed[T](VolumetricConvolution(inputSize, outputSize,
       kernel, kernel, kernel, stride, stride, stride, padding, padding, padding,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
     val input = Tensor[T](sizes)
     val output = conv.forward(input)
     output.size()

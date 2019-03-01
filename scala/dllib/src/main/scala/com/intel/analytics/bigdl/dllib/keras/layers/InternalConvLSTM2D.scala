@@ -162,7 +162,7 @@ class InternalConvLSTM2D[T : ClassTag](
     val input = Tensor[T](sizes)
     val conv = InternalTimeDistributed[T](SpatialConvolution(inputSize, outputSize, kernel,
       kernel, stride, stride, padding, padding, wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer))
+      bRegularizer = bRegularizer).asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
     val output = conv.forward(input)
     output.size()
   }
