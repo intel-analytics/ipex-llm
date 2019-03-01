@@ -43,8 +43,9 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     val prop = new Properties()
     prop.load(this.getClass.getResourceAsStream("/app.properties"))
     modelZooUrl = prop.getProperty("data-store-url")
-  } catch { case e: Exception =>
-    modelZooUrl = "http://download.tensorflow.org"
+  } catch {
+    case e: Exception =>
+      modelZooUrl = "http://download.tensorflow.org"
   }
 
   val logger = LoggerFactory.getLogger(getClass)
@@ -99,6 +100,17 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     fasterrcnnModel.release()
   }
 
+  test("openvino model should throw exception if load failed") {
+    val thrown = intercept[InferenceRuntimeException] {
+      InferenceModelFactory.loadOpenVINOModelForTF(
+        faserrcnnFrozenModelFilePath + "error",
+        faserrcnnModelType,
+        faserrcnnPipelineConfigFilePath,
+        null, fasterrcnnDeviceType)
+    }
+    assert(thrown.getMessage.contains("Openvino optimize tf model error"))
+  }
+
   test("openvino model should load successfully") {
     println(s"fasterrcnnModel from tensorflow pb loaded as $fasterrcnnModel")
     fasterrcnnModel shouldNot be(null)
@@ -140,6 +152,7 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
       case false => println(x, y); false
     }
   }
+
   def almostEqual(x: Array[Float], y: Array[Float], precision: Float): Boolean = {
     x.length == y.length match {
       case true => x.zip(y).filter(t => !almostEqual(t._1, t._2, precision)).length == 0
