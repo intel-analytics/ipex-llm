@@ -125,7 +125,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive {
         s"stdout: $stdout \n" +
         s"exitCode: $exitCode\n -----")
       exitCode match {
-        case 0 => logger.info(s"tensorflow model optimization successed")
+        case 0 => logger.info(s"tensorflow model optimization succeeded")
         case _ =>
           val message = stderr.toString().split("\n").filter(_ contains("ERROR")).mkString(",")
           throw
