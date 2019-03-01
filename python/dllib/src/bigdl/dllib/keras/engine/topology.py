@@ -49,7 +49,7 @@ class KerasNet(ZooKerasLayer):
             from zoo.pipeline.api.autograd import CustomLoss
             loss = CustomLoss(loss, self.get_output_shape()[1:])
         if metrics and all(isinstance(metric, six.string_types) for metric in metrics):
-            metrics = to_bigdl_metrics(metrics)
+            metrics = to_bigdl_metrics(metrics, loss)
         callBigDlFunc(self.bigdl_type, "zooCompile",
                       self.value,
                       optimizer,

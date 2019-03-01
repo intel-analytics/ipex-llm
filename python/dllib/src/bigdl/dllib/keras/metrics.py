@@ -56,6 +56,39 @@ class Accuracy(ZooKerasCreator, JavaValue):
                                        zero_based_label)
 
 
+class SparseCategoricalAccuracy(ZooKerasCreator, JavaValue):
+    """
+    Measures top1 accuracy for multi-class classification with sparse target.
+
+    >>> acc = SparseCategoricalAccuracy()
+    creating: createZooKerasSparseCategoricalAccuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        super(SparseCategoricalAccuracy, self).__init__(None, bigdl_type)
+
+
+class CategoricalAccuracy(ZooKerasCreator, JavaValue):
+    """
+    Measures top1 accuracy for multi-class classification when target is one-hot encoded.
+
+    >>> acc = CategoricalAccuracy()
+    creating: createZooKerasCategoricalAccuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        super(CategoricalAccuracy, self).__init__(None, bigdl_type)
+
+
+class BinaryAccuracy(ZooKerasCreator, JavaValue):
+    """
+    Measures top1 accuracy for binary classification with zero-based index.
+
+    >>> acc = BinaryAccuracy()
+    creating: createZooKerasBinaryAccuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        super(BinaryAccuracy, self).__init__(None, bigdl_type)
+
+
 class Top5Accuracy(ZooKerasCreator, JavaValue):
     """
     Measures top5 accuracy for multi-class classification.
