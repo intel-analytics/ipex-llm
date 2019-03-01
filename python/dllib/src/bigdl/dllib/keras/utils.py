@@ -69,10 +69,22 @@ def to_bigdl_criterion(criterion):
         raise TypeError("Unsupported loss: %s" % criterion)
 
 
-def to_bigdl_metric(metric):
+def to_bigdl_metric(metric, loss):
     metric = metric.lower()
+    loss_str = (loss if isinstance(loss, six.string_types) else loss.__class__.__name__).lower()
     if metric == "accuracy" or metric == "acc":
-        return metrics.Accuracy()
+        if loss_str == "sparse_categorical_crossentropy"\
+                or loss_str == "sparsecategoricalcrossentropy":
+            return metrics.SparseCategoricalAccuracy()
+        elif loss_str == "categorical_crossentropy"\
+                or loss_str == "categoricalcrossentropy":
+            return metrics.CategoricalAccuracy()
+        elif loss_str == "binary_crossentropy"\
+                or loss_str == "binarycrossentropy":
+            return metrics.BinaryAccuracy()
+        else:
+            raise TypeError(
+                "Not supported combination: metric {} and loss {}".format(metric, loss_str))
     elif metric == "top5accuracy" or metric == "top5acc":
         return metrics.Top5Accuracy()
     elif metric == "mae":
@@ -88,5 +100,5 @@ def to_bigdl_metric(metric):
         raise TypeError("Unsupported metric: %s" % metric)
 
 
-def to_bigdl_metrics(metrics):
-    return [to_bigdl_metric(m) for m in metrics]
+def to_bigdl_metrics(metrics, loss):
+    return [to_bigdl_metric(m, loss) for m in metrics]
