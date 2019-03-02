@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from bigdl.optim.optimizer import MaxEpoch
 from tensorflow.python.keras.engine import training_utils
 
+from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFPredictor
-from bigdl.util.common import get_spark_context
 import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
@@ -41,10 +42,6 @@ class KerasModel(object):
 
         self.tf_optimizer = None
         self.tf_optimizer_done_epochs = 0
-
-    @classmethod
-    def from_keras(cls, model):
-        return cls(model)
 
     @property
     def metrics_names(self):
@@ -78,7 +75,7 @@ class KerasModel(object):
             self._fit_distributed(x, validation_split, epochs, **kwargs)
 
         elif distributed:
-            sc = get_spark_context()
+            sc = getOrCreateSparkContext()
             train_rdd, types, shapes = _create_rdd_x_y(x, y,
                                                        self.model._feed_input_names,
                                                        self.model._feed_output_names,
@@ -129,10 +126,10 @@ class KerasModel(object):
         if isinstance(x, TFDataset):
             x = _standarize_feature_label_dataset(x, self.model)
             # todo check arguments
-            return self._evaluate_distributed(x, batch_per_thread)
+            return self._evaluate_distributed(x)
         else:
             if distributed:
-                sc = get_spark_context()
+                sc = getOrCreateSparkContext()
                 rdd, types, shapes = _create_rdd_x_y(x, y,
                                                      self.model._feed_input_names,
                                                      self.model._feed_output_names,
@@ -144,13 +141,13 @@ class KerasModel(object):
                                              shapes=shapes,
                                              batch_per_thread=-1 if batch_per_thread is None
                                              else batch_per_thread)
-                return self._evaluate_distributed(dataset, batch_per_thread)
+                return self._evaluate_distributed(dataset)
             else:
                 return self.model.evaluate(x=x,
                                            y=y,
                                            batch_size=batch_per_thread)
 
-    def _evaluate_distributed(self, dataset, batch_size):
+    def _evaluate_distributed(self, dataset):
         predictor = TFPredictor(K.get_session(), self.metrics_tensors,
                                 self.model.inputs + self.model.targets, dataset)
         result = predictor.predict()
@@ -168,10 +165,10 @@ class KerasModel(object):
         if isinstance(x, TFDataset):
             # todo check arguments
             x = _standarize_feature_dataset(x, self.model)
-            return self._predict_distributed(x, batch_per_thread)
+            return self._predict_distributed(x)
         else:
             if distributed:
-                sc = get_spark_context()
+                sc = getOrCreateSparkContext()
                 rdd, types, shapes = _create_rdd_x(x, self.model._feed_input_names, sc)
 
                 dataset = TFDataset.from_rdd(rdd,
@@ -180,12 +177,20 @@ class KerasModel(object):
                                              shapes=shapes,
                                              batch_per_thread=-1 if batch_per_thread is None
                                              else batch_per_thread)
-                return np.array(self._predict_distributed(dataset, batch_per_thread).collect())
+                results = self._predict_distributed(dataset).collect()
+                output_num = len(self.model.outputs)
+                if output_num == 1:
+                    return np.stack(results)
+                else:
+                    predictions = []
+                    for i in range(0, output_num):
+                        predictions.append(np.stack([res[i] for res in results]))
+                    return predictions
             else:
                 return self.model.predict(x=x,
                                           batch_size=batch_per_thread)
 
-    def _predict_distributed(self, x, batch_size):
+    def _predict_distributed(self, x):
         predictor = TFPredictor.from_keras(self.model, x)
         return predictor.predict()
 
