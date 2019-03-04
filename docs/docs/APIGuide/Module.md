@@ -170,7 +170,7 @@ import org.apache.spark.SparkContext
 
 val conf = Engine.createSparkConf()
     .setAppName("Model")
-    .setMaster("local[*]"
+    .setMaster("local[*]")
 val sc = new SparkContext(conf)
     Engine.init
 
