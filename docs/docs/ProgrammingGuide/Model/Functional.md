@@ -14,10 +14,13 @@ You can write code like this
 
 **Scala:**
 ```scala
-val linear = Linear(...).inputs()
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val linear = Linear(3, 5).inputs()
 val sigmoid = Sigmoid().inputs(linear)
-val softmax = Softmax().inputs(sigmoid)
-val model = Graph(Seq[linear], Seq[softmax])
+val softmax = SoftMax().inputs(sigmoid)
+val model = Graph(Array(linear, sigmoid), Array(softmax))
 ```
 **Python:**
 ```python

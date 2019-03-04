@@ -165,6 +165,14 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.Top1Accuracy
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.utils.engine
+import org.apache.spark.SparkContext
+
+val conf = Engine.createSparkConf()
+    .setAppName("Model")
+    .setMaster("local[*]"
+val sc = new SparkContext(conf)
+    Engine.init
 
 //create some dummy dataset for evaluation
 val feature = Tensor(10).rand()
@@ -212,7 +220,7 @@ model.predictClass(dataset)
 model.predict(data_rdd)
 model.predict_class(data_rdd)
 ```
-Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter.
+Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter.
 
 Please note that the sequence and the partitions of the output rdd will keep the same with input. So you can zip the output rdd with input rdd to get a (data, result) pair rdd.
 

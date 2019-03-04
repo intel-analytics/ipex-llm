@@ -4,7 +4,7 @@
 BigDL provides `DLEstimator` and `DLClassifier` for users with Apache Spark MLlib experience, which
 provides high level API for training a BigDL Model with the Apache Spark
 [Estimator](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#estimators)/
-[Transfomer](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#transformers)
+[Transformer](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#transformers)
 pattern, thus users can conveniently fit BigDL into a ML pipeline. The fitted model `DLModel` and
 `DLClassiferModel` contains the trained BigDL model and extends the Spark ML `Model` class.
 Alternatively users may also construct a `DLModel` with a pre-trained BigDL model to use it in
@@ -16,7 +16,7 @@ DLClassifier and how to use it. For advanced users, please check our
 ---
 ## **Define a DLEstimator**
 Before we are trying to use DLEstimator to automate the training process, we need to make clear
-which model used to be updated parameters and gradients, which criterion used to measure the loss,
+which model is used to update parameters and gradients, which criterion is used to measure the loss and 
 the dimension of the features and the label. These are the key elements the DLEstimator required to
 prepare for the training. If you are unfamiliar with creating a model and criterion, check out
 [Model](./Model/Sequential.md) and [Losses](../APIGuide/Losses.md) sections with provided links.
@@ -29,8 +29,12 @@ Then basically one can write code like this:
 **Scala:**
 
 ```scala
+import com.intel.analytics.bigdl.dlframes.DLEstimator
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+
 val model = Sequential().add(Linear(2, 2))
-val estimator = new DLEstimator(model, criterion, Array(2), Array(2))
+val estimator = new DLEstimator(model, MSECriterion(), Array(2), Array(2))
 ```
 
 **Python:**
