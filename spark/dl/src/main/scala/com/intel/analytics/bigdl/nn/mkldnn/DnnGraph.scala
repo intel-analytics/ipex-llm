@@ -390,10 +390,28 @@ class DnnGraph(
     }
   }
 
+  // fuse some layers when doing inference
+  private def fusion(): Unit = {
+    if (!this.train) {
+      for (j <- 0 to 1) {
+        var i = forwardExecution.length - 1
+        while (i >= 0) {
+          if (j == 0) {
+            Fusion.fuseModule(forwardExecution(i))
+          } else if (j == 1) {
+            Fusion.fuseCAdd(forwardExecution(i))
+          }
+          i -= 1
+        }
+      }
+    }
+  }
+
   // init forward primitives
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     skipInitFwdPrimitives()
+    fusion()
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
     for (i <- 0 until forwardExecution.length) {
