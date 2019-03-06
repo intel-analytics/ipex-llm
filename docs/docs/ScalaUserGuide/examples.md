@@ -4,7 +4,7 @@ This section is a short introduction of some classic examples/tutorials. They ca
 
 ---
 ## **Training LeNet on MNIST - The "hello world" for deep learning**
-This tutorial is an explanation of what is happening in the [lenet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala) example, which trains [LeNet-5](http://yann.lecun.com/exdb/lenet/) on the [MNIST data](http://yann.lecun.com/exdb/mnist/) using BigDL.
+This tutorial is an explanation of what is happening in the [lenet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala) example, which trains [LeNet-5](http://yann.lecun.com/exdb/lenet/) on the [MNIST data](http://yann.lecun.com/exdb/mnist/) using BigDL. **Please open [Train.scala](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala) to follow the example and check [README.md](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) for details of how to run the example**
 
 A BigDL program starts with `import com.intel.analytics.bigdl._`; it then _**creates the `SparkContext`**_ using the `SparkConf` returned by the `Engine`; after that, it _**initializes the `Engine`**_.
 ````scala

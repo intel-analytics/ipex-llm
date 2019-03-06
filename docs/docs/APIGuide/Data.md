@@ -28,22 +28,22 @@ import com.intel.analytics.bigdl.utils.T
 Tensor can be created with existing data.
 ```scala
 scala> val a = Tensor(T(
-     | T(1f, 2f, 3f),
-     | T(4f, 5f, 6f)))
+      T(1f, 2f, 3f),
+      T(4f, 5f, 6f)))
 a: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 1.0	2.0	3.0
 4.0	5.0	6.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 
 scala> val b = Tensor(T(
-     | T(6f, 5f, 4f),
-     | T(3f, 2f, 1f)))
+      T(6f, 5f, 4f),
+      T(3f, 2f, 1f)))
 b: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 6.0	5.0	4.0
 3.0	2.0	1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 ```
-`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor too, but `*` is a matrix multiply on two 2D tensors. 
+`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `/` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor too, but `*` is a matrix multiply on two 2D tensors. 
 ```scala
 scala> a + 1
 res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
@@ -165,7 +165,7 @@ A `Sample` represents one record of your data set, which is comprised of `featur
 
 For example, one image and its category in image classification, one word in word2vec and one sentence and its label in RNN language model are all `Sample`.
 
-Every `Sample` is actually a set of tensors, and them will be transformed to the input/output of the model. For example, in the case of image classification, a `Sample` has two tensors. One is a 3D tensor representing an image; another is a 1-element tensor representing its category. For the 1-element label, you also can use a `T` instead of tensor.
+Every `Sample` is actually a set of tensors, and they will be transformed to the input/output of the model. For example, in the case of image classification, a `Sample` has two tensors. One is a 3D tensor representing an image; another is a 1-element tensor representing its category. For the 1-element label, you also can use a `T` instead of tensor.
 
 **Scala example:**
 
@@ -289,7 +289,7 @@ Output is
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 5x1]
 ```
 
-If you `Sample`s are not the same size, you can use `PaddingParam` to pad the `Sample`s to the same size.
+If your `Sample`s are not the same size, you can use `PaddingParam` to pad the `Sample`s to the same size.
 ```scala
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -404,6 +404,10 @@ It can be created by
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import org.apache.commons.io.FileUtils
+import java.io.File
+
 // read local image path as OpenCVMat
 val mat = OpenCVMat.read("/tmp/test.jpg")
 

@@ -10,7 +10,7 @@ trait Transformer[A, B] extends Serializable {
 
 It's simple, right? What a transformer do is convert a sequence of objects of Class A to a sequence of objects of Class  B.
 
-Transformer is flexible. You can chain them together to do pre-processing. Let's still use the CNN example, say first    we need read image files from given paths, then extract the image binaries to array of float, then normalized the image  content and crop a fixed size from the image at a random position. Here we need 4 transformers, `PathToImage`,           `ImageToArray`, `Normalizor` and `Cropper`. And then chain them together.
+Transformer is flexible. You can chain them together to do pre-processing. Let's still use the CNN example, say first    we need read image files from given paths, then extract the image binaries to array of float, then normalize the image  content and crop a fixed size from the image at a random position. Here we need 4 transformers, `PathToImage`,           `ImageToArray`, `Normalizor` and `Cropper`. And then chain them together.
 
 ## **FeatureTransformer**
 `FeatureTransformer` is the transformer that transforms from `ImageFeature` to `ImageFeature`.
@@ -41,6 +41,7 @@ Adjust the image brightness.
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = Brightness(0, 32)
 val transformed = transformer(data)
@@ -71,6 +72,7 @@ Adjust the image hue.
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = Hue(-18, 18)
 val transformed = transformer(data)
@@ -101,6 +103,7 @@ Adjust the image Saturation.
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = Saturation(10, 20)
 val transformed = transformer(data)
@@ -159,6 +162,7 @@ Random change the channel order of an image
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = ChannelOrder()
 val transformed = transformer(data)
@@ -222,6 +226,7 @@ Random adjust brightness, contrast, hue, saturation
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = ColorJitter()
 val transformed = transformer(data)
@@ -264,6 +269,7 @@ Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH))
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = Resize(300, 300)
 val transformed = transformer(data)
@@ -297,6 +303,7 @@ Resize the image, keep the aspect ratio. scale according to the short edge
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = AspectScale(750, maxSize = 3000)
 val transformed = transformer(data)
@@ -329,6 +336,7 @@ resize the image by randomly choosing a scale
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = RandomAspectScale(Array(750, 600), maxSize = 3000)
 val transformed = transformer(data)
@@ -364,6 +372,7 @@ image channel normalize
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = ChannelNormalize(100f, 200f, 300f, 2f, 3f, 4f)
 val transformed = transformer(data)
@@ -393,6 +402,7 @@ Pixel level normalizer, data(i) = data(i) - mean(i)
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 // Assume the image pixels length is 375 * 500 * 3
 val means = new Array[Float](375 * 500 * 3)
@@ -429,6 +439,7 @@ The patch size should be less than the image size.
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = CenterCrop(200, 200)
 val transformed = transformer(data)
@@ -462,6 +473,7 @@ The patch size should be less than the image size.
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = RandomCrop(200, 200)
 val transformed = transformer(data)
@@ -498,6 +510,7 @@ Crop a fixed area of image
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = FixedCrop(0, 0, 50, 50, false)
 val transformed = transformer(data)
@@ -537,6 +550,7 @@ which is stored in ImageFeature
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -571,6 +585,7 @@ expand image, fill the blank part with the meanR, meanG, meanB
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = Expand(minExpandRatio = 2, maxExpandRatio = 2)
@@ -606,6 +621,7 @@ Fill part of image with certain pixel value
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = Filler(0, 0, 1, 0.5f, 255)
@@ -635,6 +651,7 @@ Flip the image horizontally
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = HFlip()
@@ -666,6 +683,7 @@ It is a wrapper for transformers to control the transform probability
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = RandomTransformer(HFlip(), 0.5)
@@ -696,6 +714,7 @@ Transform byte array(original image file in byte) to OpenCVMat
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.BytesToMat
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = BytesToMat()
@@ -732,6 +751,7 @@ Transform OpenCVMat to float array, note that in this transformer, the mat is re
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.MatToFloats
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = MatToFloats()
@@ -750,12 +770,12 @@ transformed = transformer(data)
 ## **MatToTensor**
 **Scala:**
 ```scala
-val transformer = MatToFloats(toRGB: Boolean = false,
+val transformer = MatToTensor(toRGB: Boolean = false,
                                tensorKey: String = ImageFeature.imageTensor)
 ```
 **Python:**
 ```python
-transformer = MatToFloats(to_rgb=False, tensor_key="imageTensor")
+transformer = MatToTensor(to_rgb=False, tensor_key="imageTensor")
 ```
 Transform opencv mat to tensor, note that in this transformer, the mat is released.
  * `toRGB` BGR to RGB (default is BGR)
@@ -764,6 +784,7 @@ Transform opencv mat to tensor, note that in this transformer, the mat is releas
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
+import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = MatToTensor[Float]()
