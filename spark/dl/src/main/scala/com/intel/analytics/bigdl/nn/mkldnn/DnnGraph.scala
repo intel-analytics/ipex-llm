@@ -390,17 +390,18 @@ class DnnGraph(
     }
   }
 
-  // fuse some layers when doing inference
+  /**
+   * fuse some layers when doing inference
+   * first fuse layers in sequence, mainly relu with bn/conv, conv with bn.
+   * after that, fuse sum operation.
+   */
   private def fusion(): Unit = {
     if (!this.train) {
       for (j <- 0 to 1) {
         var i = forwardExecution.length - 1
         while (i >= 0) {
-          if (j == 0) {
-            Fusion.fuseModule(forwardExecution(i))
-          } else if (j == 1) {
-            Fusion.fuseCAdd(forwardExecution(i))
-          }
+          if (j == 0) Fusion.fuseModule(forwardExecution(i))
+          if (j == 1) Fusion.fuseCAdd(forwardExecution(i))
           i -= 1
         }
       }

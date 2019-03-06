@@ -21,6 +21,13 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Node
 
+/**
+ * Add fusion operation for dnn graph node, there are three cases about fusion:
+ * case 1: fuse relu with conv(SpatialConvolution) or bn(SpatialBatchNormalization)
+ * case 2: fuse conv with bn
+ * case 3: sum conv output with another layer output
+ * If you want to use fusion for inference, please set property "bigdl.mkldnn.fusion" to true
+ */
 private[mkldnn] object Fusion {
 
   private val fuse = System.getProperty("bigdl.mkldnn.fusion", "false").toBoolean
@@ -29,7 +36,7 @@ private[mkldnn] object Fusion {
     if (!fuse) return;
     node.element match {
       case relu: ReLU => fusionRelu(node)
-      case bn: SpatialBatchNormalization => fusionBn(node)
+      case bn: SpatialBatchNormalization => fusionBN(node)
       case _ =>
     }
   }
@@ -47,11 +54,12 @@ private[mkldnn] object Fusion {
    * if bn has fused with relu, then fuse relu and bn with conv
    * @param node
    */
-  private def fusionBn(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
+  private def fusionBN(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
     val bn = node.element.asInstanceOf[SpatialBatchNormalization]
     node.prevNodes.foreach(n => {
       n.element match {
         case conv : SpatialConvolution =>
+          // reminder: may be conv can fuse with two bn
           if (!conv.relu && !conv.batchNorm) {
             if (bn.relu) conv.setReLU(true)
             fusionConvBn(conv, bn)
