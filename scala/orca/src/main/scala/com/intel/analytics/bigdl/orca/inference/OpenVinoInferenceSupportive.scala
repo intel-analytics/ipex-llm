@@ -254,7 +254,7 @@ object ModelType {
 
   def resolveActualExtensionsConfigPath(modelType : String): String = {
     val category = modelType match {
-      case t if t.contains("ssd") => "ssd"
+      case t if t.contains("ssd") => "ssd_v2"
       case t if t.contains("faster_rcnn") => "faster_rcnn"
       case t if t.contains("mask_rcnn") => "mask_rcnn"
       case t if t.contains("rfcn") => "rfcn"
