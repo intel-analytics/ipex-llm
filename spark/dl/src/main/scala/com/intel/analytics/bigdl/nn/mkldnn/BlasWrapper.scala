@@ -17,11 +17,14 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.dataset.MiniBatch
+import com.intel.analytics.bigdl.mkl.{MKL, Memory}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
+import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.intermediate.IRGraph
 import spire.syntax.module
 
 /**
@@ -49,6 +52,12 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
 
   private[mkldnn] var needOutputFormats: Boolean = true
+  @transient private var workingModels: Array[Module[Float]] = _
+  @transient private var _subModelNumber : Int = 1
+  @transient private var withMultiThread: Boolean = false
+  @transient private var inputBuffer : Array[Activity] = _
+  @transient private var tensorBuffer : Array[Tensor[Float]] = _
+  @transient private var batchSize : Int = _
 
   private def inferInputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
     inputs.map(in => HeapData(in.shape, getFormats(in.shape.length)))
@@ -69,10 +78,48 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     }).toArray
   }
 
+  /**
+   * Blas layers may not have good performance with mkldnn backend,
+   * so we can use java multi thread to run blas layers and thread number is
+   * related with batch size and core number.
+   * input and output for this module must be in batch.
+   */
+  private def setMultiThreadEnv(): Unit = {
+    val multiThread = System.getProperty("multiThread", "false").toBoolean
+    if (this.train || !multiThread) return
+    if (_inputFormats == null || _outputFormats == null || _outputFormats.length != 1) return
+    if (_inputFormats(0).shape(0) != _outputFormats(0).shape(0)) return
+    batchSize = _inputFormats(0).shape(0)
+    val t = batchSize % Engine.coreNumber()
+    if (t != 0 || batchSize < 2 || Engine.coreNumber() < 2) return
+    _subModelNumber = Engine.coreNumber()
+    initModules()
+    withMultiThread = true
+  }
+
+  private def initModules(): Unit = {
+    workingModels = if (module.parameters() != null) {
+        val wb = Util.getAndClearWeightBias(module.parameters())
+        val models = (1 to _subModelNumber).map(i => {
+          val m = module.cloneModule()
+          Util.putWeightBias(wb, m)
+          m.asInstanceOf[Module[Float]]
+        }).toArray
+        Util.putWeightBias(wb, module)
+        models
+      } else {
+        val models = (1 to _subModelNumber).map(i => {
+          val m = module.cloneModule()
+          m.asInstanceOf[Module[Float]]
+        }).toArray
+        models
+      }
+  }
+
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = inferInputFormats(inputs)
     _outputFormats = if (needOutputFormats) inferOutputFormats(inputs) else null
-
+    setMultiThreadEnv()
     (_inputFormats, _outputFormats)
   }
 
@@ -87,8 +134,57 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     _gradOutputFormatsForWeight
   }
 
+  private def flattenInput(input: Activity): Unit = {
+    if (input.isTensor) {
+      tensorBuffer(0) = input.toTensor[Float]
+    } else {
+      val in = input.toTable
+      for (i <- 0 to in.length()) {
+        tensorBuffer(i) = in.get[Tensor[Float]](i + 1).get
+      }
+    }
+  }
+  private def getInput(dim: Int, index: Int, size: Int): Activity = {
+    if (tensorBuffer.length == 1) {
+      tensorBuffer(0).narrow(dim, index, size)
+    } else {
+      T.array(tensorBuffer.map(_.narrow(dim, index, size)))
+    }
+  }
+  private def multiThreadForInference(input: Activity): Activity = {
+    if (inputBuffer == null) inputBuffer = new Array[Activity](_subModelNumber)
+    if (tensorBuffer == null) tensorBuffer = new Array[Tensor[Float]](_inputFormats.length)
+    if (output == null || output.toTensor[Float].isEmpty) {
+      output = Tensor[Float]().resize(_outputFormats(0).shape)
+    }
+    flattenInput(input)
+
+    val stackSize = batchSize / _subModelNumber
+    val tasks = Engine.wrapperComputing.invoke(() => {
+      var b = 0
+      while (b < _subModelNumber) {
+        inputBuffer(b) = getInput(1, b * stackSize + 1, stackSize)
+        b += 1
+      }
+    })
+    Engine.wrapperComputing.sync(Seq(tasks))
+
+    val trainingThreads = Engine.wrapperComputing.invoke((0 until _subModelNumber).map(i =>
+      () => {
+          val out = workingModels(i).forward(inputBuffer(i)).toTensor[Float]
+          output.toTensor[Float].narrow(1, i * stackSize + 1, stackSize).copy(out)
+      }))
+    Engine.wrapperComputing.sync(trainingThreads)
+
+    output
+  }
+
   override def updateOutput(input: Activity): Activity = {
-    output = module.forward(input)
+    output = if (withMultiThread) {
+      multiThreadForInference(input)
+    } else {
+      module.forward(input)
+    }
     output
   }
 
