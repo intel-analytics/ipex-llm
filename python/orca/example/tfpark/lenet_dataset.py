@@ -66,7 +66,7 @@ def main(max_epoch):
         testing_rdd,
         features=(tf.float32, [28, 28, 1]),
         labels=(tf.int32, []), batch_per_thread=80)
-    result = model.evaluate(eval_dataset)
+    result = keras_model.evaluate(eval_dataset)
 
     print(model.metrics_names)
     print(result)
