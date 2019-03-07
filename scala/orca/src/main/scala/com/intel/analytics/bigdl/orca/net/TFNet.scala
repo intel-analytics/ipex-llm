@@ -19,16 +19,15 @@ import java.io.{File, FileInputStream, InputStream}
 import java.nio._
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
-import com.intel.analytics.zoo.pipeline.api.{Predictable, Predictor}
+import com.intel.analytics.zoo.core.TFNetNative
+import com.intel.analytics.zoo.pipeline.api.Predictable
 import com.intel.analytics.zoo.pipeline.api.net.TFNet.TFGraphHolder
-import org.apache.spark.rdd.RDD
 import org.tensorflow.framework.GraphDef
-import org.tensorflow.types.{TFBool, UInt8}
+import org.tensorflow.types.UInt8
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
@@ -577,6 +576,8 @@ class TFNet(private val graphDef: TFGraphHolder,
 }
 
 object TFNet {
+
+  assert(TFNetNative.isLoaded)
 
   @transient
   private lazy val inDriver = NetUtils.isDriver
