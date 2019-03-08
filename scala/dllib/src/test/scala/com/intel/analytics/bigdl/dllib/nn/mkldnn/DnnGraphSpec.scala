@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Graph, Module => _, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -185,5 +185,84 @@ class DnnGraphSpec extends FlatSpec with Matchers {
     dnn.compile(Phase.InferencePhase)
 
     dnn.forward(input).toTensor[Float]
+  }
+
+  "Dnn graph fusion operation for resnet50" should "be correct" in {
+    System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
+    System.setProperty("bigdl.mkldnn.fusion.bnrelu", "true")
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
+    System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+
+    val batchSize = 2
+    val seed = 1
+    val inputFormat = Memory.Format.nchw
+    val inputShape = Array(batchSize, 3, 224, 224)
+
+    RNG.setSeed(seed)
+    val seqModel = mkldnn.ResNet(batchSize, 1000, T("depth" -> 50,
+      "dataSet" -> ResNet.DatasetType.ImageNet))
+    RNG.setSeed(seed)
+    val graphFuse = mkldnn.ResNet.graph(batchSize, 1000, T("depth" -> 50,
+      "dataSet" -> ResNet.DatasetType.ImageNet))
+
+    seqModel.getExtraParameter().map(_.fill(1.0f))
+    graphFuse.getExtraParameter().map(_.fill(1.0f))
+
+    seqModel.evaluate()
+    seqModel.asInstanceOf[MklDnnContainer].compile(
+      Phase.InferencePhase, Array(HeapData(inputShape, inputFormat)))
+    graphFuse.evaluate()
+    graphFuse.asInstanceOf[DnnGraph].compile(Phase.InferencePhase)
+
+    RNG.setSeed(100)
+    val input = Tensor[Float](inputShape).rand()
+
+    val output = seqModel.forward(input).toTensor[Float]
+    val outputFuse = graphFuse.forward(input).toTensor[Float]
+
+    output.almostEqual(outputFuse, 1e-4) should be(true)
+
+    System.clearProperty("bigdl.mkldnn.fusion.convbn")
+    System.clearProperty("bigdl.mkldnn.fusion.bnrelu")
+    System.clearProperty("bigdl.mkldnn.fusion.convrelu")
+    System.clearProperty("bigdl.mkldnn.fusion.convsum")
+    System.clearProperty("bigdl.mkldnn.fusion")
+  }
+
+  "Dnn graph fusion operation for vgg16" should "be correct" in {
+    System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
+    System.setProperty("bigdl.mkldnn.fusion.bnrelu", "true")
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
+    System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+
+    val batchSize = 2
+    val seed = 1
+    val inputFormat = Memory.Format.nchw
+    val inputShape = Array(batchSize, 3, 224, 224)
+
+    RNG.setSeed(seed)
+    val seqModel = models.Vgg_16(batchSize, 1000, false)
+    RNG.setSeed(seed)
+    val graphFuse = models.Vgg_16.graph(batchSize, 1000, false)
+
+    seqModel.evaluate()
+    graphFuse.evaluate()
+    graphFuse.asInstanceOf[DnnGraph].compile(Phase.InferencePhase)
+    seqModel.compile(Phase.InferencePhase)
+
+    val input = Tensor[Float](inputShape).rand()
+
+    val output = Tools.dense(graphFuse.forward(input)).toTensor[Float]
+    val outputDnn = Tools.dense(seqModel.forward(input)).toTensor[Float]
+
+    output.almostEqual(outputDnn, 1e-4) should be(true)
+
+    System.clearProperty("bigdl.mkldnn.fusion.convbn")
+    System.clearProperty("bigdl.mkldnn.fusion.bnrelu")
+    System.clearProperty("bigdl.mkldnn.fusion.convrelu")
+    System.clearProperty("bigdl.mkldnn.fusion.convsum")
+    System.clearProperty("bigdl.mkldnn.fusion")
   }
 }

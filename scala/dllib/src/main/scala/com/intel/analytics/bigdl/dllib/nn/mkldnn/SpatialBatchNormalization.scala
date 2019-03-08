@@ -58,8 +58,8 @@ class SpatialBatchNormalization(
   val weightAndBias = new TensorMMap(Array(nOutput * 2))
   val gradWeightAndBias = new TensorMMap(Array(nOutput * 2))
 
-  var scaleFactor: Float = 0.0f
-  var biasFactor: Float = 0.0f
+  var scaleFactor: Float = 1.0f
+  var biasFactor: Float = 1.0f
 
   {
     val wInit = Ones // RandomUniform(0, 1)
