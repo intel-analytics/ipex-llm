@@ -85,10 +85,19 @@ class SpatialConvolution(
 
   private var _relu = false
   private var _sum = false
+  private var _batchNorm = false
+  private var _dim = 1
+  private var _sumInput = false
 
   def relu: Boolean = _relu
   def setReLU(value: Boolean = true): this.type = {
     _relu = value
+    this
+  }
+
+  def batchNorm: Boolean = _batchNorm
+  def setBatchNorm(value: Boolean = true): this.type = {
+    _batchNorm = value
     this
   }
 
@@ -99,8 +108,10 @@ class SpatialConvolution(
   }
 
   var sumOp: MklDnnLayer = null
-  def setSumOp(conv: Module[Float]): this.type = {
+  def setSumOp(conv: Module[Float], number: Int = 1): this.type = {
     sumOp = conv.asInstanceOf[MklDnnLayer]
+    _dim = number
+    _sum = true
     this
   }
 
@@ -151,8 +162,14 @@ class SpatialConvolution(
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     reorderManager.setRuntime(runtime)
 
-    val inputHeight = inputs(0).shape(2) // TODO only supports 4-D and nchw
-    val inputWidth = inputs(0).shape(3)
+    if (_sum && inputs.length > 1) {
+      _sumInput = true
+      require(inputs.length == 2,
+        s"inputs length should be 2 when having sum operation, but get ${inputs.length}")
+    }
+    val inputMemoryData = inputs(_dim - 1)
+    val inputHeight = inputMemoryData.shape(2) // TODO only supports 4-D and nchw
+    val inputWidth = inputMemoryData.shape(3)
 
     val sizes = if (padW == -1 && padH == -1) {
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW)
@@ -170,8 +187,8 @@ class SpatialConvolution(
     paddingTL = Array(padTop, padLeft)
     paddingBR = Array(padBottom, padRight)
 
-    val inputShape = inputs(0).shape
-    val outputShape = Array(inputs(0).shape(0), nOutputPlane, outputHeight, outputWidth)
+    val inputShape = inputMemoryData.shape
+    val outputShape = Array(inputMemoryData.shape(0), nOutputPlane, outputHeight, outputWidth)
 
     val src = NativeData(inputShape, Memory.Format.any)
     val wei = NativeData(weightShape, Memory.Format.any)
@@ -235,25 +252,31 @@ class SpatialConvolution(
     updateOutputPrimitives = Array(primitive)
     output = initTensor(realDst)
 
-    _inputFormats = Array(realSrc)
+    _inputFormats = if (_sumInput) Array(realSrc, realSrc) else Array(realSrc)
     _outputFormats = Array(realDst)
     (_inputFormats, _outputFormats)
   }
 
   override def updateOutput(input: Activity): Activity = {
+    val inputTensor = if (input.isTensor) {
+      input.toTensor[Float]
+    } else {
+      output = input.toTable.get[Tensor[Float]](3 - _dim).get
+      input.toTable.get[Tensor[Float]](_dim).get
+    }
     if (updateOutputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
-      buffer.append(input.asInstanceOf[Tensor[Float]])
+      buffer.append(inputTensor.asInstanceOf[Tensor[Float]])
       buffer.append(weight.native)
       buffer.append(bias.native)
-      if (sum) {
+      if (sum && input.isTensor) {
         output = sumOp.output
       }
       buffer.append(output.asInstanceOf[Tensor[Float]])
       updateOutputTensors = buffer.toArray
     }
 
-    updateWithNewTensor(updateOutputTensors, 0, input)
+    updateWithNewTensor(updateOutputTensors, 0, inputTensor)
 
     if (isTraining()) {
       weight.sync()
@@ -391,8 +414,13 @@ class SpatialConvolution(
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     // if needed, reorder manager will reorder input to mkldnn wants
+    val inputTensor = if (input.isTensor) {
+      input.toTensor[Float]
+    } else {
+      input.toTable.get[Tensor[Float]](_dim).get
+    }
     inputForAcc = reorderManager.infer(Array(inputFormats()(0)),
-      Array(inputForAccMemoryData), input).asInstanceOf[DnnTensor[Float]]
+      Array(inputForAccMemoryData), inputTensor).asInstanceOf[DnnTensor[Float]]
 
     if (updateGradWTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()

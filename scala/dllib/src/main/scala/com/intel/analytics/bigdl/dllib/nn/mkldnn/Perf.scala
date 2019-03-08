@@ -88,21 +88,21 @@ object Perf {
 
       Engine.dnnComputing.invokeAndWait2(Array(1).map(_ => () => {
         if (training) {
+          model.training()
           if (model.isInstanceOf[MklDnnContainer]) {
             model.asInstanceOf[MklDnnContainer]
               .compile(TrainingPhase, Array(HeapData(inputShape, inputFormat)))
           } else if (model.isInstanceOf[DnnGraph]) {
             model.asInstanceOf[DnnGraph].compile(TrainingPhase)
           }
-          model.training()
         } else {
+          model.evaluate()
           if (model.isInstanceOf[MklDnnContainer]) {
             model.asInstanceOf[MklDnnContainer]
               .compile(InferencePhase, Array(HeapData(inputShape, inputFormat)))
           } else if (model.isInstanceOf[DnnGraph]) {
             model.asInstanceOf[DnnGraph].compile(InferencePhase)
           }
-          model.evaluate()
         }
       }))
 
