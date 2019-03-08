@@ -16,16 +16,19 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import breeze.linalg.Axis._1
+import breeze.linalg.dim
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl.mkl.{MKL, Memory}
+import com.intel.analytics.bigdl.nn.{DetectionOutputSSD, PriorBox}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Engine._
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.intermediate.IRGraph
-import spire.syntax.module
+import org.apache.log4j.Logger
 
 /**
  * wrap blas module to be dnn module,
@@ -52,12 +55,15 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
 
   private[mkldnn] var needOutputFormats: Boolean = true
-  @transient private var workingModels: Array[Module[Float]] = _
-  @transient private var _subModelNumber : Int = 1
+  private val logger = Logger.getLogger(getClass)
+
+  @transient private var subModels: Array[Module[Float]] = _
+  @transient private var subModelNumber : Int = 1
   @transient private var withMultiThread: Boolean = false
   @transient private var inputBuffer : Array[Activity] = _
   @transient private var tensorBuffer : Array[Tensor[Float]] = _
   @transient private var batchSize : Int = _
+  @transient private var initEnv: Boolean = false
 
   private def inferInputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
     inputs.map(in => HeapData(in.shape, getFormats(in.shape.length)))
@@ -84,23 +90,58 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
    * related with batch size and core number.
    * input and output for this module must be in batch.
    */
-  private def setMultiThreadEnv(): Unit = {
+  private def setMultiThreadEnv(input: Activity): Unit = {
+    initEnv = true
     val multiThread = System.getProperty("multiThread", "false").toBoolean
-    if (this.train || !multiThread) return
-    if (_inputFormats == null || _outputFormats == null || _outputFormats.length != 1) return
-    if (_inputFormats(0).shape(0) != _outputFormats(0).shape(0)) return
-    batchSize = _inputFormats(0).shape(0)
+    if (this.train && multiThread) {
+      throw new IllegalArgumentException("Please not set multiThread to true for model training")
+    }
+    if (this.train
+      || !multiThread
+      || (_outputFormats != null && _outputFormats.length != 1)
+      || (_outputFormats != null && _inputFormats != null
+      && _inputFormats(0).shape(0) != _outputFormats(0).shape(0))
+      || !flattenInput(input)
+    ) {
+      return
+    }
+    batchSize = tensorBuffer(0).size(1)
     val t = batchSize % Engine.coreNumber()
-    if (t != 0 || batchSize < 2 || Engine.coreNumber() < 2) return
-    _subModelNumber = Engine.coreNumber()
+    if (t != 0 || batchSize < 2 || Engine.coreNumber() < 2) {
+      logger.warn("If you want to use multiThread property to speed up, " +
+        "please attention core number should be greater than 1, " +
+        s"batch size should be greater than 1 and divided by core number, " +
+        s"but now get core number ${Engine.coreNumber()} batch size ${batchSize}")
+      return
+    }
+    subModelNumber = Engine.coreNumber()
     initModules()
     withMultiThread = true
   }
-
+  private def flattenInput(input: Activity): Boolean = {
+    val inputDepth = if (input.isTensor) 1 else input.toTable.length()
+    if (tensorBuffer == null) tensorBuffer = new Array[Tensor[Float]](inputDepth)
+    var batch : Int = 0
+    if (inputDepth == 1) {
+      tensorBuffer(0) = input.toTensor[Float]
+    } else {
+      val in = input.toTable
+      for (i <- 1 to in.length()) {
+        if (in.get(i).get.isInstanceOf[Table]) return false
+        tensorBuffer(i - 1) = in.get[Tensor[Float]](i).get
+        if (i == 1) batch = tensorBuffer(i - 1).size(1)
+        if (batch != tensorBuffer(i - 1).size(1)
+          && !module.isInstanceOf[DetectionOutputSSD[Float]]) {
+          return false
+        }
+      }
+    }
+    true
+  }
   private def initModules(): Unit = {
-    workingModels = if (module.parameters() != null) {
+    subModels = if (module.parameters() != null) {
         val wb = Util.getAndClearWeightBias(module.parameters())
-        val models = (1 to _subModelNumber).map(i => {
+        val models = (1 to subModelNumber).map(i => {
           val m = module.cloneModule()
           Util.putWeightBias(wb, m)
           m.asInstanceOf[Module[Float]]
@@ -108,7 +149,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
         Util.putWeightBias(wb, module)
         models
       } else {
-        val models = (1 to _subModelNumber).map(i => {
+        val models = (1 to subModelNumber).map(i => {
           val m = module.cloneModule()
           m.asInstanceOf[Module[Float]]
         }).toArray
@@ -119,7 +160,6 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = inferInputFormats(inputs)
     _outputFormats = if (needOutputFormats) inferOutputFormats(inputs) else null
-    setMultiThreadEnv()
     (_inputFormats, _outputFormats)
   }
 
@@ -134,54 +174,59 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     _gradOutputFormatsForWeight
   }
 
-  private def flattenInput(input: Activity): Unit = {
-    if (input.isTensor) {
-      tensorBuffer(0) = input.toTensor[Float]
-    } else {
-      val in = input.toTable
-      for (i <- 0 to in.length()) {
-        tensorBuffer(i) = in.get[Tensor[Float]](i + 1).get
-      }
-    }
-  }
   private def getInput(dim: Int, index: Int, size: Int): Activity = {
     if (tensorBuffer.length == 1) {
       tensorBuffer(0).narrow(dim, index, size)
     } else {
-      T.array(tensorBuffer.map(_.narrow(dim, index, size)))
+      if (module.isInstanceOf[DetectionOutputSSD[Float]]) {
+        T(tensorBuffer(0).narrow(dim, index, size),
+          tensorBuffer(1).narrow(dim, index, size), tensorBuffer(2))
+      } else {
+        T.array(tensorBuffer.map(_.narrow(dim, index, size)))
+      }
     }
   }
-  private def multiThreadForInference(input: Activity): Activity = {
-    if (inputBuffer == null) inputBuffer = new Array[Activity](_subModelNumber)
-    if (tensorBuffer == null) tensorBuffer = new Array[Tensor[Float]](_inputFormats.length)
-    if (output == null || output.toTensor[Float].isEmpty) {
-      output = Tensor[Float]().resize(_outputFormats(0).shape)
-    }
-    flattenInput(input)
+  private def forwardWithMultiThread(input: Activity): Activity = {
+    if (inputBuffer == null) inputBuffer = new Array[Activity](subModelNumber)
+    val stackSize = batchSize / subModelNumber
 
-    val stackSize = batchSize / _subModelNumber
-    val tasks = Engine.wrapperComputing.invoke(() => {
-      var b = 0
-      while (b < _subModelNumber) {
-        inputBuffer(b) = getInput(1, b * stackSize + 1, stackSize)
-        b += 1
+    val tasks = Engine.wrapperComputing.invoke((0 until subModelNumber).map(i =>
+      () => inputBuffer(i) = getInput(1, i * stackSize + 1, stackSize)))
+    Engine.wrapperComputing.sync(tasks)
+
+    val forwardThreads = Engine.wrapperComputing.invoke((0 until subModelNumber).map(i =>
+      () => subModels(i).forward(inputBuffer(i)).toTensor[Float]))
+    Engine.wrapperComputing.sync(forwardThreads)
+
+    if (subModels(0).output.isTable) {
+      withMultiThread = false
+      module.forward(input)
+    } else {
+      val subOutSize = subModels(0).output.toTensor[Float].size()
+      if (subOutSize(0) != stackSize) {
+        withMultiThread = false
+        module.forward(input)
+      } else {
+        subOutSize(0) = batchSize
+        if (output == null || output.toTensor[Float].isEmpty) {
+          output = Tensor[Float]().resize(subOutSize)
+        }
+        val copyThreads = Engine.wrapperComputing.invoke((0 until subModelNumber).map(i =>
+          () => {
+            output.toTensor[Float].narrow(1, i * stackSize + 1, stackSize)
+              .copy(subModels(i).output.toTensor[Float])
+          }))
+        Engine.wrapperComputing.sync(copyThreads)
+
+        output
       }
-    })
-    Engine.wrapperComputing.sync(Seq(tasks))
-
-    val trainingThreads = Engine.wrapperComputing.invoke((0 until _subModelNumber).map(i =>
-      () => {
-          val out = workingModels(i).forward(inputBuffer(i)).toTensor[Float]
-          output.toTensor[Float].narrow(1, i * stackSize + 1, stackSize).copy(out)
-      }))
-    Engine.wrapperComputing.sync(trainingThreads)
-
-    output
+    }
   }
 
   override def updateOutput(input: Activity): Activity = {
+    if (!initEnv) setMultiThreadEnv(input)
     output = if (withMultiThread) {
-      multiThreadForInference(input)
+      forwardWithMultiThread(input)
     } else {
       module.forward(input)
     }
