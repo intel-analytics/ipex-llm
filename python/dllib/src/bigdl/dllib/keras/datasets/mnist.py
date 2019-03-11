@@ -83,7 +83,8 @@ def read_data_sets(train_dir, data_type="train"):
 
     ```
     (ndarray, ndarray) representing (features, labels)
-    features is a 4D unit8 numpy array [index, y, x, depth] representing each pixel valued from 0 to 255.
+    features is a 4D unit8 numpy array [index, y, x, depth]
+    representing each pixel valued from 0 to 255.
     labels is 1D unit8 nunpy array representing the label valued from 0 to 9.
     ```
 
@@ -118,7 +119,7 @@ def read_data_sets(train_dir, data_type="train"):
         return test_images, test_labels
 
 
-def load_data(location="/tmp/.zoo/mnist"):
+def load_data(location="/tmp/.zoo/dataset/mnist"):
     (train_images, train_labels) = read_data_sets(location, "train")
     (test_images, test_labels) = read_data_sets(location, "test")
 
@@ -127,5 +128,5 @@ def load_data(location="/tmp/.zoo/mnist"):
 
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = load_data()
-    train, _ = read_data_sets("/tmp/.zoo/mnist/", "train")
-    test, _ = read_data_sets("/tmp/.zoo/mnist", "test")
+    train, _ = read_data_sets("/tmp/.zoo/dataset/mnist/", "train")
+    test, _ = read_data_sets("/tmp/.zoo/dataset/mnist/", "test")
