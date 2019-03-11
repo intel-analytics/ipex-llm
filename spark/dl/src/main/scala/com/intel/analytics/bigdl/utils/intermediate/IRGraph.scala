@@ -56,7 +56,7 @@ private[bigdl] class IRGraph[T: ClassTag](
 
   private var graph: Graph[T] = null
 
-  private[bigdl] def isBuild(): Boolean = if (graph == null) false else true
+  private[bigdl] def isBuild(): Boolean = graph != null
 
   override def updateOutput(input: Activity): Activity = {
     if (graph == null) {

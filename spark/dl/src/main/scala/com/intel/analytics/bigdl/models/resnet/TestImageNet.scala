@@ -30,6 +30,9 @@ import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
+/**
+ * This example is to evaluate trained resnet50 with imagenet data and get top1 and top5 accuracy
+ */
 object TestImageNet {
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
@@ -45,7 +48,7 @@ object TestImageNet {
       Engine.init
 
       val model = Module.loadModule[Float](param.model)
-      val evaluationSet = ImageNetDataSet.valDataSet(param.folder + "/val",
+      val evaluationSet = ImageNetDataSet.valDataSet(param.folder,
         sc, 224, param.batchSize).toDistributed().data(train = false)
 
       val result = model.evaluate(evaluationSet,

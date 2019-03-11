@@ -55,6 +55,7 @@ class DnnPredictorSpec extends SparkContextLifeCycle with Matchers {
 
     prob(0) should be (model.forward(data(0).feature.reshape(Array(1, 3, 224, 224)))
       .toTensor[Float].squeeze)
+    Engine.setEngineType(MklBlas)
   }
 
   "predict for dnn" should "work properly" in {
@@ -106,5 +107,6 @@ class DnnPredictorSpec extends SparkContextLifeCycle with Matchers {
     probClass(91) should be
     (model.forward(data(91).feature
     ).toTensor[Float].squeeze().max(1)._2.valueAt(1).toInt)
+    Engine.setEngineType(MklBlas)
   }
 }

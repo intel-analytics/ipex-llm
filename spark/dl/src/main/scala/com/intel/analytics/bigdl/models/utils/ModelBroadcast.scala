@@ -122,7 +122,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
       putWeightBias(SerializationUtils.clone(weightsBias), model)
       initGradWeightBias(weightsBias, model)
     }
-    this.setNodeAndCore()
+    setNodeAndCore()
     this
   }
 
@@ -135,7 +135,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
    * @return model
    */
   override def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
-    Engine.setNodeAndCore(coreNumber, nodeNumber)
+    Engine.setNodeAndCore(nodeNumber, coreNumber)
     CachedModels.deleteAll(uuid)
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)

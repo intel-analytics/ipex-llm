@@ -78,7 +78,7 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
   }
 
   /**
-   * Applies ValidationMethod to the model and rdd dataset.
+   * Apply ValidationMethod to the model and rdd dataset.
    * @param vMethods
    * @return
    */
