@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import java.io.File
 import java.util.UUID
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -38,10 +39,10 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, null input
     val linear0 = Linear[Float](inputSize, outputSize)
     linear0.calcScales(null)
-    linear0.output should be (null)
-    linear0.getInputScales() should be (Array.empty)
-    linear0.getOutputScales() should be (Array.empty)
-    linear0.getWeightScales() should be (Array.empty)
+    linear0.output.isEmpty should be (true)
+    linear0.getInputScales().isEmpty should be (true)
+    linear0.getOutputScales().isEmpty should be (true)
+    linear0.getWeightScales().isEmpty should be (true)
 
     // Global mask, non-null input
     val linear1 = Linear[Float](inputSize, outputSize)
@@ -79,10 +80,10 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val spatialConv0 = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
     spatialConv0.calcScales(inputTensor)
     spatialConv0.calcScales(null)
-    spatialConv0.output should be (null)
-    spatialConv0.getInputScales() should be (Array.empty)
-    spatialConv0.getOutputScales() should be (Array.empty)
-    spatialConv0.getWeightScales() should be (Array.empty)
+    spatialConv0.output.isEmpty should be (true)
+    spatialConv0.getInputScales().isEmpty should be (true)
+    spatialConv0.getOutputScales().isEmpty should be (true)
+    spatialConv0.getWeightScales().isEmpty should be (true)
 
     // Global mask, non-null input
     val spatialConv1 = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
@@ -125,6 +126,9 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Calculating scales" should "work correct for BLAS Sequential Module" in {
 
     var dimMaskIdx = 0
+    var inputDimMask = 0
+    var outputDimMask = 0
+
     def makeSequential(): Sequential[Float] = {
       val sequential = Sequential[Float]()
       sequential.add(Reshape(Array(1, 3, 4)))
@@ -148,10 +152,10 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, null input
     val sequential0 = makeSequential()
     sequential0.calcScales(null)
-    sequential0.output should be (null)
-    sequential0.getInputScales() should be (Array.empty)
-    sequential0.getOutputScales() should be (Array.empty)
-    sequential0.getWeightScales() should be (Array.empty)
+    sequential0.output.toTensor.isEmpty should be (true)
+    sequential0.getInputScales().isEmpty should be (true)
+    sequential0.getOutputScales().isEmpty should be (true)
+    sequential0.getWeightScales().isEmpty should be (true)
 
     // Global mask, non-null input
     val sequential1 = makeSequential()
@@ -166,8 +170,11 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     sequential1.getOutputScales() should be (outputScales1)
 
     // Single dimension mask at index 1, non-null input
-    val sequential2 = makeSequential()
-    sequential2.calcScales(inputTensor)
+//    val sequential2 = makeSequential()
+//    inputDimMask = Math.pow(2, 0).toInt
+//    outputDimMask = Math.pow(2, 0).toInt
+//
+//    sequential2.calcScales(inputTensor)
 
   }
 
@@ -189,10 +196,10 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     concatTable.setWeightDimMask(0)
 
     concatTable.calcScales(null)
-    concatTable.output should be (null)
-    concatTable.getInputScales() should be (Array.empty)
-    concatTable.getOutputScales() should be (Array.empty)
-    concatTable.getWeightScales() should be (Array.empty)
+    concatTable.output.toTensor.isEmpty should be (true)
+    concatTable.getInputScales().isEmpty should be (true)
+    concatTable.getOutputScales().isEmpty should be (true)
+    concatTable.getWeightScales().isEmpty should be (true)
 
     concatTable.calcScales(inputTensor)
     concatTable.getInputScales() should be (Array(Array[Float](sampleMax)))
@@ -204,15 +211,15 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   /**
-    * tensor =
-    * 01 10 03 12
-    * 09 07 11 08
-    * 05 02 06 04
-    *
-    * @param dim
-    * @param max
-    * @return
-    */
+   * tensor =
+   * 01 10 03 12
+   * 09 07 11 08
+   * 05 02 06 04
+   *
+   * @param dim
+   * @param max
+   * @return
+   */
   def make2DTensor(): Tensor[Float] = {
     val tensor = Tensor[Float](3, 4)
     tensor.setValue(1, 1, 1)
@@ -237,6 +244,30 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     tensor.setValue(1, max)
     println(tensor.storage().size)
     tensor
+  }
+
+  def sequentialValidationHelper(sequential: Sequential[Float]): Unit = {
+
+    var prevModule: AbstractModule[_, _, Float] = null
+    val moduleIter = sequential.modules.iterator
+
+    while (moduleIter.hasNext) {
+      val currModule = moduleIter.next()
+      if (currModule.isInstanceOf[MklInt8Convertible]) {
+        val currInputMask = currModule.asInstanceOf[MklInt8Convertible].getInputDimMask()
+        val currInputScales = currModule.asInstanceOf[MklInt8Convertible].getInputScales()
+        if (prevModule != null) {
+          val prevOutput = null
+
+        }
+      }
+      prevModule = currModule
+    }
+
+
+
+
+
   }
 
 

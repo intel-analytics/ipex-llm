@@ -21,9 +21,9 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
-  /**
-    * Trait which provides MKL-DNN functionality to convert FP32 model to INT8 model
-    */
+/**
+ * Trait which provides MKL-DNN functionality to convert FP32 model to INT8 model
+ */
 trait MklInt8Convertible {
   // input dimension mask
   protected var inDimMask: Int = 0
@@ -40,14 +40,14 @@ trait MklInt8Convertible {
 
 
   /**
-    * Calculate the required scales for converting int8 modules
-    * Currently there are four type of modules should be supported:
-    * 1) Linear: requires scales for input, output and weight
-    * 2) Spatial Convolution: requires scales for input, output and weight
-    * 3) Sequential: requires scales for input, output as well as the scales of submodules
-    * 4) ConcatTable: requires scales for input, output as well as the scales of submodules
-    * @param inActivity
-    */
+   * Calculate the required scales for converting int8 modules
+   * Currently there are four type of modules should be supported:
+   * 1) Linear: requires scales for input, output and weight
+   * 2) Spatial Convolution: requires scales for input, output and weight
+   * 3) Sequential: requires scales for input, output as well as the scales of submodules
+   * 4) ConcatTable: requires scales for input, output as well as the scales of submodules
+   * @param inActivity
+   */
   def calcScales(inputActvt: Activity): Unit = {
 
     if (inputActvt != null) {
@@ -80,11 +80,11 @@ trait MklInt8Convertible {
   }
 
   /**
-    * Calculate module's scales given its input and output
-    * Store calculated scales in array buffers
-    * @param inActivity input activity
-    * @param outActivity output activity
-    */
+   * Calculate module's scales given its input and output
+   * Store calculated scales in array buffers
+   * @param inActivity input activity
+   * @param outActivity output activity
+   */
   private def calcModuleScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     require(inputActvt != null, "Input Activity should not be null")
 
@@ -98,11 +98,11 @@ trait MklInt8Convertible {
   }
 
   /**
-    * Calculate module's scales given its input, output and weight
-    * @param inActivity input activity
-    * @param outActivity output activity
-    * @param weightTensor weight
-    */
+   * Calculate module's scales given its input, output and weight
+   * @param inActivity input activity
+   * @param outActivity output activity
+   * @param weightTensor weight
+   */
   private def calcModuleScales(inActivity: Activity, outActivity: Activity,
                                weightTensor: Tensor[Float]): Unit = {
     calcModuleScales(inActivity, outActivity)
@@ -113,11 +113,11 @@ trait MklInt8Convertible {
   }
 
   /**
-    * Calculate scales given activity, mask and update method
-    * @param activity target activity to get scales
-    * @param mask dimension mask associated with target activity
-    * @param appendFunc update method for scales
-    */
+   * Calculate scales given activity, mask and update method
+   * @param activity target activity to get scales
+   * @param mask dimension mask associated with target activity
+   * @param appendFunc update method for scales
+   */
   private def calcActivityScales(activity: Activity, mask: Int): Array[Array[Float]] = {
     if (activity.isTensor) {
       Array(calcTensorScale(activity.toTensor[Float], mask))
@@ -133,10 +133,10 @@ trait MklInt8Convertible {
   }
 
   /** Given a tensor and a dimension mask, calculate the scales of this tensor
-    * @param tensor tensor of float, stores high dimension data
-    * @param mask dimension mask
-    * @return scalesBuffer Array, an array stores scales
-    */
+   * @param tensor tensor of float, stores high dimension data
+   * @param mask dimension mask
+   * @return scalesBuffer Array, an array stores scales
+   */
   private def calcTensorScale(tensor: Tensor[Float], mask: Int): Array[Float] = {
     if (mask == 0) { // no mask performed, return max of tensor storage
       Array(tensor.storage().toArray.map(Math.abs).max)
@@ -168,9 +168,9 @@ trait MklInt8Convertible {
   }
 
   /**
-    * Scales calculator for Sequential Module
-    * @param inActivity input of the Sequential Module
-    */
+   * Scales calculator for Sequential Module
+   * @param inActivity input of the Sequential Module
+   */
   private def calcSequentialScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     require(this.isInstanceOf[Sequential[Float@unchecked]] || this.isInstanceOf[mkldnn.Sequential],
       this.getClass.getName + " is not an instance of Sequential.")
@@ -197,10 +197,10 @@ trait MklInt8Convertible {
   }
 
   /**
-    * Scales calculator for ConcatTable module
-    * Submodules inside ConcatTable share the same input
-    * @param inActivity
-    */
+   * Scales calculator for ConcatTable module
+   * Submodules inside ConcatTable share the same input
+   * @param inActivity
+   */
   private def calcConcatTableScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     require(this.isInstanceOf[ConcatTable[Float@unchecked]], this.getClass.getName +
       " is not an instance of ConcatTable.")
@@ -223,179 +223,179 @@ trait MklInt8Convertible {
 
 
   /**
-    * Get dimension mask of input
-    * @return inDimMask field which stores value of input dimension mask
-    */
+   * Get dimension mask of input
+   * @return inDimMask field which stores value of input dimension mask
+   */
   def getInputDimMask(): Int = {
     inDimMask
   }
 
   /**
-    * Set dimension mask of input
-    * @param mask value of input dimension mask to be set
-    * @return Unit
-    */
+   * Set dimension mask of input
+   * @param mask value of input dimension mask to be set
+   * @return Unit
+   */
   def setInputDimMask(mask: Int) : Unit = {
     inDimMask = mask
   }
 
   /**
-    * Get dimension mask of output
-    * @return outDimMask field which stores value of output dimension mask
-    */
+   * Get dimension mask of output
+   * @return outDimMask field which stores value of output dimension mask
+   */
   def getOutputDimMask(): Int = {
     outDimMask
   }
 
   /**
-    * Set dimension mask of output
-    * @param mask value of output dimension mask to be set
-    * @return Unit
-    */
+   * Set dimension mask of output
+   * @param mask value of output dimension mask to be set
+   * @return Unit
+   */
   def setOutputDimMask(mask: Int): Unit = {
     outDimMask = mask
   }
 
   /**
-    * Get dimension mask of weight
-    * @return weightDimMask which stores value of weight mask
-    */
+   * Get dimension mask of weight
+   * @return weightDimMask which stores value of weight mask
+   */
   def getWeightDimMask(mask: Int): Int = {
     weightDimMask
   }
 
   /**
-    * Set dimension mask of weight
-    * @param mask value of weight mask to be set
-    * @return Unit
-    */
+   * Set dimension mask of weight
+   * @param mask value of weight mask to be set
+   * @return Unit
+   */
   def setWeightDimMask(mask: Int): Unit = {
     weightDimMask = mask
   }
 
 
   /**
-    * Get input scales
-    * @return field which stores value of input scales
-    */
+   * Get input scales
+   * @return field which stores value of input scales
+   */
   def getInputScales(): Array[Array[Float]] = {
     inScalesBuffer.toArray
   }
 
   /**
-    * Set input scales
-    * Clear existing buffer of input scales, and place updated scales into the cleared buffer
-    * @param inScales value of input scales to be set
-    * @return Unit
-    */
+   * Set input scales
+   * Clear existing buffer of input scales, and place updated scales into the cleared buffer
+   * @param inScales value of input scales to be set
+   * @return Unit
+   */
   def setInputScales(inScales: Array[Array[Float]]): Unit = {
     inScalesBuffer.clear()
     inScales.foreach(appendInputScales)
   }
 
   /**
-    * Get output scales
-    * @return field which stores value of output scales
-    */
+   * Get output scales
+   * @return field which stores value of output scales
+   */
   def getOutputScales(): Array[Array[Float]] = {
     outScalesBuffer.toArray
   }
 
   /**
-    * Set output scales
-    * Clear existing buffer of output scales, and place updated scales into the cleared buffer
-    * @param outScales value of output scales to be set
-    * @return Unit
-    */
+   * Set output scales
+   * Clear existing buffer of output scales, and place updated scales into the cleared buffer
+   * @param outScales value of output scales to be set
+   * @return Unit
+   */
   def setOutputScales(outScales: Array[Array[Float]]): Unit = {
     outScalesBuffer.clear()
     outScales.foreach(appendOutputScales)
   }
 
   /**
-    * Get weight scales
-    * @return field which stores value of weight scales
-    */
+   * Get weight scales
+   * @return field which stores value of weight scales
+   */
   def getWeightScales(): Array[Array[Float]] = {
     weightScalesBuffer.toArray
   }
 
   /**
-    * Set weight scales
-    * Clear existing buffer of weight scales, and place updated scales into the cleared buffer
-    * @param weightScales value of weight scales to be set
-    * @return Unit
-    */
+   * Set weight scales
+   * Clear existing buffer of weight scales, and place updated scales into the cleared buffer
+   * @param weightScales value of weight scales to be set
+   * @return Unit
+   */
   def setWeightScales(weightScales: Array[Array[Float]]): Unit = {
     weightScalesBuffer.clear()
     weightScales.foreach(appendWeightScales)
   }
 
   /**
-    * Append a scale, an array of float, into input scales buffer
-    * @param scale value of an input scale to be appended
-    * @return Unit
-    */
+   * Append a scale, an array of float, into input scales buffer
+   * @param scale value of an input scale to be appended
+   * @return Unit
+   */
   private def appendInputScales(scale: Array[Float]): Unit = {
     inScalesBuffer.append(scale)
   }
 
   /**
-    * Append a scale, an array of float, into output scales buffer
-    * @param scale value of an output scale to be appended
-    * @return Unit
-    */
+   * Append a scale, an array of float, into output scales buffer
+   * @param scale value of an output scale to be appended
+   * @return Unit
+   */
   private def appendOutputScales(scale: Array[Float]): Unit = {
     outScalesBuffer.append(scale)
   }
 
   /**
-    * Append a scale, an array of float, into weight scales buffer
-    * @param scale value of an weight scale to be appended
-    * @return Unit
-    */
+   * Append a scale, an array of float, into weight scales buffer
+   * @param scale value of an weight scale to be appended
+   * @return Unit
+   */
   private def appendWeightScales(scale: Array[Float]): Unit = {
     weightScalesBuffer.append(scale)
   }
 
   /**
-    * Update input scales at specific index with provided new scale
-    * @param scale the new scale
-    * @param index the index of which the scale need to be updated
-    * @return Unit
-    */
+   * Update input scales at specific index with provided new scale
+   * @param scale the new scale
+   * @param index the index of which the scale need to be updated
+   * @return Unit
+   */
   def updateInputScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(inScalesBuffer, scale, index)
   }
 
   /**
-    * Update output scales at specific index with provided new scale
-    * @param scale the new scale
-    * @param index the index of which the scale need to be updated
-    * @return Unit
-    */
+   * Update output scales at specific index with provided new scale
+   * @param scale the new scale
+   * @param index the index of which the scale need to be updated
+   * @return Unit
+   */
   def updateOutputScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(outScalesBuffer, scale, index)
   }
 
   /**
-    * Update weight scales at specific index with provided new scale
-    * @param scale the new scale
-    * @param index the index of which the scale need to be updated
-    * @return Unit
-    */
+   * Update weight scales at specific index with provided new scale
+   * @param scale the new scale
+   * @param index the index of which the scale need to be updated
+   * @return Unit
+   */
   def updateWeightScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(weightScalesBuffer, scale, index)
   }
 
 
   /**
-    * Scales update helper. Replace scale at specific index with provided new scale
-    * @param scales the scales arrayBuffer to be updated
-    * @param scale the new scale
-    * @param index the index of which the scale need to be updated
-    * @return Unit
-    */
+   * Scales update helper. Replace scale at specific index with provided new scale
+   * @param scales the scales arrayBuffer to be updated
+   * @param scale the new scale
+   * @param index the index of which the scale need to be updated
+   * @return Unit
+   */
   private def updateScalesHelper(scales: ArrayBuffer[Array[Float]],
                                  scale: Array[Float], index: Int): Unit = {
     if (scales.length - 1 < index) {
