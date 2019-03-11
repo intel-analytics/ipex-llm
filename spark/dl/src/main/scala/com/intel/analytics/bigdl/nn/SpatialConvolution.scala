@@ -70,7 +70,8 @@ class SpatialConvolution[T: ClassTag](
   val initGradBias: Tensor[T] = null,
   val withBias: Boolean = true,
   val format: DataFormat = DataFormat.NCHW
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+)(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] with Initializable with MklInt8Convertible {
 
 
   require(nOutputPlane % nGroup == 0, s"Number of input channels " +
