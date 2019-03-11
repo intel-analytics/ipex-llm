@@ -34,6 +34,8 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sampleMax = 999
     val inputSize = 120
     val outputSize = 1
+    var inputMask = 0
+    var outputMask = 0
     val inputTensor = make1DTensor(inputSize, sampleMax)
 
     // Global mask, null input
@@ -55,13 +57,14 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Single dimension mask, non-null input
     val linear2 = Linear[Float](inputSize, outputSize)
+    inputMask = Math.pow(2, 0).toInt
+    outputMask = Math.pow(2, 0).toInt
+
     linear2.setInputDimMask(Math.pow(2, 0).toInt)
     linear2.calcScales(inputTensor)
-    linear2.getInputScales() should be (Array(Array[Float](sampleMax)))
-    linear2.getOutputScales().length should be (1)
-    linear2.getOutputScales()(0).length should be (1)
-    linear2.getWeightScales().length should be (1)
-    linear2.getWeightScales()(0).length should be (1)
+    val output2 = linear2.output
+    linear2.getInputScales() should be (Array(getScalesFromTensor(inputTensor, inputMask)))
+    linear2.getOutputScales() should be (Array(getScalesFromTensor(output2, outputMask)))
 
   }
 
@@ -71,14 +74,10 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val outputSize = 1
     val sampleMax = 999
     var dimMaskIdx = 0
-    val spatialConv = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
-
     val inputTensor = make2DTensor().reshape(Array(inputSize, 3, 4))
-
 
     // Global mask, null input
     val spatialConv0 = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
-    spatialConv0.calcScales(inputTensor)
     spatialConv0.calcScales(null)
     spatialConv0.output.isEmpty should be (true)
     spatialConv0.getInputScales().isEmpty should be (true)
@@ -168,13 +167,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val outputScales1 = Array(Array(sequential1.output.toTensor[Float].max()))
     sequential1.getInputScales() should be (inputScales1)
     sequential1.getOutputScales() should be (outputScales1)
-
-    // Single dimension mask at index 1, non-null input
-//    val sequential2 = makeSequential()
-//    inputDimMask = Math.pow(2, 0).toInt
-//    outputDimMask = Math.pow(2, 0).toInt
-//
-//    sequential2.calcScales(inputTensor)
+    sequentialValidationHelper(sequential1)
 
   }
 
@@ -184,29 +177,30 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val numElem = 12
     val inputTensor = make1DTensor(numElem, sampleMax)
 
-    val concatTable = new  ConcatTable[Float]().setName("concatTable")
-    concatTable.add(Linear[Float](numElem, 1))
-    concatTable.add(Linear[Float](numElem, 1))
-
-    concatTable.calcScales(inputTensor)
+    def makeConcatTable(): ConcatTable[Float] = {
+      val concatTable = new  ConcatTable[Float]().setName("concatTable")
+      concatTable.add(Linear[Float](numElem, 1))
+      concatTable.add(Linear[Float](numElem, 1))
+      concatTable
+    }
 
     // Global mask
-    concatTable.setInputDimMask(0)
-    concatTable.setOutputDimMask(0)
-    concatTable.setWeightDimMask(0)
+    val concatTable0 = makeConcatTable()
+    concatTable0.setInputDimMask(0)
+    concatTable0.setOutputDimMask(0)
+    concatTable0.setWeightDimMask(0)
 
-    concatTable.calcScales(null)
-    concatTable.output.toTensor[Float].isEmpty should be (true)
-    concatTable.getInputScales().isEmpty should be (true)
-    concatTable.getOutputScales().isEmpty should be (true)
-    concatTable.getWeightScales().isEmpty should be (true)
+    concatTable0.calcScales(null)
+    concatTable0.output.toTensor[Float].isEmpty should be (true)
+    concatTable0.getInputScales().isEmpty should be (true)
+    concatTable0.getOutputScales().isEmpty should be (true)
+    concatTable0.getWeightScales().isEmpty should be (true)
 
-    concatTable.calcScales(inputTensor)
-    concatTable.getInputScales() should be (Array(Array[Float](sampleMax)))
-    concatTable.getOutputScales().length should be (1)
-    concatTable.getOutputScales()(0).length should be (1)
-    concatTable.getWeightScales().length should be (1)
-    concatTable.getWeightScales()(0).length should be (1)
+    val concatTable1 = makeConcatTable()
+
+    concatTable1.calcScales(inputTensor)
+    concatTable1.getInputScales() should be (Array(Array[Float](sampleMax)))
+
 
   }
 
@@ -255,18 +249,24 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val currModule = moduleIter.next()
       if (currModule.isInstanceOf[MklInt8Convertible]) {
         val currInputMask = currModule.asInstanceOf[MklInt8Convertible].getInputDimMask()
+        val currOutputMask = currModule.asInstanceOf[MklInt8Convertible].getOutputDimMask()
         val currInputScales = currModule.asInstanceOf[MklInt8Convertible].getInputScales()
+        val currOutputScales = currModule.asInstanceOf[MklInt8Convertible].getOutputScales()
         if (prevModule != null) {
-          val prevOutput = null
-
+          val prevOutput = prevModule.output.asInstanceOf[Tensor[Float]]
+          Array(getScalesFromTensor(prevOutput, currInputMask)) should be (currInputScales)
         }
+        Array(getScalesFromTensor(currModule.output.toTensor[Float], currOutputMask)) should
+          be (currOutputScales)
       }
       prevModule = currModule
     }
+  }
 
+  def concatTableValidationHelper(inputTensor: Tensor[Float],
+                                  concatTable: ConcatTable[Float]): Unit = {
 
-
-
+    val moduleIter = concatTable.modules
 
   }
 
@@ -274,14 +274,13 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   def getScalesFromTensor(tensor: Tensor[Float], mask: Int): Array[Float] = {
 
     if (mask == 0) {
-      Array(tensor.max())
+      Array(tensor.abs().max())
     } else {
-//      val dimSize = tensor.size(mask)
-//
-//      (1 to dimSize).map(idx => {
-//        tensor.select(mask, idx).abs().max()
-//      }).toArray
-      Array.empty
+      val dimSize = tensor.size(mask)
+
+      (1 to dimSize).map(idx => {
+        tensor.select(mask, idx).abs().max()
+      }).toArray
     }
 
   }
