@@ -200,11 +200,12 @@ class TestLayer(ZooTestCase):
     def test_regularizer(self):
         model = ZSequential()
         model.add(ZLayer.Dense(16, W_regularizer=regularizers.l2(0.001),
-                          activation='relu', input_shape=(10000,)))
+                               activation='relu', input_shape=(10000,)))
         model.summary()
         model.compile(optimizer='rmsprop',
-                 loss='binary_crossentropy',
-                 metrics=['acc'])
+                      loss='binary_crossentropy',
+                      metrics=['acc'])
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
