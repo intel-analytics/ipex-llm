@@ -107,4 +107,5 @@ pages:
 #    - Optimizers: Keras2StyleAPIGuide/Optimization/optimizer.md
 #    - Losses: Keras2StyleAPIGuide/Optimization/loss.md
 - Powered by: powered-by.md
+- Presentations: presentations.md
 - FAQ and Known Issues: known-issues.md
