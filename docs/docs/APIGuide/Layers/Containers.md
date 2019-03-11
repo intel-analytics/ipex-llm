@@ -432,7 +432,9 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val model = Bottle(Linear(3, 2), 2, 2)
+val module = Sequential()
+module.add(Linear(3, 2))
+val model = Bottle(module, 2, 2)
 val input = Tensor(2, 3, 3).rand()
 
 scala> print(input)
