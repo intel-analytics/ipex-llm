@@ -322,6 +322,23 @@ class TestTFPark(ZooTestCase):
         optimizer = TFOptimizer.from_keras(model, dataset)
         optimizer.optimize()
 
+    def test_tensorflow_optimizer(self):
+        data = tf.keras.layers.Input(shape=[10])
+
+        x = tf.keras.layers.Flatten()(data)
+        x = tf.keras.layers.Dense(10, activation='relu')(x)
+        predictions = tf.keras.layers.Dense(2, activation='softmax')(x)
+
+        model = tf.keras.models.Model(inputs=data, outputs=predictions)
+        model.compile(optimizer=tf.train.AdamOptimizer(),
+                      loss='sparse_categorical_crossentropy',
+                      metrics=['accuracy'])
+
+        keras_model = KerasModel(model)
+
+        x, y = self.create_training_data()
+
+        keras_model.fit(x, y, batch_size=4, distributed=True)
 
 if __name__ == "__main__":
     pytest.main([__file__])
