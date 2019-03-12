@@ -198,11 +198,6 @@ class DnnPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFeatures = detection.array
     val prob = imageFeatures.map(x => x[Tensor[Float]](ImageFeature.predict))
     val data = imageFeatures.map(_[Sample[Float]](ImageFeature.sample))
-    val tmp1 = prob(0)
-    val tmp2 = model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 24, 24)))
-      .toTensor[Float].split(1)(0)
-    prob(0) should be(model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 24, 24)))
-      .toTensor[Float].split(1)(0))
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
       if (imageFeatures(x - 1).predict() == null) println(x, imageFeatures(x - 1).predict())
