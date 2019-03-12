@@ -342,21 +342,23 @@ trait ModuleSerializable extends Loadable with Savable{
    private def loadMklInt8Attr[T: ClassTag](context: DeserializeContext,
                                            module: MklInt8Convertible)
                                           (implicit ev: TensorNumeric[T]): Unit = {
-
-    val protobufModel = context.bigdlModule
-
-    // Extract ArrayValue for each AttrValue, and then get FltList as input scales
-    val inputScales = protobufModel.getInputScalesList.iterator().asScala
+     val protobufModel = context.bigdlModule
+     // Extract ArrayValue for each AttrValue, and then get FltList as input scales
+     val inputScales = protobufModel.getInputScalesList.iterator().asScala
+      .map(attrValueToFloatArray)
+     // Extract ArrayValue for each AttrValue, and then get FltList as output scales
+     val outputScales = protobufModel.getOutputScalesList.iterator().asScala
+       .map(attrValueToFloatArray)
+     // Extract ArrayValue for each AttrValue, and then get FltList as weight scales
+     val weightScales = protobufModel.getWeightScalesList.iterator().asScala
       .map(attrValueToFloatArray)
 
-    // Extract ArrayValue for each AttrValue, and then get FltList as output scales
-    val outputScales = protobufModel.getOutputScalesList.iterator().asScala
-      .map(attrValueToFloatArray)
-
-    module.setInputDimMask(protobufModel.getInputDimMasks)
-    module.setInputScales(inputScales.toArray)
-    module.setOutputDimMask(protobufModel.getOutputDimMasks)
-    module.setOutputScales(outputScales.toArray)
+     module.setInputDimMask(protobufModel.getInputDimMasks)
+     module.setInputScales(inputScales.toArray)
+     module.setOutputDimMask(protobufModel.getOutputDimMasks)
+     module.setOutputScales(outputScales.toArray)
+     module.setWeightDimMask(protobufModel.getWeightDimMasks)
+     module.setWeightScales(weightScales.toArray)
   }
 
   /**
@@ -430,22 +432,23 @@ trait ModuleSerializable extends Loadable with Savable{
     // Save scale and mask of input into BigDL model builder
     val inputScales : Array[Array[Float]] = module.getInputScales()
     val inputMasks : Int = module.getInputDimMask()
-
-
     val inputScalesAttrList = inputScales.map(floatArrayToAttrValue)
-
     modelBuilder.addAllInputScales(inputScalesAttrList.toIterable.asJava)
     modelBuilder.setInputDimMasks(inputMasks)
-
 
     // Save scale and mask of output into BigDL model builder
     val outputScales : Array[Array[Float]] = module.getOutputScales()
     val outputMasks : Int = module.getOutputDimMask()
-
     val outputScalesAttrList = outputScales.map(floatArrayToAttrValue)
-
     modelBuilder.addAllOutputScales(outputScalesAttrList.toIterable.asJava)
     modelBuilder.setOutputDimMasks(outputMasks)
+
+    // Save scale and mask of weight into BigDL model builder
+    val weightScales: Array[Array[Float]] = module.getWeightScales()
+    val weightMasks: Int = module.getWeightDimMask()
+    val weightScalesAttrList = weightScales.map(floatArrayToAttrValue)
+    modelBuilder.addAllWeightScales(weightScalesAttrList.toIterable.asJava)
+    modelBuilder.setWeightDimMasks(weightMasks)
   }
 
 
