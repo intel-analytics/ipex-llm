@@ -29,7 +29,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val modelPath: String = "myTestModel" + UUID.randomUUID().toString
   val weightPath: String = "myTestModelWeight" + UUID.randomUUID().toString
 
-  
+
   "Calculating scales" should "work correct for BLAS Linear Module" in {
 
     val sampleMax = 999
@@ -60,8 +60,9 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val linear2 = Linear[Float](inputSize, outputSize)
     inputMask = Math.pow(2, 0).toInt
     outputMask = Math.pow(2, 0).toInt
+    linear2.setInputDimMask(inputMask)
+    linear2.setOutputDimMask(outputMask)
 
-    linear2.setInputDimMask(Math.pow(2, 0).toInt)
     linear2.calcScales(inputTensor)
     val output2 = linear2.output
     linear2.getInputScales() should be (Array(getScalesFromTensor(inputTensor, inputMask)))
@@ -75,7 +76,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
 
-  def compareModules(modX: MklInt8Convertible, modY: MklInt8Convertible): Unit = {
+  private def compareModules(modX: MklInt8Convertible, modY: MklInt8Convertible): Unit = {
     modX.getInputDimMask() should be (modY.getInputDimMask())
     modX.getOutputDimMask() should be (modY.getOutputDimMask())
     modX.getWeightDimMask() should be (modY.getWeightScales())
@@ -134,6 +135,12 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       idx => inputTensor.select(dimMaskIdx, idx).max()
     ).toArray)
     spatialConv4.getInputScales() should be (inputScales4)
+
+    spatialConv4.saveModule(modelPath, weightPath, true)
+
+    val loadedModule4 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    compareModules(spatialConv4, loadedModule4)
   }
 
 
@@ -182,6 +189,11 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     sequential1.getOutputScales() should be (outputScales1)
     sequentialValidationHelper(sequential1)
 
+    sequential1.saveModule(modelPath, weightPath, true)
+
+    val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    compareModules(sequential1, loadedModule1)
   }
 
 
@@ -215,19 +227,11 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     concatTable1.calcScales(inputTensor)
     concatTable1.getInputScales() should be (Array(Array[Float](sampleMax)))
     concatTable1.getOutputScales() should be (Array(Array(concatOutput1.abs().max())))
-
-    concatTable1.calcScales(inputTensor)
-    val moduleIter = concatTable1.modules.iterator
-
-    while (moduleIter.hasNext) {
-      val currModule = moduleIter.next()
-      val currInputScales = currModule.asInstanceOf[MklInt8Convertible].getInputScales()
-      val currOutputScales = currModule.asInstanceOf[MklInt8Convertible].getOutputScales()
-      currModule.asInstanceOf[MklInt8Convertible].getInputDimMask() should be (0)
-      currModule.asInstanceOf[MklInt8Convertible].getOutputDimMask() should be (0)
-      inputTensor.abs().max() should be (currInputScales(0)(0))
-      currModule.output.toTensor[Float].abs().max() should be (currOutputScales(0)(0))
-    }
+    concatTableValidationHelper(inputTensor, concatTable1, 0)
+    concatTable1.saveModule(modelPath, weightPath, true)
+    val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    compareModules(concatTable1, loadedModule1)
   }
 
 
@@ -235,7 +239,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
    * Iterate over modules inside the Sequential module, verify their calculated scales
    * @param sequential the sequential to be verified
    */
-  def sequentialValidationHelper(sequential: Sequential[Float]): Unit = {
+  private def sequentialValidationHelper(sequential: Sequential[Float]): Unit = {
 
     var prevModule: AbstractModule[_, _, Float] = null
     val moduleIter = sequential.modules.iterator
@@ -264,7 +268,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
    * @param inputTensor input of the ConcatTable
    * @param concatTable the ConcatTable to be verified
    */
-  def concatTableValidationHelper(inputTensor: Tensor[Float],
+  private def concatTableValidationHelper(inputTensor: Tensor[Float],
                                   concatTable: ConcatTable[Float],
                                   mask: Int): Unit = {
 
@@ -306,7 +310,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
    * @param mask dimension mask
    * @return an Array contains scales
    */
-  def getScalesFromTensor(tensor: Tensor[Float], mask: Int): Array[Float] = {
+  private def getScalesFromTensor(tensor: Tensor[Float], mask: Int): Array[Float] = {
 
     if (mask == 0) {
       Array(tensor.abs().max())
@@ -330,7 +334,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
    *
    * @return a 2D tensor of float
    */
-  def make2DTensor(): Tensor[Float] = {
+  private def make2DTensor(): Tensor[Float] = {
     val tensor = Tensor[Float](3, 4)
     tensor.setValue(1, 1, 1)
     tensor.setValue(1, 2, 10)
@@ -355,7 +359,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
    * @param max max value of the random generated tensor
    * @return a tensor of float
    */
-  def make1DTensor(n: Int, max: Float): Tensor[Float] = {
+  private def make1DTensor(n: Int, max: Float): Tensor[Float] = {
     val tensor = Tensor[Float](n)
     tensor.rand(0, 100)
     tensor.setValue(1, max)
