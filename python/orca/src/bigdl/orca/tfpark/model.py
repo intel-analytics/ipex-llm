@@ -16,9 +16,11 @@
 
 from bigdl.optim.optimizer import MaxEpoch
 from tensorflow.python.keras.engine import training_utils
+from tensorflow.python.keras import models
 
 from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFPredictor
+from zoo.tfpark import variable_creator_scope
 import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
@@ -58,6 +60,25 @@ class KerasModel(object):
 
     def load_weights(self, filepath, by_name=False):
         self.model.load_weights(filepath, by_name)
+
+    def save_model(self, path):
+        """
+        Save the model to a single HDF5 file.
+
+        :param path: String. The path to save the model.
+        """
+        self.model.save(path)
+
+    @staticmethod
+    def load_model(path):
+        """
+        Load an existing keras model (with weights) from HDF5 file.
+
+        :param path: String. The path to the pre-defined model.
+        :return: KerasModel.
+        """
+        with variable_creator_scope():
+            return KerasModel(models.load_model(path))
 
     def fit(self,
             x=None,
@@ -151,6 +172,13 @@ class KerasModel(object):
         predictor = TFPredictor(K.get_session(), self.metrics_tensors,
                                 self.model.inputs + self.model.targets, dataset)
         result = predictor.predict()
+
+        def elem_sum(arr1, arr2):
+            result = []
+            for i in range(len(arr1)):
+                result.append(arr1[i] + arr2[i])
+            return result
+
         metrics_sum = result.map(lambda x: x + [np.array(1.0)]).reduce(lambda a, b: elem_sum(a, b))
         length = len(metrics_sum) - 1
         for i in range(length):
@@ -219,6 +247,28 @@ class KerasModel(object):
 def _standarize_feature_label_dataset(dataset, model):
     input_names = model.input_names
     output_names = model.output_names
+
+    def _process_labels(ys):
+        if isinstance(ys, dict):
+            return {k: np.expand_dims(y, axis=1) if y.ndim == 0 else y for k, y in ys.items()}
+        elif isinstance(ys, list):
+            return [np.expand_dims(y, axis=1) if y.ndim == 0 else y for y in ys]
+        else:
+            return np.expand_dims(ys, axis=1) if ys.ndim == 0 else ys
+
+    def _training_reorder(x, input_names, output_names):
+        assert isinstance(x, tuple)
+
+        return _reorder(x[0], input_names) + _reorder(x[1], output_names)
+
+    def _reorder(x, names):
+        if isinstance(x, dict):
+            return [x[name] for name in names]
+        elif isinstance(x, list):
+            return x
+        else:
+            return [x]
+
     rdd = dataset.rdd.map(lambda x: (x[0], _process_labels(x[1])))\
         .map(lambda sample: _training_reorder(sample, input_names, output_names))
     if dataset.val_rdd is not None:
@@ -235,36 +285,21 @@ def _standarize_feature_label_dataset(dataset, model):
 
 def _standarize_feature_dataset(dataset, model):
     input_names = model.input_names
+
+    def _reorder(x, names):
+        if isinstance(x, dict):
+            return [x[name] for name in names]
+        elif isinstance(x, list):
+            return x
+        else:
+            return [x]
+
     rdd = dataset.rdd.map(lambda sample: _reorder(sample, input_names))
     feature_schema = _reorder(dataset.tensor_structure[0], input_names)
 
     dataset = TFDataset(rdd, feature_schema, dataset.batch_size,
                         -1, dataset.hard_code_batch_size)
     return dataset
-
-
-def _process_labels(ys):
-    if isinstance(ys, dict):
-        return {k: np.expand_dims(y, axis=1) if y.ndim == 0 else y for k, y in ys.items()}
-    elif isinstance(ys, list):
-        return [np.expand_dims(y, axis=1) if y.ndim == 0 else y for y in ys]
-    else:
-        return np.expand_dims(ys, axis=1) if ys.ndim == 0 else ys
-
-
-def _training_reorder(x, input_names, output_names):
-    assert isinstance(x, tuple)
-
-    return _reorder(x[0], input_names) + _reorder(x[1], output_names)
-
-
-def _reorder(x, names):
-    if isinstance(x, dict):
-        return [x[name] for name in names]
-    elif isinstance(x, list):
-        return x
-    else:
-        return [x]
 
 
 def _create_rdd_x_y(x, y, input_names, output_names, sc):
@@ -322,10 +357,3 @@ def _create_rdd_x(x, input_names, sc):
 
     rdd = sc.parallelize(input_data)
     return rdd, types, shapes
-
-
-def elem_sum(arr1, arr2):
-    result = []
-    for i in range(len(arr1)):
-        result.append(arr1[i] + arr2[i])
-    return result
