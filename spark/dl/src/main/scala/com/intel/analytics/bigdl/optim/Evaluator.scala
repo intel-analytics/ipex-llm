@@ -16,13 +16,13 @@
 
 package com.intel.analytics.bigdl.optim
 
-import breeze.util.partition
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
 import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
+import org.apache.spark.rdd
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -59,7 +59,7 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
     val totalBatch = batchSize.getOrElse(batchPerPartition * partitionNum)
     val rdd = ConversionUtils.coalesce(dataset)
     val otherBroad = rdd.sparkContext.broadcast(vMethods, SampleToMiniBatch(
-      batchSize = totalBatch, partitionNum = Some(rdd.getNumPartitions)))
+      batchSize = totalBatch, partitionNum = Some(rdd.partitions.length)))
 
     rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()

@@ -42,7 +42,6 @@ class BlasToDnnSpec extends BigDLSpecHelper {
   override def doAfter(): Unit = {
     System.clearProperty("bigdl.engineType")
   }
-
   "vgg16 blas to dnn" should "work properly" in {
     val batchSize = 2
     val classNum = 1000

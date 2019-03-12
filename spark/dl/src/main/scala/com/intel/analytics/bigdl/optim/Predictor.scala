@@ -130,13 +130,13 @@ object Predictor {
       ConversionUtils.convert(model.evaluate()))
     val totalBatch = imageFrame.rdd.partitions.length * batchPerPartition
 
-
+    val realPartitionLength = rdd.partitions.length
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = totalBatch,
-      partitionNum = Some(rdd.getNumPartitions),
+      partitionNum = Some(realPartitionLength),
       featurePaddingParam = featurePaddingParam), shareBuffer)
 
-    val localBatchPerPartition = totalBatch / rdd.getNumPartitions
+    val localBatchPerPartition = totalBatch / realPartitionLength
 
     val result = rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
@@ -167,7 +167,7 @@ object Predictor {
     val rdd = ConversionUtils.coalesce(dataSet)
     val otherBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = totalBatch,
-      partitionNum = Some(rdd.getNumPartitions),
+      partitionNum = Some(rdd.partitions.length),
       featurePaddingParam = featurePaddingParam))
     rdd.mapPartitions { partition =>
       val localModel = modelBroad.value()

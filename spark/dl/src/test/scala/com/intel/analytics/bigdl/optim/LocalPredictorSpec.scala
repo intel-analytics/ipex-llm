@@ -20,7 +20,6 @@ import java.io.File
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn._
@@ -305,46 +304,5 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       assert(imageFeatures(x - 1).predict() != null)
       assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
-  }
-
-  "Local predictor with dnn backend" should "work properly" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
-
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-    RNG.setSeed(100)
-    val resource = getClass.getClassLoader.getResource("pascal/")
-    val ims = (1 to 50).map(x => {
-      val im = ImageFeature()
-      im(ImageFeature.uri) = x.toString
-      im(ImageFeature.imageTensor) = Tensor[Float](3, 24, 24).randn()
-      im
-    })
-
-    val imageFrame = ImageFrame.array(ims.toArray) -> ImageFrameToSample()
-    val m = Sequential()
-    m.add(SpatialConvolution(3, 6, 5, 5))
-    m.add(Tanh())
-    val model = m.toGraph().asInstanceOf[StaticGraph[Float]]
-    model.setInputFormats(Seq(Memory.Format.nchw))
-    model.setOutputFormats(Seq(Memory.Format.nchw))
-
-    val detection = model.predictImage(imageFrame).toLocal()
-    val feature = detection.array.head
-
-    val imageFeatures = detection.array
-    val prob = imageFeatures.map(x => x[Tensor[Float]](ImageFeature.predict))
-    val data = imageFeatures.map(_[Sample[Float]](ImageFeature.sample))
-    val tmp1 = prob(0)
-    val tmp2 = model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 24, 24)))
-      .toTensor[Float].split(1)(0)
-    prob(0) should be(model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 24, 24)))
-      .toTensor[Float].split(1)(0))
-    (1 to 20).foreach(x => {
-      imageFeatures(x - 1).uri() should be (x.toString)
-      if (imageFeatures(x - 1).predict() == null) println(x, imageFeatures(x - 1).predict())
-      assert(imageFeatures(x - 1).predict() != null)
-    })
-
-    System.clearProperty("bigdl.engineType")
   }
 }

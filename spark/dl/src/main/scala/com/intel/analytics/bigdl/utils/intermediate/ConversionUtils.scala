@@ -55,7 +55,7 @@ private[bigdl] object ConversionUtils {
    * @return
    */
   def coalesce[T: ClassTag](dataset: RDD[T]): RDD[T] = {
-    if (dataset.getNumPartitions != Engine.nodeNumber()
+    if (dataset.partitions.length != Engine.nodeNumber()
       && Engine.getEngineType() == MklDnn) {
       dataset.coalesce(Engine.nodeNumber(), false)
     } else dataset

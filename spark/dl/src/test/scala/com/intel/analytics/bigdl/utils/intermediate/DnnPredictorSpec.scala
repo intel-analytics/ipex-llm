@@ -15,23 +15,39 @@
  */
 package com.intel.analytics.bigdl.utils.intermediate
 
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.StaticGraph
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.Matchers
+import org.apache.spark.SparkContext
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class DnnPredictorSpec extends SparkContextLifeCycle with Matchers {
-  override def nodeNumber: Int = 1
-  override def coreNumber: Int = 4
+class DnnPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+  private val coreNumber = 4
+  private val nodeNumber = 1
+  private var sc: SparkContext = _
+
+  before {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    Engine.init(nodeNumber, coreNumber, true)
+    val conf = Engine.createSparkConf().setMaster(s"local[$coreNumber]").setAppName("dnn predictor")
+    sc = SparkContext.getOrCreate(conf)
+    Engine.init
+  }
+
+  after {
+    if (sc != null) sc.stop()
+    System.clearProperty("bigdl.engineType")
+  }
 
   "predict image for dnn" should "work properly" in {
-    Engine.setEngineType(MklDnn)
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
@@ -46,8 +62,8 @@ class DnnPredictorSpec extends SparkContextLifeCycle with Matchers {
     val feature = detection.rdd.first()
     println(feature(ImageFeature.predict))
 
-    imageFrame.rdd.getNumPartitions should be(coreNumber)
-    detection.rdd.getNumPartitions should be(1)
+    imageFrame.rdd.partitions.length should be(coreNumber)
+    detection.rdd.partitions.length should be(1)
 
     val imageFeatures = detection.rdd.collect()
     val prob = imageFeatures.map(x => x[Tensor[Float]](ImageFeature.predict))
@@ -55,11 +71,9 @@ class DnnPredictorSpec extends SparkContextLifeCycle with Matchers {
 
     prob(0) should be (model.forward(data(0).feature.reshape(Array(1, 3, 224, 224)))
       .toTensor[Float].squeeze)
-    Engine.setEngineType(MklBlas)
   }
 
   "predict for dnn" should "work properly" in {
-    Engine.setEngineType(MklDnn)
     RNG.setSeed(100)
     val data = new Array[Sample[Float]](97)
     var i = 0
@@ -76,8 +90,8 @@ class DnnPredictorSpec extends SparkContextLifeCycle with Matchers {
     var result = model.predict(dataSet)
     var prob = result.collect()
 
-    dataSet.getNumPartitions should be(1)
-    result.getNumPartitions should be(1)
+    dataSet.partitions.length should be(1)
+    result.partitions.length should be(1)
 
     prob(0) should be (model.forward(data(0).feature).toTensor[Float].squeeze())
     prob(11) should be (model.forward(data(11).feature).toTensor[Float].squeeze())
@@ -107,6 +121,92 @@ class DnnPredictorSpec extends SparkContextLifeCycle with Matchers {
     probClass(91) should be
     (model.forward(data(91).feature
     ).toTensor[Float].squeeze().max(1)._2.valueAt(1).toInt)
-    Engine.setEngineType(MklBlas)
+  }
+
+  "Evaluator with dnn backend" should "be correct" in {
+    RNG.setSeed(100)
+    val tmp = new Array[Sample[Float]](100)
+    var i = 0
+    while (i < tmp.length) {
+      val input = Tensor[Float](28, 28).fill(0.8f)
+      val label = Tensor[Float](1).fill(1.0f)
+      tmp(i) = Sample(input, label)
+      i += 1
+    }
+    val model = LeNet5(classNum = 10)
+    val dataSet = DataSet.array(tmp, sc).toDistributed().data(train = false).repartition(4)
+
+    val result = model.evaluate(dataSet, Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](),
+      new Loss[Float](CrossEntropyCriterion[Float]())))
+
+    dataSet.partitions.length should be(4)
+    result(0)._1 should be (new AccuracyResult(0, 100))
+    result(1)._1 should be (new AccuracyResult(100, 100))
+    result(2)._1 should be (new LossResult(16.130993f, 7))
+    result(0)._1.result()._1 should be (0f)
+    result(1)._1.result()._1 should be (1f)
+    result(2)._1.result()._1 should be (2.3044279f+-0.000001f)
+  }
+
+  "Evaluator MiniBatch with dnn backend" should "be correct" in {
+    RNG.setSeed(100)
+    val tmp = new Array[MiniBatch[Float]](25)
+    var i = 0
+    while (i < tmp.length) {
+      val input = Tensor[Float](4, 28, 28).fill(0.8f)
+      val label = Tensor[Float](4).fill(1.0f)
+      tmp(i) = MiniBatch(input, label)
+      i += 1
+    }
+    val model = LeNet5(classNum = 10)
+    val dataSet = DataSet.array(tmp, sc).toDistributed().data(train = false).repartition(4)
+
+    val result = model.evaluate(dataSet, Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](),
+      new Loss[Float](CrossEntropyCriterion[Float]())))
+
+    dataSet.partitions.length should be(4)
+    result(0)._1 should be (new AccuracyResult(0, 100))
+    result(1)._1 should be (new AccuracyResult(100, 100))
+    result(2)._1 should be (new LossResult(57.610695f, 25))
+    result(0)._1.result()._1 should be (0f)
+    result(1)._1.result()._1 should be (1f)
+    result(2)._1.result()._1 should be (2.3044279f+-0.000001f)
+  }
+
+  "Local predictor with dnn backend" should "work properly" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val resource = getClass.getClassLoader.getResource("pascal/")
+    val ims = (1 to 50).map(x => {
+      val im = ImageFeature()
+      im(ImageFeature.uri) = x.toString
+      im(ImageFeature.imageTensor) = Tensor[Float](3, 24, 24).randn()
+      im
+    })
+
+    val imageFrame = ImageFrame.array(ims.toArray) -> ImageFrameToSample()
+    val m = Sequential()
+    m.add(SpatialConvolution(3, 6, 5, 5))
+    m.add(Tanh())
+    val model = m.toGraph().asInstanceOf[StaticGraph[Float]]
+    model.setInputFormats(Seq(Memory.Format.nchw))
+    model.setOutputFormats(Seq(Memory.Format.nchw))
+
+    val detection = model.predictImage(imageFrame).toLocal()
+    val feature = detection.array.head
+
+    val imageFeatures = detection.array
+    val prob = imageFeatures.map(x => x[Tensor[Float]](ImageFeature.predict))
+    val data = imageFeatures.map(_[Sample[Float]](ImageFeature.sample))
+    val tmp1 = prob(0)
+    val tmp2 = model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 24, 24)))
+      .toTensor[Float].split(1)(0)
+    prob(0) should be(model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 24, 24)))
+      .toTensor[Float].split(1)(0))
+    (1 to 20).foreach(x => {
+      imageFeatures(x - 1).uri() should be (x.toString)
+      if (imageFeatures(x - 1).predict() == null) println(x, imageFeatures(x - 1).predict())
+      assert(imageFeatures(x - 1).predict() != null)
+    })
   }
 }
