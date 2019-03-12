@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.Util._
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
@@ -83,7 +84,13 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
   private var broadcastModel: Broadcast[ModelInfo[T]] = _
   private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
+  private var nodeNumber : Int = _
+  private var coreNumber : Int = _
 
+  private def setNodeAndCore(): Unit = {
+    nodeNumber = Engine.nodeNumber()
+    coreNumber = Engine.coreNumber()
+  }
   /**
    * broadcast the model
    * first get and clear Const values from the model
@@ -115,6 +122,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
       putWeightBias(SerializationUtils.clone(weightsBias), model)
       initGradWeightBias(weightsBias, model)
     }
+    setNodeAndCore()
     this
   }
 
@@ -127,6 +135,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
    * @return model
    */
   override def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
+    Engine.setNodeAndCore(nodeNumber, coreNumber)
     CachedModels.deleteAll(uuid)
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)

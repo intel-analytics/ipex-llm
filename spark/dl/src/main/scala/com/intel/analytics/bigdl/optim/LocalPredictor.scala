@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.nn.quantized.QuantizedModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.Util._
+import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Util}
 import org.apache.log4j.Logger
 
@@ -59,8 +60,10 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     case MklDnn => 1
   }
 
+  private val batchPerModel = batchPerCore * coreNumber / subModelNumber
+
   // we should clone a new model which has no impact to origin model
-  private val clonedModel = model.cloneModule()
+  private val clonedModel = ConversionUtils.convert(model.cloneModule())
 
   private val workingModels = {
 
@@ -77,7 +80,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
 
   val workingToBatch = {
     val toBatch = SampleToMiniBatch[T](
-      batchSize = batchPerCore * subModelNumber,
+      batchSize = batchPerModel * subModelNumber,
       partitionNum = Some(subModelNumber),
       featurePaddingParam = featurePaddingParam)
     (1 to subModelNumber).map(_ => {
@@ -132,10 +135,10 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
   }
 
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
-    val dataIter = dataSet.grouped(batchPerCore * subModelNumber)
+    val dataIter = dataSet.grouped(batchPerModel * subModelNumber)
 
     dataIter.map(batch => {
-      val groupedSamples = batch.grouped(batchPerCore).toArray
+      val groupedSamples = batch.grouped(batchPerModel).toArray
       Engine.default.invokeAndWait(
         groupedSamples.indices.map(b =>
           () => {
@@ -162,10 +165,10 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     shareBuffer: Boolean = false,
     predictKey: String = ImageFeature.predict): LocalImageFrame = {
 
-    val dataIter = imageFrame.array.grouped(batchPerCore * subModelNumber)
+    val dataIter = imageFrame.array.grouped(batchPerModel * subModelNumber)
 
     val result = dataIter.map(batch => {
-      val groupedImages = batch.grouped(batchPerCore).toArray
+      val groupedImages = batch.grouped(batchPerModel).toArray
       Engine.default.invokeAndWait(
         groupedImages.indices.map(b =>
           () => {
