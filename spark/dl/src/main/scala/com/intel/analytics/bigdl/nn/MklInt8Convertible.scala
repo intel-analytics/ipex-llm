@@ -20,21 +20,22 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 /**
  * Trait which provides MKL-DNN functionality to convert FP32 model to INT8 model
  */
 trait MklInt8Convertible {
   // input dimension mask
-  protected var inDimMask: Int = 0
+  protected var inputDimMask: Int = 0
   // output dimension mask
-  protected var outDimMask: Int = 0
+  protected var outputDimMask: Int = 0
   // weight dimension mask
   protected var weightDimMask: Int = 0
   // input activation scales
-  private[nn] var inScalesBuffer: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
+  private[nn] var inputScalesBuffer: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
   // output scales
-  private[nn] var outScalesBuffer: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
+  private[nn] var outputScalesBuffer: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
   // weight scales
   private[nn] var weightScalesBuffer: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
 
@@ -89,11 +90,11 @@ trait MklInt8Convertible {
     require(inputActvt != null, "Input Activity should not be null")
 
     if (inputActvt != null) {
-      calcActivityScales(inputActvt, inDimMask).foreach(appendInputScales)
+      calcActivityScales(inputActvt, inputDimMask).foreach(appendInputScales)
     }
 
     if (outputActvt != null) {
-      calcActivityScales(outputActvt, outDimMask).foreach(appendOutputScales)
+      calcActivityScales(outputActvt, outputDimMask).foreach(appendOutputScales)
     }
   }
 
@@ -105,11 +106,11 @@ trait MklInt8Convertible {
    */
   private def calcModuleScales(inActivity: Activity, outActivity: Activity,
                                weightTensor: Tensor[Float]): Unit = {
+    // calculate scales for input and output
     calcModuleScales(inActivity, outActivity)
+    // calculate scales for weight
+    appendWeightScales(calcTensorScale(weightTensor, weightDimMask))
 
-    if(weightScalesBuffer != null || !weightScalesBuffer.isEmpty) {
-      appendWeightScales(calcTensorScale(weightTensor, weightDimMask))
-    }
   }
 
   /**
@@ -119,6 +120,7 @@ trait MklInt8Convertible {
    * @param appendFunc update method for scales
    */
   private def calcActivityScales(activity: Activity, mask: Int): Array[Array[Float]] = {
+
     if (activity.isTensor) {
       Array(calcTensorScale(activity.toTensor[Float], mask))
     } else if (activity.isTable) {
@@ -162,7 +164,6 @@ trait MklInt8Convertible {
           }
         }
       }
-
       scalesBuffer.toArray[Float]
     }
   }
@@ -221,13 +222,12 @@ trait MklInt8Convertible {
 
   }
 
-
   /**
    * Get dimension mask of input
-   * @return inDimMask field which stores value of input dimension mask
+   * @return inputDimMask field which stores value of input dimension mask
    */
   def getInputDimMask(): Int = {
-    inDimMask
+    inputDimMask
   }
 
   /**
@@ -236,15 +236,15 @@ trait MklInt8Convertible {
    * @return Unit
    */
   def setInputDimMask(mask: Int) : Unit = {
-    inDimMask = mask
+    inputDimMask = mask
   }
 
   /**
    * Get dimension mask of output
-   * @return outDimMask field which stores value of output dimension mask
+   * @return outputDimMask field which stores value of output dimension mask
    */
   def getOutputDimMask(): Int = {
-    outDimMask
+    outputDimMask
   }
 
   /**
@@ -253,14 +253,14 @@ trait MklInt8Convertible {
    * @return Unit
    */
   def setOutputDimMask(mask: Int): Unit = {
-    outDimMask = mask
+    outputDimMask = mask
   }
 
   /**
    * Get dimension mask of weight
    * @return weightDimMask which stores value of weight mask
    */
-  def getWeightDimMask(mask: Int): Int = {
+  def getWeightDimMask(): Int = {
     weightDimMask
   }
 
@@ -279,7 +279,7 @@ trait MklInt8Convertible {
    * @return field which stores value of input scales
    */
   def getInputScales(): Array[Array[Float]] = {
-    inScalesBuffer.toArray
+    inputScalesBuffer.toArray
   }
 
   /**
@@ -289,7 +289,7 @@ trait MklInt8Convertible {
    * @return Unit
    */
   def setInputScales(inScales: Array[Array[Float]]): Unit = {
-    inScalesBuffer.clear()
+    inputScalesBuffer.clear()
     inScales.foreach(appendInputScales)
   }
 
@@ -298,7 +298,7 @@ trait MklInt8Convertible {
    * @return field which stores value of output scales
    */
   def getOutputScales(): Array[Array[Float]] = {
-    outScalesBuffer.toArray
+    outputScalesBuffer.toArray
   }
 
   /**
@@ -308,7 +308,7 @@ trait MklInt8Convertible {
    * @return Unit
    */
   def setOutputScales(outScales: Array[Array[Float]]): Unit = {
-    outScalesBuffer.clear()
+    outputScalesBuffer.clear()
     outScales.foreach(appendOutputScales)
   }
 
@@ -337,7 +337,7 @@ trait MklInt8Convertible {
    * @return Unit
    */
   private def appendInputScales(scale: Array[Float]): Unit = {
-    inScalesBuffer.append(scale)
+    inputScalesBuffer.append(scale)
   }
 
   /**
@@ -346,7 +346,7 @@ trait MklInt8Convertible {
    * @return Unit
    */
   private def appendOutputScales(scale: Array[Float]): Unit = {
-    outScalesBuffer.append(scale)
+    outputScalesBuffer.append(scale)
   }
 
   /**
@@ -365,7 +365,7 @@ trait MklInt8Convertible {
    * @return Unit
    */
   def updateInputScales(scale: Array[Float], index: Int): Unit = {
-    updateScalesHelper(inScalesBuffer, scale, index)
+    updateScalesHelper(inputScalesBuffer, scale, index)
   }
 
   /**
@@ -375,7 +375,7 @@ trait MklInt8Convertible {
    * @return Unit
    */
   def updateOutputScales(scale: Array[Float], index: Int): Unit = {
-    updateScalesHelper(outScalesBuffer, scale, index)
+    updateScalesHelper(outputScalesBuffer, scale, index)
   }
 
   /**

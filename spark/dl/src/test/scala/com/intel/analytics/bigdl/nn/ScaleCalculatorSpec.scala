@@ -66,6 +66,21 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     linear2.getInputScales() should be (Array(getScalesFromTensor(inputTensor, inputMask)))
     linear2.getOutputScales() should be (Array(getScalesFromTensor(output2, outputMask)))
 
+    linear2.saveModule(modelPath, weightPath, true)
+
+    val loadedModule2 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    compareModules(linear2, loadedModule2)
+    
+  }
+
+  def compareModules(modX: MklInt8Convertible, modY: MklInt8Convertible): Unit = {
+    modX.getInputDimMask() should be (modY.getInputDimMask())
+    modX.getOutputDimMask() should be (modY.getOutputDimMask())
+    modX.getWeightDimMask() should be (modY.getWeightScales())
+    modX.getInputScales() should be (modY.getInputScales())
+    modX.getOutputScales() should be (modY.getOutputScales())
+    modX.getWeightScales() should be (modY.getWeightScales())
   }
 
 
