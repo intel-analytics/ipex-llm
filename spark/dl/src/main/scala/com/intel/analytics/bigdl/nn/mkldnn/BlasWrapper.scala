@@ -31,7 +31,7 @@ import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
 
 /**
- * wrap blas module to be dnn module,
+ * wrap blas module to dnn module,
  * and the module should have implemented "computeOutputShape" func.
  * @param module
  */
@@ -85,10 +85,10 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
 
   /**
-   * Blas layers may not have good performance with mkldnn backend,
-   * so we can use java multi thread to run blas layers and thread number is
-   * related with batch size and core number.
-   * input and output for this module must be in batch.
+   * Blas layers normally do not have competitive performance when running under mkldnn.
+   * So we can leverage multi-threading to resolve bottleneck introduced by one model only
+   * for mkl-dnn backend. The parallelism is determined by both bath size and core number,
+   * with restrictions that both input and output format must be batched.
    */
   private def setMultiThreadEnv(input: Activity): Unit = {
     initEnv = true
@@ -106,8 +106,8 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       return
     }
     batchSize = tensorBuffer(0).size(1)
-    val t = batchSize % Engine.coreNumber()
-    if (t != 0 || batchSize < 2 || Engine.coreNumber() < 2) {
+    val residue = batchSize % Engine.coreNumber()
+    if (residue != 0 || batchSize < 2 || Engine.coreNumber() < 2) {
       logger.warn("If you want to use multiThread property to speed up, " +
         "please attention core number should be greater than 1, " +
         s"batch size should be greater than 1 and divided by core number, " +
@@ -130,6 +130,8 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
         if (in.get(i).get.isInstanceOf[Table]) return false
         tensorBuffer(i - 1) = in.get[Tensor[Float]](i).get
         if (i == 1) batch = tensorBuffer(i - 1).size(1)
+        // reminder: inputs for DetectionOutputSSD are not all in batch,
+        // but the non-batched input can be shared in all batch. So this layer can be paralleled.
         if (batch != tensorBuffer(i - 1).size(1)
           && !module.isInstanceOf[DetectionOutputSSD[Float]]) {
           return false
@@ -178,6 +180,8 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     if (tensorBuffer.length == 1) {
       tensorBuffer(0).narrow(dim, index, size)
     } else {
+      // the third tensor of inputs for DetectionOutputSSD is not in batch,
+      // but it can be shared with all batch.
       if (module.isInstanceOf[DetectionOutputSSD[Float]]) {
         T(tensorBuffer(0).narrow(dim, index, size),
           tensorBuffer(1).narrow(dim, index, size), tensorBuffer(2))
@@ -186,7 +190,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       }
     }
   }
-  private def forwardWithMultiThread(input: Activity): Activity = {
+  private def forwardInParallel(input: Activity): Activity = {
     if (inputBuffer == null) inputBuffer = new Array[Activity](subModelNumber)
     val stackSize = batchSize / subModelNumber
 
@@ -226,7 +230,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   override def updateOutput(input: Activity): Activity = {
     if (!initEnv) setMultiThreadEnv(input)
     output = if (withMultiThread) {
-      forwardWithMultiThread(input)
+      forwardInParallel(input)
     } else {
       module.forward(input)
     }
