@@ -172,15 +172,14 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Calculating scales" should "work correct for BLAS ConcatTable Module" in {
-
     val sampleMax = 999
     val numElem = 12
     val inputTensor = make1DTensor(numElem, sampleMax)
 
     def makeConcatTable(): ConcatTable[Float] = {
       val concatTable = new  ConcatTable[Float]().setName("concatTable")
-      concatTable.add(Linear[Float](numElem, 1))
-      concatTable.add(Linear[Float](numElem, 1))
+      concatTable.add(Linear[Float](numElem, 1).setName("A"))
+      concatTable.add(Linear[Float](numElem, 1).setName("B"))
       concatTable
     }
 
@@ -198,47 +197,31 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Global mask, non-null input
     val concatTable1 = makeConcatTable()
+    val concatOutput1 = concatTable1.output.toTensor[Float]
     concatTable1.calcScales(inputTensor)
     concatTable1.getInputScales() should be (Array(Array[Float](sampleMax)))
-    
+    concatTable1.getOutputScales() should be (Array(Array(concatOutput1.abs().max())))
+
+    concatTable1.calcScales(inputTensor)
+    val moduleIter = concatTable1.modules.iterator
+
+    while (moduleIter.hasNext) {
+      val currModule = moduleIter.next()
+      val currInputScales = currModule.asInstanceOf[MklInt8Convertible].getInputScales()
+      val currOutputScales = currModule.asInstanceOf[MklInt8Convertible].getOutputScales()
+      currModule.asInstanceOf[MklInt8Convertible].getInputDimMask() should be (0)
+      currModule.asInstanceOf[MklInt8Convertible].getOutputDimMask() should be (0)
+      inputTensor.abs().max() should be (currInputScales(0)(0))
+      currModule.output.toTensor[Float].abs().max() should be (currOutputScales(0)(0))
+    }
   }
+
+
 
   /**
-   * tensor =
-   * 01 10 03 12
-   * 09 07 11 08
-   * 05 02 06 04
-   *
-   * @param dim
-   * @param max
-   * @return
+   * Iterate over modules inside the Sequential module, verify their calculated scales
+   * @param sequential the sequential to be verified
    */
-  def make2DTensor(): Tensor[Float] = {
-    val tensor = Tensor[Float](3, 4)
-    tensor.setValue(1, 1, 1)
-    tensor.setValue(1, 2, 10)
-    tensor.setValue(1, 3, 3)
-    tensor.setValue(1, 4, 12)
-    tensor.setValue(2, 1, 9)
-    tensor.setValue(2, 2, 7)
-    tensor.setValue(2, 3, 11)
-    tensor.setValue(2, 4, 8)
-    tensor.setValue(3, 1, 5)
-    tensor.setValue(3, 2, 2)
-    tensor.setValue(3, 3, 6)
-    tensor.setValue(3, 4, 4)
-
-    tensor
-  }
-
-  def make1DTensor(n: Int, max: Float): Tensor[Float] = {
-    val tensor = Tensor[Float](n)
-    tensor.rand(0, 100)
-    tensor.setValue(1, max)
-    println(tensor.storage().size)
-    tensor
-  }
-
   def sequentialValidationHelper(sequential: Sequential[Float]): Unit = {
 
     var prevModule: AbstractModule[_, _, Float] = null
@@ -262,14 +245,39 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  /**
+   * Iterate over modules inside the ConcatTable module, verify their calculated scales
+   * @param inputTensor input of the ConcatTable
+   * @param concatTable the ConcatTable to be verified
+   */
   def concatTableValidationHelper(inputTensor: Tensor[Float],
-                                  concatTable: ConcatTable[Float]): Unit = {
+                                  concatTable: ConcatTable[Float],
+                                  mask: Int): Unit = {
 
-    val moduleIter = concatTable.modules
+    val moduleIter = concatTable.modules.iterator
+    if (mask == 0) {
+      while (moduleIter.hasNext) {
+        val currModule = moduleIter.next()
+        val currInputScales = currModule.asInstanceOf[MklInt8Convertible].getInputScales()
+        val currOutputScales = currModule.asInstanceOf[MklInt8Convertible].getOutputScales()
+        currModule.asInstanceOf[MklInt8Convertible].getInputDimMask() should be (0)
+        currModule.asInstanceOf[MklInt8Convertible].getOutputDimMask() should be (0)
+        inputTensor.max() should be (currInputScales(0)(0))
+        currModule.output.toTensor[Float].max() should be (currOutputScales(0)(0))
+      }
+    } else {
+
+    }
 
   }
 
 
+  /**
+   * Calculate the scales based on the input tensor and dimension mask
+   * @param tensor input tensor
+   * @param mask dimension mask
+   * @return an Array contains scales
+   */
   def getScalesFromTensor(tensor: Tensor[Float], mask: Int): Array[Float] = {
 
     if (mask == 0) {
@@ -282,6 +290,46 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }).toArray
     }
 
+  }
+
+  /**
+   * Helper method to make testing 2 dimensional tensor
+   * tensor =
+   * 01 10 03 12
+   * 09 07 11 08
+   * 05 02 06 04
+   *
+   * @return a 2D tensor of float
+   */
+  def make2DTensor(): Tensor[Float] = {
+    val tensor = Tensor[Float](3, 4)
+    tensor.setValue(1, 1, 1)
+    tensor.setValue(1, 2, 10)
+    tensor.setValue(1, 3, 3)
+    tensor.setValue(1, 4, 12)
+    tensor.setValue(2, 1, 9)
+    tensor.setValue(2, 2, 7)
+    tensor.setValue(2, 3, 11)
+    tensor.setValue(2, 4, 8)
+    tensor.setValue(3, 1, 5)
+    tensor.setValue(3, 2, 2)
+    tensor.setValue(3, 3, 6)
+    tensor.setValue(3, 4, 4)
+
+    tensor
+  }
+
+  /**
+   * Helper method to make testing 1 dimensional tensor
+   * @param n tensor size
+   * @param max max value of the random generated tensor
+   * @return a tensor of float
+   */
+  def make1DTensor(n: Int, max: Float): Tensor[Float] = {
+    val tensor = Tensor[Float](n)
+    tensor.rand(0, 100)
+    tensor.setValue(1, max)
+    tensor
   }
 
   after {
