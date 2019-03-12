@@ -79,7 +79,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   private def compareModules(modX: MklInt8Convertible, modY: MklInt8Convertible): Unit = {
     modX.getInputDimMask() should be (modY.getInputDimMask())
     modX.getOutputDimMask() should be (modY.getOutputDimMask())
-    modX.getWeightDimMask() should be (modY.getWeightScales())
+    modX.getWeightDimMask() should be (modY.getWeightDimMask())
     modX.getInputScales() should be (modY.getInputScales())
     modX.getOutputScales() should be (modY.getOutputScales())
     modX.getWeightScales() should be (modY.getWeightScales())

@@ -43,10 +43,10 @@ trait MklInt8Convertible {
   /**
    * Calculate the required scales for converting int8 modules
    * Currently there are four type of modules should be supported:
-   * 1) Linear: requires scales for input, output and weight
-   * 2) Spatial Convolution: requires scales for input, output and weight
-   * 3) Sequential: requires scales for input, output as well as the scales of submodules
-   * 4) ConcatTable: requires scales for input, output as well as the scales of submodules
+   * 1) Linear: calculate scales for input, output and weight
+   * 2) Spatial Convolution: calculate scales for input, output and weight
+   * 3) Sequential: calculate scales for input, output as well as the scales of submodules
+   * 4) ConcatTable: calculate scales for input, output as well as the scales of submodules
    * @param inActivity
    */
   def calcScales(inputActvt: Activity): Unit = {
@@ -56,6 +56,7 @@ trait MklInt8Convertible {
       val outputActvt = module.forward(inputActvt)
 
       module match {
+        // handlers for BLAS modules
         case linear: Linear[Float@unchecked] =>
           calcModuleScales(inputActvt, outputActvt, linear.weight)
         case spatialConv: SpatialConvolution[Float@unchecked] =>
@@ -65,6 +66,7 @@ trait MklInt8Convertible {
         case concatTable: ConcatTable[Float@unchecked] =>
           calcConcatTableScales(inputActvt, outputActvt)
 
+        // handlers for DNN modules
         case dnnLinear: mkldnn.Linear =>
           calcModuleScales(inputActvt, outputActvt, dnnLinear.getWeight().dense)
         case dnnSpatialConv: mkldnn.SpatialConvolution =>
@@ -87,8 +89,6 @@ trait MklInt8Convertible {
    * @param outActivity output activity
    */
   private def calcModuleScales(inputActvt: Activity, outputActvt: Activity): Unit = {
-    require(inputActvt != null, "Input Activity should not be null")
-
     if (inputActvt != null) {
       calcActivityScales(inputActvt, inputDimMask).foreach(appendInputScales)
     }
@@ -120,7 +120,6 @@ trait MklInt8Convertible {
    * @param appendFunc update method for scales
    */
   private def calcActivityScales(activity: Activity, mask: Int): Array[Array[Float]] = {
-
     if (activity.isTensor) {
       Array(calcTensorScale(activity.toTensor[Float], mask))
     } else if (activity.isTable) {
@@ -141,11 +140,11 @@ trait MklInt8Convertible {
    */
   private def calcTensorScale(tensor: Tensor[Float], mask: Int): Array[Float] = {
     if (mask == 0) { // no mask performed, return max of tensor storage
-      Array(tensor.storage().toArray.map(Math.abs).max)
+      Array(tensor.abs().max())
     } else if (scala.math.pow(2, tensor.dim()) - 1 == mask) {
       // mask bits are ON for all dimensions
-      // return storage in this case
-      tensor.storage().toArray[Float]
+      // return the abs value of tensor as an array
+      tensor.abs().storage().toArray[Float]
     } else {
       // mask bits are ON for some of dimensions
       // slice storage according to the dimension if its mask bit is ON
@@ -168,6 +167,7 @@ trait MklInt8Convertible {
     }
   }
 
+
   /**
    * Scales calculator for Sequential Module
    * @param inActivity input of the Sequential Module
@@ -179,11 +179,11 @@ trait MklInt8Convertible {
     val module: Sequential[Float] = this.asInstanceOf[Sequential[Float]]
     // output of previous module is the input of current module
     var prevOutputActivity: Activity = inputActvt
-    // Iterator of Sequential modules
-    val moduleIter = module.modules.iterator
 
     this.calcModuleScales(inputActvt, outputActvt)
 
+    // Iterator of Sequential modules
+    val moduleIter = module.modules.iterator
     // Iterate over Sequential modules, calculate scales for each module
     while(moduleIter.hasNext) {
       val currModule = moduleIter.next()
@@ -194,8 +194,8 @@ trait MklInt8Convertible {
       // update previous output
       prevOutputActivity = currModule.output
     }
-
   }
+
 
   /**
    * Scales calculator for ConcatTable module
@@ -206,11 +206,11 @@ trait MklInt8Convertible {
     require(this.isInstanceOf[ConcatTable[Float@unchecked]], this.getClass.getName +
       " is not an instance of ConcatTable.")
     val module: ConcatTable[Float] = this.asInstanceOf[ConcatTable[Float]]
-    val moduleIter = module.modules.iterator
 
     // calculate scales for current ConcatTable module
     this.calcModuleScales(inputActvt, outputActvt)
 
+    val moduleIter = module.modules.iterator
     // Iterate over modules inside ConcatTable, calculate scales for each module
     while (moduleIter.hasNext) {
       val currModule = moduleIter.next()
@@ -219,8 +219,8 @@ trait MklInt8Convertible {
         cvtbModule.calcScales(inputActvt)
       }
     }
-
   }
+
 
   /**
    * Get dimension mask of input
@@ -229,6 +229,7 @@ trait MklInt8Convertible {
   def getInputDimMask(): Int = {
     inputDimMask
   }
+
 
   /**
    * Set dimension mask of input
@@ -239,6 +240,7 @@ trait MklInt8Convertible {
     inputDimMask = mask
   }
 
+
   /**
    * Get dimension mask of output
    * @return outputDimMask field which stores value of output dimension mask
@@ -246,6 +248,7 @@ trait MklInt8Convertible {
   def getOutputDimMask(): Int = {
     outputDimMask
   }
+
 
   /**
    * Set dimension mask of output
@@ -256,6 +259,7 @@ trait MklInt8Convertible {
     outputDimMask = mask
   }
 
+
   /**
    * Get dimension mask of weight
    * @return weightDimMask which stores value of weight mask
@@ -263,6 +267,7 @@ trait MklInt8Convertible {
   def getWeightDimMask(): Int = {
     weightDimMask
   }
+
 
   /**
    * Set dimension mask of weight
@@ -282,6 +287,7 @@ trait MklInt8Convertible {
     inputScalesBuffer.toArray
   }
 
+
   /**
    * Set input scales
    * Clear existing buffer of input scales, and place updated scales into the cleared buffer
@@ -293,6 +299,7 @@ trait MklInt8Convertible {
     inScales.foreach(appendInputScales)
   }
 
+
   /**
    * Get output scales
    * @return field which stores value of output scales
@@ -300,6 +307,7 @@ trait MklInt8Convertible {
   def getOutputScales(): Array[Array[Float]] = {
     outputScalesBuffer.toArray
   }
+
 
   /**
    * Set output scales
@@ -312,6 +320,7 @@ trait MklInt8Convertible {
     outScales.foreach(appendOutputScales)
   }
 
+
   /**
    * Get weight scales
    * @return field which stores value of weight scales
@@ -319,6 +328,7 @@ trait MklInt8Convertible {
   def getWeightScales(): Array[Array[Float]] = {
     weightScalesBuffer.toArray
   }
+
 
   /**
    * Set weight scales
@@ -331,6 +341,7 @@ trait MklInt8Convertible {
     weightScales.foreach(appendWeightScales)
   }
 
+
   /**
    * Append a scale, an array of float, into input scales buffer
    * @param scale value of an input scale to be appended
@@ -339,6 +350,7 @@ trait MklInt8Convertible {
   private def appendInputScales(scale: Array[Float]): Unit = {
     inputScalesBuffer.append(scale)
   }
+
 
   /**
    * Append a scale, an array of float, into output scales buffer
@@ -349,6 +361,7 @@ trait MklInt8Convertible {
     outputScalesBuffer.append(scale)
   }
 
+
   /**
    * Append a scale, an array of float, into weight scales buffer
    * @param scale value of an weight scale to be appended
@@ -357,6 +370,7 @@ trait MklInt8Convertible {
   private def appendWeightScales(scale: Array[Float]): Unit = {
     weightScalesBuffer.append(scale)
   }
+
 
   /**
    * Update input scales at specific index with provided new scale
@@ -368,6 +382,7 @@ trait MklInt8Convertible {
     updateScalesHelper(inputScalesBuffer, scale, index)
   }
 
+
   /**
    * Update output scales at specific index with provided new scale
    * @param scale the new scale
@@ -377,6 +392,7 @@ trait MklInt8Convertible {
   def updateOutputScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(outputScalesBuffer, scale, index)
   }
+
 
   /**
    * Update weight scales at specific index with provided new scale
