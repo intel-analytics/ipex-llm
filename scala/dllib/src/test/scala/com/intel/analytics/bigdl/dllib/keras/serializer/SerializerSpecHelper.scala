@@ -39,6 +39,8 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalCAddTable",
     "com.intel.analytics.zoo.pipeline.api.autograd.InternalParameter",
     "com.intel.analytics.zoo.pipeline.api.autograd.KerasParameter",
+    "com.intel.analytics.zoo.pipeline.api.autograd.KerasConstant",
+    "com.intel.analytics.zoo.pipeline.api.autograd.InternalConstant",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.InternalGetShape",
     "com.intel.analytics.zoo.pipeline.api.net.TFTrainingHelper")
