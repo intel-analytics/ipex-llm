@@ -151,7 +151,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, null input
     val sequential0 = makeSequential()
     sequential0.calcScales(null)
-    sequential0.output.toTensor[Float].isEmpty should be (true)
+    sequential0.output should be (null)
     sequential0.getInputScales().isEmpty should be (true)
     sequential0.getOutputScales().isEmpty should be (true)
     sequential0.getWeightScales().isEmpty should be (true)
@@ -184,24 +184,23 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       concatTable
     }
 
-    // Global mask
+    // Global mask, null input
     val concatTable0 = makeConcatTable()
     concatTable0.setInputDimMask(0)
     concatTable0.setOutputDimMask(0)
     concatTable0.setWeightDimMask(0)
 
     concatTable0.calcScales(null)
-    concatTable0.output.toTensor[Float].isEmpty should be (true)
+    concatTable0.output should be (null)
     concatTable0.getInputScales().isEmpty should be (true)
     concatTable0.getOutputScales().isEmpty should be (true)
     concatTable0.getWeightScales().isEmpty should be (true)
 
+    // Global mask, non-null input
     val concatTable1 = makeConcatTable()
-
     concatTable1.calcScales(inputTensor)
     concatTable1.getInputScales() should be (Array(Array[Float](sampleMax)))
-
-
+    
   }
 
   /**
