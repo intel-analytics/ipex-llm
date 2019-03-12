@@ -151,22 +151,22 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     def makeSequential(): Sequential[Float] = {
       val sequential = Sequential[Float]()
-      sequential.add(Reshape(Array(1, 3, 4)))
-        .add(SpatialConvolution[Float](1, 1, 2, 2).setName("conv1_5x5"))
+      sequential.add(Reshape[Float](Array(1, 28, 28)))
+        .add(SpatialConvolution[Float](1, 6, 5, 5).setName("conv1_5x5"))
         .add(Tanh())
-        .add(SpatialMaxPooling(2, 2, 2, 2))
-        .add(SpatialConvolution[Float](1, 1, 2, 2).setName("conv2_5x5"))
+        .add(SpatialMaxPooling[Float](2, 2, 2, 2))
+        .add(SpatialConvolution[Float](6, 12, 5, 5).setName("conv2_5x5"))
         .add(Tanh())
-        .add(SpatialMaxPooling(2, 2, 2, 2))
-        .add(Reshape(Array(1 * 4 * 4)))
-        .add(Linear[Float](1 * 4 * 4, 2).setName("fc1"))
+        .add(SpatialMaxPooling[Float](2, 2, 2, 2))
+        .add(Reshape[Float](Array(12 * 4 * 4)))
+        .add(Linear[Float](12 * 4 * 4, 100).setName("fc1"))
         .add(Tanh())
-        .add(Linear[Float](2, 10).setName("fc2"))
-        .add(LogSoftMax())
+        .add(Linear[Float](100, 10).setName("fc2"))
+        .add(LogSoftMax[Float]())
       sequential
     }
 
-    val inputTensor = make2DTensor().reshape(Array(1, 3, 4))
+    val inputTensor = Tensor[Float](1, 28, 28).rand()
 
     // Global mask, null input
     val sequential0 = makeSequential()
@@ -179,12 +179,15 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, non-null input
     val sequential1 = makeSequential()
     sequential1.calcScales(inputTensor)
+    sequential1.getInputScales().isEmpty should be (false)
+    sequential1.getInputScales().length should be (1)
+    sequential1.getInputScales()(0).length should be (1)
+    sequential1.getOutputScales().isEmpty should be (false)
     sequential1.getOutputScales().length should be (1)
     sequential1.getOutputScales()(0).length should be (1)
-    sequential1.getWeightScales().length should be (1)
-    sequential1.getWeightScales()(0).length should be (1)
-    val inputScales1 = Array(Array(inputTensor.max()))
-    val outputScales1 = Array(Array(sequential1.output.toTensor[Float].max()))
+    sequential1.getWeightScales().isEmpty should be (true)
+    val inputScales1 = Array(Array(inputTensor.abs().max()))
+    val outputScales1 = Array(Array(sequential1.output.toTensor[Float].abs().max()))
     sequential1.getInputScales() should be (inputScales1)
     sequential1.getOutputScales() should be (outputScales1)
     sequentialValidationHelper(sequential1)
@@ -216,19 +219,26 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     concatTable0.setWeightDimMask(0)
 
     concatTable0.calcScales(null)
-    concatTable0.output should be (null)
     concatTable0.getInputScales().isEmpty should be (true)
     concatTable0.getOutputScales().isEmpty should be (true)
     concatTable0.getWeightScales().isEmpty should be (true)
 
     // Global mask, non-null input
     val concatTable1 = makeConcatTable()
-    val concatOutput1 = concatTable1.output.toTensor[Float]
+
     concatTable1.calcScales(inputTensor)
     concatTable1.getInputScales() should be (Array(Array[Float](sampleMax)))
-    concatTable1.getOutputScales() should be (Array(Array(concatOutput1.abs().max())))
+    concatTable1.getOutputScales() should be (
+      concatTable1.output.toTable.map((pair: (Any, Any)) => {
+        val key = pair._1
+        val value: Tensor[Float] = pair._2.asInstanceOf[Tensor[Float]]
+        Array(value.abs().max())
+      }).toArray
+    )
     concatTableValidationHelper(inputTensor, concatTable1, 0)
+
     concatTable1.saveModule(modelPath, weightPath, true)
+
     val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
       .asInstanceOf[MklInt8Convertible]
     compareModules(concatTable1, loadedModule1)
