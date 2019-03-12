@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
+import breeze.numerics._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.inception.{Inception_Layer_v1, Inception_v1_NoAuxClassifier}
@@ -39,7 +40,7 @@ class BlasToDnnSpec extends BigDLSpecHelper {
   }
 
   override def doAfter(): Unit = {
-    System.setProperty("bigdl.engineType", "mklblas")
+    System.clearProperty("bigdl.engineType")
   }
   "vgg16 blas to dnn" should "work properly" in {
     val batchSize = 2
@@ -87,6 +88,30 @@ class BlasToDnnSpec extends BigDLSpecHelper {
 
     Equivalent.nearequals(outDnn, outBlas, 1e-6) should be(true)
     Equivalent.nearequals(gradInputDnn, gradInputBlas, 1e-6) should be(true)
+  }
+
+  "inception_v1 blas to dnn" should "work properly" in {
+    val batchSize = 2
+    val classNum = 1000
+    RandomGenerator.RNG.setSeed(1)
+
+    val input = Tensor[Float](Array(batchSize, 3, 224, 224)).apply1(_ =>
+      RandomGenerator.RNG.uniform(0.1, 1.0).toFloat)
+    val gradOutput = Tensor[Float](batchSize, classNum).apply1(_ =>
+      RandomGenerator.RNG.uniform(1, 10).toFloat)
+
+    val blas = Inception_v1_NoAuxClassifier.graph(classNum, false).asInstanceOf[StaticGraph[Float]]
+    blas.setInputFormats(Seq(Memory.Format.nchw))
+    blas.setOutputFormats(Seq(Memory.Format.nc))
+    val irBlas = blas.cloneModule().toIRgraph()
+
+    val outBlas = blas.forward(input).toTensor[Float]
+    val gradInputBlas = blas.backward(input, gradOutput).toTensor[Float]
+
+    val outDnn = irBlas.forward(input).toTensor[Float]
+    val gradInputDnn = irBlas.backward(input, gradOutput).toTensor[Float]
+
+    Equivalent.nearequals(outDnn, outBlas, 1e-6) should be(true)
   }
 
   "resnet50 blas to dnn" should "work properly" in {
