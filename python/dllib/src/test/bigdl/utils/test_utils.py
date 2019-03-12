@@ -155,6 +155,21 @@ class ZooTestCase(TestCase):
         self.compare_output_and_grad_input(model, loaded_model, input_data, rtol, atol)
         os.remove(tmp_path)
 
+    def assert_tfpark_model_save_load(self, model, input_data, rtol=1e-6, atol=1e-6):
+        model_class = model.__class__
+        tmp_path = create_tmp_path() + ".h5"
+        model.save_model(tmp_path)
+        loaded_model = model_class.load_model(tmp_path)
+        assert isinstance(loaded_model, model_class)
+        # Calling predict will remove the impact of dropout.
+        output1 = model.predict(input_data)
+        output2 = loaded_model.predict(input_data, distributed=True)
+        if isinstance(output1, list):
+            self.assert_list_allclose(output1, output2, rtol, atol)
+        else:
+            self.assert_allclose(output1, output2, rtol, atol)
+        os.remove(tmp_path)
+
     def compare_output_and_grad_input(self, model1, model2, input_data, rtol=1e-6, atol=1e-6):
         # Set seed in case of random factors such as dropout.
         rng = RNG()
