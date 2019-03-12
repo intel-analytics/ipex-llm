@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.optim.Optimizer.{saveModel, saveOptimMethod}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.intermediate.IRGraph
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Table}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
@@ -140,7 +141,7 @@ abstract class AbstractOptimizer {
               val miniBatch = batch.slice(offset, length)
               val input = miniBatch.getInput()
               val target = miniBatch.getTarget()
-              if (Engine.getEngineType() == MklDnn) {
+              if (Engine.getEngineType() == MklDnn && !workingModels(b).isInstanceOf[IRGraph[T]]) {
                 Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
                   workingModels(b).forward(input)
                 }))
