@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.{Sequential => Seq}
+import com.intel.analytics.bigdl.nn.{MklInt8Convertible, Sequential => Seq}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
-class Sequential extends MklDnnContainer {
+class Sequential extends MklDnnContainer with MklInt8Convertible {
 
   val fuseConvBn = System.getProperty("bigdl.mkldnn.fusion.convbn", "false").toBoolean
   val fuseBnRelu = System.getProperty("bigdl.mkldnn.fusion.bnrelu", "false").toBoolean
@@ -368,6 +368,7 @@ class Sequential extends MklDnnContainer {
       (null, null)
     }
   }
+
 
   override def toString(): String = {
     val tab = "  "
