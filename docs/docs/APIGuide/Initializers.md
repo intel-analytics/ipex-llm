@@ -315,7 +315,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val weightInitMethod = BilinearFiller
-val biasInitMethod - Zeros
+val biasInitMethod = Zeros
 val model = SpatialFullConvolution(2, 3, 2, 2).setName("sfconv")
 model.setInitMethod(weightInitMethod, biasInitMethod)
 println(model.getParametersTable().get("sfconv").get)

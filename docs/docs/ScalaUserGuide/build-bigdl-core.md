@@ -1,5 +1,5 @@
 BigDL-core provides a lot of native methods including math processing routines,
-quantized operation and so on. It will increase the performance of neuroal
+quantized operation and so on. It will increase the performance of neural
 networks. The math processing routines will call [Intel MKL](https://software.intel.com/en-us/mkl),
 including gemm, add operations and so on.
 

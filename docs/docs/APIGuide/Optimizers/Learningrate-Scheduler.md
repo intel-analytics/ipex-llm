@@ -17,8 +17,9 @@ A learning rate decay policy, where the effective learning rate follows a polyno
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.optim.SGD._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
 

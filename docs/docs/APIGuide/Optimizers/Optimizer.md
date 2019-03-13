@@ -71,7 +71,7 @@ optimizer.setValidation(
   dataset: DataSet[MiniBatch[T]],
   vMethods : Array[ValidationMethod[T])
 ```
-`trigger`: how often to evaluation validation set.  
+`trigger`: how often to evaluate validation set.  
 `dataset`: validate data set in type of DataSet[MiniBatch].  
 `vMethods`: a set of ValidationMethod.  
  <br>
@@ -82,7 +82,7 @@ optimizer.setValidation(
   vMethods: Array[ValidationMethod[T]],
   batchSize: Int)
 ```
-`trigger`: how often to evaluation validation set.  
+`trigger`: how often to evaluate validation set.  
 `sampleRDD`: validate data set in type of RDD[Sample].  
 `vMethods`: a set of ValidationMethod.  
 `batchSize`: size of mini batch.
@@ -132,7 +132,7 @@ Function setModel will set a new model to the optimizer.
 `newModel`: a model will replace the old model in optimizer.  
  <br>
  ```scala
-optimizer.setModelAndOptimMethods(newModel: Module[T], newOptimMethods: Map[String, OptimMethod[T]])
+ optimizer.setModelAndOptimMethods(newModel: Module[T], newOptimMethods: Map[String, OptimMethod[T]])
 ```
 Function setModelAndOptimMethods will set a new model and new OptimMethods to the optimizer.  
 `newModel`: a model will replace the old model in optimizer.  
@@ -155,7 +155,7 @@ the overloaded set of methods `setTrainData` allows user to replace the training
 `batchSize`: mini batch size.
 `featurePaddingParam`: feature padding strategy.
 `labelPaddingParam`: label padding strategy.
-`miniBatch`: An User-Defined MiniBatch implemenation.
+`miniBatch`: A User-Defined MiniBatch implemenation.
  <br>
 
 ```scala
@@ -175,7 +175,7 @@ Function setState is used to set a state(learning rate, epochs...) to the `optim
 optimizer.setOptimMethod(method : OptimMethod[T])
 ```
 Function setOptimMethod is used to set an optimization method in this `optimizer`.  
-`method`: the method the optimize the model in this `optimizer`.  
+`method`: the method to optimize the model in this `optimizer`.  
  <br>
  ```scala
 optimizer.setOptimMethods(method: Map[String, OptimMethod[T]])
