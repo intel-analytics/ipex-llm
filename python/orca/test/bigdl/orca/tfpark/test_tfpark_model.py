@@ -23,7 +23,7 @@ import numpy as np
 from zoo.tfpark import KerasModel, TFDataset
 
 
-class TestTFPark(ZooTestCase):
+class TestTFParkModel(ZooTestCase):
 
     def create_model(self):
         data = tf.keras.layers.Input(shape=[10])
