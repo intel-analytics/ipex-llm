@@ -313,7 +313,7 @@ trait MklInt8Convertible {
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask)
+          module.asInstanceOf[MklInt8Convertible].setOutputDimMask(mask)
         }
       })
     }
@@ -339,7 +339,7 @@ trait MklInt8Convertible {
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask)
+          module.asInstanceOf[MklInt8Convertible].setWeightDimMask(mask)
         }
       })
     }
