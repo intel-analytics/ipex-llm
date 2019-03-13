@@ -24,7 +24,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 /**
- * Trait which provides MKL-DNN functionality to convert FP32 model to INT8 model
+ * Trait which provides MKL-DNN functionality to convert from FP32 to INT8
  */
 trait MklInt8Convertible {
   // input dimension mask
@@ -44,11 +44,12 @@ trait MklInt8Convertible {
   /**
    * Calculate the required scales for converting int8 modules
    * Currently there are four type of modules should be supported:
-   * 1) Linear: calculate scales for input, output and weight
-   * 2) Spatial Convolution: calculate scales for input, output and weight
-   * 3) Sequential: calculate scales for input, output as well as the scales of submodules
-   * 4) ConcatTable: calculate scales for input, output as well as the scales of submodules
-   * @param inActivity
+   * 1) Graph: calculate scales for input and output
+   * 2) Linear: calculate scales for input, output and weight
+   * 3) Spatial Convolution: calculate scales for input, output and weight
+   * 4) Sequential: calculate scales for input, output as well as the scales of submodules
+   * 5) ConcatTable: calculate scales for input, output as well as the scales of submodules
+   * @param inActivity input activity
    */
   private[bigdl]def calcScales(inputActvt: Activity): Unit = {
 
@@ -221,6 +222,13 @@ trait MklInt8Convertible {
     }
   }
 
+  /**
+   * Scales calculator for Graph module
+   * Submodules inside Graph are traversed based on its topological sort
+   * The order can obtain from by calling getForwardExecutions
+   * @param inputActvt input activity of the graph module
+   * @param outputActvt output activity of the graph module
+   */
   private def calcGraphScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     require(this.isInstanceOf[Graph[Float@unchecked]], this.getClass.getName +
     " is not an instance of Graph[Float]")
@@ -232,9 +240,13 @@ trait MklInt8Convertible {
     val module: Graph[Float] = this.asInstanceOf[Graph[Float]]
     val outputNodes = module.getForwardExecutions()
     var i = 0
+    // traverse through all the sub-modules
     while(i < outputNodes.length) {
+      // get current sub-module
       val currNode = outputNodes(i)
+      // get the input activity of current sub-module
       val currInputActvt = module.findInput(currNode, inputActvt)
+      // calculate scales if current sub-module is int8 convertible
       if (currNode.element.isInstanceOf[MklInt8Convertible]) {
         currNode.element.asInstanceOf[MklInt8Convertible].calcScales(currInputActvt)
       }
