@@ -1451,5 +1451,31 @@ object TensorNumericMath {
         a == b
       }
     }
+
+    implicit object NumericByte extends UndefinedTensorNumeric[Byte]("Byte") {
+      override def getType(): TensorDataType = ByteType
+
+      override def plus(x: Byte, y: Byte): Byte = (x + y).toByte
+
+      override def minus(x: Byte, y: Byte): Byte = (x - y).toByte
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): Byte =
+        c.toByte(k)
+
+      override def axpy(n: Int, da: Byte, dx: Array[Byte], _dx_offset: Int,
+        incx: Int, dy: Array[Byte],
+        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = (dx(_dx_offset + i) + dy(_dy_offset + i)).toByte
+          i += 1
+        }
+      }
+
+      override def nearlyEqual(a: Byte, b: Byte, epsilon: Double): Boolean = {
+        a == b
+      }
+    }
   }
 }
