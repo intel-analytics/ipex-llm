@@ -817,6 +817,8 @@ object BooleanType extends TensorDataType
 
 object CharType extends TensorDataType
 
+object ByteType extends TensorDataType
+
 object StringType extends TensorDataType
 
 object IntType extends TensorDataType
