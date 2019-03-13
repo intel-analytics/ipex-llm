@@ -28,7 +28,19 @@ import scala.reflect._
  */
 private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
 
-  require(classTag[T] == ClassTag.Float, "DnnStorage only support float")
+  private def checkIsInstanceOf(that: Any): Boolean = {
+    scala.reflect.classTag[T] == that
+  }
+
+  private val bytes = if (checkIsInstanceOf(ClassTag.Float)) {
+    DnnStorage.FLOAT_BYTES
+  } else if (checkIsInstanceOf(ClassTag.Byte)) {
+    DnnStorage.INT8_BYTES
+  } else if (checkIsInstanceOf(ClassTag.Int)) {
+    DnnStorage.INT_BYTES
+  } else {
+    throw new UnsupportedOperationException(s"Unsupported type for storage")
+  }
 
   private var _isReleased: Boolean = false
 
@@ -53,11 +65,12 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   : this.type = {
     source match {
       case s: ArrayStorage[T] =>
+        require(checkIsInstanceOf(ClassTag.Float), s"copy from float storage not supported")
         Memory.CopyArray2Ptr(s.array().asInstanceOf[Array[Float]], sourceOffset,
-          ptr.address, offset, length, DnnStorage.FLOAT_BYTES)
+          ptr.address, offset, length, bytes)
       case s: DnnStorage[T] =>
         Memory.CopyPtr2Ptr(s.ptr.address, sourceOffset, ptr.address, offset, length,
-          DnnStorage.FLOAT_BYTES)
+          bytes)
       case _ =>
         throw new UnsupportedOperationException("Only support copy from ArrayStorage or DnnStorage")
     }
@@ -83,7 +96,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
    * Release the native array, the storage object is useless
    */
   def release(): Unit = synchronized {
-    if (!this.isReleased()) {
+    if (!this.isReleased() && ptr.address != 0L) {
       Memory.AlignedFree(ptr.address)
       DnnStorage.checkAndSet(ptr.address)
       _isReleased = true
@@ -94,8 +107,8 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   def isReleased(): Boolean = _isReleased
 
   private def allocate(capacity: Int): Long = {
-    require(capacity > 0, s"capacity should not be larger than 0")
-    val ptr = Memory.AlignedMalloc(capacity * DnnStorage.FLOAT_BYTES, DnnStorage.CACHE_LINE_SIZE)
+    require(capacity > 0, s"capacity should be larger than 0")
+    val ptr = Memory.AlignedMalloc(capacity * bytes, DnnStorage.CACHE_LINE_SIZE)
     require(ptr != 0L, s"allocate native aligned memory failed")
     _isReleased = false
     DnnStorage.add(ptr)
@@ -132,6 +145,8 @@ private[bigdl] class Pointer(val address: Long)
 object DnnStorage {
   private[tensor] val CACHE_LINE_SIZE = System.getProperty("bigdl.cache.line", "64").toInt
   private[tensor] val FLOAT_BYTES: Int = 4
+  private[tensor] val INT8_BYTES: Int = 1
+  private[tensor] val INT_BYTES: Int = 4
 
   import java.util.concurrent.ConcurrentHashMap
   private val nativeStorages: ConcurrentHashMap[Long, Boolean] = new ConcurrentHashMap()
