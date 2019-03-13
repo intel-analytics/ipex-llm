@@ -198,6 +198,29 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
       .asInstanceOf[MklInt8Convertible]
     compareModules(sequential1, loadedModule1)
+
+    val sequential2 = makeSequential()
+    sequential2.getInputDimMask() should be (0)
+    sequential2.getOutputDimMask() should be (0)
+    sequential2.getWeightDimMask() should be (0)
+    sequential2.modules.filter(_.isInstanceOf[MklInt8Convertible]).foreach(x => {
+      x.asInstanceOf[MklInt8Convertible].getInputDimMask() should be(0)
+      x.asInstanceOf[MklInt8Convertible].getOutputDimMask() should be(0)
+      x.asInstanceOf[MklInt8Convertible].getWeightDimMask() should be(0)
+    })
+
+    sequential2.setInputDimMask(2)
+    sequential2.setOutputDimMask(2)
+    sequential2.setWeightDimMask(2)
+
+    sequential2.getInputDimMask() should be (2)
+    sequential2.getOutputDimMask() should be (2)
+    sequential2.getWeightDimMask() should be (2)
+    sequential2.modules.filter(_.isInstanceOf[MklInt8Convertible]).foreach(x => {
+      x.asInstanceOf[MklInt8Convertible].getInputDimMask() should be(2)
+      x.asInstanceOf[MklInt8Convertible].getOutputDimMask() should be(2)
+      x.asInstanceOf[MklInt8Convertible].getWeightDimMask() should be(2)
+    })
   }
 
 

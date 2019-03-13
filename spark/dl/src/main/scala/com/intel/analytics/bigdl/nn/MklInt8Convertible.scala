@@ -282,6 +282,15 @@ trait MklInt8Convertible {
    */
   def setInputDimMask(mask: Int) : Unit = {
     inputDimMask = mask
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]]) {
+      val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
+      val modules = container.modules
+      modules.foreach(module => {
+        if (module.isInstanceOf[MklInt8Convertible]) {
+          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask)
+        }
+      })
+    }
   }
 
   /**
@@ -299,6 +308,15 @@ trait MklInt8Convertible {
    */
   def setOutputDimMask(mask: Int): Unit = {
     outputDimMask = mask
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]]) {
+      val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
+      val modules = container.modules
+      modules.foreach(module => {
+        if (module.isInstanceOf[MklInt8Convertible]) {
+          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask)
+        }
+      })
+    }
   }
 
   /**
@@ -316,6 +334,15 @@ trait MklInt8Convertible {
    */
   def setWeightDimMask(mask: Int): Unit = {
     weightDimMask = mask
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]]) {
+      val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
+      val modules = container.modules
+      modules.foreach(module => {
+        if (module.isInstanceOf[MklInt8Convertible]) {
+          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask)
+        }
+      })
+    }
   }
 
   /**
