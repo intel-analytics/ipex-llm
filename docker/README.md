@@ -7,7 +7,7 @@
 * git
 * maven
 * Oracle jdk 1.8.0_152 (in /opt/jdk1.8.0_152)
-* python 2.7.6
+* python 2.7.6 or 3.6.7
 * pip
 * numpy
 * scipy
@@ -45,6 +45,13 @@
         --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
         --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
         --rm -t intelanalytics/analytics-zoo:default .
+
+### If you need python 3 to build the image:
+
+    sudo docker build \
+        --build-arg PY_VERSION_3=YES \
+        --rm -t intelanalytics/analytics-zoo:default-py3 .
+
 
 ### You can also specify the ANALYTICS_ZOO_VERSION and SPARK_VERSION to build a specific Analytics-Zoo image:
 
