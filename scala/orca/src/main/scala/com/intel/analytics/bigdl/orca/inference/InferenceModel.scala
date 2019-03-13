@@ -16,14 +16,12 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import java.lang.{Float => JFloat, Integer => JInt}
 import java.util
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 
 import scala.collection.JavaConverters._
@@ -41,7 +39,8 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * loads a bigdl, analytics-zoo model
-   * @param modelPath the file path of the model
+   *
+   * @param modelPath  the file path of the model
    * @param weightPath the file path of the weights
    */
   def doLoad(modelPath: String, weightPath: String = null): Unit = {
@@ -52,7 +51,8 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * loads a caffe model
-   * @param modelPath the path of the prototxt file
+   *
+   * @param modelPath  the path of the prototxt file
    * @param weightPath the path of the caffemodel file
    */
   def doLoadCaffe(modelPath: String, weightPath: String): Unit = {
@@ -63,6 +63,7 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * loads a TF model as TFNet
+   *
    * @param modelPath the path of the tensorflow model file
    */
   def doLoadTF(modelPath: String): Unit = {
@@ -71,10 +72,11 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * loads a TF model as TFNet
-   * @param modelPath the path of the tensorflow model
+   *
+   * @param modelPath                 the path of the tensorflow model
    * @param intraOpParallelismThreads the num of intraOpParallelismThreads
    * @param interOpParallelismThreads the num of interOpParallelismThreads
-   * @param usePerSessionThreads whether to perSessionThreads
+   * @param usePerSessionThreads      whether to perSessionThreads
    */
   def doLoadTF(modelPath: String,
                intraOpParallelismThreads: Int,
@@ -89,6 +91,7 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * loads a TF model as OpenVINO
+   *
    * @param modelPath the path of the tensorflow model
    * @param modelType the type of the tensorflow model,
    *                  please refer to [[ModelType]]
@@ -107,8 +110,8 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
   /**
    * loads a TF model as OpenVINO
    *
-   * @param modelPath the path of the tensorflow model
-   * @param pipelineConfigPath the path of the pipeline configure file
+   * @param modelPath            the path of the tensorflow model
+   * @param pipelineConfigPath   the path of the pipeline configure file
    * @param extensionsConfigPath the path of the extensions configure file
    */
   def doLoadTF(modelPath: String,
@@ -137,7 +140,7 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
   def doLoadTF(modelPath: String,
                modelType: String,
                pipelineConfigPath: String,
-               extensionsConfigPath: String) : Unit = {
+               extensionsConfigPath: String): Unit = {
     doLoadTensorflowModelAsOpenVINO(
       modelPath,
       modelType,
@@ -149,7 +152,8 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * loads a openvino IR
-   * @param modelPath the path of openvino ir xml file
+   *
+   * @param modelPath  the path of openvino ir xml file
    * @param weightPath the path of openvino ir bin file
    */
   def doLoadOpenVINO(modelPath: String, weightPath: String): Unit = {
@@ -191,7 +195,8 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * reloads the bigdl, analytics-zoo model
-   * @param modelPath the file path of the model
+   *
+   * @param modelPath  the file path of the model
    * @param weightPath the file path of the weights
    */
   def doReload(modelPath: String, weightPath: String): Unit = {
@@ -216,6 +221,7 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * predicts the inference result
+   *
    * @param inputs the input tensor with batch
    * @return the output tensor with batch
    */
@@ -229,6 +235,7 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   /**
    * predicts the inference result
+   *
    * @param inputActivity the input activity
    * @return the output activity
    */
@@ -279,23 +286,6 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
     require(this.supportedConcurrentNum > 0, "supported concurrent number should > 0")
     val models = this.originalModel.copy(supportedConcurrentNum)
     models.map(this.modelQueue.offer(_))
-  }
-
-  @throws(classOf[IOException])
-  private def writeObject(out: ObjectOutputStream): Unit = {
-    out.writeInt(supportedConcurrentNum)
-    out.writeObject(originalModel)
-  }
-
-  @throws(classOf[IOException])
-  private def readObject(in: ObjectInputStream): Unit = {
-    System.setProperty("bigdl.localMode", System.getProperty("bigdl.localMode", "true"))
-    System.setProperty("bigdl.coreNumber", System.getProperty("bigdl.coreNumber", "1"))
-    Engine.init
-    this.supportedConcurrentNum = in.readInt
-    this.originalModel = in.readObject.asInstanceOf[FloatModel]
-    this.modelQueue = new LinkedBlockingQueue[AbstractModel](supportedConcurrentNum)
-    offerModelQueue()
   }
 
   def getOriginalModel: AbstractModel = originalModel
