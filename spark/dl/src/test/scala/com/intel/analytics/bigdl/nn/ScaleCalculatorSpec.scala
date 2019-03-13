@@ -294,7 +294,6 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val loadedGraph1 = Module.loadModule[Float](modelPath, weightPath)
       .asInstanceOf[MklInt8Convertible]
-    
     compareModules(graph1, loadedGraph1)
   }
 
