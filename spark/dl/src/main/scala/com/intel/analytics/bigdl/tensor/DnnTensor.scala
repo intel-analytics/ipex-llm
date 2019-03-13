@@ -180,7 +180,7 @@ class DnnTensor[T: ClassTag](
         val array = new Array[Int](nElement())
         Memory.CopyPtr2IntArray(this.storageAddress(), 0, array, 0, nElement(), 4)
         array.mkString("\t")
-      case _ => "unknown string"
+      case _ => "unknown type"
     }
   }
 }
