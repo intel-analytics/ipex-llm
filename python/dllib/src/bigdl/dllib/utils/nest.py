@@ -21,7 +21,11 @@ def flatten(seq):
         return seq
 
     if isinstance(seq, tuple):
-        return flatten(seq[0]) + flatten(seq[1])
+        seq = list(seq)
+        results = []
+        for item in seq:
+            results.extend(flatten(item))
+        return results
 
     if isinstance(seq, dict):
         sorted_keys = sorted(seq.keys())
