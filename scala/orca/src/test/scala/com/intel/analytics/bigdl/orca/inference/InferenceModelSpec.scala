@@ -16,10 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io._
 import java.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.zoo.common.CheckedObjectInputStream
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class TestAbstractInferenceModel(supportedConcurrentNum: Integer = 1)
@@ -197,7 +198,7 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     assert(bytes4AModel.length < bytes4FModel.length)
 
     val bis4AModel = new ByteArrayInputStream(bytes4AModel)
-    val in4AModel = new ObjectInputStream(bis4AModel)
+    val in4AModel = new CheckedObjectInputStream(classOf[TestAbstractInferenceModel], bis4AModel)
     val aModel2 = in4AModel.readObject.asInstanceOf[TestAbstractInferenceModel]
     in4AModel.close()
 

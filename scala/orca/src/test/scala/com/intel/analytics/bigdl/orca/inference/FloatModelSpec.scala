@@ -16,10 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutputStream}
 import java.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.zoo.common.CheckedObjectInputStream
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
@@ -138,8 +139,9 @@ class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     bos.close()
 
     val bis = new ByteArrayInputStream(bytes)
-    val in = new ObjectInputStream(bis)
+    val in = new CheckedObjectInputStream(classOf[FloatModel], bis)
     val floatInferenceModel2 = in.readObject.asInstanceOf[FloatModel]
+
     assert(floatInferenceModel.model == floatInferenceModel2.model)
     in.close()
   }
