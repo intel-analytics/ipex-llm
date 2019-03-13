@@ -21,6 +21,13 @@ message BigDLModule
     Shape outputShape = 14; //output shape
     bool hasParameters  = 15; // indicator if module has parameters
     repeated BigDLTensor parameters = 16; // parameters, e.g., weight and bias
+    bool isMklInt8Enabled = 17;
+    int32 inputDimMasks = 18;
+    repeated AttrValue inputScales = 19;
+    int32 outputDimMasks = 20;
+    repeated AttrValue outputScales = 21;
+    int32 weightDimMasks = 22;
+    repeated AttrValue weightScales = 23;
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;
