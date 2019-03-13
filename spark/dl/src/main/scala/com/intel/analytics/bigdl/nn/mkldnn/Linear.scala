@@ -301,9 +301,6 @@ class Linear(
     List(weight, bias, gradWeight, gradBias).foreach(_.release())
   }
 
-  def getWeight(): TensorMMap = {
-    weight
-  }
 }
 
 object Linear {

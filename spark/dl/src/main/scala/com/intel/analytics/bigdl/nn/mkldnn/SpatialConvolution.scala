@@ -467,9 +467,6 @@ class SpatialConvolution(
     if (weightForBackward != null) { weightForBackward.release() }
   }
 
-  def getWeight(): TensorMMap = {
-    weight
-  }
 }
 
 object SpatialConvolution {

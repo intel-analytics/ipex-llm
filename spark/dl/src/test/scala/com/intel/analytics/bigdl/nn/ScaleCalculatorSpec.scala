@@ -20,8 +20,9 @@ package com.intel.analytics.bigdl.nn
 import java.io.File
 import java.util.UUID
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -242,6 +243,77 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val loadedModule1 = Module.loadModule[Float](modelPath, weightPath)
       .asInstanceOf[MklInt8Convertible]
     compareModules(concatTable1, loadedModule1)
+  }
+
+
+  "Calculating scales" should "work correct for Graph Module" in {
+    def makeTestingGraph(): Graph[Float] = {
+      val input = Reshape(Array(1, 28, 28)).inputs()
+      val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1_5x5").inputs(input)
+      val tanh1 = Tanh().inputs(conv1)
+      val pool1 = SpatialMaxPooling(2, 2, 2, 2).inputs(tanh1)
+      val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2_5x5").inputs(pool1)
+      val tanh2 = Tanh().inputs(conv2)
+      val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(tanh2)
+      val reshape = Reshape(Array(12 * 4 * 4)).inputs(pool2)
+      val fc1 = Linear(12 * 4 * 4, 100).setName("fc1").inputs(reshape)
+      val tanh3 = Tanh().inputs(fc1)
+      val fc2 = Linear(100, 10).setName("fc2").inputs(tanh3)
+      val output = LogSoftMax().inputs(fc2)
+
+      Graph(input, output)
+    }
+
+    val inputTensor = Tensor(1, 28, 28).rand()
+
+    // global mask, null input
+    val graph0 = makeTestingGraph()
+    graph0.setInputDimMask(0)
+    graph0.setOutputDimMask(0)
+    graph0.calcScales(null)
+    graph0.getInputDimMask() should be (0)
+    graph0.getOutputDimMask() should be (0)
+    graph0.getInputScales().isEmpty should be (true)
+    graph0.getOutputScales().isEmpty should be (true)
+
+    // global mask, non-null input
+    val graph1 = makeTestingGraph()
+    graph1.setInputDimMask(0)
+    graph1.setOutputDimMask(0)
+    graph1.calcScales(inputTensor)
+    val graphOutput1 = graph1.output
+
+    graph1.getInputDimMask() should be (0)
+    graph1.getOutputDimMask() should be (0)
+    graphOutput1 should not be (null)
+    graph1.getInputScales() should be (Array(Array(inputTensor.abs().max())))
+    graph1.getOutputScales() should be (Array(Array(graphOutput1.toTensor.abs().max())))
+    graphValidationHelper(graph1, inputTensor)
+
+
+  }
+
+
+  private def graphValidationHelper(graph: Graph[Float], inputActvt: Activity): Unit = {
+    val nextNodes = graph.getForwardExecutions()
+    var i = 0
+    while (i < nextNodes.length) {
+      val currNode = nextNodes(i)
+      val currInputActvt = graph.findInput(currNode, inputActvt)
+      val currOutputActvt = currNode.element.output
+      if (currNode.element.isInstanceOf[MklInt8Convertible]) {
+        val currNodeInt8 = currNode.element.asInstanceOf[MklInt8Convertible]
+        val currInputScales = currNodeInt8.getInputScales()
+        val currOutputScales = currNodeInt8.getOutputScales()
+        currNodeInt8.getInputDimMask() should be (0)
+        currNodeInt8.getOutputDimMask() should be (0)
+        currNodeInt8.getInputScales() should be (Array(Array(currInputActvt.toTensor.abs().max())))
+        currNodeInt8.getOutputScales() should be (
+          Array(Array(currOutputActvt.toTensor.abs().max()))
+        )
+      }
+      i += 1
+    }
   }
 
 
