@@ -29,7 +29,8 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends DynamicContainer[Activity, Activity, T] {
+(implicit ev: TensorNumeric[T])
+  extends DynamicContainer[Activity, Activity, T] with MklInt8Convertible {
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0

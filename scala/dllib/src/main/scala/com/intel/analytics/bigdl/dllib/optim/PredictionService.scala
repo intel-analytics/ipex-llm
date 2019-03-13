@@ -347,6 +347,7 @@ object PredictionService {
         DataConverter.getAttributeValue[Boolean](dsc, attr)
       case DataType.CHAR =>
         DataConverter.getAttributeValue[Char](dsc, attr)
+      case _ => throw new UnsupportedOperationException(s"Unsupported DataType($dataType)!")
     }
   }
 

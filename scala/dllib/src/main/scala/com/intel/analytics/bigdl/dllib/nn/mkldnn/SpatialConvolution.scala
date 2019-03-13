@@ -46,7 +46,7 @@ class SpatialConvolution(
   val initGradBias: Tensor[Float] = null,
   val withBias: Boolean = true,
   val format: DataFormat = DataFormat.NCHW
-) extends MklDnnLayer with Initializable with Serializable {
+) extends MklDnnLayer with Initializable with Serializable with MklInt8Convertible {
   private val weightShape = if (nGroup == 1) {
     Array(nOutputPlane, nInputPlane, kernelH, kernelW)
   } else {
@@ -466,6 +466,7 @@ class SpatialConvolution(
     List(weight, bias, gradWeight, gradBias).foreach(_.release())
     if (weightForBackward != null) { weightForBackward.release() }
   }
+
 }
 
 object SpatialConvolution {

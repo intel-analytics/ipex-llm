@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
+import com.intel.analytics.bigdl.nn.{InitializationMethod, MklInt8Convertible, RandomUniform, VariableFormat}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor._
 
@@ -32,7 +32,8 @@ class Linear(
   private val initWeight: Tensor[Float] = null,
   private val initBias: Tensor[Float] = null,
   private val initGradWeight: Tensor[Float] = null,
-  private val initGradBias: Tensor[Float] = null) extends MklDnnLayer with Initializable {
+  private val initGradBias: Tensor[Float] = null)
+  extends MklDnnLayer with Initializable with MklInt8Convertible {
 
   private[mkldnn] val weight: TensorMMap = new TensorMMap(Array(outputSize, inputSize))
   private[mkldnn] val bias: TensorMMap = new TensorMMap(Array(outputSize))
@@ -299,6 +300,7 @@ class Linear(
     super.release()
     List(weight, bias, gradWeight, gradBias).foreach(_.release())
   }
+
 }
 
 object Linear {

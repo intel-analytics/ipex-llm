@@ -51,7 +51,8 @@ class Linear[T: ClassTag](
   private val initBias: Tensor[T] = null,
   private val initGradWeight: Tensor[T] = null,
   private val initGradBias: Tensor[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+)(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] with Initializable with MklInt8Convertible {
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] =
