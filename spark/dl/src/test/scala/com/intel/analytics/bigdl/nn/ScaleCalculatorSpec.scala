@@ -290,7 +290,12 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     graph1.getOutputScales() should be (Array(Array(graphOutput1.toTensor.abs().max())))
     graphValidationHelper(graph1, inputTensor)
 
+    graph1.saveModule(modelPath, weightPath, true)
 
+    val loadedGraph1 = Module.loadModule[Float](modelPath, weightPath)
+      .asInstanceOf[MklInt8Convertible]
+    
+    compareModules(graph1, loadedGraph1)
   }
 
 
