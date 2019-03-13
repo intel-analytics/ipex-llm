@@ -21,6 +21,7 @@ from zoo.tfpark.text import TextKerasModel
 class IntentEntity(TextKerasModel):
     """
     A multi-task model used for joint intent extraction and slot filling.
+
     This model has two inputs:
     - word indices of shape (batch, sequence_length)
     - character indices of shape (batch, sequence_length, word_length)
@@ -30,9 +31,9 @@ class IntentEntity(TextKerasModel):
 
     :param num_intents: Positive int. The number of intent classes to be classified.
     :param num_entities: Positive int. The number of slot labels to be classified.
-    :param word_length: Positive int. The max word length in characters.
     :param word_vocab_size: Positive int. The size of the word dictionary.
     :param char_vocab_size: Positive int. The size of the character dictionary.
+    :param word_length: Positive int. The max word length in characters. Default is 12.
     :param word_emb_dim: Positive int. The dimension of word embeddings. Default is 100.
     :param char_emb_dim: Positive int. The dimension of character embeddings. Default is 30.
     :param char_lstm_dim: Positive int. The hidden size of character feature Bi-LSTM layer.
@@ -42,8 +43,8 @@ class IntentEntity(TextKerasModel):
     :param optimizer: Optimizer to train the model.
                       If not specified, it will by default to be tf.train.AdamOptimizer().
     """
-    def __init__(self, num_intents, num_entities, word_length, word_vocab_size,
-                 char_vocab_size, word_emb_dim=100, char_emb_dim=30,
+    def __init__(self, num_intents, num_entities, word_vocab_size,
+                 char_vocab_size, word_length=12, word_emb_dim=100, char_emb_dim=30,
                  char_lstm_dim=30, tagger_lstm_dim=100, dropout=0.2, optimizer=None):
         super(IntentEntity, self).__init__(intent_models.MultiTaskIntentModel(use_cudnn=False),
                                            optimizer,
