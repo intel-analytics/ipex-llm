@@ -87,8 +87,8 @@ class DnnGraph(
       node.element.forward(nodeInput)
       i += 1
     }
-    output = dummyOutput.element.output
-    getRealOutput(input, output)
+    output = getRealOutput(input, dummyOutput.element.output)
+    output
   }
 
   override def backward(input: Activity, gradOutput: Activity): Activity = {
@@ -112,8 +112,8 @@ class DnnGraph(
       }
       i += 1
     }
-    gradInput = fetchModelGradInput()
-    getRealOutput(input, gradInput)
+    gradInput = getRealOutput(input, fetchModelGradInput())
+    gradInput
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
@@ -390,10 +390,29 @@ class DnnGraph(
     }
   }
 
+  /**
+   * fuse some layers when doing inference
+   * first fuse layers in sequence, mainly relu with bn/conv, conv with bn.
+   * after that, fuse sum operation.
+   */
+  private def fusion(): Unit = {
+    if (!this.train) {
+      for (j <- 0 to 1) {
+        var i = forwardExecution.length - 1
+        while (i >= 0) {
+          if (j == 0) Fusion.fuseModule(forwardExecution(i))
+          if (j == 1) Fusion.fuseCAdd(forwardExecution(i))
+          i -= 1
+        }
+      }
+    }
+  }
+
   // init forward primitives
-  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     skipInitFwdPrimitives()
+    fusion()
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
     for (i <- 0 until forwardExecution.length) {
@@ -414,7 +433,7 @@ class DnnGraph(
   }
 
   // init updateGradInput primitives
-  override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
@@ -434,7 +453,7 @@ class DnnGraph(
   }
 
   // init acc primitives
-  override private[mkldnn] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
     : Array[MemoryData] = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null

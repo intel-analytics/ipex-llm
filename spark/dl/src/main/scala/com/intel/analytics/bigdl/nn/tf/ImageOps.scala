@@ -182,6 +182,7 @@ private[bigdl] class DecodeRaw[T: ClassTag](val outType: DataType,
       case DataType.DT_INT64 => decodeInt64(input, buffer.asLongBuffer().capacity())
       case DataType.DT_FLOAT => decodeFloat(input, buffer.asFloatBuffer().capacity())
       case DataType.DT_DOUBLE => decodeDouble(input, buffer.asDoubleBuffer().capacity())
+      case _ => throw new IllegalArgumentException(s"$outType are not supported")
     }
     output
   }
