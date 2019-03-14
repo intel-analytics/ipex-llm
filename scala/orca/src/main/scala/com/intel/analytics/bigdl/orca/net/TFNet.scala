@@ -619,6 +619,7 @@ object TFNet {
         val len = in.readInt()
         require(len != 0, "GraphDef length should not be zero," +
           "please set logging level to debug for more information")
+        assert(len >= 0, "GraphDef length should be an non-negative integer")
         val graphDef = new Array[Byte](len)
         timing("reading graph def from stream") {
           var numOfBytes = 0
@@ -632,6 +633,7 @@ object TFNet {
 
       if (!graphDefIsCreated) {
         val len = in.readInt()
+        assert(len >= 0, "GraphDef length should be an non-negative integer")
         in.skip(len)
       }
 
