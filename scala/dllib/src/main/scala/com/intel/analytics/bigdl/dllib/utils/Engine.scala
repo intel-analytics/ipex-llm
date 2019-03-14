@@ -220,6 +220,9 @@ object Engine {
   // Thread pool for layer use
   @volatile private var _model: ThreadPool = new ThreadPool(1)
 
+  // Thread pool for blas wrapper layer
+  private[bigdl] var wrapperComputing: ThreadPool = null
+
   // This thread is mainly for mkldnn library.
   // Because if we use the parent thread directly, there will be two bugs,
   //   1. The child threads forked from parent thread will be bound to core 0
@@ -339,6 +342,9 @@ object Engine {
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
       _default = new ThreadPool(defaultPoolSize)
     }
+    if (wrapperComputing == null || wrapperComputing.getPoolSize != defaultPoolSize) {
+      wrapperComputing = new ThreadPool(defaultPoolSize)
+    }
 
     // for dnn model we should set the pool size to 1 also.
     // otherwise, it will downgrade the performance and
@@ -356,6 +362,9 @@ object Engine {
     // this thread and the omp threads forked from computing.
     if (engineType == MklDnn) {
       dnnComputing.setMKLThreadOfMklDnnBackend(MKL.getMklNumThreads)
+    }
+    if (System.getProperty("multiThread", "false").toBoolean) {
+      wrapperComputing.setMKLThread(1)
     }
   }
 
