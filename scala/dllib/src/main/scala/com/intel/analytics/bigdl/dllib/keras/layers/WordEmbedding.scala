@@ -345,6 +345,7 @@ object WordEmbedding {
         val len = in.readInt()
         require(len != 0, "weight length should not be zero," +
           "please set logging level to debug for more information")
+        assert(len >= 0, "weight length should be an non-negative integer")
         val w = new Array[Byte](len)
         timing("reading weight from stream") {
           var numOfBytes = 0
@@ -362,6 +363,7 @@ object WordEmbedding {
       }
       if (!isCreated) {
         val len = in.readInt()
+        assert(len >= 0, "weight length should be an non-negative integer")
         in.skip(len)
       }
       weight = cachedWeight.asInstanceOf[Tensor[T]]
