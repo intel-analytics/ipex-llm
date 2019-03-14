@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
+import com.intel.analytics.zoo.common.CheckedObjectInputStream
 import com.intel.analytics.zoo.feature.common.{Preprocessing, _}
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
@@ -750,7 +751,7 @@ object NNModel extends MLReadable[NNModel[_]] {
         throw new Exception("Only support float and double for now")
     }
 
-    val ois = new ObjectInputStream(
+    val ois = new CheckedObjectInputStream(classOf[Preprocessing[Any, Any]],
       new FileInputStream(new Path(path, "samplePreprocessing").toString))
     val featurePreprocessing = try {
       ois.readObject.asInstanceOf[Preprocessing[Any, Any]]
