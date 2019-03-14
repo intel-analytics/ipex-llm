@@ -20,12 +20,37 @@ import com.intel.analytics.bigdl.nn.{Narrow => BNarrow}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Narrow => ZNarrow}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.autograd.Parameter
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
 
 import scala.util.Random
 
 class NarrowSpec extends ZooSpecHelper {
+
+  "Narrow Zoo 1D" should "be the same as BigDL" in {
+    val blayer = BNarrow[Float](1, 1, 2)
+    val input1 = Parameter[Float](inputShape = Shape(4), name = "input1")
+    val zlayer = new ZNarrow[Float](0, 0, 2).from(input1)
+    val model = Model(input1, zlayer)
+    model.getOutputShape().toSingle().toArray should be (Array(2))
+    val input = Tensor[Float](Array(4)).rand()
+    val output = model.forward(input).toTensor[Float]
+    output.size() should be (Array(2))
+    output.toTensor[Float].almostEqual(blayer.forward(input), 1e-4)
+  }
+
+  "Narrow Zoo 1D with batch" should "be the same as BigDL" in {
+    val blayer = BNarrow[Float](1, 1, 2)
+    val zlayer = ZNarrow[Float](0, 0, 2, inputShape = Shape(3))
+    zlayer.build(Shape(-1, 3))
+    zlayer.getOutputShape().toSingle().toArray should be (Array(2, 3))
+    val input = Tensor[Float](Array(3, 3)).rand()
+    val output = zlayer.forward(input).toTensor[Float]
+    output.size() should be (Array(2, 3))
+    output.toTensor[Float].almostEqual(blayer.forward(input), 1e-4)
+  }
 
   "Narrow Zoo 2D" should "be the same as BigDL" in {
     val blayer = BNarrow[Float](2, 3, -1)
