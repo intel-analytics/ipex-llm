@@ -15,14 +15,23 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, Query}
-import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.mkl._
 
 sealed trait MemoryData extends Serializable {
   def shape: Array[Int]
   def layout: Int
+  def dataType: Int
   def setShape(shape: Array[Int]): Unit
   def setLayout(layout: Int): Unit
+  def setDataType(dataType: Int): Unit
+
+  private var _mask: Int = -1
+  private var _scales: Array[Float] = Array.emptyFloatArray
+
+  def mask: Int = _mask
+  def setMask(s: Int): Unit = _mask = s
+  def scales: Array[Float] = _scales
+  def setScales(f: Array[Float]): Unit = _scales = f
 
   def isLayoutFixed(): Boolean = {
     layout != Memory.Format.format_undef && layout != Memory.Format.any
@@ -39,7 +48,7 @@ sealed trait MemoryData extends Serializable {
 
   def getMemoryDescription(): Long = {
     if (description == UNDEFINED || description == ERROR) {
-      description = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, layout)
+      description = MklDnn.MemoryDescInit(shape.length, shape, dataType, layout)
     }
     description
   }
@@ -69,9 +78,24 @@ sealed trait MemoryData extends Serializable {
   def setMemoryDescription(desc: Long): Unit = {
     description = desc
   }
+
+  def getRealSize: Long = {
+    require(primitiveDesc != UNDEFINED && primitiveDesc != ERROR)
+    MklDnn.PrimitiveDescGetSize(primitiveDesc)
+  }
+
+  def getPaddingShape: Array[Int] = {
+    require(description != UNDEFINED && description != ERROR)
+    Memory.GetPaddingShape(description)
+  }
 }
 
-case class HeapData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
+case class HeapData(private var _shape: Array[Int], private var _layout: Int,
+  private var _dataType: Int = DataType.F32) extends MemoryData {
+
+  override def dataType: Int = _dataType
+
+  override def setDataType(dataType: Int): Unit = _dataType = dataType
 
   override def setShape(shape: Array[Int]): Unit = _shape = shape.clone()
 
@@ -128,14 +152,16 @@ case class HeapData(private var _shape: Array[Int], private var _layout: Int) ex
     s"HeapData([${shape.mkString("x")}], ${layout})"
   }
 
-  override def cloneFormat(): MemoryData = new HeapData(_shape, _layout)
+  override def cloneFormat(): MemoryData = new HeapData(_shape, _layout, _dataType)
 
   def toNative(): NativeData = {
     NativeData(shape, layout)
   }
 }
 
-case class NativeData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
+case class NativeData(private var _shape: Array[Int], private var _layout: Int,
+  private var _dataType: Int = DataType.F32) extends MemoryData {
+
   override def shape: Array[Int] = _shape.clone()
 
   override def layout: Int = _layout
@@ -188,10 +214,14 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int) 
   }
 
   override def toString: String = {
-    s"NativeData([${shape.mkString("x")}], ${layout})"
+    s"NativeData([${shape.mkString("x")}], ${layout}, ${dataType}, ${mask}, ${scales})"
   }
 
-  override def cloneFormat(): MemoryData = new NativeData(_shape, _layout)
+  override def cloneFormat(): MemoryData = new NativeData(_shape, _layout, _dataType)
+
+  override def dataType: Int = _dataType
+
+  override def setDataType(dataType: Int): Unit = _dataType = dataType
 }
 
 private[mkldnn] object MemoryData {
@@ -213,23 +243,14 @@ private[mkldnn] object MemoryData {
     val outputPD = MklDnn.PrimitiveDescQueryPd(pd, Query.DstPd, 0)
     val memoryDesc = MklDnn.PrimitiveDescQueryMemory(outputPD)
     val shape = Memory.GetShape(memoryDesc)
+    val paddingShape = Memory.GetPaddingShape(memoryDesc)
     val layout = Memory.GetLayout(memoryDesc)
+    val dataType = Memory.GetDataType(memoryDesc)
+    val size = MklDnn.PrimitiveDescGetSize(outputPD)
 
-    val memory = NativeData(shape, layout)
+    val memory = NativeData(shape, layout, dataType)
     memory.setMemoryDescription(memoryDesc)
     memory.setPrimitiveDescription(outputPD)
-    memory
-  }
-
-  def primitiveGradInput(pd: Long): NativeData = {
-    val gradInputPD = MklDnn.PrimitiveDescQueryPd(pd, Query.DiffSrcPd, 0)
-    val memoryDesc = MklDnn.PrimitiveDescQueryMemory(gradInputPD)
-    val shape = Memory.GetShape(memoryDesc)
-    val layout = Memory.GetLayout(memoryDesc)
-
-    val memory = NativeData(shape, layout)
-    memory.setMemoryDescription(memoryDesc)
-    memory.setPrimitiveDescription(gradInputPD)
     memory
   }
 
@@ -237,23 +258,13 @@ private[mkldnn] object MemoryData {
     val memoryPrimDesc = MklDnn.PrimitiveDescQueryPd(primDesc, queryType, 0)
     val memoryDesc = MklDnn.PrimitiveDescQueryMemory(memoryPrimDesc)
     val shape = Memory.GetShape(memoryDesc)
+    val paddingShape = Memory.GetPaddingShape(memoryDesc)
     val layout = Memory.GetLayout(memoryDesc)
+    val dataType = Memory.GetDataType(memoryDesc)
 
-    val memory = NativeData(shape, layout)
+    val memory = NativeData(shape, layout, dataType)
     memory.setMemoryDescription(memoryDesc)
     memory.setPrimitiveDescription(memoryPrimDesc)
-    memory
-  }
-
-  def primitiveWorkSpace(pd: Long): NativeData = {
-    val workspacePD = MklDnn.PrimitiveDescQueryPd(pd, Query.WorkspacePd, 0)
-    val memoryDesc = MklDnn.PrimitiveDescQueryMemory(workspacePD)
-    val shape = Memory.GetShape(memoryDesc)
-    val layout = Memory.GetLayout(memoryDesc)
-
-    val memory = NativeData(shape, layout)
-    memory.setMemoryDescription(memoryDesc)
-    memory.setPrimitiveDescription(workspacePD)
     memory
   }
 }
