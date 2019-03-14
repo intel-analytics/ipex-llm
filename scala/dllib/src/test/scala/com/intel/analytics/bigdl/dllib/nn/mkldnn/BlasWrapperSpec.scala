@@ -20,15 +20,19 @@ import breeze.linalg.reshape
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.{Module, nn}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Graph, Squeeze, mkldnn}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine, RandomGenerator, T}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 class BlasWrapperSpec extends BigDLSpecHelper {
+
+  override def doBefore(): Unit = {
+     Engine.init(1, 4, true)
+  }
 
   def modelBlas(format: DataFormat = DataFormat("NCHW")) : Module[Float] = {
     val conv1 = nn.SpatialConvolution(1, 20, 5, 5, format = format).inputs()
@@ -86,5 +90,26 @@ class BlasWrapperSpec extends BigDLSpecHelper {
 
     weight1 should be(weight2)
     gradWeight1 should be(gradWeight2)
+  }
+
+  "wrapper model run with blas multithread" should "be correct" in {
+    val inputShape = Array(4, 1, 28, 28)
+    val input = Tensor[Float](inputShape).rand()
+
+    RandomGenerator.RNG.setSeed(1)
+    val wrapper = modelWrapper(Memory.Format.nchw, inputShape)
+    wrapper.evaluate()
+    wrapper.compile(InferencePhase)
+    val out1 = wrapper.forward(input)
+
+    RandomGenerator.RNG.setSeed(1)
+    System.setProperty("multiThread", "true")
+    val wrapperMulti = modelWrapper(Memory.Format.nchw, inputShape)
+    wrapperMulti.evaluate()
+    wrapperMulti.compile(InferencePhase)
+    val out2 = wrapperMulti.forward(input)
+
+    out1 should be(out2)
+    System.clearProperty("multiThread")
   }
 }
