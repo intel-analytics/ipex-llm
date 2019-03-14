@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, SerializeContext}
 import com.intel.analytics.bigdl.utils.serializer.converters.{DataConverter, TensorConverter}
+import com.intel.analytics.zoo.common.CheckedObjectInputStream
 import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding.EmbeddingMatrixHolder
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
 import org.slf4j.LoggerFactory
@@ -352,7 +353,7 @@ object WordEmbedding {
             numOfBytes += read
           }
         }
-        val ois = new ObjectInputStream(new ByteArrayInputStream(w))
+        val ois = new CheckedObjectInputStream(classOf[Tensor[T]], new ByteArrayInputStream(w))
         try {
           ois.readObject().asInstanceOf[Tensor[T]]
         } finally {
