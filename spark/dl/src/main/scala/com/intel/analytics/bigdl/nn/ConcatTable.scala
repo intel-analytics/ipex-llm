@@ -34,7 +34,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 704681653938468956L)
 class ConcatTable[T : ClassTag]
-  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Activity, Table, T] {
+  (implicit ev: TensorNumeric[T])
+  extends DynamicContainer[Activity, Table, T] with MklInt8Convertible {
 
   override def updateOutput(input: Activity): Table = {
     require(modules.length > 0, "empty modules of concat table")

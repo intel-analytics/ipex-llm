@@ -73,7 +73,8 @@ abstract class Graph[T: ClassTag](
   val inputs : Seq[ModuleNode[T]],
   private[bigdl] val outputs : Seq[ModuleNode[T]],
   private[bigdl] val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
-)(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
+)(implicit ev: TensorNumeric[T])
+  extends Container[Activity, Activity, T] with MklInt8Convertible {
 
   /**
    * For a multi-tensor output module, some output tensors may not contributed to the final forward
@@ -293,7 +294,7 @@ abstract class Graph[T: ClassTag](
     }
   }
 
-  protected def findInput(node: ModuleNode[T], input: Activity): Activity = {
+  def findInput(node: ModuleNode[T], input: Activity): Activity = {
     if (node.element.isInstanceOf[WithoutInput]) return null
 
     val nodeInput = if (node.prevNodes.isEmpty) {

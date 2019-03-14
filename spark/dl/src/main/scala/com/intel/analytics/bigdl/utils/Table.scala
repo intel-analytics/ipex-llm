@@ -75,6 +75,8 @@ class Table private[bigdl](
 
   def foreach[U](f: ((Any, Any)) => U): Unit = state.foreach(f)
 
+  def map[U](func: ((Any, Any)) => U): Iterable[U] = state.map(func)
+
   def get[T](key: Any): Option[T] = {
     state.get(key).map(_.asInstanceOf[T])
   }
