@@ -13,6 +13,9 @@ Compute L1 norm for input, and sign of input
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.L1Cost
+import com.intel.analytics.bigdl.tensor.Tensor
+
 val layer = L1Cost[Float]()
 val input = Tensor[Float](2, 2).rand
 val target = Tensor[Float](2, 2).rand
@@ -582,6 +585,10 @@ prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.{Tensor, Storage}
+import com.intel.analytics.bigdl.nn.SmoothL1CriterionWithWeights
+import com.intel.analytics.bigdl.utils.T
+
 val smcod = SmoothL1CriterionWithWeights[Float](2.4f, 2)
 
 val inputArr = Array(1.1, -0.8, 0.1, 0.4, 1.3, 0.2, 0.2, 0.03)
@@ -816,23 +823,28 @@ Creates a criterion that optimizes a two-class classification (squared) hinge lo
 
 **Scala example:**
 ```scala
+scala> 
+import com.intel.analytics.bigdl.nn.MarginCriterion
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
 val criterion = MarginCriterion(margin=1.0, sizeAverage=true)
 
-val input = Tensor(3, 2).rand()
+scala> val input = Tensor(3, 2).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.33753583      0.3575501
 0.23477706      0.7240361
 0.92835575      0.4737949
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
-val target = Tensor(3, 2).rand()
+scala> val target = Tensor(3, 2).rand()
 target: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.27280563      0.7022703
 0.3348442       0.43332106
 0.08935371      0.17876455
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
-criterion.forward(input, target)
+scala> criterion.forward(input, target)
 res5: Float = 0.84946966
 ```
 
@@ -871,7 +883,7 @@ a table of two Tensors, and a Tensor label y with values 1 or -1.
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
-impot com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.T
 val cosineEmbeddingCriterion = CosineEmbeddingCriterion(0.0, false)
 val input1 = Tensor(5).rand()
 val input2 = Tensor(5).rand()
@@ -955,6 +967,8 @@ criterion = BCECriterion()
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.BCECriterion
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val criterion = BCECriterion[Float]()
 val input = Tensor[Float](3, 1).rand
