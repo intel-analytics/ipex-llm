@@ -61,7 +61,6 @@ class Narrow[T: ClassTag](
 
   private def getPositiveDimAndLength(inputShape: Shape): (Int, Int) = {
     val input = inputShape.toSingle().toArray
-    require(input.length >= 2, s"Narrow requires >= 2D input, but got input dim ${input.length}")
     val positiveDim = if (dim < 0) dim + input.length else dim
     require(positiveDim >= 0 && positiveDim <= input.length - 1,
       s"Invalid select dim: $dim, dim should be within range [0, ${input.length - 1}]")
