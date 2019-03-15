@@ -172,6 +172,8 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     if (t.runningMean != null) extraParams(0).copy(t.runningMean.toTensor[Float])
     if (t.runningVar != null) extraParams(1).copy(t.runningVar.toTensor[Float])
 
+    // reminder: assume batch_norm is converted from blas
+    layer.needScale = true
     layer
   }
 
