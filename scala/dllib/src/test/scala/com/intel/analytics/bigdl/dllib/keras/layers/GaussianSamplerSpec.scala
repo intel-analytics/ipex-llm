@@ -48,13 +48,14 @@ class GaussianSamplerSerialTest extends ModuleSerializationTest {
     val input = T(Tensor[Float](Array(2, 3)).apply1(_ => Random.nextFloat()),
       Tensor[Float](Array(2, 3)).apply1(_ => Random.nextFloat()))
 
-    RandomGenerator.RNG.setSeed(1234)
+    val seed = System.currentTimeMillis()
+    RandomGenerator.RNG.setSeed(seed)
     val originalOutput = layer.forward(input).asInstanceOf[Tensor[Float]].clone()
     val tmpFile = ZooSpecHelper.createTmpFile()
     val absPath = tmpFile.getAbsolutePath
     layer.saveModule(absPath, overWrite = true)
     val loadedLayer = Module.loadModule[Float](absPath)
-    RandomGenerator.RNG.setSeed(1234)
+    RandomGenerator.RNG.setSeed(seed)
     val loadedOutput = loadedLayer.forward(input).asInstanceOf[Tensor[Float]].clone()
     originalOutput.asInstanceOf[Tensor[Float]].size.sameElements(
       loadedOutput.asInstanceOf[Tensor[Float]].size) should be (true)
