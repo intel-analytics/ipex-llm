@@ -47,7 +47,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   // Hold the address of the native array
   @transient var ptr: Pointer = new Pointer(allocate(size))
 
-  override def length(): Int = size / bytes
+  override def length(): Int = size
 
   override def apply(index: Int): T =
     throw new UnsupportedOperationException("Not support this operation in DnnStorage")
