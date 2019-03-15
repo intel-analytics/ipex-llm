@@ -128,7 +128,7 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     updateOutputPrimitives = Array(fwdReorderPrim)
 
     // recover to original data
-    output = initActivity(realOutput)
+    output = initTensor(realOutput(0))
 
     reshapeOutputIfNeeded(_outputFormats(0), output.toTensor[Float])
 
