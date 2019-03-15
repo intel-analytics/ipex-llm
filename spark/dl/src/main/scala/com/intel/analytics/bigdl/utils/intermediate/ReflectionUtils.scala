@@ -95,7 +95,7 @@ private[bigdl] object ReflectionUtils {
 
     if (layer.getName() != "") blasLayer.setName(layer.getName())
     if (blasLayer.isInstanceOf[MklInt8Convertible]) {
-      scales(layer, blasLayer.asInstanceOf[MklInt8Convertible])
+      setScales(layer, blasLayer.asInstanceOf[MklInt8Convertible])
     }
 
     blasLayer
@@ -110,13 +110,14 @@ private[bigdl] object ReflectionUtils {
     val element = IRElement[T](
       layer.getName(), op, weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
     if (layer.isInstanceOf[MklInt8Convertible]) {
-      scales(layer.asInstanceOf[MklInt8Convertible], element)
+      setScales(layer.asInstanceOf[MklInt8Convertible], element)
     }
     element
   }
 
   // put scales in fromEle to toELe
-  private def scales[T: ClassTag](fromEle: MklInt8Convertible, toELe: MklInt8Convertible): Unit = {
+  private def setScales[T: ClassTag](fromEle: MklInt8Convertible,
+                                     toELe: MklInt8Convertible): Unit = {
     toELe.setInputScales(fromEle.getInputScales())
     toELe.setOutputScales(fromEle.getOutputScales())
     toELe.setWeightScales(fromEle.getWeightScales())
