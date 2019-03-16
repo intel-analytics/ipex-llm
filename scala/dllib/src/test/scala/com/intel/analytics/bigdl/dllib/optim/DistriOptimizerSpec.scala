@@ -737,7 +737,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val myOpt = new DistriOptimizer[Double](Identity[Double](), dataSet, null) {
       override def optimize(): Module[Double] = {
-        val dds = this.dataset.asInstanceOf[DistributedDataSet[MiniBatch[Double]]]
+        val dds = this.dataset.toDistributed()
         val rdd = dds.data(train = false)
         // flatmap to break minibatches into single tensors
         val input = rdd.flatMap[Tensor[Double]]{

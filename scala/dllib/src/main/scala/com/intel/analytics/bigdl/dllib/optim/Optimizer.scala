@@ -140,7 +140,7 @@ abstract class Optimizer[T: ClassTag, D](
     val dataSet =
       (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+        .toDistributed()
     this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)
     this
@@ -161,7 +161,7 @@ abstract class Optimizer[T: ClassTag, D](
     this.validationTrigger = Some(trigger)
     val dataSet =
       (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+        .toDistributed()
     this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)
     this
@@ -182,7 +182,7 @@ abstract class Optimizer[T: ClassTag, D](
     this.validationTrigger = Some(trigger)
     val dataSet =
       (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(miniBatch, batchSize, None))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+        .toDistributed()
     this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)
     this
@@ -615,7 +615,7 @@ object Optimizer {
        _model = model,
        _dataset = (DataSet.rdd(sampleRDD) ->
          SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
-         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+         .toDistributed(),
        _criterion = criterion
      ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
@@ -644,7 +644,7 @@ object Optimizer {
       _model = model,
       _dataset = (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(miniBatchImpl, batchSize, None))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+        .toDistributed(),
       _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
@@ -666,13 +666,13 @@ object Optimizer {
       case d: DistributedDataSet[_] =>
         new DistriOptimizer[T](
           _model = model,
-          _dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+          _dataset = d.toDistributed().asInstanceOf[DistributedDataSet[MiniBatch[T]]],
           _criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
       case d: LocalDataSet[_] =>
         new LocalOptimizer[T](
           model = model,
-          dataset = d.asInstanceOf[LocalDataSet[MiniBatch[T]]],
+          dataset = d.toLocal().asInstanceOf[LocalDataSet[MiniBatch[T]]],
           criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
       case _ =>
