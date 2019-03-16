@@ -634,7 +634,7 @@ class ParallelOptimizer[T: ClassTag] (
 
 
   override def prepareInput(): Unit = {
-    if (!dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].isCached) {
+    if (!dataset.toDistributed().isCached) {
       ParallelOptimizer.logger.info("caching training rdd ...")
       ParallelOptimizer.prepareInput(this.dataset, this.validationDataSet)
     }
@@ -685,7 +685,7 @@ class ParallelOptimizer[T: ClassTag] (
 
   override def optimize(): Module[T] = {
 
-    val distDataset = dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    val distDataset = dataset.toDistributed()
 
     optimMethods.values.foreach { optimMethod =>
       optimMethod.clearHistory()
