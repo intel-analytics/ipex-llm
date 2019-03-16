@@ -17,8 +17,10 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
+
 import scala.collection.mutable
 import scala.reflect.{ClassTag, ManifestFactory}
 import scala.reflect.runtime._
@@ -92,6 +94,9 @@ private[bigdl] object ReflectionUtils {
     }
 
     if (layer.getName() != "") blasLayer.setName(layer.getName())
+    if (blasLayer.isInstanceOf[MklInt8Convertible]) {
+      setScales(layer, blasLayer.asInstanceOf[MklInt8Convertible])
+    }
 
     blasLayer
   }
@@ -104,7 +109,22 @@ private[bigdl] object ReflectionUtils {
       if (layer.parameters() != null) layer.getParameters() else (null, null)
     val element = IRElement[T](
       layer.getName(), op, weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
+    if (layer.isInstanceOf[MklInt8Convertible]) {
+      setScales(layer.asInstanceOf[MklInt8Convertible], element)
+    }
     element
+  }
+
+  // put scales in fromEle to toELe
+  private def setScales[T: ClassTag](fromEle: MklInt8Convertible,
+                                     toELe: MklInt8Convertible): Unit = {
+    toELe.setInputScales(fromEle.getInputScales())
+    toELe.setOutputScales(fromEle.getOutputScales())
+    toELe.setWeightScales(fromEle.getWeightScales())
+
+    toELe.setInputDimMask(fromEle.getInputDimMask())
+    toELe.setOutputDimMask(fromEle.getOutputDimMask())
+    toELe.setWeightDimMask(fromEle.getWeightDimMask())
   }
 
   def findClass(name: String): Class[_] = {
