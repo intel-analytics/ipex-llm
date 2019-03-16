@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
+import com.intel.analytics.bigdl.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
@@ -132,7 +133,7 @@ private[bigdl] class IRElement[T: ClassTag](
   val name: String,
   val op: IROperator[T],
   private var weights: Tensor[T] = null,
-  private var gradWeights: Tensor[T] = null) extends Serializable {
+  private var gradWeights: Tensor[T] = null) extends Serializable with MklInt8Convertible {
 
   /**
    * set weight and bias
