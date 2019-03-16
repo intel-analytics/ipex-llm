@@ -66,6 +66,31 @@ class IRconvertSpec extends BigDLSpecHelper {
     Graph(conv1, output)
   }
 
+  def modelWithScale(format: DataFormat = DataFormat("NCHW")) : Module[Float] = {
+    val convElement = nn.SpatialConvolution(1, 20, 5, 5, format = format)
+    convElement.setInputDimMask(1)
+    convElement.setWeightDimMask(2)
+    convElement.setOutputDimMask(3)
+    convElement.setInputScales(Array(Array(1, 2, 3)))
+    convElement.setWeightScales(Array(Array(4, 5, 6)))
+    val conv1 = convElement.setName("input").inputs()
+    val pool1 = nn.SpatialMaxPooling(2, 2, 2, 2, format = format).setName("pool").inputs(conv1)
+    val conv2 = nn.SpatialConvolution(20, 50, 5, 5, format = format).inputs(pool1)
+    val pool2 = nn.SpatialMaxPooling(2, 2, 2, 2, format = format).inputs(conv2)
+    val reshape = nn.Reshape(Array(50 * 4 * 4)).inputs(pool2)
+    val fc = nn.Linear(50 * 4 * 4, 500).inputs(reshape)
+    val relu = nn.ReLU().setName("relu1").inputs(fc)
+
+    val linearElement = nn.Linear(500, 10)
+    linearElement.setInputDimMask(1)
+    linearElement.setOutputDimMask(2)
+    linearElement.setInputScales(Array(Array(0, 1, 2)))
+    linearElement.setOutputScales(Array(Array(7, 8, 9)))
+    val fc2 = linearElement.setName("output").inputs(relu)
+    val output = fc2
+    Graph(conv1, output)
+  }
+
   "Convert Blas with NCHW to Dnn" should "be correct" in {
     System.setProperty("bigdl.engineType", "mkldnn")
     val input = Tensor[Float](2, 1, 28, 28).rand()
@@ -177,5 +202,43 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     Equivalent.nearequals(p1._1, p1._1, 1e-4) should be (true)
     Equivalent.nearequals(p1._2, p1._2, 1e-4) should be (true)
+  }
+
+  "Convert Blas with scale to Dnn" should "be correct" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    val input = Tensor[Float](2, 1, 28, 28).rand()
+    val gradOutput = Tensor[Float](2, 10).rand()
+
+    val blasModel = modelWithScale().asInstanceOf[StaticGraph[Float]]
+    val irModel = blasModel.cloneModule().toIRgraph()
+
+    val blasExecutions = blasModel.getSortedForwardExecutions()
+    val irExecutions = irModel.graph.getSortedForwardExecutions()
+
+    val blasInputs = blasExecutions.filter(_.element.getName() == "input")(0)
+      .element.asInstanceOf[MklInt8Convertible]
+    val blasOutputs = blasExecutions.filter(_.element.getName() == "output")(0)
+      .element.asInstanceOf[MklInt8Convertible]
+
+    val inputs = irExecutions.filter(_.element.getName() == "input")(0)
+      .element.asInstanceOf[MklInt8Convertible]
+    val outputs = irExecutions.filter(_.element.getName() == "output")(0)
+      .element.asInstanceOf[MklInt8Convertible]
+
+    blasInputs.getWeightDimMask() should be(inputs.getWeightDimMask())
+    blasInputs.getInputDimMask() should be(inputs.getInputDimMask())
+    blasInputs.getOutputDimMask() should be(inputs.getOutputDimMask())
+
+    blasInputs.getWeightScales() should be(inputs.getWeightScales())
+    blasInputs.getInputScales() should be(inputs.getInputScales())
+    blasInputs.getOutputScales() should be(inputs.getOutputScales())
+
+    val outBlas = blasModel.forward(input).toTensor[Float]
+    val gradInputBlas = blasModel.backward(input, gradOutput)
+    val outDnn = irModel.forward(input).toTensor[Float]
+    val gradInputDnn = irModel.backward(input, gradOutput).toTensor[Float]
+
+    Equivalent.nearequals(outDnn, outBlas, 1e-4) should be (true)
+    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
   }
 }
