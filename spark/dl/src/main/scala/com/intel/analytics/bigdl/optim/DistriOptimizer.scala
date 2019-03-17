@@ -31,8 +31,8 @@ import java.util.Calendar
 
 import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer, MklDnnLayer}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer, MklDnnLayer, MklDnnModule}
 import com.intel.analytics.bigdl.utils.intermediate.IRGraph
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
@@ -789,7 +789,7 @@ class DistriOptimizer[T: ClassTag] (
   override def optimize(): Module[T] = {
 
     val distDataset = dataset.toDistributed()
-    val trainingModel = if (Engine.getEngineType() == MklDnn && !model.isInstanceOf[MklDnnLayer]
+    val trainingModel = if (Engine.getEngineType() == MklDnn && !model.isInstanceOf[MklDnnModule]
       && !model.isInstanceOf[IRGraph[T]] && !model.isInstanceOf[Graph[T]]) {
       model.toGraph().setName(model.getName())
     } else model

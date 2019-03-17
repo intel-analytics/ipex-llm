@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.mkldnn.DnnGraph
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnLayer, MklDnnModule}
 import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.nn.Graph
@@ -35,7 +35,7 @@ private[bigdl] object ConversionUtils {
     if (model.isInstanceOf[IRGraph[T]]) {
       val g = model.asInstanceOf[IRGraph[T]]
       if (g.isBuild) g else g.build()
-    } else if (!model.isInstanceOf[DnnGraph] && Engine.getEngineType() == MklDnn) {
+    } else if (!model.isInstanceOf[MklDnnModule] && Engine.getEngineType() == MklDnn) {
       val m = if (!model.isInstanceOf[Graph[T]]) model.toGraph() else model
       if (!m.isInstanceOf[StaticGraph[T]]) return model
       val ir = m.asInstanceOf[StaticGraph[T]].toIRgraph().asInstanceOf[Module[T]]
