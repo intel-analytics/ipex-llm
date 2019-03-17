@@ -84,8 +84,8 @@ class MaxPooling(
     fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
     _outputFormats = Array(MemoryData.primitiveOutput(fwdPD))
     output = initTensor(_outputFormats(0))
-    workSpaceFormat = MemoryData.primitiveWorkSpace(fwdPD)
-    workSpace = initTensor(workSpaceFormat)
+    workSpaceFormat = MemoryData.operationWant(fwdPD, Query.WorkspacePd)
+    workSpace = initTensor(workSpaceFormat).asInstanceOf[Tensor[Float]]
     updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(fwdPD,
       _inputFormats.map(_.getPrimitive(runtime)), Array(0), 1,
       Array(_outputFormats(0), workSpaceFormat).map(_.getPrimitive(runtime)), 2))
@@ -105,7 +105,7 @@ class MaxPooling(
       strides, kernel, paddingTL, paddingBR, MklDnn.PaddingKind.mkldnnPaddingZero)
 
     val pd = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPD)
-    _gradInputFormats = Array(MemoryData.primitiveGradInput(pd))
+    _gradInputFormats = Array(MemoryData.operationWant(pd, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(MklDnn.PrimitiveCreate2(pd,
       Array(_gradOutputFormats(0), workSpaceFormat).map(_.getPrimitive(runtime)),
       Array(0, 0), 2, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
