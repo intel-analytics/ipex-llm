@@ -272,8 +272,9 @@ class Linear(
       updateGradWTensors = buffer.toArray
     }
 
-    updateWithNewTensor(updateGradInputTensors, 0, input)
-    updateWithNewTensor(updateGradInputTensors, 1, gradOutput)
+    // do not use the updateGradInputTensors for acc
+    updateWithNewTensor(updateGradWTensors, 0, input)
+    updateWithNewTensor(updateGradWTensors, 1, gradOutput)
 
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
@@ -300,7 +301,6 @@ class Linear(
     super.release()
     List(weight, bias, gradWeight, gradBias).foreach(_.release())
   }
-
 }
 
 object Linear {

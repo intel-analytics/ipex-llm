@@ -61,6 +61,36 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     }
   }
 
+  private def createInt8PrimDesc(): Long = {
+    val attr = MklDnn.CreateAttr()
+    MklDnn.AttrSetIntOutputRoundMode(attr, 1)
+
+    if (realOutput(0).scales == null || realOutput(0).scales.isEmpty) {
+      realOutput(0).setMask(realInput(0).mask)
+      realOutput(0).setScales(realInput(0).scales)
+    }
+
+    // if convert s8/u8 to f32, we should set the scale factor to 1.0f/x
+    if (realOutput(0).dataType == DataType.F32) {
+      realOutput(0).setScales(realOutput(0).scales.map(1.0f / _))
+    }
+
+    // copy the scales back to outputFormats if not equal
+    if (realOutput(0) ne _outputFormats(0)) {
+      _outputFormats(0).setMask(realOutput(0).mask)
+      _outputFormats(0).setScales(realOutput(0).scales)
+    }
+
+    require(realOutput(0).scales.nonEmpty)
+    MklDnn.AttrSetOutputScales(attr, realOutput(0).scales.length, realOutput(0).mask,
+      realOutput(0).scales)
+
+    MklDnn.ReorderPrimitiveDescCreateV2(
+      realInput(0).getPrimitiveDescription(runtime),
+      realOutput(0).getPrimitiveDescription(runtime),
+      attr)
+  }
+
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = if (inputFormat == null) inputs else Array(inputFormat)
     require(_inputFormats.length == 1, "Only accept one tensor as input")
@@ -76,7 +106,6 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     val outputShape = _outputFormats(0).shape
     val inputLayout = _inputFormats(0).layout
     val outputLayout = _outputFormats(0).layout
-
     realInput = _inputFormats
     realOutput = _outputFormats
 
@@ -90,35 +119,15 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
       }
     }
 
-    val needNotAttr = inputFormats()(0).dataType == DataType.F32 &&
+    val noInt8Formats = inputFormats()(0).dataType == DataType.F32 &&
       outputFormats()(0).dataType == DataType.F32
 
-    val fwdReorderPrimDesc = if (needNotAttr) {
+    val fwdReorderPrimDesc = if (noInt8Formats) {
       MklDnn.ReorderPrimitiveDescCreate(
         realInput(0).getPrimitiveDescription(runtime),
         realOutput(0).getPrimitiveDescription(runtime))
     } else {
-      val attr = MklDnn.CreateAttr()
-      MklDnn.AttrSetIntOutputRoundMode(attr, 1)
-
-      if (_outputFormats(0).scales == null || !_outputFormats(0).scales.nonEmpty) {
-        if (_outputFormats(0).dataType == DataType.F32) {
-          _outputFormats(0).setScales(realInput(0).scales.map(1.0f / _))
-        } else {
-          _outputFormats(0).setScales(realInput(0).scales)
-        }
-        _outputFormats(0).setMask(realInput(0).mask)
-      }
-
-      require(_outputFormats(0).scales.nonEmpty)
-      require(_outputFormats(0).mask != -1)
-      MklDnn.AttrSetOutputScales(attr, _outputFormats(0).scales.length, _outputFormats(0).mask,
-        _outputFormats(0).scales)
-
-      MklDnn.ReorderPrimitiveDescCreateV2(
-        realInput(0).getPrimitiveDescription(runtime),
-        realOutput(0).getPrimitiveDescription(runtime),
-        attr)
+      createInt8PrimDesc()
     }
 
     val fwdReorderPrim = MklDnn.PrimitiveCreate2(fwdReorderPrimDesc,

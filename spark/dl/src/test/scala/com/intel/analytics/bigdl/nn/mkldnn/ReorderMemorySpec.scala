@@ -119,24 +119,6 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     grad should be(input)
   }
 
-  "conv1" should "work correctly" in {
-    val conv = SpatialConvolution(1, 20, 5, 5)
-
-    val inputShape = Array(4, 1, 28, 28)
-    val outputShape = Array(4, 20, 24, 24)
-    val nativeData1 = NativeData(inputShape, Memory.Format.nChw8c)
-    val nativeData2 = NativeData(outputShape, Memory.Format.nChw8c)
-
-    conv.setRuntime(new MklDnnRuntime)
-    conv.initFwdPrimitives(Array(nativeData1), TrainingPhase)
-    conv.initBwdPrimitives(Array(nativeData2), TrainingPhase)
-    conv.initGradWPrimitives(Array(nativeData2), TrainingPhase)
-
-    val input = DnnTensor[Float](Array(4, 24, 28, 28))
-    val output = DnnTensor[Float](Array(4, 24, 24, 24))
-
-    conv.accGradParameters(input, output)
-  }
   "Reorder from nhwc to nchw" should "be correct" in {
     val shapeNCHW = Array(4, 3, 7, 7)
     val shapeNHWC = Array(4, 7, 7, 3)
@@ -282,7 +264,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val nativeData = NativeData(shape, Memory.Format.nc, DataType.S8)
     val heapData = HeapData(shape, Memory.Format.nc)
     heapData.setMask(0)
-    heapData.setScales(Array(128.0f / input.max()))
+    heapData.setScales(Array(127.0f / input.max()))
     val f32ToS2 = ReorderMemory(nativeData)
 
     f32ToS2.setRuntime(new MklDnnRuntime)
@@ -318,7 +300,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val nativeData = NativeData(shape, Memory.Format.nhwc, DataType.U8)
     val heapData = HeapData(shape, Memory.Format.nchw, DataType.F32)
     heapData.setMask(2)
-    heapData.setScales(inputScales.map(x => 255f / x))
+    heapData.setScales(inputScales.map(x => 255.0f / x))
     val f32ToS2 = ReorderMemory(nativeData)
     println(Memory.Format.nchw)
 
@@ -388,7 +370,9 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
   "oihw" should "work correctly" in {
     // this test case is used to test oihw -> hwio_s8s8 reordering.
     // the hwio_s8s8 will need more space than padding shape, which is called additional space
-    // called by mkldnn
+    // called by mkldnn.
+
+    // we will convert the hwio_s8s8 back to oihw, because mkldnn has not implemented it yet.
     val shape = Array(50, 24, 5, 5)
     val from = Tensor[Float](shape).rand(-1, 1)
 
@@ -396,7 +380,8 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val native = NativeData(shape, Memory.Format.hwio_s8s8, DataType.S8)
 
     val mask = 0
-    val scales = Array(from.abs().max()) // (1 to 50).map(i => from.select(1, i).max()).toArray
+    // (1 to 50).map(i => from.select(1, i).max()).toArray
+    val scales = Array(from.clone().abs().max() / 127.0f)
 
     heap.setMask(mask)
     heap.setScales(scales)
@@ -412,8 +397,5 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
       println(s"do forward ${i}")
       reorder.forward(from)
     })
-
-    println(from)
-    println(reorder.output)
   }
 }
