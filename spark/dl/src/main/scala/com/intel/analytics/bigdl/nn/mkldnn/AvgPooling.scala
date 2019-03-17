@@ -102,7 +102,7 @@ class AvgPooling(
       strides, kernel, paddingTL, paddingBR, MklDnn.PaddingKind.mkldnnPaddingZero)
 
     val pd = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPD)
-    _gradInputFormats = Array(MemoryData.primitiveGradInput(pd))
+    _gradInputFormats = Array(MemoryData.operationWant(pd, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(MklDnn.PrimitiveCreate2(pd,
       _gradOutputFormats.map(_.getPrimitive(runtime)),
       Array(0, 0), 2, _gradInputFormats.map(_.getPrimitive(runtime)), 1))

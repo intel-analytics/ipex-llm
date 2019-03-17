@@ -15,6 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.mkl.{DataType, Memory}
+import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.tensor.{DnnTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
@@ -252,5 +256,146 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     reorder2.forward(reorder.output)
 
     reorder2.output.toTensor[Float] should be (t1)
+  }
+
+  "F32 to S8" should "work correctly" in {
+    val shape = Array[Int](2, 2)
+    val input = Tensor[Float](Array[Float](15, 14, 8, 10), shape).rand(0, 1)
+    val nativeData = NativeData(shape, Memory.Format.nc, DataType.S8)
+    val heapData = HeapData(shape, Memory.Format.nc)
+    heapData.setMask(0)
+    heapData.setScales(Array(127.0f / input.max()))
+    val f32ToS2 = ReorderMemory(nativeData)
+
+    f32ToS2.setRuntime(new MklDnnRuntime)
+    f32ToS2.initFwdPrimitives(Array(heapData), Phase.InferencePhase)
+
+    f32ToS2.forward(input)
+
+    val srcAddress = f32ToS2.output.asInstanceOf[DnnTensor[Byte]].storageAddress()
+
+    val len = shape.product
+    val output = new Array[Byte](len)
+    Memory.CopyPtr2ByteArray(srcAddress, 0, output, 0, len, 1)
+
+    output.foreach(println)
+
+    println(input)
+
+    val S8ToF32 = ReorderMemory(HeapData(shape, Memory.Format.nc))
+    S8ToF32.setRuntime(new MklDnnRuntime)
+    S8ToF32.initFwdPrimitives(Array(nativeData), Phase.InferencePhase)
+
+    S8ToF32.forward(f32ToS2.output)
+
+    // the int part should be the same
+    S8ToF32.output.toTensor[Float].storage().array().map(_.toInt) should be (
+      input.storage().array().map(_.toInt))
+  }
+
+  "F32 to S8 NCHW" should "work correctly" in {
+    val shape = Array[Int](4, 3, 2, 2)
+    val input = Tensor[Float](shape).rand(0, 1)
+    val inputScales = input.max(1)._1.max(3)._1.max(4)._1.storage().array()
+    val nativeData = NativeData(shape, Memory.Format.nhwc, DataType.U8)
+    val heapData = HeapData(shape, Memory.Format.nchw, DataType.F32)
+    heapData.setMask(2)
+    heapData.setScales(inputScales.map(x => 255.0f / x))
+    val f32ToS2 = ReorderMemory(nativeData)
+    println(Memory.Format.nchw)
+
+    f32ToS2.setRuntime(new MklDnnRuntime)
+    f32ToS2.initFwdPrimitives(Array(heapData), Phase.InferencePhase)
+
+    f32ToS2.forward(input)
+
+    val srcAddress = f32ToS2.output.asInstanceOf[DnnTensor[Byte]].storageAddress()
+
+    val len = shape.product
+    val output = new Array[Byte](len)
+    Memory.CopyPtr2ByteArray(srcAddress, 0, output, 0, len, 1)
+
+    output.foreach(println)
+
+    println(input)
+
+    val S8ToF32 = ReorderMemory(HeapData(shape, Memory.Format.nchw, DataType.F32))
+    S8ToF32.setRuntime(new MklDnnRuntime)
+    S8ToF32.initFwdPrimitives(Array(f32ToS2.outputFormats()(0)), Phase.InferencePhase)
+
+    S8ToF32.forward(f32ToS2.output)
+    println(S8ToF32.output)
+
+    // the int part should be the same
+    S8ToF32.output.toTensor[Float].storage().array().map(_.toInt) should be (
+      input.storage().array().map(_.toInt))
+  }
+
+  "F32 to S32 Memory.Format.x" should "work correctly" in {
+    val shape = Array[Int](2)
+    val inputData = Array[Float](10, 12)
+    val input = Tensor[Float](inputData, shape).rand(0, 1)
+    val nativeData = NativeData(shape, Memory.Format.x, DataType.S32)
+    val heapData = HeapData(shape, Memory.Format.x)
+    heapData.setMask(1)
+    heapData.setScales(inputData.map(x => 100 / inputData.max))
+
+    println(Integer.MAX_VALUE)
+
+    val f32ToS32 = ReorderMemory(nativeData)
+
+    f32ToS32.setRuntime(new MklDnnRuntime)
+    f32ToS32.initFwdPrimitives(Array(heapData), Phase.InferencePhase)
+
+    f32ToS32.forward(input)
+
+    println(input)
+    println(f32ToS32.output)
+
+    nativeData.setMask(1)
+    nativeData.setScales(inputData.map(x => 100 / inputData.max))
+    val S32ToF32 = ReorderMemory(HeapData(shape, Memory.Format.x))
+    S32ToF32.setRuntime(new MklDnnRuntime)
+    S32ToF32.initFwdPrimitives(Array(nativeData), Phase.InferencePhase)
+
+    S32ToF32.forward(f32ToS32.output)
+
+    println(S32ToF32.output)
+
+    // the int part should be the same
+    S32ToF32.output.toTensor[Float].storage().array().map(_.toInt) should be (
+      input.storage().array().map(_.toInt))
+  }
+
+  "oihw" should "work correctly" in {
+    // this test case is used to test oihw -> hwio_s8s8 reordering.
+    // the hwio_s8s8 will need more space than padding shape, which is called additional space
+    // called by mkldnn.
+
+    // we will convert the hwio_s8s8 back to oihw, because mkldnn has not implemented it yet.
+    val shape = Array(50, 24, 5, 5)
+    val from = Tensor[Float](shape).rand(-1, 1)
+
+    val heap = HeapData(shape, Memory.Format.oihw, DataType.F32)
+    val native = NativeData(shape, Memory.Format.hwio_s8s8, DataType.S8)
+
+    val mask = 0
+    // (1 to 50).map(i => from.select(1, i).max()).toArray
+    val scales = Array(from.clone().abs().max() / 127.0f)
+
+    heap.setMask(mask)
+    heap.setScales(scales)
+    native.setMask(mask)
+    native.setScales(scales)
+
+    val runtime = new MklDnnRuntime
+    val reorder = ReorderMemory(native)
+    reorder.setRuntime(runtime)
+    reorder.initFwdPrimitives(Array(heap), InferencePhase)
+
+    (0 to 10).foreach ( i => {
+      println(s"do forward ${i}")
+      reorder.forward(from)
+    })
   }
 }

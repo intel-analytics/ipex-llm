@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.mkl.DataType
 import com.intel.analytics.bigdl.nn.DynamicContainer
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
@@ -80,12 +80,20 @@ trait MklDnnModuleHelper {
     }
   }
 
-  protected def initTensor(format: MemoryData): Tensor[Float] = {
+  protected def initTensor(format: MemoryData): Tensor[_] = {
+    val paddingShape = format.getPaddingShape
+    val realSize = format.getRealSize
+
     format match {
       case d: NativeData =>
-        DnnTensor[Float](Memory.GetPaddingShape(format.getMemoryDescription()))
+        d.dataType match {
+          case DataType.S8 => DnnTensor[Byte](paddingShape, realSize)
+          case DataType.U8 => DnnTensor[Byte](paddingShape, realSize)
+          case DataType.S32 => DnnTensor[Int](paddingShape, realSize)
+          case DataType.F32 => DnnTensor[Float](paddingShape, realSize)
+        }
       case d: HeapData =>
-        Tensor[Float](Memory.GetPaddingShape(format.getMemoryDescription()))
+        Tensor[Float](paddingShape)
       case _ => throw new UnsupportedOperationException("memory format is not supported")
     }
   }
