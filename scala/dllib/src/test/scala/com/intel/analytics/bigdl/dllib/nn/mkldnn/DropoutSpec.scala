@@ -27,6 +27,7 @@ class DropoutSpec extends FlatSpec with Matchers {
     val zeros = Tensor[Float](Array(2, 3, 4, 4)).fill(0)
 
     val dropout = Dropout()
+    dropout.setRuntime(new MklDnnRuntime)
     dropout.initFwdPrimitives(Array(HeapData(Array(2, 3, 4, 4), Memory.Format.nchw)), TrainingPhase)
 
     {
@@ -54,6 +55,7 @@ class DropoutSpec extends FlatSpec with Matchers {
     val zeros = Tensor[Float](Array(2, 3, 4, 4)).fill(0)
 
     val dropout = Dropout()
+    dropout.setRuntime(new MklDnnRuntime)
     dropout.initFwdPrimitives(Array(HeapData(Array(2, 3, 4, 4), Memory.Format.nchw)),
       InferencePhase)
     dropout.evaluate()

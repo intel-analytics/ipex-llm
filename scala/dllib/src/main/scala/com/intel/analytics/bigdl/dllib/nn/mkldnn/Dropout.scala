@@ -39,6 +39,8 @@ class Dropout(
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
     _outputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
+    // we should genereate the primitives here, otherwise the initTensor can't get the padding shape
+    _outputFormats.map(_.getPrimitive(runtime))
     output = initTensor(_outputFormats.head)
     (_inputFormats, _outputFormats)
   }
