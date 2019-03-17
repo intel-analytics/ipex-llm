@@ -162,6 +162,9 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = inferInputFormats(inputs)
     _outputFormats = if (needOutputFormats) inferOutputFormats(inputs) else null
+    if (_outputFormats != null) {
+      _outputFormats.map(_.getPrimitive(runtime))
+    }
     (_inputFormats, _outputFormats)
   }
 
