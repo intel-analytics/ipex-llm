@@ -31,7 +31,7 @@ class DnnTensor[T: ClassTag](
 ) (implicit ev: TensorNumeric[T])
   extends DnnTensorUnsupportOperations[T]{
 
-  override def nElement(): Int = storage.length()
+  override def nElement(): Int = sizes.product
 
   override def copy(other: Tensor[T]): Tensor[T] = {
     other match {

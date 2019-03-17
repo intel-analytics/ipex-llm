@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{AlgKind, MklDnn, PropKind}
+import com.intel.analytics.bigdl.mkl.{AlgKind, MklDnn, PropKind, Query}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -40,8 +40,8 @@ class LRN(
       _inputFormats(0).getMemoryDescription(), size, alpha.toFloat, beta.toFloat, k.toFloat)
     fwdPrimDesc = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
     _outputFormats = Array(MemoryData.primitiveOutput(fwdPrimDesc))
-    workSpaceFormat = MemoryData.primitiveWorkSpace(fwdPrimDesc)
-    workSpace = initTensor(workSpaceFormat)
+    workSpaceFormat = MemoryData.operationWant(fwdPrimDesc, Query.WorkspacePd)
+    workSpace = initTensor(workSpaceFormat).asInstanceOf[Tensor[Float]]
     updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(fwdPrimDesc,
       _inputFormats.map(_.getPrimitive(runtime)), Array(0), 1, Array(_outputFormats(0),
         workSpaceFormat).map(_.getPrimitive(runtime)), 2))
@@ -59,7 +59,7 @@ class LRN(
       _gradOutputFormats(0).getMemoryDescription(), size, alpha.toFloat, beta.toFloat, k.toFloat)
     require(fwdPrimDesc != UNDEFINED, "You should call initFwdPrimitives first")
     val primDesc = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPrimDesc)
-    _gradInputFormats = Array(MemoryData.primitiveGradInput(primDesc))
+    _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(MklDnn.PrimitiveCreate2(primDesc,
       Array(_inputFormats(0), _gradOutputFormats(0), workSpaceFormat).map(_.getPrimitive(runtime)),
       Array(0, 0, 0), 3, _gradInputFormats.map(_.getPrimitive(runtime)), 1))

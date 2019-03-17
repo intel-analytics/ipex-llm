@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.mkl.DataType
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
@@ -103,7 +104,12 @@ private[mkldnn] class ReorderManager() {
         to match {
           case hh: HeapData => true
           case nn: NativeData =>
-            nn.layout != n.layout
+            // we will skip the S8 to U8 reorder
+            val doNotReorderIt = n.layout == nn.layout && (
+              n.dataType == nn.dataType || // the same data type
+                (n.dataType == DataType.S8 && nn.dataType == DataType.U8)) // skip the s8->u8
+
+            !doNotReorderIt
           case _ => throw new UnsupportedOperationException("Not support such memory format")
         }
       case _ => throw new UnsupportedOperationException("Not support such memory format")
