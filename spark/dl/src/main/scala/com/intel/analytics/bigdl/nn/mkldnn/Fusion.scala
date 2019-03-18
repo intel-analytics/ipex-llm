@@ -134,7 +134,7 @@ private[mkldnn] object Fusion {
       if (conv != null) {
         node.element = conv.element
         val element = node.element.asInstanceOf[SpatialConvolution]
-        element.setSumOp(previousNodes(otherNumber).element, otherNumber)
+        element.setSumOp(previousNodes(otherNumber).element, otherNumber + 1)
         conv.element = Identity[Float]().asInstanceOf[AbstractModule[Activity, Activity, Float]]
 
         val nexts = node.nextNodes(0)
@@ -179,8 +179,7 @@ private[mkldnn] object Fusion {
     val bnWeight = Tensor[Float].resizeAs(bn.weightAndBias.dense).copy(bn.weightAndBias.dense)
 
     (0 until bn.nOutput).foreach { j =>
-      val variance = originVar.storage().array()(j + originVar.storageOffset() - 1) /
-        bn.scaleFactor.storage().array()(0)
+      val variance = originVar.storage().array()(j + originVar.storageOffset() - 1)
       val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
       require(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
 
@@ -196,7 +195,7 @@ private[mkldnn] object Fusion {
       weight.mul(alpha)
 
       val bias = convBias.storage().array()(j)
-      val mean = originMean.storage().array()(j) / bn.scaleFactor.storage().array()(0)
+      val mean = originMean.storage().array()(j)
       convBias.storage().array()(j) = alpha / base * bias + beta - (alpha * mean) / base
     }
 

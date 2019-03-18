@@ -137,17 +137,20 @@ class SpatialBatchNormalization(
     // weight and bias should be combined
     val weightAndBias: NativeData = NativeData(Array(nOutput * 2), Memory.Format.x)
 
+    // the bn only accept F32 as input, like lrn
+    val src = NativeData(inputs.head.shape, inputs.head.layout, DataType.F32)
+
     // init phase status
     initPhase(phase)
     forwardDesc = modelPhase match {
       case TrainingPhase =>
         MklDnn.BatchNormForwardDescInit(PropKind.Forward,
-          inputs(0).getMemoryDescription(), eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
+          src.getMemoryDescription(), eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
       case InferencePhase =>
         // we always use the weight and bias / scale and offset. So the flags should be combined
         // with use_scaleshift and use_global_stats.
         MklDnn.BatchNormForwardDescInit(PropKind.ForwardInference,
-          inputs(0).getMemoryDescription(), eps.toFloat,
+          src.getMemoryDescription(), eps.toFloat,
           MklDnn.BatchNormFlag.mkldnn_use_global_stats | MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
       case _ => throw new UnsupportedOperationException
     }
