@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
-
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.numeric.NumericDouble
-import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
-import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
+package com.intel.analytics.bigdl.optim
 
 import java.io.StringWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.apache.spark.SparkContext
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
+import com.intel.analytics.bigdl.numeric.NumericDouble
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, TestUtils}
 import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
+import org.apache.spark.SparkContext
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
 class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {

@@ -25,11 +25,13 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 sealed class IROperator[T: ClassTag] extends Serializable {
-  val tag: ClassTag[T] = scala.reflect.classTag[T]
-  val numerics: TensorNumeric[T] = tag match {
-    case ClassTag.Float => TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
-    case ClassTag.Double => TensorNumeric.NumericDouble.asInstanceOf[TensorNumeric[T]]
-    case _ => throw new IllegalArgumentException(s"not supported class tag: ${tag}")
+  val numerics: TensorNumeric[T] = getNumerics(scala.reflect.classTag[T])
+  final def getNumerics[T](tag: ClassTag[T]) : TensorNumeric[T] = {
+    tag match {
+      case ClassTag.Float => TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
+      case ClassTag.Double => TensorNumeric.NumericDouble.asInstanceOf[TensorNumeric[T]]
+      case _ => throw new IllegalArgumentException(s"not supported class tag: ${tag}")
+    }
   }
   def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array(scala.reflect.classTag[T]), Array(numerics))
@@ -112,7 +114,15 @@ case class IRSoftMax[T: ClassTag]() extends IROperator[T]
 
 case class IRSelectTable[T: ClassTag](dimension: Int) extends IROperator[T]
 
-case class IRCAddTable[T: ClassTag, D: ClassTag](inplace: Boolean = false) extends IROperator[T]
+case class IRCAddTable[T: ClassTag, D: ClassTag](inplace: Boolean = false) extends IROperator[T] {
+  private val ev = getNumerics(scala.reflect.classTag[T])
+  private val ev2 = getNumerics(scala.reflect.classTag[D])
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
+}
 
 case class IRJoinTable[T: ClassTag](dimension: Int,
                                     nInputDims: Int = 0) extends IROperator[T]

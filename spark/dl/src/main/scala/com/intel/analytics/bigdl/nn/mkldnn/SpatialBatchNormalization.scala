@@ -43,6 +43,10 @@ class SpatialBatchNormalization(
   }
   def relu: Boolean = _relu
 
+  // reminder: runningMean/runningVariance in blas batch_norm is
+  // same to scaled runningMean/runningVariance in dnn.
+  private[bigdl] var needScale = false
+
   @transient private var updateOutputTensors: Array[Tensor[Float]] = _
   @transient private var updateOutputMemoryPrimitives: Array[Long] = _
   @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
@@ -60,6 +64,9 @@ class SpatialBatchNormalization(
 
   var scaleFactor: Float = 1.0f
   var biasFactor: Float = 1.0f
+
+  private val runningMeanScaled = Tensor[Float].resizeAs(runningMean.dense)
+  private val runningVarianceScaled = Tensor[Float].resizeAs(runningVariance.dense)
 
   {
     val wInit = Ones // RandomUniform(0, 1)
@@ -348,7 +355,13 @@ class SpatialBatchNormalization(
   }
 
   override def getExtraParameter(): Array[Tensor[Float]] = {
-    Array(runningMean.dense, runningVariance.dense)
+    if (needScale) {
+      runningMeanScaled.copy(runningMean.dense).div(scaleFactor)
+      runningVarianceScaled.copy(runningVariance.dense).div(scaleFactor)
+      Array(runningMeanScaled, runningVarianceScaled)
+    } else {
+      Array(runningMean.dense, runningVariance.dense)
+    }
   }
 
   override def toString(): String = {
