@@ -143,4 +143,40 @@ class BlasToDnnSpec extends BigDLSpecHelper {
 
     Equivalent.nearequals(outDnn, outBlas, 1e-6) should be(true)
   }
+
+  "resnet50 dnn to blas" should "work properly" in {
+    val batchSize = 2
+    val classNum = 1000
+    RandomGenerator.RNG.setSeed(1000)
+    val blas = ResNet.graph(classNum,
+      T("shortcutType" -> ShortcutType.B, "depth" -> 50,
+        "optnet" -> false, "dataset" -> DatasetType.ImageNet)).asInstanceOf[StaticGraph[Float]]
+    val irBlas = blas.toIRgraph()
+
+    for (i <- 0 to 3) {
+      val input = Tensor[Float](2, 3, 224, 224).rand()
+      val gradOutput = Tensor[Float](2, 1000).rand()
+      irBlas.training()
+      irBlas.forward(input)
+      irBlas.backward(input, gradOutput)
+    }
+    val input = Tensor[Float](2, 3, 224, 224).rand()
+    irBlas.evaluate()
+    irBlas.forward(input)
+
+    val p1 = blas.getParameters()
+    val p2 = irBlas.getParameters()
+    p1._1.copy(p2._1)
+    p1._2.copy(p2._2)
+    blas.setExtraParameter(irBlas.getExtraParameter())
+
+    val in = Tensor[Float](2, 3, 224, 224).rand()
+    blas.evaluate()
+    irBlas.evaluate()
+
+    val out1 = blas.forward(in).toTensor[Float]
+    val out2 = irBlas.forward(in).toTensor[Float]
+
+    Equivalent.getunequals(out1, out2, 1e-4) should be(true)
+  }
 }
