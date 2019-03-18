@@ -47,7 +47,7 @@ object TestImageNet {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       val evaluationSet = ImageNetDataSet.valDataSet(param.folder,
         sc, 224, param.batchSize).toDistributed().data(train = false)
 
