@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.zoo.feature.DistributedFeatureSet
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text._
 import com.intel.analytics.zoo.pipeline.api.{Net, Predictable}
@@ -78,6 +79,13 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
         new InternalDistriOptimizer(_model = this,
           _dataset = distriDataSet,
           _criterion = this.criterion)
+      case distriFeatureSet: DistributedFeatureSet[MiniBatch[T]] =>
+        new InternalDistriOptimizer(_model = this,
+          _dataset = distriFeatureSet.toDistributed(),
+          _criterion = this.criterion)
+      case _ =>
+        throw new IllegalArgumentException(s"Unsupported DataSet type ${x.getClass.getName}," +
+          s" excepted LocalDataSet, DistributedDataSet and DistributedFeatureSet.")
     }
 
     if (this.checkpointPath != null) {
@@ -872,6 +880,11 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
 
   def setTrainData(trainingDataSet: DataSet[MiniBatch[T]]): this.type = {
     this.dataset = trainingDataSet
+    this.dataset = if (trainingDataSet.isInstanceOf[DistributedFeatureSet[T]]) {
+      trainingDataSet.toDistributed()
+    } else {
+      trainingDataSet
+    }
     InternalOptimizerUtil.endEpoch(this)
     this
   }
