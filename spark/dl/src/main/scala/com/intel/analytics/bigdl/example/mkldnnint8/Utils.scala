@@ -25,7 +25,8 @@ object Utils {
     batchSize: Int = 128
   )
 
-  val testParser = new OptionParser[TestParams]("BigDL ResNet on Cifar10 Test Example") {
+  val testParser = new OptionParser[TestParams](
+    "BigDL ResNet-50 with mkldnn int8 on ImageNet Test Example") {
     opt[String]('f', "folder")
       .text("the location of Cifar10 dataset")
       .action((x, c) => c.copy(folder = x))
@@ -38,8 +39,5 @@ object Utils {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
-    opt[Boolean]('q', "quantize")
-      .text("quantize the model")
-      .action((x, c) => c.copy(quantize = x))
   }
 }
