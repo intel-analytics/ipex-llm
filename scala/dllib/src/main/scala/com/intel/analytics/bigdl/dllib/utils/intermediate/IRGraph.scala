@@ -135,6 +135,10 @@ private[bigdl] class IRGraph[T: ClassTag](
     graph.resetTimes()
   }
 
+  override def release(): Unit = {
+    graph.release()
+  }
+
   private def initPrimitives(input: Activity): Unit = {
     if (!initPrim && graph.isInstanceOf[DnnGraph]) {
       val inputMemory = new Array[MemoryData](inputFormats.length)
