@@ -17,7 +17,7 @@
 package com.intel.analytics.zoo.feature.pmem
 
 import com.intel.analytics.bigdl.dataset.{ByteRecord, Sample}
-import com.intel.analytics.zoo.feature.DistributedFeatureSet
+import com.intel.analytics.zoo.feature.{CachedDistributedFeatureSet, DistributedFeatureSet}
 import com.intel.analytics.zoo.feature.common.ArrayLike
 import org.apache.spark.rdd.RDD
 
@@ -138,7 +138,7 @@ object PmemFeatureSet {
       nativeArrayConverter.toArray(dataIter, countIter)
     }.setName(s"FeatureSet: ${data.name} cached in PMEM")
       .cache()
-    new DistributedFeatureSet[T](arrayRDD.asInstanceOf[RDD[ArrayLike[T]]])
+    new CachedDistributedFeatureSet[T](arrayRDD.asInstanceOf[RDD[ArrayLike[T]]])
   }
 
   def rdd[T: ClassTag](data: RDD[T],
