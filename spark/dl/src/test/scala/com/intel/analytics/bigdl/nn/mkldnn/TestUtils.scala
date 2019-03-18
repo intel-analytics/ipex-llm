@@ -425,7 +425,7 @@ object Collect {
   }
 }
 
-object Utils {
+object TestUtils {
   def time[R](block: => R): (Double, R) = {
     val t0 = System.nanoTime()
     val result = block

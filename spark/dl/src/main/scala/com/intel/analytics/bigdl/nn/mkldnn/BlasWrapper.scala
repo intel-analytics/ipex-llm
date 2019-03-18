@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine._
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.{Util => NNUtils, _}
 import org.apache.log4j.Logger
 
 /**
@@ -142,13 +142,13 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
   private def initModules(): Unit = {
     subModels = if (module.parameters() != null) {
-        val wb = Util.getAndClearWeightBias(module.parameters())
+        val wb = NNUtils.getAndClearWeightBias(module.parameters())
         val models = (1 to subModelNumber).map(i => {
           val m = module.cloneModule()
-          Util.putWeightBias(wb, m)
+          NNUtils.putWeightBias(wb, m)
           m.asInstanceOf[Module[Float]]
         }).toArray
-        Util.putWeightBias(wb, module)
+        NNUtils.putWeightBias(wb, module)
         models
       } else {
         val models = (1 to subModelNumber).map(i => {

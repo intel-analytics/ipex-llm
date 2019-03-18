@@ -30,7 +30,9 @@ private[mkldnn] object MklDnnOps {
   }
 
   def streamSubmit(loc: Long, block: Int, primitives: Array[Long], length: Int,
-                   memory_primitives: Array[Long], buffers: Array[Tensor[Float]]): Unit = {
+    memory_primitives: Array[Long],
+    buffers: Array[Tensor[Float@unchecked]]): Unit = {
+    // the tensor maybe Tensor[Byte]. so use the unchecked to handle this
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     require(memory_primitives.length == buffers.length)
 

@@ -38,6 +38,11 @@ trait MklDnnModule extends MklDnnModuleHelper {
     this.runtime = runtime
   }
 
+  private[bigdl] def getRuntime: MklDnnRuntime = {
+    require(runtime != null, s"you should init the mkldnn runtime first")
+    runtime
+  }
+
   /**
    * Init the MKL-DNN primitives for the layer. Note that these primitives will be erased when
    * sent to a remote worker.
@@ -69,6 +74,8 @@ trait MklDnnModule extends MklDnnModuleHelper {
   private[mkldnn] def gradOutputFormats(): Array[MemoryData]
 
   private[mkldnn] def gradOutputWeightFormats(): Array[MemoryData]
+
+  def setQuantize(value: Boolean): this.type
 }
 
 trait MklDnnModuleHelper {
@@ -287,6 +294,8 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
 
     tensors.foreach(_.release())
   }
+
+  override def setQuantize(value: Boolean): MklDnnLayer.this.type = this
 }
 
 /**
@@ -377,5 +386,13 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
   override def release(): Unit = {
     super.release()
     reorderManager.release()
+  }
+
+  override def setQuantize(value: Boolean): this.type = {
+    this.modules.foreach {
+      case mkldnnModule: MklDnnModule => mkldnnModule.setQuantize(value)
+      case _ =>
+    }
+    this
   }
 }

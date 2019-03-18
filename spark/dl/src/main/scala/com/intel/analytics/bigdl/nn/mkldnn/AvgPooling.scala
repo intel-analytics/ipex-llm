@@ -16,8 +16,9 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.Utils
+import com.intel.analytics.bigdl.nn.{Utils => NNUtils}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class AvgPooling(
@@ -69,17 +70,25 @@ class AvgPooling(
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
     val (pt, pb, pl, pr, oh, ow) = if (padH == -1 && padW == -1) {
-      val sizes = Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
+      val sizes = NNUtils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
       (sizes(0), sizes(1), sizes(2), sizes(3), sizes(4), sizes(5))
     } else {
-      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW, ceilMode)
+      NNUtils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW, ceilMode)
     }
 
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
-    val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)
+    val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
+      Memory.Format.any)
+
+    val kind = if (phase == InferencePhase) {
+      PropKind.ForwardScoring
+    } else {
+      PropKind.ForwardTraining
+    }
+
     val description = MklDnn.PoolingForwardDescInit(
-      PropKind.Forward, algKind,
+      kind, algKind,
       _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
