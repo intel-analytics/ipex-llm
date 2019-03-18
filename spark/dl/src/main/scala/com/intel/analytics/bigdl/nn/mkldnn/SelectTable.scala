@@ -80,12 +80,12 @@ class SelectTable(val index: Int)(implicit ev: TensorNumeric[Float]) extends Mkl
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = inputs
-    _outputFormats = Array(inputs(index))
+    _outputFormats = Array(inputs(index - 1))
     (inputs, _outputFormats)
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    _gradInputFormats = Array(grad(index))
+    _gradInputFormats = Array(grad(index - 1))
     _gradOutputFormats = grad
     (grad, _gradInputFormats)
   }

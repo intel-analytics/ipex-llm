@@ -15,11 +15,11 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{AlgKind, Memory}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.mkl.{AlgKind, DataType, Memory}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
@@ -164,5 +164,59 @@ class MaxPoolingSpec extends BigDLSpecHelper {
     cloned.backward(input, gradOutput)
 
     Tools.dense(pool.gradInput) should be (Tools.dense(cloned.gradInput))
+  }
+
+  "max pooling with int8" should "be correct" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 3, 2, 2)
+
+    val kernel = 3
+    val pad = 1
+
+    val runtime = new MklDnnRuntime
+
+    val input = Tensor[Float](inputShape).rand(0, 1)
+
+    val heapData = HeapData(inputShape, Memory.Format.nchw, DataType.F32)
+    val nativeData = NativeData(inputShape, Memory.Format.nhwc, DataType.U8)
+    val inputScales = input.clone().max(1)._1.max(3)._1.max(4)._1.storage().array()
+    heapData.setMask(0)
+    heapData.setScales(inputScales.map(x => 255f / x))
+
+    val reorder = ReorderMemory(nativeData)
+    reorder.setRuntime(runtime)
+    reorder.initFwdPrimitives(Array(heapData), InferencePhase)
+
+    val reorderedInput = reorder.forward(input)
+
+    {
+      val len = inputShape.product
+      val output = new Array[Byte](len)
+      Memory.CopyPtr2ByteArray(reorderedInput.asInstanceOf[DnnTensor[Byte]].storageAddress(),
+        0, output, 0, len, 1)
+      output.foreach(println)
+    }
+
+    val pool = MaxPooling(3, 3, 2, 2)
+    pool.evaluate()
+    pool.setRuntime(runtime)
+    pool.initFwdPrimitives(Array(nativeData), InferencePhase)
+    pool.forward(reorderedInput)
+
+    {
+      val len = outputShape.product
+      val output = new Array[Byte](len)
+      Memory.CopyPtr2ByteArray(pool.output.asInstanceOf[DnnTensor[Byte]].storageAddress(),
+        0, output, 0, len, 1)
+      output.foreach(println)
+    }
+
+    val heapData2 = HeapData(outputShape, Memory.Format.nchw, DataType.F32)
+    val reorder2 = ReorderMemory(heapData2)
+    reorder2.setRuntime(runtime)
+    reorder2.initFwdPrimitives(pool.outputFormats(), InferencePhase)
+    reorder2.forward(pool.output)
+
+    println(reorder2.output)
   }
 }

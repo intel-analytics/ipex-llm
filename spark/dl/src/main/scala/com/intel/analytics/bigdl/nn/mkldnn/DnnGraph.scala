@@ -18,20 +18,15 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import java.util
 
-import breeze.linalg.Axis._1
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
-import com.intel.analytics.bigdl.nn.{DetectionOutputSSD, Graph, StaticGraph, mkldnn}
+import com.intel.analytics.bigdl.nn.{Graph, mkldnn, MklInt8Convertible}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{LayerException, Node, T}
-import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.utils.{Node, T}
 
 import scala.collection.mutable
-import scala.reflect.ClassTag
 
 
 class DnnGraph(
@@ -40,7 +35,7 @@ class DnnGraph(
   private val _variables: Option[(Array[Tensor[Float]], Array[Tensor[Float]])] = None,
   private val enableExcludeChecking: Boolean = true)
   extends Graph[Float](_inputs, _outputs, _variables)
-  with MklDnnLayer {
+  with MklDnnLayer with MklInt8Convertible {
   private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var inputCache: Array[Activity] = _
@@ -422,8 +417,15 @@ class DnnGraph(
         val realInputAndOutputFormats =
           m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
         lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
-          case (o, i) => reorderManager.register(o, i)
+          case (o, i) =>
+            Helper.copyMaskAndScales(o, i)
+            reorderManager.register(o, i)
         }
+
+        // copy the scales from the input formats to output formats, for some layers,
+        // it will not copy the mask and scales automatically or generate the scales themselves
+        Helper.copyMaskAndScales(realInputAndOutputFormats._1, realInputAndOutputFormats._2)
+
         if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
       }
     }
@@ -485,6 +487,36 @@ class DnnGraph(
   override def release(): Unit = {
     super.release()
     reorderManager.release()
+  }
+
+  override def calcScales(input: Activity): Unit = {
+    if (input == null) return
+
+    var i = 0
+    while(i < forwardExecution.length) {
+      val node = forwardExecution(i)
+      val nodeInput = if (skipPrimitiveId(i)) {
+        findInput(node, input)
+      } else {
+        findDnnInput(node, input)
+      }
+
+      node.element match {
+        case convertible: MklInt8Convertible =>
+          convertible.calcScales(nodeInput)
+        case _ =>
+      }
+      i += 1
+    }
+  }
+
+  override def setQuantize(value: Boolean): DnnGraph.this.type = {
+    this.forwardExecution.foreach { node =>
+      if (node.element.isInstanceOf[MklDnnModule]) {
+        node.element.asInstanceOf[MklDnnModule].setQuantize(value)
+      }
+    }
+    this
   }
 }
 

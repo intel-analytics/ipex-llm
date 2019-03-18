@@ -15,10 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.mkl.{DataType, Memory}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 import org.apache.commons.lang3.SerializationUtils
 
@@ -97,5 +97,43 @@ class ConcatTableSpec extends BigDLSpecHelper {
     Tools.dense(ct.output.toTable(2)) should be(Tools.dense(cloned.output.toTable(2)))
 
     Tools.dense(ct.gradInput) should be(Tools.dense(cloned.gradInput))
+  }
+
+  "ConcatTable with U8" should "be good" in {
+    val shape = Array(4, 3, 5, 5)
+    val input = Tensor[Float](shape).rand(0, 1)
+
+    println(input)
+
+    val nativeData1 = NativeData(shape, Memory.Format.nchw, DataType.U8)
+    val nativeData2 = NativeData(shape, Memory.Format.nchw, DataType.U8)
+    val heapData = HeapData(shape, Memory.Format.nchw, DataType.F32)
+    heapData.setMask(0)
+    val inputScales = Array(input.clone().abs().max())
+    heapData.setScales(inputScales.map(x => 255f / x))
+
+    val concat = ConcatTable()
+
+    concat.add(ReorderMemory(nativeData1))
+    concat.add(ReorderMemory(nativeData2))
+    concat.compile(Phase.InferencePhase, Array(heapData))
+
+    concat.forward(input)
+
+    val output1 = new Array[Byte](shape.product)
+    Memory.CopyPtr2ByteArray(
+      concat.output.toTable[Tensor[Float]](1)
+        .asInstanceOf[DnnTensor[Byte]].storageAddress(),
+      0, output1, 0, shape.product, 1)
+    output1.foreach(println)
+
+    val output2 = new Array[Byte](shape.product)
+    Memory.CopyPtr2ByteArray(
+      concat.output.toTable[Tensor[Float]](1)
+        .asInstanceOf[DnnTensor[Byte]].storageAddress(),
+      0, output2, 0, shape.product, 1)
+    output2.foreach(println)
+
+    output1 should be (output2)
   }
 }
