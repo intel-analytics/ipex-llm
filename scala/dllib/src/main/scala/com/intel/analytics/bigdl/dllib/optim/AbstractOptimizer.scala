@@ -128,7 +128,11 @@ abstract class AbstractOptimizer {
         weightsResults.foreach(_.waitResult())
       }
 
-      workingModels.foreach(_.evaluate())
+      if (Engine.getEngineType() == MklDnn) {
+        if (dataIter.hasNext) workingModels.foreach(_.evaluate())
+      } else {
+        workingModels.foreach(_.evaluate())
+      }
       dataIter.map(batch => {
         val stackSize = batch.size() / _subModelNumber
         val extraSize = batch.size() % _subModelNumber

@@ -481,6 +481,11 @@ class DnnGraph(
     )
     checkDuplicate()
   }
+
+  override def release(): Unit = {
+    super.release()
+    reorderManager.release()
+  }
 }
 
 object DnnGraph {
