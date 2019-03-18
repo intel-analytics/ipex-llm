@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Xavier, Zeros}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
@@ -107,7 +107,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val weight1 = conv.weight.dense
     val gradweight1 = conv.gradWeight.dense
-    val bias1 = Tools.dense(conv.bias.native).toTensor[Float]
+    val bias1 = Tools.dense(conv.bias.native[Float]).toTensor[Float]
     val gradbias1 = Tools.dense(conv.gradBias.dense).toTensor
 
     val output2 = layer.forward(input)
@@ -605,6 +605,69 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Equivalent.nearequals(model.getParameters()._1, blas.getParameters()._1) should be (true)
     // control the epsilon to 1e-4, not 1e-5
     Equivalent.nearequals(model.getParameters()._2, blas.getParameters()._2, 1e-4) should be (true)
+  }
+
+  "unsigned input quantization" should "work correctly" in {
+    RNG.setSeed(1)
+
+    val inputShape = Array(1, 2, 12, 12)
+    val outputShape = Array(1, 4, 8, 8)
+
+    val initBias = Tensor[Float](4).fill(1.0f)
+
+    val model = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(SpatialConvolution(2, 4, 5, 5, initBias = initBias)).setName("conv2")
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+
+    model.evaluate()
+    val input = Tensor[Float](inputShape).rand(-1, 1)
+    model.compile(InferencePhase)
+    val output = model.forward(input).toTensor.clone()
+    model.calcScales(input)
+
+    val quantized = model.quantize()
+    quantized.asInstanceOf[Sequential].compile(InferencePhase)
+    quantized.forward(input)
+    Equivalent.nearequals(output, quantized.output.toTensor, 1e-1) should be (true)
+  }
+
+  "generate the convolution scales with random" should "work correctly" in {
+    RNG.setSeed(1)
+    val inputShape = Array(1, 1, 2, 2)
+    val outputShape = Array(1, 2, 1, 1)
+
+    val inputData = Array[Float](-100, 12, 14, 67)
+    val input = Tensor[Float](inputShape).rand(-100, 100)
+
+    val initWeight = Tensor[Float](Array(2, 1, 2, 2)).rand(-10, 10)
+    val initBias = Tensor[Float](Array(2)).rand(-1, 1)
+
+    val conv = SpatialConvolution(1, 2, 2, 2)
+
+    val seq = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(conv)
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+
+    seq.compile(InferencePhase)
+    seq.forward(input)
+
+    val outputFP32Model = seq.forward(input).toTensor.clone()
+
+    seq.calcScales(input)
+
+    val quantizedModel = seq.quantize()
+    quantizedModel.asInstanceOf[Sequential].compile(InferencePhase)
+
+    val outputInt8Model = quantizedModel.forward(input).toTensor.clone()
+
+    println(outputFP32Model)
+    println(outputInt8Model)
+
+    outputFP32Model.storage().array().zip(outputInt8Model.storage().array()).foreach { x =>
+      (Math.abs(x._1 - x._2) / Math.max(Math.abs(x._1), Math.abs(x._2)) <= 1e-1) should be (true)
+    }
   }
 
   def prototxt(inputShape: Array[Int], name: String,

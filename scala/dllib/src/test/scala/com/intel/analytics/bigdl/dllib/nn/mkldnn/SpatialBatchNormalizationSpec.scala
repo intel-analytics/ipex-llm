@@ -213,12 +213,12 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     bn.initBwdPrimitives(Array(defaultFormat), TrainingPhase)
     bn.initGradWPrimitives(Array(defaultFormat), TrainingPhase)
 
-    Utils.manyTimes(bn.forward(input))(10)
+    TestUtils.manyTimes(bn.forward(input))(10)
 
     val nnBn = nn.SpatialBatchNormalization(channel, epsilon,
       initWeight = initWeight, initBias = initBias)
 
-    Utils.manyTimes(nnBn.forward(input))(10)
+    TestUtils.manyTimes(nnBn.forward(input))(10)
 
     val output = Tools.toNCHW(bn.output.toTensor, bn.outputFormats()(0))
 
