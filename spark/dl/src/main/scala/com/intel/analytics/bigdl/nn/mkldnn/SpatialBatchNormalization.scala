@@ -66,6 +66,8 @@ class SpatialBatchNormalization(
 
   private val runningMeanScaled = Tensor[Float].resizeAs(runningMean.dense)
   private val runningVarianceScaled = Tensor[Float].resizeAs(runningVariance.dense)
+
+  // the blank shoud be here, otherwise the runningVarianceScaled will be a method
   {
     val wInit = Ones // RandomUniform(0, 1)
     val bInit = Zeros

@@ -21,9 +21,11 @@ import java.io.File
 import java.util.UUID
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.mkldnn.DnnGraph
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
-import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -498,8 +500,8 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val bn1 = SpatialBatchNormalization[Float](2)
 
     bn1.calcScales(inputTensor)
-    bn1.getInputScales() should be (Array(Array[Float](inputTensor.max())))
-    bn1.getOutputScales() should be (Array(Array[Float](bn1.output.max())))
+    bn1.getInputScales() should be (Array(Array[Float](inputTensor.abs().max())))
+    bn1.getOutputScales() should be (Array(Array[Float](bn1.output.abs().max())))
 
     bn1.saveModule(modelPath, weightPath, true)
 
