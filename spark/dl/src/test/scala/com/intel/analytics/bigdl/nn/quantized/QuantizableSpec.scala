@@ -25,14 +25,14 @@ import com.intel.analytics.bigdl.nn.{Linear => NNLinear, SpatialConvolution => N
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, T, Table}
 import org.apache.log4j.Logger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class QuantizableSpec extends FlatSpec with Matchers with BeforeAndAfter {
   before {
     System.setProperty("bigdl.engineType", "mklblas")
-    Engine.reset
+    Engine.setEngineType(MklBlas)
   }
 
   after {
