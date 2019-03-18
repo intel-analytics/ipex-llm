@@ -31,7 +31,10 @@ class DnnTensor[T: ClassTag](
 ) (implicit ev: TensorNumeric[T])
   extends DnnTensorUnsupportOperations[T]{
 
-  override def nElement(): Int = sizes.product
+  // performance regression, the sizes.product will make the performance downgrade.
+  private val _nElement: Int = sizes.product
+
+  override def nElement(): Int = _nElement
 
   override def copy(other: Tensor[T]): Tensor[T] = {
     other match {

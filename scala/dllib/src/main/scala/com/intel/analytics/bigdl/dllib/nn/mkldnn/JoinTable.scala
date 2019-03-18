@@ -49,7 +49,7 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
       i += 1
     }
     val primDesc = MklDnn.ConcatPrimitiveDescCreate(
-      MklDnn.MemoryDescInit(totalShape.length, totalShape, DataType.F32, Memory.Format.any),
+      MklDnn.MemoryDescInit(totalShape.length, totalShape, inputs(0).dataType, Memory.Format.any),
       inputs.length, dimension - 1, _inputFormats.map(_.getPrimitiveDescription(runtime)))
 
     _outputFormats = Array(MemoryData.primitiveOutput(primDesc))

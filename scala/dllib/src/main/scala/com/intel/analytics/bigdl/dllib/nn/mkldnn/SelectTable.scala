@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.nn.Utils
+import com.intel.analytics.bigdl.nn.{Utils => NNUtils}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -46,14 +46,14 @@ class SelectTable(val index: Int)(implicit ev: TensorNumeric[Float]) extends Mkl
   override def updateGradInput(in: Activity, gradOutput: Activity): Table = {
     val input = in.asInstanceOf[Table]
     gradInput = T()
-    Utils.zeroTableCopy(gradInput.asInstanceOf[Table], input)
+    NNUtils.zeroTableCopy(gradInput.asInstanceOf[Table], input)
     val index = if (this.index < 0) {
       input.length() + this.index + 1
     } else {
       this.index
     }
 
-    Utils.recursiveCopy(gradInput.asInstanceOf[Table](index), gradOutput)
+    NNUtils.recursiveCopy(gradInput.asInstanceOf[Table](index), gradOutput)
 
     require(gradInput.asInstanceOf[Table].contains(index), "Index exceeds the size of input table")
 
@@ -80,12 +80,12 @@ class SelectTable(val index: Int)(implicit ev: TensorNumeric[Float]) extends Mkl
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = inputs
-    _outputFormats = Array(inputs(index))
+    _outputFormats = Array(inputs(index - 1))
     (inputs, _outputFormats)
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    _gradInputFormats = Array(grad(index))
+    _gradInputFormats = Array(grad(index - 1))
     _gradOutputFormats = grad
     (grad, _gradInputFormats)
   }

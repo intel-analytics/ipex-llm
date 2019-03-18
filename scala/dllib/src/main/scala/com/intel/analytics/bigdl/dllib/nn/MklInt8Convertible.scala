@@ -55,7 +55,7 @@ trait MklInt8Convertible {
 
     if (inputActvt != null) {
       val module = this.asInstanceOf[AbstractModule[_, _, Float]]
-      val outputActvt = module.forward(inputActvt)
+      val outputActvt = mkldnn.Utils.getOutput(module, inputActvt)
 
       module match {
         case graph: Graph[Float] => calcGraphScales(inputActvt, outputActvt)
@@ -64,6 +64,12 @@ trait MklInt8Convertible {
           calcModuleScales(inputActvt, outputActvt, linear.weight)
         case spatialConv: SpatialConvolution[Float@unchecked] =>
           calcModuleScales(inputActvt, outputActvt, spatialConv.weight)
+        case relu: ReLU[Float@unchecked] =>
+          calcModuleScales(inputActvt, outputActvt)
+        case caddTable: CAddTable[Float@unchecked, Float@unchecked] =>
+          calcModuleScales(inputActvt, outputActvt)
+        case bn: SpatialBatchNormalization[Float@unchecked] =>
+          calcModuleScales(inputActvt, outputActvt)
         case sequential: Sequential[Float@unchecked] =>
           calcSequentialScales(inputActvt, outputActvt)
         case concatTable: ConcatTable[Float@unchecked] =>
@@ -77,11 +83,22 @@ trait MklInt8Convertible {
           calcSequentialScales(inputActvt, outputActvt)
         case dnnConcatTable: mkldnn.ConcatTable =>
           calcConcatTableScales(inputActvt, outputActvt)
+        case relu: mkldnn.ReLU =>
+          calcModuleScales(inputActvt, outputActvt)
+        case bn: mkldnn.SpatialBatchNormalization =>
+          calcModuleScales(inputActvt, outputActvt)
+        case caddTable: mkldnn.CAddTable =>
+          calcModuleScales(inputActvt, outputActvt)
         case _ => throw new UnsupportedOperationException(
           "Int8 conversion is not supported for module: " + module.getName()
         )
       }
     }
+  }
+
+  private[bigdl] def flushWeightScales(weight: Tensor[Float]): Unit = {
+    weightScalesBuffer.clear()
+    appendWeightScales(calcTensorScale(weight, weightDimMask))
   }
 
   /**
@@ -92,11 +109,13 @@ trait MklInt8Convertible {
    */
   private def calcModuleScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     if (inputActvt != null) {
-      calcActivityScales(inputActvt, inputDimMask).foreach(appendInputScales)
+      val denseIn = mkldnn.Utils.getDenseIn(this, inputActvt)
+      calcActivityScales(denseIn, inputDimMask).foreach(appendInputScales)
     }
 
     if (outputActvt != null) {
-      calcActivityScales(outputActvt, outputDimMask).foreach(appendOutputScales)
+      val denseOut = mkldnn.Utils.getDenseOut(this, outputActvt)
+      calcActivityScales(denseOut, outputDimMask).foreach(appendOutputScales)
     }
   }
 
@@ -139,12 +158,13 @@ trait MklInt8Convertible {
    * @return scalesBuffer Array, an array stores scales
    */
   private def calcTensorScale(tensor: Tensor[Float], mask: Int): Array[Float] = {
+    // we must clone the tensor, the abs will change the original tensor's value
     if (mask == 0) { // no mask performed, return max of tensor storage
-      Array(tensor.abs().max())
+      Array(tensor.clone().abs().max())
     } else if (scala.math.pow(2, tensor.dim()) - 1 == mask) {
       // mask bits are ON for all dimensions
       // return the abs value of tensor as an array
-      tensor.abs().storage().toArray[Float]
+      tensor.clone().abs().storage().toArray[Float]
     } else {
       // mask bits are ON for some of dimensions
       // slice storage according to the dimension if its mask bit is ON
@@ -159,7 +179,7 @@ trait MklInt8Convertible {
         if (bitMask(binStrLen - i) == 1) {
           val dimSize = tensor.size(i)
           for (j <- 1 to dimSize) {
-            scalesBuffer.append(tensor.select(i, j).abs().max())
+            scalesBuffer.append(tensor.select(i, j).clone().abs().max())
           }
         }
       }
@@ -261,7 +281,8 @@ trait MklInt8Convertible {
    */
   private def getWeight(module: AbstractModule[_, _, Float]): Tensor[Float] = {
     if (module != null) {
-      module.getParameters()._1
+      // the getParameters will flatten the weight and bias, it's wrong
+      module.parameters()._1(0)
     } else {
       null
     }
