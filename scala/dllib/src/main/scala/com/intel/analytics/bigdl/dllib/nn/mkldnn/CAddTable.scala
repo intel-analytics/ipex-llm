@@ -16,10 +16,11 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
+import com.intel.analytics.bigdl.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.utils.T
 
-class CAddTable extends MklDnnLayer {
+class CAddTable extends MklDnnLayer with MklInt8Convertible {
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = nativeData(inputs)
     val shape = inputs(0).shape.clone()
@@ -30,8 +31,18 @@ class CAddTable extends MklDnnLayer {
       }
     }
 
-    val outputMD = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
-    val scales = inputs.map(_ => 1f)
+    val outputMD = MklDnn.MemoryDescInit(shape.length, shape, inputs(0).dataType, Memory.Format.any)
+
+    val scales = inputs.map { x =>
+      if (x.dataType != DataType.F32 && x.scales.nonEmpty) {
+        // here only supports 1 scale for cadd
+        val max = inputs.flatMap(_.scales).max
+        x.scales.head / max
+      } else {
+        1.0f
+      }
+    }
+
     val pd = MklDnn.SumPrimitiveDescCreate(outputMD, inputs.length, scales,
       inputs.map(_.getPrimitiveDescription(runtime)))
     _outputFormats = Array(MemoryData.primitiveOutput(pd))
