@@ -120,7 +120,16 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     LoggerFilter.redirectSparkInfoLogs()
     this.optimMethod = optimizer
     this.criterion = loss
-    this.vMethods = if (metrics == null) null else metrics.toArray
+
+    val lossArray: Array[ValidationMethod[T]] = Array(new Loss(this.criterion))
+
+    if (metrics == null) {
+      this.vMethods = lossArray
+    }
+    else {
+      val metricsArray = metrics.toArray
+      this.vMethods = lossArray ++ metricsArray
+    }
   }
 
   /**
