@@ -166,6 +166,7 @@ class MaxPoolingSpec extends BigDLSpecHelper {
     Tools.dense(pool.gradInput) should be (Tools.dense(cloned.gradInput))
   }
 
+
   "max pooling with int8" should "be correct" in {
     val inputShape = Array(4, 3, 5, 5)
     val outputShape = Array(4, 3, 2, 2)
@@ -179,44 +180,36 @@ class MaxPoolingSpec extends BigDLSpecHelper {
 
     val heapData = HeapData(inputShape, Memory.Format.nchw, DataType.F32)
     val nativeData = NativeData(inputShape, Memory.Format.nhwc, DataType.U8)
-    val inputScales = input.clone().max(1)._1.max(3)._1.max(4)._1.storage().array()
-    heapData.setMask(0)
-    heapData.setScales(inputScales.map(x => 255f / x))
+    val inputScales = Array(input.max())
+
+    nativeData.setMask(0)
+    nativeData.setScales(inputScales.map(x => 255.0f / x))
 
     val reorder = ReorderMemory(nativeData)
-    reorder.setRuntime(runtime)
-    reorder.initFwdPrimitives(Array(heapData), InferencePhase)
-
-    val reorderedInput = reorder.forward(input)
-
-    {
-      val len = inputShape.product
-      val output = new Array[Byte](len)
-      Memory.CopyPtr2ByteArray(reorderedInput.asInstanceOf[DnnTensor[Byte]].storageAddress(),
-        0, output, 0, len, 1)
-      output.foreach(println)
-    }
-
     val pool = MaxPooling(3, 3, 2, 2)
-    pool.evaluate()
-    pool.setRuntime(runtime)
-    pool.initFwdPrimitives(Array(nativeData), InferencePhase)
-    pool.forward(reorderedInput)
-
-    {
-      val len = outputShape.product
-      val output = new Array[Byte](len)
-      Memory.CopyPtr2ByteArray(pool.output.asInstanceOf[DnnTensor[Byte]].storageAddress(),
-        0, output, 0, len, 1)
-      output.foreach(println)
-    }
-
     val heapData2 = HeapData(outputShape, Memory.Format.nchw, DataType.F32)
     val reorder2 = ReorderMemory(heapData2)
-    reorder2.setRuntime(runtime)
-    reorder2.initFwdPrimitives(pool.outputFormats(), InferencePhase)
-    reorder2.forward(pool.output)
 
-    println(reorder2.output)
+    val seq = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(reorder)
+      .add(pool)
+      .add(reorder2)
+
+    seq.evaluate()
+    seq.compile(InferencePhase)
+    seq.forward(input)
+
+    val seq2 = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(MaxPooling(3, 3, 2, 2))
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+
+    seq2.evaluate()
+    seq2.compile(InferencePhase)
+    seq2.forward(input)
+
+    Equivalent.nearequals(seq.output.toTensor, seq2.output.toTensor, 1e-2) should be (true)
   }
+
 }

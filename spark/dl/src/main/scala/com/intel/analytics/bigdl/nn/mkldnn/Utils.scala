@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 
-private[bigdl] object Helper {
+private[bigdl] object Utils {
   def copyMaskAndScales(from: MemoryData, to: MemoryData): Unit = {
     if (to.scales.isEmpty) {
       to.setScales(from.scales.clone())
@@ -97,7 +97,7 @@ private[bigdl] object Helper {
   def getDenseIn(module: MklInt8Convertible, input: Activity): Activity = {
     if (module.isInstanceOf[MklDnnModule]) {
       val mklDnnLayer = module.asInstanceOf[MklDnnModule]
-      Helper.denseActivity(mklDnnLayer.inputFormats(), input, true, mklDnnLayer.getRuntime)
+      Utils.denseActivity(mklDnnLayer.inputFormats(), input, true, mklDnnLayer.getRuntime)
     } else {
       input
     }
@@ -106,7 +106,7 @@ private[bigdl] object Helper {
   def getDenseOut(module: MklInt8Convertible, output: Activity): Activity = {
     if (module.isInstanceOf[MklDnnModule]) {
       val mklDnnLayer = module.asInstanceOf[MklDnnModule]
-      Helper.denseActivity(mklDnnLayer.outputFormats(), output, true, mklDnnLayer.getRuntime)
+      Utils.denseActivity(mklDnnLayer.outputFormats(), output, true, mklDnnLayer.getRuntime)
     } else {
       output
     }
@@ -127,7 +127,7 @@ private[bigdl] object Helper {
     module match {
       case mkldnnModule: MklInt8Convertible =>
         mkldnnModule.calcScales(input)
-        Helper.setConvNegativeInput(mkldnnModule, input)
+        Utils.setConvNegativeInput(mkldnnModule, input)
       case _ =>
     }
   }

@@ -52,10 +52,10 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
       val (realInputFormats, outputFormats) = m.initFwdPrimitives(lastOutputFormats, phase)
       lastOutputFormats.zip(realInputFormats).foreach {
         case (o, i) =>
-          Helper.copyMaskAndScales(o, i)
+          Utils.copyMaskAndScales(o, i)
           reorderManager.register(o, i)
       }
-      Helper.copyMaskAndScales(realInputFormats, outputFormats)
+      Utils.copyMaskAndScales(realInputFormats, outputFormats)
       if (i == 0) firstRealInputFormats = realInputFormats
       lastOutputFormats = outputFormats
     }
@@ -376,7 +376,7 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
     var i = 0
     var lastOutput = input
     while (i < this.modules.length - 1) {
-      Helper.calcScales(this.modules(i), lastOutput)
+      Utils.calcScales(this.modules(i), lastOutput)
 
       val curOutput = this.modules(i).output
       require(mklDnnModules(i).outputFormats().length == mklDnnModules(i + 1).inputFormats().length)
@@ -389,7 +389,7 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
       i += 1
     }
 
-    Helper.calcScales(this.modules(i), lastOutput)
+    Utils.calcScales(this.modules(i), lastOutput)
   }
 
   override def toString(): String = {

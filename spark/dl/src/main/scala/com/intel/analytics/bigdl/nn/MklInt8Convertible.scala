@@ -55,7 +55,7 @@ trait MklInt8Convertible {
 
     if (inputActvt != null) {
       val module = this.asInstanceOf[AbstractModule[_, _, Float]]
-      val outputActvt = mkldnn.Helper.getOutput(module, inputActvt)
+      val outputActvt = mkldnn.Utils.getOutput(module, inputActvt)
 
       module match {
         case graph: Graph[Float] => calcGraphScales(inputActvt, outputActvt)
@@ -109,12 +109,12 @@ trait MklInt8Convertible {
    */
   private def calcModuleScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     if (inputActvt != null) {
-      val denseIn = mkldnn.Helper.getDenseIn(this, inputActvt)
+      val denseIn = mkldnn.Utils.getDenseIn(this, inputActvt)
       calcActivityScales(denseIn, inputDimMask).foreach(appendInputScales)
     }
 
     if (outputActvt != null) {
-      val denseOut = mkldnn.Helper.getDenseOut(this, outputActvt)
+      val denseOut = mkldnn.Utils.getDenseOut(this, outputActvt)
       calcActivityScales(denseOut, outputDimMask).foreach(appendOutputScales)
     }
   }

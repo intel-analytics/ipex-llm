@@ -418,13 +418,13 @@ class DnnGraph(
           m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
         lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
           case (o, i) =>
-            Helper.copyMaskAndScales(o, i)
+            Utils.copyMaskAndScales(o, i)
             reorderManager.register(o, i)
         }
 
         // copy the scales from the input formats to output formats, for some layers,
         // it will not copy the mask and scales automatically or generate the scales themselves
-        Helper.copyMaskAndScales(realInputAndOutputFormats._1, realInputAndOutputFormats._2)
+        Utils.copyMaskAndScales(realInputAndOutputFormats._1, realInputAndOutputFormats._2)
 
         if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
       }

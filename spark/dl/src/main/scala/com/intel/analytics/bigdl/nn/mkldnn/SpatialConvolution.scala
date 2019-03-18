@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{Utils => NNUtils, _}
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, DnnTensor, Tensor}
@@ -192,9 +192,10 @@ class SpatialConvolution(
     val inputWidth = inputMemoryData.shape(3)
 
     val sizes = if (padW == -1 && padH == -1) {
-        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW)
+        NNUtils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH,
+          kernelW)
       } else {
-        Utils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW,
+        NNUtils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW,
           padH, padW, ceilMode = false)
       }
 
