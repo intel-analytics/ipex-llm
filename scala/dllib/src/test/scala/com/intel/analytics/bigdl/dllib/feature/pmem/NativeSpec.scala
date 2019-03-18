@@ -125,7 +125,7 @@ class NativeSpec extends ZooSpecHelper {
       nodeNumber = 1,
       coresPerNode = 4,
       classNumber = 1000,
-      memoryType = DIRECT).asInstanceOf[DistributedDataSet[MiniBatch[Float]]]
+      memoryType = DIRECT).toDistributed()
     val data = imageNet.data(train = false)
     assert(data.count() == 3)
     data.collect()
