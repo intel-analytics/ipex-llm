@@ -52,7 +52,7 @@ private[bigdl] object ConversionUtils {
   def convert[T: ClassTag](model: Module[T], needQuantize: Boolean)(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val convertedModel = convert(model)
-    getInt8ModelIfNeeds(convertedModel, needQuantize)
+    getInt8ModelIfNeeded(convertedModel, needQuantize)
   }
 
   /**
@@ -70,7 +70,7 @@ private[bigdl] object ConversionUtils {
     } else dataset
   }
 
-  private def getInt8ModelIfNeeds[T: ClassTag](model: Module[T],
+  private def getInt8ModelIfNeeded[T: ClassTag](model: Module[T],
     needQuantize: Boolean)(implicit ev: TensorNumeric[T]): Module[T] = {
     // we will not set the model's quantize flag with `needQuantize`.
     // because Evaluator will always has the `false` of it.

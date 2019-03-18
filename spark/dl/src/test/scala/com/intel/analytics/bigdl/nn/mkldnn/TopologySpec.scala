@@ -1015,9 +1015,19 @@ class TopologySpec extends FlatSpec with Matchers {
   }
 
   "resnet50 model" should "work correctly" in {
+    def setRuningMeanAndVariance(model: DnnGraph): Unit = {
+      model.getForwardExecutions()
+        .filter(_.element.isInstanceOf[SpatialBatchNormalization])
+        .map(_.element.asInstanceOf[SpatialBatchNormalization])
+        .foreach(bn => {
+          bn.runningMean.dense.rand()
+          bn.runningVariance.dense.rand()
+        })
+    }
+
     RandomGenerator.RNG.setSeed(1)
     val model = ResNet.graph(4, 1000, T("depth" -> 50, "dataSet" -> ImageNet))
-    model.reset()
+    setRuningMeanAndVariance(model)
     val inputShape = Array(4, 3, 224, 224)
     val input = Tensor[Float](inputShape).rand(-1, 1)
 

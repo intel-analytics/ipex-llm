@@ -487,7 +487,8 @@ class DnnGraph(
   }
 
   override def release(): Unit = {
-    super.release()
+    // do not call super.release, it will call MklDnnLayer.release()
+    modules.foreach(_.release())
     reorderManager.release()
   }
 

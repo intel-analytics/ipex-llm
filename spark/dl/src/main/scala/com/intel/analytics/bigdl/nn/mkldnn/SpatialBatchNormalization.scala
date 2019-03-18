@@ -33,8 +33,6 @@ class SpatialBatchNormalization(
   private val initGradWeight: Tensor[Float] = null,
   private val initGradBias: Tensor[Float] = null
 ) extends MklDnnLayer with Initializable with MklInt8Convertible {
-  var scaleFactor: Tensor[Float] = Tensor[Float](1).fill(1f)
-  var biasFactor: Tensor[Float] = Tensor[Float](1).fill(1f)
 
   @transient private var forwardDesc: Long = 0L
   private var _relu: Boolean = false
@@ -63,6 +61,10 @@ class SpatialBatchNormalization(
   // TODO we should make it private. Currently, ResNet50 will use it out of this scope.
   val weightAndBias = new TensorMMap(Array(nOutput * 2))
   val gradWeightAndBias = new TensorMMap(Array(nOutput * 2))
+
+  // TODO the two should be learnable parameters
+  var scaleFactor: Float = 1.0f
+  var biasFactor: Float = 1.0f
 
   private val runningMeanScaled = Tensor[Float].resizeAs(runningMean.dense)
   private val runningVarianceScaled = Tensor[Float].resizeAs(runningVariance.dense)
@@ -99,8 +101,8 @@ class SpatialBatchNormalization(
     mean.copy(zeros)
     variance.copy(zeros)
 
-    runningMean.dense.zero()
-    runningVariance.dense.zero()
+    runningMean.copy(zeros)
+    runningVariance.copy(zeros)
   }
 
   private object Index extends Serializable {
@@ -128,7 +130,7 @@ class SpatialBatchNormalization(
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     val m = inputs(0).shape.product / this.nOutput
-    biasFactor.storage().array()(0) = if (m > 1) { m.toFloat / (m - 1) } else { 1 }
+    biasFactor = if (m > 1) { m.toFloat / (m - 1) } else { 1 }
 
     val List(mean, variance, runningMean, runningVariance): List[NativeData] =
       (0 until 4).map { _ =>
@@ -256,10 +258,8 @@ class SpatialBatchNormalization(
     } else {
       // we should re-computing the running mean and running variance.
       // FIXME should do it at `initFwdPrimitives`
-      mean.scale(runningMean.native.asInstanceOf[DnnTensor[Float]],
-        1 / scaleFactor.storage().array()(0))
-      variance.scale(runningVariance.native.asInstanceOf[DnnTensor[Float]],
-        1 / scaleFactor.storage().array()(0))
+      mean.scale(runningMean.native, 1 / scaleFactor)
+      variance.scale(runningVariance.native, 1 / scaleFactor)
     }
 
     updateWithNewTensor(updateOutputTensors, 0, input)
@@ -269,11 +269,10 @@ class SpatialBatchNormalization(
 
     if (this.isTraining()) {
       // update running(Mean, Var) and scaleFactor
-      scaleFactor.storage().array()(0) = scaleFactor.storage().array()(0) * momentum.toFloat + 1
+      scaleFactor = scaleFactor * momentum.toFloat + 1
 
-      mean.axpby(1, momentum.toFloat, runningMean.native.asInstanceOf[DnnTensor[Float]])
-      variance.axpby(biasFactor.storage().array()(0), momentum.toFloat,
-        runningVariance.native.asInstanceOf[DnnTensor[Float]])
+      mean.axpby(1, momentum.toFloat, runningMean.native)
+      variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
 
       runningMean.sync()
       runningVariance.sync()
@@ -344,8 +343,7 @@ class SpatialBatchNormalization(
     updateWithNewTensor(updateGradInputTensors, 3, gradOutput)
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
-      updateGradInputPrimitives.length, updateGradInputMemoryPrimitives,
-      updateGradInputTensors)
+      updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
     gradWeightAndBias.sync()
 

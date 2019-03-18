@@ -73,8 +73,8 @@ class FusionSpec extends FlatSpec with Matchers {
     val bn1 = SpatialBatchNormalization(64)
     bn1.runningMean.copy(runningMean)
     bn1.runningVariance.copy(runningVar)
-    bn1.scaleFactor.setValue(1.0f)
-    val reorder1 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
+    bn1.scaleFactor = 1.0f
+    val reorder1 = ReorderMemory(NativeData(inputShape, Memory.Format.nchw))
     val reorder11 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
     val model1 = Sequential().add(reorder1).add(conv1).add(bn1).add(reorder11)
     model1.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
@@ -85,7 +85,7 @@ class FusionSpec extends FlatSpec with Matchers {
     val bn2 = SpatialBatchNormalization(64)
     bn2.runningMean.copy(runningMean)
     bn2.runningVariance.copy(runningVar)
-    bn2.scaleFactor.setValue(1.0f)
+    bn2.scaleFactor = 1.0f
     val reorder2 = ReorderMemory(NativeData(inputShape, Memory.Format.nchw))
     val reorder22 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
     val model2 = Sequential().add(reorder2).add(conv2).add(bn2).add(reorder22)
@@ -240,7 +240,7 @@ class FusionSpec extends FlatSpec with Matchers {
     val bn1 = SpatialBatchNormalization(64)
     bn1.runningMean.copy(runningMean)
     bn1.runningVariance.copy(runningVar)
-    bn1.scaleFactor.fill(9.99f)
+    bn1.scaleFactor = 1.0f
     val reorder1 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
     val reorder11 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
     val model1 = Sequential().add(reorder1).add(conv1).add(bn1).add(reorder11)
@@ -254,7 +254,7 @@ class FusionSpec extends FlatSpec with Matchers {
     val bn2 = SpatialBatchNormalization(64)
     bn2.runningMean.copy(runningMean)
     bn2.runningVariance.copy(runningVar)
-    bn2.scaleFactor.fill(9.99f)
+    bn2.scaleFactor = 1.0f
     val reorder2 = ReorderMemory(NativeData(inputShape, Memory.Format.nchw))
     val reorder22 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
     val model2 = Sequential().add(reorder2).add(conv2).add(bn2).add(reorder22)

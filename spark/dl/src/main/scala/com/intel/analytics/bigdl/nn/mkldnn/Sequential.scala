@@ -25,20 +25,24 @@ import scala.collection.mutable.ArrayBuffer
 
 class Sequential extends MklDnnContainer with MklInt8Convertible {
 
-  def fuseConvBn: Boolean = {
-    System.getProperty("bigdl.mkldnn.fusion.convbn", "false").toBoolean
+  def fuse: Boolean = {
+    System.getProperty("bigdl.mkldnn.fusion", "false").toBoolean
   }
 
-  def fuseBnRelu: Boolean = {
-    System.getProperty("bigdl.mkldnn.fusion.bnrelu", "false").toBoolean
+  private def fuseConvBn: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.convbn", "false").toBoolean
   }
 
-  def fuseConvRelu: Boolean = {
-    System.getProperty("bigdl.mkldnn.fusion.convrelu", "false").toBoolean
+  private def fuseBnRelu: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.bnrelu", "false").toBoolean
   }
 
-  def fuseConvSum: Boolean = {
-    System.getProperty("bigdl.mkldnn.fusion.convsum", "false").toBoolean
+  private def fuseConvRelu: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.convrelu", "false").toBoolean
+  }
+
+  private def fuseConvSum: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.convsum", "false").toBoolean
   }
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {
@@ -309,8 +313,7 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
     val bnWeight = Tensor[Float].resizeAs(bn.weightAndBias.dense).copy(bn.weightAndBias.dense)
 
     (0 until bn.nOutput).foreach { j =>
-      val variance = originVar.storage().array()(j + originVar.storageOffset() - 1) /
-        bn.scaleFactor.storage().array()(0)
+      val variance = originVar.storage().array()(j + originVar.storageOffset() - 1)
       val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
       require(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
 
@@ -326,7 +329,7 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
       weight.mul(alpha)
 
       val bias = convBias.storage().array()(j)
-      val mean = originMean.storage().array()(j) / bn.scaleFactor.storage().array()(0)
+      val mean = originMean.storage().array()(j)
       convBias.storage().array()(j) = alpha / base * bias + beta - (alpha * mean) / base
     }
 
