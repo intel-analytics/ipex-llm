@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.int8
+package com.intel.analytics.bigdl.example.mkldnnint8
 
 import com.intel.analytics.bigdl.dataset.image.CropCenter
 import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
-object Quantize {
+object GenerateInt8Scales {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)

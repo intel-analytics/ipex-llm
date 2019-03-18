@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.int8
+package com.intel.analytics.bigdl.example.mkldnnint8
 
 import scopt.OptionParser
 
@@ -22,8 +22,7 @@ object Utils {
   case class TestParams(
     folder: String = "./",
     model: String = "",
-    batchSize: Int = 128,
-    quantize: Boolean = false
+    batchSize: Int = 128
   )
 
   val testParser = new OptionParser[TestParams]("BigDL ResNet on Cifar10 Test Example") {

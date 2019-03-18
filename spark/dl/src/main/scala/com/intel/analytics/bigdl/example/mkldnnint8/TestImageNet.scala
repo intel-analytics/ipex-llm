@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.int8
+package com.intel.analytics.bigdl.example.mkldnnint8
 
 import com.intel.analytics.bigdl.models.resnet.ImageNetDataSet
 import com.intel.analytics.bigdl.nn.Module
@@ -43,11 +43,7 @@ object TestImageNet {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val model = if (param.quantize) {
-        Module.loadModule[Float](param.model).quantize()
-      } else {
-        Module.loadModule[Float](param.model)
-      }
+      val model = Module.loadModule[Float](param.model).quantize()
 
       val evaluationSet = ImageNetDataSet.valDataSet(param.folder,
         sc, 224, param.batchSize).toDistributed().data(train = false)
