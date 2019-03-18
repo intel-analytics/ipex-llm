@@ -21,8 +21,9 @@ import java.io.File
 import java.util.UUID
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -76,6 +77,62 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     compareModules(linear2, loadedModule2)
   }
 
+  "Calculating scales" should "work correct for DNN Linear Module" in {
+    import com.intel.analytics.bigdl.mkl.Memory
+
+    val sampleMax = 999
+    val inputSize = 2
+    val outputSize = 2
+    var inputMask = 0
+    var outputMask = 0
+    val inputTensor = Tensor[Float](Array(4, inputSize)).rand(-1, 1)
+
+    // Global mask, null input
+    val linear0 = mkldnn.Linear(inputSize, outputSize)
+    linear0.calcScales(null)
+
+    linear0.getInputScales().isEmpty should be (true)
+    linear0.getOutputScales().isEmpty should be (true)
+    linear0.getWeightScales().isEmpty should be (true)
+
+    // Global mask, non-null input
+    val linear1 = mkldnn.Linear(inputSize, outputSize)
+    val seq1 = mkldnn.Sequential()
+      .add(mkldnn.Input(Array(4, inputSize), Memory.Format.nc))
+      .add(linear1)
+      .add(mkldnn.Output(Memory.Format.nc))
+
+    seq1.compile(InferencePhase)
+    seq1.forward(inputTensor)
+    seq1.calcScales(inputTensor)
+    linear1.getInputScales() should be (Array(Array[Float](inputTensor.abs().max())))
+    linear1.getOutputScales().length should be (1)
+    linear1.getOutputScales()(0).length should be (1)
+    linear1.getWeightScales().length should be (1)
+    linear1.getWeightScales()(0).length should be (1)
+
+    // Single dimension mask, non-null input
+    val linear2 = mkldnn.Linear(inputSize, outputSize)
+    val seq2 = mkldnn.Sequential()
+      .add(mkldnn.Input(Array(4, inputSize), Memory.Format.nc))
+      .add(linear2)
+      .add(mkldnn.Output(Memory.Format.nc))
+    seq2.compile(InferencePhase)
+
+    inputMask = Math.pow(2, 0).toInt
+    outputMask = Math.pow(2, 0).toInt
+    linear2.setInputDimMask(inputMask)
+    linear2.setOutputDimMask(outputMask)
+
+    seq2.forward(inputTensor)
+    seq2.calcScales(inputTensor)
+
+    val output2 = seq2.output.toTensor[Float]
+    linear2.getInputScales() should be (Array(getScalesFromTensor(inputTensor, inputMask)))
+    linear2.getOutputScales() should be (Array(getScalesFromTensor(output2, outputMask)))
+
+    // for dnn linear, we skip the saveModule, because we do not support
+  }
 
   private def compareModules(modX: MklInt8Convertible, modY: MklInt8Convertible): Unit = {
     modX.getInputDimMask() should be (modY.getInputDimMask())
@@ -144,6 +201,92 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     compareModules(spatialConv4, loadedModule4)
   }
 
+  "Calculating scales" should "work correct for DNN Spatial Convolution Module" in {
+    import com.intel.analytics.bigdl.mkl.Memory
+    val inputSize = 8
+    val outputSize = 8
+    var dimMaskIdx = 0
+    val input = Tensor[Float](4, 8, 8, 8).rand(-1, 1)
+
+    // Global mask, null input
+    val spatialConv0 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
+    spatialConv0.calcScales(null)
+    spatialConv0.getInputScales().isEmpty should be (true)
+    spatialConv0.getOutputScales().isEmpty should be (true)
+    spatialConv0.getWeightScales().isEmpty should be (true)
+
+    // Global mask, non-null input
+    val spatialConv1 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
+    val seq1 = mkldnn.Sequential()
+        .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+        .add(spatialConv1)
+        .add(mkldnn.Output(Memory.Format.nchw))
+
+    seq1.compile(InferencePhase)
+    seq1.forward(input)
+    spatialConv1.calcScales(input)
+
+    spatialConv1.getInputScales() should be (Array(Array[Float](input.clone().abs().max())))
+    spatialConv1.getOutputScales().length should be (1)
+    spatialConv1.getOutputScales()(0).length should be (1)
+    spatialConv1.getWeightScales().length should be (1)
+    spatialConv1.getWeightScales()(0).length should be (1)
+
+    seq1.release()
+
+    // Single input dimension mask, non-null input
+    dimMaskIdx = 1
+    val spatialConv2 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
+    val seq2 = mkldnn.Sequential()
+      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+      .add(spatialConv2)
+      .add(mkldnn.Output(Memory.Format.nchw))
+    seq2.compile(InferencePhase)
+    seq2.forward(input)
+
+    seq2.setInputDimMask(Math.pow(2, dimMaskIdx - 1).toInt)
+    seq2.calcScales(input)
+
+    spatialConv2.getInputScales().length should be (1)
+    spatialConv2.getInputScales().flatten.length should be (4)
+
+    seq2.release()
+
+    dimMaskIdx = 2
+    val spatialConv3 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
+    val seq3 = mkldnn.Sequential()
+        .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+        .add(spatialConv3)
+        .add(mkldnn.Output(Memory.Format.nchw))
+    seq3.compile(InferencePhase)
+    seq3.forward(input)
+
+    seq3.setInputDimMask(Math.pow(2, dimMaskIdx - 1).toInt)
+    seq3.calcScales(input)
+
+    val inputScales3 = Array((1 to input.size(dimMaskIdx)).map(
+      idx => input.select(dimMaskIdx, idx).abs().max()
+    ).toArray)
+    spatialConv3.getInputScales() should be (inputScales3)
+
+    seq3.release()
+
+    dimMaskIdx = 3
+    val spatialConv4 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
+    val seq4 = mkldnn.Sequential()
+        .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+        .add(spatialConv4)
+        .add(mkldnn.Output(Memory.Format.nchw))
+    seq4.compile(InferencePhase)
+    seq4.forward(input)
+
+    seq4.setInputDimMask(Math.pow(2, dimMaskIdx - 1).toInt)
+    seq4.calcScales(input)
+    val inputScales4 = Array((1 to input.size(dimMaskIdx)).map(
+      idx => input.select(dimMaskIdx, idx).abs().max()
+    ).toArray)
+    spatialConv4.getInputScales() should be (inputScales4)
+  }
 
   "Calculating scales" should "work correct for BLAS Sequential Module" in {
     var dimMaskIdx = 0
@@ -268,7 +411,6 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     compareModules(concatTable1, loadedModule1)
   }
 
-
   "Calculating scales" should "work correct for Graph Module" in {
     def makeTestingGraph(): Graph[Float] = {
       val input = Reshape(Array(1, 28, 28)).inputs()
@@ -319,7 +461,6 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .asInstanceOf[MklInt8Convertible]
     compareModules(graph1, loadedGraph1)
   }
-
 
   private def graphValidationHelper(graph: Graph[Float], inputActvt: Activity): Unit = {
     val nextNodes = graph.getForwardExecutions()

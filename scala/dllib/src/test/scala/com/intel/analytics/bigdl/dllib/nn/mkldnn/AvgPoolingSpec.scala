@@ -15,11 +15,11 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.mkl.{DataType, Memory}
 import com.intel.analytics.bigdl.nn.SpatialAveragePooling
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
@@ -190,5 +190,50 @@ class AvgPoolingSpec extends BigDLSpecHelper {
     cloned.backward(input, gradOutput)
 
     Tools.dense(pool.gradInput) should be (Tools.dense(cloned.gradInput))
+  }
+
+  "avg pooling with int8" should "be correct" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 3, 2, 2)
+
+    val kernel = 3
+    val pad = 1
+
+    val runtime = new MklDnnRuntime
+
+    val input = Tensor[Float](inputShape).rand(0, 1)
+
+    val heapData = HeapData(inputShape, Memory.Format.nchw, DataType.F32)
+    val nativeData = NativeData(inputShape, Memory.Format.nhwc, DataType.U8)
+    val inputScales = Array(input.max())
+
+    nativeData.setMask(0)
+    nativeData.setScales(inputScales.map(x => 255.0f / x))
+
+    val reorder = ReorderMemory(nativeData)
+    val pool = AvgPooling(3, 3, 2, 2)
+    val heapData2 = HeapData(outputShape, Memory.Format.nchw, DataType.F32)
+    val reorder2 = ReorderMemory(heapData2)
+
+    val seq = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(reorder)
+      .add(pool)
+      .add(reorder2)
+
+    seq.evaluate()
+    seq.compile(InferencePhase)
+    seq.forward(input)
+
+    val seq2 = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(AvgPooling(3, 3, 2, 2))
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+
+    seq2.evaluate()
+    seq2.compile(InferencePhase)
+    seq2.forward(input)
+
+    Equivalent.nearequals(seq.output.toTensor, seq2.output.toTensor, 1e-2) should be (true)
   }
 }
