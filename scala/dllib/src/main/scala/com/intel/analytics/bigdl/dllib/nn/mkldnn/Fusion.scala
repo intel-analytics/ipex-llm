@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Node
@@ -30,7 +31,7 @@ import com.intel.analytics.bigdl.utils.Node
  */
 private[mkldnn] object Fusion {
 
-  private val fuse = System.getProperty("bigdl.mkldnn.fusion", "false").toBoolean
+  private def fuse = System.getProperty("bigdl.mkldnn.fusion", "false").toBoolean
 
   def fuseModule(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
     if (!fuse) return;
@@ -79,11 +80,13 @@ private[mkldnn] object Fusion {
         case conv: SpatialConvolution =>
           if (!conv.relu) {
             conv.setReLU(true)
+            conv.setOutputScales(node.element.asInstanceOf[ReLU].getOutputScales())
             node.element = Identity[Float]().asInstanceOf[AbstractModule[Activity, Activity, Float]]
           }
         case bn: SpatialBatchNormalization =>
           if (!bn.relu) {
             bn.setReLU(true)
+            bn.setOutputScales(node.element.asInstanceOf[ReLU].getOutputScales())
             node.element = Identity[Float]().asInstanceOf[AbstractModule[Activity, Activity, Float]]
           }
         case _ => null
@@ -95,6 +98,15 @@ private[mkldnn] object Fusion {
     if (node.element.isInstanceOf[Identity] && node.prevNodes.length == 1) {
       findPrevious(node.prevNodes(0))
     } else node
+  }
+
+  private def findNext(node: Node[AbstractModule[Activity, Activity, Float]])
+  : Seq[Node[AbstractModule[Activity, Activity, Float]]] = {
+    if (node.element.isInstanceOf[Identity]) {
+      node.nextNodes.flatMap(n => findNext(n))
+    } else {
+      Seq(node)
+    }
   }
 
   /**
@@ -128,7 +140,23 @@ private[mkldnn] object Fusion {
         val nexts = node.nextNodes(0)
         if (nexts.element.isInstanceOf[ReLU] && !element.relu) {
           node.element.asInstanceOf[SpatialConvolution].setReLU(true)
+          node.element.asInstanceOf[SpatialConvolution].setOutputScales(
+            nexts.element.asInstanceOf[ReLU].getOutputScales())
           nexts.element = new Identity()
+        }
+
+        val prevIsNotIdentity = findPrevious(previousNodes(otherNumber))
+
+        prevIsNotIdentity.element match {
+          case conv: SpatialConvolution =>
+            conv.setOutputScales(node.element.asInstanceOf[SpatialConvolution].getOutputScales())
+          case relu: ReLU =>
+            relu.setOutputScales(node.element.asInstanceOf[SpatialConvolution].getOutputScales())
+            prevIsNotIdentity.nextNodes.flatMap(x => findNext(x))
+              .filter(x => x != node && x.element.isInstanceOf[MklInt8Convertible])
+              .foreach(_.element.asInstanceOf[MklInt8Convertible].setInputScales(
+                node.element.asInstanceOf[SpatialConvolution].getOutputScales()))
+          case _ =>
         }
       }
     }
@@ -173,5 +201,45 @@ private[mkldnn] object Fusion {
 
     conv.weight.copy(convWeight)
     conv.bias.copy(convBias)
+
+    // regenerate the weight scales and output scales
+    conv.flushWeightScales(conv.weight.dense)
+    conv.setOutputScales(bn.getOutputScales())
+  }
+
+  def setNegativeInputOfConv(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
+
+    def findAllNonIdentityPrevs(node: Node[AbstractModule[Activity, Activity, Float]])
+    : Seq[Node[AbstractModule[Activity, Activity, Float]]] = {
+      // TODO currently, it will only skip the Identity, MaxPooling, AvgPooling
+      // becase if the output of layer/op previous of the three, they will output
+      // nonnegative too. it's not an elegant impl.
+      if (node.element.isInstanceOf[Identity] ||
+        node.element.isInstanceOf[MaxPooling] ||
+        node.element.isInstanceOf[AvgPooling]) {
+        node.prevNodes.flatMap(findAllNonIdentityPrevs)
+      } else {
+        Seq(node)
+      }
+    }
+
+    if (!fuse || !node.element.isInstanceOf[SpatialConvolution]) return
+
+    val successFromReLU = node.prevNodes.flatMap(x => findAllNonIdentityPrevs(x))
+      .map { x =>
+        x.element match {
+          case _: SpatialConvolution =>
+            x.element.asInstanceOf[SpatialConvolution].relu
+          case _: ReLU =>
+            true
+          case _ =>
+            false
+        }
+      }.forall(_ == true)
+
+
+    if (successFromReLU) {
+      node.element.asInstanceOf[SpatialConvolution].negativeInput = false
+    }
   }
 }
