@@ -53,18 +53,18 @@ ${SPARK_HOME}/bin/spark-submit \
 --master spark://... \
 --executor-memory 150g \
 --driver-memory 100g \
---executor-cores 28 \
---total-executor-cores 448  \
+--executor-cores 4 \
+--total-executor-cores 64  \
 --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
 --jars ${BigDL_JAR_PATH} \
 --py-files ${PYTHON_API_PATH} \
 ${BigDL_HOME}/pyspark/bigdl/models/inception/inception.py \
 -f hdfs://... \
---batchSize 1792 \
---learningRate 0.0898 \
---weightDecay 0.0001 \
---checkpointIteration 6200 \
--i 62000 \
+--batchSize 1024 \
+--learningRate 0.065 \
+--weightDecay 0.0002 \
+--checkpointIteration 1000 \
+-i 90000 \
 --checkpoint /models/inception
 ```
 * Spark yarn client mode, example command
@@ -80,7 +80,7 @@ ${SPARK_HOME}/bin/spark-submit \
 --deploy-mode client \
 --executor-memory 150g \
 --driver-memory 100g \
---executor-cores 28 \
+--executor-cores 4 \
 --num-executors 16 \
 --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
 --jars ${BigDL_JAR_PATH} \
@@ -89,11 +89,11 @@ ${SPARK_HOME}/bin/spark-submit \
 --py-files ${PYTHON_API_PATH} \
 ${BigDL_HOME}/pyspark/bigdl/models/inception/inception.py \
 -f hdfs://... \
---batchSize 1792 \
---learningRate 0.0898 \
---weightDecay 0.0001 \
---checkpointIteration 6200 \
--i 62000 \
+--batchSize 1024 \
+--learningRate 0.065 \
+--weightDecay 0.0002 \
+--checkpointIteration 1000 \
+-i 90000 \
 --checkpoint /models/inception
 
 ```
