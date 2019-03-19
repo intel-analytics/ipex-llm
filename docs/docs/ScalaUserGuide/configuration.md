@@ -34,7 +34,7 @@ java -cp xxx.jar -DFOO=BAR your.main.class.name
 **Mode**
 
 - `bigdl.localMode`: Whether BigDL is running as a local Java/Scala program. Default is false.
-- `bigdl.engineType`: Default is **mklblas**. When you run model contains mkl dnn layers, you should set it to **mkldnn** to get better performance.
+- `bigdl.engineType`: Default is **mklblas**. Besides, you can try **mkldnn** When you want to get better performance for model prediction/training.
 
 **Multi-threading**
 
@@ -51,4 +51,8 @@ java -cp xxx.jar -DFOO=BAR your.main.class.name
 
 **Tensor**
 
-- `bigdl.tensor.fold`: To set how many elements in a tensor to determine it is a large tensor, and thus print only part of it. Default is 1000.
+ `bigdl.tensor.fold`: To set how many elements in a tensor to determine it is a large tensor, and thus print only part of it. Default is 1000.
+
+**MKLDNN Prediction**
+- `bigdl.mkldnn.fusion`: To do layers fusion for model prediction which can improve performance, just for mkldnn engine type. Default is true.
+- `multiThread`: To do java parallelism for some layers, just for mkldnn engine type. Default is false.
