@@ -73,6 +73,7 @@ object Convolution1D {
     nbFilter: Int,
     filterLength: Int,
     init: String = "glorot_uniform",
+    limits: Array[Double] = null,
     activation: String = null,
     borderMode: String = "valid",
     subsampleLength: Int = 1,
@@ -81,7 +82,7 @@ object Convolution1D {
     bias: Boolean = true,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): Convolution1D[T] = {
-    val initValue = KerasUtils.getInitMethod(init)
+    val initValue = KerasUtils.getInitMethod(init, limits)
     val activationValue = KerasUtils.getKerasActivation(activation)
     new Convolution1D[T](nbFilter, filterLength, initValue, activationValue, borderMode,
       subsampleLength, wRegularizer, bRegularizer, bias, inputShape)

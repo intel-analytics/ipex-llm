@@ -182,12 +182,14 @@ private[zoo] class KerasConstant[T: ClassTag] private[zoo](
   val data: Tensor[T]
   )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T]()
-    with InternalWithoutInput with IdentityOutputShape with Net {
+    with InternalWithoutInput with Net {
 
   override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] =
     new InternalConstant[T](data).asInstanceOf[AbstractModule[Activity, Activity, T]]
 
   override def skipDuplicateCheck(): Boolean = true
+
+  override def computeOutputShape(inputShape: Shape): Shape = Shape(data.size())
 }
 
 class Constant[T: ClassTag] private[zoo](val data: Tensor[T],

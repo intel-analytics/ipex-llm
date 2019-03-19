@@ -49,13 +49,24 @@ object KerasUtils {
     }
   }
 
-  def getInitMethod(init: String): InitializationMethod = {
+  def getInitMethod(init: String, limits: Array[Double] = null): InitializationMethod = {
     init.toLowerCase() match {
       case "glorot_uniform" => Xavier
       case "one" => Ones
       case "zero" => Zeros
-      case "uniform" => RandomUniform(-0.05, 0.05)
-      case "normal" => RandomNormal(0.0, 0.05)
+      case "uniform" =>
+        if (limits == null) {
+          RandomUniform(-0.05, 0.05)
+        }
+        else {
+          RandomUniform(limits.head, limits(1))
+        }
+      case "normal" =>
+        if (limits == null) {
+          RandomNormal(0.0, 0.05)
+        } else {
+          RandomNormal(limits.head, limits(1))
+        }
       case _ => throw new IllegalArgumentException(s"Unsupported initialization method: " +
         s"${init.toLowerCase()}")
     }
