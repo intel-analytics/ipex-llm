@@ -74,6 +74,40 @@ class KerasNet(ZooKerasLayer):
                       log_dir,
                       app_name)
 
+    def get_train_summary(self, tag=None):
+        """
+        Get the scalar from model train summary
+        Return 2-D array like object which could be converted
+        by nd.array()
+        # Arguments
+        tag: The string variable represents the scalar wanted
+        """
+        # exception handle
+        if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
+            raise TypeError('Only "Loss", "LearningRate", "Throughput"'
+                            + 'are supported in train summary')
+
+        return callBigDlFunc(self.bigdl_type, "zooGetScalarFromSummary",
+                             self.value, tag, "Train")
+
+    def get_validation_summary(self, tag=None):
+        """
+        Get the scalar from model validation summary
+        Return 2-D array like object which could be converted
+        by np.array()
+        # Arguments
+        tag: The string variable represents the scalar wanted
+        """
+        validation_set = set(('AUC', 'Accuracy', 'BinaryAccuracy', 'CategoricalAccuracy',
+                              'HitRatio', 'Loss', 'MAE', 'NDCG', 'SparseCategoricalAccuracy',
+                              'TFValidationMethod', 'Top1Accuracy',
+                              'Top5Accuracy', 'TreeNNAccuracy'))
+        if tag not in validation_set:
+            raise TypeError('Only subclasses of ValidationMethod are supported,'
+                            + 'which are ' + str(validation_set))
+        return callBigDlFunc(self.bigdl_type, "zooGetScalarFromSummary",
+                             self.value, tag, "Validation")
+
     def set_checkpoint(self, path, over_write=True):
         """
         Configure checkpoint settings to write snapshots every epoch during the training process.
