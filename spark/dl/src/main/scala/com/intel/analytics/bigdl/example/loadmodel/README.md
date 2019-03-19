@@ -4,7 +4,7 @@ This example demonstrates how to use BigDL to load pre-trained [Torch](http://to
 
 **ModelValidator** provides an integrated example to load models, and test over imagenet validation dataset on Spark.
 
-For most cnn models, mkldnn engine type will get better performance, so you can set bigdl.engineType property to mkldnn and have a try.
+For most CNN models, it's recommended to enable MKL-DNN acceleration by specifying `bigdl.engineType` as `mkldnn` for model validation.
 
 ## Preparation
 

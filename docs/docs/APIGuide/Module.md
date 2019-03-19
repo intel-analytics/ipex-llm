@@ -158,7 +158,7 @@ model.evaluate(val_rdd, batch_size, val_methods)
 
 Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods.
 
-For most cnn models, you can set `bigdl.engineType` as **mkldnn** to get better performance when doing evaluation.
+For most CNN models, it's recommended to enable MKL-DNN acceleration by specifying `bigdl.engineType` as `mkldnn` for evaluation.
 
 **Scala example**
 ```scala
@@ -226,7 +226,7 @@ Use `predict` or `predictClass` or `predict_class` on model for Prediction. `pre
 
 Please note that the sequence and the partitions of the output rdd will keep the same with input. So you can zip the output rdd with input rdd to get a (data, result) pair rdd.
 
-For most cnn models, you can set `bigdl.engineType` as **mkldnn** to get better performance when doing prediction.
+For most CNN models, it's recommended to enable MKL-DNN acceleration by specifying `bigdl.engineType` as `mkldnn` for prediction.
 
 **Scala example**
 ```scala
