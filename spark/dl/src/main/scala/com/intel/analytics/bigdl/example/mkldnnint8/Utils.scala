@@ -25,12 +25,11 @@ object Utils {
     batchSize: Int = 128
   )
 
-  val testParser = new OptionParser[TestParams](
+  val testParser: OptionParser[TestParams] = new OptionParser[TestParams](
     "BigDL ResNet-50 with mkldnn int8 on ImageNet Test Example") {
     opt[String]('f', "folder")
-      .text("the location of Cifar10 dataset")
+      .text("the location of imagenet dataset")
       .action((x, c) => c.copy(folder = x))
-
     opt[String]('m', "model")
       .text("the location of model snapshot")
       .action((x, c) => c.copy(model = x))
@@ -40,4 +39,29 @@ object Utils {
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
   }
+
+  case class GenInt8ScalesParams(
+    folder: String = "./",
+    model: String = "",
+    batchSize: Int = 128,
+    numOfBatch: Int = 1
+  )
+
+  val genInt8ScalesParser: OptionParser[GenInt8ScalesParams] =
+    new OptionParser[GenInt8ScalesParams](
+      "BigDL ResNet-50 generate scales on ImageNet Test Example") {
+      opt[String]('f', "folder")
+        .text("the location of imagenet dataset")
+        .action((x, c) => c.copy(folder = x))
+      opt[String]('m', "model")
+        .text("the location of model snapshot")
+        .action((x, c) => c.copy(model = x))
+        .required()
+        .required()
+      opt[Int]('b', "batchSize")
+        .text("batch size")
+        .action((x, c) => c.copy(batchSize = x))
+      opt[Int]('n', "numOfBatch")
+        .action((x, c) => c.copy(batchSize = x))
+    }
 }
