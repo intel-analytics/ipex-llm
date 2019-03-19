@@ -17,11 +17,14 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer}
 import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnLayer, MklDnnModule}
 import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.StaticGraph
+import com.intel.analytics.bigdl.nn.quantized.Quantization
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -46,6 +49,12 @@ private[bigdl] object ConversionUtils {
     }
   }
 
+  def convert[T: ClassTag](model: Module[T], needQuantize: Boolean)(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val convertedModel = convert(model)
+    getInt8ModelIfNeeded(convertedModel, needQuantize)
+  }
+
   /**
    * For dnn backend, it is recommended to run single model on each node.
    * So when partition number of dataset is not equal to node number,
@@ -59,5 +68,28 @@ private[bigdl] object ConversionUtils {
       && Engine.getEngineType() == MklDnn) {
       dataset.coalesce(Engine.nodeNumber(), false)
     } else dataset
+  }
+
+  private def getInt8ModelIfNeeded[T: ClassTag](model: Module[T],
+    needQuantize: Boolean)(implicit ev: TensorNumeric[T]): Module[T] = {
+    // we will not set the model's quantize flag with `needQuantize`.
+    // because Evaluator will always has the `false` of it.
+
+    // TODO we should handle different types of model. We need refactor here later
+    model match {
+      case ir: IRGraph[T] => if (needQuantize) ir.setQuantize(true) else ir
+      case dnnGraph: DnnGraph => if (needQuantize) {
+        dnnGraph.cloneModule().setQuantize(true)
+      } else {
+        dnnGraph
+      }
+      case dnnContainer: MklDnnContainer =>
+        if (needQuantize) {
+          dnnContainer.cloneModule().setQuantize(true)
+        } else {
+          dnnContainer
+        }
+      case _ => if (needQuantize) Quantization.quantize[T](model) else model
+    }
   }
 }

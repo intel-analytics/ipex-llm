@@ -105,7 +105,11 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     nodeMap
   }
 
-  private def fromReLU(node: IRElement[Float]) : Module[Float] = mkldnn.ReLU()
+  private def fromReLU(node: IRElement[Float]) : Module[Float] = {
+    val layer = mkldnn.ReLU()
+    ReflectionUtils.setScales(node, layer)
+    layer
+  }
 
   private def fromSpatialConvolution(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialConvolution[Float]]
@@ -171,6 +175,8 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     val extraParams = layer.getExtraParameter()
     if (t.runningMean != null) extraParams(0).copy(t.runningMean.toTensor[Float])
     if (t.runningVar != null) extraParams(1).copy(t.runningVar.toTensor[Float])
+
+    ReflectionUtils.setScales(node, layer)
 
     // reminder: assume batch_norm is converted from blas
     layer.needScale = true

@@ -116,7 +116,7 @@ private[bigdl] object ReflectionUtils {
   }
 
   // put scales in fromEle to toELe
-  private def setScales[T: ClassTag](fromEle: MklInt8Convertible,
+  private[intermediate] def setScales[T: ClassTag](fromEle: MklInt8Convertible,
                                      toELe: MklInt8Convertible): Unit = {
     toELe.setInputScales(fromEle.getInputScales())
     toELe.setOutputScales(fromEle.getOutputScales())

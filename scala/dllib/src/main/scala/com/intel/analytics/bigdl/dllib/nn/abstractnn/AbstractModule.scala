@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, 
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
+import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 import org.apache.commons.lang3.SerializationUtils
@@ -916,7 +917,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   final def quantize(): Module[T] = {
-    Quantization.quantize(this)
+    ConversionUtils.convert[T](this, true)
   }
 
   // ================================= Internal APIs ===========================================
