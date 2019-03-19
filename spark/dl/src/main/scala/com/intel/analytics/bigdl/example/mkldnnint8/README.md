@@ -11,7 +11,8 @@ use it.
 If you use a BigDL model which is trained by yourself or converted from other
 frameworks. You should generate the scales first. It needs some sample images
 to do the `forward` which can be the test or validation dataset. And because
-it's the sample images, you need no to pass the whole validate dataset.
+it's the sample images, you need no to pass the whole validate dataset. And of
+cause you can use spark local mode to generate scales.
 
 After that, you can call `GenerateInt8Scales`, it will generate a model with
 a `quantized` in the name. It's the original model combined with scales information.
