@@ -34,7 +34,7 @@ import scala.reflect._
 @SerialVersionUID(7959261460060075605L)
 class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends AbstractModule[Table, Tensor[D], T] {
+  extends AbstractModule[Table, Tensor[D], T] with MklInt8Convertible {
 
   output = Tensor[D]()
 

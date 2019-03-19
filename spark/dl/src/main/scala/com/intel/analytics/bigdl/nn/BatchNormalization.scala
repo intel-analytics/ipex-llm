@@ -57,7 +57,8 @@ class BatchNormalization[T: ClassTag](
   private val initBias: Tensor[T] = null,
   private val initGradWeight: Tensor[T] = null,
   private val initGradBias: Tensor[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable
+  with MklInt8Convertible {
 
   require(nOutput > 0, "output feature map number must be greater than zero")
 

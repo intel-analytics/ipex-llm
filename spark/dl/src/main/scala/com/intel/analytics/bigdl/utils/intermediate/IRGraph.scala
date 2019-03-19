@@ -135,10 +135,6 @@ private[bigdl] class IRGraph[T: ClassTag](
     graph.resetTimes()
   }
 
-  override def release(): Unit = {
-    graph.release()
-  }
-
   private def initPrimitives(input: Activity): Unit = {
     if (!initPrim && graph.isInstanceOf[DnnGraph]) {
       val inputMemory = new Array[MemoryData](inputFormats.length)
@@ -168,6 +164,22 @@ private[bigdl] class IRGraph[T: ClassTag](
         dnnGraph.initGradWPrimitives(dnnGraph.outputFormats(), phase)
       }
       initPrim = true
+    }
+  }
+
+  def setQuantize(value: Boolean): this.type = {
+    require(graph != null, s"you should build the graph first")
+    if (graph.isInstanceOf[DnnGraph]) {
+      graph.asInstanceOf[DnnGraph].setQuantize(value)
+    }
+    this
+  }
+
+  override def release(): Unit = {
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        graph.release()
+      }))
     }
   }
 }

@@ -130,6 +130,10 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
     _gradOutputWeightFormats
   }
 
+  private[mkldnn] def reconstruct(): Unit = {
+    mklDnnModules = modules.map(_.asInstanceOf[MklDnnModule]).toArray
+  }
+
   override private[mkldnn] def inputFormats() = {
     require(_inputFormats != null, "You should call initFwdPrimitives first")
     _inputFormats
