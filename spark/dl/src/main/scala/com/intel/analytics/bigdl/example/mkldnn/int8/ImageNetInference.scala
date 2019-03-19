@@ -16,8 +16,6 @@
 
 package com.intel.analytics.bigdl.example.mkldnn.int8
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl.models.resnet.ImageNetDataSet
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim._
@@ -25,7 +23,6 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 
 /**
  * This example demonstrates how to evaluate pre-trained resnet-50 with ImageNet dataset using Int8

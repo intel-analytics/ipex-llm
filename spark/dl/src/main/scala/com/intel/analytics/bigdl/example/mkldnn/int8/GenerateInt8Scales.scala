@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.example.mkldnn.int8
 
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.models.resnet.ImageNetDataSet
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.Engine
