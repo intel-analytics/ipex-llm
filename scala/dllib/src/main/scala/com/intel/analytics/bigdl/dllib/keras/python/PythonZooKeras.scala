@@ -178,6 +178,21 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     module.setTensorBoard(logDir, appName)
   }
 
+  def zooGetScalarFromSummary(
+      module: KerasNet[T],
+      tag: String,
+      target: String): JList[JList[Any]] = {
+
+    require(target == "Train" || target == "Validation",
+      "Invalid target, must be Train or Validation.")
+    val scalarArray = if (target == "Train") module.getTrainSummary(tag)
+    else module.getValidationSummary(tag)
+
+    scalarArray.toList.map { tuple =>
+      List(tuple._1, tuple._2, tuple._3).asJava.asInstanceOf[JList[Any]]
+    }.asJava
+  }
+
   def zooClearGradientClipping(module: KerasNet[T]): Unit = {
     module.clearGradientClipping()
   }
