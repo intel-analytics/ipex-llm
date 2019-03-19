@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.{Ones, VariableFormat, Zeros}
+import com.intel.analytics.bigdl.nn.{MklInt8Convertible, Ones, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.tensor._
 
 import scala.collection.mutable.ArrayBuffer
@@ -32,7 +32,7 @@ class SpatialBatchNormalization(
   private val initBias: Tensor[Float] = null,
   private val initGradWeight: Tensor[Float] = null,
   private val initGradBias: Tensor[Float] = null
-) extends MklDnnLayer with Initializable {
+) extends MklDnnLayer with Initializable with MklInt8Convertible {
 
   @transient private var forwardDesc: Long = 0L
   private var _relu: Boolean = false
@@ -62,12 +62,14 @@ class SpatialBatchNormalization(
   val weightAndBias = new TensorMMap(Array(nOutput * 2))
   val gradWeightAndBias = new TensorMMap(Array(nOutput * 2))
 
+  // TODO the two should be learnable parameters
   var scaleFactor: Float = 1.0f
   var biasFactor: Float = 1.0f
 
   private val runningMeanScaled = Tensor[Float].resizeAs(runningMean.dense)
   private val runningVarianceScaled = Tensor[Float].resizeAs(runningVariance.dense)
 
+  // the blank shoud be here, otherwise the runningVarianceScaled will be a method
   {
     val wInit = Ones // RandomUniform(0, 1)
     val bInit = Zeros
@@ -137,17 +139,20 @@ class SpatialBatchNormalization(
     // weight and bias should be combined
     val weightAndBias: NativeData = NativeData(Array(nOutput * 2), Memory.Format.x)
 
+    // the bn only accept F32 as input, like lrn
+    val src = NativeData(inputs.head.shape, inputs.head.layout, DataType.F32)
+
     // init phase status
     initPhase(phase)
     forwardDesc = modelPhase match {
       case TrainingPhase =>
         MklDnn.BatchNormForwardDescInit(PropKind.Forward,
-          inputs(0).getMemoryDescription(), eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
+          src.getMemoryDescription(), eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
       case InferencePhase =>
         // we always use the weight and bias / scale and offset. So the flags should be combined
         // with use_scaleshift and use_global_stats.
         MklDnn.BatchNormForwardDescInit(PropKind.ForwardInference,
-          inputs(0).getMemoryDescription(), eps.toFloat,
+          src.getMemoryDescription(), eps.toFloat,
           MklDnn.BatchNormFlag.mkldnn_use_global_stats | MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
       case _ => throw new UnsupportedOperationException
     }
@@ -192,6 +197,8 @@ class SpatialBatchNormalization(
     updateOutputMemoryPrimitives = srcs ++ dsts
     updateOutputPrimitives = Array(primitive)
 
+    // if the output is not null, it means we have initialized the primitives before.
+    // so we do not need create weightAndBias native space again.
     if (output == null || output.isInstanceOf[DnnTensor[_]] &&
       output.toTensor[Float].size().deep != outputFormats()(0).shape.deep) {
       output = initTensor(outputFormats()(0))

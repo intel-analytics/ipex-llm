@@ -607,6 +607,40 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Equivalent.nearequals(model.getParameters()._2, blas.getParameters()._2, 1e-4) should be (true)
   }
 
+  "conv quantization" should "work correctly" in {
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
+    RNG.setSeed(1)
+    val inputShape = Array(1, 2, 12, 12)
+    val outputShape = Array(1, 8)
+    val model = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(SpatialConvolution(2, 4, 5, 5).setName("conv2"))
+      .add(ReLU()).setName("relu")
+      .add(MaxPooling(2, 2, 2, 2).setName("pool2"))
+      .add(Linear(4 * 4 * 4, 8).setName("ip1"))
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nc)))
+    model.evaluate()
+
+    val input = Tensor[Float](inputShape).rand(-100, 100)
+    model.compile(InferencePhase)
+    println(model.forward(input))
+
+    val output = model.output.toTensor[Float].clone()
+
+    model.setInputDimMask(1)
+    model.calcScales(input)
+    model.release()
+
+    val quantized = model.cloneModule().quantize()
+    quantized.asInstanceOf[Sequential].compile(InferencePhase)
+
+    quantized.forward(input)
+    println(quantized.output)
+    System.clearProperty("bigdl.mkldnn.fusion.convrelu")
+
+    Equivalent.nearequals(output, quantized.output.toTensor, 1e-1) should be (true)
+  }
+
   "unsigned input quantization" should "work correctly" in {
     RNG.setSeed(1)
 

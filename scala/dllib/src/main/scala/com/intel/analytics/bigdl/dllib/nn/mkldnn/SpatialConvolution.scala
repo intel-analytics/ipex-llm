@@ -187,7 +187,8 @@ class SpatialConvolution(
       require(inputs.length == 2,
         s"inputs length should be 2 when having sum operation, but get ${inputs.length}")
     }
-    val inputMemoryData = inputs(_dim - 1)
+    // we should not use output branch
+    val inputMemoryData = inputs(inputs.length - _dim)
     val inputHeight = inputMemoryData.shape(2) // TODO only supports 4-D and nchw
     val inputWidth = inputMemoryData.shape(3)
 
@@ -364,8 +365,9 @@ class SpatialConvolution(
     val inputTensor = if (input.isTensor) {
       input.toTensor[Float]
     } else {
-      output = input.toTable.get[Tensor[Float]](3 - _dim).get
-      input.toTable.get[Tensor[Float]](_dim).get
+      // here we should not use the output branch
+      output = input.toTable.get[Tensor[Float]](_dim).get
+      input.toTable.get[Tensor[Float]](3 - _dim).get
     }
     if (updateOutputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
