@@ -16,12 +16,13 @@
 
 package com.intel.analytics.bigdl.example.mkldnn.int8
 
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.models.resnet.ImageNetDataSet
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.{Graph, Module}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 /**
  * GenerateInt8Scales will generate a model with scales information,
@@ -34,8 +35,41 @@ object GenerateInt8Scales {
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
 
-
   import Utils._
+
+  def genereateInt8Scales(model: Graph[Float], modelName: String,
+    evaluationSet: RDD[MiniBatch[Float]]): Unit = {
+    model.evaluate()
+
+    model.setInputDimMask(0)
+    model.setOutputDimMask(0)
+    model.setWeightDimMask(1)
+
+    logger.info(s"Generate the scales for $modelName ...")
+    val samples = evaluationSet
+      .repartition(1) // repartition (shuffle) will have better accuracy
+      .take(1) // only split one batch to sample
+      .map(_.getInput().toTensor[Float])
+
+    samples.foreach { sample =>
+      model.calcScales(sample)
+    }
+
+    // we should clean the state, such as output
+    model.clearState()
+
+    logger.info(s"Generate the scales for $modelName done.")
+  }
+
+  def saveQuantizedModel(model: Graph[Float], modelName: String): Unit = {
+    val suffix = ".bigdl"
+    val prefix = modelName.stripSuffix(suffix)
+    val name = prefix.concat(".quantized").concat(suffix)
+    logger.info(s"Save the quantized model $name ...")
+    // it will force overWrite the existed model file
+    model.saveModule(name, overWrite = true)
+    logger.info(s"Save the quantized model $name done.")
+  }
 
   def main(args: Array[String]): Unit = {
     genInt8ScalesParser.parse(args, GenInt8ScalesParams()).foreach { param =>
@@ -52,37 +86,11 @@ object GenerateInt8Scales {
       // the transformer is the same as as that in validation during training
       val evaluationSet = ImageNetDataSet.valDataSet(param.folder,
         sc, 224, param.batchSize).toDistributed().data(train = false)
-
-      val samples = evaluationSet
-        .repartition(1) // repartition (shuffle) will have better accuracy
-        .take(param.numOfBatch) // only split one or some batches to sample
-        .map(_.getInput().toTensor[Float])
-
       // Currently, we only support the graph model, so we add a `toGraph`
       // if the model is already graph, you can need not to it.
       val model = Module.loadModule[Float](param.model).toGraph()
-
-      model.setInputDimMask(0)
-      model.setOutputDimMask(0)
-      model.setWeightDimMask(1)
-
-      logger.info(s"Generate the scales for ${param.model} ...")
-      samples.foreach { sample =>
-        model.calcScales(sample)
-      }
-
-      // we should clean the state, such as output
-      model.clearState()
-
-      logger.info(s"Generate the scales for ${param.model} done.")
-
-      val suffix = ".bigdl"
-      val prefix = param.model.stripSuffix(suffix)
-      val name = prefix.concat(".quantized").concat(suffix)
-      logger.info(s"Save the quantized model $name ...")
-      // it will force overWrite the existed model file
-      model.saveModule(name, overWrite = true)
-      logger.info(s"Save the quantized model $name done.")
+      genereateInt8Scales(model, param.model, evaluationSet)
+      saveQuantizedModel(model, param.model)
     }
   }
 }

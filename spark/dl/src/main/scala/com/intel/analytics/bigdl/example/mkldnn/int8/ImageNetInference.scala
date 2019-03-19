@@ -47,6 +47,7 @@ object ImageNetInference {
         sc, 224, param.batchSize).toDistributed().data(train = false)
 
       val model = Module.loadModule[Float](param.model).quantize()
+      model.evaluate()
 
       val result = model.evaluate(evaluationSet, Array(new Top1Accuracy[Float],
         new Top5Accuracy[Float]))
