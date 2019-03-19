@@ -4,6 +4,8 @@ This example demonstrates how to use BigDL to load pre-trained [Torch](http://to
 
 **ModelValidator** provides an integrated example to load models, and test over imagenet validation dataset on Spark.
 
+For most CNN models, it's recommended to enable MKL-DNN acceleration by specifying `bigdl.engineType` as `mkldnn` for model validation.
+
 ## Preparation
 
 To start with this example, you need prepare your model, dataset.
@@ -116,6 +118,7 @@ For example, following the steps below will load BVLC GoogLeNet.
 - Execute command for Spark standalone mode.
 ```shell
   master=spark://xxx.xxx.xxx.xxx:xxxx # please set your own spark master
+  engine=... # mklblas/mkldnn. For most cnn models, you can set bigdl.engineType as mkldnn to get better performance.
   modelType=caffe
   folder=hdfs://...
   modelName=inception
@@ -125,6 +128,8 @@ For example, following the steps below will load BVLC GoogLeNet.
   spark-submit --driver-memory 20g --master $master --executor-memory 100g                 \
                --executor-cores 28                                                         \
                --total-executor-cores 112                                                  \
+               --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=$engine"  \
+               --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=$engine"  \
                --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
                --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
                        dist/lib/bigdl-VERSION-jar-with-dependencies.jar             \
@@ -136,12 +141,15 @@ For example, following the steps below will load BVLC GoogLeNet.
 ```shell
   modelType=caffe
   folder=hdfs://...
+  engine=... # mklblas/mkldnn. For most cnn models, you can set bigdl.engineType as mkldnn to get better performance.
   modelName=inception
   pathToCaffePrototxt=data/model/bvlc_googlenet/deploy.prototxt
   pathToModel=data/model/bvlc_googlenet/bvlc_googlenet.caffemodel
   batchSize=448
   spark-submit --driver-memory 20g --master yarn --executor-memory 100g                    \
-               --deploy-mode client                                                        \
+               --deploy-mode client
+               --conf "spark.yarn.am.extraJavaOptions=-Dbigdl.engineType=$engine" \
+               --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=$engine" \
                --executor-cores 28                                                         \
                --num-executors 4                                                  \
                --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
