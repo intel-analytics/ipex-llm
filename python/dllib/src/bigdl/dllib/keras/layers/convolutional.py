@@ -37,6 +37,7 @@ class Convolution1D(ZooKerasLayer):
     filter_length: The extension (spatial or temporal) of each filter.
     init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
+    limits: Optional. Limit value for initialization method.
     activation: String representation of the activation function to use
                 (such as 'relu' or 'sigmoid'). Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
@@ -53,7 +54,7 @@ class Convolution1D(ZooKerasLayer):
     >>> conv1d = Convolution1D(12, 4, input_shape=(3, 16))
     creating: createZooKerasConvolution1D
     """
-    def __init__(self, nb_filter, filter_length, init="glorot_uniform",
+    def __init__(self, nb_filter, filter_length, init="glorot_uniform", limits=None,
                  activation=None, border_mode="valid", subsample_length=1,
                  W_regularizer=None, b_regularizer=None, bias=True,
                  input_shape=None, **kwargs):
@@ -61,6 +62,7 @@ class Convolution1D(ZooKerasLayer):
                                             nb_filter,
                                             filter_length,
                                             init,
+                                            list(limits) if limits else None,
                                             activation,
                                             border_mode,
                                             subsample_length,
