@@ -41,7 +41,7 @@ spark-submit \
   --executor-memory ${EXECUTOR_MEMORY} \
   --executor-cores ${EXECUTOR_CORES} \
   --total-executor-cores ${TOTAL_EXECUTOR_CORES} \
-  --class com.intel.analytics.bigdl.example.mkldnnint8.GenerateInt8Scales \
+  --class com.intel.analytics.bigdl.example.mkldnn.int8.GenerateInt8Scales \
   ./dist/lib/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
   -f  ${VAL_FOLDER} \
   --batchSize ${BATCH_SIZE}  \
@@ -94,7 +94,7 @@ spark-submit \
   --executor-cores ${EXECUTOR_CORES} \
   --num-executors ${EXECUTOR_NUMBER} \
   --total-executor-cores ${TOTAL_EXECUTOR_CORES} \
-  --class com.intel.analytics.bigdl.example.mkldnnint8.TestImageNet \
+  --class com.intel.analytics.bigdl.example.mkldnn.int8.TestImageNet \
   ./dist/lib/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
   -f  ${VAL_FOLDER} \
   --batchSize ${BATCH_SIZE}  \

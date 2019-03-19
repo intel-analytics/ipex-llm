@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.mkldnnint8
+package com.intel.analytics.bigdl.example.mkldnn.int8
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.MiniBatch
