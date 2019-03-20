@@ -135,7 +135,7 @@ private[bigdl] object Utils {
   def getOutput(module: AbstractModule[_, _, _], input: Activity): Activity = {
     module match {
       case mklDnnModule: MklDnnModule => module.output.asInstanceOf[Activity]
-      case _ => module.forward(input)
+      case _ => module.output.asInstanceOf[Activity]
     }
   }
 }
