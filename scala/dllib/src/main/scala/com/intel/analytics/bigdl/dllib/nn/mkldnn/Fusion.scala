@@ -31,7 +31,7 @@ import com.intel.analytics.bigdl.utils.Node
  */
 private[mkldnn] object Fusion {
 
-  private def fuse = System.getProperty("bigdl.mkldnn.fusion", "false").toBoolean
+  private def fuse = System.getProperty("bigdl.mkldnn.fusion", "true").toBoolean
 
   def fuseModule(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
     if (!fuse) return;
