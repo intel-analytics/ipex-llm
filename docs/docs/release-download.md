@@ -14,11 +14,12 @@
 
 | | BigDL 0.7.2 | 
 | ------------- | --------- |
-| Spark 1.6.2   | [download](https://oss.sonatype.org/content/repositories/releases/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_1.6.2/0.4.0/)| 
-| Spark 2.1.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.1.1/0.4.0/)|
-| Spark 2.2.0   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.2.0/0.4.0/)|
-| Spark 2.3.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.3.1/0.4.0/)|
-| Spark 2.4.0   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.4.1/0.4.0/)|
+| Spark 1.6.2   | [download](https://oss.sonatype.org/content/repositories/releases/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_1.6.2/0.4.0/analytics-zoo-bigdl_0.7.2-spark_1.6.2-0.4.0-dist-all.zip)| 
+| Spark 2.1.1   | [download](https://oss.sonatype.org/content/repositories/releases/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.1.1/0.4.0/analytics-zoo-bigdl_0.7.2-spark_2.1.1-0.4.0-dist-all.zip)|
+| Spark 2.2.0   | [download](https://oss.sonatype.org/content/repositories/releases/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.2.0/0.4.0/analytics-zoo-bigdl_0.7.2-spark_2.2.0-0.4.0-dist-all.zip)|
+| Spark 2.3.1   | [download](https://oss.sonatype.org/content/repositories/releases/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.3.1/0.4.0/analytics-zoo-bigdl_0.7.2-spark_2.3.1-0.4.0-dist-all.zip)|
+| Spark 2.4.0   | [download](https://oss.sonatype.org/content/repositories/releases/com/intel/analytics/zoo/analytics-zoo-bigdl_0.7.2-spark_2.4.0/0.4.0/analytics-zoo-bigdl_0.7.2-spark_2.4.0-0.4.0-dist-all.zip)|
+
 
 ---
 ## **Release 0.3.0**
