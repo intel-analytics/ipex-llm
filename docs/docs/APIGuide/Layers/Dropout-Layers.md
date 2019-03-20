@@ -91,48 +91,34 @@ Reference: [Dropout: A Simple Way to Prevent Neural Networks from Overfitting Sr
 
 **Scala example:**
 ```scala
-scala> import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.nn._
 
-scala> val layer = GaussianDropout(0.5)
-2017-11-27 14:03:48 INFO  ThreadPool$:79 - Set mkl threads to 1 on thread 1
-layer: com.intel.analytics.bigdl.nn.GaussianDropout[Float] = GaussianDropout[668c68cd](0.5)
-
-scala> layer.training()
-res0: layer.type = GaussianDropout[668c68cd](0.5)
-
-scala> val input = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0     1.0     1.0
-1.0     1.0     1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> val output = layer.forward(input)
-output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.1833225       1.1171452       0.27325004
-0.436912        0.9357152       0.47588816
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> val gradout = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
-gradout: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0     1.0     1.0
-1.0     1.0     1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> val gradin = layer.backward(input,gradout)
-gradin: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.4862849       1.0372512       0.91885364
--0.18087652     2.3662233       0.9388555
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> layer.evaluate()
-res1: layer.type = GaussianDropout[668c68cd](0.5)
-
-scala> val output = layer.forward(input)
-output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0     1.0     1.0
-1.0     1.0     1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
+val layer = GaussianDropout(0.5)
+layer.training()
+val input = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
+val output = layer.forward(input)
+val gradout = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
+val gradin = layer.backward(input,gradout)
+println(output)
+println(gradin)
+layer.evaluate()
+val output2 = layer.forward(input)
+println(output2)
+```
+Output is
+```
+1.7464018	2.9785068	0.053465042
+0.6711602	2.7494855	0.13988598
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+0.86814594	1.9510038	1.5220107
+1.2875593	0.10056248	2.5501933
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+1.0	1.0	1.0
+1.0	1.0	1.0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
 **Python example:**
@@ -186,44 +172,25 @@ As it is a regularization layer, it is only active at training time.
 
 **Scala example:**
 ```scala
-scala> val layer = GaussianNoise(0.2)
-layer: com.intel.analytics.bigdl.nn.GaussianNoise[Float] = GaussianNoise[77daa92e](0.2)
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.nn._
 
-scala> layer.training()
-res3: layer.type = GaussianNoise[77daa92e](0.2)
+val layer = GaussianNoise(0.2)
+layer.training()
+val input = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
+val output = layer.forward(input)
+val gradout = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
+val gradin = layer.backward(input,gradout)
+layer.evaluate()
+println(layer.forward(input))
+```
+```
+1.0	1.0	1.0
+1.0	1.0	1.0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 
-scala> val input = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0     1.0     1.0
-1.0     1.0     1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> val output = layer.forward(input)
-output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.263781        0.91440135      0.928574
-0.88923925      1.1450694       0.97276205
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> val gradout = Tensor(T(T(1.0,1.0,1.0),T(1.0,1.0,1.0)))
-gradout: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0     1.0     1.0
-1.0     1.0     1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> val gradin = layer.backward(input,gradout)
-gradin: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0     1.0     1.0
-1.0     1.0     1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-scala> layer.evaluate()
-res2: layer.type = GaussianNoise[77daa92e](0.2)
-
-scala> val output = layer.forward(input)
-output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0     1.0     1.0
-1.0     1.0     1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 ```
 
 **Python example:**
@@ -280,6 +247,10 @@ This version performs the same function as Dropout, however it drops
 
 **Scala example:**
 ```scala
+    import com.intel.analytics.bigdl.tensor.Tensor
+    import com.intel.analytics.bigdl.nn._
+    import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+
     val module = SpatialDropout1D[Double](0.7)
     val input = Tensor[Double](3, 4, 5)
     val seed = 100
@@ -407,6 +378,10 @@ This version performs the same function as Dropout, however it drops
 
 **Scala example:**
 ```scala
+    import com.intel.analytics.bigdl.tensor.Tensor
+    import com.intel.analytics.bigdl.nn._
+    import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+    
     val module = SpatialDropout2D[Double](0.7)
     val input = Tensor[Double](2, 3, 4, 5)
     val seed = 100
@@ -463,30 +438,7 @@ This version performs the same function as Dropout, however it drops
     0.0	0.0	0.0	0.0	0.0	
     0.0	0.0	0.0	0.0	0.0	
     
-    (1,2,.,.) =## SpatialDropout2D ##
-
-**Scala:**
-```scala
-val module = SpatialDropout2D(initP = 0.5, format = DataFormat.NCHW)
-```
-**Python:**
-```python
-module = SpatialDropout2D(
-  init_p=0.5, data_format="NCHW")
-```
-
-This version performs the same function as Dropout, however it drops
- entire 2D feature maps instead of individual elements. If adjacent pixels
- within feature maps are strongly correlated (as is normally the case in
- early convolution layers) then regular dropout will not regularize the
- activations and will otherwise just result in an effective learning rate
- decrease. In this case, SpatialDropout2D will help promote independence
- between feature maps and should be used instead.
- 
- * param initP the probability p
- * param format  'NCHW' or 'NHWC'.
-            In 'NCHW' mode, the channels dimension (the depth)
-            is at index 1, in 'NHWC' mode is it at index 4.
+    (1,2,.,.) =
     0.0	0.0	0.0	0.0	0.0	
     0.0	0.0	0.0	0.0	0.0	
     0.0	0.0	0.0	0.0	0.0	
