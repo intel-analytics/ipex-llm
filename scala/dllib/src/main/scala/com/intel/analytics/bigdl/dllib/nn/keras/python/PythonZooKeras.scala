@@ -1310,4 +1310,15 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     inputShape: JList[JList[Int]] = null): SelectTable[T] = {
     SelectTable[T](index, toScalaMultiShape(inputShape))
   }
+
+  def createZooKerasTransformerLayer(layerNum: Int,
+    residDrop: Double,
+    attnDrop: Double,
+    headNum: Int,
+    maskAttention: Boolean,
+    embeddingLayer: KerasLayer[Tensor[T], Tensor[T], T]): TransformerLayer[T] = {
+    TransformerLayer(nBlock = layerNum, residPdrop = residDrop,
+      attnPdrop = attnDrop, nHead = headNum,
+      maskAttention = maskAttention, embeddingLayer = embeddingLayer)
+  }
 }
