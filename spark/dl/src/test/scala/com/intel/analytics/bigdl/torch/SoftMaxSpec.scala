@@ -138,4 +138,21 @@ class SoftMaxSpec extends TorchSpec {
 
     println("Test case : SoftMax, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
+
+  "A SoftMax with narrowed input" should "generate correct output" in {
+    torchCheck()
+    val layer = new SoftMax[Double]()
+    val input = Tensor[Double](4, 6).apply1(_ => Random.nextDouble())
+
+    val in1 = input.narrow(1, 1, 2)
+    val in2 = input.narrow(1, 3, 2)
+
+    val output = layer.forward(input).clone()
+    val output1 = layer.forward(in1).clone()
+    val output2 = layer.forward(in2).clone()
+
+    output.narrow(1, 1, 2) should be(output1)
+    output.narrow(1, 3, 2) should be(output2)
+    println("done")
+  }
 }
