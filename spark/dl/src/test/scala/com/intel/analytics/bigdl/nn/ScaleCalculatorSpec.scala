@@ -53,6 +53,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Global mask, non-null input
     val linear1 = Linear[Float](inputSize, outputSize)
+    linear1.forward(inputTensor)
     linear1.calcScales(inputTensor)
     linear1.getInputScales() should be (Array(Array[Float](sampleMax)))
     linear1.getOutputScales().length should be (1)
@@ -67,6 +68,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     linear2.setInputDimMask(inputMask)
     linear2.setOutputDimMask(outputMask)
 
+    linear2.forward(inputTensor)
     linear2.calcScales(inputTensor)
     val output2 = linear2.output
     linear2.getInputScales() should be (Array(getScalesFromTensor(inputTensor, inputMask)))
@@ -163,6 +165,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Global mask, non-null input
     val spatialConv1 = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
+    spatialConv1.forward(inputTensor)
     spatialConv1.calcScales(inputTensor)
     spatialConv1.getInputScales() should be (Array(Array[Float](12)))
     spatialConv1.getOutputScales().length should be (1)
@@ -174,6 +177,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dimMaskIdx = 1
     val spatialConv2 = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
     spatialConv2.setInputDimMask(Math.pow(2, dimMaskIdx - 1).toInt)
+    spatialConv2.forward(inputTensor)
     spatialConv2.calcScales(inputTensor)
     val inputScales2 = Array(Array(inputTensor.select(dimMaskIdx, 1).max()))
     spatialConv2.getInputScales() should be (inputScales2)
@@ -181,6 +185,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dimMaskIdx = 2
     val spatialConv3 = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
     spatialConv3.setInputDimMask(Math.pow(2, dimMaskIdx - 1).toInt)
+    spatialConv3.forward(inputTensor)
     spatialConv3.calcScales(inputTensor)
     val inputScales3 = Array((1 to inputTensor.size(dimMaskIdx)).map(
       idx => inputTensor.select(dimMaskIdx, idx).max()
@@ -190,6 +195,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dimMaskIdx = 3
     val spatialConv4 = SpatialConvolution[Float](inputSize, outputSize, 1, 1)
     spatialConv4.setInputDimMask(Math.pow(2, dimMaskIdx - 1).toInt)
+    spatialConv4.forward(inputTensor)
     spatialConv4.calcScales(inputTensor)
     val inputScales4 = Array((1 to inputTensor.size(dimMaskIdx)).map(
       idx => inputTensor.select(dimMaskIdx, idx).max()
@@ -324,6 +330,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Global mask, non-null input
     val sequential1 = makeSequential()
+    sequential1.forward(inputTensor)
     sequential1.calcScales(inputTensor)
     sequential1.getInputScales().isEmpty should be (false)
     sequential1.getInputScales().length should be (1)
@@ -395,6 +402,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, non-null input
     val concatTable1 = makeConcatTable()
 
+    concatTable1.forward(inputTensor)
     concatTable1.calcScales(inputTensor)
     concatTable1.getInputScales() should be (Array(Array[Float](sampleMax)))
     concatTable1.getOutputScales() should be (
@@ -434,6 +442,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, non-null input
     val caddTable1 = CAddTable()
 
+    caddTable1.forward(inputTable)
     caddTable1.calcScales(inputTable)
     caddTable1.getOutputScales() should be (Array(Array[Float](4.0f)))
     caddTable1.getInputScales() should be (
@@ -470,6 +479,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, non-null input
     val relu1 = ReLU[Float]()
 
+    relu1.forward(inputTensor)
     relu1.calcScales(inputTensor)
     relu1.getInputScales() should be (Array(Array[Float](sampleMax)))
     relu1.getOutputScales() should be (Array(Array[Float](relu1.output.max())))
@@ -499,6 +509,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // Global mask, non-null input
     val bn1 = SpatialBatchNormalization[Float](2)
 
+    bn1.forward(inputTensor)
     bn1.calcScales(inputTensor)
     bn1.getInputScales() should be (Array(Array[Float](inputTensor.abs().max())))
     bn1.getOutputScales() should be (Array(Array[Float](bn1.output.abs().max())))
@@ -544,6 +555,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val graph1 = makeTestingGraph()
     graph1.setInputDimMask(0)
     graph1.setOutputDimMask(0)
+    graph1.forward(inputTensor)
     graph1.calcScales(inputTensor)
     val graphOutput1 = graph1.output
 

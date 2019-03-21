@@ -52,6 +52,7 @@ object GenerateInt8Scales {
       .map(_.getInput().toTensor[Float])
 
     samples.foreach { sample =>
+      model.forward(sample)
       model.calcScales(sample)
     }
 
