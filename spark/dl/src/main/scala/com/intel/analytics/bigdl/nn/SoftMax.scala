@@ -94,12 +94,13 @@ object SoftMax{
     } else {
       input.contiguous().storage().array()
     }
+    val storageOffset = input.storageOffset() - 1
 
     var t = 0
     while (t < stride * nFrame) {
       val _t = t
       results(_t) = Engine.model.invoke(() => {
-        val inputOffset = (_t / stride) * dim * stride + _t % stride
+        val inputOffset = (_t / stride) * dim * stride + _t % stride + storageOffset
         val outputOffset = (_t / stride) * dim * stride + _t % stride
 
         var inputMax = ev.fromType[Float](Float.MinValue)
