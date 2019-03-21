@@ -30,7 +30,6 @@ import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.objectives.{RankHinge, SparseCategoricalCrossEntropy}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
-import com.intel.analytics.zoo.feature.text.TextFeature
 
 import scala.collection.immutable.HashSet
 
@@ -79,6 +78,18 @@ class TextSetSpec extends ZooSpecHelper {
     require(features.length == 2)
     require(features(0).keys() == HashSet("label", "text", "tokens", "indexedTokens", "sample"))
     require(features(0)[Array[Float]]("indexedTokens").length == 5)
+
+    val tmpFile = createTmpFile()
+    transformed.saveWordIndex(tmpFile.getAbsolutePath)
+
+    val distributed2 = TextSet.rdd(sc.parallelize(genFeatures().take(1)))
+      .loadWordIndex(tmpFile.getAbsolutePath)
+    require(distributed2.getWordIndex == wordIndex)
+    val transformed2 = distributed2.tokenize().normalize().word2idx()
+      .shapeSequence(4, TruncMode.post)
+    val indices = transformed2.toDistributed().rdd.first().getIndices.map(_.toInt)
+    require(indices.sameElements(Array(wordIndex("hello"), wordIndex("my"),
+      wordIndex("friend"), wordIndex("please"))))
   }
 
   "LocalTextSet Transformation" should "work properly" in {
@@ -97,6 +108,25 @@ class TextSetSpec extends ZooSpecHelper {
     require(features.length == 2)
     require(features(0).keys() == HashSet("label", "text", "tokens", "indexedTokens", "sample"))
     require(features(0).getIndices.length == 10)
+
+    val tmpFile = createTmpFile()
+    transformed.saveWordIndex(tmpFile.getAbsolutePath)
+
+    val local2 = TextSet.array(genFeatures().take(1))
+      .loadWordIndex(tmpFile.getAbsolutePath)
+    require(local2.getWordIndex == wordIndex)
+    val transformed2 = local2.tokenize().normalize().word2idx().shapeSequence(4)
+    val indices = transformed2.toLocal().array(0).getIndices.map(_.toInt)
+    require(indices.sameElements(Array(wordIndex("friend"), wordIndex("please"),
+      wordIndex("annotate"), wordIndex("text"))))
+  }
+
+  "Save a TextSet with no wordIndex" should "raise an error" in {
+    intercept[Exception] {
+      val tmpFile = createTmpFile()
+      val distributed = TextSet.rdd(sc.parallelize(genFeatures()))
+      distributed.saveWordIndex(tmpFile.getAbsolutePath)
+    }
   }
 
   "TextSet read with sc, fit, predict and evaluate" should "work properly" in {
