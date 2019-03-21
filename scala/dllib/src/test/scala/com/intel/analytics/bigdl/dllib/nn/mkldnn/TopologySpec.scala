@@ -983,6 +983,7 @@ class TopologySpec extends FlatSpec with Matchers {
   }
 
   "resnet-50 block graph" should "work correctly" in {
+    System.setProperty("bigdl.mkldnn.fusion", "false")
     RandomGenerator.RNG.setSeed(1)
     val inputShape = Array(4, 3, 224, 224)
     val outputShape = Array(4, 256, 56, 56)

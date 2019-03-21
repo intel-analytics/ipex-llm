@@ -563,6 +563,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Calculating scales" should "work correct for DNN Graph Module" in {
     import com.intel.analytics.bigdl.mkl.Memory
+    System.setProperty("bigdl.mkldnn.fusion", "false")
 
     def dnnGraph(batchSize: Int, classNum: Int): mkldnn.DnnGraph = {
       val inputShape = Array(batchSize, 1, 28, 28)
@@ -630,6 +631,7 @@ class ScaleCalculatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .exists(_ == false) should be (false)
 
     graph1.release()
+    System.clearProperty("bigdl.mkldnn.fusion")
   }
 
 
