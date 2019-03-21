@@ -284,8 +284,10 @@ trait MklInt8Convertible {
     if (module != null) {
       // the getParameters will flatten the weight and bias, it's wrong
       val weight = module.parameters()._1(0)
-      // if the weight is came from nn.SpatialConvolution and the nGroup is 1,
-      // we need to skip the first dimension
+      // If the weight is came from nn.SpatialConvolution and the nGroup is 1,
+      // we need to skip the first dimension. Because if the group is 1, mkldnn thinks
+      // it's 4-D tensor weight. But for original nn.SpatialConvolution, for convenience,
+      // it always use 5-D tensor weight although the nGroup is 1.
       if (module.isInstanceOf[SpatialConvolution[Float]] && weight.size(1) == 1) {
         weight.select(1, 1)
       } else {
