@@ -33,7 +33,8 @@ object Relations {
    * For csv file, it should be without header.
    * For txt file, each line should contain one record with fields separated by comma.
    *
-   * @param path The path to the relations file, which can either be a local file path or HDFS path.
+   * @param path The path to the relations file, which can either be a local or disrtibuted file
+   *             system (such as HDFS) path.
    * @param sc An instance of SparkContext.
    * @param minPartitions Integer. A suggestion value of the minimal partition number for input
    *                      texts. Default is 1.
