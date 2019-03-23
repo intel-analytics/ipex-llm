@@ -144,9 +144,9 @@ private[bigdl] class Pointer(val address: Long)
 
 object DnnStorage {
   private[tensor] val CACHE_LINE_SIZE = System.getProperty("bigdl.cache.line", "64").toInt
-  private[tensor] val FLOAT_BYTES: Int = 4
-  private[tensor] val INT8_BYTES: Int = 1
-  private[tensor] val INT_BYTES: Int = 4
+  private[bigdl] val FLOAT_BYTES: Int = 4
+  private[bigdl] val INT8_BYTES: Int = 1
+  private[bigdl] val INT_BYTES: Int = 4
 
   import java.util.concurrent.ConcurrentHashMap
   private val nativeStorages: ConcurrentHashMap[Long, Boolean] = new ConcurrentHashMap()
