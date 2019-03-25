@@ -25,13 +25,19 @@ import com.intel.analytics.bigdl.utils.T
 
 private[bigdl] object Utils {
   def copyMaskAndScales(from: MemoryData, to: MemoryData): Unit = {
-    if (to.scales.isEmpty) {
+    // here we check the from and to, they should not be null ideally
+    // but if the model is mixin with blas layer, it may be null
+    if (from != null && to != null && to.scales.isEmpty) {
       to.setScales(from.scales.clone())
       to.setMask(from.mask)
     }
   }
 
   def copyMaskAndScales(from: Array[MemoryData], to: Array[MemoryData]): Unit = {
+    // here we check the from and to, they should not be null ideally
+    // but if the model is mixin with blas layer, it may be null
+    if (from == null || to == null) return
+
     val valid = (from.length == 1 || to.length == 1) || // the ConcatTable or JoinTable
       (from.length == to.length) // the same length of from and to.
 
