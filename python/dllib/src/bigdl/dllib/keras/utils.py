@@ -88,8 +88,7 @@ def to_bigdl_metric(metric, loss):
     elif metric == "top5accuracy" or metric == "top5acc":
         return metrics.Top5Accuracy()
     elif metric == "mae":
-        from bigdl.optim.optimizer import MAE
-        return MAE()
+        return metrics.MAE()
     elif metric == "auc":
         return metrics.AUC()
     elif metric == "loss":
