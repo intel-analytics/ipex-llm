@@ -37,6 +37,18 @@ class AUC(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, threshold_num)
 
 
+class MAE(ZooKerasCreator, JavaValue):
+    """
+    Metric for mean absoluate error, similar from MAE criterion
+
+    >>> mae = MAE()
+    creating: createZooKerasMAE
+
+    """
+    def __init__(self, bigdl_type="float"):
+        super(MAE, self).__init__(None, bigdl_type)
+
+
 class Accuracy(ZooKerasCreator, JavaValue):
     """
     Measures top1 accuracy for multi-class classification
