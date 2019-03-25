@@ -107,7 +107,8 @@ private[mkldnn] class ReorderManager() {
             // we will skip the S8 to U8 reorder
             val doNotReorderIt = n.layout == nn.layout && (
               n.dataType == nn.dataType || // the same data type
-                (n.dataType == DataType.S8 && nn.dataType == DataType.U8)) // skip the s8->u8
+                (n.dataType == DataType.S8 && nn.dataType == DataType.U8) || // skip the u8 -> s8
+                (n.dataType == DataType.U8 && nn.dataType == DataType.S8)) // skip the s8->u8
 
             !doNotReorderIt
           case _ => throw new UnsupportedOperationException("Not support such memory format")
