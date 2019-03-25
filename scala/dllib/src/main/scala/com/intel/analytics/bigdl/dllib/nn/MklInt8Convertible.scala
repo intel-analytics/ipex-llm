@@ -55,15 +55,17 @@ trait MklInt8Convertible {
 
     if (inputActvt != null) {
       val module = this.asInstanceOf[AbstractModule[_, _, Float]]
-      val outputActvt = mkldnn.Utils.getOutput(module, inputActvt)
+      // do not forward here, because the input maybe not the real input
+      // such as th ReLU(true) will do the computing inplace
+      val outputActvt = module.output.asInstanceOf[Activity]
 
       module match {
         case graph: Graph[Float] => calcGraphScales(inputActvt, outputActvt)
         // handlers for BLAS modules
         case linear: Linear[Float@unchecked] =>
-          calcModuleScales(inputActvt, outputActvt, linear.weight)
+          calcModuleScales(inputActvt, outputActvt, getWeight(linear))
         case spatialConv: SpatialConvolution[Float@unchecked] =>
-          calcModuleScales(inputActvt, outputActvt, spatialConv.weight)
+          calcModuleScales(inputActvt, outputActvt, getWeight(spatialConv))
         case relu: ReLU[Float@unchecked] =>
           calcModuleScales(inputActvt, outputActvt)
         case caddTable: CAddTable[Float@unchecked, Float@unchecked] =>
@@ -131,7 +133,6 @@ trait MklInt8Convertible {
     calcModuleScales(inActivity, outActivity)
     // calculate scales for weight
     appendWeightScales(calcTensorScale(weightTensor, weightDimMask))
-
   }
 
   /**
@@ -282,7 +283,16 @@ trait MklInt8Convertible {
   private def getWeight(module: AbstractModule[_, _, Float]): Tensor[Float] = {
     if (module != null) {
       // the getParameters will flatten the weight and bias, it's wrong
-      module.parameters()._1(0)
+      val weight = module.parameters()._1(0)
+      // If the weight is came from nn.SpatialConvolution and the nGroup is 1,
+      // we need to skip the first dimension. Because if the group is 1, mkldnn thinks
+      // it's 4-D tensor weight. But for original nn.SpatialConvolution, for convenience,
+      // it always use 5-D tensor weight although the nGroup is 1.
+      if (module.isInstanceOf[SpatialConvolution[Float]] && weight.size(1) == 1) {
+        weight.select(1, 1)
+      } else {
+        weight
+      }
     } else {
       null
     }
