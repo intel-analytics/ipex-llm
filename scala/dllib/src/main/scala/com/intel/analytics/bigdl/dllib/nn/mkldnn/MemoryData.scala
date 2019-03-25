@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
+import com.intel.analytics.bigdl.tensor.DnnStorage
 
 sealed trait MemoryData extends Serializable {
   def shape: Array[Int]
@@ -81,12 +82,22 @@ sealed trait MemoryData extends Serializable {
 
   def getRealSize: Long = {
     require(primitiveDesc != UNDEFINED && primitiveDesc != ERROR)
-    MklDnn.PrimitiveDescGetSize(primitiveDesc)
+    MklDnn.PrimitiveDescGetSize(primitiveDesc) / getDataTypeBytes
   }
 
   def getPaddingShape: Array[Int] = {
     require(description != UNDEFINED && description != ERROR)
     Memory.GetPaddingShape(description)
+  }
+
+  private def getDataTypeBytes: Int = {
+    dataType match {
+      case DataType.F32 => DnnStorage.FLOAT_BYTES
+      case DataType.S32 => DnnStorage.INT_BYTES
+      case DataType.S8 => DnnStorage.INT8_BYTES
+      case DataType.U8 => DnnStorage.INT8_BYTES
+      case _ => throw new UnsupportedOperationException(s"unsupported data type")
+    }
   }
 }
 
