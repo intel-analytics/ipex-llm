@@ -163,8 +163,8 @@ class TFEstimator(object):
                     checkpoint_path = latest_checkpoint
 
                 with tf.Session() as sess:
-                    saver = tf.train.Saver()
                     if checkpoint_path:
+                        saver = tf.train.Saver()
                         saver.restore(sess, checkpoint_path)
                     else:
                         sess.run(tf.global_variables_initializer())
@@ -200,8 +200,8 @@ class TFEstimator(object):
                     checkpoint_path = latest_checkpoint
 
                 with tf.Session() as sess:
-                    saver = tf.train.Saver()
                     if checkpoint_path:
+                        saver = tf.train.Saver()
                         saver.restore(sess, checkpoint_path)
                     else:
                         sess.run(tf.global_variables_initializer())
