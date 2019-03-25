@@ -12,7 +12,7 @@ apt-get install -y build-essential ${PYTHON} ${PYTHON}-setuptools ${PYTHON}-dev 
 ${PIP} install --upgrade setuptools
 ${PIP} install numpy scipy
 ${PIP} install --no-binary pandas -I pandas
-${PIP} install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow
+${PIP} install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.10.0
 
 if [[ "$PYTHON" != "python3" ]]; then
     ${PYTHON} -m pip install -U ipykernel
