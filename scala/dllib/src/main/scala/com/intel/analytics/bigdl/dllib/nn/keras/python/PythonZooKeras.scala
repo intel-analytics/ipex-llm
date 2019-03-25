@@ -1213,6 +1213,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     RankHinge[T](margin)
   }
 
+  def createZooKerasMAE(): ValidationMethod[T] = {
+    new zmetrics.MAE()
+  }
+
   def createZooKerasAccuracy(
       zeroBasedLabel: Boolean = true): ValidationMethod[T] = {
     new zmetrics.Accuracy(zeroBasedLabel)
