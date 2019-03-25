@@ -1172,6 +1172,10 @@ negval sets the slope of the negative part:
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.LeakyReLU
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericFloat
+
 val layer = LeakyReLU(negval=0.01,inplace=false)
 val input = Tensor(3, 2).rand(-1, 1)
 println(input)
