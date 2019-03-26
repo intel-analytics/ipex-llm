@@ -16,19 +16,24 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.models
 
+import java.text.SimpleDateFormat
+import java.util.Calendar
+
 import com.intel.analytics.bigdl.dataset.{MiniBatch, _}
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.{DataSet, _}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.nn.{Container, Graph, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.feature.DistributedFeatureSet
+import com.intel.analytics.zoo.feature.{DistributedFeatureSet, FeatureSet}
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text._
 import com.intel.analytics.zoo.pipeline.api.{Net, Predictable}
@@ -37,7 +42,11 @@ import com.intel.analytics.zoo.pipeline.api.autograd._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils._
 import com.intel.analytics.zoo.pipeline.api.net.NetUtils
-import org.apache.spark.rdd.RDD
+import com.intel.analytics.zoo.pipeline.estimator.AbstractEstimator
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import org.apache.log4j.Logger
+import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -868,6 +877,13 @@ object Sequential extends KerasLayerSerializable {
 }
 
 private[zoo] object InternalOptimizerUtil {
+  def getModelCacheFromOptimizer[T: ClassTag](
+        optimizer: Optimizer[T, MiniBatch[T]]): RDD[Cache[T]] = {
+    val field = classOf[DistriOptimizer[T]].getDeclaredField("models")
+    field.setAccessible(true)
+    val models = field.get(optimizer).asInstanceOf[RDD[Cache[T]]]
+    models
+  }
 
   def getStateFromOptiMethod[T: ClassTag](optimMethod: OptimMethod[T]): Table = {
     val method = classOf[OptimMethod[T]].getDeclaredMethod("state")
@@ -914,16 +930,193 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
     _model: Module[T],
     _dataset: DistributedDataSet[MiniBatch[T]],
     _criterion: Criterion[T])
-  (implicit ev: TensorNumeric[T]) extends DistriOptimizer[T](_model, _dataset, _criterion) {
+  (implicit ev: TensorNumeric[T]) extends DistriOptimizer[T](_model, _dataset, _criterion)
+  with AbstractEstimator[T]{
+  import InternalDistriOptimizer.logger
+  protected var checkpointDir: Option[String] = None
+
+  def setCheckpointDir(path: Option[String]): this.type = {
+    if (path.isDefined) {
+      val pathAndTime = path.get + "/" +
+        new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss")
+          .format(Calendar.getInstance().getTime())
+      checkpointDir = Some(pathAndTime)
+      logger.info(s"Saving summaries to ${pathAndTime + "/summary"}")
+      val trainSummary = TrainSummary(pathAndTime, "summary")
+      val valSummary = ValidationSummary(pathAndTime, "summary")
+      this.setTrainSummary(trainSummary)
+      this.setValidationSummary(valSummary)
+    }
+    this
+  }
 
   def setTrainData(trainingDataSet: DataSet[MiniBatch[T]]): this.type = {
-    this.dataset = trainingDataSet
-    this.dataset = if (trainingDataSet.isInstanceOf[DistributedFeatureSet[T]]) {
-      trainingDataSet.toDistributed()
-    } else {
-      trainingDataSet
-    }
+    this.dataset = trainingDataSet.toDistributed()
     InternalOptimizerUtil.endEpoch(this)
     this
+  }
+
+  override def train(
+        trainSet: FeatureSet[MiniBatch[T]],
+        criterion: Criterion[T],
+        endTrigger: Option[Trigger] = None,
+        checkPointTrigger: Option[Trigger] = None,
+        validationSet: FeatureSet[MiniBatch[T]] = null,
+        validationMethod: Array[ValidationMethod[T]] = null): this.type = {
+    this.dataset = trainSet.toDataSet()
+    val endWhen = if (endTrigger.isDefined) {
+      endTrigger.get
+    } else {
+      Trigger.maxIteration(Int.MaxValue)
+    }
+    this.setEndWhen(endWhen)
+    if (checkPointTrigger.isDefined && checkpointDir.isDefined) {
+      // we should setCheckpoint every time before we call optimize(),
+      // as BigDL will overwrite checkpointPath to its subfolder.
+      val logPath = new Path(checkpointDir.get + "/models")
+      val fs = logPath.getFileSystem(new Configuration(false))
+      fs.mkdirs(logPath)
+      logger.info(s"Saving checkpoints to ${logPath.toUri.toString}")
+      this.setCheckpoint(logPath.toUri.toString(), checkPointTrigger.get)
+    }
+    if (validationMethod != null && validationSet != null) {
+      this.setValidation(checkPointTrigger.get, validationSet.toDataSet(), validationMethod)
+    }
+    this.optimize()
+    this
+  }
+
+  override def evaluate(
+        validationSet: FeatureSet[MiniBatch[T]],
+        validationMethod: Array[ValidationMethod[T]]
+      ): Map[ValidationMethod[T], ValidationResult] = {
+    val validateRDD = validationSet.toDistributed().data(train = false)
+    val sc = validateRDD.sparkContext
+    val cachedModels = InternalOptimizerUtil.getModelCacheFromOptimizer(this)
+
+    val coresPerNode = EngineRef.getCoreNumber()
+    val _subModelNumber = EngineRef.getEngineType() match {
+      case MklBlas => coresPerNode
+      case MklDnn => 1
+      case _ => throw new IllegalArgumentException
+    }
+
+    val models = if (null != cachedModels) {
+      val bcVMethods = cachedModels.sparkContext.broadcast(validationMethod)
+      cachedModels.map{cache =>
+        Cache[T](
+          cache.localModels,
+          cache.modelWeights,
+          cache.modelGradients,
+          cache.localCriterions,
+          cache.localStates,
+          cache.moduleTimeList,
+          Array.tabulate(_subModelNumber)(_ =>
+            Some(bcVMethods.value.map(_.clone()))),
+          cache.optimMethods,
+          cache.parameterSynchronizer
+        )
+      }
+    } else {
+      val bcVMethods = validateRDD.sparkContext.broadcast(validationMethod)
+      val bcModel = ModelBroadcast[T]().broadcast(sc, model)
+      validateRDD.mapPartitions{_ =>
+        Iterator.single(Cache[T](
+          Array.tabulate(_subModelNumber)(_ => bcModel.value()),
+          null,
+          null,
+          null,
+          null,
+          null,
+          Array.tabulate(_subModelNumber) { _ =>
+            Some(bcVMethods.value.map(_.clone()))},
+          null,
+          null
+        ))
+      }
+    }
+
+    // get current iteration from optimMethod
+    val step = if (null != optimMethods && optimMethods.size != 0) {
+      val state = InternalOptimizerUtil.getStateFromOptiMethod(
+        optimMethods.values.head)
+      state.getOrElse[Int]("neval", -1)
+    } else {
+      -1
+    }
+
+    InternalDistriOptimizer.validate(
+      validationSet,
+      validationMethod,
+      models,
+      step,
+      validationSummary
+    )
+  }
+}
+
+object InternalDistriOptimizer {
+  val logger = Logger.getLogger(this.getClass)
+
+  protected def validate[T](validationFeatureSet: FeatureSet[MiniBatch[T]],
+                            validationMethods: Array[ValidationMethod[T]],
+                            models: RDD[Cache[T]],
+                            step: Int,
+                            validationSummary: Option[ValidationSummary]
+                           ): Map[ValidationMethod[T], ValidationResult] = {
+    val vMethods = validationMethods
+    val validateRDD = validationFeatureSet.toDistributed().data(train = false)
+    val _subModelNumber = EngineRef.getEngineType match {
+      case MklBlas => EngineRef.getCoreNumber()
+      case MklDnn => 1
+      case _ => throw new IllegalArgumentException
+    }
+    // TODO: evaluate local
+    val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)(
+      (modelIter, dataIter) => {
+        val cached = modelIter.next()
+        val workingModels = cached.localModels
+        val localVMethods = cached.localMethods
+
+        workingModels.foreach(_.evaluate())
+        dataIter.map(batch => {
+          val stackSize = batch.size() / _subModelNumber
+          val extraSize = batch.size() % _subModelNumber
+          val parallelism = if (stackSize == 0) extraSize else _subModelNumber
+          (0 until parallelism).toParArray.map { b =>
+            val offset = b * stackSize + math.min(b, extraSize) + 1
+            val length = stackSize + (if (b < extraSize) 1 else 0)
+            val miniBatch = batch.slice(offset, length)
+            val input = miniBatch.getInput()
+            val target = miniBatch.getTarget()
+            val output = workingModels(b).forward(input)
+            val validatMethods = localVMethods(b).get
+            validatMethods.map(validation => {
+              validation(output, target)
+            })
+          }.reduce((left, right) => {
+            left.zip(right).map { case (l, r) =>
+              l + r
+            }
+          })
+        })
+      }).reduce((left, right) => {
+        left.zip(right).map { case (l, r) =>
+          l + r
+        }
+      }).zip(vMethods)
+    results.foreach(r => {
+      // TODO:
+      DistriOptimizer.logger.info(s"${r._2} is ${r._1}")
+    })
+    if (validationSummary.isDefined && step > 0) {
+      results.foreach { r =>
+        val result = r._1.result
+        validationSummary.get.addScalar(r._2.toString(), result._1,
+          step - 1
+        )
+      }
+    }
+    results.map(a => (a._2, a._1)).toMap
   }
 }
