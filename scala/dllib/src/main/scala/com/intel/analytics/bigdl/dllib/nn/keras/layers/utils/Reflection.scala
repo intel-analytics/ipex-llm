@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.utils.{Engine, Shape, Table}
+import com.intel.analytics.bigdl.utils.{Engine, EngineType, Shape, Table}
 import com.intel.analytics.zoo.pipeline.api.keras.optimizers.Adam
 
 import scala.collection.mutable
@@ -82,6 +82,10 @@ object EngineRef {
 
   def getNodeNumber(): Int = {
     KerasUtils.invokeMethod(Engine, "nodeNumber").asInstanceOf[Int]
+  }
+
+  def getEngineType(): EngineType = {
+    KerasUtils.invokeMethod(Engine, "getEngineType").asInstanceOf[EngineType]
   }
 }
 
