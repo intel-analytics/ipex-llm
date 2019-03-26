@@ -49,6 +49,7 @@ class Dropout(
     _gradOutputFormats = grad.map(x => HeapData(x.shape, format(x.shape)))
     _gradOutputFormatsForWeight = grad.map(x => HeapData(x.shape, format(x.shape)))
     _gradInputFormats = grad.map(x => HeapData(x.shape, format(x.shape)))
+    _gradInputFormats.map(_.getPrimitive(runtime))
     gradInput = initTensor(_gradInputFormats.head)
     (_gradOutputFormats, _gradInputFormats)
   }
