@@ -67,4 +67,18 @@ class DropoutSpec extends FlatSpec with Matchers {
     val ratio = notEqZeros.toDouble / total
     ratio should be (1.0)
   }
+
+  "dropout in sequential" should "work correctly" in {
+    val shape = Array(2, 3, 4, 4)
+    val dropout = Dropout()
+    val seq = Sequential().add(Input(shape, Memory.Format.nchw))
+      .add(dropout)
+      .add(Output(Memory.Format.nchw))
+
+    seq.compile(TrainingPhase)
+
+    val input = Tensor[Float](shape).rand(-1, 1)
+    seq.forward(input)
+    seq.backward(input, seq.output)
+  }
 }
