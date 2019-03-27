@@ -17,6 +17,7 @@
 package com.intel.analytics.zoo.feature.pmem
 
 import com.intel.analytics.bigdl.dataset.{ByteRecord, Sample}
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.zoo.feature.{CachedDistributedFeatureSet, DistributedFeatureSet}
 import com.intel.analytics.zoo.feature.common.ArrayLike
 import org.apache.spark.rdd.RDD
@@ -114,6 +115,59 @@ private[zoo] case class SampleArray(
   }
 }
 
+private[zoo] class ImageFeatureConverter(
+      memoryType: MemoryType = PMEM) extends NativeArrayConverter[ImageFeature] {
+
+  override def getBytesPerRecord(imageFeature: ImageFeature): Long = {
+    imageFeature.bytes().length
+  }
+
+  override def toArray(
+        recordIterator: Iterator[ImageFeature],
+        countPerPartition: Iterator[(Int, Long)]): Iterator[ArrayLike[ImageFeature]] = {
+    val count = countPerPartition.next()
+    val nativeArray = new VarLenBytesArray(count._1, count._2,
+      memoryType = memoryType)
+    // cache ImageFeature without bytes.
+    val metrics = new Array[ImageFeature](count._1)
+    var i = 0
+    while(recordIterator.hasNext) {
+      // Move bytes in ImageFeature to PMEM, then remove bytes in ImageFeature to minimize
+      // memory used in DRAM.
+      val data = recordIterator.next()
+      require(data.contains(ImageFeature.bytes),
+        s"Only support cache ImageFeature's bytes" +
+        s"to PMEM, but no bytes data found, please check your data.")
+      nativeArray.set(i, data.bytes())
+      data.update(ImageFeature.bytes, null)
+      metrics(i) = data
+      i += 1
+    }
+    Iterator.single(ImageFeatureArray(nativeArray, metrics))
+  }
+}
+
+/**
+ * Cached ImageFeatures in PMEM.
+ * @param bytesData bytes in PMEM.
+ * @param metrics ImageFeature without bytes, just some metrics.
+ */
+private[zoo] case class ImageFeatureArray(
+      bytesData: VarLenBytesArray,
+      metrics: Array[ImageFeature]) extends ArrayLike[ImageFeature] {
+  override def length: Int = {
+    bytesData.recordNum
+  }
+  override def apply(i: Int): ImageFeature = {
+    val data = metrics(i).clone()
+    data.update("bytes", bytesData.get(i))
+    data
+  }
+  override def free(): Unit = {
+    bytesData.free()
+  }
+}
+
 object PmemFeatureSet {
 
   private def rdd[T: ClassTag](data: RDD[T],
@@ -151,6 +205,9 @@ object PmemFeatureSet {
       case t if t == classOf[Sample[Float]] =>
         rdd[Sample[Float]](data.asInstanceOf[RDD[Sample[Float]]],
           new SampleConverter(memoryType)).asInstanceOf[DistributedFeatureSet[T]]
+      case t if t == classOf[ImageFeature] =>
+        rdd[ImageFeature](data.asInstanceOf[RDD[ImageFeature]],
+          new ImageFeatureConverter(memoryType)).asInstanceOf[DistributedFeatureSet[T]]
       case _ =>
         throw new IllegalArgumentException(
           s"${implicitly[ClassTag[T]].runtimeClass} is not supported for now")

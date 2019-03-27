@@ -15,11 +15,10 @@
  */
 package com.intel.analytics.zoo.feature.image
 
+import com.intel.analytics.bigdl.opencv.OpenCV
 import org.apache.log4j.Logger
-
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-
 import org.opencv.imgcodecs.Imgcodecs
 
 /**
@@ -67,3 +66,4 @@ object ImageBytesToMat {
     feature
   }
 }
+
