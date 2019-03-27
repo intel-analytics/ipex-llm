@@ -385,6 +385,18 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   }
 
   /**
+   * Release DataSet from memory. This method is used to release the rdd
+   * which is cached when toDataSet() method is called and rdd is cached
+   * TODO: modify this when BigDL fix this issue
+   *
+   * @param dataSet Target DataSet to release
+   */
+  def releaseDataSet(dataSet: DataSet[MiniBatch[T]]): Unit = {
+    dataSet.toDistributed().unpersist()
+    dataSet.toDistributed().originRDD().unpersist()
+  }
+
+  /**
    * Train a model for a fixed number of epochs on Sample RDD.
    *
    * @param x Training dataset, RDD of Sample.
@@ -400,8 +412,14 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featurePaddingParam: PaddingParam[T] = null,
       labelPaddingParam: PaddingParam[T] = null)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
-    this.fit(toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam),
-      nbEpoch, toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam))
+    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam)
+    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam)
+    this.fit(trainData, nbEpoch, valData)
+
+    releaseDataSet(trainData)
+    if (valData != null) {
+      releaseDataSet(valData)
+    }
   }
 
   /**
@@ -418,7 +436,16 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       nbEpoch: Int,
       validationData: ImageSet)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
+    val trainData = toDataSet(x, batchSize)
+    val valData = toDataSet(validationData, batchSize)
     this.fit(toDataSet(x, batchSize), nbEpoch, toDataSet(validationData, batchSize))
+
+    if (x.isDistributed()) {
+      releaseDataSet(trainData)
+      if (valData != null) {
+        releaseDataSet(valData)
+      }
+    }
   }
 
   def fit(
