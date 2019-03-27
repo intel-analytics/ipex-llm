@@ -979,7 +979,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
       logger.info(s"Saving checkpoints to ${logPath.toUri.toString}")
       this.setCheckpoint(logPath.toUri.toString(), checkPointTrigger.get)
     }
-    if (validationMethod != null && validationSet != null) {
+    if (checkPointTrigger.isDefined && validationMethod != null && validationSet != null) {
       this.setValidation(checkPointTrigger.get, validationSet.toDataSet(), validationMethod)
     }
     this.optimize()
