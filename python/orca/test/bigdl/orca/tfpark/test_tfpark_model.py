@@ -332,5 +332,45 @@ class TestTFParkModel(ZooTestCase):
 
         keras_model.fit(x, y, batch_size=4, distributed=True)
 
+    def test_dataset_without_batch(self):
+        x = np.random.rand(20, 10)
+        y = np.random.randint(0, 2, (20))
+
+        rdd_x = self.sc.parallelize(x)
+        rdd_y = self.sc.parallelize(y)
+
+        rdd = rdd_x.zip(rdd_y)
+
+        dataset = TFDataset.from_rdd(rdd,
+                                     features=(tf.float32, [10]),
+                                     labels=(tf.int32, []),
+                                     names=["features", "labels"],
+                                     val_rdd=rdd
+                                     )
+
+        keras_model = self.create_model()
+        model = KerasModel(keras_model)
+        self.intercept(lambda: model.fit(dataset),
+                       "The batch_size of TFDataset must be" +
+                       " specified when used in KerasModel fit.")
+
+        dataset = TFDataset.from_rdd(rdd,
+                                     features=(tf.float32, [10]),
+                                     labels=(tf.int32, []),
+                                     names=["features", "labels"],
+                                     )
+        self.intercept(lambda: model.evaluate(dataset),
+                       "The batch_per_thread of TFDataset must be " +
+                       "specified when used in KerasModel evaluate.")
+
+        dataset = TFDataset.from_rdd(rdd_x,
+                                     features=(tf.float32, [10]),
+                                     names=["features", "labels"],
+                                     )
+        self.intercept(lambda: model.predict(dataset),
+                       "The batch_per_thread of TFDataset must be" +
+                       " specified when used in KerasModel predict.")
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
