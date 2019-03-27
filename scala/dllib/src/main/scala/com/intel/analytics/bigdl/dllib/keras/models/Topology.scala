@@ -438,8 +438,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     KerasUtils.validateBatchSize(batchSize)
     val trainData = toDataSet(x, batchSize)
     val valData = toDataSet(validationData, batchSize)
-    this.fit(toDataSet(x, batchSize), nbEpoch, toDataSet(validationData, batchSize))
 
+    this.fit(trainData, nbEpoch, valData)
     if (x.isDistributed()) {
       releaseDataSet(trainData)
       if (valData != null) {
