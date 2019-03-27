@@ -124,6 +124,9 @@ class TFEstimator(object):
             assign_step = tf.assign_add(global_step_tensor, add_step_input)
             result = self.estimator._call_input_fn(input_fn, tf.estimator.ModeKeys.TRAIN)
             if isinstance(result, TFDataset):
+                if not result.has_batch:
+                    raise ValueError("The batch_size of TFDataset must be " +
+                                     "specified when used for training.")
                 spec = self._call_model_fn(result.feature_tensors,
                                            result.label_tensors,
                                            tf.estimator.ModeKeys.TRAIN,
@@ -168,7 +171,7 @@ class TFEstimator(object):
                         saver.restore(sess, checkpoint_path)
                     else:
                         sess.run(tf.global_variables_initializer())
-                    inputs = nest.flatten(result.feature_tensors)
+                    inputs = nest.flatten(result._original_tensors[0])
                     outputs = nest.flatten(spec.predictions)
                     tfnet = TFNet.from_session(sess, inputs=inputs, outputs=outputs)
 
@@ -177,7 +180,7 @@ class TFEstimator(object):
                     if result.batch_per_thread < 0:
                         batch_size = result.batch_size
                     else:
-                        batch_size = result.batch_per_thread * result.total_core_num
+                        batch_size = result.batch_per_thread * result.rdd.getNumPartitions()
 
                     eval_methods = [self._to_bigdl_metric(m) for m in eval_methods]
                     results = tfnet.evaluate(rdd, batch_size, eval_methods)
@@ -205,7 +208,7 @@ class TFEstimator(object):
                         saver.restore(sess, checkpoint_path)
                     else:
                         sess.run(tf.global_variables_initializer())
-                    inputs = nest.flatten(result.feature_tensors)
+                    inputs = nest.flatten(result._original_tensors[0])
                     outputs = nest.flatten(spec.predictions)
                     tfnet = TFNet.from_session(sess, inputs=inputs, outputs=outputs)
 

@@ -90,6 +90,9 @@ class KerasModel(object):
             ):
         if isinstance(x, TFDataset):
             # todo check arguments
+            if not x.has_batch:
+                raise ValueError("The batch_size of TFDataset must be " +
+                                 "specified when used in KerasModel fit.")
             x = _standarize_feature_label_dataset(x, self.model)
             self._fit_distributed(x, validation_split, epochs, **kwargs)
 
@@ -143,6 +146,9 @@ class KerasModel(object):
                  distributed=False
                  ):
         if isinstance(x, TFDataset):
+            if not x.has_batch:
+                raise ValueError("The batch_per_thread of TFDataset must be " +
+                                 "specified when used in KerasModel evaluate.")
             x = _standarize_feature_label_dataset(x, self.model)
             # todo check arguments
             return self._evaluate_distributed(x)
@@ -190,6 +196,9 @@ class KerasModel(object):
 
         if isinstance(x, TFDataset):
             # todo check arguments
+            if not x.has_batch:
+                raise ValueError("The batch_per_thread of TFDataset" +
+                                 " must be specified when used in KerasModel predict.")
             x = _standarize_feature_dataset(x, self.model)
             return self._predict_distributed(x)
         else:
