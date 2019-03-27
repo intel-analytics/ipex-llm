@@ -302,22 +302,14 @@ class TestTFParkModel(ZooTestCase):
                                      shapes=[[], []],
                                      types=[tf.int32, tf.int32],
                                      batch_size=8)
-        from tensorflow.python.ops import variable_scope
-
-        def variable_creator(**kwargs):
-            kwargs["use_resource"] = False
-            return variable_scope.default_variable_creator(None, **kwargs)
-
-        getter = lambda next_creator, **kwargs: variable_creator(**kwargs)
-        with variable_scope.variable_creator_scope(getter):
-            words_input = tf.keras.layers.Input(shape=(), name='words_input')
-            embedding_layer = tf.keras.layers.Embedding(input_dim=10,
-                                                        output_dim=5, name='word_embedding')
-            word_embeddings = embedding_layer(words_input)
-            embedding = tf.keras.layers.Flatten()(word_embeddings)
-            output = tf.keras.layers.Dense(5, activation="softmax")(embedding)
-            model = tf.keras.models.Model(inputs=[words_input], outputs=[output])
-            model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy")\
+        words_input = tf.keras.layers.Input(shape=(), name='words_input')
+        embedding_layer = tf.keras.layers.Embedding(input_dim=10,
+                                                    output_dim=5, name='word_embedding')
+        word_embeddings = embedding_layer(words_input)
+        embedding = tf.keras.layers.Flatten()(word_embeddings)
+        output = tf.keras.layers.Dense(5, activation="softmax")(embedding)
+        model = tf.keras.models.Model(inputs=[words_input], outputs=[output])
+        model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy")
 
         optimizer = TFOptimizer.from_keras(model, dataset)
         optimizer.optimize()
