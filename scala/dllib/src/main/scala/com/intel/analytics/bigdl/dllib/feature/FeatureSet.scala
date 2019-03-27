@@ -129,6 +129,7 @@ trait DistributedFeatureSet[T] extends AbstractFeatureSet[T, RDD[T]] {
       }
 
       override def unpersist(): Unit = {
+        preFeatureSet.unpersist()
         cachedTransformer.unpersist()
         isCached = false
       }
