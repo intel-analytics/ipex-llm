@@ -18,6 +18,7 @@ package com.intel.analytics.zoo.feature.pmem
 
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.examples.inception.ImageNet2012
@@ -143,6 +144,21 @@ class NativeSpec extends ZooSpecHelper {
     data.map(_._2.toInt).sorted should be(Array.range(1, 10))
     data.foreach(d =>
       d._1 should be(Tensor[Float].range(d._2, d._2 + 5))
+    )
+  }
+
+  "getting ImageFeature from FeatureSet" should "be right" in {
+    val bytes = Array.tabulate(10)(v => (Array.range(v, v + 40).map(_.toByte), v))
+    val samples = sc.parallelize(bytes.map(v => ImageFeature(v._1, v._2))).setName("Example Sample")
+    val featureSet = FeatureSet.rdd(samples, memoryType = DIRECT)
+    featureSet.shuffle()
+    val dataIter = featureSet.data(false)
+    val data = dataIter.mapPartitions(v =>
+      v.map(s => (s.bytes(), s.getLabel[Int]))
+    ).collect()
+    data.map(_._2.toInt).sorted should be(Array.range(0, 10))
+    data.foreach(d =>
+      d._1 should be(Array.range(d._2, d._2 + 40).map(_.toByte))
     )
   }
 }
