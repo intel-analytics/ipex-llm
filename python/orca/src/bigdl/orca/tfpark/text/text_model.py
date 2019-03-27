@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.tfpark import KerasModel, variable_creator_scope
+from zoo.tfpark import KerasModel
 
 
 # TODO: add word embedding file support
@@ -24,13 +24,12 @@ class TextKerasModel(KerasModel):
     """
     def __init__(self, labor, optimizer=None, **kwargs):
         self.labor = labor
-        with variable_creator_scope():
-            self.labor.build(**kwargs)
-            model = self.labor.model
-            # Recompile the model if user uses a different optimizer other than the default one.
-            if optimizer:
-                model.compile(loss=model.loss, optimizer=optimizer, metrics=model.metrics)
-            super(TextKerasModel, self).__init__(model)
+        self.labor.build(**kwargs)
+        model = self.labor.model
+        # Recompile the model if user uses a different optimizer other than the default one.
+        if optimizer:
+            model.compile(loss=model.loss, optimizer=optimizer, metrics=model.metrics)
+        super(TextKerasModel, self).__init__(model)
 
     # Remark: nlp-architect CRF layer has error when directly loaded by tf.keras.models.load_model.
     # Thus we keep the nlp-architect class as labor and uses its save/load,
@@ -46,8 +45,7 @@ class TextKerasModel(KerasModel):
 
     @staticmethod
     def _load_model(labor, path):
-        with variable_creator_scope():
-            labor.load(path)
-            model = KerasModel(labor.model)
-            model.labor = labor
-            return model
+        labor.load(path)
+        model = KerasModel(labor.model)
+        model.labor = labor
+        return model

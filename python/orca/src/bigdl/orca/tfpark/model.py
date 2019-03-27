@@ -20,7 +20,6 @@ from tensorflow.python.keras import models
 
 from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFPredictor
-from zoo.tfpark import variable_creator_scope
 import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
@@ -77,8 +76,7 @@ class KerasModel(object):
         :param path: String. The path to the pre-defined model.
         :return: KerasModel.
         """
-        with variable_creator_scope():
-            return KerasModel(models.load_model(path))
+        return KerasModel(models.load_model(path))
 
     def fit(self,
             x=None,
