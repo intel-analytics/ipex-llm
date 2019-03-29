@@ -49,7 +49,10 @@ class InferShape(JavaValue):
 
     @classmethod
     def __to_keras_shape(cls, shape):
-        return tuple([None] + shape[1:])
+        if shape[0] == -1:
+            return tuple([None] + shape[1:])
+        else:
+            return tuple(shape)
 
     def __process_shape(self, shape):
         if len(shape) == 1:
