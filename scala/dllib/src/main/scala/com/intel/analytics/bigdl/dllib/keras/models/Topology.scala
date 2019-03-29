@@ -391,9 +391,13 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    *
    * @param dataSet Target DataSet to release
    */
-  def releaseDataSet(dataSet: DataSet[MiniBatch[T]]): Unit = {
-    dataSet.toDistributed().unpersist()
-    dataSet.toDistributed().originRDD().unpersist()
+  def releaseDataSets(dataSets: Array[DataSet[MiniBatch[T]]]): Unit = {
+    for (ds <- dataSets) {
+      if (ds != null && ds.isInstanceOf[DistributedDataSet[T]]) {
+        ds.toDistributed().unpersist()
+        ds.toDistributed().originRDD().unpersist()
+      }
+    }
   }
 
   /**
@@ -416,10 +420,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam)
     this.fit(trainData, nbEpoch, valData)
 
-    releaseDataSet(trainData)
-    if (valData != null) {
-      releaseDataSet(valData)
-    }
+    releaseDataSets(Array(trainData, valData))
   }
 
   /**
@@ -440,12 +441,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     val valData = toDataSet(validationData, batchSize)
 
     this.fit(trainData, nbEpoch, valData)
-    if (x.isDistributed()) {
-      releaseDataSet(trainData)
-      if (valData != null) {
-        releaseDataSet(valData)
-      }
-    }
+    releaseDataSets(Array(trainData, valData))
   }
 
   def fit(
