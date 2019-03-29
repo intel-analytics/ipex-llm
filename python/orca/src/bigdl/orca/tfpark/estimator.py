@@ -62,15 +62,13 @@ def add_train_op(model_fn, features, labels, mode, params, config, optimizer):
                 " that do not support gradients, between variables %s and loss %s." %
                 ([str(v) for _, v in grads_and_vars], spec.loss))
 
-        train_op = spec.optimizer.apply_gradients(grads_and_vars,
-                                                  global_step=tf.train.get_global_step())
+        train_op = optimizer.apply_gradients(grads_and_vars,
+                                             global_step=tf.train.get_global_step())
 
     return tf.estimator.EstimatorSpec(mode,
                                       spec.predictions,
                                       spec.loss,
-                                      train_op,
-                                      spec.eval_metric_ops,
-                                      spec.export_outputs)
+                                      train_op)
 
 
 class TFEstimatorSpec:
