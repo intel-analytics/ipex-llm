@@ -518,3 +518,22 @@ class Max(ZooKerasLayer):
                                   return_value,
                                   list(input_shape) if input_shape else None,
                                   **kwargs)
+
+
+class ExpandDim(ZooKerasLayer):
+    """
+    Expand_dim is an improved layer to suuport 1D input.
+    For example, if we get an 1D input with shape(3),
+    we will return the shape(1, 3) after we use expand_dim(0, input).
+    # Arguments
+    dim: The specified axis to expand dimension on.
+    input_shape: A shape tuple, not including batch.
+
+    >>> expandDim = ExpandDim(dim=0, input_shape=(3, 2))
+    creating: createZooKerasExpandDim
+    """
+    def __init__(self, dim, input_shape=None, **kwargs):
+        super(ExpandDim, self).__init__(None,
+                                        dim,
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
