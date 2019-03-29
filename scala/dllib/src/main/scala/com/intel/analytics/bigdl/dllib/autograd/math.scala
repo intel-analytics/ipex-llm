@@ -233,8 +233,7 @@ object AutoGrad {
    */
   def expandDims[T: ClassTag](x: Variable[T], axis: Int)(
       implicit ev: TensorNumeric[T]): Variable[T] = {
-    val layer = new KerasLayerWrapper[T](
-      bnn.Unsqueeze[T](pos = axis + 1).asInstanceOf[AbstractModule[Activity, Activity, T]])
+    val layer = ExpandDim(axis).asInstanceOf[AbstractModule[Activity, Activity, T]]
     val expanded = Variable(layer.inputs(x.node))
     contiguous(expanded)
   }

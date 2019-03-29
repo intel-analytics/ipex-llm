@@ -337,6 +337,12 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     Reshape(toScalaArray(targetShape), toScalaShape(inputShape))
   }
 
+  def createZooKerasExpandDim(
+      dim: Int,
+      inputShape: JList[Int] = null): ExpandDim[T] = {
+    ExpandDim(dim, toScalaShape(inputShape))
+  }
+
   def createZooKerasDropout(
       p: Double,
       inputShape: JList[Int] = null): Dropout[T] = {
