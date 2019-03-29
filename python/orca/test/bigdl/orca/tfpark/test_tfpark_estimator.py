@@ -56,6 +56,11 @@ class TestTFParkEstimator(ZooTestCase):
                                              features=(tf.float32, [10]),
                                              labels=(tf.int32, []),
                                              batch_size=4)
+            elif mode == tf.estimator.ModeKeys.EVAL:
+                dataset = TFDataset.from_rdd(rdd,
+                                             features=(tf.float32, [10]),
+                                             labels=(tf.int32, []),
+                                             batch_per_thread=4)
             else:
                 dataset = TFDataset.from_rdd(rdd_x,
                                              features=(tf.float32, [10]),
@@ -63,6 +68,25 @@ class TestTFParkEstimator(ZooTestCase):
             return dataset
 
         return input_fn
+
+    def test_init_TFDataset_from_ndarrays(self):
+
+        model_fn = self.create_model_fn()
+
+        def input_fn(mode):
+            x = np.random.rand(20, 10)
+            y = np.random.randint(0, 10, (20,))
+            if mode == tf.estimator.ModeKeys.TRAIN:
+                return TFDataset.from_ndarrays((x, y), batch_size=8)
+            elif mode == tf.estimator.ModeKeys.EVAL:
+                return TFDataset.from_ndarrays((x, y), batch_per_thread=1)
+            else:
+                return TFDataset.from_ndarrays(x, batch_per_thread=1)
+
+        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator.train(input_fn, 10)
+        estimator.evaluate(input_fn, ["acc"])
+        estimator.predict(input_fn)
 
     def test_training(self):
         model_fn = self.create_model_fn()
