@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.nn.InitializationMethod
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
+import com.intel.analytics.bigdl.nn.{BatchNormalization => BNBatchNormalization}
 import com.intel.analytics.bigdl.utils.{Shape, Table}
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.pipeline.api.autograd.{Constant, _}
@@ -282,6 +283,16 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       inputShape: JList[Int] = null): BatchNormalization[T] = {
     BatchNormalization[T](epsilon, momentum, betaInit,
       gammaInit, dimOrdering, toScalaShape(inputShape))
+  }
+
+  def setRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
+    module.labor.asInstanceOf[BNBatchNormalization[T]]
+      .runningMean.set(toTensor(runningMean))
+  }
+
+  def setRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
+    module.labor.asInstanceOf[BNBatchNormalization[T]]
+      .runningVar.set(toTensor(runningStd))
   }
 
   def createZooKerasConvolution2D(
