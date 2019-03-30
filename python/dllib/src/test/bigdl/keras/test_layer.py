@@ -41,6 +41,7 @@ class TestLayer(ZooTestCase):
                            WeightsConverter.convert_embedding)
 
     def test_batchnormalization(self):
+        print("Running batch normal test")
         K.set_image_dim_ordering("th")
         input_data = np.random.random_sample([2, 5, 32, 32])
         zlayer = ZLayer.BatchNormalization(axis=1, input_shape=(5, 32, 32))
@@ -52,6 +53,12 @@ class TestLayer(ZooTestCase):
         zlayer = ZLayer.BatchNormalization(axis=-1, dim_ordering="tf", input_shape=(32, 32, 4))
         klayer = KLayer.BatchNormalization(axis=-1, input_shape=(32, 32, 4))
         self.compare_layer(klayer, zlayer, input_data2,
+                           WeightsConverter.convert_batchnormalization)
+        K.set_image_dim_ordering("th")
+        input_data = np.random.random_sample([2, 5])
+        zlayer = ZLayer.BatchNormalization(axis=1, input_shape=(5,))
+        klayer = KLayer.BatchNormalization(axis=1, input_shape=(5,))
+        self.compare_layer(klayer, zlayer, input_data,
                            WeightsConverter.convert_batchnormalization)
 
     def test_merge_sum(self):
