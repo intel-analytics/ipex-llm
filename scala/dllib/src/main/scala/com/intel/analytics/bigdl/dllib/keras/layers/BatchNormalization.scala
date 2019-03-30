@@ -16,8 +16,10 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{BatchNormalization => BBatchNormalization}
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.nn.{RandomNormal, RandomUniform, SpatialBatchNormalization, Xavier, BatchNormalization => BBatchNormalization}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, BatchNormalization => BKBatchNormalization}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -49,14 +51,64 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class BatchNormalization[T: ClassTag](
-   override val epsilon: Double = 0.001,
-   override val momentum: Double = 0.99,
-   override val betaInit: String = "zero",
-   override val gammaInit: String = "one",
-   override val dimOrdering: DataFormat = DataFormat.NCHW,
-   override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BBatchNormalization[T](
-    epsilon, momentum, betaInit, gammaInit, dimOrdering, inputShape) with Net {
+   val epsilon: Double = 0.001,
+   val momentum: Double = 0.99,
+   val betaInit: String = "zero",
+   val gammaInit: String = "one",
+   val dimOrdering: DataFormat = DataFormat.NCHW,
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
+
+  private def getInit(init: String, n: Int): Tensor[T] = {
+    val weights = Tensor[T](n)
+    init.toLowerCase() match {
+      case "zero" => weights.fill(ev.zero)
+      case "one" => weights.fill(ev.one)
+      case "glorot_uniform" => Xavier.init(weights)
+        weights
+      case "uniform" => RandomUniform(-0.05, 0.05).init(weights)
+        weights
+      case "normal" => RandomNormal(0.0, 0.05).init(weights)
+        weights
+      case _ => throw new IllegalArgumentException(s"Unsupported initialization method: " +
+        s"${init.toLowerCase()}")
+    }
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4 || input.length == 2,
+      s"BatchNormalization requires 4D or 2D input, but got input dim ${input.length}")
+    inputShape
+  }
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
+    input.length match {
+      case 4 => val nChannel = dimOrdering match {
+          case DataFormat.NCHW => input(1)
+          case DataFormat.NHWC => input(3)
+        }
+        // TODO: support arbitrary input shape
+        val layer = SpatialBatchNormalization(
+          nOutput = nChannel,
+          eps = epsilon,
+          momentum = momentum,
+          initWeight = getInit(gammaInit, nChannel),
+          initBias = getInit(betaInit, nChannel),
+          dataFormat = dimOrdering)
+        layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+      case 2 => val nOutput = input(1)
+        BBatchNormalization[T](nOutput,
+          epsilon,
+          momentum,
+          affine = true,
+          initWeight = getInit(gammaInit, nOutput),
+          initBias = getInit(betaInit, nOutput))
+      case _ => throw new IllegalArgumentException(s"BatchNormalization requires 4D or 2D input," +
+        s" but got input dim ${input.length}")
+    }
+  }
 }
 
 object BatchNormalization {
