@@ -30,7 +30,7 @@ class BatchNormalization(ZooKerasLayer):
     Normalize the activations of the previous layer at each batch, i.e. applies a transformation
     that maintains the mean activation close to 0 and the activation standard deviation close to 1.
     It is a feature-wise normalization, each feature map in the input will be normalized separately.
-    The input of this layer should be 4D.
+    The input of this layer should be 4D or 2D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
     input_shape (a shape tuple, does not include the batch dimension).
