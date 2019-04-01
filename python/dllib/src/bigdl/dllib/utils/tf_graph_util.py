@@ -1,7 +1,8 @@
 # This file is adapted from https://github.com/tensorflow/tensorflow/blob/master
 # /tensorflow/python/framework/graph_util_impl.py
 #
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2015 The TensorFlow Authors, 2019 Analytics Zoo Authors.
+# All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
