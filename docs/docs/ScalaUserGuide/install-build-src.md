@@ -44,11 +44,11 @@ By default, `make-dist.sh` uses Scala 2.10 for Spark 1.5.x or 1.6.x, and Scala 2
 
 After that, you can find a `dist` folder, which contains all the needed files to run a BigDL program. The files in `dist` include:
 
-* **dist/bin/bigdl.sh**: A script used to set up proper environment variables and launch the BigDL program.
+* **dist/bin/**: The folder contains scripts used to set up proper environment variables and launch the BigDL program.
 * **dist/lib/bigdl-VERSION-jar-with-dependencies.jar**: This jar package contains all dependencies except Spark classes.
 * **dist/lib/bigdl-VERSION-python-api.zip**: This zip package contains all Python files of BigDL.
 * **dist/conf/spark-bigdl.conf**: This file contains necessary property configurations. ```Engine.createSparkConf``` will populate these properties, so try to use that method in your code. Or you need to pass the file to Spark with the "--properties-file" option. 
-    
+
 ---
 ## **Build with Maven**
 
@@ -64,7 +64,6 @@ Note that the instructions above will build BigDL with Spark 1.5.x or 1.6.x (usi
  - `-P spark_2.x`: build for Spark 2.0 and above (using Scala 2.11). (Again, it is highly recommended to use _**Java 8**_ when running with Spark 2.0; otherwise you may observe very poor performance.)
  * `-P full-build`: full build
  * `-P scala_2.10` (or `-P scala_2.11`): build using Scala 2.10 (or Scala 2.11) 
-
 
 ---
 ## **Setup IDE**
