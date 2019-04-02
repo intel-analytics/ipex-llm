@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{Shape, T}
 import com.intel.analytics.zoo.pipeline.api.autograd.Variable
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
@@ -31,39 +31,48 @@ import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerialization
 class TransformerLayerSpec extends ZooSpecHelper {
   "TransformerLayer" should "be able to work" in {
     val model = TransformerLayer[Float](vocab = 100, hiddenSize = 768, nBlock = 3)
-    model.build(Shape(4, 77, 2))
+    val shape = Shape(List(Shape(4, 77), Shape(4, 77)))
+    model.build(shape)
     val w = model.parameters()._1
     require(w.length == 37)
-    val input = Tensor[Float](Array(2, 2, 77, 2)).rand().resize(4, 77, 2)
-    val gradOutput = Tensor[Float](4, 77, 768).rand()
+    val wordInput = Tensor[Float](Array(4, 77)).rand()
+    val positionInput = Tensor[Float](Array(4, 77)).rand()
+    val input = T(wordInput, positionInput)
     val output = model.forward(input)
-    val gradInput = model.backward(input, gradOutput)
+    val gradInput = model.backward(input, output)
   }
 
   "TransformerLayer with configured embedding" should "be able to work" in {
+    val wordInputLayer = InputLayer[Float](inputShape = Shape(77))
+    val postionInputLayer = InputLayer[Float](inputShape = Shape(77))
     val embedding = Sequential[Float]()
-      .add(Reshape[Float](Array(77 * 2), inputShape = Shape(77, 2)))
+      .add(Merge[Float](layers = List(wordInputLayer, postionInputLayer), mode = "concat"))
+      .add(Reshape[Float](Array(77 * 2)))
       .add(Embedding[Float](100, 768, inputLength = 77 * 2))
       .add(Reshape[Float](Array(77, 2, 768)))
       .add(new KerasLayerWrapper[Float](Sum[Float](dimension = 3,
         squeeze = true).asInstanceOf[AbstractModule[Activity, Activity, Float]]))
     val model = TransformerLayer[Float](nBlock = 3,
-      residPdrop = 0.1, attnPdrop = 0.1, nHead = 12, maskAttention = false,
-      embeddingLayer = embedding.asInstanceOf[KerasLayer[Tensor[Float], Tensor[Float], Float]])
+      residPdrop = 0.1, attnPdrop = 0.1, nHead = 12, bidirectional = false,
+      initializerRange = 0.02, outputAllBlock = true,
+      embeddingLayer = embedding.asInstanceOf[KerasLayer[Activity, Tensor[Float], Float]])
 
-    model.build(Shape(4, 77, 2))
-    val input = Tensor[Float](Array(2, 2, 77, 2)).rand().resize(4, 77, 2)
-    val gradOutput = Tensor[Float](4, 77, 768).rand()
+    val shape = Shape(List(Shape(4, 77), Shape(4, 77)))
+    model.build(shape)
+    val wordInput = Tensor[Float](Array(4, 77)).rand()
+    val positionInput = Tensor[Float](Array(4, 77)).rand()
+    val input = T(wordInput, positionInput)
     val output = model.forward(input)
-    val gradInput = model.backward(input, gradOutput)
+    val gradInput = model.backward(input, output)
   }
 
   "TransformerLayer" should "be able to generate correct result" in {
     RNG.setSeed(42)
     val layer = TransformerLayer[Float](vocab = 10, hiddenSize = 4, seqLen = 2, nHead = 2,
-      residPdrop = 0, attnPdrop = 0, nBlock = 1)
+      residPdrop = 0, attnPdrop = 0, nBlock = 1, outputAllBlock = false)
     val data = Array[Float](6, 3, 7, 4, 6, 9, 2, 6, 7, 4, 3, 7, 7, 2, 5, 4)
-    layer.build(Shape(4, 2, 2))
+    val shape = Shape(List(Shape(4, 2), Shape(4, 2)))
+    layer.build(shape)
     val wb = layer.parameters()._1
 
     val embedingW = Tensor[Float](Array[Float](0.0035f, 0.0210f, 0.0001f, -0.0015f,
@@ -122,7 +131,8 @@ class TransformerLayerSpec extends ZooSpecHelper {
      0.0127f, 0.0081f, 0.0068f, -0.0044f), Array(1, 1, 1, 16, 4))
     wb(9).set(conv4W)
 
-    val input = Tensor[Float](data, Array(4, 2, 2))
+    val ori = Tensor[Float](data, Array(4, 2, 2))
+    val input = T.array(ori.split(2))
     val output = layer.forward(input).toTensor[Float]
 
     val expect = Tensor[Float](Array[Float](1.1891f, -0.0895f, -1.5431f, 0.4436f,
@@ -301,9 +311,9 @@ class TransformerLayerSpec extends ZooSpecHelper {
 
   "Attention" should "be able to generate correct result" in {
     val transformerLayer = TransformerLayer[Float](vocab = 10, hiddenSize = 4,
-      seqLen = 2, nHead = 2,
-      residPdrop = 0, attnPdrop = 0, nBlock = 1)
-    transformerLayer.build(Shape(2, 2, 2))
+      seqLen = 2, nHead = 2, residPdrop = 0, attnPdrop = 0, nBlock = 1)
+    val shape = Shape(List(Shape(2, 2), Shape(2, 2)))
+    transformerLayer.build(shape)
 
     val xValue = Tensor[Float](Array[Float](0.6532f, 0.3958f, 0.9147f, 0.2036f,
     0.2018f, 0.2018f, 0.9497f, 0.6666f,
@@ -424,8 +434,11 @@ class TransformerLayerSpec extends ZooSpecHelper {
 class TransformerLayerSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = TransformerLayer[Float](vocab = 100, hiddenSize = 768, nBlock = 3)
-    layer.build(Shape(2, 77, 2))
-    val input = Tensor[Float](Array(2, 77, 2)).rand()
+    val shape = Shape(List(Shape(2, 77), Shape(2, 77)))
+    layer.build(shape)
+    val wordInput = Tensor[Float](Array(2, 77)).rand()
+    val positionInput = Tensor[Float](Array(2, 77)).rand()
+    val input = T(wordInput, positionInput)
     runSerializationTest(layer, input)
   }
 }
