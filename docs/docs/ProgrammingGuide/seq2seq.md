@@ -12,8 +12,8 @@ You can call the following API in Scala and Python respectively to create a `Seq
 
 **Scala**
 ```scala
-val encoder = RNNEncoder[Float](rnnType="lstm", numLayer=3, hiddenSize=3, embedding=Embedding[Float](10, inputSize))
-val decoder = RNNDecoder[Float](rnnType="lstm", numLayer=3, hiddenSize=3, embedding=Embedding[Float](10, inputSize))
+val encoder = RNNEncoder[Float](rnnType="lstm", numLayers=3, hiddenSize=3, embedding=Embedding[Float](10, inputSize))
+val decoder = RNNDecoder[Float](rnnType="lstm", numLayers=3, hiddenSize=3, embedding=Embedding[Float](10, inputSize))
 val bridge = Bridge[Float](bridgeType="dense", decoderHiddenSize=3)
 val model = Seq2seq[Float](encoder, decoder, inputShape=SingleShape(List(-1)), outputShape=SingleShape(List(-1)), bridge)
 ```
