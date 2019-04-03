@@ -28,3 +28,6 @@
 
 * Use Intel Analytics Zoo to build an intelligent QA Bot for Microsoft Azure, [Shanghai Apache Spark+AI meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/255788956/), Nov 2018, Shanghai ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Use%20Intel%20Analytics%20Zoo%20to%20build%20an%20intelligent%20QA%20Bot%20for%20Microsoft%20Azure.pdf))
 
+* User-based real-time product recommendations leveraging deep learning using Analytics Zoo on Apache Spark and BigDL, [Strata Data conference](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079), March 2019, San Francisco ([slides](https://cdn.oreillystatic.com/en/assets/1/event/290/User-based%20real-time%20product%20recommendations%20leveraging%20deep%20learning%20using%20Analytics%20Zoo%20on%20Apache%20Spark%20and%20BigDL%20Presentation.ppt))
+
+* Analytics Zoo: Distributed Tensorflow, Keras and BigDL in production on Apache Spark, [Strata Data conference](https://conferences.oreilly.com/strata/strata-ca), March 2019, San Francisco ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Analytics%20Zoo-Distributed%20Tensorflow%2C%20Keras%20and%20BigDL%20in%20production%20on%20Apache%20Spark.pdf))
