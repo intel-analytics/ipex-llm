@@ -114,7 +114,7 @@ tanhShrink = TanhShrink()
 ```
 TanhShrink applies element-wise Tanh and Shrink function to the input
 
-TanhShrink function : `f(x) = scala.math.tanh(x) - 1`
+TanhShrink function : `f(x) = x - scala.math.tanh(x)`
 
 **Scala example:**
 ```scala
@@ -315,17 +315,17 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 val relu = ReLU(false)
 
-val input = Tensor(3, 3).rand()
+val input = Tensor(3, 3).randn()
 > print(input)
-0.13486342	0.8986828	0.2648762	
-0.56467545	0.7727274	0.65959305	
-0.01554346	0.9552375	0.2434533	
+1.6491432	-0.1935831	0.33882537
+0.23419656	-1.4213086	0.8740734
+0.018890858	0.7296756	0.37037155
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
 
 > print(relu.forward(input))
-0.13486342	0.8986828	0.2648762	
-0.56467545	0.7727274	0.65959305	
-0.01554346	0.9552375	0.2434533	
+1.6491432	0.0	0.33882537
+0.23419656	0.0	0.8740734
+0.018890858	0.7296756	0.37037155
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 
 
@@ -558,7 +558,7 @@ println(grad)
 1.0	2.0	3.0
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 ```
-**Scala example:**
+**Python example:**
 ```python
 activation = SoftShrink()
 input = np.array([
@@ -656,7 +656,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
 
-val activation = Tanh()
+val activation = new Tanh()
 val input = Tensor(T(
   T(1f, 2f, 3f),
   T(2f, 3f, 4f),
@@ -881,7 +881,7 @@ val input = Tensor(3, 3).rand()
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
 
 
-> print(l1Penalty.forward(input))
+> print(penalty.forward(input))
 0.0370419	0.03080979	0.22083037	
 0.1547358	0.018475588	0.8102709	
 0.86393493	0.7081842	0.13717912	
@@ -927,14 +927,12 @@ f(x) = ⎨ x, if x < -lambda
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 
-import com.intel.analytics.bigdl.utils._
-
-def randomn(): Float = RandomGenerator.RNG.uniform(-10, 10)
+def randomn(): Double = RNG.uniform(-10, 10)
 val input = Tensor(3, 4)
 input.apply1(x => randomn().toFloat)
 
@@ -1174,16 +1172,21 @@ negval sets the slope of the negative part:
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.LeakyReLU
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericFloat
+
 val layer = LeakyReLU(negval=0.01,inplace=false)
 val input = Tensor(3, 2).rand(-1, 1)
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+println(input)
+println(layer.forward(input))
+```
+The output is,
+```
 -0.6923256      -0.14086828
 0.029539397     0.477964
 0.5202874       0.10458552
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
-
-layer.forward(input)
-res7: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 -0.006923256    -0.0014086828
 0.029539397     0.477964
 0.5202874       0.10458552
@@ -1461,18 +1464,18 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val module = HardSigmoid()
-val input = Tensor(2, 2).randn()
+val input = Tensor(2, 2).randn(0, 5)
 val output = module.forward(input)
 
 > input
--1.7260494	-0.17521624	
--1.6705151	0.013930867	
+1.9305606	2.5518782
+0.55136	7.8706875
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2]
 
 > output
-0.15479012	0.46495676	
-0.16589698	0.50278616	
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2]
+0.8861121	1.0
+0.610272	1.0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
 
 ```
 
