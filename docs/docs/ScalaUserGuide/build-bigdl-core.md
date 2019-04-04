@@ -135,8 +135,6 @@ can use `brew`.
 
 We use maven profile to control the build process. For different platforms has different profiles.
 
-$source ${Parallel_Studio_XE_HOME}/compilers_and_libraries/linux/bin/compilervars.sh
- intel64
 
 | Platform      | Profile | Command                      |
 | -----         | :--:    | :--:                         |
