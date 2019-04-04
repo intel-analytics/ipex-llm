@@ -135,7 +135,6 @@ can use `brew`.
 
 We use maven profile to control the build process. For different platforms has different profiles.
 
-
 | Platform      | Profile | Command                      |
 | -----         | :--:    | :--:                         |
 | Linux         | linux   | `mvn clean package -P linux` |
@@ -156,4 +155,3 @@ There two ways to deploy. You can use `mvn deploy -P deploy` at the end.
 ```
 mvn clean deploy -P 'linux' -pl 'bigquant/bigquant-java-x86_64-linux'
 ```
-
