@@ -67,6 +67,8 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
   -b batch_size
 
   # Spark standalone mode
+  ## ${SPARK_HOME}/sbin/start-master.sh
+  ## check master URL from http://localhost:8080
   spark-submit --master spark://... --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.bigdl.models.vgg.Train \
@@ -147,30 +149,31 @@ safety of your model files.
 scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Test \
 -f path_to_mnist_folder \
---model ./model/model.iteration \
+--model ./model/model.#iteration_number \
 -c core_number \
 -b batch_size
 ```
 In the above command
 
 * -f: where you put your MNIST data
-* --model: the model snapshot file
+* --model: the model snapshot file cached during training. 
 * -c: The core number on local machine used for this testing. The default value is physical cores number. Get it through Runtime.getRuntime().availableProcessors() / 2
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of core_number   
-   
+  
+
 4.Run below command to predict with trained model:
 ```bash
 scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Predict \
 -f path_to_mnist_folder \
 -c core_number \
---model ./model/model.iteration
+--model ./model/model.#iteration_number
 ```
 In the above command
 
 * -f: where you put your MNIST data
 * -c: The core number on local machine used for this prediction. The default value is physical cores number. Get it through Runtime.getRuntime().availableProcessors() / 2
-* --model: the model snapshot file
+* --model: the model snapshot file cached during training
 
 ---
 ## **For Windows User**
