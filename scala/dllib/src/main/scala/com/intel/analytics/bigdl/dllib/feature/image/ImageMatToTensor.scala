@@ -40,11 +40,13 @@ class ImageMatToTensor[T: ClassTag](
 
   private val internalMatToTensor = new image.MatToTensor[T](toRGB, tensorKey, shareBuffer)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
+    prev.map(transform(_))
+  }
+
+  override def transform(feature: ImageFeature): ImageFeature = {
     format match {
-      case DataFormat.NHWC => prev.map { iter =>
-        transformWithNHWC(iter)
-      }
-      case DataFormat.NCHW => internalMatToTensor.apply(prev)
+      case DataFormat.NHWC => transformWithNHWC(feature)
+      case DataFormat.NCHW => internalMatToTensor.transform(feature)
       case other => throw new IllegalArgumentException(s"Unsupported format:" +
         s" $format. Only NCHW and NHWC are supported.")
     }

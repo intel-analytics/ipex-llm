@@ -15,20 +15,25 @@
  */
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.transform.vision.image.MatToFloats
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, MatToFloats, augmentation}
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 
 import scala.reflect.ClassTag
 
 class ImageMatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
                        outKey: String = ImageFeature.floats, shareBuffer: Boolean = true)
   extends ImageProcessing {
+  @transient private var data: Array[Float] = _
 
-  private val internalMatToFloats =
-    MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
+  private val internalMatToFloats = MatToFloats(validHeight, validWidth, validChannels,
+  outKey, shareBuffer)
 
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    internalMatToFloats.apply(prev)
+    prev.map(transform(_))
+  }
+
+  override def transform(feature: ImageFeature): ImageFeature = {
+    internalMatToFloats.transform(feature)
   }
 }
 
@@ -37,4 +42,5 @@ object ImageMatToFloats {
   def apply[T: ClassTag](validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
     outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): ImageMatToFloats =
     new ImageMatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
+
 }

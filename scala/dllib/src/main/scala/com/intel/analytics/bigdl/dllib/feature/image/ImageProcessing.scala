@@ -24,9 +24,20 @@ abstract class ImageProcessing extends FeatureTransformer with
    Preprocessing[ImageFeature, ImageFeature] {
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
-  def -> (other: ImageProcessing): Preprocessing[ImageFeature, ImageFeature] = {
-    new ChainedPreprocessing(this, other)
+  def -> (other: ImageProcessing): ImageProcessing = {
+    new ChainedImageProcessing(this, other)
   }
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
+}
+
+/**
+ * A transformer chain two ImageProcessing together.
+ */
+class ChainedImageProcessing(first: ImageProcessing, last: ImageProcessing) extends
+  ImageProcessing {
+
+  override def transform(prev: ImageFeature): ImageFeature = {
+    last.transform(first.transform(prev))
+  }
 }
