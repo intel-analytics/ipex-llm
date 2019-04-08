@@ -128,6 +128,13 @@ def _extract_graph_summary(graph_def):
         n = _node_name(node.name)
         name_to_node[n] = node
         name_to_input_name[n] = [_node_name(x) for x in node.input]
+        if "_class" in node.attr:
+            # Prevent colocated nodes being lost
+            for v in node.attr["_class"].list.s:
+                v_str = v.decode("utf-8")
+                if v_str.startswith("loc:@"):
+                    colocated_node = v_str[5:]
+                    name_to_input_name[n].append(colocated_node)
         name_to_seq_num[n] = seq
         seq += 1
     return name_to_input_name, name_to_node, name_to_seq_num
@@ -240,15 +247,24 @@ def convert_variables_to_constants(sess,
       GraphDef containing a simplified version of the original.
     """
 
-    def get_input_name(node):
-        """Gets the name of the first input. Errors if suffix is not :0."""
-        details = node.input[0].split(":")
-        if len(details) == 1 or int(details[1]) == 0:
-            return details[0]
-        # While it is valid for input tensors to have a suffix that is not :0, this
-        # method is used to find the associated ops, not tensors, and therefore it
-        # is not valid.
-        raise ValueError("Tensor name '{0}' is invalid.".format(node.input[0]))
+    def trace_back_find_variable(origin_name, name_to_nodes):
+
+        nodes_in_path = set()
+        control_ops = ["Enter", "Exit", "NextIteration", "Switch"]
+
+        current_name = origin_name
+        while name_to_nodes[current_name].op != "VarHandleOp":
+            nodes_in_path.add(current_name)
+            current_node = name_to_nodes[current_name]
+            op_name = current_node.op
+            if op_name in control_ops or op_name == "Identity":
+                curr_input_name = _node_name(current_node.input[0])
+            else:
+                raise ValueError("Op type %s should not be in the path " +
+                                 "between ReadVariableOp and VarHandleOp" % current_node.op)
+            current_name = curr_input_name
+
+        return current_name, nodes_in_path
 
     def create_const_op(node_name, dtype, data, data_shape=None):
         """Creates a Const op."""
@@ -275,29 +291,29 @@ def convert_variables_to_constants(sess,
     variable_names = []
     variable_dict_names = []
     resource_identity_types = {}
+    read_variable_op_types = {}
     for node in inference_graph.node:
         if node.op in ["Variable", "VariableV2", "VarHandleOp"]:
             variable_name = node.name
-            if ((variable_names_whitelist is not None and
-                         variable_name not in variable_names_whitelist) or
-                    (variable_names_blacklist is not None and
-                             variable_name in variable_names_blacklist)):
+            if ((variable_names_whitelist is not None
+                 and variable_name not in variable_names_whitelist)
+                or (variable_names_blacklist is not None
+                    and variable_name in variable_names_blacklist)):
                 continue
             variable_dict_names.append(variable_name)
             if node.op == "VarHandleOp":
                 variable_names.append(variable_name + "/Read/ReadVariableOp:0")
             else:
                 variable_names.append(variable_name + ":0")
-        elif node.op in ["ReadVariableOp", "ResourceGather"]:
-            # There can be one or more Identity ops in between the ReadVariableOp and
-            # VarHandleOp.  Store the Identity ops with the associated dtypes.
-            source_op_name = get_input_name(node)
-            while map_name_to_node[source_op_name].op == "Identity":
-                resource_identity_types[source_op_name] = node.attr["dtype"]
-                source_op_name = get_input_name(map_name_to_node[source_op_name])
-            if map_name_to_node[source_op_name].op != "VarHandleOp":
-                raise ValueError("Cannot find the variable that is an input "
-                                 "to the ReadVariableOp.")
+        elif node.op in ["ReadVariableOp", "ResourceGather", "VariableShape"]:
+            # There can be one or more Identity or control flow ops in between the ReadVariableOp
+            # and VarHandleOp.  Store them with the associated dtypes.
+            source_op_name, nodes_in_path = trace_back_find_variable(_node_name(node.input[0]),
+                                                                     map_name_to_node)
+            dtype = map_name_to_node[source_op_name].attr["dtype"]
+            for node_name in nodes_in_path:
+                resource_identity_types[node_name] = dtype
+            read_variable_op_types[node.name] = dtype
 
     # Gets map of variables and the associated data.
     if variable_names:
@@ -353,6 +369,12 @@ def convert_variables_to_constants(sess,
             output_node.attr["Taxis"].CopyFrom(axis_dtype)
             if "_class" in input_node.attr:
                 output_node.attr["_class"].CopyFrom(input_node.attr["_class"])
+        elif input_node.op == "VariableShape":
+            output_node.op = "Shape"
+            output_node.name = input_node.name
+            output_node.input.extend([input_node.input[0]])
+            output_node.attr["T"].CopyFrom(read_variable_op_types[input_node.name])
+            output_node.attr["out_type"].CopyFrom(input_node.attr["out_type"])
         else:
             output_node.CopyFrom(input_node)
         output_graph_def.node.extend([output_node])
