@@ -14,6 +14,16 @@ maven for java and make for c/c++ code. For building BigDL-core, there should ha
 + [Intel Parallel Studio](https://software.intel.com/en-us/parallel-studio-xe/choose-download)
 + Git.
 
+## **Download BigDL-core Source**
+
+BigDL-core source code is available at [GitHub](https://github.com/intel-analytics/BigDL)
+
+```bash
+$ git clone https://github.com/intel-analytics/BigDL-core.git
+```
+
+By default, `git clone` will download the development version of BigDL-core, if you want a release version, you can use command `git checkout` to change the version. 
+
 ## **Environment on CentOS** (after 6.8 final)
 
 You should build the environment with CentOS 6.8 final. BigQuant depends the GCC 7.2,
