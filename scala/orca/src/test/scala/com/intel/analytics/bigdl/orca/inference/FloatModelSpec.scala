@@ -155,4 +155,37 @@ class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     val result3 = floatInferenceModel.predict(inputTensorBatch)
     assert(result3 != null)
   }
+
+  "floatInferenceModel" should "works well when copy and release" in {
+    val original = floatInferenceModel
+    val copies = original.copy(2)
+    val copy1 = copies(0).asInstanceOf[FloatModel]
+    val copy2 = copies(1).asInstanceOf[FloatModel]
+    val originalWeightBias = original.model.getWeightsBias()(0).storage()
+    val copy1WeightBias = copy1.model.getWeightsBias()(0).storage()
+    val copy2WeightBias = copy2.model.getWeightsBias()(0).storage()
+    println(original.model, original.model.getWeightsBias()(0).storage(), original.metaModel)
+    println(copy1.model, copy1.model.getWeightsBias()(0).storage(), copy1.metaModel)
+    println(copy2.model, copy2.model.getWeightsBias()(0).storage(), copy2.metaModel)
+    assert(original.metaModel == copy1.metaModel)
+    assert(original.metaModel == copy2.metaModel)
+    assert(originalWeightBias == copy1WeightBias)
+    assert(originalWeightBias == copy2WeightBias)
+
+    copy1.release()
+    val originalWeightBiasAfterRelease = original.model.getWeightsBias()(0).storage()
+    // val copy1WeightBiassAfterRelease = copy1.model.getWeightsBias()(0).storage()
+    val copy2WeightBiassAfterRelease = copy2.model.getWeightsBias()(0).storage()
+    println(original.model, originalWeightBiasAfterRelease, original.metaModel)
+    println(copy1.model, copy1.metaModel)
+    println(copy2.model, copy2WeightBiassAfterRelease, copy2.metaModel)
+    assert(copy1.model == null)
+    assert(copy1.metaModel == null)
+    assert(originalWeightBias == originalWeightBiasAfterRelease)
+    assert(originalWeightBias == copy2WeightBiassAfterRelease)
+
+    original.release()
+    assert(original.model == null)
+    assert(original.metaModel == null)
+  }
 }
