@@ -8,7 +8,7 @@ Analytics Zoo provides two typical kind of pre-trained Object Detection models :
 **Scala**
 
 
-[Scala example](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/objectdetection/Predict.scala)
+[Scala example](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/objectdetection/inference/Predict.scala)
 
 It's very easy to apply the model for inference with below code piece.
 
