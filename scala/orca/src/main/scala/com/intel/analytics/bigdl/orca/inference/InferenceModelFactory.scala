@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.inference
 import com.intel.analytics.zoo.pipeline.api.net.TFNet
 import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 
-object InferenceModelFactory {
+object InferenceModelFactory extends InferenceSupportive {
 
   def loadFloatModel(modelPath: String): FloatModel = {
     loadFloatModel(modelPath, null)
@@ -29,13 +29,15 @@ object InferenceModelFactory {
   : FloatModel = {
     val model = ModelLoader.loadFloatModel(modelPath, weightPath)
     model.evaluate()
-    new FloatModel(model)
+    val metaModel = makeMetaModel(model)
+    new FloatModel(model, metaModel, true)
   }
 
   def loadFloatModelForCaffe(modelPath: String, weightPath: String): FloatModel = {
     val model = ModelLoader.loadFloatModelForCaffe(modelPath, weightPath)
     model.evaluate()
-    new FloatModel(model)
+    val metaModel = makeMetaModel(model)
+    new FloatModel(model, metaModel, true)
   }
 
   def loadFloatModelForTF(modelPath: String,
@@ -46,7 +48,8 @@ object InferenceModelFactory {
       interOpParallelismThreads, usePerSessionThreads)
     val model = ModelLoader.loadFloatModelForTF(modelPath, sessionConfig)
     model.evaluate()
-    new FloatModel(model)
+    val metaModel = makeMetaModel(model)
+    new FloatModel(model, metaModel, true)
   }
 
   def loadOpenVINOModelForTF(modelPath: String,

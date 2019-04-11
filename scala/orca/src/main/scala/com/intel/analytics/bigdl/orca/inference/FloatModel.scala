@@ -28,7 +28,9 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class FloatModel(var model: AbstractModule[Activity, Activity, Float])
+class FloatModel(var model: AbstractModule[Activity, Activity, Float],
+                 var metaModel: AbstractModule[Activity, Activity, Float],
+                 var isOriginal: Boolean)
   extends AbstractModel with InferenceSupportive with Serializable {
 
   override def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
@@ -54,13 +56,16 @@ class FloatModel(var model: AbstractModule[Activity, Activity, Float])
   }
 
   override def copy(num: Int): Array[AbstractModel] = {
-    cloneSharedWeightsModelsIntoArray(this, num)
+    doCopy(metaModel, model.getWeightsBias(), num)
   }
 
   override def release(): Unit = {
     isReleased match {
       case true =>
-      case false => model.release(); model = null
+      case false =>
+        model.release()
+        model = null
+        metaModel = null
     }
   }
 
@@ -70,55 +75,15 @@ class FloatModel(var model: AbstractModule[Activity, Activity, Float])
 
   override def toString: String = s"FloatInferenceModel($model)"
 
-  def cloneSharedWeightsModelsIntoArray(originalModel: FloatModel, num: Int):
+  def doCopy(metaModel: AbstractModule[Activity, Activity, Float],
+             weightBias: Array[Tensor[Float]],
+             num: Int):
   Array[AbstractModel] = {
-    var modelList = ArrayBuffer[FloatModel]()
-    val emptyModel = originalModel.model.cloneModule()
-    clearWeightsBias(emptyModel)
-    var i = 0
-    while (i < num) {
-      val clonedModel = emptyModel.cloneModule
-      val newModel = makeUpModel(clonedModel, originalModel.model.getWeightsBias)
-      modelList.append(newModel)
-      i += 1
-    }
-    modelList.toArray
-  }
-
-  private def clearTensor[T: ClassTag](tensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]):
-  Unit = {
-    var i = 0
-    while (i < tensors.length) {
-      if (tensors(i) != null) {
-        tensors(i).set()
-      }
-      i += 1
-    }
-  }
-
-  private def clearWeightsBias(model: Module[Float]): Unit = {
-    clearTensor(model.parameters()._1)
-    clearTensor(model.parameters()._2)
-  }
-
-  private def putWeightsBias(weightBias: Array[Tensor[Float]], localModel: Module[Float]):
-  Module[Float] = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(weightBias(i))
-      }
-      i += 1
-    }
-    localModel
-  }
-
-  private def makeUpModel(model: Module[Float], weightBias: Array[Tensor[Float]]):
-  FloatModel = {
-    val newModel = model.cloneModule()
-    putWeightsBias(weightBias, newModel)
-    newModel.evaluate()
-    new FloatModel(newModel)
+    require(metaModel != null, "metaModel can NOT be null")
+    List.range(0, num).map(_ => {
+      val clonedModel = metaModel.cloneModule()
+      val clonedModelWithWeightsBias = makeUpModel(clonedModel, weightBias)
+      new FloatModel(clonedModelWithWeightsBias, metaModel, false)
+    }).toArray
   }
 }

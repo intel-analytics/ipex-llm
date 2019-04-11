@@ -26,12 +26,43 @@ import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 
 import scala.collection.JavaConverters._
 
-class InferenceModel(private var supportedConcurrentNum: Int = 1,
+class InferenceModel(private var autoScalingEnabled: Boolean = true,
+                     private var concurrentNum: Int = 20,
                      private var originalModel: AbstractModel = null,
                      private[inference] var modelQueue:
                      LinkedBlockingQueue[AbstractModel] = null)
   extends InferenceSupportive with Serializable {
-  this.modelQueue = new LinkedBlockingQueue[AbstractModel](supportedConcurrentNum)
+
+  require(concurrentNum > 0, "concurrentNum should > 0")
+
+  /**
+   * default constructor, will create a InferenceModel with auto-scaling enabled.
+   *
+   * @return an auto-scaling enabled InferenceModel
+   */
+  def this() = this(true, 20, null, null)
+
+  /**
+   * create an auto-scaling disabled InferenceModel with supportedConcurrentNum
+   *
+   * @param concurrentNum the concurrentNum of the InferenceModel
+   * @return an auto-scaling disabled InferenceModel
+   */
+  def this(concurrentNum: Int) = this(false, concurrentNum, null, null)
+
+  /**
+   * create an InferenceModel with specified autoScalingEnabled, supportedConcurrentNum
+   * and maxConcurrentNum
+   *
+   * @param autoScalingEnabled     if auto-scaling is enabled
+   * @param concurrentNum          the concurrentNum of the InferenceModel
+   * @return a specified InferenceModel
+   */
+  def this(autoScalingEnabled: Boolean, concurrentNum: Int) =
+    this(autoScalingEnabled, concurrentNum, null, null)
+
+  this.modelQueue = new LinkedBlockingQueue[AbstractModel](concurrentNum)
+
   this.originalModel match {
     case null =>
     case _ => offerModelQueue()
@@ -157,8 +188,8 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
    * @param weightPath the path of openvino ir bin file
    */
   def doLoadOpenVINO(modelPath: String, weightPath: String): Unit = {
-    if (supportedConcurrentNum > 1) {
-      InferenceSupportive.logger.warn(s"supportedConcurrentNum is $supportedConcurrentNum > 1, " +
+    if (concurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"concurrentNum is $concurrentNum > 1, " +
         s"openvino model does not support shared weights model copies")
     }
     clearModelQueue()
@@ -183,8 +214,8 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
                                               pipelineConfigPath: String,
                                               extensionsConfigPath: String,
                                               deviceType: DeviceTypeEnumVal): Unit = {
-    if (supportedConcurrentNum > 1) {
-      InferenceSupportive.logger.warn(s"supportedConcurrentNum is $supportedConcurrentNum > 1, " +
+    if (concurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"concurrentNum is $concurrentNum > 1, " +
         s"openvino model does not support shared weights model copies")
     }
     clearModelQueue()
@@ -240,32 +271,72 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
    * @return the output activity
    */
   def doPredict(inputActivity: Activity): Activity = {
-    var model: AbstractModel = null
-    try {
-      model = modelQueue.take
-    } catch {
-      case e: InterruptedException => throw new InferenceRuntimeException("no model available", e);
+    timing(s"model predict for activity") {
+      predict(inputActivity)
     }
+  }
+
+  /**
+   * release original model and all the cloned ones in the queue
+   */
+  def release(): Unit = {
+    clearModelQueue()
+  }
+
+  private def predict(inputActivity: Activity): Activity = {
+    val model: AbstractModel = retrieveModel()
     try {
-      val result = model.predict(inputActivity)
-      result
+      model.predict(inputActivity)
     } finally {
-      modelQueue.offer(model)
+      model match {
+        case null =>
+        case _ =>
+          val success = modelQueue.offer(model)
+          success match {
+            case true =>
+            case false => model.release()
+          }
+      }
     }
   }
 
   private def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    var model: AbstractModel = null
-    try {
-      model = modelQueue.take
-    } catch {
-      case e: InterruptedException => throw new InferenceRuntimeException("no model available", e);
-    }
+    val model: AbstractModel = retrieveModel()
     try {
       model.predict(inputs)
     } finally {
-      modelQueue.offer(model)
+      model match {
+        case null =>
+        case _ =>
+          val success = modelQueue.offer(model)
+          success match {
+            case true =>
+            case false => model.release()
+          }
+      }
     }
+  }
+
+  private def retrieveModel(): AbstractModel = {
+    var model: AbstractModel = null
+    autoScalingEnabled match {
+      case false =>
+        // if auto-scaling is not enabled, will take a model, waiting if necessary.
+        try {
+          model = modelQueue.take
+        } catch {
+          case e: InterruptedException =>
+            throw new InferenceRuntimeException("no model available", e);
+        }
+      case true =>
+        // if auto-scaling is enabled, will poll a model, no waiting but scale 1 model if necessary.
+        model = modelQueue.poll()
+        model match {
+          case null => model = this.originalModel.copy(1)(0)
+          case _ =>
+        }
+    }
+    model
   }
 
   private def clearModelQueue(): Unit = {
@@ -273,7 +344,7 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
       case null =>
       case _ => this.originalModel.release(); this.originalModel = null
     }
-    List.range(0, this.modelQueue.size()).map(i => {
+    List.range(0, this.modelQueue.size()).map(_ => {
       val model = this.modelQueue.take
       this.modelQueue.remove(model)
       model.release()
@@ -283,14 +354,18 @@ class InferenceModel(private var supportedConcurrentNum: Int = 1,
 
   private def offerModelQueue(): Unit = {
     require(this.originalModel != null, "original model can not be null")
-    require(this.supportedConcurrentNum > 0, "supported concurrent number should > 0")
-    val models = this.originalModel.copy(supportedConcurrentNum)
-    models.map(this.modelQueue.offer(_))
+    require(this.concurrentNum > 0, "supported concurrent number should > 0")
+    autoScalingEnabled match {
+      case true =>
+      case false =>
+        val models = this.originalModel.copy(concurrentNum)
+        models.map(this.modelQueue.offer(_))
+    }
   }
 
   def getOriginalModel: AbstractModel = originalModel
 
   override def toString: String =
-    s"InferenceModel($supportedConcurrentNum, $originalModel, $modelQueue)"
+    s"InferenceModel($autoScalingEnabled, $concurrentNum, $originalModel, $modelQueue)"
 
 }
