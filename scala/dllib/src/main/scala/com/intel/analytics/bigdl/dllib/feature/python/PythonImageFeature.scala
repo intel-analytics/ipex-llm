@@ -16,6 +16,7 @@
 
 package com.intel.analytics.zoo.feature.python
 
+import java.util
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
@@ -54,11 +55,19 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
   }
 
   def readImageSet(path: String, sc: JavaSparkContext, minPartitions: Int,
-                   resizeH: Int, resizeW: Int, imageCodec: Int): ImageSet = {
+                   resizeH: Int, resizeW: Int, imageCodec: Int, withLabel: Boolean): ImageSet = {
     if (sc == null) {
-      ImageSet.read(path, null, minPartitions, resizeH, resizeW, imageCodec)
+      ImageSet.read(path, null, minPartitions, resizeH, resizeW, imageCodec, withLabel)
     } else {
-      ImageSet.read(path, sc.sc, minPartitions, resizeH, resizeW, imageCodec)
+      ImageSet.read(path, sc.sc, minPartitions, resizeH, resizeW, imageCodec, withLabel)
+    }
+  }
+
+  def imageSetGetLabelMap(imageSet: ImageSet): util.Map[String, Int] = {
+    if (imageSet.labelMap.isEmpty) {
+      null
+    } else {
+      imageSet.labelMap.get.asJava
     }
   }
 
