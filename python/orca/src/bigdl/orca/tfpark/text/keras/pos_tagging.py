@@ -15,7 +15,7 @@
 #
 
 from nlp_architect.models import chunker
-from zoo.tfpark.text import TextKerasModel
+from zoo.tfpark.text.keras.text_model import TextKerasModel
 
 
 class SequenceTagger(TextKerasModel):

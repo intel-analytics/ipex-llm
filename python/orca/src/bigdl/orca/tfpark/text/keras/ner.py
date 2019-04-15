@@ -15,7 +15,7 @@
 #
 
 import nlp_architect.models.ner_crf as ner_model
-from zoo.tfpark.text import TextKerasModel
+from zoo.tfpark.text.keras.text_model import TextKerasModel
 
 
 class NER(TextKerasModel):

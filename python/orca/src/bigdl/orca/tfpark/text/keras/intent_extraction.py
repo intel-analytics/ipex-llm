@@ -15,7 +15,7 @@
 #
 
 import nlp_architect.models.intent_extraction as intent_models
-from zoo.tfpark.text import TextKerasModel
+from zoo.tfpark.text.keras.text_model import TextKerasModel
 
 
 class IntentEntity(TextKerasModel):
