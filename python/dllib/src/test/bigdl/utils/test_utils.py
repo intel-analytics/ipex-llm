@@ -37,7 +37,8 @@ class ZooTestCase(TestCase):
         It is invoked for every test method of a class.
         """
         K.set_image_dim_ordering("th")
-        sparkConf = init_spark_conf().setMaster("local[4]").setAppName("zoo test case")
+        sparkConf = init_spark_conf().setMaster("local[4]").setAppName("zoo test case")\
+            .set("spark.driver.memory", "20g")
         assert str(sparkConf.get("spark.shuffle.reduceLocality.enabled")) == "false"
         assert \
             str(sparkConf.get("spark.serializer")) == "org.apache.spark.serializer.JavaSerializer"
