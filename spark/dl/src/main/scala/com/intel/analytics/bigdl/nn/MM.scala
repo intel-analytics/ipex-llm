@@ -42,9 +42,9 @@ class MM[T: ClassTag](
       input(2).isInstanceOf[Tensor[T]], "Input must be two tensors")
     val m1: Tensor[T] = input(1)
     val m2: Tensor[T] = input(2)
-    require(m1.dim() == 2 || m1.dim() == 3, "input matrix must be 2D or 3D" +
+    require(m1.dim() == 2 || m1.dim() == 3 || m1.dim() == 4, "input matrix must be 2D or 3D or 4D" +
       s"input dim ${m1.dim()}")
-    require(m2.dim() == 2 || m2.dim() == 3, "input matrix must be 2D or 3D" +
+    require(m2.dim() == 2 || m2.dim() == 3 || m2.dim() == 4, "input matrix must be 2D or 3D or 4D" +
       s"input dim ${m2.dim()}")
 
     (m1, m2)
@@ -69,36 +69,40 @@ class MM[T: ClassTag](
       output.resize(ma.size(1), mb.size(2))
       output.mm(ma, mb)
     } else {
-      require(mb.dim() == 3, "second input tensor must be 3D" +
+      require(mb.dim() == 3 || mb.dim() == 4, "second input tensor must be 3D or 4D, but get " +
         s"second input dim ${mb.dim()}")
       require(ma.size(1) == mb.size(1), "inputs must contain the same number of minibatches" +
         s"The minibatces of each are ${ma.size(1)} and ${mb.size(1)}")
 
+      val dimNum = ma.dim()
+      val batchSize = mb.size().slice(0, dimNum - 2).product
+
+      var reshapedX = ma.view(Array(batchSize, ma.size(dimNum - 1), ma.size(dimNum)))
+      var reshapedY = mb.view(Array(batchSize, mb.size(dimNum - 1), mb.size(dimNum)))
+
       if (transA) {
-        ma = ma.transpose(2, 3)
+        reshapedX = reshapedX.transpose(2, 3)
       }
       if (transB) {
-        mb = mb.transpose(2, 3)
+        reshapedY = reshapedY.transpose(2, 3)
       }
-      require(ma.size(3) == mb.size(2), "matrix sizes do not match" +
-        s"the matrix sizes are ${ma.size(3)} and ${mb.size(2)}")
+      require(reshapedX.size(3) == reshapedY.size(2), "matrix sizes do not match" +
+        s"the matrix sizes are ${reshapedX.size(3)} and ${reshapedY.size(2)}")
 
-      output.resize(ma.size(1), ma.size(2), mb.size(3))
-      output.baddbmm(ev.fromType[Float](0.0f), ev.fromType[Float](1.0f), ma, mb)
+      output.resize(batchSize, reshapedX.size(2), reshapedY.size(3)).zero()
+      output.bmm(reshapedX, reshapedY)
+      val outputSize = ma.size().slice(0, dimNum - 2) ++ Array(reshapedX.size(2), reshapedY.size(3))
+      output.resize(outputSize)
     }
 
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-
     var (ma, mb) = checkInputFormat(input)
 
-    gradInput[Tensor[T]](1).resizeAs(ma)
-    gradInput[Tensor[T]](2).resizeAs(mb)
-
-    require(gradOutput.dim() == 2 || gradOutput.dim() == 3,
-      "arguments must be a 2D or 3D Tensor" +
+    require(gradOutput.dim() == 2 || gradOutput.dim() == 3 || gradOutput.dim() == 4,
+      "arguments must be a 2D or 3D or 4D Tensor" +
         s"arguments dim ${gradOutput.dim()}")
 
 
@@ -110,7 +114,7 @@ class MM[T: ClassTag](
           s"second input dim ${mb.dim()}")
 
         (1, 2, t => m1 => m2 => t.mm(m1, m2))
-      } else {
+      } else if (gradOutput.dim() == 3) {
         require(ma.dim() == 3, "first input tensor must be 3D" +
           s"first input dim ${ma.dim()}")
         require(mb.dim() == 3, "second input tensor must be 3D" +
@@ -118,26 +122,46 @@ class MM[T: ClassTag](
 
         (2, 3, t => m1 => m2 => t.baddbmm(ev.fromType[Float](0.0f), ev.fromType[Float](1.0f),
           m1, m2))
+      } else {
+        require(ma.dim() == 4, "first input tensor must be 3D" +
+          s"first input dim ${ma.dim()}")
+        require(mb.dim() == 4, "second input tensor must be 3D" +
+          s"second input dim ${mb.dim()}")
+
+        (2, 3, t => m1 => m2 => t.bmm(m1, m2))
       }
 
+    val dimNum = ma.dim()
+    val batchSize = mb.size().slice(0, dimNum - 2).product
+    val batchSizeGrad = gradOutput.size().slice(0, dimNum - 2).product
+
+    var reshapedX = ma.view(Array(batchSize, ma.size(dimNum - 1), ma.size(dimNum)))
+    var reshapedY = mb.view(Array(batchSize, mb.size(dimNum - 1), mb.size(dimNum)))
+    val reshapeGradOutput = gradOutput.contiguous().
+      view(batchSizeGrad, gradOutput.size(dimNum - 1), gradOutput.size(dimNum))
+
+    gradInput[Tensor[T]](1).resizeAs(reshapedX).zero()
+    gradInput[Tensor[T]](2).resizeAs(reshapedY).zero()
 
     if (transA == transB) {
-      ma = ma.transpose(hDim, wDim)
-      mb = mb.transpose(hDim, wDim)
+      reshapedX = reshapedX.transpose(hDim, wDim)
+      reshapedY = reshapedY.transpose(hDim, wDim)
     }
 
     if (transA) {
-      f (gradInput[Tensor[T]](1)) (mb) (gradOutput.clone().transpose(hDim, wDim))
+      f (gradInput[Tensor[T]](1)) (reshapedY) (reshapeGradOutput.clone().transpose(hDim, wDim))
     } else {
-      f (gradInput[Tensor[T]](1)) (gradOutput) (mb)
+      f (gradInput[Tensor[T]](1)) (reshapeGradOutput) (reshapedY)
     }
 
     if (transB) {
-      f (gradInput[Tensor[T]](2)) (gradOutput.clone().transpose(hDim, wDim)) (ma)
+      f (gradInput[Tensor[T]](2)) (reshapeGradOutput.clone().transpose(hDim, wDim)) (reshapedX)
     } else {
-      f (gradInput[Tensor[T]](2)) (ma) (gradOutput)
+      f (gradInput[Tensor[T]](2)) (reshapedX) (reshapeGradOutput)
     }
 
+    gradInput[Tensor[T]](1).resizeAs(ma)
+    gradInput[Tensor[T]](2).resizeAs(mb)
     gradInput
   }
 

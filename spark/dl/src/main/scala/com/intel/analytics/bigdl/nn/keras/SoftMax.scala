@@ -33,8 +33,8 @@ class SoftMax[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 2 || input.length == 3,
-      s"SoftMax requires 2D or 3D input, but got input dim ${input.length}")
+    require(input.length == 2 || input.length == 3 || input.length == 4,
+      s"SoftMax requires 2D or 3D or 4D input, but got input dim ${input.length}")
     inputShape
   }
 
@@ -43,13 +43,21 @@ class SoftMax[T: ClassTag](
     val layer = com.intel.analytics.bigdl.nn.SoftMax()
     if (input.length <= 2) {
       layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    }
-    else {
+    } else if (input.length == 3) {
       val model = TSequential[T]()
       model.add(Transpose(Array((1, 3))))
       model.add(layer)
       model.add(Transpose(Array((1, 3))))
       model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    } else if (input.length == 4) {
+      val model = TSequential[T]()
+      model.add(Transpose(Array((2, 4))))
+      model.add(layer)
+      model.add(Transpose(Array((2, 4))))
+      model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    } else {
+      throw new IllegalArgumentException(s"SoftMax requires 2D or 3D or 4D input, " +
+        s"but got input dim ${input.length}")
     }
   }
 }
