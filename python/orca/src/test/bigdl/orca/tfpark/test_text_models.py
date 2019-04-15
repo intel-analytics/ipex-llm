@@ -18,7 +18,7 @@ import pytest
 
 import numpy as np
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.tfpark.text import *
+from zoo.tfpark.text.keras import *
 
 
 class TestTextModels(ZooTestCase):
