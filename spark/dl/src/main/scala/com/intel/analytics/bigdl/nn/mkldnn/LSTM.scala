@@ -25,15 +25,17 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.collection.mutable.ArrayBuffer
 
 class LSTM(
-  val inputSize: Int,
-  val f: Int,
-  val flags: Int,
-  val alpha: Float,
-  val clipping: Float,
-  val direction: Int,
-  private val initWeight: Tensor[Float] = null,
-  private val initBias: Tensor[Float] = null
-) extends MklDnnLayer with Initializable {
+            val inputSize: Int,
+            val hiddenSize: Int,
+            val f: Int,
+            val flags: Int,
+            val alpha: Float,
+            val clipping: Float,
+            val direction: Int,
+            private val initWeight: Tensor[Float] = null,
+            private val initWeightIter: Tensor[Float] = null,
+            private val initBias: Tensor[Float] = null
+          ) extends MklDnnLayer with Initializable {
   @transient private var src_layer_MD: Long = _
   @transient private var src_iter_MD: Long = _
   @transient private var weights_layer_MD: Long = _
@@ -52,9 +54,11 @@ class LSTM(
   private val lstm_n_states: Int = 2
 
   private[mkldnn] val weight: TensorMMap = new TensorMMap(Array(common_n_layers,
-    1, inputSize, lstm_n_gates, inputSize))
+    1, inputSize, lstm_n_gates, hiddenSize))
+  private[mkldnn] val weight_i: TensorMMap = new TensorMMap(Array(common_n_layers,
+    1, hiddenSize, lstm_n_gates, hiddenSize))
   private[mkldnn] val bias: TensorMMap = new TensorMMap(Array(common_n_layers, 1,
-    lstm_n_gates, inputSize))
+    lstm_n_gates, hiddenSize))
   private[mkldnn] var iter: TensorMMap = _   // TODO
 
   override def reset(): Unit = {
@@ -62,6 +66,12 @@ class LSTM(
       weightInitMethod.init(weight.dense, VariableFormat.OUT_IN)
     } else {
       weight.dense.copy(initWeight)
+    }
+
+    if (initWeightIter == null) {
+      weightInitMethod.init(weight_i.dense, VariableFormat.OUT_IN)
+    } else {
+      weight_i.dense.copy(initWeightIter)
     }
 
     if (initBias == null) {
@@ -84,35 +94,30 @@ class LSTM(
       case 3 => /* tnc */
         (inputs(0).shape, Memory.Format.tnc)
       case _ =>
-        throw new UnsupportedOperationException("Not support other input formats")
+        throw new UnsupportedOperationException("Not support such input format")
     }
 
     direction match {
       case Direction.UnidirectionalLeft2Right =>
-        val weightShape = weight.size()
-        /* ldigo */
-        val weightLayout = Memory.Format.ldigo
-        val biasShape = bias.size()
-        /* ldgo */
-        /* TODO bias one dim? */
-        val biasLayout = Memory.Format.ldgo
-        val outputShape = inputShape
-        /* tnc */
-        val outputLayout = inputLayout
+        // | Direction.UnidirectionalRight2Left =>
+        val weightShape = weight.size() /* ldigo */
+      val biasShape = bias.size() /* ldgo */
+      val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
 
         val inputShape_iter = Array(common_n_layers, 1, lstm_n_states,
-          inputs(0).shape(1), inputSize)
-        val weightShape_iter = weightShape
-        val outputShape_iter = inputShape_iter
+          inputs(0).shape(1), hiddenSize) /* ldsnc */
+      val weightShape_iter = weight_i.size() /* ldigo */
+      val outputShape_iter = inputShape_iter /* ldsnc */
 
         src_layer = NativeData(inputShape, Memory.Format.any)
         src_iter = NativeData(inputShape_iter, Memory.Format.ldsnc)
         /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
-        wei_layer = NativeData(weightShape, Memory.Format.any)
-        wei_iter = NativeData(weightShape_iter, Memory.Format.any)
+        wei_layer = NativeData(weightShape, Memory.Format.ldigo)
+        /* TODO */
+        wei_iter = NativeData(weightShape_iter, Memory.Format.ldigo)
         bis = NativeData(biasShape, Memory.Format.any)
-        dst_iter = NativeData(outputShape_iter, Memory.Format.any)
         dst = NativeData(outputShape, Memory.Format.any)
+        dst_iter = NativeData(outputShape_iter, Memory.Format.any)
 
         src_layer_MD = src_layer.getMemoryDescription()
         src_iter_MD = src_iter.getMemoryDescription()
@@ -125,50 +130,8 @@ class LSTM(
         iter = new TensorMMap(inputShape_iter)
         iter.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
 
-      case _ => throw new UnsupportedOperationException("Not support other directions")
+      case _ => throw new UnsupportedOperationException("Not support such direction")
     }
-
-    /*
-    _inputFormats = nativeData(inputs)
-    _inputFormats(0).shape.length match {
-      case 3 => /* tnc */
-        val t = _inputFormats(0).shape(0)
-        /* Sequence length */
-        val n = _inputFormats(0).shape(1)
-        /* Batch Size */
-        val c = _inputFormats(0).shape(2) /* Common feature size */
-
-        direction match {
-          case Direction.UnidirectionalLeft2Right =>
-
-            src_layer_MD = _inputFormats(0).getMemoryDescription() /* tnc */
-
-            src_iter_MD = MklDnn.MemoryDescInit(5, Array(common_n_layers, 1,
-              lstm_n_states, n, c), inputs(0).dataType, Memory.Format.any) /* ldsnc */
-
-            weights_layer_MD = MklDnn.MemoryDescInit(5, Array(common_n_layers, 1,
-              c, lstm_n_gates, c), inputs(0).dataType, Memory.Format.any) /* ldigo */
-
-            weights_iter_MD = MklDnn.MemoryDescInit(5, Array(common_n_layers, 1,
-              c, lstm_n_gates, c), inputs(0).dataType, Memory.Format.any) /* ldigo */
-
-            bias_MD = MklDnn.MemoryDescInit(4, Array(common_n_layers, 1, lstm_n_gates, c),
-              inputs(0).dataType, Memory.Format.any) /* ldgo */
-
-            dist_layer_MD = _inputFormats(0).getMemoryDescription() /* tnc */
-
-            dist_iter_MD = MklDnn.MemoryDescInit(5, Array(common_n_layers, 1,
-              lstm_n_states, n, c), inputs(0).dataType, Memory.Format.any) /* ldsnc */
-
-
-
-
-          case _ => throw new UnsupportedOperationException("Not support other directions")
-        }
-
-      case _ => throw new UnsupportedOperationException("Not support other memory formats")
-    }
-    */
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
@@ -201,23 +164,34 @@ class LSTM(
     }
     */
 
+    require(iter.size().product == realSrc_iter.shape.product,
+      s"${getName} src iter shape is not correct.")
+    require(iter.size().product == realDst_iter.shape.product,
+      s"${getName} dst iter shape is not correct.")
     require(weight.size().product == realWei.shape.product,
       s"${getName} weight shape is not correct.")
+    require(weight_i.size().product == realWei_iter.shape.product,
+      s"${getName} weight iter shape is not correct.")
+    require(bias.size().product == realBias.shape.product,
+      s"${getName} bias shape is not correct.")
 
     weight.setMemoryData(HeapData(weight.size(), Memory.Format.ldigo), realWei, runtime)
+    weight_i.setMemoryData(HeapData(weight_i.size(), Memory.Format.ldigo), realWei_iter, runtime)
     bias.setMemoryData(HeapData(bias.size(), Memory.Format.ldgo), realBias, runtime)
     iter.setMemoryData(HeapData(iter.size(), Memory.Format.ldsnc), realSrc_iter, runtime)
-    /*
-    bias.setMemoryData(HeapData(bias.size(), Memory.Format.ldgo),
-      NativeData(bias.size(), Memory.Format.ldgo), runtime)
-    */
+
+    println("before sync")
 
     weight.sync()
+    weight_i.sync()
     bias.sync()
+    iter.sync()
+
+    println("after sync")
 
     val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
-                     realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
-                     realBias.getPrimitive(runtime))
+      realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
+      realBias.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
     /* TODO Not sure about the meaning of indexes here */
     val dsts = Array(realDst.getPrimitive(runtime), realDst_iter.getPrimitive(runtime))
@@ -240,8 +214,7 @@ class LSTM(
       buffer.append(input.asInstanceOf[Tensor[Float]])
       buffer.append(iter.native) // TODO
       buffer.append(weight.native)
-      println(weight.native)
-      buffer.append(weight.native)
+      buffer.append(weight_i.native)
       buffer.append(bias.native)
       buffer.append(output.asInstanceOf[Tensor[Float]])
       buffer.append(iter.native) // TODO
@@ -273,14 +246,16 @@ class LSTM(
 
 object LSTM{
   def apply(
-    inputSize: Int,
-    f: Int,
-    flags: Int,
-    alpha: Float,
-    clipping: Float,
-    direction: Int,
-    initWeight: Tensor[Float] = null,
-    initBias: Tensor[Float] = null
-  ): LSTM = new LSTM(inputSize, f, flags, alpha, clipping, direction, initWeight,
-    initBias)
+             inputSize: Int,
+             hiddenSize: Int,
+             f: Int,
+             flags: Int,
+             alpha: Float,
+             clipping: Float,
+             direction: Int,
+             initWeight: Tensor[Float] = null,
+             initWeightIter: Tensor[Float] = null,
+             initBias: Tensor[Float] = null
+           ): LSTM = new LSTM(inputSize, hiddenSize, f, flags, alpha,
+    clipping, direction, initWeight, initWeightIter, initBias)
 }
