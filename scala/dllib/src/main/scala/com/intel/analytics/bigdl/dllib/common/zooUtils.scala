@@ -20,6 +20,8 @@ import java.io._
 
 import com.intel.analytics.bigdl.utils.File
 import org.apache.commons.io.filefilter.WildcardFileFilter
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
@@ -34,6 +36,11 @@ private[zoo] object Utils {
     files.toArray
   }
 
+  /**
+   * List files in local file system
+   * @param path String
+   * @param files File handles will be appended to files
+   */
   def listFiles(path: String, files: ArrayBuffer[File]): Unit = {
     val file = new File(path)
     if (file.isDirectory) {
@@ -48,7 +55,106 @@ private[zoo] object Utils {
     }
   }
 
-  def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false) : Unit = {
+  /**
+   * List paths of local or remote files (HDFS, S3 and FTP etc)
+   * with FileSystem API
+   * @param path String path
+   * @param recursive Recursive or not
+   * @return Array[String]
+   */
+  def listPaths(path: String, recursive: Boolean = false): Array[String] = {
+    val fs = getFileSystem(path)
+    // List remote or local files
+    val res = new ArrayBuffer[String]()
+    try {
+      val files = fs.listFiles(new Path(path), recursive)
+      while (files.hasNext) {
+        val file = files.next()
+        // Ignore dir
+        if (!file.isDirectory) {
+          // Add file paths (string) into ArrayBuffer
+          res.append(file.getPath.toString)
+        }
+      }
+    } catch {
+      case _: FileNotFoundException => logger.warn(s"$path doesn't exist!")
+      case _: IOException => logger.error(s"List paths of $path error!")
+    }
+    fs.close()
+    res.toArray
+  }
+
+  /**
+   * Read all bytes of file (local or remote) and return bytes Array.
+   * WARNING: Don't use it to read large files. It may cause performance issue
+   * and OOM.
+   * @param path String
+   * @return Array[Byte]
+   */
+  def readBytes(path: String): Array[Byte] = {
+    File.readBytes(path)
+  }
+
+  /**
+   * Read all bytes of multiple files (local or remote) and
+   * return 2 dim bytes Array.
+   * WARNING: Don't use it to read large files. It may cause performance issue
+   * and OOM.
+   * @param paths String paths in Array
+   * @return 2 dim Byte Array
+   */
+  def readBytes(paths: Array[String]): Array[Array[Byte]] = {
+    paths.map(readBytes)
+  }
+
+  /**
+   * Write string lines into given path (local or remote file system)
+   * @param path String path
+   * @param lines String content
+   */
+  def writeLines(path: String, lines: String): Unit = {
+    val fs = getFileSystem(path)
+    val outStream = fs.create(new Path(path), true)
+    try {
+      outStream.writeBytes(lines)
+    } finally {
+      outStream.close()
+    }
+    fs.close()
+  }
+
+  def getFileSystem(fileName: String): FileSystem = {
+    FileSystem.get(new Path(fileName).toUri, new Configuration())
+  }
+
+  /**
+   * Create file in FileSystem (local or remote)
+   * @param path String path
+   * @param overwrite overwrite exiting file or not
+   * @return
+   */
+  def create(path: String, overwrite: Boolean = false): DataOutputStream = {
+    getFileSystem(path).create(new Path(path), overwrite)
+  }
+
+  /**
+   * Open file in FileSystem (local or remote)
+   * @param path String path
+   * @return DataInputStream
+   */
+  def open(path: String): DataInputStream = {
+    getFileSystem(path).open(new Path(path))
+  }
+
+  /**
+   * Save bytes into given path (local or remote file system).
+   * WARNING: Don't use it to read large files. It may cause performance issue
+   * and OOM.
+   * @param bytes bytes
+   * @param fileName String path
+   * @param isOverwrite Overwrite exiting file or not
+   */
+  def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false): Unit = {
     File.saveBytes(bytes, fileName, isOverwrite)
   }
 
