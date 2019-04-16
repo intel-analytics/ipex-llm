@@ -27,6 +27,23 @@ if sys.version >= '3':
 
 
 class KerasNet(ZooKerasLayer):
+    def save(self, path, over_write=False):
+        raise Exception("This is a deprecated method. Please use saveModel instead.")
+
+    def saveModel(self, modelPath, weightPath=None, over_write=False):
+        """
+        Save this module to path with protobuf format.
+        :param modelPath: The path to save module, local file system,
+                          HDFS and Amazon S3 is supported.
+                          HDFS path should be like "hdfs://[host]:[port]/xxx"
+                          Amazon S3 path should be like "s3a://bucket/xxx"
+        :param weightPath: The Path for the parameters
+        :param over_write: override the existing model on modelPath or not.
+        """
+        super(KerasNet, self).saveModel(modelPath=modelPath,
+                                        weightPath=weightPath,
+                                        over_write=over_write)
+
     def compile(self, optimizer, loss, metrics=None):
         """
         Configure the learning process. It MUST be called before fit or evaluate.
