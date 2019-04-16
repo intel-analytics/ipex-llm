@@ -21,6 +21,7 @@ from keras.models import Sequential as KSequential
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import zoo.pipeline.api.keras.layers as ZLayer
 from zoo.pipeline.api.keras.models import Model as ZModel
+from zoo.pipeline.api.keras.models import Sequential as ZSequential
 from zoo.pipeline.api.net import Net, TFNet
 from bigdl.nn.layer import Linear, Sigmoid, SoftMax, Model as BModel
 from bigdl.util.common import *
@@ -52,16 +53,46 @@ class TestLayer(ZooTestCase):
         model2.freeze_up_to(["conv2"])
         model2.unfreeze()
 
+    def test_deprecated_save(self):
+        with pytest.raises(Exception) as e_info:
+            input = ZLayer.Input(shape=(5,))
+            output = ZLayer.Dense(10)(input)
+            zmodel = ZModel(input, output, name="graph1")
+            zmodel.save(create_tmp_path())
+
+    def test_save_load_Model(self):
+        input = ZLayer.Input(shape=(5,))
+        output = ZLayer.Dense(10)(input)
+        zmodel = ZModel(input, output, name="graph1")
+        tmp_path = create_tmp_path()
+        zmodel.saveModel(tmp_path, None, True)
+        model_reloaded = Net.load(tmp_path)
+        input_data = np.random.random([10, 5])
+        y = np.random.random([10, 10])
+        model_reloaded.compile(optimizer="adam",
+                               loss="mse")
+        model_reloaded.fit(x=input_data, y=y, batch_size=8, nb_epoch=2)
+
+    def test_save_load_Sequential(self):
+        zmodel = ZSequential()
+        dense = ZLayer.Dense(10, input_dim=5)
+        zmodel.add(dense)
+        tmp_path = create_tmp_path()
+        zmodel.saveModel(tmp_path, None, True)
+        model_reloaded = Net.load(tmp_path)
+        input_data = np.random.random([10, 5])
+        y = np.random.random([10, 10])
+        model_reloaded.compile(optimizer="adam",
+                               loss="mse")
+        model_reloaded.fit(x=input_data, y=y, batch_size=8, nb_epoch=1)
+
     def test_load(self):
         input = ZLayer.Input(shape=(5,))
         output = ZLayer.Dense(10)(input)
         zmodel = ZModel(input, output, name="graph1")
-
         tmp_path = create_tmp_path()
         zmodel.saveModel(tmp_path, None, True)
-
         model_reloaded = Net.load(tmp_path)
-
         input_data = np.random.random([3, 5])
         self.compare_output_and_grad_input(zmodel, model_reloaded, input_data)
 
