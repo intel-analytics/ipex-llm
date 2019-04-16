@@ -84,12 +84,12 @@ class ImageSet(JavaValue):
     def from_image_frame(cls, image_frame, bigdl_type="float"):
         return ImageSet(jvalue=callBigDlFunc(bigdl_type, "imageFrameToImageSet", image_frame))
 
-    def transform(self, transformer, bigdl_type="float"):
+    def transform(self, transformer):
         """
         transformImageSet
         """
-        self.value = callBigDlFunc(bigdl_type, "transformImageSet", transformer, self.value)
-        return self
+        return ImageSet(callBigDlFunc(self.bigdl_type, "transformImageSet",
+                                      transformer, self.value), self.bigdl_type)
 
     def get_image(self, key="floats", to_chw=True):
         """
