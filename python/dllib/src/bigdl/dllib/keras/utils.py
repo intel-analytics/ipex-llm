@@ -92,7 +92,7 @@ def to_bigdl_metric(metric, loss):
     elif metric == "auc":
         return metrics.AUC()
     elif metric == "loss":
-        return Loss()
+        return Loss(to_bigdl_criterion(loss_str))
     elif metric == "treennaccuracy":
         return TreeNNAccuracy()
     else:
