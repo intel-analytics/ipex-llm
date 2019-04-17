@@ -60,17 +60,18 @@ class KerasNet(ZooKerasLayer):
         """
         if isinstance(optimizer, six.string_types):
             optimizer = to_bigdl_optim_method(optimizer)
+        criterion = loss
         if isinstance(loss, six.string_types):
-            loss = to_bigdl_criterion(loss)
+            criterion = to_bigdl_criterion(loss)
         if callable(loss):
             from zoo.pipeline.api.autograd import CustomLoss
-            loss = CustomLoss(loss, self.get_output_shape()[1:])
+            criterion = CustomLoss(loss, self.get_output_shape()[1:])
         if metrics and all(isinstance(metric, six.string_types) for metric in metrics):
             metrics = to_bigdl_metrics(metrics, loss)
         callBigDlFunc(self.bigdl_type, "zooCompile",
                       self.value,
                       optimizer,
-                      loss,
+                      criterion,
                       metrics)
 
     def set_tensorboard(self, log_dir, app_name):
