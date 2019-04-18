@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from bigdl.transform.vision.image import ImageFrame
 from bigdl.util.common import *
 
 
@@ -51,7 +51,7 @@ class ImageSet(JavaValue):
 
     @classmethod
     def read(cls, path, sc=None, min_partitions=1, resize_height=-1,
-             resize_width=-1, image_codec=-1, with_label=False,
+             resize_width=-1, image_codec=-1, with_label=False, one_based_label=True,
              bigdl_type="float"):
         """
         Read images as Image Set
@@ -74,11 +74,13 @@ class ImageSet(JavaValue):
                By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED(-1)
         :param with_label whether to treat folders in the path as image classification labels
                and read the labels into ImageSet.
+        :param one_based_label whether to use one based label
         :return ImageSet
         """
         return ImageSet(jvalue=callBigDlFunc(bigdl_type, "readImageSet", path,
                                              sc, min_partitions, resize_height,
-                                             resize_width, image_codec, with_label))
+                                             resize_width, image_codec, with_label,
+                                             one_based_label))
 
     @classmethod
     def from_image_frame(cls, image_frame, bigdl_type="float"):
@@ -110,7 +112,7 @@ class ImageSet(JavaValue):
         return self.image_set.get_predict(key)
 
     def to_image_frame(self, bigdl_type="float"):
-        return callBigDlFunc(bigdl_type, "imageSetToImageFrame", self.value)
+        return ImageFrame(callBigDlFunc(bigdl_type, "imageSetToImageFrame", self.value), bigdl_type)
 
 
 class LocalImageSet(ImageSet):
