@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.feature.image
 import java.io.File
 
 import com.intel.analytics.bigdl.DataSet
+import com.intel.analytics.bigdl.dataset.DataSet.ImageFolder
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.zoo.common.Utils
@@ -234,18 +235,20 @@ object ImageSet {
   def read(path: String, sc: SparkContext = null, minPartitions: Int = 1,
            resizeH: Int = -1, resizeW: Int = -1,
            imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED,
-           withLabel: Boolean = false): ImageSet = {
+           withLabel: Boolean = false, oneBasedLabel: Boolean = true): ImageSet = {
     val imageSet = if (null != sc) {
-      readToDistributedImageSet(path, minPartitions, sc, withLabel)
+      readToDistributedImageSet(path, minPartitions, sc, withLabel, oneBasedLabel)
     } else {
-      readToLocalImageSet(path, withLabel)
+      readToLocalImageSet(path, withLabel, oneBasedLabel)
     }
     transform(imageSet, resizeH, resizeW, imageCodec)
   }
 
   private def readToDistributedImageSet(pathStr: String,
                                         minPartitions: Int,
-                                        sc: SparkContext, withLabel: Boolean): ImageSet = {
+                                        sc: SparkContext,
+                                        withLabel: Boolean,
+                                        oneBasedLabel: Boolean): ImageSet = {
     if (withLabel) {
       val path = new Path(pathStr)
 
@@ -254,7 +257,10 @@ object ImageSet {
       val classFolders = fsSys.listStatus(path).filter(_.isDirectory)
       val newPathsString = classFolders.map(_.getPath.toUri.toString).mkString(",")
       val labelMap = classFolders.map(_.getPath.getName)
-        .sorted.zipWithIndex.map(c => c._1 -> (c._2 + 1)).toMap
+        .sorted.zipWithIndex.map { c =>
+        if (oneBasedLabel) c._1 -> (c._2 + 1)
+        else c._1 -> c._2
+      }.toMap
       val images = sc.binaryFiles(newPathsString, minPartitions).map { case (p, stream) =>
         val classStr = new Path(p).toUri.getPath
           .substring(fullPath.length + 1).split(File.separator)(0)
@@ -271,7 +277,9 @@ object ImageSet {
     }
   }
 
-  private def readToLocalImageSet(pathStr: String, withLabel: Boolean): ImageSet = {
+  private def readToLocalImageSet(pathStr: String,
+                                  withLabel: Boolean,
+                                  oneBasedLabel: Boolean): ImageSet = {
 
     val basePath = Paths.get(pathStr)
 
@@ -281,7 +289,10 @@ object ImageSet {
 
       val labelMap = classFolders
         .map(_.getFileName.toString)
-        .toArray.sortWith(_ < _).zipWithIndex.map(c => c._1 -> (c._2 + 1)).toMap
+        .toArray.sortWith(_ < _).zipWithIndex.map{ c =>
+        if (oneBasedLabel) c._1 -> (c._2 + 1)
+        else c._1 -> c._2
+      }.toMap
 
       val files = classFolders.flatMap { p =>
         Utils.listLocalFiles(p.toAbsolutePath.toString)
