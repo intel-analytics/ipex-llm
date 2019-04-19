@@ -70,7 +70,7 @@ class Dense[T: ClassTag](
       outputSize = outputDim,
       withBias = bias,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer).setName(this.getName())
+      bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
 
     var torchLayer: AbstractModule[Tensor[T], Tensor[T], T] = layer
