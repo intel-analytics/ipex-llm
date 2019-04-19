@@ -27,10 +27,10 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 
 class LSTMSpec extends FlatSpec with Matchers{
   "LSTM UnidirectionalLeft2Right updateOutput" should "work correctly" in {
-    val seqLength = 2
-    val batchSize = 2
-    val inputSize = 3
-    val hiddenSize = 5
+    val seqLength = 1
+    val batchSize = 1
+    val inputSize = 2
+    val hiddenSize = 2
 
     val f = AlgKind.EltwiseTanh
     val flags = RNNCellFlags.RNNCellWithRelu
@@ -40,6 +40,7 @@ class LSTMSpec extends FlatSpec with Matchers{
 
     val common_n_layers = 1
     val lstm_n_gates = 4
+    val lstm_n_states = 2
 
     val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
     val input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
@@ -58,13 +59,17 @@ class LSTMSpec extends FlatSpec with Matchers{
     lstm.initFwdPrimitives(Array(inputFormat), InferencePhase)
 
     val output = lstm.forward(input)
-    // println("DNN output \n" + output)
+    println("DNN output \n" + output)
 
+    /*
     val nnlstm = nn.Recurrent().add(nn.LSTM(inputSize, hiddenSize,
       activation = nn.Tanh(), innerActivation = nn.Tanh()))
 
     val nnoutput = nnlstm.forward(input)
-    // println("NN output \n" + nnoutput)
+    println("NN output \n" + nnoutput)
+
+    println(input)
+    */
   }
 
   /*

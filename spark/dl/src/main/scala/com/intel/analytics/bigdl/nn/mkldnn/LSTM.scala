@@ -59,7 +59,8 @@ class LSTM(
     1, hiddenSize, lstm_n_gates, hiddenSize))
   private[mkldnn] val bias: TensorMMap = new TensorMMap(Array(common_n_layers, 1,
     lstm_n_gates, hiddenSize))
-  private[mkldnn] var iter: TensorMMap = _   // TODO
+  private[mkldnn] var src_i: TensorMMap = _   // TODO
+  private[mkldnn] var dst_i: TensorMMap = _   // TODO
 
   override def reset(): Unit = {
     if (initWeight == null) {
@@ -112,9 +113,9 @@ class LSTM(
         src_layer = NativeData(inputShape, Memory.Format.any)
         src_iter = NativeData(inputShape_iter, Memory.Format.ldsnc)
         /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
-        wei_layer = NativeData(weightShape, Memory.Format.ldigo)
+        wei_layer = NativeData(weightShape, Memory.Format.any)
         /* TODO */
-        wei_iter = NativeData(weightShape_iter, Memory.Format.ldigo)
+        wei_iter = NativeData(weightShape_iter, Memory.Format.any)
         bis = NativeData(biasShape, Memory.Format.any)
         dst = NativeData(outputShape, Memory.Format.any)
         dst_iter = NativeData(outputShape_iter, Memory.Format.any)
@@ -127,8 +128,10 @@ class LSTM(
         dist_layer_MD = dst.getMemoryDescription()
         dist_iter_MD = dst_iter.getMemoryDescription()
 
-        iter = new TensorMMap(inputShape_iter)
-        iter.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
+        src_i = new TensorMMap(inputShape_iter)
+        src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
+        dst_i = new TensorMMap(outputShape_iter)
+        dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
 
       case _ => throw new UnsupportedOperationException("Not support such direction")
     }
@@ -164,9 +167,9 @@ class LSTM(
     }
     */
 
-    require(iter.size().product == realSrc_iter.shape.product,
+    require(src_i.size().product == realSrc_iter.shape.product,
       s"${getName} src iter shape is not correct.")
-    require(iter.size().product == realDst_iter.shape.product,
+    require(dst_i.size().product == realDst_iter.shape.product,
       s"${getName} dst iter shape is not correct.")
     require(weight.size().product == realWei.shape.product,
       s"${getName} weight shape is not correct.")
@@ -175,17 +178,24 @@ class LSTM(
     require(bias.size().product == realBias.shape.product,
       s"${getName} bias shape is not correct.")
 
-    weight.setMemoryData(HeapData(weight.size(), Memory.Format.ldigo), realWei, runtime)
-    weight_i.setMemoryData(HeapData(weight_i.size(), Memory.Format.ldigo), realWei_iter, runtime)
-    bias.setMemoryData(HeapData(bias.size(), Memory.Format.ldgo), realBias, runtime)
-    iter.setMemoryData(HeapData(iter.size(), Memory.Format.ldsnc), realSrc_iter, runtime)
+    weight.setMemoryData(HeapData(weight.size(), Memory.Format.ldigo),
+                         NativeData(realWei.shape, realWei.layout), runtime)
+    weight_i.setMemoryData(HeapData(weight_i.size(), Memory.Format.ldigo),
+                         NativeData(realWei_iter.shape, realWei_iter.layout), runtime)
+    bias.setMemoryData(HeapData(bias.size(), Memory.Format.ldgo),
+                         NativeData(realBias.shape, realBias.layout), runtime)
+    src_i.setMemoryData(HeapData(src_i.size(), Memory.Format.ldsnc),
+                         NativeData(realSrc_iter.shape, realSrc_iter.layout), runtime)
+    dst_i.setMemoryData(HeapData(dst_i.size(), Memory.Format.ldsnc),
+                         NativeData(realDst_iter.shape, realDst_iter.layout), runtime)
 
     println("before sync")
 
     weight.sync()
     weight_i.sync()
     bias.sync()
-    iter.sync()
+    src_i.sync()
+    dst_i.sync()
 
     println("after sync")
 
@@ -212,12 +222,12 @@ class LSTM(
     if (updateOutputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(input.asInstanceOf[Tensor[Float]])
-      buffer.append(iter.native) // TODO
+      buffer.append(src_i.native) // TODO
       buffer.append(weight.native)
       buffer.append(weight_i.native)
       buffer.append(bias.native)
       buffer.append(output.asInstanceOf[Tensor[Float]])
-      buffer.append(iter.native) // TODO
+      buffer.append(dst_i.native) // TODO
 
       updateOutputTensors = buffer.toArray
     }
