@@ -243,6 +243,15 @@ def mm(x, y, axes=None):
     return Variable.from_jvalue(callBigDlFunc("float", "mm", x, y, axes))
 
 
+def erf(x):
+    """
+    Computes the error function(Gauss error function) of each element.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "erf", x))
+
+
 class VariableOperator(object):
     # TODO: we need to add a mapping for Shape here.
     def __to_batch_shape(cls, shape):
