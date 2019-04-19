@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.{nn => bnn}
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.{InternalCAddTable, InternalCMulTable, InternalExpand, InternalMM}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.internal._
 import com.intel.analytics.zoo.pipeline.api.keras.models._
 
 import scala.reflect.ClassTag
@@ -348,6 +348,17 @@ object AutoGrad {
     val l2_y = l2Normalize(y, axes(1))
     batchDot(l2_x, l2_y, axes = axes)
     }
+  }
+
+  /**
+   * Computes the error function(Gauss error function) of each element.
+   * @param x A variable.
+   * @return A variable.
+   */
+  def erf[T: ClassTag](x: Variable[T])(
+    implicit ev: TensorNumeric[T]): Variable[T] = {
+    Variable(new KerasLayerWrapper[T](new InternalERF[T]()
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]).inputs(x.node))
   }
 }
 

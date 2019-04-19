@@ -198,6 +198,10 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     autograd.AutoGrad.softplus(a)
   }
 
+  def erf(a: Variable[T]): Variable[T] = {
+    autograd.AutoGrad.erf(a)
+  }
+
   def expandDims(a: Variable[T], axis: Int): Variable[T] = {
     autograd.AutoGrad.expandDims(a, axis)
   }
