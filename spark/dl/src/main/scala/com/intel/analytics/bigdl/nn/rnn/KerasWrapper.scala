@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn.keras.{Dense, KerasLayer}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{Shape, Table}
 
 import scala.reflect.ClassTag
 
@@ -46,5 +46,10 @@ private[nn] class KerasWrapper[T: ClassTag](val layer: KerasLayer[Tensor[T], Ten
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     layer.accGradParameters(input, gradOutput)
+  }
+
+  override def getParametersTable(): Table = {
+    require(isBuild == true)
+    layer.getParametersTable()
   }
 }

@@ -77,7 +77,9 @@ private[nn] abstract class BaseModule[T: ClassTag]()(implicit ev: TensorNumeric[
     model.parameters()
   }
 
-  override def getParametersTable(): Table = model.getParametersTable()
+  override def getParametersTable(): Table = {
+    model.getParametersTable()
+  }
 
   override def clearState(): this.type = {
     model.clearState()

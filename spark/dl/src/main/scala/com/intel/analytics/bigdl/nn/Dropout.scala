@@ -180,7 +180,8 @@ class Dropout[T: ClassTag](
         this.gradInput.cmul(noise)
       }
     } else {
-      throw new IllegalArgumentException("backprop only defined while training")
+      this.gradInput = gradOutput
+      // throw new IllegalArgumentException("backprop only defined while training")
     }
 
     this.gradInput

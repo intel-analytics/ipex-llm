@@ -15,6 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.rnn
 
+import javax.swing.text.Position.Bias
+
+import breeze.linalg.{*, product}
+import com.amazonaws.services.simpleworkflow.model.Run
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -27,22 +31,33 @@ import com.intel.analytics.bigdl.nn.keras
 
 import scala.reflect.ClassTag
 
-class AttentionLayer[T: ClassTag](hidden_size: Int, num_heads: Int, attention_dropout: Float)
-                                 (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
+/**
+ * Implementation of multiheaded attention and self-attention layers.
+ * @param hidden_size hidden size
+ * @param num_heads heads number
+ * @param attention_dropout
+ */
+private[nn] class AttentionLayer[T: ClassTag](
+  hidden_size: Int, num_heads: Int, attention_dropout: Float)
+ (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
 
   override var model : Module[T] = buildModel()
 
   private def buildModel(): Module[T] = {
+    // InputX with shape [batch_size, length_x, hidden_size].
+    // InputY with shape [batch_size, length_x, hidden_size]
+    // for self attention, InputX and InputY should be same.
+    // Bias is attention bias that will be added to the result of the dot product.
     val inputX = Input()
     val inputY = Input()
     val inputBias = Input()
 
     val q_dense_layer = new KerasWrapper(
-      new Dense(outputDim = hidden_size, bias = false)).inputs(inputX)
+      new Dense(outputDim = hidden_size, bias = false).setName("q")).inputs(inputX)
     val k_dense_layer = new KerasWrapper(
-      new Dense(outputDim = hidden_size, bias = false)).inputs(inputY)
+      new Dense(outputDim = hidden_size, bias = false).setName("k")).inputs(inputY)
     val v_dense_layer = new KerasWrapper(
-      new Dense(outputDim = hidden_size, bias = false)).inputs(inputY)
+      new Dense(outputDim = hidden_size, bias = false).setName("v")).inputs(inputY)
 
     val split_q = new SplitHeads(hidden_size, num_heads, true).inputs(q_dense_layer)
     val split_k = new SplitHeads(hidden_size, num_heads).inputs(k_dense_layer)
@@ -55,12 +70,17 @@ class AttentionLayer[T: ClassTag](hidden_size: Int, num_heads: Int, attention_dr
     val matmul = MM(transB = true).inputs(contiguous_q, contiguous_k)
     val cadd = CAddTable().inputs(matmul, inputBias)
     val softMax = new KerasWrapper(keras.SoftMax()).inputs(cadd)
-    val drop = Dropout(initP = (1.0 - attention_dropout)).inputs(softMax)
 
+    val drop = if (train) {
+      Dropout(initP = (1.0 - attention_dropout)).inputs(softMax)
+    } else softMax
     val matmulNoTrans = MM().inputs(drop, contiguous_v)
+    // Recombine heads --> [batch_size, length, hidden_size]
     val combineHeads = new CombineHeads().inputs(matmulNoTrans)
-    val output_dense_layer = new KerasWrapper(new Dense(outputDim = hidden_size, bias = false)
-    ).inputs(combineHeads)
+    // Run the combined outputs through another linear projection layer.
+    val output_dense_layer = new KerasWrapper(
+        new Dense(outputDim = hidden_size, bias = false)
+        .setName("output_transform")).inputs(combineHeads)
     val graph = Graph(Array(inputX, inputY, inputBias), Array(output_dense_layer))
     if (this.train) graph.training() else graph.evaluate()
     graph

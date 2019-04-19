@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+// Combine tensor that has been split.
+//  input should be tensor with shape [batch_size, num_heads, length, hidden_size/num_heads]
+// output should be tensor with shape [batch_size, length, hidden_size]
 private[nn] class CombineHeads[T: ClassTag](implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
@@ -45,8 +48,7 @@ private[nn] class CombineHeads[T: ClassTag](implicit ev: TensorNumeric[T])
     } else {
       gradInput = gradOutput.contiguous().view(size)
     }
-    //    gradInput.resizeAs(input).copy(gradOutput)
-    gradInput = gradInput.transpose(permutations._1, permutations._2)
+    gradInput = gradInput.transpose(permutations._1, permutations._2).contiguous()
     gradInput
   }
 }
