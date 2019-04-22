@@ -30,6 +30,10 @@ class ImagePixelBytesToMat(
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalTransformer.apply(prev)
   }
+
+  override def transform(prev: ImageFeature): ImageFeature = {
+    internalTransformer.transform(prev)
+  }
 }
 
 object ImagePixelBytesToMat {
