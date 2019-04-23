@@ -30,16 +30,20 @@ import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerialization
 
 class TransformerLayerSpec extends ZooSpecHelper {
   "TransformerLayer" should "be able to work" in {
-    val model = TransformerLayer[Float](vocab = 100, hiddenSize = 768, nBlock = 3)
-    val shape = Shape(List(Shape(4, 77), Shape(4, 77)))
-    model.build(shape)
-    val w = model.parameters()._1
-    require(w.length == 37)
-    val wordInput = Tensor[Float](Array(4, 77)).rand()
-    val positionInput = Tensor[Float](Array(4, 77)).rand()
-    val input = T(wordInput, positionInput)
-    val output = model.forward(input)
-    val gradInput = model.backward(input, output)
+    val shape1 = Shape(20)
+    val shape2 = Shape(20)
+    val input1 = Variable[Float](shape1)
+    val input2 = Variable[Float](shape2)
+    val input = Array(input1, input2)
+    val seq = TransformerLayer[Float](200, hiddenSize = 128, nHead = 8,
+      seqLen = 20, nBlock = 1).from(input: _*)
+    val model = Model[Float](input, seq)
+
+    val trainToken = Tensor[Float](1, 20).rand()
+    val trainPos = Tensor.ones[Float](1, 20)
+    val input3 = T(trainToken, trainPos)
+    val output = model.forward(input3)
+    val gradInput = model.backward(input3, output)
   }
 
   "TransformerLayer with configured embedding" should "be able to work" in {
