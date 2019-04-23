@@ -243,12 +243,14 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def createZooKerasDense(
       outputDim: Int,
       init: String = "glorot_uniform",
+      limits: JList[Double] = null,
       activation: String = null,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null,
       bias: Boolean = true,
       inputShape: JList[Int] = null): Dense[T] = {
-    Dense(outputDim, init, activation, wRegularizer,
+    val configedValue = if (limits != null) limits.asScala.toArray else null
+    Dense(outputDim, init, configedValue, activation, wRegularizer,
       bRegularizer, bias, toScalaShape(inputShape))
   }
 
