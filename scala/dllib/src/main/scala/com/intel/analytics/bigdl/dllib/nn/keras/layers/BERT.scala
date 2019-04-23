@@ -51,7 +51,7 @@ import scala.reflect.ClassTag
  * @param embeddingLayer embedding layer
  * @param inputShape input shape, default is null
  */
-class BERT[T: ClassTag] (
+class BERT[T: ClassTag] private (
   nBlock: Int = 12,
   nHead: Int = 12,
   intermediateSize: Int = 3072,
@@ -121,12 +121,15 @@ object BERT {
     val tokenTypeInput = Variable(Shape(seqLen))
     val positionInput = Variable(Shape(seqLen))
 
+    val initWordEmbeddingW = Tensor[T](vocab, hiddenSize).randn(0.0, initializerRange)
+    val initPositionEmbeddingW = Tensor[T](seqLen, hiddenSize).randn(0.0, initializerRange)
+    val initTokenEmbeddingW = Tensor[T](2, hiddenSize).randn(0.0, initializerRange)
     val wordEmbeddings = new Embedding(vocab, hiddenSize, inputShape = Shape(seqLen),
-      init = RandomNormal(0.0, initializerRange)).from(wordInput)
+      initWeights = initWordEmbeddingW).from(wordInput)
     val positionEmbeddings = new Embedding(seqLen, hiddenSize, inputShape = Shape(seqLen),
-      init = RandomNormal(0.0, initializerRange)).from(positionInput)
+      initWeights = initPositionEmbeddingW).from(positionInput)
     val tokenTypeEmbeddings = new Embedding(2, hiddenSize, inputShape = Shape(seqLen),
-      init = RandomNormal(0.0, initializerRange)).from(tokenTypeInput)
+      initWeights = initTokenEmbeddingW).from(tokenTypeInput)
 
     val embeddings = wordEmbeddings + positionEmbeddings + tokenTypeEmbeddings
     val w = Parameter[T](Shape(1, hiddenSize),

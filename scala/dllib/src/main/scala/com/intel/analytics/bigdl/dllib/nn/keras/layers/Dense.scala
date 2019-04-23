@@ -65,12 +65,14 @@ object Dense {
   def apply[@specialized(Float, Double) T: ClassTag](
     outputDim: Int,
     init: String = "glorot_uniform",
+    limits: Array[Double] = null,
     activation: String = null,
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Dense[T] = {
-    new Dense[T](outputDim, KerasUtils.getInitMethod(init),
+    val initValue = KerasUtils.getInitMethod(init, limits)
+    new Dense[T](outputDim, initValue,
       KerasUtils.getKerasActivation(activation),
       wRegularizer, bRegularizer, bias, inputShape)
   }

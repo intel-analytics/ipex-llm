@@ -47,7 +47,7 @@ import scala.reflect.ClassTag
  * @param intermediateSize The size of the "intermediate" (i.e., conv1d)
  * @param inputShape input shape, default is null
  */
-class TransformerLayer[T: ClassTag](
+private[layers] class TransformerLayer[T: ClassTag](
   val nBlock: Int,
   val hiddenPDrop: Double,
   val attnPDrop: Double,
@@ -221,15 +221,16 @@ object TransformerLayer {
     initializerRange: Double = 0.02,
     bidirectional: Boolean = false,
     outputAllBlock: Boolean = false)(implicit ev: TensorNumeric[T]): TransformerLayer[T] = {
-    require(hiddenSize > 0, "hiddenSize must be great" +
+    require(hiddenSize > 0, "hiddenSize must be greater" +
       "than 0 with default embedding layer")
     val wordInput = InputLayer[T](inputShape = Shape(seqLen))
     val postionInput = InputLayer[T](inputShape = Shape(seqLen))
+    val initEmbeddingW = Tensor[T](vocab, hiddenSize).randn(0.0, initializerRange)
     val embeddingLayer = Sequential[T]()
       .add(Merge(layers = List(wordInput, postionInput), mode = "concat"))
       .add(Reshape(Array(seqLen * 2)))
       .add(new Embedding(vocab, hiddenSize, inputShape = Shape(seqLen * 2),
-        init = RandomNormal(0.0, initializerRange)))
+        initWeights = initEmbeddingW))
       .add(Dropout(embeddingDrop))
       .add(Reshape(Array(seqLen, 2, hiddenSize)))
       .add(new KerasLayerWrapper[T](bnn.Sum[T](dimension = 3,
