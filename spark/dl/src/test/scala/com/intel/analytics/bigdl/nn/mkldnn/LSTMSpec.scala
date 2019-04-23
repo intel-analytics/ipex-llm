@@ -23,14 +23,16 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.utils.T
+
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 class LSTMSpec extends FlatSpec with Matchers{
   "LSTM UnidirectionalLeft2Right updateOutput" should "work correctly" in {
-    val seqLength = 1
+    val seqLength = 3
     val batchSize = 1
     val inputSize = 2
-    val hiddenSize = 2
+    val hiddenSize = 3
 
     val f = AlgKind.EltwiseTanh
     val flags = RNNCellFlags.RNNCellWithRelu
@@ -42,13 +44,20 @@ class LSTMSpec extends FlatSpec with Matchers{
     val lstm_n_gates = 4
     val lstm_n_states = 2
 
-    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
-    val input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
-
-    val initWeight = Tensor[Float](common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize).rand()
-    val initWeightIter = Tensor[Float](common_n_layers, 1, hiddenSize, lstm_n_gates, hiddenSize)
-      .rand()
-    val initBias = Tensor[Float](common_n_layers, 1, lstm_n_gates, hiddenSize).rand()
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.any)
+    val input = Tensor(T(T(T(1f, 1f)), T(T(1f, 1f)), T(T(1f, 1f))))
+    // val input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
+    val initWeight = Tensor(T(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
+                                T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f))))))
+    // val initWeight = Tensor[Float](common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize)
+    // .rand()
+    val initWeightIter = Tensor(T(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
+      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
+      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f))))))
+    // val initWeightIter = Tensor[Float](common_n_layers, 1, hiddenSize, lstm_n_gates, hiddenSize)
+    //  .rand()
+    val initBias = Tensor(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)))))
+    // val initBias = Tensor[Float](common_n_layers, 1, lstm_n_gates, hiddenSize).rand()
 
     val lstm = LSTM(inputSize, hiddenSize, f, flags, alpha, clipping,
       direction, initWeight, initWeightIter, initBias)
@@ -61,15 +70,16 @@ class LSTMSpec extends FlatSpec with Matchers{
     val output = lstm.forward(input)
     println("DNN output \n" + output)
 
+
     /*
     val nnlstm = nn.Recurrent().add(nn.LSTM(inputSize, hiddenSize,
       activation = nn.Tanh(), innerActivation = nn.Tanh()))
 
     val nnoutput = nnlstm.forward(input)
     println("NN output \n" + nnoutput)
-
-    println(input)
     */
+
+    // println(input)
   }
 
   /*

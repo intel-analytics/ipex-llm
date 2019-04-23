@@ -21,21 +21,22 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 
 import scala.collection.mutable.ArrayBuffer
 
 class LSTM(
-            val inputSize: Int,
-            val hiddenSize: Int,
-            val f: Int,
-            val flags: Int,
-            val alpha: Float,
-            val clipping: Float,
-            val direction: Int,
-            private val initWeight: Tensor[Float] = null,
-            private val initWeightIter: Tensor[Float] = null,
-            private val initBias: Tensor[Float] = null
-          ) extends MklDnnLayer with Initializable {
+  val inputSize: Int,
+  val hiddenSize: Int,
+  val f: Int,
+  val flags: Int,
+  val alpha: Float,
+  val clipping: Float,
+  val direction: Int,
+  private val initWeight: Tensor[Float] = null,
+  private val initWeightIter: Tensor[Float] = null,
+  private val initBias: Tensor[Float] = null
+) extends MklDnnLayer with Initializable {
   @transient private var src_layer_MD: Long = _
   @transient private var src_iter_MD: Long = _
   @transient private var weights_layer_MD: Long = _
@@ -113,9 +114,9 @@ class LSTM(
         src_layer = NativeData(inputShape, Memory.Format.any)
         src_iter = NativeData(inputShape_iter, Memory.Format.ldsnc)
         /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
-        wei_layer = NativeData(weightShape, Memory.Format.any)
+        wei_layer = NativeData(weightShape, Memory.Format.ldigo)    // TODO any?
         /* TODO */
-        wei_iter = NativeData(weightShape_iter, Memory.Format.any)
+        wei_iter = NativeData(weightShape_iter, Memory.Format.ldigo) // TODO any?
         bis = NativeData(biasShape, Memory.Format.any)
         dst = NativeData(outputShape, Memory.Format.any)
         dst_iter = NativeData(outputShape_iter, Memory.Format.any)
