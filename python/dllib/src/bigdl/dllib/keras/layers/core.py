@@ -325,7 +325,7 @@ class Dense(ZooKerasLayer):
     >>> dense = Dense(10, input_dim=8, name="dense1")
     creating: createZooKerasDense
     """
-    def __init__(self, output_dim, init="glorot_uniform", activation=None,
+    def __init__(self, output_dim, init="glorot_uniform", limits=None, activation=None,
                  W_regularizer=None, b_regularizer=None,
                  bias=True, input_dim=None, input_shape=None, **kwargs):
         if input_dim:
@@ -333,6 +333,7 @@ class Dense(ZooKerasLayer):
         super(Dense, self).__init__(None,
                                     output_dim,
                                     init,
+                                    list(limits) if limits else None,
                                     activation,
                                     W_regularizer,
                                     b_regularizer,
