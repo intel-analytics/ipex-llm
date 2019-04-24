@@ -23,6 +23,7 @@ from unittest import TestCase
 import keras.backend as K
 
 from zoo.common.nncontext import *
+from zoo.feature.image import ImageSet
 
 np.random.seed(1337)  # for reproducibility
 
@@ -210,3 +211,13 @@ class ZooTestCase(TestCase):
 
         if not error:
             raise Exception("exception is not raised")
+
+    def get_raw_image_set(self, with_label):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        if with_label:
+            image_folder = os.path.join(resource_path, "cat_dog")
+        else:
+            image_folder = os.path.join(resource_path, "cat_dog/*")
+        image_set = ImageSet.read(image_folder, with_label=with_label, sc=get_spark_context(),
+                                  one_based_label=False)
+        return image_set
