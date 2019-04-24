@@ -48,7 +48,7 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.size().sameElements(target.size()),
       s"input size should be equal to target size, but got input size: ${input.size().toList}," +
-        s" target size: ${input.size().toList}")
+        s" target size: ${target.size().toList}")
 
     if (weights != null) {
       if (weights.nDimension() < input.nDimension()) {
