@@ -45,15 +45,16 @@ class LSTMSpec extends FlatSpec with Matchers{
     val lstm_n_states = 2
 
     val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.any)
-    val input = Tensor(T(T(T(1f, 1f)), T(T(1f, 1f)), T(T(1f, 1f))))
+    val input = Tensor(T(T(T(2f, 2f)), T(T(2f, 2f)), T(T(2f, 2f))))
     // val input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
     val initWeight = Tensor(T(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
                                 T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f))))))
     // val initWeight = Tensor[Float](common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize)
     // .rand()
     val initWeightIter = Tensor(T(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
-      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
-      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f))))))
+                                      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
+                                      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f))
+                                      ))))
     // val initWeightIter = Tensor[Float](common_n_layers, 1, hiddenSize, lstm_n_gates, hiddenSize)
     //  .rand()
     val initBias = Tensor(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)))))

@@ -102,7 +102,7 @@ class LSTM(
     direction match {
       case Direction.UnidirectionalLeft2Right =>
         // | Direction.UnidirectionalRight2Left =>
-        val weightShape = weight.size() /* ldigo */
+      val weightShape = weight.size() /* ldigo */
       val biasShape = bias.size() /* ldgo */
       val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
 
@@ -112,11 +112,11 @@ class LSTM(
       val outputShape_iter = inputShape_iter /* ldsnc */
 
         src_layer = NativeData(inputShape, Memory.Format.any)
-        src_iter = NativeData(inputShape_iter, Memory.Format.ldsnc)
+        src_iter = NativeData(inputShape_iter, Memory.Format.any)  // TODO any or ldsnc?
         /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
-        wei_layer = NativeData(weightShape, Memory.Format.ldigo)    // TODO any?
+        wei_layer = NativeData(weightShape, Memory.Format.any)    // TODO any?
         /* TODO */
-        wei_iter = NativeData(weightShape_iter, Memory.Format.ldigo) // TODO any?
+        wei_iter = NativeData(weightShape_iter, Memory.Format.any) // TODO any?
         bis = NativeData(biasShape, Memory.Format.any)
         dst = NativeData(outputShape, Memory.Format.any)
         dst_iter = NativeData(outputShape_iter, Memory.Format.any)
@@ -179,6 +179,13 @@ class LSTM(
     require(bias.size().product == realBias.shape.product,
       s"${getName} bias shape is not correct.")
 
+    weight.setMemoryData(HeapData(weight.size(), Memory.Format.ldigo), realWei, runtime)
+    weight_i.setMemoryData(HeapData(weight_i.size(), Memory.Format.ldigo), realWei_iter, runtime)
+    bias.setMemoryData(HeapData(bias.size(), Memory.Format.ldgo), realBias, runtime)
+    src_i.setMemoryData(HeapData(src_i.size(), Memory.Format.ldsnc), realSrc_iter, runtime)
+    dst_i.setMemoryData(HeapData(dst_i.size(), Memory.Format.ldsnc), realDst_iter, runtime)
+
+    /*
     weight.setMemoryData(HeapData(weight.size(), Memory.Format.ldigo),
                          NativeData(realWei.shape, realWei.layout), runtime)
     weight_i.setMemoryData(HeapData(weight_i.size(), Memory.Format.ldigo),
@@ -189,6 +196,7 @@ class LSTM(
                          NativeData(realSrc_iter.shape, realSrc_iter.layout), runtime)
     dst_i.setMemoryData(HeapData(dst_i.size(), Memory.Format.ldsnc),
                          NativeData(realDst_iter.shape, realDst_iter.layout), runtime)
+                         */
 
     println("before sync")
 
@@ -257,16 +265,16 @@ class LSTM(
 
 object LSTM{
   def apply(
-             inputSize: Int,
-             hiddenSize: Int,
-             f: Int,
-             flags: Int,
-             alpha: Float,
-             clipping: Float,
-             direction: Int,
-             initWeight: Tensor[Float] = null,
-             initWeightIter: Tensor[Float] = null,
-             initBias: Tensor[Float] = null
-           ): LSTM = new LSTM(inputSize, hiddenSize, f, flags, alpha,
+   inputSize: Int,
+   hiddenSize: Int,
+   f: Int,
+   flags: Int,
+   alpha: Float,
+   clipping: Float,
+   direction: Int,
+   initWeight: Tensor[Float] = null,
+   initWeightIter: Tensor[Float] = null,
+   initBias: Tensor[Float] = null
+ ): LSTM = new LSTM(inputSize, hiddenSize, f, flags, alpha,
     clipping, direction, initWeight, initWeightIter, initBias)
 }
