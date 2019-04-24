@@ -27,16 +27,16 @@ import scala.reflect.ClassTag
  * values during the matrix multiplication.
  * input with shape [batch_size, length, hidden_size]
  * output with shape [batch_size, num_heads, length, hidden_size/num_heads]
- * @param hidden_size
- * @param num_heads
+ * @param hiddenSize
+ * @param numHeads
  * @param mul
  * @tparam T The numeric type in this module parameters
  */
-private[nn] class SplitHeads[T: ClassTag](hidden_size: Int, num_heads: Int,
+private[nn] class SplitHeads[T: ClassTag](hiddenSize: Int, numHeads: Int,
                               mul: Boolean = false)(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
-  private val depth = hidden_size / num_heads
+  private val depth = hiddenSize / numHeads
   private val value = ev.fromType(math.pow(depth, -0.5))
   private val permutations: (Int, Int) = (2, 3)
 
@@ -45,7 +45,7 @@ private[nn] class SplitHeads[T: ClassTag](hidden_size: Int, num_heads: Int,
     val length = input.size(2)
 
     output.resizeAs(input).copy(input)
-    output = output.reshape(Array(batchSize, length, num_heads, depth))
+    output = output.reshape(Array(batchSize, length, numHeads, depth))
       .transpose(permutations._1, permutations._2)
     if (mul) {
       output.mul(value)

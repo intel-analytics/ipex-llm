@@ -230,8 +230,7 @@ class AttentionSpec  extends FlatSpec with Matchers {
   )
   "attention layer" should "work correctly" in {
     // compare with tensorflow 1.13.1
-    val attention = new AttentionLayer[Float](8, 4, 0.1f)
-    attention.evaluate()
+    val attention = new AttentionLayer[Float](8, 4, 1.0f)
 
     val paramsTable = attention.getParametersTable()
     val w1 = weights.get[Tensor[Float]]("q").get

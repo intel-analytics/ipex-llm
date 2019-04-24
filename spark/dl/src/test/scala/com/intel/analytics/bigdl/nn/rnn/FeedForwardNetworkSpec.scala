@@ -115,8 +115,7 @@ class FeedForwardNetworkSpec extends FlatSpec with Matchers {
 
   "FeedForwardNetwork layer" should "work correctly" in {
     // compare with tensorflow 1.13.1
-    val ffn = new FeedForwardNetwork[Float](8, 4, 0.1f)
-    ffn.evaluate()
+    val ffn = new FeedForwardNetwork[Float](8, 4, 1.0f)
 
     val paramsTable = ffn.getParametersTable()
     val w1 = weights.get[Tensor[Float]]("filter_layer").get

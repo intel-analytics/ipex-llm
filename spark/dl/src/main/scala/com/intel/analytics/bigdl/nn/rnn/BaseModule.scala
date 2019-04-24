@@ -28,7 +28,9 @@ import scala.reflect.ClassTag
 private[nn] abstract class BaseModule[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Activity, T] {
 
-  var model : Module[T]
+  val model : Module[T] = buildModel()
+
+  def buildModel(): Module[T]
 
   override def updateOutput(input: Activity): Activity = {
     output = model.updateOutput(input)

@@ -31,25 +31,23 @@ import scala.reflect.ClassTag
  * Implementation of fully connected network.
  * Input with shape [batch_size, length, hidden_size]
  * Output with shape [batch_size, length, hidden_size]
- * @param hidden_size hidden_size
- * @param filter_size
- * @param relu_dropout
+ * @param hiddenSize hidden_size
+ * @param filterSize
+ * @param reluDropout
  */
-private[nn] class FeedForwardNetwork[T: ClassTag](hidden_size: Int, filter_size: Int,
-                                      relu_dropout: Float)(implicit ev: TensorNumeric[T])
+private[nn] class FeedForwardNetwork[T: ClassTag](hiddenSize: Int, filterSize: Int,
+                                      reluDropout: Float)(implicit ev: TensorNumeric[T])
   extends BaseModule[T]{
 
-  override var model : Module[T] = buildModel()
-
-  private def buildModel(): Module[T] = {
+  override def buildModel(): Module[T] = {
     val input = Input()
-    val filter_dense_layer = TransformerOperation.dense(
-      hidden_size, filter_size, bias = true, activation = ReLU[T]()).inputs(input)
+    val filterLayer = TransformerOperation.dense(
+      hiddenSize, filterSize, bias = true, activation = ReLU[T]()).inputs(input)
     val drop = if (train) {
-      Dropout(initP = (1.0 - relu_dropout)).inputs(filter_dense_layer)
-    } else filter_dense_layer
+      Dropout(initP = (1.0 - reluDropout)).inputs(filterLayer)
+    } else filterLayer
     val output_dense_layer = TransformerOperation.dense(
-      filter_size, hidden_size, bias = true).inputs(drop)
+      filterSize, hiddenSize, bias = true).inputs(drop)
     val graph = Graph(Array(input), Array(output_dense_layer))
     if (this.train) graph.training() else graph.evaluate()
     graph

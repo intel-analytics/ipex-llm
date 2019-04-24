@@ -26,54 +26,53 @@ import scala.reflect.ClassTag
 
 /**
  * Implementation of multiheaded attention and self-attention layers.
- * @param hidden_size hidden size
- * @param num_heads heads number
- * @param attention_dropout
+ * @param hiddenSize hidden size
+ * @param numHeads heads number
+ * @param attentionDropout
  */
 private[nn] class AttentionLayer[T: ClassTag](
-  hidden_size: Int, num_heads: Int, attention_dropout: Float)
+  hiddenSize: Int, numHeads: Int, attentionDropout: Float)
  (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
 
-  override var model : Module[T] = buildModel()
-
-  private def buildModel(): Module[T] = {
+  override def buildModel(): Module[T] = {
     // InputX with shape [batch_size, length_x, hidden_size].
     // InputY with shape [batch_size, length_x, hidden_size]
-    // for self attention, InputX and InputY should be same.
+    // for self attention, InputX and InputY should be the same.
     // Bias is attention bias that will be added to the result of the dot product.
     val inputX = Input()
     val inputY = Input()
     val inputBias = Input()
 
-    val q_dense_layer = TransformerOperation.dense(
-      hidden_size, hidden_size, false, name = "q").inputs(inputX)
-    val k_dense_layer = TransformerOperation.dense(
-      hidden_size, hidden_size, false, name = "k").inputs(inputY)
-    val v_dense_layer = TransformerOperation.dense(
-      hidden_size, hidden_size, false, name = "v").inputs(inputY)
+    // Layers for linearly projecting the queries, keys, and values.
+    val queryLayer = TransformerOperation.dense(
+      hiddenSize, hiddenSize, false, name = "q").inputs(inputX)
+    val keyLayer = TransformerOperation.dense(
+      hiddenSize, hiddenSize, false, name = "k").inputs(inputY)
+    val valueLayer = TransformerOperation.dense(
+      hiddenSize, hiddenSize, false, name = "v").inputs(inputY)
 
-    val split_q = new SplitHeads(hidden_size, num_heads, true).inputs(q_dense_layer)
-    val split_k = new SplitHeads(hidden_size, num_heads).inputs(k_dense_layer)
-    val split_v = new SplitHeads(hidden_size, num_heads).inputs(v_dense_layer)
+    val querySplit = new SplitHeads(hiddenSize, numHeads, true).inputs(queryLayer)
+    val keySplit = new SplitHeads(hiddenSize, numHeads).inputs(keyLayer)
+    val valueSplit = new SplitHeads(hiddenSize, numHeads).inputs(valueLayer)
 
-    val contiguous_q = new Contiguous[T]().inputs(split_q)
-    val contiguous_k = new Contiguous[T]().inputs(split_k)
-    val contiguous_v = new Contiguous[T]().inputs(split_v)
+    val contiguousQ = new Contiguous[T]().inputs(querySplit)
+    val contiguousK = new Contiguous[T]().inputs(keySplit)
+    val contiguousV = new Contiguous[T]().inputs(valueSplit)
 
-    val matmul = MM(transB = true).inputs(contiguous_q, contiguous_k)
+    val matmul = MM(transB = true).inputs(contiguousQ, contiguousK)
     val cadd = CAddTable().inputs(matmul, inputBias)
     val softMax = TransformerOperation.softMax[T]().inputs(cadd)
 
     val drop = if (train) {
-      Dropout(initP = (1.0 - attention_dropout)).inputs(softMax)
+      Dropout(initP = (1.0 - attentionDropout)).inputs(softMax)
     } else softMax
-    val matmulNoTrans = MM().inputs(drop, contiguous_v)
+    val matmulNoTrans = MM().inputs(drop, contiguousV)
     // Recombine heads --> [batch_size, length, hidden_size]
     val combineHeads = new CombineHeads().inputs(matmulNoTrans)
     // Run the combined outputs through another linear projection layer.
-    val output_dense_layer = TransformerOperation.dense(
-      hidden_size, hidden_size, false, name = "output_transform").inputs(combineHeads)
-    val graph = Graph(Array(inputX, inputY, inputBias), Array(output_dense_layer))
+    val outputLayer = TransformerOperation.dense(
+      hiddenSize, hiddenSize, false, name = "output_transform").inputs(combineHeads)
+    val graph = Graph(Array(inputX, inputY, inputBias), Array(outputLayer))
     if (this.train) graph.training() else graph.evaluate()
     graph
   }
@@ -81,7 +80,7 @@ private[nn] class AttentionLayer[T: ClassTag](
 
 object Attention {
   def apply[@specialized(Float, Double) T: ClassTag]
-  (hidden_size: Int, num_heads: Int, attention_dropout: Float)
+  (hiddenSize: Int, numHeads: Int, attentionDropout: Float)
   (implicit ev: TensorNumeric[T]): AttentionLayer[T] =
-    new AttentionLayer(hidden_size: Int, num_heads: Int, attention_dropout: Float)
+    new AttentionLayer(hiddenSize: Int, numHeads: Int, attentionDropout: Float)
 }

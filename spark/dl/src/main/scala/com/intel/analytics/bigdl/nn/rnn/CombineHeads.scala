@@ -33,11 +33,11 @@ private[nn] class CombineHeads[T: ClassTag](implicit ev: TensorNumeric[T])
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val batchSize = input.size(1)
     val length = input.size(3)
-    val hidden_size = input.size(2) * input.size(4)
+    val hiddenSize = input.size(2) * input.size(4)
 
     output.resizeAs(input).copy(input)
     output = output.transpose(permutations._1, permutations._2)
-      .reshape(Array(batchSize, length, hidden_size))
+      .reshape(Array(batchSize, length, hiddenSize))
     output
   }
 
