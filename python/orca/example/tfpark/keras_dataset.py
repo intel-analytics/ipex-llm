@@ -52,7 +52,7 @@ def main(max_epoch):
          ]
     )
 
-    model.compile(optimizer='rmsprop',
+    model.compile(optimizer=tf.keras.optimizers.RMSprop(),
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
 
