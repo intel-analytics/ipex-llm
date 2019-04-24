@@ -116,6 +116,14 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     new IdentityCriterion()
   }
 
+  def createMergeFeatureLabelImagePreprocessing(): MergeFeatureLabel = {
+    new MergeFeatureLabel()
+  }
+
+  def createMergeFeatureLabelFeatureTransformer(): MergeFeatureLabel = {
+    new MergeFeatureLabel()
+  }
+
   def createTFValidationMethod(validationMethod: ValidationMethod[Float],
                                outputLength: Int, targetLength: Int): TFValidationMethod = {
     new TFValidationMethod(validationMethod, outputLength, targetLength)
