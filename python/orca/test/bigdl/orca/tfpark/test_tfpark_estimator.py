@@ -19,6 +19,8 @@ from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
 
+from zoo.feature.common import ChainedPreprocessing, FeatureSet
+from zoo.feature.image import *
 from zoo.tfpark import TFDataset
 from zoo.tfpark.estimator import TFEstimatorSpec, TFEstimator
 
@@ -27,7 +29,7 @@ class TestTFParkEstimator(ZooTestCase):
 
     def create_model_fn(self):
         def model_fn(features, labels, mode):
-
+            features = tf.layers.flatten(features)
             h1 = tf.layers.dense(features, 64, activation=tf.nn.relu)
             h2 = tf.layers.dense(h1, 64, activation=tf.nn.relu)
             logits = tf.layers.dense(h2, 10)
@@ -153,6 +155,88 @@ class TestTFParkEstimator(ZooTestCase):
 
         estimator.evaluate(input_fn, ["acc"])
         estimator.predict(input_fn).collect()
+
+    def create_imageset_input_fn(self):
+        def input_fn(mode):
+            import os
+            resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
+            if mode == tf.estimator.ModeKeys.TRAIN or mode == tf.estimator.ModeKeys.EVAL:
+                image_folder = os.path.join(resource_path, "cat_dog")
+                image_set = ImageSet.read(image_folder, with_label=True, sc=self.sc,
+                                          one_based_label=False)
+                transformer = ChainedPreprocessing([ImageResize(256, 256),
+                                                    ImageRandomCrop(224, 224, True),
+                                                    ImageMatToTensor(format="NHWC"),
+                                                    ImageSetToSample(input_keys=["imageTensor"],
+                                                                     target_keys=["label"])])
+                image_set = image_set.transform(transformer)
+                dataset = TFDataset.from_image_set(image_set,
+                                                   image=(tf.float32, [224, 224, 3]),
+                                                   label=(tf.int32, [1]),
+                                                   batch_size=8)
+            else:
+                image_folder = os.path.join(resource_path, "cat_dog/*/*")
+                image_set = ImageSet.read(image_folder, with_label=False, sc=self.sc,
+                                          one_based_label=False)
+                transformer = ChainedPreprocessing([ImageResize(256, 256),
+                                                    ImageRandomCrop(224, 224, True),
+                                                    ImageMatToTensor(format="NHWC"),
+                                                    ImageSetToSample(
+                                                        input_keys=["imageTensor"])])
+                image_set = image_set.transform(transformer)
+                dataset = TFDataset.from_image_set(image_set,
+                                                   image=(tf.float32, [224, 224, 3]),
+                                                   batch_per_thread=8)
+
+            return dataset
+        return input_fn
+
+    def test_estimator_for_imageset(self):
+
+        model_fn = self.create_model_fn()
+        input_fn = self.create_imageset_input_fn()
+
+        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator.train(input_fn, steps=1)
+        estimator.evaluate(input_fn, ["acc"])
+        results = estimator.predict(input_fn).get_predict().collect()
+        assert all(r[1] is not None for r in results)
+
+    def create_train_feature_set_input_fn(self):
+        def input_fn(mode):
+            if mode == tf.estimator.ModeKeys.TRAIN:
+                image_set = self.get_raw_image_set(with_label=True)
+                feature_set = FeatureSet.image_frame(image_set.to_image_frame())
+                train_transformer = ChainedPreprocessing([ImageBytesToMat(),
+                                                          ImageResize(256, 256),
+                                                          ImageRandomCrop(224, 224),
+                                                          ImageRandomPreprocessing(
+                                                              ImageHFlip(), 0.5),
+                                                          ImageChannelNormalize(
+                                                              0.485, 0.456, 0.406,
+                                                              0.229, 0.224, 0.225),
+                                                          ImageMatToTensor(
+                                                              to_RGB=True, format="NHWC"),
+                                                          ImageSetToSample(
+                                                              input_keys=["imageTensor"],
+                                                              target_keys=["label"])
+                                                          ])
+                feature_set = feature_set.transform(train_transformer)
+                training_dataset = TFDataset.from_feature_set(feature_set,
+                                                              features=(tf.float32, [224, 224, 3]),
+                                                              labels=(tf.int32, [1]),
+                                                              batch_size=8)
+                return training_dataset
+            else:
+                raise NotImplementedError
+        return input_fn
+
+    def test_estimator_for_feature_set(self):
+        model_fn = self.create_model_fn()
+        input_fn = self.create_train_feature_set_input_fn()
+
+        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator.train(input_fn, steps=1)
 
 
 if __name__ == "__main__":
