@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class SplitHeadsSpec extends FlatSpec with Matchers {
     val inputX : Tensor[Float] = Tensor(
@@ -169,5 +172,13 @@ class SplitHeadsSpec extends FlatSpec with Matchers {
     )
     output should  be(outputExpected)
     gradInput should be(gradInputExpected)
+  }
+}
+
+class SplitHeadsSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = new SplitHeads[Float](8, 4, mul = true).setName("splitheads")
+    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
   }
 }

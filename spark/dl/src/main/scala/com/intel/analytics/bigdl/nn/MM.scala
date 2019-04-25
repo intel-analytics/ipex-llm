@@ -102,7 +102,7 @@ class MM[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    var (ma, mb) = checkInputFormat(input)
+    val (ma, mb) = checkInputFormat(input)
 
     require(gradOutput.dim() == 2 || gradOutput.dim() == 3 || gradOutput.dim() == 4,
       "arguments must be a 2D or 3D or 4D Tensor" +
@@ -126,9 +126,9 @@ class MM[T: ClassTag](
         (2, 3, t => m1 => m2 => t.baddbmm(ev.fromType[Float](0.0f), ev.fromType[Float](1.0f),
           m1, m2))
       } else {
-        require(ma.dim() == 4, "first input tensor must be 3D" +
+        require(ma.dim() == 4, "first input tensor must be 4D" +
           s"first input dim ${ma.dim()}")
-        require(mb.dim() == 4, "second input tensor must be 3D" +
+        require(mb.dim() == 4, "second input tensor must be 4D" +
           s"second input dim ${mb.dim()}")
 
         (2, 3, t => m1 => m2 => t.bmm(m1, m2))
@@ -138,10 +138,16 @@ class MM[T: ClassTag](
     val batchSize = mb.size().slice(0, dimNum - 2).product
     val batchSizeGrad = gradOutput.size().slice(0, dimNum - 2).product
 
-    var reshapedX = ma.view(Array(batchSize, ma.size(dimNum - 1), ma.size(dimNum)))
-    var reshapedY = mb.view(Array(batchSize, mb.size(dimNum - 1), mb.size(dimNum)))
-    val reshapeGradOutput = gradOutput.contiguous().
-      view(batchSizeGrad, gradOutput.size(dimNum - 1), gradOutput.size(dimNum))
+    var reshapedX = if (ma.dim() == 4) {
+      ma.view(Array(batchSize, ma.size(dimNum - 1), ma.size(dimNum)))
+    } else ma
+    var reshapedY = if (mb.dim() == 4) {
+      mb.view(Array(batchSize, mb.size(dimNum - 1), mb.size(dimNum)))
+    } else mb
+    val reshapeGradOutput = if (gradOutput.dim() == 4) {
+      gradOutput.contiguous().view(batchSizeGrad,
+        gradOutput.size(dimNum - 1), gradOutput.size(dimNum))
+    } else gradOutput.contiguous()
 
     gradInput[Tensor[T]](1).resizeAs(reshapedX).zero()
     gradInput[Tensor[T]](2).resizeAs(reshapedY).zero()

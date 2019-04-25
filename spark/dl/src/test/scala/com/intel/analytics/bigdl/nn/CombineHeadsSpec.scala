@@ -17,9 +17,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-class MergeHeadsSpec extends FlatSpec with Matchers {
+import scala.util.Random
+
+class CombineHeadsSpec extends FlatSpec with Matchers {
 
   val inputX = Tensor[Float](
     T(T(T(T( 0.06007948, 0.30860155),
@@ -102,7 +105,7 @@ class MergeHeadsSpec extends FlatSpec with Matchers {
           T(-0.15310201, 0.4139873, 0.0932807, 0.20502582, 0.06091063,
           0.56474197, 0.21174718, 0.03867003))))
 
-  "Merge heads layer" should "work correctly" in {
+  "Combine heads layer" should "work correctly" in {
     val layer = new CombineHeads[Float]()
 
     val output = layer.forward(inputX)
@@ -110,5 +113,13 @@ class MergeHeadsSpec extends FlatSpec with Matchers {
 
     output should  be(outputExpected)
     gradInput should be(gradInputExpected)
+  }
+}
+
+class CombineHeadsSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = new CombineHeads[Float]().setName("combine_heads")
+    val input = Tensor[Float](2, 4, 3, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
   }
 }
