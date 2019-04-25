@@ -22,9 +22,6 @@ import com.intel.analytics.bigdl.mkl.{AlgKind, Direction, Memory, RNNCellFlags}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn
-
-import com.intel.analytics.bigdl.utils.T
-
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 class LSTMSpec extends FlatSpec with Matchers{
@@ -32,101 +29,86 @@ class LSTMSpec extends FlatSpec with Matchers{
     val seqLength = 3
     val batchSize = 1
     val inputSize = 2
-    val hiddenSize = 3
+    val hiddenSize = 2
 
     val f = AlgKind.EltwiseTanh
-    val flags = RNNCellFlags.RNNCellWithRelu
-    val alpha = 0F
-    val clipping = 0F
-    val direction = Direction.UnidirectionalLeft2Right
+    var direction = Direction.UnidirectionalLeft2Right
 
     val common_n_layers = 1
     val lstm_n_gates = 4
     val lstm_n_states = 2
 
     val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.any)
-    val input = Tensor(T(T(T(2f, 2f)), T(T(2f, 2f)), T(T(2f, 2f))))
+
+    var input = Tensor(Array(seqLength, batchSize, inputSize))
+    for (i <- 1 to seqLength; j <- 1 to batchSize; k <- 1 to inputSize)
+      input.setValue(i, j, k, 2f)
+
     // val input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
-    val initWeight = Tensor(T(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
-                                T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f))))))
-    // val initWeight = Tensor[Float](common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize)
-    // .rand()
-    val initWeightIter = Tensor(T(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
-                                      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)),
-                                      T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f))
-                                      ))))
-    // val initWeightIter = Tensor[Float](common_n_layers, 1, hiddenSize, lstm_n_gates, hiddenSize)
-    //  .rand()
-    val initBias = Tensor(T(T(T(T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f), T(1f, 1f, 1f)))))
+    // println("input")
+    // println(input)
+
+    var initWeight = Tensor[Float](Array(common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize))
+    for (a <- 1 to common_n_layers; b <- 1 to 1;
+         i <- 1 to inputSize; j <- 1 to lstm_n_gates; k <- 1 to hiddenSize)
+      initWeight.setValue(a, b, i, j, k, 0.5f)
+    /* val initWeight = Tensor[Float](common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize)
+      .rand() */
+    // println("initWeight")
+    // println(initWeight)
+
+    var initWeightIter = Tensor[Float](Array(common_n_layers, 1,
+      hiddenSize, lstm_n_gates, hiddenSize))
+    for (a <- 1 to common_n_layers; b <- 1 to 1;
+         i <- 1 to hiddenSize; j <- 1 to lstm_n_gates; k <- 1 to hiddenSize)
+      initWeightIter.setValue(a, b, i, j, k, 0.5f)
+    /* val initWeightIter = Tensor[Float](common_n_layers, 1, hiddenSize, lstm_n_gates, hiddenSize)
+      .rand() */
+    // println("initWeightIter")
+    // println(initWeightIter)
+
+    var initBias = Tensor[Float](common_n_layers, 1, lstm_n_gates, hiddenSize)
+    for (a <- 1 to common_n_layers; b <- 1 to 1;
+         i <- 1 to lstm_n_gates; j <- 1 to hiddenSize)
+      initBias.setValue(a, b, i, j, 1f)
     // val initBias = Tensor[Float](common_n_layers, 1, lstm_n_gates, hiddenSize).rand()
+    // println("initBias")
+    // println(initBias)
 
-    val lstm = LSTM(inputSize, hiddenSize, f, flags, alpha, clipping,
-      direction, initWeight, initWeightIter, initBias)
+    val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
+    /* val lstm = LSTM(inputSize, hiddenSize, f, flags, alpha, clipping,
+         direction) */
+    lstm1.setRuntime(new MklDnnRuntime)
+    lstm1.initMemoryDescs(Array(inputFormat))
+    lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
+    val output1 = lstm1.forward(input)
+    println("DNN output Left2Right\n" + output1)
 
-    lstm.setRuntime(new MklDnnRuntime)
-    lstm.reset()
-    lstm.initMemoryDescs(Array(inputFormat))
-    lstm.initFwdPrimitives(Array(inputFormat), InferencePhase)
+    direction = Direction.UnidirectionalRight2Left
+    val lstm2 = LSTM(inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
+    /* val lstm = LSTM(inputSize, hiddenSize, f, flags, alpha, clipping,
+         direction) */
+    lstm2.setRuntime(new MklDnnRuntime)
+    lstm2.initMemoryDescs(Array(inputFormat))
+    lstm2.initFwdPrimitives(Array(inputFormat), InferencePhase)
+    val output2 = lstm2.forward(input)
+    println("DNN output Right2Left\n" + output2)
 
-    val output = lstm.forward(input)
-    println("DNN output \n" + output)
 
+    // input = input.resize(Array(batchSize, seqLength, inputSize))
 
     /*
-    val nnlstm = nn.Recurrent().add(nn.LSTM(inputSize, hiddenSize,
-      activation = nn.Tanh(), innerActivation = nn.Tanh()))
+    val nn_model = nn.Sequential().add(
+      nn.Recurrent().add(nn.LSTM2(inputSize, hiddenSize))
+    )
 
-    val nnoutput = nnlstm.forward(input)
-    println("NN output \n" + nnoutput)
+    val (nn_weight, nn_grad) = nn_model.getParameters()
+    println(nn_weight)
+
+    val nn_output = nn_model.forward(input).toTensor
+    println(nn_output)
     */
-
-    // println(input)
   }
-
-  /*
-  "LSTM 5DimSync" should "work correctly" in {
-    val s1: Int = 1
-    val s2: Int = 1
-    val s3: Int = 5
-    val s4: Int = 4
-    val s5: Int = 5
-
-    val tensorMap1: TensorMMap = new TensorMMap(Array(s1, s2, s3, s4, s5))
-    val runtime1 = new MklDnnRuntime
-
-    val inputFormat1 = HeapData(Array(s1, s2, s3, s4, s5), Memory.Format.ldigo)
-    val outputFormat1 = NativeData(Array(s1, s2, s3, s4, s5), Memory.Format.ldigo)
-    tensorMap1.setMemoryData(inputFormat1, outputFormat1, runtime1)
-
-    val input = Tensor(Array(s1, s2, s3, s4, s5)).rand()
-    tensorMap1.dense.copy(input)
-    tensorMap1.sync()
-    println("ldigo")
-
-
-    val tensorMap2: TensorMMap = new TensorMMap(Array(s1, s2, s3, s4, s5))
-    val runtime2 = new MklDnnRuntime
-
-    val inputFormat2 = HeapData(Array(s1, s2, s3, s4, s5), Memory.Format.ldsnc)
-    val outputFormat2 = NativeData(Array(s1, s2, s3, s4, s5), Memory.Format.ldsnc)
-    tensorMap2.setMemoryData(inputFormat2, outputFormat2, runtime2)
-
-    tensorMap2.dense.copy(input)
-    tensorMap2.sync()
-    println("ldsnc")
-
-
-    val tensorMap3: TensorMMap = new TensorMMap(Array(s1, s2, s4, s5))
-    val runtime3 = new MklDnnRuntime
-
-    val inputFormat3 = HeapData(Array(s1, s2, s4, s5), Memory.Format.ldgo)
-    val outputFormat3 = NativeData(Array(s1, s2, s4, s5), Memory.Format.ldgo)
-    tensorMap3.setMemoryData(inputFormat3, outputFormat3, runtime3)
-
-    val input_4d = Tensor(Array(s1, s2, s4, s5)).rand()
-    tensorMap3.dense.copy(input_4d)
-    tensorMap3.sync()
-    println("ldgo")
-  }
-  */
 }
