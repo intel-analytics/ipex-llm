@@ -69,16 +69,19 @@ class MM[T: ClassTag](
       output.resize(ma.size(1), mb.size(2))
       output.mm(ma, mb)
     } else {
-      require(mb.dim() == 3 || mb.dim() == 4, "second input tensor must be 3D or 4D, but get " +
-        s"second input dim ${mb.dim()}")
-      require(ma.size(1) == mb.size(1), "inputs must contain the same number of minibatches" +
-        s"The minibatces of each are ${ma.size(1)} and ${mb.size(1)}")
+      require(ma.dim() == mb.dim(), s"input tensors should be with same dimension," +
+        s"but get ${ma.dim()} ${mb.dim()}")
+      require(mb.dim() == 3 || mb.dim() == 4, "input tensor must be 3D or 4D, but get " +
+        s"input dim ${mb.dim()}")
 
       val dimNum = ma.dim()
-      val batchSize = mb.size().slice(0, dimNum - 2).product
+      val batchSizeX = ma.size().slice(0, dimNum - 2).product
+      val batchSizeY = mb.size().slice(0, dimNum - 2).product
+      require(batchSizeX == batchSizeY, "inputs must contain the same number of minibatches" +
+        s"The minibatches of each are ${batchSizeX} and ${batchSizeY}")
 
-      var reshapedX = ma.view(Array(batchSize, ma.size(dimNum - 1), ma.size(dimNum)))
-      var reshapedY = mb.view(Array(batchSize, mb.size(dimNum - 1), mb.size(dimNum)))
+      var reshapedX = ma.view(Array(batchSizeX, ma.size(dimNum - 1), ma.size(dimNum)))
+      var reshapedY = mb.view(Array(batchSizeX, mb.size(dimNum - 1), mb.size(dimNum)))
 
       if (transA) {
         reshapedX = reshapedX.transpose(2, 3)
@@ -89,7 +92,7 @@ class MM[T: ClassTag](
       require(reshapedX.size(3) == reshapedY.size(2), "matrix sizes do not match" +
         s"the matrix sizes are ${reshapedX.size(3)} and ${reshapedY.size(2)}")
 
-      output.resize(batchSize, reshapedX.size(2), reshapedY.size(3)).zero()
+      output.resize(batchSizeX, reshapedX.size(2), reshapedY.size(3)).zero()
       output.bmm(reshapedX, reshapedY)
       val outputSize = ma.size().slice(0, dimNum - 2) ++ Array(reshapedX.size(2), reshapedY.size(3))
       output.resize(outputSize)

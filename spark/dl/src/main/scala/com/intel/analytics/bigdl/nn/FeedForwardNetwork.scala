@@ -13,24 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.rnn
+package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.{Sequential, Module => _, _}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.Dense
-import com.intel.analytics.bigdl.nn.ops.Gather
-import com.intel.analytics.bigdl.nn.tf.TensorArrayScatter
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.{Module => _}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
 /**
- * Implementation of fully connected network.
- * Input with shape [batch_size, length, hidden_size]
- * Output with shape [batch_size, length, hidden_size]
+ * Implementation FeedForwardNetwork constructed with fully connected network.
+ * Input with shape (batch_size, length, hidden_size)
+ * Output with shape (batch_size, length, hidden_size)
  * @param hiddenSize hidden_size
  * @param filterSize
  * @param reluDropout
