@@ -270,6 +270,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       Sequential[T]()
   }
 
+  def createAttention(hiddenSize: Int, numHeads: Int, attentionDropout: Float): Attention[T] = {
+     Attention(hiddenSize, numHeads, attentionDropout)
+  }
+
+  def createFeedForwardNetwork(hiddenSize: Int,
+    filterSize: Int, reluDropout: Float): FeedForwardNetwork[T] = {
+    FeedForwardNetwork(hiddenSize, filterSize, reluDropout)
+  }
+
   def createLinear(inputSize: Int, outputSize: Int,
     withBias: Boolean,
     wRegularizer: Regularizer[T] = null,

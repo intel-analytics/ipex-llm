@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  * @param numHeads heads number
  * @param attentionDropout
  */
-class AttentionLayer[T: ClassTag](
+class Attention[T: ClassTag](
   val hiddenSize: Int, val numHeads: Int, val attentionDropout: Float)
  (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
 
@@ -153,6 +153,6 @@ private[nn] class SplitHeads[T: ClassTag](val hiddenSize: Int, val numHeads: Int
 object Attention {
   def apply[@specialized(Float, Double) T: ClassTag]
   (hiddenSize: Int, numHeads: Int, attentionDropout: Float)
-  (implicit ev: TensorNumeric[T]): AttentionLayer[T] =
-    new AttentionLayer(hiddenSize: Int, numHeads: Int, attentionDropout: Float)
+  (implicit ev: TensorNumeric[T]): Attention[T] =
+    new Attention(hiddenSize: Int, numHeads: Int, attentionDropout: Float)
 }

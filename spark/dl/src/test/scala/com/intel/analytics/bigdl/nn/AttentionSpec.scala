@@ -231,7 +231,7 @@ class AttentionSpec  extends FlatSpec with Matchers {
   )
   "attention layer" should "work correctly" in {
     // compare with tensorflow 1.13.1
-    val attention = new AttentionLayer[Float](8, 4, 1.0f)
+    val attention = new Attention[Float](8, 4, 1.0f)
 
     val paramsTable = attention.getParametersTable()
     val w1 = weights.get[Tensor[Float]]("q").get
@@ -273,8 +273,10 @@ class AttentionSpec  extends FlatSpec with Matchers {
 
 class AttentionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val attention = new AttentionLayer[Float](8, 4, 1.0f).setName("attention")
-    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
-    runSerializationTest(attention, input)
+    val attention = new Attention[Float](8, 4, 1.0f).setName("attention")
+    val inputX = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    val inputY = inputX.clone()
+    val inputBias = Tensor[Float](2, 4, 3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(attention, T(inputX, inputY, inputBias))
   }
 }
