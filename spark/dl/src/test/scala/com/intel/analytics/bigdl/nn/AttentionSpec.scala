@@ -16,8 +16,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class AttentionSpec  extends FlatSpec with Matchers {
 
@@ -127,7 +130,7 @@ class AttentionSpec  extends FlatSpec with Matchers {
         T( 0.3683961, -0.05546927, -0.2827503, 0.43347543, 0.1822511, -0.16377908,
           -0.5162845, -0.43161902),
         T( 0.46889406, 0.59701246, 0.48150903, 0.4334857, 0.486095, 0.53306824,
-        0.27221018,  0.5941089),
+        0.27221018, 0.5941089),
         T( 0.12607813, -0.5313994, -0.57173353, -0.12448379, -0.11713088, -0.4439688,
           -0.527298, -0.37749383),
         T(-0.3919587, 0.05043119, 0.18434244, -0.01674193, -0.20570382, -0.21749035,
@@ -265,5 +268,13 @@ class AttentionSpec  extends FlatSpec with Matchers {
       if (i == "v") params should be(gw3.t())
       if (i == "output_transform") params should be(gw4.t())
     }
+  }
+}
+
+class AttentionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val attention = new AttentionLayer[Float](8, 4, 1.0f).setName("attention")
+    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(attention, input)
   }
 }

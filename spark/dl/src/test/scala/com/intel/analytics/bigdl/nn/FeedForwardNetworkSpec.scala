@@ -16,8 +16,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class FeedForwardNetworkSpec extends FlatSpec with Matchers {
   val input : Tensor[Float] = Tensor(T(T(
@@ -143,5 +146,13 @@ class FeedForwardNetworkSpec extends FlatSpec with Matchers {
         params should be(gw2.transpose(1, 2))
       }
     }
+  }
+}
+
+class FeedForwardNetworkSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val ffn = new FeedForwardNetwork[Float](8, 4, 1.0f)
+    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(ffn, input)
   }
 }

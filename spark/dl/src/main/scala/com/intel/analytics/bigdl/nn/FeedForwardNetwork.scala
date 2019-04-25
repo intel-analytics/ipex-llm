@@ -29,8 +29,8 @@ import scala.reflect.ClassTag
  * @param filterSize
  * @param reluDropout
  */
-private[nn] class FeedForwardNetwork[T: ClassTag](hiddenSize: Int, filterSize: Int,
-                                      reluDropout: Float)(implicit ev: TensorNumeric[T])
+class FeedForwardNetwork[T: ClassTag](val hiddenSize: Int, val filterSize: Int,
+                                      val reluDropout: Float)(implicit ev: TensorNumeric[T])
   extends BaseModule[T]{
 
   override def buildModel(): Module[T] = {
@@ -46,4 +46,13 @@ private[nn] class FeedForwardNetwork[T: ClassTag](hiddenSize: Int, filterSize: I
     if (this.train) graph.training() else graph.evaluate()
     graph
   }
+}
+
+object FeedForwardNetwork {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    hiddenSize: Int,
+    filterSize: Int,
+    reluDropout: Float)
+  (implicit ev: TensorNumeric[T]): FeedForwardNetwork[T] =
+    new FeedForwardNetwork[T](hiddenSize, filterSize, reluDropout)
 }

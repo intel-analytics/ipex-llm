@@ -28,8 +28,8 @@ import scala.reflect.ClassTag
  * @param numHeads heads number
  * @param attentionDropout
  */
-private[nn] class AttentionLayer[T: ClassTag](
-  hiddenSize: Int, numHeads: Int, attentionDropout: Float)
+class AttentionLayer[T: ClassTag](
+  val hiddenSize: Int, val numHeads: Int, val attentionDropout: Float)
  (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
 
   override def buildModel(): Module[T] = {
@@ -117,8 +117,8 @@ private[nn] class CombineHeads[T: ClassTag](implicit ev: TensorNumeric[T])
  * @param mul
  * @tparam T The numeric type in this module parameters
  */
-private[nn] class SplitHeads[T: ClassTag](hiddenSize: Int, numHeads: Int,
-                                          mul: Boolean = false)(implicit ev: TensorNumeric[T])
+private[nn] class SplitHeads[T: ClassTag](val hiddenSize: Int, val numHeads: Int,
+  val mul: Boolean = false)(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
   private val depth = hiddenSize / numHeads
