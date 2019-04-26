@@ -79,7 +79,7 @@ class BatchMatMul[T: ClassTag, D: ClassTag](
       if (adjY) {
         reshapedY = reshapedY.transpose(2, 3)
       }
-      require(reshapedX.size(2) == reshapedY.size(3), "matrix sizes do not match" +
+      require(reshapedX.size(3) == reshapedY.size(2), "matrix sizes do not match" +
         s"the matrix sizes are ${reshapedX.size(2)} and ${reshapedY.size(3)}")
 
       output.resize(batchSize, reshapedX.size(2), reshapedY.size(3))
