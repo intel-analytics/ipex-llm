@@ -52,21 +52,11 @@ class LSTM(
   private val lstm_n_gates: Int = 4
   private val lstm_n_states: Int = 2
 
-  private[mkldnn] val weight: TensorMMap = new TensorMMap(Array(common_n_layers,
-    1, inputSize, lstm_n_gates, hiddenSize))
-  private[mkldnn] val weight_i: TensorMMap = new TensorMMap(Array(common_n_layers,
-    1, hiddenSize, lstm_n_gates, hiddenSize))
-  private[mkldnn] val bias: TensorMMap = new TensorMMap(Array(common_n_layers, 1,
-    lstm_n_gates, hiddenSize))
+  private[mkldnn] var weight: TensorMMap = _
+  private[mkldnn] var weight_i: TensorMMap = _
+  private[mkldnn] var bias: TensorMMap = _
   private[mkldnn] var src_i: TensorMMap = _
   private[mkldnn] var dst_i: TensorMMap = _
-
-  {
-    val stdv = 1.0 / math.sqrt(hiddenSize)
-    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    setInitMethod(wInit, bInit)
-  }
 
   override def reset(): Unit = {
     if (initWeight == null) {
@@ -107,12 +97,109 @@ class LSTM(
     direction match {
       case Direction.UnidirectionalLeft2Right
            | Direction.UnidirectionalRight2Left =>
+        weight = new TensorMMap(Array(common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize))
+        weight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, lstm_n_gates, hiddenSize))
+        bias = new TensorMMap(Array(common_n_layers, 1, lstm_n_gates, hiddenSize))
+
+        {
+          val stdv = 1.0 / math.sqrt(hiddenSize)
+          val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          setInitMethod(wInit, bInit)
+        }
+
         val weightShape = weight.size() /* ldigo */
         val biasShape = bias.size() /* ldgo */
         val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
 
         val inputShape_iter = Array(common_n_layers, 1, lstm_n_states,
             inputs(0).shape(1), hiddenSize) /* ldsnc */
+        val weightShape_iter = weight_i.size() /* ldigo */
+        val outputShape_iter = inputShape_iter /* ldsnc */
+
+        src_layer = NativeData(inputShape, Memory.Format.any)
+        src_iter = NativeData(inputShape_iter, Memory.Format.any)  // TODO any or ldsnc?
+        /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
+        wei_layer = NativeData(weightShape, Memory.Format.any)
+        wei_iter = NativeData(weightShape_iter, Memory.Format.any)
+        bis = NativeData(biasShape, Memory.Format.any)
+        dst = NativeData(outputShape, Memory.Format.any)
+        dst_iter = NativeData(outputShape_iter, Memory.Format.any)
+
+        src_layer_MD = src_layer.getMemoryDescription()
+        src_iter_MD = src_iter.getMemoryDescription()
+        weights_layer_MD = wei_layer.getMemoryDescription()
+        weights_iter_MD = wei_iter.getMemoryDescription()
+        bias_MD = bis.getMemoryDescription()
+        dist_layer_MD = dst.getMemoryDescription()
+        dist_iter_MD = dst_iter.getMemoryDescription()
+
+        src_i = new TensorMMap(inputShape_iter)
+        src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
+        dst_i = new TensorMMap(outputShape_iter)
+        dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
+
+      case Direction.BidirectionalConcat =>
+        weight = new TensorMMap(Array(common_n_layers, 2, inputSize, lstm_n_gates, hiddenSize))
+        weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, lstm_n_gates, hiddenSize))
+        bias = new TensorMMap(Array(common_n_layers, 2, lstm_n_gates, hiddenSize))
+
+        {
+          val stdv = 1.0 / math.sqrt(hiddenSize)
+          val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          setInitMethod(wInit, bInit)
+        }
+
+        val weightShape = weight.size() /* ldigo */
+        val biasShape = bias.size() /* ldgo */
+        val outputShape = Array(inputShape(0), inputShape(1), 2 * hiddenSize) /* tnc */
+
+        val inputShape_iter = Array(common_n_layers, 2, lstm_n_states,
+            inputs(0).shape(1), hiddenSize) /* ldsnc */
+        val weightShape_iter = weight_i.size() /* ldigo */
+        val outputShape_iter = inputShape_iter /* ldsnc */
+
+        src_layer = NativeData(inputShape, Memory.Format.any)
+        src_iter = NativeData(inputShape_iter, Memory.Format.any)  // TODO any or ldsnc?
+        /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
+        wei_layer = NativeData(weightShape, Memory.Format.any)
+        wei_iter = NativeData(weightShape_iter, Memory.Format.any)
+        bis = NativeData(biasShape, Memory.Format.any)
+        dst = NativeData(outputShape, Memory.Format.any)
+        dst_iter = NativeData(outputShape_iter, Memory.Format.any)
+
+        src_layer_MD = src_layer.getMemoryDescription()
+        src_iter_MD = src_iter.getMemoryDescription()
+        weights_layer_MD = wei_layer.getMemoryDescription()
+        weights_iter_MD = wei_iter.getMemoryDescription()
+        bias_MD = bis.getMemoryDescription()
+        dist_layer_MD = dst.getMemoryDescription()
+        dist_iter_MD = dst_iter.getMemoryDescription()
+
+        src_i = new TensorMMap(inputShape_iter)
+        src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
+        dst_i = new TensorMMap(outputShape_iter)
+        dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
+
+      case Direction.BidirectionalSum =>
+        weight = new TensorMMap(Array(common_n_layers, 2, inputSize, lstm_n_gates, hiddenSize))
+        weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, lstm_n_gates, hiddenSize))
+        bias = new TensorMMap(Array(common_n_layers, 2, lstm_n_gates, hiddenSize))
+
+        {
+          val stdv = 1.0 / math.sqrt(hiddenSize)
+          val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          setInitMethod(wInit, bInit)
+        }
+
+        val weightShape = weight.size() /* ldigo */
+        val biasShape = bias.size() /* ldgo */
+        val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
+
+        val inputShape_iter = Array(common_n_layers, 2, lstm_n_states,
+          inputs(0).shape(1), hiddenSize) /* ldsnc */
         val weightShape_iter = weight_i.size() /* ldigo */
         val outputShape_iter = inputShape_iter /* ldsnc */
 
