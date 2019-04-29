@@ -128,7 +128,7 @@ class ImageSetToSample(ImagePreprocessing):
     :param target_keys keys that maps targets (each target should be a tensor)
     :param sample_key key to store sample
     """
-    def __init__(self, input_keys=["imageTensor"], target_keys=None,
+    def __init__(self, input_keys=["imageTensor"], target_keys=["label"],
                  sample_key="sample", bigdl_type="float"):
         super(ImageSetToSample, self).__init__(bigdl_type, input_keys, target_keys, sample_key)
 
