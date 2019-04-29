@@ -27,6 +27,20 @@ import org.apache.log4j.{Level, Logger}
 
 import scala.reflect.ClassTag
 
+
+/**
+  * An implementation of LARS https://arxiv.org/abs/1708.03888
+  * Lars.createOptimForModule is recommended to be used to create LARS optimizers for multiple layers
+  * @param lrScheduleOwner if this optimizer owns the learning rate scheduler. A scheduler may be
+  *                        shared by multiple LARS scheduler
+  * @param trust the trust on the learning rate scale, should be in 0 to 1
+  * @param learningRate learning rate
+  * @param learningRateDecay learning rate decay
+  * @param weightDecay weight decay
+  * @param momentum momentum
+  * @param learningRateSchedule the learning rate scheduler
+  * @tparam T
+  */
 class Lars[@specialized(Float, Double) T: ClassTag](
                                                      lrScheduleOwner: Boolean,
                                                      trust: Double = 1.0,
@@ -154,19 +168,31 @@ object Lars {
     * used in setOptimMethods.
     * Note: each Lars optim uses the same LearningRateSchedule
     * @param model the container to build LARS optimizer for
-    * @param trust the trust rate of the learning rate scale, should be in (0,1)
+    * @param trust the trust on the learning rate scale, should be in 0 to 1
+    * @param learningRate learning rate
+    * @param learningRateDecay learning rate decay
+    * @param weightDecay weight decay
+    * @param momentum momentum
+    * @param learningRateSchedule the learning rate scheduler
 
     * */
   def createOptimForModule[T: ClassTag](model: Module[T],
-                                        trust: Double = 1,
+                                        trust: Double = 1.0,
                                         learningRate: Double = 1e-3,
                                         learningRateDecay: Double = 0.01,
                                         weightDecay: Double = 0.005,
                                         momentum: Double = 0.5,
                                         learningRateSchedule: LearningRateSchedule = Default())
                                        (implicit ev: TensorNumeric[T]): Map[String, OptimMethod[T]] = {
-
-    createOptimSeqForModule(model, (_:AbstractModule[Activity,Activity,T])=>learningRateSchedule, true,
+    var isOwner = true
+    //lrScheGenerator generates the same learningRateSchedule for each module
+    //But it only returns isOwner = true for the first module
+    val lrScheGenerator = (_:AbstractModule[Activity,Activity,T])=>{
+      val _isOwner = isOwner
+      isOwner = false
+      (learningRateSchedule, _isOwner)
+    }
+    createOptimSeqForModule(model, lrScheGenerator ,
       trust,learningRate,learningRateDecay,weightDecay,momentum).toMap
 
   }
@@ -178,48 +204,53 @@ object Lars {
     * used in setOptimMethods.
     * This function sets different LearningRateSchedules for different submodules
     * @param model the container to build LARS optimizer for
-    * @param lrScheGenerator the learning rate schedule generater for each sub-module. The input variable is the sub-module that the schedule is linked to
-    * @param trust the trust rate of the learning rate scale, should be in (0,1)
+    * @param lrScheGenerator the learning rate schedule generator for each sub-module.
+    *                        Generator accepts the sub-module that the schedule is linked to.
+    *                        It should return a tuple (learningRateSchedule, isOwner), where isOwner
+    *                        indicates whether the corresponding LARS optimizer is responsible for
+    *                        updating the learning rate (multiple LARS optimizers may share one
+    *                        learning rate scheduler)
+    * @param trust the trust on the learning rate scale, should be in 0 to 1
+    * @param learningRate learning rate
+    * @param learningRateDecay learning rate decay
+    * @param weightDecay weight decay
+    * @param momentum momentum
 
     * */
 
   def createOptimLRSchedulerForModule[A<:Activity,B<:Activity,T : ClassTag](model : Container[A,B,T],
-                                                                            lrScheGenerator: AbstractModule[Activity,Activity,T] => LearningRateSchedule,
-                                                                            trust: Double = 1,
+                                                                            lrScheGenerator: AbstractModule[Activity,Activity,T] => (LearningRateSchedule,Boolean),
+                                                                            trust: Double = 1.0,
                                                                             learningRate: Double = 1e-3,
                                                                             learningRateDecay: Double = 0.01,
                                                                             weightDecay: Double = 0.005,
                                                                             momentum: Double = 0.5)
                                                                            (implicit ev: TensorNumeric[T]): Map[String,OptimMethod[T]] ={
-    createOptimSeqForModule(model,lrScheGenerator,true, trust,learningRate,learningRateDecay,weightDecay,momentum).toMap
+    createOptimSeqForModule(model,lrScheGenerator,trust,learningRate,learningRateDecay,weightDecay,momentum).toMap
   }
 
   /**
     * Create a Seq of (name,Lars) pair for the model
-    * @param lrScheduleOwner whether the first sub-module should return the hyper parameters in getHyperParameter(). Use this
-    *                      parameter to avoid verbose output of hyper parameters
+    * @see createOptimLRSchedulerForModule
     */
   private def createOptimSeqForModule[T: ClassTag](model: Module[T],
-                                                   lrScheGenerator: AbstractModule[Activity,Activity,T] => LearningRateSchedule,
-                                                   lrScheduleOwner: Boolean,
+                                                   lrScheGenerator: AbstractModule[Activity,Activity,T] => (LearningRateSchedule,Boolean),
                                                    trust: Double ,
                                                    learningRate: Double ,
                                                    learningRateDecay: Double ,
                                                    weightDecay: Double ,
                                                    momentum: Double )
                                                   (implicit ev: TensorNumeric[T]): Seq[(String, OptimMethod[T])] = {
-    var _lrScheduleOwner = lrScheduleOwner
     model match {
       case container: Container[_,_,T]=>
         container.modules.filter(mod => mod.parameters() != null).flatMap(mod => {
           //generate Seq for each sub-module
-          val ret = createOptimSeqForModule(mod,lrScheGenerator,_lrScheduleOwner,trust, learningRate,learningRateDecay,weightDecay,momentum)
-          _lrScheduleOwner = false
-          ret
+          createOptimSeqForModule(mod,lrScheGenerator,trust, learningRate,learningRateDecay,weightDecay,momentum)
         })
       case _=>
         if(model.parameters()!=null){
-          Seq((model.getName(),new Lars[T](lrScheduleOwner, trust, learningRate, learningRateDecay, weightDecay, momentum, lrScheGenerator(model))))
+          val (lrSche, isOwner) = lrScheGenerator(model)
+          Seq((model.getName(),new Lars[T](isOwner, trust, learningRate, learningRateDecay, weightDecay, momentum, lrSche)))
         }
         else
           Seq()
