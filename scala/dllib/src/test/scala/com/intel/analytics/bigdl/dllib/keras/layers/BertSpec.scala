@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Shape, T}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 import com.intel.analytics.zoo.pipeline.api.autograd.{Parameter, Variable}
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
@@ -34,13 +34,14 @@ class BertSpec extends ZooSpecHelper {
     intermediateSize = 64,
     hiddenPDrop = 0.1,
     attnPDrop = 0.1,
-    seqLen = 10,
-    outputAllBlock = false)
+    maxPositionLen = 10,
+    outputAllBlock = false,
+    inputSeqLen = 10)
 
     val shape = Shape(List(Shape(1, 10), Shape(1, 10), Shape(1, 10), Shape(1, 1, 1, 10)))
     layer.build(shape)
     val w = layer.parameters()._1
-    require(w.length == 41)
+    require(w.length == 43)
     val inputIds = Tensor[Float](Array[Float](7, 20, 39, 27, 10,
       39, 30, 21, 17, 15), Array(1, 10))
     val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1), Array(1, 10))
@@ -48,7 +49,7 @@ class BertSpec extends ZooSpecHelper {
     val masks = Tensor[Float](1, 1, 1, 10).fill(1.0f)
 
     val output = layer.forward(T(inputIds, segmentIds, positionIds, masks))
-    val gradOutput = Tensor[Float](output.toTensor[Float].size()).rand()
+    val gradOutput = T(Tensor[Float](1, 10, 10).rand(), Tensor[Float](1, 10).rand())
     val gradInput = layer.backward(T(inputIds, segmentIds, positionIds, masks), gradOutput)
   }
 
@@ -60,13 +61,13 @@ class BertSpec extends ZooSpecHelper {
       intermediateSize = 64,
       hiddenPDrop = 0.1,
       attnPDrop = 0.1,
-      seqLen = 10,
+      maxPositionLen = 10,
       outputAllBlock = true)
 
     val shape = Shape(List(Shape(1, 10), Shape(1, 10), Shape(1, 10), Shape(1, 1, 1, 10)))
     layer.build(shape)
     val w = layer.parameters()._1
-    require(w.length == 41)
+    require(w.length == 43)
     val inputIds = Tensor[Float](Array[Float](7, 20, 39, 27, 10,
       39, 30, 21, 17, 15), Array(1, 10))
     val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1), Array(1, 10))
@@ -119,8 +120,7 @@ class BertSpec extends ZooSpecHelper {
     val masks = Tensor[Float](1, 1, 1, 10).fill(1.0f)
 
     val output = layer.forward(T(inputIds, segmentIds, positionIds, masks))
-    val gradOutput = Tensor[Float](output.toTensor[Float].size()).rand()
-    val gradInput = layer.backward(T(inputIds, segmentIds, positionIds, masks), gradOutput)
+    val gradInput = layer.backward(T(inputIds, segmentIds, positionIds, masks), output)
   }
 
   "BERT" should "be able to generate correct result" in {
@@ -131,7 +131,7 @@ class BertSpec extends ZooSpecHelper {
       intermediateSize = 64,
       hiddenPDrop = 0,
       attnPDrop = 0,
-      seqLen = 6,
+      maxPositionLen = 6,
       outputAllBlock = false)
     val shape = Shape(List(Shape(2, 6), Shape(2, 6), Shape(2, 6), Shape(2, 1, 1, 6)))
     layer.build(shape)
@@ -538,7 +538,7 @@ class BertSpec extends ZooSpecHelper {
     val attentionMask = Tensor[Float](2, 1, 1, 6).fill(1.0f)
     val finalInput = T(input, tokenTypeInput, positionInput,
       attentionMask)
-    val output = layer.forward(finalInput).toTensor[Float]
+    val output = layer.forward(finalInput).toTable
 
     val expect = Tensor[Float](Array[Float](0.5962f, 1.0420f, 0.1113f, -0.2090f, 0.9805f,
       -1.4064f, -0.1274f,
@@ -565,7 +565,7 @@ class BertSpec extends ZooSpecHelper {
       -1.5163f, -0.0971f, 0.8916f,
       -0.3329f, -0.3355f, 1.0987f, -1.9300f, 0.9568f, 0.5973f, -1.0527f,
       0.8440f, 1.0099f, -0.8555f), Array(2, 6, 10))
-    require(output.almostEqual(expect, 1e-2) == true)
+    require(output[Tensor[Float]](1).almostEqual(expect, 5e-3) == true)
 
     val gradOutput = Tensor[Float](Array[Float](21f, 52f, 1f, 87f, 29f, 37f,
       1f, 63f, 59f, 20f,
@@ -581,11 +581,12 @@ class BertSpec extends ZooSpecHelper {
       87f, 62f, 10f, 80f, 7f, 34f, 34f, 32f, 4f, 40f,
       27f, 6f, 72f, 71f, 11f, 33f, 32f, 47f, 22f, 61f
     ), Array(2, 6, 10))
+    val grad2 = Tensor[Float](2, 10)
 
-    layer.backward(finalInput, gradOutput)
+    layer.backward(finalInput, T(gradOutput, grad2))
     val grads = layer.parameters()._2
 
-    val expectGrad = new Array[Tensor[Float]](grads.size)
+    val expectGrad = new Array[Tensor[Float]](grads.size - 2)
     expectGrad(20 - 4) = Tensor[Float](Array[Float](429f, 578f, 472f, 800f, 598f, 478f,
       568f, 610f, 517f, 563f), Array(1, 10))
     expectGrad(19 - 4) = Tensor[Float](Array[Float](-308.3242f, 73.9104f, 415.4557f,
@@ -1061,6 +1062,287 @@ class BertSpec extends ZooSpecHelper {
     }
   }
 
+  "Bert " should "save/load be able to work" in {
+    val layer = BERT[Float](vocab = 30000,
+      hiddenSize = 10,
+      nBlock = 5,
+      nHead = 2,
+      intermediateSize = 64,
+      hiddenPDrop = 0,
+      attnPDrop = 0,
+      maxPositionLen = 11,
+      outputAllBlock = false)
+    val shape = Shape(List(Shape(1, 11), Shape(1, 11), Shape(1, 11), Shape(1, 1, 1, 11)))
+    layer.build(shape)
+
+    val inputIds = Tensor[Float](Array[Float](2040f, 2001, 3958, 27227, 1029, 3958, 103,
+      2001, 1037, 13997, 11510), Array(1, 11))
+    val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1), Array(1, 11))
+    val positionIds = Tensor[Float](Array[Float](0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), Array(1, 11))
+    val masks = Tensor[Float](1, 1, 1, 11).fill(1.0f)
+
+    val input = T(inputIds.clone(), segmentIds.clone(), positionIds.clone(), masks.clone())
+    val output = layer.forward(input).toTable
+    val expectO = T(output[Tensor[Float]](1).clone(), output[Tensor[Float]](2).clone())
+    val gradOutput_1 = Tensor[Float](1, 11, 10).rand()
+    val gradO2 = Tensor[Float](1, 10)
+    val gradOutput = T(gradOutput_1, gradO2)
+    val gradInput = layer.backward(input, T(gradOutput_1.clone(), gradO2.clone())).toTable
+    val test = (1 to gradInput.length()).map(gradInput[Tensor[Float]](_).clone())
+    val expepctGradInput = T.array(test.toArray)
+
+    val tmpFile = ZooSpecHelper.createTmpFile()
+    val absPath = tmpFile.getAbsolutePath
+    layer.saveModule(absPath, overWrite = true)
+    val layer2 = BERT[Float](absPath, null, 11, 0, 0, false)
+    val output2 = layer2.forward(T(inputIds, segmentIds, positionIds, masks)).toTable
+    val gradInput3 = layer2.backward(T(inputIds, segmentIds, positionIds, masks),
+      gradOutput).toTable
+    for (i <- 1 to output2.length()) {
+      require(output2[Tensor[Float]](i).almostEqual(expectO[Tensor[Float]](i), 1e-8))
+    }
+    for (i <- 1 to gradInput.length()) {
+      require(expepctGradInput[Tensor[Float]](i).almostEqual(gradInput3[Tensor[Float]](i), 1e-5))
+    }
+  }
+
+  // TODO: uncomment this ut after we have put zoo model in a public place
+//  "Bert with pretrained model " should "be able to work" in {
+//    // TODO: put zoo model in a public place
+//    val layer = BERT[Float]("/tmp/zoo-bert.model", null, inputSeqLen = 11, hiddenPDrop = 0.0,
+//      attnPDrop = 0.0, true)
+//
+//    val inputIds = Tensor[Float](Array[Float](2040f, 2001, 3958, 27227, 1029, 3958, 103,
+//      2001, 1037, 13997, 11510), Array(1, 11))
+//    val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1), Array(1, 11))
+//    val positionIds = Tensor[Float](Array[Float](0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), Array(1, 11))
+//    val masks = Tensor[Float](1, 1, 1, 11).fill(1.0f)
+//
+//    val input = T(inputIds, segmentIds, positionIds, masks)
+//    val output = layer.forward(input).toTable
+//
+//    val expectPoolOutput = Tensor[Float](Array[Float](-0.7162f, -0.1396f, 0.7603f,
+//      0.3641f, -0.6005f, -0.2462f, 0.7046f, 0.0890f,
+//      0.8521f, -0.9968f, 0.5658f, -0.6746f, 0.9748f, -0.6179f, 0.9423f, -0.3352f,
+//      0.0830f, -0.4201f, 0.2724f, -0.5666f, 0.7584f, -0.0920f, 0.8036f, 0.2927f,
+//      0.0453f, -0.8674f, -0.4508f, 0.9286f, 0.9351f, 0.8020f, -0.6272f, 0.0372f,
+//      -0.9862f, -0.1660f, 0.0781f, -0.9841f, -0.1545f, -0.6641f, -0.2398f, 0.0144f,
+//      -0.9033f, 0.1099f, 0.9771f, -0.8061f, 0.0059f, -0.2065f, -0.9722f, 0.0251f,
+//      -0.9021f, -0.9456f, -0.6896f, -0.9564f, 0.0519f, 0.1854f, 0.1896f, 0.6364f,
+//      -0.1458f, 0.0746f, -0.0153f, -0.3355f, -0.4169f, 0.0664f, 0.6940f, -0.8770f,
+//      -0.9073f, -0.7581f, -0.2571f, -0.2412f, -0.0101f, -0.0291f, 0.7521f, 0.1513f,
+//      0.6677f, -0.8569f, -0.8606f, 0.2286f, -0.3572f, 0.9978f, 0.3681f, -0.9787f,
+//      -0.0825f, -0.7081f, 0.3884f, 0.8268f, -0.6925f, -0.9885f, -0.0306f, -0.1499f,
+//      -0.9875f, 0.1070f, 0.1838f, -0.0348f, 0.1364f, 0.4469f, -0.2244f, -0.0421f,
+//      -0.0109f, 0.3887f, -0.1453f, 0.1406f, -0.0316f, -0.0859f, -0.0602f, -0.2716f,
+//      0.0345f, -0.0536f, -0.1663f, -0.2223f, -0.5041f, 0.3877f, 0.3318f, -0.1905f,
+//      0.0250f, -0.9412f, 0.2981f, -0.1303f, -0.9602f, -0.4054f, -0.9871f, 0.7988f,
+//      -0.0876f, -0.4186f, 0.9571f, 0.7023f, 0.1317f, -0.0598f, 0.9564f, -0.9982f,
+//      0.6961f, 0.0997f, 0.6105f, -0.0848f, -0.9721f, -0.9648f, 0.2606f, 0.8880f,
+//      0.0675f, 0.9830f, -0.0328f, 0.9508f, 0.7032f, 0.3969f, -0.9032f, -0.4663f,
+//      -0.1569f, 0.1598f, -0.6167f, 0.3050f, 0.3721f, -0.8162f, -0.0270f, -0.1218f,
+//      0.7294f, -0.9266f, -0.2046f, 0.9405f, 0.6775f, 0.8277f, 0.7095f, -0.0222f,
+//      -0.1586f, 0.8070f, -0.1977f, 0.2968f, 0.2671f, 0.0159f, -0.3666f, 0.1654f,
+//      -0.6356f, 0.8115f, 0.1022f, -0.0277f, 0.4317f, -0.9800f, -0.2187f, 0.2425f,
+//      0.9773f, 0.6488f, 0.1156f, -0.8433f, -0.1829f, -0.5950f, -0.9516f, 0.9792f,
+//      -0.0946f, 0.1392f, 0.4140f, -0.5860f, -0.7811f, -0.1265f, 0.5148f, 0.5665f,
+//      -0.7989f, 0.0579f, -0.2782f, -0.0707f, 0.1247f, 0.3033f, -0.1486f, -0.3969f,
+//      -0.1184f, 0.9160f, 0.7994f, 0.6171f, -0.5199f, -0.1578f, -0.9006f, -0.3371f,
+//      0.1465f, 0.0052f, -0.0266f, 0.9798f, -0.0686f, 0.0602f, -0.8204f, -0.9792f,
+//      0.1078f, -0.7781f, -0.0333f, -0.3414f, 0.0418f, 0.3171f, -0.7073f, 0.1727f,
+//      -0.9042f, -0.8144f, 0.0733f, -0.0641f, 0.2665f, -0.0541f, 0.3952f, -0.6823f,
+//      -0.4333f, 0.5374f, 0.9017f, 0.7004f, -0.7999f, 0.6353f, -0.1725f, 0.7958f,
+//      -0.2901f, 0.9769f, -0.6294f, -0.1802f, -0.9378f, 0.2437f, -0.6200f, 0.6196f,
+//      -0.1076f, -0.7601f, -0.7550f, 0.4579f, -0.0830f, 0.6436f, -0.0972f, 0.8839f,
+//      -0.6791f, -0.9578f, -0.3163f, 0.4027f, -0.9870f, -0.6541f, 0.1541f, -0.5528f,
+//      -0.2818f, 0.0063f, -0.9724f, 0.6324f, 0.1280f, 0.9215f, 0.1273f, -0.5899f,
+//      0.5715f, -0.9524f, 0.0339f, -0.2239f, 0.8126f, -0.0554f, -0.9408f, 0.3213f,
+//      0.4896f, 0.0629f, 0.7366f, 0.9008f, 0.9069f, 0.9719f, 0.8679f, 0.5541f,
+//      -0.2049f, 0.1948f, 0.9966f, 0.6645f, -0.9866f, -0.9136f, -0.2357f, 0.4273f,
+//      -0.9980f, -0.0674f, -0.1421f, -0.9326f, -0.6956f, 0.9571f, 0.9187f, -0.9966f,
+//      0.7822f, 0.8609f, -0.4010f, -0.8146f, -0.0580f, 0.9602f, 0.1276f, 0.2033f,
+//      -0.1566f, 0.4025f, -0.0706f, -0.7124f, 0.5992f, 0.5017f, -0.5854f, 0.0679f,
+//      -0.0444f, -0.9526f, -0.3486f, -0.0046f, -0.2216f, -0.9666f, -0.1915f, -0.8234f,
+//      0.0790f, -0.0616f, 0.0841f, -0.7505f, 0.0087f, -0.6945f, 0.4681f, 0.4427f,
+//      -0.7811f, -0.4501f, 0.6757f, -0.7121f, 0.5318f, -0.9615f, 0.9654f, -0.1700f,
+//      -0.9108f, 0.9955f, -0.0542f, -0.9140f, 0.0220f, -0.0412f, -0.3037f, 0.9941f,
+//      -0.1090f, -0.9820f, -0.3511f, -0.3380f, -0.0779f, 0.0112f, 0.9919f, -0.0013f,
+//      0.6381f, 0.5495f, 0.9873f, -0.9844f, -0.5295f, -0.7156f, -0.9563f, 0.9685f,
+//      0.9571f, 0.0137f, -0.4769f, 0.0336f, 0.3625f, 0.1125f, -0.8594f, 0.2999f,
+//      0.5331f, -0.1464f, 0.8701f, -0.5283f, -0.2819f, 0.1792f, 0.6559f, 0.7553f,
+//      -0.7151f, 0.1020f, -0.0604f, -0.0285f, -0.2009f, -0.0457f, -0.9241f, -0.2874f,
+//      0.9940f, 0.3557f, -0.5637f, 0.3754f, -0.1321f, 0.0472f, 0.0158f, 0.2659f,
+//      -0.0973f, -0.7388f, -0.6294f, -0.7506f, -0.9889f, 0.7080f, 0.0880f, -0.0248f,
+//      0.8815f, 0.3149f, 0.0668f, -0.4228f, -0.8850f, 0.0654f, 0.1866f, -0.8231f,
+//      0.9515f, -0.1010f, 0.3055f, 0.6091f, 0.8471f, -0.2643f, -0.2524f, 0.0051f,
+//      -0.9161f, 0.1817f, -0.9544f, 0.9664f, -0.9283f, 0.0641f, 0.2203f, -0.4566f,
+//      0.9939f, -0.3684f, 0.3610f, -0.3358f, 0.7058f, 0.0779f, -0.5924f, -0.3633f,
+//      0.0304f, 0.8327f, 0.0060f, 0.1495f, -0.9548f, -0.8065f, -0.7363f, -0.8592f,
+//      -0.9867f, 0.7629f, 0.2969f, 0.1757f, 0.2586f, -0.1554f, -0.5450f, -0.3296f,
+//      0.0075f, -0.9652f, 0.8086f, -0.1231f, 0.1124f, -0.2777f, 0.4091f, -0.7615f,
+//      0.7235f, 0.6044f, 0.2692f, -0.2067f, -0.7993f, 0.1972f, -0.2400f, 0.8271f,
+//      -0.0676f, 0.9969f, 0.2129f, -0.3808f, 0.6144f, 0.4426f, -0.1054f, 0.1481f,
+//      -0.7204f, 0.1953f, 0.5176f, 0.9203f, -0.5080f, -0.0119f, 0.0775f, -0.2754f,
+//      -0.5738f, 0.8438f, -0.3832f, 0.0354f, -0.1252f, 0.0627f, 0.8787f, 0.0781f,
+//      0.0409f, -0.4946f, -0.0855f, -0.1822f, -0.2237f, 0.9882f, 0.1373f, -0.2795f,
+//      -0.9899f, 0.7308f, -0.7784f, 0.7151f, 0.9118f, -0.8336f, -0.0133f, -0.2039f,
+//      -0.1394f, 0.2967f, -0.1437f, -0.1720f, 0.1148f, 0.1680f, 0.9750f, -0.3740f,
+//      -0.9799f, -0.6423f, 0.0846f, -0.9437f, 0.2282f, -0.2336f, 0.0390f, -0.2100f,
+//      0.5036f, 0.6197f, -0.0862f, -0.9763f, -0.0167f, -0.0524f, 0.9740f, 0.1433f,
+//      -0.3203f, -0.8910f, -0.8981f, -0.3564f, 0.8119f, -0.9449f, 0.9762f, -0.9524f,
+//      -0.3477f, 0.9853f, 0.2716f, -0.9356f, -0.0130f, -0.3620f, 0.1561f, -0.1850f,
+//      0.3515f, -0.9542f, -0.1533f, -0.1714f, 0.2145f, 0.0633f, 0.2303f, 0.7615f,
+//      0.1269f, -0.2645f, -0.3332f, -0.0549f, 0.3007f, 0.4099f, -0.0848f, -0.0151f,
+//      -0.1012f, 0.0073f, -0.9460f, -0.1528f, -0.1057f, -0.2738f, 0.6139f, -0.9966f,
+//      -0.6367f, -0.7447f, -0.1497f, 0.8077f, -0.1831f, -0.6210f, -0.8092f, 0.8853f,
+//      0.8814f, 0.6907f, -0.1110f, 0.8732f, -0.7302f, 0.0512f, -0.1806f, 0.2345f,
+//      0.7230f, 0.6315f, -0.1467f, 0.9984f, 0.1652f, -0.0225f, -0.7866f, 0.1438f,
+//      -0.1376f, 0.9274f, -0.5747f, -0.9553f, 0.1266f, -0.1419f, -0.7931f, 0.1151f,
+//      0.0198f, -0.3491f, 0.4269f, 0.8990f, 0.7312f, -0.3052f, 0.2512f, -0.0957f,
+//      0.0593f, 0.1259f, -0.8737f, 0.9860f, 0.2696f, 0.4766f, 0.3463f, -0.0315f,
+//      0.9666f, 0.0141f, 0.6121f, -0.0339f, 0.9844f, 0.1921f, -0.9012f, 0.1097f,
+//      -0.9560f, -0.2892f, -0.8855f, 0.2145f, 0.0726f, 0.8682f, -0.1482f, 0.9529f,
+//      0.8500f, -0.0611f, 0.7121f, 0.8382f, -0.0007f, -0.9559f, -0.9868f, -0.9916f,
+//      -0.2818f, -0.2869f, 0.0582f, 0.2519f, 0.0024f, 0.1225f, 0.2525f, -0.9693f,
+//      0.9053f, 0.2988f, -0.6687f, 0.9702f, -0.5648f, -0.0998f, 0.3368f, -0.9773f,
+//      -0.9023f, -0.2172f, -0.1050f, 0.5856f, 0.2271f, 0.8620f, -0.0993f, -0.2223f,
+//      -0.2049f, 0.4892f, -0.5222f, -0.9908f, 0.3641f, 0.8315f, -0.6809f, 0.9588f,
+//      -0.4072f, -0.3041f, 0.7473f, 0.8007f, 0.7079f, 0.7385f, 0.4648f, 0.0785f,
+//      0.6499f, 0.9205f, 0.7790f, 0.9819f, 0.5908f, 0.5459f, 0.9206f, 0.2609f,
+//      0.5047f, -0.9116f, 0.2087f, -0.2924f, -0.0403f, 0.1722f, -0.0398f, -0.8534f,
+//      0.2932f, -0.0467f, 0.4758f, -0.2525f, 0.0883f, -0.2131f, 0.0019f, -0.5476f,
+//      0.0264f, 0.4317f, 0.1654f, 0.9330f, -0.2348f, -0.1628f, 0.1235f, -0.0188f,
+//      0.7218f, -0.9457f, 0.6322f, 0.0025f, 0.7549f, -0.5926f, -0.1748f, 0.6003f,
+//      -0.2664f, -0.0785f, -0.0902f, -0.5837f, 0.6162f, 0.2644f, -0.1987f, -0.2380f,
+//      0.0994f, 0.1211f, 0.3593f, 0.2705f, 0.8306f, 0.3293f, 0.0518f, 0.2511f,
+//      -0.0081f, -0.9695f, 0.0637f, 0.7831f, -0.2514f, 0.6340f, -0.3967f, 0.8890f,
+//      -0.9158f, -0.2154f, -0.2064f, -0.6473f, -0.2937f, 0.6980f, 0.3257f, 0.9740f,
+//      -0.7701f, 0.7724f, 0.5081f, 0.7332f, 0.3277f, 0.5873f, -0.4213f, 0.8806f), Array(1, 768))
+//    require(output[Tensor[Float]](13).almostEqual(expectPoolOutput, 2e-4))
+//
+//    val gradPoolOutput = Tensor[Float](Array[Float](99.0f, 78.0f, 61.0f, 16.0f, 73.0f,
+//      8.0f, 62.0f, 27.0f, 30.0f, 80.0f, 7.0f, 76.0f, 15.0f, 53.0f,
+//      80.0f, 27.0f, 44.0f, 77.0f, 75.0f, 65.0f, 47.0f, 30.0f, 84.0f, 86.0f, 18.0f,
+//      9.0f, 41.0f, 62.0f,
+//      1.0f, 82.0f, 16.0f, 78.0f, 5.0f, 58.0f, 0.0f, 80.0f, 4.0f, 36.0f, 51.0f, 27.0f,
+//      31.0f, 2.0f,
+//      68.0f, 38.0f, 83.0f, 19.0f, 18.0f, 7.0f, 30.0f, 62.0f, 11.0f, 67.0f, 65.0f, 55.0f,
+//      3.0f, 91.0f,
+//      78.0f, 27.0f, 29.0f, 33.0f, 89.0f, 85.0f, 7.0f, 16.0f, 94.0f, 14.0f, 90.0f, 31.0f,
+//      9.0f, 38.0f,
+//      47.0f, 16.0f, 5.0f, 34.0f, 45.0f, 59.0f, 24.0f, 13.0f, 31.0f, 32.0f, 76.0f, 44.0f,
+//      5.0f, 14.0f,
+//      47.0f, 94.0f, 82.0f, 0.0f, 7.0f, 86.0f, 16.0f, 64.0f, 8.0f, 90.0f, 44.0f, 37.0f,
+//      94.0f, 75.0f,
+//      5.0f, 22.0f, 52.0f, 69.0f, 82.0f, 60.0f, 91.0f, 29.0f, 88.0f, 97.0f, 92.0f, 79.0f,
+//      70.0f, 35.0f,
+//      20.0f, 49.0f, 72.0f, 32.0f, 82.0f, 13.0f, 92.0f, 18.0f, 52.0f, 81.0f, 22.0f, 58.0f,
+//      83.0f, 92.0f,
+//      83.0f, 49.0f, 4.0f, 82.0f, 36.0f, 41.0f, 20.0f, 32.0f, 10.0f, 31.0f, 15.0f, 22.0f,
+//      70.0f, 9.0f,
+//      63.0f, 94.0f, 14.0f, 66.0f, 57.0f, 19.0f, 64.0f, 8.0f, 8.0f, 71.0f, 12.0f, 20.0f,
+//      59.0f, 72.0f,
+//      74.0f, 86.0f, 72.0f, 32.0f, 15.0f, 69.0f, 35.0f, 62.0f, 43.0f, 0.0f, 2.0f, 2.0f,
+//      91.0f, 65.0f,
+//      45.0f, 87.0f, 1.0f, 23.0f, 50.0f, 86.0f, 19.0f, 54.0f, 24.0f, 64.0f, 77.0f, 73.0f,
+//      1.0f, 9.0f,
+//      64.0f, 23.0f, 39.0f, 68.0f, 81.0f, 91.0f, 36.0f, 97.0f, 87.0f, 69.0f, 36.0f, 18.0f,
+//      34.0f, 30.0f,
+//      77.0f, 97.0f, 35.0f, 29.0f, 1.0f, 82.0f, 20.0f, 0.0f, 34.0f, 78.0f, 51.0f, 30.0f,
+//      40.0f, 74.0f,
+//      69.0f, 79.0f, 53.0f, 19.0f, 46.0f, 26.0f, 85.0f, 89.0f, 57.0f, 17.0f, 94.0f, 64.0f,
+//      28.0f, 8.0f,
+//      14.0f, 64.0f, 31.0f, 45.0f, 5.0f, 26.0f, 41.0f, 83.0f, 28.0f, 75.0f, 35.0f, 83.0f,
+//      55.0f, 3.0f,
+//      23.0f, 3.0f, 95.0f, 2.0f, 54.0f, 93.0f, 38.0f, 18.0f, 71.0f, 64.0f, 35.0f, 37.0f,
+//      1.0f, 30.0f,
+//      91.0f, 31.0f, 93.0f, 6.0f, 7.0f, 35.0f, 78.0f, 9.0f, 7.0f, 89.0f, 90.0f, 54.0f, 31.0f,
+//      14.0f,
+//      4.0f, 85.0f, 74.0f, 68.0f, 96.0f, 81.0f, 67.0f, 79.0f, 17.0f, 87.0f, 11.0f, 30.0f,
+//      26.0f, 8.0f,
+//      51.0f, 61.0f, 84.0f, 52.0f, 74.0f, 25.0f, 9.0f, 31.0f, 39.0f, 59.0f, 22.0f, 80.0f,
+//      58.0f, 44.0f,
+//      15.0f, 15.0f, 95.0f, 77.0f, 81.0f, 99.0f, 57.0f, 46.0f, 19.0f, 45.0f, 92.0f, 83.0f,
+//      51.0f, 85.0f,
+//      16.0f, 96.0f, 26.0f, 94.0f, 30.0f, 93.0f, 78.0f, 14.0f, 98.0f, 8.0f, 57.0f, 81.0f,
+//      40.0f, 59.0f,
+//      58.0f, 10.0f, 6.0f, 58.0f, 73.0f, 54.0f, 93.0f, 33.0f, 24.0f, 18.0f, 20.0f, 46.0f,
+//      89.0f, 5.0f,
+//      76.0f, 45.0f, 79.0f, 24.0f, 38.0f, 12.0f, 1.0f, 5.0f, 17.0f, 11.0f, 88.0f, 56.0f,
+//      83.0f, 26.0f,
+//      42.0f, 57.0f, 87.0f, 48.0f, 8.0f, 10.0f, 39.0f, 3.0f, 44.0f, 68.0f, 94.0f, 55.0f,
+//      94.0f, 31.0f,
+//      26.0f, 96.0f, 13.0f, 76.0f, 54.0f, 83.0f, 10.0f, 33.0f, 97.0f, 64.0f, 36.0f, 60.0f,
+//      0.0f, 72.0f,
+//      24.0f, 26.0f, 5.0f, 29.0f, 63.0f, 18.0f, 55.0f, 76.0f, 6.0f, 45.0f, 85.0f, 46.0f,
+//      58.0f, 62.0f,
+//      2.0f, 22.0f, 95.0f, 76.0f, 55.0f, 38.0f, 5.0f, 49.0f, 58.0f, 15.0f, 86.0f, 48.0f,
+//      18.0f, 59.0f,
+//      95.0f, 53.0f, 18.0f, 36.0f, 36.0f, 67.0f, 9.0f, 47.0f, 0.0f, 72.0f, 81.0f, 64.0f,
+//      25.0f, 60.0f,
+//      36.0f, 78.0f, 5.0f, 13.0f, 73.0f, 69.0f, 77.0f, 33.0f, 64.0f, 3.0f, 94.0f, 45.0f,
+//      70.0f, 58.0f,
+//      52.0f, 99.0f, 67.0f, 11.0f, 65.0f, 21.0f, 8.0f, 31.0f, 47.0f, 77.0f, 78.0f, 82.0f,
+//      66.0f, 98.0f,
+//      98.0f, 84.0f, 20.0f, 59.0f, 57.0f, 33.0f, 53.0f, 96.0f, 1.0f, 70.0f, 90.0f, 78.0f,
+//      17.0f, 26.0f,
+//      32.0f, 31.0f, 89.0f, 49.0f, 69.0f, 41.0f, 76.0f, 79.0f, 38.0f, 79.0f, 81.0f, 38.0f,
+//      43.0f, 28.0f,
+//      17.0f, 16.0f, 73.0f, 54.0f, 45.0f, 34.0f, 90.0f, 67.0f, 69.0f, 70.0f, 90.0f, 18.0f,
+//      75.0f, 94.0f,
+//      29.0f, 33.0f, 94.0f, 93.0f, 29.0f, 47.0f, 55.0f, 21.0f, 70.0f, 16.0f, 15.0f, 83.0f,
+//      91.0f, 70.0f,
+//      71.0f, 41.0f, 13.0f, 61.0f, 0.0f, 46.0f, 65.0f, 86.0f, 80.0f, 48.0f, 3.0f, 77.0f,
+//      60.0f, 16.0f,
+//      11.0f, 1.0f, 97.0f, 57.0f, 9.0f, 50.0f, 16.0f, 61.0f, 65.0f, 30.0f, 69.0f, 54.0f,
+//      46.0f, 85.0f,
+//      10.0f, 58.0f, 97.0f, 82.0f, 42.0f, 38.0f, 34.0f, 18.0f, 43.0f, 56.0f, 76.0f, 7.0f,
+//      47.0f, 62.0f,
+//      93.0f, 51.0f, 24.0f, 36.0f, 15.0f, 64.0f, 49.0f, 0.0f, 6.0f, 26.0f, 4.0f, 81.0f,
+//      12.0f, 95.0f,
+//      63.0f, 98.0f, 61.0f, 94.0f, 91.0f, 75.0f, 62.0f, 51.0f, 2.0f, 96.0f, 19.0f, 7.0f,
+//      76.0f, 66.0f,
+//      56.0f, 0.0f, 57.0f, 31.0f, 86.0f, 74.0f, 37.0f, 64.0f, 51.0f, 12.0f, 59.0f, 25.0f,
+//      39.0f, 33.0f,
+//      24.0f, 7.0f, 68.0f, 81.0f, 69.0f, 69.0f, 81.0f, 20.0f, 86.0f, 1.0f, 74.0f, 70.0f,
+//      48.0f, 55.0f,
+//      51.0f, 97.0f, 39.0f, 0.0f, 30.0f, 42.0f, 87.0f, 71.0f, 4.0f, 62.0f, 25.0f, 17.0f,
+//      50.0f, 63.0f,
+//      17.0f, 73.0f, 1.0f, 22.0f, 33.0f, 27.0f, 82.0f, 29.0f, 2.0f, 62.0f, 55.0f, 10.0f,
+//      90.0f, 53.0f,
+//      88.0f, 54.0f, 9.0f, 75.0f, 49.0f, 16.0f, 66.0f, 73.0f, 29.0f, 60.0f, 1.0f, 77.0f,
+//      21.0f, 25.0f,
+//      60.0f, 26.0f, 14.0f, 68.0f, 31.0f, 16.0f, 50.0f, 70.0f, 92.0f, 16.0f, 67.0f, 50.0f,
+//      76.0f, 53.0f,
+//      61.0f, 70.0f, 49.0f, 69.0f, 20.0f, 6.0f, 21.0f, 38.0f, 94.0f, 13.0f, 92.0f, 15.0f,
+//      63.0f, 46.0f,
+//      19.0f, 99.0f, 18.0f, 61.0f, 22.0f, 46.0f, 60.0f, 86.0f, 15.0f, 33.0f, 93.0f, 78.0f,
+//      82.0f, 18.0f,
+//      12.0f, 40.0f, 62.0f, 36.0f, 7.0f, 88.0f, 58.0f, 78.0f, 58.0f, 35.0f, 10.0f, 60.0f,
+//      30.0f, 88.0f,
+//      28.0f, 76.0f, 98.0f, 93.0f, 89.0f, 42.0f, 96.0f, 42.0f, 91.0f, 45.0f, 48.0f, 35.0f,
+//      25.0f, 20.0f,
+//      94.0f, 38.0f, 73.0f, 56.0f, 76.0f, 5.0f, 64.0f, 97.0f, 9.0f, 52.0f, 46.0f, 15.0f,
+//      82.0f, 16.0f,
+//      3.0f, 21.0f, 67.0f, 66.0f, 92.0f, 83.0f, 36.0f, 4.0f, 33.0f, 54.0f, 27.0f, 47.0f,
+//      8.0f, 96.0f,
+//      26.0f, 89.0f, 74.0f, 16.0f, 22.0f, 68.0f, 67.0f, 36.0f, 85.0f, 16.0f, 1.0f, 96.0f,
+//      91.0f, 41.0f,
+//      72.0f, 95.0f, 73.0f, 31.0f, 86.0f, 3.0f, 52.0f, 6.0f, 62.0f, 29.0f, 30.0f, 90.0f),
+//      Array(1, 768))
+//    val gradO2 = Tensor[Float](1, 11, 768)
+//    val gradOutput = T.array(Array.fill[Tensor[Float]](12)(gradO2) :+ gradPoolOutput)
+//    val gradInput = layer.backward(input, gradOutput).toTable
+//
+//    val gradients = layer.parameters()._2
+//    require(Math.abs(gradients(2).apply(Array(1, 1)) - 151.8128) < 0.005)
+//    require(Math.abs(gradients(2).apply(Array(1, 2)) - (-249.5875)) < 0.015)
+//    require(Math.abs(gradients(0).apply(Array(1, 1)) - (-16.2635)) < 0.006)
+//    require(Math.abs(gradients(0).apply(Array(1, 2)) - (-18.1143)) < 0.016)
+//    require(Math.abs(gradients(5).apply(Array(1, 1)) - 0.0743) < 5e-5)
+//    require(Math.abs(gradients(5).apply(Array(1, 2)) - 0.6531) < 7e-5)
+//  }
+
   "Bert gelu" should "be able to generate correct result" in {
     val layer = BERT[Float](vocab = 100,
       hiddenSize = 10,
@@ -1069,7 +1351,7 @@ class BertSpec extends ZooSpecHelper {
       intermediateSize = 64,
       hiddenPDrop = 0.1,
       attnPDrop = 0.1,
-      seqLen = 10,
+      maxPositionLen = 10,
       outputAllBlock = false)
 
     val xValue = Tensor[Float](Array[Float](2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f,
@@ -1109,7 +1391,7 @@ class BERTSerialTest extends ModuleSerializationTest {
       intermediateSize = 1024,
       hiddenPDrop = 0.1,
       attnPDrop = 0.1,
-      seqLen = 6,
+      maxPositionLen = 6,
       outputAllBlock = false)
     val inputIds = Tensor[Float](2, 6).rand()
     val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1),
