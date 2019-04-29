@@ -31,6 +31,12 @@ class ExpandDim[T: ClassTag](
       val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
 
+  override def clearState() : this.type = {
+    output = Tensor[T]()
+    gradInput = Tensor[T]()
+    this
+  }
+
   override def computeOutputShape(inputShape: Shape): Shape = {
     val output = inputShape.toSingle().toArray.toBuffer
     output.insert(dim, 1)
