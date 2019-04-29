@@ -101,9 +101,10 @@ class LarsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = Optimizer(module, generateData(), MSECriterion[Float]())
     val epochs = 6
     optimizer
-      .setOptimMethods(Lars.createOptimForModule(module, learningRate = 0.02, learningRateDecay = 0.1))
-      .setEndWhen(Trigger.maxEpoch(epochs))
-      .optimize()
+       .setOptimMethods(Lars.createOptimForModule(module, learningRate = 0.02, learningRateDecay
+          = 0.1))
+       .setEndWhen(Trigger.maxEpoch(epochs))
+       .optimize()
     (1 to 10).foreach(i => {
       val tensor = Tensor[Float](2).rand()
       val v1 = tensor.valueAt(1)
