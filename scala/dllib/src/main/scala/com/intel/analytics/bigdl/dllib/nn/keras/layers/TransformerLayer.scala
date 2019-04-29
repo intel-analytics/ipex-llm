@@ -82,9 +82,11 @@ private[layers] class TransformerLayer[T: ClassTag](
       modelOutput(i) = output
     }
 
+    val output = pooler(modelOutput.last, hiddenSize)
+
     val model = if (outputAllBlock) {
-      Model(inputs.toArray, modelOutput)
-    } else Model(inputs.toArray, modelOutput.last)
+      Model(inputs.toArray, modelOutput :+ output)
+    } else Model(inputs.toArray, Array(modelOutput.last, output))
 
     model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
@@ -191,6 +193,12 @@ private[layers] class TransformerLayer[T: ClassTag](
     val p = AutoGrad.contiguous(Permute[T](Array(2, 1, 3)).from(x))
     val sizes = p.getOutputShape().toSingle().toArray
     Reshape(sizes.drop(1).dropRight(2) ++ Array(sizes.last * sizes(sizes.length - 2))).from(p)
+  }
+
+  def pooler(x: Variable[T], hiddenSize: Int): Variable[T] = {
+    val firstToken = Select(1, 0).from(x)
+    val poolerOutput = Dense(hiddenSize).from(firstToken)
+    Activation[Float]("tanh").from(poolerOutput)
   }
 }
 

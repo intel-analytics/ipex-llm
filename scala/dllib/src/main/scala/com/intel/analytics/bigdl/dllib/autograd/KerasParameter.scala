@@ -35,6 +35,12 @@ private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shap
   extends KerasLayer[Activity, Activity, T](inputShape)
     with InternalWithoutInput with Net {
 
+  override def clearState() : this.type = {
+    output = Tensor[T]()
+    gradInput = Tensor[T]()
+    this
+  }
+
   def setWeight(tensor: Tensor[T]): Unit = {
     this.labor.asInstanceOf[InternalParameter[T]].setWeight(tensor)
   }
@@ -87,6 +93,7 @@ class Parameter[T: ClassTag] private[zoo](val inputShape: Shape,
 }
 
 object Parameter {
+
   /**
    * Create a trainable Variable
    */

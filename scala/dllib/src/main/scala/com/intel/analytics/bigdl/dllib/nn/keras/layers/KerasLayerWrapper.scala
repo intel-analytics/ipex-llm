@@ -30,6 +30,18 @@ abstract class LayerWrapperByForward[T: ClassTag](
       val batchInputShape: Shape)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](batchInputShape) with Net {
 
+  override def clearState() : this.type = {
+    if (output.isInstanceOf[Tensor[_]]) {
+      output = Tensor[T]()
+    }
+
+    if (gradInput.isInstanceOf[Tensor[_]]) {
+      gradInput = Tensor[T]()
+    }
+
+    this
+  }
+
   override def computeOutputShape(calcInputShape: Shape): Shape = {
     LayerWrapperByForward.computeOutputShape[T](doBuild(calcInputShape), calcInputShape)
   }
