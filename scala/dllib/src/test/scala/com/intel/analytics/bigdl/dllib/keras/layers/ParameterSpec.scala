@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.MSECriterion
+import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.Sequential
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -122,5 +122,28 @@ class ParameterSpec extends KerasBaseSpec {
     }
     assert(seq.getWeightsBias()(0).almostEqual(cmodel.getWeightsBias()(1), 1e-4))
     assert(seq.getWeightsBias()(1).almostEqual(cmodel.getWeightsBias()(0), 1e-4))
+  }
+
+  "Parameter save/load" should "be able to work" in {
+    val w = Parameter[Float](Shape(1, 10),
+      initWeight = Tensor.ones[Float](10).view(1, 10))
+    val b = Parameter[Float](Shape(1, 10),
+      initWeight = Tensor[Float](10).view(1, 10))
+    val x = Variable[Float](Shape(1, 10))
+    val z = x * w
+    val model = Model[Float](input = x, output = z)
+    val input2 = Tensor[Float](Array(1, 10)).rand
+    val out = model.forward(input2.clone()).toTensor[Float].clone()
+    val gradOutput = Tensor[Float](out.size())
+    val gradInput = model.backward(input2, gradOutput.clone()).toTensor[Float].clone()
+
+    val tmpFile = ZooSpecHelper.createTmpFile()
+    val absPath = tmpFile.getAbsolutePath
+    model.saveModule(absPath, overWrite = true)
+    val model2 = Module.loadModule[Float](absPath)
+    val output2 = model2.forward(input2).toTensor[Float]
+    val gradInput2 = model2.backward(input2, gradOutput).toTensor[Float]
+    require(out.almostEqual(output2, 1e-8))
+    require(gradInput.almostEqual(gradInput2, 1e-9))
   }
 }
