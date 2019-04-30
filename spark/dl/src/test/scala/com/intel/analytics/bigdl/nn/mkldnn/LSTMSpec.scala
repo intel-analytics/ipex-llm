@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.mkl.{AlgKind, Direction, Memory, RNNCellFlags}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.{DenseTensor, Tensor}
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 class LSTMSpec extends FlatSpec with Matchers{
-  "LSTM Unidirectional updateOutput" should "work correctly" in {
-    val seqLength = 3
+  "LSTM UnidirectionalInference updateOutput" should "work correctly" in {
+    val seqLength = 6
     val batchSize = 2
     val inputSize = 3
     val hiddenSize = 5
@@ -115,7 +116,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     input = input.resize(Array(batchSize, seqLength, inputSize))
     val nn_model = nn.Recurrent().add(nn.LSTM2(inputSize, hiddenSize))
     val nn_output = nn_model.forward(input).toTensor.transpose(1, 2)
-    println("NN output\n" + nn_output)
+    println("NN output Uni Left2Right\n" + nn_output)
 
     val i2g1: Table = nn_model.getParametersTable().get("i2g1").get
     var i2g1_w: Tensor[Float] = i2g1.get("weight").get
@@ -166,7 +167,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     // println(h2g4_b.resize(1, h2g4_b.size(1)))
   }
 
-  "LSTM BidirectionalConcat updateOutput" should "work correctly" in {
+  "LSTM BidirectionalConcatInference updateOutput" should "work correctly" in {
     val seqLength = 3
     val batchSize = 2
     val inputSize = 3
@@ -241,10 +242,17 @@ class LSTMSpec extends FlatSpec with Matchers{
     lstm1.initMemoryDescs(Array(inputFormat))
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
-    println("DNN output Bi Concat Left2Right\n" + output1)
+    println("DNN output Bi Concat\n" + output1)
+
+    input = input.resize(Array(batchSize, seqLength, inputSize))
+    val nn_model = nn.BiRecurrent[Float](nn.JoinTable[Float](3, 0)
+      .asInstanceOf[AbstractModule[Table, Tensor[Float], Float]])
+      .add(nn.LSTM2(inputSize, hiddenSize))
+    val nn_output = nn_model.forward(input).toTensor.transpose(1, 2)
+    println("NN output Bi Concat\n" + nn_output)
   }
 
-  "LSTM BidirectionalSum updateOutput" should "work correctly" in {
+  "LSTM BidirectionalSumInference updateOutput" should "work correctly" in {
     val seqLength = 3
     val batchSize = 2
     val inputSize = 3
@@ -319,6 +327,11 @@ class LSTMSpec extends FlatSpec with Matchers{
     lstm1.initMemoryDescs(Array(inputFormat))
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
-    println("DNN output Bi Concat Left2Right\n" + output1)
+    println("DNN output Bi Sum\n" + output1)
+
+    input = input.resize(Array(batchSize, seqLength, inputSize))
+    val nn_model = nn.BiRecurrent(merge = nn.CAddTable()).add(nn.LSTM2(inputSize, hiddenSize))
+    val nn_output = nn_model.forward(input).toTensor.transpose(1, 2)
+    println("NN output Bi Sum\n" + nn_output)
   }
 }
