@@ -32,31 +32,31 @@ import scala.reflect.ClassTag
  * An implementation of LARS https://arxiv.org/abs/1708.03888
  * Lars.createOptimForModule is recommended to be used to create LARS optimizers for multiple layers
  *
- * @param lrScheduleOwner      if this optimizer owns the learning rate scheduler.
- *                             A scheduler may be shared by multiple LARS scheduler
- * @param trust                the trust on the learning rate scale, should be in 0 to 1
- * @param learningRate         learning rate
- * @param learningRateDecay    learning rate decay
- * @param weightDecay          weight decay
- * @param momentum             momentum
- * @param learningRateSchedule the learning rate scheduler
+ * @param lrScheduleOwner       if this optimizer owns the learning rate scheduler.
+ *                              A scheduler may be shared by multiple LARS scheduler
+ * @param trust                 the trust on the learning rate scale, should be in 0 to 1
+ * @param _learningRate         learning rate
+ * @param _learningRateDecay    learning rate decay
+ * @param _weightDecay          weight decay
+ * @param _momentum             momentum
+ * @param _learningRateSchedule the learning rate scheduler
  * @tparam T
  */
-class Lars[@specialized(Float, Double) T: ClassTag](
-                                                      lrScheduleOwner: Boolean,
-                                                      trust: Double = 1.0,
-                                                      learningRate: Double = 1e-3,
-                                                      learningRateDecay: Double = 0.01,
-                                                      weightDecay: Double = 0.0005,
-                                                      momentum: Double = 0.5,
-                                                      learningRateSchedule: LearningRateSchedule
-                                                      = Default()
-                                                   )(implicit ev: TensorNumeric[T])
-   extends OptimMethod[T] {
+class Lars[T: ClassTag](
+                          lrScheduleOwner: Boolean,
+                          trust: Double = 1.0,
+                          _learningRate: Double = 1e-3,
+                          _learningRateDecay: Double = 0.01,
+                          _weightDecay: Double = 0.0005,
+                          _momentum: Double = 0.5,
+                          _learningRateSchedule: LearningRateSchedule
+                          = Default()
+                       )(implicit ev: TensorNumeric[T])
+   extends SGD[T](_learningRate, _learningRateDecay, _weightDecay, _momentum,
+     learningRateSchedule = _learningRateSchedule) {
   @transient
   private var buffer: Tensor[T] = null
-  private val sgd = new SGD[T](learningRate, learningRateDecay, weightDecay,
-    momentum, learningRateSchedule = this.learningRateSchedule)
+
 
   /**
    * An implementation of LARS https://arxiv.org/abs/1708.03888
@@ -71,7 +71,6 @@ class Lars[@specialized(Float, Double) T: ClassTag](
 
     val weightDecay = this.weightDecay
     val momentum = this.momentum
-    val state = sgd.state
     val (fx, dfdx) = feval(parameter)
     if (buffer == null) buffer = Tensor[T]().resizeAs(dfdx)
 
@@ -81,9 +80,9 @@ class Lars[@specialized(Float, Double) T: ClassTag](
       } else {
         Tensor[T]().resizeAs(dfdx).zero()
       }
-    if (lrScheduleOwner) {
-      learningRateSchedule.updateHyperParameter(sgd)
-    }
+
+    learningRateSchedule.updateHyperParameter(this)
+
     val globalLr = -learningRateSchedule.currentRate * trust
 
     val normGradient = ev.sqrt(dfdx.sumSquare())
@@ -95,11 +94,14 @@ class Lars[@specialized(Float, Double) T: ClassTag](
     scale.mul(ev.fromType[Double](weightDecay)).add(normGradient).div(normParam)
 
     val raw_scale_value = scale.value()
-    val scale_value = if (ev.isFinite(raw_scale_value)
-       && ev.isGreater(raw_scale_value, ev.fromType[Double](0.001))) {
-      raw_scale_value
-    } else {
+    val scale_value = if (ev.isInf(raw_scale_value)) {
+      ev.fromType[Double](10000.0)
+    } else if (ev.nearlyEqual(raw_scale_value, ev.fromType[Double](0.0), 0.0001)) {
+      ev.fromType[Double](1e-4)
+    } else if (ev.isNan(raw_scale_value)) {
       ev.fromType[Double](1.0)
+    } else {
+      raw_scale_value
     }
 
 
@@ -116,15 +118,6 @@ class Lars[@specialized(Float, Double) T: ClassTag](
     state("v") = _v
 
     (parameter, Array(fx))
-  }
-
-  override def loadFromTable(config: Table): this.type = {
-    sgd.loadFromTable(config)
-    this
-  }
-
-  override def clearHistory(): Unit = {
-    sgd.clearHistory()
   }
 
   /**
@@ -152,11 +145,6 @@ class Lars[@specialized(Float, Double) T: ClassTag](
       ""
     }
   }
-
-  override def updateHyperParameter(): Unit = {
-    this.learningRateSchedule.updateHyperParameter(sgd)
-  }
-
 
   override def updateHyperParameter(config: Table, state: Table): Unit = {
     val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
@@ -215,10 +203,9 @@ object Lars {
    * @param lrScheGenerator   the learning rate schedule generator for each sub-module.
    *                          Generator accepts the sub-module that the schedule is linked to.
    *                          It should return a tuple (learningRateSchedule, isOwner), where
-   *                          isOwner
-   *                          indicates whether the corresponding LARS optimizer is responsible for
-   *                          updating the learning rate (multiple LARS optimizers may share one
-   *                          learning rate scheduler)
+   *                          isOwner indicates whether the corresponding LARS optimizer is
+   *                          responsible for showing the learning rate in  getHyperParameter
+   *                          (multiple LARS optimizers may share one learning rate scheduler)
    * @param trust             the trust on the learning rate scale, should be in 0 to 1
    * @param learningRate      learning rate
    * @param learningRateDecay learning rate decay

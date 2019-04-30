@@ -45,7 +45,7 @@ class LarsSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val start = System.currentTimeMillis()
   "lars" should "perform well on rosenbrock function" in {
     val x = Tensor[Double](2).fill(0)
-    val optm = new Lars[Double](true, learningRate = 0.1, learningRateDecay = 0.09)
+    val optm = new Lars[Double](true, _learningRate = 0.1, _learningRateDecay = 0.09)
     var fx = new ArrayBuffer[Double]
     for (i <- 1 to 10001) {
       val result = optm.optimize(TestUtils.rosenBrock, x)
