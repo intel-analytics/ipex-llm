@@ -88,56 +88,48 @@ class LSTM2[T : ClassTag] (
 
     val lineari2g1_m = Linear(inputSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g1")
-    lineari2g1_m.setInitMethod(weightInitMethod, biasInitMethod1)
-    val pi2g1 = lineari2g1_m.parameters()._1
+    // lineari2g1_m.setInitMethod(weightInitMethod, biasInitMethod1)
     val lineari2g1 = lineari2g1_m.inputs(input1)
 
     val lineari2g2_m = Linear(inputSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g2")
-    lineari2g2_m.setInitMethod(weightInitMethod, biasInitMethod1)
-    val pi2g2 = lineari2g2_m.parameters()._1
+    // lineari2g2_m.setInitMethod(weightInitMethod, biasInitMethod1)
     val lineari2g2 = lineari2g2_m.inputs(input1)
 
     val lineari2g3_m = Linear(inputSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g3")
-    lineari2g3_m.setInitMethod(weightInitMethod, biasInitMethod1)
-    val pi2g3 = lineari2g1_m.parameters()._1
+    // lineari2g3_m.setInitMethod(weightInitMethod, biasInitMethod1)
     val lineari2g3 = lineari2g3_m.inputs(input1)
 
     val lineari2g4_m = Linear(inputSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g4")
-    lineari2g4_m.setInitMethod(weightInitMethod, biasInitMethod1)
-    val pi2g4 = lineari2g4_m.parameters()._1
+    // lineari2g4_m.setInitMethod(weightInitMethod, biasInitMethod1)
     val lineari2g4 = lineari2g4_m.inputs(input1)
 
     i2g = JoinTable(1, 1).inputs(lineari2g1, lineari2g2, lineari2g3, lineari2g4)
 
     val linearh2g1_m = Linear(hiddenSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g1")
-    // linearh2g1_m.setInitMethod(biasInitMethod0)
-    linearh2g1_m.setInitMethod(weightInitMethod, biasInitMethod0)
-    val ph2g1 = linearh2g1_m.parameters()._1
+    linearh2g1_m.setInitMethod(biasInitMethod0)
+    // linearh2g1_m.setInitMethod(weightInitMethod, biasInitMethod0)
     val linearh2g1 = linearh2g1_m.inputs(input2)
 
     val linearh2g2_m = Linear(hiddenSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g2")
-    // linearh2g2_m.setInitMethod(biasInitMethod0)
-    linearh2g2_m.setInitMethod(weightInitMethod, biasInitMethod0)
-    val ph2g2 = linearh2g2_m.parameters()._1
+    linearh2g2_m.setInitMethod(biasInitMethod0)
+    // linearh2g2_m.setInitMethod(weightInitMethod, biasInitMethod0)
     val linearh2g2 = linearh2g2_m.inputs(input2)
 
     val linearh2g3_m = Linear(hiddenSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g3")
-    // linearh2g3_m.setInitMethod(biasInitMethod0)
-    linearh2g3_m.setInitMethod(weightInitMethod, biasInitMethod0)
-    val ph2g3 = linearh2g3_m.parameters()._1
+    linearh2g3_m.setInitMethod(biasInitMethod0)
+    // linearh2g3_m.setInitMethod(weightInitMethod, biasInitMethod0)
     val linearh2g3 = linearh2g3_m.inputs(input2)
 
     val linearh2g4_m = Linear(hiddenSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g4")
-    // linearh2g4_m.setInitMethod(biasInitMethod0)
-    linearh2g4_m.setInitMethod(weightInitMethod, biasInitMethod0)
-    val ph2g4 = linearh2g4_m.parameters()._1
+    linearh2g4_m.setInitMethod(biasInitMethod0)
+    // linearh2g4_m.setInitMethod(weightInitMethod, biasInitMethod0)
     val linearh2g4 = linearh2g4_m.inputs(input2)
 
     h2g = JoinTable(1, 1).inputs(linearh2g1, linearh2g2, linearh2g3, linearh2g4)

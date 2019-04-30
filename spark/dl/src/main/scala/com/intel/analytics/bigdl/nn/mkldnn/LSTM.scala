@@ -269,15 +269,11 @@ class LSTM(
     src_i.setMemoryData(HeapData(src_i.size(), Memory.Format.ldsnc), realSrc_iter, runtime)
     dst_i.setMemoryData(HeapData(dst_i.size(), Memory.Format.ldsnc), realDst_iter, runtime)
 
-    println("before sync")
-
     weight.sync()
     weight_i.sync()
     bias.sync()
     src_i.sync()
     dst_i.sync()
-
-    println("after sync")
 
     val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
       realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
