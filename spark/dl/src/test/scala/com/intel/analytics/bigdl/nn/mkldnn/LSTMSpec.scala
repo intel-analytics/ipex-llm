@@ -280,6 +280,7 @@ class LSTMSpec extends FlatSpec with Matchers{
 
     var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
 
+    /*
     var initWeight = Tensor[Float](Array(common_n_layers, 1, inputSize, lstm_n_gates, hiddenSize))
     for (a <- 1 to common_n_layers; b <- 1 to 1;
          i <- 1 to inputSize; j <- 1 to lstm_n_gates; k <- 1 to hiddenSize)
@@ -306,8 +307,8 @@ class LSTMSpec extends FlatSpec with Matchers{
     // val initBias = Tensor[Float](common_n_layers, 1, lstm_n_gates, hiddenSize).rand()
     // println("initBias")
     // println(initBias)
+    */
 
-    /*
     var initWeight = Tensor[Float](
       Array(common_n_layers, 1,
         inputSize, lstm_n_gates, hiddenSize)).rand()
@@ -319,7 +320,6 @@ class LSTMSpec extends FlatSpec with Matchers{
     var initBias = Tensor[Float](
       Array(common_n_layers, 1,
         lstm_n_gates, hiddenSize)).rand()
-    */
 
     val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
@@ -350,8 +350,8 @@ class LSTMSpec extends FlatSpec with Matchers{
     val i2g1: Table = nn_model.getParametersTable().get("i2g1").get
     var i2g1_w: Tensor[Float] = i2g1.get("weight").get
     val i2g1_b: Tensor[Float] = i2g1.get("bias").get
-    i2g1_w.copy(initWeight(4).transpose(1, 2))
-    i2g1_b.copy(initBias(4))
+    i2g1_w.copy(initWeight(1).transpose(1, 2))
+    i2g1_b.copy(initBias(1))
 
     val i2g2: Table = nn_model.getParametersTable().get("i2g2").get
     var i2g2_w: Tensor[Float] = i2g2.get("weight").get
@@ -368,13 +368,13 @@ class LSTMSpec extends FlatSpec with Matchers{
     val i2g4: Table = nn_model.getParametersTable().get("i2g4").get
     val i2g4_w: Tensor[Float] = i2g4.get("weight").get
     val i2g4_b: Tensor[Float] = i2g4.get("bias").get
-    i2g4_w.copy(initWeight(1).transpose(1, 2))
-    i2g4_b.copy(initBias(1))
+    i2g4_w.copy(initWeight(4).transpose(1, 2))
+    i2g4_b.copy(initBias(4))
 
     val h2g1: Table = nn_model.getParametersTable().get("h2g1").get
     val h2g1_w: Tensor[Float] = h2g1.get("weight").get
     val h2g1_b: Tensor[Float] = h2g1.get("bias").get
-    h2g1_w.copy(initWeightIter(4).transpose(1, 2))
+    h2g1_w.copy(initWeightIter(1).transpose(1, 2))
     h2g1_b.copy(Tensor(hiddenSize).zero())
 
     val h2g2: Table = nn_model.getParametersTable().get("h2g2").get
@@ -392,7 +392,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     val h2g4: Table = nn_model.getParametersTable().get("h2g4").get
     val h2g4_w: Tensor[Float] = h2g4.get("weight").get
     val h2g4_b: Tensor[Float] = h2g4.get("bias").get
-    h2g4_w.copy(initWeightIter(1).transpose(1, 2))
+    h2g4_w.copy(initWeightIter(4).transpose(1, 2))
     h2g4_b.copy(Tensor(hiddenSize).zero())
 
     val nn_output = nn_model.forward(input).toTensor.transpose(1, 2)

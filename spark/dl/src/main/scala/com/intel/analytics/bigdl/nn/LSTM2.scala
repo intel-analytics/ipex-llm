@@ -82,9 +82,9 @@ class LSTM2[T : ClassTag] (
     var i2g: ModuleNode[T] = null
     var h2g: ModuleNode[T] = null
 
-    val weightInitMethod = Ones
+    // val weightInitMethod = Ones
     val biasInitMethod0 = Zeros
-    val biasInitMethod1 = Ones
+    // val biasInitMethod1 = Ones
 
     val lineari2g1_m = Linear(inputSize, hiddenSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g1")
