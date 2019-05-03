@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.utils.{Engine, EngineType, Shape, Table}
-import com.intel.analytics.zoo.pipeline.api.keras.optimizers.Adam
+import com.intel.analytics.zoo.pipeline.api.keras.optimizers.{Adam, AdamWeightDecay}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -92,6 +92,10 @@ object EngineRef {
 
 object SGDRef {
   def getstate[T: ClassTag](instance: Adam[T]): Table = {
+    KerasUtils.invokeMethod(instance, "state").asInstanceOf[Table]
+  }
+
+  def getstate[T: ClassTag](instance: AdamWeightDecay[T]): Table = {
     KerasUtils.invokeMethod(instance, "state").asInstanceOf[Table]
   }
 }
