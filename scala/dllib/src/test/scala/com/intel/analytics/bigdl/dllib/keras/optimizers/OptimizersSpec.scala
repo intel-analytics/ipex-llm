@@ -17,6 +17,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.optimizers
 
 import com.intel.analytics.bigdl.nn.{BCECriterion, Linear, Sequential, Sigmoid}
 import com.intel.analytics.bigdl.optim.SGD._
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -81,4 +82,36 @@ class OptimizersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  def rosenBrock(x: Tensor[Float]): (Float, Tensor[Float]) = {
+    val g = Tensor[Float](Array[Float](0.0829f, 0.3558f, 0.2875f, 0.1609f, 0.0620f,
+      0.0622f, 0.0606f, 0.2673f, 0.1962f, 0.1967f,
+      0.0238f, 0.3107f, 0.2626f, 0.0869f, 0.0572f, 0.0576f, 0.0858f, 0.1851f, 0.1470f,
+      0.1138f,
+      0.0394f, 0.1638f, 0.1320f, 0.0755f, 0.0284f, 0.0286f, 0.0270f, 0.1243f, 0.0910f,
+      0.0921f,
+      0.0514f, 0.2943f, 0.2419f, 0.1141f, 0.0523f, 0.0526f, 0.0618f, 0.2040f, 0.1537f,
+      0.1422f
+    ), Array(4, 10))
+    (x.size(1), g)
+  }
+
+  "AdamWeightDecay " should "be able to generate correct result" in {
+    val w = Tensor[Float](Array[Float](0.2418f, 0.2625f, -0.0741f, 0.2905f, -0.0693f, 0.0638f,
+      -0.1540f, 0.1857f, 0.2788f, -0.2320f,
+      0.2749f, 0.0592f, 0.2336f, 0.0428f, 0.1525f, -0.0446f, 0.2438f, 0.0467f,
+      -0.1476f, 0.0806f,
+      -0.1457f, -0.0371f, -0.1284f, 0.2098f, -0.2496f, -0.1458f, -0.0893f, -0.1901f,
+      0.0298f, -0.3123f,
+      0.2856f, -0.2686f, 0.2441f, 0.0526f, -0.1027f, 0.1954f, 0.0493f, 0.2555f,
+      0.0346f, -0.0997f), Array(4, 10))
+    val expectW = w.clone()
+    val optm = new AdamWeightDecay[Float](lr = 5e-5, beta1 = 0.9, beta2 = 0.999,
+      epsilon = 1e-6, weightDecay = 0.01, total = 343, schedule = "linear",
+      warmupPortion = 0.1)
+    optm.optimize(rosenBrock, w)
+    optm.optimize(rosenBrock, w)
+    optm.optimize(rosenBrock, w)
+
+    require(w.almostEqual(expectW, 2e-6))
+  }
 }
