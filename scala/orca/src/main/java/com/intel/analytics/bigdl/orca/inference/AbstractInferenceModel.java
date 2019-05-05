@@ -60,16 +60,25 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadTF(modelPath, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
   }
 
-  public void loadTF(String modelPath, String modelType) {
-    doLoadTF(modelPath, modelType);
+  public void loadTF(String modelPath, String objectDetectionModelType) {
+    doLoadTF(modelPath, objectDetectionModelType);
   }
 
   public void loadTF(String modelPath, String pipelineConfigFilePath, String extensionsConfigFilePath) {
     doLoadTF(modelPath, pipelineConfigFilePath, extensionsConfigFilePath);
   }
 
-  public void loadTF(String modelPath, String modelType, String pipelineConfigFilePath, String extensionsConfigFilePath) {
-    doLoadTF(modelPath, modelType, pipelineConfigFilePath, extensionsConfigFilePath);
+  public void loadTF(String modelPath, String objectDetectionModelType, String pipelineConfigFilePath, String extensionsConfigFilePath) {
+    doLoadTF(modelPath, objectDetectionModelType, pipelineConfigFilePath, extensionsConfigFilePath);
+  }
+
+  public void loadTF(String modelPath, String imageClassificationModelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale) {
+    doLoadTF(modelPath, imageClassificationModelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale);
+  }
+
+  public void dloadTFAsCalibratedOpenVINO(String modelPath, String modelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale,
+                                          String networkType, String validationFilePath, int subset, String opencvLibPath) {
+    doLoadTFAsCalibratedOpenVINO(modelPath, modelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale, networkType, validationFilePath, subset, opencvLibPath);
   }
 
   public void loadOpenVINO(String modelFilePath, String weightFilePath) {
@@ -108,5 +117,17 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
   @Override
   public String toString() {
     return super.toString();
+  }
+
+  public static void optimizeTF(String modelPath, String objectDetectionModelType, String pipelineConfigPath, String extensionsConfigPath, String outputDir) {
+    InferenceModel.doOptimizeTF(modelPath, objectDetectionModelType, pipelineConfigPath, extensionsConfigPath, outputDir);
+  }
+
+  public static void optimizeTF(String modelPath, String imageClassificationModelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String outputDir) {
+    InferenceModel.doOptimizeTF(modelPath, imageClassificationModelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale, outputDir);
+  }
+
+  public static void calibrateTF(String modelPath, String networkType, String validationFilePath, int subset, String opencvLibPath, String outputDir) {
+    InferenceModel.doCalibrateTF(modelPath, networkType, validationFilePath, subset, opencvLibPath, outputDir);
   }
 }
