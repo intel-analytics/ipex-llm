@@ -18,10 +18,10 @@ package com.intel.analytics.zoo.pipeline.inference
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
-import java.util.{List => JList}
+import java.util.{List => JList, ArrayList}
 
 import scala.reflect.ClassTag
+import scala.collection.JavaConverters._
 
 object PythonInferenceModel {
 
@@ -74,10 +74,49 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
 
   def inferenceModelOpenVINOLoadTF(model: InferenceModel,
                                    modelPath: String,
-                                   modelType: String,
+                                   objectDetectionModelType: String,
                                    pipelineConfigFilePath: String,
                                    extensionsConfigFilePath: String): Unit = {
-    model.doLoadTF(modelPath, modelType, pipelineConfigFilePath, extensionsConfigFilePath)
+    model.doLoadTF(modelPath, objectDetectionModelType,
+      pipelineConfigFilePath, extensionsConfigFilePath)
+  }
+
+  def inferenceModelOpenVINOLoadTF(model: InferenceModel,
+                                   modelPath: String,
+                                   imageClassificationModelType: String,
+                                   checkpointPath: String,
+                                   inputShape: JList[Int],
+                                   ifReverseInputChannels: Boolean,
+                                   meanValues: JList[Double],
+                                   scale: Double
+                                  ): Unit = {
+    require(inputShape != null, "inputShape can not be null")
+    require(meanValues != null, "meanValues can not be null")
+    require(scale != null, "scale can not be null")
+    model.doLoadTF(modelPath, imageClassificationModelType,
+      checkpointPath, inputShape.asScala.toArray,
+      ifReverseInputChannels, meanValues.asScala.toArray.map(_.toFloat), scale.toFloat)
+  }
+
+  def inferenceModelOpenVINOLoadTFAsCalibratedOpenVINO(model: InferenceModel,
+                                                       modelPath: String,
+                                                       modelType: String,
+                                                       checkpointPath: String,
+                                                       inputShape: JList[Int],
+                                                       ifReverseInputChannels: Boolean,
+                                                       meanValues: JList[Double],
+                                                       scale: Double,
+                                                       networkType: String,
+                                                       validationFilePath: String,
+                                                       subset: Int,
+                                                       opencvLibPath: String): Unit = {
+    require(inputShape != null, "inputShape can not be null")
+    require(meanValues != null, "meanValues can not be null")
+    require(scale != null, "scale can not be null")
+    model.doLoadTFAsCalibratedOpenVINO(modelPath, modelType,
+      checkpointPath, inputShape.asScala.toArray,
+      ifReverseInputChannels, meanValues.asScala.toArray.map(_.toFloat), scale.toFloat,
+      networkType, validationFilePath, subset, opencvLibPath)
   }
 
   def inferenceModelTensorFlowLoadTF(

@@ -55,10 +55,37 @@ object InferenceModelFactory extends InferenceSupportive {
   def loadOpenVINOModelForTF(modelPath: String,
                              modelType: String,
                              pipelineConfigPath: String,
-                             extensionsConfigPath: String,
-                             deviceType: DeviceTypeEnumVal): OpenVINOModel = {
+                             extensionsConfigPath: String): OpenVINOModel = {
     OpenVinoInferenceSupportive.loadTensorflowModel(
-      modelPath, modelType, pipelineConfigPath, extensionsConfigPath, deviceType)
+      modelPath, modelType, pipelineConfigPath, extensionsConfigPath)
+  }
+
+  def loadOpenVINOModelForTF(modelPath: String,
+                             imageClassificationModelType: String,
+                             checkpointPath: String,
+                             inputShape: Array[Int],
+                             ifReverseInputChannels: Boolean,
+                             meanValues: Array[Float],
+                             scale: Float): OpenVINOModel = {
+    OpenVinoInferenceSupportive.loadTensorflowModel(modelPath, imageClassificationModelType,
+      checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale)
+  }
+
+  def loadCalibratedOpenVINOModelForTF(modelPath: String,
+                                       modelType: String,
+                                       checkpointPath: String,
+                                       inputShape: Array[Int],
+                                       ifReverseInputChannels: Boolean,
+                                       meanValues: Array[Float],
+                                       scale: Float,
+                                       networkType: String,
+                                       validationFilePath: String,
+                                       subset: Int,
+                                       opencvLibPath: String): OpenVINOModel = {
+    OpenVinoInferenceSupportive.loadTensorflowModelAsCalibrated(
+      modelPath, modelType, checkpointPath,
+      inputShape, ifReverseInputChannels, meanValues, scale,
+      networkType, validationFilePath, subset, opencvLibPath)
   }
 
   def loadOpenVINOModelForIR(modelFilePath: String,
