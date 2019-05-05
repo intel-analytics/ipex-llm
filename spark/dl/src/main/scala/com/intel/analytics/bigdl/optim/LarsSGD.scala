@@ -57,7 +57,6 @@ class LarsSGD[T: ClassTag](
      learningRateSchedule = _learningRateSchedule) {
   @transient
   private var buffer: Tensor[T] = null
-  
   /**
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
@@ -66,7 +65,6 @@ class LarsSGD[T: ClassTag](
    */
   override def optimize(feval: Tensor[T] => (T, Tensor[T]),
                         parameter: Tensor[T]): (Tensor[T], Array[T]) = {
-
     val weightDecay = this.weightDecay
     val momentum = this.momentum
     val (fx, dfdx) = feval(parameter)
@@ -174,7 +172,6 @@ object LarsSGD {
     }
     createOptimSeqForModule(model, lrScheGenerator,
       trust, learningRate, learningRateDecay, weightDecay, momentum).toMap
-
   }
 
 
@@ -244,6 +241,5 @@ object LarsSGD {
           Seq()
         }
     }
-
   }
 }
