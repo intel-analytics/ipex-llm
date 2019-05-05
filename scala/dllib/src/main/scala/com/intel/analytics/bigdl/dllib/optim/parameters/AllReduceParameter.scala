@@ -179,7 +179,7 @@ class AllReduceParameter[T: ClassTag](
   }
 
   private def getGradientBlockId(pidFrom: Int, pidTo: Int): BlockId = {
-    SparkExtension.getLocalBlockId(id.toString + pidTo + "gradientBytes" + pidFrom)
+    SparkExtension.getLocalBlockId(id.toString + "_" + pidTo + "gradientBytes" + pidFrom)
   }
 
   /**
