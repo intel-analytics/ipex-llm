@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.optim._
 import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LarsSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class LarsSGDSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     System.setProperty("bigdl.localMode", "true")
@@ -45,7 +45,7 @@ class LarsSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val start = System.currentTimeMillis()
   "lars" should "perform well on rosenbrock function" in {
     val x = Tensor[Double](2).fill(0)
-    val optm = new Lars[Double](true, _learningRate = 0.1, _learningRateDecay = 0.09)
+    val optm = new LarsSGD[Double](true, _learningRate = 0.1, _learningRateDecay = 0.09)
     var fx = new ArrayBuffer[Double]
     for (i <- 1 to 10001) {
       val result = optm.optimize(TestUtils.rosenBrock, x)
@@ -101,7 +101,7 @@ class LarsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = Optimizer(module, generateData(), MSECriterion[Float]())
     val epochs = 6
     optimizer
-       .setOptimMethods(Lars.createOptimForModule(module, learningRate = 0.02, learningRateDecay
+       .setOptimMethods(LarsSGD.createOptimForModule(module, learningRate = 0.02, learningRateDecay
           = 0.1))
        .setEndWhen(Trigger.maxEpoch(epochs))
        .optimize()
