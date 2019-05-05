@@ -296,7 +296,6 @@ object Utils {
     }
     if (count == 1) pivot else -1
   }
-
   /**
    *
    * @return Array(padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)

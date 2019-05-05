@@ -69,7 +69,9 @@ class SpatialConvolution[T: ClassTag](
   val initGradWeight: Tensor[T] = null,
   val initGradBias: Tensor[T] = null,
   val withBias: Boolean = true,
-  val format: DataFormat = DataFormat.NCHW
+  val format: DataFormat = DataFormat.NCHW,
+  private final val dilationW: Int = 1,
+  private final val dilationH: Int = 1
 )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] with Initializable with MklInt8Convertible {
 
