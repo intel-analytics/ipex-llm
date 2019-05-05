@@ -647,17 +647,17 @@ class SpatialConvolution(
   }
 
   /**
-    * Todo:
-    *   (1) add calculation logic for Full padding
-    *   (2) abstract and design an object type for return value, insteaof returnning
-    *       the result as an int array
-    * Calculate padding size
-    * @param inputHeight height of input
-    * @param inputWidth width of input
-    * @param paddingType one of Same, Valid, Full
-    * @return an int array of length 4 representing padding sizes
-    *         (top, bottom, left, right)
-    */
+   * Todo:
+   *   (1) add calculation logic for Full padding
+   *   (2) abstract and design an object type for return value, insteaof returnning
+   *       the result as an int array
+   * Calculate padding size
+   * @param inputHeight height of input
+   * @param inputWidth width of input
+   * @param paddingType one of Same, Valid, Full
+   * @return an int array of length 4 representing padding sizes
+   *         (top, bottom, left, right)
+   */
   private def getConvPaddingShape(inputHeight: Int, inputWidth: Int,
                                    paddingType: PaddingType.Value): ConvPaddingShape = {
     paddingType match {
@@ -711,13 +711,13 @@ class SpatialConvolution(
 
 
   /**
-    * Calculate convolution output size
-    * Please try to keep the logic in consistent with MKL-DNN
-    * Reffernce: https://github.com/intel/mkl-dnn/blob/master/src/common/convolution.cpp#L117
-    * @param inputH height of input
-    * @param inputW width of input
-    * @return a ConvOutputShape object
-    */
+   * Calculate convolution output size
+   * Please try to keep the logic in consistent with MKL-DNN
+   * Reffernce: https://github.com/intel/mkl-dnn/blob/master/src/common/convolution.cpp#L117
+   * @param inputH height of input
+   * @param inputW width of input
+   * @return a ConvOutputShape object
+   */
   private def getConvOutputShape(inputH: Int, inputW: Int,
                                  paddingShape: ConvPaddingShape): ConvOutputShape = {
     def getOutputLength(inputLength: Int, padLeft: Int, padRight: Int,
