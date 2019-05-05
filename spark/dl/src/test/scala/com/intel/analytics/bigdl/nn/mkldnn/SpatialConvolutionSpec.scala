@@ -193,12 +193,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val bias2 = layer.bias
     val gradbias2 = layer.gradBias
 
-//    Equivalent.nearequals(weight1, weight2.resizeAs(weight1)) should be(true)
-//    Equivalent.nearequals(gradweight1, gradweight2.resizeAs(gradweight1)) should be(true)
-//    Equivalent.nearequals(bias1, bias2) should be(true)
-//    Equivalent.nearequals(gradbias1, gradbias2) should be(true)
-//    Equivalent.nearequals(output.toTensor, output2) should be(true)
-//    Equivalent.nearequals(grad1.toTensor, grad2) should be(true)
+    Equivalent.nearequals(weight1, weight2.resizeAs(weight1)) should be(true)
+    Equivalent.nearequals(gradweight1, gradweight2.resizeAs(gradweight1)) should be(true)
+    Equivalent.nearequals(bias1, bias2) should be(true)
+    Equivalent.nearequals(gradbias1, gradbias2) should be(true)
+    Equivalent.nearequals(output.toTensor, output2) should be(true)
+    Equivalent.nearequals(grad1.toTensor, grad2) should be(true)
   }
 
   "ConvolutionDnn with format=nchw and ngroup=2" should "work correctly" in {
