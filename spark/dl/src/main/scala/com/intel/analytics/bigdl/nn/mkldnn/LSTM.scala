@@ -118,8 +118,7 @@ class LSTM(
         val outputShape_iter = inputShape_iter /* ldsnc */
 
         src_layer = NativeData(inputShape, Memory.Format.any)
-        src_iter = NativeData(inputShape_iter, Memory.Format.any)  // TODO any or ldsnc?
-        /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
+        src_iter = NativeData(inputShape_iter, Memory.Format.any)
         wei_layer = NativeData(weightShape, Memory.Format.any)
         wei_iter = NativeData(weightShape_iter, Memory.Format.any)
         bis = NativeData(biasShape, Memory.Format.any)
@@ -161,8 +160,7 @@ class LSTM(
         val outputShape_iter = inputShape_iter /* ldsnc */
 
         src_layer = NativeData(inputShape, Memory.Format.any)
-        src_iter = NativeData(inputShape_iter, Memory.Format.any)  // TODO any or ldsnc?
-        /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
+        src_iter = NativeData(inputShape_iter, Memory.Format.any)
         wei_layer = NativeData(weightShape, Memory.Format.any)
         wei_iter = NativeData(weightShape_iter, Memory.Format.any)
         bis = NativeData(biasShape, Memory.Format.any)
@@ -204,8 +202,7 @@ class LSTM(
         val outputShape_iter = inputShape_iter /* ldsnc */
 
         src_layer = NativeData(inputShape, Memory.Format.any)
-        src_iter = NativeData(inputShape_iter, Memory.Format.any)  // TODO any or ldsnc?
-        /* TODO Refer to MKLDNN details, Format of src_iter cannot be any */
+        src_iter = NativeData(inputShape_iter, Memory.Format.any)
         wei_layer = NativeData(weightShape, Memory.Format.any)
         wei_iter = NativeData(weightShape_iter, Memory.Format.any)
         bis = NativeData(biasShape, Memory.Format.any)

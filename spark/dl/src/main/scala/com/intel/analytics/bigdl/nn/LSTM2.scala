@@ -18,38 +18,15 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
 /**
- * Long Short Term Memory architecture.
- * Ref. A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
- * B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
- * C. http://arxiv.org/pdf/1503.04069v1.pdf
- * D. https://github.com/wojzaremba/lstm
- *
- * @param inputSize the size of each input vector
- * @param hiddenSize Hidden unit size in the LSTM
- * @param p is used for [[Dropout]] probability. For more details about
- *           RNN dropouts, please refer to
- *           [RnnDrop: A Novel Dropout for RNNs in ASR]
- *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
- *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
- *           (https://arxiv.org/pdf/1512.05287.pdf)
- * @param activation: activation function, by default to be Tanh if not specified.
- * @param innerActivation: activation function for inner cells,
- *                       by default to be Sigmoid if not specified.
- * @param wRegularizer: instance of [[Regularizer]]
- *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
- * @param uRegularizer: instance [[Regularizer]]
-            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
- * @param bRegularizer: instance of [[Regularizer]]
-            applied to the bias.
+ * Long Short Term Memory architecture similar to nn/LSTM but without Dropout
+ * It is used to verify the inference results of mkldnn/LSTM
  */
-@SerialVersionUID(- 8176191554025511686L)
+// @SerialVersionUID(- 8176191554025511686L)
 class LSTM2[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
@@ -84,43 +61,31 @@ class LSTM2[T : ClassTag] (
 
     val biasInitMethod0 = Zeros
 
-    val lineari2g1_m = Linear(inputSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g1")
-    val lineari2g1 = lineari2g1_m.inputs(input1)
+    val lineari2g1 = Linear(inputSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input1)
 
-    val lineari2g2_m = Linear(inputSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g2")
-    val lineari2g2 = lineari2g2_m.inputs(input1)
+    val lineari2g2 = Linear(inputSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input1)
 
-    val lineari2g3_m = Linear(inputSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g3")
-    val lineari2g3 = lineari2g3_m.inputs(input1)
+    val lineari2g3 = Linear(inputSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input1)
 
-    val lineari2g4_m = Linear(inputSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("i2g4")
-    val lineari2g4 = lineari2g4_m.inputs(input1)
+    val lineari2g4 = Linear(inputSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input1)
 
     i2g = JoinTable(1, 1).inputs(lineari2g1, lineari2g2, lineari2g3, lineari2g4)
 
-    val linearh2g1_m = Linear(hiddenSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g1")
-    linearh2g1_m.setInitMethod(biasInitMethod = biasInitMethod0)
-    val linearh2g1 = linearh2g1_m.inputs(input2)
+    val linearh2g1 = Linear(hiddenSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input2)
 
-    val linearh2g2_m = Linear(hiddenSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g2")
-    linearh2g2_m.setInitMethod(biasInitMethod = biasInitMethod0)
-    val linearh2g2 = linearh2g2_m.inputs(input2)
+    val linearh2g2 = Linear(hiddenSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input2)
 
-    val linearh2g3_m = Linear(hiddenSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g3")
-    linearh2g3_m.setInitMethod(biasInitMethod = biasInitMethod0)
-    val linearh2g3 = linearh2g3_m.inputs(input2)
+    val linearh2g3 = Linear(hiddenSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input2)
 
-    val linearh2g4_m = Linear(hiddenSize, hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("h2g4")
-    linearh2g4_m.setInitMethod(biasInitMethod = biasInitMethod0)
-    val linearh2g4 = linearh2g4_m.inputs(input2)
+    val linearh2g4 = Linear(hiddenSize, hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(input2)
 
     h2g = JoinTable(1, 1).inputs(linearh2g1, linearh2g2, linearh2g3, linearh2g4)
 
