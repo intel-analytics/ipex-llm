@@ -39,9 +39,6 @@ import scala.collection.JavaConverters._
 import org.tensorflow.framework.GraphDef
 
 
-
-
-
 /**
  * A graph container. The modules in the container are connected as a directed Graph. Each module
  * can output one tensor or multiple tensors(as table). The edges between modules in the graph
