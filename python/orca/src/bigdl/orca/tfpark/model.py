@@ -19,11 +19,13 @@ from tensorflow.python.keras.engine import training_utils
 from tensorflow.python.keras import models
 
 from zoo.common.nncontext import getOrCreateSparkContext
-from zoo.pipeline.api.keras.utils import to_bigdl_metric, to_bigdl_criterion
-from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFPredictor, TFNdarrayDataset, TFNet
+from zoo.pipeline.api.keras.utils import to_bigdl_metric
+from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFPredictor, TFNet
 import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
+
+from zoo.pipeline.api.net.tf_dataset import TFNdarrayDataset
 
 
 class KerasModel(object):
