@@ -21,7 +21,9 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.feature.{DistributedFeatureSet, FeatureSet}
 import com.intel.analytics.zoo.pipeline.api.keras.models.InternalDistriOptimizer
+import org.apache.log4j.Logger
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -42,6 +44,12 @@ trait AbstractEstimator[T]{
 
 }
 
+private[estimator] trait GradientClipping
+
+private[estimator] case class L2NormClipping(l2Norm: Double) extends GradientClipping
+
+private[estimator] case class ConstantClipping(min: Double, max: Double) extends GradientClipping
+
 /**
  * Estimator class for training and evaluation BigDL models.
  *
@@ -57,8 +65,40 @@ class Estimator[T: ClassTag] private[zoo](
       model: Module[T],
       optimMethods: Map[String, OptimMethod[T]] = Map(),
       modelDir: Option[String] = None)(implicit ev: TensorNumeric[T]) extends AbstractEstimator[T] {
+  import Estimator.logger
   protected var internalEstimator: AbstractEstimator[T] = null
 
+  protected val gradientClipping: ArrayBuffer[GradientClipping] =
+    new ArrayBuffer[GradientClipping]()
+
+  /**
+   * Clear gradient clipping parameters. In this case, gradient clipping will not be applied.
+   * In order to take effect, it needs to be called before fit.
+   */
+  def clearGradientClipping(): Unit = {
+    this.gradientClipping.clear()
+  }
+
+  /**
+   * Set constant gradient clipping during the training process.
+   * In order to take effect, it needs to be called before fit.
+   *
+   * @param min The minimum value to clip by. Double.
+   * @param max The maximum value to clip by. Double.
+   */
+  def setConstantGradientClipping(min: Double, max: Double): Unit = {
+    this.gradientClipping.append(ConstantClipping(min, max))
+  }
+
+  /**
+   * Clip gradient to a maximum L2-Norm during the training process.
+   * In order to take effect, it needs to be called before fit.
+   *
+   * @param clipNorm Gradient L2-Norm threshold. Double.
+   */
+  def setGradientClippingByL2Norm(clipNorm: Double): Unit = {
+    this.gradientClipping.append(L2NormClipping(clipNorm))
+  }
   /**
    * Train model with provided trainSet and criterion.
    * The training will end until the endTrigger is triggered.
@@ -89,6 +129,24 @@ class Estimator[T: ClassTag] private[zoo](
         case _ => throw new IllegalArgumentException("Unsupported FeatureSet type.")
       }
     }
+    if (gradientClipping.nonEmpty) {
+      // as internalEstimator will deal with the duplicated type of clipping,
+      // we just call the set function directly.
+      gradientClipping.foreach {
+          case constant: ConstantClipping =>
+            logger.info(s"Using constant clipping (${constant.min}, ${constant.max}).")
+            internalEstimator.asInstanceOf[Optimizer[_, _]]
+              .setConstantGradientClipping(constant.min, constant.max)
+          case l2norm: L2NormClipping =>
+            logger.info(s"Using L2 norm clipping ${l2norm.l2Norm}.")
+            internalEstimator.asInstanceOf[Optimizer[_, _]]
+              .setGradientClippingByl2Norm(l2norm.l2Norm)
+          case other =>
+            throw new IllegalArgumentException(s"Unsupported gradient clipping type ${other}")
+      }
+    } else {
+      internalEstimator.asInstanceOf[Optimizer[_, _]].disableGradientClipping()
+    }
     internalEstimator.train(trainSet, criterion, endTrigger, checkPointTrigger,
       validationSet, validationMethod)
     this
@@ -117,6 +175,7 @@ class Estimator[T: ClassTag] private[zoo](
 }
 
 object Estimator {
+  val logger = Logger.getLogger(this.getClass)
   /**
    * Create an estimator
    * @param model model
@@ -128,7 +187,7 @@ object Estimator {
   def apply[T: ClassTag](
         model: Module[T],
         optimMethods: Map[String, OptimMethod[T]],
-        modelDir: String)(implicit ev: TensorNumeric[T]): AbstractEstimator[T] = {
+        modelDir: String)(implicit ev: TensorNumeric[T]): Estimator[T] = {
     if (null != modelDir && "" != modelDir) {
       new Estimator[T](model, optimMethods, Some(modelDir))
     } else {
@@ -146,7 +205,7 @@ object Estimator {
   def apply[T: ClassTag](
        model: Module[T],
        optimMethods: Map[String, OptimMethod[T]]
-      )(implicit ev: TensorNumeric[T]): AbstractEstimator[T] = {
+      )(implicit ev: TensorNumeric[T]): Estimator[T] = {
     apply(model, optimMethods, "")
   }
 
@@ -161,7 +220,7 @@ object Estimator {
   def apply[T: ClassTag](
         model: Module[T],
         optimMethod: OptimMethod[T],
-        modelDir: String)(implicit ev: TensorNumeric[T]): AbstractEstimator[T] = {
+        modelDir: String)(implicit ev: TensorNumeric[T]): Estimator[T] = {
     if (null != modelDir && "" != modelDir) {
       new Estimator[T](model, Map(model.getName() -> optimMethod), Some(modelDir))
     } else {
@@ -178,7 +237,7 @@ object Estimator {
    */
   def apply[T: ClassTag](
         model: Module[T],
-        optimMethod: OptimMethod[T])(implicit ev: TensorNumeric[T]): AbstractEstimator[T] = {
+        optimMethod: OptimMethod[T])(implicit ev: TensorNumeric[T]): Estimator[T] = {
     apply(model, optimMethod, "")
   }
 
@@ -189,7 +248,7 @@ object Estimator {
    * @return a new estimator
    */
   def apply[T: ClassTag](
-        model: Module[T])(implicit ev: TensorNumeric[T]): AbstractEstimator[T] = {
+        model: Module[T])(implicit ev: TensorNumeric[T]): Estimator[T] = {
     new Estimator[T](model, Map())
   }
 
