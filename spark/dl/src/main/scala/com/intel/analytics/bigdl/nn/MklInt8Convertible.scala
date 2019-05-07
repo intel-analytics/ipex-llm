@@ -50,7 +50,7 @@ trait MklInt8Convertible {
    * 5) ConcatTable: calculate scales for input, output as well as the scales of submodules
    * @param inputActvt input activity
    */
-  private[bigdl]def calcScales(inputActvt: Activity): Unit = {
+  def calcScales(inputActvt: Activity): Unit = {
 
     if (inputActvt != null) {
       val module = this.asInstanceOf[AbstractModule[_, _, Float]]
@@ -311,7 +311,7 @@ trait MklInt8Convertible {
    * @param mask value of input dimension mask to be set
    * @return Unit
    */
-  def setInputDimMask(mask: Int, recursiveFlag: Boolean) : Unit = {
+  def setInputDimMask(mask: Int, recursiveFlag: Boolean = false) : Unit = {
     inputDimMask = mask
     if (this.isInstanceOf[Container[_, _, Float@unchecked]] && recursiveFlag == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
@@ -337,7 +337,7 @@ trait MklInt8Convertible {
    * @param mask value of output dimension mask to be set
    * @return Unit
    */
-  def setOutputDimMask(mask: Int, recursiveFlag: Boolean): Unit = {
+  def setOutputDimMask(mask: Int, recursiveFlag: Boolean = false): Unit = {
     outputDimMask = mask
     if (this.isInstanceOf[Container[_, _, Float@unchecked]] && recursiveFlag == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
@@ -366,7 +366,7 @@ trait MklInt8Convertible {
    * @Param recursiveFlag flag to set mask recursively
    * @return Unit
    */
-  def setWeightDimMask(mask: Int, recursiveFlag: Boolean): Unit = {
+  def setWeightDimMask(mask: Int, recursiveFlag: Boolean = false): Unit = {
     weightDimMask = mask
     if (this.isInstanceOf[Container[_, _, Float@unchecked]] && recursiveFlag == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
@@ -469,7 +469,7 @@ trait MklInt8Convertible {
    * @param index the index of which the scale need to be updated
    * @return Unit
    */
-  def updateInputScales(scale: Array[Float], index: Int): Unit = {
+  private def updateInputScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(inputScalesBuffer, scale, index)
   }
 
@@ -479,7 +479,7 @@ trait MklInt8Convertible {
    * @param index the index of which the scale need to be updated
    * @return Unit
    */
-  def updateOutputScales(scale: Array[Float], index: Int): Unit = {
+  private def updateOutputScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(outputScalesBuffer, scale, index)
   }
 
@@ -489,7 +489,7 @@ trait MklInt8Convertible {
    * @param index the index of which the scale need to be updated
    * @return Unit
    */
-  def updateWeightScales(scale: Array[Float], index: Int): Unit = {
+  private def updateWeightScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(weightScalesBuffer, scale, index)
   }
 
