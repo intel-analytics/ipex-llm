@@ -174,6 +174,36 @@ class DistriEstimatorSpec extends ZooSpecHelper {
     result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
+  "Train with constant gradient clipping" should "be trained with good result" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    val mm = mse
+    mm.parameters()._1.foreach(_.fill(0.125))
+    val estimator = Estimator(mm, new SGD[Double](20))
+    val resultBefore = mm.forward(input1).asInstanceOf[Tensor[Double]](Array(1))
+    // make gradient nearly zero.
+    estimator.setConstantGradientClipping(-1e-12, 1e-12)
+    estimator.train(dataSet, MSECriterion[Double](),
+      Option(Trigger.maxEpoch(1)))
+
+    val result = mm.forward(input1).asInstanceOf[Tensor[Double]]
+    result(Array(1)) should be(resultBefore +- 5e-5)
+  }
+
+  "Train with l2norm gradient clipping" should "be trained with good result" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    val mm = mse
+    mm.parameters()._1.foreach(_.fill(0.125))
+    val estimator = Estimator(mm, new SGD[Double](20))
+    val resultBefore = mm.forward(input1).asInstanceOf[Tensor[Double]](Array(1))
+    // make gradient nearly zero.
+    estimator.setGradientClippingByL2Norm(1e-10)
+    estimator.train(dataSet, MSECriterion[Double](),
+      Option(Trigger.maxEpoch(1)))
+
+    val result = mm.forward(input1).asInstanceOf[Tensor[Double]]
+    result(Array(1)) should be(resultBefore +- 5e-5)
+  }
+
   "Train multi times" should "be trained with good result" in {
     LoggerFilter.redirectSparkInfoLogs()
     val mm = EstimatorSpecModel.mse
