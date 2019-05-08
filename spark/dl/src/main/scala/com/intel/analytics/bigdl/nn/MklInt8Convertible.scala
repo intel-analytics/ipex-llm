@@ -135,7 +135,7 @@ trait MklInt8Convertible {
   }
 
   /**
-   * Calculate scales given activity, mask and update method
+   * Calculate scales given activity and mask
    * @param activity target activity to get scales
    * @param mask dimension mask associated with target activity
    */
@@ -220,8 +220,8 @@ trait MklInt8Convertible {
   /**
    * Scales calculator for ConcatTable module
    * Submodules inside ConcatTable share the same input
-   * @param inputActvt input of the Sequential Module
-   * @param outputActvt output of the Sequential Module
+   * @param inputActvt input of the ConcatTable Module
+   * @param outputActvt output of the ConcatTable Module
    */
   private def calcConcatTableScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     require(this.isInstanceOf[ConcatTable[Float@unchecked]] || this.isInstanceOf[mkldnn.ConcatTable]
@@ -309,16 +309,19 @@ trait MklInt8Convertible {
   /**
    * Set dimension mask of input
    * @param mask value of input dimension mask to be set
+   * @param fullScope full scopre indicator, when set it to true,
+   *             update mask in full scope including itself and submodules,
+   *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setInputDimMask(mask: Int, recursiveFlag: Boolean = false) : Unit = {
+  def setInputDimMask(mask: Int, fullScope: Boolean = false) : Unit = {
     inputDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && recursiveFlag == true) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && fullScope == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask, recursiveFlag)
+          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask, fullScope)
         }
       })
     }
@@ -335,16 +338,19 @@ trait MklInt8Convertible {
   /**
    * Set dimension mask of output
    * @param mask value of output dimension mask to be set
+   * @param fullScope full scopre indicator, when set it to true,
+   *             update mask in full scope including itself and submodules,
+   *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setOutputDimMask(mask: Int, recursiveFlag: Boolean = false): Unit = {
+  def setOutputDimMask(mask: Int, fullScope: Boolean = false): Unit = {
     outputDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && recursiveFlag == true) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && fullScope == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setOutputDimMask(mask, recursiveFlag)
+          module.asInstanceOf[MklInt8Convertible].setOutputDimMask(mask, fullScope)
         }
       })
     }
@@ -360,20 +366,20 @@ trait MklInt8Convertible {
 
   /**
    * Set dimension mask for weight
-   * If the module is a Container and recursive flag is set,
-   * then recursively set the mask for each sub-module
    * @param mask value of weight mask to be set
-   * @Param recursiveFlag flag to set mask recursively
+   * @param fullScope full scopre indicator, when set it to true,
+   *             update mask in full scope including itself and submodules,
+   *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setWeightDimMask(mask: Int, recursiveFlag: Boolean = false): Unit = {
+  def setWeightDimMask(mask: Int, fullScope: Boolean = false): Unit = {
     weightDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && recursiveFlag == true) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && fullScope == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setWeightDimMask(mask, recursiveFlag)
+          module.asInstanceOf[MklInt8Convertible].setWeightDimMask(mask, fullScope)
         }
       })
     }

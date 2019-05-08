@@ -353,11 +353,11 @@ trait ModuleSerializable extends Loadable with Savable{
      val weightScales = protobufModel.getWeightScalesList.iterator().asScala
       .map(attrValueToFloatArray)
 
-     module.setInputDimMask(protobufModel.getInputDimMasks, false)
+     module.setInputDimMask(protobufModel.getInputDimMasks)
      module.setInputScales(inputScales.toArray)
-     module.setOutputDimMask(protobufModel.getOutputDimMasks, false)
+     module.setOutputDimMask(protobufModel.getOutputDimMasks)
      module.setOutputScales(outputScales.toArray)
-     module.setWeightDimMask(protobufModel.getWeightDimMasks, false)
+     module.setWeightDimMask(protobufModel.getWeightDimMasks)
      module.setWeightScales(weightScales.toArray)
   }
 
