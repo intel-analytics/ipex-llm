@@ -309,19 +309,19 @@ trait MklInt8Convertible {
   /**
    * Set dimension mask of input
    * @param mask value of input dimension mask to be set
-   * @param fullScope full scopre indicator, when set it to true,
-   *             update mask in full scope including itself and submodules,
+   * @param overrideSubmodules when set it to true,
+   *             update mask including itself and submodules,
    *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setInputDimMask(mask: Int, fullScope: Boolean = false) : Unit = {
+  def setInputDimMask(mask: Int, overrideSubmodules: Boolean = false) : Unit = {
     inputDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && fullScope == true) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && overrideSubmodules == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask, fullScope)
+          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask, overrideSubmodules)
         }
       })
     }
@@ -338,19 +338,19 @@ trait MklInt8Convertible {
   /**
    * Set dimension mask of output
    * @param mask value of output dimension mask to be set
-   * @param fullScope full scopre indicator, when set it to true,
+   * @param overrideSubmodules when set it to true,
    *             update mask in full scope including itself and submodules,
    *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setOutputDimMask(mask: Int, fullScope: Boolean = false): Unit = {
+  def setOutputDimMask(mask: Int, overrideSubmodules: Boolean = false): Unit = {
     outputDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && fullScope == true) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && overrideSubmodules == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setOutputDimMask(mask, fullScope)
+          module.asInstanceOf[MklInt8Convertible].setOutputDimMask(mask, overrideSubmodules)
         }
       })
     }
@@ -367,19 +367,19 @@ trait MklInt8Convertible {
   /**
    * Set dimension mask for weight
    * @param mask value of weight mask to be set
-   * @param fullScope full scopre indicator, when set it to true,
+   * @param overrideSubmodules when set it to true,
    *             update mask in full scope including itself and submodules,
    *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setWeightDimMask(mask: Int, fullScope: Boolean = false): Unit = {
+  def setWeightDimMask(mask: Int, overrideSubmodules: Boolean = false): Unit = {
     weightDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && fullScope == true) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && overrideSubmodules == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setWeightDimMask(mask, fullScope)
+          module.asInstanceOf[MklInt8Convertible].setWeightDimMask(mask, overrideSubmodules)
         }
       })
     }
