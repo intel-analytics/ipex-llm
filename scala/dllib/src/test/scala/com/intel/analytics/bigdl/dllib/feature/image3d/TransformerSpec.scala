@@ -17,20 +17,13 @@ package com.intel.analytics.zoo.feature.image3d
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature}
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.TH
-import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.zoo.feature.common._
 import com.intel.analytics.zoo.feature.image._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Flatten, Input}
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-import com.intel.analytics.zoo.pipeline.nnframes.{NNClassifierModel}
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Row, SQLContext}
-import org.opencv.core.CvType
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.ClassTag
 
@@ -57,14 +50,23 @@ class TransformerSpec extends FlatSpec with Matchers{
     val cropped_image = cropper.transform(imageClone)
 
     // compare chain transformer result with torch result
-    val code = "require 'image'\n" +
-      "dst = image.rotate(src,math.pi/3.7,'bilinear')"
-    val (luaTime, torchResult) = TH.run(code,
-      Map("src" -> cropped_image[Tensor[Float]](ImageFeature.imageTensor).clone.view(10, 10)),
-      Array("dst"))
-    val dstTorch = torchResult("dst").asInstanceOf[Tensor[Float]]
-    output(0).asInstanceOf[ImageFeature3D][Tensor[Float]](ImageFeature.imageTensor)
-      .view(10, 10).map(dstTorch, (v1, v2) => {
+    val dstTorch = Tensor[Double](Array[Double](0.0, 0.0, 0.29262194, 0.4249478, 0.31712994,
+      0.09275303, 0.08961805, 0.0, 0.0, 0.0, 0.0, 0.29755187, 0.32578096, 0.5626346, 0.4365354,
+      0.40343443, 0.41490048, 0.32817173, 0.22530137, 0.0, 0.0, 0.4672376, 0.4677945, 0.70909166,
+      0.50209534, 0.6593656, 0.91172934, 0.7242027, 0.37856963, 0.39695457, 0.12731975, 0.66596985,
+      0.70920634, 0.6457655, 0.35826272, 0.68768394, 0.5295299, 0.49672747, 0.5379895, 0.5760645,
+      0.5341844, 0.4697795, 0.40747032, 0.438281, 0.2712102, 0.554312, 0.23995556, 0.36858487,
+      0.40459204, 0.2524506, 0.4267454, 0.12342952, 0.2880426, 0.30744562, 0.17224228, 0.40548807,
+      0.6973631, 0.27889606, 0.3665819, 0.63194805, 0.34321332, 0.08689031, 0.30138263, 0.4345351,
+      0.81047827, 0.23823035, 0.62529624, 0.71889293, 0.56671214, 0.47234702, 0.73507214,
+      0.40327334, 0.34665608, 0.39636195, 0.75153077, 0.51748544, 0.7237126, 0.90470463,
+      0.87663966, 0.0, 0.0, 0.19828838, 0.34249613, 0.6051069, 0.66840446, 0.39873663,
+      0.28909186, 0.5503567, 0.79466873, 0.0, 0.0, 0.0, 0.0, 0.43310156, 0.4053475, 0.5347002,
+      0.674352, 0.37905228, 0.0, 0.0), Array(10, 10))
+    val dstTensor = Tensor[Double](
+      storage = Storage[Double](output(0)[Tensor[Float]](ImageFeature.imageTensor).storage().array()
+        .map(_.toDouble)), storageOffset = 1, size = Array(1, 10, 10))
+    dstTensor.view(10, 10).map(dstTorch, (v1, v2) => {
       assert(math.abs(v1-v2)<1e-6)
       v1
     })
