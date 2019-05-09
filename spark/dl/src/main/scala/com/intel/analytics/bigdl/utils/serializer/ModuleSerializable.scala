@@ -124,8 +124,14 @@ trait ModuleSerializable extends Loadable with Savable{
 
     val clsMirror = universe.runtimeMirror(cls.getClassLoader)
     val clsSymbol = clsMirror.classSymbol(cls)
-    val companion = currentMirror.reflectModule(clsSymbol.companionSymbol.asModule).instance
-    val instanceMirror = clsMirror.reflect(companion)
+    val compnionSymbol = clsSymbol.companionSymbol
+
+    val instanceMirror = compnionSymbol match {
+      case universe.NoSymbol => null
+      case _ =>
+        val compnInst = currentMirror.reflectModule(clsSymbol.companionSymbol.asModule).instance
+        clsMirror.reflect(compnInst)
+    }
 
     constructorFullParams.flatten.foreach(param => {
       val pname = param.name.decodedName.toString
@@ -505,6 +511,12 @@ trait ModuleSerializable extends Loadable with Savable{
   private def getPrimCtorDefaultParamValue(instMirror: universe.InstanceMirror,
                                     paramSymbol: universe.Symbol,
                                     index: Int): AnyRef = {
+    
+    if (paramSymbol == null || paramSymbol == universe.NoSymbol ||
+    instMirror == null || index < 0) {
+      return None
+    }
+
     if (!paramSymbol.asTerm.isParamWithDefault) { // param has no default value
       None
     } else {
