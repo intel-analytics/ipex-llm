@@ -33,6 +33,9 @@ class ImageSetToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeatur
                        targetKeys: Array[String] = Array(ImageFeature.label),
                        sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
   extends ImageProcessing {
+
+  import ImageSetToSample.logger
+
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     prev.map(transform(_))
   }
@@ -58,7 +61,11 @@ class ImageSetToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeatur
             require(target.isInstanceOf[Tensor[T]], s"the target $key should be tensor")
             Some(target.asInstanceOf[Tensor[T]])
           }
-          else None
+          else {
+            // You are safe to ignore this warning if you are doing inference.
+            logger.warn(s"The ImageFeature doesn't contain targetKey $key, ignoring it")
+            None
+          }
         })
         if (targets.length > 0) ArraySample[T](inputs, targets)
         else ArraySample[T](inputs)
@@ -68,7 +75,7 @@ class ImageSetToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeatur
       case e: Exception =>
         e.printStackTrace()
         val uri = feature.uri()
-        ImageSetToSample.logger.warn(s"The conversion from ImageFeature to Sample fails for $uri")
+        logger.error(s"The conversion from ImageFeature to Sample fails for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }

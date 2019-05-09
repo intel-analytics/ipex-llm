@@ -15,7 +15,6 @@
  */
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.opencv.OpenCV
 import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
@@ -59,7 +58,7 @@ object ImageBytesToMat {
       case e: Exception =>
         e.printStackTrace()
         val uri = feature.uri()
-        logger.warn(s"convert byte to mat fail for $uri")
+        logger.error(s"The convertion from bytes to mat fails for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }
