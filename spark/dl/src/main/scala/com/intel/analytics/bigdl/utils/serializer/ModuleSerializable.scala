@@ -124,9 +124,11 @@ trait ModuleSerializable extends Loadable with Savable{
 
     val clsMirror = universe.runtimeMirror(cls.getClassLoader)
     val clsSymbol = clsMirror.classSymbol(cls)
-    val compnionSymbol = clsSymbol.companionSymbol
 
-    val instanceMirror = compnionSymbol match {
+    // https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
+    val companionSymbol = clsSymbol.companionSymbol
+
+    val instanceMirror = companionSymbol match {
       case universe.NoSymbol => null
       case _ =>
         val compnInst = currentMirror.reflectModule(clsSymbol.companionSymbol.asModule).instance
@@ -153,6 +155,7 @@ trait ModuleSerializable extends Loadable with Savable{
         }
         args(i) = pvalue
       }
+      println(i, args(i))
       i += 1
     })
    constructorMirror.apply(args : _*).
