@@ -524,6 +524,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * get string name of the method, which returns default value of the i-th parameter
+   * Reference:
+   * https://stackoverflow.com/questions/39657211/scala-class-constructors-default-argument-naming
    * @param i parameter index in primary constructor
    * @return method name in string, calling this method returns default value of i-th parameter
    */
