@@ -511,9 +511,8 @@ trait ModuleSerializable extends Loadable with Savable{
   private def getPrimCtorDefaultParamValue(instMirror: universe.InstanceMirror,
                                     paramSymbol: universe.Symbol,
                                     index: Int): AnyRef = {
-    
     if (paramSymbol == null || paramSymbol == universe.NoSymbol ||
-    instMirror == null || index < 0) {
+      instMirror == null || index < 0) {
       return None
     }
 
