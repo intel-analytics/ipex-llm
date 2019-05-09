@@ -32,7 +32,7 @@ import com.intel.analytics.bigdl.serialization.Bigdl._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe
+import scala.reflect.runtime.{currentMirror, universe}
 
 /**
  * [[ModuleSerializable]] trait inherits [[Loadable]] and [[Savable]]
@@ -121,26 +121,33 @@ trait ModuleSerializable extends Loadable with Savable{
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams.map(_.size).sum)
     var i = 0
-    constructorFullParams.foreach(map => {
-      map.foreach(param => {
-        val name = param.name.decodedName.toString
-        val ptype = param.typeSignature
-        if (ptype <:< universe.typeOf[ClassTag[_]]||
-          ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
-          require(tagIter.hasNext, "If your module contains multiple class tags, " +
-            "do you forget to override getClassTagNumerics method")
-          args(i) = tagIter.next
-        } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
-          || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
-          args(i) = numericIter.next
-        } else {
-          require(modelAttributes.containsKey(name), s"$name value cannot be found")
-          val attribute = modelAttributes.get(name)
-          val value = DataConverter.getAttributeValue(context, attribute)
-          args(i) = value
+
+    val clsMirror = universe.runtimeMirror(cls.getClassLoader)
+    val clsSymbol = clsMirror.classSymbol(cls)
+    val companion = currentMirror.reflectModule(clsSymbol.companionSymbol.asModule).instance
+    val instanceMirror = clsMirror.reflect(companion)
+
+    constructorFullParams.flatten.foreach(param => {
+      val pname = param.name.decodedName.toString
+      val ptypesig = param.typeSignature
+      if (ptypesig <:< universe.typeOf[ClassTag[_]]||
+        ptypesig.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
+        require(tagIter.hasNext, "If your module contains multiple class tags, " +
+          "do you forget to override getClassTagNumerics method")
+        args(i) = tagIter.next
+      } else if (ptypesig <:< universe.typeOf[TensorNumeric[_]]
+        || ptypesig.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
+        args(i) = numericIter.next
+      } else {
+        val pvalue = if (modelAttributes.containsKey(pname)) { // for existing parameters
+          val attrValue = modelAttributes.get(pname)
+          DataConverter.getAttributeValue(context, attrValue)
+        } else { // parameter not found, get its default value
+          getPrimCtorDefaultParamValue(instanceMirror, param, i)
         }
-        i += 1
-      })
+        args(i) = pvalue
+      }
+      i += 1
     })
    constructorMirror.apply(args : _*).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -363,7 +370,7 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Convert Attr Value object to Array of Float
-   * @param AttrValue
+   * @param attr
    * @return Array[Float]
    */
   protected def attrValueToFloatArray(attr: AttrValue): Array[Float] = {
@@ -423,8 +430,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Serialize and save MKL DNN INT8 attributes into BigDL Model of protobuf definition
-   * @param modelBuilder serialized module builder
-   * @param context  serialization context
+   * @param module serialized module builder
+   * @param modelBuilder  serialization context
    */
   protected def saveMklInt8Attr[T: ClassTag](module : MklInt8Convertible,
                                              modelBuilder : BigDLModule.Builder)
@@ -454,7 +461,7 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Convert an array of float into an attr value object
-   * @param Array[Float]
+   * @param arry
    * @return AttrValue
    */
   private def floatArrayToAttrValue(arry : Array[Float]) : AttrValue = {
@@ -485,6 +492,43 @@ trait ModuleSerializable extends Loadable with Savable{
         modelBuilder.addParameters(tensorAttr.getTensorValue)
       })
     }
+  }
+
+
+  /**
+   * Get class primary consturctor's default parameter value by index
+   * @param instMirror instance mirror object of the class companion object
+   * @param paramSymbol symbol object of the target parameter with default value
+   * @param index the index of parameter in the class primary constructor
+   * @return AnyRef which is compatible with java Object
+   */
+  private def getPrimCtorDefaultParamValue(instMirror: universe.InstanceMirror,
+                                    paramSymbol: universe.Symbol,
+                                    index: Int): AnyRef = {
+    if (!paramSymbol.asTerm.isParamWithDefault) { // param has no default value
+      None
+    } else {
+      val instTypeSig = instMirror.symbol.typeSignature
+      val methodName = getCtorDefaultParamMethodByIndex(index)
+      val methodSymbol = instTypeSig.member(universe.newTermName(methodName))
+      if (methodSymbol == universe.NoSymbol) { // method not found
+        None
+      }
+      else {
+        // make the method call using reflection
+        // need to cast it as AnyRef to be compatible with Java Object type
+        instMirror.reflectMethod(methodSymbol.asMethod).apply().asInstanceOf[AnyRef]
+      }
+    }
+  }
+
+  /**
+   * get string name of the method, which returns default value of the i-th parameter
+   * @param i parameter index in primary constructor
+   * @return method name in string, calling this method returns default value of i-th parameter
+   */
+  private def getCtorDefaultParamMethodByIndex(i: Int): String = {
+    s"$$lessinit$$greater$$default$$${i + 1}"
   }
 
 }
