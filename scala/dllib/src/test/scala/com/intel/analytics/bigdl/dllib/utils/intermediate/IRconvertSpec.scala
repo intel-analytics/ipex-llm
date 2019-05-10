@@ -68,9 +68,9 @@ class IRconvertSpec extends BigDLSpecHelper {
 
   def modelWithScale(format: DataFormat = DataFormat("NCHW")) : Module[Float] = {
     val convElement = nn.SpatialConvolution(1, 20, 5, 5, format = format)
-    convElement.setInputDimMask(1)
-    convElement.setWeightDimMask(2)
-    convElement.setOutputDimMask(3)
+    convElement.setInputDimMask(1, true)
+    convElement.setWeightDimMask(2, true)
+    convElement.setOutputDimMask(3, true)
     convElement.setInputScales(Array(Array(1, 2, 3)))
     convElement.setWeightScales(Array(Array(4, 5, 6)))
     val conv1 = convElement.setName("input").inputs()
@@ -82,8 +82,8 @@ class IRconvertSpec extends BigDLSpecHelper {
     val relu = nn.ReLU().setName("relu1").inputs(fc)
 
     val linearElement = nn.Linear(500, 10)
-    linearElement.setInputDimMask(1)
-    linearElement.setOutputDimMask(2)
+    linearElement.setInputDimMask(1, true)
+    linearElement.setOutputDimMask(2, true)
     linearElement.setInputScales(Array(Array(0, 1, 2)))
     linearElement.setOutputScales(Array(Array(7, 8, 9)))
     val fc2 = linearElement.setName("output").inputs(relu)
