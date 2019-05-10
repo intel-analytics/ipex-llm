@@ -122,9 +122,9 @@ private[bigdl] object ReflectionUtils {
     toELe.setOutputScales(fromEle.getOutputScales())
     toELe.setWeightScales(fromEle.getWeightScales())
 
-    toELe.setInputDimMask(fromEle.getInputDimMask())
-    toELe.setOutputDimMask(fromEle.getOutputDimMask())
-    toELe.setWeightDimMask(fromEle.getWeightDimMask())
+    toELe.setInputDimMask(fromEle.getInputDimMask(), true)
+    toELe.setOutputDimMask(fromEle.getOutputDimMask(), true)
+    toELe.setWeightDimMask(fromEle.getWeightDimMask(), true)
   }
 
   def findClass(name: String): Class[_] = {

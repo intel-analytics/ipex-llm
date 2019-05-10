@@ -41,9 +41,9 @@ object GenerateInt8Scales {
     evaluationSet: RDD[MiniBatch[Float]]): Unit = {
     model.evaluate()
 
-    model.setInputDimMask(0)
-    model.setOutputDimMask(0)
-    model.setWeightDimMask(1)
+    model.setInputDimMask(0, true)
+    model.setOutputDimMask(0, true)
+    model.setWeightDimMask(1, true)
 
     logger.info(s"Generate the scales for $modelName ...")
     val samples = evaluationSet

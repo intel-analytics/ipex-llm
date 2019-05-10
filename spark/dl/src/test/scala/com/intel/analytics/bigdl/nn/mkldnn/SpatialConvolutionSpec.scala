@@ -627,7 +627,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val output = model.output.toTensor[Float].clone()
 
-    model.setInputDimMask(1)
+    model.setInputDimMask(1, true)
     model.calcScales(input)
     model.release()
 
