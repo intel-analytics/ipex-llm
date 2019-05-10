@@ -49,8 +49,7 @@ class TestTextEstimators(ZooTestCase):
         test_rdd = self.sc.parallelize([gen_record(has_label=False) for i in range(4)])
         test_input_fn = bert_input_fn(test_rdd, 2, 4)
         predictions = estimator.predict(test_input_fn)
-        for prediction in predictions.collect():
-            assert prediction.shape == (2, )
+        assert predictions.count() == 4
 
 
 if __name__ == "__main__":
