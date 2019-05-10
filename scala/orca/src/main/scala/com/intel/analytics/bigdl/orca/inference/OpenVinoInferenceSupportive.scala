@@ -33,8 +33,21 @@ class OpenVinoInferenceSupportive {
                              weightFilePath: String,
                              deviceTypeValue: Int): Long
 
+  @native def loadOpenVinoIRInt8(modelFilePath: String,
+                                 weightFilePath: String,
+                                 deviceTypeValue: Int,
+                                 batchSize: Int): Long
+
   @native def predict(executableNetworkReference: Long,
                       data: Array[Float],
+                      shape: Array[Int]): JTensor
+
+  @native def predictInt8(executableNetworkReference: Long,
+                      data: Array[Float],
+                      shape: Array[Int]): JTensor
+
+  @native def predictInt8(executableNetworkReference: Long,
+                      data: Array[Byte],
                       shape: Array[Int]): JTensor
 
   @native def releaseOpenVINOIR(executableNetworkReference: Long): Unit
@@ -414,6 +427,20 @@ object OpenVinoInferenceSupportive extends InferenceSupportive {
       new OpenVINOModel(executableNetworkReference, supportive)
     }
   }
+
+  def loadOpenVinoIRInt8(modelFilePath: String,
+                         weightFilePath: String,
+                         deviceType: DeviceTypeEnumVal,
+                         batchSize: Int): OpenVINOModel = {
+    timing("load openvino IR Int8") {
+      val supportive: OpenVinoInferenceSupportive = new OpenVinoInferenceSupportive()
+      val executableNetworkReference: Long =
+        supportive.loadOpenVinoIRInt8(modelFilePath, weightFilePath,
+          deviceType.value, batchSize)
+      new OpenVINOModel(executableNetworkReference, supportive)
+    }
+  }
+
 
   def load(path: String): Unit = {
     logger.info(s"start to load library: $path.")

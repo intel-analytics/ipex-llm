@@ -262,6 +262,24 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     offerModelQueue()
   }
 
+  /**
+   * loads a openvino IR Int8
+   *
+   * @param modelPath  the path of openvino ir xml file
+   * @param weightPath the path of openvino ir bin file
+   */
+  def doLoadOpenVINOInt8(modelPath: String, weightPath: String, batchSize: Int): Unit = {
+    if (concurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"concurrentNum is $concurrentNum > 1, " +
+        s"openvino model does not support shared weights model copies")
+    }
+    clearModelQueue()
+    this.originalModel =
+      InferenceModelFactory.loadOpenVINOModelForIRInt8(modelPath, weightPath,
+        DeviceType.CPU, batchSize)
+    offerModelQueue()
+  }
+
   private def doLoadTensorflowModel(modelPath: String,
                                     intraOpParallelismThreads: Int,
                                     interOpParallelismThreads: Int,
@@ -370,6 +388,20 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
+   * predicts int8 the inference result
+   *
+   * @param inputs the input tensor with batch
+   * @return the output tensor with batch
+   */
+  def doPredictInt8(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
+    timing(s"model predict for batch ${inputs.size()}") {
+      val batchSize = inputs.size()
+      require(batchSize > 0, "inputs size should > 0")
+      predictInt8(inputs)
+    }
+  }
+
+  /**
    * predicts the inference result
    *
    * @param inputActivity the input activity
@@ -378,6 +410,18 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   def doPredict(inputActivity: Activity): Activity = {
     timing(s"model predict for activity") {
       predict(inputActivity)
+    }
+  }
+
+  /**
+   * predicts int8 the inference result
+   *
+   * @param inputActivity the input activity
+   * @return the output activity
+   */
+  def doPredictInt8(inputActivity: Activity): Activity = {
+    timing(s"model predict for activity") {
+      predictInt8(inputActivity)
     }
   }
 
@@ -421,6 +465,47 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
       }
     }
   }
+
+  private def predictInt8(inputActivity: Activity): Activity = {
+    val model: AbstractModel = retrieveModel()
+    try {
+      model.predictInt8(inputActivity)
+    } catch {
+      case e: RuntimeException =>
+        throw new InferenceRuntimeException("Model doesn't support PredictInt8", e);
+    } finally {
+      model match {
+        case null =>
+        case _ =>
+          val success = modelQueue.offer(model)
+          success match {
+            case true =>
+            case false => model.release()
+          }
+      }
+    }
+  }
+
+  private def predictInt8(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
+    val model: AbstractModel = retrieveModel()
+    try {
+      model.predictInt8(inputs)
+    } catch {
+      case e: RuntimeException =>
+        throw new InferenceRuntimeException("Model doesn't support PredictInt8", e);
+    } finally {
+      model match {
+        case null =>
+        case _ =>
+          val success = modelQueue.offer(model)
+          success match {
+            case true =>
+            case false => model.release()
+          }
+      }
+    }
+  }
+
 
   private def retrieveModel(): AbstractModel = {
     var model: AbstractModel = null
