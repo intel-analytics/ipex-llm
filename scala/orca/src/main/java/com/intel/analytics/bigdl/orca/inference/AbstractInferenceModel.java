@@ -85,6 +85,10 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadOpenVINO(modelFilePath, weightFilePath);
   }
 
+  public void loadOpenVINOInt8(String modelFilePath, String weightFilePath, int batchSize) {
+    doLoadOpenVINOInt8(modelFilePath, weightFilePath, batchSize);
+  }
+
   public void reload(String modelPath) {
     doReload(modelPath, null);
   }
@@ -110,8 +114,16 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     return doPredict(inputs);
   }
 
+  public List<List<JTensor>> predictInt8(List<List<JTensor>> inputs) {
+    return doPredictInt8(inputs);
+  }
+
   public List<List<JTensor>> predict(List<JTensor>[] inputs) {
     return predict(Arrays.asList(inputs));
+  }
+
+  public List<List<JTensor>> predictInt8(List<JTensor>[] inputs) {
+    return predictInt8(Arrays.asList(inputs));
   }
 
   @Override
