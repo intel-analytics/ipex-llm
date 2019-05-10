@@ -23,6 +23,15 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+ * @param inputSize  : the size of input vector
+ * @param hiddenSize : the size of hidden state
+ * @param f          : the type of output activation function
+ *                   (e.g. AlgKind.EltwiseTanh or AlgKind.EltwiseRelu)
+ * @param direction  : the direction to run LSTM
+ *                   (e.g. Direction.UnidirectionalLeft2Right or Direction.BidirectionalConcat)
+ */
+
 class LSTM(
   val inputSize: Int,
   val hiddenSize: Int,
@@ -240,14 +249,14 @@ class LSTM(
 
     fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
 
-    val realSrc = MemoryData.operationWant2(fwdPD, Query.SrcPd, 0)
-    val realSrc_iter = MemoryData.operationWant2(fwdPD, Query.SrcPd, 1)
-    val realWei = MemoryData.operationWant2(fwdPD, Query.WeightsPd, 0)
-    val realWei_iter = MemoryData.operationWant2(fwdPD, Query.WeightsPd, 1)
-    val realBias = MemoryData.operationWant2(fwdPD, Query.WeightsPd, 2)
+    val realSrc = MemoryData.operationWantWithIndex(fwdPD, Query.SrcPd, 0)
+    val realSrc_iter = MemoryData.operationWantWithIndex(fwdPD, Query.SrcPd, 1)
+    val realWei = MemoryData.operationWantWithIndex(fwdPD, Query.WeightsPd, 0)
+    val realWei_iter = MemoryData.operationWantWithIndex(fwdPD, Query.WeightsPd, 1)
+    val realBias = MemoryData.operationWantWithIndex(fwdPD, Query.WeightsPd, 2)
 
-    val realDst = MemoryData.operationWant2(fwdPD, Query.DstPd, 0)
-    val realDst_iter = MemoryData.operationWant2(fwdPD, Query.DstPd, 1)
+    val realDst = MemoryData.operationWantWithIndex(fwdPD, Query.DstPd, 0)
+    val realDst_iter = MemoryData.operationWantWithIndex(fwdPD, Query.DstPd, 1)
 
     require(src_i.size().product == realSrc_iter.shape.product,
       s"${getName} src iter shape is not correct.")
@@ -314,9 +323,7 @@ class LSTM(
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    _gradInputFormats = grad.clone()
-    _gradOutputFormats = grad.clone()
-    (_gradInputFormats, _gradOutputFormats)
+    throw new UnsupportedOperationException("Not support backward propagation")
   }
 }
 

@@ -279,7 +279,7 @@ private[mkldnn] object MemoryData {
     memory
   }
 
-  def operationWant2(primDesc: Long, queryType: Int, index: Int): NativeData = {
+  def operationWantWithIndex(primDesc: Long, queryType: Int, index: Int): NativeData = {
     val memoryPrimDesc = MklDnn.PrimitiveDescQueryPd(primDesc, queryType, index)
     val memoryDesc = MklDnn.PrimitiveDescQueryMemory(memoryPrimDesc)
     val shape = Memory.GetShape(memoryDesc)
