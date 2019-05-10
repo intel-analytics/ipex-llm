@@ -363,7 +363,7 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Convert Attr Value object to Array of Float
-   * @param AttrValue
+   * @param attr
    * @return Array[Float]
    */
   protected def attrValueToFloatArray(attr: AttrValue): Array[Float] = {
@@ -423,8 +423,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Serialize and save MKL DNN INT8 attributes into BigDL Model of protobuf definition
+   * @param module
    * @param modelBuilder serialized module builder
-   * @param context  serialization context
    */
   protected def saveMklInt8Attr[T: ClassTag](module : MklInt8Convertible,
                                              modelBuilder : BigDLModule.Builder)
@@ -454,7 +454,7 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Convert an array of float into an attr value object
-   * @param Array[Float]
+   * @param arry
    * @return AttrValue
    */
   private def floatArrayToAttrValue(arry : Array[Float]) : AttrValue = {

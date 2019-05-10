@@ -40,7 +40,6 @@ trait MklInt8Convertible {
   // weight scales
   private[nn] var weightScalesBuffer: ArrayBuffer[Array[Float]] = ArrayBuffer.empty[Array[Float]]
 
-
   /**
    * Calculate the required scales for converting int8 modules
    * Currently there are four type of modules should be supported:
@@ -49,9 +48,9 @@ trait MklInt8Convertible {
    * 3) Spatial Convolution: calculate scales for input, output and weight
    * 4) Sequential: calculate scales for input, output as well as the scales of submodules
    * 5) ConcatTable: calculate scales for input, output as well as the scales of submodules
-   * @param inActivity input activity
+   * @param inputActvt input activity
    */
-  private[bigdl]def calcScales(inputActvt: Activity): Unit = {
+  def calcScales(inputActvt: Activity): Unit = {
 
     if (inputActvt != null) {
       val module = this.asInstanceOf[AbstractModule[_, _, Float]]
@@ -106,8 +105,8 @@ trait MklInt8Convertible {
   /**
    * Calculate module's scales given its input and output
    * Store calculated scales in array buffers
-   * @param inActivity input activity
-   * @param outActivity output activity
+   * @param inputActvt input activity
+   * @param outputActvt output activity
    */
   private def calcModuleScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     if (inputActvt != null) {
@@ -136,10 +135,9 @@ trait MklInt8Convertible {
   }
 
   /**
-   * Calculate scales given activity, mask and update method
+   * Calculate scales given activity and mask
    * @param activity target activity to get scales
    * @param mask dimension mask associated with target activity
-   * @param appendFunc update method for scales
    */
   private def calcActivityScales(activity: Activity, mask: Int): Array[Array[Float]] = {
     activity match {
@@ -190,7 +188,8 @@ trait MklInt8Convertible {
 
   /**
    * Scales calculator for Sequential Module
-   * @param inActivity input of the Sequential Module
+   * @param inputActvt input of the Sequential Module
+   * @param outputActvt output of the Sequential Module
    */
   private def calcSequentialScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     require(this.isInstanceOf[Sequential[Float@unchecked]] || this.isInstanceOf[mkldnn.Sequential],
@@ -221,7 +220,8 @@ trait MklInt8Convertible {
   /**
    * Scales calculator for ConcatTable module
    * Submodules inside ConcatTable share the same input
-   * @param inActivity
+   * @param inputActvt input of the ConcatTable Module
+   * @param outputActvt output of the ConcatTable Module
    */
   private def calcConcatTableScales(inputActvt: Activity, outputActvt: Activity): Unit = {
     require(this.isInstanceOf[ConcatTable[Float@unchecked]] || this.isInstanceOf[mkldnn.ConcatTable]
@@ -309,16 +309,19 @@ trait MklInt8Convertible {
   /**
    * Set dimension mask of input
    * @param mask value of input dimension mask to be set
+   * @param overrideSubmodules when set it to true,
+   *             update mask including itself and submodules,
+   *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setInputDimMask(mask: Int) : Unit = {
+  def setInputDimMask(mask: Int, overrideSubmodules: Boolean = false) : Unit = {
     inputDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]]) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && overrideSubmodules == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask)
+          module.asInstanceOf[MklInt8Convertible].setInputDimMask(mask, overrideSubmodules)
         }
       })
     }
@@ -328,23 +331,26 @@ trait MklInt8Convertible {
    * Get dimension mask of output
    * @return outputDimMask field which stores value of output dimension mask
    */
-  def getOutputDimMask(): Int = {
+  private[bigdl] def getOutputDimMask(): Int = {
     outputDimMask
   }
 
   /**
    * Set dimension mask of output
    * @param mask value of output dimension mask to be set
+   * @param overrideSubmodules when set it to true,
+   *             update mask in full scope including itself and submodules,
+   *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setOutputDimMask(mask: Int): Unit = {
+  def setOutputDimMask(mask: Int, overrideSubmodules: Boolean = false): Unit = {
     outputDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]]) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && overrideSubmodules == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setOutputDimMask(mask)
+          module.asInstanceOf[MklInt8Convertible].setOutputDimMask(mask, overrideSubmodules)
         }
       })
     }
@@ -359,18 +365,21 @@ trait MklInt8Convertible {
   }
 
   /**
-   * Set dimension mask of weight
+   * Set dimension mask for weight
    * @param mask value of weight mask to be set
+   * @param overrideSubmodules when set it to true,
+   *             update mask in full scope including itself and submodules,
+   *             otherwise only update mask to module itself.
    * @return Unit
    */
-  def setWeightDimMask(mask: Int): Unit = {
+  def setWeightDimMask(mask: Int, overrideSubmodules: Boolean = false): Unit = {
     weightDimMask = mask
-    if (this.isInstanceOf[Container[_, _, Float@unchecked]]) {
+    if (this.isInstanceOf[Container[_, _, Float@unchecked]] && overrideSubmodules == true) {
       val container = this.asInstanceOf[Container[_, _, Float@unchecked]]
       val modules = container.modules
       modules.foreach(module => {
         if (module.isInstanceOf[MklInt8Convertible]) {
-          module.asInstanceOf[MklInt8Convertible].setWeightDimMask(mask)
+          module.asInstanceOf[MklInt8Convertible].setWeightDimMask(mask, overrideSubmodules)
         }
       })
     }
@@ -466,7 +475,7 @@ trait MklInt8Convertible {
    * @param index the index of which the scale need to be updated
    * @return Unit
    */
-  def updateInputScales(scale: Array[Float], index: Int): Unit = {
+  private def updateInputScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(inputScalesBuffer, scale, index)
   }
 
@@ -476,7 +485,7 @@ trait MklInt8Convertible {
    * @param index the index of which the scale need to be updated
    * @return Unit
    */
-  def updateOutputScales(scale: Array[Float], index: Int): Unit = {
+  private def updateOutputScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(outputScalesBuffer, scale, index)
   }
 
@@ -486,7 +495,7 @@ trait MklInt8Convertible {
    * @param index the index of which the scale need to be updated
    * @return Unit
    */
-  def updateWeightScales(scale: Array[Float], index: Int): Unit = {
+  private def updateWeightScales(scale: Array[Float], index: Int): Unit = {
     updateScalesHelper(weightScalesBuffer, scale, index)
   }
 
@@ -508,5 +517,4 @@ trait MklInt8Convertible {
         scales(index)(i) = scale(i)
       })
   }
-
 }
