@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -73,11 +73,6 @@ class Attention[T: ClassTag](
     val graph = Graph(Array(inputX, inputY, inputBias), Array(outputLayer))
     if (this.train) graph.training() else graph.evaluate()
     graph
-  }
-
-  override def updateOutput(input: Activity): Activity = {
-    output = model.updateOutput(input)
-    output
   }
 }
 // Combine tensor that has been splitted.

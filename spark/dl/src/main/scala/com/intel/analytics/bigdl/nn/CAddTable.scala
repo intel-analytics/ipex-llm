@@ -55,7 +55,7 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
     return true
   }
 
-  private def sumDims(tensor: Tensor[D], other: Tensor[D]): Tensor[D] = {
+  private def sumAlongDims(tensor: Tensor[D], other: Tensor[D]): Tensor[D] = {
     val size = tensor.size()
     var target: Tensor[D] = other
     var i = 0
@@ -119,16 +119,16 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
-        } else if (input[Tensor[D]](i).isScalar) {
+        } else if (canFastBroadcast(input[Tensor[D]](i), gradOutput)) {
+        gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
+          sumAlongDims(input[Tensor[D]](i), gradOutput))
+        } else {
           require(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
           if (!calculateSum) {
             sum = gradOutput.sum()
             calculateSum = true
           }
           gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).setValue(sum)
-        } else if (canFastBroadcast(input[Tensor[D]](i), gradOutput)) {
-          gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
-            sumDims(input[Tensor[D]](i), gradOutput))
         }
       }
       i += 1

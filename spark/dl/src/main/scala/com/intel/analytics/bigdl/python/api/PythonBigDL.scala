@@ -279,6 +279,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     FeedForwardNetwork(hiddenSize, filterSize, reluDropout)
   }
 
+  def createTransformerLayer(hiddenSize: Int,
+    numHeads: Int,
+    filterSize: Int,
+    numHiddenlayers: Int,
+    postprocessDropout: Float,
+    attentionDropout: Float,
+    reluDropout: Float): TransformerLayer[T] = {
+    TransformerLayer(hiddenSize, numHeads, filterSize,
+      numHiddenlayers, postprocessDropout, attentionDropout, reluDropout)
+  }
+
   def createLinear(inputSize: Int, outputSize: Int,
     withBias: Boolean,
     wRegularizer: Regularizer[T] = null,

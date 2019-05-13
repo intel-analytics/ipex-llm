@@ -141,7 +141,7 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
    * @return
    */
   def cloneGraph(reverseEdge: Boolean = false): DirectedGraph[T] = {
-    val oldToNew = new mutable.HashMap[Node[T], Node[T]]()
+    val oldToNew = new util.HashMap[Node[T], Node[T]]()
     val bfs = BFS.toArray
     bfs.foreach(node => {
       oldToNew.put(node, new Node[T](node.element))
@@ -153,36 +153,30 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
       if (reverseEdge) {
         node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
           // Some next nodes may be not included in the graph
-          if (oldToNew.contains(nextNodeAndEdge._1)) {
-            oldToNew.get(nextNodeAndEdge._1).get.add(oldToNew.get(node).get, nextNodeAndEdge._2)
+          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
+            oldToNew.get(node).addPrevious(
+              oldToNew.get(nextNodeAndEdge._1), nextNodeAndEdge._2)
+          }
+        })
+        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+          if (oldToNew.containsKey(prevNodeAndEdge._1)) {
+            oldToNew.get(node).addNexts(
+              oldToNew.get(prevNodeAndEdge._1), prevNodeAndEdge._2)
           }
         })
       } else {
         node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
-          if (oldToNew.contains(nextNodeAndEdge._1)) {
-            oldToNew.get(node).get.add(oldToNew.get(nextNodeAndEdge._1).get, nextNodeAndEdge._2)
+          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
+            oldToNew.get(node).add(oldToNew.get(nextNodeAndEdge._1), nextNodeAndEdge._2)
           }
         })
       }
     })
 
     if (reverseEdge) {
-      // sort previous node
-      // todo: more refactor
-      oldToNew.toArray.foreach(node => {
-        // if node has more than one previous nodes, we have to consider nodes order
-        if (node._1.prevNodesAndEdges.length > 1) {
-          node._2.removeNextEdges()
-          node._1.prevNodesAndEdges.foreach(prevNodeAndEdge => {
-            if (oldToNew.contains(prevNodeAndEdge._1)) {
-              node._2.add(oldToNew.get(prevNodeAndEdge._1).get, prevNodeAndEdge._2)
-            }
-          })
-        }
-      })
-      new DirectedGraph[T](oldToNew.get(source).get, !reverse)
+      new DirectedGraph[T](oldToNew.get(source), !reverse)
     } else {
-      new DirectedGraph[T](oldToNew.get(source).get, reverse)
+      new DirectedGraph[T](oldToNew.get(source), reverse)
     }
   }
 }
@@ -252,6 +246,14 @@ class Node[T](var element: T) extends Serializable {
     if (!node.prevs.contains((this, e))) node.prevs.append((this, e))
     if (!this.nexts.contains((node, e))) this.nexts.append((node, e))
     node
+  }
+
+  def addPrevious(node: Node[T], e: Edge = Edge()): Unit = {
+    if (!this.prevs.contains((node, e))) this.prevs.append((node, e))
+  }
+
+  def addNexts(node: Node[T], e: Edge = Edge()): Unit = {
+    if (!this.nexts.contains((node, e))) this.nexts.append((node, e))
   }
 
   def from(node: Node[T], e: Edge = Edge()): Node[T] = {

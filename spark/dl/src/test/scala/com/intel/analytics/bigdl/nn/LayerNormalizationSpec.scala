@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.mkldnn.Equivalent
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class LayerNormalizationSpec extends FlatSpec with Matchers {
 
@@ -168,17 +171,33 @@ class LayerNormalizationSpec extends FlatSpec with Matchers {
     gradWeights should be(gradWeightExpected)
   }
 
-  "InternalMulTable" should "good" in {
+  "InternalMulTable" should "work correctly" in {
     val input1 = Tensor[Float](T(T(-0.52817175, -1.07296862, 0.86540763, -2.3015387,
       1.74481176, -0.7612069, 0.3190391, -0.24937038),
     T( 1.46210794, -2.06014071, -0.3224172, -0.38405435, 1.13376944, -1.09989127,
       -0.17242821, -0.87785842)))
     val input2 = Tensor[Float](T(T(1.62434536), T(-0.61175641)))
+    val input3 = Tensor[Float](T(T(1.62434536, 1.62434536, 1.62434536, 1.62434536,
+      1.62434536, 1.62434536, 1.62434536, 1.62434536),
+      T(-0.61175641, -0.61175641, -0.61175641, -0.61175641, -0.61175641,
+        -0.61175641, -0.61175641, -0.61175641)))
     val layer = InternalCMulTable[Float]()
     val output = layer.forward(T(input1, input2))
-    println(output)
+    val output2 = layer.forward(T(input1, input3))
+    output should be(output2)
+
     val gradInput = layer.backward(T(input1, input2), output)
-    println(gradInput)
-    print("done")
+    val gradInput2 = layer.backward(T(input1, input3), output2)
+
+    gradInput[Tensor[Float]](1) should be(gradInput2[Tensor[Float]](1))
+    gradInput[Tensor[Float]](2) should be(gradInput2[Tensor[Float]](2))
+  }
+}
+
+class LayerNormalizationSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val model = new LayerNormalization[Float](8).setName("LayerNormalization")
+    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, input)
   }
 }

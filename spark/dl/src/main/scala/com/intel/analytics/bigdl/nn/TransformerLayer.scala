@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  * @param hiddenSize
  * @param numHeads
  * @param filterSize
- * @param num_hidden_layers
+ * @param numHiddenlayers
  * @param postprocessDropout
  * @param attentionDropout
  * @param reluDropout
@@ -45,7 +45,7 @@ class TransformerLayer[T: ClassTag](
    val hiddenSize: Int,
    val numHeads: Int,
    val filterSize: Int,
-   val num_hidden_layers: Int,
+   val numHiddenlayers: Int,
    val postprocessDropout: Float,
    val attentionDropout: Float,
    val reluDropout: Float)
@@ -61,7 +61,7 @@ class TransformerLayer[T: ClassTag](
       postDropOut.inputs(decoder_input)
     } else decoder_input
 
-    val blockModel = decode(num_hidden_layers)
+    val blockModel = decode(numHiddenlayers)
     val output = blockModel.inputs(decoder_input_lm, decoder_self_attention_bias)
     Graph(input, output)
   }
@@ -75,9 +75,9 @@ class TransformerLayer[T: ClassTag](
       val attention = new Attention[T](hiddenSize, numHeads, attentionDropout)
       val ffn = new FeedForwardNetwork[T](hiddenSize, filterSize, reluDropout)
       // for self attention
-      val attentionModel = prePostProcessingWrapperAttention(
-        attention, output, decoder_self_attention_bias, s"attention_${i}")
-      val ffnModel = prePostProcessingWrapperFFN(ffn, attentionModel, s"ffn_${i}")
+      val attentionModel = prePostProcessingSelfAttention(
+        attention, output, decoder_self_attention_bias, s"self_attention_${i}")
+      val ffnModel = prePostProcessingFFN(ffn, attentionModel, s"ffn_${i}")
       output = ffnModel
       i += 1
     }
@@ -85,15 +85,15 @@ class TransformerLayer[T: ClassTag](
     Graph(Array(decoder_input, decoder_self_attention_bias), Array(norm))
   }
 
-  private def prePostProcessingWrapperAttention(layer: Module[T], decoder_input: ModuleNode[T],
+  private def prePostProcessingSelfAttention(layer: Module[T], decoder_input: ModuleNode[T],
     decoder_self_attention_bias: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
       .inputs(decoder_input)
     val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
-      .inputs(layer.setName(preName + "/attention").inputs(norm, norm, decoder_self_attention_bias))
+      .inputs(layer.setName(preName + "/self_attention").inputs(norm, norm, decoder_self_attention_bias))
     CAddTable().inputs(decoder_input, drop)
   }
-  private def prePostProcessingWrapperFFN(layer: Module[T],
+  private def prePostProcessingFFN(layer: Module[T],
     decoder_input: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
       .inputs(decoder_input)
@@ -109,12 +109,12 @@ object TransformerLayer {
      hiddenSize: Int,
      numHeads: Int,
      filterSize: Int,
-     num_hidden_layers: Int,
+     numHiddenlayers: Int,
      postprocessDropout: Float,
      attentionDropout: Float,
      reluDropout: Float)
    (implicit ev: TensorNumeric[T]): TransformerLayer[T] =
-    new TransformerLayer(hiddenSize, numHeads, filterSize, num_hidden_layers,
+    new TransformerLayer(hiddenSize, numHeads, filterSize, numHiddenlayers,
       postprocessDropout, attentionDropout, reluDropout)
 }
 

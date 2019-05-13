@@ -208,6 +208,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
 
     val out2 = prepare.backward(input, out)
   }
+
 }
 
 class TransformerConstantSerialTest extends ModuleSerializationTest {
@@ -228,11 +229,10 @@ class TransformerPrepareDecoderSerialTest extends ModuleSerializationTest {
 
 class TransformerLayerSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val vocabSize = 10
     val hiddenSize = 4
     val numHeads = 2
     val filterSize = 3
-    val num_hidden_layers = 1
+    val num_hidden_layers = 2
     val postprocessDropout = 1.0f
     val attentionDropout = 1.0f
     val reluDropout = 1.0f
