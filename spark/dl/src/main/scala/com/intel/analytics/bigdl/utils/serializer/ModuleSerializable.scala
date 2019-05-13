@@ -128,10 +128,10 @@ trait ModuleSerializable extends Loadable with Savable{
     /*
     https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
     this line tries to get companion object of the class;
-    through the companion, default values can be access by calling
+    through the companion, default values can be accessed by calling
     some static methods created by scala compiler, however it does not work when
     the class is not a case class or has not defined a companion, which in this case,
-    calling companionSymbol return s universe.NoSymbol
+    calling companionSymbol returns universe.NoSymbol
     */
     val companionSymbol = clsSymbol.companionSymbol
 
