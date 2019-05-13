@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
 
 import scala.reflect._
@@ -91,13 +91,16 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
-        } else {
+        } else if (input[Tensor[D]](i).isScalar) {
           require(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
           if (!calculateSum) {
             sum = gradOutput.sum()
             calculateSum = true
           }
           gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).setValue(sum)
+        } else {
+          // todo: refactor same with zoo
+          gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(gradOutput.sum(1).sum(2))
         }
       }
       i += 1

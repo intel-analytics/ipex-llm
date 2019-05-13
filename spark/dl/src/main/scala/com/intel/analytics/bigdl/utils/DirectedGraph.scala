@@ -141,7 +141,7 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
    * @return
    */
   def cloneGraph(reverseEdge: Boolean = false): DirectedGraph[T] = {
-    val oldToNew = new util.HashMap[Node[T], Node[T]]()
+    val oldToNew = new mutable.HashMap[Node[T], Node[T]]()
     val bfs = BFS.toArray
     bfs.foreach(node => {
       oldToNew.put(node, new Node[T](node.element))
@@ -153,23 +153,36 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
       if (reverseEdge) {
         node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
           // Some next nodes may be not included in the graph
-          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
-            oldToNew.get(nextNodeAndEdge._1).add(oldToNew.get(node), nextNodeAndEdge._2)
+          if (oldToNew.contains(nextNodeAndEdge._1)) {
+            oldToNew.get(nextNodeAndEdge._1).get.add(oldToNew.get(node).get, nextNodeAndEdge._2)
           }
         })
       } else {
         node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
-          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
-            oldToNew.get(node).add(oldToNew.get(nextNodeAndEdge._1), nextNodeAndEdge._2)
+          if (oldToNew.contains(nextNodeAndEdge._1)) {
+            oldToNew.get(node).get.add(oldToNew.get(nextNodeAndEdge._1).get, nextNodeAndEdge._2)
           }
         })
       }
     })
 
     if (reverseEdge) {
-      new DirectedGraph[T](oldToNew.get(source), !reverse)
+      // sort previous node
+      // todo: more refactor
+      oldToNew.toArray.foreach(node => {
+        // if node has more than one previous nodes, we have to consider nodes order
+        if (node._1.prevNodesAndEdges.length > 1) {
+          node._2.removeNextEdges()
+          node._1.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+            if (oldToNew.contains(prevNodeAndEdge._1)) {
+              node._2.add(oldToNew.get(prevNodeAndEdge._1).get, prevNodeAndEdge._2)
+            }
+          })
+        }
+      })
+      new DirectedGraph[T](oldToNew.get(source).get, !reverse)
     } else {
-      new DirectedGraph[T](oldToNew.get(source), reverse)
+      new DirectedGraph[T](oldToNew.get(source).get, reverse)
     }
   }
 }
