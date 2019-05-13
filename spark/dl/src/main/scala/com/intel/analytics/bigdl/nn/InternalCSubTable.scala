@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-class InternalCSubTable[T: ClassTag](expandDim: Int = 1)
+private[nn] class InternalCSubTable[T: ClassTag](expandDim: Int = 1)
                                    (implicit ev: TensorNumeric[T]) extends CSubTable[T] {
   private var expandLayer: AbstractModule[Tensor[T], Tensor[T], T] = null
 

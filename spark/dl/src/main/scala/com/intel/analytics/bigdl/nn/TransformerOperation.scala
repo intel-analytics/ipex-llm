@@ -57,40 +57,9 @@ private[nn] object TransformerOperation {
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 
-  /**
-    * Calculate bias tensor from padding values in tensor.
-    * Bias tensor that is added to the pre-softmax multi-headed attention logits,
-    * which has shape [batch_size, num_heads, length, length]. The tensor is zero at
-    * non-padding locations, and -1e9 (negative infinity) at padding locations.
-    * Args: x: int tensor with shape [batch_size, length]
-    * Returns: Attention bias tensor of shape [batch_size, 1, 1, length].
-    * @param input
-    * @tparam T
-    * @return
-    */
-  def getPaddingBias[T: ClassTag](input: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val res = getPadding[T](input)
-    res.addSingletonDimension(res, 2)
-    res.addSingletonDimension(res, 3)
-  }
-
-  /**
-   * Return float tensor representing the padding values in x.
-   * Args:
-   * x: int tensor with any shape
-   * padding_value: int value that
-   * Returns:float tensor with same shape as x containing values 0 or 1.
-   *   0 -> non-padding, 1 -> padding
-   */
-  def getPadding[T: ClassTag](input: Tensor[T], paddingValue: Float = 0.0f)
-    (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    input.apply1(e => {if (e == paddingValue) ev.one else ev.zero})
-  }
-
   // Shift the second dimension of x right by one.
   def shiftRight3D[T: ClassTag](input: Tensor[T], output: Tensor[T])
-                               (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    // todo: return shifted_targets = tf.pad(x, [[0, 0], [1, 0], [0, 0]])[:, :-1, :]
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     output.resizeAs(input).zero()
     val index = input.size(2)
     output.narrow(2, 2, index - 1).copy(input.narrow(2, 1, index - 1))

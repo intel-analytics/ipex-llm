@@ -23,7 +23,14 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-private[nn] class LayerNormalization[T: ClassTag](hidden_size: Int)
+/**
+ * Applies layer normalization.
+ * @param hiddenSize
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
+private[nn] class LayerNormalization[T: ClassTag](hiddenSize: Int)
   (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
   override def buildModel(): Module[T] = {
     val input = Input()
@@ -34,7 +41,7 @@ private[nn] class LayerNormalization[T: ClassTag](hidden_size: Int)
     val add = AddConstant(1e-6).inputs(mean2)
     val sqrt = Power(-0.5, 1, 0).inputs(add)
     val mul = InternalCMulTable().inputs(sub, sqrt)
-    val linear = new LayerLinear[T](hidden_size).inputs(mul)
+    val linear = new LayerLinear[T](hiddenSize).inputs(mul)
     Graph(input, linear)
   }
   override def updateOutput(input: Activity): Activity = {
@@ -43,13 +50,20 @@ private[nn] class LayerNormalization[T: ClassTag](hidden_size: Int)
   }
 }
 
-private[nn] class LayerLinear[T: ClassTag](hidden_size: Int)
+/**
+ * Implement x * weight vector + bias vector
+ * @param hiddenSize
+ * @param ev$1
+ * @param ev
+ * @tparam T The numeric type in this module parameters
+ */
+private[nn] class LayerLinear[T: ClassTag](hiddenSize: Int)
    (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  var weight = Tensor[T](hidden_size).fill(ev.one)
-  var bias = Tensor[T](hidden_size).fill(ev.zero)
-  var gradWeight = Tensor[T](hidden_size)
-  var gradBias = Tensor[T](hidden_size)
+  var weight = Tensor[T](hiddenSize).fill(ev.one)
+  var bias = Tensor[T](hiddenSize).fill(ev.zero)
+  var gradWeight = Tensor[T](hiddenSize)
+  var gradBias = Tensor[T](hiddenSize)
 
   private val buffer = Tensor[T]()
   private var inputSize: Array[Int] = _

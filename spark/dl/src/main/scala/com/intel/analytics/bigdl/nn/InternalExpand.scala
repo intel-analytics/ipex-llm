@@ -24,11 +24,11 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
-  * Expand tensor to configured size
-  * @param tgtSizes target tensor sizes, dim whose size is -1 will be ignored
-  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
-  */
-class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
+ * Expand tensor to configured size
+ * @param tgtSizes target tensor sizes, dim whose size is -1 will be ignored
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
+private[nn] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
    (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -94,7 +94,7 @@ class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
   override def toString: String = s"InternalExpand()"
 }
 
-object InternalExpand {
+private[nn] object InternalExpand {
   def apply[@specialized(Float, Double) T: ClassTag](tgtSizes: Array[Int])
      (implicit ev: TensorNumeric[T]) : InternalExpand[T] = {
     new InternalExpand[T](tgtSizes)

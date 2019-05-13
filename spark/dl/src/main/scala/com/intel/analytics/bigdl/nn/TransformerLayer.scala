@@ -66,7 +66,7 @@ class TransformerLayer[T: ClassTag](
     Graph(input, output)
   }
 
-  private def decode(num_layers: Int): Module[T] = {
+  private[nn] def decode(num_layers: Int): Module[T] = {
     val decoder_input = Input()
     val decoder_self_attention_bias = Input()
     var output = decoder_input
@@ -74,6 +74,7 @@ class TransformerLayer[T: ClassTag](
     while (i < num_layers) {
       val attention = new Attention[T](hiddenSize, numHeads, attentionDropout)
       val ffn = new FeedForwardNetwork[T](hiddenSize, filterSize, reluDropout)
+      // for self attention
       val attentionModel = prePostProcessingWrapperAttention(
         attention, output, decoder_self_attention_bias, s"attention_${i}")
       val ffnModel = prePostProcessingWrapperFFN(ffn, attentionModel, s"ffn_${i}")
@@ -89,7 +90,7 @@ class TransformerLayer[T: ClassTag](
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
       .inputs(decoder_input)
     val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
-      .inputs(layer.setName(preName + "/attention").inputs(norm, decoder_self_attention_bias))
+      .inputs(layer.setName(preName + "/attention").inputs(norm, norm, decoder_self_attention_bias))
     CAddTable().inputs(decoder_input, drop)
   }
   private def prePostProcessingWrapperFFN(layer: Module[T],
@@ -171,17 +172,15 @@ private[nn] class TransformerPrepareDecoder[T: ClassTag](implicit ev: TensorNume
   }
 
   /**
-    * Args:
-    * x: a Tensor with shape [batch, length, channels]
-    * min_timescale: a float
-    * max_timescale: a float
-    * start_index: index of first position
-    * Returns: a Tensor the same shape as x.
-    * @param input
-    * @param min_timescale
-    * @param max_timescale
-    * @return
-    */
+   * x: a Tensor with shape [batch, length, channels]
+   * min_timescale: a float
+   * max_timescale: a float
+   * Returns: a Tensor the same shape as x.
+   * @param input
+   * @param min_timescale
+   * @param max_timescale
+   * @return
+   */
   def addTimingSignal1D(input: Tensor[T],
      min_timescale : Float = 1.0f,
      max_timescale: Float = 1.0e4f): Tensor[T] = {

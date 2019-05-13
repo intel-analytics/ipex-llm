@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -38,7 +38,7 @@ class Attention[T: ClassTag](
     // for self attention, InputX and InputY should be the same.
     // Bias is attention bias that will be added to the result of the dot product.
     val inputX = Input()
-    val inputY = inputX // Input()
+    val inputY = Input()
     val inputBias = Input()
 
     // Layers for linearly projecting the queries, keys, and values.
@@ -70,9 +70,14 @@ class Attention[T: ClassTag](
     // Run the combined outputs through another linear projection layer.
     val outputLayer = TransformerOperation.dense(
       hiddenSize, hiddenSize, false, name = "output_transform").inputs(combineHeads)
-    val graph = Graph(Array(inputX, inputBias), Array(outputLayer))
+    val graph = Graph(Array(inputX, inputY, inputBias), Array(outputLayer))
     if (this.train) graph.training() else graph.evaluate()
     graph
+  }
+
+  override def updateOutput(input: Activity): Activity = {
+    output = model.updateOutput(input)
+    output
   }
 }
 // Combine tensor that has been splitted.
