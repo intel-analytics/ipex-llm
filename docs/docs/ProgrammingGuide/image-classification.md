@@ -70,6 +70,7 @@ For preprocessors for Image Classification models, please check [Image Classific
 * [VGG-19 Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-19-quantize_imagenet_0.1.0.model)
 * [Resnet-50](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_resnet-50_imagenet_0.1.0.model)
 * [Resnet-50 Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_resnet-50-quantize_imagenet_0.1.0.model)
+* [Resnet-50 Int8](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_resnet-50-int8_imagenet_0.5.0.model)
 * [Densenet-161](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_densenet-161_imagenet_0.1.0.model)
 * [Densenet-161 Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_densenet-161-quantize_imagenet_0.1.0.model)
 * [Mobilenet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_mobilenet_imagenet_0.1.0.model)
@@ -77,4 +78,3 @@ For preprocessors for Image Classification models, please check [Image Classific
 * [Mobilenet-V2 Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/analytics-zoo_mobilenet-v2-quantize_imagenet_0.1.0.model)
 * [Squeezenet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_squeezenet_imagenet_0.1.0.model)
 * [Squeezenet Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_squeezenet-quantize_imagenet_0.1.0.model)
-
