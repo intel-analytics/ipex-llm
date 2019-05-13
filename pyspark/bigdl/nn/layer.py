@@ -934,13 +934,13 @@ class TransformerLayer(Layer):
 
     '''
     Implementation TransformerLayer
-    >>> ffn = TransformerLayer(4, 2, 3, 1, 0.1, 0.1, 0.1)
+    >>> ffn = TransformerLayer(20, 4, 2, 3, 1, 0.1, 0.1, 0.1)
     creating: createTransformerLayer
     '''
-    def __init__(self, hidden_size, num_heads, filter_size, num_hidden_layers,
+    def __init__(self, vocab_size, hidden_size, num_heads, filter_size, num_hidden_layers,
                  postprocess_dropout, attention_dropout,
                  relu_dropout, bigdl_type="float"):
-        super(TransformerLayer, self).__init__(None, bigdl_type,
+        super(TransformerLayer, self).__init__(None, bigdl_type, vocab_size,
                                                hidden_size, num_heads, filter_size,
                                                num_hidden_layers, postprocess_dropout,
                                                attention_dropout, relu_dropout)

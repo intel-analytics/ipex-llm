@@ -31,7 +31,6 @@ import scala.reflect.ClassTag
  * good results on a number of problems, especially in NLP and machine translation.
  * See "Attention Is All You Need" (https://arxiv.org/abs/1706.03762) for the full
  * description of the model and the results obtained with its early version.
- * Input with shape (batchSize, length, hiddenSize)
  * @param hiddenSize
  * @param numHeads
  * @param filterSize
@@ -42,27 +41,32 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in this module parameters.
  */
 class TransformerLayer[T: ClassTag](
+   val vocabSize: Int,
    val hiddenSize: Int,
    val numHeads: Int,
    val filterSize: Int,
    val numHiddenlayers: Int,
    val postprocessDropout: Float,
    val attentionDropout: Float,
-   val reluDropout: Float)
+   val reluDropout: Float,
+   val problem: ProblemType = LanguageModel)
   (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
+
+  require(problem == LanguageModel, "Transformer layer only support language model now")
 
   override def buildModel(): Module[T] = {
     val input = Input()
-    val decoder_input = new TransformerPrepareDecoder().inputs(input)
-    val decoder_self_attention_bias = new TransformerConstant().inputs(input)
+    val embedding = LookupTable[T](nIndex = vocabSize, nOutput = hiddenSize).inputs(input)
+    val decoder_input = new TransformerPrepareDecoder().inputs(embedding)
+    val decoder_self_attention_bias = new TransformerConstant().inputs(embedding)
 
-    val decoder_input_lm = if (train) {
+    val decoder_input_drop = if (train) {
       val postDropOut = Dropout(1- postprocessDropout)
       postDropOut.inputs(decoder_input)
     } else decoder_input
 
     val blockModel = decode(numHiddenlayers)
-    val output = blockModel.inputs(decoder_input_lm, decoder_self_attention_bias)
+    val output = blockModel.inputs(decoder_input_drop, decoder_self_attention_bias)
     Graph(input, output)
   }
 
@@ -88,9 +92,10 @@ class TransformerLayer[T: ClassTag](
   private def prePostProcessingSelfAttention(layer: Module[T], decoder_input: ModuleNode[T],
     decoder_self_attention_bias: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
-      .inputs(decoder_input)
+        .inputs(decoder_input)
     val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
-      .inputs(layer.setName(preName + "/self_attention").inputs(norm, norm, decoder_self_attention_bias))
+        .inputs(layer.setName(preName + "/self_attention")
+        .inputs(norm, norm, decoder_self_attention_bias))
     CAddTable().inputs(decoder_input, drop)
   }
   private def prePostProcessingFFN(layer: Module[T],
@@ -106,6 +111,7 @@ class TransformerLayer[T: ClassTag](
 
 object TransformerLayer {
   def apply[T: ClassTag](
+     vocabSize: Int,
      hiddenSize: Int,
      numHeads: Int,
      filterSize: Int,
@@ -114,7 +120,8 @@ object TransformerLayer {
      attentionDropout: Float,
      reluDropout: Float)
    (implicit ev: TensorNumeric[T]): TransformerLayer[T] =
-    new TransformerLayer(hiddenSize, numHeads, filterSize, numHiddenlayers,
+    new TransformerLayer(vocabSize, hiddenSize, numHeads,
+      filterSize, numHiddenlayers,
       postprocessDropout, attentionDropout, reluDropout)
 }
 

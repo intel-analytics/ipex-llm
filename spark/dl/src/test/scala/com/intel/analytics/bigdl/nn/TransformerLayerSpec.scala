@@ -32,7 +32,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     val postprocessDropout = 1.0f
     val attentionDropout = 1.0f
     val reluDropout = 1.0f
-    val transformer = new TransformerLayer[Float](
+    val transformer = new TransformerLayer[Float](vocabSize,
       hiddenSize, numHeads, filterSize, num_hidden_layers,
       postprocessDropout, attentionDropout, reluDropout)
 
@@ -236,10 +236,10 @@ class TransformerLayerSerialTest extends ModuleSerializationTest {
     val postprocessDropout = 1.0f
     val attentionDropout = 1.0f
     val reluDropout = 1.0f
-    val model = new TransformerLayer[Float](
+    val model = new TransformerLayer[Float](20,
       hiddenSize, numHeads, filterSize, num_hidden_layers,
       postprocessDropout, attentionDropout, reluDropout)
-    val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 6).apply1(_ => Random.nextInt(10) + 1)
     runSerializationTest(model, input)
   }
 }

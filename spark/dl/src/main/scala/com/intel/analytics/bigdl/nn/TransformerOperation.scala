@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.EngineType
 
 import scala.reflect.ClassTag
 
@@ -66,3 +67,8 @@ private[nn] object TransformerOperation {
     output
   }
 }
+
+sealed trait ProblemType
+
+case object Translation extends ProblemType
+case object LanguageModel extends ProblemType
