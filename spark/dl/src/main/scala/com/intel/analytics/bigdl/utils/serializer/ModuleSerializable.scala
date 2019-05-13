@@ -439,8 +439,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Serialize and save MKL DNN INT8 attributes into BigDL Model of protobuf definition
-   * @param module serialized module builder
-   * @param modelBuilder  serialization context
+   * @param module
+   * @param modelBuilder serialized module builder
    */
   protected def saveMklInt8Attr[T: ClassTag](module : MklInt8Convertible,
                                              modelBuilder : BigDLModule.Builder)
