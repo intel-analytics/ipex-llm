@@ -125,7 +125,13 @@ trait ModuleSerializable extends Loadable with Savable{
     val clsMirror = universe.runtimeMirror(cls.getClassLoader)
     val clsSymbol = clsMirror.classSymbol(cls)
 
-    // https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
+    /*
+    https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
+    this line tries to get companion object of the class;
+    through the companion, default values can be access by calling some static methods created by scala compiler,
+    however it does not work when the class is not a case class or has not defined a companion,
+    which in this case, calling companionSymbol return s universe.NoSymbol
+    */
     val companionSymbol = clsSymbol.companionSymbol
 
     val instanceMirror = companionSymbol match {
