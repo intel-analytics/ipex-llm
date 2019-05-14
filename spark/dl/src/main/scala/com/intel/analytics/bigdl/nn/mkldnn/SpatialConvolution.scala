@@ -25,6 +25,49 @@ import com.intel.analytics.bigdl.tensor.{DenseTensorMath, DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 
+/*
+ * Applies a 2D convolution over an input image composed of several input planes.
+ * The input tensor in forward(input) is expected to be
+ * a 3D tensor (nInputPlane x height x width).
+ *
+ * nInputPlane The number of expected input planes in the image given into forward()
+ * nOutputPlane: The number of output planes the convolution layer will produce.
+ * kernelW: the kernel width of the convolution
+ * kernelH: The kernel height of the convolution
+ * strideW: Int = 1, The step of the convolution in the width dimension.
+ * strideH: Int = 1, The step of the convolution in the height dimension
+ * padW: Int = 0, The additional zeros added per width to the input planes.
+ * padH: Int = 0, The additional zeros added per height to the input planes.
+ * nGroup: Int = 1, Kernel group number
+ * propagateBack: Boolean = true, propagate gradient back
+ * wRegularizer: Regularizer[Float] = null,
+ * bRegularizer: Regularizer[Float] = null,
+ * initWeight: Tensor[Float] = null,
+ * initBias: Tensor[Float] = null,
+ * initGradWeight: Tensor[Float] = null,
+ * initGradBias: Tensor[Float] = null,
+ * withBias: Boolean = true,
+ * format: DataFormat = DataFormat.NCHW,
+ * dilationW: Int = 1,
+ * dilationH: Int = 1
+ *
+ * When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+ * padding of tensorflow. That is
+ *
+ * outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ * outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ *
+ * padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ * padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ *
+ * padTop = padAlongHeight / 2
+ * padLeft = padAlongWidth / 2
+ *
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
+*/
 class SpatialConvolution(
   val nInputPlane: Int,
   val nOutputPlane: Int,
@@ -43,7 +86,9 @@ class SpatialConvolution(
   val initGradWeight: Tensor[Float] = null,
   val initGradBias: Tensor[Float] = null,
   val withBias: Boolean = true,
-  val format: DataFormat = DataFormat.NCHW
+  val format: DataFormat = DataFormat.NCHW,
+  val dilationW: Int = 1,
+  val dilationH: Int = 1
 ) extends MklDnnLayer with Initializable with Serializable with MklInt8Convertible {
   private val weightShape = if (nGroup == 1) {
     Array(nOutputPlane, nInputPlane, kernelH, kernelW)
@@ -90,6 +135,7 @@ class SpatialConvolution(
   private var _dim = 1
   private var _sumInput = false
 
+
   def relu: Boolean = _relu
   def setReLU(value: Boolean = true): this.type = {
     _relu = value
@@ -115,6 +161,20 @@ class SpatialConvolution(
     _sum = true
     this
   }
+
+  // get padding type
+  private val paddingType: PaddingType.Value = getPaddingType()
+
+  // Parameters for Dilated Convolution
+  // In most of deep learning framework,
+  // the default value of dilation which defines regular convolution module is 1
+  // BigDL follows this convention
+  // However the default value used by mkl-dnn is 0;
+  // in order to keep consistensy, we internally transform them with deducting by 1.
+  private val dilationW_mkldnn: Int = dilationW - 1
+  private val dilationH_mkldnn: Int = dilationH - 1
+
+
 
   private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
     format match {
@@ -192,20 +252,16 @@ class SpatialConvolution(
     val inputHeight = inputMemoryData.shape(2) // TODO only supports 4-D and nchw
     val inputWidth = inputMemoryData.shape(3)
 
-    val sizes = if (padW == -1 && padH == -1) {
-        NNUtils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH,
-          kernelW)
-      } else {
-        NNUtils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW,
-          padH, padW, ceilMode = false)
-      }
+    val convPaddingShape = getConvPaddingShape(inputHeight, inputWidth, paddingType)
+    val convOutputShape = getConvOutputShape(inputHeight, inputWidth, convPaddingShape)
 
-    val padTop = sizes(0)
-    val padBottom = sizes(1)
-    val padLeft = sizes(2)
-    val padRight = sizes(3)
-    val outputHeight = sizes(4)
-    val outputWidth = sizes(5)
+    val padTop = convPaddingShape.top
+    val padBottom = convPaddingShape.bottom
+    val padLeft = convPaddingShape.left
+    val padRight = convPaddingShape.right
+    val outputHeight = convOutputShape.height
+    val outputWidth = convOutputShape.width
+
     paddingTL = Array(padTop, padLeft)
     paddingBR = Array(padBottom, padRight)
 
@@ -258,13 +314,14 @@ class SpatialConvolution(
     val scaleWeight = this.getWeightScales().flatten.map { w => Scale.S8_MAX / w }
 
     // TODO check wether ForwardInference and ForwardTraining is the same
-    val desc = MklDnn.ConvForwardDescInit(
+    val desc = MklDnn.DilatedConvForwardDescInit(
       PropKind.ForwardTraining, AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
       bis.getMemoryDescription(),
       dst.getMemoryDescription(),
-      Array(strideW, strideH), paddingTL, paddingBR,
+      Array(strideW, strideH), Array(dilationW_mkldnn, dilationH_mkldnn),
+      paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
 
     forwardPrimDesc = if (relu || sum) {
@@ -407,12 +464,15 @@ class SpatialConvolution(
     val bis = NativeData(Array(nOutputPlane), Memory.Format.x)
     val dst = NativeData(outputShape, Memory.Format.any)
 
-    val desc = MklDnn.ConvBackwardDataDescInit(
+    val desc = MklDnn.DilatedConvBackwardDataDescInit(
       AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(), // TODO check correctness of strides and padding
-      dst.getMemoryDescription(), Array(strideW, strideH), paddingTL, paddingBR,
+      dst.getMemoryDescription(),
+      Array(strideW, strideH), Array(dilationW_mkldnn, dilationH_mkldnn),
+      paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
+
     val backwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
     val List(realDiffSrc, realWei, realDiffDst) =
@@ -472,13 +532,16 @@ class SpatialConvolution(
     val wei = NativeData(weightShape, Memory.Format.any)
     val bis = NativeData(Array(nOutputPlane), Memory.Format.x)
 
-    val desc = MklDnn.ConvBackwardWeightsDescInit(
+    val desc = MklDnn.DilatedConvBackwardWeightsDescInit(
       AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
       bis.getMemoryDescription(),
-      grad(0).getMemoryDescription(), Array(strideW, strideH), paddingTL, paddingBR,
+      grad(0).getMemoryDescription(),
+      Array(strideW, strideH), Array(dilationW_mkldnn, dilationH_mkldnn),
+      paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
+
     val gradWeightPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
     // TODO here seems some errors ?????? check the realSrc format.
@@ -576,6 +639,114 @@ class SpatialConvolution(
     needQuantize = value
     this
   }
+
+  /**
+    * Todo:
+    *   (1) add calculation logic for Full padding
+    *   (2) abstract and design an object type for return value, insteaof returnning
+    *       the result as an int array
+    * Calculate padding size
+    * @param inputHeight height of input
+    * @param inputWidth width of input
+    * @param paddingType one of Same, Valid, Full
+    * @return an int array of length 4 representing padding sizes
+    *         (top, bottom, left, right)
+    */
+  private def getConvPaddingShape(inputHeight: Int, inputWidth: Int,
+                                  paddingType: PaddingType.Value): ConvPaddingShape = {
+    paddingType match {
+      case PaddingType.Same =>
+        getConvPaddingShape(inputHeight, inputWidth, kernelH, kernelW,
+          strideH, strideW, dilationH, dilationW)
+      case PaddingType.Custom => ConvPaddingShape(padH, padH, padW, padW)
+      case _ => throw new IllegalArgumentException()
+    }
+  }
+
+  /**
+    * Helper function to get convolution padding shape for Same Padding
+    * Steps:
+    *   1). calculate the dimension of dilated kernel
+    *       dilated kernel = kernel + (kernel - 1) * (dilation - 1)
+    *   2). calculate the number of stride it would make
+    *       number of stride = (input + stride - 1) / stride
+    *   3). calculate the number of pad needed to make
+    *       number of pad = start of last stride + dilated kernel - input
+    *       start of last stride = (number of stride - 1) * stride
+    *   4). assign the number of pad to left & right side
+    * @param inputHeight height of input
+    * @param inputWidth width of input
+    * @param kernelHeight height of kernel
+    * @param kernelWidth width of kernel
+    * @param strideHeight height of stride
+    * @param strideWidth width of stride
+    * @param dilationHeight height of dilation
+    * @param dilationWidth width of dilation
+    * @return ConvPaddingShape
+    */
+  private def getConvPaddingShape(inputHeight: Int, inputWidth: Int,
+                                  kernelHeight: Int, kernelWidth: Int,
+                                  strideHeight: Int, strideWidth: Int,
+                                  dilationHeight: Int, dilationWidth: Int
+                                 ): ConvPaddingShape = {
+    val dilatedKernelHeight = kernelHeight + (kernelHeight - 1) * (dilationHeight - 1)
+    val dilatedKernelWidth = kernelWidth + (kernelWidth - 1) * (dilationWidth - 1)
+    val numOfStrideHeight = (inputHeight + strideHeight - 1) / strideHeight
+    val numOfStrideWidth = (inputWidth + strideWidth - 1) / strideWidth
+    val padAlongHeight = Math.max(0,
+      (numOfStrideHeight - 1) * strideHeight + dilatedKernelHeight - inputHeight)
+    val padAlongWidth = Math.max(0,
+      (numOfStrideWidth - 1) * strideWidth + dilatedKernelWidth - inputWidth)
+    val (padTop, padBottom) = (padAlongHeight / 2, (padAlongHeight + 1) / 2)
+    val (padLeft, padRight) = (padAlongWidth / 2, (padAlongWidth + 1) / 2)
+    ConvPaddingShape(padTop, padBottom, padLeft, padRight)
+  }
+
+
+
+  /**
+    * Calculate convolution output size
+    * Please try to keep the logic in consistent with MKL-DNN
+    * Reffernce: https://github.com/intel/mkl-dnn/blob/master/src/common/convolution.cpp#L117
+    * @param inputH height of input
+    * @param inputW width of input
+    * @return a ConvOutputShape object
+    */
+  private def getConvOutputShape(inputH: Int, inputW: Int,
+                                 paddingShape: ConvPaddingShape): ConvOutputShape = {
+    def getOutputLength(inputLength: Int, padLeft: Int, padRight: Int,
+                        dilation: Int, kernelSize: Int, stride: Int): Int = {
+      val kernelRange = 1 + (kernelSize - 1) * (dilation + 1)
+      val outputLength = (inputLength - kernelRange + padLeft + padRight) / stride + 1
+      return outputLength
+    }
+    val (padTop, padBottom, padLeft, padRight) = (
+      paddingShape.top, paddingShape.bottom,
+      paddingShape.left, paddingShape.right
+    )
+    val outputHeight = getOutputLength(inputH, padTop, padBottom,
+      dilationH_mkldnn, kernelH, strideH)
+    val outputWidth = getOutputLength(inputW, padLeft, padRight,
+      dilationW_mkldnn, kernelW, strideH)
+
+    ConvOutputShape(outputHeight, outputWidth)
+  }
+
+
+  /**
+    *  Get padding type
+    * @return
+    */
+  private def getPaddingType(): PaddingType.Value = {
+    if (padH == -1 && padW == -1) {
+      PaddingType.Same
+    } else if (padH >= 0 && padW >= 0) {
+      PaddingType.Custom
+    } else {
+      throw new IllegalArgumentException("Invalid padding")
+    }
+  }
+
 }
 
 object SpatialConvolution {
@@ -597,10 +768,13 @@ object SpatialConvolution {
     initGradWeight: Tensor[Float] = null,
     initGradBias: Tensor[Float] = null,
     withBias: Boolean = true,
-    format: DataFormat = DataFormat.NCHW): SpatialConvolution = {
+    format: DataFormat = DataFormat.NCHW,
+    dilationW: Int = 1,
+    dilationH: Int = 1): SpatialConvolution = {
     new SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW,
       dH, padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
-      initWeight, initBias, initGradWeight, initGradBias, withBias, format)
+      initWeight, initBias, initGradWeight,
+      initGradBias, withBias, format, dilationW, dilationH)
   }
 }
 
@@ -608,3 +782,20 @@ object Scale {
   val S8_MAX = 127.0f
   val U8_MAX = 255.0f
 }
+
+
+private[mkldnn] object PaddingType extends Enumeration {
+  val Same, Custom = Value
+}
+
+private[mkldnn] case class ConvPaddingShape (
+  top: Int,
+  bottom: Int,
+  left: Int,
+  right: Int
+)
+
+private[mkldnn] case class ConvOutputShape (
+  height: Int,
+  width: Int
+)
