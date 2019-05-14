@@ -1,5 +1,13 @@
 **Talks:**
 
+* LSTM-based time series anomaly detection using Analytics Zoo for Spark and BigDL, [Strata Data conference](https://conferences.oreilly.com/strata/strata-eu/public/schedule/detail/74077), May 2019, London ([slides](https://cdn.oreillystatic.com/en/assets/1/event/292/LSTM-based%20time%20series%20anomaly%20detection%20using%20Analytics%20Zoo%20for%20Spark%20and%20BigDL%20Presentation.pptx))
+
+* Game Playing Using AI on Apache Spark, [Spark+AI Summit](https://databricks.com/session/game-playing-using-ai-on-apache-spark), April 2019, San Francisco ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/game-playing-using-ai-on-apache-spark.pdf))
+
+* Using Deep Learning on Apache Spark to Diagnose Thoracic Pathology from Chest X-rays, [Spark+AI Summit](https://databricks.com/session/using-deep-learning-on-apache-spark-to-diagnose-thoracic-pathology-from-chest-x-rays), April 2019, San Francisco ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Using%20Deep%20Learning%20on%20Apache%20Spark%20to%20diagnose%20thoracic%20pathology%20from%20.._.pdf))
+
+* Leveraging NLP and Deep Learning for Document Recommendation in the Cloud, [Spark+AI Summit](https://databricks.com/session/leveraging-nlp-and-deep-learning-for-document-recommendations-in-the-cloud), April 2019, San Francisco ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Leveraging%20NLP%20and%20Deep%20Learning%20for%20Document%20Recommendation%20in%20the%20Cloud.pdf))
+
 * Analytics Zoo: Distributed Tensorflow, Keras and BigDL in production on Apache Spark, [Strata Data conference](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/72802), March 2019, San Francisco ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Analytics%20Zoo-Distributed%20Tensorflow%2C%20Keras%20and%20BigDL%20in%20production%20on%20Apache%20Spark.pdf))
 
 * User-based real-time product recommendations leveraging deep learning using Analytics Zoo on Apache Spark in Office Depot, [Strata Data conference](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079), March 2019, San Francisco ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/User-based%20real-time%20product%20recommendations%20leveraging%20deep%20learning%20using%20Analytics%20Zoo%20on%20Apache%20Spark%20and%20BigDL%20Presentation.pdf))
