@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.{DenseTensorMath, DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 
-/*
+/**
  * Applies a 2D convolution over an input image composed of several input planes.
  * The input tensor in forward(input) is expected to be
  * a 3D tensor (nInputPlane x height x width).
@@ -67,7 +67,9 @@ import scala.collection.mutable.ArrayBuffer
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
  *                    applied to the bias.
-*/
+ * @param dilationW: dilation width, default to 1
+ * @param dilationH: dilation height, default to 1
+ */
 class SpatialConvolution(
   val nInputPlane: Int,
   val nOutputPlane: Int,
