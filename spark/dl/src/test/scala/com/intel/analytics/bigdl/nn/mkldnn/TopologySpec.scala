@@ -958,7 +958,7 @@ class TopologySpec extends FlatSpec with Matchers {
 
     val input = Tensor[Float](inputShape).rand(-1, 1)
     model.forward(input)
-    model.asInstanceOf[Sequential].setWeightDimMask(1, true)
+    model.asInstanceOf[Sequential].setWeightDimMask(1)
     model.asInstanceOf[Sequential].calcScales(input)
 
     val output = model.output.toTensor[Float].clone()
@@ -996,7 +996,7 @@ class TopologySpec extends FlatSpec with Matchers {
     model.forward(input)
     val output = model.output.toTensor[Float].clone()
 
-    model.setWeightDimMask(1, true)
+    model.setWeightDimMask(1)
     model.calcScales(input)
     model.release()
 
@@ -1036,7 +1036,7 @@ class TopologySpec extends FlatSpec with Matchers {
     model.compile(InferencePhase)
 
     model.forward(input)
-    model.setWeightDimMask(1, true)
+    model.setWeightDimMask(1)
     model.calcScales(input)
     val output = model.output.toTensor[Float].clone()
     model.release()

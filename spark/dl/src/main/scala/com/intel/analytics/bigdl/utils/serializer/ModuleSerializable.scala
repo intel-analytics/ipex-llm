@@ -125,14 +125,7 @@ trait ModuleSerializable extends Loadable with Savable{
     val clsMirror = universe.runtimeMirror(cls.getClassLoader)
     val clsSymbol = clsMirror.classSymbol(cls)
 
-    /*
-    https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
-    this line tries to get companion object of the class;
-    through the companion, default values can be accessed by calling
-    some static methods created by scala compiler, however it does not work when
-    the class is not a case class or has not defined a companion, which in this case,
-    calling companionSymbol returns universe.NoSymbol
-    */
+    // https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
     val companionSymbol = clsSymbol.companionSymbol
 
     val instanceMirror = companionSymbol match {
@@ -162,6 +155,7 @@ trait ModuleSerializable extends Loadable with Savable{
         }
         args(i) = pvalue
       }
+      println(i, args(i))
       i += 1
     })
    constructorMirror.apply(args : _*).
@@ -445,8 +439,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   /**
    * Serialize and save MKL DNN INT8 attributes into BigDL Model of protobuf definition
-   * @param module
-   * @param modelBuilder serialized module builder
+   * @param module serialized module builder
+   * @param modelBuilder  serialization context
    */
   protected def saveMklInt8Attr[T: ClassTag](module : MklInt8Convertible,
                                              modelBuilder : BigDLModule.Builder)

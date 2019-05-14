@@ -29,80 +29,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.util.Random
 
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
-
-  "MKL-DNN Dilated Convolution compared with BLAS Dilated Convolution" should "work correctly" in {
-    val nInputPlane = 2
-    val nOutputPlane = 4
-    val kW = 3
-    val kH = 3
-    val dW = 4
-    val dH = 4
-    val padW = 0
-    val padH = 0
-    var (dilationH, dilationW) = (1, 1)
-
-    var input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    var gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => Random.nextFloat())
-
-
-    def compareHelper(input: Tensor[Float], gradOutput: Tensor[Float],
-                      dilationHeight: Int, dilationWidth: Int): Unit = {
-      RNG.setSeed(100)
-      var mkldnnConv = SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH,
-        dilationH = dilationH, dilationW = dilationW)
-
-
-      RNG.setSeed(100)
-
-      val blasConv = nn.SpatialDilatedConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-        padW, padH, dilationH = dilationH, dilationW = dilationW)
-
-      val mkldnnSeq = Sequential()
-        .add(Input(input.size(), Memory.Format.nchw))
-        .add(mkldnnConv)
-        .add(ReorderMemory(HeapData(gradOutput.size(), Memory.Format.nchw)))
-
-      mkldnnSeq.compile(TrainingPhase)
-
-      val output = mkldnnSeq.forward(input)
-      val grad1 = mkldnnSeq.backward(input, gradOutput)
-
-      val weight1 = mkldnnConv.weight.dense
-      val gradweight1 = mkldnnConv.gradWeight.dense
-      val bias1 = mkldnnConv.bias.dense
-      val gradbias1 = mkldnnConv.gradBias.dense
-
-      val output2 = blasConv.forward(input)
-      val grad2 = blasConv.updateGradInput(input, gradOutput)
-      blasConv.accGradParameters(input, gradOutput)
-
-      val weight2 = blasConv.weight
-      val gradweight2 = blasConv.gradWeight
-      val bias2 = blasConv.bias
-      val gradbias2 = blasConv.gradBias
-
-      Equivalent.nearequals(weight1, weight2.resizeAs(weight1)) should be(true)
-      Equivalent.nearequals(gradweight1, gradweight2.resizeAs(gradweight1)) should be(true)
-      Equivalent.nearequals(bias1, bias2) should be(true)
-      Equivalent.nearequals(gradbias1, gradbias2) should be(true)
-      Equivalent.nearequals(output.toTensor, output2) should be(true)
-      Equivalent.nearequals(grad1.toTensor, grad2) should be(true)
-    }
-
-    compareHelper(input, gradOutput, dilationH, dilationW)
-
-
-
-    dilationH = 2
-    dilationW = 2
-    input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    gradOutput = Tensor[Float](2, 4, 5, 5).apply1(e => Random.nextFloat())
-
-    compareHelper(input, gradOutput, dilationH, dilationW)
-
-  }
-
-
   "ConvolutionDnn with format=nchw and ngroup=1" should "work correctly" in {
     val nInputPlane = 2
     val nOutputPlane = 4
@@ -701,7 +627,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val output = model.output.toTensor[Float].clone()
 
-    model.setInputDimMask(1, true)
+    model.setInputDimMask(1)
     model.calcScales(input)
     model.release()
 
