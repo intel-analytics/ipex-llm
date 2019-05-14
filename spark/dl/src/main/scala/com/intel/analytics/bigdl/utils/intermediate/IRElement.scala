@@ -62,7 +62,8 @@ case class IRSpatialConvolution[T: ClassTag](
             wRegularizer: Regularizer[T] = null, bRegularizer: Regularizer[T] = null,
             initWeight: Tensor[T] = null, initBias: Tensor[T] = null,
             initGradWeight: Tensor[T] = null, initGradBias: Tensor[T] = null,
-            withBias: Boolean = true, format: DataFormat = DataFormat.NCHW) extends IROperator[T]
+            withBias: Boolean = true, format: DataFormat = DataFormat.NCHW,
+            dilationW: Int = 1, dilationH: Int = 1) extends IROperator[T]
 
 case class IRSpatialShareConvolution[T: ClassTag](
             nInputPlane: Int, nOutputPlane: Int,

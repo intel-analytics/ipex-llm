@@ -52,6 +52,7 @@ private[bigdl] object ReflectionUtils {
     val tagIter = tags.iterator
     val numericIter = numerics.iterator
     var i = 0
+
     constructorFullParams.foreach(map => {
       map.foreach(param => {
         val name = param.name.decodedName.toString
@@ -71,6 +72,7 @@ private[bigdl] object ReflectionUtils {
         i += 1
       })
     })
+
     constructorMirror.apply(args : _*).asInstanceOf[Object]
   }
 
@@ -79,7 +81,6 @@ private[bigdl] object ReflectionUtils {
     val (tags, numerics) = layer.getOp().getClassTagNumerics()
     val blasLayer = ReflectionUtils.reflection(layer.getOp(), cls, tags, numerics)
       .asInstanceOf[Module[T]]
-
     if (blasLayer.parameters() != null) {
       val params = blasLayer.getParameters()
       val params2 = layer.getParameters()
@@ -107,6 +108,7 @@ private[bigdl] object ReflectionUtils {
     val op = ReflectionUtils.reflection(layer, cls, tags, numerics).asInstanceOf[IROperator[T]]
     val weightsAndBias =
       if (layer.parameters() != null) layer.getParameters() else (null, null)
+
     val element = IRElement[T](
       layer.getName(), op, weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
     if (layer.isInstanceOf[MklInt8Convertible]) {

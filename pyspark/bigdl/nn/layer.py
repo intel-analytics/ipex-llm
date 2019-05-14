@@ -902,34 +902,6 @@ class Model(Container):
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
         return self
 
-class Attention(Layer):
-
-    '''
-    Implementation of multiheaded attention and self-attention layers.
-
-    >>> attention = Attention(8, 4, 1.0)
-    creating: createAttention
-    '''
-
-    def __init__(self, hidden_size, num_heads, attention_dropout, bigdl_type="float"):
-        super(Attention, self).__init__(None, bigdl_type,
-                                        hidden_size, num_heads, attention_dropout)
-
-class FeedForwardNetwork(Layer):
-
-    '''
-    Implementation FeedForwardNetwork constructed with fully connected network.
-    Input with shape (batch_size, length, hidden_size)
-    Output with shape (batch_size, length, hidden_size)
-
-    >>> ffn = FeedForwardNetwork(8, 4, 1.0)
-    creating: createFeedForwardNetwork
-    '''
-
-    def __init__(self, hidden_size, filter_size, relu_dropout, bigdl_type="float"):
-        super(FeedForwardNetwork, self).__init__(None, bigdl_type,
-                                        hidden_size, filter_size, relu_dropout)
-
 class Linear(Layer):
 
     '''

@@ -71,7 +71,7 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
     Equivalent.nearequals(weight1, weight2) should be (true)
     Equivalent.nearequals(gradWeight1, gradWeight2) should be (true)
 
-    Equivalent.nearequals(Tools.dense(seq.gradInput).toTensor,
+    Equivalent.nearequals(Tools.dense(modelDnn.gradInput).toTensor,
       modelBlas.gradInput.toTensor[Float]) should be (true)
   }
 
