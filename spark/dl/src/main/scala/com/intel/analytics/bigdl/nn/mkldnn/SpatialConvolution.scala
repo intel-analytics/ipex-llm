@@ -165,12 +165,14 @@ class SpatialConvolution(
   // get padding type
   private val paddingType: PaddingType.Value = getPaddingType()
 
-  // Parameters for Dilated Convolution
-  // In most of deep learning framework,
-  // the default value of dilation which defines regular convolution module is 1
-  // BigDL follows this convention
-  // However the default value used by mkl-dnn is 0;
-  // in order to keep consistensy, we internally transform them with deducting by 1.
+  /*
+  Parameters for Dilated Convolution
+  In most of deep learning framework,
+  the default value of dilation which defines regular convolution module is 1
+  BigDL follows this convention
+  However the default value used by mkl-dnn is 0;
+  in order to keep consistensy, we internally transform them with deducting by 1.
+  */
   private val dilationW_mkldnn: Int = dilationW - 1
   private val dilationH_mkldnn: Int = dilationH - 1
 
@@ -641,17 +643,17 @@ class SpatialConvolution(
   }
 
   /**
-    * Todo:
-    *   (1) add calculation logic for Full padding
-    *   (2) abstract and design an object type for return value, insteaof returnning
-    *       the result as an int array
-    * Calculate padding size
-    * @param inputHeight height of input
-    * @param inputWidth width of input
-    * @param paddingType one of Same, Valid, Full
-    * @return an int array of length 4 representing padding sizes
-    *         (top, bottom, left, right)
-    */
+   * Todo:
+   *   (1) add calculation logic for Full padding
+   *   (2) abstract and design an object type for return value, insteaof returnning
+   *       the result as an int array
+   * Calculate padding size
+   * @param inputHeight height of input
+   * @param inputWidth width of input
+   * @param paddingType one of Same, Valid, Full
+   * @return an int array of length 4 representing padding sizes
+   *         (top, bottom, left, right)
+   */
   private def getConvPaddingShape(inputHeight: Int, inputWidth: Int,
                                   paddingType: PaddingType.Value): ConvPaddingShape = {
     paddingType match {
@@ -664,26 +666,26 @@ class SpatialConvolution(
   }
 
   /**
-    * Helper function to get convolution padding shape for Same Padding
-    * Steps:
-    *   1). calculate the dimension of dilated kernel
-    *       dilated kernel = kernel + (kernel - 1) * (dilation - 1)
-    *   2). calculate the number of stride it would make
-    *       number of stride = (input + stride - 1) / stride
-    *   3). calculate the number of pad needed to make
-    *       number of pad = start of last stride + dilated kernel - input
-    *       start of last stride = (number of stride - 1) * stride
-    *   4). assign the number of pad to left & right side
-    * @param inputHeight height of input
-    * @param inputWidth width of input
-    * @param kernelHeight height of kernel
-    * @param kernelWidth width of kernel
-    * @param strideHeight height of stride
-    * @param strideWidth width of stride
-    * @param dilationHeight height of dilation
-    * @param dilationWidth width of dilation
-    * @return ConvPaddingShape
-    */
+   * Helper function to get convolution padding shape for Same Padding
+   * Steps:
+   *   1). calculate the dimension of dilated kernel
+   *       dilated kernel = kernel + (kernel - 1) * (dilation - 1)
+   *   2). calculate the number of stride it would make
+   *       number of stride = (input + stride - 1) / stride
+   *   3). calculate the number of pad needed to make
+   *       number of pad = start of last stride + dilated kernel - input
+   *       start of last stride = (number of stride - 1) * stride
+   *   4). assign the number of pad to left & right side
+   * @param inputHeight height of input
+   * @param inputWidth width of input
+   * @param kernelHeight height of kernel
+   * @param kernelWidth width of kernel
+   * @param strideHeight height of stride
+   * @param strideWidth width of stride
+   * @param dilationHeight height of dilation
+   * @param dilationWidth width of dilation
+   * @return ConvPaddingShape
+   */
   private def getConvPaddingShape(inputHeight: Int, inputWidth: Int,
                                   kernelHeight: Int, kernelWidth: Int,
                                   strideHeight: Int, strideWidth: Int,
@@ -705,13 +707,13 @@ class SpatialConvolution(
 
 
   /**
-    * Calculate convolution output size
-    * Please try to keep the logic in consistent with MKL-DNN
-    * Reffernce: https://github.com/intel/mkl-dnn/blob/master/src/common/convolution.cpp#L117
-    * @param inputH height of input
-    * @param inputW width of input
-    * @return a ConvOutputShape object
-    */
+   * Calculate convolution output shape
+   * Please try to keep the logic in consistent with MKL-DNN
+   * Reffernce: https://github.com/intel/mkl-dnn/blob/master/src/common/convolution.cpp#L117
+   * @param inputH height of input
+   * @param inputW width of input
+   * @return a ConvOutputShape object
+   */
   private def getConvOutputShape(inputH: Int, inputW: Int,
                                  paddingShape: ConvPaddingShape): ConvOutputShape = {
     def getOutputLength(inputLength: Int, padLeft: Int, padRight: Int,
@@ -734,9 +736,9 @@ class SpatialConvolution(
 
 
   /**
-    *  Get padding type
-    * @return
-    */
+   * Get padding type
+   * @return PaddingType
+   */
   private def getPaddingType(): PaddingType.Value = {
     if (padH == -1 && padW == -1) {
       PaddingType.Same
@@ -784,10 +786,22 @@ object Scale {
 }
 
 
+/**
+ * Enum for padding type
+ * currently only support Same and Custom
+ */
 private[mkldnn] object PaddingType extends Enumeration {
   val Same, Custom = Value
 }
 
+
+/**
+ * object to store meta for convolution padding shape
+ * @param top
+ * @param bottom
+ * @param left
+ * @param right
+ */
 private[mkldnn] case class ConvPaddingShape (
   top: Int,
   bottom: Int,
@@ -795,6 +809,11 @@ private[mkldnn] case class ConvPaddingShape (
   right: Int
 )
 
+/**
+ * case class to store meta for convolution output shape
+ * @param height
+ * @param width
+ */
 private[mkldnn] case class ConvOutputShape (
   height: Int,
   width: Int
