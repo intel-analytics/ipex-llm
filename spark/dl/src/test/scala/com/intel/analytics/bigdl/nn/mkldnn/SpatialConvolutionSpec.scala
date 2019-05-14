@@ -29,6 +29,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.util.Random
 
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
+  
   "ConvolutionDnn with format=nchw and ngroup=1" should "work correctly" in {
     val nInputPlane = 2
     val nOutputPlane = 4
