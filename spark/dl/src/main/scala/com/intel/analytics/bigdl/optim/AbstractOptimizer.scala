@@ -115,7 +115,7 @@ abstract class AbstractOptimizer {
       case _ => throw new IllegalArgumentException
     }
     val start = System.nanoTime()
-    val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
+    val results = models.zipPartitions(validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
       val vMethodsArr = cached.localMethods
       val workingModels = cached.localModels
