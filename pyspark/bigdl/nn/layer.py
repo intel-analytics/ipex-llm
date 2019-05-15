@@ -929,6 +929,39 @@ class FeedForwardNetwork(Layer):
     def __init__(self, hidden_size, filter_size, relu_dropout, bigdl_type="float"):
         super(FeedForwardNetwork, self).__init__(None, bigdl_type,
                                         hidden_size, filter_size, relu_dropout)
+class LayerNormalization(Layer):
+    '''
+    Applies layer normalization.
+
+    >>> norm = LayerNormalization(8)
+    creating: createLayerNormalization
+    '''
+
+    def __init__(self, hidden_size, bigdl_type="float"):
+        super(LayerNormalization, self).__init__(None, bigdl_type, hidden_size)
+
+class createTableOperationExpand(Layer):
+    '''
+    When two tensors have different size, firstly expand small size tensor to large size tensor,
+    and then do table operation.
+
+    >>> norm = TableOperationExpand(CMulTable)
+    creating: createTableOperationExpand
+    '''
+
+    def __init__(self, operation_layer, expand_pos=2, bigdl_type="float"):
+        super(TableOperationExpand, self).__init__(None, bigdl_type, operation_layer, expand_pos)
+
+class createExpandSize(Layer):
+    '''
+    Expand tensor to configured size
+
+    >>> expand = ExpandSize([2, 3, 4])
+    creating: createExpandSize
+    '''
+
+    def __init__(self, sizes, bigdl_type="float"):
+        super(ExpandSize, self).__init__(None, bigdl_type, sizes)
 
 class Linear(Layer):
 
