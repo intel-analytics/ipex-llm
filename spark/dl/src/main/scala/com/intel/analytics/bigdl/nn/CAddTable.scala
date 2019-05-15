@@ -16,11 +16,14 @@
 
 package com.intel.analytics.bigdl.nn
 
+import javax.print.attribute.standard.MediaSize.Other
+
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
+import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.VAR
 
 import scala.reflect._
 
@@ -37,6 +40,31 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   extends AbstractModule[Table, Tensor[D], T] with MklInt8Convertible {
 
   output = Tensor[D]()
+
+  private def canFastBroadcast(tensor: Tensor[D], other: Tensor[D]): Boolean = {
+    if (tensor.nDimension != other.nDimension()) {
+      return false
+    }
+    var d = other.nDimension()
+    while(d > 0) {
+      if (tensor.size(d) != 1 && tensor.size(d) != other.size(d)) {
+        return false
+      }
+      d -= 1
+    }
+    return true
+  }
+
+  private def sumAlongDims(tensor: Tensor[D], other: Tensor[D]): Tensor[D] = {
+    val size = tensor.size()
+    var target: Tensor[D] = other
+    var i = 0
+    while (i < size.length) {
+      if (size(i) == 1) target = target.sum(i + 1)
+      i += 1
+    }
+    target
+  }
 
   override def updateOutput(input: Table): Tensor[D] = {
     var scalar = ev2.zero
@@ -91,6 +119,9 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
+        } else if (canFastBroadcast(input[Tensor[D]](i), gradOutput)) {
+        gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
+          sumAlongDims(input[Tensor[D]](i), gradOutput))
         } else {
           require(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
           if (!calculateSum) {
