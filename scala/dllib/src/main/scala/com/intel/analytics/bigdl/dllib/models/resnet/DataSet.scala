@@ -121,7 +121,7 @@ object ImageNetDataSet extends ResNetDataSet {
         batchSize = batchSize,
         transformer = PixelBytesToMat() ->
           RandomResize(256, 256) ->
-          RandomCropper(224, 224, false, CropCenter) ->
+          CenterCrop(224, 224) ->
           ChannelScaledNormalizer(104, 117, 123, 0.0078125) ->
           MatToTensor[Float](), toRGB = false
       )
