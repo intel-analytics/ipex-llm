@@ -15,21 +15,17 @@
  */
 package com.intel.analytics.bigdl.parameters
 
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{Callable, ExecutorService, Executors, Future, ThreadFactory}
-
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent._
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
+import org.apache.spark.TaskContext
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
-import org.apache.spark.TaskContext
-
 import scala.collection.JavaConverters._
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
 object AllReduceParameter {
@@ -134,6 +130,15 @@ class AllReduceParameter[T: ClassTag](
       .map(_.data.next().asInstanceOf[Tensor[T]])
       .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
   }
+
+  def localPartitionRange: (Int, Int) = {
+    val taskSize = size / partitionNum
+    val extraSize = size % partitionNum
+    val partitionId = TaskContext.getPartitionId()
+    (partitionId * taskSize + math.min(partitionId, extraSize),
+       taskSize + (if (partitionId < extraSize) 1 else 0))
+  }
+
 
   /**
    * This method should be called on each RDD partition before parameter synchronization begins.

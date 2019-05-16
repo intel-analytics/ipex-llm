@@ -34,7 +34,7 @@ abstract class AbstractOptimizer {
 
   protected def getModel[T: ClassTag](
     models: RDD[Cache[T]],
-    parameters: Map[String, AllReduceParameter[T]],
+    parameters: AllReduceParameter[T],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Module[T]
 
   /**
@@ -48,7 +48,7 @@ abstract class AbstractOptimizer {
     trainSummary: TrainSummary,
     models: RDD[Cache[T]],
     driverState: Table,
-    parameters: Map[String, AllReduceParameter[T]],
+    parameters: AllReduceParameter[T],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val currentIteration = driverState[Int]("neval") - 1
     val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
@@ -98,7 +98,7 @@ abstract class AbstractOptimizer {
     state: Table,
     validationSummary: Option[ValidationSummary],
     header: String,
-    parameters: Map[String, AllReduceParameter[T]] = null): Unit = {
+    parameters: AllReduceParameter[T] = null): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -122,10 +122,9 @@ abstract class AbstractOptimizer {
 
       // update with latest weight for validation
       if (parameters != null) {
-        val weightsResults = parameters.values.map(p =>
-          p.getWeights(cached.modelWeights.head.narrow(1, p.paramOffset, p.size))
-        ).toArray
-        weightsResults.foreach(_.waitResult())
+        parameters.getWeights(cached.modelWeights.head.narrow(1,
+          parameters.paramOffset, parameters.size))
+          .waitResult()
       }
 
       if (Engine.getEngineType() == MklDnn) {
@@ -210,7 +209,7 @@ abstract class AbstractOptimizer {
     wallClockTime: Long,
     models: RDD[Cache[T]],
     state: Table,
-    parameters: Map[String, AllReduceParameter[T]],
+    parameters: AllReduceParameter[T],
     optimMethods: Map[String, OptimMethod[T]],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     cacheTrigger.foreach { trigger =>
