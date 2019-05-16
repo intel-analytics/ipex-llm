@@ -104,7 +104,7 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
     require(nonmatchPartitionId.size == candidateLocs.size,
       "unmatched partition size should be the same with candidateLocs size")
     nonmatchPartitionId.foreach { i =>
-      val locs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
+      val locs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.toString).distinct
       val matchPartition = candidateLocs.remove(0)
       parts(i) = new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
     }
