@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer, MklDnnModule}
 import com.intel.analytics.bigdl.nn.{Container, Graph, Module, Utils}
-import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
+import com.intel.analytics.bigdl.parameters.{AllReduceParameter, FutureResult, ParameterProcessor}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -46,6 +46,49 @@ object DistriOptimizer extends AbstractOptimizer {
 
   val logger: Logger = Logger.getLogger(getClass)
 
+  // The local buffers, should be of the type Tensor[T], but with ugly variable type "Any"
+  // We do not have type parameter T here. Thus we have to mark them with "Any"
+  @transient
+  private[DistriOptimizer] var localGradientBuffer: Any = _
+
+  /**
+   * Get or allocate a buffer for whole gradients
+   * @param size the length of the gradient vector
+   */
+  private def getLocalGradientBuffer[T: ClassTag](size: Int)
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    if (localGradientBuffer == null) {
+      localGradientBuffer = Tensor[T](size)
+    }
+    localGradientBuffer.asInstanceOf[Tensor[T]]
+  }
+
+  /**
+   * Update the weights in the cached model. It may fetch the global weights if:
+   *  1. the whole gradients is not required (thus, we don't have updated model in cached model)
+   *  2. or we are in the first iteration (thus, the initial model is not in the cached model)
+   *  3. or cached.iterations != iteration - 1, which means the cached model weight in the model
+   *    cache is not the result of the last iteration
+   * @param cached the cached model
+   * @param parameters the allreduce parameter
+   * @param requiresWholeGradient if the optim methods needs the whole gradient. If so, the updated
+   *                              weight may be already in the cached model
+   * @param iteration the current iteration number
+   * @return the FutureResult if needing to fetch weights, or None
+   */
+  private def updateWeightBuffer[T: ClassTag](cached: Cache[T], parameters: AllReduceParameter[T],
+    requiresWholeGradient: Boolean, iteration: Int)
+    (implicit ev: TensorNumeric[T]): Option[FutureResult[Int]] = {
+    val needsGlobalFetch = !requiresWholeGradient || iteration == 0 ||
+      cached.iterations != iteration - 1
+    if (needsGlobalFetch) {
+      Some(parameters.getWeights(cached.modelWeights.head.narrow(1,
+        parameters.paramOffset, parameters.size)))
+    } else {
+      None
+    }
+  }
+
   /**
    * Optimizer cache some metadata on each executor
    *
@@ -69,7 +112,8 @@ object DistriOptimizer extends AbstractOptimizer {
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
     var optimMethods: Map[String, OptimMethod[T]],
-    parameterSynchronizer: DistriParameterSynchronizer[T] = null
+    parameterSynchronizer: DistriParameterSynchronizer[T] = null,
+    var iterations: Int = 0
   )
 
   /**
@@ -177,6 +221,7 @@ object DistriOptimizer extends AbstractOptimizer {
     val maxDropPercentage = state.get[Double]("maxDropPercentage").get
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
+    val requiresWholeGradient = WholeGradientOptimMethod.checkRequiresWholeGradient(optimMethods)
     var lossArray = new Array[Double](_subModelNumber)
 
     var epochStart = System.nanoTime()
@@ -209,8 +254,8 @@ object DistriOptimizer extends AbstractOptimizer {
             Note: All models in `cached` share the same storage for weights, so we only need to
             copy the weights from parameter server into the first model's weights.
            */
-          val weightsResults = parameters.getWeights(cached.modelWeights.head.narrow(1,
-            parameters.paramOffset, parameters.size))
+          val weightsResults = updateWeightBuffer(cached, parameters,
+            requiresWholeGradient, iteration)
           val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
           val batch = data.next()
           val stackSize = batch.size() / _subModelNumber
@@ -230,7 +275,7 @@ object DistriOptimizer extends AbstractOptimizer {
             }
           })
           Engine.default.sync(tasks)
-          weightsResults.waitResult()
+          weightsResults.foreach(_.waitResult())
           val weightSyncTime = System.nanoTime() - syWStart
           driverMetrics.add("get weights average", weightSyncTime)
           driverMetrics.add("get weights for each node", weightSyncTime)
@@ -283,7 +328,6 @@ object DistriOptimizer extends AbstractOptimizer {
 
           if (finishedThreads.nonEmpty) {
             val finishedGradients = finishedThreads.map(cached.modelGradients(_))
-
             time = System.nanoTime()
             val pOffset = parameters.paramOffset
             val pLength = parameters.size
@@ -368,17 +412,21 @@ object DistriOptimizer extends AbstractOptimizer {
             if (validationMethods.isDefined) {
               optimMethod.state.update("score", driverState[Float]("score"))
             }
-            val p = parameterSplits(name)
-            val startIdx = Math.max(paramLocalStart, p._1)
-            val endIdx = Math.min(paramLocalStart + paramLocalLen, p._1 + p._2)
-            if (endIdx > startIdx) {
-
-              optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition.narrow(1,
-                startIdx - paramLocalStart + 1, endIdx - startIdx)),
-                parameters.weightPartition.narrow(1,
-                  startIdx - paramLocalStart + 1, endIdx - startIdx))
-            }
-
+          }
+          if (!requiresWholeGradient) {
+            callOptimMethods(modelCache.optimMethods, parameterSplits, paramLocalStart,
+              paramLocalLen, parameters.gradientPartition, parameters.weightPartition, value)
+          }
+          else {
+            parameters.sendGradientPartition()
+            val gradientBuffer = getLocalGradientBuffer[T](parameters.size)
+            val weightBuffer = modelCache.modelWeights.head.narrow(1,
+              parameters.paramOffset, parameters.size)
+            parameters.getGradients(gradientBuffer).waitResult()
+            callOptimMethods(modelCache.optimMethods, parameterSplits, parameters.paramOffset,
+              parameters.size, gradientBuffer, weightBuffer, value)
+            parameters.weightPartition.copy(weightBuffer.narrow(1, paramLocalStart, paramLocalLen))
+            modelCache.iterations = iteration
           }
           var time = System.nanoTime()
           driverMetrics.add("compute weight average", System.nanoTime() - time)
@@ -475,7 +523,7 @@ object DistriOptimizer extends AbstractOptimizer {
           driverState,
           validationSummary,
           _header,
-          parameters
+          if (requiresWholeGradient) null else parameters
         )
 
         trainSummary.foreach { summary =>
@@ -505,6 +553,40 @@ object DistriOptimizer extends AbstractOptimizer {
           s"iteration due to some slow tasks. The gradients computed in this iteration will be " +
           s"discarded. Only $numFinishedModelUpdates/$driverSubModelNum threads successfully " +
           s"completed training.")
+      }
+    }
+  }
+
+  /**
+   * Call the optim methods layer-by-layer, and apply the gradients to the weights
+   *
+   * @param optimMethods the optim methods
+   * @param parameterSplits the mapping from layer name -> (startIndex, length) of the parameters
+   * of the layer. The index is counted within the global model weight
+   * @param paramLocalStart the start index of "gradientPartition" and "weightPartition" within
+   * the global model weight/gradient vector
+   * @param paramLocalLen the length of gradientPartition and weightPartition
+   * @param gradientPartition the gradient vector to be applied on the weight
+   * @param weightPartition the weight vector to be updated
+   * @param value the loss function value
+   */
+  private def callOptimMethods[T](optimMethods: Map[String, OptimMethod[T]],
+    parameterSplits: Map[String, (Int, Int)],
+    paramLocalStart: Int,
+    paramLocalLen: Int,
+    gradientPartition: Tensor[T],
+    weightPartition: Tensor[T],
+    value: Double)
+    (implicit ev: TensorNumeric[T]): Unit = {
+    optimMethods.foreach { case (name, optimMethod) =>
+      val p = parameterSplits(name)
+      val startIdx = Math.max(paramLocalStart, p._1)
+      val endIdx = Math.min(paramLocalStart + paramLocalLen, p._1 + p._2)
+      if (endIdx > startIdx) {
+        optimMethod.optimize(_ => (ev.fromType(value), gradientPartition.narrow(
+          1, startIdx - paramLocalStart + 1, endIdx - startIdx)),
+          weightPartition.narrow(1,
+            startIdx - paramLocalStart + 1, endIdx - startIdx))
       }
     }
   }
@@ -541,8 +623,7 @@ object DistriOptimizer extends AbstractOptimizer {
     validationMethods: Option[Array[ValidationMethod[T]]],
     optimMethod: Map[String, OptimMethod[T]],
     parameterProcessors: ArrayBuffer[ParameterProcessor]
-  )(implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer
-  .Cache[T]], ModelBroadcast[T]) = {
+  )(implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer.Cache[T]], ModelBroadcast[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
     // ensure model's parameter is compacted for getting a better performance when broadcasting
@@ -650,9 +731,7 @@ object DistriOptimizer extends AbstractOptimizer {
   override protected def getModel[T: ClassTag](
     models: RDD[Cache[T]],
     parameters: AllReduceParameter[T],
-    trainingModel: Module[T])(implicit
-    ev: TensorNumeric[T])
-  : Module[T] = {
+    trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val extraState = models.map(_.localModels.head.getExtraParameter()).first()
     trainingModel.setExtraParameter(extraState)
@@ -687,7 +766,6 @@ object DistriOptimizer extends AbstractOptimizer {
 
     trainingModel
   }
-
 }
 
 /**
@@ -734,7 +812,6 @@ class DistriOptimizer[T: ClassTag](
    * If you want to reserve optimMethod for each worker and reuse those methods in
    * next training task, please set reserve = true
    * Otherwise, if just using optimMethod you set in optimizer, please set reserve = false
-   *
    * @param reserve whether to reserve optim method for each worker
    * @return
    */
@@ -746,14 +823,13 @@ class DistriOptimizer[T: ClassTag](
   // replace optim methods with previous
   private def resetOptimMethods[T: ClassTag](
     models: RDD[DistriOptimizer.Cache[T]],
-    previousOptimMethods: RDD[Map[String,
-      OptimMethod[T]]]):
-  RDD[DistriOptimizer.Cache[T]] = {
-    models.zipPartitions(previousOptimMethods) { (m1, m2) => {
-      val cache = m1.next()
-      cache.optimMethods = m2.next()
-      Iterator(cache)
-    }
+    previousOptimMethods: RDD[Map[String, OptimMethod[T]]]):
+    RDD[DistriOptimizer.Cache[T]] = {
+      models.zipPartitions(previousOptimMethods) { (m1, m2) => {
+        val cache = m1.next()
+        cache.optimMethods = m2.next()
+        Iterator(cache)
+      }
     }
   }
 
@@ -996,7 +1072,7 @@ class DistriOptimizer[T: ClassTag](
       iter.foreach { arrayModels =>
         arrayModels.localModels.foreach(_.release())
       }
-
+      DistriOptimizer.localGradientBuffer = null
       iter
     }.count()
     CachedModels.deleteKey(modelBroadcast.uuid)

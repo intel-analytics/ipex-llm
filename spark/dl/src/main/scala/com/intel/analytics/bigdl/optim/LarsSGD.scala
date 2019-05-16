@@ -23,8 +23,6 @@ import com.intel.analytics.bigdl.optim.SGD.{Default, LearningRateSchedule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import org.apache.log4j.{Level, Logger}
-
 import scala.reflect.ClassTag
 
 
@@ -54,7 +52,7 @@ class LarsSGD[T: ClassTag](
                              = Default()
                           )(implicit ev: TensorNumeric[T])
    extends SGD[T](_learningRate, _learningRateDecay, _weightDecay, _momentum,
-     learningRateSchedule = _learningRateSchedule) {
+     learningRateSchedule = _learningRateSchedule) with WholeGradientOptimMethod {
   @transient
   private var buffer: Tensor[T] = null
   /**
