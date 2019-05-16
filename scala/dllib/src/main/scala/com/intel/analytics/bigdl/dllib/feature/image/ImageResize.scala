@@ -25,7 +25,7 @@ class ImageResize(
     resizeMode: Int = Imgproc.INTER_LINEAR,
     useScaleFactor: Boolean = true) extends ImageProcessing {
 
-  private val internalResize = augmentation.Resize(resizeH, resizeW)
+  private val internalResize = augmentation.Resize(resizeH, resizeW, resizeMode, useScaleFactor)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalResize.apply(prev)
   }
