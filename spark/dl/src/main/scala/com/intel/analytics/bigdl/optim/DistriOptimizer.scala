@@ -116,6 +116,14 @@ object DistriOptimizer extends AbstractOptimizer {
     var iterations: Int = 0
   )
 
+  private def sendWeights[T](driverMetrics: Metrics, parameters: AllReduceParameter[T]) : Unit = {
+    var time = System.nanoTime()
+    driverMetrics.add("compute weight average", System.nanoTime() - time)
+    parameters.sendWeightPartition()
+    time = System.nanoTime()
+    driverMetrics.add("send weights average", System.nanoTime() - time)
+  }
+
   /**
    * Train the model.
    *
@@ -403,7 +411,6 @@ object DistriOptimizer extends AbstractOptimizer {
               System.nanoTime() - getG)
           }
           parameterProcessers.foreach(_.processParameters(parameters, modelCache, driverState))
-
           modelCache.optimMethods.foreach { case (name, optimMethod) =>
 
             optimMethod.state.update("epoch", driverState[Int]("epoch"))
@@ -416,9 +423,19 @@ object DistriOptimizer extends AbstractOptimizer {
           if (!requiresWholeGradient) {
             callOptimMethods(modelCache.optimMethods, parameterSplits, paramLocalStart,
               paramLocalLen, parameters.gradientPartition, parameters.weightPartition, value)
-          }
-          else {
+            sendWeights(driverMetrics, parameters)
+          } else {
             parameters.sendGradientPartition()
+          }
+          Iterator.empty
+        }.count()
+
+        if (requiresWholeGradient) {
+          // After parameters.sendGradientPartition() are done on all node, we can fetch the global
+          // gradient, apply the gradient to the weights and send the weights
+          models.mapPartitions { modelIter =>
+            val (paramLocalStart, paramLocalLen) = parameters.localPartitionRange
+            val modelCache = modelIter.next()
             val gradientBuffer = getLocalGradientBuffer[T](parameters.size)
             val weightBuffer = modelCache.modelWeights.head.narrow(1,
               parameters.paramOffset, parameters.size)
@@ -427,14 +444,10 @@ object DistriOptimizer extends AbstractOptimizer {
               parameters.size, gradientBuffer, weightBuffer, value)
             parameters.weightPartition.copy(weightBuffer.narrow(1, paramLocalStart, paramLocalLen))
             modelCache.iterations = iteration
-          }
-          var time = System.nanoTime()
-          driverMetrics.add("compute weight average", System.nanoTime() - time)
-          parameters.sendWeightPartition()
-          time = System.nanoTime()
-          driverMetrics.add("send weights average", System.nanoTime() - time)
-          Iterator.empty
-        }.count()
+            sendWeights(driverMetrics, parameters)
+            Iterator.empty
+          }.count()
+        }
 
         stateBroadcast.destroy()
         recordsProcessedThisEpoch += recordsNum.value
