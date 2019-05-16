@@ -16,6 +16,8 @@
 
 from bigdl.util.common import *
 import warnings
+import multiprocessing
+import os
 
 
 def init_nncontext(conf=None):
@@ -46,7 +48,6 @@ def getOrCreateSparkContext(conf=None, appName=None):
     :param conf: combining bigdl configs into spark conf
     :return: SparkContext
     """
-
     with SparkContext._lock:
         if SparkContext._active_spark_context is None:
             spark_conf = init_spark_conf() if conf is None else conf
@@ -76,8 +77,47 @@ def get_analytics_zoo_conf():
     return {}
 
 
+def init_env():
+    # Default env
+    kmp_affinity = "granularity=fine,compact,1,0"
+    kmp_settings = "1"
+    omp_num_threads = "1"
+    kmp_blocktime = "0"
+
+    # Check env and override if necessary
+    # Currently, focused on ZOO_NUM_MKLTHREADS,
+    # OMP_NUM_THREADS, KMP_BLOCKTIME, KMP_AFFINITY
+    # and KMP_SETTINGS
+    if "KMP_AFFINITY" in os.environ:
+        kmp_affinity = os.environ["KMP_AFFINITY"]
+    if "KMP_SETTINGS" in os.environ:
+        kmp_settings = os.environ["KMP_SETTINGS"]
+    if "OMP_NUM_THREADS" in os.environ:
+        omp_num_threads = os.environ["OMP_NUM_THREADS"]
+    elif "ZOO_NUM_MKLTHREADS" in os.environ:
+        if os.environ["ZOO_NUM_MKLTHREADS"].lower() == "all":
+            omp_num_threads = multiprocessing.cpu_count()
+        else:
+            omp_num_threads = os.environ["ZOO_NUM_MKLTHREADS"]
+    if "KMP_BLOCKTIME" in os.environ:
+        kmp_blocktime = os.environ["KMP_BLOCKTIME"]
+
+    # Set env
+    os.environ["KMP_AFFINITY"] = kmp_affinity
+    os.environ["KMP_SETTINGS"] = kmp_settings
+    os.environ["OMP_NUM_THREADS"] = omp_num_threads
+    os.environ["KMP_BLOCKTIME"] = kmp_blocktime
+
+
 def init_spark_conf():
+    init_env()
     zoo_conf = get_analytics_zoo_conf()
+    # Set bigDL and TF conf
+    zoo_conf["spark.executorEnv.KMP_AFFINITY"] = os.environ["KMP_AFFINITY"]
+    zoo_conf["spark.executorEnv.KMP_SETTINGS"] = os.environ["KMP_SETTINGS"]
+    zoo_conf["spark.executorEnv.OMP_NUM_THREADS"] = os.environ["OMP_NUM_THREADS"]
+    zoo_conf["spark.executorEnv.KMP_BLOCKTIME"] = os.environ["KMP_BLOCKTIME"]
+
     sparkConf = SparkConf()
     sparkConf.setAll(zoo_conf.items())
     if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
