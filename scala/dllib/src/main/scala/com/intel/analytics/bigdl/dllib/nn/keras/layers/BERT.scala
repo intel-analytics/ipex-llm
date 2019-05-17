@@ -30,6 +30,7 @@ import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad, Parameter, Varia
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{GraphRef, KerasUtils}
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model.{apply => _, _}
+
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
@@ -97,6 +98,8 @@ class BERT[T: ClassTag] private (
     val inputs = _inputShape.map(Variable(_))
     return ((- inputs.last + 1.0) * -10000.0, inputs.dropRight(1), inputs)
   }
+
+  override def allowRebuilt: Boolean = true
 }
 
 object BERT extends KerasLayerSerializable {
@@ -203,11 +206,11 @@ object BERT extends KerasLayerSerializable {
    *             Amazon S3 path should be like "s3a://bucket/xxx".
    * @param weightPath The path for pre-trained weights if any.
    * @param inputSeqLen sequence length of input, will be ignored if existing model is built with
-    *                   customized embedding
+   *                   customized embedding
    * @param hiddenPDrop The dropout probability for all fully connected layers, will be
-    *                   ignored if existing model is built with customized embedding
+   *                   ignored if existing model is built with customized embedding
    * @param attnPDrop drop probability of attention, will be ignored if existing model is
-    *                  built with customized embedding
+   *                  built with customized embedding
    */
   def apply[T: ClassTag](path: String, weightPath: String, inputSeqLen: Int,
     hiddenPDrop: Double, attnPDrop: Double, outputAllBlock: Boolean)
