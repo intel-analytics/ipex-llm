@@ -19,7 +19,10 @@ import numpy as np
 import math
 
 from bigdl.nn.layer import Sum
+from bigdl.nn.layer import Layer
+from bigdl.util.common import callBigDlFunc
 
+from zoo.models.common import ZooModel
 from zoo.pipeline.api.keras.engine import ZooKerasLayer
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import Sequential
@@ -85,7 +88,9 @@ class TransformerLayer(ZooKerasLayer):
             o = self.block(output[index], hidden_size, extended_attention_mask)
             output[index+1] = o
 
-        model = Model(inputs, output) if output_all_block else Model(inputs, output[-1])
+        pooler_output = self.pooler(output[-1], hidden_size)
+        model = Model(inputs, output.append(pooler_output)) if output_all_block\
+            else Model(inputs, [output[-1], pooler_output])
         self.value = model.value
 
     def build_input(self, input_shape):
@@ -172,6 +177,12 @@ class TransformerLayer(ZooKerasLayer):
         m = Reshape(merge_sizes)(p)
         return m
 
+    def pooler(self, x, hidden_size):
+        first_token = Select(1, 0)(x)
+        pooler_output = Dense(hidden_size)(first_token)
+        o = Activation("tanh")(pooler_output)
+        return o
+
     @classmethod
     def init(cls, vocab=40990, seq_len=77, n_block=12, hidden_drop=0.1,
              attn_drop=0.1, n_head=12, hidden_size=768,
@@ -248,6 +259,7 @@ class BERT(TransformerLayer):
         self.seq_len = input_shape[0][0]
         self.initializer_range = initializer_range
         self.bidirectional = True
+        self.n_block = n_block
 
         word_input = Input(shape=input_shape[0])
         token_type_input = Input(shape=input_shape[1])
@@ -266,12 +278,15 @@ class BERT(TransformerLayer):
             output = self.block(model_output[_], self.hidden_size, extended_attention_mask)
             model_output[_+1] = output
 
+        pooler_output = self.pooler(model_output[-1], self.hidden_size)
+
         if output_all_block:
+            model_output.append(pooler_output)
             model = Model([word_input, token_type_input, position_input, attention_mask],
                           model_output)
         else:
             model = Model([word_input, token_type_input, position_input, attention_mask],
-                          model_output[-1])
+                          [model_output[-1], pooler_output])
         self.value = model.value
 
     def projection_layer(self, output_size):
@@ -336,3 +351,23 @@ class BERT(TransformerLayer):
 
         return BERT(n_block, n_head, intermediate_size, hidden_drop, attn_drop, initializer_range,
                     output_all_block, embedding_layer, input_shape=shape)
+
+    @staticmethod
+    def init_from_existing_model(path, weight_path=None, input_seq_len=-1.0, hidden_drop=-1.0,
+                                 attn_drop=-1.0, output_all_block=True, bigdl_type="float"):
+        """
+        Load an existing BERT model (with weights).
+
+        # Arguments
+        path: The path for the pre-defined model.
+              Local file system, HDFS and Amazon S3 are supported.
+              HDFS path should be like 'hdfs://[host]:[port]/xxx'.
+              Amazon S3 path should be like 's3a://bucket/xxx'.
+        weight_path: The path for pre-trained weights if any. Default is None.
+        """
+        jlayer = callBigDlFunc(bigdl_type, "loadBERT", path, weight_path, input_seq_len,
+                               hidden_drop, attn_drop, output_all_block)
+
+        model = Layer(jvalue=jlayer, bigdl_type=bigdl_type)
+        model.__class__ = BERT
+        return model
