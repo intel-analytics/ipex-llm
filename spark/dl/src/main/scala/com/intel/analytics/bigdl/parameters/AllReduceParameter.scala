@@ -134,14 +134,11 @@ class AllReduceParameter[T: ClassTag](
   /**
    * Returns the start index (starting from 1, within the whole origin parameter)
    * and length of the current local partition
-  */
-  def localPartitionRange: (Int, Int) = {
-    val taskSize = size / partitionNum
-    val extraSize = size % partitionNum
-    val partitionId = TaskContext.getPartitionId()
-    // add paramOffset to start index
+   */
+  private[bigdl] def localPartitionRange: (Int, Int) = {
+    // add paramOffset to the starting index
     (paramOffset + partitionId * taskSize + math.min(partitionId, extraSize),
-       taskSize + (if (partitionId < extraSize) 1 else 0))
+      taskSize + (if (partitionId < extraSize) 1 else 0))
   }
 
 
