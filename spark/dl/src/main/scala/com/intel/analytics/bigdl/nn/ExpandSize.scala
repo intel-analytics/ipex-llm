@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Analytics Zoo Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ import scala.reflect.ClassTag
 
 /**
  * Expand tensor to configured size
- * @param tgtSizes target tensor sizes, dim whose size is -1 will be ignored
+ * @param targetSizes target tensor sizes, dim whose size is -1 will be ignored
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-class ExpandSize[T: ClassTag](tgtSizes: Array[Int])
+class ExpandSize[T: ClassTag](targetSizes: Array[Int])
    (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(tgtSizes.length == input.dim(),
+    require(targetSizes.length == input.dim(),
       s"the number of dimensions provided must equal ${input.dim()}")
     val tensorDim = input.dim()
     val tensorStride = input.stride()
@@ -40,11 +40,11 @@ class ExpandSize[T: ClassTag](tgtSizes: Array[Int])
 
     var i = 0
     while (i < tensorDim) {
-      if (tgtSizes(i) != -1) {
+      if (targetSizes(i) != -1) {
         if (tensorSize(i) == 1) {
-          tensorSize(i) = tgtSizes(i)
+          tensorSize(i) = targetSizes(i)
           tensorStride(i) = 0
-        } else if (tensorSize(i) != tgtSizes(i)) {
+        } else if (tensorSize(i) != targetSizes(i)) {
           throw new UnsupportedOperationException(
             "incorrect size: only supporting singleton expansion (size=1)")
         }
@@ -64,8 +64,8 @@ class ExpandSize[T: ClassTag](tgtSizes: Array[Int])
     val expandDim = new ArrayBuffer[Int]()
     var i = 0
     while (i < tensorDim) {
-      if (tgtSizes(i) != -1) {
-        if (tensorSize(i) == 1 && tgtSizes(i) != 1) {
+      if (targetSizes(i) != -1) {
+        if (tensorSize(i) == 1 && targetSizes(i) != 1) {
           expandDim.append(i + 1)
         }
       }
@@ -91,12 +91,12 @@ class ExpandSize[T: ClassTag](tgtSizes: Array[Int])
     gradInput
   }
 
-  override def toString: String = s"InternalExpand()"
+  override def toString: String = s"ExpandSize"
 }
 
 object ExpandSize {
-  def apply[@specialized(Float, Double) T: ClassTag](tgtSizes: Array[Int])
+  def apply[@specialized(Float, Double) T: ClassTag](targetSizes: Array[Int])
      (implicit ev: TensorNumeric[T]) : ExpandSize[T] = {
-    new ExpandSize[T](tgtSizes)
+    new ExpandSize[T](targetSizes)
   }
 }

@@ -940,19 +940,20 @@ class LayerNormalization(Layer):
     def __init__(self, hidden_size, bigdl_type="float"):
         super(LayerNormalization, self).__init__(None, bigdl_type, hidden_size)
 
-class createTableOperationExpand(Layer):
+class TableOperation(Layer):
     '''
     When two tensors have different size, firstly expand small size tensor to large size tensor,
     and then do table operation.
 
-    >>> norm = TableOperationExpand(CMulTable)
-    creating: createTableOperationExpand
+    >>> norm = TableOperation(CMulTable())
+    creating: createCMulTable
+    creating: createTableOperation
     '''
 
-    def __init__(self, operation_layer, expand_pos=2, bigdl_type="float"):
-        super(TableOperationExpand, self).__init__(None, bigdl_type, operation_layer, expand_pos)
+    def __init__(self, operation_layer, bigdl_type="float"):
+        super(TableOperation, self).__init__(None, bigdl_type, operation_layer)
 
-class createExpandSize(Layer):
+class ExpandSize(Layer):
     '''
     Expand tensor to configured size
 

@@ -136,7 +136,7 @@ class LayerNormalizationSpec extends FlatSpec with Matchers {
     gradWeights should be(gradWeightExpected)
   }
 
-  "layer linear with 2 dims" should "work correct" in {
+  "vector linear with 2 dims" should "work correct" in {
     val weight = Tensor[Float](T(-0.14037117, -0.16902402, -0.06451887,
       -0.5642037, 0.24212438, 0.44951588, -0.4296978, 0.423163))
     val bias = Tensor[Float](T(0.44111532, -0.06523705, -0.3474969,
@@ -158,7 +158,7 @@ class LayerNormalizationSpec extends FlatSpec with Matchers {
       -2.7860408, 0.01291263, 2.9350655, -0.5385718, 1.4307464, 0.60943544,
       0.01507702, -0.75525033, 1.6029637, -0.5815844, -1.5703702, -0.31845763, -1.5114479))
 
-    val layer = new LayerLinear[Float](8)
+    val layer = new VectorProduct[Float](8)
     layer.setWeightsBias(Array(weight, bias))
 
     val output = layer.forward(input)
@@ -247,5 +247,22 @@ class ExpandSizeSerialTest extends ModuleSerializationTest {
     val model = ExpandSize[Float](Array(2, 8)).setName("ExpandSize")
     val input = Tensor[Float](2, 1).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
+  }
+}
+
+class VectorProductSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val model = new VectorProduct[Float](8).setName("VectorProduct")
+    val input = Tensor[Float](2, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, input)
+  }
+}
+
+class TableOperationSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val model = new TableOperation[Float](CMulTable()).setName("TableOperation")
+    val input1 = Tensor[Float](2, 8).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](2, 1).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, T(input1, input2))
   }
 }

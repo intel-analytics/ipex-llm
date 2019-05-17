@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Analytics Zoo Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,25 +27,33 @@ import scala.reflect.ClassTag
 /**
  * When two tensors have different size, firstly expand small size tensor to large size tensor,
  * and then do table operation.
- * @param operationLayer layer that can handle table operation, such as CSubTable, CMulTable, etc.
- * @param expandPos small tensor position in input table
+ * @param operationLayer layer that handles table operation, such as CSubTable, CMulTable, etc.
  * @param ev$1
  * @param ev
  * @tparam T
  */
-class TableOperationExpand[T: ClassTag](
-   operationLayer: AbstractModule[Table, Tensor[T], T], expandPos: Int = 2)
+class TableOperation[T: ClassTag](
+   val operationLayer: AbstractModule[Table, Tensor[T], T])
    (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
-
-  require(expandPos == 1 || expandPos == 2, s"TableOperationExpand:" +
-    s"small tensor position in input table should be 1 or 2 , but get ${expandPos}")
 
   @transient
   private var expandLayer: AbstractModule[Tensor[T], Tensor[T], T] = null
 
+  // small tensor position in input table
+  private var smallPos = 1
+
   override def updateOutput(input: Table): Tensor[T] = {
-    val inputSmall = input[Tensor[T]](expandPos)
-    val inputLarge = input[Tensor[T]](3 - expandPos)
+    // only support table with two tensors
+    require(input.length() == 2, s"Only support input two tensors, but get ${input.length()}")
+    // get small tensor position in table
+    val input1 = input[Tensor[T]](1)
+    val input2 = input[Tensor[T]](2)
+    if (input1.nElement() > input2.nElement()) {
+      smallPos = 2
+    }
+
+    val inputSmall = input[Tensor[T]](smallPos)
+    val inputLarge = input[Tensor[T]](3 - smallPos)
 
     if (expandLayer == null) expandLayer = ExpandSize(inputLarge.size())
     val inputExpand = expandLayer.forward(inputSmall)
@@ -55,8 +63,8 @@ class TableOperationExpand[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val inputSmall = input[Tensor[T]](expandPos)
-    val inputLarge = input[Tensor[T]](3 - expandPos)
+    val inputSmall = input[Tensor[T]](smallPos)
+    val inputLarge = input[Tensor[T]](3 - smallPos)
 
     val inputExpand = expandLayer.output
     gradInput = operationLayer.updateGradInput(T(inputLarge, inputExpand), gradOutput)
@@ -74,17 +82,17 @@ class TableOperationExpand[T: ClassTag](
 }
 
 object CMulTableExpand {
-  def apply[@specialized(Float, Double) T: ClassTag](expandPos: Int = 2)
-    (implicit ev: TensorNumeric[T]) : TableOperationExpand[T] = {
-    new TableOperationExpand[T](CMulTable[T], expandPos)
+  def apply[@specialized(Float, Double) T: ClassTag]()
+    (implicit ev: TensorNumeric[T]) : TableOperation[T] = {
+    new TableOperation[T](CMulTable[T])
   }
 }
 
 object CSubTableExpand {
-  def apply[@specialized(Float, Double) T: ClassTag](expandPos: Int = 2)
-    (implicit ev: TensorNumeric[T]) : TableOperationExpand[T] = {
-    new TableOperationExpand[T](CSubTable[T]
-      .asInstanceOf[AbstractModule[Table, Tensor[T], T]], expandPos)
+  def apply[@specialized(Float, Double) T: ClassTag]()
+    (implicit ev: TensorNumeric[T]) : TableOperation[T] = {
+    new TableOperation[T](CSubTable[T]
+      .asInstanceOf[AbstractModule[Table, Tensor[T], T]])
   }
 }
 

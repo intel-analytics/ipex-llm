@@ -41,7 +41,7 @@ class LayerNormalization[T: ClassTag](hiddenSize: Int)
     val add = AddConstant(1e-6).inputs(mean2)
     val sqrt = Power(-0.5, 1, 0).inputs(add)
     val mul = CMulTableExpand().inputs(sub, sqrt)
-    val linear = new LayerLinear[T](hiddenSize).inputs(mul)
+    val linear = new VectorProduct[T](hiddenSize).inputs(mul)
     Graph(input, linear)
   }
   override def updateOutput(input: Activity): Activity = {
@@ -57,7 +57,7 @@ class LayerNormalization[T: ClassTag](hiddenSize: Int)
  * @param ev
  * @tparam T The numeric type in this module parameters
  */
-private[nn] class LayerLinear[T: ClassTag](hiddenSize: Int)
+private[nn] class VectorProduct[T: ClassTag](val hiddenSize: Int)
    (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   var weight = Tensor[T](hiddenSize).fill(ev.one)

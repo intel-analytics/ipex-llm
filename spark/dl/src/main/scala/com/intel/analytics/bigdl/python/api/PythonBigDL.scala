@@ -279,13 +279,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     FeedForwardNetwork(hiddenSize, filterSize, reluDropout)
   }
 
-  def createExpandSize(tgtSizes: JList[Int]): ExpandSize[T] = {
-    ExpandSize(tgtSizes.asScala.toArray)
+  def createExpandSize(targetSizes: JList[Int]): ExpandSize[T] = {
+    ExpandSize(targetSizes.asScala.toArray)
   }
 
-  def createTableOperationExpand(operationLayer: AbstractModule[Table, Tensor[T], T],
-                                 expandPos: Int = 2): TableOperationExpand[T] = {
-    new TableOperationExpand(operationLayer, expandPos)
+  def createTableOperation(
+    operationLayer: AbstractModule[Table, Tensor[T], T]): TableOperation[T] = {
+    new TableOperation(operationLayer)
   }
 
   def createLayerNormalization(hiddenSize: Int): LayerNormalization[T] = {
