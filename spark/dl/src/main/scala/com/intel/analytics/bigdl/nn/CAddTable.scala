@@ -46,13 +46,13 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   @transient
   private var bufferSumOutput: Tensor[D] = null
 
-  private def canBroadcast(tensor: Tensor[D], other: Tensor[D]): Boolean = {
-    if (tensor.nDimension != other.nDimension()) {
+  private def expandWithDims(smallSize: Array[Int], otherSize: Array[Int]): Boolean = {
+    if (smallSize.length != otherSize.length) {
       return false
     }
-    var d = other.nDimension()
-    while(d > 0) {
-      if (tensor.size(d) != 1 && tensor.size(d) != other.size(d)) {
+    var d = otherSize.length - 1
+    while(d >= 0) {
+      if (smallSize(d) != 1 && smallSize(d) != otherSize(d)) {
         return false
       }
       d -= 1
@@ -130,7 +130,7 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
-        } else if (canBroadcast(input[Tensor[D]](i), gradOutput)) {
+        } else if (expandWithDims(input[Tensor[D]](i).size(), gradOutput.size())) {
         gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
           sumAlongDims(input[Tensor[D]](i), gradOutput))
         } else {
