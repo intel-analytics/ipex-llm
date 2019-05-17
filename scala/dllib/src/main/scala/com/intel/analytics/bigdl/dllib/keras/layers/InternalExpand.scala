@@ -48,7 +48,9 @@ private[zoo] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
           tensorStride(i) = 0
         } else if (tensorSize(i) != tgtSizes(i)) {
           throw new UnsupportedOperationException(
-            "incorrect size: only supporting singleton expansion (size=1)")
+            "incorrect size: only supporting singleton expansion (size=1)," +
+              s"tensorSize: ${tensorSize.mkString(" ")}  " +
+              s"tgtSize: ${tgtSizes.mkString(" ")}")
         }
       }
       i += 1
