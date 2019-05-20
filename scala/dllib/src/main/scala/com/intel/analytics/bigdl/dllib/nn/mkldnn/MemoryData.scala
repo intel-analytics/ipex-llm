@@ -126,6 +126,8 @@ case class HeapData(private var _shape: Array[Int], private var _layout: Int,
       d += 1
     }
 
+    hash = hash * seed + this.dataType
+
     hash
   }
 
@@ -190,6 +192,8 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int,
       hash = hash * seed + this.shape(d)
       d += 1
     }
+
+    hash = hash * seed + this.dataType
 
     hash
   }
