@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 import scala.language.postfixOps
 import sys.process._
 
-class OpenVinoInferenceSupportive {
+class OpenVinoInferenceSupportive extends InferenceSupportive with Serializable {
 
   @native def loadOpenVinoIR(modelFilePath: String,
                              weightFilePath: String,
@@ -53,7 +53,7 @@ class OpenVinoInferenceSupportive {
   @native def releaseOpenVINOIR(executableNetworkReference: Long): Unit
 }
 
-object OpenVinoInferenceSupportive extends InferenceSupportive {
+object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable {
   val logger = LoggerFactory.getLogger(getClass)
 
   timing("load native so for openvino") {
