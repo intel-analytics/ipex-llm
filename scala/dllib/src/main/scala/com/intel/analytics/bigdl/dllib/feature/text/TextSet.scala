@@ -115,9 +115,10 @@ abstract class TextSet {
    * During the training, you need to generate a new wordIndex map according to the texts you are
    * dealing with. Thus this method will first do the map generation and then convert words to
    * indices based on the generated map.
-   * You can specify the following arguments which poses some constraints when generating the map.
+   * You can specify the following arguments which pose some constraints when generating the map.
    * In the result map, index will start from 1 and corresponds to the occurrence frequency of
    * each word sorted in descending order.
+   * Here we adopt the convention that index 0 will be reserved for unknown words.
    * After word2idx, you can get the generated wordIndex map by calling 'getWordIndex'.
    * Also, you can call `saveWordIndex` to save this wordIndex map to be used in future training.
    *
@@ -135,8 +136,8 @@ abstract class TextSet {
    *                    existingMap and assign subsequent indices to new words.
    *
    * ---------------------------------------Inference--------------------------------------------
-   * During the inference, you are supposed to use exactly the same wordIndex map in the training
-   * stage instead of generating a new one.
+   * During the inference, you are supposed to use exactly the same wordIndex map as in the
+   * training stage instead of generating a new one.
    * Thus please be aware that you do not need to specify any of the above arguments.
    * You need to call `loadWordIndex` or `setWordIndex` beforehand for map loading.
    *
