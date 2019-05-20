@@ -169,7 +169,7 @@ class SpatialConvolution(
 
   /*
   Parameters for Dilated Convolution
-  In most of deep learning framework,
+  In most deep learning frameworks,
   the default value of dilation which defines regular convolution module is 1
   BigDL follows this convention
   However the default value used by mkl-dnn is 0;
