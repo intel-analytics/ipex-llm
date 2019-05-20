@@ -22,7 +22,7 @@ Each text will be a given a label according to the directory where it is located
 textSet = TextSet.read(path, sc = null, minPartitions = 1)
 ```
 
-* `path`: String. Folder path to texts. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be specified.
+* `path`: String. Folder path to texts. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be specified.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is null and in this case texts will be read as a LocalTextSet. 
 * `minPartitions`: Integer. A suggestion value of the minimal partition number for input texts.
@@ -34,7 +34,7 @@ Only need to specify this when sc is not null. Default is 1.
 text_set = TextSet.read(path, sc=None, min_partitions=1)
 ```
 
-* `path`: String. Folder path to texts. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be defined.
+* `path`: String. Folder path to texts. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be defined.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is None and in this case texts will be read as a LocalTextSet. 
 * `min_partitions`: Int. A suggestion value of the minimal partition number for input texts.
@@ -53,7 +53,7 @@ Note that the csv file should be without header.
 textSet = TextSet.readCSV(path, sc = null, minPartitions = 1)
 ```
 
-* `path`: String. The path to the csv file. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be specified.
+* `path`: String. The path to the csv file. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be specified.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is null and in this case texts will be read as a LocalTextSet. 
 * `minPartitions`: Integer. A suggestion value of the minimal partition number for input texts.
@@ -64,7 +64,7 @@ Only need to specify this when sc is not null. Default is 1.
 text_set = TextSet.read_csv(path, sc=None, min_partitions=1)
 ```
 
-* `path`: String. The path to the csv file. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be defined.
+* `path`: String. The path to the csv file. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be defined.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is None and in this case texts will be read as a LocalTextSet. 
 * `min_partitions`: Int. A suggestion value of the minimal partition number for input texts.
@@ -120,10 +120,51 @@ model.fit(transformedTextSet, batchSize, nbEpoch)
 model.fit(transformed_text_set, batch_size, nb_epoch)
 ```
 
+---
+## **Word Index Save and Load**
+
+#### **Save word index**
+After training the model, you can save the word index correspondence to text file, which can be used for future inference. Each separate line will be "word id".
+
+For LocalTextSet, save txt to a local file system.
+
+For DistributedTextSet, save txt to a local or distributed file system (such as HDFS).
+
+**Scala**
+```scala
+transformedTextSet.saveWordIndex(path)
+```
+
+**Python**
+```python
+transformed_text_set.save_word_index(path)
+```
+
+#### **Load word index**
+
+During text prediction, you can load the saved word index back, so that the prediction TextSet uses exactly the same word index as the training process. Each separate line should be "word id".
+
+For LocalTextSet, load txt to a local file system.
+
+For DistributedTextSet, load txt to a local or distributed file system (such as HDFS).
+
+**Scala**
+```scala
+textSet.loadWordIndex(path)
+```
+
+**Python**
+```python
+text_set.load_word_index(path)
+```
 
 ---
 ## **Text Prediction**
-You can also directly input the transformed TextSet into the model for prediction and the prediction result will be stored in each TextFeature.
+Given a raw TextSet to do prediction, you need to first load the saved word index back as instructed [above](#load-word-index) and go through the same transformation
+process as what you did in your training. Note that here you do not need to specify any argument when calling `word2idx` in the preprocessing pipeline as now you are using exactly
+the loaded word index.
+
+Then you can directly feed the transformed TextSet into the model for prediction and the prediction result will be stored in each TextFeature.
 
 **Scala**
 ```scala

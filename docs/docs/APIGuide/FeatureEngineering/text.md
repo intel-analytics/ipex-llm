@@ -22,7 +22,7 @@ Each text will be a given a label according to the directory where it is located
 textSet = TextSet.read(path, sc = null, minPartitions = 1)
 ```
 
-* `path`: String. Folder path to texts. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be specified.
+* `path`: String. Folder path to texts. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be specified.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is null and in this case texts will be read as a LocalTextSet. 
 * `minPartitions`: Integer. A suggestion value of the minimal partition number for input texts.
@@ -34,7 +34,7 @@ Only need to specify this when sc is not null. Default is 1.
 text_set = TextSet.read(path, sc=None, min_partitions=1)
 ```
 
-* `path`: String. Folder path to texts. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be defined.
+* `path`: String. Folder path to texts. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be defined.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is None and in this case texts will be read as a LocalTextSet. 
 * `min_partitions`: Int. A suggestion value of the minimal partition number for input texts.
@@ -53,7 +53,7 @@ Note that the csv file should be without header.
 textSet = TextSet.readCSV(path, sc = null, minPartitions = 1)
 ```
 
-* `path`: String. The path to the csv file. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be specified.
+* `path`: String. The path to the csv file. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be specified.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is null and in this case texts will be read as a LocalTextSet. 
 * `minPartitions`: Integer. A suggestion value of the minimal partition number for input texts.
@@ -64,7 +64,7 @@ Only need to specify this when sc is not null. Default is 1.
 text_set = TextSet.read_csv(path, sc=None, min_partitions=1)
 ```
 
-* `path`: String. The path to the csv file. Local file system and HDFS are supported. If you want to read from HDFS, sc needs to be defined.
+* `path`: String. The path to the csv file. Local or distributed file system (such as HDFS) are supported. If you want to read from HDFS, sc needs to be defined.
 * `sc`: An instance of SparkContext. If specified, texts will be read as a DistributedTextSet. 
 Default is None and in this case texts will be read as a LocalTextSet. 
 * `min_partitions`: Int. A suggestion value of the minimal partition number for input texts.
@@ -125,12 +125,36 @@ transformed_text_set = text_set.normalize()
 
 
 ### **Word To Index**
-Map word tokens to indices. 
-Result index will start from 1 and corresponds to the occurrence frequency of each word sorted in descending order. 
+Map word tokens to indices.
+
+**Important:** Take care that this method behaves a bit differently for training and inference.
+
+**Training**
+
+During the training, you need to generate a new word index correspondence according to the texts
+you are dealing with. Thus this method will first do the vocabulary generation and then
+convert words to indices based on the generated vocabulary.
+
+The following arguments pose some constraints when generating the vocabulary.
+In the result vocabulary, index will start from 1 and corresponds to the occurrence frequency of each word sorted in descending order. 
+
 Here we adopt the convention that index 0 will be reserved for unknown words.
 Need to tokenize first.
 
-After word2idx, you can get the generated wordIndex map by calling ```getWordIndex``` (Scala) or ```get_word_index()``` (Python) of the transformed TextSet.
+After word2idx, you can get the generated word index vocabulary by calling ```getWordIndex``` (Scala) or ```get_word_index()``` (Python) of the transformed TextSet.
+
+Also, you can call ```saveWordIndex(path)``` (Scala) ```save_word_index(path)``` (Python) to [save](../../ProgrammingGuide/workingwithtexts/#save-word-index) this word index vocabulary to be used in
+future training.
+
+
+**Inference**
+
+During the inference, you are supposed to use exactly the same word index correspondence as in the
+training stage instead of generating a new one. Need to tokenize first.
+
+Thus please be aware that you do not need to specify any of the below arguments.
+
+You need to call ```loadWordIndex(path)``` (Scala) or ```load_word_index(path)``` (Python) beforehand for word index [loading](../../ProgrammingGuide/workingwithtexts/#load-word-index).
 
 **Scala**
 ```scala
@@ -152,7 +176,7 @@ transformed_text_set = text_set.word2idx(remove_topN=0, max_words_num=-1, min_fr
 * `remove_topN`: Non-negative int. Remove the topN words with highest frequencies in the case where those are treated as stopwords. Default is 0, namely remove nothing.
 * `max_words_num`: Int. The maximum number of words to be taken into consideration. Default is -1, namely all words will be considered. Otherwise, it should be a positive int.
 * `min_freq`: Positive int. Only those words with frequency >= min_freq will be taken into consideration. Default is 1, namely all words that occur will be considered.
-* `existing_map`: Existing dictionary of word index if any. Default is None and in this case a new map with index starting from 1 will be generated. 
+* `existing_map`: Existing dictionary of word index if any. Default is None and in this case a new dictionary with index starting from 1 will be generated. 
 If not None, then the generated map will preserve the word index in existing_map and assign subsequent indices to new words.
 
 
@@ -180,11 +204,11 @@ transformed_text_set = text_set.shape_sequence(len, trunc_mode="pre", pad_elemen
 ```
 
 * `len`: Positive int. The target length.
-* `truncMode`: String. Truncation mode if the original sequence is longer than the target length. Either 'pre' or 'post'. 
+* `trunc_mode`: String. Truncation mode if the original sequence is longer than the target length. Either 'pre' or 'post'. 
 If 'pre', the sequence will be truncated from the beginning. 
 If 'post', the sequence will be truncated from the end. 
 Default is 'post'.
-* `padElement`: Int. The index element to be padded to the end of the sequence if the original length is smaller than the target length.
+* `pad_element`: Int. The index element to be padded to the end of the sequence if the original length is smaller than the target length.
 Default is 0 with the convention that we reserve index 0 for unknown words.
 
 
