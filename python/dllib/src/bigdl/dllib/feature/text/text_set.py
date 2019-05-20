@@ -228,10 +228,11 @@ class TextSet(JavaValue):
         you are dealing with. Thus this method will first do the dictionary generation and then
         convert words to indices based on the generated dictionary.
 
-        You can specify the following arguments which poses some constraints when generating
+        You can specify the following arguments which pose some constraints when generating
         the dictionary.
         In the result dictionary, index will start from 1 and corresponds to the occurrence
         frequency of each word sorted in descending order.
+        Here we adopt the convention that index 0 will be reserved for unknown words.
         After word2idx, you can get the generated word_index dictionary by calling 'get_word_index'.
         Also, you can call `save_word_index` to save this word_index dictionary to be used in
         future training.
@@ -246,14 +247,14 @@ class TextSet(JavaValue):
                          into consideration.
                          Default is 1, namely all words that occur will be considered.
         :param existing_map: Existing dictionary of word_index if any.
-                             Default is None and in this case a new map with index starting
+                             Default is None and in this case a new dictionary with index starting
                              from 1 will be generated.
-                             If not None, then the generated map will preserve the word_index in
-                             existing_map and assign subsequent indices to new words.
+                             If not None, then the generated dictionary will preserve the word_index
+                             in existing_map and assign subsequent indices to new words.
 
         ---------------------------------------Inference--------------------------------------------
-        During the inference, you are supposed to use exactly the same word_index dictionary in the
-        training stage instead of generating a new one.
+        During the inference, you are supposed to use exactly the same word_index dictionary as in
+        the training stage instead of generating a new one.
         Thus please be aware that you do not need to specify any of the above arguments.
         You need to call `load_word_index` or `set_word_index` beforehand for dictionary loading.
 
