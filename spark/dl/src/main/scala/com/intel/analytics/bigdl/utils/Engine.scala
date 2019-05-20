@@ -253,7 +253,7 @@ object Engine {
     val coreNum = Runtime.getRuntime().availableProcessors()
     require(coreNum > 0, "Get a non-positive core number")
     // We assume the HT is enabled
-    // Todo: check the Hyper threading
+    // TODO: check the Hyper threading
     if (coreNum > 1) coreNum / 2 else 1
   }
 

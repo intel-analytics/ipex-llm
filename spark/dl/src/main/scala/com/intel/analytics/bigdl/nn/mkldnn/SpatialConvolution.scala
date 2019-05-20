@@ -645,7 +645,7 @@ class SpatialConvolution(
   }
 
   /**
-   * Todo:
+   * TODO:
    *   (1) add calculation logic for Full padding
    *   (2) abstract and design an object type for return value, insteaof returnning
    *       the result as an int array

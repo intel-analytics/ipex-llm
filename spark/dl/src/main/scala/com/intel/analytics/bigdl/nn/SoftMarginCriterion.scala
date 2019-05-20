@@ -42,7 +42,7 @@ class SoftMarginCriterion[@specialized(Float, Double) T: ClassTag](var sizeAvera
     this
   }
 
-  // Todo: replace apply for performance optimization
+  // TODO: replace apply for performance optimization
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.isSameSizeAs(target), "The input should have the same size as target" +
       s"input size ${input.nElement()}, target size ${target.nElement()}")
@@ -63,7 +63,7 @@ class SoftMarginCriterion[@specialized(Float, Double) T: ClassTag](var sizeAvera
     output
   }
 
-  // Todo: replace apply for performance optimization
+  // TODO: replace apply for performance optimization
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.isSameSizeAs(target), "The input should have the same size as target" +
       s"input size ${input.nElement()}, target size ${target.nElement()}")

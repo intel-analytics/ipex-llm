@@ -84,7 +84,7 @@ class HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](
     output
   }
 
-  // Todo: Optimize performance to substitute apply3
+  // TODO: Optimize performance to substitute apply3
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input).copy(target)
     val func = new TensorFunc6[T] {
