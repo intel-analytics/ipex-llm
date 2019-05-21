@@ -154,7 +154,14 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
         node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
           // Some next nodes may be not included in the graph
           if (oldToNew.containsKey(nextNodeAndEdge._1)) {
-            oldToNew.get(nextNodeAndEdge._1).add(oldToNew.get(node), nextNodeAndEdge._2)
+            oldToNew.get(node).addPrevious(
+              oldToNew.get(nextNodeAndEdge._1), nextNodeAndEdge._2)
+          }
+        })
+        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+          if (oldToNew.containsKey(prevNodeAndEdge._1)) {
+            oldToNew.get(node).addNexts(
+              oldToNew.get(prevNodeAndEdge._1), prevNodeAndEdge._2)
           }
         })
       } else {
@@ -239,6 +246,14 @@ class Node[T](var element: T) extends Serializable {
     if (!node.prevs.contains((this, e))) node.prevs.append((this, e))
     if (!this.nexts.contains((node, e))) this.nexts.append((node, e))
     node
+  }
+
+  def addPrevious(node: Node[T], e: Edge = Edge()): Unit = {
+    if (!this.prevs.contains((node, e))) this.prevs.append((node, e))
+  }
+
+  def addNexts(node: Node[T], e: Edge = Edge()): Unit = {
+    if (!this.nexts.contains((node, e))) this.nexts.append((node, e))
   }
 
   def from(node: Node[T], e: Edge = Edge()): Node[T] = {
