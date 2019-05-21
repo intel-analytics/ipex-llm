@@ -58,47 +58,55 @@ class TFNet(private val graphDef: TFGraphHolder,
   implicit val ev = TensorNumeric.NumericFloat
   implicit val tag: ClassTag[Float] = ClassTag.Float
 
-  // todo if an exception is thrown during forward or backward, there will be memory leak
-  // maybe create a resource manager to handle tensor creation and destruction
-
   class ResourceManager() extends java.io.Serializable {
-    private var tensorList: List[TTensor[_]] = List()
+    private val tensorList: mutable.Set[TTensor[_]] = mutable.Set[TTensor[_]]()
     def createTFTensor(shape: Array[Long], buffer: FloatBuffer): TTensor[_] = {
       val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList = TFTensor :: tensorList
+      tensorList += TFTensor
       return TFTensor
     }
     def createTFTensor(shape: Array[Long], buffer: ByteBuffer): TTensor[_] = {
       val TFTensor : TTensor[_] = TTensor.create(classOf[UInt8], shape, buffer)
-      tensorList = TFTensor :: tensorList
+      tensorList += TFTensor
       return TFTensor
     }
     def createTFTensor(shape: Array[Long], buffer: IntBuffer): TTensor[_] = {
       val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList = TFTensor :: tensorList
+      tensorList += TFTensor
       return TFTensor
     }
     def createTFTensor(shape: Array[Long], buffer: LongBuffer): TTensor[_] = {
       val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList = TFTensor :: tensorList
+      tensorList += TFTensor
       return TFTensor
     }
     def createTFTensor(shape: Array[Long], buffer: DoubleBuffer): TTensor[_] = {
       val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList = TFTensor :: tensorList
+      tensorList += TFTensor
       return TFTensor
     }
 
     def createBoolTFTensor(shape: Array[Long], bytes: ByteBuffer): TTensor[_] = {
       val TFTensor : TTensor[_] = TTensor.create(classOf[java.lang.Boolean], shape, bytes)
-      tensorList = TFTensor :: tensorList
+      tensorList += TFTensor
       return TFTensor
+    }
+
+    def releaseTensor(t: TTensor[_]): Unit = {
+      t.close()
+      tensorList -= t
+    }
+
+    def isEmpty: Boolean = {
+      tensorList.isEmpty
     }
 
     def destructTFTensors(): Unit = {
       for (tensor <- tensorList) {
         tensor.close()
       }
+
+      tensorList.clear()
     }
   }
 
@@ -276,29 +284,30 @@ class TFNet(private val graphDef: TFGraphHolder,
         }
       }
       if (!this.isTraining()) {
-        // clean up input tensorflow tensors
-        emptyTFTensorArray(tempTFTensors)
+        // clean up all tensorflow tensors
+        tensorManager.destructTFTensors()
       } else {
         // clean up variable tensorflow tensors
         emptyTFTensorArray(weightTFTensors)
+        // clean up model output tensorflow tensors
+        emptyTFTensorArray(outputs.asScala.slice(0, outputNames.length))
+
+        // tempTensors will be cleaned up after backward
       }
 
-      // clean up model output tensorflow tensors
-      emptyTFTensorArray(outputs.asScala.slice(0, outputNames.length))
-      // tempTensors will be cleaned up after backward
-
-      output
     } catch {
       case ex: Throwable =>
         tensorManager.destructTFTensors()
         throw ex
     }
+
+    output
   }
 
   private def emptyTFTensorArray(arr: Array[TTensor[_]]): Unit = {
     var i = 0
     while (i < arr.length) {
-      arr(i).close()
+      tensorManager.releaseTensor(arr(i))
       arr(i) = null
       i += 1
     }
@@ -307,7 +316,7 @@ class TFNet(private val graphDef: TFGraphHolder,
   private def emptyTFTensorArray(arr: mutable.Buffer[TTensor[_]]): Unit = {
     var i = 0
     while (i < arr.length) {
-      arr(i).close()
+      tensorManager.releaseTensor(arr(i))
       arr(i) = null
       i += 1
     }
@@ -395,12 +404,8 @@ class TFNet(private val graphDef: TFGraphHolder,
         gradWeight.add(gradWeightBuffer)
       }
 
-      // clean up grad weights tf tensors
-      emptyTFTensorArray(gradWeightTFTensors)
-    } catch {
-      case ex: Throwable =>
-        tensorManager.destructTFTensors()
-        throw ex
+    } finally {
+      tensorManager.destructTFTensors()
     }
   }
 
@@ -581,6 +586,8 @@ object TFNet {
 
   @transient
   private lazy val inDriver = NetUtils.isDriver
+
+  val logger = LoggerFactory.getLogger(getClass)
 
   private val graphRegistry = new RegistryMap[ClosableGraph]()
 
