@@ -16,11 +16,14 @@
 
 package com.intel.analytics.bigdl.nn
 
+import javax.print.attribute.standard.MediaSize.Other
+
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
+import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.VAR
 
 import scala.reflect._
 
@@ -37,6 +40,42 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   extends AbstractModule[Table, Tensor[D], T] with MklInt8Convertible {
 
   output = Tensor[D]()
+
+  @transient
+  private var bufferSumInput: Tensor[D] = null
+  @transient
+  private var bufferSumOutput: Tensor[D] = null
+
+  private def expandWithDims(smallSize: Array[Int], otherSize: Array[Int]): Boolean = {
+    if (smallSize.length != otherSize.length) {
+      return false
+    }
+    var d = otherSize.length - 1
+    while(d >= 0) {
+      if (smallSize(d) != 1 && smallSize(d) != otherSize(d)) {
+        return false
+      }
+      d -= 1
+    }
+    return true
+  }
+
+  private def sumAlongDims(tensor: Tensor[D], other: Tensor[D]): Tensor[D] = {
+    val size = tensor.size()
+    var target: Tensor[D] = other
+    if (bufferSumOutput == null) bufferSumOutput = Tensor[D]()
+    if (bufferSumInput == null) bufferSumInput = Tensor[D]()
+
+    var i = 0
+    while (i < size.length) {
+      if (size(i) == 1) {
+        bufferSumOutput.sum(target, i + 1)
+        target = bufferSumInput.resizeAs(bufferSumOutput).copy(bufferSumOutput)
+      }
+      i += 1
+    }
+    target
+  }
 
   override def updateOutput(input: Table): Tensor[D] = {
     var scalar = ev2.zero
@@ -91,6 +130,9 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
+        } else if (expandWithDims(input[Tensor[D]](i).size(), gradOutput.size())) {
+        gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
+          sumAlongDims(input[Tensor[D]](i), gradOutput))
         } else {
           require(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
           if (!calculateSum) {
