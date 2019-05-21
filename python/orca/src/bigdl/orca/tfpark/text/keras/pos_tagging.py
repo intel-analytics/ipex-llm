@@ -63,6 +63,12 @@ class SequenceTagger(TextKerasModel):
 
     @staticmethod
     def load_model(path):
+        """
+        Load an existing SequenceTagger model (with weights) from HDF5 file.
+
+        :param path: String. The path to the pre-defined model.
+        :return: NER.
+        """
         labor = chunker.SequenceTagger(use_cudnn=False)
         model = TextKerasModel._load_model(labor, path)
         model.__class__ = SequenceTagger
