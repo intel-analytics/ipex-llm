@@ -1,5 +1,3 @@
-# TFEstimator Class API
-
 TFEstimator wraps a model defined by `model_fn`. The `model_fn` is almost identical to TensorFlow's `model_fn`
 except users are required to return a `TFEstimator` object. Users do not need to construct backward graph
 (calling `optimizer.minimize(...)`) but set a `loss` tensor in `TFEstimator`.
