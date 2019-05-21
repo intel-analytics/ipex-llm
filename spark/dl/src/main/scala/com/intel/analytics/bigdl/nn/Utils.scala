@@ -587,20 +587,20 @@ object Utils {
   }
 
   /**
-    * recursively calculate tensor max values based on the mask and index.
-    *
-    * for a [4, 3, 2, 2] tensor and 11 mask, it will generate 4*3=12 max values.
-    * First it will narrow 4 tensors whose size are [1, 3, 2, 2] and the index will increase to 1
-    * Second it will narrow 3 tensors whose size are [1, 1, 2, 2] and get the abs max values.
-    * So it will returns 3 * 4 = 12 values.
-    *
-    * `abs` in tensor will do inplace, so it will clone the tensor first.
-    *
-    * @param tensor narrowed tensor, so the index can not be shifted every call
-    * @param mask binary string, which dimension should be calculated
-    * @param index the index of tensor, which is different with mask
-    * @return seq of max values
-    */
+   * recursively calculate tensor max values based on the mask and index.
+   *
+   * for a [4, 3, 2, 2] tensor and 11 mask, it will generate 4*3=12 max values.
+   * First it will narrow 4 tensors whose size are [1, 3, 2, 2] and the index will increase to 1
+   * Second it will narrow 3 tensors whose size are [1, 1, 2, 2] and get the abs max values.
+   * So it will returns 3 * 4 = 12 values.
+   *
+   * `abs` in tensor will do inplace, so it will clone the tensor first.
+   *
+   * @param tensor narrowed tensor, so the index can not be shifted every call
+   * @param mask binary string, which dimension should be calculated
+   * @param index the index of tensor, which is different with mask
+   * @return seq of max values
+   */
   private def calc(tensor: Tensor[Float], mask: String, index: Int): Seq[Float] = {
 
     // terminator 1
