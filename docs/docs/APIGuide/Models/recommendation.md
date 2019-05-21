@@ -1,4 +1,4 @@
-Analytics Zoo provides two Recommenders, including Wide and Deep (WND) model and Neural network-based Collaborative Filtering (NCF) model. Each model could be fed into NNFrames or BigDL Optimizer directly for training.
+Analytics Zoo provides two Recommenders, including Wide and Deep (WND) model and Neural network-based Collaborative Filtering (NCF) model. Easy-to-use Keras-Style defined models which provides compile and fit methods for training. Alternatively, they could be fed into NNFrames or BigDL Optimizer.
 
 Recommenders can handle models with either explict or implicit feedback, given corresponding features.
 
