@@ -570,4 +570,57 @@ object Utils {
     times: Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]): (Long, Long) = {
       times.map(t => (t._2, t._3)).reduce((a, b) => (a._1 + b._1, a._2 + b._2))
   }
+
+  private[nn] def calc(tensor: Tensor[Float], mask: Int): Array[Float] = {
+    def maskInterval: String = {
+      val start = 0
+      val end = (math.pow(2, tensor.size().length) - 1).toInt
+
+      s"mask should between [$start, $end]"
+    }
+    require(mask.toBinaryString.length <= tensor.size().length, s"$maskInterval")
+
+    // because the shape of tensor is reverse of mask, for example,
+    // if the mask is 11 (bit representation) and the shape is [4, 3, 2, 2].
+    // the corresponding dimension is [4, 3] which will return 12 values.
+    calc(tensor, mask.toBinaryString.reverse, 0).toArray
+  }
+
+  /**
+    * recursively calculate tensor max values based on the mask and index.
+    *
+    * for a [4, 3, 2, 2] tensor and 11 mask, it will generate 4*3=12 max values.
+    * First it will narrow 4 tensors whose size are [1, 3, 2, 2] and the index will increase to 1
+    * Second it will narrow 3 tensors whose size are [1, 1, 2, 2] and get the abs max values.
+    * So it will returns 3 * 4 = 12 values.
+    *
+    * `abs` in tensor will do inplace, so it will clone the tensor first.
+    *
+    * @param tensor narrowed tensor, so the index can not be shifted every call
+    * @param mask binary string, which dimension should be calculated
+    * @param index the index of tensor, which is different with mask
+    * @return seq of max values
+    */
+  private def calc(tensor: Tensor[Float], mask: String, index: Int): Seq[Float] = {
+
+    // terminator 1
+    if (index < 0 || index >= mask.length) return Seq()
+
+    // terminator 2, at the end of mask whose bit has been set
+    if (mask(index).asDigit == 1 && index == mask.length - 1) {
+      return (1 to tensor.size(index + 1)).flatMap { idx =>
+        Seq(tensor.narrow(index + 1, idx, 1).clone().abs.max())
+      }
+    }
+
+    // in the middle process, do recursively on the narrowed tensor
+    if (mask(index).asDigit == 1) {
+      return (1 to tensor.size(index + 1)).flatMap { idx =>
+        calc(tensor.narrow(index + 1, idx, 1), mask, index + 1)
+      }
+    }
+
+    // skip this dimension and do recursively on the current tensor
+    calc(tensor, mask, index + 1)
+  }
 }
