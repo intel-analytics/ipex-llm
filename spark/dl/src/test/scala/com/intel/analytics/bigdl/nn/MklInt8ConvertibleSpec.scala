@@ -813,9 +813,9 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
 
 
   /**
-    * Iterate over modules inside the Sequential module, verify their calculated scales
-    * @param sequential the sequential to be verified
-    */
+   * Iterate over modules inside the Sequential module, verify their calculated scales
+   * @param sequential the sequential to be verified
+   */
   private def sequentialValidationHelper(sequential: Sequential[Float]): Unit = {
 
     var prevModule: AbstractModule[_, _, Float] = null
@@ -841,10 +841,10 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
 
 
   /**
-    * Iterate over modules inside the ConcatTable module, verify their calculated scales
-    * @param inputTensor input of the ConcatTable
-    * @param concatTable the ConcatTable to be verified
-    */
+   * Iterate over modules inside the ConcatTable module, verify their calculated scales
+   * @param inputTensor input of the ConcatTable
+   * @param concatTable the ConcatTable to be verified
+   */
   private def concatTableValidationHelper(inputTensor: Tensor[Float],
     concatTable: ConcatTable[Float],
     mask: Int): Unit = {
@@ -882,11 +882,11 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
 
 
   /**
-    * Calculate the scales based on the input tensor and dimension mask
-    * @param tensor input tensor
-    * @param mask dimension mask
-    * @return an Array contains scales
-    */
+   * Calculate the scales based on the input tensor and dimension mask
+   * @param tensor input tensor
+   * @param mask dimension mask
+   * @return an Array contains scales
+   */
   private def getScalesFromTensor(tensor: Tensor[Float], mask: Int): Array[Float] = {
 
     if (mask == 0) {
@@ -903,14 +903,14 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
 
 
   /**
-    * Helper method to make testing 2 dimensional tensor
-    * tensor =
-    * 01 10 03 12
-    * 09 07 11 08
-    * 05 02 06 04
-    *
-    * @return a 2D tensor of float
-    */
+   * Helper method to make testing 2 dimensional tensor
+   * tensor =
+   * 01 10 03 12
+   * 09 07 11 08
+   * 05 02 06 04
+   *
+   * @return a 2D tensor of float
+   */
   private def make2DTensor(): Tensor[Float] = {
     val tensor = Tensor[Float](3, 4)
     tensor.setValue(1, 1, 1)
@@ -931,11 +931,11 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
 
 
   /**
-    * Helper method to make testing 1 dimensional tensor
-    * @param n tensor size
-    * @param max max value of the random generated tensor
-    * @return a tensor of float
-    */
+   * Helper method to make testing 1 dimensional tensor
+   * @param n tensor size
+   * @param max max value of the random generated tensor
+   * @return a tensor of float
+   */
   private def make1DTensor(n: Int, max: Float): Tensor[Float] = {
     val tensor = Tensor[Float](n)
     tensor.rand(0, 100)
