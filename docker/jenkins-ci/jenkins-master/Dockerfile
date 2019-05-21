@@ -17,6 +17,7 @@ ENV COPY_REFERENCE_FILE_LOG  ${JENKINS_HOME}/copy_reference_file.log
 ENV PATH                     ${JAVA_HOME}/bin:${PATH}
 
 COPY init.groovy ${JENKINS_HOME}/init.groovy.d/basic-security.groovy
+COPY jenkins-support ${JENKINS_HOME}/jenkins-support
 COPY jenkins.sh ${JENKINS_HOME}/jenkins.sh
 
 RUN apt-get update && apt-get install -y git wget curl && rm -rf /var/lib/apt/lists/* && \
