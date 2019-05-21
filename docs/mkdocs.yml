@@ -31,7 +31,7 @@ pages:
     - Autograd: ProgrammingGuide/autograd.md
     - Transfer Learning: ProgrammingGuide/transferlearning.md
     - Model Serving: ProgrammingGuide/inference.md
-    - Distributed Tensoflow on Spark/BigDL: ProgrammingGuide/tensorflow.md
+  - TFPark API: ProgrammingGuide/tensorflow.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
@@ -54,6 +54,9 @@ pages:
     - Autograd-Variable: APIGuide/PipelineAPI/variable.md
     - Net: APIGuide/PipelineAPI/net.md
     - Inference: APIGuide/PipelineAPI/inference.md
+  - TFPark API:
+    - KerasModel: APIGuide/TFPark/model.md
+    - TFEstimator: APIGuide/TFPark/estimator.md
   - Feature Engineering:
     - FeatureSet: APIGuide/FeatureEngineering/featureset.md
     - Relation: APIGuide/FeatureEngineering/relation.md

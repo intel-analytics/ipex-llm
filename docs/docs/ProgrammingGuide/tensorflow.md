@@ -1,6 +1,6 @@
 Analytics-Zoo provides a set APIs for running TensorFlow model on Spark in a distributed fashion.
 
-## System Requirement
+# System Requirement
 TensorFlow version: 1.10
 
 OS version (all 64-bit): __Ubuntu 16.04 or later__, __macOS 10.12.6 or later__, __Windows 7 or later__ (TensorFlow is
@@ -9,11 +9,150 @@ OS version (all 64-bit): __Ubuntu 16.04 or later__, __macOS 10.12.6 or later__, 
 To run on other system may require you to manually compile the TensorFlow source code. Instructions can
 be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
 
+# TFPark API
+
+TFPark is a set of high-level api modeling after tf.keras and tf.estimator to help user to train and evaluate TensorFlow
+models on Spark and BigDL. Users can define their model using `tf.keras` API or using `model_fn` similar to `tf.estimator`.
+
+## TFDataset
+
+**TFDatasets** represents a distributed collection of elements (backed by a RDD) to be fed into a TensorFlow graph.
+TFDatasets can be created from numpy.ndarrays, an rdd of numpy.ndarrays as well as ImageSet, TextSet and FeatureSet.
+It acts as an interface connecting RDD data to TensorFlow models.
+
+```python
+from zoo import init_nncontext
+from zoo.pipeline.api.net import TFDataset
+from tensorflow as tf
+
+sc = init_nncontext()
+
+# Each record in the train_rdd consists of a list of NumPy ndrrays
+train_rdd = sc.parallelize(file_list)
+  .map(lambda x: read_image_and_label(x))
+  .map(lambda image_label: decode_to_ndarrays(image_label))
+
+# TFDataset represents a distributed set of elements,
+# in which each element contains one or more TensorFlow Tensor objects. 
+dataset = TFDataset.from_rdd(train_rdd,
+                             features=(tf.float32, [28, 28, 1]),
+                             labels=(tf.int32, []),
+                             batch_size=BATCH_SIZE)
+```
+
+More on TFDataset API [API Guide](../APIGuide/PipelineAPI/net.md#tfnet)
+
+## KerasModel
+
+KerasModel enables user to use `tf.keras` API to define TensorFlow models and perform training or evaluation on top
+of Spark and BigDL in a distributed fashion.
+
+1. Create a KerasModel
+```python
+from zoo.tfpark import KerasModel, TFDataset
+import tensorflow as tf
+
+model = tf.keras.Sequential(
+    [tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
+     tf.keras.layers.Dense(64, activation='relu'),
+     tf.keras.layers.Dense(10, activation='softmax'),
+     ]
+)
+
+model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+keras_model = KerasModel(model)
+
+```
+
+2. Perform training on TFDataset and save model
+
+```python
+keras_model.fit(training_dataset, epochs=max_epoch)
+
+model.save_weights("/tmp/model.h5")
+
+```
+
+2. Loading saved model and preform evaluation or inference
+
+```python
+model.load_weights("/tmp/model.h5")
+
+evaluation_results = model.evaluate(eval_dataset)
+
+predictions = model.predict(pred_dataset)
+```
+
+More on KerasModel API [API Guide](../APIGuide/TFPark/model.md)
+
+## TFEstimator
+
+TFEstimator wraps a model defined by `model_fn`. The `model_fn` is almost identical to TensorFlow's `model_fn`
+except users are required to return a `TFEstimator` object. Users do not need to construct backward graph
+(calling `optimizer.minimize(...)`) but set a `loss` tensor in `TFEstimator`.
+
+1. Define a `model_fn`
+
+```python
+import tensorflow as tf
+from zoo.tfpark.estimator import TFEstimator, TFEstimatorSpec
+def model_fn(features, labels, mode):
+
+    hidden = tf.layers.dense(features, 32, activation=tf.nn.relu)
+    
+    logits = tf.layers.dense(hidden, 10)
+
+    if mode == tf.estimator.ModeKeys.EVAL or mode == tf.estimator.ModeKeys.TRAIN:
+        loss = tf.reduce_mean(
+            tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
+        return TFEstimatorSpec(mode, predictions=logits, loss=loss)
+    else:
+        return TFEstimatorSpec(mode, predictions=logits)
+
+```
+
+2. Define a input_fn
+
+```python
+import tensorflow as tf
+sc = init_nncontext()
+def input_fn(mode):
+    if mode == tf.estimator.ModeKeys.TRAIN:
+        training_rdd = get_data_rdd("train", sc)
+        dataset = TFDataset.from_rdd(training_rdd,
+                                     features=(tf.float32, [28, 28, 1]),
+                                     labels=(tf.int32, []),
+                                     batch_size=320)
+    elif mode == tf.estimator.ModeKeys.EVAL:
+        validation_rdd = get_data_rdd("validation", sc)
+        dataset = TFDataset.from_rdd(testing_rdd,
+                                     features=(tf.float32, [28, 28, 1]),
+                                     labels=(tf.int32, []),
+                                     batch_size=320)
+    else:
+        testing_rdd = get_data_rdd("test", sc)
+        dataset = TFDataset.from_rdd(testing_rdd,
+                                     features=(tf.float32, [28, 28, 1]),
+                                     batch_per_thread=80)
+    return dataset
+```
+
+3. Create TFEstimator and perform training, evaluation or inference
+
+```python
+estimator = TFEstimator(model_fn, tf.train.AdamOptimizer(), model_dir="/tmp/estimator")
+estimator.train(input_fn, steps=10000)
+evaluation_result = estimator.evaluate(input_fn, ["acc"])
+predictions = estimator.predict(input_fn)
+```
+
+More on TFEstimator API [API Guide](../APIGuide/TFPark/estimator.md)
+
+# Low level API
 
 ## Concepts
-- **TFDatasets** represents a distributed collection of elements to be fed into a TensorFlow graph.
-TFDatasets can be created directly from an RDD; each record in the RDD should be a list of numpy.ndarray
-representing the input data. TFDatasets must be used with the TFOptimizer or TFPredictor (to be described next).
 
 - **TFOptimizer** is the class that does all the hard work in distributed training, such as model
 distribution and parameter synchronization. It takes the user specified **loss** (a TensorFlow scalar tensor) as
@@ -43,9 +182,8 @@ train_rdd = sc.parallelize(file_list)
 # TFDataset represents a distributed set of elements,
 # in which each element contains one or more TensorFlow Tensor objects. 
 dataset = TFDataset.from_rdd(train_rdd,
-                             names=["features", "labels"],
-                             shapes=[[28, 28, 1], [1]],
-                             types=[tf.float32, tf.int32],
+                             features=(tf.float32, [28, 28, 1]),
+                             labels=(tf.int32, []),
                              batch_size=BATCH_SIZE)
 ```
 
@@ -138,9 +276,8 @@ testing_rdd = sc.parallelize(file_list)
 # TFDataset represents a distributed set of elements,
 # in which each element contains one or more TensorFlow Tensor objects. 
 dataset = TFDataset.from_rdd(testing_rdd,
-                             names=["features"],
-                             shapes=[[28, 28, 1]],
-                             types=[tf.float32])
+                             features=(tf.float32, [28, 28, 1]),
+                             batch_per_thread=4)
 ```
    
 2.Reconstruct the model for inference and load the checkpoint
@@ -192,7 +329,7 @@ predictor = TFPredictor.from_keras(model, dataset)
 predictions_rdd = predictor.predict()
 ```
 
-### Relationship to TFNet
+# Relationship to TFNet
 
 **TFNet** is a layer representing a TensorFlow sub-graph (specified by the input and output TensorFlow tensors).
 It implements the standard BigDL layer API, and can be used with other Analytics-Zoo/BigDL layers
@@ -201,5 +338,5 @@ to construct more complex models for training or inference using the standard An
 You can think of `TFDatasets`, `TFOptimizer`, `TFPredictor` as a set API for training/testing TensorFlow models
 on Spark/BigDL, while `TFNet` as an Analytics-Zoo/BigDL layer initialized using TensorFlow graph.
 
-For more information on TFNet, please refer to the [API Guide](../APIGuide/PipelineAPI/net.md#tfnet)
+For more information on TFNet, please refer to the [API Guide](../APIGuide/PipelineAPI/net.md##TFNet)
 
