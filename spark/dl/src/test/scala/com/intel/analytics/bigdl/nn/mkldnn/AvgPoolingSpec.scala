@@ -236,4 +236,33 @@ class AvgPoolingSpec extends BigDLSpecHelper {
 
     Equivalent.nearequals(seq.output.toTensor, seq2.output.toTensor, 1e-2) should be (true)
   }
+
+  "global average pooling" should "work correctly" in {
+    val gap = AvgPooling(2, 2, globalPooling = true)
+    val ap = AvgPooling(3, 3)
+
+    val inputShape = Array(4, 2, 3, 3)
+    val input = Tensor[Float](inputShape).rand(-1, 1)
+
+    val seq1 = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(ap)
+      .add(Output(Memory.Format.nchw))
+
+    val seq2 = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(gap)
+      .add(Output(Memory.Format.nchw))
+
+    seq1.evaluate()
+    seq2.evaluate()
+
+    seq1.compile(InferencePhase)
+    seq2.compile(InferencePhase)
+
+    seq1.forward(input)
+    seq2.forward(input)
+
+    seq1.output should be (seq2.output)
+  }
 }
