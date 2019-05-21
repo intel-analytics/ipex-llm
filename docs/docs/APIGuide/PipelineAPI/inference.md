@@ -35,8 +35,24 @@ We just need to specify the model path and optionally weight path if exists wher
 
 ***loadTF***
 
-`loadTF` method is to load a tensorflow model. There are two backends to load a tensorflow model and to do the predictions: TFNet and OpenVINO. For OpenVINO backend, supported tensorflow models are listed below:
+`loadTF` method is to load a tensorflow model. There are two backends to load a tensorflow model and to do the predictions: TFNet and OpenVINO. For OpenVINO backend, [supported tensorflow models](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html) are listed below:
 
+    inception_v1
+    inception_v2
+    inception_v3
+    inception_v4
+    inception_resnet_v2
+    mobilenet_v1
+    nasnet_large
+    nasnet_mobile
+    resnet_v1_50
+    resnet_v2_50
+    resnet_v1_101
+    resnet_v2_101
+    resnet_v1_152
+    resnet_v2_152
+    vgg_16
+    vgg_19
     faster_rcnn_inception_resnet_v2_atrous_coco
     faster_rcnn_inception_resnet_v2_atrous_lowproposals_coco
     faster_rcnn_inception_resnet_v2_atrous_lowproposals_oid
@@ -59,10 +75,20 @@ We just need to specify the model path and optionally weight path if exists wher
 
 `loadOpenVINO` method is to load an OpenVINO Intermediate Representation(IR).
 
+***loadOpenVINOInt8***
+
+`loadOpenVINO` method is to load an OpenVINO Int8 Intermediate Representation(IR).
+
 **predict**
 
 AbstractInferenceModel provides `predict` API for prediction with loaded model.
 The predict result of`AbstractInferenceModel` is a `List<List<JTensor>>` by default.
+
+**predictInt8**
+
+AbstractInferenceModel provides `predictInt8` API for prediction with loaded int8 model.
+The predictInt8 result of`AbstractInferenceModel` is a `List<List<JTensor>>` by default.
+
 
 ## Examples
 
@@ -100,8 +126,24 @@ List<List<JTensor>> result = model.predict(inputList);
 
 `doLoadTF` method is to load a tensorflow model. The model can be loaded as a `FloatModel` or an `OpenVINOModel`. There are two backends to load a tensorflow model: TFNet and OpenVINO. 
 
-<span id="jump">For OpenVINO backend, supported tensorflow models are listed below:</span>
+<span id="jump">For OpenVINO backend, [supported tensorflow models](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html) are listed below:</span>
                                           
+    inception_v1
+    inception_v2
+    inception_v3
+    inception_v4
+    inception_resnet_v2
+    mobilenet_v1
+    nasnet_large
+    nasnet_mobile
+    resnet_v1_50
+    resnet_v2_50
+    resnet_v1_101
+    resnet_v2_101
+    resnet_v1_152
+    resnet_v2_152
+    vgg_16
+    vgg_19
     faster_rcnn_inception_resnet_v2_atrous_coco
     faster_rcnn_inception_resnet_v2_atrous_lowproposals_coco
     faster_rcnn_inception_resnet_v2_atrous_lowproposals_oid
@@ -119,10 +161,14 @@ List<List<JTensor>> result = model.predict(inputList);
     ssd_mobilenet_v1_coco
     ssd_mobilenet_v2_coco
     ssdlite_mobilenet_v2_coco
-                                          
+
 ***doLoadOpenVINO***
                                           
 `doLoadOpenVINO` method is to load an OpenVINO Intermediate Representation(IR).
+
+***doLoadOpenVINOInt8***
+
+`doLoadOpenVINOInt8` method is to load an OpenVINO Int8 Intermediate Representation(IR).
 
 ***doReload***
 
@@ -131,6 +177,10 @@ List<List<JTensor>> result = model.predict(inputList);
 ***doPredict***
 
 `doPredict` method is to do the prediction.
+
+***doPredictInt8***
+
+`doPredict` method is to do the prediction with Int8 model. If model doesn't support predictInt8, will throw RuntimeException with `does not support predictInt8` message.
 
 **InferenceSupportive**
 
@@ -147,7 +197,7 @@ to [`JTensor`](https://github.com/intel-analytics/analytics-zoo/blob/88afc2d921b
 
 **FloatModel**
 
-`FloatModel` is an extending class of `AbstractModel` and achieves all `AbstractModel` interfaces.
+`FloatModel` is an extending class of `AbstractModel` and achieves all `AbstractModel` interfaces. 
 
 **OpenVINOModel**
 
