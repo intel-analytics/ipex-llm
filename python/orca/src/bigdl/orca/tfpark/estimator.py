@@ -83,6 +83,52 @@ class TFEstimator(object):
 
     def __init__(self, model_fn, optimizer=None, model_dir=None, config=None,
                  params=None, warm_start_from=None):
+        """
+        :param model_fn: Model function. Follows the signature:
+
+            * Args:
+
+                * `features`: This is the first item returned from the `input_fn`
+                    passed to `train`, `evaluate`, and `predict`. This should be a
+                    single `tf.Tensor` or `dict` of same.
+                * `labels`: This is the second item returned from the `input_fn`
+                    passed to `train`, `evaluate`, and `predict`. This should be a
+                    single `tf.Tensor` or `dict` of same (for multi-head models).
+                    If mode is `tf.estimator.ModeKeys.PREDICT`, `labels=None` will
+                    be passed. If the `model_fn`'s signature does not accept
+                    `mode`, the `model_fn` must still be able to handle
+                    `labels=None`.
+                * `mode`: Optional. Specifies if this training, evaluation or
+                    prediction. See `tf.estimator.ModeKeys`.
+                * `params`: Optional `dict` of hyperparameters.  Will receive what
+                    is passed to Estimator in `params` parameter. This allows
+                    to configure Estimators from hyper parameter tuning.
+                * `config`: Optional `estimator.RunConfig` object. Will receive what
+                    is passed to Estimator as its `config` parameter, or a default
+                    value. Allows setting up things in your `model_fn` based on
+                    configuration such as `num_ps_replicas`, or `model_dir`.
+
+            * Returns:
+                `zoo.tfpark.estimator.TFEstimatorSpec`
+        :param optimizer: the tf.train.Optimizer to be used in training,
+                         e.g. tf.train.AdamOptimizer()
+        :param model_dir: Directory to save model parameters, graph and etc. This can
+            also be used to load checkpoints from the directory into an estimator to
+            continue training a previously saved model. If `PathLike` object, the
+            path will be resolved. If `None`, the model_dir in `config` will be used
+            if set. If both are set, they must be same. If both are `None`, a
+            temporary directory will be used.
+        :param config: `estimator.RunConfig` configuration object.
+        :param params: `dict` of hyper parameters that will be passed into `model_fn`.
+              Keys are names of parameters, values are basic python types.
+        :param warm_start_from: Optional string filepath to a checkpoint or SavedModel to
+                       warm-start from, or a `tf.estimator.WarmStartSettings`
+                       object to fully configure warm-starting.  If the string
+                       filepath is provided instead of a
+                       `tf.estimator.WarmStartSettings`, then all variables are
+                       warm-started, and it is assumed that vocabularies
+                       and `tf.Tensor` names are unchanged.
+        """
 
         def tf_model_fn(features, labels, mode, params, config):
             return add_train_op(model_fn, features, labels, mode, params, config, optimizer)
@@ -115,6 +161,23 @@ class TFEstimator(object):
         return model_fn_results
 
     def train(self, input_fn, steps=None):
+        """Trains a model given training data `input_fn`.
+
+        :param input_fn: A function that constructs the input data for evaluation. The
+            function should construct and return one of the following:
+            * A `TFDataset` object, each elements of which is a tuple `(features, labels)`.
+            * A `tf.data.Dataset` object: Outputs of `Dataset` object must be a tuple
+            `(features, labels)` with same constraints as below.
+            * A tuple `(features, labels)`: Where `features` is a `tf.Tensor` or a dictionary
+            of string feature name to `Tensor` and `labels` is a `Tensor` or a
+            dictionary of string label name to `Tensor`. Both `features` and
+            `labels` are consumed by `model_fn`. They should satisfy the expectation
+            of `model_fn` from inputs.
+        :param steps: Number of steps for which to train the model.
+
+        Returns:
+          `self`, for chaining.
+        """
 
         with tf.Graph().as_default() as g:
             global_step_tensor = self.estimator._create_and_assert_global_step(g)
@@ -149,6 +212,30 @@ class TFEstimator(object):
         return self.estimator.train(input_fn, steps=steps)
 
     def evaluate(self, input_fn, eval_methods, steps=None, checkpoint_path=None):
+        """Evaluates the model given evaluation data `input_fn`.
+
+        :param input_fn: A function that constructs the input data for evaluation. The
+            function should construct and return one of the following:
+            * A `TFDataset` object, each elements of which is a tuple `(features, labels)`.
+            * A `tf.data.Dataset` object: Outputs of `Dataset` object must be a tuple
+            `(features, labels)` with same constraints as below.
+            * A tuple `(features, labels)`: Where `features` is a `tf.Tensor` or a dictionary
+            of string feature name to `Tensor` and `labels` is a `Tensor` or a
+            dictionary of string label name to `Tensor`. Both `features` and
+            `labels` are consumed by `model_fn`. They should satisfy the expectation
+            of `model_fn` from inputs.
+        :param eval_methods: a list of strings to specify the evaluation metrics to
+                            be used in this model
+        :param steps: Number of steps for which to evaluate model.
+        :param checkpoint_path: Path of a specific checkpoint to evaluate. If `None`, the
+            latest checkpoint in `model_dir` is used.  If there are no checkpoints
+            in `model_dir`, evaluation is run with newly initialized `Variables`
+            instead of ones restored from checkpoint.
+
+        Returns:
+          A dict containing the evaluation metrics specified in `model_fn` keyed by
+          name.
+        """
         if not all(isinstance(metric, six.string_types) for metric in eval_methods):
             raise ValueError("All metrics should be string types")
         with tf.Graph().as_default() as g:
@@ -187,6 +274,27 @@ class TFEstimator(object):
         return self.estimator.evaluate(input_fn, steps, checkpoint_path=checkpoint_path)
 
     def predict(self, input_fn, checkpoint_path=None):
+        """Outputs predictions for given features.
+
+        :param input_fn: A function that constructs the features.
+              * A `TFDataset` object, each elements of which is a tuple `(features, None)`.
+              * A `tf.data.Dataset` object: Outputs of `Dataset` object must have
+                same constraints as below.
+              * features: A `tf.Tensor` or a dictionary of string feature name to
+                `Tensor`. features are consumed by `model_fn`. They should satisfy
+                the expectation of `model_fn` from inputs.
+              * A tuple, in which case the first item is extracted as features.
+
+        :param checkpoint_path: Path of a specific checkpoint to predict. If `None`, the
+            latest checkpoint in `model_dir` is used.  If there are no checkpoints
+            in `model_dir`, prediction is run with newly initialized `Variables`
+            instead of ones restored from checkpoint.
+
+
+        Return:
+          Evaluated values of `predictions` tensors.
+
+        """
         with tf.Graph().as_default() as g:
             result = self.estimator._call_input_fn(input_fn, tf.estimator.ModeKeys.PREDICT)
             if isinstance(result, TFDataset):
@@ -214,7 +322,7 @@ class TFEstimator(object):
                     results = tfnet.predict(rdd, result.batch_per_thread)
                     return results
 
-        return self.estimator.predict(input_fn, checkpoint_path=checkpoint_path)
+        return list(self.estimator.predict(input_fn, checkpoint_path=checkpoint_path))
 
     @staticmethod
     def _to_bigdl_metric(metric):

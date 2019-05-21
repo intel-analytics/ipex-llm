@@ -31,6 +31,9 @@ from zoo.pipeline.api.net.tf_dataset import TFNdarrayDataset
 class KerasModel(object):
 
     def __init__(self, model):
+        """
+        :param model: a compiled keras model
+        """
         self.model = model
         metrics_tensors = [
             self.model.metrics_tensors[m] for m in range(len(self.model.metrics_names) - 1)
@@ -91,6 +94,42 @@ class KerasModel(object):
             distributed=False,
             **kwargs
             ):
+        """
+        Train the model for a fixed num of epochs
+
+        Arguments:
+        :param x: Input data. It could be:
+            - a TFDataset object
+            - A Numpy array (or array-like), or a list of arrays
+               (in case the model has multiple inputs).
+            - A dict mapping input names to the corresponding array/tensors,
+            if the model has named inputs.
+        :param y: Target data. Like the input data `x`,
+          It should be consistent with `x` (you cannot have Numpy inputs and
+          tensor targets, or inversely). If `x` is a TFDataset, `y` should
+          not be specified (since targets will be obtained from `x`).
+        :param batch_size: Integer or `None`.
+            Number of samples per gradient update.
+            If `x` is a TFDataset, you do not need to specify batch_size.
+        :param epochs: Integer. Number of epochs to train the model.
+            An epoch is an iteration over the entire `x` and `y`
+            data provided.
+        :param validation_split: Float between 0 and 1.
+            Fraction of the training data to be used as validation data.
+            The model will set apart this fraction of the training data,
+            will not train on it, and will evaluate
+            the loss and any model metrics
+            on this data at the end of each epoch.
+        :param validation_data: Data on which to evaluate
+            the loss and any model metrics at the end of each epoch.
+            The model will not be trained on this data.
+            `validation_data` will override `validation_split`.
+            `validation_data` could be:
+              - tuple `(x_val, y_val)` of Numpy arrays or tensors
+              - `TFDataset`
+        :param distributed: Boolean. Whether to do prediction in distributed mode or local mode.
+                     Default is True. In local mode, x must be a Numpy array.
+        """
         if isinstance(x, TFDataset):
             # todo check arguments
             if not x.has_batch:
@@ -131,6 +170,26 @@ class KerasModel(object):
                  batch_per_thread=None,
                  distributed=False
                  ):
+        """
+        Evaluate a model on a given dataset
+
+        :param x: Input data. It could be:
+            - a TFDataset object
+            - A Numpy array (or array-like), or a list of arrays
+               (in case the model has multiple inputs).
+            - A dict mapping input names to the corresponding array/tensors,
+            if the model has named inputs.
+        :param y: Target data. Like the input data `x`,
+          It should be consistent with `x` (you cannot have Numpy inputs and
+          tensor targets, or inversely). If `x` is a TFDataset, `y` should
+          not be specified (since targets will be obtained from `x`).
+        :param batch_per_thread:
+          The default value is 1.
+          When distributed is True,the total batch size is batch_per_thread * rdd.getNumPartitions.
+          When distributed is False the total batch size is batch_per_thread * numOfCores.
+        :param distributed: Boolean. Whether to do prediction in distributed mode or local mode.
+                     Default is True. In local mode, x must be a Numpy array.
+        """
         if isinstance(x, TFDataset):
             if not x.has_batch:
                 raise ValueError("The batch_per_thread of TFDataset must be " +
@@ -176,6 +235,23 @@ class KerasModel(object):
                 x,
                 batch_per_thread=None,
                 distributed=False):
+
+        """
+        Use a model to do prediction.
+
+        :param x: Input data. It could be:
+            - a TFDataset object
+            - A Numpy array (or array-like), or a list of arrays
+               (in case the model has multiple inputs).
+            - A dict mapping input names to the corresponding array/tensors,
+            if the model has named inputs.
+        :param batch_per_thread:
+          The default value is 1.
+          When distributed is True,the total batch size is batch_per_thread * rdd.getNumPartitions.
+          When distributed is False the total batch size is batch_per_thread * numOfCores.
+        :param distributed: Boolean. Whether to do prediction in distributed mode or local mode.
+                     Default is True. In local mode, x must be a Numpy array.
+        """
 
         if isinstance(x, TFDataset):
             # todo check arguments
