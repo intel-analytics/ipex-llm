@@ -113,7 +113,7 @@ object BERT extends KerasLayerSerializable {
   /**
    * [[BERT]] A self attention keras like layer
    * @param vocab vocabulary size of training data, default is 40990
-   * @param hiddenSize ize of the encoder layers, default is 768
+   * @param hiddenSize size of the encoder layers, default is 768
    * @param nBlock block number, default is 12
    * @param nHead head number, default is 12
    * @param maxPositionLen sequence length, default is 512
