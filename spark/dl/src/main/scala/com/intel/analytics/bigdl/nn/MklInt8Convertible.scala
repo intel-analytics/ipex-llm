@@ -165,7 +165,7 @@ trait MklInt8Convertible {
       // return the abs value of tensor as an array
       tensor.clone().abs().storage().toArray[Float]
     } else {
-      Utils.calc(tensor, mask)
+      Utils.calcScales(tensor, mask)
     }
   }
 

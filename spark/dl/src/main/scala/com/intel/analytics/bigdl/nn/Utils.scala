@@ -571,7 +571,22 @@ object Utils {
       times.map(t => (t._2, t._3)).reduce((a, b) => (a._1 + b._1, a._2 + b._2))
   }
 
-  private[nn] def calc(tensor: Tensor[Float], mask: Int): Array[Float] = {
+  /**
+   * calculate scales of tensor based on the mask
+   *
+   * The mask parameter determines the dimension to which the scales array is applied to.
+   * If the ith bit of mask is set, it will select that dimension and calc scales on that.
+   * For a 5-dimensional tensor T[g0, o1,i2,h3,w4] where the numbering indicates the bit-index:
+   *    + A mask = 3 = 2^0 | 2^1 selects the group (g0) and output channels (o1).
+   *    + A mask = 2 = 2^1 selects the output channels (o1).
+   *
+   * For a [4, 3, 2, 2] tensor and 3(2^0|2^1) as the mask, it will generate 4*3=12 max values.
+   *
+   * @param tensor
+   * @param mask
+   * @return
+   */
+  private[nn] def calcScales(tensor: Tensor[Float], mask: Int): Array[Float] = {
     def maskInterval: String = {
       val start = 0
       val end = (math.pow(2, tensor.size().length) - 1).toInt
@@ -583,25 +598,25 @@ object Utils {
     // because the shape of tensor is reverse of mask, for example,
     // if the mask is 11 (bit representation) and the shape is [4, 3, 2, 2].
     // the corresponding dimension is [4, 3] which will return 12 values.
-    calc(tensor, mask.toBinaryString.reverse, 0).toArray
+    calcScales(tensor, mask.toBinaryString.reverse, 0).toArray
   }
 
   /**
    * recursively calculate tensor max values based on the mask and index.
    *
-   * for a [4, 3, 2, 2] tensor and 11 mask, it will generate 4*3=12 max values.
-   * First it will narrow 4 tensors whose size are [1, 3, 2, 2] and the index will increase to 1
-   * Second it will narrow 3 tensors whose size are [1, 1, 2, 2] and get the abs max values.
-   * So it will returns 3 * 4 = 12 values.
+   * the mask is a binary string. if the ith mask is set, the cooresponding dimension
+   * will be selected, such as a [n, c, h, w] tensor and the mask "11" means the the
+   * *n* and *c* dimension will be selected and generated n*c scales.
    *
-   * `abs` in tensor will do inplace, so it will clone the tensor first.
+   * 1. `abs` in tensor will do inplace, so it will clone the tensor first.
+   * 2. `narrow` will keep the dimension, so the `index` will not shift.
    *
    * @param tensor narrowed tensor, so the index can not be shifted every call
-   * @param mask binary string, which dimension should be calculated
+   * @param mask binary string, the ith mask is coorespoonding the ith dimension
    * @param index the index of tensor, which is different with mask
    * @return seq of max values
    */
-  private def calc(tensor: Tensor[Float], mask: String, index: Int): Seq[Float] = {
+  private def calcScales(tensor: Tensor[Float], mask: String, index: Int): Seq[Float] = {
 
     // terminator 1
     if (index < 0 || index >= mask.length) return Seq()
