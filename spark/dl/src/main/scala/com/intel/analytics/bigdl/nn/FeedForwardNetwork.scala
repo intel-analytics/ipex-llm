@@ -36,12 +36,13 @@ class FeedForwardNetwork[T: ClassTag](val hiddenSize: Int, val filterSize: Int,
   override def buildModel(): Module[T] = {
     val input = Input()
     val filterLayer = TransformerOperation.dense(
-      hiddenSize, filterSize, bias = true, activation = ReLU[T]()).inputs(input)
+      hiddenSize, filterSize, bias = true, activation = ReLU[T](),
+      name = s"${this.getName()}_filter_layer").inputs(input)
     val drop = if (train) {
       Dropout(initP = (1.0 - reluDropout)).inputs(filterLayer)
     } else filterLayer
     val output_dense_layer = TransformerOperation.dense(
-      filterSize, hiddenSize, bias = true).inputs(drop)
+      filterSize, hiddenSize, bias = true, name = s"${this.getName()}_output_layer").inputs(drop)
     val graph = Graph(Array(input), Array(output_dense_layer))
     if (this.train) graph.training() else graph.evaluate()
     graph

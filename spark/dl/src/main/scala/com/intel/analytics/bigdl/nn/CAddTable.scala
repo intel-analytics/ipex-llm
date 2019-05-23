@@ -47,12 +47,10 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   private var bufferSumOutput: Tensor[D] = null
 
   private def expandWithDims(smallSize: Array[Int], otherSize: Array[Int]): Boolean = {
-    if (smallSize.length != otherSize.length) {
-      return false
-    }
-    var d = otherSize.length - 1
+    var d = smallSize.length - 1
+    val diff = otherSize.length - smallSize.length
     while(d >= 0) {
-      if (smallSize(d) != 1 && smallSize(d) != otherSize(d)) {
+      if (smallSize(d) != 1 && smallSize(d) != otherSize(d + diff)) {
         return false
       }
       d -= 1
@@ -61,14 +59,18 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   }
 
   private def sumAlongDims(tensor: Tensor[D], other: Tensor[D]): Tensor[D] = {
+    val diff = other.nDimension() - tensor.nDimension()
     val size = tensor.size()
     var target: Tensor[D] = other
     if (bufferSumOutput == null) bufferSumOutput = Tensor[D]()
     if (bufferSumInput == null) bufferSumInput = Tensor[D]()
 
     var i = 0
-    while (i < size.length) {
-      if (size(i) == 1) {
+    while (i < other.nDimension()) {
+      if (i < diff) {
+        bufferSumOutput.sum(target, i + 1)
+        target = bufferSumInput.resizeAs(bufferSumOutput).copy(bufferSumOutput)
+      } else if (size(i - diff) == 1) {
         bufferSumOutput.sum(target, i + 1)
         target = bufferSumInput.resizeAs(bufferSumOutput).copy(bufferSumOutput)
       }
