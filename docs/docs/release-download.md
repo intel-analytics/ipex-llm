@@ -1,5 +1,3 @@
-
----
 ## **Release 0.5.0 nightly build**
 
 | | BigDL 0.7.2 | 
