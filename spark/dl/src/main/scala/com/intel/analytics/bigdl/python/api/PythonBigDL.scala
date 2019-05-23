@@ -293,14 +293,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTransformerLayer(
-                              vocabSize: Int,
-                              hiddenSize: Int,
-                              numHeads: Int,
-                              filterSize: Int,
-                              numHiddenlayers: Int,
-                              postprocessDropout: Float,
-                              attentionDropout: Float,
-                              reluDropout: Float): TransformerLayer[T] = {
+    vocabSize: Int,
+    hiddenSize: Int,
+    numHeads: Int,
+    filterSize: Int,
+    numHiddenlayers: Int,
+    postprocessDropout: Float,
+    attentionDropout: Float,
+    reluDropout: Float): TransformerLayer[T] = {
     TransformerLayer(vocabSize, hiddenSize, numHeads, filterSize,
       numHiddenlayers, postprocessDropout, attentionDropout, reluDropout)
   }

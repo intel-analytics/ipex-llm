@@ -70,7 +70,7 @@ private[nn] object TransformerOperation {
     * @return
     */
   def getPaddingBias[T: ClassTag](input: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val res = getPadding[T](input)
+    val res = getPadding[T](input).mul(ev.fromType(-1e9))
     res.addSingletonDimension(res, 2)
     res.addSingletonDimension(res, 3)
   }
@@ -107,6 +107,13 @@ private[nn] object TransformerOperation {
     }
   }
 
+  /**
+   * Args:length: Sequence length.
+   * channels: Size of the hidden
+   * min_timescale: Minimum scale that will be applied at each position
+   * max_timescale: Maximum scale that will be applied at each position
+   * Returns: Tensor with shape [length, hidden_size]
+   */
   def addTimingSignal1D[T: ClassTag](
     length: Int,
     channels: Int,
@@ -139,7 +146,7 @@ private[nn] object TransformerOperation {
   }
 }
 
-sealed trait ProblemType
+sealed trait TransformerType
 
-case object Translation extends ProblemType
-case object LanguageModel extends ProblemType
+case object Translation extends TransformerType
+case object LanguageModel extends TransformerType

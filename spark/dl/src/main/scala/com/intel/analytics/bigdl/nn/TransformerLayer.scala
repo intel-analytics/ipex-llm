@@ -51,7 +51,7 @@ class TransformerLayer[T: ClassTag](
    val postprocessDropout: Float,
    val attentionDropout: Float,
    val reluDropout: Float,
-   val problem: ProblemType = LanguageModel)
+   val problem: TransformerType = LanguageModel)
   (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
 
   override def buildModel(): Module[T] = {
@@ -61,12 +61,12 @@ class TransformerLayer[T: ClassTag](
     }
   }
 
-  // inputs: int tensor with shape [batch_size, input_length].
-  // targets: None or int tensor with shape [batch_size, target_length].
+  // input: int tensor with shape [batch_size, input_length].
+  // target: int tensor with shape [batch_size, target_length].
   private def buildTranslation(): Module[T] = {
-    val inNode = Input()
-    val tarNode = Input()
-    val attention_bias = new AttentionBiasConstant().inputs(inNode)
+    val inputNode = Input()
+    val targetNode = Input()
+    val attentionBias = new PaddingMask().inputs(inputNode)
 
     val embedding = LookupTable[T](vocabSize, hiddenSize)
     val embeddingDupicate = LookupTable[T](vocabSize, hiddenSize)
@@ -77,76 +77,76 @@ class TransformerLayer[T: ClassTag](
     params1._2.set(params2._2)
 
     val constantValue = math.sqrt(hiddenSize)
-    val embeddingInput = MulConstant(constantValue).inputs(embedding.inputs(inNode))
-    val embeddingOutput = MulConstant(constantValue).inputs(embeddingDupicate.inputs(tarNode))
-    val encoder_outputs = encode(embeddingInput, attention_bias)
-    val outNode = decode(embeddingOutput, encoder_outputs, attention_bias)
-    Graph(Array(inNode, tarNode), outNode)
+    val embeddingInput = MulConstant(constantValue).inputs(embedding.inputs(inputNode))
+    val embeddingOutput = MulConstant(constantValue).inputs(embeddingDupicate.inputs(targetNode))
+    val encoderOutput = encode(embeddingInput, attentionBias)
+    val outputNode = decode(embeddingOutput, encoderOutput, attentionBias)
+    Graph(Array(inputNode, targetNode), outputNode)
   }
 
   private def buildLM(): Module[T] = {
-    val inNode = Input()
+    val inputNode = Input()
     val constantValue = math.sqrt(hiddenSize)
     val embeddingInput = MulConstant(constantValue).inputs(
-      LookupTable[T](vocabSize, hiddenSize).inputs(inNode))
-    val outNode = decode(embeddingInput)
-    Graph(inNode, outNode)
+      LookupTable[T](vocabSize, hiddenSize).inputs(inputNode))
+    val outputNode = decode(embeddingInput)
+    Graph(inputNode, outputNode)
   }
 
-  private[nn] def encode(inputs: ModuleNode[T], attention_bias: ModuleNode[T]): ModuleNode[T] = {
+  private[nn] def encode(inputs: ModuleNode[T], attentionBias: ModuleNode[T]): ModuleNode[T] = {
     // Prepare inputs to the layer stack by adding positional encodings and
     // applying dropout.
-    val input2 = new EncodePositionConstant().inputs(inputs)
-    val encoder_inputs = CAddTable().inputs(inputs, input2)
-    val decoder_input_drop = if (train) {
+    val position = new PositionEncode().inputs(inputs)
+    val encoderInput = CAddTable().inputs(inputs, position)
+    val decoderInputDrop = if (train) {
       val postDropOut = Dropout(1- postprocessDropout)
-      postDropOut.inputs(encoder_inputs)
-    } else encoder_inputs
+      postDropOut.inputs(encoderInput)
+    } else encoderInput
 
-    encodeStack(numHiddenlayers, decoder_input_drop, attention_bias)
+    encodeStack(numHiddenlayers, decoderInputDrop, attentionBias)
   }
 
   private[nn] def decode(targets: ModuleNode[T],
-                     encoder_outputs: ModuleNode[T] = null,
-                     attention_bias: ModuleNode[T] = null): ModuleNode[T] = {
-    val decoder_input = new TransformerPrepareDecoder().inputs(targets)
-    val decoder_self_attention_bias = new SelfAttentionBiasConstant().inputs(targets)
+                     encoderOutput: ModuleNode[T] = null,
+                     attentionBias: ModuleNode[T] = null): ModuleNode[T] = {
+    val decoderInput = new PositionEncodeWithShift().inputs(targets)
+    val decoderSelfAttentionBias = new SelfAttentionMask().inputs(targets)
 
-    val decoder_input_drop = if (train) {
+    val decoderInputDrop = if (train) {
       val postDropOut = Dropout(1- postprocessDropout)
-      postDropOut.inputs(decoder_input)
-    } else decoder_input
+      postDropOut.inputs(decoderInput)
+    } else decoderInput
 
-    decodeStack(numHiddenlayers, decoder_input_drop,
-      decoder_self_attention_bias, encoder_outputs, attention_bias)
+    decodeStack(numHiddenlayers, decoderInputDrop,
+      decoderSelfAttentionBias, encoderOutput, attentionBias)
   }
 
 
-  private[nn] def encodeStack(num_layers: Int,
-                              encoder_input: ModuleNode[T],
-                              attention_bias: ModuleNode[T]): ModuleNode[T] = {
-    decodeStack(num_layers, encoder_input, attention_bias, preName = "encode")
+  private[nn] def encodeStack(numLayers: Int,
+                              encoderInput: ModuleNode[T],
+                              attentionBias: ModuleNode[T]): ModuleNode[T] = {
+    decodeStack(numLayers, encoderInput, attentionBias, preName = "encode")
   }
 
-  private[nn] def decodeStack(num_layers: Int,
-                              decoder_input: ModuleNode[T],
-                              decoder_self_attention_bias: ModuleNode[T],
-                              encoder_outputs: ModuleNode[T] = null,
-                              attention_bias: ModuleNode[T] = null,
+  private[nn] def decodeStack(numLayers: Int,
+                              decoderInput: ModuleNode[T],
+                              decoderSelfAttentionBias: ModuleNode[T],
+                              encoderOutputs: ModuleNode[T] = null,
+                              attentionBias: ModuleNode[T] = null,
                               preName: String = "decode"): ModuleNode[T] = {
-    var input = decoder_input
+    var input = decoderInput
     var i = 0
-    while (i < num_layers) {
+    while (i < numLayers) {
       val selfAttention = new Attention[T](hiddenSize, numHeads, attentionDropout)
       val selfAttentionModel = prePostProcessingSelfAttention(
-        selfAttention, input, decoder_self_attention_bias,
+        selfAttention, input, decoderSelfAttentionBias,
         s"${preName}_self_attention_${i}")
       input = selfAttentionModel
 
-      if (encoder_outputs != null && attention_bias != null) {
+      if (encoderOutputs != null && attentionBias != null) {
         val encdecAttention = new Attention[T](hiddenSize, numHeads, attentionDropout)
         val encdecAttentionModel = prePostProcessingEncDecAttention(
-          encdecAttention, input, encoder_outputs, attention_bias,
+          encdecAttention, input, encoderOutputs, attentionBias,
           s"${preName}_encdec_attention_${i}")
         input = encdecAttentionModel
       }
@@ -161,39 +161,38 @@ class TransformerLayer[T: ClassTag](
     norm
   }
 
-  private def prePostProcessingSelfAttention(layer: Module[T], decoder_input: ModuleNode[T],
-    decoder_self_attention_bias: ModuleNode[T], preName: String): ModuleNode[T] = {
+  private def prePostProcessingSelfAttention(layer: Module[T], decoderInput: ModuleNode[T],
+    decoderSelfAttentionBias: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
-        .inputs(decoder_input)
+        .inputs(decoderInput)
     val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
         .inputs(layer.setName(preName + "/self_attention")
-        .inputs(norm, norm, decoder_self_attention_bias))
-    CAddTable().inputs(decoder_input, drop)
+        .inputs(norm, norm, decoderSelfAttentionBias))
+    CAddTable().inputs(decoderInput, drop)
   }
 
   private def prePostProcessingEncDecAttention(
     layer: Module[T],
-    decoder_input: ModuleNode[T],
-    encoder_outputs: ModuleNode[T],
-    attention_bias: ModuleNode[T], preName: String): ModuleNode[T] = {
+    decoderInput: ModuleNode[T],
+    encoderOutput: ModuleNode[T],
+    attentionBias: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
-      .inputs(decoder_input)
+      .inputs(decoderInput)
     val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
       .inputs(layer.setName(preName + "/encdec_attention")
-        .inputs(norm, encoder_outputs, attention_bias))
-    CAddTable().inputs(decoder_input, drop)
+        .inputs(norm, encoderOutput, attentionBias))
+    CAddTable().inputs(decoderInput, drop)
   }
 
   private def prePostProcessingFFN(layer: Module[T],
-    decoder_input: ModuleNode[T], preName: String): ModuleNode[T] = {
+    decoderInput: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
-      .inputs(decoder_input)
+      .inputs(decoderInput)
     val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
       .inputs(layer.setName(preName + "/ffn").inputs(norm))
-    CAddTable().inputs(decoder_input, drop)
+    CAddTable().inputs(decoderInput, drop)
   }
 }
-
 
 object TransformerLayer {
   def apply[T: ClassTag](
@@ -205,14 +204,23 @@ object TransformerLayer {
      postprocessDropout: Float,
      attentionDropout: Float,
      reluDropout: Float,
-      problem: ProblemType = LanguageModel)
+     problem: TransformerType = LanguageModel)
    (implicit ev: TensorNumeric[T]): TransformerLayer[T] =
     new TransformerLayer(vocabSize, hiddenSize, numHeads,
       filterSize, numHiddenlayers,
       postprocessDropout, attentionDropout, reluDropout, problem)
 }
 
-private[nn] class EncodePositionConstant[T: ClassTag](implicit ev: TensorNumeric[T])
+/**
+ * Return positional encoding.
+ * Calculates the position encoding as a mix of sine and cosine functions with
+ * geometrically increasing wavelengths.
+ * Defined and formulized in Attention is All You Need, section 3.5.
+ * @param ev$1
+ * @param ev
+ * @tparam T The numeric type in this module parameters
+ */
+private[nn] class PositionEncode[T: ClassTag](implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   @transient private var rangeBuffer : Tensor[T] = null
 
@@ -239,21 +247,8 @@ private[nn] class EncodePositionConstant[T: ClassTag](implicit ev: TensorNumeric
   }
 }
 
-private[nn] class AttentionBiasConstant[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input).copy(input)
-    output = TransformerOperation.getPaddingBias(output)
-    output
-  }
-
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input).zero()
-    gradInput
-  }
-}
-
-private[nn] class TransformerPrepareDecoder[T: ClassTag](implicit ev: TensorNumeric[T])
+// Return postition encoding with input shift right
+private[nn] class PositionEncodeWithShift[T: ClassTag](implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
   @transient private var rangeBuffer : Tensor[T] = null
@@ -296,21 +291,46 @@ private[nn] class TransformerPrepareDecoder[T: ClassTag](implicit ev: TensorNume
   }
 }
 
-private[nn] class SelfAttentionBiasConstant[T: ClassTag](implicit ev: TensorNumeric[T])
+/**
+ * Calculate bias tensor from padding values in tensor.
+ * Bias tensor that is added to the pre-softmax multi-headed attention logits,
+ * which has shape [batch_size, num_heads, length, length]. The tensor is zero at
+ * non-padding locations, and -1e9 (negative infinity) at padding locations.
+ * @param ev$1
+ * @param ev
+ * @tparam T The numeric type in this module parameters
+ */
+private[nn] class PaddingMask[T: ClassTag](implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    output.resizeAs(input).copy(input)
+    output = TransformerOperation.getPaddingBias(output)
+    output
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput.resizeAs(input).zero()
+    gradInput
+  }
+}
+
+// This mask is to hide both <pad> and future words. Used in decode
+private[nn] class SelfAttentionMask[T: ClassTag](implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   /**
-    * Create an bias tensor to be added to attention logits.
-    * Returns tensor with shape (1, 1, length, length)
-    * @param length
-    * @tparam T
-    * @return
-    */
+   * Create an bias tensor to be added to attention logits.
+   * Returns tensor with shape (1, 1, length, length)
+   * @param length
+   * @tparam T
+   * @return
+   */
   private def attentionBiasLowerTriangle[T: ClassTag](
     length: Int, output: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val arr = output.storage().array()
     for (i <- 0 to (length - 1)) {
       var j = length - 1
       while (j > i) {
+        // reminder: here not 1
         arr(i * length + j) = ev.fromType(-1e9)
         j -= 1
       }

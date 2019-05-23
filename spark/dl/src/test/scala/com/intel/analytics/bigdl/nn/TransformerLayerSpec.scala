@@ -407,7 +407,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
   }
 
   "AttentionBiasConstant" should "work correctly" in {
-    val layer = new EncodePositionConstant[Float]()
+    val layer = new PositionEncode[Float]()
 
     val input = Tensor[Float](T(T(
       T(1.5575712, 1.6023955, 1.4487493, 0.46178865),
@@ -437,7 +437,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
   }
 
   "transformer prepare decode layer" should "work correctly" in {
-    val prepare = new TransformerPrepareDecoder[Float]()
+    val prepare = new PositionEncodeWithShift[Float]()
 
     val input = Tensor[Float](
         T(T(T( 16.24345364, -6.11756414, -5.28171752, -10.72968622),
@@ -490,7 +490,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
   }
 
   "SelfAttentionBiasConstant layer" should "work correctly" in {
-    val prepare = new SelfAttentionBiasConstant[Float]()
+    val prepare = new SelfAttentionMask[Float]()
     val input = Tensor[Float](T(T(
         T( 16.24345364, -6.11756414, -5.28171752, -10.72968622),
         T(  8.65407629, -23.01538697, 17.44811764, -7.61206901),
@@ -522,23 +522,39 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
   "TransformerOperation getPaddingBias" should "work good" in {
     val input = Tensor[Float](T(0, 1, 2, 3, 4, 5, 6, 7)).resize(Array(2, 4))
     val ops = TransformerOperation.getPaddingBias(input)
-    val opsExpected = Tensor[Float](T(1.0f, 0.0f, 0f, 0f, 0f, 0f, 0f, 0f))
+    val opsExpected = Tensor[Float](T(-1e9f, 0.0f, 0f, 0f, 0f, 0f, 0f, 0f))
       .resize(Array(2, 1, 1, 4))
     ops should be(opsExpected)
   }
 }
 
-class TransformerConstantSerialTest extends ModuleSerializationTest {
+class SelfAttentionMaskSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val model = new SelfAttentionBiasConstant[Float]().setName("TransformerConstant")
+    val model = new SelfAttentionMask[Float]().setName("SelfAttentionMask")
     val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
 
-class TransformerPrepareDecoderSerialTest extends ModuleSerializationTest {
+class PaddingMaskSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val model = new TransformerPrepareDecoder[Float]().setName("TransformerPrepareDecoder")
+    val model = new PaddingMask[Float]().setName("PaddingMask")
+    val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, input)
+  }
+}
+
+class PositionEncodeWithShiftSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val model = new PositionEncodeWithShift[Float]().setName("PositionEncodeWithShift")
+    val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, input)
+  }
+}
+
+class PositionEncodeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val model = new PositionEncode[Float]().setName("PositionEncode")
     val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }

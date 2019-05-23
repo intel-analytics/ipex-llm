@@ -967,7 +967,7 @@ class ExpandSize(Layer):
 class TransformerLayer(Layer):
 
     '''
-    Implementation TransformerLayer
+    Implementation for TransformerLayer
     >>> ffn = TransformerLayer(20, 4, 2, 3, 1, 0.1, 0.1, 0.1)
     creating: createTransformerLayer
     '''

@@ -46,11 +46,11 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   @transient
   private var bufferSumOutput: Tensor[D] = null
 
-  private def expandWithDims(smallSize: Array[Int], otherSize: Array[Int]): Boolean = {
-    var d = smallSize.length - 1
-    val diff = otherSize.length - smallSize.length
+  private def canExpand(inputSize: Array[Int], targetSize: Array[Int]): Boolean = {
+    var d = inputSize.length - 1
+    val diff = targetSize.length - inputSize.length
     while(d >= 0) {
-      if (smallSize(d) != 1 && smallSize(d) != otherSize(d + diff)) {
+      if (inputSize(d) != 1 && inputSize(d) != targetSize(d + diff)) {
         return false
       }
       d -= 1
@@ -132,7 +132,7 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
-        } else if (expandWithDims(input[Tensor[D]](i).size(), gradOutput.size())) {
+        } else if (canExpand(input[Tensor[D]](i).size(), gradOutput.size())) {
         gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
           sumAlongDims(input[Tensor[D]](i), gradOutput))
         } else {
