@@ -39,7 +39,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     val common_n_layers = 1
     val lstm_n_gates = 4
 
-    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.any)
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
     var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
 
     var initWeight = Tensor[Float](
@@ -57,7 +57,6 @@ class LSTMSpec extends FlatSpec with Matchers{
     val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm1.setRuntime(new MklDnnRuntime)
-    lstm1.initMemoryDescs(Array(inputFormat))
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
     println("DNN output Uni Left2Right \n" + output1)
@@ -66,7 +65,6 @@ class LSTMSpec extends FlatSpec with Matchers{
     val lstm2 = LSTM(inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm2.setRuntime(new MklDnnRuntime)
-    lstm2.initMemoryDescs(Array(inputFormat))
     lstm2.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output2 = lstm2.forward(input)
     println("DNN output Uni Right2Left \n" + output2)
@@ -123,6 +121,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     var nn_output2 = nn_model.forward(inputt)
     nn_output2 = reverse.forward(nn_output2).toTensor.transpose(1, 2)
     println("NN output Uni Right2Left \n" + nn_output2)
+    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(output2).asInstanceOf[Tensor[Float]],
       nn_output2) should be(true)
@@ -140,7 +139,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     val common_n_layers = 1
     val lstm_n_gates = 4
 
-    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.any)
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
     var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
 
     var initWeight = Tensor[Float](
@@ -158,7 +157,6 @@ class LSTMSpec extends FlatSpec with Matchers{
     val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm1.setRuntime(new MklDnnRuntime)
-    lstm1.initMemoryDescs(Array(inputFormat))
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
     println("DNN output Bi Concat \n" + output1)
@@ -222,6 +220,7 @@ class LSTMSpec extends FlatSpec with Matchers{
 
     val nn_output = nn_model.forward(inputt).toTensor.transpose(1, 2)
     println("NN output Bi Concat \n" + nn_output)
+    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(output1).asInstanceOf[Tensor[Float]],
       nn_output) should be(true)
@@ -239,7 +238,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     val common_n_layers = 1
     val lstm_n_gates = 4
 
-    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.any)
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
     var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
 
     var initWeight = Tensor[Float](
@@ -257,7 +256,6 @@ class LSTMSpec extends FlatSpec with Matchers{
     val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm1.setRuntime(new MklDnnRuntime)
-    lstm1.initMemoryDescs(Array(inputFormat))
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
     println("DNN output Bi Sum \n" + output1)
@@ -321,6 +319,7 @@ class LSTMSpec extends FlatSpec with Matchers{
 
     val nn_output = nn_model.forward(inputt).toTensor.transpose(1, 2)
     println("NN output Bi Sum \n" + nn_output)
+    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(output1).asInstanceOf[Tensor[Float]],
       nn_output) should be(true)
