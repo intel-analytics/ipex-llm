@@ -123,8 +123,34 @@ private[zoo] object Utils {
     fs.close()
   }
 
-  def getFileSystem(fileName: String): FileSystem = {
-    FileSystem.get(new Path(fileName).toUri, new Configuration())
+  /**
+   * Get FileSystem (local or remote) from given file path
+   * @param fileName file path (string)
+   * @param newInstance always new instance if is set to true, otherwise will
+   *                    get from cache (may shared with our connections)
+   * @return hadoop.fs.FileSystem
+   */
+  def getFileSystem(fileName: String, newInstance: Boolean = false): FileSystem = {
+    if (newInstance) {
+      FileSystem.newInstance(new Path(fileName).toUri, new Configuration())
+    } else {
+      FileSystem.get(new Path(fileName).toUri, new Configuration())
+    }
+  }
+
+  /**
+   * Get FileSystem (local or remote) from given file path
+   * @param fileName file path (hadoop.fs.Path)
+   * @param newInstance always new instance if is set to true, otherwise will
+   *                    get from cache (may shared with our connections)
+   * @return hadoop.fs.FileSystem
+   */
+  def getFileSystem(fileName: Path, newInstance: Boolean): FileSystem = {
+    if (newInstance) {
+      FileSystem.newInstance(fileName.toUri, new Configuration())
+    } else {
+      FileSystem.get(fileName.toUri, new Configuration())
+    }
   }
 
   /**
