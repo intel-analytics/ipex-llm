@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class AvgPooling(
-  kW: Int,
-  kH: Int,
+  var kW: Int,
+  var kH: Int,
   dW: Int = 1,
   dH: Int = 1,
   padW: Int = 0,
-  padH: Int = 0
+  padH: Int = 0,
+  globalPooling: Boolean = false
 ) extends MklDnnLayer {
   @transient private var paddingTL: Array[Int] = _
   @transient private var paddingBR: Array[Int] = _
@@ -63,12 +64,20 @@ class AvgPooling(
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)
-    val strides = Array(dW, dH)
-    val kernel = Array(kH, kW)
     val n = _inputFormats(0).shape(0)
     val c = _inputFormats(0).shape(1)
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
+
+    // global average pooling reduce each feature map to a single average value
+    if (globalPooling) {
+      kH = h
+      kW = w
+    }
+
+    val strides = Array(dW, dH)
+    val kernel = Array(kH, kW)
+
     val (pt, pb, pl, pr, oh, ow) = if (padH == -1 && padW == -1) {
       val sizes = NNUtils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
       (sizes(0), sizes(1), sizes(2), sizes(3), sizes(4), sizes(5))
@@ -127,6 +136,7 @@ object AvgPooling {
     dW: Int = 1,
     dH: Int = 1,
     padW: Int = 0,
-    padH: Int = 0
-  ): AvgPooling = new AvgPooling(kW, kH, dW, dH, padW, padH)
+    padH: Int = 0,
+    globalPooling: Boolean = false
+  ): AvgPooling = new AvgPooling(kW, kH, dW, dH, padW, padH, globalPooling)
 }

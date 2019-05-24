@@ -240,5 +240,30 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     Equivalent.nearequals(outDnn, outBlas, 1e-4) should be (true)
     Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "convert blas gap to dnn" should "work correctly" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    val graph = Sequential()
+      .add(SpatialAveragePooling[Float](2, 2, globalPooling = true))
+      .toGraph()
+
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nchw))
+    val dnn = ConversionUtils.convert(graph.cloneModule())
+
+    graph.evaluate()
+    dnn.evaluate()
+
+    val input = Tensor[Float](4, 2, 3, 3).rand(-1, 1)
+
+    graph.forward(input)
+    dnn.forward(input)
+
+    graph.output should be (dnn.output)
+
+    dnn.release()
+    System.clearProperty("bigdl.engineType")
   }
 }
