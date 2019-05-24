@@ -646,7 +646,7 @@ class ParallelOptimizer[T: ClassTag] (
         asInstanceOf[Container[_, _, T]].modules,
         optimMethodMap(this.model.getName), optimMethodMap)
     } else {
-      require(optimMethodMap.contains(this.model.getName),
+      require(optimMethodMap.contains(this._model.getName),
         "single layer model should have optim method set")
     }
 
@@ -675,7 +675,7 @@ class ParallelOptimizer[T: ClassTag] (
 
   private def defaultPrioritize(): mutable.HashMap[String, Int] = {
     val priorities = new mutable.HashMap[String, Int]
-    val orders = ParallelOptimizer.getExecutionOrder(this.model)
+    val orders = ParallelOptimizer.getExecutionOrder(this._model)
     val len = orders.size
     orders.zipWithIndex.foreach(order => {
       priorities.put(order._1.getName, len - order._2)
@@ -709,7 +709,7 @@ class ParallelOptimizer[T: ClassTag] (
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
-    state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
+    state("isLayerwiseScaled") = Utils.isLayerwiseScaled(_model)
 
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
