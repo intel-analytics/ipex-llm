@@ -60,6 +60,9 @@ class LarsSGD[T: ClassTag](
   private var buffer: Tensor[T] = null
   @transient
   private[bigdl] var calculatedTrust: Option[T] = None
+
+  require(trust>0.0 && trust<= 1.0, "trust for LARS should be greater than 0 and less than 1")
+
   /**
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
@@ -110,7 +113,7 @@ class LarsSGD[T: ClassTag](
       scale.value()
     }
 
-    val ret = if (ev.isInf(raw_scale_value)) {
+    if (ev.isInf(raw_scale_value)) {
       ev.fromType[Double](10000.0)
     } else if (ev.nearlyEqual(raw_scale_value, ev.fromType[Double](0.0), 0.0001)) {
       ev.fromType[Double](1e-4)
@@ -119,8 +122,6 @@ class LarsSGD[T: ClassTag](
     } else {
       raw_scale_value
     }
-    println(s"LARSScale ${ret}")
-    ret
   }
 
 
@@ -244,14 +245,14 @@ object LarsSGD {
    *
    */
   def createOptimLRSchedulerForModule[A <: Activity, B <: Activity, T: ClassTag]
-  (model: Container[A, B, T],
-   lrScheGenerator: AbstractModule[Activity, Activity, T] => (LearningRateSchedule, Boolean),
-   trust: Double = 1.0,
-   learningRate: Double = 1e-3,
-   learningRateDecay: Double = 0.01,
-   weightDecay: Double = 0.005,
-   momentum: Double = 0.5)
-  (implicit ev: TensorNumeric[T]): Map[String, OptimMethod[T]] = {
+    (model: Container[A, B, T],
+      lrScheGenerator: AbstractModule[Activity, Activity, T] => (LearningRateSchedule, Boolean),
+      trust: Double = 1.0,
+      learningRate: Double = 1e-3,
+      learningRateDecay: Double = 0.01,
+      weightDecay: Double = 0.005,
+      momentum: Double = 0.5)
+      (implicit ev: TensorNumeric[T]): Map[String, OptimMethod[T]] = {
     createOptimSeqForModule(model, lrScheGenerator, trust, learningRate, learningRateDecay,
       weightDecay, momentum).toMap
   }
