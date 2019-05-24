@@ -37,9 +37,6 @@ class Output(outputLayOut: Int = Memory.Format.nc,
       if (outLayout == Memory.Format.nhwc && inLayout != Memory.Format.nhwc) {
         // nchw*  -> nhwc
         Array(inShape(0), inShape(2), inShape(3), inShape(1))
-      } else if ((outLayout != Memory.Format.nhwc) && (inLayout == Memory.Format.nhwc)) {
-        // nhwc -> nchw*
-        Array(inShape(0), inShape(3), inShape(1), inShape(2))
       } else inShape
     outputShape
   }
