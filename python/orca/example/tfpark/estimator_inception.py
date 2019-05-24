@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from optparse import OptionParser
 
 import tensorflow as tf
 
@@ -24,19 +25,13 @@ from zoo.tfpark import TFDataset
 from zoo.tfpark.estimator import TFEstimator, TFEstimatorSpec
 
 
-def main():
+def main(option):
     sc = init_nncontext()
 
-    def input_fn(mode):
+    def input_fn(mode, params):
 
         if mode == tf.estimator.ModeKeys.TRAIN:
-            # demo_small directory structure
-            # \demo_small
-            #    \cats
-            #       cat images ...
-            #    \dogs
-            #       dog images ...
-            image_set = ImageSet.read("./datasets/cat_dog/demo_small",
+            image_set = ImageSet.read(params["image_path"],
                                       sc=sc, with_label=True, one_based_label=False)
             train_transformer = ChainedPreprocessing([ImageBytesToMat(),
                                                       ImageResize(256, 256),
@@ -59,12 +54,14 @@ def main():
 
         return dataset
 
-    def model_fn(features, labels, mode):
+    def model_fn(features, labels, mode, params):
         from nets import inception
         slim = tf.contrib.slim
         labels = tf.squeeze(labels, axis=1)
         with slim.arg_scope(inception.inception_v1_arg_scope()):
-            logits, end_points = inception.inception_v1(features, num_classes=2, is_training=True)
+            logits, end_points = inception.inception_v1(features,
+                                                        num_classes=int(params["num_classes"]),
+                                                        is_training=True)
 
         if mode == tf.estimator.ModeKeys.TRAIN:
             loss = tf.reduce_mean(
@@ -73,9 +70,17 @@ def main():
         else:
             raise NotImplementedError
 
-    estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+    estimator = TFEstimator(model_fn,
+                            tf.train.AdamOptimizer(),
+                            params={"image_path": option.image_path,
+                                    "num_classes": option.num_classes})
 
     estimator.train(input_fn, steps=100)
 
 if __name__ == '__main__':
-    main()
+    parser = OptionParser()
+    parser.add_option("--image-path", dest="image_path")
+    parser.add_option("--num-classes", dest="num_classes")
+
+    (options, args) = parser.parse_args(sys.argv)
+    main(options)
