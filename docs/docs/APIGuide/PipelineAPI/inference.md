@@ -1,186 +1,258 @@
-## Inference Model
+Inference Model is a package in Analytics Zoo aiming to provide high-level APIs to speed-up development. It allows user to conveniently use pre-trained models from Analytics Zoo, Caffe, Tensorflow and OpenVINO Intermediate Representation(IR). Inference Model provides Java, Scala and Python interfaces.
 
-## Overview
-
-Inference is a package in Analytics Zoo aiming to provide high level APIs to speed-up development. It 
-allows user to conveniently use pre-trained models from Analytics Zoo, Caffe, Tensorflow and OpenVINO Intermediate Representation(IR).
-Inference provides multiple Scala interfaces.
-
-
-
-## Highlights
+**Highlights**
 
 1. Easy-to-use APIs for loading and prediction with deep learning models of Analytics Zoo, Caffe, Tensorflow and OpenVINO Intermediate Representation(IR).
-
 2. Support transformation of various input data type, thus supporting future prediction tasks.
-
 3. Transparently support the OpenVINO toolkit, which deliver a significant boost for inference speed ([up to 19.9x](https://software.intel.com/en-us/blogs/2018/05/15/accelerate-computer-vision-from-edge-to-cloud-with-openvino-toolkit)).
 
-## Primary APIs for Java
+**Basic usage of Inference Model:**
 
-**load**
+1. Directly use InferenceModel or write a subclass extends `InferenceModel` (`AbstractInferenceModel` in Java).
+2. Load pre-trained models with corresponding `load` methods, e.g, doLoad for Analytics Zoo, and doLoadTF for TensorFlow.
+3. Do prediction with `predict` method.
 
-AbstractInferenceModel provides `load` API for loading a pre-trained model,
-thus we can conveniently load various kinds of pre-trained models in java applications. The load result of
-`AbstractInferenceModel` is an `AbstractModel`.
-We just need to specify the model path and optionally weight path if exists where we previously saved the model.
+**OpenVINO requirements:**
 
-***load***
+    tensorflow>=1.2.0
+    networkx>=1.11
+    numpy>=1.12.0
+    protobuf==3.6.1
+    onnx>=1.1.2
 
-`load` method is to load a BigDL model.
+**Supported models:**
 
-***loadCaffe***
+1. [Analytics Zoo Models](https://analytics-zoo.github.io/master/##built-in-deep-learning-models)
+2. [Caffe Models](https://github.com/BVLC/caffe/wiki/Model-Zoo)
+3. [TensorFlow Models](https://github.com/tensorflow/models)
+4. [OpenVINO models](https://software.intel.com/en-us/openvino-toolkit/documentation/pretrained-models)
 
-`loadCaffe` method is to load a caffe model.
+## **Load pre-trained model**
+### **Load pre-trained Analytics Zoo model**
+Load Analytics Zoo model with corresponding `load` methods (`load` for Java and Python, `doLoad` for Scala).
 
-***loadTF***
+**Java**
 
-`loadTF` method is to load a tensorflow model. There are two backends to load a tensorflow model and to do the predictions: TFNet and OpenVINO. For OpenVINO backend, [supported tensorflow models](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html) are listed below:
-
-    inception_v1
-    inception_v2
-    inception_v3
-    inception_v4
-    inception_resnet_v2
-    mobilenet_v1
-    nasnet_large
-    nasnet_mobile
-    resnet_v1_50
-    resnet_v2_50
-    resnet_v1_101
-    resnet_v2_101
-    resnet_v1_152
-    resnet_v2_152
-    vgg_16
-    vgg_19
-    faster_rcnn_inception_resnet_v2_atrous_coco
-    faster_rcnn_inception_resnet_v2_atrous_lowproposals_coco
-    faster_rcnn_inception_resnet_v2_atrous_lowproposals_oid
-    faster_rcnn_inception_resnet_v2_atrous_oid
-    faster_rcnn_nas_coco
-    faster_rcnn_nas_lowproposals_coco
-    faster_rcnn_resnet101_coco
-    faster_rcnn_resnet101_kitti
-    faster_rcnn_resnet101_lowproposals_coco
-    mask_rcnn_inception_resnet_v2_atrous_coco
-    mask_rcnn_inception_v2_coco
-    mask_rcnn_resnet101_atrous_coco
-    mask_rcnn_resnet50_atrous_coco
-    ssd_inception_v2_coco
-    ssd_mobilenet_v1_coco
-    ssd_mobilenet_v2_coco
-    ssdlite_mobilenet_v2_coco
-
-***loadOpenVINO***
-
-`loadOpenVINO` method is to load an OpenVINO Intermediate Representation(IR).
-
-***loadOpenVINOInt8***
-
-`loadOpenVINO` method is to load an OpenVINO Int8 Intermediate Representation(IR).
-
-**predict**
-
-AbstractInferenceModel provides `predict` API for prediction with loaded model.
-The predict result of`AbstractInferenceModel` is a `List<List<JTensor>>` by default.
-
-**predictInt8**
-
-AbstractInferenceModel provides `predictInt8` API for prediction with loaded int8 model.
-The predictInt8 result of`AbstractInferenceModel` is a `List<List<JTensor>>` by default.
-
-
-## Examples
-
-It's very easy to apply abstract inference model for inference with below code piece.
-You will need to write a subclass that extends AbstractinferenceModel.
 ```java
-import com.intel.analytics.zoo.pipeline.inference.AbstractInferenceModel;
-import com.intel.analytics.zoo.pipeline.inference.JTensor;
-
-public class TextClassificationModel extends AbstractInferenceModel {
-    public TextClassificationModel() {
-        super();
-    }
- }
-TextClassificationModel model = new TextClassificationModel();
+public class ExtendedInferenceModel extends AbstractInferenceModel {
+}
+ExtendedInferenceModel model = new ExtendedInferenceModel();
 model.load(modelPath, weightPath);
-List<List<JTensor>> result = model.predict(inputList);
 ```
 
-## Primary APIs for Scala
+**Scala**
+
+```scala
+val model = new InferenceModel()
+model.doLoad(modelPath, weightPath)
+```
+
+**Python**
+
+```python
+model = InferenceModel()
+model.load(modelPath, weightPath)
+```
+
+* `modelPath`: String. Path of pre-trained model.
+* `weightPath`: String. Path of pre-trained model weight. Default is `null`.
+
+### **Load pre-trained Caffe model**
+Load Caffe model with `loadCaffe` methods (`loadCaffe` for Java, `doLoadCaffe` for Scala and `load_caffe` Python).
+
+**Java**
+
+```java
+public class ExtendedInferenceModel extends AbstractInferenceModel {
+}
+ExtendedInferenceModel model = new ExtendedInferenceModel();
+model.loadCaffe(modelPath, weightPath);
+```
+
+**Scala**
+
+```scala
+val model = new InferenceModel()
+model.doLoadCaffe(modelPath, weightPath)
+```
+
+**Python**
+
+```python
+model = InferenceModel()
+model.load_caffe(modelPath, weightPath)
+```
+
+* `modelPath`: String. Path of pre-trained model.
+* `weightPath`: String. Path of pre-trained model weight.
+
+### **Load TensorFlow model**
+There are two backends to load a tensorflow model: TensorFlow and OpenVINO. When using TensorFlow as backend, tensorflow model will be loaded into `FloatModel`. Otherwise, it will be coverted into OpenVINO model, and loaded into `OpenVINOModel`.
+
+**1. Load with TensorFlow backend**
+
+Load model into `FloatModel` with TensorFlow backend, with corresponding `loadTF` methods (`loadTF` for Java, `doLoadTF` for Scala and `load_tf` Python)
+
+**Java**
+
+```java
+public class ExtendedInferenceModel extends AbstractInferenceModel {
+}
+ExtendedInferenceModel model = new ExtendedInferenceModel();
+model.loadTF(modelPath);
+```
+
+**Scala**
+
+```scala
+val model = new InferenceModel()
+model.doLoadTF(modelPath)
+```
+
+**Python**
+
+```python
+model = InferenceModel()
+model.load_tf(modelPath)
+```
+
+* `modelPath`: String. Path of pre-trained model.
+
+**2. Load with OpenVINO backend**
+
+Load model into `OpenVINOModel` with OpenVINO backend, with corresponding `loadTF` methods (`loadTF` for Java, `doLoadTF` for Scala and `load_tf` Python). Note that OpenVINO cannot directly load TensorFlow models. We need to [covert TensorFlow models into OpenVINO models]((https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html)), then load models into OpenVINO.
+
+Herein Analytics Zoo, we merge these two steps into one, and provide `loadOpenVINOModelForTF` with the following parameters:
+
+* `modelPath`: String. Path of pre-trained tensorflow model.
+* `modelType`: String. Type the type of the tensorflow model.
+* `checkpointPath`: String. Path of the tensorflow checkpoint file
+* `inputShape`: Array[Int]. Input shape that should be fed to an input node(s) of the model
+* `ifReverseInputChannels`: Boolean. If need reverse input channels. switch the input channels order from RGB to BGR (or vice versa).
+* `meanValues`: Array[Int]. All input values coming from original network inputs will be divided by this value.
+* `scale`: Float. Scale value, to be used for the input image per channel.
+* `outputDir`: String. Path of pre-trained tensorflow model.
+
+Note that we prepare several implementations with less parameters based on this method, e.g., `loadTF(modelPath, modelType)`.
+
+**Java**
+
+```java
+public class ExtendedInferenceModel extends AbstractInferenceModel {
+}
+ExtendedInferenceModel model = new ExtendedInferenceModel();
+model.loadTF(modelPath, modelType);
+```
+
+**Scala**
+
+```scala
+val model = new InferenceModel()
+model.doLoadTF(modelPath, modelType)
+```
+
+**Python**
+
+```python
+model = InferenceModel()
+model.load_tf(modelPath, modelType)
+```
+
+* `modelPath`: String. Path of pre-trained model.
+* `weightPath`: String. Path of pre-trained model weight.
+
+### **Load OpenVINO model**
+
+Load OpenVINO model with `loadOpenVINO` methods (`loadOpenVINO` for Java, `doLoadOpenVINO` for Scala and `load_openvino` Python).
+
+**Java**
+
+```java
+public class ExtendedInferenceModel extends AbstractInferenceModel {
+}
+ExtendedInferenceModel model = new ExtendedInferenceModel();
+model.loadOpenVINO(modelPath, weightPath);
+```
+
+**Scala**
+
+```scala
+val model = new InferenceModel()
+model.doLoadOpenVINO(modelPath, weightPath)
+```
+
+**Python**
+
+```python
+model = InferenceModel()
+model.load_openvino(modelPath, weightPath)
+```
+
+* `modelPath`: String. Path of pre-trained OpenVINO model.
+* `weightPath`: String. Path of pre-trained OpenVINO model weight.
+
+## **Predict with loaded model**
+After loading pre-trained models with load methods, we can make prediction with unified `predict` method.
+
+* `predictInput`: JList[JList[JTensor]] or [Tensor](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/tensor) for Scale and Java, Numpy for Python. Input data for prediction. [JTensor](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/java/com/intel/analytics/zoo/pipeline/inference/JTensor.java) is a 1D List, with Array[Int] shape.
+* `predictOutput`: JList[JList[JTensor]] or [Tensor](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/tensor) for Scale and Java, Numpy for Python. Prediction result.
+
+### **predict**
+
+Do prediction with `predict` methods (`predict` for Java and Python, `doPredict` for Scala).
+
+**Java**
+
+```java
+List<List<JTensor>> predictOutput = model.predict(predictInput);
+```
+
+**Scala**
+
+```scala
+val predictOutput = model.doPredict(predictInput)
+```
+
+**Python**
+
+```python
+predict_output = model.predict(predict_input)
+```
+
+### **predictInt8** and **loadTFAsCalibratedOpenVINO**
+
+Do prediction with int8 optimized model. Powered by [VNNI](https://en.wikichip.org/wiki/x86/avx512vnni) and [Intel Deep Learning Boost](https://www.intel.ai/intel-deep-learning-boost/). Currently, this API is only for OpenVINO. For Analytics Zoo model, int8 optimized model can directly make prediction with `predict` method.
+
+To load an OpenVINO int8 optimized model from TensorFlow, we build `loadTFAsCalibratedOpenVINO` methods with 4 more parameters than `loadOpenVINOModelForTF`.
+
+* `networkType`: String. Type of an inferred network, "C" to calibrate Classification, "OD" to calibrate Object Detection, "RawC" to collect only statistics for Classification, "RawOD" to collect only statistics for Object Detection.
+* `validationFilePath`: String. Path to a file with validation images path and target labels.
+* `subset`: Int. Number of pictures from the whole validation set to create the calibration dataset.
+* `opencvLibPath`: String. lib path where libopencv_imgcodecs.so.4.0, libopencv_core.so.4.0 and libopencv_imgproc.so.4.0 can be found.
+
+**Java**
+
+```java
+List<List<JTensor>> predictOutput = model.predictInt8(predictInput);
+```
+
+**Scala**
+
+```scala
+val predictOutput = model.doPredictInt8(predictInput)
+```
+
+## **Supportive classes**
 
 **InferenceModel**
 
-`InferenceModel` is a thead-safe wrapper of AbstractModels, which can be used to load models and do the predictions.
+`doOptimizeTF` method in Scala is designed for coverting TensorFlow model into OpenVINO model.
 
-***doLoad***
+`doCalibrateTF` method in Scala is designed for optimizing OpenVINO model into OpenVINO int8 optimized model.
 
-`doLoad` method is to load a bigdl, analytics-zoo model.
+Pipline of these API:
 
-***doLoadCaffe***
-
-`doLoadCaffe` method is to load a caffe model.
-
-***doLoadTF***
-
-`doLoadTF` method is to load a tensorflow model. The model can be loaded as a `FloatModel` or an `OpenVINOModel`. There are two backends to load a tensorflow model: TFNet and OpenVINO. 
-
-<span id="jump">For OpenVINO backend, [supported tensorflow models](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html) are listed below:</span>
-                                          
-    inception_v1
-    inception_v2
-    inception_v3
-    inception_v4
-    inception_resnet_v2
-    mobilenet_v1
-    nasnet_large
-    nasnet_mobile
-    resnet_v1_50
-    resnet_v2_50
-    resnet_v1_101
-    resnet_v2_101
-    resnet_v1_152
-    resnet_v2_152
-    vgg_16
-    vgg_19
-    faster_rcnn_inception_resnet_v2_atrous_coco
-    faster_rcnn_inception_resnet_v2_atrous_lowproposals_coco
-    faster_rcnn_inception_resnet_v2_atrous_lowproposals_oid
-    faster_rcnn_inception_resnet_v2_atrous_oid
-    faster_rcnn_nas_coco
-    faster_rcnn_nas_lowproposals_coco
-    faster_rcnn_resnet101_coco
-    faster_rcnn_resnet101_kitti
-    faster_rcnn_resnet101_lowproposals_coco
-    mask_rcnn_inception_resnet_v2_atrous_coco
-    mask_rcnn_inception_v2_coco
-    mask_rcnn_resnet101_atrous_coco
-    mask_rcnn_resnet50_atrous_coco
-    ssd_inception_v2_coco
-    ssd_mobilenet_v1_coco
-    ssd_mobilenet_v2_coco
-    ssdlite_mobilenet_v2_coco
-
-***doLoadOpenVINO***
-                                          
-`doLoadOpenVINO` method is to load an OpenVINO Intermediate Representation(IR).
-
-***doLoadOpenVINOInt8***
-
-`doLoadOpenVINOInt8` method is to load an OpenVINO Int8 Intermediate Representation(IR).
-
-***doReload***
-
-`doReload` method is to reload the bigdl, analytics-zoo model.
-
-***doPredict***
-
-`doPredict` method is to do the prediction.
-
-***doPredictInt8***
-
-`doPredict` method is to do the prediction with Int8 model. If model doesn't support predictInt8, will throw RuntimeException with `does not support predictInt8` message.
+TensorFlow model -`doOptimizeTF`-> OpenVINO model -`doCalibrateTF`-> OpenVINO int8 optimized model
 
 **InferenceSupportive**
 
@@ -205,13 +277,9 @@ to [`JTensor`](https://github.com/intel-analytics/analytics-zoo/blob/88afc2d921b
 
 **InferenceModelFactory**
 
-`InferenceModelFactory` is an object with APIs for loading pre-trained Analytics Zoo models, Caffe models, Tensorflow models and OpenVINO Intermediate Representations(IR).
-Analytics Zoo models, Caffe models, Tensorflow models can be loaded as FloatModels. The load result of it is a `FloatModel`
-Tensorflow models and OpenVINO Intermediate Representations(IR) can be loaded as OpenVINOModels. The load result of it is an `OpenVINOModel`. 
-The load result of it is a `FloatModel` or an `OpenVINOModel`. 
-
+`InferenceModelFactory` is an object with APIs for loading pre-trained Analytics Zoo models, Caffe models, Tensorflow models and OpenVINO Intermediate Representations(IR). Analytics Zoo models, Caffe models, Tensorflow models can be loaded as FloatModels. The load result of it is a `FloatModel` Tensorflow models and OpenVINO Intermediate Representations(IR) can be loaded as OpenVINOModels. The load result of it is an `OpenVINOModel`. 
+The load result of it is a `FloatModel` or an `OpenVINOModel`.
 
 **OpenVinoInferenceSupportive**
 
-`OpenVinoInferenceSupportive` is an extending object of `InferenceSupportive` and focus on the implementation of loading pre-trained models, including tensorflow models and OpenVINO Intermediate Representations(IR). 
-There are two backends to load a tensorflow model: TFNet and OpenVINO. For OpenVINO backend, [supported tensorflow models](#jump) are listed in the section of `doLoadTF` method of `InferenceModel` API above. 
+`OpenVinoInferenceSupportive` is an extending object of `InferenceSupportive` and focuses on the implementation of loading pre-trained models, including tensorflow models and OpenVINO Intermediate Representations(IR).
