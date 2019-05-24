@@ -807,7 +807,7 @@ class DistriOptimizer[T: ClassTag] (
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
-    state("isLayerwiseScaled") = Utils.isLayerwiseScaled(_model)
+    state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
 
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
