@@ -12,6 +12,13 @@ In this example, we will use the **slim** library to construct the model. You ca
 clone it [here](https://github.com/tensorflow/models/tree/master/research/slim) and
 the `research/slim` directory to `PYTHONPATH`.
 
+```bash
+
+git clone https://github.com/tensorflow/models/
+
+export PYTHONPATH=$PWD/models/research/slim:$PYTHONPATH
+```
+
 
 ## Run the KerasModel example after pip install
 
