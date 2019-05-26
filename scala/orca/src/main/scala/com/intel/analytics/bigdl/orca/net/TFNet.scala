@@ -286,6 +286,8 @@ class TFNet(private val graphDef: TFGraphHolder,
       if (!this.isTraining()) {
         // clean up all tensorflow tensors
         tensorManager.destructTFTensors()
+        // outputs is returned by tensorflow and cannot be freed using tensorManager
+        emptyTFTensorArray(outputs.asScala.slice(0, outputNames.length))
       } else {
         // clean up variable tensorflow tensors
         emptyTFTensorArray(weightTFTensors)
@@ -403,6 +405,8 @@ class TFNet(private val graphDef: TFGraphHolder,
         }
         gradWeight.add(gradWeightBuffer)
       }
+      // gradWeightTFTensors is returned by tensorflow and cannot be freed using tensorManager
+      emptyTFTensorArray(gradWeightTFTensors)
 
     } finally {
       tensorManager.destructTFTensors()
