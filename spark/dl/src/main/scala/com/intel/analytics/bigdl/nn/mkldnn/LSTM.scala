@@ -68,6 +68,12 @@ class LSTM(
   private[mkldnn] var src_i: TensorMMap = _
   private[mkldnn] var dst_i: TensorMMap = _
 
+  if(layers > 1) {
+    require(inputSize == hiddenSize,
+      "If layers of LSTM is more than 1," +
+        " the input size and the hidden size should equal")
+  }
+
   override def reset(): Unit = {
     if (initWeight == null) {
       weightInitMethod.init(weight.dense, VariableFormat.Default)
