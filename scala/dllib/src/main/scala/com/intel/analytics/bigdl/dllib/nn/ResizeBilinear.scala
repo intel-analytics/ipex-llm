@@ -311,7 +311,7 @@ object ResizeBilinear {
     var _imageOffset = imageOffset
     var _outputOffset = outputOffset
 
-    // Todo: use multiple thread to speed up this
+    // TODO: use multiple thread to speed up this
     var b = 0
     while(b < batchSize) {
       var y = 0

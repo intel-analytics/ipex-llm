@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.{Table, Shape => BigDLShape}
 import com.intel.analytics.bigdl.utils.serializer.converters.{DataConverter, ShapeConverter, TensorConverter}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
 import com.intel.analytics.bigdl.serialization.Bigdl._
+import com.intel.analytics.bigdl.utils.intermediate.ReflectionUtils
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -142,6 +143,7 @@ trait ModuleSerializable extends Loadable with Savable{
         clsMirror.reflect(compnInst)
     }
 
+    // Todo: to be replaced with ReflectionUtils.reflect
     constructorFullParams.flatten.foreach(param => {
       val pname = param.name.decodedName.toString
       val ptypesig = param.typeSignature
@@ -158,7 +160,7 @@ trait ModuleSerializable extends Loadable with Savable{
           val attrValue = modelAttributes.get(pname)
           DataConverter.getAttributeValue(context, attrValue)
         } else { // parameter not found, get its default value
-          getPrimCtorDefaultParamValue(instanceMirror, param, i)
+          ReflectionUtils.getPrimCtorDefaultParamValue(instanceMirror, param, i)
         }
         args(i) = pvalue
       }
@@ -507,50 +509,6 @@ trait ModuleSerializable extends Loadable with Savable{
         modelBuilder.addParameters(tensorAttr.getTensorValue)
       })
     }
-  }
-
-
-  /**
-   * Get class primary consturctor's default parameter value by index
-   * @param instMirror instance mirror object of the class companion object
-   * @param paramSymbol symbol object of the target parameter with default value
-   * @param index the index of parameter in the class primary constructor
-   * @return AnyRef which is compatible with java Object
-   */
-  private def getPrimCtorDefaultParamValue(instMirror: universe.InstanceMirror,
-                                    paramSymbol: universe.Symbol,
-                                    index: Int): AnyRef = {
-    if (paramSymbol == null || paramSymbol == universe.NoSymbol ||
-      instMirror == null || index < 0) {
-      return None
-    }
-
-    if (!paramSymbol.asTerm.isParamWithDefault) { // param has no default value
-      None
-    } else {
-      val instTypeSig = instMirror.symbol.typeSignature
-      val methodName = getCtorDefaultParamMethodByIndex(index)
-      val methodSymbol = instTypeSig.member(universe.newTermName(methodName))
-      if (methodSymbol == universe.NoSymbol) { // method not found
-        None
-      }
-      else {
-        // make the method call using reflection
-        // need to cast it as AnyRef to be compatible with Java Object type
-        instMirror.reflectMethod(methodSymbol.asMethod).apply().asInstanceOf[AnyRef]
-      }
-    }
-  }
-
-  /**
-   * get string name of the method, which returns default value of the i-th parameter
-   * Reference:
-   * https://stackoverflow.com/questions/39657211/scala-class-constructors-default-argument-naming
-   * @param i parameter index in primary constructor
-   * @return method name in string, calling this method returns default value of i-th parameter
-   */
-  private def getCtorDefaultParamMethodByIndex(i: Int): String = {
-    s"$$lessinit$$greater$$default$$${i + 1}"
   }
 
 }
