@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -61,24 +61,21 @@ class TransformerLayer[T: ClassTag](
     }
   }
 
-  // input: int tensor with shape [batch_size, input_length].
-  // target: int tensor with shape [batch_size, target_length].
   private def buildTranslation(): Module[T] = {
+    // input: int tensor with shape [batch_size, input_length].
     val inputNode = Input()
+    // target: int tensor with shape [batch_size, target_length].
     val targetNode = Input()
     val attentionBias = new PaddingMask().inputs(inputNode)
 
-    val embedding = LookupTable[T](vocabSize, hiddenSize)
-    val embeddingDupicate = LookupTable[T](vocabSize, hiddenSize)
-    // parameter share
-    val params1 = embedding.getParameters()
-    val params2 = embeddingDupicate.getParameters()
-    params1._1.set(params2._1)
-    params1._2.set(params2._2)
-
+    val join = JoinTable(1, -1).inputs(inputNode, targetNode)
     val constantValue = math.sqrt(hiddenSize)
-    val embeddingInput = MulConstant(constantValue).inputs(embedding.inputs(inputNode))
-    val embeddingOutput = MulConstant(constantValue).inputs(embeddingDupicate.inputs(targetNode))
+    val embedding = MulConstant(constantValue).inputs(
+      LookupTable[T](vocabSize, hiddenSize).inputs(join))
+    val split = new SplitTensor(1, 2).inputs(embedding)
+    val embeddingInput = SelectTable(1).inputs(split)
+    val embeddingOutput = SelectTable(2).inputs(split)
+
     val encoderOutput = encode(embeddingInput, attentionBias)
     val outputNode = decode(embeddingOutput, encoderOutput, attentionBias)
     Graph(Array(inputNode, targetNode), outputNode)
@@ -348,6 +345,22 @@ private[nn] class SelfAttentionMask[T: ClassTag](implicit ev: TensorNumeric[T])
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     if (!gradInput.isEmpty && gradInput.nElement() == input.nElement()) return gradInput
     gradInput.resizeAs(input).zero()
+    gradInput
+  }
+}
+
+private[nn] class SplitTensor[T: ClassTag](dimension: Int, num: Int)
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Table, T] {
+
+  private val innerLayer = new JoinTable[T](dimension, -1)
+
+  override def updateOutput(input: Tensor[T]): Table = {
+    output = T.array(input.split(input.size(dimension) / num, dimension))
+    output
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Table): Tensor[T] = {
+    gradInput = innerLayer.forward(gradOutput).toTensor[T]
     gradInput
   }
 }

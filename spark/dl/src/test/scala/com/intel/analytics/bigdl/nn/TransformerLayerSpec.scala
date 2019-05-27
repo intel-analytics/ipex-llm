@@ -526,6 +526,28 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
       .resize(Array(2, 1, 1, 4))
     ops should be(opsExpected)
   }
+
+  "Split tensor" should "be ok" in {
+    val l1 = Tensor[Float](Array[Float](1, 2, 3, 4, 5, 6,
+      1.2f, 2.2f, 3.2f, 4.2f, 5.2f, 6.2f), Array(2, 6))
+    val l2 = Tensor[Float](Array[Float](1.1f, 2.1f, 3.1f, 4.1f, 5.1f, 6.1f,
+      1.3f, 2.3f, 3.3f, 4.3f, 5.3f, 6.3f), Array(2, 6))
+    val input = T(l1, l2)
+
+    val layer = new JoinTable[Float](1, -1)
+    val output = layer.forward(input).toTensor[Float]
+
+    val layer2 = new SplitTensor[Float](1, 2)
+    val o2 = layer2.forward(output)
+
+    val g1 = o2[Tensor[Float]](1)
+    val g2 = o2[Tensor[Float]](2)
+    assert(g1.almostEqual(l1, 1e-8) == true)
+    assert(g2.almostEqual(l2, 1e-8) == true)
+
+    val gradInput = layer2.backward(output, o2)
+    assert(output.almostEqual(gradInput, 1e-8) == true)
+  }
 }
 
 class SelfAttentionMaskSerialTest extends ModuleSerializationTest {
@@ -557,6 +579,22 @@ class PositionEncodeSerialTest extends ModuleSerializationTest {
     val model = new PositionEncode[Float]().setName("PositionEncode")
     val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
+  }
+}
+
+class SplitTensorSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val l1 = Tensor[Float](Array[Float](1, 2, 3, 4, 5, 6,
+      1.2f, 2.2f, 3.2f, 4.2f, 5.2f, 6.2f), Array(2, 6))
+    val l2 = Tensor[Float](Array[Float](1.1f, 2.1f, 3.1f, 4.1f, 5.1f, 6.1f,
+      1.3f, 2.3f, 3.3f, 4.3f, 5.3f, 6.3f), Array(2, 6))
+    val input = T(l1, l2)
+
+    val layer = new JoinTable[Float](1, -1)
+    val output = layer.forward(input).toTensor[Float]
+
+    val model = new SplitTensor[Float](1, 2)
+    runSerializationTest(model, output)
   }
 }
 
