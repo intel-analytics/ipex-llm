@@ -19,7 +19,8 @@
 echo $ANALYTICS_ZOO_VERSION
 echo $BIGDL_VERSION
 echo $SPARK_VERSION
-SPARK_MAJOR_VERSION=${SPARK_VERSION_ENV%%.[0-9]}
+SPARK_MAJOR_VERSION=${SPARK_VERSION%%.[0-9]}
+echo $SPARK_MAJOR_VERSION
 
 if [[ $ANALYTICS_ZOO_VERSION == *"SNAPSHOT"* ]]; then
   NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/groups/public/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))

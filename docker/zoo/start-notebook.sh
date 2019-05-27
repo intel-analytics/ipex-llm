@@ -20,21 +20,30 @@ set -x
 
 #setup pathes
 ANALYTICS_ZOO_TUTORIALS_HOME=${ANALYTICS_ZOO_HOME}/apps
-ANALYTICS_ZOO_VERSION=${ANALYTICS_ZOO_VERSION_ENV}
-BIGDL_VERSION=${BIGDL_VERSION_ENV}
-SPARK_VERSION=${SPARK_VERSION_ENV}
-SPARK_MAJOR_VERSION=${SPARK_VERSION_ENV%%.[0-9]}
+SPARK_MAJOR_VERSION=${SPARK_VERSION%%.[0-9]}
+echo $ANALYTICS_ZOO_TUTORIALS_HOME
+echo $ANALYTICS_ZOO_VERSION
+echo $BIGDL_VERSION
+echo $SPARK_VERSION
+echo $SPARK_MAJOR_VERSION
 
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=$ANALYTICS_ZOO_TUTORIALS_HOME --ip=0.0.0.0 --port=$NotebookPort --no-browser --NotebookApp.token=$NotebookToken --allow-root"
 
+echo $RUNTIME_EXECUTOR_CORES
+echo $RUNTIME_DRIVER_CORES
+echo $RUNTIME_DRIVER_MEMORY
+echo $RUNTIME_EXECUTOR_CORES
+echo $RUNTIME_EXECUTOR_MEMORY
+echo $RUNTIME_TOTAL_EXECUTOR_CORES
+
 ${SPARK_HOME}/bin/pyspark \
-  --master local[${RUNTIME_EXECUTOR_CORES_ENV}] \
-  --driver-cores ${RUNTIME_DRIVER_CORES_ENV} \
-  --driver-memory ${RUNTIME_DRIVER_MEMORY_ENV} \
-  --executor-cores ${RUNTIME_EXECUTOR_CORES_ENV} \
-  --executor-memory ${RUNTIME_EXECUTOR_MEMORY_ENV} \
-  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES_ENV} \
+  --master local[${RUNTIME_EXECUTOR_CORES}] \
+  --driver-cores ${RUNTIME_DRIVER_CORES} \
+  --driver-memory ${RUNTIME_DRIVER_MEMORY} \
+  --executor-cores ${RUNTIME_EXECUTOR_CORES} \
+  --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
+  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
   --properties-file ${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf \
   --py-files ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
   --jars ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
