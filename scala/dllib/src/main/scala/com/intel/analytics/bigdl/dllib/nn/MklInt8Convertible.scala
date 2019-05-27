@@ -165,24 +165,7 @@ trait MklInt8Convertible {
       // return the abs value of tensor as an array
       tensor.clone().abs().storage().toArray[Float]
     } else {
-      // mask bits are ON for some of dimensions
-      // slice storage according to the dimension if its mask bit is ON
-      // find and store the max for each subset
-      val scalesBuffer = ArrayBuffer.empty[Float]
-      val binStrMask: String = mask.toBinaryString
-      val binStrLen = binStrMask.length
-      val bitMask: Array[Int] = new Array(binStrLen)
-
-      for(i <- 1 to binStrLen) {
-        bitMask(binStrLen - i) = binStrMask(binStrLen - i).asDigit
-        if (bitMask(binStrLen - i) == 1) {
-          val dimSize = tensor.size(i)
-          for (j <- 1 to dimSize) {
-            scalesBuffer.append(tensor.select(i, j).clone().abs().max())
-          }
-        }
-      }
-      scalesBuffer.toArray[Float]
+      Utils.calcScales(tensor, mask)
     }
   }
 
