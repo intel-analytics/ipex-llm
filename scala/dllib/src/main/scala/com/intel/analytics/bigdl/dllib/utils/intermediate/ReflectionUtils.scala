@@ -42,37 +42,60 @@ private[bigdl] object ReflectionUtils {
   }
 
   // create layer2 object form layer1
-  private def reflection(layer1: Object, layer2: Class[_],
-     tags: Array[ClassTag[_]], numerics: Array[TensorNumeric[_]]) : Object = {
-    val nameAndValues = getFieldNameAndValues(layer1)
-    val constructorMirror = getCostructorMirror(layer2)
+  private def reflection(source: Object, target: Class[_],
+                         tags: Array[ClassTag[_]], numerics: Array[TensorNumeric[_]]) : Object = {
+    val nameAndValues = getFieldNameAndValues(source)
+    val constructorMirror = getCostructorMirror(target)
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams.map(_.size).sum)
 
     val tagIter = tags.iterator
     val numericIter = numerics.iterator
-    var i = 0
-    constructorFullParams.foreach(map => {
-      map.foreach(param => {
-        val name = param.name.decodedName.toString
-        val ptype = param.typeSignature
-        if (ptype <:< universe.typeOf[ClassTag[_]]||
-          ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
+
+    val clsMirror = universe.runtimeMirror(target.getClassLoader)
+    val clsSymbol = clsMirror.classSymbol(target)
+
+    /*
+    https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
+    this line tries to get companion object of the class;
+    through the companion, default values can be accessed by calling
+    some static methods created by scala compiler, however it does not work when
+    the class is not a case class or has not defined a companion, which in this case,
+    calling companionSymbol returns universe.NoSymbol
+    */
+    val companionSymbol = clsSymbol.companionSymbol
+
+    val instanceMirror = companionSymbol match {
+      case universe.NoSymbol => null
+      case _ =>
+        val compnInst = currentMirror.reflectModule(clsSymbol.companionSymbol.asModule).instance
+        clsMirror.reflect(compnInst)
+    }
+
+    constructorFullParams.flatten.zipWithIndex.map {
+      case (param, idx) =>
+        val pname = param.name.decodedName.toString
+        val ptypesig = param.typeSignature
+        if (ptypesig <:< universe.typeOf[ClassTag[_]]||
+          ptypesig.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
           require(tagIter.hasNext, "If your module contains multiple class tags, " +
-            s"do you forget to override getClassTagNumerics method ${layer1}")
-          args(i) = tagIter.next()
-        } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
-          || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
-          args(i) = numericIter.next()
+            "do you forget to override getClassTagNumerics method")
+          args(idx) = tagIter.next
+        } else if (ptypesig <:< universe.typeOf[TensorNumeric[_]]
+          || ptypesig.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
+          args(idx) = numericIter.next
         } else {
-          val value = nameAndValues.get(name).getOrElse(null)
-          args(i) = value
+          val pvalue = if (nameAndValues.contains(pname)) { // for existing parameters
+            nameAndValues.get(pname).getOrElse(null)
+          } else { // parameter not found, get its default value
+            getPrimCtorDefaultParamValue(instanceMirror, param, idx)
+          }
+          args(idx) = pvalue
         }
-        i += 1
-      })
-    })
+    }
     constructorMirror.apply(args : _*).asInstanceOf[Object]
   }
+
 
   // create Module form IRElement
   def reflectFromIR[T : ClassTag](layer: IRElement[T], cls: Class[_]) : Module[T] = {
@@ -135,4 +158,48 @@ private[bigdl] object ReflectionUtils {
       case e: Throwable => throw e
     }
   }
+
+  /**
+   * Get class primary consturctor's default parameter value by index
+   * @param instMirror instance mirror object of the class companion object
+   * @param paramSymbol symbol object of the target parameter with default value
+   * @param index the index of parameter in the class primary constructor
+   * @return AnyRef which is compatible with java Object
+   */
+  def getPrimCtorDefaultParamValue(instMirror: universe.InstanceMirror,
+                                           paramSymbol: universe.Symbol,
+                                           index: Int): AnyRef = {
+    if (paramSymbol == null || paramSymbol == universe.NoSymbol ||
+      instMirror == null || index < 0) {
+      return None
+    }
+
+    if (!paramSymbol.asTerm.isParamWithDefault) { // param has no default value
+      None
+    } else {
+      val instTypeSig = instMirror.symbol.typeSignature
+      val methodName = getCtorDefaultParamMethodByIndex(index)
+      val methodSymbol = instTypeSig.member(universe.newTermName(methodName))
+      if (methodSymbol == universe.NoSymbol) { // method not found
+        None
+      }
+      else {
+        // make the method call using reflection
+        // need to cast it as AnyRef to be compatible with Java Object type
+        instMirror.reflectMethod(methodSymbol.asMethod).apply().asInstanceOf[AnyRef]
+      }
+    }
+  }
+
+  /**
+   * get string name of the method, which returns default value of the i-th parameter
+   * Reference:
+   * https://stackoverflow.com/questions/39657211/scala-class-constructors-default-argument-naming
+   * @param i parameter index in primary constructor
+   * @return method name in string, calling this method returns default value of i-th parameter
+   */
+  def getCtorDefaultParamMethodByIndex(i: Int): String = {
+    s"$$lessinit$$greater$$default$$${i + 1}"
+  }
+
 }
