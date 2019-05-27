@@ -778,7 +778,7 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
     val mask6 = Utils.calcScales(tensor, 6)
     val mask7 = Utils.calcScales(tensor, 7)
 
-    mask0 should be (Array())
+    mask0 should be (Array(16.0))
     mask1 should be (Array(4, 8, 12, 16))
     mask2 should be (Array(14, 16))
     mask3 should be (Array(2, 4, 6, 8, 10, 12, 14, 16))

@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 object Utils {
@@ -577,16 +578,35 @@ object Utils {
    * The mask parameter determines the dimension to which the scales array is applied to.
    * If the ith bit of mask is set, it will select that dimension and calc scales on that.
    * For a 5-dimensional tensor T[g0, o1,i2,h3,w4] where the numbering indicates the bit-index:
-   *    + A mask = 3 = 2^0 | 2^1 selects the group (g0) and output channels (o1).
-   *    + A mask = 2 = 2^1 selects the output channels (o1).
+   *    + A mask = 3 = $2^0 | 2^1$ selects the group (g0) and output channels (o1).
+   *    + A mask = 2 = $2^1$ selects the output channels (o1).
+   * For a [4, 3, 2, 2] tensor and 3 ( $2^0|2^1$ ) as the mask, it will generate 4*3=12 max values.
    *
-   * For a [4, 3, 2, 2] tensor and 3(2^0|2^1) as the mask, it will generate 4*3=12 max values.
-   *
-   * @param tensor
-   * @param mask
-   * @return
+   * @param tensor the tensor want to be caculated
+   * @param mask the mask value. You can construct it with math.pow(2, ?).
+   * @return the scales of tensor relevant with mask
    */
   private[nn] def calcScales(tensor: Tensor[Float], mask: Int): Array[Float] = {
+    // inner helper function
+    def calcScalesHelper(tensor: Tensor[Float], maskStr: String,
+      result: mutable.ListBuffer[Float], index: Int): Unit = {
+      if (index < maskStr.length) {
+        if (maskStr(index).asDigit == 1) { // mask bit is ON at this dimension
+          (1 to tensor.size(index + 1)).foreach(
+            i => { // split the tensor based on its size
+              calcScalesHelper(tensor.narrow(index + 1, i, 1), maskStr, result, index + 1)
+            }
+          )
+        } else {
+          calcScalesHelper(tensor, maskStr, result, index + 1)
+        }
+
+      } else { // finished splitting tensor based on its mask bit, aggregate and append the result
+        result.append(tensor.clone().abs().max())
+      }
+
+    }
+
     def maskInterval: String = {
       val start = 0
       val end = (math.pow(2, tensor.size().length) - 1).toInt
@@ -595,47 +615,10 @@ object Utils {
     }
     require(mask.toBinaryString.length <= tensor.size().length, s"$maskInterval")
 
-    // because the shape of tensor is reverse of mask, for example,
-    // if the mask is 11 (bit representation) and the shape is [4, 3, 2, 2].
-    // the corresponding dimension is [4, 3] which will return 12 values.
-    calcScales(tensor, mask.toBinaryString.reverse, 0).toArray
-  }
+    val result = mutable.ListBuffer[Float]()
 
-  /**
-   * recursively calculate tensor max values based on the mask and index.
-   *
-   * the mask is a binary string. if the ith mask is set, the cooresponding dimension
-   * will be selected, such as a [n, c, h, w] tensor and the mask "11" means the the
-   * *n* and *c* dimension will be selected and generated n*c scales.
-   *
-   * 1. `abs` in tensor will do inplace, so it will clone the tensor first.
-   * 2. `narrow` will keep the dimension, so the `index` will not shift.
-   *
-   * @param tensor narrowed tensor, so the index can not be shifted every call
-   * @param mask binary string, the ith mask is coorespoonding the ith dimension
-   * @param index the index of tensor, which is different with mask
-   * @return seq of max values
-   */
-  private def calcScales(tensor: Tensor[Float], mask: String, index: Int): Seq[Float] = {
+    calcScalesHelper(tensor, mask.toBinaryString.reverse, result, 0 /* start dimension */)
 
-    // terminator 1
-    if (index < 0 || index >= mask.length) return Seq()
-
-    // terminator 2, at the end of mask whose bit has been set
-    if (mask(index).asDigit == 1 && index == mask.length - 1) {
-      return (1 to tensor.size(index + 1)).flatMap { idx =>
-        Seq(tensor.narrow(index + 1, idx, 1).clone().abs.max())
-      }
-    }
-
-    // in the middle process, do recursively on the narrowed tensor
-    if (mask(index).asDigit == 1) {
-      return (1 to tensor.size(index + 1)).flatMap { idx =>
-        calc(tensor.narrow(index + 1, idx, 1), mask, index + 1)
-      }
-    }
-
-    // skip this dimension and do recursively on the current tensor
-    calc(tensor, mask, index + 1)
+    result.toArray
   }
 }
