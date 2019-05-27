@@ -31,6 +31,11 @@ import scala.collection.mutable.ArrayBuffer
  *                   (e.g. AlgKind.EltwiseTanh or AlgKind.EltwiseRelu)
  * @param direction  : the direction to run LSTM
  *                   (e.g. Direction.UnidirectionalLeft2Right or Direction.BidirectionalConcat)
+ *
+ * MKLDNN Gate 1 -> nn/LSTM Gate 1
+ * MKLDNN Gate 2 -> nn/LSTM Gate 3
+ * MKLDNN Gate 3 -> nn/LSTM Gate 2
+ * MKLDNN Gate 4 -> nn/LSTM Gate 4
  */
 
 class RNN(
