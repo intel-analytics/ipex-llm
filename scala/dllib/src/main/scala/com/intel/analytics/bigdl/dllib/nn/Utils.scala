@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 object Utils {
@@ -569,5 +570,55 @@ object Utils {
   def calculateFwdBwdTime[T: ClassTag](
     times: Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]): (Long, Long) = {
       times.map(t => (t._2, t._3)).reduce((a, b) => (a._1 + b._1, a._2 + b._2))
+  }
+
+  /**
+   * calculate scales of tensor based on the mask
+   *
+   * The mask parameter determines the dimension to which the scales array is applied to.
+   * If the ith bit of mask is set, it will select that dimension and calc scales on that.
+   * For a 5-dimensional tensor T[g0, o1,i2,h3,w4] where the numbering indicates the bit-index:
+   *    + A mask = 3 = $2^0 | 2^1$ selects the group (g0) and output channels (o1).
+   *    + A mask = 2 = $2^1$ selects the output channels (o1).
+   * For a [4, 3, 2, 2] tensor and 3 ( $2^0|2^1$ ) as the mask, it will generate 4*3=12 max values.
+   *
+   * @param tensor the tensor want to be caculated
+   * @param mask the mask value. You can construct it with math.pow(2, ?).
+   * @return the scales of tensor relevant with mask
+   */
+  private[nn] def calcScales(tensor: Tensor[Float], mask: Int): Array[Float] = {
+    // inner helper function
+    def calcScalesHelper(tensor: Tensor[Float], maskStr: String,
+      result: mutable.ListBuffer[Float], index: Int): Unit = {
+      if (index < maskStr.length) {
+        if (maskStr(index).asDigit == 1) { // mask bit is ON at this dimension
+          (1 to tensor.size(index + 1)).foreach(
+            i => { // split the tensor based on its size
+              calcScalesHelper(tensor.narrow(index + 1, i, 1), maskStr, result, index + 1)
+            }
+          )
+        } else {
+          calcScalesHelper(tensor, maskStr, result, index + 1)
+        }
+
+      } else { // finished splitting tensor based on its mask bit, aggregate and append the result
+        result.append(tensor.clone().abs().max())
+      }
+
+    }
+
+    def maskInterval: String = {
+      val start = 0
+      val end = (math.pow(2, tensor.size().length) - 1).toInt
+
+      s"mask should between [$start, $end]"
+    }
+    require(mask.toBinaryString.length <= tensor.size().length, s"$maskInterval")
+
+    val result = mutable.ListBuffer[Float]()
+
+    calcScalesHelper(tensor, mask.toBinaryString.reverse, result, 0 /* start dimension */)
+
+    result.toArray
   }
 }
