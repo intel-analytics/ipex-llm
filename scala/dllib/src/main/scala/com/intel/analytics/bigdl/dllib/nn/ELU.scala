@@ -36,7 +36,7 @@ class ELU[T: ClassTag](
 
   val _alpha = ev.fromType[Double](alpha)
 
-  // Todo: Improve the performance of contiguous tensor
+  // TODO: Improve the performance of contiguous tensor
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (inplace) {
       input.apply1(in => {

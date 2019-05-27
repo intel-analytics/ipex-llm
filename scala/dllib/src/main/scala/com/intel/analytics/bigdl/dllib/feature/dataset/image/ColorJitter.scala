@@ -34,7 +34,7 @@ object ColorJitter {
  * Process an image with brightness, contrast, saturation in a random order
  */
 class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
-  // Todo: make the bcs parameter configurable
+  // TODO: make the bcs parameter configurable
   private val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
   private var gs: Array[Float] = null
 
