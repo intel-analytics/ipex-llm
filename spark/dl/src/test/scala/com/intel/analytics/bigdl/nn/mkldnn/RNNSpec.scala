@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-class LSTMSpec extends FlatSpec with Matchers{
+class RNNSpec extends FlatSpec with Matchers{
   "LSTM UnidirectionalInference updateOutput" should "work correctly" in {
     val seqLength = 3
     val batchSize = 2
@@ -54,20 +54,20 @@ class LSTMSpec extends FlatSpec with Matchers{
       Array(common_n_layers, 1,
         lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
 
-    val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
+    val lstm1 = RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm1.setRuntime(new MklDnnRuntime)
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
-    println("DNN output Uni Left2Right \n" + output1)
+    println("DNN output LSTM Uni Left2Right \n" + output1)
 
     direction = Direction.UnidirectionalRight2Left
-    val lstm2 = LSTM(inputSize, hiddenSize, f, direction,
+    val lstm2 = RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm2.setRuntime(new MklDnnRuntime)
     lstm2.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output2 = lstm2.forward(input)
-    println("DNN output Uni Right2Left \n" + output2)
+    println("DNN output LSTM Uni Right2Left \n" + output2)
 
     var inputt = input.transpose(1, 2).clone()
     initWeight = initWeight.resize(Array(inputSize, lstm_n_gates, hiddenSize))
@@ -107,20 +107,20 @@ class LSTMSpec extends FlatSpec with Matchers{
     uniParams(2).copy(initWeightIter)
 
     val nn_output = nn_model.forward(inputt).toTensor.transpose(1, 2)
-    println("NN output Uni Left2Right \n" + nn_output)
+    println("NN output LSTM Uni Left2Right \n" + nn_output)
 
     Equivalent.nearequals(Tools.dense(output1).asInstanceOf[Tensor[Float]],
       nn_output) should be(true)
 
     /**
-      * nn/LSTM2 Right2Left
+      * nn/LSTM Right2Left
       */
     val reverse = nn.Reverse(2)
     inputt = reverse.forward(inputt)
 
     var nn_output2 = nn_model.forward(inputt)
     nn_output2 = reverse.forward(nn_output2).toTensor.transpose(1, 2)
-    println("NN output Uni Right2Left \n" + nn_output2)
+    println("NN output LSTM Uni Right2Left \n" + nn_output2)
     println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(output2).asInstanceOf[Tensor[Float]],
@@ -154,12 +154,12 @@ class LSTMSpec extends FlatSpec with Matchers{
       Array(common_n_layers, 2,
         lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
 
-    val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
+    val lstm1 = RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm1.setRuntime(new MklDnnRuntime)
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
-    println("DNN output Bi Concat \n" + output1)
+    println("DNN output LSTM Bi Concat \n" + output1)
 
     val inputt = input.transpose(1, 2).clone()
     initWeight = initWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
@@ -219,7 +219,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     biParams(5).copy(initWeightIter(2))
 
     val nn_output = nn_model.forward(inputt).toTensor.transpose(1, 2)
-    println("NN output Bi Concat \n" + nn_output)
+    println("NN output LSTM Bi Concat \n" + nn_output)
     println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(output1).asInstanceOf[Tensor[Float]],
@@ -253,12 +253,12 @@ class LSTMSpec extends FlatSpec with Matchers{
       Array(common_n_layers, 2,
         lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
 
-    val lstm1 = LSTM(inputSize, hiddenSize, f, direction,
+    val lstm1 = RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
       initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     lstm1.setRuntime(new MklDnnRuntime)
     lstm1.initFwdPrimitives(Array(inputFormat), InferencePhase)
     val output1 = lstm1.forward(input)
-    println("DNN output Bi Sum \n" + output1)
+    println("DNN output LSTM Bi Sum \n" + output1)
 
     val inputt = input.transpose(1, 2).clone()
     initWeight = initWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
@@ -318,7 +318,7 @@ class LSTMSpec extends FlatSpec with Matchers{
     biParams(5).copy(initWeightIter(2))
 
     val nn_output = nn_model.forward(inputt).toTensor.transpose(1, 2)
-    println("NN output Bi Sum \n" + nn_output)
+    println("NN output LSTM Bi Sum \n" + nn_output)
     println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(output1).asInstanceOf[Tensor[Float]],
