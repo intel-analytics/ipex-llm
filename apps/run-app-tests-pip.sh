@@ -11,6 +11,31 @@ clear_up () {
 
 chmod +x ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh
 
+set -e
+
+RUN_PART1=0
+RUN_PART2=0
+RUN_PART3=0
+if [ $1 = 1 ]; then
+	RUN_PART1=1
+	RUN_PART2=0
+	RUN_PART3=0
+elif [ $1 = 2 ]; then
+	RUN_PART1=0
+	RUN_PART2=1
+	RUN_PART3=0
+elif [ $1 = 3 ]; then
+	RUN_PART1=0
+	RUN_PART2=0
+	RUN_PART3=1
+else
+	RUN_PART1=1
+	RUN_PART2=1
+	RUN_PART3=1
+fi
+
+
+if [ $RUN_PART1 = 1 ]; then
 echo "#1 start app test for anomaly-detection"
 start=$(date "+%s")
 
@@ -274,6 +299,10 @@ now=$(date "+%s")
 time10=$((now-start))
 echo "#10 dogs-vs-cats time used:$time10 seconds"
 
+fi
+
+if [ $RUN_PART2 = 1 ]; then
+
 echo "#11 start app test for image-augmentation-3d"
 # timer
 start=$(date "+%s")
@@ -394,7 +423,10 @@ now=$(date "+%s")
 time6=$((now-start))
 echo "#6 using_variational_autoencoder_to_generate_faces time used:$time6 seconds"
 
+fi
 
+
+if [ $RUN_PART3 = 1 ]; then
 echo "#7 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
 #timer
 start=$(date "+%s")
@@ -511,6 +543,8 @@ unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
 time11=$((now-start))
 echo "sentiment-analysis time used:$time11 seconds"
+
+fi
 
 # This should be done at the very end after all tests finish.
 clear_up
