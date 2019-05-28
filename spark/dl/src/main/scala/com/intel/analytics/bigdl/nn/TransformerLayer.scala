@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 
 /**
  * Transformer model from "Attention Is All You Need".
- * The Transformer model consists of an encoder and a decoder. Both are stacks
+ * The Transformer model consists of an encoder and a decoder, both are stacks
  * of self-attention layers followed by feed-forward layers. This model yields
  * good results on a number of problems, especially in NLP and machine translation.
  * See "Attention Is All You Need" (https://arxiv.org/abs/1706.03762) for the full
@@ -51,11 +51,11 @@ class TransformerLayer[T: ClassTag](
    val postprocessDropout: Float,
    val attentionDropout: Float,
    val reluDropout: Float,
-   val problem: TransformerType = LanguageModel)
+   val transformerType: TransformerType = LanguageModel)
   (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
 
   override def buildModel(): Module[T] = {
-    problem match {
+    transformerType match {
       case LanguageModel => buildLM()
       case Translation => buildTranslation()
     }
@@ -100,7 +100,7 @@ class TransformerLayer[T: ClassTag](
       postDropOut.inputs(encoderInput)
     } else encoderInput
 
-    encodeStack(numHiddenlayers, decoderInputDrop, attentionBias)
+    block(numHiddenlayers, decoderInputDrop, attentionBias, blockType = "encode")
   }
 
   private[nn] def decode(targets: ModuleNode[T],
@@ -114,48 +114,41 @@ class TransformerLayer[T: ClassTag](
       postDropOut.inputs(decoderInput)
     } else decoderInput
 
-    decodeStack(numHiddenlayers, decoderInputDrop,
-      decoderSelfAttentionBias, encoderOutput, attentionBias)
+    block(numHiddenlayers, decoderInputDrop,
+      decoderSelfAttentionBias, encoderOutput, attentionBias, blockType = "decode")
   }
 
+  private[nn] def block(numLayers: Int,
+                        decoderInput: ModuleNode[T],
+                        decoderSelfAttentionBias: ModuleNode[T],
+                        encoderOutputs: ModuleNode[T] = null,
+                        attentionBias: ModuleNode[T] = null,
+                        blockType: String = "decode"): ModuleNode[T] = {
 
-  private[nn] def encodeStack(numLayers: Int,
-                              encoderInput: ModuleNode[T],
-                              attentionBias: ModuleNode[T]): ModuleNode[T] = {
-    decodeStack(numLayers, encoderInput, attentionBias, preName = "encode")
-  }
-
-  private[nn] def decodeStack(numLayers: Int,
-                              decoderInput: ModuleNode[T],
-                              decoderSelfAttentionBias: ModuleNode[T],
-                              encoderOutputs: ModuleNode[T] = null,
-                              attentionBias: ModuleNode[T] = null,
-                              preName: String = "decode"): ModuleNode[T] = {
     var input = decoderInput
     var i = 0
     while (i < numLayers) {
       val selfAttention = new Attention[T](hiddenSize, numHeads, attentionDropout)
       val selfAttentionModel = prePostProcessingSelfAttention(
         selfAttention, input, decoderSelfAttentionBias,
-        s"${preName}_self_attention_${i}")
+        s"${blockType}_self_attention_${i}")
       input = selfAttentionModel
 
       if (encoderOutputs != null && attentionBias != null) {
         val encdecAttention = new Attention[T](hiddenSize, numHeads, attentionDropout)
         val encdecAttentionModel = prePostProcessingEncDecAttention(
           encdecAttention, input, encoderOutputs, attentionBias,
-          s"${preName}_encdec_attention_${i}")
+          s"${blockType}_encdec_attention_${i}")
         input = encdecAttentionModel
       }
 
       val ffn = new FeedForwardNetwork[T](hiddenSize, filterSize, reluDropout)
-      val ffnModel = prePostProcessingFFN(ffn, input, s"${preName}_ffn_${i}")
+      val ffnModel = prePostProcessingFFN(ffn, input, s"${blockType}_ffn_${i}")
       input = ffnModel
 
       i += 1
     }
-    val norm = new LayerNormalization[T](hiddenSize).inputs(input)
-    norm
+    new LayerNormalization[T](hiddenSize).inputs(input)
   }
 
   private def prePostProcessingSelfAttention(layer: Module[T], decoderInput: ModuleNode[T],
@@ -201,11 +194,11 @@ object TransformerLayer {
      postprocessDropout: Float,
      attentionDropout: Float,
      reluDropout: Float,
-     problem: TransformerType = LanguageModel)
+     transformerType: TransformerType = LanguageModel)
    (implicit ev: TensorNumeric[T]): TransformerLayer[T] =
     new TransformerLayer(vocabSize, hiddenSize, numHeads,
       filterSize, numHiddenlayers,
-      postprocessDropout, attentionDropout, reluDropout, problem)
+      postprocessDropout, attentionDropout, reluDropout, transformerType)
 }
 
 /**
@@ -314,6 +307,9 @@ private[nn] class PaddingMask[T: ClassTag](implicit ev: TensorNumeric[T])
 // This mask is to hide both <pad> and future words. Used in decode
 private[nn] class SelfAttentionMask[T: ClassTag](implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
+
+  private val maskValue = -1e9
+
   /**
    * Create an bias tensor to be added to attention logits.
    * Returns tensor with shape (1, 1, length, length)
@@ -328,7 +324,7 @@ private[nn] class SelfAttentionMask[T: ClassTag](implicit ev: TensorNumeric[T])
       var j = length - 1
       while (j > i) {
         // reminder: here not 1
-        arr(i * length + j) = ev.fromType(-1e9)
+        arr(i * length + j) = ev.fromType(maskValue)
         j -= 1
       }
     }

@@ -39,7 +39,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     val input1 = Input[Float]()
     val input2 = Input[Float]()
 
-    val blockOutput = transformer.decodeStack(num_hidden_layers, input1, input2)
+    val blockOutput = transformer.block(num_hidden_layers, input1, input2)
     val block = Graph(Array(input1, input2), blockOutput)
     val paramsTable = block.getParametersTable()
 
@@ -206,7 +206,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     val reluDropout = 1.0f
     val transformer = new TransformerLayer[Float](vocabSize,
       hiddenSize, numHeads, filterSize, num_hidden_layers,
-      postprocessDropout, attentionDropout, reluDropout, problem = Translation)
+      postprocessDropout, attentionDropout, reluDropout, Translation)
 
     val attention0 = transformer.model("encode_self_attention_0/self_attention").get
     val ffn0 = transformer.model("encode_ffn_0/ffn").get
