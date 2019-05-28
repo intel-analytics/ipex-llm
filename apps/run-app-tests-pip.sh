@@ -36,7 +36,7 @@ fi
 
 
 if [ $RUN_PART1 = 1 ]; then
-echo "#1 start app test for anomaly-detection"
+echo "#1 start app test for anomaly-detection-nyc-taxi"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
@@ -60,7 +60,7 @@ fi
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
 time1=$((now-start))
-echo "anomaly-detection-nyc-taxi time used:$time1 seconds"
+echo "#1 anomaly-detection-nyc-taxi time used:$time1 seconds"
 
 echo "#2 start app test for object-detection"
 start=$(date "+%s")
@@ -198,7 +198,7 @@ now=$(date "+%s")
 time3=$((now-start))
 echo "#3 image-similarity time used:$time3 seconds"
 
-echo "#5 start app test for using_variational_autoencoder_to_generate_digital_numbers"
+echo "#4 start app test for using_variational_autoencoder_to_generate_digital_numbers"
 #timer
 start=$(date "+%s")
 
@@ -219,10 +219,13 @@ fi
 
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time5=$((now-start))
-echo "#5 using_variational_autoencoder_to_generate_digital_numbers time used:$time5 seconds"
+time4=$((now-start))
+echo "#4 using_variational_autoencoder_to_generate_digital_numbers time used:$time4 seconds"
 
-echo "#9 start app test for image-augmentation"
+fi
+
+if [ $RUN_PART2 = 1 ]; then
+echo "#5 start app test for image-augmentation"
 # timer
 start=$(date "+%s")
 
@@ -243,10 +246,10 @@ fi
 
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time9=$((now-start))
-echo "#9 image-augmentation time used:$time9 seconds"
+time5=$((now-start))
+echo "#5 image-augmentation time used:$time5 seconds"
 
-echo "#10 start app test for dogs-vs-cats"
+echo "#6 start app test for dogs-vs-cats"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
@@ -296,14 +299,10 @@ fi
 
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time10=$((now-start))
-echo "#10 dogs-vs-cats time used:$time10 seconds"
+time6=$((now-start))
+echo "#6 dogs-vs-cats time used:$time6 seconds"
 
-fi
-
-if [ $RUN_PART2 = 1 ]; then
-
-echo "#11 start app test for image-augmentation-3d"
+echo "#7 start app test for image-augmentation-3d"
 # timer
 start=$(date "+%s")
 
@@ -324,10 +323,10 @@ fi
 
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time11=$((now-start))
-echo "#11 image-augmentation-3d time used:$time11 seconds"
+time7=$((now-start))
+echo "#7 image-augmentation-3d time used:$time7 seconds"
 
-echo "#12 start app test for image_classification_inference"
+echo "#8 start app test for image_classification_inference"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/tfnet/image_classification_inference
@@ -389,12 +388,12 @@ fi
 
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time12=$((now-start))
+time8=$((now-start))
 rm ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
-echo "#12 image_classification_inference time used:$time12 seconds"
+echo "#8 image_classification_inference time used:$time8 seconds"
 
 
-echo "#6 start app test for using_variational_autoencoder_to_generate_faces"
+echo "#9 start app test for using_variational_autoencoder_to_generate_faces"
 #timer
 start=$(date "+%s")
  ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces
@@ -420,14 +419,14 @@ then
 fi
  unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time6=$((now-start))
-echo "#6 using_variational_autoencoder_to_generate_faces time used:$time6 seconds"
+time9=$((now-start))
+echo "#9 using_variational_autoencoder_to_generate_faces time used:$time9 seconds"
 
 fi
 
 
 if [ $RUN_PART3 = 1 ]; then
-echo "#7 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
+echo "#10 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_and_deep_feature_loss_to_generate_faces
@@ -460,12 +459,12 @@ then
     echo "using_variational_autoencoder_and_deep_feature_loss_to_generate_faces failed"
     exit $exit_status
 fi
- unset SPARK_DRIVER_MEMORY
- now=$(date "+%s")
-time7=$((now-start))
-echo "#7 using_variational_autoencoder_and_deep_feature_loss_to_generate_faces time used:$time7 seconds"
+unset SPARK_DRIVER_MEMORY
+now=$(date "+%s")
+time10=$((now-start))
+echo "#10 using_variational_autoencoder_and_deep_feature_loss_to_generate_faces time used:$time10 seconds"
 
-echo "#13 start app test for recommendation-ncf"
+echo "#11 start app test for recommendation-ncf"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
@@ -486,10 +485,10 @@ fi
 
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time1=$((now-start))
-echo "recommendation-ncf time used:$time1 seconds"
+time11=$((now-start))
+echo "#11 recommendation-ncf time used:$time11 seconds"
 
-echo "#4 start app test for wide_n_deep"
+echo "#12 start app test for recommendation-wide-n-deep"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
@@ -509,10 +508,10 @@ then
 fi
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time4=$((now-start))
-echo "recommendation-wide-n-deep time used:$time4 seconds"
+time12=$((now-start))
+echo "#12 recommendation-wide-n-deep time used:$time12 seconds"
 
-echo "#11 start app test for sentiment-analysis"
+echo "#13 start app test for sentiment-analysis"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
@@ -541,8 +540,8 @@ then
 fi
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
-time11=$((now-start))
-echo "sentiment-analysis time used:$time11 seconds"
+time13=$((now-start))
+echo "#13 sentiment-analysis time used:$time13 seconds"
 
 fi
 
