@@ -140,6 +140,8 @@ class TFEstimator(object):
         self.config = config
         self.params = params
         self.tf_optimizer = None
+        self.gradient_clipping_norm = None
+        self.gradient_clipping_constant = None
 
     def _call_model_fn(self, features, labels, mode, config):
         model_fn_args = function_utils.fn_args(self._model_fn)
@@ -159,6 +161,29 @@ class TFEstimator(object):
             raise ValueError('model_fn should return an TFEstimatorSpec.')
 
         return model_fn_results
+
+    def clear_gradient_clipping(self):
+        self.gradient_clipping_constant = None
+        self.gradient_clipping_norm = None
+
+    def set_constant_gradient_clipping(self, min, max):
+        """
+        Configure constant clipping settings.
+
+
+        :param min_value: the minimum value to clip by
+        :param max_value: the maxmimum value to clip by
+        """
+        self.gradient_clipping_constant = (min, max)
+
+    def set_gradient_clipping_by_l2_norm(self, clip_norm):
+        """
+        Configure L2 norm clipping settings.
+
+
+        :param clip_norm: gradient L2-Norm threshold
+        """
+        self.gradient_clipping_norm = clip_norm
 
     def train(self, input_fn, steps=None):
         """Trains a model given training data `input_fn`.
@@ -202,7 +227,11 @@ class TFEstimator(object):
                     else:
                         sess.run(tf.global_variables_initializer())
 
-                    opt = TFOptimizer.from_loss(spec.loss, optim_method, session=sess)
+                    opt = TFOptimizer.from_loss(spec.loss,
+                                                optim_method,
+                                                session=sess,
+                                                clip_norm=self.gradient_clipping_norm,
+                                                clip_value=self.gradient_clipping_constant)
                     opt.optimize(MaxIteration(steps))
                     sess.run(assign_step, feed_dict={add_step_input: steps})
                     final_step = sess.run(global_step_tensor)

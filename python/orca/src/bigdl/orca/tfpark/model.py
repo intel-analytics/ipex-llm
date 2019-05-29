@@ -35,18 +35,6 @@ class KerasModel(object):
         :param model: a compiled keras model
         """
         self.model = model
-        metrics_tensors = [
-            self.model.metrics_tensors[m] for m in range(len(self.model.metrics_names) - 1)
-        ]
-
-        metrics_tensors = [self.model.total_loss] + metrics_tensors
-        batch_size = tf.shape(model.inputs[0])
-
-        def repeat(x, times):
-            return tf.tile(tf.expand_dims(x, 0), tf.expand_dims(times, 0))
-
-        self.metrics_tensors = [repeat(x, batch_size[0]) for x in metrics_tensors]
-
         self.tf_optimizer = None
         self.tf_optimizer_done_epochs = 0
 
