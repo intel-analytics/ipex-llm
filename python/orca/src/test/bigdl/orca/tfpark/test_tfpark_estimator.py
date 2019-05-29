@@ -238,6 +238,17 @@ class TestTFParkEstimator(ZooTestCase):
         estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
         estimator.train(input_fn, steps=1)
 
+    def test_gradient_clipping(self):
+
+        model_fn = self.create_model_fn()
+        input_fn = self.create_train_feature_set_input_fn()
+
+        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator.set_constant_gradient_clipping(-1e-8, 1e8)
+        estimator.train(input_fn, steps=1)
+
+        # todo add weights verification
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
