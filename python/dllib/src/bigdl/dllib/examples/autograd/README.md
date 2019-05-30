@@ -8,8 +8,8 @@ Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUse
 You can easily use the following commands to run this example:
 ```
 export SPARK_DRIVER_MEMORY=2g
-python custom.py
-python customloss.py
+python path/to/custom.py
+python path/to/customloss.py
 ```
 
 See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
@@ -24,12 +24,12 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
     --master ${MASTER}\
     --driver-memory 2g \
     --executor-memory 2g \
-    custom.py 
+    path/to/custom.py
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
     --master ${MASTER}\
     --driver-memory 2g \
     --executor-memory 2g \
-    customloss.py 
+    path/to/customloss.py
 ```
 See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
 
