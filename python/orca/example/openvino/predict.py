@@ -16,6 +16,7 @@
 
 import sys
 import numpy as np
+from os.path import join
 from optparse import OptionParser
 
 from zoo.common.nncontext import init_nncontext
@@ -41,7 +42,9 @@ if __name__ == "__main__":
                            resize_height=600, resize_width=600).get_image().collect()
     input_data = np.concatenate([image.reshape((1, 1) + image.shape) for image in images], axis=0)
     model = InferenceModel()
-    model.load_tf(options.model_path, backend="openvino", model_type=options.model_type)
+    model.load_tf(join(options.model_path, "frozen_inference_graph.pb"),
+                  backend="openvino", model_type=options.model_type,
+                  ov_pipeline_config_path=join(options.model_path, "pipeline.config"))
     predictions = model.predict(input_data)
     # Print the detection result of the first image.
     print(predictions[0])
