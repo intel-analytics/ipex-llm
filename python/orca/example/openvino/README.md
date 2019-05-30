@@ -7,6 +7,19 @@ to make inferences with OpenVINO toolkit as backend using Analytics Zoo, which d
 ## Install or download Analytics Zoo
 Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
 
+[OpenVINO System requirements](https://software.intel.com/en-us/openvino-toolkit/documentation/system-requirements):
+
+    Ubuntu 16.04.3 LTS (64 bit)
+    Windows 10 (64 bit)
+    CentOS 7.4 (64 bit)
+    macOS 10.13, 10.14 (64 bit)
+
+OpenVINO Python requirements:
+
+    tensorflow>=1.2.0
+    networkx>=1.11
+    numpy>=1.12.0
+    protobuf==3.6.1
 
 ## Model and Data Preparation
 1. Prepare a pre-trained TensorFlow object detection model. You can download from [tensorflow detection model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md).
@@ -21,7 +34,7 @@ In this example, we use `frozen_inference_graph.pb` of the `faster_rcnn_resnet10
 ```bash
 export SPARK_DRIVER_MEMORY=10g
 image_path=directory path that contain images
-model_path=path to frozen_inference_graph.pb
+model_path=dir contains frozen_inference_graph.pb and pipeline.config
 
 python predict.py --image ${image_path} --model ${model_path}
 ```
@@ -35,7 +48,7 @@ export SPARK_HOME=the root directory of Spark
 export ANALYTICS_ZOO_HOME=the directory where you extract the downloaded Analytics Zoo zip package
 MASTER=local[*]
 image_path=directory path that contain images
-model_path=path to frozen_inference_graph.pb
+model_path=dir contains frozen_inference_graph.pb and pipeline.config
 
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
     --master $MASTER \
