@@ -24,15 +24,22 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * @param mode       : the type of RNN cell
  * @param inputSize  : the size of input vector
  * @param hiddenSize : the size of hidden state
  * @param f          : the type of output activation function
  *                   (e.g. AlgKind.EltwiseTanh or AlgKind.EltwiseRelu)
  * @param direction  : the direction to run LSTM
  *                   (e.g. Direction.UnidirectionalLeft2Right or Direction.BidirectionalConcat)
+ *
+ * MKLDNN Gate 1 -> nn/LSTM Gate 1
+ * MKLDNN Gate 2 -> nn/LSTM Gate 3
+ * MKLDNN Gate 3 -> nn/LSTM Gate 2
+ * MKLDNN Gate 4 -> nn/LSTM Gate 4
  */
 
-class LSTM(
+class RNN(
+  val mode: Int,
   val inputSize: Int,
   val hiddenSize: Int,
   val f: Int,
@@ -235,16 +242,20 @@ class LSTM(
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    val rnnCellDesc = MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
-
-    ngates = MklDnn.RNNCellGetGatesCount(rnnCellDesc)
-    nstates = MklDnn.RNNCellGetStatesCount(rnnCellDesc)
-
     val kind = if (phase == InferencePhase) {
       PropKind.ForwardInference
     } else {
       throw new UnsupportedOperationException("Not support training")
     }
+
+    val rnnCellDesc = mode match {
+      case AlgKind.VanillaLstm =>
+        MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
+      case _ => throw new UnsupportedOperationException("Not support such cell")
+    }
+
+    ngates = MklDnn.RNNCellGetGatesCount(rnnCellDesc)
+    nstates = MklDnn.RNNCellGetStatesCount(rnnCellDesc)
 
     initMemoryDescs(inputs)
 
@@ -331,8 +342,9 @@ class LSTM(
   }
 }
 
-object LSTM{
+object RNN{
   def apply(
+   mode: Int,
    inputSize: Int,
    hiddenSize: Int,
    f: Int,
@@ -344,6 +356,6 @@ object LSTM{
    initWeight: Tensor[Float] = null,
    initWeightIter: Tensor[Float] = null,
    initBias: Tensor[Float] = null
- ): LSTM = new LSTM(inputSize, hiddenSize, f, direction, layers, flags, alpha,
+ ): RNN = new RNN(mode, inputSize, hiddenSize, f, direction, layers, flags, alpha,
     clipping, initWeight, initWeightIter, initBias)
 }
