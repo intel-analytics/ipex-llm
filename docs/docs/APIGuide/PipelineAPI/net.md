@@ -216,7 +216,33 @@ be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow
 
 #### from_rdd
 
-Create a TFDataset from a rdd, each element of the rdd must be a list of numpy.ndarray.
+Create a TFDataset from a rdd.
+
+For training and evaluation, both `features` and `labels` arguments should be specified.
+The element of the rdd should be a tuple of two, (features, labels), each has the
+same structure of numpy.ndarrays of the argument `features`, `labels`.
+
+E.g. if `features` is [(tf.float32, [10]), (tf.float32, [20])],
+and `labels` is {"label1":(tf.float32, [10]), "label2": (tf.float32, [20])}
+then a valid element of the rdd could be
+
+        (
+        [np.zeros(dtype=float, shape=(10,), np.zeros(dtype=float, shape=(10,)))],
+         {"label1": np.zeros(dtype=float, shape=(10,)),
+          "label2":np.zeros(dtype=float, shape=(10,))))}
+        )
+
+If `labels` is not specified,
+then the above element should be changed to
+
+        [np.zeros(dtype=float, shape=(10,), np.zeros(dtype=float, shape=(10,)))]
+
+For inference, `labels` can be not specified.
+The element of the rdd should be some ndarrays of the same structure of the `features`
+argument.
+
+A note on the legacy api: if you are using `names`, `shapes`, `types` arguments,
+each element of the rdd should be a list of numpy.ndarray.
 
 **Python**
 ```python
@@ -225,8 +251,8 @@ from_rdd(rdd, features, labels=None, batch_size=-1, batch_per_thread=-1, hard_co
 
 **Arguments**
 
-* **rdd**: a rdd of list of numpy.ndarray each representing a tensor to feed into
-        tensorflow graph on each iteration
+* **rdd**: a rdd containing the numpy.ndarrays to be used 
+           for training/evaluation/inference
 * **features**: the structure of input features, should one the following:
 
      - a tuple (dtype, shape), e.g. (tf.float32, [28, 28, 1]) 
