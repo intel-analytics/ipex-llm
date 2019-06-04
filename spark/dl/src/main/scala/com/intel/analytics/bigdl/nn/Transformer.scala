@@ -19,12 +19,16 @@ import breeze.linalg.*
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime._
 
 /**
  * Transformer model from "Attention Is All You Need".
@@ -37,20 +41,20 @@ import scala.reflect.ClassTag
  * @param numHeads
  * @param filterSize
  * @param numHiddenlayers
- * @param postprocessDropout
+ * @param embeddingDropout
  * @param attentionDropout
- * @param reluDropout
+ * @param ffnDropout
  * @tparam T The numeric type in this module parameters.
  */
-class TransformerLayer[T: ClassTag](
+class Transformer[T: ClassTag](
    val vocabSize: Int,
    val hiddenSize: Int,
    val numHeads: Int,
    val filterSize: Int,
    val numHiddenlayers: Int,
-   val postprocessDropout: Float,
+   val embeddingDropout: Float,
    val attentionDropout: Float,
-   val reluDropout: Float,
+   val ffnDropout: Float,
    val transformerType: TransformerType = LanguageModel)
   (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
 
@@ -95,12 +99,12 @@ class TransformerLayer[T: ClassTag](
     // applying dropout.
     val position = new PositionEncode().inputs(inputs)
     val encoderInput = CAddTable().inputs(inputs, position)
-    val decoderInputDrop = if (train) {
-      val postDropOut = Dropout(1- postprocessDropout)
+    val encoderInputDrop = if (train) {
+      val postDropOut = Dropout(1- embeddingDropout)
       postDropOut.inputs(encoderInput)
     } else encoderInput
 
-    block(numHiddenlayers, decoderInputDrop, attentionBias, blockType = "encode")
+    block(numHiddenlayers, encoderInputDrop, attentionBias, blockType = "encode")
   }
 
   private[nn] def decode(targets: ModuleNode[T],
@@ -110,7 +114,7 @@ class TransformerLayer[T: ClassTag](
     val decoderSelfAttentionBias = new SelfAttentionMask().inputs(targets)
 
     val decoderInputDrop = if (train) {
-      val postDropOut = Dropout(1- postprocessDropout)
+      val postDropOut = Dropout(1- embeddingDropout)
       postDropOut.inputs(decoderInput)
     } else decoderInput
 
@@ -121,29 +125,29 @@ class TransformerLayer[T: ClassTag](
   private[nn] def block(numLayers: Int,
                         decoderInput: ModuleNode[T],
                         decoderSelfAttentionBias: ModuleNode[T],
-                        encoderOutputs: ModuleNode[T] = null,
-                        attentionBias: ModuleNode[T] = null,
-                        blockType: String = "decode"): ModuleNode[T] = {
+                        encoderOutput: ModuleNode[T] = null,
+                        encoderAttentionBias: ModuleNode[T] = null,
+                        blockType: String): ModuleNode[T] = {
 
     var input = decoderInput
     var i = 0
     while (i < numLayers) {
       val selfAttention = new Attention[T](hiddenSize, numHeads, attentionDropout)
-      val selfAttentionModel = prePostProcessingSelfAttention(
+      val selfAttentionModel = processSelfAttention(
         selfAttention, input, decoderSelfAttentionBias,
         s"${blockType}_self_attention_${i}")
       input = selfAttentionModel
 
-      if (encoderOutputs != null && attentionBias != null) {
+      if (encoderOutput != null && encoderAttentionBias != null) {
         val encdecAttention = new Attention[T](hiddenSize, numHeads, attentionDropout)
-        val encdecAttentionModel = prePostProcessingEncDecAttention(
-          encdecAttention, input, encoderOutputs, attentionBias,
+        val encdecAttentionModel = processEncDecAttention(
+          encdecAttention, input, encoderOutput, encoderAttentionBias,
           s"${blockType}_encdec_attention_${i}")
         input = encdecAttentionModel
       }
 
-      val ffn = new FeedForwardNetwork[T](hiddenSize, filterSize, reluDropout)
-      val ffnModel = prePostProcessingFFN(ffn, input, s"${blockType}_ffn_${i}")
+      val ffn = new FeedForwardNetwork[T](hiddenSize, filterSize, ffnDropout)
+      val ffnModel = processFFN(ffn, input, s"${blockType}_ffn_${i}")
       input = ffnModel
 
       i += 1
@@ -151,54 +155,176 @@ class TransformerLayer[T: ClassTag](
     new LayerNormalization[T](hiddenSize).inputs(input)
   }
 
-  private def prePostProcessingSelfAttention(layer: Module[T], decoderInput: ModuleNode[T],
+  private def processSelfAttention(layer: Module[T], decoderInput: ModuleNode[T],
     decoderSelfAttentionBias: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
         .inputs(decoderInput)
-    val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
+    val drop = Dropout[T](1 - embeddingDropout).setName(preName + "/dropout")
         .inputs(layer.setName(preName + "/self_attention")
         .inputs(norm, norm, decoderSelfAttentionBias))
     CAddTable().inputs(decoderInput, drop)
   }
 
-  private def prePostProcessingEncDecAttention(
+  private def processEncDecAttention(
     layer: Module[T],
     decoderInput: ModuleNode[T],
     encoderOutput: ModuleNode[T],
     attentionBias: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
       .inputs(decoderInput)
-    val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
+    val drop = Dropout[T](1 - embeddingDropout).setName(preName + "/dropout")
       .inputs(layer.setName(preName + "/encdec_attention")
         .inputs(norm, encoderOutput, attentionBias))
     CAddTable().inputs(decoderInput, drop)
   }
 
-  private def prePostProcessingFFN(layer: Module[T],
+  private def processFFN(layer: Module[T],
     decoderInput: ModuleNode[T], preName: String): ModuleNode[T] = {
     val norm = new LayerNormalization[T](hiddenSize).setName(preName + "/norm")
       .inputs(decoderInput)
-    val drop = Dropout[T](1 - postprocessDropout).setName(preName + "/dropout")
+    val drop = Dropout[T](1 - embeddingDropout).setName(preName + "/dropout")
       .inputs(layer.setName(preName + "/ffn").inputs(norm))
     CAddTable().inputs(decoderInput, drop)
   }
 }
 
-object TransformerLayer {
+object Transformer extends ModuleSerializable {
   def apply[T: ClassTag](
      vocabSize: Int,
      hiddenSize: Int,
      numHeads: Int,
      filterSize: Int,
      numHiddenlayers: Int,
-     postprocessDropout: Float,
+     embeddingDropout: Float,
      attentionDropout: Float,
-     reluDropout: Float,
+     ffnDropout: Float,
      transformerType: TransformerType = LanguageModel)
-   (implicit ev: TensorNumeric[T]): TransformerLayer[T] =
-    new TransformerLayer(vocabSize, hiddenSize, numHeads,
+   (implicit ev: TensorNumeric[T]): Transformer[T] =
+    new Transformer(vocabSize, hiddenSize, numHeads,
       filterSize, numHiddenlayers,
-      postprocessDropout, attentionDropout, reluDropout, transformerType)
+      embeddingDropout, attentionDropout, ffnDropout, transformerType)
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+
+    val model = DataConverter
+      .getAttributeValue(context, attrMap.get("model")).
+      asInstanceOf[Module[T]]
+
+    val vocabSize = DataConverter
+      .getAttributeValue(context, attrMap.get("vocabSize"))
+      .asInstanceOf[Int]
+
+    val hiddenSize = DataConverter
+      .getAttributeValue(context, attrMap.get("hiddenSize"))
+      .asInstanceOf[Int]
+
+    val numHeads = DataConverter
+      .getAttributeValue(context, attrMap.get("numHeads"))
+      .asInstanceOf[Int]
+
+    val filterSize = DataConverter
+      .getAttributeValue(context, attrMap.get("filterSize"))
+      .asInstanceOf[Int]
+
+    val numHiddenlayers = DataConverter
+      .getAttributeValue(context, attrMap.get("numHiddenlayers"))
+      .asInstanceOf[Int]
+
+    val embeddingDropout = DataConverter
+      .getAttributeValue(context, attrMap.get("embeddingDropout"))
+      .asInstanceOf[Float]
+
+    val attentionDropout = DataConverter
+      .getAttributeValue(context, attrMap.get("attentionDropout"))
+      .asInstanceOf[Float]
+
+    val ffnDropout = DataConverter
+      .getAttributeValue(context, attrMap.get("ffnDropout"))
+      .asInstanceOf[Float]
+
+    val tag = DataConverter
+      .getAttributeValue(context, attrMap.get("transformerType"))
+      .asInstanceOf[Int]
+
+    val transformerType = tag match {
+      case 1 => LanguageModel
+      case 2 => Translation
+      case _ => throw new UnsupportedOperationException(
+        s"Only support transformer tag 1 and 2, but get ${tag}")
+    }
+
+    val transformer = Transformer(vocabSize, hiddenSize, numHeads, filterSize,
+      numHiddenlayers, embeddingDropout, attentionDropout, ffnDropout, transformerType)
+
+    transformer.model = model
+    transformer
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+     transformerBuilder : BigDLModule.Builder)(implicit ev: TensorNumeric[T]) : Unit = {
+
+    val transformer = context.moduleData.module.asInstanceOf[Transformer[T]]
+
+    val modelBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, modelBuilder, transformer.model,
+      ModuleSerializer.abstractModuleType)
+    transformerBuilder.putAttr("model", modelBuilder.build)
+
+    val vocabSizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, vocabSizeBuilder,
+      transformer.vocabSize, universe.typeOf[Int])
+    transformerBuilder.putAttr("vocabSize", vocabSizeBuilder.build)
+
+    val hiddenSizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, hiddenSizeBuilder,
+      transformer.hiddenSize, universe.typeOf[Int])
+    transformerBuilder.putAttr("hiddenSize", hiddenSizeBuilder.build)
+
+    val numHeadsBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, numHeadsBuilder,
+      transformer.numHeads, universe.typeOf[Int])
+    transformerBuilder.putAttr("numHeads", numHeadsBuilder.build)
+
+    val filterSizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, filterSizeBuilder,
+      transformer.filterSize, universe.typeOf[Int])
+    transformerBuilder.putAttr("filterSize", filterSizeBuilder.build)
+
+    val numHiddenlayersBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, numHiddenlayersBuilder,
+      transformer.numHiddenlayers, universe.typeOf[Int])
+    transformerBuilder.putAttr("numHiddenlayers", numHiddenlayersBuilder.build)
+
+    val embeddingDropoutBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, embeddingDropoutBuilder,
+      transformer.embeddingDropout, universe.typeOf[Float])
+    transformerBuilder.putAttr("embeddingDropout", embeddingDropoutBuilder.build)
+
+    val attentionDropoutBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, attentionDropoutBuilder,
+      transformer.attentionDropout, universe.typeOf[Float])
+    transformerBuilder.putAttr("attentionDropout", attentionDropoutBuilder.build)
+
+    val ffnDropoutBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, ffnDropoutBuilder,
+      transformer.ffnDropout, universe.typeOf[Float])
+    transformerBuilder.putAttr("ffnDropout", embeddingDropoutBuilder.build)
+
+    // for language model, marked as 1
+    // for translation model, marked as 2
+    val tag = transformer.transformerType match {
+      case LanguageModel => 1
+      case Translation => 2
+      case _ => throw new UnsupportedOperationException(s"Only support LanguageModel" +
+        s"and Translation transformer type, but get ${transformer.transformerType}")
+    }
+    val transformerTypeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, transformerTypeBuilder,
+      tag, universe.typeOf[Int])
+    transformerBuilder.putAttr("transformerType", transformerTypeBuilder.build)
+  }
 }
 
 /**

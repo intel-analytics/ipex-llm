@@ -59,16 +59,16 @@ private[nn] object TransformerOperation {
   }
 
   /**
-    * Calculate bias tensor from padding values in tensor.
-    * Bias tensor that is added to the pre-softmax multi-headed attention logits,
-    * which has shape [batch_size, num_heads, length, length]. The tensor is zero at
-    * non-padding locations, and -1e9 (negative infinity) at padding locations.
-    * Args: x: int tensor with shape [batch_size, length]
-    * Returns: Attention bias tensor of shape [batch_size, 1, 1, length].
-    * @param input
-    * @tparam T
-    * @return
-    */
+   * Calculate bias tensor from padding values in tensor.
+   * Bias tensor that is added to the pre-softmax multi-headed attention logits,
+   * which has shape [batch_size, num_heads, length, length]. The tensor is zero at
+   * non-padding locations, and -1e9 (negative infinity) at padding locations.
+   * Args: x: int tensor with shape [batch_size, length]
+   * Returns: Attention bias tensor of shape [batch_size, 1, 1, length].
+   * @param input
+   * @tparam T
+   * @return
+   */
   def getPaddingBias[T: ClassTag](input: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val res = getPadding[T](input).mul(ev.fromType(-1e9))
     res.addSingletonDimension(res, 2)

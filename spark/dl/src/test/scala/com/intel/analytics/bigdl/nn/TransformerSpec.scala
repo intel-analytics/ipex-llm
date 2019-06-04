@@ -32,14 +32,14 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     val postprocessDropout = 1.0f
     val attentionDropout = 1.0f
     val reluDropout = 1.0f
-    val transformer = new TransformerLayer[Float](vocabSize,
+    val transformer = new Transformer[Float](vocabSize,
       hiddenSize, numHeads, filterSize, num_hidden_layers,
       postprocessDropout, attentionDropout, reluDropout)
 
     val input1 = Input[Float]()
     val input2 = Input[Float]()
 
-    val blockOutput = transformer.block(num_hidden_layers, input1, input2)
+    val blockOutput = transformer.block(num_hidden_layers, input1, input2, blockType = "encode")
     val block = Graph(Array(input1, input2), blockOutput)
     val paramsTable = block.getParametersTable()
 
@@ -204,7 +204,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     val postprocessDropout = 1.0f
     val attentionDropout = 1.0f
     val reluDropout = 1.0f
-    val transformer = new TransformerLayer[Float](vocabSize,
+    val transformer = new Transformer[Float](vocabSize,
       hiddenSize, numHeads, filterSize, num_hidden_layers,
       postprocessDropout, attentionDropout, reluDropout, Translation)
 
@@ -548,6 +548,8 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     val gradInput = layer2.backward(output, o2)
     assert(output.almostEqual(gradInput, 1e-8) == true)
   }
+
+
 }
 
 class SelfAttentionMaskSerialTest extends ModuleSerializationTest {
@@ -598,7 +600,7 @@ class SplitTensorSerialTest extends ModuleSerializationTest {
   }
 }
 
-class TransformerLayerSerialTest extends ModuleSerializationTest {
+class TransformerSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val hiddenSize = 4
     val numHeads = 2
@@ -607,9 +609,9 @@ class TransformerLayerSerialTest extends ModuleSerializationTest {
     val postprocessDropout = 1.0f
     val attentionDropout = 1.0f
     val reluDropout = 1.0f
-    val model = new TransformerLayer[Float](20,
+    val model = Transformer[Float](20,
       hiddenSize, numHeads, filterSize, num_hidden_layers,
-      postprocessDropout, attentionDropout, reluDropout)
+      postprocessDropout, attentionDropout, reluDropout).setName("Transformer")
     val input = Tensor[Float](2, 6).apply1(_ => Random.nextInt(10) + 1)
     runSerializationTest(model, input)
   }

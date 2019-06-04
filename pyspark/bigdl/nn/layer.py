@@ -964,17 +964,17 @@ class ExpandSize(Layer):
     def __init__(self, sizes, bigdl_type="float"):
         super(ExpandSize, self).__init__(None, bigdl_type, sizes)
 
-class TransformerLayer(Layer):
+class Transformer(Layer):
 
     '''
-    Implementation for TransformerLayer
-    >>> ffn = TransformerLayer(20, 4, 2, 3, 1, 0.1, 0.1, 0.1)
-    creating: createTransformerLayer
+    Implementation for Transformer
+    >>> layer = Transformer(20, 4, 2, 3, 1, 0.1, 0.1, 0.1)
+    creating: createTransformer
     '''
     def __init__(self, vocab_size, hidden_size, num_heads, filter_size, num_hidden_layers,
                  postprocess_dropout, attention_dropout,
                  relu_dropout, bigdl_type="float"):
-        super(TransformerLayer, self).__init__(None, bigdl_type, vocab_size,
+        super(Transformer, self).__init__(None, bigdl_type, vocab_size,
                                                hidden_size, num_heads, filter_size,
                                                num_hidden_layers, postprocess_dropout,
                                                attention_dropout, relu_dropout)
