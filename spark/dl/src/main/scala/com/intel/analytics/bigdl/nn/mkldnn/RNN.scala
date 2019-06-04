@@ -70,9 +70,62 @@ class RNN(
   private[mkldnn] var dst_i: TensorMMap = _
 
   if(layers > 1) {
+    if (inputSize != hiddenSize) {
+      println("inputSize = " + inputSize)
+      println("hiddenSize = " + hiddenSize)
+    }
+
     require(inputSize == hiddenSize,
       "If layers of LSTM is more than 1," +
         " the input size and the hidden size should equal")
+  }
+
+  mode match {
+    case AlgKind.VanillaLstm =>
+      ngates = 4
+      nstates = 2
+    case _ =>
+      throw new UnsupportedOperationException("Support RNN Cell types: LSTM")
+  }
+
+  direction match {
+    case Direction.UnidirectionalLeft2Right
+         | Direction.UnidirectionalRight2Left =>
+
+      /**
+        * Gate order matching between MKLDNN LSTM and nn/LSTM:
+        * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+        * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+        * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+        * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+        */
+      weight = new TensorMMap(Array(common_n_layers, 1, inputSize, ngates, hiddenSize))
+      weight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, ngates, hiddenSize))
+      bias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
+
+    case Direction.BidirectionalConcat =>
+      require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers")
+
+      weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
+      weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
+      bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
+
+    case Direction.BidirectionalSum =>
+
+      /** TODO: Multi-layer Bidirectional LSTM is available in MKLDNN,
+        * but it is not supported in current version BigDL BLAS.
+        */
+
+      weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
+      weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
+      bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
+  }
+
+  {
+    val stdv = 1.0 / math.sqrt(hiddenSize)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = Zeros
+    setInitMethod(wInit, bInit)
   }
 
   override def reset(): Unit = {
@@ -106,24 +159,6 @@ class RNN(
     direction match {
       case Direction.UnidirectionalLeft2Right
            | Direction.UnidirectionalRight2Left =>
-        /**
-          * Gate order matching between MKLDNN LSTM and nn/LSTM:
-          * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
-          * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
-          * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
-          * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
-          */
-        weight = new TensorMMap(Array(common_n_layers, 1, inputSize, ngates, hiddenSize))
-        weight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, ngates, hiddenSize))
-        bias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
-
-        {
-          val stdv = 1.0 / math.sqrt(hiddenSize)
-          val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-          val bInit: InitializationMethod = Zeros
-          setInitMethod(wInit, bInit)
-        }
-
         val weightShape = weight.size() /* ldigo */
         val biasShape = bias.size() /* ldgo */
         val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
@@ -155,26 +190,6 @@ class RNN(
         dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
 
       case Direction.BidirectionalConcat =>
-        require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers")
-
-        /**
-          * Gate order matching between MKLDNN LSTM and nn/LSTM:
-          * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
-          * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
-          * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
-          * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
-          */
-        weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
-        weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
-        bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
-
-        {
-          val stdv = 1.0 / math.sqrt(hiddenSize)
-          val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-          val bInit: InitializationMethod = Zeros
-          setInitMethod(wInit, bInit)
-        }
-
         val weightShape = weight.size() /* ldigo */
         val biasShape = bias.size() /* ldgo */
         val outputShape = Array(inputShape(0), inputShape(1), 2 * hiddenSize) /* tnc */
@@ -209,26 +224,6 @@ class RNN(
         dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
 
       case Direction.BidirectionalSum =>
-        /** TODO: Multi-layer Bidirectional LSTM is available in MKLDNN,
-          * but it is not supported in current version BigDL BLAS.
-
-          * Gate order matching between MKLDNN LSTM and nn/LSTM:
-          * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
-          * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
-          * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
-          * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
-          */
-        weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
-        weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
-        bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
-
-        {
-          val stdv = 1.0 / math.sqrt(hiddenSize)
-          val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-          val bInit: InitializationMethod = Zeros
-          setInitMethod(wInit, bInit)
-        }
-
         val weightShape = weight.size() /* ldigo */
         val biasShape = bias.size() /* ldgo */
         val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
@@ -276,9 +271,6 @@ class RNN(
       case _ => throw new UnsupportedOperationException("Not support such cell")
     }
 
-    ngates = MklDnn.RNNCellGetGatesCount(rnnCellDesc)
-    nstates = MklDnn.RNNCellGetStatesCount(rnnCellDesc)
-
     initMemoryDescs(inputs)
 
     val description = MklDnn.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,
@@ -286,14 +278,14 @@ class RNN(
 
     fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
 
-    val realSrc = MemoryData.operationWantWithIndex(fwdPD, Query.SrcPd, 0)
-    val realSrc_iter = MemoryData.operationWantWithIndex(fwdPD, Query.SrcPd, 1)
-    val realWei = MemoryData.operationWantWithIndex(fwdPD, Query.WeightsPd, 0)
-    val realWei_iter = MemoryData.operationWantWithIndex(fwdPD, Query.WeightsPd, 1)
-    val realBias = MemoryData.operationWantWithIndex(fwdPD, Query.WeightsPd, 2)
+    val realSrc = MemoryData.operationWant(fwdPD, Query.SrcPd, 0)
+    val realSrc_iter = MemoryData.operationWant(fwdPD, Query.SrcPd, 1)
+    val realWei = MemoryData.operationWant(fwdPD, Query.WeightsPd, 0)
+    val realWei_iter = MemoryData.operationWant(fwdPD, Query.WeightsPd, 1)
+    val realBias = MemoryData.operationWant(fwdPD, Query.WeightsPd, 2)
 
-    val realDst = MemoryData.operationWantWithIndex(fwdPD, Query.DstPd, 0)
-    val realDst_iter = MemoryData.operationWantWithIndex(fwdPD, Query.DstPd, 1)
+    val realDst = MemoryData.operationWant(fwdPD, Query.DstPd, 0)
+    val realDst_iter = MemoryData.operationWant(fwdPD, Query.DstPd, 1)
 
     require(src_i.size().product == realSrc_iter.shape.product,
       s"${getName} src iter shape is not correct.")
@@ -361,6 +353,18 @@ class RNN(
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
     throw new UnsupportedOperationException("Not support backward propagation")
+  }
+
+  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
+    (Array(weight.dense, bias.dense, weight_i.dense), Array())
+  }
+
+  override def zeroGradParameters(): Unit = {
+  }
+
+  override def release(): Unit = {
+    super.release()
+    List(weight, bias, weight_i).foreach(_.release())
   }
 }
 
