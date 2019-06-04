@@ -43,11 +43,11 @@ class Attention[T: ClassTag](
 
     // Layers for linearly projecting the queries, keys, and values.
     val queryLayer = TransformerOperation.dense(
-      hiddenSize, hiddenSize, false, name = "q").inputs(inputX)
+      hiddenSize, hiddenSize, false, name = s"${this.getName()}_q").inputs(inputX)
     val keyLayer = TransformerOperation.dense(
-      hiddenSize, hiddenSize, false, name = "k").inputs(inputY)
+      hiddenSize, hiddenSize, false, name = s"${this.getName()}_k").inputs(inputY)
     val valueLayer = TransformerOperation.dense(
-      hiddenSize, hiddenSize, false, name = "v").inputs(inputY)
+      hiddenSize, hiddenSize, false, name = s"${this.getName()}_v").inputs(inputY)
 
     val querySplit = new SplitHeads(hiddenSize, numHeads, true).inputs(queryLayer)
     val keySplit = new SplitHeads(hiddenSize, numHeads).inputs(keyLayer)
@@ -69,7 +69,8 @@ class Attention[T: ClassTag](
     val combineHeads = new CombineHeads().inputs(matmulNoTrans)
     // Run the combined outputs through another linear projection layer.
     val outputLayer = TransformerOperation.dense(
-      hiddenSize, hiddenSize, false, name = "output_transform").inputs(combineHeads)
+      hiddenSize, hiddenSize, false, name = s"${this.getName()}_output_transform")
+      .inputs(combineHeads)
     val graph = Graph(Array(inputX, inputY, inputBias), Array(outputLayer))
     if (this.train) graph.training() else graph.evaluate()
     graph
