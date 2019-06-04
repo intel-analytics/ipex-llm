@@ -219,7 +219,7 @@ private[bigdl] object ReflectionUtils {
     val companionSymbol = clsSymbol.companionSymbol
 
     val instanceMirror = companionSymbol match {
-      case universe.NoSymbol => throw new ClassNotFoundException("Companion does not exists")
+      case universe.NoSymbol => null
       case _ =>
         val compnInst = currentMirror.reflectModule(clsSymbol.companionSymbol.asModule).instance
         clsMirror.reflect(compnInst)
