@@ -278,6 +278,8 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.MultiRNNCell", MultiRNNCell)
     registerModule("com.intel.analytics.bigdl.nn.SpatialSeparableConvolution",
       SpatialSeparableConvolution)
+    registerModule("com.intel.analytics.bigdl.nn.Transformer",
+      Transformer)
   }
 }
 
