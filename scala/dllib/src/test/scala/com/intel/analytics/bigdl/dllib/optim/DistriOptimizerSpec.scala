@@ -282,7 +282,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE with two LBFGS after set a new Model" should "be good" in {
-    RandomGenerator.RNG.setSeed(10)
+    RandomGenerator.RNG.setSeed(11)
     val optimizer = new DistriOptimizer[Double](
       mse,
       dataSet,
