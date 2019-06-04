@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
+import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -28,14 +28,9 @@ import scala.collection.mutable.ArrayBuffer
  * @param inputSize  : the size of input vector
  * @param hiddenSize : the size of hidden state
  * @param f          : the type of output activation function
- *                   (e.g. AlgKind.EltwiseTanh or AlgKind.EltwiseRelu)
+ *                   (AlgKind.EltwiseTanh or AlgKind.EltwiseRelu)
  * @param direction  : the direction to run LSTM
  *                   (e.g. Direction.UnidirectionalLeft2Right or Direction.BidirectionalConcat)
- *
- * MKLDNN Gate 1 -> nn/LSTM Gate 1
- * MKLDNN Gate 2 -> nn/LSTM Gate 3
- * MKLDNN Gate 3 -> nn/LSTM Gate 2
- * MKLDNN Gate 4 -> nn/LSTM Gate 4
  */
 
 class RNN(
@@ -112,6 +107,13 @@ class RNN(
     direction match {
       case Direction.UnidirectionalLeft2Right
            | Direction.UnidirectionalRight2Left =>
+        /**
+          * Gate order matching between MKLDNN LSTM and nn/LSTM:
+          * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+          * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+          * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+          * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+          */
         weight = new TensorMMap(Array(common_n_layers, 1, inputSize, ngates, hiddenSize))
         weight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, ngates, hiddenSize))
         bias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
@@ -119,7 +121,7 @@ class RNN(
         {
           val stdv = 1.0 / math.sqrt(hiddenSize)
           val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-          val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          val bInit: InitializationMethod = Zeros
           setInitMethod(wInit, bInit)
         }
 
@@ -154,6 +156,15 @@ class RNN(
         dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
 
       case Direction.BidirectionalConcat =>
+        require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers")
+
+        /**
+          * Gate order matching between MKLDNN LSTM and nn/LSTM:
+          * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+          * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+          * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+          * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+          */
         weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
         weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
         bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
@@ -161,7 +172,7 @@ class RNN(
         {
           val stdv = 1.0 / math.sqrt(hiddenSize)
           val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-          val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          val bInit: InitializationMethod = Zeros
           setInitMethod(wInit, bInit)
         }
 
@@ -190,12 +201,24 @@ class RNN(
         dist_layer_MD = dst.getMemoryDescription()
         dist_iter_MD = dst_iter.getMemoryDescription()
 
+        /** TODO: user-defined initial hidden state is not supported currently.
+          * The default initial hidden state is all zero.
+          */
         src_i = new TensorMMap(inputShape_iter)
         src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
         dst_i = new TensorMMap(outputShape_iter)
         dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
 
       case Direction.BidirectionalSum =>
+        /** TODO: Multi-layer Bidirectional LSTM is available in MKLDNN,
+          * but it is not supported in current version BigDL BLAS.
+
+          * Gate order matching between MKLDNN LSTM and nn/LSTM:
+          * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+          * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+          * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+          * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+          */
         weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
         weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
         bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
@@ -203,7 +226,7 @@ class RNN(
         {
           val stdv = 1.0 / math.sqrt(hiddenSize)
           val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-          val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+          val bInit: InitializationMethod = Zeros
           setInitMethod(wInit, bInit)
         }
 
