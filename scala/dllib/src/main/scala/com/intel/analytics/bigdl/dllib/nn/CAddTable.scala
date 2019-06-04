@@ -46,13 +46,11 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   @transient
   private var bufferSumOutput: Tensor[D] = null
 
-  private def expandWithDims(smallSize: Array[Int], otherSize: Array[Int]): Boolean = {
-    if (smallSize.length != otherSize.length) {
-      return false
-    }
-    var d = otherSize.length - 1
+  private def canExpand(inputSize: Array[Int], targetSize: Array[Int]): Boolean = {
+    var d = inputSize.length - 1
+    val diff = targetSize.length - inputSize.length
     while(d >= 0) {
-      if (smallSize(d) != 1 && smallSize(d) != otherSize(d)) {
+      if (inputSize(d) != 1 && inputSize(d) != targetSize(d + diff)) {
         return false
       }
       d -= 1
@@ -61,14 +59,18 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
   }
 
   private def sumAlongDims(tensor: Tensor[D], other: Tensor[D]): Tensor[D] = {
+    val diff = other.nDimension() - tensor.nDimension()
     val size = tensor.size()
     var target: Tensor[D] = other
     if (bufferSumOutput == null) bufferSumOutput = Tensor[D]()
     if (bufferSumInput == null) bufferSumInput = Tensor[D]()
 
     var i = 0
-    while (i < size.length) {
-      if (size(i) == 1) {
+    while (i < other.nDimension()) {
+      if (i < diff) {
+        bufferSumOutput.sum(target, i + 1)
+        target = bufferSumInput.resizeAs(bufferSumOutput).copy(bufferSumOutput)
+      } else if (size(i - diff) == 1) {
         bufferSumOutput.sum(target, i + 1)
         target = bufferSumInput.resizeAs(bufferSumOutput).copy(bufferSumOutput)
       }
@@ -130,7 +132,7 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
-        } else if (expandWithDims(input[Tensor[D]](i).size(), gradOutput.size())) {
+        } else if (canExpand(input[Tensor[D]](i).size(), gradOutput.size())) {
         gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
           sumAlongDims(input[Tensor[D]](i), gradOutput))
         } else {
