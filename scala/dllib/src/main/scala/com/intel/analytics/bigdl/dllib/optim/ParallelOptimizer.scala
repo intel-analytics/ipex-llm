@@ -16,33 +16,31 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.nn.{Container, Graph, Module, Sequential, Utils}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import java.io.{File, FilenameFilter}
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.mkldnn.MklDnnContainer
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.nn.{Container, Utils}
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import org.apache.commons.lang.exception.ExceptionUtils
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.{Module, _}
+import java.io.{File, FilenameFilter}
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
-import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
-
+import org.apache.spark.rdd.RDD
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.reflect.{ClassTag, classTag}
 
 object ParallelOptimizer extends AbstractOptimizer {
+
   import Optimizer._
 
   val logger: Logger = Logger.getLogger(getClass)
@@ -90,7 +88,7 @@ object ParallelOptimizer extends AbstractOptimizer {
     var lastEpochTime = 0L
 
     // driverState is needed to prevent serializing the whole optimizer
-    optimMethods.values.foreach{ optimMethod =>
+    optimMethods.values.foreach { optimMethod =>
       if (!optimMethod.state.contains("epoch")) optimMethod.state.update("epoch", 1)
       if (!optimMethod.state.contains("neval")) optimMethod.state.update("neval", 1)
       if (!optimMethod.state.contains("Loss")) {
@@ -172,7 +170,7 @@ object ParallelOptimizer extends AbstractOptimizer {
           var count = 0
           var finishedThreadSize = 0
           val cached = modelIter.next()
-         // val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
+          // val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
           var miniBatch: MiniBatch[T] = null
           while (count < iterationPerTime) {
             val syWStart = System.nanoTime()
@@ -211,13 +209,13 @@ object ParallelOptimizer extends AbstractOptimizer {
               lossSum += lossArray(finishedThreads(i))
               i += 1
             }
-            count +=1
+            count += 1
           }
           val end = System.nanoTime()
           wallClockTime += end - start
           Iterator.single(finishedThreadSize, lossSum, recordsNum)
         }
-      }.reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
+        }.reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
 
       dropModelNumBatch += (driverSubModelNum - numFinishedModelUpdates)
 
@@ -228,7 +226,7 @@ object ParallelOptimizer extends AbstractOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         driverState("Loss") = localLossSum / numFinishedModelUpdates
-        optimMethods.foreach{ v =>
+        optimMethods.foreach { v =>
           v._2.updateHyperParameter()
         }
 
@@ -239,7 +237,8 @@ object ParallelOptimizer extends AbstractOptimizer {
           driverState[Int]("neval"), wallClockTime)
         logger.info(s"${_header} Trained ${localRecordsNum} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}.")
+            driverState("Loss")
+          }.")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
@@ -253,7 +252,7 @@ object ParallelOptimizer extends AbstractOptimizer {
 
           val k = (dropPercentage * computeThresholdbatchSize * driverSubModelNum).toInt
           if (k > dropModelNumBatch) {
-            threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1,
+            threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length - 1,
               k - dropModelNumBatch)
           } else {
             threshold = (threshold * 1.01).toLong
@@ -464,7 +463,7 @@ object ParallelOptimizer extends AbstractOptimizer {
     models
   }
 
-  private def getExecutionOrder[T: ClassTag](module : Module[T]): ArrayBuffer[Module[T]] = {
+  private def getExecutionOrder[T: ClassTag](module: Module[T]): ArrayBuffer[Module[T]] = {
     val res = new ArrayBuffer[Module[T]]
     if (module.isInstanceOf[Container[_, _, T]]) {
       val subModules = module.asInstanceOf[Container[_, _, T]].modules
@@ -480,7 +479,7 @@ object ParallelOptimizer extends AbstractOptimizer {
   }
 
   private def setDistriPartitionsynchronizer[T: ClassTag](model: Module[T],
-     parameterSynchronizer: DistriParameterSynchronizer[T],
+    parameterSynchronizer: DistriParameterSynchronizer[T],
     barrierLayers: mutable.Map[Int, Int], slices: Int): Unit = {
     val globalWeights = model.getParameters()._1
     val globalGrads = model.getParameters()._2
@@ -529,9 +528,9 @@ object ParallelOptimizer extends AbstractOptimizer {
    * @param trainingModel the model is trained by optimizer
    * @return trained model
    */
-   override protected def getModel[T: ClassTag](
+  override protected def getModel[T: ClassTag](
     models: RDD[Cache[T]],
-    parameters: Map[String, AllReduceParameter[T]],
+    parameters: AllReduceParameter[T],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val extraState = models.map(_.localModels.head.getExtraParameter()).first()
@@ -577,11 +576,11 @@ object ParallelOptimizer extends AbstractOptimizer {
  * @param _dataset train dataset
  * @param _criterion loss function
  */
-class ParallelOptimizer[T: ClassTag] (
+class ParallelOptimizer[T: ClassTag](
   _model: Module[T],
   _dataset: DistributedDataSet[MiniBatch[T]],
   _criterion: Criterion[T]
- )(implicit ev: TensorNumeric[T])
+)(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     _model, _dataset, _criterion) {
   val metrics = new Metrics
@@ -600,7 +599,7 @@ class ParallelOptimizer[T: ClassTag] (
    * This method will be called at the end of optimize. You need not call it if optimize succeed.
    * If the optimize fails, you may call it before next optimize.
    */
-  def clearState() : Unit = {
+  def clearState(): Unit = {
     ParallelOptimizer.clearState(models)
   }
 
@@ -621,7 +620,7 @@ class ParallelOptimizer[T: ClassTag] (
   override def setTrainData(sampleRDD: RDD[Sample[T]],
     batchSize: Int,
     featurePaddingParam: PaddingParam[T] = null,
-    labelPaddingParam: PaddingParam[T] = null) : this.type = {
+    labelPaddingParam: PaddingParam[T] = null): this.type = {
     val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
     val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
     this.dataset = ParallelOptimizer.setTrainData(sampleRDD, batchSize,
@@ -781,7 +780,7 @@ class ParallelOptimizer[T: ClassTag] (
 
     var lastMod = Long.MinValue
     var choice: String = null
-    files.map {file =>
+    files.map { file =>
       if (file.lastModified() > lastMod) {
         choice = file.getPath;
         lastMod = file.lastModified();
