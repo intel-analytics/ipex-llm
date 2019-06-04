@@ -58,6 +58,7 @@ class RNNSpec extends FlatSpec with Matchers{
       .add(Input(input.size(), Memory.Format.tnc))
       .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
         initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnLSTM1.evaluate()
     mkldnnLSTM1.compile(InferencePhase)
     val mkldnn_output1 = mkldnnLSTM1.forward(input)
     println("MKLDNN output LSTM Uni Left2Right \n" + mkldnn_output1)
@@ -67,6 +68,7 @@ class RNNSpec extends FlatSpec with Matchers{
       .add(Input(input.size(), Memory.Format.tnc))
       .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
         initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnLSTM2.evaluate()
     mkldnnLSTM2.compile(InferencePhase)
     val mkldnn_output2 = mkldnnLSTM2.forward(input)
     println("MKLDNN output LSTM Uni Right2Left \n" + mkldnn_output2)
@@ -169,6 +171,7 @@ class RNNSpec extends FlatSpec with Matchers{
       .add(Input(input.size(), Memory.Format.tnc))
       .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
           initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnLSTM.evaluate()
     mkldnnLSTM.compile(InferencePhase)
     val mkldnn_output = mkldnnLSTM.forward(input)
     println("MKLDNN output LSTM Bi Concat \n" + mkldnn_output)
@@ -278,6 +281,7 @@ class RNNSpec extends FlatSpec with Matchers{
       .add(Input(input.size(), Memory.Format.tnc))
       .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
         initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnLSTM.evaluate()
     mkldnnLSTM.compile(InferencePhase)
     val mkldnn_output = mkldnnLSTM.forward(input)
     println("MKLDNN output LSTM Bi Sum \n" + mkldnn_output)
@@ -387,6 +391,7 @@ class RNNSpec extends FlatSpec with Matchers{
       .add(RNN(AlgKind.VanillaLstm, commonSize, commonSize, f, direction,
         initWeight = initWeight, initWeightIter = initWeightIter,
         initBias = initBias, layers = common_n_layers))
+    mkldnnLSTM.evaluate()
     mkldnnLSTM.compile(InferencePhase)
     val output = mkldnnLSTM.forward(input)
     println("MKLDNN output LSTM Uni Multilayers Left2Right \n" + output)
