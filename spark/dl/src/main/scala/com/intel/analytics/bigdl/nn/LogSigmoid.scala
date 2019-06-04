@@ -39,7 +39,7 @@ class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
     output.resizeAs(input)
     buffer.resizeAs(input)
 
-    // Todo: Replace apply to get a better performance
+    // TODO: Replace apply to get a better performance
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
         data3: Array[T], offset3: Int): Unit = {
@@ -59,7 +59,7 @@ class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
     gradInput
       .resizeAs(buffer)
 
-    // Todo: Replace apply to get a better performance
+    // TODO: Replace apply to get a better performance
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
         data3: Array[T], offset3: Int): Unit = {
