@@ -50,7 +50,7 @@ class RNN(
   @transient private var src_iter_MD: Long = _
   @transient private var weights_layer_MD: Long = _
   @transient private var weights_iter_MD: Long = _
-  @transient private var bias_MD: Long = _
+  @transient private var bis_MD: Long = _
   @transient private var dist_layer_MD: Long = _
   @transient private var dist_iter_MD: Long = _
 
@@ -149,13 +149,15 @@ class RNN(
   }
 
   private def initMemoryDescs(inputs: Array[MemoryData]) = {
-    val(inputShape, inputLayout) = inputs(0).layout match {
-      case Memory.Format.tnc => /* tnc */
-        (inputs(0).shape, Memory.Format.tnc)
-      case _ =>
-        throw new UnsupportedOperationException("Not support such input format")
-    }
-
+    // TODO: The default format of input is TNC
+    /**
+      * Input format check is not done here. The default format of input is TNC.
+      * Batch size of input is needed by creating memory descriptors of src iter and dst iter.
+      * Step size of input is needed by creating memory descriptor of dst layer.
+      * By default, batch size of input is the second element of inputShape
+      * and step size is the first element of inputShape.
+      */
+    val inputShape = inputs(0).shape
     direction match {
       case Direction.UnidirectionalLeft2Right
            | Direction.UnidirectionalRight2Left =>
@@ -164,7 +166,7 @@ class RNN(
         val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
 
         val inputShape_iter = Array(common_n_layers, 1, nstates,
-            inputs(0).shape(1), hiddenSize) /* ldsnc */
+          inputShape(1), hiddenSize) /* ldsnc */
         val weightShape_iter = weight_i.size() /* ldigo */
         val outputShape_iter = inputShape_iter /* ldsnc */
 
@@ -173,15 +175,15 @@ class RNN(
         val wei_layer = NativeData(weightShape, Memory.Format.any)
         val wei_iter = NativeData(weightShape_iter, Memory.Format.any)
         val bis = NativeData(biasShape, Memory.Format.any)
-        val dst = NativeData(outputShape, Memory.Format.any)
+        val dst_layer = NativeData(outputShape, Memory.Format.any)
         val dst_iter = NativeData(outputShape_iter, Memory.Format.any)
 
         src_layer_MD = src_layer.getMemoryDescription()
         src_iter_MD = src_iter.getMemoryDescription()
         weights_layer_MD = wei_layer.getMemoryDescription()
         weights_iter_MD = wei_iter.getMemoryDescription()
-        bias_MD = bis.getMemoryDescription()
-        dist_layer_MD = dst.getMemoryDescription()
+        bis_MD = bis.getMemoryDescription()
+        dist_layer_MD = dst_layer.getMemoryDescription()
         dist_iter_MD = dst_iter.getMemoryDescription()
 
         src_i = new TensorMMap(inputShape_iter)
@@ -195,7 +197,7 @@ class RNN(
         val outputShape = Array(inputShape(0), inputShape(1), 2 * hiddenSize) /* tnc */
 
         val inputShape_iter = Array(common_n_layers, 2, nstates,
-            inputs(0).shape(1), hiddenSize) /* ldsnc */
+          inputShape(1), hiddenSize) /* ldsnc */
         val weightShape_iter = weight_i.size() /* ldigo */
         val outputShape_iter = inputShape_iter /* ldsnc */
 
@@ -204,15 +206,15 @@ class RNN(
         val wei_layer = NativeData(weightShape, Memory.Format.any)
         val wei_iter = NativeData(weightShape_iter, Memory.Format.any)
         val bis = NativeData(biasShape, Memory.Format.any)
-        val dst = NativeData(outputShape, Memory.Format.any)
+        val dst_layer = NativeData(outputShape, Memory.Format.any)
         val dst_iter = NativeData(outputShape_iter, Memory.Format.any)
 
         src_layer_MD = src_layer.getMemoryDescription()
         src_iter_MD = src_iter.getMemoryDescription()
         weights_layer_MD = wei_layer.getMemoryDescription()
         weights_iter_MD = wei_iter.getMemoryDescription()
-        bias_MD = bis.getMemoryDescription()
-        dist_layer_MD = dst.getMemoryDescription()
+        bis_MD = bis.getMemoryDescription()
+        dist_layer_MD = dst_layer.getMemoryDescription()
         dist_iter_MD = dst_iter.getMemoryDescription()
 
         /** TODO: user-defined initial hidden state is not supported currently.
@@ -229,7 +231,7 @@ class RNN(
         val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
 
         val inputShape_iter = Array(common_n_layers, 2, nstates,
-          inputs(0).shape(1), hiddenSize) /* ldsnc */
+          inputShape(1), hiddenSize) /* ldsnc */
         val weightShape_iter = weight_i.size() /* ldigo */
         val outputShape_iter = inputShape_iter /* ldsnc */
 
@@ -238,15 +240,15 @@ class RNN(
         val wei_layer = NativeData(weightShape, Memory.Format.any)
         val wei_iter = NativeData(weightShape_iter, Memory.Format.any)
         val bis = NativeData(biasShape, Memory.Format.any)
-        val dst = NativeData(outputShape, Memory.Format.any)
+        val dst_layer = NativeData(outputShape, Memory.Format.any)
         val dst_iter = NativeData(outputShape_iter, Memory.Format.any)
 
         src_layer_MD = src_layer.getMemoryDescription()
         src_iter_MD = src_iter.getMemoryDescription()
         weights_layer_MD = wei_layer.getMemoryDescription()
         weights_iter_MD = wei_iter.getMemoryDescription()
-        bias_MD = bis.getMemoryDescription()
-        dist_layer_MD = dst.getMemoryDescription()
+        bis_MD = bis.getMemoryDescription()
+        dist_layer_MD = dst_layer.getMemoryDescription()
         dist_iter_MD = dst_iter.getMemoryDescription()
 
         src_i = new TensorMMap(inputShape_iter)
@@ -274,7 +276,7 @@ class RNN(
     initMemoryDescs(inputs)
 
     val description = MklDnn.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,
-      src_iter_MD, weights_layer_MD, weights_iter_MD, bias_MD, dist_layer_MD, dist_iter_MD)
+      src_iter_MD, weights_layer_MD, weights_iter_MD, bis_MD, dist_layer_MD, dist_iter_MD)
 
     fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
 
