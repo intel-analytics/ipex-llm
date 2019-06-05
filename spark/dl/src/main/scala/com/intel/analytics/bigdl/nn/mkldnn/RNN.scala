@@ -70,14 +70,10 @@ class RNN(
   private[mkldnn] var dst_i: TensorMMap = _
 
   if(layers > 1) {
-    if (inputSize != hiddenSize) {
-      println("inputSize = " + inputSize)
-      println("hiddenSize = " + hiddenSize)
-    }
-
     require(inputSize == hiddenSize,
-      "If layers of LSTM is more than 1," +
-        " the input size and the hidden size should equal")
+      "If layers of LSTM is more than 1, the input size and the hidden size should equal.\n"
+      + "inputSize: " + inputSize + '\n'
+      + "hiddenSize: " + hiddenSize)
   }
 
   mode match {
@@ -85,7 +81,7 @@ class RNN(
       ngates = 4
       nstates = 2
     case _ =>
-      throw new UnsupportedOperationException("Support RNN Cell types: LSTM")
+      throw new UnsupportedOperationException("Not support such RNN Cell. Cell type: " + mode)
   }
 
   direction match {
@@ -104,7 +100,8 @@ class RNN(
       bias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
 
     case Direction.BidirectionalConcat =>
-      require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers")
+      require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers. " +
+        "layers = " + layers)
 
       weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
       weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
@@ -151,13 +148,20 @@ class RNN(
   private def initMemoryDescs(inputs: Array[MemoryData]) = {
     // TODO: The default format of input is TNC
     /**
-      * Input format check is not done here. The default format of input is TNC.
+      * The default format of input is TNC.
       * Batch size of input is needed by creating memory descriptors of src iter and dst iter.
       * Step size of input is needed by creating memory descriptor of dst layer.
       * By default, batch size of input is the second element of inputShape
       * and step size is the first element of inputShape.
       */
-    val inputShape = inputs(0).shape
+    val(inputShape, inputLayout) = inputs(0).layout match {
+      case Memory.Format.tnc => /* tnc */
+        (inputs(0).shape, Memory.Format.tnc)
+      case _ =>
+        throw new UnsupportedOperationException("Not support such input format. " +
+          "The input format is: " + inputs(0).layout)
+    }
+
     direction match {
       case Direction.UnidirectionalLeft2Right
            | Direction.UnidirectionalRight2Left =>
@@ -270,7 +274,8 @@ class RNN(
     val rnnCellDesc = mode match {
       case AlgKind.VanillaLstm =>
         MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
-      case _ => throw new UnsupportedOperationException("Not support such cell")
+      case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
+        "Cell type: " + mode)
     }
 
     initMemoryDescs(inputs)
@@ -366,7 +371,7 @@ class RNN(
 
   override def release(): Unit = {
     super.release()
-    List(weight, bias, weight_i).foreach(_.release())
+    List(weight, bias, weight_i, src_i, dst_i).foreach(_.release())
   }
 }
 
