@@ -40,6 +40,7 @@ with open(property_path) as f:
 
 
 class TestInferenceModel(ZooTestCase):
+
     def test_load_model(self):
         model = InferenceModel(3)
         model.load(os.path.join(resource_path, "models/bigdl/bigdl_lenet.model"))
@@ -99,6 +100,7 @@ class TestInferenceModel(ZooTestCase):
             mean_values=[123.68, 116.78, 103.94],
             scale=1)
         print(model)
+        input_data = np.random.random([4, 1, 224, 224, 3])
         s3url = "https://s3-ap-southeast-1.amazonaws.com/"
         var_url = s3url + "analytics-zoo-models/openvino/val_bmp_32.tar"
         lib_url = s3url + "analytics-zoo-models/openvino/opencv_4.0.0_ubuntu_lib.tar"
@@ -128,6 +130,7 @@ class TestInferenceModel(ZooTestCase):
             subset=32,
             opencv_lib_path=opencv_lib_path)
         print(model2)
+        model2.predict_int8(input_data)
 
 if __name__ == "__main__":
     pytest.main([__file__])
