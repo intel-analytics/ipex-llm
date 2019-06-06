@@ -231,7 +231,7 @@ predict_output = model.predict(predict_input)
 
 Do prediction with int8 optimized model. Powered by [VNNI](https://en.wikichip.org/wiki/x86/avx512vnni) and [Intel Deep Learning Boost](https://www.intel.ai/intel-deep-learning-boost/). Currently, this API is only for OpenVINO. For Analytics Zoo model, int8 optimized model can directly make prediction with `predict` method.
 
-To load an OpenVINO int8 optimized model from TensorFlow, we build `loadTFAsCalibratedOpenVINO` methods with 4 more parameters than `loadOpenVINOModelForTF`.
+To load an OpenVINO int8 optimized model from TensorFlow, we build `loadTFAsCalibratedOpenVINO` methods with 4 more parameters than `loadOpenVINOModelForTF`. Note that in this step, we need to prepare `validation images` and `OpenCV 4.0 libs` for int8 optimization. For more details, please refer to [this example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/vnni/openvino).
 
 * `networkType`: String. Type of an inferred network, "C" to calibrate Classification, "OD" to calibrate Object Detection, "RawC" to collect only statistics for Classification, "RawOD" to collect only statistics for Object Detection.
 * `validationFilePath`: String. Path to a file with validation images path and target labels.
@@ -248,6 +248,12 @@ List<List<JTensor>> predictOutput = model.predictInt8(predictInput);
 
 ```scala
 val predictOutput = model.doPredictInt8(predictInput)
+```
+
+**Python**
+
+```python
+predict_output = model.predict_int8(predict_input)
 ```
 
 ## **Supportive classes**
