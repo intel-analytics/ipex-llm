@@ -35,6 +35,11 @@ import scala.collection.JavaConverters._
 import scala.io.Source
 import scala.reflect.ClassTag
 import scala.reflect.io.Path
+import scala.collection.mutable.ListBuffer
+import java.util.ArrayList
+import java.util.concurrent.{CopyOnWriteArrayList, TimeUnit}
+
+import org.apache.log4j.{Level, Logger}
 
 object PythonZooNet {
 
@@ -135,6 +140,45 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                         batchSize: Int = 32): TFOptimizer = {
     new TFOptimizer(modelPath, optimMethod,
       toJSample(x).asInstanceOf[RDD[JSample[Float]]], batchSize)
+  }
+
+  val processToBeKill = new CopyOnWriteArrayList[String]()
+  registerKiller()
+
+  private def killPids(killingList: JList[String], killCommand: String): Unit = {
+    try {
+      val iter = killingList.iterator()
+      while(iter.hasNext) {
+        val pid = iter.next()
+        println("JVM is stopping process: " +  pid)
+        val process = Runtime.getRuntime().exec(killCommand + pid)
+        process.waitFor(2, TimeUnit.SECONDS)
+        if (process.exitValue() == 0) {
+          iter.remove()
+        }
+      }
+    } catch {
+      case e : Exception =>
+    }
+  }
+
+  private def registerKiller(): Unit = {
+    Logger.getLogger("py4j.reflection.ReflectionEngine").setLevel(Level.ERROR)
+    Logger.getLogger("py4j.GatewayConnection").setLevel(Level.ERROR)
+    Runtime.getRuntime().addShutdownHook(new Thread {
+          override def run(): Unit = {
+            // Give it a chance to be gracefully killed
+            killPids(processToBeKill, "kill ")
+            if (!processToBeKill.isEmpty) {
+              Thread.sleep(2000)
+              killPids(processToBeKill, "kill -9")
+            }
+          }
+      })
+  }
+
+  def jvmGuardRegisterPids(pids: ArrayList[Integer]): Unit = {
+    pids.asScala.foreach(pid => processToBeKill.add(pid + ""))
   }
 
 }
