@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, T}
+import com.intel.analytics.bigdl.utils.{Node, ReflectionUtils, T}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
