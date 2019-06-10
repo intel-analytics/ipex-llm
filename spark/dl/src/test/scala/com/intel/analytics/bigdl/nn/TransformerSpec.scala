@@ -206,7 +206,8 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     val reluDropout = 1.0f
     val transformer = new Transformer[Float](vocabSize,
       hiddenSize, numHeads, filterSize, num_hidden_layers,
-      postprocessDropout, attentionDropout, reluDropout, withShareWeightsLinear= true, transformerType = Translation)
+      postprocessDropout, attentionDropout, reluDropout, withShareWeightsLinear = true,
+      transformerType = Translation)
 
     val attention0 = transformer.model("encode_self_attention_0/self_attention").get
     val ffn0 = transformer.model("encode_ffn_0/ffn").get

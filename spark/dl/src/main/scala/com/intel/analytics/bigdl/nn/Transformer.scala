@@ -44,6 +44,9 @@ import scala.reflect.runtime._
  * @param embeddingDropout
  * @param attentionDropout
  * @param ffnDropout
+ * @param paddingValue padding value for word embedding, default 0, which means no padding.
+ * @param withShareWeightsLinear whether to add linear that sharing weights with embedding layer.
+ * @param transformerType transformer type, support LanguageModel and Translation.
  * @tparam T The numeric type in this module parameters.
  */
 class Transformer[T: ClassTag](
@@ -128,10 +131,7 @@ class Transformer[T: ClassTag](
     // applying dropout.
     val position = new PositionEncode().inputs(inputs)
     val encoderInput = CAddTable().inputs(inputs, position)
-    val encoderInputDrop = if (train) {
-      val postDropOut = Dropout(1- embeddingDropout)
-      postDropOut.inputs(encoderInput)
-    } else encoderInput
+    val encoderInputDrop = Dropout(1- embeddingDropout).inputs(encoderInput)
 
     block(numHiddenlayers, encoderInputDrop, attentionBias, blockType = "encode")
   }
@@ -142,11 +142,7 @@ class Transformer[T: ClassTag](
     val decoderInput = new PositionEncodeWithShift().inputs(targets)
     val decoderSelfAttentionBias = new SelfAttentionMask().inputs(targets)
 
-    val decoderInputDrop = if (train) {
-      val postDropOut = Dropout(1- embeddingDropout)
-      postDropOut.inputs(decoderInput)
-    } else decoderInput
-
+    val decoderInputDrop = Dropout(1- embeddingDropout).inputs(decoderInput)
     block(numHiddenlayers, decoderInputDrop,
       decoderSelfAttentionBias, encoderOutput, attentionBias, blockType = "decode")
   }
@@ -241,8 +237,6 @@ object Transformer extends ModuleSerializable {
       embeddingDropout, attentionDropout, ffnDropout, paddingValue,
       withShareWeightsLinear = withShareWeightsLinear, transformerType = transformerType)
   }
-
-
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
