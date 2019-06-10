@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.nn.tf.{DecodeRawSerializer, ParseExample, Parse
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.ReflectionUtils
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 
 import scala.collection.mutable
@@ -181,20 +182,7 @@ object ModuleSerializer extends ModuleSerializable{
     groupSerializerMaps(superModuleType) = groupSerializer
   }
 
-  private[bigdl] def getCostructorMirror[T : ClassTag](cls : Class[_]):
-    universe.MethodMirror = {
-    getLock.synchronized {
-      val clsSymbol = runtimeMirror.classSymbol(cls)
-      val cm = runtimeMirror.reflectClass(clsSymbol)
-      // to make it compatible with both 2.11 and 2.10
-      val ctorCs = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR)
-      val primary: Option[universe.MethodSymbol] = ctorCs.asTerm.alternatives.collectFirst {
-        case cstor if cstor.asInstanceOf[universe.MethodSymbol].isPrimaryConstructor =>
-          cstor.asInstanceOf[universe.MethodSymbol]
-      }
-      cm.reflectConstructor(primary.get)
-    }
-  }
+
 
   private def init() : Unit = {
     initializeDeclaredTypes
@@ -204,7 +192,7 @@ object ModuleSerializer extends ModuleSerializable{
   private def initializeDeclaredTypes() : Unit = {
 
     var wrapperCls = Class.forName("com.intel.analytics.bigdl.utils.serializer.GenericTypeWrapper")
-    val fullParams = getCostructorMirror(wrapperCls).symbol.paramss
+    val fullParams = ReflectionUtils.getPrimCtorMirror(wrapperCls).symbol.paramss
     fullParams.foreach(map => {
       map.foreach(param => {
         val name = param.name.decodedName.toString

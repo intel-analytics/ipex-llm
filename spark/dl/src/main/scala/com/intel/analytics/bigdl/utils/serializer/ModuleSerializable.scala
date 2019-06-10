@@ -24,16 +24,14 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Table, Shape => BigDLShape}
+import com.intel.analytics.bigdl.utils.{ReflectionUtils, Table, Shape => BigDLShape}
 import com.intel.analytics.bigdl.utils.serializer.converters.{DataConverter, ShapeConverter, TensorConverter}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
 import com.intel.analytics.bigdl.serialization.Bigdl._
-import com.intel.analytics.bigdl.utils.intermediate.ReflectionUtils
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import scala.reflect.runtime.{currentMirror, universe}
+import scala.reflect.runtime.universe
 
 /**
  * [[ModuleSerializable]] trait inherits [[Loadable]] and [[Savable]]
@@ -108,67 +106,24 @@ trait ModuleSerializable extends Loadable with Savable{
    * @return BigDL module
    */
   protected def doLoadModule[T: ClassTag](context: DeserializeContext)
-    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val (tags, numerics) = getTypes(context)
-    val tagIter = tags.iterator
-    val numericIter = numerics.iterator
-    val evidence = scala.reflect.classTag[T]
     val model = context.bigdlModule
-    val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
     val cls = Class.forName(moduleType)
-    val constructorMirror = getCostructorMirror(cls)
-    val constructorFullParams = constructorMirror.symbol.paramss
-    val args = new Array[Object](constructorFullParams.map(_.size).sum)
-    var i = 0
 
-    val clsMirror = universe.runtimeMirror(cls.getClassLoader)
-    val clsSymbol = clsMirror.classSymbol(cls)
+    val modelAttributes = model.getAttrMap.asScala.map{
+      case (key, value) =>
+        (key, DataConverter.getAttributeValue(context, value)
+    )}.toMap
 
-    /*
-    https://www.scala-lang.org/api/2.10.7/#scala.reflect.api.Symbols$Symbol
-    this line tries to get companion object of the class;
-    through the companion, default values can be accessed by calling
-    some static methods created by scala compiler, however it does not work when
-    the class is not a case class or has not defined a companion, which in this case,
-    calling companionSymbol returns universe.NoSymbol
-    */
-    val companionSymbol = clsSymbol.companionSymbol
+    val module = ReflectionUtils.reflection(cls, modelAttributes,
+      tags, numerics)
 
-    val instanceMirror = companionSymbol match {
-      case universe.NoSymbol => null
-      case _ =>
-        val compnInst = currentMirror.reflectModule(clsSymbol.companionSymbol.asModule).instance
-        clsMirror.reflect(compnInst)
-    }
-
-    // Todo: to be replaced with ReflectionUtils.reflect
-    constructorFullParams.flatten.foreach(param => {
-      val pname = param.name.decodedName.toString
-      val ptypesig = param.typeSignature
-      if (ptypesig <:< universe.typeOf[ClassTag[_]]||
-        ptypesig.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
-        require(tagIter.hasNext, "If your module contains multiple class tags, " +
-          "do you forget to override getClassTagNumerics method")
-        args(i) = tagIter.next
-      } else if (ptypesig <:< universe.typeOf[TensorNumeric[_]]
-        || ptypesig.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
-        args(i) = numericIter.next
-      } else {
-        val pvalue = if (modelAttributes.containsKey(pname)) { // for existing parameters
-          val attrValue = modelAttributes.get(pname)
-          DataConverter.getAttributeValue(context, attrValue)
-        } else { // parameter not found, get its default value
-          ReflectionUtils.getPrimCtorDefaultParamValue(instanceMirror, param, i)
-        }
-        args(i) = pvalue
-      }
-      i += 1
-    })
-   constructorMirror.apply(args : _*).
-      asInstanceOf[AbstractModule[Activity, Activity, T]]
+    module.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
+
 
   protected def getTypes(context: DeserializeContext):
   (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
@@ -239,7 +194,7 @@ trait ModuleSerializable extends Loadable with Savable{
                                               (implicit ev: TensorNumeric[T]) : Unit = {
     val module = context.moduleData.module
     val cls = module.getClass
-    val fullParams = getCostructorMirror(cls).symbol.paramss
+    val fullParams = ReflectionUtils.getPrimCtorMirror(cls).symbol.paramss
     val constructorParams = fullParams(0)
     constructorParams.foreach(param => {
       val paramName = param.name.decodedName.toString

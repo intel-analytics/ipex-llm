@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.utils.intermediate
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.ReflectionUtils
+
 import scala.reflect.ClassTag
 
 private[bigdl] class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElement[T]]{
