@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
+import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, ReflectionUtils, T}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
