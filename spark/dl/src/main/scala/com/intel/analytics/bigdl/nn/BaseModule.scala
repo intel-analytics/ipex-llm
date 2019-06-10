@@ -46,11 +46,6 @@ private[nn] abstract class BaseModule[T: ClassTag]()(implicit ev: TensorNumeric[
     model.accGradParameters(input, gradOutput)
   }
 
-  override def backward(input: Activity, gradOutput: Activity): Activity = {
-    gradInput = model.backward(input, gradOutput)
-    gradInput
-  }
-
   override def training(): this.type = {
     train = true
     model.training()

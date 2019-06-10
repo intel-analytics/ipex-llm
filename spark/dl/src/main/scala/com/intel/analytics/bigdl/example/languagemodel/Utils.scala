@@ -50,7 +50,8 @@ object Utils {
                           numLayers: Int = 2,
                           numSteps: Int = 20,
                           overWriteCheckpoint: Boolean = false,
-                          keepProb: Float = 2.0f)
+                          keepProb: Float = 2.0f,
+                          withTransformerModel: Boolean = false)
 
   val trainParser = new OptionParser[TrainParams]("BigDL ptbModel Train Example") {
     opt[String]('f', "dataFolder")
@@ -109,5 +110,9 @@ object Utils {
     opt[Double]("keepProb")
       .text("the probability p to do dropout")
       .action((x, c) => c.copy(keepProb = x.toFloat))
+
+    opt[Boolean]("withTransformerModel")
+      .text("Use transformer model in this LM")
+      .action((x, c) => c.copy(withTransformerModel = true))
   }
 }
