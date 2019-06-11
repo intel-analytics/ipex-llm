@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, IdentityOutputShape}
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalSoftMax
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -34,19 +30,32 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  * Currently only support apply softmax normalization to the last dim.
  */
-class SoftMax[T: ClassTag](val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape))
-    with IdentityOutputShape with Net {
+private[zoo] class InternalSoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    val dim = input.dim()
+    val sizes = input.size()
+    val shift = input.max(dim)._1
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = InternalSoftMax()
-    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val shiftedInput = input.sub(shift.expand(sizes))
+    val exp = shiftedInput.exp()
+
+    val sum = exp.sum(dim)
+    output = exp.div(sum.expand(sizes))
+    output
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val dim = input.dim()
+    val sum = (output.clone().cmul(gradOutput)).sum(dim)
+    gradInput = output.clone().cmul(gradOutput - sum.expand(input.size()))
+    gradInput
   }
 }
 
-object SoftMax {
-  def apply[@specialized(Float, Double) T: ClassTag](inputShape: Shape = null)
-    (implicit ev: TensorNumeric[T]): SoftMax[T] = {
-    new SoftMax[T](inputShape)
+private[zoo] object InternalSoftMax{
+  def apply[@specialized(Float, Double) T: ClassTag]()
+    (implicit ev: TensorNumeric[T]) : InternalSoftMax[T] = {
+    new InternalSoftMax[T]()
   }
 }
