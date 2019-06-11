@@ -185,6 +185,9 @@ class TFEstimator(object):
         """
         self.gradient_clipping_norm = clip_norm
 
+    def set_optimizer(self, optimizer):
+        self.optimizer = optimizer
+
     def train(self, input_fn, steps=None):
         """Trains a model given training data `input_fn`.
 
@@ -349,6 +352,19 @@ class TFEstimator(object):
                     rdd = result.get_prediction_data()
 
                     results = tfnet.predict(rdd, result.batch_per_thread)
+
+                    # If predictions is a dict, add back the keys and results is a dict as well.
+                    if isinstance(spec.predictions, dict):
+                        # Given a list of outputs; return a dict of outputs.
+                        def zip_key(outs, keys):
+                            assert len(outs) == len(keys)
+                            res_dict = {}
+                            for out, key in zip(outs, keys):
+                                res_dict[key] = out
+                            return res_dict
+
+                        pred_keys = sorted(spec.predictions.keys())
+                        results = results.map(lambda res: zip_key(res, pred_keys))
                     return results
 
         return list(self.estimator.predict(input_fn, checkpoint_path=checkpoint_path))

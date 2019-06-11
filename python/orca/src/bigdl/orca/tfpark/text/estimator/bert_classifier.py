@@ -53,7 +53,8 @@ def _bert_classifier_model_fn(features, labels, mode, params):
 
 class BERTClassifier(BERTBaseEstimator):
     """
-    A pre-built TFEstimator that takes the hidden state of the first token to do classification.
+    A pre-built TFEstimator that takes the hidden state of the first token of BERT
+    to do classification.
 
     :param num_classes: Positive int. The number of classes to be classified.
     :param bert_config_file: The path to the json file for BERT configurations.

@@ -16,3 +16,5 @@
 
 from .bert_base import *
 from .bert_classifier import *
+from .bert_squad import *
+from .bert_ner import *
