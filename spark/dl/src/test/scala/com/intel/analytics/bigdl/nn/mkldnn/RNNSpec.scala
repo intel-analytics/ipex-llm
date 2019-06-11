@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import org.scalatest.{FlatSpec, Matchers}
@@ -25,9 +23,6 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-
-import scala.util.Random
 
 class RNNSpec extends FlatSpec with Matchers{
   "LSTM UnidirectionalInference updateOutput" should "work correctly" in {
@@ -467,25 +462,4 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(Tools.dense(output).asInstanceOf[Tensor[Float]],
       blas_output) should be(true)
   }
-
-//  "test" should "" in {
-//    val test = new RNNSerialTest()
-//    test.test()
-//  }
 }
-
-// class RNNSerialTest extends ModuleSerializationTest {
-//  override def test(): Unit = {
-//    val input = Tensor[Float](Array(5, 1, 6)).apply1(_ => Random.nextFloat())
-//    val lstm = RNN(AlgKind.VanillaLstm, 6, 4,
-//      AlgKind.EltwiseTanh, Direction.UnidirectionalLeft2Right).setName("lstm")
-//    val inputFormat = HeapData(Array(5, 1, 6), Memory.Format.tnc)
-//    lstm.evaluate()
-//    lstm.setRuntime(new MklDnnRuntime)
-//    lstm.initFwdPrimitives(Array(inputFormat), InferencePhase)
-//
-//    val hashcode = lstm.getClass
-//    val name = lstm.getName()
-//    runSerializationTest(lstm, input, lstm.getClass)
-//  }
-// }
