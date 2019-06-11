@@ -7,7 +7,7 @@ when define some complex model.
 ## **Define a simple model**
 Suppose we want to define a model with three layers
 ```
-Linear -> Sigmoid -> Softmax
+Linear -> Sigmoid -> SoftMax
 ```
 
 You can write code like this
@@ -26,7 +26,7 @@ val model = Graph(Array(linear, sigmoid), Array(softmax))
 ```python
 linear = Linear(...)()
 sigmoid = Sigmoid()(linear)
-softmax = Softmax()(sigmoid)
+softmax = SoftMax()(sigmoid)
 model = Model([linear], [softmax])
 ```
 
@@ -35,7 +35,7 @@ edge connecting its input and output
 
 In the above code, first we create an input node named as linear by using
 the Linear layer, then connect it to the sigmoid node with a Sigmoid
-layer, then connect the sigmoid node to the softmax node with a Softmax layer.
+layer, then connect the sigmoid node to the softmax node with a SoftMax layer.
 
 After defined the graph, we create the model by passing in the input nodes
 and output nodes.
