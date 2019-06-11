@@ -102,10 +102,11 @@ sealed trait MemoryData extends Serializable {
   }
 
   private def checkConsistency(shape: Array[Int], layout: Int): Unit = {
-    // TODO current only handle the 4-D and 2-D shape
-    val isConsistency = if (shape.length == 4) layout != Memory.Format.nc
-    else {
-      true
+    val isConsistency = shape.length match {
+      case 1 => layout == Memory.Format.x
+      case 2 => layout == Memory.Format.nc
+      case 3 | 4 | 5 => layout != Memory.Format.nc || layout != Memory.Format.x
+      case _ => false
     }
 
     require(isConsistency,
