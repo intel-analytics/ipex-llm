@@ -28,8 +28,9 @@ import scala.collection.mutable.ArrayBuffer
  * @param hiddenSize : the size of hidden state
  * @param f          : the type of output activation function
  *                   (AlgKind.EltwiseTanh or AlgKind.EltwiseRelu)
- * @param direction  : the direction to run LSTM
+ * @param direction  : the direction to run RNN
  *                   (e.g. Direction.UnidirectionalLeft2Right or Direction.BidirectionalConcat)
+ * @param layers     : the number of RNN layers
  */
 
 class RNN(
@@ -46,18 +47,18 @@ class RNN(
   private val initWeightIter: Tensor[Float] = null,
   private val initBias: Tensor[Float] = null
 ) extends MklDnnLayer with Initializable {
-  @transient private var src_layer_MD: Long = _
-  @transient private var src_iter_MD: Long = _
-  @transient private var weights_layer_MD: Long = _
-  @transient private var weights_iter_MD: Long = _
-  @transient private var bis_MD: Long = _
-  @transient private var dist_layer_MD: Long = _
-  @transient private var dist_iter_MD: Long = _
+  private var src_layer_MD: Long = _
+  private var src_iter_MD: Long = _
+  private var weights_layer_MD: Long = _
+  private var weights_iter_MD: Long = _
+  private var bis_MD: Long = _
+  private var dist_layer_MD: Long = _
+  private var dist_iter_MD: Long = _
 
-  @transient private var fwdPD: Long = _
+  private var fwdPD: Long = _
 
-  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
-  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  private var updateOutputMemoryPrimitives: Array[Long] = _
+  private var updateOutputTensors: Array[Tensor[Float]] = _
 
   private val common_n_layers: Int = layers
   private var ngates: Int = _
@@ -89,12 +90,12 @@ class RNN(
          | Direction.UnidirectionalRight2Left =>
 
       /**
-        * Gate order matching between MKLDNN LSTM and nn/LSTM:
-        * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
-        * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
-        * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
-        * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
-        */
+       * Gate order matching between MKLDNN LSTM and nn/LSTM:
+       * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+       * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+       * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+       * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+       */
       weight = new TensorMMap(Array(common_n_layers, 1, inputSize, ngates, hiddenSize))
       weight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, ngates, hiddenSize))
       bias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
@@ -110,8 +111,8 @@ class RNN(
     case Direction.BidirectionalSum =>
 
       /** TODO: Multi-layer Bidirectional LSTM is available in MKLDNN,
-        * but it is not supported in current version BigDL BLAS.
-        */
+       * but it is not supported in current version BigDL BLAS.
+       */
 
       weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
       weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
@@ -148,12 +149,12 @@ class RNN(
   private def initMemoryDescs(inputs: Array[MemoryData]) = {
     // TODO: The default format of input is TNC
     /**
-      * The default format of input is TNC.
-      * Batch size of input is needed by creating memory descriptors of src iter and dst iter.
-      * Step size of input is needed by creating memory descriptor of dst layer.
-      * By default, batch size of input is the second element of inputShape
-      * and step size is the first element of inputShape.
-      */
+     * The default format of input is TNC.
+     * Batch size of input is needed by creating memory descriptors of src iter and dst iter.
+     * Step size of input is needed by creating memory descriptor of dst layer.
+     * By default, batch size of input is the second element of inputShape
+     * and step size is the first element of inputShape.
+     */
     val(inputShape, inputLayout) = inputs(0).layout match {
       case Memory.Format.tnc => /* tnc */
         (inputs(0).shape, Memory.Format.tnc)
@@ -222,8 +223,8 @@ class RNN(
         dist_iter_MD = dst_iter.getMemoryDescription()
 
         /** TODO: user-defined initial hidden state is not supported currently.
-          * The default initial hidden state is all zero.
-          */
+         * The default initial hidden state is all zero.
+         */
         src_i = new TensorMMap(inputShape_iter)
         src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
         dst_i = new TensorMMap(outputShape_iter)
