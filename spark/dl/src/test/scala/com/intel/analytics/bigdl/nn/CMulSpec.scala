@@ -67,7 +67,7 @@ class CMulSpec extends FlatSpec with Matchers {
     layer2.gradWeight should be (layer1.gradWeight.mul(0.5))
   }
 
-  "CMUl" should "work good on batch input" in {
+  "CMUl" should "works well on batch input" in {
     val model = nn.CMul[Float](Array(1, 64, 1, 1))
     val model2 = model.cloneModule()
 

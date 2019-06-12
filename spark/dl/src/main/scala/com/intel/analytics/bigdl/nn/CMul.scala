@@ -82,7 +82,7 @@ class CMul[T: ClassTag](
   }
 
   private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
-    var dimOfOutput : Int = dim
+    var outputDim : Int = dim
     if (expand.dim() > output.dim()) {
       val multiplyDimSize = expand.size(dim)
       var dimTemp : Int = 1
@@ -91,12 +91,12 @@ class CMul[T: ClassTag](
         require(dimTemp <= output.dim(), s"OutOfBound : " +
           s"Output does not have a dimension of $multiplyDimSize elements")
       }
-      dimOfOutput = dimTemp
+      outputDim = dimTemp
     } else {
       require(output.size(dim) == expand.size(dim), s"OutOfBound : " +
         s"Output does not have a dimension of ${expand.size(dim)} elements")
     }
-    val (innerNum, outerNum) = Utils.getInnerOuterNum(dimOfOutput, output)
+    val (innerNum, outerNum) = Utils.getInnerOuterNum(outputDim, output)
     val weightData = expand.storage().array()
     val weightOffset = expand.storageOffset() - 1
     var outer = 0
