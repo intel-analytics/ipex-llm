@@ -92,7 +92,8 @@ class RayServiceFuncGenerator(object):
         return modified_env
 
     def __init__(self, python_loc, redis_port, ray_node_cpu_cores, mkl_cores,
-                 password, object_store_memory, waitting_time_sec=6, verbose=False, env=None):
+                 password, object_store_memory, waitting_time_sec=6, verbose=False, env=None,
+                 extra_params=None):
         """object_store_memory: integer in bytes"""
         self.env = env
         self.python_loc = python_loc
@@ -103,6 +104,7 @@ class RayServiceFuncGenerator(object):
         self.ray_exec = self._get_ray_exec()
         self.object_store_memory = object_store_memory
         self.waiting_time_sec = waitting_time_sec
+        self.extra_params = extra_params
         self.verbose = verbose
         self.labels = """--resources='{"trainer": %s, "ps": %s }' """ % (1, 1)
 
@@ -115,22 +117,25 @@ class RayServiceFuncGenerator(object):
 
         return _stop
 
-    def _gen_master_command(self):
-        command = "{} start --head " \
-                  "--include-webui --redis-port {} \
-                  --redis-password {} --num-cpus {} ". \
-            format(self.ray_exec, self.redis_port, self.password, self.ray_node_cpu_cores)
+    def _enrich_command(self, command):
         if self.object_store_memory:
             command = command + "--object-store-memory {} ".format(str(self.object_store_memory))
+        if self.extra_params:
+            for pair in self.extra_params.items():
+                command = command + " --{} {} ".format(pair[0], pair[1])
         return command
+
+    def _gen_master_command(self):
+        command = "{} start --head " \
+                  "--include-webui --redis-port {} " \
+                  "--redis-password {} --num-cpus {} ". \
+            format(self.ray_exec, self.redis_port, self.password, self.ray_node_cpu_cores)
+        return self._enrich_command(command)
 
     def _get_raylet_command(self, redis_address):
         command = "{} start --redis-address {} --redis-password  {} --num-cpus {} {}  ".format(
             self.ray_exec, redis_address, self.password, self.ray_node_cpu_cores, self.labels)
-
-        if self.object_store_memory:
-            command = command + "--object-store-memory {} ".format(str(self.object_store_memory))
-        return command
+        return self._enrich_command(command)
 
     def _start_ray_node(self, command, tag, wait_before=5, wait_after=5):
         modified_env = self._prepare_env(self.mkl_cores)
@@ -180,18 +185,24 @@ class RayServiceFuncGenerator(object):
 
 class RayContext(object):
     def __init__(self, sc, redis_port=None, password="123456", object_store_memory=None,
-                 verbose=False, env=None, local_ray_node_num=2, waitting_time_sec=8):
+                 verbose=False, env=None, local_ray_node_num=2, waiting_time_sec=8,
+                 extra_params=None):
         """
-        The RayContext would init a ray cluster on top of the configuration of the SparkContext.
+        The RayContext would init a ray cluster on top of the configuration of SparkContext.
         For spark cluster mode: The number of raylets is equal to number of executors.
         For Spark local mode: The number of raylets is controlled by local_ray_node_num.
-        CPU cores for each raylet equals to spark_cores/local_ray_node_num.
+        CPU cores for each is raylet equals to spark_cores/local_ray_node_num.
         :param sc:
         :param redis_port: redis port for the "head" node.
-               The value would be randomly picked if not specified
-        :param local_ray_node_num number of raylets to be created.
+               The value would be randomly picked if not specified.
+        :param password: [optional] password for the redis.
         :param object_store_memory: Memory size for the object_store.
+        :param verbose: True for more logs.
         :param env: The environment variable dict for running Ray.
+        :param local_ray_node_num number of raylets to be created.
+        :param waiting_time_sec: Waiting time for the raylets before connecting to redis.
+        :param extra_params: key value dictionary for extra options to launch Ray.
+                             i.e extra_params={"temp-dir": "/tmp/ray2/"}
         """
         self.sc = sc
         self.stopped = False
@@ -212,7 +223,8 @@ class RayContext(object):
             object_store_memory=self._enrich_object_sotre_memory(sc, object_store_memory),
             verbose=verbose,
             env=env,
-            waitting_time_sec=waitting_time_sec)
+            waitting_time_sec=waiting_time_sec,
+            extra_params=extra_params)
         self._gather_cluster_ips()
         from bigdl.util.common import init_executor_gateway
         print("Start to launch the JVM guarding process")
