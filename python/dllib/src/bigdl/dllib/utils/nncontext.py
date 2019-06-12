@@ -52,7 +52,8 @@ def init_spark_on_yarn(hadoop_conf,
                        hadoop_user_name="root",
                        spark_yarn_archive=None,
                        spark_log_level="WARN",
-                       redirect_spark_log=True):
+                       redirect_spark_log=True,
+                       spark_conf=None):
     """
     Create a SparkContext with Zoo configuration on Yarn cluster on "Yarn-client" mode.
     You should create a conda env and install the python dependencies in that env.
@@ -72,8 +73,10 @@ def init_spark_on_yarn(hadoop_conf,
            `conda_name`, but you can also pass the path to a packed file in "tar.gz" format here.
     :param hadoop_user_name: User name for running in yarn cluster. Default value is: root
     :param spark_log_level: Log level of Spark
-    :param redirect_spark_log:
-    :return: Direct the Spark log to local file or not.
+    :param redirect_spark_log: Direct the Spark log to local file or not.
+    :param spark_conf: You can append extra spark conf here in key value format.
+                       i.e spark_conf={"spark.executor.extraJavaOptions": "-XX:+PrintGCDetails"}
+    :return: SparkContext
     """
     from zoo.ray.util.spark import SparkRunner
     sparkrunner = SparkRunner(spark_log_level=spark_log_level,
@@ -91,7 +94,8 @@ def init_spark_on_yarn(hadoop_conf,
         penv_archive=penv_archive,
         hadoop_user_name=hadoop_user_name,
         spark_yarn_archive=spark_yarn_archive,
-        jars=None)
+        jars=None,
+        spark_conf=spark_conf)
     return sc
 
 
