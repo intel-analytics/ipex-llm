@@ -30,10 +30,12 @@ sc = init_spark_on_yarn(
     executor_memory="10g",
     driver_memory="2g",
     driver_cores=4,
-    extra_executor_memory_for_ray="30g")
+    extra_executor_memory_for_ray="30g",
+    spark_conf={"hello": "world"})
 
 ray_ctx = RayContext(sc=sc,
                      object_store_memory="25g",
+                     extra_params={"temp-dir": "/tmp/hello/"},
                      env={"http_proxy": "http://child-prc.intel.com:913",
                           "http_proxys": "http://child-prc.intel.com:913"})
 ray_ctx.init()
