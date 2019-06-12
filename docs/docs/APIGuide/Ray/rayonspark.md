@@ -4,9 +4,10 @@ AnalyticsZoo has already provided a mechanism to deploy Python dependencies and 
 across yarn cluster,meaning python user would be able to run `Analytics-Zoo` or `Ray`
 in a pythonic way on yarn without `spark-submit` or installing Analytics-Zoo or Ray across all cluster nodes.
 
+
 ## Here are the steps to run RayOnSpark:
 
-1) You should install Conda first and create a conda-env named "ray36"
+1) You should install [Conda](https://docs.conda.io/projects/conda/en/latest/commands/install.html) and create a conda-env named "ray36"
 
 2) Install some essential dependencies inthe conda env
 
@@ -91,3 +92,5 @@ print([ray.get(actor.ip.remote()) for actor in actors])
 ray_ctx.stop()
 
 ```
+
+

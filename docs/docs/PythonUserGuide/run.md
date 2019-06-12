@@ -3,6 +3,7 @@ You need to first [install](install.md) analytics-zoo, either [from pip](install
 **NOTE**: Only __Python 2.7__, __Python 3.5__ and __Python 3.6__ are supported for now.
 
 ---
+
 ## **Run after pip install**
 
 **Important:**
@@ -46,6 +47,28 @@ export SPARK_DRIVER_MEMORY=20g
 ```bash
 export BIGDL_JARS=...
 export BIGDL_PACKAGES=...
+```
+
+## **Run on yarn after pip install
+
+Start python and then execute the following code:
+Caveat: You should use `init_spark_on_yarn` rather than `init_nncontext()` here.
+- Create a SparkContext on Yarn
+
+``` python
+
+from zoo import init_spark_on_yarn
+
+sc = init_spark_on_yarn(
+    hadoop_conf="path to the yarn configuration folder",
+    conda_name="zoo", # The name of the created conda-env
+    num_executor=2,
+    executor_cores=4,
+    executor_memory="8g",
+    driver_memory="2g",
+    driver_cores=4,
+    extra_executor_memory_for_ray="10g")
+
 ```
 
 ---

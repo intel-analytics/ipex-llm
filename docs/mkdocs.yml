@@ -67,6 +67,8 @@ pages:
     - Relation: APIGuide/FeatureEngineering/relation.md
     - Image: APIGuide/FeatureEngineering/image.md
     - Text: APIGuide/FeatureEngineering/text.md
+  - Ray:
+    - RayOnSpark: APIGuide/Ray/rayonspark.md
   - Models:
     - Object Detection: APIGuide/Models/object-detection.md
     - Image Classification: APIGuide/Models/image-classification.md
