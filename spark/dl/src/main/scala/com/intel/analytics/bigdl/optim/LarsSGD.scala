@@ -61,7 +61,8 @@ class LarsSGD[T: ClassTag](
   @transient
   private[bigdl] var calculatedTrust: Option[T] = None
 
-  require(trust>0.0 && trust<= 1.0, "trust for LARS should be greater than 0 and less than 1")
+  require(trust > 0.0 && trust <= 1.0,
+    s"the trust for LARS is $trust, which should be greater than 0 and less than 1")
 
   /**
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
@@ -85,7 +86,8 @@ class LarsSGD[T: ClassTag](
     val globalLr = -learningRateSchedule.currentRate * trust
 
     // rate = globalLr / scale
-    val rate = ev.divide(ev.fromType[Double](globalLr), getGradientScale(dfdx, parameter))
+    val s=getGradientScale(dfdx, parameter)
+    val rate = ev.divide(ev.fromType[Double](globalLr), s)
     // _v = momentum * _v + rate * (dfdx + weightDecay * parameter)
     _v.mul(ev.fromType[Double](momentum))
     buffer.mul(parameter, ev.fromType[Double](weightDecay)).add(dfdx).mul(rate)
@@ -100,7 +102,7 @@ class LarsSGD[T: ClassTag](
   }
 
   private[bigdl] def getGradientScale(dfdx: Tensor[T], parameter: Tensor[T]): T = {
-    val raw_scale_value = if (calculatedTrust.isDefined) {
+    val rawScaleValue = if (calculatedTrust.isDefined) {
       val ret = calculatedTrust.get
       calculatedTrust = None
       ret
@@ -113,14 +115,14 @@ class LarsSGD[T: ClassTag](
       scale.value()
     }
 
-    if (ev.isInf(raw_scale_value)) {
+    if (ev.isInf(rawScaleValue)) {
       ev.fromType[Double](10000.0)
-    } else if (ev.nearlyEqual(raw_scale_value, ev.fromType[Double](0.0), 0.0001)) {
+    } else if (ev.nearlyEqual(rawScaleValue, ev.fromType[Double](0.0), 0.0001)) {
       ev.fromType[Double](1e-4)
-    } else if (ev.isNan(raw_scale_value)) {
+    } else if (ev.isNan(rawScaleValue)) {
       ev.fromType[Double](1.0)
     } else {
-      raw_scale_value
+      rawScaleValue
     }
   }
 
@@ -198,7 +200,7 @@ object LarsSGD {
 
 
   /**
-   * Check if there is LarsSGD in optimMethods If so, return the weight decay of the first found
+   * Check if there is LarsSGD in optimMethods. If so, return the weight decay of the first found
    * LarsSGD. Else, return None
    * @param optimMethods
    * @tparam T
@@ -206,21 +208,8 @@ object LarsSGD {
    *         Or None if there is not one
    */
   def containsLarsSGD[T](optimMethods: Map[String, OptimMethod[T]]): Option[Double] = {
-    var weightDecay = 0.0
-    val exists = optimMethods.exists({ case (name, optim) =>
-      optim match {
-        case d: LarsSGD[T] =>
-          weightDecay = d.weightDecay
-          true
-        case _ =>
-          false
-      }
-    })
-    if (exists) {
-      Some(weightDecay)
-    } else {
-      None
-    }
+    optimMethods.find({ case (name, optim) => optim.isInstanceOf[LarsSGD[T]]})
+      .map({case (name, optim) => optim.asInstanceOf[LarsSGD[T]].weightDecay})
   }
 
 
