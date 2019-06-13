@@ -36,7 +36,7 @@ estimator.set_val_summary(val_summary)
 ...
 nnModel = estimator.fit(...)
 ```
-### **Generating summary in KerasAPI**  
+### **Generating summary in Keras API**  
 
 ****scala****
 ```scala
