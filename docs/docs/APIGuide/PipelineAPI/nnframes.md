@@ -339,7 +339,7 @@ nnClassifierModel = classifier.fit(df)
 ```
 User may also set validation DataFrame and validation frequency through `setValidation` method.
 Train summay and validation summary can also be configured to log the training process for
-visualization in Tensorboard.
+visualization in Tensorboard. See [Visualization](../../ProgrammingGuide/visualization.md) for the details.
 
 
 ## Make prediction on chosen data
