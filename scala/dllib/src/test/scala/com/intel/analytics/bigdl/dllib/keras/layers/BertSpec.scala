@@ -1383,26 +1383,7 @@ class BertSpec extends ZooSpecHelper {
 }
 
 class BERTSerialTest extends ModuleSerializationTest {
+  // remove the test since it's duplicate with "Bert " should "save/load be able to work"
   override def test(): Unit = {
-    val layer = BERT[Float](vocab = 100,
-      hiddenSize = 768,
-      nBlock = 12,
-      nHead = 12,
-      intermediateSize = 1024,
-      hiddenPDrop = 0.1,
-      attnPDrop = 0.1,
-      maxPositionLen = 6,
-      outputAllBlock = false)
-    val inputIds = Tensor[Float](2, 6).rand()
-    val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1),
-      Array(2, 6))
-    val positionIds = Tensor[Float](Array[Float](0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5),
-      Array(2, 6))
-    val masks = Tensor[Float](2, 1, 1, 6).fill(1.0f)
-
-    val shape = Shape(List(Shape(2, 6), Shape(2, 6), Shape(2, 6), Shape(2, 1, 1, 6)))
-    layer.build(shape)
-
-    runSerializationTest(layer, T(inputIds, segmentIds, positionIds, masks))
   }
 }
