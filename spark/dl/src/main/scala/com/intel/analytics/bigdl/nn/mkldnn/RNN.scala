@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -60,6 +60,10 @@ class RNN(
   private var updateOutputMemoryPrimitives: Array[Long] = _
   private var updateOutputTensors: Array[Tensor[Float]] = _
 
+  private var updateGradInputMemoryPrimitives: Array[Long] = _
+  private var updateGradInputTensors: Array[Tensor[Float]] = _
+
+
   private val common_n_layers: Int = layers
   private var ngates: Int = _
   private var nstates: Int = _
@@ -69,6 +73,23 @@ class RNN(
   private[mkldnn] var bias: TensorMMap = _
   private[mkldnn] var src_i: TensorMMap = _
   private[mkldnn] var dst_i: TensorMMap = _
+
+  private[mkldnn] var gradWeight: TensorMMap = _
+  private[mkldnn] var gradWeight_i: TensorMMap = _
+  private[mkldnn] var gradBias: TensorMMap = _
+  private[mkldnn] var gradsrc_i: TensorMMap = _
+  private[mkldnn] var graddst_i: TensorMMap = _
+
+  private var workSpaceFormat: MemoryData = _
+  private var workSpace : Tensor[Float] = _
+
+  @transient private lazy val reorderManager = new ReorderManager
+
+  private var weightForBackward: DnnTensor[Float] = _
+  private var weightForBackwardMemoryData: MemoryData = _
+  private var weightIterForBackward: DnnTensor[Float] = _
+  private var weightIterForBackwardMemoryData: MemoryData = _
+
 
   if(layers > 1) {
     require(inputSize == hiddenSize,
@@ -83,6 +104,13 @@ class RNN(
       nstates = 2
     case _ =>
       throw new UnsupportedOperationException("Not support such RNN Cell. Cell type: " + mode)
+  }
+
+  val rnnCellDesc = mode match {
+    case AlgKind.VanillaLstm =>
+      MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
+    case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
+      "Cell type: " + mode)
   }
 
   direction match {
@@ -100,6 +128,10 @@ class RNN(
       weight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, ngates, hiddenSize))
       bias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
 
+      gradWeight = new TensorMMap(Array(common_n_layers, 1, inputSize, ngates, hiddenSize))
+      gradWeight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, ngates, hiddenSize))
+      gradBias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
+
     case Direction.BidirectionalConcat =>
       require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers. " +
         "layers = " + layers)
@@ -107,6 +139,10 @@ class RNN(
       weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
       weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
       bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
+
+      gradWeight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
+      gradWeight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
+      gradBias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
 
     case Direction.BidirectionalSum =>
 
@@ -117,6 +153,10 @@ class RNN(
       weight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
       weight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
       bias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
+
+      gradWeight = new TensorMMap(Array(common_n_layers, 2, inputSize, ngates, hiddenSize))
+      gradWeight_i = new TensorMMap(Array(common_n_layers, 2, hiddenSize, ngates, hiddenSize))
+      gradBias = new TensorMMap(Array(common_n_layers, 2, ngates, hiddenSize))
   }
 
   {
@@ -192,9 +232,9 @@ class RNN(
         dist_iter_MD = dst_iter.getMemoryDescription()
 
         src_i = new TensorMMap(inputShape_iter)
-        src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
         dst_i = new TensorMMap(outputShape_iter)
-        dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
+        gradsrc_i = new TensorMMap(inputShape_iter)
+        graddst_i = new TensorMMap(outputShape_iter)
 
       case Direction.BidirectionalConcat =>
         val weightShape = weight.size() /* ldigo */
@@ -226,9 +266,9 @@ class RNN(
          * The default initial hidden state is all zero.
          */
         src_i = new TensorMMap(inputShape_iter)
-        src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
         dst_i = new TensorMMap(outputShape_iter)
-        dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
+        gradsrc_i = new TensorMMap(inputShape_iter)
+        graddst_i = new TensorMMap(outputShape_iter)
 
       case Direction.BidirectionalSum =>
         val weightShape = weight.size() /* ldigo */
@@ -257,9 +297,9 @@ class RNN(
         dist_iter_MD = dst_iter.getMemoryDescription()
 
         src_i = new TensorMMap(inputShape_iter)
-        src_i.dense.copy(Tensor[Float]().resize(inputShape_iter).zero())
         dst_i = new TensorMMap(outputShape_iter)
-        dst_i.dense.copy(Tensor[Float]().resize(outputShape_iter).zero())
+        gradsrc_i = new TensorMMap(inputShape_iter)
+        graddst_i = new TensorMMap(outputShape_iter)
 
       case _ => throw new UnsupportedOperationException("Not support such direction")
     }
@@ -269,14 +309,7 @@ class RNN(
     val kind = if (!isTraining()) {
       PropKind.ForwardInference
     } else {
-      throw new UnsupportedOperationException("Not support training")
-    }
-
-    val rnnCellDesc = mode match {
-      case AlgKind.VanillaLstm =>
-        MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
-      case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
-        "Cell type: " + mode)
+      PropKind.ForwardTraining
     }
 
     initMemoryDescs(inputs)
@@ -323,7 +356,20 @@ class RNN(
       realBias.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
 
-    val dsts = Array(realDst.getPrimitive(runtime), realDst_iter.getPrimitive(runtime))
+    if (isTraining()) {
+      workSpaceFormat = MemoryData.operationWant(fwdPD, Query.WorkspacePd, 0)
+      workSpace = initTensor(workSpaceFormat).asInstanceOf[Tensor[Float]]
+    }
+
+    val dsts = if (isTraining()) {
+      Array(realDst.getPrimitive(runtime),
+        realDst_iter.getPrimitive(runtime),
+        workSpaceFormat.getPrimitive(runtime))
+    }
+    else {
+      Array(realDst.getPrimitive(runtime),
+        realDst_iter.getPrimitive(runtime))
+    }
 
     val primitive = MklDnn.PrimitiveCreate2(fwdPD, srcs, indexes, srcs.length, dsts, dsts.length)
 
@@ -347,11 +393,22 @@ class RNN(
       buffer.append(bias.native)
       buffer.append(output.asInstanceOf[Tensor[Float]])
       buffer.append(dst_i.native)
+      if (isTraining()) {
+        buffer.append(workSpace)
+      }
 
       updateOutputTensors = buffer.toArray
     }
 
     updateWithNewTensor(updateOutputTensors, 0, input)
+
+    if(isTraining()) {
+      weight.sync()
+      weight_i.sync()
+      bias.sync()
+      src_i.sync()
+      dst_i.sync()
+    }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
@@ -360,11 +417,154 @@ class RNN(
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    throw new UnsupportedOperationException("Not support backward propagation")
+    val inputShape = inputFormats()(0).shape
+    val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
+
+    reorderManager.setRuntime(runtime)
+
+    val diff_src_layer = NativeData(inputShape, Memory.Format.any)
+    val diff_src_iter = NativeData(src_i.size(), Memory.Format.any)
+    val diff_weights_layer = NativeData(weight.size(), Memory.Format.any)
+    val diff_weights_iter = NativeData(weight_i.size(), Memory.Format.any)
+    val diff_bias = NativeData(bias.size(), Memory.Format.any)
+    val diff_dist_layer = NativeData(outputShape, Memory.Format.any)
+    val diff_dist_iter = NativeData(dst_i.size(), Memory.Format.any)
+
+    val diff_src_layer_MD = diff_src_layer.getMemoryDescription()
+    val diff_src_iter_MD = diff_src_iter.getMemoryDescription()
+    val diff_weights_layer_MD = diff_weights_layer.getMemoryDescription()
+    val diff_weights_iter_MD = diff_weights_iter.getMemoryDescription()
+    val diff_bis_MD = diff_bias.getMemoryDescription()
+    val diff_dist_layer_MD = diff_dist_layer.getMemoryDescription()
+    val diff_dist_iter_MD = diff_dist_iter.getMemoryDescription()
+
+    val description = MklDnn.RNNBackwardDescInit(PropKind.Backward, rnnCellDesc,
+      direction, src_layer_MD,
+      src_iter_MD, weights_layer_MD,
+      weights_iter_MD, bis_MD,
+      dist_layer_MD, dist_iter_MD,
+      diff_src_layer_MD, diff_src_iter_MD,
+      diff_weights_layer_MD, diff_weights_iter_MD,
+      diff_bis_MD, diff_dist_layer_MD,
+      diff_dist_iter_MD
+    )
+
+    val bwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPD)
+
+    val realSrc = MemoryData.operationWant(bwdPD, Query.SrcPd, 0)
+    val realSrc_iter = MemoryData.operationWant(bwdPD, Query.SrcPd, 1)
+    val realWei = MemoryData.operationWant(bwdPD, Query.WeightsPd, 0)
+    val realWei_iter = MemoryData.operationWant(bwdPD, Query.WeightsPd, 1)
+    val realBias = MemoryData.operationWant(bwdPD, Query.WeightsPd, 2)
+    val realDst = MemoryData.operationWant(bwdPD, Query.DstPd, 0)
+    val realDst_iter = MemoryData.operationWant(bwdPD, Query.DstPd, 1)
+    val realDiffDst = MemoryData.operationWant(bwdPD, Query.DiffDstPd, 0)
+    val realDiffDst_iter = MemoryData.operationWant(bwdPD, Query.DiffDstPd, 1)
+    // val workSpace = MemoryData.operationWant(bwdPD, Query.WorkspacePd, 0)
+
+    val realDiffSrc = MemoryData.operationWant(bwdPD, Query.DiffSrcPd, 0)
+    val realDiffSrc_iter = MemoryData.operationWant(bwdPD, Query.DiffSrcPd, 1)
+    val realDiffWei = MemoryData.operationWant(bwdPD, Query.DiffWeightsPd, 0)
+    val realDiffWei_iter = MemoryData.operationWant(bwdPD, Query.DiffWeightsPd, 1)
+    val realDiffBias = MemoryData.operationWant(bwdPD, Query.DiffWeightsPd, 2)
+
+    weightForBackwardMemoryData = realWei
+    reorderManager.register(weight.heapData, realWei)
+    weightForBackward = reorderManager
+      .infer(Array(weight.heapData), Array(weightForBackwardMemoryData), weight.dense)
+      .asInstanceOf[DnnTensor[Float]]
+
+    weightIterForBackwardMemoryData = realWei_iter
+    reorderManager.register(weight_i.heapData, realWei_iter)
+    weightIterForBackward = reorderManager
+      .infer(Array(weight_i.heapData), Array(weightIterForBackwardMemoryData), weight_i.dense)
+      .asInstanceOf[DnnTensor[Float]]
+
+    gradsrc_i.setMemoryData(realDiffSrc_iter, HeapData(gradsrc_i.size(), Memory.Format.ldsnc),
+      runtime)
+    graddst_i.setMemoryData(realDiffDst_iter, HeapData(graddst_i.size(), Memory.Format.ldsnc),
+      runtime)
+    gradWeight.setMemoryData(realDiffWei, HeapData(gradWeight.size(), Memory.Format.ldigo), runtime)
+    gradWeight_i.setMemoryData(realDiffWei_iter, HeapData(gradWeight_i.size(), Memory.Format.ldigo),
+      runtime)
+    gradBias.setMemoryData(realDiffBias, HeapData(gradBias.size(), Memory.Format.ldgo), runtime)
+
+
+    gradsrc_i.zero()
+    graddst_i.zero()
+    gradWeight.zero()
+    gradWeight_i.zero()
+    gradBias.zero()
+
+    val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
+      realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
+      realBias.getPrimitive(runtime), realDst.getPrimitive(runtime),
+      realDst_iter.getPrimitive(runtime), realDiffDst.getPrimitive(runtime),
+      realDiffDst_iter.getPrimitive(runtime), workSpaceFormat.getPrimitive(runtime))
+    val indexes = Array.fill(srcs.length)(0)
+
+    val dsts = Array(realDiffSrc.getPrimitive(runtime), realDiffSrc_iter.getPrimitive(runtime),
+      realDiffWei.getPrimitive(runtime), realDiffWei_iter.getPrimitive(runtime),
+      realDiffBias.getPrimitive(runtime)
+    )
+
+    val primitive = MklDnn.PrimitiveCreate2(bwdPD, srcs, indexes, srcs.length,
+      dsts, dsts.length)
+
+    updateGradInputMemoryPrimitives = srcs ++ dsts
+    updateGradInputPrimitives = Array(primitive)
+    gradInput = initTensor(realDiffSrc)
+
+    _gradInputFormats = Array(realDiffSrc)
+    _gradOutputFormats = Array(realDiffDst)
+    (_gradOutputFormats, _gradInputFormats)
+  }
+
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    if (updateGradInputTensors == null) {
+      val buffer = new ArrayBuffer[Tensor[Float]]()
+      buffer.append(input.asInstanceOf[Tensor[Float]]) // 0
+      buffer.append(src_i.native) // 1
+      buffer.append(weightForBackward) // 2
+      buffer.append(weightIterForBackward) // 3
+      buffer.append(bias.native) // 4
+      buffer.append(output.asInstanceOf[Tensor[Float]]) // 5
+      buffer.append(dst_i.native) // 6
+      buffer.append(gradOutput.asInstanceOf[Tensor[Float]]) // 7
+      buffer.append(graddst_i.native) // 8
+      buffer.append(workSpace) // TODO 9
+
+      buffer.append(gradInput.asInstanceOf[Tensor[Float]]) // 10
+      buffer.append(gradsrc_i.native) // 11
+      buffer.append(gradWeight.native) // 12
+      buffer.append(gradWeight_i.native) // 13
+      buffer.append(gradBias.native) // 14
+
+      updateGradInputTensors = buffer.toArray
+    }
+
+    updateWithNewTensor(updateGradInputTensors, 0, input)
+    updateWithNewTensor(updateGradInputTensors, 7, gradOutput)  // TODO
+
+    MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
+      updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
+
+    gradsrc_i.sync() // TODO
+    graddst_i.sync()
+    gradWeight.sync()
+    gradWeight_i.sync()
+    gradBias.sync()
+
+    gradInput
+  }
+
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    // Do nothing
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
-    (Array(weight.dense, bias.dense, weight_i.dense), Array())
+    (Array(weight.dense, bias.dense, weight_i.dense),
+      Array(gradWeight.dense, gradBias.dense, gradWeight_i.dense))
   }
 
   override def zeroGradParameters(): Unit = {
@@ -372,7 +572,8 @@ class RNN(
 
   override def release(): Unit = {
     super.release()
-    List(weight, bias, weight_i, src_i, dst_i).foreach(_.release())
+    List(weight, bias, weight_i, src_i, dst_i,
+      gradWeight, gradBias, gradWeight_i, gradsrc_i, graddst_i).foreach(_.release())
   }
 }
 
