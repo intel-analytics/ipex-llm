@@ -22,14 +22,21 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import scala.collection.JavaConverters._
 
 class OpenVINOModel(var executableNetworkReference: Long = -1,
-                    var supportive: OpenVinoInferenceSupportive)
+                    var supportive: OpenVinoInferenceSupportive,
+                    var isInt8: Boolean = false)
   extends AbstractModel with InferenceSupportive with Serializable {
 
   override def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
     val outputs = new ArrayList[JList[JTensor]]()
     inputs.asScala.map(input => {
       val tensor = input.get(0)
-      val output = supportive.predict(executableNetworkReference, tensor.getData, tensor.getShape)
+      val output = if (isInt8) {
+        supportive.predictInt8(executableNetworkReference,
+          tensor.getData, tensor.getShape)
+      } else {
+        supportive.predict(executableNetworkReference,
+          tensor.getData, tensor.getShape)
+      }
       outputs.add(Arrays.asList({
         output
       }))
@@ -49,34 +56,6 @@ class OpenVINOModel(var executableNetworkReference: Long = -1,
         (transferBatchTensorToJListOfJListOfJTensor(inputTensor, batchSize), batchSize)
     }
     val outputs = predict(inputList)
-    transferListOfActivityToActivityOfBatch(outputs, batchSize)
-  }
-
-  override def predictInt8(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    val outputs = new ArrayList[JList[JTensor]]()
-    inputs.asScala.map(input => {
-      val tensor = input.get(0)
-      val output = supportive.predictInt8(executableNetworkReference,
-        tensor.getData, tensor.getShape)
-      outputs.add(Arrays.asList({
-        output
-      }))
-    })
-    outputs
-  }
-
-  override def predictInt8(inputActivity: Activity): Activity = {
-    val (inputList, batchSize) = inputActivity.isTable match {
-      case true =>
-        val inputTable = inputActivity.toTable
-        val batchSize = inputTable.length()
-        (transferBatchTableToJListOfJListOfJTensor(inputTable, batchSize), batchSize)
-      case false =>
-        val inputTensor = inputActivity.toTensor[Float]
-        val batchSize = inputTensor.size(1)
-        (transferBatchTensorToJListOfJListOfJTensor(inputTensor, batchSize), batchSize)
-    }
-    val outputs = predictInt8(inputList)
     transferListOfActivityToActivityOfBatch(outputs, batchSize)
   }
 

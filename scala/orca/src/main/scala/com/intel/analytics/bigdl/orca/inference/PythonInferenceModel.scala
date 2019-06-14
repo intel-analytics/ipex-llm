@@ -145,13 +145,4 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
     val outputActivity = model.doPredict(inputActivity)
     activityToList(outputActivity)
   }
-
-  def inferenceModelPredictInt8(
-                             model: InferenceModel,
-                             inputs: JList[com.intel.analytics.bigdl.python.api.JTensor],
-                             inputIsTable: Boolean): JList[Object] = {
-    val inputActivity = jTensorsToActivity(inputs, inputIsTable)
-    val outputActivity = model.doPredictInt8(inputActivity)
-    activityToList(outputActivity)
-  }
 }

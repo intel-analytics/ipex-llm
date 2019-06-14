@@ -388,20 +388,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
-   * predicts int8 the inference result
-   *
-   * @param inputs the input tensor with batch
-   * @return the output tensor with batch
-   */
-  def doPredictInt8(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    timing(s"model predict for batch ${inputs.size()}") {
-      val batchSize = inputs.size()
-      require(batchSize > 0, "inputs size should > 0")
-      predictInt8(inputs)
-    }
-  }
-
-  /**
    * predicts the inference result
    *
    * @param inputActivity the input activity
@@ -410,18 +396,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   def doPredict(inputActivity: Activity): Activity = {
     timing(s"model predict for activity") {
       predict(inputActivity)
-    }
-  }
-
-  /**
-   * predicts int8 the inference result
-   *
-   * @param inputActivity the input activity
-   * @return the output activity
-   */
-  def doPredictInt8(inputActivity: Activity): Activity = {
-    timing(s"model predict for activity") {
-      predictInt8(inputActivity)
     }
   }
 
@@ -465,47 +439,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
       }
     }
   }
-
-  private def predictInt8(inputActivity: Activity): Activity = {
-    val model: AbstractModel = retrieveModel()
-    try {
-      model.predictInt8(inputActivity)
-    } catch {
-      case e: RuntimeException =>
-        throw new InferenceRuntimeException("Model doesn't support PredictInt8", e);
-    } finally {
-      model match {
-        case null =>
-        case _ =>
-          val success = modelQueue.offer(model)
-          success match {
-            case true =>
-            case false => model.release()
-          }
-      }
-    }
-  }
-
-  private def predictInt8(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    val model: AbstractModel = retrieveModel()
-    try {
-      model.predictInt8(inputs)
-    } catch {
-      case e: RuntimeException =>
-        throw new InferenceRuntimeException("Model doesn't support PredictInt8", e);
-    } finally {
-      model match {
-        case null =>
-        case _ =>
-          val success = modelQueue.offer(model)
-          success match {
-            case true =>
-            case false => model.release()
-          }
-      }
-    }
-  }
-
 
   private def retrieveModel(): AbstractModel = {
     var model: AbstractModel = null

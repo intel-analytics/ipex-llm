@@ -51,16 +51,8 @@ class FloatModel(var model: AbstractModule[Activity, Activity, Float],
     outputs
   }
 
-  override def predictInt8(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    throw new RuntimeException(s"$model does not support predictInt8")
-  }
-
   override def predict(inputActivity: Activity): Activity = {
     model.forward(inputActivity)
-  }
-
-  override def predictInt8(inputActivity: Activity): Activity = {
-    throw new RuntimeException(s"$model does not support predictInt8")
   }
 
   override def copy(num: Int): Array[AbstractModel] = {

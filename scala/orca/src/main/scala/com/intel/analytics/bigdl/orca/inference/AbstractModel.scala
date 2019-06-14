@@ -22,8 +22,6 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 trait AbstractModel {
   def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]]
   def predict(inputActivity: Activity): Activity
-  def predictInt8(inputs: JList[JList[JTensor]]): JList[JList[JTensor]]
-  def predictInt8(inputActivity: Activity): Activity
   def copy(num: Int): Array[AbstractModel]
   def release(): Unit
   def isReleased(): Boolean
