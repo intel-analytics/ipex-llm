@@ -245,17 +245,3 @@ class InferenceModel(JavaValue):
                                jinputs,
                                input_is_table)
         return KerasNet.convert_output(output)
-
-    def predict_int8(self, inputs):
-        """
-        Do predictionInt8 on inputs.
-
-        :param inputs: A numpy array or a list of numpy arrays or JTensor or a list of JTensors.
-        """
-        jinputs, input_is_table = Layer.check_input(inputs)
-        output = callBigDlFunc(self.bigdl_type,
-                               "inferenceModelPredictInt8",
-                               self.value,
-                               jinputs,
-                               input_is_table)
-        return KerasNet.convert_output(output)

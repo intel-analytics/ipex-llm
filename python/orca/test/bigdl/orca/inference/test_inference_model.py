@@ -130,7 +130,7 @@ class TestInferenceModel(ZooTestCase):
             subset=32,
             opencv_lib_path=opencv_lib_path)
         print(model2)
-        model2.predict_int8(input_data)
+        model2.predict(input_data)
 
 if __name__ == "__main__":
     pytest.main([__file__])
