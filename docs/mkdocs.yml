@@ -46,6 +46,7 @@ pages:
     - Anomaly Detection API: ProgrammingGuide/anomaly-detection.md
     - Text Matching API: ProgrammingGuide/text-matching.md
     - Sequence to Sequence API: ProgrammingGuide/seq2seq.md
+  - Visualization: ProgrammingGuide/visualization.md
   - Reference Use Cases: ProgrammingGuide/usercases-overview.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
 - White Paper:
