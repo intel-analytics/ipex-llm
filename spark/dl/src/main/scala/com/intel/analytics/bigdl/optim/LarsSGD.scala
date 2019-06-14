@@ -86,8 +86,7 @@ class LarsSGD[T: ClassTag](
     val globalLr = -learningRateSchedule.currentRate * trust
 
     // rate = globalLr / scale
-    val s=getGradientScale(dfdx, parameter)
-    val rate = ev.divide(ev.fromType[Double](globalLr), s)
+    val rate = ev.divide(ev.fromType[Double](globalLr), getGradientScale(dfdx, parameter))
     // _v = momentum * _v + rate * (dfdx + weightDecay * parameter)
     _v.mul(ev.fromType[Double](momentum))
     buffer.mul(parameter, ev.fromType[Double](weightDecay)).add(dfdx).mul(rate)
@@ -284,7 +283,7 @@ object LarsSGD {
 
 
 /**
- * Process layer-wise l2 norm
+ * Process layer-wise l2 norm to scale the gradients
  */
 private[bigdl] class LarsProcessor(paramaterSplits: Map[String, (Int, Int)],
   weightDecay: Double
