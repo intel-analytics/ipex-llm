@@ -82,11 +82,6 @@ We just need to specify the model path and optionally weight path if exists wher
 AbstractInferenceModel provides `predict` API for prediction with loaded model.
 The predict result of`AbstractInferenceModel` is a `List<List<JTensor>>` by default.
 
-**predictInt8**
-
-AbstractInferenceModel provides `predictInt8` API for prediction with loaded int8 model.
-The predictInt8 result of`AbstractInferenceModel` is a `List<List<JTensor>>` by default.
-
 ## Examples
 
 It's very easy to apply abstract inference model for inference with below code piece. You will need to write a subclass that extends AbstractinferenceModel.
