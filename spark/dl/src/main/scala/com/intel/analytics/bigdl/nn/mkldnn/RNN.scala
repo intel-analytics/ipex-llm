@@ -418,7 +418,11 @@ class RNN(
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
     val inputShape = inputFormats()(0).shape
-    val outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
+    var outputShape = Array(inputShape(0), inputShape(1), hiddenSize) /* tnc */
+
+    if (direction == Direction.BidirectionalConcat) {
+      outputShape = Array(inputShape(0), inputShape(1), 2 * hiddenSize)
+    }
 
     reorderManager.setRuntime(runtime)
 

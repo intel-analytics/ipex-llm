@@ -503,9 +503,9 @@ class RNNSpec extends FlatSpec with Matchers{
     println("MKLDNN LSTM Uni Left2Right gradInput\n" + mkldnn_gradInput)
 
     /**
-      * Reorder to formats of BLAS.
-      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
-      */
+     * Reorder to formats of BLAS.
+     * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+     */
     var inputt = input.transpose(1, 2).clone()
     var gradOutputt = gradOutput.transpose(1, 2).clone()
     initWeight = initWeight.resize(Array(inputSize, lstm_n_gates, hiddenSize))
@@ -515,16 +515,16 @@ class RNNSpec extends FlatSpec with Matchers{
     initBias = initBias.resize(Array(lstm_n_gates, hiddenSize))
 
     /**
-      * Gate order matching between MKLDNN LSTM and nn/LSTM:
-      * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
-      * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
-      * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
-      * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
-      *
-      * uniParams(0) -> input weights
-      * uniParams(1) -> bias
-      * uniParams(2) -> hidden weights
-      */
+     * Gate order matching between MKLDNN LSTM and nn/LSTM:
+     * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+     * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+     * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+     * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+     *
+     * uniParams(0) -> input weights
+     * uniParams(1) -> bias
+     * uniParams(2) -> hidden weights
+     */
 
     var initWeight0 = Tensor[Float](Array(hiddenSize * lstm_n_gates, inputSize))
     var initWeightIter0 = Tensor[Float](Array(hiddenSize * lstm_n_gates, hiddenSize))
@@ -553,6 +553,122 @@ class RNNSpec extends FlatSpec with Matchers{
 
     val blas_gradInput = blasLSTM.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
     println("BLAS LSTM Uni Left2Right gradInput\n" + blas_gradInput)
+    println("==================================================================== \n\n\n")
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
+      blas_gradInput) should be(true)
+  }
+
+  "LSTM BidirectionalConcatTraining updateGradInput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.BidirectionalConcat
+
+    val common_n_layers = 1
+    val lstm_n_gates = 4
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
+    val gradOutputFormat = HeapData(Array(seqLength, batchSize, 2 * hiddenSize), Memory.Format.tnc)
+    var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
+    val gradOutput = Tensor(Array(seqLength, batchSize, 2 * hiddenSize)).rand(1.0, 1.0)
+
+    var initWeight = Tensor[Float](
+      Array(common_n_layers, 2,
+        inputSize, lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(common_n_layers, 2,
+        hiddenSize, lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(common_n_layers, 2,
+        lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    val mkldnnLSTM = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
+        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+
+    mkldnnLSTM.compile(TrainingPhase)
+    mkldnnLSTM.forward(input)
+    val mkldnn_gradInput = mkldnnLSTM.backward(input, gradOutput)
+    println("MKLDNN LSTM Bi Concat gradInput\n" + mkldnn_gradInput)
+
+    /**
+     * Reorder to formats of BLAS.
+     * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+     */
+    val inputt = input.transpose(1, 2).clone()
+    val gradOutputt = gradOutput.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initWeightIter = initWeightIter.resize(Array(2, hiddenSize, lstm_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initBias = initBias.resize(Array(2, lstm_n_gates, hiddenSize))
+
+    var initWeight0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, inputSize))
+    var initWeightIter0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, hiddenSize))
+    var initBias0 = Tensor[Float](Array(2, lstm_n_gates * hiddenSize))
+
+    val concat = nn.JoinTable(1, 4)
+    initWeight0(1) = concat.forward(T(initWeight(1)(1), initWeight(1)(3),
+      initWeight(1)(2), initWeight(1)(4))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(1) = concat.forward(T(initWeightIter(1)(1), initWeightIter(1)(3),
+      initWeightIter(1)(2), initWeightIter(1)(4))).asInstanceOf[Tensor[Float]].clone()
+    initBias0(1) = concat.forward(T(initBias(1)(1), initBias(1)(3),
+      initBias(1)(2), initBias(1)(4))).asInstanceOf[Tensor[Float]].clone()
+
+    initWeight0(2) = concat.forward(T(initWeight(2)(1), initWeight(2)(3),
+      initWeight(2)(2), initWeight(2)(4))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(2) = concat.forward(T(initWeightIter(2)(1), initWeightIter(2)(3),
+      initWeightIter(2)(2), initWeightIter(2)(4))).asInstanceOf[Tensor[Float]].clone()
+    initBias0(2) = concat.forward(T(initBias(2)(1), initBias(2)(3),
+      initBias(2)(2), initBias(2)(4))).asInstanceOf[Tensor[Float]].clone()
+
+    val blasLSTM = nn.BiRecurrent[Float](nn.JoinTable[Float](3, 0)
+      .asInstanceOf[AbstractModule[Table, Tensor[Float], Float]])
+      .add(nn.LSTM(inputSize, hiddenSize))
+
+    /**
+     * biParams(0 - 2) and (3 - 5) are for the two directions respectively
+     *
+     * Gate order matching between MKLDNN LSTM and nn/LSTM:
+     * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+     * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+     * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+     * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+     *
+     * biParams(0) -> input weights
+     * biParams(1) -> bias
+     * biParams(2) -> hidden weights
+     * biParams(3) -> input weights
+     * biParams(4) -> bias
+     * biParams(5) -> hidden weights
+     */
+
+    val biParams = blasLSTM.parameters()._1
+    initWeight0(1).resizeAs(biParams(0))
+    initBias0(1).resizeAs(biParams(1))
+    initWeightIter0(1).resizeAs(biParams(2))
+    initWeight0(2).resizeAs(biParams(3))
+    initBias0(2).resizeAs(biParams(4))
+    initWeightIter0(2).resizeAs(biParams(5))
+
+    biParams(0).copy(initWeight0(1))
+    biParams(1).copy(initBias0(1))
+    biParams(2).copy(initWeightIter0(1))
+    biParams(3).copy(initWeight0(2))
+    biParams(4).copy(initBias0(2))
+    biParams(5).copy(initWeightIter0(2))
+
+    blasLSTM.forward(inputt).toTensor.transpose(1, 2)
+
+    val blas_gradInput = blasLSTM.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
+    println("BLAS LSTM Bi Concat gradInput \n" + blas_gradInput)
     println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
@@ -599,11 +715,11 @@ class RNNSpec extends FlatSpec with Matchers{
     println("MKLDNN LSTM Bi Sum gradInput\n" + mkldnn_gradInput)
 
     /**
-      * Reorder to formats of BLAS.
-      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
-      */
+     * Reorder to formats of BLAS.
+     * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+     */
     val inputt = input.transpose(1, 2).clone()
-    var gradOutputt = gradOutput.transpose(1, 2).clone()
+    val gradOutputt = gradOutput.transpose(1, 2).clone()
     initWeight = initWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
       .transpose(2, 3).transpose(3, 4)
     initWeightIter = initWeightIter.resize(Array(2, hiddenSize, lstm_n_gates, hiddenSize))
@@ -634,21 +750,21 @@ class RNNSpec extends FlatSpec with Matchers{
       .add(nn.LSTM(inputSize, hiddenSize))
 
     /**
-      * biParams(0 - 2) and (3 - 5) are for the two directions respectively
-      *
-      * Gate order matching between MKLDNN LSTM and nn/LSTM:
-      * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
-      * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
-      * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
-      * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
-      *
-      * biParams(0) -> input weights
-      * biParams(1) -> bias
-      * biParams(2) -> hidden weights
-      * biParams(3) -> input weights
-      * biParams(4) -> bias
-      * biParams(5) -> hidden weights
-      */
+     * biParams(0 - 2) and (3 - 5) are for the two directions respectively
+     *
+     * Gate order matching between MKLDNN LSTM and nn/LSTM:
+     * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+     * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+     * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+     * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+     *
+     * biParams(0) -> input weights
+     * biParams(1) -> bias
+     * biParams(2) -> hidden weights
+     * biParams(3) -> input weights
+     * biParams(4) -> bias
+     * biParams(5) -> hidden weights
+     */
 
     val biParams = blasLSTM.parameters()._1
     initWeight0(1).resizeAs(biParams(0))
@@ -675,7 +791,7 @@ class RNNSpec extends FlatSpec with Matchers{
       blas_gradInput) should be(true)
   }
 
-  "LSTM UnidirectionalInference Multilayers gradInput" should "work correctly" in {
+  "LSTM UnidirectionalInference Multilayers updateGradInput" should "work correctly" in {
     val seqLength = 3
     val batchSize = 2
     val commonSize = 5
@@ -715,9 +831,9 @@ class RNNSpec extends FlatSpec with Matchers{
     println("MKLDNN LSTM Uni Multilayers Left2Right gradInput\n" + mkldnn_gradInput)
 
     /**
-      * Reorder to formats of BLAS.
-      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
-      */
+     * Reorder to formats of BLAS.
+     * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+     */
     var inputt = input.transpose(1, 2).clone()
     var gradOutputt = gradOutput.transpose(1, 2).clone()
     initWeight = initWeight.resize(Array(common_n_layers, commonSize, lstm_n_gates, commonSize))
@@ -728,16 +844,16 @@ class RNNSpec extends FlatSpec with Matchers{
     initBias = initBias.resize(Array(common_n_layers, lstm_n_gates, commonSize))
 
     /**
-      * Gate order matching between MKLDNN LSTM and nn/LSTM:
-      * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
-      * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
-      * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
-      * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
-      *
-      * uniParams(0) -> input weights
-      * uniParams(1) -> bias
-      * uniParams(2) -> hidden weights
-      */
+     * Gate order matching between MKLDNN LSTM and nn/LSTM:
+     * MKLDNN Gate 1 -> nn/LSTM Gate 1 (input gate)
+     * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
+     * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
+     * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+     *
+     * uniParams(0) -> input weights
+     * uniParams(1) -> bias
+     * uniParams(2) -> hidden weights
+     */
 
     var initWeight0 = Tensor[Float](Array(common_n_layers, commonSize * lstm_n_gates, commonSize))
     var initWeightIter0 =
