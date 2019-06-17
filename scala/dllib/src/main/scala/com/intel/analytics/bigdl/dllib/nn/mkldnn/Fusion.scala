@@ -199,8 +199,11 @@ private[mkldnn] object Fusion {
       convBias.storage().array()(j) = alpha / base * bias + beta - (alpha * mean) / base
     }
 
-    conv.weight.copy(convWeight)
-    conv.bias.copy(convBias)
+    // We will change model structure and weights when doing conv and bn fusion
+    // In order to not influence broadcast model and weights,
+    // we set new storage to weight and bias.
+    conv.weight.dense.set(convWeight)
+    conv.bias.dense.set(convBias)
 
     // regenerate the weight scales and output scales
     conv.flushWeightScales(conv.weight.dense)
