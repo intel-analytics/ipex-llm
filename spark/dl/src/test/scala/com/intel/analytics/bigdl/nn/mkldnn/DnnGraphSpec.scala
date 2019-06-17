@@ -26,12 +26,29 @@ import com.intel.analytics.bigdl.nn.{Graph, Module => _, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.models.resnet
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.utils.intermediate._
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import org.apache.spark.SparkContext
 
-class DnnGraphSpec extends FlatSpec with Matchers {
+class DnnGraphSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  private var sc: SparkContext = _
+
+  before {
+    val nodeNumber = 1
+    val coreNumber = 4
+    Engine.init(nodeNumber, coreNumber, onSpark = true)
+    sc = new SparkContext("local[1]", "DnnGraphSpec")
+  }
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
+  }
 
   def model(size: Array[Int]) : Module[Float] = {
     val input = mkldnn.Input(size, Memory.Format.nchw).inputs()
@@ -264,5 +281,34 @@ class DnnGraphSpec extends FlatSpec with Matchers {
     System.clearProperty("bigdl.mkldnn.fusion.convrelu")
     System.clearProperty("bigdl.mkldnn.fusion.convsum")
     System.clearProperty("bigdl.mkldnn.fusion")
+  }
+
+  "DnnGraph fusion" should "not change model parameters" in {
+    Engine.setEngineType(MklDnn)
+    import com.intel.analytics.bigdl.models.resnet
+    RNG.setSeed(100)
+    val module = resnet.ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth" -> 50,
+      "optnet" -> false, "dataSet" -> DatasetType.ImageNet))
+      .toGraph().asInstanceOf[StaticGraph[Float]]
+      .toIRgraph()
+
+    val bcast = ModelBroadcast[Float]().broadcast(sc, module.evaluate())
+    for(i <- 1 to 3) {
+      val data = sc.parallelize(0 to 10, 1)
+      data.mapPartitions(i => {
+        val tensor = Tensor[Float](2, 3, 224, 224).rand()
+        val mod = bcast.value()
+        Iterator(mod.forward(tensor).toTensor[Float])
+      }).count()
+
+      sc.parallelize(1 to 1, 1).mapPartitions(i => {
+        val weightSum = bcast.value().getWeightsBias().map(f => f.sum()).sum
+        require(weightSum == 11759.763f, s"sum of model weight " +
+          s"parameters should be 11759.764, but get ${weightSum}")
+        i
+      }).count()
+
+      Engine.setEngineType(MklBlas)
+    }
   }
 }
