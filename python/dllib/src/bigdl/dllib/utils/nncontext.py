@@ -53,6 +53,7 @@ def init_spark_on_yarn(hadoop_conf,
                        spark_yarn_archive=None,
                        spark_log_level="WARN",
                        redirect_spark_log=True,
+                       jars=None,
                        spark_conf=None):
     """
     Create a SparkContext with Zoo configuration on Yarn cluster on "Yarn-client" mode.
@@ -74,6 +75,7 @@ def init_spark_on_yarn(hadoop_conf,
     :param hadoop_user_name: User name for running in yarn cluster. Default value is: root
     :param spark_log_level: Log level of Spark
     :param redirect_spark_log: Direct the Spark log to local file or not.
+    :param jars: Comma-separated list of jars to include on the driver and executor classpaths.
     :param spark_conf: You can append extra spark conf here in key value format.
                        i.e spark_conf={"spark.executor.extraJavaOptions": "-XX:+PrintGCDetails"}
     :return: SparkContext
@@ -94,7 +96,7 @@ def init_spark_on_yarn(hadoop_conf,
         penv_archive=penv_archive,
         hadoop_user_name=hadoop_user_name,
         spark_yarn_archive=spark_yarn_archive,
-        jars=None,
+        jars=jars,
         spark_conf=spark_conf)
     return sc
 
