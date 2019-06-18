@@ -143,6 +143,7 @@
         -e NotebookToken="1234qwer" \
         -e http_proxy=http://your-proxy-host:your-proxy-port  \
         -e https_proxy=https://your-proxy-host:your-proxy-port  \
+        -e RUNTIME_SPARK_MASTER=spark://your-spark-master-host:your-spark-master-port or local[*] \
         -e RUNTIME_DRIVER_CORES=4 \
         -e RUNTIME_DRIVER_MEMORY=20g \
         -e RUNTIME_EXECUTOR_CORES=4 \
