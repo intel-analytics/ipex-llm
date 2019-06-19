@@ -118,9 +118,9 @@ class LarsSGDSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "lars" should "be found in multi-optims" in {
-    val optim = Map("1"->new SGD[Float](), "2"->new LarsSGD[Float](false,
+    val optim = Map("1" -> new SGD[Float](), "2" -> new LarsSGD[Float](false,
       _weightDecay = 1.23))
-    LarsSGD.containsLarsSGD(optim).getOrElse(0.0) should be (1.23)
+    LarsSGD.containsLarsSGD(optim).getOrElse(0.0) should be(1.23)
   }
 
 }
