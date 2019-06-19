@@ -65,29 +65,6 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
   var fasterrcnnInputdata1FilePath: String = _
   var fasterrcnnInputdata2FilePath: String = _
 
-  val resnet_v1_50_url = s"$modelZooUrl" + s"/models/resnet_v1_50_2016_08_28.tar.gz"
-  val resnet_v1_50_tar = resnet_v1_50_url.split("/").last
-  val resnet_v1_50_dir = resnet_v1_50_tar.replaceAll(".tar.gz", "")
-  val resnet_v1_50_modelType = "resnet_v1_50"
-  var resnet_v1_50_checkpointPath: String = _
-  val resnet_v1_50_inputShape = Array(4, 224, 224, 3)
-  val resnet_v1_50_ifReverseInputChannels = true
-  val resnet_v1_50_meanValues = Array(123.68f, 116.78f, 103.94f)
-  val resnet_v1_50_scale = 1.0f
-
-  val calibrateValTarUrl = s"$s3Url/analytics-zoo-models/openvino/val_bmp_32.tar"
-  val calibrateValTar = calibrateValTarUrl.split("/").last
-  var calibrateValFilePath: String = _
-
-  val resnet_v1_50_shape = Array(4, 3, 224, 224)
-  val image_input_65_url = s"$s3Url/analytics-zoo-models/openvino/ic_input_65"
-  val image_input_970_url = s"$s3Url/analytics-zoo-models/openvino/ic_input_970"
-  var image_input_65_filePath: String = _
-  var image_input_970_filePath: String = _
-
-  val opencvLibTarURL = s"$s3Url/analytics-zoo-models/openvino/opencv_4.0.0_ubuntu_lib.tar"
-  val opencvLibTar = opencvLibTarURL.split("/").last
-  var opencvLibPath: String = _
 
   override def beforeAll() {
     tmpDir = Files.createTempDir()
@@ -96,36 +73,16 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     s"wget -P $dir $url_ov_fasterrcnn_tests_inputdata1" !;
     s"wget -P $dir $url_ov_fasterrcnn_tests_inputdata2" !;
 
-    s"wget -P $dir $resnet_v1_50_url" !;
-    s"tar xvf $dir/$resnet_v1_50_tar -C $dir" !;
-
     s"wget -P $dir $fasterrcnnModelUrl" !;
     s"tar xvf $dir/$fasterrcnnModelTar -C $dir" !;
 
-    s"wget -P $dir $calibrateValTarUrl" !;
-    s"tar xvf $dir/$calibrateValTar -C $dir" !;
-
-    s"wget -P $dir $image_input_65_url" !;
-    s"wget -P $dir $image_input_970_url" !;
-
-    s"wget -P $dir $opencvLibTarURL" !;
-    s"tar xvf $dir/$opencvLibTar -C $dir" !;
-
     s"ls -alh $dir" !;
-
-    resnet_v1_50_checkpointPath = s"$dir/resnet_v1_50.ckpt"
-    calibrateValFilePath = s"$dir/val_bmp_32/val.txt"
 
     faserrcnnFrozenModelFilePath = s"$dir/$fasterrcnnModelDir/frozen_inference_graph.pb"
     faserrcnnModelType = "faster_rcnn_resnet101_coco"
     faserrcnnPipelineConfigFilePath = s"$dir/$fasterrcnnModelDir/pipeline.config"
     fasterrcnnInputdata1FilePath = s"$dir/inputdata_1"
     fasterrcnnInputdata2FilePath = s"$dir/inputdata_2"
-
-    image_input_65_filePath = s"$dir/ic_input_65"
-    image_input_970_filePath = s"$dir/ic_input_970"
-
-    opencvLibPath = s"$dir/lib"
   }
 
   override def afterAll() {
@@ -144,29 +101,6 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     tmpDir.listFiles().foreach(file => println(file.getAbsoluteFile))
   }
 
-  test("openvino model should be optimized and calibrated") {
-    InferenceModel.doOptimizeTF(
-      null,
-      resnet_v1_50_modelType,
-      resnet_v1_50_checkpointPath,
-      resnet_v1_50_inputShape,
-      resnet_v1_50_ifReverseInputChannels,
-      resnet_v1_50_meanValues,
-      resnet_v1_50_scale,
-      tmpDir.getAbsolutePath
-    )
-    val model_IR_path = s"${tmpDir.getAbsolutePath}/${resnet_v1_50_modelType}_inference_graph.xml"
-    InferenceModel.doCalibrateTF(
-      model_IR_path,
-      "C",
-      calibrateValFilePath,
-      32,
-      opencvLibPath,
-      tmpDir.getAbsolutePath
-    )
-    tmpDir.listFiles().foreach(file => println(file.getAbsoluteFile))
-  }
-
   test("openvino model should throw exception if load failed") {
     val thrown = intercept[InferenceRuntimeException] {
       InferenceModelFactory.loadOpenVINOModelForTF(
@@ -178,7 +112,7 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     assert(thrown.getMessage.contains("Openvino optimize tf object detection model error"))
   }
 
-  test("openvino object dection model should load successfully and predict correctly") {
+  test("openvino object detection model should load successfully and predict correctly") {
     fasterrcnnModel = InferenceModelFactory.loadOpenVINOModelForTF(
       faserrcnnFrozenModelFilePath,
       faserrcnnModelType,
@@ -224,77 +158,6 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
 
     fasterrcnnModel.release()
     fasterrcnnInferenceModel.release()
-  }
-
-  test("openvino image classification model should load successfully") {
-    val model = new InferenceModel(3)
-    model.doLoadTF(null,
-      resnet_v1_50_modelType,
-      resnet_v1_50_checkpointPath,
-      resnet_v1_50_inputShape,
-      resnet_v1_50_ifReverseInputChannels,
-      resnet_v1_50_meanValues,
-      resnet_v1_50_scale)
-    println(s"resnet_v1_50_model from tf loaded as $model")
-    model shouldNot be(null)
-
-    val indata1 = Source.fromFile(image_input_65_filePath).getLines().map(_.toFloat).toArray
-    val indata2 = Source.fromFile(image_input_970_filePath).getLines().map(_.toFloat).toArray
-    val data = indata1 ++ indata2 ++ indata1 ++ indata2
-    val input1 = new JTensor(data, resnet_v1_50_shape)
-    val input2 = new JTensor(data, resnet_v1_50_shape)
-    val inputs = Arrays.asList(
-      Arrays.asList({
-        input1
-      }),
-      Arrays.asList({
-        input2
-      }))
-    val results: util.List[util.List[JTensor]] = model.doPredict(inputs)
-    val classes = results.toArray().map(list => {
-      val inner = list.asInstanceOf[util.List[JTensor]].get(0)
-      val class1 = inner.getData.slice(0, 1000).zipWithIndex.maxBy(_._1)._2
-      val class2 = inner.getData.slice(1000, 2000).zipWithIndex.maxBy(_._1)._2
-      (class1, class2)
-    })
-    println(classes.mkString(","))
-  }
-
-  test("openvino image classification model should load as calibrated successfully") {
-    val model = new InferenceModel(3)
-    model.doLoadTFAsCalibratedOpenVINO(null,
-      resnet_v1_50_modelType,
-      resnet_v1_50_checkpointPath,
-      resnet_v1_50_inputShape,
-      resnet_v1_50_ifReverseInputChannels,
-      resnet_v1_50_meanValues,
-      resnet_v1_50_scale,
-      "C",
-      calibrateValFilePath,
-      32,
-      opencvLibPath)
-    println(s"resnet_v1_50_model from tf loaded as $model")
-    model shouldNot be(null)
-    val indata1 = Source.fromFile(image_input_65_filePath).getLines().map(_.toFloat).toArray
-    val indata2 = Source.fromFile(image_input_970_filePath).getLines().map(_.toFloat).toArray
-    val data = indata1 ++ indata2 ++ indata1 ++ indata2
-    val input1 = new JTensor(data, resnet_v1_50_shape)
-    val input2 = new JTensor(data, resnet_v1_50_shape)
-    val inputs = Arrays.asList(
-      Arrays.asList({
-        input1
-      }),
-      Arrays.asList({
-        input2
-      }))
-    val results: util.List[util.List[JTensor]] = model.doPredict(inputs)
-    val classes = results.toArray().map(list => {
-      val inner = list.asInstanceOf[util.List[JTensor]].get(0)
-      val class1 = inner.getData.slice(0, 1000).zipWithIndex.maxBy(_._1)._2
-      val class2 = inner.getData.slice(1000, 2000).zipWithIndex.maxBy(_._1)._2
-      (class1, class2)
-    })
-    println(classes.mkString(","))
   }
 
   def almostEqual(x: Float, y: Float, precision: Float): Boolean = {
