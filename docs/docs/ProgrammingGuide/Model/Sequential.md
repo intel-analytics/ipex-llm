@@ -6,7 +6,7 @@ Here we introduce how to define a model in Sequential API.
 ## **Define a simple model**
 Suppose we want to define a model with three layers
 ```
-Linear -> Sigmoid -> Softmax
+Linear -> Sigmoid -> SoftMax
 ```
 
 You can write code like this
