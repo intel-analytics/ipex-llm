@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.mkl.{AlgKind, Direction, Memory}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.{Recurrent, StaticGraph}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -59,7 +60,6 @@ class RNNSpec extends FlatSpec with Matchers{
     mkldnnLSTM1.evaluate()
     mkldnnLSTM1.compile(InferencePhase)
     val mkldnn_output1 = mkldnnLSTM1.forward(input)
-    println("MKLDNN output LSTM Uni Left2Right \n" + mkldnn_output1)
 
     direction = Direction.UnidirectionalRight2Left
     val mkldnnLSTM2 = Sequential()
@@ -69,7 +69,6 @@ class RNNSpec extends FlatSpec with Matchers{
     mkldnnLSTM2.evaluate()
     mkldnnLSTM2.compile(InferencePhase)
     val mkldnn_output2 = mkldnnLSTM2.forward(input)
-    println("MKLDNN output LSTM Uni Right2Left \n" + mkldnn_output2)
 
     /**
      * Reorder to formats of BLAS.
@@ -118,7 +117,6 @@ class RNNSpec extends FlatSpec with Matchers{
     uniParams(2).copy(initWeightIter0)
 
     val blas_output1 = blasLSTM.forward(inputt).toTensor.transpose(1, 2)
-    println("BLAS output LSTM Uni Left2Right \n" + blas_output1)
 
     Equivalent.nearequals(Tools.dense(mkldnn_output1).asInstanceOf[Tensor[Float]],
       blas_output1) should be(true)
@@ -131,8 +129,6 @@ class RNNSpec extends FlatSpec with Matchers{
 
     var blas_output2 = blasLSTM.forward(inputt)
     blas_output2 = reverse.forward(blas_output2).toTensor.transpose(1, 2)
-    println("BLAS output LSTM Uni Right2Left \n" + blas_output2)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_output2).asInstanceOf[Tensor[Float]],
       blas_output2) should be(true)
@@ -172,7 +168,6 @@ class RNNSpec extends FlatSpec with Matchers{
     mkldnnLSTM.evaluate()
     mkldnnLSTM.compile(InferencePhase)
     val mkldnn_output = mkldnnLSTM.forward(input)
-    println("MKLDNN output LSTM Bi Concat \n" + mkldnn_output)
 
     /**
      * Reorder to formats of BLAS.
@@ -241,8 +236,6 @@ class RNNSpec extends FlatSpec with Matchers{
     biParams(5).copy(initWeightIter0(2))
 
     val blas_output = blasLSTM.forward(inputt).toTensor.transpose(1, 2)
-    println("BLAS output LSTM Bi Concat \n" + blas_output)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_output).asInstanceOf[Tensor[Float]],
       blas_output) should be(true)
@@ -282,7 +275,6 @@ class RNNSpec extends FlatSpec with Matchers{
     mkldnnLSTM.evaluate()
     mkldnnLSTM.compile(InferencePhase)
     val mkldnn_output = mkldnnLSTM.forward(input)
-    println("MKLDNN output LSTM Bi Sum \n" + mkldnn_output)
 
     /**
      * Reorder to formats of BLAS.
@@ -351,8 +343,6 @@ class RNNSpec extends FlatSpec with Matchers{
     biParams(5).copy(initWeightIter0(2))
 
     val blas_output = blasLSTM.forward(inputt).toTensor.transpose(1, 2)
-    println("BLAS output LSTM Bi Sum \n" + blas_output)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_output).asInstanceOf[Tensor[Float]],
       blas_output) should be(true)
@@ -392,7 +382,6 @@ class RNNSpec extends FlatSpec with Matchers{
     mkldnnLSTM.evaluate()
     mkldnnLSTM.compile(InferencePhase)
     val output = mkldnnLSTM.forward(input)
-    println("MKLDNN output LSTM Uni Multilayers Left2Right \n" + output)
 
     /**
      * Reorder to formats of BLAS.
@@ -456,8 +445,6 @@ class RNNSpec extends FlatSpec with Matchers{
     }
 
     val blas_output = blasLSTM.forward(inputt).toTensor.transpose(1, 2)
-    println("BLAS output LSTM Uni Multilayers Left2Right \n" + blas_output)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(output).asInstanceOf[Tensor[Float]],
       blas_output) should be(true)
@@ -492,15 +479,16 @@ class RNNSpec extends FlatSpec with Matchers{
       Array(common_n_layers, 1,
         lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
 
+    val rnn = RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
+
     val mkldnnLSTM = Sequential()
       .add(Input(inputFormat.shape, inputFormat.layout))
-      .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
-        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+      .add(rnn)
 
     mkldnnLSTM.compile(TrainingPhase)
     mkldnnLSTM.forward(input)
     val mkldnn_gradInput = mkldnnLSTM.backward(input, gradOutput)
-    println("MKLDNN LSTM Uni Left2Right gradInput\n" + mkldnn_gradInput)
 
     /**
      * Reorder to formats of BLAS.
@@ -538,7 +526,8 @@ class RNNSpec extends FlatSpec with Matchers{
     initBias0 = concat.forward(T(initBias(1), initBias(3), initBias(2), initBias(4)))
       .asInstanceOf[Tensor[Float]].clone()
 
-    val blasLSTM = nn.Recurrent().add(nn.LSTM(inputSize, hiddenSize))
+    val blasrnn = nn.LSTM(inputSize, hiddenSize)
+    val blasLSTM = nn.Recurrent().add(blasrnn)
 
     val uniParams = blasLSTM.parameters()._1
     initWeight0 = initWeight0.resizeAs(uniParams(0))
@@ -552,11 +541,42 @@ class RNNSpec extends FlatSpec with Matchers{
     blasLSTM.forward(inputt).toTensor.transpose(1, 2)
 
     val blas_gradInput = blasLSTM.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
-    println("BLAS LSTM Uni Left2Right gradInput\n" + blas_gradInput)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
+
+    var mkldnn_gradWeight = rnn.gradWeight.dense
+    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
+    var mkldnn_gradBias = rnn.gradBias.dense
+
+    var blas_gradWeight = blasrnn.preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+    var blas_gradBias = blasrnn.preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+    var blas_gradWeight_i = blasrnn.cell.asInstanceOf[nn.Sequential[Float]].modules(1)
+      .asInstanceOf[nn.StaticGraph[Float]].modules(1).asInstanceOf[nn.Linear[Float]].gradWeight
+
+    mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(inputSize, lstm_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    mkldnn_gradWeight_i = mkldnn_gradWeight_i.resize(Array(hiddenSize, lstm_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    mkldnn_gradBias = mkldnn_gradBias.resize(Array(lstm_n_gates, hiddenSize))
+
+    var mkldnn_gradWeight0 = Tensor[Float](Array(hiddenSize * lstm_n_gates, inputSize))
+    var mkldnn_gradWeight_i0 = Tensor[Float](Array(hiddenSize * lstm_n_gates, hiddenSize))
+    var mkldnn_gradBias0 = Tensor[Float](Array(lstm_n_gates * hiddenSize))
+
+    mkldnn_gradWeight0 = concat.forward(T(mkldnn_gradWeight(1), mkldnn_gradWeight(3),
+      mkldnn_gradWeight(2), mkldnn_gradWeight(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0 = concat.forward(T(mkldnn_gradWeight_i(1), mkldnn_gradWeight_i(3),
+      mkldnn_gradWeight_i(2), mkldnn_gradWeight_i(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradBias0 = concat.forward(T(mkldnn_gradBias(1), mkldnn_gradBias(3),
+      mkldnn_gradBias(2), mkldnn_gradBias(4))).asInstanceOf[Tensor[Float]].clone()
+
+    Equivalent.nearequals(mkldnn_gradWeight0,
+      blas_gradWeight) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0,
+      blas_gradWeight_i) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0,
+      blas_gradBias) should be(true)
   }
 
   "LSTM BidirectionalConcatTraining updateGradInput" should "work correctly" in {
@@ -588,15 +608,15 @@ class RNNSpec extends FlatSpec with Matchers{
       Array(common_n_layers, 2,
         lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
 
+    val rnn = RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     val mkldnnLSTM = Sequential()
       .add(Input(input.size(), Memory.Format.tnc))
-      .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
-        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+      .add(rnn)
 
     mkldnnLSTM.compile(TrainingPhase)
     mkldnnLSTM.forward(input)
     val mkldnn_gradInput = mkldnnLSTM.backward(input, gradOutput)
-    println("MKLDNN LSTM Bi Concat gradInput\n" + mkldnn_gradInput)
 
     /**
      * Reorder to formats of BLAS.
@@ -668,11 +688,81 @@ class RNNSpec extends FlatSpec with Matchers{
     blasLSTM.forward(inputt).toTensor.transpose(1, 2)
 
     val blas_gradInput = blasLSTM.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
-    println("BLAS LSTM Bi Concat gradInput \n" + blas_gradInput)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
+
+    var mkldnn_gradWeight = rnn.gradWeight.dense
+    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
+    var mkldnn_gradBias = rnn.gradBias.dense
+
+    mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradWeight_i = mkldnn_gradWeight_i.resize(Array(2, hiddenSize, lstm_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradBias = mkldnn_gradBias.resize(Array(2, lstm_n_gates, hiddenSize))
+
+    var mkldnn_gradWeight0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, inputSize))
+    var mkldnn_gradWeight_i0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, hiddenSize))
+    var mkldnn_gradBias0 = Tensor[Float](Array(2, lstm_n_gates * hiddenSize))
+
+    mkldnn_gradWeight0(1) = concat.forward(T(mkldnn_gradWeight(1)(1), mkldnn_gradWeight(1)(3),
+      mkldnn_gradWeight(1)(2), mkldnn_gradWeight(1)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(1) = concat.forward(T(mkldnn_gradWeight_i(1)(1), mkldnn_gradWeight_i(1)(3),
+      mkldnn_gradWeight_i(1)(2), mkldnn_gradWeight_i(1)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradBias0(1) = concat.forward(T(mkldnn_gradBias(1)(1), mkldnn_gradBias(1)(3),
+      mkldnn_gradBias(1)(2), mkldnn_gradBias(1)(4))).asInstanceOf[Tensor[Float]].clone()
+
+    mkldnn_gradWeight0(2) = concat.forward(T(mkldnn_gradWeight(2)(1), mkldnn_gradWeight(2)(3),
+      mkldnn_gradWeight(2)(2), mkldnn_gradWeight(2)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(2) = concat.forward(T(mkldnn_gradWeight_i(2)(1), mkldnn_gradWeight_i(2)(3),
+      mkldnn_gradWeight_i(2)(2), mkldnn_gradWeight_i(2)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradBias0(2) = concat.forward(T(mkldnn_gradBias(2)(1), mkldnn_gradBias(2)(3),
+      mkldnn_gradBias(2)(2), mkldnn_gradBias(2)(4))).asInstanceOf[Tensor[Float]].clone()
+
+    val blas_gradWeight_1 = blasLSTM
+      .layer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_2 = blasLSTM
+      .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i_1 = blasLSTM
+      .layer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .cell.asInstanceOf[nn.Sequential[Float]].modules(1)
+      .asInstanceOf[nn.StaticGraph[Float]].modules(1).asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i_2 = blasLSTM
+      .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .cell.asInstanceOf[nn.Sequential[Float]].modules(1)
+      .asInstanceOf[nn.StaticGraph[Float]].modules(1).asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradBias_1 = blasLSTM
+      .layer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    val blas_gradBias_2 = blasLSTM
+      .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(1)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_1) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(2)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_2) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(1)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_i_1) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(2)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_i_2) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(1)).asInstanceOf[Tensor[Float]],
+      blas_gradBias_1) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(2)).asInstanceOf[Tensor[Float]],
+      blas_gradBias_2) should be(true)
   }
 
   "LSTM BidirectionalSumTraining updateGradInput" should "work correctly" in {
@@ -704,15 +794,15 @@ class RNNSpec extends FlatSpec with Matchers{
       Array(common_n_layers, 2,
         lstm_n_gates, hiddenSize)).rand(-1.0, 1.0)
 
+    val rnn = RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
     val mkldnnLSTM = Sequential()
       .add(Input(input.size(), Memory.Format.tnc))
-      .add(RNN(AlgKind.VanillaLstm, inputSize, hiddenSize, f, direction,
-        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+      .add(rnn)
 
     mkldnnLSTM.compile(TrainingPhase)
     mkldnnLSTM.forward(input)
     val mkldnn_gradInput = mkldnnLSTM.backward(input, gradOutput)
-    println("MKLDNN LSTM Bi Sum gradInput\n" + mkldnn_gradInput)
 
     /**
      * Reorder to formats of BLAS.
@@ -784,11 +874,81 @@ class RNNSpec extends FlatSpec with Matchers{
     blasLSTM.forward(inputt).toTensor.transpose(1, 2)
 
     val blas_gradInput = blasLSTM.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
-    println("BLAS LSTM Bi Sum gradInput \n" + blas_gradInput)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
+
+    var mkldnn_gradWeight = rnn.gradWeight.dense
+    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
+    var mkldnn_gradBias = rnn.gradBias.dense
+
+    mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradWeight_i = mkldnn_gradWeight_i.resize(Array(2, hiddenSize, lstm_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradBias = mkldnn_gradBias.resize(Array(2, lstm_n_gates, hiddenSize))
+
+    var mkldnn_gradWeight0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, inputSize))
+    var mkldnn_gradWeight_i0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, hiddenSize))
+    var mkldnn_gradBias0 = Tensor[Float](Array(2, lstm_n_gates * hiddenSize))
+
+    mkldnn_gradWeight0(1) = concat.forward(T(mkldnn_gradWeight(1)(1), mkldnn_gradWeight(1)(3),
+      mkldnn_gradWeight(1)(2), mkldnn_gradWeight(1)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(1) = concat.forward(T(mkldnn_gradWeight_i(1)(1), mkldnn_gradWeight_i(1)(3),
+      mkldnn_gradWeight_i(1)(2), mkldnn_gradWeight_i(1)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradBias0(1) = concat.forward(T(mkldnn_gradBias(1)(1), mkldnn_gradBias(1)(3),
+      mkldnn_gradBias(1)(2), mkldnn_gradBias(1)(4))).asInstanceOf[Tensor[Float]].clone()
+
+    mkldnn_gradWeight0(2) = concat.forward(T(mkldnn_gradWeight(2)(1), mkldnn_gradWeight(2)(3),
+      mkldnn_gradWeight(2)(2), mkldnn_gradWeight(2)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(2) = concat.forward(T(mkldnn_gradWeight_i(2)(1), mkldnn_gradWeight_i(2)(3),
+      mkldnn_gradWeight_i(2)(2), mkldnn_gradWeight_i(2)(4))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradBias0(2) = concat.forward(T(mkldnn_gradBias(2)(1), mkldnn_gradBias(2)(3),
+      mkldnn_gradBias(2)(2), mkldnn_gradBias(2)(4))).asInstanceOf[Tensor[Float]].clone()
+
+    val blas_gradWeight_1 = blasLSTM
+      .layer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_2 = blasLSTM
+      .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i_1 = blasLSTM
+      .layer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .cell.asInstanceOf[nn.Sequential[Float]].modules(1)
+      .asInstanceOf[nn.StaticGraph[Float]].modules(1).asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i_2 = blasLSTM
+      .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .cell.asInstanceOf[nn.Sequential[Float]].modules(1)
+      .asInstanceOf[nn.StaticGraph[Float]].modules(1).asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradBias_1 = blasLSTM
+      .layer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    val blas_gradBias_2 = blasLSTM
+      .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(1)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_1) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(2)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_2) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(1)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_i_1) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(2)).asInstanceOf[Tensor[Float]],
+      blas_gradWeight_i_2) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(1)).asInstanceOf[Tensor[Float]],
+      blas_gradBias_1) should be(true)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(2)).asInstanceOf[Tensor[Float]],
+      blas_gradBias_2) should be(true)
   }
 
   "LSTM UnidirectionalInference Multilayers updateGradInput" should "work correctly" in {
@@ -819,16 +979,16 @@ class RNNSpec extends FlatSpec with Matchers{
       Array(common_n_layers, 1,
         lstm_n_gates, commonSize)).rand(-1.0, 1.0)
 
+    val rnn = RNN(AlgKind.VanillaLstm, commonSize, commonSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter,
+      initBias = initBias, layers = common_n_layers)
     val mkldnnLSTM = Sequential()
       .add(Input(input.size(), Memory.Format.tnc))
-      .add(RNN(AlgKind.VanillaLstm, commonSize, commonSize, f, direction,
-        initWeight = initWeight, initWeightIter = initWeightIter,
-        initBias = initBias, layers = common_n_layers))
+      .add(rnn)
 
     mkldnnLSTM.compile(TrainingPhase)
     mkldnnLSTM.forward(input)
     val mkldnn_gradInput = mkldnnLSTM.backward(input, gradOutput)
-    println("MKLDNN LSTM Uni Multilayers Left2Right gradInput\n" + mkldnn_gradInput)
 
     /**
      * Reorder to formats of BLAS.
@@ -895,10 +1055,80 @@ class RNNSpec extends FlatSpec with Matchers{
     blasLSTM.forward(inputt).toTensor.transpose(1, 2)
 
     val blas_gradInput = blasLSTM.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
-    println("BLAS LSTM Uni Multilayers Left2Right gradInput\n" + blas_gradInput)
-    println("==================================================================== \n\n\n")
 
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
+
+    var mkldnn_gradWeight = rnn.gradWeight.dense
+    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
+    var mkldnn_gradBias = rnn.gradBias.dense
+
+    mkldnn_gradWeight = mkldnn_gradWeight
+      .resize(Array(common_n_layers, commonSize, lstm_n_gates, commonSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradWeight_i = mkldnn_gradWeight_i
+      .resize(Array(common_n_layers, commonSize, lstm_n_gates, commonSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradBias = mkldnn_gradBias.resize(Array(common_n_layers, lstm_n_gates, commonSize))
+
+    var mkldnn_gradWeight0 = Tensor[Float](
+      Array(common_n_layers, commonSize * lstm_n_gates, commonSize))
+    var mkldnn_gradWeight_i0 =
+      Tensor[Float](Array(common_n_layers, commonSize * lstm_n_gates, commonSize))
+    var mkldnn_gradBias0 = Tensor[Float](Array(common_n_layers, lstm_n_gates * commonSize))
+
+    for(l <- 1 to common_n_layers) {
+      mkldnn_gradWeight0(l).copy(
+        concat
+          .forward(T(
+            mkldnn_gradWeight(l)(1), mkldnn_gradWeight(l)(3),
+            mkldnn_gradWeight(l)(2), mkldnn_gradWeight(l)(4)))
+          .asInstanceOf[Tensor[Float]].clone())
+      mkldnn_gradWeight_i0(l).copy(
+        concat
+          .forward(T(
+            mkldnn_gradWeight_i(l)(1), mkldnn_gradWeight_i(l)(3),
+            mkldnn_gradWeight_i(l)(2), mkldnn_gradWeight_i(l)(4)))
+          .asInstanceOf[Tensor[Float]].clone())
+      mkldnn_gradBias0(l).copy(concat.forward(T(mkldnn_gradBias(l)(1), mkldnn_gradBias(l)(3),
+        mkldnn_gradBias(l)(2), mkldnn_gradBias(l)(4)))
+        .asInstanceOf[Tensor[Float]].clone())
+    }
+
+    val blas_gradWeight = Tensor[Float](
+      Array(common_n_layers, commonSize * lstm_n_gates, commonSize))
+    val blas_gradWeight_i = Tensor[Float](
+      Array(common_n_layers, commonSize * lstm_n_gates, commonSize))
+    val blas_gradBias = Tensor[Float](
+      Array(common_n_layers, lstm_n_gates * commonSize))
+
+    for (l <- 1 to common_n_layers) {
+      blas_gradWeight(l).copy(blasLSTM.modules(l).asInstanceOf[nn.Recurrent[Float]]
+        .modules(1).asInstanceOf[nn.LSTM[Float]]
+        .preTopology.asInstanceOf[nn.Linear[Float]]
+        .gradWeight)
+
+      blas_gradWeight_i(l).copy(blasLSTM.modules(l).asInstanceOf[nn.Recurrent[Float]]
+        .modules(1).asInstanceOf[nn.LSTM[Float]]
+        .cell.asInstanceOf[nn.Sequential[Float]].modules(1)
+        .asInstanceOf[nn.StaticGraph[Float]].modules(1).asInstanceOf[nn.Linear[Float]]
+        .gradWeight)
+
+      blas_gradBias(l).copy(blasLSTM.modules(l).asInstanceOf[nn.Recurrent[Float]]
+        .modules(1).asInstanceOf[nn.LSTM[Float]]
+        .preTopology.asInstanceOf[nn.Linear[Float]]
+        .gradBias)
+    }
+
+    for (l <- 1 to common_n_layers) {
+      Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(l)).asInstanceOf[Tensor[Float]],
+        blas_gradWeight(l)) should be(true)
+
+      Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(l)).asInstanceOf[Tensor[Float]],
+        blas_gradWeight_i(l)) should be(true)
+
+      Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(l)).asInstanceOf[Tensor[Float]],
+        blas_gradBias(l)) should be(true)
+    }
   }
 }

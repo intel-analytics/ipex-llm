@@ -63,7 +63,6 @@ class RNN(
   private var updateGradInputMemoryPrimitives: Array[Long] = _
   private var updateGradInputTensors: Array[Tensor[Float]] = _
 
-
   private val common_n_layers: Int = layers
   private var ngates: Int = _
   private var nstates: Int = _
@@ -131,6 +130,7 @@ class RNN(
       gradWeight = new TensorMMap(Array(common_n_layers, 1, inputSize, ngates, hiddenSize))
       gradWeight_i = new TensorMMap(Array(common_n_layers, 1, hiddenSize, ngates, hiddenSize))
       gradBias = new TensorMMap(Array(common_n_layers, 1, ngates, hiddenSize))
+
 
     case Direction.BidirectionalConcat =>
       require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers. " +
@@ -426,10 +426,28 @@ class RNN(
 
     reorderManager.setRuntime(runtime)
 
+    val src_layer_bw = NativeData(inputShape, Memory.Format.any)
+    val src_iter_bw = NativeData(src_i.size(), Memory.Format.any)
+    val wei_layer_bw = NativeData(weight.size(), Memory.Format.any)
+    val wei_iter_bw = NativeData(weight_i.size(), Memory.Format.any)
+    val bis_bw = NativeData(bias.size(), Memory.Format.any)
+    val dst_layer_bw = NativeData(outputShape, Memory.Format.any)
+    val dst_iter_bw = NativeData(dst_i.size(), Memory.Format.any)
+
+    val src_layer_bw_MD = src_layer_bw.getMemoryDescription()
+    val src_iter_bw_MD = src_iter_bw.getMemoryDescription()
+    val weights_layer_bw_MD = wei_layer_bw.getMemoryDescription()
+    val weights_iter_bw_MD = wei_iter_bw.getMemoryDescription()
+    val bis_bw_MD = bis_bw.getMemoryDescription()
+    val dist_layer_bw_MD = dst_layer_bw.getMemoryDescription()
+    val dist_iter_bw_MD = dst_iter_bw.getMemoryDescription()
+
     val diff_src_layer = NativeData(inputShape, Memory.Format.any)
     val diff_src_iter = NativeData(src_i.size(), Memory.Format.any)
-    val diff_weights_layer = NativeData(weight.size(), Memory.Format.any)
-    val diff_weights_iter = NativeData(weight_i.size(), Memory.Format.any)
+    val diff_weights_layer = NativeData(weight.size(), Memory.Format.ldigo)
+    // IMPORTANT : it has to be ldigo
+    val diff_weights_iter = NativeData(weight_i.size(), Memory.Format.ldigo)
+    // IMPORTANT : it has to be ldigo
     val diff_bias = NativeData(bias.size(), Memory.Format.any)
     val diff_dist_layer = NativeData(outputShape, Memory.Format.any)
     val diff_dist_iter = NativeData(dst_i.size(), Memory.Format.any)
@@ -443,10 +461,11 @@ class RNN(
     val diff_dist_iter_MD = diff_dist_iter.getMemoryDescription()
 
     val description = MklDnn.RNNBackwardDescInit(PropKind.Backward, rnnCellDesc,
-      direction, src_layer_MD,
-      src_iter_MD, weights_layer_MD,
-      weights_iter_MD, bis_MD,
-      dist_layer_MD, dist_iter_MD,
+      direction, src_layer_bw_MD,
+      src_iter_bw_MD, weights_layer_bw_MD,
+      weights_iter_bw_MD, bis_bw_MD,
+      dist_layer_bw_MD, dist_iter_bw_MD,
+
       diff_src_layer_MD, diff_src_iter_MD,
       diff_weights_layer_MD, diff_weights_iter_MD,
       diff_bis_MD, diff_dist_layer_MD,
@@ -464,7 +483,6 @@ class RNN(
     val realDst_iter = MemoryData.operationWant(bwdPD, Query.DstPd, 1)
     val realDiffDst = MemoryData.operationWant(bwdPD, Query.DiffDstPd, 0)
     val realDiffDst_iter = MemoryData.operationWant(bwdPD, Query.DiffDstPd, 1)
-    // val workSpace = MemoryData.operationWant(bwdPD, Query.WorkspacePd, 0)
 
     val realDiffSrc = MemoryData.operationWant(bwdPD, Query.DiffSrcPd, 0)
     val realDiffSrc_iter = MemoryData.operationWant(bwdPD, Query.DiffSrcPd, 1)
@@ -492,7 +510,6 @@ class RNN(
     gradWeight_i.setMemoryData(realDiffWei_iter, HeapData(gradWeight_i.size(), Memory.Format.ldigo),
       runtime)
     gradBias.setMemoryData(realDiffBias, HeapData(gradBias.size(), Memory.Format.ldgo), runtime)
-
 
     gradsrc_i.zero()
     graddst_i.zero()
