@@ -19,12 +19,13 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.optim.SGD.{Default, LearningRateSchedule}
+import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor, Util}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import org.apache.log4j.{Level, Logger}
-
+import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 
@@ -57,6 +58,12 @@ class LarsSGD[T: ClassTag](
      learningRateSchedule = _learningRateSchedule) {
   @transient
   private var buffer: Tensor[T] = null
+  @transient
+  private[bigdl] var calculatedTrust: Option[T] = None
+
+  require(trust > 0.0 && trust <= 1.0,
+    s"the trust for LARS is $trust, which should be greater than 0 and less than 1")
+
   /**
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
@@ -77,23 +84,9 @@ class LarsSGD[T: ClassTag](
       }
     learningRateSchedule.updateHyperParameter(this)
     val globalLr = -learningRateSchedule.currentRate * trust
-    val normGradient = ev.sqrt(dfdx.sumSquare())
-    val normParam = ev.sqrt(parameter.sumSquare())
-    // scale = (normGradient + weightDecay * normParam) / normParam
-    val scale = Tensor.scalar[T](normParam)
-    scale.mul(ev.fromType[Double](weightDecay)).add(normGradient).div(normParam)
-    val raw_scale_value = scale.value()
-    val scale_value = if (ev.isInf(raw_scale_value)) {
-      ev.fromType[Double](10000.0)
-    } else if (ev.nearlyEqual(raw_scale_value, ev.fromType[Double](0.0), 0.0001)) {
-      ev.fromType[Double](1e-4)
-    } else if (ev.isNan(raw_scale_value)) {
-      ev.fromType[Double](1.0)
-    } else {
-      raw_scale_value
-    }
+
     // rate = globalLr / scale
-    val rate = ev.divide(ev.fromType[Double](globalLr), scale_value)
+    val rate = ev.divide(ev.fromType[Double](globalLr), getGradientScale(dfdx, parameter))
     // _v = momentum * _v + rate * (dfdx + weightDecay * parameter)
     _v.mul(ev.fromType[Double](momentum))
     buffer.mul(parameter, ev.fromType[Double](weightDecay)).add(dfdx).mul(rate)
@@ -102,6 +95,36 @@ class LarsSGD[T: ClassTag](
     state("v") = _v
     (parameter, Array(fx))
   }
+
+  private[bigdl] def setGradientScale[T](scale: Double): Unit = {
+    calculatedTrust = Some(ev.fromType[Double](scale))
+  }
+
+  private[bigdl] def getGradientScale(dfdx: Tensor[T], parameter: Tensor[T]): T = {
+    val rawScaleValue = if (calculatedTrust.isDefined) {
+      val ret = calculatedTrust.get
+      calculatedTrust = None
+      ret
+    } else {
+      val normGradient = ev.sqrt(dfdx.sumSquare())
+      val normParam = ev.sqrt(parameter.sumSquare())
+      // scale = (normGradient + weightDecay * normParam) / normParam
+      val scale = Tensor.scalar[T](normParam)
+      scale.mul(ev.fromType[Double](weightDecay)).add(normGradient).div(normParam)
+      scale.value()
+    }
+
+    if (ev.isInf(rawScaleValue)) {
+      ev.fromType[Double](10000.0)
+    } else if (ev.nearlyEqual(rawScaleValue, ev.fromType[Double](0.0), 0.0001)) {
+      ev.fromType[Double](1e-4)
+    } else if (ev.isNan(rawScaleValue)) {
+      ev.fromType[Double](1.0)
+    } else {
+      rawScaleValue
+    }
+  }
+
 
   /**
    * return an string of current hyperParameter.
@@ -176,6 +199,20 @@ object LarsSGD {
 
 
   /**
+   * Check if there is LarsSGD in optimMethods. If so, return the weight decay of the first found
+   * LarsSGD. Else, return None
+   * @param optimMethods
+   * @tparam T
+   * @return The weight decay of the first found LarsSGD in the optimMethods.
+   *         Or None if there is not one
+   */
+  def containsLarsSGD[T](optimMethods: Map[String, OptimMethod[T]]): Option[Double] = {
+    optimMethods.find({ case (name, optim) => optim.isInstanceOf[LarsSGD[T]]})
+      .map({case (name, optim) => optim.asInstanceOf[LarsSGD[T]].weightDecay})
+  }
+
+
+  /**
    * Create a Map(String, OptimMethod) for a container. For each submodule in the container,
    * generate (module.getName(), new Lars[T]) pair in the returned map. The resulting map can be
    * used in setOptimMethods.
@@ -196,14 +233,14 @@ object LarsSGD {
    *
    */
   def createOptimLRSchedulerForModule[A <: Activity, B <: Activity, T: ClassTag]
-  (model: Container[A, B, T],
-   lrScheGenerator: AbstractModule[Activity, Activity, T] => (LearningRateSchedule, Boolean),
-   trust: Double = 1.0,
-   learningRate: Double = 1e-3,
-   learningRateDecay: Double = 0.01,
-   weightDecay: Double = 0.005,
-   momentum: Double = 0.5)
-  (implicit ev: TensorNumeric[T]): Map[String, OptimMethod[T]] = {
+    (model: Container[A, B, T],
+      lrScheGenerator: AbstractModule[Activity, Activity, T] => (LearningRateSchedule, Boolean),
+      trust: Double = 1.0,
+      learningRate: Double = 1e-3,
+      learningRateDecay: Double = 0.01,
+      weightDecay: Double = 0.005,
+      momentum: Double = 0.5)
+      (implicit ev: TensorNumeric[T]): Map[String, OptimMethod[T]] = {
     createOptimSeqForModule(model, lrScheGenerator, trust, learningRate, learningRateDecay,
       weightDecay, momentum).toMap
   }
@@ -241,5 +278,80 @@ object LarsSGD {
           Seq()
         }
     }
+  }
+}
+
+
+/**
+ * Process layer-wise l2 norm to scale the gradients
+ */
+private[bigdl] class LarsProcessor(paramaterSplits: Map[String, (Int, Int)],
+  weightDecay: Double
+) extends ParameterProcessor {
+  override def collectGlobalData[T](models: RDD[Cache[T]],
+    parameters: AllReduceParameter[T],
+    metrics: Metrics,
+    state: Table)(implicit ev: TensorNumeric[T]): Unit = {
+    val numFinishedModel = state.get[Int]("numFinishedModel").get
+    val parallelism = state.get[Int]("parallelism").get
+    val isGradientUpdated = state.get[Boolean]("isGradientUpdated").get
+
+    val scales = models.mapPartitions(modelIter => {
+      if (!isGradientUpdated) {
+        val getG = System.nanoTime()
+        parameters.aggregateGradientPartition(numFinishedModel)
+        metrics.add("aggregrateGradientParition average executor",
+          System.nanoTime() - getG)
+      }
+      val (paramLocalStart, paramLocalLen) = parameters.localPartitionRange
+      paramaterSplits.flatMap { case (name, p) =>
+        val startIdx = Math.max(paramLocalStart, p._1)
+        val endIdx = Math.min(paramLocalStart + paramLocalLen, p._1 + p._2)
+        if (endIdx > startIdx) {
+          val grad = parameters.gradientPartition.narrow(1,
+            startIdx - paramLocalStart + 1, endIdx - startIdx)
+          val weight = parameters.weightPartition.narrow(1,
+            startIdx - paramLocalStart + 1, endIdx - startIdx)
+          val sumGrad = Util.getSumsquareInParallel(grad, parallelism)
+          val sumWeight = Util.getSumsquareInParallel(weight, parallelism)
+          Iterator((name, (sumWeight, sumGrad)))
+        } else {
+          Iterator.empty
+        }
+      }.toIterator
+    })
+      .reduceByKey((weightGrad1, weightGrad2) =>
+        (weightGrad1._1 + weightGrad2._1, weightGrad1._2 + weightGrad2._2))
+      .map { case (name, data) =>
+        val normGradient = Math.sqrt(data._2)
+        val normParam = Math.sqrt(data._1)
+        (name, (normGradient + weightDecay * normParam) / normParam)
+      }
+      .collect().toMap
+    state("isGradientUpdated") = true
+    state("larsScale") = scales
+  }
+
+  override def processParameters[T](parameters: AllReduceParameter[T],
+    modelCache: Cache[T],
+    state: Table)(implicit ev: TensorNumeric[T]): Unit = {
+    val larsScale = state.get[Map[String, Double]]("larsScale").get
+    val (paramLocalStart, paramLocalLen) = parameters.localPartitionRange
+    paramaterSplits.foreach { case (name, p) =>
+      val startIdx = Math.max(paramLocalStart, p._1)
+      val endIdx = Math.min(paramLocalStart + paramLocalLen, p._1 + p._2)
+      // if the layer is in the current partition, set the LarsSGD's gradient scale
+      if (endIdx > startIdx) {
+        modelCache.optimMethods(name) match {
+          case optim: LarsSGD[T] =>
+            optim.setGradientScale(larsScale(name))
+        }
+      }
+    }
+  }
+
+  override def processParameters[T](model: Module[T],
+    state: Table)(implicit ev: TensorNumeric[T]): Unit = {
+    // LARS optim will calculate the scale, just leave LarsSGD.calculatedScale = None
   }
 }
