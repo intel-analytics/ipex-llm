@@ -101,8 +101,8 @@ class LarsSGDSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = Optimizer(module, generateData(), MSECriterion[Float]())
     val epochs = 6
     optimizer
-       .setOptimMethods(LarsSGD.createOptimForModule(module, learningRate = 0.02, learningRateDecay
-          = 0.1))
+       .setOptimMethods(LarsSGD.createOptimForModule(module, learningRate = 0.0001,
+         learningRateDecay = 0, momentum = 0, weightDecay = 0))
        .setEndWhen(Trigger.maxEpoch(epochs))
        .optimize()
     (1 to 10).foreach(i => {
@@ -115,6 +115,12 @@ class LarsSGDSpec extends FlatSpec with Matchers with BeforeAndAfter {
       println(deviation)
       deviation should be(0.0f +- 0.1f)
     })
+  }
+
+  "lars" should "be found in multi-optims" in {
+    val optim = Map("1" -> new SGD[Float](), "2" -> new LarsSGD[Float](false,
+      _weightDecay = 1.23))
+    LarsSGD.containsLarsSGD(optim).getOrElse(0.0) should be(1.23)
   }
 
 }
