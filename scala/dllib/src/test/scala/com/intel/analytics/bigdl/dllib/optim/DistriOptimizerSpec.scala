@@ -247,6 +247,26 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "Train with MSE with LARS" should "be good with LARS parameter processor" in {
+    RandomGenerator.RNG.setSeed(10)
+    val optimizer = new DistriOptimizer(
+      mse,
+      dataSet,
+      new MSECriterion[Double]())
+      .setOptimMethods(
+        Map("fc_1" -> new LarsSGD[Double](true, _learningRate = 0.1, _learningRateDecay = 0,
+          _momentum = 0, _weightDecay = 0),
+          "fc_2" -> new LarsSGD[Double](false, _learningRate = 0.1, _learningRateDecay = 0,
+            _momentum = 0, _weightDecay = 0)))
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 1e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 1e-2)
+  }
+
   "Train with MSE and LBFGS" should "be good" in {
     LoggerFilter.redirectSparkInfoLogs()
     RandomGenerator.RNG.setSeed(10)

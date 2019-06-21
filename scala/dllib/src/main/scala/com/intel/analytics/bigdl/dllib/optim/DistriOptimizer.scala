@@ -844,6 +844,10 @@ class DistriOptimizer[T: ClassTag](
         s"have corresponding OptimMethod")
     }
 
+    LarsSGD.containsLarsSGD(optimMethods).foreach(weightDecay =>
+      parameterProcessors.append(new LarsProcessor(parameterSplits, weightDecay))
+    )
+
     prepareInput()
 
     val modelsAndBroadcast = DistriOptimizer.initThreadModels(trainingModel, distDataset, criterion,
