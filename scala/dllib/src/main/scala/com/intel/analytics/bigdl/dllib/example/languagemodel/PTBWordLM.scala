@@ -66,15 +66,20 @@ object PTBWordLM {
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.loadModule[Float](param.modelSnapshot.get)
-      } else {
-        val curModel = PTBModel(
+      } else if (param.withTransformerModel) {
+        PTBModel.transformer(
           inputSize = param.vocabSize,
           hiddenSize = param.hiddenSize,
           outputSize = param.vocabSize,
           numLayers = param.numLayers,
           keepProb = param.keepProb)
-        curModel.reset()
-        curModel
+      } else {
+        PTBModel.lstm(
+          inputSize = param.vocabSize,
+          hiddenSize = param.hiddenSize,
+          outputSize = param.vocabSize,
+          numLayers = param.numLayers,
+          keepProb = param.keepProb)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
