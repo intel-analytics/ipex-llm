@@ -44,6 +44,9 @@ import scala.reflect.runtime._
  * @param embeddingDropout
  * @param attentionDropout
  * @param ffnDropout
+ * @param paddingValue padding value for word embedding, default 0, which means no padding.
+ * @param withShareWeightsLinear whether to add linear that sharing weights with embedding layer.
+ * @param transformerType transformer type, support LanguageModel and Translation.
  * @tparam T The numeric type in this module parameters.
  */
 class Transformer[T: ClassTag](
@@ -55,8 +58,13 @@ class Transformer[T: ClassTag](
    val embeddingDropout: Float,
    val attentionDropout: Float,
    val ffnDropout: Float,
+   val paddingValue: Double = 0,
+   val withShareWeightsLinear: Boolean = false,
    val transformerType: TransformerType = LanguageModel)
   (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
+
+  private val linearSharedWeigths = TimeDistributed(
+    new Linear(inputSize = hiddenSize, outputSize = vocabSize, withBias = false))
 
   override def buildModel(): Module[T] = {
     transformerType match {
@@ -75,7 +83,8 @@ class Transformer[T: ClassTag](
     val join = JoinTable(1, -1).inputs(inputNode, targetNode)
     val constantValue = math.sqrt(hiddenSize)
     val embedding = MulConstant(constantValue).inputs(
-      LookupTable[T](vocabSize, hiddenSize).inputs(join))
+      LookupTable[T](vocabSize, hiddenSize, paddingValue = paddingValue,
+        maskZero = true).setName("embedding").inputs(join))
     val split = new SplitTensor(1, 2).inputs(embedding)
     val embeddingInput = SelectTable(1).inputs(split)
     val embeddingOutput = SelectTable(2).inputs(split)
@@ -89,9 +98,32 @@ class Transformer[T: ClassTag](
     val inputNode = Input()
     val constantValue = math.sqrt(hiddenSize)
     val embeddingInput = MulConstant(constantValue).inputs(
-      LookupTable[T](vocabSize, hiddenSize).inputs(inputNode))
+      LookupTable[T](vocabSize, hiddenSize, paddingValue = paddingValue,
+        maskZero = true).setName("embedding").inputs(inputNode))
     val outputNode = decode(embeddingInput)
     Graph(inputNode, outputNode)
+  }
+
+  override def updateOutput(input: Activity): Activity = {
+    output = model.updateOutput(input)
+
+    // sharing weight between embedding and linear
+    if (withShareWeightsLinear) {
+      val embeddingLayer = model.apply("embedding").get
+      val embeddingParams = embeddingLayer.getParameters()
+      val linearParams = linearSharedWeigths.getParameters()
+      linearParams._1.copy(embeddingParams._1)
+      output = linearSharedWeigths.updateOutput(model.output.toTensor[T])
+    }
+    output
+  }
+
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    val grad = if (withShareWeightsLinear) {
+      linearSharedWeigths.updateGradInput(model.output.toTensor[T], gradOutput.toTensor[T])
+    } else gradOutput
+    gradInput = model.updateGradInput(input, grad)
+    gradInput
   }
 
   private[nn] def encode(inputs: ModuleNode[T], attentionBias: ModuleNode[T]): ModuleNode[T] = {
@@ -99,10 +131,7 @@ class Transformer[T: ClassTag](
     // applying dropout.
     val position = new PositionEncode().inputs(inputs)
     val encoderInput = CAddTable().inputs(inputs, position)
-    val encoderInputDrop = if (train) {
-      val postDropOut = Dropout(1- embeddingDropout)
-      postDropOut.inputs(encoderInput)
-    } else encoderInput
+    val encoderInputDrop = Dropout(1- embeddingDropout).inputs(encoderInput)
 
     block(numHiddenlayers, encoderInputDrop, attentionBias, blockType = "encode")
   }
@@ -113,11 +142,7 @@ class Transformer[T: ClassTag](
     val decoderInput = new PositionEncodeWithShift().inputs(targets)
     val decoderSelfAttentionBias = new SelfAttentionMask().inputs(targets)
 
-    val decoderInputDrop = if (train) {
-      val postDropOut = Dropout(1- embeddingDropout)
-      postDropOut.inputs(decoderInput)
-    } else decoderInput
-
+    val decoderInputDrop = Dropout(1- embeddingDropout).inputs(decoderInput)
     block(numHiddenlayers, decoderInputDrop,
       decoderSelfAttentionBias, encoderOutput, attentionBias, blockType = "decode")
   }
@@ -186,6 +211,11 @@ class Transformer[T: ClassTag](
       .inputs(layer.setName(preName + "/ffn").inputs(norm))
     CAddTable().inputs(decoderInput, drop)
   }
+
+  override def clearState(): this.type = {
+    if (withShareWeightsLinear) linearSharedWeigths.clearState()
+    super.clearState()
+  }
 }
 
 object Transformer extends ModuleSerializable {
@@ -198,11 +228,15 @@ object Transformer extends ModuleSerializable {
      embeddingDropout: Float,
      attentionDropout: Float,
      ffnDropout: Float,
+     paddingValue: Double = 0,
+     withShareWeightsLinear: Boolean = false,
      transformerType: TransformerType = LanguageModel)
-   (implicit ev: TensorNumeric[T]): Transformer[T] =
+   (implicit ev: TensorNumeric[T]): Transformer[T] = {
     new Transformer(vocabSize, hiddenSize, numHeads,
       filterSize, numHiddenlayers,
-      embeddingDropout, attentionDropout, ffnDropout, transformerType)
+      embeddingDropout, attentionDropout, ffnDropout, paddingValue,
+      withShareWeightsLinear = withShareWeightsLinear, transformerType = transformerType)
+  }
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
@@ -244,9 +278,17 @@ object Transformer extends ModuleSerializable {
       .getAttributeValue(context, attrMap.get("ffnDropout"))
       .asInstanceOf[Float]
 
+    val paddingValue = DataConverter
+      .getAttributeValue(context, attrMap.get("paddingValue"))
+      .asInstanceOf[Double]
+
     val tag = DataConverter
       .getAttributeValue(context, attrMap.get("transformerType"))
       .asInstanceOf[Int]
+
+    val withShareWeightsLinear = DataConverter
+      .getAttributeValue(context, attrMap.get("withShareWeightsLinear"))
+      .asInstanceOf[Boolean]
 
     val transformerType = tag match {
       case 1 => LanguageModel
@@ -256,7 +298,8 @@ object Transformer extends ModuleSerializable {
     }
 
     val transformer = Transformer(vocabSize, hiddenSize, numHeads, filterSize,
-      numHiddenlayers, embeddingDropout, attentionDropout, ffnDropout, transformerType)
+      numHiddenlayers, embeddingDropout, attentionDropout, ffnDropout, paddingValue,
+      withShareWeightsLinear = withShareWeightsLinear, transformerType)
 
     transformer.model = model
     transformer
@@ -311,6 +354,16 @@ object Transformer extends ModuleSerializable {
     DataConverter.setAttributeValue(context, ffnDropoutBuilder,
       transformer.ffnDropout, universe.typeOf[Float])
     transformerBuilder.putAttr("ffnDropout", embeddingDropoutBuilder.build)
+
+    val paddingValueBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, paddingValueBuilder,
+      transformer.paddingValue, universe.typeOf[Double])
+    transformerBuilder.putAttr("paddingValue", paddingValueBuilder.build)
+
+    val shareWeightsBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, shareWeightsBuilder,
+      transformer.withShareWeightsLinear, universe.typeOf[Boolean])
+    transformerBuilder.putAttr("withShareWeightsLinear", shareWeightsBuilder.build)
 
     // for language model, marked as 1
     // for translation model, marked as 2
