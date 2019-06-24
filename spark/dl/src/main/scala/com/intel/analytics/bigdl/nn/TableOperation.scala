@@ -56,7 +56,7 @@ class TableOperation[T: ClassTag](
     val inputLarge = input[Tensor[T]](3 - smallPos)
 
     val largeSize = inputLarge.size()
-    // batchSize may be not same for non-training case
+    // batchSize may be not same for model inference
     largeSize(0) = -1
     if (expandLayer == null) expandLayer = ExpandSize(largeSize)
     val inputExpand = expandLayer.forward(inputSmall)

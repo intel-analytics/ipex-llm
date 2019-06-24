@@ -74,7 +74,7 @@ object PTBWordLM {
           numLayers = param.numLayers,
           keepProb = param.keepProb)
       } else {
-        PTBModel(
+        PTBModel.lstm(
           inputSize = param.vocabSize,
           hiddenSize = param.hiddenSize,
           outputSize = param.vocabSize,

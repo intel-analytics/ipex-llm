@@ -38,7 +38,7 @@ object PTBModel {
     Graph(input, output)
   }
 
-  def apply(
+  def lstm(
     inputSize: Int,
     hiddenSize: Int,
     outputSize: Int,
