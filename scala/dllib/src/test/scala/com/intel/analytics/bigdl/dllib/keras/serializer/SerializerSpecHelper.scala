@@ -34,6 +34,7 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
   private val excluded = Set[String](
     "com.intel.analytics.zoo.pipeline.api.autograd.LambdaTorch",
     "com.intel.analytics.zoo.pipeline.api.net.TFNet",
+    "com.intel.analytics.zoo.pipeline.api.net.TorchNet",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.Recurrent",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalCAddTable",
