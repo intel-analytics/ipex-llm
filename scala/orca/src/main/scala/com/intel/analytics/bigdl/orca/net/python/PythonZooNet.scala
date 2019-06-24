@@ -181,4 +181,8 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     pids.asScala.foreach(pid => processToBeKill.add(pid + ""))
   }
 
+  def createTorchNet(path: String): TorchNet = {
+    TorchNet(path)
+  }
+
 }
