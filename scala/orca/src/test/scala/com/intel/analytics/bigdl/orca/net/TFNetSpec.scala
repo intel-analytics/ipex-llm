@@ -66,7 +66,6 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result.toTensor[Float].size() should be(Array(2, 2))
   }
 
-
   "TFNet" should "should be serializable by java" in {
 
     val resource = getClass().getClassLoader().getResource("tfnet")
