@@ -2,7 +2,9 @@
 
 This example refers to [tensorflow ptb example](https://www.tensorflow.org/tutorials/recurrent#language_modeling), which shows how to train a recurrent neural network on a challenging task of language modeling.
 
-The core of our model consists of LSTM cells that process one word at a time and computes probabilities of the possible values for the next word in the sentence.
+We provide two types of model: multi-layer LSTM model and Transformer model.
+
+The core of our model is to process one word at a time and computes probabilities of the possible values for the next word in the sentence.
 
 Here we use [Penn Tree Bank (PTB)](https://catalog.ldc.upenn.edu/ldc99t42) as training dataset, which is a popular benchmark for measuring the quality of these models, whilst being small and relatively fast to train.
 
@@ -29,7 +31,7 @@ spark-submit \
 --total-executor-cores total_cores_for_the_job \
 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
--f $HOME/simple-examples/data -b 40 --checkpoint $HOME/model --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 20 --learningRateDecay 0.001 --keepProb 0.5 --overWrite
+-f $HOME/simple-examples/data -b 40 --checkpoint $HOME/model --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 20 --learningRateDecay 0.001 --keepProb 0.5 --overWrite --withTransformerModel
 ```
 
 In the above commands:
@@ -45,3 +47,4 @@ In the above commands:
 ```--numSteps```: number of words per record in LM
 ```--overWrite```: do overwrite when saving checkpoint
 ```--keepProb```: the probability to do dropout
+```--withTransformerModel```: use transformer model in this LM
