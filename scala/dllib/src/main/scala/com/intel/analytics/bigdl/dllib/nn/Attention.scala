@@ -61,9 +61,7 @@ class Attention[T: ClassTag](
     val cadd = CAddTable().inputs(matmul, inputBias)
     val softMax = TransformerOperation.softMax[T]().inputs(cadd)
 
-    val drop = if (train) {
-      Dropout(initP = (1.0 - attentionDropout)).inputs(softMax)
-    } else softMax
+    val drop = Dropout(initP = (1.0 - attentionDropout)).inputs(softMax)
     val matmulNoTrans = MM().inputs(drop, contiguousV)
     // Recombine heads --> (batch_size, length, hidden_size)
     val combineHeads = new CombineHeads().inputs(matmulNoTrans)
@@ -72,7 +70,6 @@ class Attention[T: ClassTag](
       hiddenSize, hiddenSize, false, name = s"${this.getName()}_output_transform")
       .inputs(combineHeads)
     val graph = Graph(Array(inputX, inputY, inputBias), Array(outputLayer))
-    if (this.train) graph.training() else graph.evaluate()
     graph
   }
 }
