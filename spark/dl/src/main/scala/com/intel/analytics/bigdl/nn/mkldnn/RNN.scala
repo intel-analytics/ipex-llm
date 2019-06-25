@@ -56,13 +56,9 @@ class RNN(
   private[mkldnn] var weight: TensorMMap = _
   private[mkldnn] var weight_i: TensorMMap = _
   private[mkldnn] var bias: TensorMMap = _
-  private[mkldnn] var src_i: TensorMMap = _
-  private[mkldnn] var dst_i: TensorMMap = _
   private[mkldnn] var gradWeight: TensorMMap = _
   private[mkldnn] var gradWeight_i: TensorMMap = _
   private[mkldnn] var gradBias: TensorMMap = _
-  private[mkldnn] var gradsrc_i: TensorMMap = _
-  private[mkldnn] var graddst_i: TensorMMap = _
 
   private var workSpaceFormat: MemoryData = _
   private var workSpace : Tensor[Float] = _
@@ -72,6 +68,15 @@ class RNN(
   private var weightForBackwardMemoryData: MemoryData = _
   private var weightIterForBackward: DnnTensor[Float] = _
   private var weightIterForBackwardMemoryData: MemoryData = _
+
+  private var batchSize: Int = _
+  private var stepSize: Int = _
+  private var inputShape: Array[Int] = _
+  private var outputShape: Array[Int] = _
+  private var weightShape: Array[Int] = _
+  private var weightIterShape: Array[Int] = _
+  private var biasShape: Array[Int] = _
+  private var commonIterShape: Array[Int] = _
 
   if(layers > 1) {
     require(inputSize == hiddenSize,
@@ -109,12 +114,16 @@ class RNN(
    * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
    */
 
-  weight = new TensorMMap(Array(layers, numOfDirections, inputSize, ngates, hiddenSize))
-  weight_i = new TensorMMap(Array(layers, numOfDirections, hiddenSize, ngates, hiddenSize))
-  bias = new TensorMMap(Array(layers, numOfDirections, ngates, hiddenSize))
-  gradWeight = new TensorMMap(Array(layers, numOfDirections, inputSize, ngates, hiddenSize))
-  gradWeight_i = new TensorMMap(Array(layers, numOfDirections, hiddenSize, ngates, hiddenSize))
-  gradBias = new TensorMMap(Array(layers, numOfDirections, ngates, hiddenSize))
+  weightShape = Array(layers, numOfDirections, inputSize, ngates, hiddenSize)
+  weightIterShape = Array(layers, numOfDirections, hiddenSize, ngates, hiddenSize)
+  biasShape = Array(layers, numOfDirections, ngates, hiddenSize)
+
+  weight = new TensorMMap(weightShape)
+  weight_i = new TensorMMap(weightIterShape)
+  bias = new TensorMMap(biasShape)
+  gradWeight = new TensorMMap(weightShape)
+  gradWeight_i = new TensorMMap(weightIterShape)
+  gradBias = new TensorMMap(biasShape)
 
   val rnnCellDesc = mode match {
     case AlgKind.VanillaLstm =>
@@ -165,27 +174,28 @@ class RNN(
      * and step size is the first element of inputShape.
      */
 
-    val inputShape = inputs(0).layout match {
-      case Memory.Format.tnc => inputs(0).shape
+    val (bs, ss) = inputs(0).layout match {
+      case Memory.Format.tnc => (inputs(0).shape(1), inputs(0).shape(0))
+      case Memory.Format.ntc => (inputs(0).shape(0), inputs(0).shape(1))
       case _ =>
         throw new UnsupportedOperationException("Not support such input format. " +
           "The input format is: " + inputs(0).layout)
     }
 
-    val weightShape = weight.size()
-    val biasShape = bias.size()
-    val outputShape = Array(inputShape(0), inputShape(1), outputSizeFactor * hiddenSize)
-    val inputIterShape = Array(layers, numOfDirections, nstates, inputShape(1), hiddenSize)
-    val weightIterShape = weight_i.size()
-    val outputIterShape = inputIterShape
+    batchSize = bs
+    stepSize = ss
+
+    inputShape = Array(stepSize, batchSize, inputSize)
+    outputShape = Array(stepSize, batchSize, outputSizeFactor * hiddenSize)
+    commonIterShape = Array(layers, numOfDirections, nstates, batchSize, hiddenSize)
 
     val src_layer = NativeData(inputShape, Memory.Format.any)
-    val src_iter = NativeData(inputIterShape, Memory.Format.any)
+    val src_iter = NativeData(commonIterShape, Memory.Format.any)
     val wei_layer = NativeData(weightShape, Memory.Format.any)
     val wei_iter = NativeData(weightIterShape, Memory.Format.any)
     val bis = NativeData(biasShape, Memory.Format.any)
     val dst_layer = NativeData(outputShape, Memory.Format.any)
-    val dst_iter = NativeData(outputIterShape, Memory.Format.any)
+    val dst_iter = NativeData(commonIterShape, Memory.Format.any)
 
     val src_layer_MD = src_layer.getMemoryDescription()
     val src_iter_MD = src_iter.getMemoryDescription()
@@ -194,11 +204,6 @@ class RNN(
     val bis_MD = bis.getMemoryDescription()
     val dist_layer_MD = dst_layer.getMemoryDescription()
     val dist_iter_MD = dst_iter.getMemoryDescription()
-
-    src_i = new TensorMMap(inputIterShape)
-    dst_i = new TensorMMap(outputIterShape)
-    gradsrc_i = new TensorMMap(inputIterShape)
-    graddst_i = new TensorMMap(outputIterShape)
 
     val description = MklDnn.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,
       src_iter_MD, weights_layer_MD, weights_iter_MD, bis_MD, dist_layer_MD, dist_iter_MD)
@@ -213,10 +218,6 @@ class RNN(
     val realDst = MemoryData.operationWant(fwdPD, Query.DstPd, 0)
     val realDst_iter = MemoryData.operationWant(fwdPD, Query.DstPd, 1)
 
-    require(src_i.size().product == realSrc_iter.shape.product,
-      s"${getName} src iter shape is not correct.")
-    require(dst_i.size().product == realDst_iter.shape.product,
-      s"${getName} dst iter shape is not correct.")
     require(weight.size().product == realWei.shape.product,
       s"${getName} weight shape is not correct.")
     require(weight_i.size().product == realWei_iter.shape.product,
@@ -224,17 +225,13 @@ class RNN(
     require(bias.size().product == realBias.shape.product,
       s"${getName} bias shape is not correct.")
 
-    weight.setMemoryData(HeapData(weight.size(), Memory.Format.ldigo), realWei, runtime)
-    weight_i.setMemoryData(HeapData(weight_i.size(), Memory.Format.ldigo), realWei_iter, runtime)
-    bias.setMemoryData(HeapData(bias.size(), Memory.Format.ldgo), realBias, runtime)
-    src_i.setMemoryData(HeapData(src_i.size(), Memory.Format.ldsnc), realSrc_iter, runtime)
-    dst_i.setMemoryData(HeapData(dst_i.size(), Memory.Format.ldsnc), realDst_iter, runtime)
+    weight.setMemoryData(HeapData(weightShape, Memory.Format.ldigo), realWei, runtime)
+    weight_i.setMemoryData(HeapData(weightIterShape, Memory.Format.ldigo), realWei_iter, runtime)
+    bias.setMemoryData(HeapData(biasShape, Memory.Format.ldgo), realBias, runtime)
 
     weight.sync()
     weight_i.sync()
     bias.sync()
-    src_i.sync()
-    dst_i.sync()
 
     val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
       realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
@@ -269,15 +266,18 @@ class RNN(
   }
 
   override def updateOutput(input: Activity): Activity = {
+    val src_i = DnnTensor[Float](commonIterShape).zero()
+    val dst_i = DnnTensor[Float](commonIterShape).zero()
+
     if (updateOutputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(input.asInstanceOf[Tensor[Float]])
-      buffer.append(src_i.native)
+      buffer.append(src_i)
       buffer.append(weight.native)
       buffer.append(weight_i.native)
       buffer.append(bias.native)
       buffer.append(output.asInstanceOf[Tensor[Float]])
-      buffer.append(dst_i.native)
+      buffer.append(dst_i)
       if (isTraining()) {
         buffer.append(workSpace)
       }
@@ -291,8 +291,6 @@ class RNN(
       weight.sync()
       weight_i.sync()
       bias.sync()
-      src_i.sync()
-      dst_i.sync()
     }
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
@@ -302,27 +300,24 @@ class RNN(
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    val inputShape = inputFormats()(0).shape
-    val outputShape = Array(inputShape(0), inputShape(1), outputSizeFactor * hiddenSize)
-
     reorderManager.setRuntime(runtime)
 
     val src_layer_bw = NativeData(inputShape, Memory.Format.any)
-    val src_iter_bw = NativeData(src_i.size(), Memory.Format.any)
-    val wei_layer_bw = NativeData(weight.size(), Memory.Format.any)
-    val wei_iter_bw = NativeData(weight_i.size(), Memory.Format.any)
-    val bis_bw = NativeData(bias.size(), Memory.Format.any)
+    val src_iter_bw = NativeData(commonIterShape, Memory.Format.any)
+    val wei_layer_bw = NativeData(weightShape, Memory.Format.any)
+    val wei_iter_bw = NativeData(weightIterShape, Memory.Format.any)
+    val bis_bw = NativeData(biasShape, Memory.Format.any)
     val dst_layer_bw = NativeData(outputShape, Memory.Format.any)
-    val dst_iter_bw = NativeData(dst_i.size(), Memory.Format.any)
+    val dst_iter_bw = NativeData(commonIterShape, Memory.Format.any)
     val diff_src_layer = NativeData(inputShape, Memory.Format.any)
-    val diff_src_iter = NativeData(src_i.size(), Memory.Format.any)
-    val diff_weights_layer = NativeData(weight.size(), Memory.Format.ldigo)
+    val diff_src_iter = NativeData(commonIterShape, Memory.Format.any)
+    val diff_weights_layer = NativeData(weightShape, Memory.Format.ldigo)
     // IMPORTANT : it has to be ldigo
-    val diff_weights_iter = NativeData(weight_i.size(), Memory.Format.ldigo)
+    val diff_weights_iter = NativeData(weightIterShape, Memory.Format.ldigo)
     // IMPORTANT : it has to be ldigo
-    val diff_bias = NativeData(bias.size(), Memory.Format.any)
+    val diff_bias = NativeData(biasShape, Memory.Format.any)
     val diff_dist_layer = NativeData(outputShape, Memory.Format.any)
-    val diff_dist_iter = NativeData(dst_i.size(), Memory.Format.any)
+    val diff_dist_iter = NativeData(commonIterShape, Memory.Format.any)
 
     val src_layer_bw_MD = src_layer_bw.getMemoryDescription()
     val src_iter_bw_MD = src_iter_bw.getMemoryDescription()
@@ -381,17 +376,11 @@ class RNN(
       .infer(Array(weight_i.heapData), Array(weightIterForBackwardMemoryData), weight_i.dense)
       .asInstanceOf[DnnTensor[Float]]
 
-    gradsrc_i.setMemoryData(realDiffSrc_iter, HeapData(gradsrc_i.size(), Memory.Format.ldsnc),
+    gradWeight.setMemoryData(realDiffWei, HeapData(weightShape, Memory.Format.ldigo), runtime)
+    gradWeight_i.setMemoryData(realDiffWei_iter, HeapData(weightIterShape, Memory.Format.ldigo),
       runtime)
-    graddst_i.setMemoryData(realDiffDst_iter, HeapData(graddst_i.size(), Memory.Format.ldsnc),
-      runtime)
-    gradWeight.setMemoryData(realDiffWei, HeapData(gradWeight.size(), Memory.Format.ldigo), runtime)
-    gradWeight_i.setMemoryData(realDiffWei_iter, HeapData(gradWeight_i.size(), Memory.Format.ldigo),
-      runtime)
-    gradBias.setMemoryData(realDiffBias, HeapData(gradBias.size(), Memory.Format.ldgo), runtime)
+    gradBias.setMemoryData(realDiffBias, HeapData(biasShape, Memory.Format.ldgo), runtime)
 
-    gradsrc_i.zero()
-    graddst_i.zero()
     gradWeight.zero()
     gradWeight_i.zero()
     gradBias.zero()
@@ -421,21 +410,26 @@ class RNN(
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    val src_i = DnnTensor[Float](commonIterShape).zero()
+    val dst_i = DnnTensor[Float](commonIterShape).zero()
+    val gradsrc_i = DnnTensor[Float](commonIterShape).zero()
+    val graddst_i = DnnTensor[Float](commonIterShape).zero()
+
     if (updateGradInputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(input.asInstanceOf[Tensor[Float]])
-      buffer.append(src_i.native)
+      buffer.append(src_i)
       buffer.append(weightForBackward)
       buffer.append(weightIterForBackward)
       buffer.append(bias.native)
       buffer.append(output.asInstanceOf[Tensor[Float]])
-      buffer.append(dst_i.native)
+      buffer.append(dst_i)
       buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
-      buffer.append(graddst_i.native)
+      buffer.append(graddst_i)
       buffer.append(workSpace)
 
       buffer.append(gradInput.asInstanceOf[Tensor[Float]])
-      buffer.append(gradsrc_i.native)
+      buffer.append(gradsrc_i)
       buffer.append(gradWeight.native)
       buffer.append(gradWeight_i.native)
       buffer.append(gradBias.native)
@@ -448,6 +442,10 @@ class RNN(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
+
+    gradWeight.sync()
+    gradWeight_i.sync()
+    gradBias.sync()
 
     gradInput
   }
@@ -466,8 +464,7 @@ class RNN(
 
   override def release(): Unit = {
     super.release()
-    List(weight, bias, weight_i, src_i, dst_i,
-      gradWeight, gradBias, gradWeight_i, gradsrc_i, graddst_i).foreach(_.release())
+    List(weight, bias, weight_i, gradWeight, gradBias, gradWeight_i).foreach(_.release())
   }
 }
 
