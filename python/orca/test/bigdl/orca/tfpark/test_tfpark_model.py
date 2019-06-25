@@ -77,7 +77,6 @@ class TestTFParkModel(ZooTestCase):
         dataset = TFDataset.from_rdd(rdd,
                                      features=(tf.float32, [10]),
                                      labels=(tf.int32, []),
-                                     names=["features", "labels"],
                                      batch_size=4,
                                      val_rdd=rdd
                                      )
@@ -479,6 +478,26 @@ class TestTFParkModel(ZooTestCase):
         current_weight = model.get_weights()
 
         np.all(np.abs((current_weight[0] - pre_weights[0])) < 1e-7)
+
+    def test_tf_dataset_with_list_feature(self):
+        np.random.seed(20)
+        x = np.random.rand(20, 10)
+        y = np.random.randint(0, 2, (20))
+
+        rdd_x = self.sc.parallelize(x)
+        rdd_y = self.sc.parallelize(y)
+
+        rdd = rdd_x.zip(rdd_y)
+
+        dataset = TFDataset.from_rdd(rdd,
+                                     features=[(tf.float32, [10]), (tf.float32, [10])],
+                                     labels=(tf.int32, []),
+                                     batch_size=4,
+                                     val_rdd=rdd
+                                     )
+
+        for idx, tensor in enumerate(dataset.feature_tensors):
+            assert tensor.name == "list_input_" + str(idx) + ":0"
 
 
 if __name__ == "__main__":
