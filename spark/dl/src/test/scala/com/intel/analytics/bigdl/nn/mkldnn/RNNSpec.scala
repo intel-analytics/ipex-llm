@@ -545,9 +545,9 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
 
-    var mkldnn_gradWeight = rnn.gradWeight.dense
-    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
-    var mkldnn_gradBias = rnn.gradBias.dense
+    var mkldnn_gradWeight = Tools.dense(rnn.gradWeight.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradWeight_i = Tools.dense(rnn.gradWeight_i.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradBias = Tools.dense(rnn.gradBias.native).asInstanceOf[Tensor[Float]]
 
     var blas_gradWeight = blasrnn.preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
     var blas_gradBias = blasrnn.preTopology.asInstanceOf[nn.Linear[Float]].gradBias
@@ -571,12 +571,9 @@ class RNNSpec extends FlatSpec with Matchers{
     mkldnn_gradBias0 = concat.forward(T(mkldnn_gradBias(1), mkldnn_gradBias(3),
       mkldnn_gradBias(2), mkldnn_gradBias(4))).asInstanceOf[Tensor[Float]].clone()
 
-    Equivalent.nearequals(mkldnn_gradWeight0,
-      blas_gradWeight) should be(true)
-    Equivalent.nearequals(mkldnn_gradWeight_i0,
-      blas_gradWeight_i) should be(true)
-    Equivalent.nearequals(mkldnn_gradBias0,
-      blas_gradBias) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight0, blas_gradWeight) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0, blas_gradWeight_i) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0, blas_gradBias) should be(true)
   }
 
   "LSTM BidirectionalConcatTraining updateGradInput" should "work correctly" in {
@@ -692,9 +689,9 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
 
-    var mkldnn_gradWeight = rnn.gradWeight.dense
-    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
-    var mkldnn_gradBias = rnn.gradBias.dense
+    var mkldnn_gradWeight = Tools.dense(rnn.gradWeight.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradWeight_i = Tools.dense(rnn.gradWeight_i.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradBias = Tools.dense(rnn.gradBias.native).asInstanceOf[Tensor[Float]]
 
     mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
       .transpose(2, 3).transpose(3, 4)
@@ -746,23 +743,12 @@ class RNNSpec extends FlatSpec with Matchers{
       .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
       .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
 
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(1)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_1) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(2)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_2) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(1)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_i_1) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(2)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_i_2) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(1)).asInstanceOf[Tensor[Float]],
-      blas_gradBias_1) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(2)).asInstanceOf[Tensor[Float]],
-      blas_gradBias_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight0(1), blas_gradWeight_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight0(2), blas_gradWeight_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(1), blas_gradWeight_i_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(2), blas_gradWeight_i_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(1), blas_gradBias_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(2), blas_gradBias_2) should be(true)
   }
 
   "LSTM BidirectionalSumTraining updateGradInput" should "work correctly" in {
@@ -878,9 +864,9 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
 
-    var mkldnn_gradWeight = rnn.gradWeight.dense
-    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
-    var mkldnn_gradBias = rnn.gradBias.dense
+    var mkldnn_gradWeight = Tools.dense(rnn.gradWeight.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradWeight_i = Tools.dense(rnn.gradWeight_i.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradBias = Tools.dense(rnn.gradBias.native).asInstanceOf[Tensor[Float]]
 
     mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(2, inputSize, lstm_n_gates, hiddenSize))
       .transpose(2, 3).transpose(3, 4)
@@ -932,23 +918,12 @@ class RNNSpec extends FlatSpec with Matchers{
       .revLayer.modules(1).asInstanceOf[nn.LSTM[Float]]
       .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
 
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(1)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_1) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(2)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_2) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(1)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_i_1) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(2)).asInstanceOf[Tensor[Float]],
-      blas_gradWeight_i_2) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(1)).asInstanceOf[Tensor[Float]],
-      blas_gradBias_1) should be(true)
-
-    Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(2)).asInstanceOf[Tensor[Float]],
-      blas_gradBias_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight0(1), blas_gradWeight_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight0(2), blas_gradWeight_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(1), blas_gradWeight_i_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(2), blas_gradWeight_i_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(1), blas_gradBias_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(2), blas_gradBias_2) should be(true)
   }
 
   "LSTM UnidirectionalInference Multilayers updateGradInput" should "work correctly" in {
@@ -1059,9 +1034,9 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
       blas_gradInput) should be(true)
 
-    var mkldnn_gradWeight = rnn.gradWeight.dense
-    var mkldnn_gradWeight_i = rnn.gradWeight_i.dense
-    var mkldnn_gradBias = rnn.gradBias.dense
+    var mkldnn_gradWeight = Tools.dense(rnn.gradWeight.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradWeight_i = Tools.dense(rnn.gradWeight_i.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradBias = Tools.dense(rnn.gradBias.native).asInstanceOf[Tensor[Float]]
 
     mkldnn_gradWeight = mkldnn_gradWeight
       .resize(Array(common_n_layers, commonSize, lstm_n_gates, commonSize))
@@ -1121,14 +1096,9 @@ class RNNSpec extends FlatSpec with Matchers{
     }
 
     for (l <- 1 to common_n_layers) {
-      Equivalent.nearequals(Tools.dense(mkldnn_gradWeight0(l)).asInstanceOf[Tensor[Float]],
-        blas_gradWeight(l)) should be(true)
-
-      Equivalent.nearequals(Tools.dense(mkldnn_gradWeight_i0(l)).asInstanceOf[Tensor[Float]],
-        blas_gradWeight_i(l)) should be(true)
-
-      Equivalent.nearequals(Tools.dense(mkldnn_gradBias0(l)).asInstanceOf[Tensor[Float]],
-        blas_gradBias(l)) should be(true)
+      Equivalent.nearequals(mkldnn_gradWeight0(l), blas_gradWeight(l)) should be(true)
+      Equivalent.nearequals(mkldnn_gradWeight_i0(l), blas_gradWeight_i(l)) should be(true)
+      Equivalent.nearequals(mkldnn_gradBias0(l), blas_gradBias(l)) should be(true)
     }
   }
 }
