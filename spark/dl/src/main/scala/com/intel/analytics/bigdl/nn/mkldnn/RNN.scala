@@ -78,6 +78,11 @@ class RNN(
   private var biasShape: Array[Int] = _
   private var commonIterShape: Array[Int] = _
 
+  private var src_i: Tensor[Float] = _
+  private var dst_i: Tensor[Float] = _
+  private var gradsrc_i: Tensor[Float] = _
+  private var graddst_i: Tensor[Float] = _
+
   if(layers > 1) {
     require(inputSize == hiddenSize,
       "If layers of LSTM is more than 1, the input size and the hidden size should equal.\n"
@@ -233,6 +238,9 @@ class RNN(
     weight_i.sync()
     bias.sync()
 
+    src_i = initTensor(realSrc_iter).asInstanceOf[Tensor[Float]].zero()
+    dst_i = initTensor(realDst_iter).asInstanceOf[Tensor[Float]].zero()
+
     val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
       realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
       realBias.getPrimitive(runtime))
@@ -266,9 +274,6 @@ class RNN(
   }
 
   override def updateOutput(input: Activity): Activity = {
-    val src_i = DnnTensor[Float](commonIterShape).zero()
-    val dst_i = DnnTensor[Float](commonIterShape).zero()
-
     if (updateOutputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(input.asInstanceOf[Tensor[Float]])
@@ -379,6 +384,9 @@ class RNN(
     gradWeight_i.zero()
     gradBias.zero()
 
+    gradsrc_i = initTensor(realDiffSrc_iter).asInstanceOf[Tensor[Float]].zero()
+    graddst_i = initTensor(realDiffDst_iter).asInstanceOf[Tensor[Float]].zero()
+
     val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
       realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
       realBias.getPrimitive(runtime), realDst.getPrimitive(runtime),
@@ -404,11 +412,6 @@ class RNN(
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    val src_i = DnnTensor[Float](commonIterShape).zero()
-    val dst_i = DnnTensor[Float](commonIterShape).zero()
-    val gradsrc_i = DnnTensor[Float](commonIterShape).zero()
-    val graddst_i = DnnTensor[Float](commonIterShape).zero()
-
     if (updateGradInputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(input.asInstanceOf[Tensor[Float]])
