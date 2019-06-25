@@ -35,8 +35,6 @@ class KerasModel(object):
         :param model: a compiled keras model
         """
         self.model = model
-        self.tf_optimizer = None
-        self.tf_optimizer_done_epochs = 0
 
     @property
     def metrics_names(self):
@@ -142,15 +140,9 @@ class KerasModel(object):
                            )
 
     def _fit_distributed(self, dataset, validation_split, epochs, **kwargs):
-        if not self.tf_optimizer:
-            self.tf_optimizer = TFOptimizer.from_keras(self.model, dataset,
-                                                       val_spilt=validation_split, **kwargs)
-        else:
-            self.tf_optimizer.refresh_weights()
-
-        end_epoch = self.tf_optimizer_done_epochs + epochs
-        self.tf_optimizer.optimize(MaxEpoch(end_epoch))
-        self.tf_optimizer_done_epochs = end_epoch
+        self.tf_optimizer = TFOptimizer.from_keras(self.model, dataset,
+                                                   val_spilt=validation_split, **kwargs)
+        self.tf_optimizer.optimize(MaxEpoch(epochs))
 
     def evaluate(self,
                  x=None,
