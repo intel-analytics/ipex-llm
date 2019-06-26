@@ -78,10 +78,10 @@ class RNN(
   private var biasShape: Array[Int] = _
   private var commonIterShape: Array[Int] = _
 
-  private var src_i: Tensor[Float] = _
-  private var dst_i: Tensor[Float] = _
-  private var gradsrc_i: Tensor[Float] = _
-  private var graddst_i: Tensor[Float] = _
+  private var src_i: DnnTensor[Float] = _
+  private var dst_i: DnnTensor[Float] = _
+  private var gradsrc_i: DnnTensor[Float] = _
+  private var graddst_i: DnnTensor[Float] = _
 
   if(layers > 1) {
     require(inputSize == hiddenSize,
@@ -179,16 +179,17 @@ class RNN(
      * and step size is the first element of inputShape.
      */
 
-    val (bs, ss) = inputs(0).layout match {
-      case Memory.Format.tnc => (inputs(0).shape(1), inputs(0).shape(0))
-      case Memory.Format.ntc => (inputs(0).shape(0), inputs(0).shape(1))
+    inputs(0).layout match {
+      case Memory.Format.tnc =>
+        batchSize = inputs(0).shape(1)
+        stepSize = inputs(0).shape(0)
+      case Memory.Format.ntc =>
+        batchSize = inputs(0).shape(0)
+        stepSize = inputs(0).shape(1)
       case _ =>
         throw new UnsupportedOperationException("Not support such input format. " +
           "The input format is: " + inputs(0).layout)
     }
-
-    batchSize = bs
-    stepSize = ss
 
     inputShape = Array(stepSize, batchSize, inputSize)
     outputShape = Array(stepSize, batchSize, outputSizeFactor * hiddenSize)
@@ -238,8 +239,10 @@ class RNN(
     weight_i.sync()
     bias.sync()
 
-    src_i = initTensor(realSrc_iter).asInstanceOf[Tensor[Float]].zero()
-    dst_i = initTensor(realDst_iter).asInstanceOf[Tensor[Float]].zero()
+    src_i = initTensor(realSrc_iter).asInstanceOf[DnnTensor[Float]]
+    dst_i = initTensor(realDst_iter).asInstanceOf[DnnTensor[Float]]
+    src_i.zero()
+    dst_i.zero()
 
     val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
       realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
@@ -384,8 +387,10 @@ class RNN(
     gradWeight_i.zero()
     gradBias.zero()
 
-    gradsrc_i = initTensor(realDiffSrc_iter).asInstanceOf[Tensor[Float]].zero()
-    graddst_i = initTensor(realDiffDst_iter).asInstanceOf[Tensor[Float]].zero()
+    gradsrc_i = initTensor(realDiffSrc_iter).asInstanceOf[DnnTensor[Float]]
+    graddst_i = initTensor(realDiffDst_iter).asInstanceOf[DnnTensor[Float]]
+    gradsrc_i.zero()
+    graddst_i.zero()
 
     val srcs = Array(realSrc.getPrimitive(runtime), realSrc_iter.getPrimitive(runtime),
       realWei.getPrimitive(runtime), realWei_iter.getPrimitive(runtime),
@@ -462,6 +467,7 @@ class RNN(
   override def release(): Unit = {
     super.release()
     List(weight, bias, weight_i, gradWeight, gradBias, gradWeight_i).foreach(_.release())
+    List(src_i, dst_i, gradsrc_i, graddst_i).foreach(_.release())
   }
 }
 
