@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.pipeline.api.Predictable
 import org.apache.spark.api.java.JavaRDD
-import java.util.{List => JList, Map => JMap}
+import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -30,8 +30,8 @@ import com.intel.analytics.bigdl.optim.LocalPredictor
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text.TextSet
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 object PythonZoo {
@@ -153,7 +153,8 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                  inputIsTable: Boolean): JList[Object] = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val outputActivity = model.forward(inputActivity)
-    activityToList(outputActivity)
+    val result = activityToList(outputActivity)
+    result
   }
 
   def zooPredict(
@@ -164,7 +165,8 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     val localPredictor = LocalPredictor(module,
       batchPerCore = batchPerThread)
     val result = localPredictor.predict(sampleArray)
-    result.map(activityToList).toList.asJava
+    val finalResult = result.map(activityToList).toList.asJava
+    finalResult
   }
 
   def zooPredict(
