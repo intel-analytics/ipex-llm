@@ -223,6 +223,7 @@ class TFNet(private val graphDef: TFGraphHolder,
 
   override def updateOutput(input: Activity): Activity = {
     try {
+      val start = System.nanoTime()
       val runner = sess.runner()
 
       require(activityLength(input) == inputTypes.length,
@@ -296,6 +297,9 @@ class TFNet(private val graphDef: TFGraphHolder,
 
         // tempTensors will be cleaned up after backward
       }
+
+      val end = System.nanoTime()
+      TFNet.logger.debug(s"TFNet forward time ${(end - start)/1e9} " )
 
     } catch {
       case ex: Throwable =>
@@ -775,9 +779,16 @@ object TFNet {
             inputNames: Array[String],
             outputNames: Array[String],
             config: SessionConfig): TFNet = {
+    TFNet(path, inputNames, outputNames, config.toByteArray())
+  }
+
+  def apply(path: String,
+            inputNames: Array[String],
+            outputNames: Array[String],
+            config: Array[Byte]): TFNet = {
     val graphDef = parseGraph(path)
     val graphMeta = Meta(inputNames = inputNames, outputNames = outputNames)
-    TFNet(graphDef, path, graphMeta, config.toByteArray())
+    TFNet(graphDef, path, graphMeta, config)
   }
 
   /**
@@ -795,9 +806,13 @@ object TFNet {
 
 
   def apply(folder: String, config: SessionConfig = TFNet.SessionConfig()): TFNet = {
+    TFNet(folder, config.toByteArray())
+  }
+
+  def apply(folder: String, config: Array[Byte]): TFNet = {
     val (model, meta) = NetUtils.processTFFolder(folder)
     val graphDef = parseGraph(model)
-    TFNet(graphDef, model, meta, config.toByteArray())
+    TFNet(graphDef, model, meta, config)
   }
 
   private[zoo] def parseGraph(graphProtoTxt: String) : GraphDef = {
