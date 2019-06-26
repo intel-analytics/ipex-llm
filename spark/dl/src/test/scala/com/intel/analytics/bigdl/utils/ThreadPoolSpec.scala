@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.utils
 
-import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.concurrent.ExecutionException
 
 class ThreadPoolSpec extends FlatSpec with Matchers {
 
@@ -72,5 +73,42 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
       println(Affinity.getAffinity.mkString("\t"))
       Affinity.getAffinity.length should not be (1)
     }))
+  }
+
+  "invokeAndWait2" should "catch the unsupported exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new UnsupportedOperationException(s"test invokeAndWait2") }
+
+    intercept[UnsupportedOperationException] {
+      threadPool.invokeAndWait2( (0 until 1).map( i => task ))
+    }
+  }
+
+  "invokeAndWait2" should "catch the interrupt exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new InterruptedException(s"test invokeAndWait2")}
+
+    intercept[InterruptedException] {
+      threadPool.invokeAndWait2( (0 until 1).map( i => task ))
+    }
+  }
+
+  "invokeAndWait" should "catch the exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new InterruptedException(s"test invokeAndWait")}
+
+    intercept[InterruptedException] {
+      threadPool.invokeAndWait( (0 until 1).map( i => task ))
+    }
+  }
+
+  "invoke" should "catch the exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new UnsupportedOperationException(s"test invoke2") }
+
+    intercept[ExecutionException] {
+      val results = threadPool.invoke2( (0 until 1).map( i => task ))
+      results.foreach(_.get())
+    }
   }
 }
