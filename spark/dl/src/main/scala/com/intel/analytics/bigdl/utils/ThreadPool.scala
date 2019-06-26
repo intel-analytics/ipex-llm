@@ -16,20 +16,17 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.lang.Thread.UncaughtExceptionHandler
 import java.util.concurrent._
 
-import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
-import com.intel.analytics.bigdl.mkl.{MklDnn => BackendMklDnn}
+import com.intel.analytics.bigdl.mkl.{MKL, MklDnn => BackendMklDnn}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
-import org.glassfish.jersey.server.monitoring.RequestEvent.ExceptionCause
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
