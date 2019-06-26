@@ -26,7 +26,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
   "mkldnn backend" should "create omp threads and bind correctly" in {
     com.intel.analytics.bigdl.mkl.MklDnn.isLoaded
     val poolSize = 1
-    val ompSize = 4
+    val ompSize = Runtime.getRuntime.availableProcessors() / 2
 
     val threadPool = new ThreadPool(poolSize)
     // backup the affinities
@@ -57,7 +57,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   "mkldnn thread affinity binding" should "not influence other threads" in {
     val poolSize = 1
-    val ompSize = 4
+    val ompSize = Runtime.getRuntime.availableProcessors() / 2
 
     val threadPool = new ThreadPool(poolSize)
     threadPool.setMKLThreadOfMklDnnBackend(ompSize)
