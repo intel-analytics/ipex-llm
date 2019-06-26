@@ -468,6 +468,7 @@ class RNN(
     super.release()
     List(weight, bias, weight_i, gradWeight, gradBias, gradWeight_i).foreach(_.release())
     List(src_i, dst_i, gradsrc_i, graddst_i).foreach(_.release())
+    reorderManager.release()
   }
 }
 
