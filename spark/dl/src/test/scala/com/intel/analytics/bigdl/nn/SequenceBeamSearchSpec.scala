@@ -32,10 +32,13 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
     val eosId = 1.0f
     val numHiddenLayers = 2
     val hiddenSize = 5
-    val inputlength = 6
+    val inputLength = 6
     val beamSearch = new SequenceBeamSearch[Float](vocab_size, batch_size,
      beam_size, alpha, decode_length, eosId, numHiddenLayers, hiddenSize)
-    val output = beamSearch.forward(T()).asInstanceOf[Table]
+    val encodeOutputs = Tensor[Float](batch_size, inputLength, hiddenSize)
+    val encoderDecoderAttentionBias = Tensor[Float](batch_size, 1, 1, inputLength)
+    val output = beamSearch.forward(T(encodeOutputs, encoderDecoderAttentionBias))
+      .asInstanceOf[Table]
     val outputSeq = output[Tensor[Float]](1)
     val outputScore = output[Tensor[Float]](2)
     val expectedOutputSeq = Tensor[Float](
