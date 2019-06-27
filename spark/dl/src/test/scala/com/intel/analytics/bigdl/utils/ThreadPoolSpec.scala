@@ -26,7 +26,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
   "mkldnn backend" should "create omp threads and bind correctly" in {
     com.intel.analytics.bigdl.mkl.MklDnn.isLoaded
     val poolSize = 1
-    val ompSize = Runtime.getRuntime.availableProcessors() / 2
+    val ompSize = 4
 
     val threadPool = new ThreadPool(poolSize)
     // backup the affinities
@@ -37,10 +37,11 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
     threadPool.setMKLThreadOfMklDnnBackend(ompSize)
 
+    // the first core can be used maybe not the 0, it depends on the affinity settings.
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
         Affinity.getAffinity.length should be (1)
-        Affinity.getAffinity.head should be (0)
+        Affinity.getAffinity.head should be (affinities.head.head)
       }))
 
     // set back the affinities
@@ -57,21 +58,30 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   "mkldnn thread affinity binding" should "not influence other threads" in {
     val poolSize = 1
-    val ompSize = Runtime.getRuntime.availableProcessors() / 2
+    val ompSize = 4
 
     val threadPool = new ThreadPool(poolSize)
+    // backup the affinities
+    val affinities = threadPool.invokeAndWait2( (0 until poolSize).map(i =>
+      () => {
+        Affinity.getAffinity()
+    })).map(_.get()).toArray
     threadPool.setMKLThreadOfMklDnnBackend(ompSize)
 
+    // the thread in thread pool will be set affinity to one core, which is
+    // the first core can be used.
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
         Affinity.getAffinity.length should be (1)
-        Affinity.getAffinity.head should be (0)
+        Affinity.getAffinity.head should be (affinities.head.head)
       }))
 
     val threadPool2 = new ThreadPool(poolSize)
+    // the thread has not been set any affinities, so it should return all
+    // cores can be used.
     threadPool2.invokeAndWait2( (0 until poolSize).map(i => () => {
       println(Affinity.getAffinity.mkString("\t"))
-      Affinity.getAffinity.length should not be (1)
+      Affinity.getAffinity.length should be (affinities.head.length)
     }))
   }
 
