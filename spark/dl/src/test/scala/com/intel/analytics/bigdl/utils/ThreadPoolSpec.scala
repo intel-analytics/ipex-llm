@@ -51,7 +51,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
-        Affinity.getAffinity.zipWithIndex.foreach(ai => ai._1 should be (ai._2))
+        Affinity.getAffinity.zip(affinities.head).foreach(ai => ai._1 should be (ai._2))
       }))
 
   }
