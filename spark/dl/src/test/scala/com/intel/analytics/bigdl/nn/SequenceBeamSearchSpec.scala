@@ -33,10 +33,28 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
     val numHiddenLayers = 2
     val hiddenSize = 5
     val inputLength = 6
+
+    def symbolsToLogitsFn(Ids: Tensor[Float], i: Tensor[Int], maxDecoderLen: Int,
+     encoder: Tensor[Float], Bias: Tensor[Float], list1: List[Tensor[Float]],
+     list2: List[Tensor[Float]]):
+    (Tensor[Float], Tensor[Float], Tensor[Float], List[Tensor[Float]], List[Tensor[Float]]) = {
+      val tensor = Tensor(Array(0.14f, 0.62f, 0.02f, 0.93f,
+        0.59f, 0.48f, 0.27f, 0.70f,
+        0.11f, 0.30f, 0.35f, 0.15f,
+        0.67f, 0.39f, 0.33f, 0.01f,
+        0.44f, 0.52f, 0.45f, 0.23f,
+        0.75f, 0.79f, 0.26f, 0.47f), Array(6, 4))
+      val encoder1 = encoder + Tensor[Float](encoder.size()).rand()
+      val Bias1 = Bias + Tensor[Float](Bias.size()).rand()
+      list1.map(e => Tensor[Float](batch_size * beam_size, 1, hiddenSize).rand())
+      list2.map(e => Tensor[Float](batch_size * beam_size, 1, hiddenSize).rand())
+      (tensor, encoder1, Bias1, list1, list2)
+    }
     val beamSearch = new SequenceBeamSearch[Float](vocab_size, batch_size,
-     beam_size, alpha, decode_length, eosId, numHiddenLayers, hiddenSize)
-    val encodeOutputs = Tensor[Float](batch_size, inputLength, hiddenSize)
-    val encoderDecoderAttentionBias = Tensor[Float](batch_size, 1, 1, inputLength)
+      beam_size, alpha, decode_length, eosId, numHiddenLayers, hiddenSize)
+    beamSearch.setLogitFn(symbolsToLogitsFn)
+    val encodeOutputs = Tensor[Float](batch_size, inputLength, hiddenSize).rand()
+    val encoderDecoderAttentionBias = Tensor[Float](batch_size, 1, 1, inputLength).rand()
     val output = beamSearch.forward(T(encodeOutputs, encoderDecoderAttentionBias))
       .asInstanceOf[Table]
     val outputSeq = output[Tensor[Float]](1)
@@ -53,6 +71,5 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
         T(-1.3734006, -2.4668012, -2.715382)))
     outputSeq should be(expectedOutputSeq)
     outputScore should be(expectedOutputScore)
-
   }
 }

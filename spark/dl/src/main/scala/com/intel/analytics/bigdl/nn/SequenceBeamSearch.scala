@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-// import com.intel.analytics.bigdl.nn.BeamSearchTest
+
 
 /**
  * Beam search to find the translated sequence with the highest probability.
@@ -300,9 +300,10 @@ class SequenceBeamSearch[T: ClassTag](
     gatherBeams(tensor, topkIndexes, batchSize, beamSize)
   }
 
-  def getLogitFn(): SequenceBeamSearch[T] = {
-    val fn = new SymbolFn
-    symbolToLogits = fn.getFn()
+  def setLogitFn(fn: (Tensor[T], Tensor[Int], Int, Tensor[T], Tensor[T], List[Tensor[T]],
+    List[Tensor[T]]) => (Tensor[T], Tensor[T], Tensor[T], List[Tensor[T]], List[Tensor[T]])):
+    SequenceBeamSearch[T] = {
+    symbolToLogits = fn
     this
   }
 
@@ -461,7 +462,6 @@ class SequenceBeamSearch[T: ClassTag](
   // return initial state map
   private def createInitialState(encoderOutputs: Tensor[T], encoderDecoderAttentionBias: Tensor[T]):
     Map[String, Any] = {
-    getLogitFn()
     val curIndex = Tensor(Array(0), Array(1))
     val initialID = Tensor[T](Array(batchSize))
     var initialAliveSeq = extendBeamSize(initialID, beamSize)
