@@ -104,7 +104,8 @@ sealed trait MemoryData extends Serializable {
   private def checkConsistency(shape: Array[Int], layout: Int): Unit = {
     val isConsistency = Memory.Format.any == layout || (shape.length match {
       case 1 => layout == Memory.Format.x
-      case 2 => layout == Memory.Format.nc
+      case 2 => layout == Memory.Format.nc || layout == Memory.Format.io ||
+        layout == Memory.Format.oi
       case 3 | 4 | 5 => layout != Memory.Format.nc || layout != Memory.Format.x
       case _ => false
     })
