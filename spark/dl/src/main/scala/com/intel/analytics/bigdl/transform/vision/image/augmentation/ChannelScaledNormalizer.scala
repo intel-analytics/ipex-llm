@@ -16,18 +16,45 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import java.util
 import org.apache.log4j.Logger
-
+import org.opencv.core.{Core, CvType, Mat, Scalar}
 import scala.collection.Iterator
 
 object ChannelScaledNormalizer {
 
   def apply(meanR: Int, meanG: Int, meanB: Int, scale: Double): ChannelScaledNormalizer = {
     new ChannelScaledNormalizer(meanR, meanG, meanB, scale)
+  }
+  def transform(input: OpenCVMat, output: OpenCVMat,
+    meanR: Int, meanG: Int, meanB: Int, scale: Double): Unit = {
+    val channel = input.channels()
+    require(channel == 3, s"Number of channel $channel != 3")
+    if (input.`type`() != CvType.CV_32FC(channel)) {
+      input.convertTo(input, CvType.CV_32FC(channel))
+    }
+    val inputChannels = new util.ArrayList[Mat]()
+    Core.split(input, inputChannels)
+    val outputChannels = if (output != input) {
+      output.create(input.rows(), input.cols(), input.`type`())
+      val channels = new util.ArrayList[Mat]()
+      Core.split(output, channels)
+      channels
+    } else inputChannels
+
+    val means = Array(meanR, meanG, meanB)
+    (0 until channel).foreach(i => {
+      Core.subtract(inputChannels.get(i), new Scalar(means(i)), outputChannels.get(i))
+      Core.multiply(outputChannels.get(i), new Scalar(scale), outputChannels.get(i))
+    })
+    Core.merge(outputChannels, output)
+
+    (0 until inputChannels.size()).foreach(inputChannels.get(_).release())
+    if (input != output) {
+      (0 until outputChannels.size()).foreach(outputChannels.get(_).release())
+    }
   }
 }
 
@@ -43,33 +70,8 @@ class ChannelScaledNormalizer(meanR: Int, meanG: Int, meanB: Int, scale: Double)
   extends FeatureTransformer {
 
   override protected def transformMat(feature: ImageFeature): Unit = {
-    val mat = feature.opencvMat()
-    val toFloats = OpenCVMat.toFloatPixels(mat)
-    val content = toFloats._1
-    require(content.length % 3 == 0, "Content should be multiple of 3 channels")
-    var i = 0
-    val frameLength = content.length / 3
-    val height = toFloats._2
-    val width = toFloats._3
-    val bufferContent = new Array[Float](width * height * 3)
-
-    val channels = 3
-    val mean = Array(meanR, meanG, meanB)
-    var c = 0
-    while (c < channels) {
-      i = 0
-      while (i < frameLength) {
-        val data_index = c * frameLength + i
-        bufferContent(data_index) = ((content(data_index) - mean(c)) * scale).toFloat
-        i += 1
-      }
-      c += 1
-    }
-    if (mat != null) {
-      mat.release()
-    }
-    val newMat = OpenCVMat.fromFloats(bufferContent, height, width)
-    feature(ImageFeature.mat) = newMat
+    ChannelScaledNormalizer.transform(feature.opencvMat(), feature.opencvMat(),
+      meanR, meanG, meanB, scale)
   }
 
 }
