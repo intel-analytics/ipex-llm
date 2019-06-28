@@ -49,6 +49,7 @@ sealed trait MemoryData extends Serializable {
 
   def getMemoryDescription(): Long = {
     if (description == UNDEFINED || description == ERROR) {
+      checkConsistency(shape, layout)
       description = MklDnn.MemoryDescInit(shape.length, shape, dataType, layout)
     }
     description
@@ -98,6 +99,19 @@ sealed trait MemoryData extends Serializable {
       case DataType.U8 => DnnStorage.INT8_BYTES
       case _ => throw new UnsupportedOperationException(s"unsupported data type")
     }
+  }
+
+  private def checkConsistency(shape: Array[Int], layout: Int): Unit = {
+    val isConsistency = Memory.Format.any == layout || (shape.length match {
+      case 1 => layout == Memory.Format.x
+      case 2 => layout == Memory.Format.nc || layout == Memory.Format.io ||
+        layout == Memory.Format.oi
+      case 3 | 4 | 5 => layout != Memory.Format.nc || layout != Memory.Format.x
+      case _ => false
+    })
+
+    require(isConsistency,
+      s"the shape([${shape.mkString(",")}]) of tensor is different from layout(${layout})")
   }
 }
 
