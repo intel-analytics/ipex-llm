@@ -563,8 +563,8 @@ object Engine {
 
     // 1. this library in docker/cgroup env, which sets cpu affinity fist. so we can't use
     //    resources exceeding limits.
-    // 2. this library is in a hyper thread envs, which enables hyper threading of cpu. so
-    //    we should set the mkl num threads to physical core number for performance
+    // 2. this library is in a hyper threading envs, so we should set the mkl num threads
+    //    to physical core number for performance
 
     val default = if (affinityCores.min > 0 && affinityCores.max >= physicalCoreNumber) {
       affinityCoreNum
