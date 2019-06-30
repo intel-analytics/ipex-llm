@@ -189,7 +189,10 @@ private[mkldnn] object Fusion {
       val weight = if (conv.nGroup == 1) {
         convWeight.select(1, j + 1)
       } else {
-        convWeight.select(2, j + 1)
+        val channelPerGroup = conv.nOutputPlane / conv.nGroup
+        val group = j  / channelPerGroup + 1
+        val channel = j % channelPerGroup + 1
+        convWeight.select(1, group).select(2, channel)
       }
       weight.div(base)
       weight.mul(alpha)

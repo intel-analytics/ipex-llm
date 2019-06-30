@@ -92,6 +92,16 @@ class SpatialConvolution(
   val dilationW: Int = 1,
   val dilationH: Int = 1
 ) extends MklDnnLayer with Initializable with Serializable with MklInt8Convertible {
+  require(nInputPlane % nGroup == 0, s"Number of input channels " +
+    s"should be multiples of group " +
+    s"number of input channels ${nInputPlane}, " +
+    s"group ${nGroup}.")
+  require(nOutputPlane % nGroup == 0,
+    "Number of output channels " +
+      "should be multiples of group " +
+      s"(number of output channels ${nOutputPlane}, " +
+      s"group ${nGroup}).")
+
   private val weightShape = if (nGroup == 1) {
     Array(nOutputPlane, nInputPlane, kernelH, kernelW)
   } else {
