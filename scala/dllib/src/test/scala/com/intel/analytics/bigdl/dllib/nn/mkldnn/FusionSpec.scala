@@ -341,4 +341,35 @@ class FusionSpec extends FlatSpec with Matchers {
 
     model1.output should be (model2.output)
   }
+
+  "multi-group conv fusion with bn" should "work correctly" in {
+    val inputShape = Array(4, 1024, 7, 7)
+    val input = Input(inputShape, Memory.Format.nchw).inputs()
+    val conv1 = SpatialConvolution(1024, 1024, 3, 3, 1, 1, 1, 1, nGroup = 1024).inputs(input)
+    val bn1 = SpatialBatchNormalization(1024).inputs(conv1)
+    val output = Output(Memory.Format.nchw).inputs(bn1)
+
+    // the running mean and running variance should be 1.
+    bn1.element.getExtraParameter().foreach(_.fill(1))
+
+    val model = DnnGraph(Seq(input), Seq(output))
+    val fused = model.cloneModule()
+
+    model.evaluate()
+    fused.evaluate()
+
+    val tensor = Tensor[Float](inputShape).rand(-1, 1)
+
+    System.setProperty("bigdl.mkldnn.fusion", "false")
+    model.compile(InferencePhase)
+    model.forward(tensor)
+
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+    fused.compile(InferencePhase)
+    fused.forward(tensor)
+
+    model.output should be (fused.output)
+
+    System.clearProperty("bigdl.mkldnn.fusion")
+  }
 }
