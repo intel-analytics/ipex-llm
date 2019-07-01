@@ -525,6 +525,7 @@ class SequenceBeamSearch[T: ClassTag](
   override def updateOutput(input: Table): Activity = {
     val encoderOutputs = input[Tensor[T]](1)
     val encoderDecoderAttentionBias = input[Tensor[T]](2)
+    require(symbolToLogits != null, "symbolToLogits function is null, please set this function")
     var state = createInitialState(encoderOutputs, encoderDecoderAttentionBias)
     while (continueSearch(state)) {
       state = searchStep(state)
