@@ -237,6 +237,8 @@ object Engine {
   // For `context` in ThreadPool, it is the called thread when poolSize is 1.
   // So many usages of that thread, we will not change it for now.
   val dnnComputing: ThreadPool = new ThreadPool(1)
+  // We need to init dnn thread in case that users directly call model operation in java local
+  initDnnThread()
 
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
@@ -579,5 +581,11 @@ object Engine {
 
     System.setProperty("bigdl.disable.mklBlockTime", "true")
     System.setProperty("bigdl.coreNumber", "1")
+  }
+
+  private def initDnnThread(): Unit = {
+    if (engineType == MklDnn) {
+      dnnComputing.setMKLThreadOfMklDnnBackend(MKL.getMklNumThreads)
+    }
   }
 }
