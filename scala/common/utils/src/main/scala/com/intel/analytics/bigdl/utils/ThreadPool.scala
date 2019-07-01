@@ -18,15 +18,15 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
-import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
-import com.intel.analytics.bigdl.mkl.{MklDnn => BackendMklDnn}
+import com.intel.analytics.bigdl.mkl.{MKL, MklDnn => BackendMklDnn}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.collection.JavaConverters._
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
@@ -135,24 +135,45 @@ class ThreadPool(private var poolSize: Int) {
     })
   }
 
+  private type JavaFuture[T] = java.util.concurrent.Future[T]
+
+  /**
+   * Use java future to execute the tasks. It will be blocking until tasks completed.
+   * If any task throws an exception, it will throw that exception in caller.
+   *
+   * @param tasks task sequence. each task's return type is T
+   * @param timeout the maximum time to wait
+   * @param timeUnit the time unit for the timeout
+   * @tparam T return type of tasks
+   * @return a sequence of Futures representing the tasks.
+   */
   def invokeAndWait2[T](tasks: Seq[() => T], timeout: Long = Long.MaxValue,
-    timeUnit: TimeUnit = TimeUnit.NANOSECONDS):
-  scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
+    timeUnit: TimeUnit = TimeUnit.NANOSECONDS): mutable.Buffer[JavaFuture[T]] = {
     val callables = tasks.map(task => new Callable[T] {
       override def call(): T = {
-        try {
-          task()
-        } catch {
-          case t : Throwable =>
-            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-            throw t
-        }
+        task()
       }
     })
-    threadPool.invokeAll(callables.asJava, timeout, timeUnit).asScala
+
+    val resultFutures = threadPool.invokeAll(callables.asJava, timeout, timeUnit)
+
+    // we should check all the future in the list, if any task has an exception,
+    // we should throw it.
+    var i = 0
+    while (i < resultFutures.size()) {
+      try {
+        resultFutures.get(i).get()
+      } catch {
+        case t: ExecutionException => throw t.getCause
+        case i: InterruptedException => throw i.getCause
+      }
+      i += 1
+    }
+
+    resultFutures.asScala
   }
 
-  def invoke2[T](tasks: Seq[() => T]): Seq[java.util.concurrent.Future[T]] = {
+  def invoke2[T](tasks: Seq[() => T]): Seq[JavaFuture[T]] = {
     tasks.map(task => new Callable[T] {
       override def call(): T = {
         try {
