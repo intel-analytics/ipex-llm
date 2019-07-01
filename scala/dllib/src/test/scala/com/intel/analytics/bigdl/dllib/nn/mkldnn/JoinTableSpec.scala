@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 
@@ -55,5 +56,46 @@ class JoinTableSpec extends BigDLSpecHelper {
     heapGrad should be(
       Tensor[Float](T(T(5, 8), T(10, 9)))
     )
+  }
+
+  "int8 of join table" should "work correctly" in {
+    val inputShape1 = Array[Int](4, 2, 4, 4)
+    val inputShape2 = Array[Int](4, 4, 4, 4)
+
+    val input1 = Input(inputShape1, Memory.Format.nchw).inputs()
+    val input2 = Input(inputShape2, Memory.Format.nchw).inputs()
+    val conv1 = SpatialConvolution(2, 4, 5, 5, 1, 1, 2, 2).inputs(input1)
+    val conv2 = SpatialConvolution(4, 4, 1, 1, 1, 1, 0, 0).inputs(input2)
+    val joinTable = JoinTable(2).inputs(conv1, conv2)
+    val output = Output(Memory.Format.nchw).inputs(joinTable)
+
+    val model = DnnGraph(Seq(input1, input2), Seq(output))
+    model.evaluate()
+
+    val tensor1 = Tensor[Float](inputShape1).rand(-1, 1)
+    val tensor2 = Tensor[Float](inputShape2).rand(-0.1, 0.1)
+    val tableInput = T(tensor1, tensor2)
+
+    model.setWeightDimMask(1, overrideSubmodules = true)
+    model.compile(InferencePhase)
+    model.forward(tableInput)
+
+    model.calcScales(tableInput)
+
+    val outputOfModel = Tensor[Float]()
+      .resizeAs(model.output.toTensor[Float])
+      .copy(model.output.toTensor[Float])
+
+
+    model.clearState()
+
+    val quant = model.quantize().asInstanceOf[DnnGraph]
+    quant.compile(InferencePhase)
+    quant.forward(tableInput)
+
+    Equivalent.nearequals(outputOfModel, quant.output.toTensor[Float], 1e-1) should be (true)
+
+    model.release()
+    quant.release()
   }
 }

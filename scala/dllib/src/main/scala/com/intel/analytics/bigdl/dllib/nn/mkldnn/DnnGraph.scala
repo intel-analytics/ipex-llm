@@ -327,8 +327,9 @@ class DnnGraph(
 
   private def getInputMemoryData(node: ModuleNode[Float], memoryData: Array[MemoryData])
     : Array[MemoryData] = {
-    if (inputs.length == 1) {
-      require(inputs(0).eq(node), "input node is not in the input list")
+    // the model may contain two inputs and all of them is Input.
+    if (inputs.length == 1 || memoryData.isEmpty) {
+      require(inputs.contains(node), "input node must be in the input list")
       memoryData
     } else {
       val i = inputs.indexOf(node)
@@ -392,13 +393,14 @@ class DnnGraph(
    */
   private def fusion(): Unit = {
     if (!this.train) {
-      for (j <- 0 to 2) {
+      for (j <- 0 to 3) {
         var i = forwardExecution.length - 1
         while (i >= 0) {
           if (j == 0) Fusion.fuseModule(forwardExecution(i))
           // we should do this before sum fusion, because it will change the structure of graph
           if (j == 1) Fusion.setNegativeInputOfConv(forwardExecution(i))
           if (j == 2) Fusion.fuseCAdd(forwardExecution(i))
+          if (j == 3) Fusion.setScalesPrevousJoinTable(forwardExecution(i))
           i -= 1
         }
       }
