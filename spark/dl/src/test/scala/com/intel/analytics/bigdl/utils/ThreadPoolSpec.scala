@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.utils
 
-import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.concurrent.ExecutionException
 
 class ThreadPoolSpec extends FlatSpec with Matchers {
 
@@ -36,10 +37,11 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
     threadPool.setMKLThreadOfMklDnnBackend(ompSize)
 
+    // the first core can be used maybe not the 0, it depends on the affinity settings.
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
         Affinity.getAffinity.length should be (1)
-        Affinity.getAffinity.head should be (0)
+        Affinity.getAffinity.head should be (affinities.head.head)
       }))
 
     // set back the affinities
@@ -49,7 +51,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
-        Affinity.getAffinity.zipWithIndex.foreach(ai => ai._1 should be (ai._2))
+        Affinity.getAffinity.zip(affinities.head).foreach(ai => ai._1 should be (ai._2))
       }))
 
   }
@@ -59,18 +61,64 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
     val ompSize = 4
 
     val threadPool = new ThreadPool(poolSize)
+    // backup the affinities
+    val affinities = threadPool.invokeAndWait2( (0 until poolSize).map(i =>
+      () => {
+        Affinity.getAffinity()
+    })).map(_.get()).toArray
     threadPool.setMKLThreadOfMklDnnBackend(ompSize)
 
+    // the thread in thread pool will be set affinity to one core, which is
+    // the first core can be used.
     threadPool.invokeAndWait2( (0 until poolSize).map( i =>
       () => {
         Affinity.getAffinity.length should be (1)
-        Affinity.getAffinity.head should be (0)
+        Affinity.getAffinity.head should be (affinities.head.head)
       }))
 
     val threadPool2 = new ThreadPool(poolSize)
+    // the thread has not been set any affinities, so it should return all
+    // cores can be used.
     threadPool2.invokeAndWait2( (0 until poolSize).map(i => () => {
       println(Affinity.getAffinity.mkString("\t"))
-      Affinity.getAffinity.length should not be (1)
+      Affinity.getAffinity.length should be (affinities.head.length)
     }))
+  }
+
+  "invokeAndWait2" should "catch the unsupported exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new UnsupportedOperationException(s"test invokeAndWait2") }
+
+    intercept[UnsupportedOperationException] {
+      threadPool.invokeAndWait2( (0 until 1).map( i => task ))
+    }
+  }
+
+  "invokeAndWait2" should "catch the interrupt exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new InterruptedException(s"test invokeAndWait2")}
+
+    intercept[InterruptedException] {
+      threadPool.invokeAndWait2( (0 until 1).map( i => task ))
+    }
+  }
+
+  "invokeAndWait" should "catch the exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new InterruptedException(s"test invokeAndWait")}
+
+    intercept[InterruptedException] {
+      threadPool.invokeAndWait( (0 until 1).map( i => task ))
+    }
+  }
+
+  "invoke" should "catch the exception" in {
+    val threadPool = new ThreadPool(1)
+    val task = () => { throw new UnsupportedOperationException(s"test invoke2") }
+
+    intercept[ExecutionException] {
+      val results = threadPool.invoke2( (0 until 1).map( i => task ))
+      results.foreach(_.get())
+    }
   }
 }
