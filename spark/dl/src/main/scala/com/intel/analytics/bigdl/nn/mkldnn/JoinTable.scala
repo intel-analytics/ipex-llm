@@ -34,7 +34,6 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     var i = 1
     while(i < inputs.length) {
       val curShape = inputs(i).shape
-      require(layout == inputs(i).layout, "layout not match")
       require(totalShape.length == curShape.length, "tensor dimension not match")
       // require(inputs(i).isInstanceOf[NativeData], "memory should be native")
       var j = 0
@@ -45,6 +44,10 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
           require(totalShape(j) == curShape(j), "tensor size not match")
         }
         j += 1
+      }
+
+      if (layout != inputs(i).layout || inputs(0).dataType != inputs(i).dataType) {
+        _inputFormats(i) = NativeData(inputs(i).shape, layout, inputs(0).dataType)
       }
       i += 1
     }
@@ -108,6 +111,11 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     }
     gradInput
   }
+
+  private def isSameDataType(formats: Array[MemoryData]): Boolean = {
+    formats.map(_.dataType).toSet.size == 1
+  }
+
 }
 
 object JoinTable {

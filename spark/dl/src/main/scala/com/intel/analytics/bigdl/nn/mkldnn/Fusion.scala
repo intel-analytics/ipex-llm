@@ -215,20 +215,6 @@ private[mkldnn] object Fusion {
 
   def setNegativeInputOfConv(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
 
-    def findAllNonIdentityPrevs(node: Node[AbstractModule[Activity, Activity, Float]])
-    : Seq[Node[AbstractModule[Activity, Activity, Float]]] = {
-      // TODO currently, it will only skip the Identity, MaxPooling, AvgPooling
-      // becase if the output of layer/op previous of the three, they will output
-      // nonnegative too. it's not an elegant impl.
-      if (node.element.isInstanceOf[Identity] ||
-        node.element.isInstanceOf[MaxPooling] ||
-        node.element.isInstanceOf[AvgPooling]) {
-        node.prevNodes.flatMap(findAllNonIdentityPrevs)
-      } else {
-        Seq(node)
-      }
-    }
-
     if (!fuse || !node.element.isInstanceOf[SpatialConvolution]) return
 
     val successFromReLU = node.prevNodes.flatMap(x => findAllNonIdentityPrevs(x))
@@ -246,6 +232,70 @@ private[mkldnn] object Fusion {
 
     if (successFromReLU) {
       node.element.asInstanceOf[SpatialConvolution].negativeInput = false
+    }
+  }
+
+  /**
+   * set the layers' scales which is previous nodes of JoinTable.
+   *
+   * For a graph structure like below,
+   *
+   * conv1 --+
+   *         |--> JoinTable --> conv3
+   * conv2 --+
+   *
+   * we should set the conv1's and conv2's output scales to the conv3's input scales.
+   *
+   * If the operation next JoinTable has no input scales like below. We should set
+   * the scales to the max values of input scales of conv1 and conv2.
+   *
+   * conv1 --+
+   *         |--> JoinTable --> [Layer/Op has no input scales]
+   * conv2 --+
+   *
+   * @param node current node
+   */
+  def setScalesPrevousJoinTable(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
+    // case 1, need not do fusion
+    if (!fuse || !node.element.isInstanceOf[JoinTable]) return
+
+    val preConvs = node.prevNodes.flatMap(x => findAllNonIdentityPrevs(x))
+      .filter(_.element.isInstanceOf[SpatialConvolution])
+      .map(_.element.asInstanceOf[SpatialConvolution])
+
+    // case 2, there's one node need not quantize
+    if (!preConvs.exists(_.needQuantize)) return
+
+    // case 3, the output dimension mask should be the same
+    val masks = preConvs.map(_.getOutputDimMask()).toSet
+    require(masks.size == 1, s"all preceding convolutions must have the same mask")
+
+    val nextConvs = node.nextNodes.flatMap(findNext)
+      .filter(_.element.isInstanceOf[SpatialConvolution])
+
+    val scales = if (nextConvs.isEmpty) {
+      Array(preConvs.map(_.getOutputScales().flatten).transpose.map(_.max).toArray)
+    } else {
+      nextConvs.map(_.element.asInstanceOf[SpatialConvolution]).head.getInputScales()
+    }
+
+    preConvs.foreach { conv =>
+      conv.setOutputScales(scales)
+    }
+  }
+
+  private def findAllNonIdentityPrevs(node: Node[AbstractModule[Activity, Activity, Float]])
+  : Seq[Node[AbstractModule[Activity, Activity, Float]]] = {
+    // TODO currently, it will only skip the Identity, MaxPooling, AvgPooling, JoinTable
+    // becase if the output of layer/op previous of the four, they will output
+    // nonnegative too. it's not an elegant impl.
+    if (node.element.isInstanceOf[Identity] ||
+      node.element.isInstanceOf[MaxPooling] ||
+      node.element.isInstanceOf[AvgPooling] ||
+      node.element.isInstanceOf[JoinTable]) {
+      node.prevNodes.flatMap(findAllNonIdentityPrevs)
+    } else {
+      Seq(node)
     }
   }
 }
