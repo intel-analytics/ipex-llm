@@ -16,11 +16,8 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
-
-
 
 class SequenceBeamSearchSpec extends FlatSpec with Matchers{
   "beam search" should "work correctly" in {
@@ -46,19 +43,23 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
         0.75f, 0.79f, 0.26f, 0.47f), Array(6, 4))
       val encoder1 = encoder + Tensor[Float](encoder.size()).rand()
       val Bias1 = Bias + Tensor[Float](Bias.size()).rand()
-      list1.map(e => Tensor[Float](batch_size * beam_size, 1, hiddenSize).rand())
-      list2.map(e => Tensor[Float](batch_size * beam_size, 1, hiddenSize).rand())
+      val batch_beam = encoder.size()(0)
+      list1.map(e => Tensor[Float](batch_beam, 1, hiddenSize).rand())
+      list2.map(e => Tensor[Float](batch_beam, 1, hiddenSize).rand())
       (tensor, encoder1, Bias1, list1, list2)
     }
-    val beamSearch = new SequenceBeamSearch[Float](vocab_size, batch_size,
+
+    val beamSearch = new SequenceBeamSearch[Float](vocab_size,
       beam_size, alpha, decode_length, eosId, numHiddenLayers, hiddenSize)
     beamSearch.setLogitFn(symbolsToLogitsFn)
     val encodeOutputs = Tensor[Float](batch_size, inputLength, hiddenSize).rand()
     val encoderDecoderAttentionBias = Tensor[Float](batch_size, 1, 1, inputLength).rand()
     val output = beamSearch.forward(T(encodeOutputs, encoderDecoderAttentionBias))
       .asInstanceOf[Table]
-    val outputSeq = output[Tensor[Float]](1)
-    val outputScore = output[Tensor[Float]](2)
+    val outputSeq = Tensor[Float].resizeAs(output[Tensor[Float]](1)).copy(output[Tensor[Float]](1))
+    val outputScore = Tensor[Float].resizeAs(output[Tensor[Float]](2))
+     .copy(output[Tensor[Float]](2))
+    beamSearch.clearState()
     val expectedOutputSeq = Tensor[Float](
       T(T(T(0.0, 1.0, 0.0, 0.0, 0.0),
         T(0.0, 3.0, 1.0, 0.0, 0.0),
