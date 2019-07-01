@@ -59,6 +59,10 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     if (format.layout == Memory.Format.nhwc && format.isInstanceOf[HeapData]) {
       tensor.toTensor[Float].resize(format.shape)
     }
+    // for mkldnn, it always use tnc format shape even though format is ntc
+    if (format.layout == Memory.Format.ntc && format.isInstanceOf[HeapData]) {
+      tensor.toTensor[Float].resize(format.shape)
+    }
   }
 
   private def createInt8PrimDesc(): Long = {
@@ -110,11 +114,13 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     realOutput = _outputFormats
 
     if (inputLayout != outputLayout) {
-      if (inputLayout == Memory.Format.nhwc) {
-        // remind: if format of input MemoryData is nhwc, its shape should be output shape
+      if (inputLayout == Memory.Format.nhwc || inputLayout == Memory.Format.ntc) {
+        // remind: if format of input MemoryData is nhwc or ntc,
+        // its shape should be output shape
         realInput = initMemory(_inputFormats(0), outputShape, inputLayout)
-      } else if (outputLayout == Memory.Format.nhwc) {
-        // remind: if format of output MemoryData is nhwc, its shape should be input shape
+      } else if (outputLayout == Memory.Format.nhwc || outputLayout == Memory.Format.ntc) {
+        // remind: if format of output MemoryData is nhwc or ntc,
+        // its shape should be input shape
         realOutput = initMemory(_outputFormats(0), inputShape, outputLayout)
       }
     }
@@ -174,11 +180,13 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     realgradOutput = _gradOutputFormats
 
     if (gradInputLayout != gradOutputLayout) {
-      if (gradOutputLayout == Memory.Format.nhwc) {
-        // remind: if format of gradOutput MemoryData is nhwc, its shape should be gradInput shape
+      if (gradOutputLayout == Memory.Format.nhwc || gradOutputLayout == Memory.Format.ntc) {
+        // remind: if format of gradOutput MemoryData is nhwc or ntc,
+        // its shape should be gradInput shape
         realgradOutput = initMemory(_gradOutputFormats(0), gradInputShape, gradOutputLayout)
-      } else if (gradInputLayout == Memory.Format.nhwc) {
-        // remind: if format of gradInput MemoryData is nhwc, its shape should be gradOutput shape
+      } else if (gradInputLayout == Memory.Format.nhwc || gradInputLayout == Memory.Format.ntc) {
+        // remind: if format of gradInput MemoryData is nhwc or ntc,
+        // its shape should be gradOutput shape
         realgradInput = initMemory(_gradInputFormats(0), gradOutputShape, gradInputLayout)
       }
     }
