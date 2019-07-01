@@ -545,13 +545,15 @@ class SpatialConvolution(
     val src = NativeData(inputShape, Memory.Format.any)
     val wei = NativeData(weightShape, Memory.Format.any)
     val bis = NativeData(Array(nOutputPlane), Memory.Format.x)
+    // Use format "any" to init weight desc, otherwise maybe poor performance
+    val gradMemoryData = NativeData(grad(0).shape, Memory.Format.any)
 
     val desc = MklDnn.DilatedConvBackwardWeightsDescInit(
       AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
       bis.getMemoryDescription(),
-      grad(0).getMemoryDescription(),
+      gradMemoryData.getMemoryDescription(),
       Array(strideW, strideH), Array(dilationW_mkldnn, dilationH_mkldnn),
       paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
