@@ -266,4 +266,40 @@ class IRconvertSpec extends BigDLSpecHelper {
     dnn.release()
     System.clearProperty("bigdl.engineType")
   }
+
+  "dnn resnet50" should "work correctly with dnn computing thread" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    val batchSize = 2
+
+    RandomGenerator.RNG.setSeed(1)
+    val dnnThread = mkldnn.ResNet.graph(batchSize, classNum = 1000,
+      T("depth" -> 50, "optnet" -> false, "dataSet" -> mkldnn.ResNet.DatasetType.ImageNet))
+    Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+      dnnThread.compile(mkldnn.Phase.TrainingPhase)
+    }))
+
+    RandomGenerator.RNG.setSeed(1)
+    val dnn = mkldnn.ResNet.graph(batchSize, classNum = 1000,
+      T("depth" -> 50, "optnet" -> false, "dataSet" -> mkldnn.ResNet.DatasetType.ImageNet))
+    dnn.compile(mkldnn.Phase.TrainingPhase)
+
+    RandomGenerator.RNG.setSeed(100)
+    val in = Tensor[Float](batchSize, 3, 224, 224).rand(-1, 1)
+
+    val out = dnn.forward(in).toTensor[Float]
+    Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+      dnnThread.forward(in).toTensor[Float]
+    }))
+    val outThread = dnnThread.output.toTensor[Float]
+
+    val gradOutput = out.clone()
+    val grad = dnn.backward(in, gradOutput).toTensor[Float]
+    Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+      dnnThread.backward(in, gradOutput).toTensor[Float]
+    }))
+    val gradThread = dnnThread.gradInput.toTensor[Float]
+
+    Equivalent.nearequals(out, outThread) should be(true)
+    Equivalent.nearequals(grad, gradThread) should be(true)
+  }
 }
