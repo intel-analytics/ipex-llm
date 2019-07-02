@@ -43,13 +43,13 @@ class SequenceBeamSearch[T: ClassTag](
   val hiddenSize: Int)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Activity, T] {
 
-  private var inf = 0.0f
+  private val inf = 1e7f * (-1)
   private var batchSize = 0
   private val newFinishedFlags = Tensor[T]
-  private val aliveLogProbs = Tensor[T]
+  private var aliveLogProbs = Tensor[T]
   private var finishedSeq = Tensor[T]
-  private val aliveSeq = Tensor[T]
-  private val finishedFlags = Tensor[Boolean]
+  private var aliveSeq = Tensor[T]
+  private var finishedFlags = Tensor[Boolean]
   private val finishedFlagsSeq = Tensor[T]
   private var finishedScores = Tensor[T]
   private val gatherTensor = Tensor[T]
@@ -137,10 +137,10 @@ class SequenceBeamSearch[T: ClassTag](
    */
   private def continueSearch(state: Map[String, Any]): Boolean = {
     val i = state("CUR_INDEX").asInstanceOf[Tensor[Int]]
+    finishedFlags = state("FINISHED_FLAGS").asInstanceOf[Tensor[Boolean]]
     aliveLogProbs.copy(state("ALIVE_LOG_PROBS").asInstanceOf[Tensor[T]])
     finishedScores.resizeAs(state("FINISHED_SCORES").asInstanceOf[Tensor[T]])
       .copy(state("FINISHED_SCORES").asInstanceOf[Tensor[T]])
-    finishedFlags.copy(state("FINISHED_FLAGS").asInstanceOf[Tensor[Boolean]])
     var notAtMaxDecodeLength = true
     if (i(Array(1)) < maxDecodeLength) {
       notAtMaxDecodeLength = true
@@ -316,9 +316,8 @@ class SequenceBeamSearch[T: ClassTag](
    */
   private def growAliveSeq(state: Map[String, Any]): (Tensor[T], Tensor[T]) = {
     val i = state("CUR_INDEX").asInstanceOf[Tensor[Int]]
-    aliveSeq.resizeAs(state("ALIVE_SEQ").asInstanceOf[Tensor[T]]).copy(state("ALIVE_SEQ")
-      .asInstanceOf[Tensor[T]])
-    aliveLogProbs.copy(state("ALIVE_LOG_PROBS").asInstanceOf[Tensor[T]])
+    aliveSeq = state("ALIVE_SEQ").asInstanceOf[Tensor[T]]
+    aliveLogProbs = state("ALIVE_LOG_PROBS").asInstanceOf[Tensor[T]]
     val aliveEncoder = state("ENCODER").asInstanceOf[Tensor[T]]
     val aliveAttentionsBias = state("ATTENTION_BIAS").asInstanceOf[Tensor[T]]
     val aliveLayerK = state("LAYERK").asInstanceOf[List[Tensor[T]]]
@@ -375,7 +374,7 @@ class SequenceBeamSearch[T: ClassTag](
     finishedFlagsSeq.apply1(x => boolToFloat(ev.toType[Float](x) == eosID))
     val newLogProbs1 = newLogProbs + finishedFlagsSeq * ev.fromType[Double](inf)
     var gatherTmp = gatherTopkBeams(newSeq, newLogProbs1, batchSize, beamSize)
-    topkSeq.resizeAs(gatherTmp).copy(gatherTmp)
+    aliveSeq.resizeAs(gatherTmp).copy(gatherTmp)
     gatherTmp = gatherTopkBeams(newLogProbs1, newLogProbs1, batchSize, beamSize)
     topkLogProbs.resizeAs(gatherTmp).copy(gatherTmp)
     gatherTmp = gatherTopkBeams(topkEncoder, newLogProbs1, batchSize, beamSize)
@@ -388,7 +387,6 @@ class SequenceBeamSearch[T: ClassTag](
       gatherTmp = gatherTopkBeams(topkLayerV(i), newLogProbs1, batchSize, beamSize)
       topkLayerV(i).resizeAs(gatherTmp).copy(gatherTmp)
     }
-    aliveSeq.resizeAs(topkSeq).copy(topkSeq)
     Map("ALIVE_SEQ" -> aliveSeq, "ALIVE_LOG_PROBS" -> topkLogProbs,
       "ENCODER" -> topkEncoder, "ATTENTION_BIAS" -> topkAttentionBias,
       "LAYERK" -> topkLayerK, "LAYERV" -> topkLayerV)
@@ -404,26 +402,22 @@ class SequenceBeamSearch[T: ClassTag](
   private def getNewFinishedState(state: Map[String, Any], newSeq: Tensor[T],
     newLogProbs: Tensor[T]): Map[String, Any] = {
     val i = state("CUR_INDEX").asInstanceOf[Tensor[Int]]
-    finishedSeq.resizeAs(state("FINISHED_SEQ").asInstanceOf[Tensor[T]]).copy(state("FINISHED_SEQ")
-      .asInstanceOf[Tensor[T]])
-    finishedScores.copy(state("FINISHED_SCORES").asInstanceOf[Tensor[T]])
-    finishedFlags.copy(state("FINISHED_FLAGS").asInstanceOf[Tensor[Boolean]])
+    finishedSeq = state("FINISHED_SEQ").asInstanceOf[Tensor[T]]
+    finishedScores = state("FINISHED_SCORES").asInstanceOf[Tensor[T]]
+    finishedFlags = state("FINISHED_FLAGS").asInstanceOf[Tensor[Boolean]]
     // append a column of 0-ids to finished_seq to increment the length.
     finishedSeq = concat(finishedSeq, Tensor[T](batchSize, beamSize, 1), 3)
     val lengthNorm = lengthNormalization(alpha, i.valueAt(1))
     var newScores = newLogProbs / lengthNorm
-    val newFinishedFlag = Tensor[T](newScores.size())
-    finishedFlagsSeq.copy(newSeq.select(3, newSeq.size()(2)))
-    newFinishedFlag.applyFun[T](finishedFlagsSeq, x => boolToFloat(x == eosID))
     // Set the scores of the still-alive seq in new_seq to large negative values.
-    newScores += (Tensor(newFinishedFlag.size()).fill(ev.fromType[Float](1.0f)) - newFinishedFlag) *
-      ev.fromType[Float](inf)
+    newScores += (Tensor(finishedFlagsSeq.size()).fill(ev.fromType[Float](1.0f))
+     - finishedFlagsSeq) * ev.fromType[Float](inf)
     // Combine sequences, scores, and flags.
     finishedSeq = concat(finishedSeq, newSeq, 2)
     finishedScores = concat(finishedScores, newScores, 2)
     var finishedFlags1 = Tensor[T](finishedFlags.size())
     finishedFlags1.applyFun[Boolean](finishedFlags, x => boolToFloat(x))
-    finishedFlags1 = concat(finishedFlags1, newFinishedFlag, 2)
+    finishedFlags1 = concat(finishedFlags1, finishedFlagsSeq, 2)
     var gatherTmp = gatherTopkBeams(finishedSeq, finishedScores, batchSize, beamSize)
     topkSeq.resizeAs(gatherTmp).copy(gatherTmp)
     gatherTmp = gatherTopkBeams(finishedScores, finishedScores, batchSize, beamSize)
@@ -436,10 +430,10 @@ class SequenceBeamSearch[T: ClassTag](
     for (ele <- topFinishedFlags1) {
       outputFlag.append(floatToBool(ele))
     }
-    val outfinishedFlags = Tensor(outputFlag.toArray, topkFlags.size())
+    finishedFlags = Tensor(outputFlag.toArray, topkFlags.size())
     finishedSeq.resizeAs(topkSeq).copy(topkSeq)
     Map("FINISHED_SEQ" -> finishedSeq, "FINISHED_SCORES" -> topkScore,
-      "FINISHED_FLAGS" -> outfinishedFlags)
+      "FINISHED_FLAGS" -> finishedFlags)
   }
 
   /**
@@ -460,7 +454,6 @@ class SequenceBeamSearch[T: ClassTag](
   private def createInitialState(encoderOutputs: Tensor[T], encoderDecoderAttentionBias: Tensor[T]):
     Map[String, Any] = {
     batchSize = encoderOutputs.size()(0)
-    inf = 1.0f * 1e7f * (-1)
     newFinishedFlags.resize(batchSize, beamSize)
     aliveLogProbs.resize(batchSize, beamSize)
     finishedFlags.resize(batchSize, beamSize)
@@ -550,7 +543,6 @@ class SequenceBeamSearch[T: ClassTag](
   override def clearState(): this.type = {
     super.clearState()
     batchSize = 0
-    inf = 0.0f
     newFinishedFlags.set()
     aliveLogProbs.set()
     finishedSeq.set()
@@ -563,7 +555,6 @@ class SequenceBeamSearch[T: ClassTag](
     topkLogProbs.set()
     topkScore.set()
     topkFlags.set()
-    symbolToLogits = null
     topkEncoder.set()
     topkAttentionBias.set()
     topkLayerK.foreach(e => e.set())

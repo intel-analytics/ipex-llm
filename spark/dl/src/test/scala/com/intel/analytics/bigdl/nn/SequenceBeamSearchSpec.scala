@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 class SequenceBeamSearchSpec extends FlatSpec with Matchers{
   "beam search" should "work correctly" in {
@@ -72,5 +73,16 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
         T(-1.3734006, -2.4668012, -2.715382)))
     outputSeq should be(expectedOutputSeq)
     outputScore should be(expectedOutputScore)
+  }
+}
+
+class SequenceBeamSearchSerialTest extends ModuleSerializationTest{
+  override def test(): Unit = {
+    val sequenceBeamSearch = SequenceBeamSearch[Float](4, 3, 0.0f,
+    10, 1.0f, 2, 5).setName("sequenceBeamSearch")
+    val encodeOutputs = Tensor[Float](2, 6, 5).rand()
+    val encoderDecoderAttentionBias = Tensor[Float](2, 1, 1, 6).rand()
+    val input = T(encodeOutputs, encoderDecoderAttentionBias)
+    runSerializationTest(sequenceBeamSearch, input)
   }
 }
