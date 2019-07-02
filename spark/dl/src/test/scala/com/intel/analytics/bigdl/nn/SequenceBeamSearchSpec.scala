@@ -22,10 +22,10 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 class SequenceBeamSearchSpec extends FlatSpec with Matchers{
   "beam search" should "work correctly" in {
-    val batch_size = 2
-    val beam_size = 3
-    val vocab_size = 4
-    val decode_length = 10
+    val batchSize = 2
+    val beamSize = 3
+    val vocabSize = 4
+    val decodeLength = 10
     val alpha: Float = 0.0f
     val eosId = 1.0f
     val numHiddenLayers = 2
@@ -50,11 +50,11 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
       (tensor, encoder1, Bias1, list1, list2)
     }
 
-    val beamSearch = new SequenceBeamSearch[Float](vocab_size,
-      beam_size, alpha, decode_length, eosId, numHiddenLayers, hiddenSize)
+    val beamSearch = new SequenceBeamSearch[Float](vocabSize,
+      beamSize, alpha, decodeLength, eosId, numHiddenLayers, hiddenSize)
     beamSearch.setLogitFn(symbolsToLogitsFn)
-    val encodeOutputs = Tensor[Float](batch_size, inputLength, hiddenSize).rand()
-    val encoderDecoderAttentionBias = Tensor[Float](batch_size, 1, 1, inputLength).rand()
+    val encodeOutputs = Tensor[Float](batchSize, inputLength, hiddenSize).rand()
+    val encoderDecoderAttentionBias = Tensor[Float](batchSize, 1, 1, inputLength).rand()
     val output = beamSearch.forward(T(encodeOutputs, encoderDecoderAttentionBias))
       .asInstanceOf[Table]
     val outputSeq = Tensor[Float].resizeAs(output[Tensor[Float]](1)).copy(output[Tensor[Float]](1))
