@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.linalg.Axis._1
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.example.languagemodel.PTBModel
+import com.intel.analytics.bigdl.mkl.{AlgKind, Direction, Memory}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -310,5 +311,39 @@ class DnnGraphSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
       Engine.setEngineType(MklBlas)
     }
+  }
+
+  "DnnGraph with ntc" should "work correct" in {
+    val vocabSize = 10001
+    val hiddenSize = 256
+    val numLayers = 1
+    val batchSize = 8
+    val seqLength = 16
+    val inputSize = vocabSize
+    val outputSize = vocabSize
+    val f = AlgKind.EltwiseTanh
+    val direction = Direction.UnidirectionalLeft2Right
+    var i = 2
+
+    val inputShape = Array[Int](batchSize, seqLength)
+    val input = mkldnn.Input(inputShape, Memory.Format.nc).inputs()
+    val embeddingLookup = BlasWrapper(LookupTable[Float](inputSize, hiddenSize)).inputs(input)
+    val lstm = mkldnn.RNN(AlgKind.VanillaLstm, hiddenSize, hiddenSize, f = f, direction = direction)
+      .inputs(embeddingLookup)
+    val linear = BlasWrapper(TimeDistributed[Float](nn.Linear[Float](hiddenSize, outputSize)))
+      .inputs(lstm)
+    val output = mkldnn.Output(Memory.Format.ntc).inputs(linear)
+
+    val dnn = DnnGraph(Array(input), Array(output))
+    dnn.compile(Phase.TrainingPhase)
+
+    val inputTensor = Tensor[Float](batchSize, seqLength).apply1(n => {
+      i += 1
+      i
+    })
+    val gradOutput = Tensor[Float](batchSize, seqLength, outputSize).rand()
+
+    dnn.forward(inputTensor)
+    dnn.backward(inputTensor, gradOutput)
   }
 }

@@ -66,7 +66,12 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   @transient private var initEnv: Boolean = false
 
   private def inferInputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
-    inputs.map(in => HeapData(in.shape, getFormats(in.shape.length)))
+    inputs.map(in => {
+      if (in.layout == Memory.Format.tnc) {
+        val size = in.shape
+        HeapData(Array(size(1), size(0), size(2)), Memory.Format.ntc)
+      } else HeapData(in.shape, getFormats(in.shape.length))
+    })
   }
 
   private def inferOutputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {

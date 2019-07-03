@@ -28,17 +28,19 @@ class Dropout(
   private val dropout = NNDropout[Float](initP, inplace, scale)
   private var mask: DnnTensor[Float] = _
 
-  private def format(shape: Array[Int]): Int = {
+  private def format(shape: Array[Int], layout: Int): Int = {
     shape.length match {
       case 2 => Memory.Format.nc
+      // reminder: for 3 dimension, we should keep original layout (ntc or tnc)
+      case 3 => layout
       case 4 => Memory.Format.nchw
       case _ => throw new UnsupportedOperationException(s"${getName()} unsupported input shape")
     }
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    _inputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
-    _outputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
+    _inputFormats = inputs.map(x => HeapData(x.shape, format(x.shape, x.layout)))
+    _outputFormats = inputs.map(x => HeapData(x.shape, format(x.shape, x.layout)))
     // we should genereate the primitives here, otherwise the initTensor can't get the padding shape
     _outputFormats.map(_.getPrimitive(runtime))
     output = initTensor(_outputFormats.head)
@@ -46,9 +48,9 @@ class Dropout(
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    _gradOutputFormats = grad.map(x => HeapData(x.shape, format(x.shape)))
-    _gradOutputFormatsForWeight = grad.map(x => HeapData(x.shape, format(x.shape)))
-    _gradInputFormats = grad.map(x => HeapData(x.shape, format(x.shape)))
+    _gradOutputFormats = grad.map(x => HeapData(x.shape, format(x.shape, x.layout)))
+    _gradOutputFormatsForWeight = grad.map(x => HeapData(x.shape, format(x.shape, x.layout)))
+    _gradInputFormats = grad.map(x => HeapData(x.shape, format(x.shape, x.layout)))
     _gradInputFormats.map(_.getPrimitive(runtime))
     gradInput = initTensor(_gradInputFormats.head)
     (_gradOutputFormats, _gradInputFormats)
