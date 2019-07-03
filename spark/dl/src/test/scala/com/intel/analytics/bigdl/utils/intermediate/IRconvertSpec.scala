@@ -271,6 +271,8 @@ class IRconvertSpec extends BigDLSpecHelper {
     System.setProperty("bigdl.engineType", "mkldnn")
     val batchSize = 2
 
+    Engine.dnnComputing.setMKLThreadOfMklDnnBackend(1)
+
     RandomGenerator.RNG.setSeed(1)
     val dnnThread = mkldnn.ResNet.graph(batchSize, classNum = 1000,
       T("depth" -> 50, "optnet" -> false, "dataSet" -> mkldnn.ResNet.DatasetType.ImageNet))
