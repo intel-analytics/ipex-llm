@@ -78,8 +78,27 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
 
 class SequenceBeamSearchSerialTest extends ModuleSerializationTest{
   override def test(): Unit = {
+    def symbolsToLogitsFn(Ids: Tensor[Float], i: Tensor[Int], maxDecoderLen: Int,
+                          encoder: Tensor[Float], Bias: Tensor[Float], list1: List[Tensor[Float]],
+                          list2: List[Tensor[Float]]):
+    (Tensor[Float], Tensor[Float], Tensor[Float], List[Tensor[Float]], List[Tensor[Float]]) = {
+      val tensor = Tensor(Array(0.14f, 0.62f, 0.02f, 0.93f,
+        0.59f, 0.48f, 0.27f, 0.70f,
+        0.11f, 0.30f, 0.35f, 0.15f,
+        0.67f, 0.39f, 0.33f, 0.01f,
+        0.44f, 0.52f, 0.45f, 0.23f,
+        0.75f, 0.79f, 0.26f, 0.47f), Array(6, 4))
+      val encoder1 = encoder + Tensor[Float](encoder.size()).rand()
+      val Bias1 = Bias + Tensor[Float](Bias.size()).rand()
+      val batch_beam = encoder.size()(0)
+      list1.map(e => Tensor[Float](batch_beam, 1, 5).rand())
+      list2.map(e => Tensor[Float](batch_beam, 1, 5).rand())
+      (tensor, encoder1, Bias1, list1, list2)
+    }
+
     val sequenceBeamSearch = SequenceBeamSearch[Float](4, 3, 0.0f,
     10, 1.0f, 2, 5).setName("sequenceBeamSearch")
+    sequenceBeamSearch.setLogitFn(symbolsToLogitsFn)
     val encodeOutputs = Tensor[Float](2, 6, 5).rand()
     val encoderDecoderAttentionBias = Tensor[Float](2, 1, 1, 6).rand()
     val input = T(encodeOutputs, encoderDecoderAttentionBias)
