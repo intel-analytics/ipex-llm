@@ -215,6 +215,13 @@ class Linear[T: ClassTag](
   override def toString(): String = {
     s"${getPrintName}($inputSize -> $outputSize)"
   }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val _inputSize = inputShape.toSingle().toArray
+    if (_inputSize.length == 1) {
+      Shape(outputSize)
+    } else Shape(_inputSize(0), outputSize)
+  }
 }
 
 object Linear extends quantized.Quantizable {

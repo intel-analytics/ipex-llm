@@ -37,14 +37,21 @@ class Output(outputLayOut: Int = Memory.Format.nc,
       if (outLayout == Memory.Format.nhwc && inLayout != Memory.Format.nhwc) {
         // nchw*  -> nhwc
         Array(inShape(0), inShape(2), inShape(3), inShape(1))
+      } else if (outLayout == Memory.Format.tnc && inLayout == Memory.Format.ntc) {
+        // ntc -> tnc
+        Array(inShape(1), inShape(0), inShape(2))
+      } else if (outLayout == Memory.Format.ntc && inLayout == Memory.Format.tnc) {
+        // tnc -> ntc
+        Array(inShape(1), inShape(0), inShape(2))
       } else inShape
     outputShape
   }
 
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     require(inputs.length == 1, "Only accept one tensor as input")
-    require(inputs(0).shape.length == 4 || inputs(0).shape.length == 2,
-      s"Only support input with 2 or 4 dimentions, but get ${inputs(0).shape.length}")
+    require(inputs(0).shape.length == 4 || inputs(0).shape.length == 2
+      || inputs(0).shape.length == 3,
+      s"Only support input with 2 or 3 or 4 dimentions, but get ${inputs(0).shape.length}")
 
     val outputShape = getShape(inputs(0).layout, inputs(0).shape, _outputLayOut)
     // remind: output memory storage should be heapData
@@ -61,8 +68,9 @@ class Output(outputLayOut: Int = Memory.Format.nc,
 
   override private[bigdl] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
     require(grads.length == 1, "Only accept one tensor as input")
-    require(grads(0).shape.length == 4 || grads(0).shape.length == 2,
-      s"Only support gradOutput with 2 or 4 dimentions, but get ${grads(0).shape.length}")
+    require(grads(0).shape.length == 4 || grads(0).shape.length == 2
+      || grads(0).shape.length == 3,
+      s"Only support gradOutput with 2 or 3 or 4 dimentions, but get ${grads(0).shape.length}")
 
     val outputShape = getShape(grads(0).layout, grads(0).shape, _gradOutputLayout)
 
