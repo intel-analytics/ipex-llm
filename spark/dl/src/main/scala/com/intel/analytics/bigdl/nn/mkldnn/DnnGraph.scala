@@ -55,7 +55,7 @@ class DnnGraph(
       val out = output.toTensor[Float]
       // for grey image, input should be 3 dims and the first dim should be batch size
       // for non grey image, input should be 4 dims and the first dim should be batch size
-      require(in.nDimension() == 4 || in.nDimension() == 3,
+      require(in.nDimension() == 4 || in.nDimension() == 3 || in.nDimension() == 2,
         s"only support input with 4 dimension or 3 dimension, but get ${in.nDimension()}")
       if (in.size(1) != out.size(1)) out.narrow(1, 1, in.size(1)) else output
     } else output
