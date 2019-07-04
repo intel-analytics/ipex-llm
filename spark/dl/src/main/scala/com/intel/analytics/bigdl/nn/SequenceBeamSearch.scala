@@ -57,7 +57,7 @@ class SequenceBeamSearch[T: ClassTag](
   private val topkLogProbs = Tensor[T]
   private val topkScore = Tensor[T]
   private val topkFlags = Tensor[T]
-  private var symbolToLogits: (Tensor[T], Tensor[Int], Int, Tensor[T], Tensor[T], List[Tensor[T]],
+  private var symbolToLogits: (Tensor[T], Int, Int, Tensor[T], Tensor[T], List[Tensor[T]],
     List[Tensor[T]]) => (Tensor[T], Tensor[T], Tensor[T], List[Tensor[T]], List[Tensor[T]]) = null
   private val topkEncoder = Tensor[T]
   private val topkAttentionBias = Tensor[T]
@@ -136,13 +136,13 @@ class SequenceBeamSearch[T: ClassTag](
    *         terminate.
    */
   private def continueSearch(state: Map[String, Any]): Boolean = {
-    val i = state("CUR_INDEX").asInstanceOf[Tensor[Int]]
+    val i = state("CUR_INDEX").asInstanceOf[Int]
     finishedFlags = state("FINISHED_FLAGS").asInstanceOf[Tensor[Boolean]]
     aliveLogProbs.copy(state("ALIVE_LOG_PROBS").asInstanceOf[Tensor[T]])
     finishedScores.resizeAs(state("FINISHED_SCORES").asInstanceOf[Tensor[T]])
       .copy(state("FINISHED_SCORES").asInstanceOf[Tensor[T]])
     var notAtMaxDecodeLength = true
-    if (i(Array(1)) < maxDecodeLength) {
+    if (i < maxDecodeLength) {
       notAtMaxDecodeLength = true
     } else {
       notAtMaxDecodeLength = false
@@ -298,7 +298,7 @@ class SequenceBeamSearch[T: ClassTag](
     gatherBeams(tensor, topkIndexes, batchSize, beamSize)
   }
 
-  def setLogitFn(fn: (Tensor[T], Tensor[Int], Int, Tensor[T], Tensor[T], List[Tensor[T]],
+  def setLogitFn(fn: (Tensor[T], Int, Int, Tensor[T], Tensor[T], List[Tensor[T]],
     List[Tensor[T]]) => (Tensor[T], Tensor[T], Tensor[T], List[Tensor[T]], List[Tensor[T]])):
     SequenceBeamSearch[T] = {
     symbolToLogits = fn
@@ -315,7 +315,7 @@ class SequenceBeamSearch[T: ClassTag](
    *         topkLogProbs probabilities of returned sequences [batch_size, 2 * beam_size]
    */
   private def growAliveSeq(state: Map[String, Any]): (Tensor[T], Tensor[T]) = {
-    val i = state("CUR_INDEX").asInstanceOf[Tensor[Int]]
+    val i = state("CUR_INDEX").asInstanceOf[Int]
     aliveSeq = state("ALIVE_SEQ").asInstanceOf[Tensor[T]]
     aliveLogProbs = state("ALIVE_LOG_PROBS").asInstanceOf[Tensor[T]]
     val aliveEncoder = state("ENCODER").asInstanceOf[Tensor[T]]
@@ -401,13 +401,13 @@ class SequenceBeamSearch[T: ClassTag](
    */
   private def getNewFinishedState(state: Map[String, Any], newSeq: Tensor[T],
     newLogProbs: Tensor[T]): Map[String, Any] = {
-    val i = state("CUR_INDEX").asInstanceOf[Tensor[Int]]
+    val i = state("CUR_INDEX").asInstanceOf[Int]
     finishedSeq = state("FINISHED_SEQ").asInstanceOf[Tensor[T]]
     finishedScores = state("FINISHED_SCORES").asInstanceOf[Tensor[T]]
     finishedFlags = state("FINISHED_FLAGS").asInstanceOf[Tensor[Boolean]]
     // append a column of 0-ids to finished_seq to increment the length.
     finishedSeq = concat(finishedSeq, Tensor[T](batchSize, beamSize, 1), 3)
-    val lengthNorm = lengthNormalization(alpha, i.valueAt(1))
+    val lengthNorm = lengthNormalization(alpha, i)
     var newScores = newLogProbs / lengthNorm
     // Set the scores of the still-alive seq in new_seq to large negative values.
     newScores += (Tensor(finishedFlagsSeq.size()).fill(ev.fromType[Float](1.0f))
@@ -446,7 +446,7 @@ class SequenceBeamSearch[T: ClassTag](
     val aliveState = growNewAliveState(newSeq, newLogProbs)
     val finishedState = getNewFinishedState(state, newSeq, newLogProbs)
     val newState: Map[String, Any] = Map("CUR_INDEX" -> (state("CUR_INDEX")
-      .asInstanceOf[Tensor[Int]] + 1)) ++ aliveState ++ finishedState
+      .asInstanceOf[Int] + 1)) ++ aliveState ++ finishedState
     newState
   }
 
@@ -459,7 +459,7 @@ class SequenceBeamSearch[T: ClassTag](
     finishedFlags.resize(batchSize, beamSize)
     finishedFlagsSeq.resize(batchSize, beamSize * 2)
     finishedScores.resize(batchSize, beamSize)
-    val curIndex = Tensor(Array(0), Array(1))
+    val curIndex = 0
     val initialID = Tensor[T](Array(batchSize))
     var initialAliveSeq = extendBeamSize(initialID, beamSize)
     initialAliveSeq = expandDim(initialAliveSeq, 2)
