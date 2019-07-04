@@ -35,7 +35,7 @@ import scala.reflect.runtime._
  * @tparam T numeric type
  */
 class BiRecurrent[T : ClassTag] (
-  private val merge: AbstractModule[Table, Tensor[T], T] = null,
+  private var merge: AbstractModule[Table, Tensor[T], T] = null,
   val batchNormParams: BatchNormParams[T] = null,
   val isSplitInput: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
@@ -62,8 +62,11 @@ class BiRecurrent[T : ClassTag] (
         .add(Reverse[T](timeDim))
         .add(revLayer)
         .add(Reverse[T](timeDim))))
-  if (merge == null) birnn.add(CAddTable[T](true))
-  else birnn.add(merge)
+  if (merge == null) merge = CAddTable[T](true)
+  birnn.add(merge)
+
+
+  def getMerge(): AbstractModule[Table, Tensor[T], T] = merge
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     layer.add(module)
