@@ -4023,6 +4023,44 @@ class SelectTable(Layer):
                                           index)
 
 
+class SequenceBeamSearch(Layer):
+
+    '''
+    Find the translated sequence with the highest probability.
+
+
+    :param vocab_size: size of tokens
+    :param beam_size: number of beams
+    :param alpha: defining the strength of length normalization
+    :param decode_length: maximum length to decoded sequence
+    :param eos_id: id of eos token, used to determine when a sequence has finished
+    :param num_hidden_layers: number of hidden layers
+    :param hidden_size: size of hidden layer
+
+
+    >>> sequenceBeamSearch = SequenceBeamSearch(4, 3, 0.0, 10, 1.0, 2, 5)
+    creating: createSequenceBeamSearch
+    '''
+
+    def __init__(self,
+                vocab_size,
+                beam_size,
+                alpha,
+                decode_length,
+                eos_id,
+                num_hidden_layers,
+                hidden_size,
+                bigdl_type="float"):
+        super(SequenceBeamSearch, self).__init__(None, bigdl_type,
+                                                 vocab_size,
+                                                 beam_size,
+                                                 alpha,
+                                                 decode_length,
+                                                 eos_id,
+                                                 num_hidden_layers,
+                                                 hidden_size)
+
+
 class SoftMax(Layer):
 
     '''
