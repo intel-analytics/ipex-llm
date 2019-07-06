@@ -1165,6 +1165,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SelectTable[T](dimension)
   }
 
+  def createSequenceBeamSearch(vocabSize: Int,
+    beamSize: Int,
+    alpha: Float,
+    decodeLength: Int,
+    eosId: Float,
+    numHiddenLayers: Int,
+    hiddenSize: Int)
+  : SequenceBeamSearch[T] = {
+    SequenceBeamSearch[T](vocabSize,
+      beamSize,
+      alpha,
+      decodeLength,
+      eosId,
+      numHiddenLayers,
+      hiddenSize)
+  }
+
   def createSigmoid()
   : Sigmoid[T] = {
     Sigmoid[T]()
