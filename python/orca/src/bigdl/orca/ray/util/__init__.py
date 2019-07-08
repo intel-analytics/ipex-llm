@@ -18,10 +18,10 @@ import os
 import signal
 
 from zoo.ray.util.utils import to_list
-import ray.services as rservices
 
 
 def gen_shutdown_per_node(pgids, node_ips=None):
+    import ray.services as rservices
     pgids = to_list(pgids)
 
     def _shutdown_per_node(iter):
