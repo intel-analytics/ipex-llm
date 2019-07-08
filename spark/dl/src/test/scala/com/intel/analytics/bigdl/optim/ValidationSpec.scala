@@ -22,6 +22,243 @@ import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ValidationSpec extends FlatSpec with Matchers {
+  "precission for a class" should "be correct on 2d tensor" in {
+    val output = Tensor[Double](
+      T(
+        T(0.8, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0),
+        T(0.0, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0))
+    )
+
+    /*
+      6 True positives and a wrong prediction for the firest class.
+      Precission = TP / (FP + TP) 6 / (3 + 6) = 0.666
+     */
+    val target = Tensor[Double](
+      T(
+        T(2.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0))
+    )
+
+    val validation = new Precision[Double](1.0)
+    val result = validation(output, target)
+    val test = new PrecisionResult[Double](1.0, tpByClass = 6, fpByClass = 3)
+
+    result should be(test)
+  }
+
+  "precision for a class with Float" should "be correct on 2d tensor" in {
+    val output = Tensor[Float](
+      T(
+        T(0.8, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0),
+        T(0.0, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0))
+    )
+
+    /*
+      6 True positives and a wrong prediction for the firest class.
+      Precission = TP / (FP + TP) 6 / (3 + 6) = 0.666
+     */
+    val target = Tensor[Float](
+      T(
+        T(2.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0))
+    )
+
+    val validation = new Precision[Float](1.0f)
+    val result = validation(output, target)
+    val test = new PrecisionResult[Float](1.0f, 6, 3)
+
+    result should be(test)
+  }
+
+  "recall for a class" should "be correct on 2d tensor" in {
+    val output = Tensor[Double](
+      T(
+        T(0.8, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0),
+        T(0.0, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0))
+    )
+
+    /*
+      6 True positives and a wrong prediction for the firest class.
+      Recall = TP / (FN + TP) 6 / (1 + 6) = 0.857
+     */
+    val target = Tensor[Double](
+      T(
+        T(2.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0))
+    )
+
+    val validation = new Recall[Double](1.0f)
+    val result = validation(output, target)
+    val test = new RecallResult(1.0, 6, 1)
+
+    result should be(test)
+  }
+
+  "recall for a class with Float" should  "be correct on 2d tensor" in {
+
+    val output = Tensor[Float](
+      T(
+        T(0.8, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0),
+        T(0.0, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0))
+    )
+
+    val target = Tensor[Float](
+      T(
+        T(2.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0))
+    )
+
+    val validation = new Recall[Float](1.0f)
+    val result = validation(output, target)
+    val test = new RecallResult(1.0, 6, 1)
+
+    result should be(test)
+
+  }
+
+  "F1Score for a class" should "be correct on 2d tensor" in {
+    val output = Tensor[Double](
+      T(
+        T(0.8, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0),
+        T(0.0, 0.0, 0.1, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.2, 0.0, 0.0, 0.0),
+        T(0.0, 0.1, 0.0, 0.0))
+    )
+
+    val target = Tensor[Double](
+      T(
+        T(2.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0),
+        T(1.0))
+    )
+
+    val validation = new F1Score[Double](1.0)
+    val result = validation(output, target)
+    // (2 * (precission * recall)) / ( precission + recall)
+    val test = new F1ScoreResult[Double]( 1.0, 6, 3, 1)
+
+    result should be(test)
+  }
+
+  "precission, recall and f1score" should "be correct in a concrete example" in {
+
+    /**
+       Using:
+                             Actual Positives    Actual Negatives
+       Predicted Positives         42                 16
+       Predicted Negatives         13                 29
+     */
+
+    val recallResultPositives = new RecallResult[Float](1.0F, 42, 13)
+    val r1 = BigDecimal(recallResultPositives.result()._1)
+      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
+    r1 should be (0.76F)
+
+    val recallResultNegatives = new RecallResult[Float](0.0F, 29, 16)
+    val r2 = BigDecimal(recallResultNegatives.result()._1)
+      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
+    r2 should be (0.64F)
+
+    val precisionResultPositives = new PrecisionResult[Float](1.0f, 42, 16)
+    val r3 = BigDecimal(precisionResultPositives.result()._1)
+      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
+    r3 should be (0.72F)
+
+    val precisionResultNegatives = new PrecisionResult[Float](0.0f, 29, 13)
+    val r4 = BigDecimal(precisionResultNegatives.result()._1)
+      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
+    r4 should be (0.69F)
+
+
+    val f1ScorePositives = new F1ScoreResult[Float](1.0f, 42, 16, 13)
+    val r5 = BigDecimal(f1ScorePositives.result()._1)
+      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
+    r5 should be (0.74F)
+
+    val f1ScoreNegatives = new F1ScoreResult[Float](0.0f, 29, 13, 16)
+    val r6 = BigDecimal(f1ScoreNegatives.result()._1)
+      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
+
+    r6 should be (0.67F)
+  }
+
   "treeNN accuracy" should "be correct on 2d tensor" in {
     val output = Tensor[Double](
       T(
