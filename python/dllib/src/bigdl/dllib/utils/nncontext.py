@@ -32,7 +32,7 @@ def init_spark_on_local(cores=2, conf=None, python_location=None, spark_log_leve
     :param redirect_spark_log: Redirect the Spark log to local file or not.
     :return:
     """
-    from zoo.ray.util.spark import SparkRunner
+    from zoo.util.spark import SparkRunner
     sparkrunner = SparkRunner(spark_log_level=spark_log_level,
                               redirect_spark_log=redirect_spark_log)
     return sparkrunner.init_spark_on_local(cores=cores, conf=conf,
@@ -80,7 +80,7 @@ def init_spark_on_yarn(hadoop_conf,
                        i.e spark_conf={"spark.executor.extraJavaOptions": "-XX:+PrintGCDetails"}
     :return: SparkContext
     """
-    from zoo.ray.util.spark import SparkRunner
+    from zoo.util.spark import SparkRunner
     sparkrunner = SparkRunner(spark_log_level=spark_log_level,
                               redirect_spark_log=redirect_spark_log)
     sc = sparkrunner.init_spark_on_yarn(

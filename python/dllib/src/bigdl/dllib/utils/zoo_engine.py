@@ -113,6 +113,9 @@ def get_analytics_zoo_classpath():
     if jar_paths:
         assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
         return jar_paths[0]
+    import logging
+    logging.warning(
+        "Trying to search from: {}, but can not find the jar for Analytics-Zoo".format(jar_dir))
     return ""
 
 
