@@ -7,7 +7,7 @@
 - Note that __Python 3.6__ is only compatible with Spark 1.6.4, 2.0.3, 2.1.1 and 2.2.0. See [this issue](https://issues.apache.org/jira/browse/SPARK-19019) for more discussion.
 
 
-## **Install BigDL-0.8.0.dev0**
+## **Install BigDL-0.9.0.dev0**
 
 Install BigDL release via pip (we tested this on pip 9.0.1)
 
@@ -18,6 +18,6 @@ Install BigDL release via pip (we tested this on pip 9.0.1)
 - `pyspark` will be automatically installed first before installing BigDL if it hasn't been detected locally.
 ```bash
 pip install --upgrade pip
-pip install BigDL==0.8.0.dev0     # for Python 2.7
-pip3 install BigDL==0.8.0.dev0    # for Python 3.5 and Python 3.6
+pip install BigDL==0.9.0.dev0     # for Python 2.7
+pip3 install BigDL==0.9.0.dev0    # for Python 3.5 and Python 3.6
 ```

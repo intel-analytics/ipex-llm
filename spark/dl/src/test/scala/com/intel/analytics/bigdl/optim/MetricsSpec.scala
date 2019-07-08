@@ -110,7 +110,7 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result._2 should be(5)
   }
 
-  it should "throw exception when the local metric isn't exsited" in {
+  it should "throw exception when the local metric doesn't exist" in {
     val metric = new Metrics
     intercept[IllegalArgumentException] {
       metric.add("test", 10.0)
@@ -128,7 +128,7 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result._2 should be(5)
   }
 
-  it should "throw exception when the distributed metric isn't exsited" in {
+  it should "throw exception when the distributed metric doesn't exist" in {
     val metric = new Metrics
     val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
     sc = new SparkContext(conf)

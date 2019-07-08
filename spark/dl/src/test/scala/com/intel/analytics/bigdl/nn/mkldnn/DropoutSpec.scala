@@ -27,6 +27,7 @@ class DropoutSpec extends FlatSpec with Matchers {
     val zeros = Tensor[Float](Array(2, 3, 4, 4)).fill(0)
 
     val dropout = Dropout()
+    dropout.setRuntime(new MklDnnRuntime)
     dropout.initFwdPrimitives(Array(HeapData(Array(2, 3, 4, 4), Memory.Format.nchw)), TrainingPhase)
 
     {
@@ -54,6 +55,7 @@ class DropoutSpec extends FlatSpec with Matchers {
     val zeros = Tensor[Float](Array(2, 3, 4, 4)).fill(0)
 
     val dropout = Dropout()
+    dropout.setRuntime(new MklDnnRuntime)
     dropout.initFwdPrimitives(Array(HeapData(Array(2, 3, 4, 4), Memory.Format.nchw)),
       InferencePhase)
     dropout.evaluate()
@@ -64,5 +66,19 @@ class DropoutSpec extends FlatSpec with Matchers {
     val total = input.nElement()
     val ratio = notEqZeros.toDouble / total
     ratio should be (1.0)
+  }
+
+  "dropout in sequential" should "work correctly" in {
+    val shape = Array(2, 3, 4, 4)
+    val dropout = Dropout()
+    val seq = Sequential().add(Input(shape, Memory.Format.nchw))
+      .add(dropout)
+      .add(Output(Memory.Format.nchw))
+
+    seq.compile(TrainingPhase)
+
+    val input = Tensor[Float](shape).rand(-1, 1)
+    seq.forward(input)
+    seq.backward(input, seq.output)
   }
 }

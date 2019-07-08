@@ -21,8 +21,8 @@ import com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.BigDLSpecHelper
-import com.intel.analytics.bigdl.utils.intermediate.{IRToBlas, IRToDnn, ReflectionUtils}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, ReflectionUtils}
+import com.intel.analytics.bigdl.utils.intermediate.{IRToBlas, IRToDnn}
 import com.intel.analytics.bigdl.{Module, nn}
 
 class ReflectionUtilsSpec extends BigDLSpecHelper {
@@ -41,24 +41,26 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
 
     val inputShape = Array(2, 2, 23, 23)
     val outShape = Array(2, 4, 6, 6)
-    modelDnn.setRuntime(new MklDnnRuntime)
-    modelDnn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
-    modelDnn.initBwdPrimitives(Array(HeapData(outShape, Memory.Format.nchw)), TrainingPhase)
-    modelDnn.initGradWPrimitives(Array(HeapData(outShape, Memory.Format.nchw)), TrainingPhase)
+
+    val seq = Sequential()
+        .add(Input(inputShape, Memory.Format.nchw))
+        .add(modelDnn)
+        .add(Output(Memory.Format.nchw))
+    seq.compile(TrainingPhase)
 
     val input = Tensor[Float](inputShape).rand()
     val gradOutput = Tensor[Float](outShape).rand()
 
     val out = model1.forward(input).toTensor[Float]
     val out1 = modelBlas.forward(input).toTensor[Float]
-    val out2 = modelDnn.forward(input).toTensor[Float]
+    val out2 = seq.forward(input).toTensor[Float]
 
     out should be(out1)
     Equivalent.nearequals(out1, Tools.dense(out2).toTensor[Float], 1e-4) should be(true)
 
     val grad = model1.backward(input, gradOutput)
     val grad1 = modelBlas.backward(input, gradOutput)
-    val grad2 = modelDnn.backward(input, gradOutput)
+    val grad2 = seq.backward(input, gradOutput)
 
     val gradWeight1 = modelDnn.getParameters()._2
     val gradWeight2 = modelBlas.getParameters()._2
@@ -69,7 +71,7 @@ class ReflectionUtilsSpec extends BigDLSpecHelper {
     Equivalent.nearequals(weight1, weight2) should be (true)
     Equivalent.nearequals(gradWeight1, gradWeight2) should be (true)
 
-    Equivalent.nearequals(Tools.dense(modelDnn.gradInput).toTensor,
+    Equivalent.nearequals(Tools.dense(seq.gradInput).toTensor,
       modelBlas.gradInput.toTensor[Float]) should be (true)
   }
 

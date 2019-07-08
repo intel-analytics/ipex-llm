@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -64,6 +65,22 @@ class CMulSpec extends FlatSpec with Matchers {
     output3 should be (output4)
     gradInput3 should be (gradInput4)
     layer2.gradWeight should be (layer1.gradWeight.mul(0.5))
+  }
+
+  "CMUl" should "works well on batch input" in {
+    val model = nn.CMul[Float](Array(1, 64, 1, 1))
+    val model2 = model.cloneModule()
+
+    val batchInput = Tensor[Float](64, 64, 112, 112).rand()
+    val input = batchInput.select(1, 1).resize(Array(1, 64, 112, 112))
+
+    model.evaluate()
+    model2.evaluate()
+
+    val out1 = model.forward(batchInput)
+    val out2 = model2.forward(input).resize(Array(64, 112, 112))
+
+    out2 should be(out1.select(1, 1))
   }
 }
 

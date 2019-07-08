@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -82,15 +82,21 @@ class CMul[T: ClassTag](
   }
 
   private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
-    val multiplyDimSize = expand.size(dim)
-    var dimOfOutput : Int = 1
-    while(output.size(dimOfOutput) != multiplyDimSize) {
-
-      dimOfOutput += 1
-      require(dimOfOutput <= output.dim(), s"OutOfBound : " +
-        s"Output does not have a dimension of $multiplyDimSize elements")
+    var outputDim : Int = dim
+    if (expand.dim() > output.dim()) {
+      val multiplyDimSize = expand.size(dim)
+      var dimTemp : Int = 1
+      while(output.size(dimTemp) != multiplyDimSize) {
+        dimTemp += 1
+        require(dimTemp <= output.dim(), s"OutOfBound : " +
+          s"Output does not have a dimension of $multiplyDimSize elements")
+      }
+      outputDim = dimTemp
+    } else {
+      require(output.size(dim) == expand.size(dim), s"OutOfBound : " +
+        s"Output does not have a dimension of ${expand.size(dim)} elements")
     }
-    val (innerNum, outerNum) = Utils.getInnerOuterNum(dimOfOutput, output)
+    val (innerNum, outerNum) = Utils.getInnerOuterNum(outputDim, output)
     val weightData = expand.storage().array()
     val weightOffset = expand.storageOffset() - 1
     var outer = 0
@@ -204,6 +210,10 @@ class CMul[T: ClassTag](
 
   override def toString(): String = {
     s"${getPrintName}(${java.util.Arrays.toString(size)})"
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
   }
 }
 

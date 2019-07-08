@@ -16,19 +16,14 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
-import java.util.List
-
-import breeze.linalg.reverse
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.{Graph, SpatialMaxPooling, keras}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Node, T}
+import com.intel.analytics.bigdl.utils._
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -52,23 +47,28 @@ private[bigdl] class IRGraph[T: ClassTag](
     val outputFormats: Seq[Int] = Seq(Memory.Format.nc))
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] with Serializable {
 
-  @transient private var initFwd: Boolean = false
-  @transient private var initBwd: Boolean = false
-  @transient private var initAcc: Boolean = false
+  @transient private var initPrim: Boolean = false
 
   require(inputFormats.length == inputs.length, s"IRGraph: inputFormats" +
     s"length ${inputFormats.length} should be same with input nodes length ${inputs.length}")
   require(outputFormats.length == outputs.length, s"IRGraph: outputFormats" +
     s"length ${inputFormats.length} should be same with input nodes length ${outputs.length}")
 
-  private var graph: Graph[T] = null
+  private[bigdl] var graph: Graph[T] = null
+
+  private[bigdl] def isBuild(): Boolean = graph != null
 
   override def updateOutput(input: Activity): Activity = {
     if (graph == null) {
       throw new UnsupportedOperationException("forward not supported, Please build graph first")
     }
-    initFwdPrimitives(input)
-    output = graph.updateOutput(input)
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        initPrimitives(input)
+        graph.updateOutput(input)
+      }))
+    } else graph.updateOutput(input)
+    output = graph.output
     output
   }
 
@@ -76,8 +76,12 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    initBwdPrimitives()
-    gradInput = graph.updateGradInput(input, gradOutput)
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        graph.updateGradInput(input, gradOutput)
+      }))
+    } else graph.updateGradInput(input, gradOutput)
+    gradInput = graph.gradInput
     gradInput
   }
 
@@ -85,8 +89,11 @@ private[bigdl] class IRGraph[T: ClassTag](
     if (graph == null) {
       throw new UnsupportedOperationException("backward not supported, Please build graph first")
     }
-    initGradWPrimitives()
-    graph.accGradParameters(input, gradOutput)
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        graph.accGradParameters(input, gradOutput)
+      }))
+    } else graph.accGradParameters(input, gradOutput)
   }
 
   def build(): this.type = {
@@ -97,6 +104,8 @@ private[bigdl] class IRGraph[T: ClassTag](
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     graph.parameters()
   }
+
+  override def getParametersTable(): Table = graph.getParametersTable()
 
   override def training(): this.type = {
     train = true
@@ -114,11 +123,29 @@ private[bigdl] class IRGraph[T: ClassTag](
     this
   }
 
-  private def initFwdPrimitives(input: Activity): Unit = {
-    if (!initFwd && graph.isInstanceOf[DnnGraph]) {
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    graph.getExtraParameter()
+  }
+
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    graph.getTimes()
+  }
+
+  override def resetTimes(): Unit = {
+    graph.resetTimes()
+  }
+
+  private def initPrimitives(input: Activity): Unit = {
+    if (!initPrim && graph.isInstanceOf[DnnGraph]) {
       val inputMemory = new Array[MemoryData](inputFormats.length)
       if (input.isInstanceOf[Tensor[T]]) {
-        inputMemory(0) = HeapData(input.toTensor[T].size(), inputFormats(0))
+        // todo: handle for 3 dimensions, expand 3 dims to 4 dims
+        val size = input.toTensor[T].size()
+        val sizeNew = if (size.length == 3 && inputFormats(0) != Memory.Format.ntc
+          && inputFormats(0) != Memory.Format.tnc) {
+          Array(size(0), 1, size(1), size(2))
+        } else size
+        inputMemory(0) = HeapData(sizeNew, inputFormats(0))
       } else {
         val tensors = input.toTable
         require(tensors.length() == inputFormats.length, s"table input length " +
@@ -132,25 +159,30 @@ private[bigdl] class IRGraph[T: ClassTag](
         })
       }
       val dnnGraph = graph.asInstanceOf[DnnGraph]
+      val phase = if (dnnGraph.isTraining()) Phase.TrainingPhase else Phase.InferencePhase
       dnnGraph.setRuntime(new MklDnnRuntime())
-      dnnGraph.initFwdPrimitives(inputMemory)
-      initFwd = true
+      dnnGraph.initFwdPrimitives(inputMemory, phase)
+      if (dnnGraph.isTraining()) {
+        dnnGraph.initBwdPrimitives(dnnGraph.outputFormats(), phase)
+        dnnGraph.initGradWPrimitives(dnnGraph.outputFormats(), phase)
+      }
+      initPrim = true
     }
   }
 
-  private def initBwdPrimitives(): Unit = {
-    if (!initBwd && graph.isInstanceOf[DnnGraph]) {
-      val dnnGraph = graph.asInstanceOf[DnnGraph]
-      dnnGraph.initBwdPrimitives(dnnGraph.outputFormats())
-      initBwd = true
+  def setQuantize(value: Boolean): this.type = {
+    require(graph != null, s"you should build the graph first")
+    if (graph.isInstanceOf[DnnGraph]) {
+      graph.asInstanceOf[DnnGraph].setQuantize(value)
     }
+    this
   }
 
-  private def initGradWPrimitives(): Unit = {
-    if (!initAcc && graph.isInstanceOf[DnnGraph]) {
-      val dnnGraph = graph.asInstanceOf[DnnGraph]
-      dnnGraph.initGradWPrimitives(dnnGraph.outputFormats())
-      initAcc = true
+  override def release(): Unit = {
+    if (graph.isInstanceOf[DnnGraph]) {
+      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+        graph.release()
+      }))
     }
   }
 }

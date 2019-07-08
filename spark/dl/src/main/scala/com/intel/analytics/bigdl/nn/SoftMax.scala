@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Shape}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -62,6 +62,10 @@ class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
     SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results)
     gradInput
   }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
+  }
 }
 
 object SoftMax{
@@ -90,12 +94,13 @@ object SoftMax{
     } else {
       input.contiguous().storage().array()
     }
+    val storageOffset = input.storageOffset() - 1
 
     var t = 0
     while (t < stride * nFrame) {
       val _t = t
       results(_t) = Engine.model.invoke(() => {
-        val inputOffset = (_t / stride) * dim * stride + _t % stride
+        val inputOffset = (_t / stride) * dim * stride + _t % stride + storageOffset
         val outputOffset = (_t / stride) * dim * stride + _t % stride
 
         var inputMax = ev.fromType[Float](Float.MinValue)

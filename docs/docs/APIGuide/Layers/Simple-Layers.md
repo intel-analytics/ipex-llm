@@ -94,7 +94,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-def randomn(): Float = RandomGenerator.RNG.uniform(0, 1)
+def randomn(): Double = RandomGenerator.RNG.uniform(0, 1)
 val input = Tensor(2, 3)
 input.apply1(x => randomn().toFloat)
 println("input:")
@@ -153,7 +153,7 @@ taking the elements row-wise.
 
 parameters:
 * `size` the size after reshape
-* `batchMode` It is a optional argument. If it is set to `Some(true)`,
+* `batchMode` It is an optional argument. If it is set to `Some(true)`,
                   the first dimension of input is considered as batch dimension,
                   and thus keep this dimension size fixed. This is necessary
                   when dealing with batch sizes of one. When set to `Some(false)`,

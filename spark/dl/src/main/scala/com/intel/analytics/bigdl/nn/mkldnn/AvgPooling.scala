@@ -16,21 +16,45 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.Utils
+import com.intel.analytics.bigdl.nn.{Utils => NNUtils}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class AvgPooling(
-  kW: Int,
-  kH: Int,
+  var kW: Int,
+  var kH: Int,
   dW: Int = 1,
   dH: Int = 1,
   padW: Int = 0,
-  padH: Int = 0
+  padH: Int = 0,
+  globalPooling: Boolean = false
 ) extends MklDnnLayer {
   @transient private var paddingTL: Array[Int] = _
   @transient private var paddingBR: Array[Int] = _
   @transient private var fwdPD: Long = _
+
+  // reminder: ceilMode default value is true,
+  // but in blas SpatialMaxPooling, default ceilMode is false
+  private var ceilMode = true
+
+  /**
+   * set ceil mode
+   * @return this
+   */
+  def ceil(): AvgPooling = {
+    ceilMode = true
+    this
+  }
+
+  /**
+   * set floor mode
+   * @return this
+   */
+  def floor(): AvgPooling = {
+    ceilMode = false
+    this
+  }
 
   private val algKind = if (padH == -1 && padW == -1) {
     AlgKind.PoolingAvgIncludePadding
@@ -40,24 +64,40 @@ class AvgPooling(
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)
-    val strides = Array(dW, dH)
-    val kernel = Array(kH, kW)
     val n = _inputFormats(0).shape(0)
     val c = _inputFormats(0).shape(1)
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
+
+    // global average pooling reduce each feature map to a single average value
+    if (globalPooling) {
+      kH = h
+      kW = w
+    }
+
+    val strides = Array(dW, dH)
+    val kernel = Array(kH, kW)
+
     val (pt, pb, pl, pr, oh, ow) = if (padH == -1 && padW == -1) {
-      val sizes = Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
+      val sizes = NNUtils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
       (sizes(0), sizes(1), sizes(2), sizes(3), sizes(4), sizes(5))
     } else {
-      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
+      NNUtils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW, ceilMode)
     }
 
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
-    val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)
+    val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
+      Memory.Format.any)
+
+    val kind = if (phase == InferencePhase) {
+      PropKind.ForwardScoring
+    } else {
+      PropKind.ForwardTraining
+    }
+
     val description = MklDnn.PoolingForwardDescInit(
-      PropKind.Forward, algKind,
+      kind, algKind,
       _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
@@ -80,7 +120,7 @@ class AvgPooling(
       strides, kernel, paddingTL, paddingBR, MklDnn.PaddingKind.mkldnnPaddingZero)
 
     val pd = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPD)
-    _gradInputFormats = Array(MemoryData.primitiveGradInput(pd))
+    _gradInputFormats = Array(MemoryData.operationWant(pd, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(MklDnn.PrimitiveCreate2(pd,
       _gradOutputFormats.map(_.getPrimitive(runtime)),
       Array(0, 0), 2, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
@@ -96,6 +136,7 @@ object AvgPooling {
     dW: Int = 1,
     dH: Int = 1,
     padW: Int = 0,
-    padH: Int = 0
-  ): AvgPooling = new AvgPooling(kW, kH, dW, dH, padW, padH)
+    padH: Int = 0,
+    globalPooling: Boolean = false
+  ): AvgPooling = new AvgPooling(kW, kH, dW, dH, padW, padH, globalPooling)
 }

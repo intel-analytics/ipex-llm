@@ -18,17 +18,32 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.{Sequential => Seq}
+import com.intel.analytics.bigdl.nn.{MklInt8Convertible, Sequential => Seq}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
-class Sequential extends MklDnnContainer {
+class Sequential extends MklDnnContainer with MklInt8Convertible {
 
-  val fuseConvBn = System.getProperty("bigdl.mkldnn.fusion.convbn", "false").toBoolean
-  val fuseBnRelu = System.getProperty("bigdl.mkldnn.fusion.bnrelu", "false").toBoolean
-  val fuseConvRelu = System.getProperty("bigdl.mkldnn.fusion.convrelu", "false").toBoolean
-  val fuseConvSum = System.getProperty("bigdl.mkldnn.fusion.convsum", "false").toBoolean
+  def fuse: Boolean = {
+    System.getProperty("bigdl.mkldnn.fusion", "false").toBoolean
+  }
+
+  private def fuseConvBn: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.convbn", "false").toBoolean
+  }
+
+  private def fuseBnRelu: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.bnrelu", "false").toBoolean
+  }
+
+  private def fuseConvRelu: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.convrelu", "false").toBoolean
+  }
+
+  private def fuseConvSum: Boolean = {
+    fuse || System.getProperty("bigdl.mkldnn.fusion.convsum", "false").toBoolean
+  }
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {
     require(mklDnnModules == null, "You should not call add after compilation")
@@ -51,8 +66,11 @@ class Sequential extends MklDnnContainer {
       val m = mklDnnModules(i)
       val (realInputFormats, outputFormats) = m.initFwdPrimitives(lastOutputFormats, phase)
       lastOutputFormats.zip(realInputFormats).foreach {
-        case (o, i) => reorderManager.register(o, i)
+        case (o, i) =>
+          Utils.copyMaskAndScales(o, i)
+          reorderManager.register(o, i)
       }
+      Utils.copyMaskAndScales(realInputFormats, outputFormats)
       if (i == 0) firstRealInputFormats = realInputFormats
       lastOutputFormats = outputFormats
     }
@@ -205,6 +223,7 @@ class Sequential extends MklDnnContainer {
           case (conv: SpatialConvolution, relu: ReLU) =>
             newModules.append(conv)
             conv.setReLU()
+            conv.setOutputScales(relu.getOutputScales())
             lastReLU = relu
           case (f: MklDnnContainer, s) =>
             f.fusion(phase)
@@ -258,9 +277,11 @@ class Sequential extends MklDnnContainer {
           if (sbt != null) {
             newModules.append(sbt)
           }
+          conv.setOutputScales(s.getOutputScales())
         case (f: MklDnnContainer, s) => f.fusion(phase); newModules.append(f)
         case (f: CAddTable, s: ReLU) => if (lastConv != null) {
           lastConv.setReLU()
+          lastConv.setOutputScales(s.getOutputScales())
           lastReLU = s
           lastConv = null
         } else {
@@ -289,10 +310,15 @@ class Sequential extends MklDnnContainer {
     val convWeight = Tensor[Float].resize(conv.weight.size()).copy(conv.weight.dense)
     val convBias = Tensor[Float].resize(conv.bias.size()).copy(conv.bias.dense)
 
+    val bnWeight = Tensor[Float].resizeAs(bn.weightAndBias.dense).copy(bn.weightAndBias.dense)
+
     (0 until bn.nOutput).foreach { j =>
       val variance = originVar.storage().array()(j + originVar.storageOffset() - 1)
       val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
       require(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
+
+      val alpha = bnWeight.storage().array()(bnWeight.storageOffset() - 1 + j)
+      val beta = bnWeight.storage().array()(bnWeight.storageOffset() - 1 + bn.nOutput + j)
 
       val weight = if (conv.nGroup == 1) {
         convWeight.select(1, j + 1)
@@ -300,30 +326,34 @@ class Sequential extends MklDnnContainer {
         convWeight.select(2, j + 1)
       }
       weight.div(base)
+      weight.mul(alpha)
 
       val bias = convBias.storage().array()(j)
       val mean = originMean.storage().array()(j)
-      convBias.storage().array()(j) = (bias - mean) / base
+      convBias.storage().array()(j) = alpha / base * bias + beta - (alpha * mean) / base
     }
 
     conv.weight.copy(convWeight)
     conv.bias.copy(convBias)
+
+    conv.flushWeightScales(conv.weight.dense)
+    conv.setOutputScales(bn.getOutputScales())
   }
 
-  private def getLast(
-    module: AbstractModule[Activity, Activity, Float]): AbstractModule[Activity, Activity, Any] = {
+  private type FloatActivityModule = AbstractModule[Activity, Activity, Float]
+  private def getLast(module: FloatActivityModule): FloatActivityModule = {
     val ret = module match {
       case sequential: Sequential => sequential.modules.last
       case _ => module
     }
 
-    ret.asInstanceOf[AbstractModule[Activity, Activity, Any]]
+    ret.asInstanceOf[FloatActivityModule]
   }
 
   private def convSum(concatTable: ConcatTable, cAddTable: CAddTable): (SpatialConvolution,
     SelectTable) = {
-    var branch1: AbstractModule[Activity, Activity, Any] = null
-    var branch2: AbstractModule[Activity, Activity, Any] = null
+    var branch1: FloatActivityModule = null
+    var branch2: FloatActivityModule = null
 
     var continue = concatTable.modules.length == 2
 
@@ -331,7 +361,7 @@ class Sequential extends MklDnnContainer {
       branch1 = getLast(concatTable.modules(0))
       branch2 = getLast(concatTable.modules(1))
 
-      def isConvOrIdentity(module: AbstractModule[Activity, Activity, Any]): Boolean = {
+      def isConvOrIdentity(module: AbstractModule[Activity, Activity, Float]): Boolean = {
         module.isInstanceOf[SpatialConvolution] || module.isInstanceOf[Identity]
       }
 
@@ -348,13 +378,15 @@ class Sequential extends MklDnnContainer {
         concatTable.modules(0) = concatTable.modules(1)
         concatTable.modules(1) = tmp
 
-        tmp = branch1.asInstanceOf[AbstractModule[Activity, Activity, Float]]
+        concatTable.reconstruct()
+
+        tmp = branch1
         branch1 = branch2
-        branch2 = tmp.asInstanceOf[AbstractModule[Activity, Activity, Any]]
+        branch2 = tmp
       }
 
       // get the index of conv, by default the output should be the first conv.
-      val (convIndex, conv, theOther) = (1, branch2.asInstanceOf[SpatialConvolution], branch1)
+      val (convIndex, conv, theOther) = (2, branch2.asInstanceOf[SpatialConvolution], branch1)
       conv.setSum()
 
       // delete CAddTable
@@ -367,6 +399,26 @@ class Sequential extends MklDnnContainer {
     } else {
       (null, null)
     }
+  }
+
+  override def calcScales(input: Activity): Unit = {
+    var i = 0
+    var lastOutput = input
+    while (i < this.modules.length - 1) {
+      Utils.calcScales(this.modules(i), lastOutput)
+
+      val curOutput = this.modules(i).output
+      require(mklDnnModules(i).outputFormats().length == mklDnnModules(i + 1).inputFormats().length)
+      lastOutput = reorderManager.infer(
+        mklDnnModules(i).outputFormats(),
+        mklDnnModules(i + 1).inputFormats(),
+        curOutput
+      )
+
+      i += 1
+    }
+
+    Utils.calcScales(this.modules(i), lastOutput)
   }
 
   override def toString(): String = {

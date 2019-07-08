@@ -90,7 +90,7 @@ optimizer = Optimizer(
 
 **Scala:**
 ```scala
-val optimMethod = SGD(learningRate= 1e-3,learningRateDecay=0.0,
+val optimMethod = new SGD(learningRate= 1e-3,learningRateDecay=0.0,
                       weightDecay=0.0,momentum=0.0,dampening=Double.MaxValue,
                       nesterov=false,learningRateSchedule=Default(),
                       learningRates=null,weightDecays=null)
@@ -142,7 +142,7 @@ http://arxiv.org/abs/1212.5701.
 
 **Scala:**
 ```scala
-val optimMethod = Adadelta(decayRate = 0.9, Epsilon = 1e-10)
+val optimMethod = new Adadelta(decayRate = 0.9, Epsilon = 1e-10)
 ```
 **Python:**
 ```python
@@ -175,7 +175,7 @@ An implementation of RMSprop (Reference: http://arxiv.org/pdf/1308.0850v5.pdf, S
 * learningRate : learning rate
 * learningRateDecay : learning rate decay
 * decayRate : decayRate, also called rho
-* Epsilone : for numerical stability
+* Epsilon : for numerical stability
 
 ## Adamax ##
 
@@ -210,7 +210,9 @@ val adagrad = new Adagrad(learningRate = 1e-3,
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor._
-val adagrad = Adagrad(0.01, 0.0, 0.0)
+import com.intel.analytics.bigdl.utils.T
+
+val adagrad = new Adagrad(0.01, 0.0, 0.0)
     def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
       // (1) compute f(x)
       val d = x.size(1)

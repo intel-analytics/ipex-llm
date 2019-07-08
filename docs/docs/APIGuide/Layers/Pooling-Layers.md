@@ -510,6 +510,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.Storage
+import com.intel.analytics.bigdl.utils.T
 
 val input_data = Tensor(2,2,6,8).randn()
 val rois = Array(0, 0, 0, 7, 5, 1, 6, 2, 7, 5, 1, 3, 1, 6, 4, 0, 3, 3, 3, 3)

@@ -16,16 +16,22 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import breeze.linalg.Axis._1
+import breeze.linalg.dim
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.dataset.MiniBatch
+import com.intel.analytics.bigdl.mkl.{MKL, Memory}
+import com.intel.analytics.bigdl.nn.{DetectionOutputSSD, PriorBox}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
-import spire.syntax.module
+import com.intel.analytics.bigdl.utils.Engine._
+import com.intel.analytics.bigdl.utils.{Util => NNUtils, _}
+import org.apache.log4j.Logger
 
 /**
- * wrap blas module to be dnn module,
+ * wrap blas module to dnn module,
  * and the module should have implemented "computeOutputShape" func.
  * @param module
  */
@@ -37,21 +43,38 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   output = module.output
   gradInput = module.gradInput
 
-  private def inferFormats(inputs: Array[MemoryData]): Int = {
-    // reminder: here assume all shapes in inputs should be same
-    inputs.foreach(in =>
-      require(in.shape.length == 2 || in.shape.length == 4,
-      s"only input shape dim 2 and 4 supported, but get ${in.shape.length}"))
-
-    inputs(0).layout match {
-      case Memory.Format.nhwc => Memory.Format.nhwc
-      case Memory.Format.nc => Memory.Format.nc
-      case _ => Memory.Format.nchw
+  // reminder: for dim 3, there may be ntc or tnc, now we just support ntc
+  private def getFormats(dims: Int): Int = {
+    dims match {
+      case 4 => Memory.Format.nchw
+      case 3 => Memory.Format.ntc
+      case 2 => Memory.Format.nc
+      case 1 => Memory.Format.x
+      case _ => throw new UnsupportedOperationException(s"UnSupported dims ${dims}")
     }
   }
 
-  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    // reminder: only support model having implemented computeOutputShape
+  private[mkldnn] var needOutputFormats: Boolean = true
+  @transient private lazy val logger = Logger.getLogger(getClass)
+
+  @transient private var subModels: Array[Module[Float]] = _
+  @transient private var subModelNumber : Int = 1
+  @transient private var withMultiThread: Boolean = false
+  @transient private var inputBuffer : Array[Activity] = _
+  @transient private var tensorBuffer : Array[Tensor[Float]] = _
+  @transient private var batchSize : Int = _
+  @transient private var initEnv: Boolean = false
+
+  private def inferInputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
+    inputs.map(in => {
+      if (in.layout == Memory.Format.tnc) {
+        val size = in.shape
+        HeapData(Array(size(1), size(0), size(2)), Memory.Format.ntc)
+      } else HeapData(in.shape, getFormats(in.shape.length))
+    })
+  }
+
+  private def inferOutputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
     val inputShape = inputs.map(in => Shape(in.shape))
     val outputShape = if (inputShape.length == 1) {
       List(module.computeOutputShape(inputShape(0)))
@@ -60,26 +83,100 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       val out = module.computeOutputShape(MultiShape(inputShape.toList))
       if (out.isInstanceOf[MultiShape]) out.toMulti() else List(out)
     }
-    val outDim = outputShape(0).toSingle().length
-    require(outDim == 4 || outDim == 2,
-      s"only output shape dim 2 and 4 supported, but get ${outDim}")
+    outputShape.map(in => {
+      val size = in.toSingle().toArray
+      HeapData(size, getFormats(size.length))
+    }).toArray
+  }
 
-    val inputFormats = inferFormats(inputs)
-    val outputFormats = if (outDim == 4) inputFormats else Memory.Format.nc
+  /**
+   * Blas layers normally do not have competitive performance when running under mkldnn.
+   * So we can leverage multi-threading to resolve bottleneck introduced by one model only
+   * for mkl-dnn backend. The parallelism is determined by both bath size and core number,
+   * with restrictions that both input and output format must be batched.
+   */
+  private def setMultiThreadEnv(input: Activity): Unit = {
+    initEnv = true
+    val multiThread = System.getProperty("multiThread", "false").toBoolean
+    if (this.train && multiThread) {
+      throw new IllegalArgumentException("Please not set multiThread to true for model training")
+    }
+    if (this.train
+      || !multiThread
+      || (_outputFormats != null && _outputFormats.length != 1)
+      || (_outputFormats != null && _inputFormats != null
+      && _inputFormats(0).shape(0) != _outputFormats(0).shape(0))
+      || !flattenInput(input)
+    ) {
+      return
+    }
+    batchSize = tensorBuffer(0).size(1)
+    val residue = batchSize % Engine.coreNumber()
+    if (residue != 0 || batchSize < 2 || Engine.coreNumber() < 2) {
+      logger.warn("If you want to use multiThread property to speed up, " +
+        "please attention core number should be greater than 1, " +
+        s"batch size should be greater than 1 and divided by core number, " +
+        s"but now get core number ${Engine.coreNumber()} batch size ${batchSize}")
+      return
+    }
+    subModelNumber = Engine.coreNumber()
+    initModules()
+    withMultiThread = true
+  }
+  private def flattenInput(input: Activity): Boolean = {
+    val inputDepth = if (input.isTensor) 1 else input.toTable.length()
+    if (tensorBuffer == null) tensorBuffer = new Array[Tensor[Float]](inputDepth)
+    var batch : Int = 0
+    if (inputDepth == 1) {
+      tensorBuffer(0) = input.toTensor[Float]
+    } else {
+      val in = input.toTable
+      for (i <- 1 to in.length()) {
+        if (in.get(i).get.isInstanceOf[Table]) return false
+        tensorBuffer(i - 1) = in.get[Tensor[Float]](i).get
+        if (i == 1) batch = tensorBuffer(i - 1).size(1)
+        // reminder: inputs for DetectionOutputSSD are not all in batch,
+        // but the non-batched input can be shared in all batch. So this layer can be paralleled.
+        if (batch != tensorBuffer(i - 1).size(1)
+          && !module.isInstanceOf[DetectionOutputSSD[Float]]) {
+          return false
+        }
+      }
+    }
+    true
+  }
+  private def initModules(): Unit = {
+    subModels = if (module.parameters() != null) {
+        val wb = NNUtils.getAndClearWeightBias(module.parameters())
+        val models = (1 to subModelNumber).map(i => {
+          val m = module.cloneModule()
+          NNUtils.putWeightBias(wb, m)
+          m.asInstanceOf[Module[Float]]
+        }).toArray
+        NNUtils.putWeightBias(wb, module)
+        models
+      } else {
+        val models = (1 to subModelNumber).map(i => {
+          val m = module.cloneModule()
+          m.asInstanceOf[Module[Float]]
+        }).toArray
+        models
+      }
+  }
 
-    val realInputs = inputShape.map(in => HeapData(in.toSingle().toArray, inputFormats))
-    val realOutputs = outputShape.map(in => HeapData(in.toSingle().toArray, outputFormats))
-
-    _inputFormats = realInputs.toArray
-    _outputFormats = realOutputs.toArray
-
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+    _inputFormats = inferInputFormats(inputs)
+    _outputFormats = if (needOutputFormats) inferOutputFormats(inputs) else null
+    if (_outputFormats != null) {
+      _outputFormats.map(_.getPrimitive(runtime))
+    }
     (_inputFormats, _outputFormats)
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
     _gradOutputFormats = _outputFormats
     _gradInputFormats = _inputFormats
-    (_outputFormats, _gradInputFormats)
+    (_gradOutputFormats, _gradInputFormats)
   }
 
   override private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData], phase: Phase) = {
@@ -87,8 +184,64 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     _gradOutputFormatsForWeight
   }
 
+  private def getInput(dim: Int, index: Int, size: Int): Activity = {
+    if (tensorBuffer.length == 1) {
+      tensorBuffer(0).narrow(dim, index, size)
+    } else {
+      // the third tensor of inputs for DetectionOutputSSD is not in batch,
+      // but it can be shared with all batch.
+      if (module.isInstanceOf[DetectionOutputSSD[Float]]) {
+        T(tensorBuffer(0).narrow(dim, index, size),
+          tensorBuffer(1).narrow(dim, index, size), tensorBuffer(2))
+      } else {
+        T.array(tensorBuffer.map(_.narrow(dim, index, size)))
+      }
+    }
+  }
+  private def forwardInParallel(input: Activity): Activity = {
+    if (inputBuffer == null) inputBuffer = new Array[Activity](subModelNumber)
+    val stackSize = batchSize / subModelNumber
+
+    val tasks = Engine.wrapperComputing.invoke((0 until subModelNumber).map(i =>
+      () => inputBuffer(i) = getInput(1, i * stackSize + 1, stackSize)))
+    Engine.wrapperComputing.sync(tasks)
+
+    val forwardThreads = Engine.wrapperComputing.invoke((0 until subModelNumber).map(i =>
+      () => subModels(i).forward(inputBuffer(i)).toTensor[Float]))
+    Engine.wrapperComputing.sync(forwardThreads)
+
+    if (subModels(0).output.isTable) {
+      withMultiThread = false
+      module.forward(input)
+    } else {
+      val subOutSize = subModels(0).output.toTensor[Float].size()
+      if (subOutSize(0) != stackSize) {
+        withMultiThread = false
+        module.forward(input)
+      } else {
+        subOutSize(0) = batchSize
+        if (output == null || output.toTensor[Float].isEmpty) {
+          output = Tensor[Float]().resize(subOutSize)
+        }
+        val copyThreads = Engine.wrapperComputing.invoke((0 until subModelNumber).map(i =>
+          () => {
+            output.toTensor[Float].narrow(1, i * stackSize + 1, stackSize)
+              .copy(subModels(i).output.toTensor[Float])
+          }))
+        Engine.wrapperComputing.sync(copyThreads)
+
+        output
+      }
+    }
+  }
+
   override def updateOutput(input: Activity): Activity = {
-    output = module.forward(input)
+    if (!initEnv) setMultiThreadEnv(input)
+    output = if (withMultiThread) {
+      forwardInParallel(input)
+    } else {
+      module.forward(input)
+    }
     output
   }
 
@@ -145,6 +298,9 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     module.evaluate()
     this
   }
+
+  override def release(): Unit = module.release()
+
 }
 
 

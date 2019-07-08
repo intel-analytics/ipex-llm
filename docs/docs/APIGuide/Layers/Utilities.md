@@ -74,6 +74,10 @@ This module is for debug purpose, which can print activation and gradient size i
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.Echo
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
 val module = Echo()
 val input = Tensor(3, 2).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Shape, Table}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 
@@ -105,6 +105,7 @@ class TimeDistributed[T : ClassTag] (
 
     val _inputSize = input.size
     combine(_inputSize, inputSize)
+    require(input.isContiguous(), "Input tensor to TimeDistributed should be contiguous")
     input.resize(inputSize)
     val _output = layer.forward(input).toTensor[T]
     split(_output.size, outputSize, _inputSize(0), _inputSize(1))
@@ -247,6 +248,17 @@ class TimeDistributed[T : ClassTag] (
 
   override def getExtraParameter(): Array[Tensor[T]] = {
     layer.getExtraParameter()
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val _inputSize = inputShape.toSingle().toArray
+    val inputSize = new Array[Int](_inputSize.length - 1)
+    val outputSize = new Array[Int](_inputSize.length)
+
+    combine(_inputSize, inputSize)
+    val _outputSize = layer.computeOutputShape(Shape(inputSize)).toSingle().toArray
+    split(_outputSize, outputSize, _inputSize(0), _inputSize(1))
+    Shape(outputSize)
   }
 
   override def clearState(): TimeDistributed.this.type = {

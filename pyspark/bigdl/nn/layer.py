@@ -902,6 +902,82 @@ class Model(Container):
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
         return self
 
+class Attention(Layer):
+
+    '''
+    Implementation of multiheaded attention and self-attention layers.
+
+    >>> attention = Attention(8, 4, 1.0)
+    creating: createAttention
+    '''
+
+    def __init__(self, hidden_size, num_heads, attention_dropout, bigdl_type="float"):
+        super(Attention, self).__init__(None, bigdl_type,
+                                        hidden_size, num_heads, attention_dropout)
+
+class FeedForwardNetwork(Layer):
+
+    '''
+    Implementation FeedForwardNetwork constructed with fully connected network.
+    Input with shape (batch_size, length, hidden_size)
+    Output with shape (batch_size, length, hidden_size)
+
+    >>> ffn = FeedForwardNetwork(8, 4, 1.0)
+    creating: createFeedForwardNetwork
+    '''
+
+    def __init__(self, hidden_size, filter_size, relu_dropout, bigdl_type="float"):
+        super(FeedForwardNetwork, self).__init__(None, bigdl_type,
+                                        hidden_size, filter_size, relu_dropout)
+class LayerNormalization(Layer):
+    '''
+    Applies layer normalization.
+
+    >>> norm = LayerNormalization(8)
+    creating: createLayerNormalization
+    '''
+
+    def __init__(self, hidden_size, bigdl_type="float"):
+        super(LayerNormalization, self).__init__(None, bigdl_type, hidden_size)
+
+class TableOperation(Layer):
+    '''
+    When two tensors have different size, firstly expand small size tensor to large size tensor,
+    and then do table operation.
+
+    >>> norm = TableOperation(CMulTable())
+    creating: createCMulTable
+    creating: createTableOperation
+    '''
+
+    def __init__(self, operation_layer, bigdl_type="float"):
+        super(TableOperation, self).__init__(None, bigdl_type, operation_layer)
+
+class ExpandSize(Layer):
+    '''
+    Expand tensor to configured size
+
+    >>> expand = ExpandSize([2, 3, 4])
+    creating: createExpandSize
+    '''
+
+    def __init__(self, sizes, bigdl_type="float"):
+        super(ExpandSize, self).__init__(None, bigdl_type, sizes)
+
+class Transformer(Layer):
+
+    '''
+    Implementation for Transformer
+    >>> layer = Transformer(20, 4, 2, 3, 1, 0.1, 0.1, 0.1)
+    creating: createTransformer
+    '''
+    def __init__(self, vocab_size, hidden_size, num_heads, filter_size, num_hidden_layers,
+                 postprocess_dropout, attention_dropout,
+                 relu_dropout, bigdl_type="float"):
+        super(Transformer, self).__init__(None, bigdl_type, vocab_size,
+                                               hidden_size, num_heads, filter_size,
+                                               num_hidden_layers, postprocess_dropout,
+                                               attention_dropout, relu_dropout)
 class Linear(Layer):
 
     '''
@@ -3945,6 +4021,44 @@ class SelectTable(Layer):
                  bigdl_type="float"):
         super(SelectTable, self).__init__(None, bigdl_type,
                                           index)
+
+
+class SequenceBeamSearch(Layer):
+
+    '''
+    Find the translated sequence with the highest probability.
+
+
+    :param vocab_size: size of tokens
+    :param beam_size: number of beams
+    :param alpha: defining the strength of length normalization
+    :param decode_length: maximum length to decoded sequence
+    :param eos_id: id of eos token, used to determine when a sequence has finished
+    :param num_hidden_layers: number of hidden layers
+    :param hidden_size: size of hidden layer
+
+
+    >>> sequenceBeamSearch = SequenceBeamSearch(4, 3, 0.0, 10, 1.0, 2, 5)
+    creating: createSequenceBeamSearch
+    '''
+
+    def __init__(self,
+                vocab_size,
+                beam_size,
+                alpha,
+                decode_length,
+                eos_id,
+                num_hidden_layers,
+                hidden_size,
+                bigdl_type="float"):
+        super(SequenceBeamSearch, self).__init__(None, bigdl_type,
+                                                 vocab_size,
+                                                 beam_size,
+                                                 alpha,
+                                                 decode_length,
+                                                 eos_id,
+                                                 num_hidden_layers,
+                                                 hidden_size)
 
 
 class SoftMax(Layer):

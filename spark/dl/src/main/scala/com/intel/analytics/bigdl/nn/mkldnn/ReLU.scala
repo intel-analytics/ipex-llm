@@ -15,9 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{AlgKind, MklDnn, PropKind, Query}
+import com.intel.analytics.bigdl.mkl._
+import com.intel.analytics.bigdl.nn.MklInt8Convertible
 
-class ReLU(value: Float = 0.0f) extends MklDnnLayer {
+class ReLU(value: Float = 0.0f) extends MklDnnLayer with MklInt8Convertible {
   private val UNDEFINED: Long = 0
 
   @transient private var fwdPrimDesc: Long = UNDEFINED
@@ -45,7 +46,7 @@ class ReLU(value: Float = 0.0f) extends MklDnnLayer {
       value, 0)
     require(fwdPrimDesc != UNDEFINED, "You should call initFwdPrimitives first")
     val primDesc = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPrimDesc)
-    _gradInputFormats = Array(MemoryData.primitiveGradInput(primDesc))
+    _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(
       MklDnn.PrimitiveCreate2(primDesc, Array(_inputFormats(0),
         _gradOutputFormats(0)).map(_.getPrimitive(runtime)), Array(0), 2,

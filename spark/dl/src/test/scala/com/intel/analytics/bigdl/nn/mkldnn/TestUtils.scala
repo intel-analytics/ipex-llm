@@ -182,9 +182,8 @@ object Tools {
           val w = Tools.getTensor(s"Fwrd_$name.Wght.$j", params(j).size(), identity)
           module match {
             case layer: MklDnnLayer =>
-              val infos = layer.parametersWithShape()._1
               val weights = if (!w.isEmpty) {
-                params(j).copy(fromOIHW(w, infos(j)))
+                params(j).copy(w)
               } else {
                 val zeros = Tensor[Float]().resize(params(j).size()).fill(0)
                 params(j).copy(zeros)
@@ -224,13 +223,7 @@ object Tools {
       case _ =>
         for (j <- params.indices) {
           val w = Tools.getTensor(s"Bwrd_$name.Grad.$j", params(j).size(), identity)
-          module match {
-            case layer: MklDnnLayer =>
-              val infos = layer.parametersWithShape()._2
-              ret &= Equivalent.nearequals(dense(params(j)).toTensor,
-                dense(fromOIHW(w, infos(j))).toTensor, epsilon)
-            case _ => ret &= compare2Tensors(params(j), w)
-          }
+          ret &= Equivalent.nearequals(params(j), w, epsilon)
 
           assert(ret, s"${module.getName()} gradient $j can't pass, please check")
         }
@@ -266,8 +259,20 @@ object Tools {
         module.gradInput.toTensor[Float]
       }
 
-      val output = Tools.getTensor(s"Fwrd_$name", bigdlOutput.size(), identity)
-      val gradInput = Tools.getTensor(s"Bwrd_$name", bigdlGradInput.size(), identity)
+      val noPaddingOutputShape = if (module.isInstanceOf[MklDnnModule]) {
+        module.asInstanceOf[MklDnnModule].outputFormats()(0).shape
+      } else {
+        bigdlOutput.size()
+      }
+
+      val noPaddingGradInputShape = if (module.isInstanceOf[MklDnnModule]) {
+        module.asInstanceOf[MklDnnModule].gradInputFormats()(0).shape
+      } else {
+        bigdlGradInput.size()
+      }
+
+      val output = Tools.getTensor(s"Fwrd_$name", noPaddingOutputShape, identity)
+      val gradInput = Tools.getTensor(s"Bwrd_$name", noPaddingGradInputShape, identity)
 
       var ret = true
 
@@ -420,7 +425,7 @@ object Collect {
   }
 }
 
-object Utils {
+object TestUtils {
   def time[R](block: => R): (Double, R) = {
     val t0 = System.nanoTime()
     val result = block

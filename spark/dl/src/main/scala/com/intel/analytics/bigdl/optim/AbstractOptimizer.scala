@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.optim.Optimizer.{saveModel, saveOptimMethod}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.intermediate.IRGraph
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Table}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
@@ -33,7 +34,7 @@ abstract class AbstractOptimizer {
 
   protected def getModel[T: ClassTag](
     models: RDD[Cache[T]],
-    parameters: Map[String, AllReduceParameter[T]],
+    parameters: AllReduceParameter[T],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Module[T]
 
   /**
@@ -47,7 +48,7 @@ abstract class AbstractOptimizer {
     trainSummary: TrainSummary,
     models: RDD[Cache[T]],
     driverState: Table,
-    parameters: Map[String, AllReduceParameter[T]],
+    parameters: AllReduceParameter[T],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val currentIteration = driverState[Int]("neval") - 1
     val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
@@ -97,7 +98,7 @@ abstract class AbstractOptimizer {
     state: Table,
     validationSummary: Option[ValidationSummary],
     header: String,
-    parameters: Map[String, AllReduceParameter[T]] = null): Unit = {
+    parameters: AllReduceParameter[T] = null): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -121,13 +122,16 @@ abstract class AbstractOptimizer {
 
       // update with latest weight for validation
       if (parameters != null) {
-        val weightsResults = parameters.values.map(p =>
-          p.getWeights(cached.modelWeights.head.narrow(1, p.paramOffset, p.size))
-        ).toArray
-        weightsResults.foreach(_.waitResult())
+        parameters.getWeights(cached.modelWeights.head.narrow(1,
+          parameters.paramOffset, parameters.size))
+          .waitResult()
       }
 
-      workingModels.foreach(_.evaluate())
+      if (Engine.getEngineType() == MklDnn) {
+        if (dataIter.hasNext) workingModels.foreach(_.evaluate())
+      } else {
+        workingModels.foreach(_.evaluate())
+      }
       dataIter.map(batch => {
         val stackSize = batch.size() / _subModelNumber
         val extraSize = batch.size() % _subModelNumber
@@ -140,7 +144,15 @@ abstract class AbstractOptimizer {
               val miniBatch = batch.slice(offset, length)
               val input = miniBatch.getInput()
               val target = miniBatch.getTarget()
-              val output = workingModels(b).forward(input)
+              if (Engine.getEngineType() == MklDnn && !workingModels(b).isInstanceOf[IRGraph[T]]) {
+                Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+                  workingModels(b).forward(input)
+                }))
+              } else {
+                workingModels(b).forward(input)
+              }
+
+              val output = workingModels(b).output
               val validatMethods = vMethodsArr(b).get
               validatMethods.map(validation => {
                 validation(output, target)
@@ -197,7 +209,7 @@ abstract class AbstractOptimizer {
     wallClockTime: Long,
     models: RDD[Cache[T]],
     state: Table,
-    parameters: Map[String, AllReduceParameter[T]],
+    parameters: AllReduceParameter[T],
     optimMethods: Map[String, OptimMethod[T]],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     cacheTrigger.foreach { trigger =>

@@ -16,17 +16,17 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import breeze.linalg.Axis._1
+import java.util
+
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
-import com.intel.analytics.bigdl.nn.{StaticGraph, mkldnn}
+import com.intel.analytics.bigdl.nn.{Graph, mkldnn, MklInt8Convertible}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{LayerException, Node, T}
-import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.utils.{Node, T}
 
-import scala.reflect.ClassTag
+import scala.collection.mutable
 
 
 class DnnGraph(
@@ -34,12 +34,33 @@ class DnnGraph(
   private val _outputs : Seq[ModuleNode[Float]],
   private val _variables: Option[(Array[Tensor[Float]], Array[Tensor[Float]])] = None,
   private val enableExcludeChecking: Boolean = true)
-  extends StaticGraph[Float](_inputs, _outputs, _variables, enableExcludeChecking)
-  with MklDnnLayer {
-  private var forwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
+  extends Graph[Float](_inputs, _outputs, _variables)
+  with MklDnnLayer with MklInt8Convertible {
+  private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, Float]]] = _
   private var inputCache: Array[Activity] = _
   private var backId2ForwardId: Array[Int] = _
+  private var skipPrimitiveId = new Array[Boolean](forwardExecution.length)
+
+  /**
+   * Batch size may change when model prediction, but output size of dnn layers will not be changed.
+   * So we have to compare batchSize for input and output, and do some change if not the same.
+   * @param input
+   * @param output
+   * @return
+   */
+  private def getRealOutput(input: Activity, output: Activity): Activity = {
+    if (input.isTensor && output.isTensor) {
+      val in = input.toTensor[Float]
+      val out = output.toTensor[Float]
+      // for grey image, input should be 3 dims and the first dim should be batch size
+      // for non grey image, input should be 4 dims and the first dim should be batch size
+      // for rnn model, input should be 2 dims and the first dim should be batch size
+      require(in.nDimension() == 4 || in.nDimension() == 3 || in.nDimension() == 2,
+        s"only support input with 4 dimension or 3 dimension, but get ${in.nDimension()}")
+      if (in.size(1) != out.size(1)) out.narrow(1, 1, in.size(1)) else output
+    } else output
+  }
 
   @transient protected lazy val reorderManager = new ReorderManager()
 
@@ -53,12 +74,16 @@ class DnnGraph(
     var i = 0
     while(i < forwardExecution.length) {
       val node = forwardExecution(i)
-      val nodeInput = findDnnInput(node, input)
+      val nodeInput = if (skipPrimitiveId(i)) {
+        findInput(node, input)
+      } else {
+        findDnnInput(node, input)
+      }
       inputCache(i) = nodeInput
       node.element.forward(nodeInput)
       i += 1
     }
-    output = dummyOutput.element.output
+    output = getRealOutput(input, dummyOutput.element.output)
     output
   }
 
@@ -83,7 +108,7 @@ class DnnGraph(
       }
       i += 1
     }
-    gradInput = fetchModelGradInput()
+    gradInput = getRealOutput(input, fetchModelGradInput())
     gradInput
   }
 
@@ -102,7 +127,6 @@ class DnnGraph(
 
   override def buildBackwardGraph(): this.type = {
     super.buildBackwardGraph()
-    forwardExecution = forwardGraph.topologySort.reverse
     inputCache = new Array[Activity](forwardExecution.length)
     backwardExecution = backwardGraph.topologySort.reverse
     backId2ForwardId = new Array[Int](backwardExecution.length)
@@ -133,6 +157,56 @@ class DnnGraph(
       i += 1
     }
     this
+  }
+
+  /**
+   * When doing inference, we may not have to compute forward primitives for some blas layers
+   */
+  private def skipInitFwdPrimitives() : Unit = {
+    val skipNodesMap = new mutable.HashMap[String, Boolean]()
+    util.Arrays.fill(skipPrimitiveId, 0, skipPrimitiveId.length, false)
+    if (!this.train) {
+      var i = forwardExecution.length - 1
+      while (i >= 0) {
+        val node = forwardExecution(i)
+        skipPrimitiveId(i) = skip(node, skipNodesMap)
+        skipNodesMap(node.element.getName()) = skipPrimitiveId(i)
+        i -= 1
+      }
+    }
+  }
+
+  /**
+   * to determine whether to skip computing primitives for current node
+   * Now, if current node is blaswrapper node and meets one of following cases,
+   * then we will skip computing primitives for this node
+   * case 1: it has no next nodes
+   * case 2: all next nodes are identity node, and those next nodes has no next nodes
+   * case 3: all next nodes are also skip nodes
+   * In some special case, if previous nodes are not blas node, we can not skip this node,
+   * but don't have to compute its output shape.
+   * @param node current node
+   * @return
+   */
+  private def skip(node: ModuleNode[Float],
+                   skipNodesMap: mutable.HashMap[String, Boolean]) : Boolean = {
+    if (node.element.isInstanceOf[BlasWrapper] || node.element.isInstanceOf[Identity]) {
+      if (node.nextNodes.length == 0) return true
+      var isSkip : Boolean = true
+      node.nextNodes.map(n => {
+        if ((skipNodesMap.getOrElse(n.element.getName(), false))
+          || (n.element.isInstanceOf[mkldnn.Identity] && n.nextNodes.length == 0)) {
+        } else isSkip = false
+      })
+      node.prevNodes.map(n =>
+        if (!n.element.isInstanceOf[BlasWrapper]
+          && node.element.isInstanceOf[BlasWrapper] && isSkip) {
+          node.element.asInstanceOf[BlasWrapper].needOutputFormats = false
+         isSkip = false
+        }
+      )
+      isSkip
+    } else false
   }
 
   // change nn identity to mkldnn identity
@@ -254,8 +328,9 @@ class DnnGraph(
 
   private def getInputMemoryData(node: ModuleNode[Float], memoryData: Array[MemoryData])
     : Array[MemoryData] = {
-    if (inputs.length == 1) {
-      require(inputs(0).eq(node), "input node is not in the input list")
+    // the model may contain two inputs and all of them is Input.
+    if (inputs.length == 1 || memoryData.isEmpty) {
+      require(inputs.contains(node), "input node must be in the input list")
       memoryData
     } else {
       val i = inputs.indexOf(node)
@@ -312,20 +387,52 @@ class DnnGraph(
     }
   }
 
+  /**
+   * fuse some layers when doing inference
+   * first fuse layers in sequence, mainly relu with bn/conv, conv with bn.
+   * after that, fuse sum operation.
+   */
+  private def fusion(): Unit = {
+    if (!this.train) {
+      for (j <- 0 to 3) {
+        var i = forwardExecution.length - 1
+        while (i >= 0) {
+          if (j == 0) Fusion.fuseModule(forwardExecution(i))
+          // we should do this before sum fusion, because it will change the structure of graph
+          if (j == 1) Fusion.setNegativeInputOfConv(forwardExecution(i))
+          if (j == 2) Fusion.fuseCAdd(forwardExecution(i))
+          if (j == 3) Fusion.setScalesPrevousJoinTable(forwardExecution(i))
+          i -= 1
+        }
+      }
+    }
+  }
+
   // init forward primitives
-  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
+    skipInitFwdPrimitives()
+    fusion()
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
     for (i <- 0 until forwardExecution.length) {
-      val m = forwardExecution(i)
-      lastOutputFormats = findInputFormats(m, inputs)
-      val realInputAndOutputFormats =
-        m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
-      lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
-        case (o, i) => reorderManager.register(o, i)
+      if (!skipPrimitiveId(i)) {
+        val m = forwardExecution(i)
+        lastOutputFormats = findInputFormats(m, inputs)
+        val realInputAndOutputFormats =
+          m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
+        lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
+          case (o, i) =>
+            Utils.copyMaskAndScales(o, i)
+            reorderManager.register(o, i)
+        }
+
+        // copy the scales from the input formats to output formats, for some layers,
+        // it will not copy the mask and scales automatically or generate the scales themselves
+        Utils.copyMaskAndScales(realInputAndOutputFormats._1, realInputAndOutputFormats._2)
+
+        if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
       }
-      if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
     }
     _inputFormats = firstRealInputFormats
     _outputFormats = lastOutputFormats
@@ -333,7 +440,7 @@ class DnnGraph(
   }
 
   // init updateGradInput primitives
-  override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
@@ -353,7 +460,7 @@ class DnnGraph(
   }
 
   // init acc primitives
-  override private[mkldnn] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
+  override private[bigdl] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase)
     : Array[MemoryData] = {
     var lastGradInputFormats = grads
     var firstRealGradOutputFormats: Array[MemoryData] = null
@@ -369,6 +476,53 @@ class DnnGraph(
     }
     _gradOutputFormatsForWeight = firstRealGradOutputFormats
     firstRealGradOutputFormats
+  }
+
+  override def populateModules(): Unit = {
+    modules.appendAll(
+      forwardGraph.topologySort
+        // todo: convert control dep node to edge
+        .filterNot(_.element.isInstanceOf[ControlDependency[Float]])
+        .filter(n => !n.eq(dummyOutput)).map(_.element)
+        .reverse
+    )
+    checkDuplicate()
+  }
+
+  override def release(): Unit = {
+    // do not call super.release, it will call MklDnnLayer.release()
+    modules.foreach(_.release())
+    reorderManager.release()
+  }
+
+  override def calcScales(input: Activity): Unit = {
+    if (input == null) return
+
+    var i = 0
+    while(i < forwardExecution.length) {
+      val node = forwardExecution(i)
+      val nodeInput = if (skipPrimitiveId(i)) {
+        findInput(node, input)
+      } else {
+        findDnnInput(node, input)
+      }
+
+      node.element match {
+        case convertible: MklInt8Convertible =>
+          convertible.calcScales(nodeInput)
+        case _ =>
+      }
+      i += 1
+    }
+  }
+
+  override def setQuantize(value: Boolean): DnnGraph.this.type = {
+    this.forwardExecution.foreach { node =>
+      if (node.element.isInstanceOf[MklDnnModule]) {
+        node.element.asInstanceOf[MklDnnModule].setQuantize(value)
+      }
+    }
+    this
   }
 }
 

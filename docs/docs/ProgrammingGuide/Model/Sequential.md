@@ -6,24 +6,26 @@ Here we introduce how to define a model in Sequential API.
 ## **Define a simple model**
 Suppose we want to define a model with three layers
 ```
-Linear -> Sigmoid -> Softmax
+Linear -> Sigmoid -> SoftMax
 ```
 
 You can write code like this
 
 **Scala:**
 ```scala
+import com.intel.analytics.bigdl.nn._
+
 val model = Sequential()
-model.add(Linear(...))
+model.add(Linear(3, 5))
 model.add(Sigmoid())
-model.add(Softmax())
+model.add(SoftMax())
 ```
 **Python:**
 ```python
 model = Sequential()
-model.add(Linear(...))
+model.add(Linear(3, 5))
 model.add(Sigmoid())
-model.add(Softmax())
+model.add(SoftMax())
 ```
 
 In the above code, we first create a container Sequential. Then add the layers

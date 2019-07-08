@@ -31,7 +31,10 @@ class DnnTensor[T: ClassTag](
 ) (implicit ev: TensorNumeric[T])
   extends DnnTensorUnsupportOperations[T]{
 
-  override def nElement(): Int = storage.length()
+  // performance regression, the sizes.product will make the performance downgrade.
+  private val _nElement: Int = sizes.product
+
+  override def nElement(): Int = _nElement
 
   override def copy(other: Tensor[T]): Tensor[T] = {
     other match {
@@ -134,6 +137,10 @@ class DnnTensor[T: ClassTag](
     true
   }
 
+  override def getType(): TensorDataType = {
+    ev.getType()
+  }
+
   override def hashCode(): Int = {
     val seed = 37
     var hash = 1
@@ -147,6 +154,37 @@ class DnnTensor[T: ClassTag](
     hash = hash * seed + this._storage.ptr.hashCode()
 
     hash
+  }
+
+  override def set(): Tensor[T] = {
+    // TODO we will do nothing. the behavior is not the same with DenseTensor
+    this
+  }
+
+  override def toString: String = {
+    ev.getType() match {
+      case FloatType =>
+        if (size().product != this.nElement()) {
+          val dense = Tensor[Float](Array(this.nElement()))
+          Memory.CopyPtr2Array(this.storageAddress(), 0, dense.storage().array(),
+            0, nElement(), 4)
+          dense.toString
+        } else {
+          val dense = Tensor[Float](size())
+          dense.copy(this.asInstanceOf[DnnTensor[Float]])
+          dense.toString
+        }
+      case ByteType =>
+        val array = new Array[Byte](nElement())
+        Memory.CopyPtr2ByteArray(this.asInstanceOf[DnnTensor[Byte]].storageAddress(), 0,
+          array, 0, nElement(), 1)
+        array.mkString("\t")
+      case IntType =>
+        val array = new Array[Int](nElement())
+        Memory.CopyPtr2IntArray(this.storageAddress(), 0, array, 0, nElement(), 4)
+        array.mkString("\t")
+      case _ => "unknown type"
+    }
   }
 }
 
@@ -170,6 +208,12 @@ object DnnTensor {
 
   def apply[T: ClassTag](sizes: Array[Int])(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
     val storage = new DnnStorage[T](sizes.product)
+    new DnnTensor[T](storage, sizes)
+  }
+
+  def apply[T: ClassTag](sizes: Array[Int], realSize: Long)(
+    implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    val storage = new DnnStorage[T](realSize.toInt) // FIXME if size more than int ?
     new DnnTensor[T](storage, sizes)
   }
 

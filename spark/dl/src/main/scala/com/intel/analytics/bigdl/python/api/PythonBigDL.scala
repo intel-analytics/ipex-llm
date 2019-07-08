@@ -270,6 +270,42 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       Sequential[T]()
   }
 
+  def createAttention(hiddenSize: Int, numHeads: Int, attentionDropout: Float): Attention[T] = {
+     Attention(hiddenSize, numHeads, attentionDropout)
+  }
+
+  def createFeedForwardNetwork(hiddenSize: Int,
+    filterSize: Int, reluDropout: Float): FeedForwardNetwork[T] = {
+    FeedForwardNetwork(hiddenSize, filterSize, reluDropout)
+  }
+
+  def createExpandSize(targetSizes: JList[Int]): ExpandSize[T] = {
+    ExpandSize(targetSizes.asScala.toArray)
+  }
+
+  def createTableOperation(
+    operationLayer: AbstractModule[Table, Tensor[T], T]): TableOperation[T] = {
+    new TableOperation(operationLayer)
+  }
+
+  def createLayerNormalization(hiddenSize: Int): LayerNormalization[T] = {
+    new LayerNormalization[T](hiddenSize)
+  }
+
+  def createTransformer(
+    vocabSize: Int,
+    hiddenSize: Int,
+    numHeads: Int,
+    filterSize: Int,
+    numHiddenlayers: Int,
+    postprocessDropout: Double,
+    attentionDropout: Double,
+    reluDropout: Double): nn.Transformer[T] = {
+    Transformer(vocabSize, hiddenSize, numHeads,
+      filterSize, numHiddenlayers, postprocessDropout.toFloat,
+      attentionDropout.toFloat, reluDropout.toFloat)
+  }
+
   def createLinear(inputSize: Int, outputSize: Int,
     withBias: Boolean,
     wRegularizer: Regularizer[T] = null,
@@ -1127,6 +1163,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createSelectTable(dimension: Int)
   : SelectTable[T] = {
     SelectTable[T](dimension)
+  }
+
+  def createSequenceBeamSearch(vocabSize: Int,
+    beamSize: Int,
+    alpha: Float,
+    decodeLength: Int,
+    eosId: Float,
+    numHiddenLayers: Int,
+    hiddenSize: Int)
+  : SequenceBeamSearch[T] = {
+    SequenceBeamSearch[T](vocabSize,
+      beamSize,
+      alpha,
+      decodeLength,
+      eosId,
+      numHiddenLayers,
+      hiddenSize)
   }
 
   def createSigmoid()

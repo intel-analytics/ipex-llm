@@ -49,6 +49,14 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import org.apache.spark.SparkContext
+
+val conf = Engine.createSparkConf()
+    .setAppName("optimization")
+    .setMaster("local[*]")
+    
+val sc = new SparkContext(conf)
+Engine.init
 
 // Define the model
 val model = Linear[Float](2, 1)

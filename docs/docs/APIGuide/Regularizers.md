@@ -116,7 +116,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 
-RNG.setSeed(100)linear.updateParameters
+RNG.setSeed(100)
 
 val input = Tensor(3, 5).rand
 val gradOutput = Tensor(3, 5).rand

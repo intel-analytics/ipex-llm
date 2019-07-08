@@ -1,5 +1,5 @@
 BigDL-core provides a lot of native methods including math processing routines,
-quantized operation and so on. It will increase the performance of neuroal
+quantized operation and so on. It will increase the performance of neural
 networks. The math processing routines will call [Intel MKL](https://software.intel.com/en-us/mkl),
 including gemm, add operations and so on.
 
@@ -13,6 +13,16 @@ maven for java and make for c/c++ code. For building BigDL-core, there should ha
 + g++-7
 + [Intel Parallel Studio](https://software.intel.com/en-us/parallel-studio-xe/choose-download)
 + Git.
+
+## **Download BigDL-core Source**
+
+BigDL-core source code is available at [GitHub](https://github.com/intel-analytics/BigDL)
+
+```bash
+$ git clone https://github.com/intel-analytics/BigDL-core.git
+```
+
+By default, `git clone` will download the development version of BigDL-core, if you want a release version, you can use command `git checkout` to change the version. 
 
 ## **Environment on CentOS** (after 6.8 final)
 
@@ -141,8 +151,7 @@ There two ways to deploy. You can use `mvn deploy -P deploy` at the end.
 
 * Copy the prebuilt libraries from every platform to a main machine, and deploy it.
 * Build the jar on specific platform and deploy it. For example, you want to deploy bigquant of linux.
-    
+  
 ```
 mvn clean deploy -P 'linux' -pl 'bigquant/bigquant-java-x86_64-linux'
 ```
-

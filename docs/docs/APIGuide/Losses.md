@@ -13,6 +13,9 @@ Compute L1 norm for input, and sign of input
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.L1Cost
+import com.intel.analytics.bigdl.tensor.Tensor
+
 val layer = L1Cost[Float]()
 val input = Tensor[Float](2, 2).rand
 val target = Tensor[Float](2, 2).rand
@@ -389,7 +392,7 @@ val target = Tensor(Storage(Array(2.0f, 4.0f, 2.0f, 4.0f, 1.0f, 2.0f))).resize(1
 val model = SoftmaxWithCriterion[Float]()
 val output = model.forward(input, target)
 
-scala> print(input)
+> print(input)
 (1,1,.,.) =
 0.65131104	0.9332143	0.5618989	
 0.9965054	0.9370902	0.108070895	
@@ -412,7 +415,7 @@ scala> print(input)
 
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x5x2x3]
 
-scala> print(output)
+> print(output)
 1.6689054
 ```
 **Python example:**
@@ -582,6 +585,10 @@ prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.{Tensor, Storage}
+import com.intel.analytics.bigdl.nn.SmoothL1CriterionWithWeights
+import com.intel.analytics.bigdl.utils.T
+
 val smcod = SmoothL1CriterionWithWeights[Float](2.4f, 2)
 
 val inputArr = Array(1.1, -0.8, 0.1, 0.4, 1.3, 0.2, 0.2, 0.03)
@@ -648,7 +655,7 @@ MultiMarginCriterion is a loss function that optimizes a multi-class classificat
 **Scala example:**
 ```scala
 
-scala>
+
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
@@ -660,22 +667,22 @@ val loss = MultiMarginCriterion(1)
 val output = loss.forward(input,target)
 val grad = loss.backward(input,target)
 
-scala> print(input)
+> print(input)
 -0.45896783     -0.80141246
 0.22560088      -0.13517438
 0.2601126       0.35492152
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
-scala> print(target)
+> print(target)
 2.0
 1.0
 2.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
 
-scala> print(output)
+> print(output)
 0.4811434
 
-scala> print(grad)
+> print(grad)
 0.16666667      -0.16666667
 -0.16666667     0.16666667
 0.16666667      -0.16666667
@@ -816,23 +823,27 @@ Creates a criterion that optimizes a two-class classification (squared) hinge lo
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.MarginCriterion
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
 val criterion = MarginCriterion(margin=1.0, sizeAverage=true)
 
-val input = Tensor(3, 2).rand()
+> val input = Tensor(3, 2).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.33753583      0.3575501
 0.23477706      0.7240361
 0.92835575      0.4737949
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
-val target = Tensor(3, 2).rand()
+> val target = Tensor(3, 2).rand()
 target: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.27280563      0.7022703
 0.3348442       0.43332106
 0.08935371      0.17876455
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
-criterion.forward(input, target)
+> criterion.forward(input, target)
 res5: Float = 0.84946966
 ```
 
@@ -871,7 +882,7 @@ a table of two Tensors, and a Tensor label y with values 1 or -1.
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
-impot com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.T
 val cosineEmbeddingCriterion = CosineEmbeddingCriterion(0.0, false)
 val input1 = Tensor(5).rand()
 val input2 = Tensor(5).rand()
@@ -955,6 +966,8 @@ criterion = BCECriterion()
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.nn.BCECriterion
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val criterion = BCECriterion[Float]()
 val input = Tensor[Float](3, 1).rand
@@ -1022,8 +1035,6 @@ Both `forward` and `backward` accept two tensors : input and target. The `forwar
 
 **Scala example:**
 ```scala
-
-scala>
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
@@ -1035,20 +1046,20 @@ val loss = DiceCoefficientCriterion(epsilon = 1.0f)
 val output = loss.forward(input,target)
 val grad = loss.backward(input,target)
 
-scala> print(input)
+> print(input)
 -0.50278
 0.51387966
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 
-scala> print(target)
+> print(target)
 2.0
 1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 
-scala> print(output)
+> print(output)
 0.9958517
 
-scala> print(grad)
+> print(grad)
 -0.99619853     -0.49758217
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2]
 
@@ -1236,8 +1247,6 @@ DistKLDivCriterion is the Kullback–Leibler divergence loss.
 
 **Scala example:**
 ```scala
-
-scala>
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
@@ -1249,20 +1258,20 @@ val loss = DistKLDivCriterion()
 val output = loss.forward(input,target)
 val grad = loss.backward(input,target)
 
-scala> print(input)
+> print(input)
 -0.3854126
 -0.7707398
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 
-scala> print(target)
+> print(target)
 2.0
 1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 
-scala> print(output)
+> print(output)
 1.4639297
 
-scala> print(grad)
+> print(grad)
 -1.0
 -0.5
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
@@ -1504,8 +1513,8 @@ val pc = ParallelCriterion()
 
 val input = T(Tensor(2, 10), Tensor(2, 10))
 var i = 0
-input[Tensor](1).apply1(_ => {i += 1; i})
-input[Tensor](2).apply1(_ => {i -= 1; i})
+input[Tensor[Float]](1).apply1(_ => {i += 1; i})
+input[Tensor[Float]](2).apply1(_ => {i -= 1; i})
 val target = T(Tensor(Storage(Array(1.0f, 8.0f))), Tensor(2, 10).fill(1.0f))
 
 val nll = ClassNLLCriterion()
@@ -1732,7 +1741,7 @@ val input = Tensor(T(1.0f, 2.0f, 3.0f))
 val target = Tensor(T(4.0f, 5.0f, 6.0f))
 val output = criterion.forward(input, target)
 
-scala> print(output)
+> print(output)
 3.0
 ```
 
@@ -2395,6 +2404,8 @@ criterion = CosineDistanceCriterion(size_average = True)
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 val criterion = CosineDistanceCriterion()

@@ -34,7 +34,24 @@ java -cp xxx.jar -DFOO=BAR your.main.class.name
 **Mode**
 
 - `bigdl.localMode`: Whether BigDL is running as a local Java/Scala program. Default is false.
-- `bigdl.engineType`: Default is **mklblas**. When you run model contains mkl dnn layers, you should set it to **mkldnn** to get better performance.
+
+  - `bigdl.engineType`: Default is **mklblas**. Besides, you can try **mkldnn** When you want to get better performance for model prediction/training. By enabling mkldnn verbose mode , you can also get mkldnn primitives execution details. To enable Intel MKL-DNN verbose mode, set `MKLDNN_VERBOSE` environment variable to `1` (to dump only execution time) or `2` (to dump both execution and creation time). 
+
+    For example: 
+
+    ```
+    export MKLDNN_VERBOSE=2
+    ```
+
+    You should be able to have the similar outputs as following verbose logs while you are running your program.
+
+    ```
+    mkldnn_verbose,info,Intel(R) MKL-DNN v0.90.0 (Git Hash c1860ebb526e1116811811975481552119676fe8),Intel(R) Advanced Vector Extensions 2 (Intel(R) AVX2)
+    mkldnn_verbose,create,reorder,jit:uni,undef,src_f32::blocked:abcd:f0 dst_f32::blocked:Acdb8a:f0,num:1,96x3x11x11,0.0979004
+    mkldnn_verbose,create,convolution,jit:avx2,forward_training,src_f32::blocked:abcd:f0 wei_f32::blocked:Acdb8a:f0 bia_f32::blocked:a:f0 dst_f32::blocked:aBcd8b:f0,alg:convolution_direct,mb8_ic3oc96_ih227oh55kh11sh4dh0ph0_iw227ow55kw11sw4dw0pw0,0.0449219
+    ```
+
+    
 
 **Multi-threading**
 
@@ -51,4 +68,8 @@ java -cp xxx.jar -DFOO=BAR your.main.class.name
 
 **Tensor**
 
-- `bigdl.tensor.fold`: To set how many elements in a tensor to determine it is a large tensor, and thus print only part of it. Default is 1000.
+ `bigdl.tensor.fold`: To set how many elements in a tensor to determine it is a large tensor, and thus print only part of it. Default is 1000.
+
+**MKLDNN Prediction**
+- `bigdl.mkldnn.fusion`: To do layers fusion for model prediction which can improve performance, just for mkldnn engine type. Default is true.
+- `multiThread`: To do java parallelism for some layers, just for mkldnn engine type. Default is false.

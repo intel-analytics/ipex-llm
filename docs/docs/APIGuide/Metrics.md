@@ -46,7 +46,7 @@ res12: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analyt
 loss = Loss(cri)
 ```
 example
-```
+```python
 from pyspark import SparkContext
 from bigdl.util.common import *
 from bigdl.nn.layer import *

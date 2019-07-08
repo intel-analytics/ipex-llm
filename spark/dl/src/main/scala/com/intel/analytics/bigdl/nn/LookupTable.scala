@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -296,6 +296,12 @@ class LookupTable[T: ClassTag]
     val state = Seq(super.hashCode(), weight, gradWeight, nIndex, nOutput,
       paddingValue, maxNorm, normType)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val _inputSize = inputShape.toSingle().toArray
+    if (_inputSize.length == 2) {
+      Shape(Array(_inputSize(0), _inputSize(1), nOutput))
+    } else Shape(Array(_inputSize(0), nOutput))
   }
 }
 

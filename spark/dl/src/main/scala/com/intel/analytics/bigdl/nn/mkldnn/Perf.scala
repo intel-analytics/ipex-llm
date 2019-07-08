@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.mkl.{MKL, Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table, ThreadPool}
 import org.apache.log4j.Logger
 import scopt.OptionParser
 
@@ -86,34 +86,39 @@ object Perf {
 
       val criterion = CrossEntropyCriterion()
 
-      if (training) {
-        if (model.isInstanceOf[MklDnnContainer]) {
-          model.asInstanceOf[MklDnnContainer]
-            .compile(TrainingPhase, Array(HeapData(inputShape, inputFormat)))
-        } else if (model.isInstanceOf[DnnGraph]) {
-          model.asInstanceOf[DnnGraph].compile(TrainingPhase)
+      Engine.dnnComputing.invokeAndWait2(Array(1).map(_ => () => {
+        if (training) {
+          model.training()
+          if (model.isInstanceOf[MklDnnContainer]) {
+            model.asInstanceOf[MklDnnContainer]
+              .compile(TrainingPhase, Array(HeapData(inputShape, inputFormat)))
+          } else if (model.isInstanceOf[DnnGraph]) {
+            model.asInstanceOf[DnnGraph].compile(TrainingPhase)
+          }
+        } else {
+          model.evaluate()
+          if (model.isInstanceOf[MklDnnContainer]) {
+            model.asInstanceOf[MklDnnContainer]
+              .compile(InferencePhase, Array(HeapData(inputShape, inputFormat)))
+          } else if (model.isInstanceOf[DnnGraph]) {
+            model.asInstanceOf[DnnGraph].compile(InferencePhase)
+          }
         }
-        model.training()
-      } else {
-        if (model.isInstanceOf[MklDnnContainer]) {
-          model.asInstanceOf[MklDnnContainer]
-            .compile(InferencePhase, Array(HeapData(inputShape, inputFormat)))
-        } else if (model.isInstanceOf[DnnGraph]) {
-          model.asInstanceOf[DnnGraph].compile(InferencePhase)
-        }
-        model.evaluate()
-      }
+      }))
 
       var iteration = 0
       while (iteration < iterations) {
         val start = System.nanoTime()
-        val output = model.forward(input)
 
-        if (training) {
-          val _loss = criterion.forward(output, label)
-          val errors = criterion.backward(output, label).toTensor
-          model.backward(input, errors)
-        }
+        Engine.dnnComputing.invokeAndWait2(Array(1).map(_ => () => {
+          val output = model.forward(input)
+
+          if (training) {
+            val _loss = criterion.forward(output, label)
+            val errors = criterion.backward(output, label).toTensor
+            model.backward(input, errors)
+          }
+        }))
 
         val takes = System.nanoTime() - start
 

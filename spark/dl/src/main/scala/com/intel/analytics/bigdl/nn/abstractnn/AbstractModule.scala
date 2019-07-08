@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.nn.{Module, _}
@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, 
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
+import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 import org.apache.commons.lang3.SerializationUtils
@@ -859,6 +860,20 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Evaluator(this).test(dataset, vMethods.map(v => v), batchSize)
   }
 
+
+  /**
+   * use ValidationMethod to evaluate module on the given rdd dataset
+   * @param dataset
+   * @param vMethods
+   * @return
+   */
+  final def evaluate(
+    dataset: RDD[MiniBatch[T]],
+    vMethods: Array[_ <:ValidationMethod[T]]
+  ): Array[(ValidationResult, ValidationMethod[T])] = {
+    Evaluator(this).testMiniBatch(dataset, vMethods.map(v => v))
+  }
+
   /**
    * use ValidationMethod to evaluate module on the given ImageFrame
    *  @param imageFrame ImageFrame for valudation
@@ -902,7 +917,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   final def quantize(): Module[T] = {
-    Quantization.quantize(this)
+    ConversionUtils.convert[T](this, true)
   }
 
   // ================================= Internal APIs ===========================================

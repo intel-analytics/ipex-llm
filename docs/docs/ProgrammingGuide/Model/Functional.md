@@ -7,23 +7,26 @@ when define some complex model.
 ## **Define a simple model**
 Suppose we want to define a model with three layers
 ```
-Linear -> Sigmoid -> Softmax
+Linear -> Sigmoid -> SoftMax
 ```
 
 You can write code like this
 
 **Scala:**
 ```scala
-val linear = Linear(...).inputs()
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val linear = Linear(3, 5).inputs()
 val sigmoid = Sigmoid().inputs(linear)
-val softmax = Softmax().inputs(sigmoid)
-val model = Graph(Seq[linear], Seq[softmax])
+val softmax = SoftMax().inputs(sigmoid)
+val model = Graph(Array(linear, sigmoid), Array(softmax))
 ```
 **Python:**
 ```python
 linear = Linear(...)()
 sigmoid = Sigmoid()(linear)
-softmax = Softmax()(sigmoid)
+softmax = SoftMax()(sigmoid)
 model = Model([linear], [softmax])
 ```
 
@@ -32,7 +35,7 @@ edge connecting its input and output
 
 In the above code, first we create an input node named as linear by using
 the Linear layer, then connect it to the sigmoid node with a Sigmoid
-layer, then connect the sigmoid node to the softmax node with a Softmax layer.
+layer, then connect the sigmoid node to the softmax node with a SoftMax layer.
 
 After defined the graph, we create the model by passing in the input nodes
 and output nodes.

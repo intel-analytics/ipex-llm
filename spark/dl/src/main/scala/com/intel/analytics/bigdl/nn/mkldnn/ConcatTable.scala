@@ -15,13 +15,14 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
+import com.intel.analytics.bigdl.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 
-class ConcatTable extends MklDnnContainer {
+class ConcatTable extends MklDnnContainer with MklInt8Convertible {
 
   output = T()
 
@@ -127,6 +128,10 @@ class ConcatTable extends MklDnnContainer {
     }
     _gradOutputWeightFormats = realGradsBuffer.toArray
     _gradOutputWeightFormats
+  }
+
+  private[mkldnn] def reconstruct(): Unit = {
+    mklDnnModules = modules.map(_.asInstanceOf[MklDnnModule]).toArray
   }
 
   override private[mkldnn] def inputFormats() = {

@@ -25,8 +25,8 @@ class DnnTensorSpec extends BigDLSpecHelper {
     tensor.nElement() should be(3 * 4 * 5)
   }
 
-  "DnnTensor" should "only support float" in {
-    intercept[IllegalArgumentException] {
+  "DnnTensor" should "does not support double" in {
+    intercept[UnsupportedOperationException] {
       val t = DnnTensor[Double](3, 4, 5)
     }
   }

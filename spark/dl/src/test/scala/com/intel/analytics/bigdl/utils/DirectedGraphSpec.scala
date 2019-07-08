@@ -15,6 +15,9 @@
  */
 package com.intel.analytics.bigdl.utils
 
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.{CAddTable, Graph, Input, Reshape}
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class DirectedGraphSpec extends FlatSpec with Matchers {
@@ -403,5 +406,25 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     nodeC.prevEdges.length should be(0)
     nodeA.nextEdges.length should be(1)
     nodeB.nextEdges.length should be(0)
+  }
+
+  "keep backward topology" should "be correct" in {
+    val input1 = Tensor[Float](2, 2, 3, 3).rand()
+    val input2 = Tensor[Float](1, 1, 3, 3).rand()
+
+    def modelDef(): Module[Float] = {
+      val input1 = Input[Float]()
+      val input2 = Input[Float]()
+
+      val add1 = CAddTable[Float]().inputs(input1, input2)
+      val add2 = CAddTable[Float]().inputs(add1, input2)
+      val add3 = CAddTable[Float]().inputs(add2, input2)
+      val add4 = CAddTable[Float]().inputs(add3, input2)
+      Graph[Float](Array(input1, input2), Array(add4))
+    }
+
+    val model = modelDef()
+    val output = model.forward(T(input1, input2))
+    val gradInput = model.backward(T(input1, input2), output)
   }
 }
