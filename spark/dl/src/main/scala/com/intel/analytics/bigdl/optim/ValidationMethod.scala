@@ -1116,3 +1116,315 @@ class MAE[@specialized(Float, Double)T: ClassTag]()
 
   override def format(): String = "MAE"
 }
+
+/**
+This validation method is used to obtain the performance in therms of recall:
+  tp / (tp + fn). This class requires a input class as parameter.
+  */
+class Recall[T: ClassTag](_class: T)
+ (implicit ev: TensorNumeric[T])
+  extends ValidationMethod[T] {
+
+  var tpByClass : Int = 0
+  var lcByClass : Int = 0
+
+  override def apply(output: Activity, target: Activity):
+  ValidationResult = {
+
+    val _target = target.asInstanceOf[Tensor[T]]
+    val _output = if (output.toTensor[T].nDimension() != 1 &&
+      output.toTensor[T].size().head != _target.size().head) {
+      output.toTensor[T].narrow(1, 1, _target.size().head)
+    } else {
+      output.toTensor[T]
+    }
+
+    if (_output.dim() == 2) {
+      (if (_output.size(2) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(2)._2.squeeze()
+      }).map(_target, (b, a) => {
+        if (a == b) {
+          if (a == _class) {
+            tpByClass += 1
+          }
+        } else {
+          if (b == _class) {
+            lcByClass += 1
+          }
+        }
+        a
+      })
+    } else if (_output.dim == 1) {
+      require(_target.size(1) == 1)
+      (if (_output.size(1) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(1)._2
+      }).map(_target, (b, a) => {
+        if (a == b) {
+          if (a == _class) {
+            tpByClass += 1
+          }
+        } else {
+          // Each key corresponds to the false predictions that have been  made
+          if (b == _class) {
+            lcByClass += 1
+          }
+        }
+        a
+      })
+    } else {
+      throw new IllegalArgumentException
+    }
+
+    new RecallResult(_class, tpByClass, lcByClass)
+  }
+
+  override def format(): String = "RECALL"
+}
+
+class RecallResult[T: ClassTag]
+(_class: T, private var tpByClass: Int, private var lcByClass: Int)
+(implicit ev: TensorNumeric[T])
+  extends ValidationResult {
+
+  override def result(): (Float, Int) = {
+    if (tpByClass != 0.0f || lcByClass != 0.0f) {
+      (tpByClass.toFloat / (tpByClass + lcByClass), ev.toType[Int](_class))
+    }
+    else {
+      (0.0f, ev.toType[Int](_class))
+    }
+  } // Apply the recall formula TP /(TP + FN)
+
+  // scalastyle:off methodName
+  override def +(other: ValidationResult): ValidationResult = {
+    val otherResult = other.asInstanceOf[RecallResult[T]]
+    this.lcByClass += otherResult.lcByClass
+    this.tpByClass += otherResult.tpByClass
+    this
+  }
+
+  // scalastyle:on methodName
+  override protected def format(): String = {
+    s"Recall for class ${_class}: ${result()._1}"
+  }
+
+  override def equals(obj: Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[RecallResult[T]]) {
+      return false
+    }
+    val other = obj.asInstanceOf[RecallResult[T]]
+    if (this.eq(other)) {
+      return true
+    }
+    this.tpByClass == other.tpByClass && this.lcByClass == other.lcByClass
+  }
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = 1
+    hash = hash * seed + this.lcByClass
+    hash = hash * seed + this.tpByClass
+    hash
+  }
+}
+
+/**
+This validation method is used to obtain the performance in therms of precision:
+  tp / (tp + fp). This class requires an input parameter which is the class
+  for which we need to obtain the precision.
+  */
+class Precision[T: ClassTag](_class: T)
+  (implicit ev: TensorNumeric[T])
+  extends ValidationMethod[T] {
+
+  var tpByClass : Int = 0
+  var fpByClass : Int = 0
+
+  override def apply(output: Activity, target: Activity):
+
+  ValidationResult = {
+    val _target = target.asInstanceOf[Tensor[T]]
+    val _output = if (output.toTensor[T].nDimension() != 1 &&
+      output.toTensor[T].size().head != _target.size().head) {
+      output.toTensor[T].narrow(1, 1, _target.size().head)
+    } else {
+      output.toTensor[T]
+    }
+
+    if (_output.dim() == 2) {
+      (if (_output.size(2) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(2)._2.squeeze()
+      }).map(_target, (b, a) => {
+        if (a == _class) {
+          if (a == b) {
+            tpByClass += 1
+          }
+          else {
+            fpByClass += 1
+          }
+        }
+        a
+      })
+    } else if (_output.dim == 1) {
+      require(_target.size(1) == 1)
+      (if (_output.size(1) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(1)._2
+      }).map(_target, (b, a) => {
+        if (a == _class) {
+          if (a == b) {
+            tpByClass += 1
+          }
+          else {
+            fpByClass += 1
+          }
+        }
+        a
+      })
+    } else {
+      throw new IllegalArgumentException
+    }
+
+    new PrecisionResult(_class, tpByClass, fpByClass)
+  }
+
+  override def format(): String = "PRECISION"
+}
+
+class PrecisionResult[T: ClassTag](_class: T,
+                                   private var tpByClass: Int,
+                                   private var fpByClass: Int)
+                                  (implicit ev: TensorNumeric[T])
+  extends ValidationResult {
+
+  override def result(): (Float, Int) = {
+    if (tpByClass != 0 || fpByClass != 0) {
+      (tpByClass.toFloat / (tpByClass + fpByClass), ev.toType[Int](_class))
+    }
+    else {
+      (0.0f, ev.toType[Int](_class))
+    }
+  }
+
+  // scalastyle:off methodName
+  override def +(other: ValidationResult): ValidationResult = {
+    val otherResult = other.asInstanceOf[PrecisionResult[T]]
+    this.fpByClass = otherResult.fpByClass
+    this.tpByClass = otherResult.tpByClass
+    this
+  }
+
+  override def equals(obj: Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[PrecisionResult[T]]) {
+      return false
+    }
+    val other = obj.asInstanceOf[PrecisionResult[T]]
+    if (this.eq(other)) {
+      return true
+    }
+    this.tpByClass == other.tpByClass && this.fpByClass == other.fpByClass
+  }
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = 1
+    hash = hash * seed + this.fpByClass
+    hash = hash * seed + this.tpByClass
+    hash
+  }
+
+  override protected def format(): String = s"Precision for class ${_class}: ${result()._1}"
+}
+
+class F1Score[T: ClassTag](_class: T)
+                          (implicit ev: TensorNumeric[T])
+  extends ValidationMethod[T] {
+
+  var tpByClass : Int = 0
+  var fpByClass : Int = 0
+  val lcByClass : Int = 0
+
+  override def apply(output: Activity, target: Activity) :
+  ValidationResult = {
+    val pr = new Precision[T](_class)
+    val rc = new Recall[T](_class)
+    pr.apply(output, target)
+    rc.apply(output, target)
+    new F1ScoreResult[T](_class, pr.tpByClass, pr.fpByClass, rc.lcByClass)
+  }
+
+  override protected def format(): String = "F1Score"
+}
+
+class F1ScoreResult[T: ClassTag](_class: T, private var tpByClass: Int,
+  private var fpByClass: Int, private var lcByClass: Int)
+  (implicit ev: TensorNumeric[T]) extends ValidationResult {
+  override def result(): (Float, Int) = {
+
+    val precision = if (tpByClass != 0 || fpByClass != 0) {
+      (tpByClass.toFloat / (tpByClass + fpByClass), tpByClass)
+    }
+    else {
+      (0.0f, tpByClass)
+    }
+
+    val recall = {
+      if (tpByClass != 0.0f || lcByClass != 0.0f) {
+        (tpByClass.toFloat / (tpByClass + lcByClass), ev.toType[Int](_class))
+      }
+      else {
+        (0.0f, ev.toType[Int](_class))
+      }
+    }
+
+    // harmonic mean
+    ((2 * (precision._1 * recall._1)) / ( precision._1 + recall._1), ev.toType[Int](_class))
+  }
+
+  override def +(other: ValidationResult): ValidationResult = {
+    val otherResult = other.asInstanceOf[F1ScoreResult[T]]
+    this.lcByClass += otherResult.lcByClass
+    this.tpByClass += otherResult.tpByClass
+    this.fpByClass += otherResult.fpByClass
+    this
+  }
+
+  override def equals(obj: Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[F1ScoreResult[T]]) {
+      return false
+    }
+    val other = obj.asInstanceOf[F1ScoreResult[T]]
+    if (this.eq(other)) {
+      return true
+    }
+    this.tpByClass == other.tpByClass && this.fpByClass == other.fpByClass &&
+      this.lcByClass == other.lcByClass
+  }
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = 1
+    hash = hash * seed + this.fpByClass
+    hash = hash * seed + this.tpByClass
+    hash = hash * seed + this.lcByClass
+    hash
+  }
+
+  override protected def format(): String = s"F1Score for class ${_class}: ${result()._1}"
+}
