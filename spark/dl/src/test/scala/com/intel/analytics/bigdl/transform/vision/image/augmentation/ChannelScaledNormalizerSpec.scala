@@ -29,7 +29,7 @@ class ChannelScaledNormalizerSpec extends FlatSpec with Matchers {
     val transformed = transformer(data)
     val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
 
-    val toFloat = new MatToFloatsWithNorm(meanRGB = Some(100f, 200f, 300f))
+    val toFloat = new _MatToFloatsWithNorm(meanRGB = Some(100f, 200f, 300f))
     val data2 = ImageFrame.read(resource.getFile)
     val transformed2 = toFloat(data2)
     val imf2 = transformed2.asInstanceOf[LocalImageFrame].array(0)
@@ -39,7 +39,7 @@ class ChannelScaledNormalizerSpec extends FlatSpec with Matchers {
 
 }
 
-class MatToFloatsWithNorm(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
+class _MatToFloatsWithNorm(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
   meanRGB: Option[(Float, Float, Float)] = None, outKey: String = ImageFeature.floats)
   extends FeatureTransformer {
   @transient private var data: Array[Float] = _
