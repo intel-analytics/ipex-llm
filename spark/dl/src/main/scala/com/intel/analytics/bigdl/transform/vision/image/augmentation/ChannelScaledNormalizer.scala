@@ -44,7 +44,7 @@ object ChannelScaledNormalizer {
       channels
     } else inputChannels
 
-    val means = Array(meanR, meanG, meanB)
+    val means = Array(meanB, meanG, meanR)
     (0 until channel).foreach(i => {
       Core.subtract(inputChannels.get(i), new Scalar(means(i)), outputChannels.get(i))
       Core.multiply(outputChannels.get(i), new Scalar(scale), outputChannels.get(i))
