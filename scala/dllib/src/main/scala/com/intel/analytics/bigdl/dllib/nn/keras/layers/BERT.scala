@@ -307,7 +307,7 @@ object BERT extends KerasLayerSerializable {
     val maxPositionLen =
       DataConverter.getAttributeValue(context, maxPositionLenAttr).asInstanceOf[Int]
 
-    val bert = new BERT(nBlock, nHead, intermediateSize, hiddenPDrop, attnPDrop,
+    val bert = new BERT[T](nBlock, nHead, intermediateSize, hiddenPDrop, attnPDrop,
       initializerRange, outputAllBlock,
       embeddingLayer.asInstanceOf[KerasLayer[Activity, Tensor[T], T]], null)
     val tGraph2 = subModules(1).asInstanceOf[StaticGraph[T]]
