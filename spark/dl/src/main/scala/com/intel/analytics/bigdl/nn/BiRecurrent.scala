@@ -65,7 +65,6 @@ class BiRecurrent[T : ClassTag] (
   if (merge == null) merge = CAddTable[T](true)
   birnn.add(merge)
 
-
   def getMerge(): AbstractModule[Table, Tensor[T], T] = merge
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {

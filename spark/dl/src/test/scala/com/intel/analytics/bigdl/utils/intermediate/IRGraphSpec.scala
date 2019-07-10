@@ -158,7 +158,6 @@ class IRGraphSpec extends BigDLSpecHelper {
   }
 
   "PTB LSTM model running with mkldnn" should "work correctly" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
     Engine.init(1, 1, true)
     RandomGenerator.RNG.setSeed(1000)
 
@@ -169,6 +168,7 @@ class IRGraphSpec extends BigDLSpecHelper {
     val seqLength = 16
     var i = 2
 
+    Engine.setEngineType(MklBlas)
     val blas = PTBModel.lstm(
       inputSize = vocabSize,
       hiddenSize = hiddenSize,
@@ -176,6 +176,7 @@ class IRGraphSpec extends BigDLSpecHelper {
       numLayers = numLayers,
       keepProb = 1.0F)
 
+    Engine.setEngineType(MklDnn)
     val dnn = blas.cloneModule().asInstanceOf[StaticGraph[Float]].toIRgraph()
 
     val input = Tensor[Float](batchSize, seqLength).apply1(n => {
