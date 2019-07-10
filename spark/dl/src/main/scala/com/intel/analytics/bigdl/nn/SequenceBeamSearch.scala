@@ -300,12 +300,12 @@ class SequenceBeamSearch[T: ClassTag](
   }
 
   /**
-    * symbolToLogits is a function apply to compute decoding probability with all vocabulary
-    * it has 6 inputs: current decoding sequence, current decoding length,
-    *                  max decoding length, encoder outputs, encoder decoder attention bias,
-    *                  decoder attention values for each layer
-    * it returns: probability, decoder attention values for each layer
-    */
+   * symbolToLogits is a function apply to compute decoding probability with all vocabulary
+   * it has 6 inputs: current decoding sequence, current decoding length,
+   *                  max decoding length, encoder outputs, encoder decoder attention bias,
+   *                  decoder attention values for each layer
+   * it returns: probability, decoder attention values for each layer
+   */
   def setLogitFn(fn: (Tensor[T], Int, Int, Tensor[T], Tensor[T], Table) => (Tensor[T], Table)):
     SequenceBeamSearch[T] = {
     symbolToLogits = fn
