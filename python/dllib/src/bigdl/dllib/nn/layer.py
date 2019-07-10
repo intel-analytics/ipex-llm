@@ -4034,11 +4034,12 @@ class SequenceBeamSearch(Layer):
     :param alpha: defining the strength of length normalization
     :param decode_length: maximum length to decoded sequence
     :param eos_id: id of eos token, used to determine when a sequence has finished
+    :param padding_value
     :param num_hidden_layers: number of hidden layers
     :param hidden_size: size of hidden layer
 
 
-    >>> sequenceBeamSearch = SequenceBeamSearch(4, 3, 0.0, 10, 1.0, 2, 5)
+    >>> sequenceBeamSearch = SequenceBeamSearch(4, 3, 0.0, 10, 2.0, 1.0, 2, 5)
     creating: createSequenceBeamSearch
     '''
 
@@ -4048,6 +4049,7 @@ class SequenceBeamSearch(Layer):
                 alpha,
                 decode_length,
                 eos_id,
+                padding_value,
                 num_hidden_layers,
                 hidden_size,
                 bigdl_type="float"):
@@ -4057,6 +4059,7 @@ class SequenceBeamSearch(Layer):
                                                  alpha,
                                                  decode_length,
                                                  eos_id,
+                                                 padding_value,
                                                  num_hidden_layers,
                                                  hidden_size)
 
