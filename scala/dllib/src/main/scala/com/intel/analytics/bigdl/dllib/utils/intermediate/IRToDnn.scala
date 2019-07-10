@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.mkl.{AlgKind, Direction}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.nn.mkldnn._
@@ -184,6 +185,175 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
   }
 
   private def fromBlasModule(node: IRElement[Float]) : Module[Float] = {
+    val model = node.getOp().asInstanceOf[IRGeneralModule[Float]].model
+    if (model.isInstanceOf[BiRecurrent[Float]]) {
+      fromBiRecurrent(node)
+    } else if (model.isInstanceOf[Recurrent[Float]]) {
+      fromRecurrent(node)
+    } else BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
+  }
+
+  private def fromRecurrent(node: IRElement[Float]): Module[Float] = {
+    val model = node.getOp().asInstanceOf[IRGeneralModule[Float]]
+      .model.asInstanceOf[Recurrent[Float]]
+    val layer = model.getCell()
+    if (layer.isInstanceOf[LSTM[Float]] && model.batchNormParams ==  null) {
+      val lstm = layer.asInstanceOf[LSTM[Float]]
+      if (lstm.activation.isInstanceOf[Tanh[Float]] &&
+        lstm.innerActivation.isInstanceOf[Sigmoid[Float]] &&
+        lstm.p == 0.0f &&
+        lstm.wRegularizer == null &&
+        lstm.bRegularizer == null &&
+        lstm.uRegularizer == null) {
+        val f = AlgKind.EltwiseTanh
+        val direction = Direction.UnidirectionalLeft2Right
+        val inputSize = lstm.inputSize
+        val hiddenSize = lstm.hiddenSize
+        val lstmDnn = nn.mkldnn.RNN(AlgKind.VanillaLstm, inputSize, hiddenSize,
+          f, direction, layers = 1)
+
+        // copy weight from blas lstm to dnn lstm
+        val lstm_n_gates = 4
+
+        val blasParams = model.parameters()._1
+        val initWeight0 = blasParams(0)
+        val initBias0 = blasParams(1)
+        val initWeightIter0 = blasParams(2)
+
+        var num = initWeight0.size(1) / lstm_n_gates
+        var gate1 = initWeight0.narrow(1, 1, num)
+        var gate3 = initWeight0.narrow(1, num + 1, num)
+        var gate2 = initWeight0.narrow(1, num * 2 + 1, num)
+        var gate4 = initWeight0.narrow(1, num * 3 + 1, num)
+
+        var initWeight = Tensor[Float](lstm_n_gates, hiddenSize, inputSize)
+        initWeight.select(1, 1).copy(gate1)
+        initWeight.select(1, 2).copy(gate2)
+        initWeight.select(1, 3).copy(gate3)
+        initWeight.select(1, 4).copy(gate4)
+        // original Array(inputSize, lstm_n_gates, hiddenSize)
+        initWeight = initWeight.transpose(1, 3).transpose(2, 3)
+
+        num = initBias0.size(1) / lstm_n_gates
+        gate1 = initBias0.narrow(1, 1, num)
+        gate3 = initBias0.narrow(1, num + 1, num)
+        gate2 = initBias0.narrow(1, num * 2 + 1, num)
+        gate4 = initBias0.narrow(1, num * 3 + 1, num)
+
+        val initBias = Tensor[Float](lstm_n_gates, hiddenSize)
+        initBias.select(1, 1).copy(gate1)
+        initBias.select(1, 2).copy(gate2)
+        initBias.select(1, 3).copy(gate3)
+        initBias.select(1, 4).copy(gate4)
+
+        num = initWeightIter0.size(1) / lstm_n_gates
+        gate1 = initWeightIter0.narrow(1, 1, num)
+        gate3 = initWeightIter0.narrow(1, num + 1, num)
+        gate2 = initWeightIter0.narrow(1, num * 2 + 1, num)
+        gate4 = initWeightIter0.narrow(1, num * 3 + 1, num)
+
+        var initIterWeight = Tensor[Float](lstm_n_gates, hiddenSize, hiddenSize)
+        initIterWeight.select(1, 1).copy(gate1)
+        initIterWeight.select(1, 2).copy(gate2)
+        initIterWeight.select(1, 3).copy(gate3)
+        initIterWeight.select(1, 4).copy(gate4)
+        // original Array(hiddenSize, lstm_n_gates, hiddenSize)
+        initIterWeight = initIterWeight.transpose(1, 3).transpose(2, 3)
+
+        val weights = lstmDnn.parameters()._1
+        weights(0).copy(initWeight)
+        weights(1).copy(initBias)
+        weights(2).copy(initIterWeight)
+
+        return lstmDnn
+      }
+    }
+    BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
+  }
+
+  private def fromBiRecurrent(node: IRElement[Float]): Module[Float] = {
+    val model = node.getOp().asInstanceOf[IRGeneralModule[Float]]
+      .model.asInstanceOf[BiRecurrent[Float]]
+    val layer = model.layer.getCell()
+    val revLayer = model.revLayer.getCell()
+    val merge = model.getMerge()
+    if ((layer equals revLayer) && layer.isInstanceOf[LSTM[Float]] &&
+      model.batchNormParams ==  null && model.isSplitInput == false &&
+      (merge.isInstanceOf[nn.CAddTable[Float, _]] || merge.isInstanceOf[nn.ConcatTable[Float]])) {
+      val lstm = layer.asInstanceOf[LSTM[Float]]
+      if (lstm.activation.isInstanceOf[Tanh[Float]] &&
+        lstm.innerActivation.isInstanceOf[Sigmoid[Float]] &&
+        lstm.p == 0.0f &&
+        lstm.wRegularizer == null &&
+        lstm.bRegularizer == null &&
+        lstm.uRegularizer == null) {
+        val f = AlgKind.EltwiseTanh
+        val direction = if (merge.isInstanceOf[nn.CAddTable[Float, _]]) {
+          Direction.BidirectionalSum
+        } else Direction.BidirectionalConcat
+        val inputSize = lstm.inputSize
+        val hiddenSize = lstm.hiddenSize
+        val lstmDnn = nn.mkldnn.RNN(AlgKind.VanillaLstm, inputSize, hiddenSize,
+          f, direction, layers = 1)
+
+        // copy weight from blas lstm to dnn lstm
+        val lstm_n_gates = 4
+
+        val blasParams = model.parameters()._1
+        val initWeight0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, inputSize))
+        val initWeightIter0 = Tensor[Float](Array(2, hiddenSize * lstm_n_gates, hiddenSize))
+        val initBias0 = Tensor[Float](Array(2, lstm_n_gates * hiddenSize))
+
+        initWeight0(1).resizeAs(blasParams(0)).copy(blasParams(0))
+        initBias0(1).resizeAs(blasParams(1)).copy(blasParams(1))
+        initWeightIter0(1).resizeAs(blasParams(2)).copy(blasParams(2))
+        initWeight0(2).resizeAs(blasParams(3)).copy(blasParams(3))
+        initBias0(2).resizeAs(blasParams(4)).copy(blasParams(4))
+        initWeightIter0(2).resizeAs(blasParams(5)).copy(blasParams(5))
+
+        val initWeight = Tensor[Float](Array(2, lstm_n_gates, hiddenSize, inputSize))
+        val initWeightIter = Tensor[Float](Array(2, lstm_n_gates, hiddenSize, hiddenSize))
+        val initBias = Tensor[Float](Array(2, lstm_n_gates, hiddenSize))
+
+        for (i <- 1 to 2) {
+          var num = initWeight0(i).size(1) / lstm_n_gates
+          var gate1 = initWeight0(i).narrow(1, 1, num)
+          var gate3 = initWeight0(i).narrow(1, num + 1, num)
+          var gate2 = initWeight0(i).narrow(1, num * 2 + 1, num)
+          var gate4 = initWeight0(i).narrow(1, num * 3 + 1, num)
+          initWeight(i).select(1, 1).copy(gate1)
+          initWeight(i).select(1, 2).copy(gate2)
+          initWeight(i).select(1, 3).copy(gate3)
+          initWeight(i).select(1, 4).copy(gate4)
+
+          num = initWeightIter0(i).size(1) / 4
+          gate1 = initWeightIter0(i).narrow(1, 1, num)
+          gate3 = initWeightIter0(i).narrow(1, num + 1, num)
+          gate2 = initWeightIter0(i).narrow(1, num * 2 + 1, num)
+          gate4 = initWeightIter0(i).narrow(1, num * 3 + 1, num)
+          initWeightIter(i).select(1, 1).copy(gate1)
+          initWeightIter(i).select(1, 2).copy(gate2)
+          initWeightIter(i).select(1, 3).copy(gate3)
+          initWeightIter(i).select(1, 4).copy(gate4)
+
+          num = initBias0(i).size(1) / 4
+          gate1 = initBias0(i).narrow(1, 1, num)
+          gate3 = initBias0(i).narrow(1, num + 1, num)
+          gate2 = initBias0(i).narrow(1, num * 2 + 1, num)
+          gate4 = initBias0(i).narrow(1, num * 3 + 1, num)
+          initBias(i).select(1, 1).copy(gate1)
+          initBias(i).select(1, 2).copy(gate2)
+          initBias(i).select(1, 3).copy(gate3)
+          initBias(i).select(1, 4).copy(gate4)
+        }
+        val weights = lstmDnn.parameters()._1
+        weights(0).copy(initWeight.transpose(2, 4).transpose(3, 4))
+        weights(1).copy(initBias)
+        weights(2).copy(initWeightIter.transpose(2, 4).transpose(3, 4))
+
+        return lstmDnn
+      }
+    }
     BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
   }
 

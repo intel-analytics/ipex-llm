@@ -293,6 +293,12 @@ class RNN(
       updateOutputTensors = buffer.toArray
     }
 
+    if (isTraining()) {
+      weight.sync()
+      weight_i.sync()
+      bias.sync()
+    }
+
     updateWithNewTensor(updateOutputTensors, 0, input)
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
