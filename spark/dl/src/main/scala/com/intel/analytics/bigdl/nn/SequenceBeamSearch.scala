@@ -30,6 +30,7 @@ import scala.reflect.ClassTag
  * @param alpha defining the strength of length normalization
  * @param maxDecodeLength maximum length to decoded sequence
  * @param eosID id of eos token, used to determine when a sequence has finished
+ * @param paddingValue id of padding token, used at the beginning and the end
  * @param numHiddenLayers number of hidden layers
  * @param hiddenSize size of hidden layer
  */
@@ -39,6 +40,7 @@ class SequenceBeamSearch[T: ClassTag](
   val alpha: Float,
   val maxDecodeLength: Int,
   val eosID: Float,
+  val paddingValue: Float,
   val numHiddenLayers: Int,
   val hiddenSize: Int)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Activity, T] {
@@ -57,17 +59,16 @@ class SequenceBeamSearch[T: ClassTag](
   private val topkLogProbs = Tensor[T]
   private val topkScore = Tensor[T]
   private val topkFlags = Tensor[T]
-  private var symbolToLogits: (Tensor[T], Int, Int, Tensor[T], Tensor[T], List[Tensor[T]],
-    List[Tensor[T]]) => (Tensor[T], Tensor[T], Tensor[T], List[Tensor[T]], List[Tensor[T]]) = null
+  private var symbolToLogits: (Tensor[T], Int, Int, Tensor[T], Tensor[T], Table)
+    => (Tensor[T], Table) = null
   private val topkEncoder = Tensor[T]
   private val topkAttentionBias = Tensor[T]
-  private var topkLayerK: List[Tensor[T]] = List()
-  private var topkLayerV: List[Tensor[T]] = List()
+  private var topkLayer = T()
   for (i <- 1 to  numHiddenLayers) {
     val tensor1 = Tensor[T]
     val tensor2 = Tensor[T]
-    topkLayerK ++= List(tensor1)
-    topkLayerV ++= List(tensor2)
+    topkLayer("layer_" ++ i.toString ++ "_k") = tensor1
+    topkLayer("layer_" ++ i.toString ++ "_v") = tensor2
   }
 
   private def expandDim(tensor: Tensor[T], axis: Int): Tensor[T] = {
@@ -298,8 +299,14 @@ class SequenceBeamSearch[T: ClassTag](
     gatherBeams(tensor, topkIndexes, batchSize, beamSize)
   }
 
-  def setLogitFn(fn: (Tensor[T], Int, Int, Tensor[T], Tensor[T], List[Tensor[T]],
-    List[Tensor[T]]) => (Tensor[T], Tensor[T], Tensor[T], List[Tensor[T]], List[Tensor[T]])):
+  /**
+    * symbolToLogits is a function apply to compute decoding probability with all vocabulary
+    * it has 6 inputs: current decoding sequence, current decoding length,
+    *                  max decoding length, encoder outputs, encoder decoder attention bias,
+    *                  decoder attention values for each layer
+    * it returns: probability, decoder attention values for each layer
+    */
+  def setLogitFn(fn: (Tensor[T], Int, Int, Tensor[T], Tensor[T], Table) => (Tensor[T], Table)):
     SequenceBeamSearch[T] = {
     symbolToLogits = fn
     this
@@ -320,21 +327,29 @@ class SequenceBeamSearch[T: ClassTag](
     aliveLogProbs = state("ALIVE_LOG_PROBS").asInstanceOf[Tensor[T]]
     val aliveEncoder = state("ENCODER").asInstanceOf[Tensor[T]]
     val aliveAttentionsBias = state("ATTENTION_BIAS").asInstanceOf[Tensor[T]]
-    val aliveLayerK = state("LAYERK").asInstanceOf[List[Tensor[T]]]
-    val aliveLayerV = state("LAYERV").asInstanceOf[List[Tensor[T]]]
+    val aliveLayer = state("LAYER").asInstanceOf[Table]
     val beamsToKeep = 2 * beamSize
     val flatIds = flattenBeamDim(aliveSeq)
     val flatEncoder = flattenBeamDim(aliveEncoder)
     val flatAttentionBias = flattenBeamDim(aliveAttentionsBias)
-    val flatLayerK = aliveLayerK.map(e => flattenBeamDim(e))
-    val flatLayerV = aliveLayerV.map(e => flattenBeamDim(e))
-    var (flatLogits, newFlatEncoder, newAttentionBias, newFlatLayerK,
-     newFlatLayerV) = symbolToLogits(flatIds, i, maxDecodeLength, flatEncoder,
-     flatAttentionBias, flatLayerK, flatLayerV)
-    newFlatEncoder = unFlattenBeamDim(newFlatEncoder, batchSize, beamSize)
-    newAttentionBias = unFlattenBeamDim(newAttentionBias, batchSize, beamSize)
-    newFlatLayerK = newFlatLayerK.map(e => unFlattenBeamDim(e, batchSize, beamSize))
-    newFlatLayerV = newFlatLayerV.map(e => unFlattenBeamDim(e, batchSize, beamSize))
+    if (i > 0) {
+      for (j <- 1 to  numHiddenLayers) {
+        val tensor1 = aliveLayer("layer_" ++ j.toString ++ "_k").asInstanceOf[Tensor[T]]
+        val tensor2 = aliveLayer("layer_" ++ j.toString ++ "_v").asInstanceOf[Tensor[T]]
+        aliveLayer("layer_" ++ j.toString ++ "_k") = flattenBeamDim(tensor1)
+        aliveLayer("layer_" ++ j.toString ++ "_v") = flattenBeamDim(tensor2)
+      }
+    }
+    val (flatLogits, newLayer) = symbolToLogits(flatIds, i, maxDecodeLength, flatEncoder,
+      flatAttentionBias, aliveLayer)
+    val newFlatEncoder = unFlattenBeamDim(flatEncoder, batchSize, beamSize)
+    val newAttentionBias = unFlattenBeamDim(flatAttentionBias, batchSize, beamSize)
+    for (j <- 1 to  numHiddenLayers) {
+      val tensor1 = newLayer("layer_" ++ j.toString ++ "_k").asInstanceOf[Tensor[T]]
+      val tensor2 = newLayer("layer_" ++ j.toString ++ "_v").asInstanceOf[Tensor[T]]
+      newLayer("layer_" ++ j.toString ++ "_k") = unFlattenBeamDim(tensor1, batchSize, beamSize)
+      newLayer("layer_" ++ j.toString ++ "_v") = unFlattenBeamDim(tensor2, batchSize, beamSize)
+    }
     val logits = unFlattenBeamDim(flatLogits, batchSize, beamSize)
     val candidateLogProbs = logProbFromLogits(logits)
     val logProbs = candidateLogProbs + expandDim(aliveLogProbs, 2)
@@ -351,13 +366,17 @@ class SequenceBeamSearch[T: ClassTag](
     topkEncoder.resizeAs(gatherTmp).copy(gatherTmp)
     gatherTmp = gatherBeams(newAttentionBias, topkBeamIndices, batchSize, beamsToKeep)
     topkAttentionBias.resizeAs(gatherTmp).copy(gatherTmp)
-    for (i <- 0 until numHiddenLayers) {
-      gatherTmp = gatherBeams(newFlatLayerK(i), topkBeamIndices, batchSize, beamsToKeep)
-      topkLayerK(i).resizeAs(gatherTmp).copy(gatherTmp)
-      gatherTmp = gatherBeams(newFlatLayerV(i), topkBeamIndices, batchSize, beamsToKeep)
-      topkLayerV(i).resizeAs(gatherTmp).copy(gatherTmp)
+    for (j <- 1 to numHiddenLayers) {
+      val tensor1 = newLayer("layer_" ++ j.toString ++ "_k").asInstanceOf[Tensor[T]]
+      val tensor2 = newLayer("layer_" ++ j.toString ++ "_v").asInstanceOf[Tensor[T]]
+      gatherTmp = gatherBeams(tensor1, topkBeamIndices, batchSize, beamsToKeep)
+      topkLayer("layer_" ++ j.toString ++ "_k").asInstanceOf[Tensor[T]]
+        .resizeAs(gatherTmp).copy(gatherTmp)
+      gatherTmp = gatherBeams(tensor2, topkBeamIndices, batchSize, beamsToKeep)
+      topkLayer("layer_" ++ j.toString ++ "_v").asInstanceOf[Tensor[T]]
+        .resizeAs(gatherTmp).copy(gatherTmp)
     }
-    var topkIds = topkIndices.apply1(e => ev.fromType[Int](ev.toType[Int](e) % vocabSize))
+    var topkIds = topkIndices.apply1(e => ev.fromType[Int](ev.toType[Int](e) % vocabSize + 1))
     topkIds = expandDim(topkIds, 2)
     val newSeq = concat(topkSeq, topkIds, 3)
     (newSeq, topkLogProbs)
@@ -381,15 +400,17 @@ class SequenceBeamSearch[T: ClassTag](
     topkEncoder.resizeAs(gatherTmp).copy(gatherTmp)
     gatherTmp = gatherTopkBeams(topkAttentionBias, newLogProbs1, batchSize, beamSize)
     topkAttentionBias.resizeAs(gatherTmp).copy(gatherTmp)
-    for (i <- 0 until numHiddenLayers) {
-      gatherTmp = gatherTopkBeams(topkLayerK(i), newLogProbs1, batchSize, beamSize)
-      topkLayerK(i).resizeAs(gatherTmp).copy(gatherTmp)
-      gatherTmp = gatherTopkBeams(topkLayerV(i), newLogProbs1, batchSize, beamSize)
-      topkLayerV(i).resizeAs(gatherTmp).copy(gatherTmp)
+    for (i <- 1 to numHiddenLayers) {
+      val tensor1 = topkLayer("layer_" ++ i.toString ++ "_k").asInstanceOf[Tensor[T]]
+      val tensor2 = topkLayer("layer_" ++ i.toString ++ "_v").asInstanceOf[Tensor[T]]
+      gatherTmp = gatherTopkBeams(tensor1, newLogProbs1, batchSize, beamSize)
+      tensor1.resizeAs(gatherTmp).copy(gatherTmp)
+      gatherTmp = gatherTopkBeams(tensor2, newLogProbs1, batchSize, beamSize)
+      tensor2.resizeAs(gatherTmp).copy(gatherTmp)
     }
     Map("ALIVE_SEQ" -> aliveSeq, "ALIVE_LOG_PROBS" -> topkLogProbs,
       "ENCODER" -> topkEncoder, "ATTENTION_BIAS" -> topkAttentionBias,
-      "LAYERK" -> topkLayerK, "LAYERV" -> topkLayerV)
+      "LAYER" -> topkLayer)
   }
 
   /**
@@ -406,8 +427,9 @@ class SequenceBeamSearch[T: ClassTag](
     finishedScores = state("FINISHED_SCORES").asInstanceOf[Tensor[T]]
     finishedFlags = state("FINISHED_FLAGS").asInstanceOf[Tensor[Boolean]]
     // append a column of 0-ids to finished_seq to increment the length.
-    finishedSeq = concat(finishedSeq, Tensor[T](batchSize, beamSize, 1), 3)
-    val lengthNorm = lengthNormalization(alpha, i)
+    finishedSeq = concat(finishedSeq, Tensor[T](batchSize, beamSize, 1)
+      .fill(ev.fromType[Float](paddingValue)), 3)
+    val lengthNorm = lengthNormalization(alpha, i + 1)
     var newScores = newLogProbs / lengthNorm
     // Set the scores of the still-alive seq in new_seq to large negative values.
     newScores += (Tensor(finishedFlagsSeq.size()).fill(ev.fromType[Float](1.0f))
@@ -460,7 +482,7 @@ class SequenceBeamSearch[T: ClassTag](
     finishedFlagsSeq.resize(batchSize, beamSize * 2)
     finishedScores.resize(batchSize, beamSize)
     val curIndex = 0
-    val initialID = Tensor[T](Array(batchSize))
+    val initialID = Tensor[T](Array(batchSize)).fill(ev.fromType[Float](paddingValue))
     var initialAliveSeq = extendBeamSize(initialID, beamSize)
     initialAliveSeq = expandDim(initialAliveSeq, 2)
     var initialLogProbs = Tensor[T](beamSize).apply1(e => ev.fromType[Float](inf))
@@ -468,13 +490,12 @@ class SequenceBeamSearch[T: ClassTag](
     initialLogProbs = initialLogProbs.repeatTensor(Array(batchSize, 1))
     val aliveEncoder = extendBeamSize(encoderOutputs, beamSize)
     val aliveAttentionsBias = extendBeamSize(encoderDecoderAttentionBias, beamSize)
-    var aliveLayerK: List[Tensor[T]] = List()
-    var aliveLayerV: List[Tensor[T]] = List()
+    val aliveLayer = T()
     for (i <- 1 to  numHiddenLayers) {
-      val tensor1 = Tensor[T](batchSize, beamSize, 0, hiddenSize)
-      val tensor2 = Tensor[T](batchSize, beamSize, 0, hiddenSize)
-      aliveLayerK ++= List(tensor1)
-      aliveLayerV ++= List(tensor2)
+      val tensor1 = Tensor[T]()
+      val tensor2 = Tensor[T]()
+      aliveLayer("layer_" ++ i.toString ++ "_k") = tensor1
+      aliveLayer("layer_" ++ i.toString ++ "_v") = tensor2
     }
     val initialFinishedSeq = Tensor[T](initialAliveSeq.size())
     val initialFinishedScores = Tensor.ones[T](batchSize, beamSize) * ev.fromType[Float](inf)
@@ -485,8 +506,7 @@ class SequenceBeamSearch[T: ClassTag](
       "ALIVE_LOG_PROBS" -> initialLogProbs,
       "ENCODER" -> aliveEncoder,
       "ATTENTION_BIAS" -> aliveAttentionsBias,
-      "LAYERK" -> aliveLayerK,
-      "LAYERV" -> aliveLayerV,
+      "LAYER" -> aliveLayer,
       "FINISHED_SEQ" -> initialFinishedSeq,
       "FINISHED_SCORES" -> initialFinishedScores,
       "FINISHED_FLAGS" -> initialFinishedFlags)
@@ -557,8 +577,10 @@ class SequenceBeamSearch[T: ClassTag](
     topkFlags.set()
     topkEncoder.set()
     topkAttentionBias.set()
-    topkLayerK.foreach(e => e.set())
-    topkLayerV.foreach(e => e.set())
+    for (i <- 1 to  numHiddenLayers) {
+      topkLayer("layer_" ++ i.toString ++ "_k").asInstanceOf[Tensor[T]].set()
+      topkLayer("layer_" ++ i.toString ++ "_v").asInstanceOf[Tensor[T]].set()
+    }
     this
   }
 }
@@ -570,6 +592,7 @@ object SequenceBeamSearch {
     alpha: Float,
     maxDecodeLength: Int,
     eosID: Float,
+    paddingValue: Float,
     numHiddenLayers: Int,
     hiddenSize: Int)
   (implicit ev: TensorNumeric[T]): SequenceBeamSearch[T] = {
@@ -579,6 +602,7 @@ object SequenceBeamSearch {
       alpha,
       maxDecodeLength,
       eosID,
+      paddingValue,
       numHiddenLayers,
       hiddenSize)
   }
