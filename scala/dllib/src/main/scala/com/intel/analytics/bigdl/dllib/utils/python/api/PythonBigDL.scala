@@ -1170,6 +1170,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     alpha: Float,
     decodeLength: Int,
     eosId: Float,
+    paddingValue: Float,
     numHiddenLayers: Int,
     hiddenSize: Int)
   : SequenceBeamSearch[T] = {
@@ -1178,6 +1179,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alpha,
       decodeLength,
       eosId,
+      paddingValue,
       numHiddenLayers,
       hiddenSize)
   }
