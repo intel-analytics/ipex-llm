@@ -478,23 +478,23 @@ class SequenceBeamSearch[T: ClassTag](
   }
 
   /**
-    * return initial state map
-    *
-    * @param encoderOutputs Sequences after encoding
-    * @param encoderDecoderAttentionBias encoder decoder attention bias
-    * @return map with states
-    *         CUR_INDEX: Variable storing the loop index.
-    *         ALIVE_SEQ: Top sequences that are alive for each batch item. Alive sequences are ones
-    *         that have not generated an EOS token.
-    *         ALIVE_LOG_PROBS: Log probabilities of each alive sequence.
-    *         ENCODER: Sequences after encoding
-    *         ATTENTION_BIAS: encoder decoder attention bias
-    *         LAYER: decoder attention values for each layer.
-    *         FINISHED_SEQ: Top finished sequences for each batch item.
-    *         FINISHED_SCORES: Scores for each finished sequence. Score=log probability/length norm
-    *         FINISHED_FLAGS: Flags indicating which sequences in the finished sequences
-    *         are finished.
-    */
+   * return initial state map
+   *
+   * @param encoderOutputs Sequences after encoding
+   * @param encoderDecoderAttentionBias encoder decoder attention bias
+   * @return map with states
+   *         CUR_INDEX: Variable storing the loop index.
+   *         ALIVE_SEQ: Top sequences that are alive for each batch item. Alive sequences are ones
+   *         that have not generated an EOS token.
+   *         ALIVE_LOG_PROBS: Log probabilities of each alive sequence.
+   *         ENCODER: Sequences after encoding
+   *         ATTENTION_BIAS: encoder decoder attention bias
+   *         LAYER: decoder attention values for each layer.
+   *         FINISHED_SEQ: Top finished sequences for each batch item.
+   *         FINISHED_SCORES: Scores for each finished sequence. Score=log probability/length norm
+   *         FINISHED_FLAGS: Flags indicating which sequences in the finished sequences
+   *         are finished.
+   */
   private def createInitialState(encoderOutputs: Tensor[T], encoderDecoderAttentionBias: Tensor[T]):
     Map[String, Any] = {
     batchSize = encoderOutputs.size()(0)
