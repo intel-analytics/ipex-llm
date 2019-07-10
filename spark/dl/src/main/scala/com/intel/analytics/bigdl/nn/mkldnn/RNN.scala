@@ -52,6 +52,7 @@ class RNN(
   private var updateGradInputMemoryPrimitives: Array[Long] = _
   private var updateGradInputTensors: Array[Tensor[Float]] = _
   private var fwdPD: Long = _
+  private var rnnCellDesc : Long = 0L
 
   private[mkldnn] var weight: TensorMMap = _
   private[mkldnn] var weight_i: TensorMMap = _
@@ -130,13 +131,6 @@ class RNN(
   gradWeight_i = new TensorMMap(weightIterShape)
   gradBias = new TensorMMap(biasShape)
 
-  val rnnCellDesc = mode match {
-    case AlgKind.VanillaLstm =>
-      MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
-    case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
-      "Cell type: " + mode)
-  }
-
   {
     val stdv = 1.0 / math.sqrt(hiddenSize)
     val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
@@ -210,6 +204,13 @@ class RNN(
     val bis_MD = bis.getMemoryDescription()
     val dist_layer_MD = dst_layer.getMemoryDescription()
     val dist_iter_MD = dst_iter.getMemoryDescription()
+
+    rnnCellDesc = mode match {
+      case AlgKind.VanillaLstm =>
+        MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
+      case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
+        "Cell type: " + mode)
+    }
 
     val description = MklDnn.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,
       src_iter_MD, weights_layer_MD, weights_iter_MD, bis_MD, dist_layer_MD, dist_iter_MD)
