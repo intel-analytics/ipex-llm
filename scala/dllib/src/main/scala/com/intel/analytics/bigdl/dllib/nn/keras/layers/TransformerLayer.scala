@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
 import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad, Constant, Parameter, Variable}
+import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad, Constant, Variable}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
 
@@ -113,21 +113,10 @@ private[layers] class TransformerLayer[T: ClassTag](
 
   def block(x: Variable[T], hiddenSize: Int, attention_mask: Variable[T] = null,
             eplision: Double = 1e-5): Variable[T] = {
-    // g, b for layerNorm
-    val g = Parameter[T](Shape(1, hiddenSize),
-      initWeight = Tensor.ones[T](hiddenSize).view(1, hiddenSize))
-    val b = Parameter[T](Shape(1, hiddenSize),
-      initWeight = Tensor[T](hiddenSize).view(1, hiddenSize))
-
-    // g, b for layerNorm
-    val g2 = Parameter[T](Shape(1, hiddenSize),
-      initWeight = Tensor.ones[T](hiddenSize).view(1, hiddenSize))
-    val b2 = Parameter[T](Shape(1, hiddenSize),
-      initWeight = Tensor[T](hiddenSize).view(1, hiddenSize))
     val a = multiHeadSelfAttention(x, hiddenSize, attention_mask)
-    val n = TransformerLayer.layerNorm(x + a, eplision, weight = g, bias = b)
+    val n = LayerNorm[T](hiddenSize, eplision).from(x + a)
     val m = mlp(n, hiddenSize)
-    val h = TransformerLayer.layerNorm(n + m, eplision, weight = g2, bias = b2)
+    val h = LayerNorm[T](hiddenSize, eplision).from(n + m)
     h
   }
 
@@ -276,15 +265,5 @@ object TransformerLayer {
     (implicit ev: TensorNumeric[T]): TransformerLayer[T] = {
     new TransformerLayer[T](nBlock, residPdrop, attnPdrop, nHead,
       initializerRange, bidirectional, outputAllBlock, embeddingLayer = embeddingLayer)
-  }
-
-  def layerNorm[@specialized(Float, Double) T: ClassTag](x: Variable[T],
-    e: Double = 1e-5, weight: Parameter[T], bias: Parameter[T])
-    (implicit ev: TensorNumeric[T]): Variable[T] = {
-    val sizes = x.getOutputShape().toSingle().toArray
-    val u = AutoGrad.mean(x, sizes.size - 1, true)
-    val s = AutoGrad.mean(AutoGrad.square(x - u), sizes.size -1, true)
-    val y = (x - u) / AutoGrad.sqrt(s + e)
-    y * weight + bias
   }
 }
