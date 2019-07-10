@@ -27,31 +27,33 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
     val vocabSize = 4
     val decodeLength = 10
     val alpha: Float = 0.0f
-    val eosId = 1.0f
+    val eosId = 2.0f
     val numHiddenLayers = 2
     val hiddenSize = 5
     val inputLength = 6
+    val paddingValue = 1.0f
 
     def symbolsToLogitsFn(Ids: Tensor[Float], i: Int, maxDecoderLen: Int,
-     encoder: Tensor[Float], Bias: Tensor[Float], list1: List[Tensor[Float]],
-     list2: List[Tensor[Float]]):
-    (Tensor[Float], Tensor[Float], Tensor[Float], List[Tensor[Float]], List[Tensor[Float]]) = {
+     encoder: Tensor[Float], Bias: Tensor[Float], Layer: Table):
+    (Tensor[Float], Table) = {
       val tensor = Tensor(Array(0.14f, 0.62f, 0.02f, 0.93f,
         0.59f, 0.48f, 0.27f, 0.70f,
         0.11f, 0.30f, 0.35f, 0.15f,
         0.67f, 0.39f, 0.33f, 0.01f,
         0.44f, 0.52f, 0.45f, 0.23f,
         0.75f, 0.79f, 0.26f, 0.47f), Array(6, 4))
-      val encoder1 = encoder + Tensor[Float](encoder.size()).rand()
-      val Bias1 = Bias + Tensor[Float](Bias.size()).rand()
-      val batch_beam = encoder.size()(0)
-      list1.map(e => Tensor[Float](batch_beam, 1, hiddenSize).rand())
-      list2.map(e => Tensor[Float](batch_beam, 1, hiddenSize).rand())
-      (tensor, encoder1, Bias1, list1, list2)
+      val outputLayer = T()
+      for (j <- 1 to  numHiddenLayers) {
+        val tensor1 = Tensor[Float](batchSize*beamSize, i + 1, hiddenSize).rand()
+        val tensor2 = Tensor[Float](batchSize*beamSize, i + 1, hiddenSize).rand()
+        outputLayer("layer_" ++ j.toString ++ "_k") = tensor1
+        outputLayer("layer_" ++ j.toString ++ "_v") = tensor2
+      }
+      (tensor, outputLayer)
     }
 
     val beamSearch = new SequenceBeamSearch[Float](vocabSize,
-      beamSize, alpha, decodeLength, eosId, numHiddenLayers, hiddenSize)
+      beamSize, alpha, decodeLength, eosId, paddingValue, numHiddenLayers, hiddenSize)
     beamSearch.setLogitFn(symbolsToLogitsFn)
     val encodeOutputs = Tensor[Float](batchSize, inputLength, hiddenSize).rand()
     val encoderDecoderAttentionBias = Tensor[Float](batchSize, 1, 1, inputLength).rand()
@@ -62,12 +64,12 @@ class SequenceBeamSearchSpec extends FlatSpec with Matchers{
      .copy(output[Tensor[Float]](2))
     beamSearch.clearState()
     val expectedOutputSeq = Tensor[Float](
-      T(T(T(0.0, 1.0, 0.0, 0.0, 0.0),
-        T(0.0, 3.0, 1.0, 0.0, 0.0),
-        T(0.0, 3.0, 3.0, 1.0, 0.0)),
-        T(T(0.0, 1.0, 0.0, 0.0, 0.0),
-        T(0.0, 0.0, 1.0, 0.0, 0.0),
-        T(0.0, 2.0, 1.0, 0.0, 0.0))))
+      T(T(T(1.0, 2.0, 1.0, 1.0, 1.0),
+        T(1.0, 4.0, 2.0, 1.0, 1.0),
+        T(1.0, 4.0, 4.0, 2.0, 1.0)),
+        T(T(1.0, 2.0, 1.0, 1.0, 1.0),
+          T(1.0, 1.0, 2.0, 1.0, 1.0),
+          T(1.0, 3.0, 2.0, 1.0, 1.0))))
     val expectedOutputScore = Tensor[Float](
       T(T(-1.2615868, -2.2131736, -3.1647604),
         T(-1.3734006, -2.4668012, -2.715382)))
