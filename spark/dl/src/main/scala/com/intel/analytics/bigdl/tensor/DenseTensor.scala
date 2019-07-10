@@ -1721,38 +1721,36 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     indicesTensor.resize(topKSize)
 
     @inline
-    def compare(a: T, b: T): Boolean = if (increase) {
+    def compare(a: T, b: T): Boolean = ev.isGreater(b, a)  ^ !increase
+    /* if (increase) {
       ev.isGreater(b, a)
     } else {
       ev.isGreater(a, b)
-    }
-
-    class LocalComparator(increase: Boolean) extends Comparator[(T, Int)] {
-      override def compare(o1: (T, Int), o2: (T, Int)): Int = {
-        val ret = if (ev.isGreater(o1._1, o2._1)) {
-          1
-        } else if (ev.isGreaterEq(o1._1, o2._1)) {
-          if (o1._2 == o2._2) {
-            0
-          } else {
-            1
-          }
-        } else {
-          -1
-        }
-
-        if (increase) {
-          -ret
-        } else {
-          ret
-        }
-      }
-    }
+    } */
 
     DenseTensorDimApply.dimApply3[T](this, resultTensor, indicesTensor, selectDim,
       (tdata, toffset, tstride, tsize, vdata, voffset, vstride, vsize, idata,
         ioffset, istride, isize) => {
-        val set = new java.util.TreeSet[(T, Int)](new LocalComparator(increase))
+        val set = new java.util.TreeSet[(T, Int)](new Comparator[(T, Int)] {
+          override def compare(o1: (T, Int), o2: (T, Int)): Int = {
+            val ret = if (ev.isGreaterEq(o1._1, o2._1)) {
+              if (o1._2 == o2._2) {
+                0
+              } else {
+                1
+              }
+            } else {
+              -1
+            }
+
+            if (increase) {
+              -ret
+            } else {
+              ret
+            }
+
+          }
+        })
 
         var i = 0
         while (i < tsize) {
