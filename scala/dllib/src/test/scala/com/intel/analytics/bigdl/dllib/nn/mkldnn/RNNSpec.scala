@@ -21,8 +21,10 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.{Recurrent, StaticGraph}
+import com.intel.analytics.bigdl.nn.StaticGraph
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 class RNNSpec extends FlatSpec with Matchers{
@@ -1100,5 +1102,80 @@ class RNNSpec extends FlatSpec with Matchers{
       Equivalent.nearequals(mkldnn_gradWeight_i0(l), blas_gradWeight_i(l)) should be(true)
       Equivalent.nearequals(mkldnn_gradBias0(l), blas_gradBias(l)) should be(true)
     }
+  }
+
+  "Converting Blas LSTM to Dnn LSTM" should "work correctly" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    RNG.setSeed(100)
+
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.UnidirectionalLeft2Right
+
+    var inputNTC = Tensor(Array(batchSize, seqLength, inputSize)).rand()
+
+    val inputNode = nn.Input[Float]()
+    val outputNode = nn.Recurrent[Float]().add(
+      nn.LSTM[Float](inputSize, hiddenSize)).inputs(inputNode)
+    val blasLSTM = nn.Graph[Float](Array(inputNode), Array(outputNode))
+
+    val dnnLSTM = blasLSTM.asInstanceOf[StaticGraph[Float]]
+      .setInputFormats(Seq(Memory.Format.ntc))
+      .setOutputFormats(Seq(Memory.Format.ntc))
+      .toIRgraph()
+
+    val mkldnn_output = dnnLSTM.forward(inputNTC).toTensor
+    val blas_output = blasLSTM.forward(inputNTC).toTensor
+
+    Equivalent.nearequals(mkldnn_output, blas_output) should be(true)
+
+    val gradOutput = Tensor[Float].resize(blas_output.size()).rand()
+    val mkldnn_gradInput = dnnLSTM.backward(inputNTC, gradOutput).toTensor
+    val blas_gradInput = blasLSTM.backward(inputNTC, gradOutput).toTensor
+
+    Equivalent.nearequals(mkldnn_gradInput, blas_gradInput) should be(true)
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "Converting Blas BiRecurrent LSTM to Dnn LSTM" should "work correctly" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    RNG.setSeed(100)
+
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.BidirectionalSum
+
+    var inputNTC = Tensor(Array(batchSize, seqLength, inputSize)).rand()
+    val inputNode = nn.Input[Float]()
+    val outputNode = nn.BiRecurrent[Float]().add(
+      nn.LSTM[Float](inputSize, hiddenSize)).inputs(inputNode)
+    val blasLSTM = nn.Graph[Float](Array(inputNode), Array(outputNode))
+
+    val dnnLSTM = blasLSTM.asInstanceOf[StaticGraph[Float]]
+      .setInputFormats(Seq(Memory.Format.ntc))
+      .setOutputFormats(Seq(Memory.Format.ntc))
+      .toIRgraph()
+
+    val mkldnn_output = dnnLSTM.forward(inputNTC).toTensor
+    val blas_output = blasLSTM.forward(inputNTC).toTensor
+
+    Equivalent.nearequals(mkldnn_output, blas_output) should be(true)
+
+    val gradOutput = Tensor[Float].resize(blas_output.size()).rand()
+    val mkldnn_gradInput = dnnLSTM.backward(inputNTC, gradOutput).toTensor
+    val blas_gradInput = blasLSTM.backward(inputNTC, gradOutput).toTensor
+
+    Equivalent.nearequals(mkldnn_gradInput, blas_gradInput) should be(true)
+
+    System.clearProperty("bigdl.engineType")
   }
 }
