@@ -545,14 +545,15 @@ object DistriOptimizer extends AbstractOptimizer {
   .Cache[T]], ModelBroadcast[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
+    val convertedModel = ConversionUtils.convert(model)
     // ensure model's parameter is compacted for getting a better performance when broadcasting
-    model.getParameters()
+    convertedModel.getParameters()
     // As cloneModel is using Serialization to implement deep copy, and will throw OOMError
     // when model's size is bigger than SerializationUtils' buffer size. So we can use
     // ModelBroadcast to clone model here.
     // Notes: All models returned by modelBroadcast.value() share the same weight&bias, while
     // gradWeight&gradBias is unshared.
-    val modelBroadcast = ModelBroadcast[T]().broadcast(sc, ConversionUtils.convert(model))
+    val modelBroadcast = ModelBroadcast[T]().broadcast(sc, convertedModel)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case MklDnn => 1
