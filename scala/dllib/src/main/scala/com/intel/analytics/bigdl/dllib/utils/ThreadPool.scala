@@ -107,7 +107,7 @@ class ThreadPool(private var poolSize: Int) {
 
       MKL.setNumThreads(size)
       BackendMklDnn.setNumThreads(size)
-      if (System.getProperty("bigdl.disableOmpAffinity", "false").toBoolean) {
+      if (!System.getProperty("bigdl.disableOmpAffinity", "false").toBoolean) {
         Affinity.setOmpAffinity()
       }
     }))
