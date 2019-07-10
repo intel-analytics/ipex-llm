@@ -584,6 +584,13 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     i should be(Tensor(Storage(Array(1.0, 6.0, 2.0, 4.0, 3.0))))
   }
 
+  "topk without increase" should "be correct for 1d tensor" in {
+    val t = Tensor(Storage(Array(0.0, 1.0, 5.0, 3.0, 9.0, 0.8, 6.3)))
+    val (v, i) = t.topk(5, increase = false)
+    v should be(Tensor(Storage(Array(9.0, 6.3, 5.0, 3.0, 1.0))))
+    i should be(Tensor(Storage(Array(5.0, 7.0, 3.0, 4.0, 2.0))))
+  }
+
   "topk" should "be correct for 2d tensor" in {
     val t = Tensor(Storage(Array(
       0.0, 1.0, 5.0, 3.0, 9.0, 0.8, 6.3,
@@ -606,6 +613,31 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       1.0, 6.0, 2.0, 4.0, 3.0,
       1.0, 6.0, 2.0, 4.0, 3.0,
       1.0, 6.0, 2.0, 4.0, 3.0
+    )), 1, Array(5, 5)))
+  }
+
+  "topk without increase" should "be correct for 2d tensor" in {
+    val t = Tensor(Storage(Array(
+      0.0, 1.0, 5.0, 3.0, 9.0, 0.8, 6.3,
+      0.0, 1.0, 5.0, 3.0, 9.0, 0.8, 6.3,
+      0.0, 1.0, 5.0, 3.0, 9.0, 0.8, 6.3,
+      0.0, 1.0, 5.0, 3.0, 9.0, 0.8, 6.3,
+      0.0, 1.0, 5.0, 3.0, 9.0, 0.8, 6.3
+    )), 1, Array(5, 7))
+    val (v, i) = t.topk(5, increase = false)
+    v should be(Tensor(Storage(Array(
+      9.0, 6.3, 5.0, 3.0, 1.0,
+      9.0, 6.3, 5.0, 3.0, 1.0,
+      9.0, 6.3, 5.0, 3.0, 1.0,
+      9.0, 6.3, 5.0, 3.0, 1.0,
+      9.0, 6.3, 5.0, 3.0, 1.0
+    )), 1, Array(5, 5)))
+    i should be(Tensor(Storage(Array(
+      5.0, 7.0, 3.0, 4.0, 2.0,
+      5.0, 7.0, 3.0, 4.0, 2.0,
+      5.0, 7.0, 3.0, 4.0, 2.0,
+      5.0, 7.0, 3.0, 4.0, 2.0,
+      5.0, 7.0, 3.0, 4.0, 2.0
     )), 1, Array(5, 5)))
   }
 
