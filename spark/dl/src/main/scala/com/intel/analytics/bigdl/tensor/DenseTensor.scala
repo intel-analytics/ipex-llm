@@ -1722,11 +1722,6 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
     @inline
     def compare(a: T, b: T): Boolean = ev.isGreater(b, a)  ^ !increase
-    /* if (increase) {
-      ev.isGreater(b, a)
-    } else {
-      ev.isGreater(a, b)
-    } */
 
     DenseTensorDimApply.dimApply3[T](this, resultTensor, indicesTensor, selectDim,
       (tdata, toffset, tstride, tsize, vdata, voffset, vstride, vsize, idata,
