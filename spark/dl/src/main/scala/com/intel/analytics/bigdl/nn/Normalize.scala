@@ -72,20 +72,24 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
       // normp.sum(buffer, 2).add(ev.fromType(eps))
       // perf fix: the sum operation of tensor will call Java + element wise
       // perf fix: start
-      normp.resize(Array(buffer.size(1), 1, buffer.size(3), buffer.size(4)))
-      var batchSize = 0
-      while (batchSize < normp.size(1)) {
-        val batchOfNormp = normp.select(1, batchSize + 1).zero
-        val batchOfInput = buffer.narrow(1, batchSize + 1, 1)
+      if (buffer.nDimension() <= 2) {
+         normp.sum(buffer, 2).add(ev.fromType(eps))
+      } else {
+        normp.resize(Array(buffer.size(1), 1, buffer.size(3), buffer.size(4)))
+        var batchSize = 0
+        while (batchSize < normp.size(1)) {
+          val batchOfNormp = normp.select(1, batchSize + 1).zero
+          val batchOfInput = buffer.narrow(1, batchSize + 1, 1)
 
-        var channel = 0
-        while (channel < buffer.size(2)) {
-          batchOfNormp.add(batchOfInput.select(2, channel + 1))
-          channel += 1
+          var channel = 0
+          while (channel < buffer.size(2)) {
+            batchOfNormp.add(batchOfInput.select(2, channel + 1))
+            channel += 1
+          }
+          batchSize += 1
         }
-        batchSize += 1
+        normp.add(ev.fromType(eps))
       }
-      normp.add(ev.fromType(eps))
       // perf fix: end
       norm.resizeAs(normp).pow(normp, ev.fromType(1.0 / p))
     }
