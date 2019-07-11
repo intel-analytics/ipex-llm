@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import breeze.linalg.*
+import breeze.numerics.exp
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -99,50 +101,70 @@ private[nn] object TransformerOperation {
 
   def initRangeTensor[T: ClassTag](length: Int, rangeBuffer: Tensor[T])
     (implicit ev: TensorNumeric[T]): Unit = {
-    rangeBuffer.resize(Array(length, 2))
-    val arr = rangeBuffer.select(2, 1).storage().array()
+    rangeBuffer.resize(Array(length))
+    val arr = rangeBuffer.storage().array()
     for (i <- 0 to (length - 1)) {
-      arr(i * 2) = ev.fromType(i)
-      arr(i * 2 + 1) = ev.fromType(i)
+      arr(i) = ev.fromType(i)
     }
   }
 
   /**
    * Args:length: Sequence length.
    * channels: Size of the hidden
-   * min_timescale: Minimum scale that will be applied at each position
-   * max_timescale: Maximum scale that will be applied at each position
+   * minTimescale: Minimum scale that will be applied at each position
+   * maxTimescale: Maximum scale that will be applied at each position
    * Returns: Tensor with shape [length, hidden_size]
    */
-  def addTimingSignal1D[T: ClassTag](
+  def getPositionEncode[T: ClassTag](
     length: Int,
     channels: Int,
-    min_timescale : Float = 1.0f,
-    max_timescale: Float = 1.0e4f,
+    minTimescale : Float = 1.0f,
+    maxTimescale: Float = 1.0e4f,
     rangeBuffer: Tensor[T],
-    timeBuffer: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    outBuffer: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     // get_timing_signal_1d, return (1, length, channels)
-    val num_timescales = channels / 2
-    val log_timescale_increment = math.log(max_timescale / min_timescale) /
-      math.max(num_timescales - 1, 1)
+    val numTimescales = channels / 2
+    val logTimescale = math.log(maxTimescale / minTimescale) /
+      math.max(numTimescales - 1, 1)
     // tf.range(num_timescales)
-    val inv_timescales = new Array[Double](num_timescales)
+    val invTensor = Tensor[T](1, numTimescales)
+    val inv_timescales = invTensor.storage().array()
+    val offset = invTensor.storageOffset() - 1
     var i = 0
-    while (i < inv_timescales.length) {
-      inv_timescales(i) = min_timescale * math.exp(i * - log_timescale_increment)
+    while (i < numTimescales) {
+      inv_timescales(i + offset) = ev.fromType(minTimescale * math.exp(i * - logTimescale))
       i += 1
     }
-    rangeBuffer.select(2, 1).mul(ev.fromType[Double](inv_timescales(0)))
-    rangeBuffer.select(2, 2).mul(ev.fromType[Double](inv_timescales(1)))
 
-    val sinRes = rangeBuffer.clone().apply1(e =>
-      ev.fromType(math.sin(ev.toType[Float](e))))
-    val cosRes = rangeBuffer.clone().apply1(e =>
-      ev.fromType(math.cos(ev.toType[Float](e))))
+    val outSin = outBuffer.narrow(2, 1, numTimescales)
+    outSin.addmm(ev.zero, ev.one, rangeBuffer.resize(length, 1), invTensor)
+    val outCos = outBuffer.narrow(2, numTimescales + 1, numTimescales).copy(outSin)
+    outSin.apply1(e => ev.fromType(math.sin(ev.toType[Float](e))))
+    outCos.apply1(e => ev.fromType(math.cos(ev.toType[Float](e))))
 
-    timeBuffer.narrow(2, 1, sinRes.size(2)).copy(sinRes)
-    timeBuffer.narrow(2, sinRes.size(2) + 1, cosRes.size(2)).copy(cosRes)
-    timeBuffer
+    outBuffer
+  }
+
+  private val maskValue = -1e9
+  /**
+   * Create an bias tensor to be added to attention logits.
+   * Returns tensor with shape (1, 1, length, length)
+   * @param length
+   * @tparam T
+   * @return
+   */
+  def attentionBiasLowerTriangle[T: ClassTag](
+     length: Int, output: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val arr = output.storage().array()
+    for (i <- 0 to (length - 1)) {
+      var j = length - 1
+      while (j > i) {
+        // reminder: here not 1
+        arr(i * length + j) = ev.fromType(maskValue)
+        j -= 1
+      }
+    }
+    output.resize(Array(1, 1, length, length))
   }
 }
 
