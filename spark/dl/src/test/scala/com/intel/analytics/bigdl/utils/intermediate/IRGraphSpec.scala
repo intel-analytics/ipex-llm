@@ -230,12 +230,12 @@ class IRGraphSpec extends BigDLSpecHelper {
     Engine.setEngineType(MklDnn)
     val dnn = blas.cloneModule()
       .asInstanceOf[StaticGraph[Float]]
-      .setInputFormats(Seq(Memory.Format.ntc))
-      .setOutputFormats(Seq(Memory.Format.ntc))
+      .setInputFormats(Seq(Memory.Format.nc))
+      .setOutputFormats(Seq(Memory.Format.nc))
       .toIRgraph()
       .evaluate()
 
-    val data = Tensor[Float](2, 255, 21)
+    val data = Tensor[Float](255, 21)
 
     val outBlas = blas.forward(data).toTensor[Float]
     val outDnn = dnn.forward(data).toTensor[Float]

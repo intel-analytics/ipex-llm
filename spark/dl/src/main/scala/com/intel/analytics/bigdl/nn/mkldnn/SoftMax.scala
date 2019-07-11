@@ -63,7 +63,7 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
         val defaultAxis = inputs(0).shape.length match {
           case 1 => 0
           case 2 => 1
-          case 3 => 1
+          case 3 => 0
           case 4 => 1
           case _ => throw new UnsupportedOperationException("1D, 2D, 3D or 4D tensor expected")
         }
