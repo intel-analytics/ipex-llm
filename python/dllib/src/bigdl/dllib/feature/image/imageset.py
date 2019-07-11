@@ -86,6 +86,21 @@ class ImageSet(JavaValue):
     def from_image_frame(cls, image_frame, bigdl_type="float"):
         return ImageSet(jvalue=callBigDlFunc(bigdl_type, "imageFrameToImageSet", image_frame))
 
+    @classmethod
+    def from_rdds(cls, image_rdd, label_rdd=None, bigdl_type="float"):
+        """
+        Create a ImageSet from rdds of ndarray.
+
+        :param image_rdd: a rdd of ndarray, each ndarray should has dimension of 3 or 4 (3D images)
+        :param label_rdd: a rdd of ndarray
+        :return: a DistributedImageSet
+        """
+        image_rdd = image_rdd.map(lambda x: JTensor.from_ndarray(x))
+        if label_rdd is not None:
+            label_rdd = label_rdd.map(lambda x: JTensor.from_ndarray(x))
+        return ImageSet(jvalue=callBigDlFunc(bigdl_type, "createDistributedImageSet",
+                                             image_rdd, label_rdd), bigdl_type=bigdl_type)
+
     def transform(self, transformer):
         """
         transformImageSet
