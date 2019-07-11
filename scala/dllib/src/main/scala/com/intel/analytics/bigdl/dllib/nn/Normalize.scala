@@ -78,12 +78,12 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
         normp.resize(Array(buffer.size(1), 1, buffer.size(3), buffer.size(4)))
         var batchSize = 0
         while (batchSize < normp.size(1)) {
-          val batchOfNormp = normp.select(1, batchSize + 1).zero
-          val batchOfInput = buffer.narrow(1, batchSize + 1, 1)
+          val normpPerBatch = normp.select(1, batchSize + 1).zero
+          val inputPerBatch = buffer.narrow(1, batchSize + 1, 1)
 
           var channel = 0
           while (channel < buffer.size(2)) {
-            batchOfNormp.add(batchOfInput.select(2, channel + 1))
+            normpPerBatch.add(inputPerBatch.select(2, channel + 1))
             channel += 1
           }
           batchSize += 1
@@ -102,14 +102,14 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
       var batchSize = 0
       while (batchSize < output.size(1)) {
 
-        val oneBatchOutput = output.narrow(1, batchSize + 1, 1)
-        val oneBatchNorm = norm.select(1, batchSize + 1)
-        val oneBatchInput = inputBuffer.narrow(1, batchSize + 1, 1)
+        val outputPerBatch = output.narrow(1, batchSize + 1, 1)
+        val normPerBatch = norm.select(1, batchSize + 1)
+        val inputPerBatch = inputBuffer.narrow(1, batchSize + 1, 1)
 
         var channel = 0
         while (channel < output.size(2)) {
-          oneBatchOutput.select(2, channel + 1)
-            .cdiv(oneBatchInput.select(2, channel + 1), oneBatchNorm)
+          outputPerBatch.select(2, channel + 1)
+            .cdiv(inputPerBatch.select(2, channel + 1), normPerBatch)
           channel += 1
         }
 
