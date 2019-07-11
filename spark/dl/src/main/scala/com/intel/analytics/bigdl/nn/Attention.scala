@@ -15,8 +15,6 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import javafx.scene.control.Tab
-
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
@@ -38,8 +36,8 @@ class Attention[T: ClassTag](val hiddenSize: Int, val numHeads: Int, val attenti
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] {
 
   // for prediction
-  private val join1 = nn.JoinTable[T](dimension = 2, nInputDims = -1)
-  private val join2 = nn.JoinTable[T](dimension = 2, nInputDims = -1)
+  private val joinK = nn.JoinTable[T](dimension = 2, nInputDims = -1)
+  private val joinV = nn.JoinTable[T](dimension = 2, nInputDims = -1)
 
   private val queryLayer = TransformerOperation.dense(
     hiddenSize, hiddenSize, false, name = s"${this.getName()}_q")
@@ -139,10 +137,10 @@ class Attention[T: ClassTag](val hiddenSize: Int, val numHeads: Int, val attenti
     } else (null, null)
 
     val key = if (inputK != null && !inputK.isEmpty) {
-      join1.forward(T(keyLayer.forward(inputY).toTensor[T], inputK))
+      joinK.forward(T(keyLayer.forward(inputY).toTensor[T], inputK))
     } else keyLayer.forward(inputY).toTensor[T]
     val value = if (inputV != null && !inputV.isEmpty) {
-      join2.forward(T(valueLayer.forward(inputY).toTensor[T], inputV))
+      joinV.forward(T(valueLayer.forward(inputY).toTensor[T], inputV))
     } else valueLayer.forward(inputY).toTensor[T]
 
     // update cache

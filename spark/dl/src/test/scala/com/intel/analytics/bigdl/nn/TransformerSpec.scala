@@ -776,8 +776,8 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
                 -0.17007843, -0.5501685),
               T(-0.41227788, -0.35933533, -0.45497704, -0.25715417, 0.60992306, -0.19668543,
                 -0.77470696, 0.24892384),
-              T( 0.12124976, 0.8671879, -0.44282717, -0.27072555, 0.2076582, -0.53506184,
-        0.39133728,  0.35779685))).transpose(1, 2))
+              T(0.12124976, 0.8671879, -0.44282717, -0.27072555, 0.2076582, -0.53506184,
+                 0.39133728, 0.35779685))).transpose(1, 2))
       } else if (i.toString contains "_output_layer") {
         paramsTable.get[Table](i).get[Tensor[Float]]("weight").copy(
           Tensor[Float](
