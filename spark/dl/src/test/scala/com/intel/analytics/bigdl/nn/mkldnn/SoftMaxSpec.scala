@@ -173,16 +173,17 @@ class SoftMaxSpec extends FlatSpec with Matchers {
   "axis" should "work correctly" in {
     val input = Tensor[Float](2, 24564, 21).rand(-1, 1)
 
-    val sm1 = SoftMax(axis = 1)
-    val seq1 = Sequential().add(Input(Array(2, 24564, 21), Memory.Format.ntc))
-        .add(sm1)
-        .add(Output(Memory.Format.ntc))
+    val sm1 = SoftMax(axis = 2)
+    val seq1 = Sequential()
+      .add(Input(Array(2, 24564, 21), Memory.Format.ntc))
+      .add(sm1)
+      .add(Output(Memory.Format.ntc))
     seq1.asInstanceOf[MklDnnContainer].compile(InferencePhase)
     seq1.evaluate()
 
     seq1.forward(input)
 
-    input.resize(Array(12, 5))
+    input.resize(Array(2 * 24564, 21))
 
     val sm2 = SoftMax()
     val seq2 = Sequential().add(Input(Array(2 * 24564, 21), Memory.Format.nc))

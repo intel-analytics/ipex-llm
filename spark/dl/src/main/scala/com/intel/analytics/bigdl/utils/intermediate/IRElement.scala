@@ -110,7 +110,7 @@ case class IRSpatialCrossMapLRN[T: ClassTag](
             k: Double = 1.0,
             format: DataFormat = DataFormat.NCHW) extends IROperator[T]
 
-case class IRSoftMax[T: ClassTag](axis: Int) extends IROperator[T]
+case class IRSoftMax[T: ClassTag]() extends IROperator[T]
 
 case class IRSelectTable[T: ClassTag](dimension: Int) extends IROperator[T]
 

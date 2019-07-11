@@ -48,6 +48,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     IR2DnnMap("IRJoinTable") = fromJoinTable
     IR2DnnMap("IRGeneralModule") = fromBlasModule
     IR2DnnMap("IRInput") = fromInput
+    IR2DnnMap("IRSoftMax") = fromSoftMax
   }
 
   override def convertLayerCheck(layer: IRElement[Float]): Boolean = {
@@ -184,13 +185,22 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     layer
   }
 
+  private def fromSoftMax(node: IRElement[Float]): Module[Float] = {
+    mkldnn.SoftMax()
+  }
+
   private def fromBlasModule(node: IRElement[Float]) : Module[Float] = {
     val model = node.getOp().asInstanceOf[IRGeneralModule[Float]].model
     if (model.isInstanceOf[BiRecurrent[Float]]) {
       fromBiRecurrent(node)
     } else if (model.isInstanceOf[Recurrent[Float]]) {
       fromRecurrent(node)
-    } else BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
+    } else if (model.isInstanceOf[TimeDistributed[Float]] &&
+      model.asInstanceOf[TimeDistributed[Float]].layer.isInstanceOf[nn.SoftMax[Float]]) {
+      fromTimeDistributedWithSoftMax(node)
+    } else {
+      BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
+    }
   }
 
   private def fromRecurrent(node: IRElement[Float]): Module[Float] = {
@@ -355,6 +365,10 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
       }
     }
     BlasWrapper(node.getOp().asInstanceOf[IRGeneralModule[Float]].model)
+  }
+
+  private def fromTimeDistributedWithSoftMax(node: IRElement[Float]): Module[Float] = {
+    mkldnn.SoftMax(axis = 2)
   }
 
   private def fromInput(node: IRElement[Float]) : Module[Float] = {

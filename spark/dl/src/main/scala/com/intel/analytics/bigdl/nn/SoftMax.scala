@@ -31,8 +31,7 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  */
 @SerialVersionUID(- 7842335603491194236L)
-class SoftMax[T: ClassTag](val axis: Int = -1)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient
   private var results: Array[Future[Unit]] = null
@@ -71,9 +70,9 @@ class SoftMax[T: ClassTag](val axis: Int = -1)(
 
 object SoftMax{
 
-  def apply[@specialized(Float, Double) T: ClassTag](axis: Int = -1)
+  def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
-    new SoftMax[T](axis)
+    new SoftMax[T]()
   }
   // Notice: SoftMin will call this function
   private[nn] def updateOutput[T: ClassTag](input: Tensor[T], output: Tensor[T],

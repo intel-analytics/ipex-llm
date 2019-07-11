@@ -63,24 +63,30 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
         val defaultAxis = inputs(0).shape.length match {
           case 1 => 0
           case 2 => 1
-          case 3 => 0
+          case 3 => 1
           case 4 => 1
           case _ => throw new UnsupportedOperationException("1D, 2D, 3D or 4D tensor expected")
         }
 
         _inputFormats = singleNativeData(inputs)
 
-        val localInputFormat = if (inputs(0).shape.length == 3) {
-          NativeData(inputs(0).shape, Memory.Format.tnc)
+        val localInputFormat = if (inputs(0).shape.length == 3 &&
+          inputs(0).layout == Memory.Format.ntc) {
+          // note: here, the format and the true memory layout is not consistent.
+          // for ntc input, we should reshape the `shape` and make the format to tnc
+          val shape = Array(inputs(0).shape(1), inputs(0).shape(0), inputs(0).shape(2))
+          NativeData(shape, Memory.Format.tnc)
         } else {
-          inputs(0)
+          _inputFormats(0)
         }
 
         val desc = MklDnn.SoftMaxForwardDescInit(PropKind.ForwardInference,
           localInputFormat.getMemoryDescription(), if (axis == -1) defaultAxis else axis)
         val forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0L)
 
-        _outputFormats = if (inputs(0).shape.length == 3) {
+        _outputFormats = if (inputs(0).shape.length ==3 &&
+          inputs(0).layout == Memory.Format.ntc) {
+          // because set the input format as tnc first, we should set the output to ntc.
           Array(NativeData(inputs(0).shape, Memory.Format.ntc))
         } else {
           Array(MemoryData.primitiveOutput(forwardPrimDesc))
