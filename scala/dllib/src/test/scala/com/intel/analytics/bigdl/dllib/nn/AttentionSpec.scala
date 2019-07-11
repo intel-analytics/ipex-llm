@@ -240,13 +240,13 @@ class AttentionSpec  extends FlatSpec with Matchers {
     val w4 = weights.get[Tensor[Float]]("output_transform").get
     for (i <- paramsTable.keySet) {
       val params = paramsTable.get[Table](i).get.get[Tensor[Float]]("weight").get
-      if (i == "q") {
+      if (i.toString contains "_q") {
         params.copy(w1.t())
-      } else if (i == "k") {
+      } else if (i.toString contains "_k") {
         params.copy(w2.t())
-      } else if (i == "v") {
+      } else if (i.toString contains "_v") {
         params.copy(w3.t())
-      } else if (i == "output_transform") {
+      } else if (i.toString contains "_output_transform") {
         params.copy(w4.t())
       }
     }
@@ -263,10 +263,10 @@ class AttentionSpec  extends FlatSpec with Matchers {
     val gw4 = gradWeightsExpected.get[Tensor[Float]]("output_transform").get
     for (i <- paramsTable.keySet) {
       val params = paramsTable.get[Table](i).get.get[Tensor[Float]]("gradWeight").get
-      if (i == "q") params should be(gw1.t())
-      if (i == "k") params should be(gw2.t())
-      if (i == "v") params should be(gw3.t())
-      if (i == "output_transform") params should be(gw4.t())
+      if (i.toString contains "_q") params should be(gw1.t())
+      if (i.toString contains "_k") params should be(gw2.t())
+      if (i.toString contains "_v") params should be(gw3.t())
+      if (i.toString contains "_output_transform") params should be(gw4.t())
     }
   }
 }
