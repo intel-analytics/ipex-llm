@@ -25,6 +25,8 @@ pages:
     - Install: ScalaUserGuide/install.md
     - Run: ScalaUserGuide/run.md
     - Examples: ScalaUserGuide/examples.md
+- Developer Guide:
+  - For Python Developers: DeveloperGuide/python.md
 - Programming Guide: 
   - Pipeline APIs:
     - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
