@@ -88,6 +88,12 @@ object EngineRef {
   def getEngineType(): EngineType = {
     KerasUtils.invokeMethod(Engine, "getEngineType").asInstanceOf[EngineType]
   }
+
+  def setCoreNumber(num: Int): Unit = {
+    val field = Engine.getClass.getDeclaredField("physicalCoreNumber")
+    field.setAccessible(true)
+    field.setInt(Engine, num)
+  }
 }
 
 object SGDRef {
