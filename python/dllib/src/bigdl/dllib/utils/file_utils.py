@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.util.common import Sample as BSample, JTensor as BJTensor
+from bigdl.util.common import Sample as BSample, JTensor as BJTensor, callBigDlFunc
 import numpy as np
 
 
@@ -36,6 +36,10 @@ def to_list_of_numpy(elements):
             raise ValueError("Wrong type: %s" % type(element))
 
     return results
+
+
+def set_core_number(num):
+    callBigDlFunc("float", "setCoreNumber", num)
 
 
 class JTensor(BJTensor):
