@@ -225,7 +225,7 @@ model.compile(optimizer='rmsprop',
 3.Distributed training on Spark and BigDL
 
 ```python
-from zoo.pipeline.api.net import TFOptimizer
+from zoo.tfpark import TFOptimizer
 from bigdl.optim.optimizer import MaxIteration, Adam, MaxEpoch, TrainSummary
 
 optimizer = TFOptimizer.from_loss(loss, Adam(1e-3))
@@ -236,7 +236,7 @@ optimizer.optimize(end_trigger=MaxEpoch(5))
 For Keras model:
 
 ```python
-from zoo.pipeline.api.net import TFOptimizer
+from zoo.tfpark import TFOptimizer
 from bigdl.optim.optimizer import MaxIteration, MaxEpoch, TrainSummary
 
 optimizer = TFOptimizer.from_keras(keras_model=model, dataset=dataset)

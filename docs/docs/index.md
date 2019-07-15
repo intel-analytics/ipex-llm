@@ -104,7 +104,7 @@ To make it easy to build and productionize the deep learning applications for Bi
 3.Distributed training on Spark and BigDL
 
 ```python
-   from zoo.pipeline.api.net import TFOptimizer
+   from zoo.tfpark import TFOptimizer
    from bigdl.optim.optimizer import MaxIteration, Adam, MaxEpoch, TrainSummary
 
    optimizer = TFOptimizer.from_loss(loss, Adam(1e-3))
