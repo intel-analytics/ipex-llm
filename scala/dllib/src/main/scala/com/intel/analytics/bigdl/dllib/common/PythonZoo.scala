@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.optim.LocalPredictor
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text.TextSet
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -189,6 +190,11 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                          batchPerThread: Int,
                          zeroBasedLabel: Boolean = true): JavaRDD[Int] = {
     module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
+  }
+
+
+  def setCoreNumber(num: Int): Unit = {
+    EngineRef.setCoreNumber(num)
   }
 
 
