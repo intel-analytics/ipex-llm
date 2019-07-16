@@ -234,10 +234,10 @@ object NNContext {
       }
     }
     // Set Spark Conf
-    zooConf.setExecutorEnv("spark.executorEnv.KMP_AFFINITY", kmpAffinity)
-    zooConf.setExecutorEnv("spark.executorEnv.KMP_BLOCKTIME", kmpBlockTime)
-    zooConf.setExecutorEnv("spark.executorEnv.KMP_SETTINGS", kmpSettings)
-    zooConf.setExecutorEnv("spark.executorEnv.OMP_NUM_THREADS", ompNumThreads)
+    zooConf.setExecutorEnv("KMP_AFFINITY", kmpAffinity)
+    zooConf.setExecutorEnv("KMP_BLOCKTIME", kmpBlockTime)
+    zooConf.setExecutorEnv("KMP_SETTINGS", kmpSettings)
+    zooConf.setExecutorEnv("OMP_NUM_THREADS", ompNumThreads)
 
   }
 
