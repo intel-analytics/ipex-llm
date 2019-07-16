@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.collection.mutable
 
-private[mkldnn] class ReorderManager() {
+private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
+  owner.registerReorderManager(this)
   // (MemoryFormatId, TargetFormat) -> Reorder
   val reorders = mutable.HashMap[(Int, MemoryData), ReorderMemory]()
   // ReorderId -> RefCount

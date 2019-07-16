@@ -31,7 +31,8 @@ class CAddTable extends MklDnnLayer with MklInt8Convertible {
       }
     }
 
-    val outputMD = MklDnn.MemoryDescInit(shape.length, shape, inputs(0).dataType, Memory.Format.any)
+    val outputMD = MklDnnMemory.MemoryDescInit(shape.length, shape,
+      inputs(0).dataType, Memory.Format.any)
 
     val scales = inputs.map { x =>
       if (x.dataType != DataType.F32 && x.scales.nonEmpty) {
@@ -43,10 +44,10 @@ class CAddTable extends MklDnnLayer with MklInt8Convertible {
       }
     }
 
-    val pd = MklDnn.SumPrimitiveDescCreate(outputMD, inputs.length, scales,
+    val pd = MklDnnMemory.SumPrimitiveDescCreate(outputMD, inputs.length, scales,
       inputs.map(_.getPrimitiveDescription(runtime)))
     _outputFormats = Array(MemoryData.primitiveOutput(pd))
-    updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(pd,
+    updateOutputPrimitives = Array(MklDnnMemory.PrimitiveCreate2(pd,
       _inputFormats.map(_.getPrimitive(runtime)), new Array[Int](inputs.length),
       _inputFormats.length, _outputFormats.map(_.getPrimitive(runtime)), 1))
     output = initTensor(_outputFormats(0))

@@ -66,7 +66,7 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
   }
 
   private def createInt8PrimDesc(): Long = {
-    val attr = MklDnn.CreateAttr()
+    val attr = MklDnnMemory.CreateAttr()
     MklDnn.AttrSetIntOutputRoundMode(attr, 1)
 
     if (realOutput(0).scales == null || realOutput(0).scales.isEmpty) {
@@ -89,7 +89,7 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     MklDnn.AttrSetOutputScales(attr, realOutput(0).scales.length, realOutput(0).mask,
       realOutput(0).scales)
 
-    MklDnn.ReorderPrimitiveDescCreateV2(
+    MklDnnMemory.ReorderPrimitiveDescCreateV2(
       realInput(0).getPrimitiveDescription(runtime),
       realOutput(0).getPrimitiveDescription(runtime),
       attr)
@@ -129,14 +129,14 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
       outputFormats()(0).dataType == DataType.F32
 
     val fwdReorderPrimDesc = if (noInt8Formats) {
-      MklDnn.ReorderPrimitiveDescCreate(
+      MklDnnMemory.ReorderPrimitiveDescCreate(
         realInput(0).getPrimitiveDescription(runtime),
         realOutput(0).getPrimitiveDescription(runtime))
     } else {
       createInt8PrimDesc()
     }
 
-    val fwdReorderPrim = MklDnn.PrimitiveCreate2(fwdReorderPrimDesc,
+    val fwdReorderPrim = MklDnnMemory.PrimitiveCreate2(fwdReorderPrimDesc,
       Array(realInput(0).getPrimitive(runtime)), Array(0), 1,
       Array(realOutput(0).getPrimitive(runtime)), 1)
 
@@ -191,10 +191,10 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
       }
     }
 
-    val bwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(
+    val bwdReorderPrimDesc = MklDnnMemory.ReorderPrimitiveDescCreate(
       realgradOutput(0).getPrimitiveDescription(runtime),
       realgradInput(0).getPrimitiveDescription(runtime))
-    val bwdReorderPrim = MklDnn.PrimitiveCreate2(bwdReorderPrimDesc,
+    val bwdReorderPrim = MklDnnMemory.PrimitiveCreate2(bwdReorderPrimDesc,
       realgradOutput.map(_.getPrimitive(runtime)), Array(0), 1,
       realgradInput.map(_.getPrimitive(runtime)), 1)
 

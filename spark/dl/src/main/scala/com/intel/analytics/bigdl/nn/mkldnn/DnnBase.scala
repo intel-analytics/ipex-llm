@@ -123,7 +123,8 @@ trait MklDnnModuleHelper {
   }
 }
 
-trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule {
+trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule
+  with MemoryOwner {
   /**
    * MKL-DNN primitives of the module. Note you should only initialize this field by calling
    * initPrimitives method. This field will be erased when sending model to remote worker. So you
@@ -135,6 +136,9 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   protected var updateGradInputPrimitives: Array[Long] = _
   @transient
   protected var accGradientPrimitives: Array[Long] = _
+
+  @transient
+  protected implicit lazy val _this : MemoryOwner = this
 
   protected var _inputFormats: Array[MemoryData] = _
   protected var _gradInputFormats: Array[MemoryData] = _
@@ -162,7 +166,8 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   def getUpdateOutputMemoryPrimitives(): Array[Long] = {
-    inputFormats().map(_.getPrimitive(runtime)) ++ outputFormats().map(_.getPrimitive(runtime))
+    inputFormats().map(_.getPrimitive(runtime)) ++
+      outputFormats().map(_.getPrimitive(runtime))
   }
   def getUpdateGradInputMemoryPrimitives(): Array[Long] = {
     gradOutputFormats().map(_.getPrimitive(runtime)) ++
@@ -293,6 +298,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     }
 
     tensors.foreach(_.release())
+    this.releaseNativeMklDnnMemory()
   }
 
   override def setQuantize(value: Boolean): MklDnnLayer.this.type = this
@@ -301,7 +307,9 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
 /**
  * Helper utilities when integrating containers with MKL-DNN
  */
-trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with MklDnnModule {
+trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with MklDnnModule
+  with MemoryOwner {
+  @transient protected implicit val _this = this
   @transient protected lazy val reorderManager = new ReorderManager()
   protected var mklDnnModules : Array[MklDnnModule] = _
 
@@ -385,7 +393,7 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
 
   override def release(): Unit = {
     super.release()
-    reorderManager.release()
+    this.releaseNativeMklDnnMemory()
   }
 
   override def setQuantize(value: Boolean): this.type = {
