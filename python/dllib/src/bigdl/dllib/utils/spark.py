@@ -108,7 +108,7 @@ class SparkRunner():
             raise Exception(err +
                             "Cannot detect current python location."
                             "Please set it manually by python_location")
-        return out
+        return out.strip()
 
     def _get_bigdl_jar_name_on_driver(self):
         from bigdl.util.engine import get_bigdl_classpath
