@@ -650,6 +650,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Predictor(this).predictClass(dataset, batchSize)
   }
 
+  final def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Sample[T]] = {
+    Predictor(this).predictClass(dataset, batchSize)
+  }
+
   /**
    * model predict images, return imageFrame with predicted tensor,
    * if you want to call predictImage multiple times,
