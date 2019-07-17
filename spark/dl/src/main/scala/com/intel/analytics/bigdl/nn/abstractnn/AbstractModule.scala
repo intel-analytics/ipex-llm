@@ -640,6 +640,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Predictor(this).predict(dataset, batchSize, shareBuffer)
   }
 
+  final def predictBeta(dataset: RDD[Sample[T]],
+    batchSize: Int = -1,
+    shareBuffer: Boolean = false): RDD[Sample[T]] = {
+    Predictor(this).predictBeta(dataset, batchSize, shareBuffer)
+  }
+
   /**
    * module predict, return the predict label
    * @param dataset dataset for prediction
@@ -650,8 +656,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Predictor(this).predictClass(dataset, batchSize)
   }
 
-  final def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Sample[T]] = {
-    Predictor(this).predictClass(dataset, batchSize)
+  final def predictClassBeta(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Sample[T]] = {
+    Predictor(this).predictClassBeta(dataset, batchSize)
   }
 
   /**

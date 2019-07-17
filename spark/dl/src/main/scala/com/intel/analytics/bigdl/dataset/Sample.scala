@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dataset
 
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
@@ -109,6 +110,15 @@ abstract class Sample[T: ClassTag] extends Serializable {
         featureSize: Array[Int],
         labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T] = {
     throw new UnsupportedOperationException("Sample.set(): unimplemented deprecated method")
+  }
+
+  /**
+   * Set data of label.
+   * @param labelData
+   * @return
+   */
+  def setLabel(labelData: Activity)(implicit ev: TensorNumeric[T]): Sample[T] = {
+    throw new UnsupportedOperationException("Sample.setLabel(): unimplemented deprecated method")
   }
 
   /**
