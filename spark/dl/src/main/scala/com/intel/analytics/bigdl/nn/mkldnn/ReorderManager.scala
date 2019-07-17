@@ -19,8 +19,8 @@ import com.intel.analytics.bigdl.mkl.DataType
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
   owner.registerReorderManager(this)

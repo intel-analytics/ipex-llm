@@ -472,10 +472,6 @@ class RNN(
   override def zeroGradParameters(): Unit = {
   }
 
-  override def release(): Unit = {
-    super.release()
-    List(src_i, dst_i, gradsrc_i, graddst_i).foreach(_.release())
-  }
 }
 
 object RNN{

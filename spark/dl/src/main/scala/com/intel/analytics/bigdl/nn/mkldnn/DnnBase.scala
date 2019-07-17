@@ -26,7 +26,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Helper utilities when integrating Module with MKL-DNN
  */
-trait MklDnnModule extends MklDnnModuleHelper {
+trait MklDnnModule extends MklDnnModuleHelper  {
   /**
    * MklDnn runtime, which includes a MKL-DNN engine and a MKL-DNN stream.
    * Note that this instance will be erased when send to remote worker, so you
@@ -78,7 +78,10 @@ trait MklDnnModule extends MklDnnModuleHelper {
   def setQuantize(value: Boolean): this.type
 }
 
-trait MklDnnModuleHelper {
+trait MklDnnModuleHelper extends MemoryOwner {
+
+  @transient protected implicit lazy val _this : MemoryOwner = this
+
   protected def initActivity(formats: Array[MemoryData]): Activity = {
     if (formats.length == 1) {
       initTensor(formats(0))
@@ -123,8 +126,7 @@ trait MklDnnModuleHelper {
   }
 }
 
-trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule
-  with MemoryOwner {
+trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule{
   /**
    * MKL-DNN primitives of the module. Note you should only initialize this field by calling
    * initPrimitives method. This field will be erased when sending model to remote worker. So you
@@ -136,9 +138,6 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   protected var updateGradInputPrimitives: Array[Long] = _
   @transient
   protected var accGradientPrimitives: Array[Long] = _
-
-  @transient
-  protected implicit lazy val _this : MemoryOwner = this
 
   protected var _inputFormats: Array[MemoryData] = _
   protected var _gradInputFormats: Array[MemoryData] = _
@@ -307,9 +306,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
 /**
  * Helper utilities when integrating containers with MKL-DNN
  */
-trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with MklDnnModule
-  with MemoryOwner {
-  @transient protected implicit val _this = this
+trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with MklDnnModule {
   @transient protected lazy val reorderManager = new ReorderManager()
   protected var mklDnnModules : Array[MklDnnModule] = _
 

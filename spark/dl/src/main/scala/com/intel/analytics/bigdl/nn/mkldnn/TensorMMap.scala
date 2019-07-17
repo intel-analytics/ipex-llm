@@ -117,9 +117,6 @@ private[mkldnn] class TensorMMap(_size: Array[Int])(implicit owner: MemoryOwner)
   }
 
   def release(): Unit = {
-    if (native != null) {
-      native.release()
-    }
     if (_reorder != null) {
       _reorder.release()
     }

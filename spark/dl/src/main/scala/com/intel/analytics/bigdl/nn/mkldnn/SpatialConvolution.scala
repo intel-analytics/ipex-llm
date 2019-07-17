@@ -645,11 +645,6 @@ class SpatialConvolution(
   override def zeroGradParameters(): Unit = {
   }
 
-  override def release(): Unit = {
-    super.release()
-    if (weightForBackward != null) { weightForBackward.release() }
-  }
-
   override def setQuantize(value: Boolean): this.type = {
     needQuantize = value
     this

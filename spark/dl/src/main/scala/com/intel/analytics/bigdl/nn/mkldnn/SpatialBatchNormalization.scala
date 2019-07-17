@@ -388,11 +388,6 @@ class SpatialBatchNormalization(
     }
     this
   }
-
-  override def release(): Unit = {
-    super.release()
-    List(mean, variance).foreach(_.release())
-  }
 }
 
 object SpatialBatchNormalization {

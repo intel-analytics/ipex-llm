@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.tensor.DnnTensor
 import scala.collection.mutable.ArrayBuffer
 
 trait MemoryOwner {
@@ -27,6 +28,10 @@ trait MemoryOwner {
     new ArrayBuffer[TensorMMap]()
 
   @transient
+  private lazy val _tensors: ArrayBuffer[DnnTensor[_]] =
+    new ArrayBuffer[DnnTensor[_]]()
+
+  @transient
   private  var _reorderManager: ReorderManager = _
 
   def registerMklNativeMemory(m: MklDnnNativeMemory): Unit = {
@@ -35,6 +40,10 @@ trait MemoryOwner {
 
   def registerTensorMMap(m: TensorMMap): Unit = {
     _tensorMMaps.append(m)
+  }
+
+  def registerTensor(m: DnnTensor[_]): Unit = {
+    _tensors.append(m)
   }
 
   def registerReorderManager(m: ReorderManager): Unit = {
@@ -52,8 +61,11 @@ trait MemoryOwner {
     _nativeMemory.clear()
     _tensorMMaps.foreach(_.release())
     _tensorMMaps.clear()
+    _tensors.foreach(_.release())
+    _tensors.clear()
     if (_reorderManager != null) {
       _reorderManager.release()
     }
+    _reorderManager = null
   }
 }

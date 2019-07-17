@@ -57,6 +57,8 @@ class CAddTableSpec extends BigDLSpecHelper {
   }
 
   "caddtable with java serialization" should "work correctly" in {
+    implicit object Owner extends MemoryOwner {
+    }
     val shape = Array(2, 3, 4, 4)
     val _1 = Tensor(shape).rand(-1, 1)
     val _2 = Tensor(shape).rand(-1, 1)
@@ -93,6 +95,7 @@ class CAddTableSpec extends BigDLSpecHelper {
 
     Tools.dense(cat.gradInput.toTable(1)) should be (Tools.dense(cloned.gradInput.toTable(1)))
     Tools.dense(cat.gradInput.toTable(2)) should be (Tools.dense(cloned.gradInput.toTable(2)))
+    Owner.releaseNativeMklDnnMemory()
   }
 
   "CAddTable u8" should "be correct" in {
