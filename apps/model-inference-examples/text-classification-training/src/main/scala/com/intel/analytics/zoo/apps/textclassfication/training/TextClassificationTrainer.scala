@@ -3,16 +3,18 @@ package com.intel.analytics.zoo.apps.textclassfication.training
 import java.io.File
 
 import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
-import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.optim.{Adagrad, Optimizer, Trigger}
+import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.optim.{Adagrad, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.apps.textclassfication.processing.TextProcessing
 import com.intel.analytics.zoo.common.NNContext
+import com.intel.analytics.zoo.feature.FeatureSet
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.Accuracy
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.objectives.SparseCategoricalCrossEntropy
+import com.intel.analytics.zoo.pipeline.estimator.Estimator
 import org.apache.spark.SparkConf
 import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
@@ -121,19 +123,16 @@ object TextClassificationTrainer extends TextProcessing {
 
       val model = buildModel(embeddingFile, wordToIndexMap, sequenceLength, classNum)
 
-      val optimizer = Optimizer(
-        model = model,
-        sampleRDD = trainings,
-        criterion = SparseCategoricalCrossEntropy[Float](),
-        batchSize = batchSize
-      )
+      val optimMethod = new Adagrad[Float](learningRate = 0.01, learningRateDecay = 0.001)
+      val (checkpointTrigger, endTrigger) = (Trigger.everyEpoch, Trigger.maxEpoch(nbEpoch))
+      val sample2batch = SampleToMiniBatch[Float](batchSize)
+      val trainSet = FeatureSet.rdd(trainings.cache()) -> sample2batch
+      val valSet = FeatureSet.rdd(validations.cache()) -> sample2batch
 
-      optimizer
-        .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.001))
-        .setValidation(Trigger.everyEpoch, validations, Array(new Accuracy), batchSize)
-        .setEndWhen(Trigger.maxEpoch(nbEpoch))
-        .optimize()
+      val estimator = Estimator[Float](model, optimMethod)
 
+      estimator.train(trainSet, SparseCategoricalCrossEntropy[Float](), Some(endTrigger),
+        Some(checkpointTrigger), valSet, Array(new Accuracy[Float]()))
 
       val results = model.predict(validations)
       validations.take(5).foreach(x => println(x.label()))
