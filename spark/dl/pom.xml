@@ -21,6 +21,14 @@
     </properties>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/onnx-platform -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>onnx-platform</artifactId>
+            <version>1.5.0-1.5.1</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.opennlp</groupId>
             <artifactId>opennlp-tools</artifactId>
@@ -180,7 +188,7 @@
                  or shade plugin will be executed after assembly plugin. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.0</version>
                 <configuration>
                     <filters>
                         <filter>
