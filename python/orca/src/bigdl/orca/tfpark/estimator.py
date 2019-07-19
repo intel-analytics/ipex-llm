@@ -142,6 +142,8 @@ class TFEstimator(object):
         self.tf_optimizer = None
         self.gradient_clipping_norm = None
         self.gradient_clipping_constant = None
+        self.train_summary = None
+        self.val_summary = None
 
     def _call_model_fn(self, features, labels, mode, config):
         model_fn_args = function_utils.fn_args(self._model_fn)
@@ -184,6 +186,22 @@ class TFEstimator(object):
         :param clip_norm: gradient L2-Norm threshold
         """
         self.gradient_clipping_norm = clip_norm
+
+    def set_train_summary(self, summary):
+        """
+        Set training summary for visualization.
+
+        :param summary: bigdl.optim.optimizer.TrainSummary
+        """
+        self.train_summary = summary
+
+    def set_val_summary(self, summary):
+        """
+        Set validation summary for visualization.
+
+        :param summary: bigdl.optim.optimizer.ValidationSummary
+        """
+        self.val_summary = summary
 
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
@@ -235,6 +253,13 @@ class TFEstimator(object):
                                                 session=sess,
                                                 clip_norm=self.gradient_clipping_norm,
                                                 clip_value=self.gradient_clipping_constant)
+
+                    if self.train_summary is not None:
+                        opt.set_train_summary(self.train_summary)
+
+                    if self.val_summary is not None:
+                        opt.set_val_summary(self.val_summary)
+
                     opt.optimize(MaxIteration(steps))
                     sess.run(assign_step, feed_dict={add_step_input: steps})
                     final_step = sess.run(global_step_tensor)
