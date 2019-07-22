@@ -192,7 +192,8 @@ class SpatialBatchNormalization(
     }
     val indexes = Array.fill(srcs.length)(0)
 
-    val primitive = MklDnnMemory.PrimitiveCreate2(primDesc, srcs, indexes, srcs.length, dsts, dsts.length)
+    val primitive = MklDnnMemory.PrimitiveCreate2(primDesc, srcs, indexes,
+      srcs.length, dsts, dsts.length)
 
     updateOutputMemoryPrimitives = srcs ++ dsts
     updateOutputPrimitives = Array(primitive)
