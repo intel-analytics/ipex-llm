@@ -424,7 +424,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
 
         nnModel.setFeaturesCol(self.getFeaturesCol()) \
             .setPredictionCol(self.getPredictionCol()) \
-            .setBatchSize(self.getBatchSize())
+            .setBatchSize(java_model.getBatchSize())
         return nnModel
 
 
@@ -472,6 +472,7 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
         self.model = model
         self._java_obj = self.value
         self.bigdl_type = bigdl_type
+        self.setBatchSize(self.value.getBatchSize())
 
     def save(self, path):
         self._transfer_params_to_java()
@@ -525,7 +526,7 @@ class NNClassifier(NNEstimator):
 
         classifierModel.setFeaturesCol(self.getFeaturesCol()) \
             .setPredictionCol(self.getPredictionCol()) \
-            .setBatchSize(self.getBatchSize())
+            .setBatchSize(java_model.getBatchSize())
         return classifierModel
 
 
