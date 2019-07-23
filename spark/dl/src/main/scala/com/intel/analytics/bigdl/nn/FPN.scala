@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
 
 class FPN(in_channels_list: Array[Int], out_channels: Int)
@@ -26,41 +28,84 @@ class FPN(in_channels_list: Array[Int], out_channels: Int)
   private var inner_blocks_modules = new Array[SpatialConvolution[Float]](num_feature_maps)
   private var layer_blocks_modules = new Array[SpatialConvolution[Float]](num_feature_maps)
 
+  private var graph: Graph[Float] = _
+
   def init(): Unit = {
     for (i <- 0 to num_feature_maps - 1) {
       if (in_channels_list(i) != 0) {
         val inner_block_module =
           SpatialConvolution[Float](in_channels_list(i), out_channels, 1, 1, 1, 1)
         val layer_block_module =
-          SpatialConvolution[Float](out_channels, out_channels, 3, 3, 1, 1)
+          SpatialConvolution[Float](out_channels, out_channels, 3, 3, 1, 1, 1, 1)
         inner_blocks_modules(i) = inner_block_module
         layer_blocks_modules(i) = layer_block_module
       }
     }
+
+    graph = buildGraph()
+  }
+
+  def buildGraph(): Graph[Float] = {
+    val input = Input[Float]()
+    val inner_conv = ParallelTable[Float]()
+    for (i <- 0 to num_feature_maps - 1) {
+      inner_conv.add(inner_blocks_modules(i))
+    }
+    val inner_block = inner_conv.inputs(input)
+
+    var count = 0
+    var results = new Array[ModuleNode[Float]](num_feature_maps)
+    var last_inner = SelectTable[Float](num_feature_maps).inputs(inner_block)
+    results(count) = layer_blocks_modules(num_feature_maps - 1).inputs(last_inner)
+
+    for(i <- num_feature_maps - 1 to 1 by -1) {
+      val layer_block = layer_blocks_modules(i - 1)
+      if (layer_block != null) {
+        val inner_topdown = UpSampling2D[Float](Array(2, 2)).inputs(last_inner)
+        val inner_lateral = SelectTable[Float](i).inputs(inner_block)
+        last_inner = CAddTable[Float]().inputs(inner_lateral, inner_topdown)
+        count += 1
+        results(count) = layer_block.inputs(last_inner)
+      }
+    }
+
+    Graph(Array(input), results)
   }
 
   override def updateOutput(input: Table): Table = {
     init()
-    var last_inner = inner_blocks_modules(num_feature_maps - 1).forward(input(num_feature_maps - 1))
+
+    /*
+    var last_inner = inner_blocks_modules(num_feature_maps - 1)
+      .forward(input.get[Tensor[Float]](num_feature_maps).get)
     var results = new Table()
     results.insert(layer_blocks_modules(num_feature_maps - 1).forward(last_inner))
-    for (i <- num_feature_maps - 2 to 0 by -1) {
-      val feature = input(i)
-      val inner_block = inner_blocks_modules(i)
-      val layer_block = layer_blocks_modules(i)
+    for (i <- num_feature_maps - 1 to 1 by -1) {
+      val feature = input.get[Tensor[Float]](i).get
+      val inner_block = inner_blocks_modules(i - 1)
+      val layer_block = layer_blocks_modules(i - 1)
       if (layer_block != null) {
-        val inner_topdown = UpSampling2D(Array(2, 2)).forward(last_inner)
+        val inner_topdown = UpSampling2D[Float](Array(2, 2)).forward(last_inner)
         val inner_lateral = inner_block.forward(feature)
         last_inner = inner_topdown + inner_lateral
-        results.insert(0, layer_block.forward(last_inner))
+        results.insert(1, layer_block.forward(last_inner))
       }
     }
-    results
+    output = results
+    output
+    */
+
+    output = graph.forward(input).toTable
+    output
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
     gradInput = null
     gradInput
+  }
+
+  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
+    graph.parameters()
   }
 }
 
