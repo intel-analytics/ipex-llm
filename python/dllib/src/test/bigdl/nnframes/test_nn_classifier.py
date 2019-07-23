@@ -83,7 +83,7 @@ class TestNNClassifer():
         for e in [NNEstimator(linear_model, mse_criterion),
                   NNEstimator(linear_model, mse_criterion, [2], [2]),
                   NNEstimator(linear_model, mse_criterion, SeqToTensor([2]), SeqToTensor([2]))]:
-            nnModel = e.setMaxEpoch(1).fit(df)
+            nnModel = e.setBatchSize(4).setMaxEpoch(1).fit(df)
             res = nnModel.transform(df)
             assert type(res).__name__ == 'DataFrame'
 
@@ -94,7 +94,7 @@ class TestNNClassifer():
         for e in [NNClassifier(linear_model, mse_criterion),
                   NNClassifier(linear_model, mse_criterion, [2]),
                   NNClassifier(linear_model, mse_criterion, SeqToTensor([2]))]:
-            nnModel = e.setMaxEpoch(1).fit(df)
+            nnModel = e.setBatchSize(4).setMaxEpoch(1).fit(df)
             res = nnModel.transform(df)
             assert type(res).__name__ == 'DataFrame'
 
@@ -106,6 +106,7 @@ class TestNNClassifer():
                   NNModel(linear_model, SeqToTensor([2]))]:
             res = e.transform(df)
             assert type(res).__name__ == 'DataFrame'
+            assert e.getBatchSize() == 4
 
     def test_nnClassiferModel_construct_with_differnt_params(self):
         linear_model = Sequential().add(Linear(2, 2))
@@ -115,6 +116,7 @@ class TestNNClassifer():
                   NNClassifierModel(linear_model, SeqToTensor([2]))]:
             res = e.transform(df)
             assert type(res).__name__ == 'DataFrame'
+            assert e.getBatchSize() == 4
 
     def test_all_set_get_methods(self):
         linear_model = Sequential().add(Linear(2, 2))
@@ -367,7 +369,7 @@ class TestNNClassifer():
     def test_NNModel_save_load(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
-        estimator = NNEstimator(model, criterion).setMaxEpoch(1)
+        estimator = NNEstimator(model, criterion).setMaxEpoch(1).setBatchSize(4)
 
         df = self.get_estimator_df()
         nnModel = estimator.fit(df)
@@ -574,7 +576,7 @@ class TestNNClassifer():
     def test_NNClassifierModel_save_load(self):
         model = Sequential().add(Linear(2, 2))
         criterion = ClassNLLCriterion()
-        classifier = NNClassifier(model, criterion, [2]).setMaxEpoch(1)
+        classifier = NNClassifier(model, criterion, [2]).setMaxEpoch(1).setBatchSize(4)
 
         df = self.get_classifier_df()
         nnClassifierModel = classifier.fit(df)
