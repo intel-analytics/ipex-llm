@@ -255,6 +255,20 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(nnModel.transform(df).count() == nRecords)
   }
 
+  "An NNModel" should "has default batchperthread as 4" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = NNEstimator(model, criterion, Array(6), Array(1))
+      .setBatchSize(52)
+      .setMaxEpoch(maxEpoch)
+    val data = sc.parallelize(smallData)
+    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+
+    val nnModel = estimator.fit(df)
+    nnModel.isInstanceOf[NNModel[_]] should be(true)
+    assert(nnModel.getBatchSize == 4 * 2)
+  }
+
   "An NNModel" should "support transform with different batchSize" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
@@ -419,7 +433,10 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       NNModel(model),
       NNModel(model, Array(6)),
       NNModel(model, SeqToTensor(Array(6)))
-    ).foreach(e => e.transform(df).count())
+    ).foreach { e =>
+      e.transform(df).count()
+      assert(e.getBatchSize == 4 * 2)
+    }
   }
 
   "An NNModel" should "return same results after saving and loading" in {
