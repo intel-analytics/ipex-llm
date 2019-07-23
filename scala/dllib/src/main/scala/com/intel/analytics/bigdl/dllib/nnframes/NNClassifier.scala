@@ -48,7 +48,8 @@ class NNClassifier[T: ClassTag] private[zoo]  (
 
   override protected def wrapBigDLModel(m: Module[T]): NNClassifierModel[T] = {
     val classifierModel = new NNClassifierModel[T](m)
-    copyValues(classifierModel.setParent(this))
+    val originBatchsize = classifierModel.getBatchSize
+    copyValues(classifierModel.setParent(this)).setBatchSize(originBatchsize)
     val clonedTransformer = ToTuple() -> $(samplePreprocessing)
       .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
     classifierModel.setSamplePreprocessing(clonedTransformer)
