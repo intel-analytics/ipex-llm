@@ -24,6 +24,7 @@ import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 import com.intel.analytics.zoo.core.openvino.OpenvinoNativeLoader
 import org.slf4j.LoggerFactory
 
+import scala.io.Source
 import scala.language.postfixOps
 import sys.process._
 
@@ -31,7 +32,8 @@ class OpenVinoInferenceSupportive extends InferenceSupportive with Serializable 
 
   @native def loadOpenVinoIR(modelFilePath: String,
                              weightFilePath: String,
-                             deviceTypeValue: Int): Long
+                             deviceTypeValue: Int,
+                             batchSize: Int): Long
 
   @native def loadOpenVinoIRInt8(modelFilePath: String,
                                  weightFilePath: String,
@@ -419,28 +421,25 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
 
   def loadOpenVinoIR(modelFilePath: String,
                      weightFilePath: String,
-                     deviceType: DeviceTypeEnumVal): OpenVINOModel = {
+                     deviceType: DeviceTypeEnumVal,
+                     batchSize: Int = 0): OpenVINOModel = {
     timing("load openvino IR") {
-      val supportive: OpenVinoInferenceSupportive = new OpenVinoInferenceSupportive()
-      val executableNetworkReference: Long =
-        supportive.loadOpenVinoIR(modelFilePath, weightFilePath, deviceType.value)
-      new OpenVINOModel(executableNetworkReference, supportive)
-    }
-  }
+      val buffer = Source.fromFile(modelFilePath)
+      val isInt8 = buffer.getLines().count(_ matches ".*statistics.*")
+      buffer.close()
 
-  def loadOpenVinoIRInt8(modelFilePath: String,
-                         weightFilePath: String,
-                         deviceType: DeviceTypeEnumVal,
-                         batchSize: Int): OpenVINOModel = {
-    timing("load openvino IR Int8") {
       val supportive: OpenVinoInferenceSupportive = new OpenVinoInferenceSupportive()
-      val executableNetworkReference: Long =
+      val executableNetworkReference: Long = if (isInt8 > 0) {
+        logger.info(s"Load int8 model")
         supportive.loadOpenVinoIRInt8(modelFilePath, weightFilePath,
           deviceType.value, batchSize)
-      new OpenVINOModel(executableNetworkReference, supportive, true)
+      } else {
+        supportive.loadOpenVinoIR(modelFilePath, weightFilePath,
+          deviceType.value, batchSize)
+      }
+      new OpenVINOModel(executableNetworkReference, supportive, isInt8 > 0)
     }
   }
-
 
   def load(path: String): Unit = {
     logger.info(s"start to load library: $path.")
