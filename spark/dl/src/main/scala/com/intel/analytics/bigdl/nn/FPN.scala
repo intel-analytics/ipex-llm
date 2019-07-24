@@ -19,51 +19,54 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
-class FPN(in_channels_list: Array[Int], out_channels: Int)
-  extends AbstractModule[Table, Table, Float]{
+import scala.reflect.ClassTag
+
+class FPN[T : ClassTag](
+  val in_channels_list: Array[Int],
+  val out_channels: Int
+)
+  (implicit ev: TensorNumeric[T])
+  extends AbstractModule[Table, Table, T]{
 
   private val num_feature_maps = in_channels_list.length
-  private var inner_blocks_modules = new Array[SpatialConvolution[Float]](num_feature_maps)
-  private var layer_blocks_modules = new Array[SpatialConvolution[Float]](num_feature_maps)
+  private val inner_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
+  private val layer_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
 
-  private var graph: Graph[Float] = _
+  private val graph: Graph[T] = buildGraph()
 
-  def init(): Unit = {
+  def buildGraph(): Graph[T] = {
     for (i <- 0 to num_feature_maps - 1) {
       if (in_channels_list(i) != 0) {
         val inner_block_module =
-          SpatialConvolution[Float](in_channels_list(i), out_channels, 1, 1, 1, 1)
+          SpatialConvolution[T](in_channels_list(i), out_channels, 1, 1, 1, 1)
         val layer_block_module =
-          SpatialConvolution[Float](out_channels, out_channels, 3, 3, 1, 1, 1, 1)
+          SpatialConvolution[T](out_channels, out_channels, 3, 3, 1, 1, 1, 1)
         inner_blocks_modules(i) = inner_block_module
         layer_blocks_modules(i) = layer_block_module
       }
     }
 
-    graph = buildGraph()
-  }
-
-  def buildGraph(): Graph[Float] = {
-    val input = Input[Float]()
-    val inner_conv = ParallelTable[Float]()
+    val input = Input[T]()
+    val inner_conv = ParallelTable[T]()
     for (i <- 0 to num_feature_maps - 1) {
       inner_conv.add(inner_blocks_modules(i))
     }
     val inner_block = inner_conv.inputs(input)
 
     var count = 0
-    var results = new Array[ModuleNode[Float]](num_feature_maps)
-    var last_inner = SelectTable[Float](num_feature_maps).inputs(inner_block)
+    var results = new Array[ModuleNode[T]](num_feature_maps)
+    var last_inner = SelectTable[T](num_feature_maps).inputs(inner_block)
     results(count) = layer_blocks_modules(num_feature_maps - 1).inputs(last_inner)
 
     for(i <- num_feature_maps - 1 to 1 by -1) {
       val layer_block = layer_blocks_modules(i - 1)
       if (layer_block != null) {
-        val inner_topdown = UpSampling2D[Float](Array(2, 2)).inputs(last_inner)
-        val inner_lateral = SelectTable[Float](i).inputs(inner_block)
-        last_inner = CAddTable[Float]().inputs(inner_lateral, inner_topdown)
+        val inner_topdown = UpSampling2D[T](Array(2, 2)).inputs(last_inner)
+        val inner_lateral = SelectTable[T](i).inputs(inner_block)
+        last_inner = CAddTable[T]().inputs(inner_lateral, inner_topdown)
         count += 1
         results(count) = layer_block.inputs(last_inner)
       }
@@ -73,28 +76,6 @@ class FPN(in_channels_list: Array[Int], out_channels: Int)
   }
 
   override def updateOutput(input: Table): Table = {
-    init()
-
-    /*
-    var last_inner = inner_blocks_modules(num_feature_maps - 1)
-      .forward(input.get[Tensor[Float]](num_feature_maps).get)
-    var results = new Table()
-    results.insert(layer_blocks_modules(num_feature_maps - 1).forward(last_inner))
-    for (i <- num_feature_maps - 1 to 1 by -1) {
-      val feature = input.get[Tensor[Float]](i).get
-      val inner_block = inner_blocks_modules(i - 1)
-      val layer_block = layer_blocks_modules(i - 1)
-      if (layer_block != null) {
-        val inner_topdown = UpSampling2D[Float](Array(2, 2)).forward(last_inner)
-        val inner_lateral = inner_block.forward(feature)
-        last_inner = inner_topdown + inner_lateral
-        results.insert(1, layer_block.forward(last_inner))
-      }
-    }
-    output = results
-    output
-    */
-
     output = graph.forward(input).toTable
     output
   }
@@ -104,12 +85,39 @@ class FPN(in_channels_list: Array[Int], out_channels: Int)
     gradInput
   }
 
-  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     graph.parameters()
   }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[FPN[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: FPN[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        in_channels_list.deep == that.in_channels_list.deep &&
+        out_channels == that.out_channels
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), in_channels_list, out_channels)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def reset(): Unit = {
+    super.reset()
+    graph.reset()
+  }
+
+  override def toString: String = s"FPN($out_channels)"
 }
 
 object FPN {
-  def apply(in_channels_list: Array[Int], out_channels: Int): FPN
-  = new FPN(in_channels_list, out_channels)
+  def apply[@specialized(Float, Double) T: ClassTag](
+    in_channels_list: Array[Int],
+    out_channels: Int
+  )(implicit ev: TensorNumeric[T]): FPN[T] = {
+    new FPN[T](in_channels_list, out_channels)
+  }
 }
