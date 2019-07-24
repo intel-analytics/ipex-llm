@@ -176,7 +176,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
 
   test("openvino doLoadInt8 and PredictInt8(float)") {
     val model = new InferenceModel(3)
-    model.doLoadOpenVINOInt8(s"${resnet_v1_50_int8_path}.xml",
+    model.doLoadOpenVINO(s"${resnet_v1_50_int8_path}.xml",
       s"${resnet_v1_50_int8_path}.bin",
       resnet_v1_50_inputShape.apply(0))
     println(s"resnet_v1_50_model from tf loaded as $model")
@@ -256,7 +256,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
 
   test("openvino should handle wrong batchSize correctly") {
     val model = new InferenceModel(3)
-    model.doLoadOpenVINOInt8(s"${resnet_v1_50_int8_path}.xml",
+    model.doLoadOpenVINO(s"${resnet_v1_50_int8_path}.xml",
       s"${resnet_v1_50_int8_path}.bin",
       resnet_v1_50_inputShape.apply(0))
     println(s"resnet_v1_50_model from tf loaded as $model")
