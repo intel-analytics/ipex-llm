@@ -16,11 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
+import breeze.linalg.dim
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
+import org.dmg.pmml.True
 
 /**
  * Outputs object detection proposals by applying estimated bounding-box
@@ -32,7 +34,7 @@ import com.intel.analytics.bigdl.utils.Table
  */
 @SerialVersionUID(5313615238114647805L)
 class Proposal(preNmsTopNTest: Int, postNmsTopNTest: Int, val ratios: Array[Float],
-  val scales: Array[Float], rpnPreNmsTopNTrain: Int, rpnPostNmsTopNTrain: Int)(
+  val scales: Array[Float], rpnPreNmsTopNTrain: Int, rpnPostNmsTopNTrain: Int, min_size: Int = 16)(
   implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Tensor[Float], Float] {
 
   private val anchorUtil: Anchor = Anchor(ratios, scales)
@@ -44,7 +46,7 @@ class Proposal(preNmsTopNTest: Int, postNmsTopNTest: Int, val ratios: Array[Floa
   @transient private var sortedInds: Tensor[Float] = _
   @transient private var filteredProposals: Tensor[Float] = _
   // Proposal height and width both need to be greater than minSize (at orig image scale)
-  private val minSize = 16
+  private val minSize = min_size
 
   private def init(): Unit = {
     if (nms == null) {
@@ -69,9 +71,9 @@ class Proposal(preNmsTopNTest: Int, postNmsTopNTest: Int, val ratios: Array[Floa
    * apply NMS with threshold to remaining proposals
    * take after_nms_topN proposals after NMS
    * return the top proposals (-> RoIs top, scores top)
-   * @param input input(1): cls scores
-   * input(2): bbox pred
-   * input(3): im_info
+   * @param input input(1): cls scores  =>>> list[BoxList]
+   * input(2): bbox pred  =>>> box_regression
+   * input(3): im_info  =>>> objectness
    * @return output
    * output(1): rpn_rois
    * output(2): rpn_scores
@@ -79,34 +81,48 @@ class Proposal(preNmsTopNTest: Int, postNmsTopNTest: Int, val ratios: Array[Floa
   override def updateOutput(input: Table): Tensor[Float] = {
     val inputScore = input[Tensor[Float]](1)
     val imInfo = input[Tensor[Float]](3)
-    require(inputScore.size(1) == 1 && imInfo.size(1) == 1, "currently only support single batch")
+    // require(inputScore.size(1) == 1 && imInfo.size(1) == 1, "currently only support single batch")
     init()
     // transpose from (1, 4A, H, W) to (H * W * A, 4)
     transposeAndReshape(input[Tensor[Float]](2), 4, bboxDeltas)
 
     // select scores for object (while the remaining is the score for background)
     // transpose from (1, 2A, H, W) to (H * W * A)
-    val scoresOri = inputScore.narrow(2, anchorUtil.anchorNum + 1, anchorUtil.anchorNum)
-    transposeAndReshape(scoresOri, 1, scores)
+//    val scoresOri = inputScore.narrow(2, anchorUtil.anchorNum + 1, anchorUtil.anchorNum)
+//    transposeAndReshape(scoresOri, 1, scores)
 
 
     // Generate proposals from bbox deltas and shifted anchors
     // Enumerate all shifts
-    val anchors = anchorUtil.generateAnchors(inputScore.size(4), inputScore.size(3))
+    val anchors = input[Tensor[Float]](1) // anchorUtil.generateAnchors(inputScore.size(4), inputScore.size(3))
     // Convert anchors into proposals via bbox transformations
     val proposals = BboxUtil.bboxTransformInv(anchors, bboxDeltas)
     // clip predicted boxes to image
     // original faster rcnn way
     // minimum box width & height
-    val minBoxH = minSize * imInfo.valueAt(1, 3)
-    val minBoxW = minSize * imInfo.valueAt(1, 4)
-    var keepN = BboxUtil.clipBoxes(proposals, imInfo.valueAt(1, 1), imInfo.valueAt(1, 2), minBoxH
-      , minBoxW, scores)
+//    val minBoxH = minSize * imInfo.valueAt(1, 3)
+//    val minBoxW = minSize * imInfo.valueAt(1, 4)
+//    var keepN = BboxUtil.clipBoxes(proposals, imInfo.valueAt(1, 1), imInfo.valueAt(1, 2), minBoxH
+//      , minBoxW, scores)
 
     val preNmsTopN = if (isTraining()) rpnPreNmsTopNTrain else preNmsTopNTest
     val postNmsTopN = if (isTraining()) rpnPostNmsTopNTrain else postNmsTopNTest
+
+    val scores = Tensor[Float](
+      T(T(0.4893, 0.5049, 0.4997, 0.4921, 0.4997, 0.4985, 0.4921, 0.5063, 0.4978,
+    0.4886, 0.4962, 0.4996, 0.4964, 0.4934, 0.4934, 0.4919, 0.4996, 0.4998,
+    0.4924, 0.5024, 0.4961, 0.4910, 0.5111, 0.5022, 0.4821, 0.5070, 0.5041,
+    0.4896, 0.5089, 0.4974, 0.4941, 0.5015, 0.5003, 0.4900, 0.5144, 0.4935,
+    0.4916, 0.5072, 0.5038, 0.4914, 0.5066, 0.5039, 0.4958, 0.4991, 0.4944,
+    0.4959, 0.4994, 0.5002, 0.4890, 0.5054, 0.4987, 0.4952, 0.5066, 0.4982,
+    0.4903, 0.5041, 0.4963, 0.4943, 0.5015, 0.4961, 0.4914, 0.5096, 0.4989)))
+
+    val tmp = input[Tensor[Float]](3)
+    var keepN = tmp.size(2) * tmp.size(3) * tmp.size(4) // num_anchors
     val topNum = Math.min(preNmsTopN, keepN)
-    scores.topk(topNum, dim = 1, increase = false,
+    // scores ==> objectness
+    // sortedScores ===> objectness, sortedInds = topk_idx + 1
+    scores.topk(topNum, dim = 2, increase = false,
       result = sortedScores, indices = sortedInds)
     if (keep == null || keep.length < sortedInds.nElement()) {
       keep = new Array[Int](sortedInds.nElement())

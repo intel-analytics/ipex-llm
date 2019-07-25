@@ -50,7 +50,8 @@ object BboxUtil {
    * @param deltas (N, 4a)
    * @return
    */
-  def bboxTransformInv(boxes: Tensor[Float], deltas: Tensor[Float]): Tensor[Float] = {
+  def bboxTransformInv(boxes: Tensor[Float], deltas: Tensor[Float],
+                       normalized: Boolean = false): Tensor[Float] = {
     if (boxes.size(1) == 0) {
       return boxes
     }
@@ -69,8 +70,8 @@ object BboxUtil {
     while (i < boxes.size(1)) {
       val x1 = boxesArr(offset)
       val y1 = boxesArr(offset + 1)
-      val width = boxesArr(offset + 2) - x1 + 1
-      val height = boxesArr(offset + 3) - y1 + 1
+      val width = if (!normalized) boxesArr(offset + 2) - x1 + 1 else boxesArr(offset + 2) - x1
+      val height = if (!normalized) boxesArr(offset + 3) - y1 + 1 else boxesArr(offset + 3) - y1
       var j = 0
       while (j < repeat) {
         j += 1
@@ -142,6 +143,25 @@ object BboxUtil {
       i += 1
     }
     count
+  }
+
+  def clipToWindows(windows: Tensor[Float], boxes: Tensor[Float]): Tensor[Float] = {
+    val boxesArr = boxes.storage().array()
+    var offset = boxes.storageOffset() - 1
+    var i = 0
+    val sw = windows.valueAt(1)
+    val sh = windows.valueAt(2)
+    val ew = windows.valueAt(3)
+    val eh = windows.valueAt(4)
+    while (i < boxes.size(1)) {
+      boxesArr(offset) = Math.max(Math.min(boxesArr(offset), ew), sw)
+      boxesArr(offset + 1) = Math.max(Math.min(boxesArr(offset + 1), eh), sh)
+      boxesArr(offset + 2) = Math.max(Math.min(boxesArr(offset + 2), ew), sw)
+      boxesArr(offset + 3) = Math.max(Math.min(boxesArr(offset + 3), eh), sh)
+      offset += 4
+      i += 1
+    }
+    boxes
   }
 
   def getLocPredictions(loc: Tensor[Float], numPredsPerClass: Int, numClasses: Int,
