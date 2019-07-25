@@ -54,11 +54,11 @@ trait ModuleSerializable extends Loadable with Savable{
                                          (implicit ev: TensorNumeric[T]) : Unit = {
     val moduleVersion = module.getVersion
     val modelVersionSplits = moduleVersion.split(".")
-    val bigdlVersinSplits = bigDLVersion.split(".")
-    require(modelVersionSplits.length == bigdlVersinSplits.length,
+    val bigdlVersionSplits = bigDLVersion.split(".")
+    require(modelVersionSplits.length == bigdlVersionSplits.length,
       s"model version ${moduleVersion} has different format as BigDL version ${bigDLVersion}")
     (0 until modelVersionSplits.length).foreach(idx => {
-      require(modelVersionSplits(idx).toInt <= bigdlVersinSplits(idx).toInt,
+      require(modelVersionSplits(idx).toInt <= bigdlVersionSplits(idx).toInt,
         s"bigDL version mismatch," +
           s"module version $moduleVersion," +
           s"bigdl version $bigDLVersion, you cannot use low version bigdl" +
