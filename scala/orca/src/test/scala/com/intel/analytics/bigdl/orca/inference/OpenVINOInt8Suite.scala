@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import java.io.File
+import java.io.{File, FileInputStream}
 import java.util
 import java.util.{Arrays, Properties}
 
@@ -138,6 +138,25 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     s"rm -rf $tmpDir" !;
   }
 
+  test("openvino should load from bytes") {
+    val model = new AbstractInferenceModel() {
+    }
+    val fileSize = new File(resnet_v1_50_checkpointPath).length()
+    val inputStream = new FileInputStream(resnet_v1_50_checkpointPath)
+    val bytes = new Array[Byte](fileSize.toInt)
+    inputStream.read(bytes)
+
+    model.loadTF(null,
+      resnet_v1_50_modelType,
+      bytes,
+      resnet_v1_50_inputShape,
+      resnet_v1_50_ifReverseInputChannels,
+      resnet_v1_50_meanValues,
+      resnet_v1_50_scale
+    )
+
+    println(model)
+  }
 
   test("openvino doLoadOpenVINO(float) and predict(float)") {
     val model = new InferenceModel(3)
