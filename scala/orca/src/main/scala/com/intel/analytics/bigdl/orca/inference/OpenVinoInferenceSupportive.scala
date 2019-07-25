@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import java.io.{File, FileOutputStream, InputStream}
+import java.io.{ByteArrayInputStream, File, FileOutputStream, InputStream}
 import java.nio.channels.Channels
 
 import com.google.common.io.Files
@@ -337,6 +337,44 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
     val path = ModelType.resolveActualInferenceGraphPath(modelType)
     val modelName = path.split("\\/").last.split("\\.").head
     loadOpenVinoIRFromTempDir(modelName, outputPath)
+  }
+
+  def loadTensorflowModel(modelBytes: Array[Byte],
+                          modelType: String,
+                          checkpointBytes: Array[Byte],
+                          inputShape: Array[Int],
+                          ifReverseInputChannels: Boolean,
+                          meanValues: Array[Float],
+                          scale: Float): OpenVINOModel = {
+    val tmpDir = Files.createTempDir()
+    val outputPath: String = tmpDir.getCanonicalPath
+    val modelPath = (modelBytes == null) match {
+      case true => null
+      case false => val modelFileName = modelType + ".pb"
+        val modelFile = new File(s"$tmpDir/$modelFileName")
+        val modelFileInputStream = new ByteArrayInputStream(modelBytes)
+        val modelFileSrc = Channels.newChannel(modelFileInputStream)
+        val modelFileDest = new FileOutputStream(modelFile).getChannel
+        modelFileDest.transferFrom(modelFileSrc, 0, Long.MaxValue)
+        modelFileDest.close()
+        modelFileSrc.close()
+        modelFile.getAbsolutePath
+    }
+    val checkpointPath = {
+      val checkpointFileName = modelType + ".ckpt"
+      val checkpointFile = new File(s"$tmpDir/$checkpointFileName")
+      val checkpointFileInputStream = new ByteArrayInputStream(checkpointBytes)
+      val checkpointFileSrc = Channels.newChannel(checkpointFileInputStream)
+      val checkpointFileDest = new FileOutputStream(checkpointFile).getChannel
+      checkpointFileDest.transferFrom(checkpointFileSrc, 0, Long.MaxValue)
+      checkpointFileDest.close()
+      checkpointFileSrc.close()
+      checkpointFile.getAbsolutePath
+    }
+    val model = loadTensorflowModel(modelPath, modelType,
+      checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale)
+    s"rm -rf $tmpDir" !;
+    model
   }
 
   def loadTensorflowModelAsCalibrated(modelPath: String,
