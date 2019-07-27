@@ -43,9 +43,8 @@ class UtilsSpec extends FlatSpec with Matchers {
   "Utils saveBytes" should "work properly" in {
     val fs = Utils.getFileSystem(path)
     // Generate random file
-    val randomFile = Random.nextInt(1000)
+    val randomFile = Random.nextInt()
     val randomContent = new Array[Byte](1000)
-    Random.nextBytes(randomContent)
     Utils.saveBytes(randomContent, path + "/" + randomFile)
     // Delete random file
     fs.deleteOnExit(new Path(path + "/" + randomFile))
