@@ -24,35 +24,27 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect._
 
 class RoiAlign[T: ClassTag] (
-  val output_size: Array[Int],
   val spatio_scale: T,
-  val sampling_ratio: T,
+  val sampling_ratio: Int,
   val pooled_height: Int,
   val pooled_width: Int
 ) (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
-  private var pre_cal: Tensor[Tensor[T]] = _
+  private var pre_cal: Tensor[T] = _
 
   override def updateOutput(input: Table): Tensor[T] = {
-    val data = input[Tensor[T]](1)
-    val rois = input[Tensor[T]](2)
+    if (ClassTag[T] == ClassTag[Double]) {
+      val data = input[Tensor[Double]](1)
+      val rois = input[Tensor[Double]](2)
+      poolOneRoiDouble(data, rois, spatio_scale.asInstanceOf[Double])
+    } else if (ClassTag[T] == ClassTag[Float]) {
+      val data = input[Tensor[Float]](1)
+      val rois = input[Tensor[Float]](2)
+      poolOneRoiFloat(data, rois, spatio_scale.asInstanceOf[Float])
+    } else {
+      throw new IllegalArgumentException("currently only Double and Float types are supported")
+    }
 
-    val num_rois = rois.size(0)
-    val channels = data.size(1)
-    val height = data.size(2)
-    val width = data.size(3)
-
-    output.resize(num_rois, channels, pooled_height, pooled_width)
-      .fill(ev.fromType[Double](Double.MinValue))
-
-    val output_size = num_rois * channels * pooled_height * pooled_width
-
-    require(output.nElement() != 0, "Output contains no elements")
-
-    val roi_cols = 5
-
-    val tensor = Tensor[T](Array(2, 2))
-
-    tensor
+    output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
@@ -60,11 +52,185 @@ class RoiAlign[T: ClassTag] (
     gradInput
   }
 
+  private def poolOneRoiFloat(data: Tensor[Float], rois: Tensor[Float],
+    spatio_scale: Float): Unit = {
+    val num_rois = rois.size(1)
+    val channels = data.size(2)
+    val height = data.size(3)
+    val width = data.size(4)
+
+    output.resize(num_rois, channels, pooled_height, pooled_width)
+      .fill(ev.fromType[Float](Float.MinValue))
+    val output_size = num_rois * channels * pooled_height * pooled_width
+    require(output.nElement() != 0, "Output contains no elements")
+
+    for (n <- 1 to num_rois) {
+      val roi = rois(n)
+      val d = data(n)
+      val roi_start_w = roi.valueAt(2) * spatio_scale
+      val roi_start_h = roi.valueAt(3) * spatio_scale
+      val roi_end_w = roi.valueAt(4) * spatio_scale
+      val roi_end_h = roi.valueAt(5) * spatio_scale
+
+      val roi_width = Math.max(roi_end_w - roi_start_w, 1.0F)
+      val roi_height = Math.max(roi_end_h - roi_start_h, 1.0F)
+      val bin_size_h = roi_height/ pooled_height
+      val bin_size_w = roi_width / pooled_width
+
+      val roi_bin_grid_h = if (sampling_ratio > 0) {
+        sampling_ratio
+      } else {
+        Math.ceil(roi_height / pooled_height).asInstanceOf[Int]
+      }
+
+      val roi_bin_grid_w = if (sampling_ratio > 0) {
+        sampling_ratio
+      } else {
+        Math.ceil(roi_width / pooled_width).asInstanceOf[Int]
+      }
+
+      val count: Float = roi_bin_grid_h * roi_bin_grid_w
+
+      preCalcForBilinearInterpolateFloat(
+        height,
+        width,
+        roi_bin_grid_h,
+        roi_bin_grid_w,
+        roi_start_h,
+        roi_start_w,
+        bin_size_h,
+        bin_size_w,
+        roi_bin_grid_h,
+        roi_bin_grid_w
+      )
+
+      for (c <- 0 until channels) {
+        var pre_calc_index: Int = 1
+
+        for (ph <- 0 until pooled_height) {
+          for (pw <- 0 until pooled_width) {
+            var output_val: Float = 0.0F
+
+            for (iy <- 0 until roi_bin_grid_h) {
+              for (ix <- 0 until roi_bin_grid_w) {
+                val pc = pre_cal(pre_calc_index)
+                val x_low = pc.valueAt(1).asInstanceOf[Int]
+                val y_low = pc.valueAt(2).asInstanceOf[Int]
+                val x_high = pc.valueAt(3).asInstanceOf[Int]
+                val y_high = pc.valueAt(4).asInstanceOf[Int]
+                val w1 = pc.valueAt(5).asInstanceOf[Float]
+                val w2 = pc.valueAt(6).asInstanceOf[Float]
+                val w3 = pc.valueAt(7).asInstanceOf[Float]
+                val w4 = pc.valueAt(8).asInstanceOf[Float]
+
+                output_val +=  w1 * d.valueAt(x_low, y_low) +
+                  w2 * d.valueAt(x_high, y_low) +
+                  w3 * d.valueAt(x_low, y_high) +
+                  w4 * d.valueAt(x_high, y_high)
+
+                pre_calc_index += 1
+              }
+            }
+            output_val /= count
+
+            output.setValue(ph + 1, pw + 1, ev.fromType[Float](output_val))
+          }
+        }
+      }
+    }
+  }
+
+  private def poolOneRoiDouble(data: Tensor[Double], rois: Tensor[Double],
+                              spatio_scale: Double): Unit = {
+    val num_rois = rois.size(1)
+    val channels = data.size(2)
+    val height = data.size(3)
+    val width = data.size(4)
+
+    output.resize(num_rois, channels, pooled_height, pooled_width)
+      .fill(ev.fromType[Double](Double.MinValue))
+    val output_size = num_rois * channels * pooled_height * pooled_width
+    require(output.nElement() != 0, "Output contains no elements")
+
+    for (n <- 1 to num_rois) {
+      val roi = rois(n)
+      val d = data(n)
+      val roi_start_w = roi.valueAt(2) * spatio_scale
+      val roi_start_h = roi.valueAt(3) * spatio_scale
+      val roi_end_w = roi.valueAt(4) * spatio_scale
+      val roi_end_h = roi.valueAt(5) * spatio_scale
+
+      val roi_width = Math.max(roi_end_w - roi_start_w, 1.0)
+      val roi_height = Math.max(roi_end_h - roi_start_h, 1.0)
+      val bin_size_h = roi_height/ pooled_height
+      val bin_size_w = roi_width / pooled_width
+
+      val roi_bin_grid_h = if (sampling_ratio > 0) {
+        sampling_ratio
+      } else {
+        Math.ceil(roi_height / pooled_height).asInstanceOf[Int]
+      }
+
+      val roi_bin_grid_w = if (sampling_ratio > 0) {
+        sampling_ratio
+      } else {
+        Math.ceil(roi_width / pooled_width).asInstanceOf[Int]
+      }
+
+      val count: Double = roi_bin_grid_h * roi_bin_grid_w
+
+      preCalcForBilinearInterpolateDouble(
+        height,
+        width,
+        roi_bin_grid_h,
+        roi_bin_grid_w,
+        roi_start_h,
+        roi_start_w,
+        bin_size_h,
+        bin_size_w,
+        roi_bin_grid_h,
+        roi_bin_grid_w
+      )
+
+      for (c <- 0 until channels) {
+        var pre_calc_index: Int = 1
+
+        for (ph <- 0 until pooled_height) {
+          for (pw <- 0 until pooled_width) {
+            var output_val: Double = 0.0F
+
+            for (iy <- 0 until roi_bin_grid_h) {
+              for (ix <- 0 until roi_bin_grid_w) {
+                val pc = pre_cal(pre_calc_index)
+                val x_low = pc.valueAt(1).asInstanceOf[Int]
+                val y_low = pc.valueAt(2).asInstanceOf[Int]
+                val x_high = pc.valueAt(3).asInstanceOf[Int]
+                val y_high = pc.valueAt(4).asInstanceOf[Int]
+                val w1 = pc.valueAt(5).asInstanceOf[Double]
+                val w2 = pc.valueAt(6).asInstanceOf[Double]
+                val w3 = pc.valueAt(7).asInstanceOf[Double]
+                val w4 = pc.valueAt(8).asInstanceOf[Double]
+
+                output_val +=  w1 * d.valueAt(x_low, y_low) +
+                  w2 * d.valueAt(x_high, y_low) +
+                  w3 * d.valueAt(x_low, y_high) +
+                  w4 * d.valueAt(x_high, y_high)
+
+                pre_calc_index += 1
+              }
+            }
+            output_val /= count
+
+            output.setValue(ph + 1, pw + 1, ev.fromType[Double](output_val))
+          }
+        }
+      }
+    }
+  }
+
   private def preCalcForBilinearInterpolateFloat(
     height: Int,
     width: Int,
-    pooled_height: Int,
-    pooled_width: Int,
     iy_upper: Int,
     ix_upper: Int,
     roi_start_h: Float,
@@ -74,8 +240,7 @@ class RoiAlign[T: ClassTag] (
     roi_bin_grid_h: Int,
     roi_bin_grid_w: Int
   ) : Unit = {
-    var pre_calc_index = 0
-    pre_cal.resize(pooled_height * pooled_width * iy_upper * ix_upper)
+    var pre_calc_index: Int = 1
 
     for (ph <- 0 until pooled_height) {
       for (pw <- 0 until pooled_width) {
@@ -86,16 +251,14 @@ class RoiAlign[T: ClassTag] (
             var x = xx
             var y = yy
             if (y < -1.0 || y > height || x < -1.0 || x > width) {
-              val pc = Tensor[Float](8)
-              pc.setValue(1, 0) // pos1
-              pc.setValue(2, 0) // pos2
-              pc.setValue(3, 0) // pos3
-              pc.setValue(4, 0) // pos4
-              pc.setValue(5, 0) // w1
-              pc.setValue(6, 0) // w2
-              pc.setValue(7, 0) // w3
-              pc.setValue(8, 0) // w4
-              pre_cal(pre_calc_index) = pc
+              pre_cal.setValue(pre_calc_index, 1, ev.fromType[Float](0)) // pos1
+              pre_cal.setValue(pre_calc_index, 2, ev.fromType[Float](0)) // pos2
+              pre_cal.setValue(pre_calc_index, 3, ev.fromType[Float](0)) // pos3
+              pre_cal.setValue(pre_calc_index, 4, ev.fromType[Float](0)) // pos4
+              pre_cal.setValue(pre_calc_index, 5, ev.fromType[Float](0)) // w1
+              pre_cal.setValue(pre_calc_index, 6, ev.fromType[Float](0)) // w2
+              pre_cal.setValue(pre_calc_index, 7, ev.fromType[Float](0)) // w3
+              pre_cal.setValue(pre_calc_index, 8, ev.fromType[Float](0)) // w4
               pre_calc_index += 1
             }
 
@@ -136,16 +299,14 @@ class RoiAlign[T: ClassTag] (
               val w3 = ly * hx
               val w4 = ly * lx
 
-              val pc = Tensor[Float](8)
-              pc.setValue(1, y_low * width + x_low)
-              pc.setValue(2, y_low * width + x_high)
-              pc.setValue(3, y_high * width + x_low)
-              pc.setValue(4, y_high * width + x_high)
-              pc.setValue(5, w1)
-              pc.setValue(6, w2)
-              pc.setValue(7, w3)
-              pc.setValue(8, w4)
-              pre_cal(pre_calc_index) = pc
+              pre_cal.setValue(pre_calc_index, 1, ev.fromType[Float](x_low + 1.0F))
+              pre_cal.setValue(pre_calc_index, 2, ev.fromType[Float](y_low + 1.0F))
+              pre_cal.setValue(pre_calc_index, 3, ev.fromType[Float](x_high + 1.0F))
+              pre_cal.setValue(pre_calc_index, 4, ev.fromType[Float](y_high + 1.0F))
+              pre_cal.setValue(pre_calc_index, 5, ev.fromType[Float](w1))
+              pre_cal.setValue(pre_calc_index, 6, ev.fromType[Float](w2))
+              pre_cal.setValue(pre_calc_index, 7, ev.fromType[Float](w3))
+              pre_cal.setValue(pre_calc_index, 8, ev.fromType[Float](w4))
               pre_calc_index += 1
             }
           }
@@ -157,8 +318,6 @@ class RoiAlign[T: ClassTag] (
   private def preCalcForBilinearInterpolateDouble(
     height: Int,
     width: Int,
-    pooled_height: Int,
-    pooled_width: Int,
     iy_upper: Int,
     ix_upper: Int,
     roi_start_h: Double,
@@ -168,7 +327,7 @@ class RoiAlign[T: ClassTag] (
     roi_bin_grid_h: Int,
     roi_bin_grid_w: Int
   ) : Unit = {
-    var pre_calc_index = 0
+    var pre_calc_index = 1
     pre_cal.resize(pooled_height * pooled_width * iy_upper * ix_upper)
 
     for (ph <- 0 until pooled_height) {
@@ -180,16 +339,14 @@ class RoiAlign[T: ClassTag] (
             var x = xx
             var y = yy
             if (y < -1.0 || y > height || x < -1.0 || x > width) {
-              val pc = Tensor[Double](8)
-              pc.setValue(1, 0) // pos1
-              pc.setValue(2, 0) // pos2
-              pc.setValue(3, 0) // pos3
-              pc.setValue(4, 0) // pos4
-              pc.setValue(5, 0) // w1
-              pc.setValue(6, 0) // w2
-              pc.setValue(7, 0) // w3
-              pc.setValue(8, 0) // w4
-              pre_cal(pre_calc_index) = pc
+              pre_cal.setValue(pre_calc_index, 1, ev.fromType[Double](0)) // pos1
+              pre_cal.setValue(pre_calc_index, 2, ev.fromType[Double](0)) // pos2
+              pre_cal.setValue(pre_calc_index, 3, ev.fromType[Double](0)) // pos3
+              pre_cal.setValue(pre_calc_index, 4, ev.fromType[Double](0)) // pos4
+              pre_cal.setValue(pre_calc_index, 5, ev.fromType[Double](0)) // w1
+              pre_cal.setValue(pre_calc_index, 6, ev.fromType[Double](0)) // w2
+              pre_cal.setValue(pre_calc_index, 7, ev.fromType[Double](0)) // w3
+              pre_cal.setValue(pre_calc_index, 8, ev.fromType[Double](0)) // w4
               pre_calc_index += 1
             }
 
@@ -223,23 +380,21 @@ class RoiAlign[T: ClassTag] (
 
               val ly = y - y_low
               val lx = x - x_low
-              val hy = 1.0F - ly
-              val hx = 1.0F - lx
+              val hy = 1.0 - ly
+              val hx = 1.0 - lx
               val w1 = hy * hx
               val w2 = hy * lx
               val w3 = ly * hx
               val w4 = ly * lx
 
-              val pc = Tensor[Double](8)
-              pc.setValue(1, y_low * width + x_low)
-              pc.setValue(2, y_low * width + x_high)
-              pc.setValue(3, y_high * width + x_low)
-              pc.setValue(4, y_high * width + x_high)
-              pc.setValue(5, w1)
-              pc.setValue(6, w2)
-              pc.setValue(7, w3)
-              pc.setValue(8, w4)
-              pre_cal(pre_calc_index) = pc
+              pre_cal.setValue(pre_calc_index, 1, ev.fromType[Double](x_low + 1.0F))
+              pre_cal.setValue(pre_calc_index, 2, ev.fromType[Double](y_low + 1.0F))
+              pre_cal.setValue(pre_calc_index, 3, ev.fromType[Double](x_high + 1.0F))
+              pre_cal.setValue(pre_calc_index, 4, ev.fromType[Double](y_high + 1.0F))
+              pre_cal.setValue(pre_calc_index, 5, ev.fromType[Double](w1))
+              pre_cal.setValue(pre_calc_index, 6, ev.fromType[Double](w2))
+              pre_cal.setValue(pre_calc_index, 7, ev.fromType[Double](w3))
+              pre_cal.setValue(pre_calc_index, 8, ev.fromType[Double](w4))
               pre_calc_index += 1
             }
           }
@@ -251,10 +406,9 @@ class RoiAlign[T: ClassTag] (
 
 object RoiAlign {
   def apply[@specialized(Float, Double) T: ClassTag](
-    output_size: Array[Int],
     spatio_scale: T,
-    sampling_ratio: T,
+    sampling_ratio: Int,
     pooled_height: Int,
     pooled_width: Int) (implicit ev: TensorNumeric[T]): RoiAlign[T] =
-    new RoiAlign[T](output_size, spatio_scale, sampling_ratio, pooled_height, pooled_width)
+    new RoiAlign[T](spatio_scale, sampling_ratio, pooled_height, pooled_width)
 }
