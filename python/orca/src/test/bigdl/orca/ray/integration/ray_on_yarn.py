@@ -24,7 +24,7 @@ slave_num = 2
 
 sc = init_spark_on_yarn(
     hadoop_conf="/opt/work/almaren-yarn-config/",
-    conda_name="ray36-dev",
+    conda_name="ray_train",
     num_executor=slave_num,
     executor_cores=28,
     executor_memory="10g",
@@ -38,7 +38,10 @@ ray_ctx = RayContext(sc=sc,
                      extra_params={"temp-dir": "/tmp/hello/"},
                      env={"http_proxy": "http://child-prc.intel.com:913",
                           "http_proxys": "http://child-prc.intel.com:913"})
-ray_ctx.init()
+ray_ctx.init(object_store_memory="2g",
+             num_cores=0,
+             labels="",
+             extra_params={})
 
 
 @ray.remote
