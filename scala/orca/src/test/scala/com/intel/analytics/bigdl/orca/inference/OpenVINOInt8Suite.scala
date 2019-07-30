@@ -75,6 +75,10 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
   val opencvLibTar = opencvLibTarURL.split("/").last
   var opencvLibPath: String = _
 
+  val savedModelTarURL = s"$s3Url/analytics-zoo-models/openvino/saved-model.tar"
+  val savedModelTar = savedModelTarURL.split("/").last
+  var savedModelPath: String = _
+
   override def beforeAll() {
     tmpDir = Files.createTempDir()
     val dir = new File(s"${tmpDir.getAbsolutePath}/OpenVinoInt8Spec").getCanonicalPath
@@ -91,6 +95,9 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     s"wget -P $dir $opencvLibTarURL" !;
     s"tar xvf $dir/$opencvLibTar -C $dir" !;
 
+    s"wget -P $dir $savedModelTarURL" !;
+    s"tar xvf $dir/$savedModelTar -C $dir" !;
+
     s"ls -alh $dir" !;
 
     resnet_v1_50_path = s"$dir/resnet_v1_50_inference_graph"
@@ -104,6 +111,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     image_input_970_filePath = s"$dir/ic_input_970"
 
     opencvLibPath = s"$dir/lib"
+    savedModelPath = s"$dir/saved-model"
 
     // Optimize model
     InferenceModel.doOptimizeTF(
@@ -156,6 +164,57 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     )
 
     println(model)
+  }
+
+  test("openvino should load from bytes of IR") {
+    val model = new AbstractInferenceModel() {
+    }
+
+    val modelFilePath = s"${resnet_v1_50_int8_path}.xml"
+    val weightFilePath = s"${resnet_v1_50_int8_path}.bin"
+    val batchSize = resnet_v1_50_inputShape.apply(0)
+    val modelFileSize = new File(modelFilePath).length()
+    val modelFileInputStream = new FileInputStream(modelFilePath)
+    val modelFileBytes = new Array[Byte](modelFileSize.toInt)
+    modelFileInputStream.read(modelFileBytes)
+
+    val weightFileSize = new File(weightFilePath).length()
+    val weightFileInputStream = new FileInputStream(weightFilePath)
+    val weightFileBytes = new Array[Byte](weightFileSize.toInt)
+    weightFileInputStream.read(weightFileBytes)
+
+    model.loadOpenVINO(modelFileBytes, weightFileBytes, batchSize)
+
+    println(model)
+  }
+
+  test("openvino should load from saved model") {
+    val model = new AbstractInferenceModel() {
+    }
+
+    model.loadTF(savedModelPath,
+      resnet_v1_50_inputShape,
+      resnet_v1_50_ifReverseInputChannels,
+      resnet_v1_50_meanValues,
+      resnet_v1_50_scale,
+    "model_input")
+    println(model)
+
+    val model2 = new AbstractInferenceModel() {
+    }
+    val savedModelTarFilePath = s"${tmpDir.getAbsolutePath}/OpenVinoInt8Spec/$savedModelTar"
+    val savedModelFileSize = new File(savedModelTarFilePath).length()
+    val savedModelFileInputStream = new FileInputStream(savedModelTarFilePath)
+    val savedModelFileBytes = new Array[Byte](savedModelFileSize.toInt)
+    savedModelFileInputStream.read(savedModelFileBytes)
+
+    model2.loadTF(savedModelFileBytes,
+      resnet_v1_50_inputShape,
+      resnet_v1_50_ifReverseInputChannels,
+      resnet_v1_50_meanValues,
+      resnet_v1_50_scale,
+      "model_input")
+    println(model2)
   }
 
   test("openvino doLoadOpenVINO(float) and predict(float)") {
