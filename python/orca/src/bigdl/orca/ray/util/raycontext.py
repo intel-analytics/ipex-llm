@@ -117,11 +117,12 @@ class RayServiceFuncGenerator(object):
 
         return _stop
 
-    def _enrich_command(self, command):
-        if self.object_store_memory:
-            command = command + "--object-store-memory {} ".format(str(self.object_store_memory))
-        if self.extra_params:
-            for pair in self.extra_params.items():
+    @staticmethod
+    def _enrich_command(command, object_store_memory, extra_params):
+        if object_store_memory:
+            command = command + "--object-store-memory {} ".format(str(object_store_memory))
+        if extra_params:
+            for pair in extra_params.items():
                 command = command + " --{} {} ".format(pair[0], pair[1])
         return command
 
@@ -130,12 +131,23 @@ class RayServiceFuncGenerator(object):
                   "--include-webui --redis-port {} " \
                   "--redis-password {} --num-cpus {} ". \
             format(self.ray_exec, self.redis_port, self.password, self.ray_node_cpu_cores)
-        return self._enrich_command(command)
+        return RayServiceFuncGenerator._enrich_command(command=command,
+                                                       object_store_memory=self.object_store_memory,
+                                                       extra_params=self.extra_params)
 
-    def _get_raylet_command(self, redis_address):
+    @staticmethod
+    def _get_raylet_command(redis_address,
+                            ray_exec,
+                            password,
+                            ray_node_cpu_cores,
+                            labels,
+                            object_store_memory,
+                            extra_params):
         command = "{} start --redis-address {} --redis-password  {} --num-cpus {} {}  ".format(
-            self.ray_exec, redis_address, self.password, self.ray_node_cpu_cores, self.labels)
-        return self._enrich_command(command)
+            ray_exec, redis_address, password, ray_node_cpu_cores, labels)
+        return RayServiceFuncGenerator._enrich_command(command=command,
+                                                       object_store_memory=object_store_memory,
+                                                       extra_params=extra_params)
 
     def _start_ray_node(self, command, tag, wait_before=5, wait_after=5):
         modified_env = self._prepare_env(self.mkl_cores)
@@ -174,7 +186,14 @@ class RayServiceFuncGenerator(object):
             else:
                 print("partition id is : {}".format(tc.partitionId()))
                 process_info = self._start_ray_node(
-                    command=self._get_raylet_command(redis_address=redis_address),
+                    command=RayServiceFuncGenerator._get_raylet_command(
+                        redis_address=redis_address,
+                        ray_exec=self.ray_exec,
+                        password=self.password,
+                        ray_node_cpu_cores=self.ray_node_cpu_cores,
+                        labels=self.labels,
+                        object_store_memory=self.object_store_memory,
+                        extra_params=self.extra_params),
                     tag="raylet",
                     wait_before=self.waiting_time_sec)
                 yield process_info
@@ -213,6 +232,8 @@ class RayContext(object):
         self.python_loc = os.environ['PYSPARK_PYTHON']
         self.ray_processesMonitor = None
         self.verbose = verbose
+        self.redis_password = password
+        self.object_store_memory = object_store_memory
         self.redis_port = self._new_port() if not redis_port else redis_port
         self.ray_service = RayServiceFuncGenerator(
             python_loc=self.python_loc,
@@ -236,8 +257,9 @@ class RayContext(object):
 
     def _enrich_object_sotre_memory(self, sc, object_store_memory):
         if is_local(sc):
-            assert not object_store_memory, "you should not set object_store_memory on spark local"
-            return resourceToBytes(self._get_ray_plasma_memory_local())
+            if self.object_store_memory is None:
+                self.object_store_memory = self._get_ray_plasma_memory_local()
+            return resourceToBytes(self.object_store_memory)
         else:
             return resourceToBytes(
                 str(object_store_memory)) if object_store_memory else None
@@ -324,9 +346,24 @@ class RayContext(object):
         else:
             return int(self.sc._conf.get("spark.executor.instances"))
 
-    def init(self):
+    def init(self, object_store_memory=None,
+             num_cores=0,
+             labels="",
+             extra_params={}):
+        """
+        :param object_store_memory: Memory size of object_store for local driver. e.g 10g
+        :param num_cores set the cpu cores for local driver which 0 by default.
+        :param extra_params: key value dictionary for extra options to launch Ray.
+                             i.e extra_params={"temp-dir": "/tmp/ray2/"}
+        """
+
         self._start_cluster()
-        self._start_driver(object_store_memory=self._get_ray_plasma_memory_local())
+        if object_store_memory is None:
+            object_store_memory = self._get_ray_plasma_memory_local()
+        self._start_driver(object_store_memory=object_store_memory,
+                           num_cores=num_cores,
+                           labels=labels,
+                           extra_params=extra_params)
 
     def _start_cluster(self):
         print("Start to launch ray on cluster")
@@ -340,21 +377,37 @@ class RayContext(object):
         self.redis_address = self.ray_processesMonitor.master.master_addr
         return self
 
-    def _start_restricted_worker(self, redis_address, redis_password, object_store_memory):
-        num_cores = 0
-        command = "ray start --redis-address {} " \
-                  "--redis-password  {} --num-cpus {} --object-store-memory {}".\
-            format(redis_address, redis_password, num_cores, object_store_memory)
+    def _start_restricted_worker(self,
+                                 object_store_memory,
+                                 num_cores=0,
+                                 labels="",
+                                 extra_params={}):
+        command = RayServiceFuncGenerator._get_raylet_command(
+            redis_address=self.redis_address,
+            ray_exec="ray ",
+            password=self.redis_password,
+            ray_node_cpu_cores=num_cores,
+            labels=labels,
+            object_store_memory=object_store_memory,
+            extra_params=extra_params)
         print("Executing command: {}".format(command))
         process_info = session_execute(command=command, fail_fast=True)
         ProcessMonitor.register_shutdown_hook(pgid=process_info.pgid)
 
-    def _start_driver(self, object_store_memory="10g"):
+    def _start_driver(self,
+                      object_store_memory,
+                      num_cores=0,
+                      labels="",
+                      extra_params={}):
         print("Start to launch ray on local")
         import ray
         if not self.is_local:
-            self._start_restricted_worker(self.redis_address, self.ray_service.password,
-                                          object_store_memory=resourceToBytes(object_store_memory))
+            self._start_restricted_worker(
+                object_store_memory=resourceToBytes(object_store_memory),
+                num_cores=num_cores,
+                labels=labels,
+                extra_params=extra_params
+            )
         ray.shutdown()
         ray.init(redis_address=self.redis_address,
                  redis_password=self.ray_service.password)
