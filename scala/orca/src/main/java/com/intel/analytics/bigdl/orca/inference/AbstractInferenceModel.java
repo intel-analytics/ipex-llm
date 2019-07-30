@@ -79,6 +79,14 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadTF(modelBytes, imageClassificationModelType, checkpointBytes, inputShape, ifReverseInputChannels, meanValues, scale);
   }
 
+  public void loadTF(String savedModelDir, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String input) {
+    doLoadTF(savedModelDir, inputShape, ifReverseInputChannels, meanValues, scale, input);
+  }
+
+  public void loadTF(byte[] savedModelBytes, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String input) {
+    doLoadTF(savedModelBytes, inputShape, ifReverseInputChannels, meanValues, scale, input);
+  }
+
   public void loadTFAsCalibratedOpenVINO(String modelPath, String modelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale,
                                           String networkType, String validationFilePath, int subset, String opencvLibPath) {
     doLoadTFAsCalibratedOpenVINO(modelPath, modelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale, networkType, validationFilePath, subset, opencvLibPath);
@@ -90,6 +98,14 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
 
   public void loadOpenVINO(String modelFilePath, String weightFilePath) {
     doLoadOpenVINO(modelFilePath, weightFilePath, 0);
+  }
+
+  public void loadOpenVINO(byte[] modelBytes, byte[] weightBytes, int batchSize) {
+    doLoadOpenVINO(modelBytes, weightBytes, batchSize);
+  }
+
+  public void loadOpenVINO(byte[] modelBytes, byte[] weightBytes) {
+    doLoadOpenVINO(modelBytes, weightBytes, 0);
   }
 
   public void reload(String modelPath) {
