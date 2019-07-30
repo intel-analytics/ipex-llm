@@ -64,10 +64,13 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
 
   val optimizeObjectDetectionRelativePath = "/zoo-optimize-model-tf-object-detection.sh"
   val optimizeImageClassificationRelativePath = "/zoo-optimize-model-tf-image-classification.sh"
+  val optimizeImageClassificationFromSavedModelRelativePath
+    = "/zoo-optimize-model-tf-image-classification-savedmodel.sh"
   val calibrateRelativePath = "/zoo-calibrate-model.sh"
   var openvinoTempDirPath: String = _
   var optimizeObjectDetectionSHPath: String = _
   var optimizeImageClassificationSHPath: String = _
+  var optimizeImageClassificationFromSavedModelSHPath: String = _
   var motfpyFilePath: String = _
   var calibrateSHPath: String = _
   var calibrationToolPath: String = _
@@ -79,6 +82,8 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
     optimizeObjectDetectionSHPath = s"$openvinoTempDirPath$optimizeObjectDetectionRelativePath"
     optimizeImageClassificationSHPath =
       s"$openvinoTempDirPath$optimizeImageClassificationRelativePath"
+    optimizeImageClassificationFromSavedModelSHPath
+      = s"$openvinoTempDirPath$optimizeImageClassificationFromSavedModelRelativePath"
     motfpyFilePath = s"$openvinoTempDirPath/model-optimizer/mo_tf.py"
     calibrateSHPath = s"$openvinoTempDirPath$calibrateRelativePath"
     calibrationToolPath = s"$openvinoTempDirPath/inference-engine-bin/calibration_tool"
@@ -93,6 +98,11 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
     val optimizeTFICPath = optimizeImageClassificationRelativePath
     val optimizeTFICInputStream = OpenvinoNativeLoaderClass.getResourceAsStream(optimizeTFICPath)
     writeFile(optimizeTFICInputStream, openvinoTempDirPath, optimizeTFICPath)
+
+    val optimizeTFIC4SavedModelPath = optimizeImageClassificationFromSavedModelRelativePath
+    val optimizeTFIC4SavedModelInputStream
+      = OpenvinoNativeLoaderClass.getResourceAsStream(optimizeTFIC4SavedModelPath)
+    writeFile(optimizeTFIC4SavedModelInputStream, openvinoTempDirPath, optimizeTFIC4SavedModelPath)
 
     val calibrateTFPath = calibrateRelativePath
     val calibrateTFInputStream = OpenvinoNativeLoaderClass.getResourceAsStream(calibrateTFPath)
@@ -193,6 +203,55 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
       }
     }
 
+  }
+
+  def optimizeTFImageClassificationModel(savedModelDir: String,
+                                         inputShape: Array[Int],
+                                         ifReverseInputChannels: Boolean,
+                                         meanValues: Array[Float],
+                                         scale: Float,
+                                         input: String,
+                                         outputDir: String): Unit = {
+    timing("optimize tf image classification model to openvino IR") {
+      val outputPath: String = outputDir
+      val inputShapeStr = inputShape.mkString("[", ",", "]")
+      val ifReverseInputChannelsStr = ifReverseInputChannels match {
+        case true => "1"
+        case false => "0"
+      }
+      val meanValuesStr = meanValues.mkString("[", ",", "]")
+      val scaleStr = scale + ""
+      val inputStr = input
+
+      val stdout = new StringBuilder
+      val stderr = new StringBuilder
+      val log = ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
+      val exitCode = timing("optimize tf image classification model execution") {
+        Seq("sh",
+          optimizeImageClassificationFromSavedModelSHPath,
+          savedModelDir,
+          inputShapeStr,
+          ifReverseInputChannelsStr,
+          meanValuesStr,
+          scaleStr,
+          inputStr,
+          outputPath,
+          motfpyFilePath) ! log
+      }
+      logger.info(s"tf image classification model optimized, log: \n" +
+        s"stderr: $stderr \n" +
+        s"stdout: $stdout \n" +
+        s"exitCode: $exitCode\n -----")
+      exitCode match {
+        case 0 => logger.info(s"tf image classification model optimization succeeded")
+        case _ =>
+          val message = stderr.toString().split("\n").filter(_ contains ("ERROR")).mkString(",")
+          throw
+            new InferenceRuntimeException(s"Openvino optimize tf image classification " +
+              s"model error: " +
+              s"$exitCode, $message")
+      }
+    }
   }
 
   def optimizeTFObjectDetectionModel(modelPath: String,
@@ -377,6 +436,57 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
     model
   }
 
+  def loadTensorflowModel(savedModelDir: String,
+                          inputShape: Array[Int],
+                          ifReverseInputChannels: Boolean,
+                          meanValues: Array[Float],
+                          scale: Float,
+                          input: String): OpenVINOModel = {
+    val tmpDir = Files.createTempDir()
+    val outputPath: String = tmpDir.getCanonicalPath
+
+    optimizeTFImageClassificationModel(savedModelDir, inputShape, ifReverseInputChannels,
+      meanValues, scale, input, outputPath)
+    val path = new File(outputPath).listFiles()
+      .filter(_.getAbsolutePath.endsWith(".mapping"))(0).getAbsolutePath
+    val modelName = path.split("\\/").last.split("\\.").head
+    loadOpenVinoIRFromTempDir(modelName, outputPath)
+  }
+
+  def loadTensorflowModel(savedModelBytes: Array[Byte],
+                          inputShape: Array[Int],
+                          ifReverseInputChannels: Boolean,
+                          meanValues: Array[Float],
+                          scale: Float,
+                          input: String): OpenVINOModel = {
+    val tmpDir = Files.createTempDir()
+    val outputPath: String = tmpDir.getCanonicalPath
+
+    val tarFilePath = (savedModelBytes == null) match {
+      case true => null
+      case false => val tarFileName = "saved-model.tar"
+        val tarFile = new File(s"$tmpDir/$tarFileName")
+        val tarFileInputStream = new ByteArrayInputStream(savedModelBytes)
+        val tarFileSrc = Channels.newChannel(tarFileInputStream)
+        val tarFileDest = new FileOutputStream(tarFile).getChannel
+        tarFileDest.transferFrom(tarFileSrc, 0, Long.MaxValue)
+        tarFileDest.close()
+        tarFileSrc.close()
+        tarFile.getAbsolutePath
+    }
+    s"mkdir -p $tmpDir/saved-model" !;
+    s"tar xvf $tarFilePath -C $tmpDir/saved-model" !;
+    s"ls $tmpDir/saved-model" !;
+    val savedModelDir = new File(s"$tmpDir/saved-model").listFiles()(0).getAbsolutePath
+
+    optimizeTFImageClassificationModel(savedModelDir, inputShape, ifReverseInputChannels,
+      meanValues, scale, input, outputPath)
+    val path = new File(outputPath).listFiles()
+      .filter(_.getAbsolutePath.endsWith(".mapping"))(0).getAbsolutePath
+    val modelName = path.split("\\/").last.split("\\.").head
+    loadOpenVinoIRFromTempDir(modelName, outputPath)
+  }
+
   def loadTensorflowModelAsCalibrated(modelPath: String,
                                       modelType: String,
                                       checkpointPath: String,
@@ -476,6 +586,55 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
           deviceType.value, batchSize)
       }
       new OpenVINOModel(executableNetworkReference, supportive, isInt8 > 0)
+    }
+  }
+
+  def loadOpenVinoIR(modelBytes: Array[Byte],
+                     weightBytes: Array[Byte],
+                     deviceType: DeviceTypeEnumVal,
+                     batchSize: Int): OpenVINOModel = {
+    timing("load openvino IR") {
+      val tmpDir = Files.createTempDir()
+      val modelFilePath = (modelBytes == null) match {
+        case true => null
+        case false => val modelFileName = "model.xml"
+          val modelFile = new File(s"$tmpDir/$modelFileName")
+          val modelFileInputStream = new ByteArrayInputStream(modelBytes)
+          val modelFileSrc = Channels.newChannel(modelFileInputStream)
+          val modelFileDest = new FileOutputStream(modelFile).getChannel
+          modelFileDest.transferFrom(modelFileSrc, 0, Long.MaxValue)
+          modelFileDest.close()
+          modelFileSrc.close()
+          modelFile.getAbsolutePath
+      }
+      val weightFilePath = {
+        val weightFileName = "weights.bin"
+        val weightFile = new File(s"$tmpDir/$weightFileName")
+        val weightFileInputStream = new ByteArrayInputStream(weightBytes)
+        val weightFileSrc = Channels.newChannel(weightFileInputStream)
+        val weightFileDest = new FileOutputStream(weightFile).getChannel
+        weightFileDest.transferFrom(weightFileSrc, 0, Long.MaxValue)
+        weightFileDest.close()
+        weightFileSrc.close()
+        weightFile.getAbsolutePath
+      }
+
+      val buffer = Source.fromFile(modelFilePath)
+      val isInt8 = buffer.getLines().count(_ matches ".*statistics.*")
+      buffer.close()
+
+      val supportive: OpenVinoInferenceSupportive = new OpenVinoInferenceSupportive()
+      val executableNetworkReference: Long = if (isInt8 > 0) {
+        logger.info(s"Load int8 model")
+        supportive.loadOpenVinoIRInt8(modelFilePath, weightFilePath,
+          deviceType.value, batchSize)
+      } else {
+        supportive.loadOpenVinoIR(modelFilePath, weightFilePath,
+          deviceType.value, batchSize)
+      }
+      val model = new OpenVINOModel(executableNetworkReference, supportive, isInt8 > 0)
+      s"rm -rf $tmpDir" !;
+      model
     }
   }
 

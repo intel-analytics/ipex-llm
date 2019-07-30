@@ -229,6 +229,50 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
+   * load TF model as OpenVINO IR
+   *
+   * @param savedModelDir          the dir path of the tensorflow saved model
+   * @param inputShape             input shape that should be fed to an input node(s) of the model
+   * @param ifReverseInputChannels the boolean value of if need reverse input channels.
+   *                               switch the input channels order from RGB to BGR (or vice versa).
+   * @param meanValues             all input values coming from original network inputs
+   *                               will be divided by this value.
+   * @param scale                  the scale value, to be used for the input image per channel.
+   * @param input                  the name of the input operation of the given model
+   */
+  def doLoadTF(savedModelDir: String,
+               inputShape: Array[Int],
+               ifReverseInputChannels: Boolean,
+               meanValues: Array[Float],
+               scale: Float,
+               input: String): Unit = {
+    doLoadTensorflowModelAsOpenVINO(savedModelDir, inputShape,
+      ifReverseInputChannels, meanValues, scale, input)
+  }
+
+  /**
+   * load TF model as OpenVINO IR
+   *
+   * @param savedModelBytes        the bytes of the tensorflow saved model tar
+   * @param inputShape             input shape that should be fed to an input node(s) of the model
+   * @param ifReverseInputChannels the boolean value of if need reverse input channels.
+   *                               switch the input channels order from RGB to BGR (or vice versa).
+   * @param meanValues             all input values coming from original network inputs
+   *                               will be divided by this value.
+   * @param scale                  the scale value, to be used for the input image per channel.
+   * @param input                  the name of the input operation of the given model
+   */
+  def doLoadTF(savedModelBytes: Array[Byte],
+               inputShape: Array[Int],
+               ifReverseInputChannels: Boolean,
+               meanValues: Array[Float],
+               scale: Float,
+               input: String): Unit = {
+    doLoadTensorflowModelAsOpenVINO(savedModelBytes, inputShape,
+      ifReverseInputChannels, meanValues, scale, input)
+  }
+
+  /**
    * load TF model as Calibrated OpenVINO IR
    *
    * @param modelPath              the path of the tensorflow model
@@ -283,6 +327,26 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     clearModelQueue()
     this.originalModel =
       InferenceModelFactory.loadOpenVINOModelForIR(modelPath, weightPath,
+        DeviceType.CPU, batchSize)
+    offerModelQueue()
+  }
+
+  /**
+   * loads a openvino IR
+   *
+   * @param modelBytes  the bytes of openvino ir xml file
+   * @param weightBytes the bytes of openvino ir bin file
+   * @param batchSize   the batchsize of openvino ir
+   */
+  def doLoadOpenVINO(modelBytes: Array[Byte],
+                     weightBytes: Array[Byte], batchSize: Int): Unit = {
+    if (concurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"concurrentNum is $concurrentNum > 1, " +
+        s"openvino model does not support shared weights model copies")
+    }
+    clearModelQueue()
+    this.originalModel =
+      InferenceModelFactory.loadOpenVINOModelForIR(modelBytes, weightBytes,
         DeviceType.CPU, batchSize)
     offerModelQueue()
   }
@@ -345,6 +409,38 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     this.originalModel = InferenceModelFactory.loadOpenVINOModelForTF(
       modelBytes, imageClassificationModelType, checkpointBytes,
       inputShape, ifReverseInputChannels, meanValues, scale)
+    offerModelQueue()
+  }
+
+  private def doLoadTensorflowModelAsOpenVINO(savedModelDir: String,
+                                              inputShape: Array[Int],
+                                              ifReverseInputChannels: Boolean,
+                                              meanValues: Array[Float],
+                                              scale: Float,
+                                              input: String): Unit = {
+    if (concurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"concurrentNum is $concurrentNum > 1, " +
+        s"openvino model does not support shared weights model copies")
+    }
+    clearModelQueue()
+    this.originalModel = InferenceModelFactory.loadOpenVINOModelForTF(
+      savedModelDir, inputShape, ifReverseInputChannels, meanValues, scale, input)
+    offerModelQueue()
+  }
+
+  private def doLoadTensorflowModelAsOpenVINO(savedModelBytes: Array[Byte],
+                                              inputShape: Array[Int],
+                                              ifReverseInputChannels: Boolean,
+                                              meanValues: Array[Float],
+                                              scale: Float,
+                                              input: String): Unit = {
+    if (concurrentNum > 1) {
+      InferenceSupportive.logger.warn(s"concurrentNum is $concurrentNum > 1, " +
+        s"openvino model does not support shared weights model copies")
+    }
+    clearModelQueue()
+    this.originalModel = InferenceModelFactory.loadOpenVINOModelForTF(
+      savedModelBytes, inputShape, ifReverseInputChannels, meanValues, scale, input)
     offerModelQueue()
   }
 

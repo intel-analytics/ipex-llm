@@ -82,6 +82,26 @@ object InferenceModelFactory extends InferenceSupportive {
       checkpointBytes, inputShape, ifReverseInputChannels, meanValues, scale)
   }
 
+  def loadOpenVINOModelForTF(savedModelDir: String,
+                             inputShape: Array[Int],
+                             ifReverseInputChannels: Boolean,
+                             meanValues: Array[Float],
+                             scale: Float,
+                             input: String): OpenVINOModel = {
+    OpenVinoInferenceSupportive.loadTensorflowModel(savedModelDir,
+      inputShape, ifReverseInputChannels, meanValues, scale, input)
+  }
+
+  def loadOpenVINOModelForTF(savedModelBytes: Array[Byte],
+                             inputShape: Array[Int],
+                             ifReverseInputChannels: Boolean,
+                             meanValues: Array[Float],
+                             scale: Float,
+                             input: String): OpenVINOModel = {
+    OpenVinoInferenceSupportive.loadTensorflowModel(savedModelBytes,
+      inputShape, ifReverseInputChannels, meanValues, scale, input)
+  }
+
   def loadCalibratedOpenVINOModelForTF(modelPath: String,
                                        modelType: String,
                                        checkpointPath: String,
@@ -104,6 +124,14 @@ object InferenceModelFactory extends InferenceSupportive {
                              deviceType: DeviceTypeEnumVal,
                              batchSize: Int = 0): OpenVINOModel = {
     OpenVinoInferenceSupportive.loadOpenVinoIR(modelFilePath, weightFilePath,
+      deviceType, batchSize)
+  }
+
+  def loadOpenVINOModelForIR(modelBytes: Array[Byte],
+                             weightBytes: Array[Byte],
+                             deviceType: DeviceTypeEnumVal,
+                             batchSize: Int): OpenVINOModel = {
+    OpenVinoInferenceSupportive.loadOpenVinoIR(modelBytes, weightBytes,
       deviceType, batchSize)
   }
 }
