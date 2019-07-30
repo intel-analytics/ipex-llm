@@ -151,7 +151,7 @@ object Predictor {
     ImageFrame.rdd(result)
   }
 
-  def predictBeta[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1,
+  def predict[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1,
     shareBuffer: Boolean = false, model: Module[T], batchPerPartition: Int,
     featurePaddingParam: Option[PaddingParam[T]])(implicit ev: TensorNumeric[T]): RDD[Sample[T]] = {
     val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext,
@@ -185,57 +185,15 @@ object Predictor {
     dataSet
   }
 
-  def predict[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1,
-    shareBuffer: Boolean = false, model: Module[T], batchPerPartition: Int,
-    featurePaddingParam: Option[PaddingParam[T]])(implicit ev: TensorNumeric[T]): RDD[Activity] = {
-    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext,
-      ConversionUtils.convert(model.evaluate()))
-    val partitionNum = dataSet.partitions.length
-    val totalBatch = if (batchSize > 0) {
-      require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
-        s"should be divided by partitionNum ${partitionNum}")
-      batchSize
-    } else {
-      batchPerPartition * partitionNum
-    }
-    val rdd = ConversionUtils.coalesce(dataSet)
-    val otherBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
-      batchSize = totalBatch,
-      partitionNum = Some(rdd.partitions.length),
-      featurePaddingParam = featurePaddingParam))
-    rdd.mapPartitions { partition =>
-      val localModel = modelBroad.value()
-      val localTransformer = otherBroad.value.cloneTransformer()
-      val miniBatch = localTransformer(partition)
-      miniBatch.flatMap(batch => {
-        val output = localModel.forward(batch.getInput)
-        splitBatch(output, shareBuffer, batch.size())
-      })
-    }
-  }
 
-  def predictClassBeta[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
+  def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
     batchPerPartition: Int, featurePaddingParam: Option[PaddingParam[T]])(
     implicit ev: TensorNumeric[T]): RDD[Sample[T]] = {
-    Predictor.predictBeta(dataSet, batchSize, true, model,
+    Predictor.predict(dataSet, batchSize, true, model,
       batchPerPartition, featurePaddingParam)
     dataSet
   }
 
-  def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
-    batchPerPartition: Int, featurePaddingParam: Option[PaddingParam[T]])(
-    implicit ev: TensorNumeric[T]): RDD[Int] = {
-    val result = Predictor.predict(dataSet, batchSize, true, model,
-      batchPerPartition, featurePaddingParam)
-    result.mapPartitions { partition =>
-      partition.map(output => {
-        val _output = output.toTensor[T]
-        require(_output.dim() == 1, s"Predictor.predictClass:" +
-          s"Only support one sample has one label, but got ${_output.dim()} label")
-        ev.toType[Int](_output.max(1)._2.valueAt(1))
-      })
-    }
-  }
 }
 
 /**
@@ -258,23 +216,16 @@ class Predictor[T: ClassTag] private[optim](
    batchPerPartition: Int = 4)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
-  def predictClass(dataSet: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
+
+  def predictClass(dataSet: RDD[Sample[T]], batchSize: Int = -1): RDD[Sample[T]] = {
     Predictor.predictClass(dataSet, batchSize, model, batchPerPartition, featurePaddingParam)
   }
 
-  def predictClassBeta(dataSet: RDD[Sample[T]], batchSize: Int = -1): RDD[Sample[T]] = {
-    Predictor.predictClassBeta(dataSet, batchSize, model, batchPerPartition, featurePaddingParam)
-  }
+
 
   def predict(dataSet: RDD[Sample[T]], batchSize: Int = -1,
-    shareBuffer: Boolean = false): RDD[Activity] = {
-    Predictor.predict(dataSet, batchSize, shareBuffer, model, batchPerPartition,
-      featurePaddingParam)
-  }
-
-  def predictBeta(dataSet: RDD[Sample[T]], batchSize: Int = -1,
     shareBuffer: Boolean = false): RDD[Sample[T]] = {
-    Predictor.predictBeta(dataSet, batchSize, shareBuffer, model, batchPerPartition,
+    Predictor.predict(dataSet, batchSize, shareBuffer, model, batchPerPartition,
       featurePaddingParam)
   }
 
