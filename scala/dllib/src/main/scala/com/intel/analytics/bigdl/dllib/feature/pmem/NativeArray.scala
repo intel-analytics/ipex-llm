@@ -26,6 +26,8 @@ case object DRAM extends MemoryType
 
 case object DIRECT extends MemoryType
 
+case class DISK_AND_DRAM(numSlice: Int) extends MemoryType
+
 sealed trait DataStrategy
 
 case object PARTITIONED extends DataStrategy
@@ -38,6 +40,15 @@ object MemoryType {
       case "PMEM" => PMEM
       case "DRAM" => DRAM
       case "DIRECT" => DIRECT
+      case default =>
+        try {
+          DISK_AND_DRAM(str.toInt)
+        } catch {
+          case nfe: NumberFormatException =>
+            throw new IllegalArgumentException(s"Unknown memory type $default," +
+              s"excepted PMEM, DRAM, DIRECT or a int number.")
+        }
+
     }
   }
 }
