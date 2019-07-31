@@ -121,8 +121,8 @@ private[bigdl] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
   rpnPostNmsTopNTrain: Int)
   (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Tensor[Float], Float]{
 
-  @transient private var sortedScores: Tensor[Float] = Tensor[Float]()
-  @transient private var sortedInds: Tensor[Float] = Tensor[Float]()
+  @transient private val sortedScores: Tensor[Float] = Tensor[Float]()
+  @transient private val sortedInds: Tensor[Float] = Tensor[Float]()
   @transient private val sigmoid = Sigmoid[Float]()
   @transient private val nms = new Nms()
 

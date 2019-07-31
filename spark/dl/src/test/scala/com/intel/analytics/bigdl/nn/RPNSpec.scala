@@ -102,8 +102,6 @@ class RPNHeadSpec extends FlatSpec with Matchers {
         T(0.5145, 0.8449, 0.7963, 0.2868, 0.8202, 0.4271, 0.2833)))))
 
     val out = head.forward(input)
-
-    println("done")
   }
 }
 
