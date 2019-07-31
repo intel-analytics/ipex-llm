@@ -16,14 +16,15 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.mkldnn.{Equivalent, Tools}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.sun.deploy.ref.AppModel.ExtensionResource
 import org.dmg.pmml.True
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, Matchers}
 
-class PriorBoxSpec extends FlatSpec {
+class PriorBoxSpec extends FlatSpec with Matchers {
   "Priorbox" should "work" in {
     val isClip = false
     val isFlip = true

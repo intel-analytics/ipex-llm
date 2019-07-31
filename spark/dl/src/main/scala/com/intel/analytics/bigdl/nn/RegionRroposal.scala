@@ -19,41 +19,56 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.Convolution2D
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.apache.spark.internal
-import org.apache.spark.internal.config
+import com.sun.tracing.dtrace.ModuleName
+import org.apache.spark.api.java.function
 
-class RegionRroposal() {
+class RegionRroposal(in_channels: Int,
+                     anchor_sizes: Array[Float],
+                     aspect_ratios: Array[Float],
+                     anchor_stride: Array[Float],
+                     preNmsTopNTest: Int,
+                     postNmsTopNTest: Int,
+                     nms_thread: Float,
+                     min_size: Int,
+                     rpnPostNmsTopNTrain: Int) extends AbstractModule[Table, Tensor[Float], Float] {
 
-  private val in_channels = 3
-  private val num_anchors = 3
-  // todo: check Convolution2D
-  private val conv = SpatialConvolution[Float](in_channels, in_channels,
-    kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
-  conv.weight.uniform() // todo: check
-  conv.bias.fill(0.0f)
+  val anchor_generator = new AnchorGenerate(anchor_sizes, aspect_ratios, anchor_stride)
+  val numAnchors = anchor_generator.num_anchors_per_location()
+  val head = new RPNHead(in_channels, numAnchors)
+  val box_selector_test = new RPNPostProcessor(preNmsTopNTest, postNmsTopNTest,
+    nms_thread, min_size, rpnPostNmsTopNTrain)
 
-  private val relu = ReLU[Float]()
 
-  private val cls_logits = SpatialConvolution[Float](in_channels, num_anchors,
-    kernelH = 1, kernelW = 1, strideH = 1, strideW = 1)
-  cls_logits.weight.uniform()
-  cls_logits.bias.fill(0.0f)
+  /**
+   * input is a table and contains:
+   * first tensor: images: images for which we want to compute the predictions
+   * second tensor: features: features computed from the images that are used for
+   *  computing the predictions.
+   */
+  override def updateOutput(input: Table): Tensor[Float] = {
+    require(input.length() == 2 && !this.isTraining(), "Only support tests")
+    val images = input[Tensor[Float]](1)
+    val features = input[Tensor[Float]](2)
 
-  private val bbox_pred = SpatialConvolution[Float](in_channels, num_anchors * 4,
-    kernelH = 3, kernelW = 3, strideH = 1, strideW = 1)
-  bbox_pred.weight.uniform()
-  bbox_pred.bias.fill(0.0f)
+    val anchorsOutput = anchor_generator.forward(T(features, images))
+    val anchors = anchorsOutput[Table](1)
+    val headOutput = head.forward(features)
+    val objectness = headOutput.apply[Tensor[Float]](1)
+    val rpn_box_regression = headOutput.apply[Tensor[Float]](2)
 
-  def forward(features: Tensor[Float]): Table = {
-    val conv_res = conv.forward(features)
-    val relu_res = relu.forward(conv_res)
-    val logits_res = cls_logits.forward(relu_res)
-    val bbox_res = bbox_pred.forward(relu_res)
-    T(logits_res, bbox_res)
+    output = box_selector_test.forward(T(anchors[Tensor[Float]](1), objectness,
+      rpn_box_regression, anchors[Tensor[Float]](2)))
+
+    println("done")
+    output
   }
 
+  override def updateGradInput(input: Table, gradOutput: Tensor[Float]): Table = {
+    gradInput = null
+    gradInput
+  }
 
-  def init(): Unit = {
-
+  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
+    head.parameters()
   }
 }

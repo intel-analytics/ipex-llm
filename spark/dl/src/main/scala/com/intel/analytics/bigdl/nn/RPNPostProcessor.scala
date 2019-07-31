@@ -49,6 +49,7 @@ class RPNPostProcessor(preNmsTopNTest: Int,
     var objectness = input[Tensor[Float]](2).clone() // todo:
     var box_regression = input[Tensor[Float]](3).clone() // todo:
     var imageSize = input[Tensor[Float]](4) // order: height, width
+    // todo: check image size information
 
     val N = objectness.size(1)
     val A = objectness.size(2)
@@ -83,19 +84,20 @@ class RPNPostProcessor(preNmsTopNTest: Int,
     // view (-1, 4)
     val box_regression_view = tmp.resize(tmp.nElement() / 4, 4)
 
-    val proposals = BboxUtil.bboxTransformInv(concat_anchors, box_regression_view, normalized = true)
+    val proposals = BboxUtil.bboxTransformInv(concat_anchors,
+      box_regression_view, normalized = true)
     // remove _small box
     val minBoxH = min_size // * imageSize.valueAt(1)
     val minBoxW = min_size // * imageSize.valueAt(2)
     var keepN = BboxUtil.clipBoxes(proposals, imageSize.valueAt(1), imageSize.valueAt(2), minBoxH
       , minBoxW, sortedScores)
 
-    println(proposals)
     val arr = new Array[Int](1000)
     nms.nms(sortedScores, proposals, thresh = 0.7f, arr, sorted = true)
 
     val proposals_index = Tensor[Float]()
-    val indices = Tensor[Float](T(arr(0), arr(1), arr(2), arr(3), arr(4)))
+    val tt = arr.filter(_ > 0).map(_.toFloat)
+    val indices = Tensor[Float]().set(Storage(tt), 1, Array(tt.length))
     output.index(1, indices, proposals)
     output
   }
