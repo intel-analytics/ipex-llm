@@ -16,6 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.models
 
+import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -25,15 +26,19 @@ import com.intel.analytics.bigdl.{DataSet, _}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializable}
-import com.intel.analytics.bigdl.nn.{Container, Graph, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.mkldnn.MklDnnModule
+import com.intel.analytics.bigdl.nn.{Container, Graph, Module, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.feature.{DistributedFeatureSet, FeatureSet}
+import com.intel.analytics.zoo.common.ZooTrigger
+import com.intel.analytics.zoo.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text._
 import com.intel.analytics.zoo.pipeline.api.{Net, Predictable}
@@ -43,6 +48,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils._
 import com.intel.analytics.zoo.pipeline.api.net.NetUtils
 import com.intel.analytics.zoo.pipeline.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
@@ -900,6 +906,8 @@ object Sequential extends KerasLayerSerializable {
 }
 
 private[zoo] object InternalOptimizerUtil {
+
+
   def getModelCacheFromOptimizer[T: ClassTag](
         optimizer: Optimizer[T, MiniBatch[T]]): RDD[Cache[T]] = {
     val field = classOf[DistriOptimizer[T]].getDeclaredField("models")
@@ -908,7 +916,7 @@ private[zoo] object InternalOptimizerUtil {
     models
   }
 
-  def getStateFromOptiMethod[T: ClassTag](optimMethod: OptimMethod[T]): Table = {
+  def getStateFromOptiMethod[T](optimMethod: OptimMethod[T]): Table = {
     val method = classOf[OptimMethod[T]].getDeclaredMethod("state")
     method.setAccessible(true)
     val state = method.invoke(optimMethod).asInstanceOf[Table]
@@ -927,6 +935,48 @@ private[zoo] object InternalOptimizerUtil {
     method.setAccessible(true)
     method.invoke(optimizer)
   }
+
+  def getParametersFromModel[T: ClassTag](model: Module[T]): (Tensor[T], Tensor[T]) = {
+    val method = classOf[Module[T]].getDeclaredMethod("getParameters")
+    method.setAccessible(true)
+    method.invoke(model).asInstanceOf[(Tensor[T], Tensor[T])]
+  }
+
+  def initThreadModels[T: ClassTag](
+      args: Object*)(
+      implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer.Cache[T]], ModelBroadcast[T]) = {
+    KerasUtils.invokeMethodWithEv(DistriOptimizer,
+      "com$intel$analytics$bigdl$optim$DistriOptimizer$$initThreadModels",
+      args: _*).asInstanceOf[(RDD[DistriOptimizer.Cache[T]], ModelBroadcast[T])]
+  }
+
+  def clearState[T: ClassTag](
+        models: RDD[DistriOptimizer.Cache[T]]): Unit = {
+    KerasUtils.invokeMethod(DistriOptimizer,
+      "clearState", models, implicitly[reflect.ClassTag[T]])
+  }
+
+  def optimizeModels[T: ClassTag](
+      args: Object*
+      )(implicit ev: TensorNumeric[T]): Unit = {
+    KerasUtils.invokeMethodWithEv(DistriOptimizer, "optimize",
+      args: _*)
+  }
+
+  def getModel[T: ClassTag](
+      args: Object*)(implicit ev: TensorNumeric[T]): Unit = {
+    KerasUtils.invokeMethodWithEv(DistriOptimizer, "getModel",
+      args: _*)
+  }
+
+  def releaseBroadcast[T: ClassTag](
+        uuid: String)(implicit ev: TensorNumeric[T]): Unit = {
+    KerasUtils.invokeMethodWithEv(
+      "com.intel.analytics.bigdl.models.utils.CachedModels",
+      "deleteKey",
+      uuid)
+  }
+
 }
 
 private[zoo] class InternalLocalOptimizer[T: ClassTag] (
@@ -955,8 +1005,203 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
     _criterion: Criterion[T])
   (implicit ev: TensorNumeric[T]) extends DistriOptimizer[T](_model, _dataset, _criterion)
   with AbstractEstimator[T]{
-  import InternalDistriOptimizer.logger
+  import InternalDistriOptimizer._
   protected var checkpointDir: Option[String] = None
+  protected var numSlice: Int = 1
+  protected var cachedModels: RDD[DistriOptimizer.Cache[T]] = null
+  protected var modelBroadcast: ModelBroadcast[T] = null
+  protected var parameterSplits: Map[String, (Int, Int)] = null
+  protected var allReduceParameter: AllReduceParameter[T] = null
+
+  def train(): Module[T] = {
+    val distDataset = dataset.toDistributed()
+    val trainingModel = if (EngineRef.getEngineType() == MklDnn) {
+      model.toGraph().setName(model.getName())
+    } else model
+
+    // To be compatible with the old usage that user define hyperparameters in a table.
+    if (optimMethods.size == 1) {
+      optimMethods.head._2.loadFromTable(state)
+    }
+
+    state("dropPercentage") = dropPercentage
+    state("warmupIterationNum") = warmupIterationNum
+    state("computeThresholdbatchSize") = computeThresholdbatchSize
+    state("maxDropPercentage") = maxDropPercentage
+    state("isLayerwiseScaled") = com.intel.analytics.bigdl.nn.Utils.isLayerwiseScaled(_model)
+
+    val nodeNumber = EngineRef.getNodeNumber()
+    val coresPerNode = EngineRef.getCoreNumber()
+
+    val partitionNum = distDataset.originRDD().partitions.length
+    val modelParameters = InternalOptimizerUtil.getParametersFromModel(trainingModel)
+
+    prepareInput()
+
+    // subModuleName -> (storageOffset, length, AllReduceParameter)
+    if (allReduceParameter == null || cachedModels == null) {
+      allReduceParameter = AllReduceParameter.newParameter[T](partitionNum,
+        modelParameters._1.nElement())
+      this.close()
+      parameterSplits = if (optimMethods.size != 1) {
+        val p = optimMethods.map { case (subModuleName, optimMethod) =>
+          val subModule = trainingModel(subModuleName)
+          require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+          val subModuleWeights = InternalOptimizerUtil
+            .getParametersFromModel(subModule.get)._1
+          (subModuleName, subModuleWeights)
+        }
+        val sortedWeights = p.values.toArray.sortWith(
+          (a, b) => a.storageOffset() < b.storageOffset())
+        val compactWeights = Module.isCompact(sortedWeights)
+        require(modelParameters._1 == compactWeights,
+          s"InternDistriOptimizer: All subModules should have an OptimMethod.")
+        p.map { case (subModuleName, weights) =>
+          (subModuleName, (weights.storageOffset(), weights.nElement()))
+        }
+      } else if (optimMethods.contains(trainingModel.getName())) {
+        Map(trainingModel.getName() -> (1, modelParameters._1.nElement()))
+      } else {
+        throw new IllegalArgumentException(s"${trainingModel.getName()} doesn't " +
+          s"have corresponding OptimMethod")
+      }
+
+      // TODO: Enable LarsSGD
+//      LarsSGD.containsLarsSGD(optimMethods).foreach(weightDecay =>
+//        parameterProcessors.append(new LarsProcessor(parameterSplits, weightDecay))
+//      )
+
+      val modelsAndBroadcast = InternalOptimizerUtil.initThreadModels[T](
+        trainingModel, distDataset, criterion, state,
+        Int.box(nodeNumber), Int.box(coresPerNode), Boolean.box(checkSingleton),
+        allReduceParameter, parameterSplits, validationMethods, optimMethods, parameterProcessors)
+      cachedModels = modelsAndBroadcast._1
+      modelBroadcast = modelsAndBroadcast._2
+    }
+
+    val currentCheckPoint = if (checkpointPath.isDefined) {
+      val file = checkpointPath.get + "/" +
+        new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
+      new File(file).mkdir()
+      Some(file)
+    } else {
+      checkpointPath
+    }
+
+
+    var retryNum = 0
+    val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
+    val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
+    var lastFailureTimestamp = System.nanoTime()
+
+    while (retryNum < maxRetry) {
+      try {
+        InternalOptimizerUtil.optimizeModels[T](
+          trainingModel,
+          distDataset,
+          Int.box(coresPerNode),
+          state,
+          endWhen,
+          metrics,
+          cachedModels,
+          optimMethods,
+          allReduceParameter,
+          parameterSplits,
+          validationTrigger,
+          validationDataSet,
+          validationMethods,
+          checkpointTrigger,
+          currentCheckPoint,
+          trainSummary,
+          validationSummary,
+          Boolean.box(isOverWrite),
+          parameterProcessors.toArray)
+        retryNum = Int.MaxValue
+      } catch {
+        case e: IllegalArgumentException =>
+          throw e
+        case t: Throwable =>
+          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+          if (checkpointPath.isDefined) {
+            /* To avoid retry number is used up by first few exceptions, we count time here.
+             * If exception exceeds maxRetry times in maxRetry*retryTimeInterval seconds,
+             * we will give up retry Or we will reset retryNum
+             */
+            if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
+              retryNum += 1
+              if (retryNum == maxRetry) {
+                throw t
+              }
+            } else {
+              retryNum = 1
+            }
+            DistriOptimizer.logger.info(s"Retrying $retryNum times")
+            lastFailureTimestamp = System.nanoTime()
+
+            val modelFile = getLatestFile(currentCheckPoint.get, "model")
+            clearState()
+            cachedModels.unpersist()
+            val newModel = if (modelFile != null) {
+              DistriOptimizer.logger.info("Model recover from last snapshot")
+              Module.load[T](modelFile)
+            } else {
+              DistriOptimizer.logger.info("Model recover from origin model")
+              trainingModel
+            }
+            optimMethods = optimMethods.map { case (moduleName, optimMethod) =>
+              val methodFile = getLatestFile(currentCheckPoint.get, s"optimMethod-$moduleName")
+
+              val newOptimMethod = if (methodFile != null) {
+                DistriOptimizer.logger.info(s"$moduleName's OptimMethod recover from last snapshot")
+                OptimMethod.load[T](methodFile)
+              } else {
+                DistriOptimizer.logger.info(s"$moduleName's OptimMethod recover from origin model")
+                optimMethod
+              }
+              newOptimMethod.clearHistory()
+              (moduleName, newOptimMethod)
+            }
+            val modelsAndBroadcast = InternalOptimizerUtil.initThreadModels[T](
+              newModel, distDataset, criterion, state,
+              Int.box(nodeNumber), Int.box(coresPerNode), Boolean.box(checkSingleton),
+              allReduceParameter, parameterSplits, validationMethods, optimMethods)
+            cachedModels = modelsAndBroadcast._1
+            modelBroadcast = modelsAndBroadcast._2
+          } else {
+            throw t
+          }
+      }
+    }
+
+    InternalOptimizerUtil.getModel(
+      cachedModels, allReduceParameter, trainingModel)
+
+    trainingModel
+  }
+
+  override def close(): Unit = {
+    if (cachedModels != null) {
+      InternalOptimizerUtil.clearState(cachedModels)
+      if (modelBroadcast != null) {
+        InternalOptimizerUtil.releaseBroadcast(modelBroadcast.uuid())
+        modelBroadcast = null
+      }
+      unpersistCachedModel(cachedModels)
+      cachedModels = null
+    }
+  }
+
+
+  def setNumOfSlice(numOfSlice: Int): this.type = {
+    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+      s" but got $numOfSlice")
+    this.numSlice = numOfSlice
+    this
+  }
+
+  def getNumOfSlice(): Int = {
+    this.numSlice
+  }
 
   def setCheckpointDir(path: Option[String]): this.type = {
     if (path.isDefined) {
@@ -978,6 +1223,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
     InternalOptimizerUtil.endEpoch(this)
     this
   }
+
 
   override def train(
         trainSet: FeatureSet[MiniBatch[T]],
@@ -1005,7 +1251,47 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
     if (checkPointTrigger.isDefined && validationMethod != null && validationSet != null) {
       this.setValidation(checkPointTrigger.get, validationSet.toDataSet(), validationMethod)
     }
-    this.optimize()
+    if (numSlice != 1) {
+      val state = InternalOptimizerUtil.getStateFromOptiMethod(
+        optimMethods.values.head)
+      if (checkPointTrigger.isDefined) {
+        if (checkPointTrigger.get.isInstanceOf[ZooTrigger]) {
+          checkPointTrigger.get.asInstanceOf[ZooTrigger].setZooState(state)
+        } else {
+          throw new IllegalArgumentException(
+            s"Excepted com.intel.analytics.zoo.common.ZooTrigger." +
+            s" Please change your trigger to an instance of ZooTrigger.")
+        }
+      }
+      if (!state.contains("numSlice")) {
+        state("numSlice") = numSlice
+        state("currentSlice") = 0
+      }
+      if (!state.contains("Loss")) {
+        state.update("Loss", Float.PositiveInfinity)
+      }
+      if (!state.contains("score")) {
+        state.update("score", 0f)
+      }
+
+      while(!endWhen(state)) {
+        val trueEpoch = Math.floor(state[Int]("currentSlice").toDouble / numSlice).toInt + 1
+        val newEndWhen = Trigger.or(endWhen, Trigger.maxEpoch(trueEpoch))
+        this.setEndWhen(newEndWhen)
+        if (checkPointTrigger.isDefined && checkpointDir.isDefined) {
+          // we should setCheckpoint every time before we call optimize(),
+          // as BigDL will overwrite checkpointPath to its subfolder.
+          this.setCheckpoint(checkpointDir.get, checkPointTrigger.get)
+        }
+        state("currentSlice") = state[Int]("currentSlice") + 1
+        this.train()
+        InternalOptimizerUtil.endEpoch(this)
+        // (neval - 1) is true iteration
+        state("epoch") = Math.floor(state[Int]("currentSlice").toDouble / numSlice).toInt + 1
+      }
+    } else {
+      this.train()
+    }
     this
   }
 
@@ -1141,5 +1427,35 @@ object InternalDistriOptimizer {
       }
     }
     results.map(a => (a._2, a._1)).toMap
+  }
+
+  protected def getLatestFile(path: String, fileName: String): String = {
+    val fl = new java.io.File(path)
+    val files = fl.listFiles(new FilenameFilter {
+      override def accept(dir: File, name: String): Boolean = {
+        name.startsWith(fileName)
+      }
+    })
+
+    var lastMod = Long.MinValue
+    var choice: String = null
+    files.map {file =>
+      if (file.lastModified() > lastMod) {
+        choice = file.getPath;
+        lastMod = file.lastModified();
+      }
+    }
+    return choice;
+  }
+
+  def unpersistCachedModel[T: ClassTag](
+      models: RDD[DistriOptimizer.Cache[T]] ): Unit = {
+    models.mapPartitions { iter =>
+      iter.foreach { arrayModels =>
+        arrayModels.localModels.foreach(_.release())
+      }
+      iter
+    }.count()
+    models.unpersist()
   }
 }
