@@ -276,6 +276,33 @@ object KerasUtils {
     method.invoke(obj, args: _*)
   }
 
+  private[zoo] def invokeMethodWithEv[T: ClassTag](
+        obj: String,
+        methodName: String,
+        args: Object*)(implicit ev: TensorNumeric[T]): Object = {
+    val clazz = Class.forName(obj)
+    val method =
+      try {
+        clazz.getMethod(methodName, args.map(_.getClass): _*)
+      } catch {
+        case t: Throwable =>
+          val methods = clazz.getMethods().filter(_.getName() == methodName)
+          require(methods.length == 1,
+            s"We should only found one result, but got ${methodName}: ${methods.length}")
+          methods(0)
+      }
+    val argsWithTag = args ++ Seq(implicitly[reflect.ClassTag[T]], ev)
+    method.invoke(obj, argsWithTag: _*)
+  }
+
+  private[zoo] def invokeMethodWithEv[T: ClassTag](
+        obj: Object,
+        methodName: String,
+        args: Object*)(implicit ev: TensorNumeric[T]): Object = {
+    val argsWithTag = args ++ Seq(implicitly[reflect.ClassTag[T]], ev)
+    invokeMethod(obj, methodName, argsWithTag: _*)
+  }
+
   /**
    * Count the total number of parameters for a KerasLayer.
    * Return a tuple (total params #, trainable params #)
