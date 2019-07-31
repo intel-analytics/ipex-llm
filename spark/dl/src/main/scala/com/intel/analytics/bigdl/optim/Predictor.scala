@@ -184,8 +184,7 @@ object Predictor {
     })
     dataSet
   }
-
-
+  
   def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
     batchPerPartition: Int, featurePaddingParam: Option[PaddingParam[T]])(
     implicit ev: TensorNumeric[T]): RDD[Sample[T]] = {
