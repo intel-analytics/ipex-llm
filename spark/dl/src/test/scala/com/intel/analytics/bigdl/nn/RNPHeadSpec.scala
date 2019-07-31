@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class RNPHeadSpec extends FlatSpec with Matchers {
   "RPNHead" should "be ok" in {
-    val proposal = new RPNHead(6, 3)
+    val proposal = new RPNHead[Float](6, 3)
     val input = Tensor[Float](T(T(T(T(0.7668, 0.1659, 0.4393, 0.2243),
       T(0.8935, 0.0497, 0.1780, 0.3011),
       T(0.1893, 0.9186, 0.2131, 0.3957)),
@@ -371,9 +371,17 @@ class RNPHeadSpec extends FlatSpec with Matchers {
 
         T(T(-0.0060f)))))
 
-    proposal.conv.weight.copy(weight_conv)
-    proposal.cls_logits.weight.copy(weight_logits)
-    proposal.bbox_pred.weight.copy(weight_pred)
+    val paramsTable = proposal.getParametersTable()
+    for (i <- paramsTable.keySet) {
+      val weight = paramsTable.get[Table](i).get.get[Tensor[Float]]("weight").get
+      if (i.toString contains "_cls_logits") {
+        weight.copy(weight_logits)
+      } else if (i.toString contains "_bbox_pred") {
+        weight.copy(weight_pred)
+      } else {
+        weight.copy(weight_conv)
+      }
+    }
 
     val out = proposal.forward(input).toTable
 
