@@ -16,20 +16,31 @@
 
 package com.intel.analytics.bigdl.nn
 
-import breeze.linalg.*
+import breeze.linalg.{*, min}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable.ArrayBuffer
+
 class AnchorGenerate(
   anchor_sizes: Array[Float],
   aspect_ratios: Array[Float],
-  anchor_stride: Array[Float],
-  straddle_thresh: Int = 0) extends AbstractModule[Table, Table, Float]{
+  anchor_stride: Array[Float]) extends AbstractModule[Table, Table, Float]{
 
   require(anchor_sizes.length == anchor_stride.length)
-  val scalesForStride = Array[Float](8f)
-  val cls = Anchor(aspect_ratios, scalesForStride)
+  val scalesForStride = new Array[Float](1)
+  val anchors = new ArrayBuffer[Anchor]
+  var i = 0
+  while (i < anchor_sizes.length) {
+    scalesForStride(0) = anchor_sizes(i) / anchor_stride(i)
+    val cls = Anchor(aspect_ratios, scalesForStride)
+    anchors.append(cls)
+    i += 1
+  }
+
+
+  def num_anchors_per_location(): Int = anchors(0).anchorNum
 
 /**
  * @param input input(1): features map
@@ -40,16 +51,17 @@ class AnchorGenerate(
     val featuresMap = input[Tensor[Float]](1)
     val imageList = input[Tensor[Float]](2)
 
-   require(featuresMap.size(1) == anchor_sizes.length)
-   require(featuresMap.size(1) == imageList.size(1))
+   require(featuresMap.size(1) == imageList.size(1), "")
+   val length = Math.min(anchor_sizes.length, featuresMap.size(1))
 
-   val zipArr = anchor_sizes.zip(anchor_stride)
    var i = 0
-   while (i < zipArr.length) {
+   while (i < length) {
      val size = anchor_sizes(i)
      val stride = anchor_stride(i)
-     val feature = featuresMap.select(1, i + 1).size()
-     val res = cls.generateAnchors(feature(0), feature(1), stride).clone()
+     val feature = featuresMap.select(1, i + 1)
+     val height = feature.size(2)
+     val width = feature.size(3)
+     val res = anchors(i).generateAnchors(width, height, stride).clone()
      output(i + 1) = T(res, imageList.select(1, i + 1))
      i += 1
    }

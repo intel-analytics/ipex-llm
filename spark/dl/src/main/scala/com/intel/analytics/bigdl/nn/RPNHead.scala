@@ -25,20 +25,22 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 class RPNHead(in_channels: Int, num_anchors: Int)
   extends AbstractModule[Tensor[Float], Table, Float]{
 
-  // todo: check Convolution2D
-  private val conv = SpatialConvolution[Float](in_channels, in_channels,
+  private[bigdl] val conv = SpatialConvolution[Float](in_channels, in_channels,
     kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
+  RNG.setSeed(100)
   conv.weight.apply1(_ => RNG.normal(0, 0.01).toFloat)
   conv.bias.apply1(_ => 0.0f)
   private val relu = ReLU[Float]()
 
-  private val cls_logits = SpatialConvolution[Float](in_channels, num_anchors,
+  private[bigdl] val cls_logits = SpatialConvolution[Float](in_channels, num_anchors,
     kernelH = 1, kernelW = 1, strideH = 1, strideW = 1)
+  RNG.setSeed(100)
   cls_logits.weight.apply1(_ => RNG.normal(0, 0.01).toFloat)
   cls_logits.bias.apply1(_ => 0.0f)
 
-  private val bbox_pred = SpatialConvolution[Float](in_channels, num_anchors * 4,
-    kernelH = 3, kernelW = 3, strideH = 1, strideW = 1)
+  private[bigdl] val bbox_pred = SpatialConvolution[Float](in_channels, num_anchors * 4,
+    kernelH = 1, kernelW = 1, strideH = 1, strideW = 1)
+  RNG.setSeed(100)
   bbox_pred.weight.apply1(_ => RNG.normal(0, 0.01).toFloat)
   bbox_pred.bias.apply1(_ => 0.0f)
 
@@ -53,5 +55,12 @@ class RPNHead(in_channels: Int, num_anchors: Int)
 
   override def updateGradInput(input: Tensor[Float], gradOutput: Table): Tensor[Float] = {
     gradInput
+  }
+
+  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
+    val p1 = conv.parameters()
+    val p2 = cls_logits.parameters()
+    val p3 = bbox_pred.parameters()
+    (p1._1 ++ p2._1 ++ p3._1, p1._2 ++ p2._2 ++ p3._2)
   }
 }
