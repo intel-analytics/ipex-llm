@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.feature.{DistributedFeatureSet, FeatureSet}
+import com.intel.analytics.zoo.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
 import com.intel.analytics.zoo.pipeline.api.keras.models.InternalDistriOptimizer
 import org.apache.log4j.Logger
 
@@ -42,6 +42,7 @@ trait AbstractEstimator[T]{
                validationMethod: Array[ValidationMethod[T]]
               ): Map[ValidationMethod[T], ValidationResult]
 
+  def close(): Unit
 }
 
 private[estimator] trait GradientClipping
@@ -120,14 +121,15 @@ class Estimator[T: ClassTag] private[zoo](
             checkPointTrigger: Option[Trigger] = None,
             validationSet: FeatureSet[MiniBatch[T]] = null,
             validationMethod: Array[ValidationMethod[T]] = null): this.type = {
-    if (internalEstimator == null) {
-      internalEstimator = trainSet match {
-        case d: DistributedFeatureSet[MiniBatch[T]] =>
-          new InternalDistriOptimizer[T](model, null, criterion)
+    trainSet match {
+      case d: DistributedFeatureSet[MiniBatch[T]] =>
+        if (internalEstimator == null) {
+          internalEstimator = new InternalDistriOptimizer[T](model, null, criterion)
             .setCheckpointDir(modelDir)
             .setOptimMethods(optimMethods)
-        case _ => throw new IllegalArgumentException("Unsupported FeatureSet type.")
-      }
+            .setNumOfSlice(d.numOfSlice)
+        }
+      case _ => throw new IllegalArgumentException("Unsupported FeatureSet type.")
     }
     if (gradientClipping.nonEmpty) {
       // as internalEstimator will deal with the duplicated type of clipping,
@@ -171,6 +173,12 @@ class Estimator[T: ClassTag] private[zoo](
       }
     }
     internalEstimator.evaluate(validationSet, validationMethod)
+  }
+
+  override def close(): Unit = {
+    if (internalEstimator != null) {
+      internalEstimator.close()
+    }
   }
 }
 
@@ -251,5 +259,6 @@ object Estimator {
         model: Module[T])(implicit ev: TensorNumeric[T]): Estimator[T] = {
     new Estimator[T](model, Map())
   }
+
 
 }
