@@ -40,8 +40,6 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
     val (shiftX, shiftY) = generateShifts(width, height, featStride)
     if (featStride != baseSize) {
       basicAnchors = generateBasicAnchors(ratios, scales, featStride)
-      print(basicAnchors)
-      // todo: cahnge base size
       baseSize = featStride.toInt
     }
     getAllAnchors(shiftX, shiftY, basicAnchors)
@@ -125,8 +123,7 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
    * 1. generate anchors for different ratios (N, 4)
    * 2. for each anchors generated in 1, scale them to get scaled anchors (M*N, 4)
    */
-  // todo: same to anchor_generator generate_anchors
-  private[bigdl] def generateBasicAnchors(_ratios: Array[Float], _scales: Array[Float],
+  private[nn] def generateBasicAnchors(_ratios: Array[Float], _scales: Array[Float],
     baseSize: Float = 16): Tensor[Float] = {
     val ratios = Tensor(Storage(_ratios))
     val scales = Tensor(Storage(_scales))

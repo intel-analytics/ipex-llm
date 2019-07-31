@@ -16,51 +16,40 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.reflect.ClassTag
+
 // Adds a simple RPN Head with classification and regression heads
-class RPNHead(in_channels: Int, num_anchors: Int)
-  extends AbstractModule[Tensor[Float], Table, Float]{
+class RPNHead[T: ClassTag](in_channels: Int, num_anchors: Int)(implicit ev: TensorNumeric[T])
+  extends BaseModule {
 
-  private[bigdl] val conv = SpatialConvolution[Float](in_channels, in_channels,
-    kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
-  RNG.setSeed(100)
-  conv.weight.apply1(_ => RNG.normal(0, 0.01).toFloat)
-  conv.bias.apply1(_ => 0.0f)
-  private val relu = ReLU[Float]()
+  override def buildModel(): Module[T] = {
+    val conv = SpatialConvolution[T](in_channels, in_channels,
+      kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
+    conv.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
+    conv.bias.apply1(_ => ev.zero)
+    val relu = ReLU[T]()
+    val conv2 = SpatialConvolution[T](in_channels, num_anchors,
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
+    conv2.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
+    conv2.bias.apply1(_ => ev.zero)
+    val conv3 = SpatialConvolution[T](in_channels, num_anchors * 4,
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
+    conv3.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
+    conv3.bias.apply1(_ => ev.zero)
 
-  private[bigdl] val cls_logits = SpatialConvolution[Float](in_channels, num_anchors,
-    kernelH = 1, kernelW = 1, strideH = 1, strideW = 1)
-  RNG.setSeed(100)
-  cls_logits.weight.apply1(_ => RNG.normal(0, 0.01).toFloat)
-  cls_logits.bias.apply1(_ => 0.0f)
+    val input = Input()
+    val node1 = conv.inputs(input)
+    val node2 = relu.inputs(node1)
+    val node3 = conv2.inputs(node2)
+    val node4 = conv3.inputs(node2)
 
-  private[bigdl] val bbox_pred = SpatialConvolution[Float](in_channels, num_anchors * 4,
-    kernelH = 1, kernelW = 1, strideH = 1, strideW = 1)
-  RNG.setSeed(100)
-  bbox_pred.weight.apply1(_ => RNG.normal(0, 0.01).toFloat)
-  bbox_pred.bias.apply1(_ => 0.0f)
-
-  override def updateOutput(input: Tensor[Float]): Table = {
-    val conv_res = conv.forward(input)
-    val relu_res = relu.forward(conv_res)
-    val logits_res = cls_logits.forward(relu_res)
-    val bbox_res = bbox_pred.forward(relu_res)
-    output = T(logits_res, bbox_res)
-    output
-  }
-
-  override def updateGradInput(input: Tensor[Float], gradOutput: Table): Tensor[Float] = {
-    gradInput
-  }
-
-  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
-    val p1 = conv.parameters()
-    val p2 = cls_logits.parameters()
-    val p3 = bbox_pred.parameters()
-    (p1._1 ++ p2._1 ++ p3._1, p1._2 ++ p2._2 ++ p3._2)
+    Graph(input, Array(node3, node4))
   }
 }

@@ -18,11 +18,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-class RPNSpec extends FlatSpec with Matchers {
+class RPNHeadSpec extends FlatSpec with Matchers {
   "rpn head" should "be ok" in {
-    val head = new RPNHead(in_channels = 25, num_anchors = 3)
+    val head = new RPNHead[Float](in_channels = 25, num_anchors = 3)
 
     val input = Tensor[Float](T(T(T(T(0.0313, 0.9142, 0.6995, 0.2265, 0.9035, 0.4504, 0.2945),
       T(0.1221, 0.9339, 0.8726, 0.1126, 0.2084, 0.8763, 0.0415),
@@ -103,5 +104,13 @@ class RPNSpec extends FlatSpec with Matchers {
     val out = head.forward(input)
 
     println("done")
+  }
+}
+
+class RPNHeadSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val head = new RPNHead[Float](in_channels = 25, num_anchors = 3).setName("RPNHead")
+    val features = Tensor[Float](1, 25, 3, 7).rand()
+    runSerializationTest(head, features)
   }
 }
