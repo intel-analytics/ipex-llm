@@ -22,7 +22,47 @@ import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ValidationSpec extends FlatSpec with Matchers {
-  "precission for a class" should "be correct on 2d tensor" in {
+  "f1score" should "be correct on 2d tensor" in {
+    val target = Tensor[Double](
+      T(
+       T(1.0),
+       T(2.0),
+       T(3.0),
+       T(2.0),
+       T(3.0),
+       T(3.0),
+       T(1.0),
+       T(2.0),
+       T(2.0)))
+
+    val output = Tensor[Double](
+      T(
+        T(0.0, 0.1, 0.0),
+        T(0.0, 0.1, 0.0),
+        T(0.1, 0.0, 0.0),
+        T(0.0, 0.1, 0.0),
+        T(0.1, 0.0, 0.0),
+        T(0.0, 0.0, 0.1),
+        T(0.0, 0.1, 0.0),
+        T(0.0, 0.0, 0.1),
+        T(0.0, 0.1, 0.0)
+      )
+    )
+
+    val f1ScoreAvgMicro = new F1ScoreAvg[Double](MicroAverage)
+    val f1ScoreAvgMacro = new F1ScoreAvg[Double](MacroAverage)
+
+    val f1ScoreAvgMacroResult = f1ScoreAvgMacro(output, target)
+    val f1ScoreAvgMicroResult = f1ScoreAvgMicro(output, target)
+
+    f1ScoreAvgMacroResult.result()._1 should be (0.35555556F)
+    f1ScoreAvgMicroResult.result()._1 should be (0.44444445F)
+
+    println("Mqcro " + f1ScoreAvgMacroResult)
+    println("Micro " + f1ScoreAvgMicroResult)
+  }
+
+  "precision for a class" should "be correct on 2d tensor" in {
     val output = Tensor[Double](
       T(
         T(0.8, 0.0, 0.1, 0.0),
@@ -57,7 +97,7 @@ class ValidationSpec extends FlatSpec with Matchers {
 
     val validation = new Precision[Double](1.0)
     val result = validation(output, target)
-    val test = new PrecisionResult[Double](1.0, tpByClass = 6, fpByClass = 3)
+    val test = new PrecisionResult[Double](1.0, tpByClass = 6, fpByClass = 1)
 
     result should be(test)
   }
@@ -97,7 +137,7 @@ class ValidationSpec extends FlatSpec with Matchers {
 
     val validation = new Precision[Float](1.0f)
     val result = validation(output, target)
-    val test = new PrecisionResult[Float](1.0f, 6, 3)
+    val test = new PrecisionResult[Float](1.0f, 6, 1)
 
     result should be(test)
   }
@@ -137,7 +177,7 @@ class ValidationSpec extends FlatSpec with Matchers {
 
     val validation = new Recall[Double](1.0f)
     val result = validation(output, target)
-    val test = new RecallResult(1.0, 6, 1)
+    val test = new RecallResult(1.0, 6, 3)
 
     result should be(test)
   }
@@ -174,47 +214,10 @@ class ValidationSpec extends FlatSpec with Matchers {
 
     val validation = new Recall[Float](1.0f)
     val result = validation(output, target)
-    val test = new RecallResult(1.0, 6, 1)
+    val test = new RecallResult(1.0, 6, 3)
 
     result should be(test)
 
-  }
-
-  "F1Score for a class" should "be correct on 2d tensor" in {
-    val output = Tensor[Double](
-      T(
-        T(0.8, 0.0, 0.1, 0.0),
-        T(0.2, 0.0, 0.0, 0.0),
-        T(0.2, 0.0, 0.0, 0.0),
-        T(0.2, 0.0, 0.0, 0.0),
-        T(0.0, 0.1, 0.0, 0.0),
-        T(0.0, 0.0, 0.1, 0.0),
-        T(0.2, 0.0, 0.0, 0.0),
-        T(0.2, 0.0, 0.0, 0.0),
-        T(0.2, 0.0, 0.0, 0.0),
-        T(0.0, 0.1, 0.0, 0.0))
-    )
-
-    val target = Tensor[Double](
-      T(
-        T(2.0),
-        T(1.0),
-        T(1.0),
-        T(1.0),
-        T(1.0),
-        T(1.0),
-        T(1.0),
-        T(1.0),
-        T(1.0),
-        T(1.0))
-    )
-
-    val validation = new F1Score[Double](1.0)
-    val result = validation(output, target)
-    // (2 * (precission * recall)) / ( precission + recall)
-    val test = new F1ScoreResult[Double]( 1.0, 6, 3, 1)
-
-    result should be(test)
   }
 
   "precission, recall and f1score" should "be correct in a concrete example" in {
@@ -246,17 +249,6 @@ class ValidationSpec extends FlatSpec with Matchers {
       .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
     r4 should be (0.69F)
 
-
-    val f1ScorePositives = new F1ScoreResult[Float](1.0f, 42, 16, 13)
-    val r5 = BigDecimal(f1ScorePositives.result()._1)
-      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
-    r5 should be (0.74F)
-
-    val f1ScoreNegatives = new F1ScoreResult[Float](0.0f, 29, 13, 16)
-    val r6 = BigDecimal(f1ScoreNegatives.result()._1)
-      .setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat
-
-    r6 should be (0.67F)
   }
 
   "treeNN accuracy" should "be correct on 2d tensor" in {

@@ -132,7 +132,7 @@ Test result: 0.0, total_num: 10, method: Top5Accuracy
 
 ---
 ## Recall ##
-In some cases, recall metric is very useful because it offers how many of your predicted documents are relevant. In the example below, recall for the class 1.0 is calculated.
+In some cases, recall metric is very useful because it offers how many of your predicted documents are relevant. The class for which we need to calculate the Recall must be included as parameter.
 
 **Scala:**
 ```scala
@@ -141,6 +141,8 @@ model.evaluate(dataSet, Array(recall))
 recall: com.intel.analytics.bigdl.optim.Recall[Float] = RECALL
 res6: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((Recall for class 1.0: 0.0,RECALL))
 ```
+
+For multiclass scenarios this metric is evaluated like **TP_For_A_Class / TP_For_A_Class  + FN_For_A_Class**
 
 ---
 ## Precision ##
@@ -153,6 +155,8 @@ model.evaluate(dataSet, Array(precision))
 precision: com.intel.analytics.bigdl.optim.Precision[Float] = PRECISION
 res7: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((Precision for class 1.0: 0.0,PRECISION))
 ```
+
+As with the Recall, Precision in a multiclass scenario is calculated like **TP_For_A_Class / Total_Predictions_For_A_Class**
 
 ---
 ## F1Score ##

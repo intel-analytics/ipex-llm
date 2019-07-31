@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang3.SerializationUtils
 
+import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 
 /**
@@ -42,6 +43,7 @@ trait ValidationMethod[T] extends Serializable {
 
   // deep clone the object
   override def clone(): ValidationMethod[T] = SerializationUtils.clone(this)
+
 }
 
 /**
@@ -163,6 +165,7 @@ class TreeNNAccuracy[T: ClassTag]()(
   override def format(): String =
     s"TreeNNAccuracy()"
 }
+
 
 /**
  * Caculate the percentage that output's max probability index equals target
@@ -513,85 +516,94 @@ class MAE[@specialized(Float, Double)T: ClassTag]()
   override def format(): String = "MAE"
 }
 
-/**
-This validation method is used to obtain the performance in therms of recall:
-  tp / (tp + fn). This class requires a input class as parameter.
-  */
-class Recall[T: ClassTag](_class: T)
- (implicit ev: TensorNumeric[T])
-  extends ValidationMethod[T] {
-
-  var tpByClass : Int = 0
-  var lcByClass : Int = 0
-
-  override def apply(output: Activity, target: Activity):
-  ValidationResult = {
-
+object TensorValidationOps {
+  /*
+  This function converts 2D tensors
+   */
+  def checkTensorDims[T: ClassTag](output: Activity, target: Activity)
+   (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val _target = target.asInstanceOf[Tensor[T]]
-    val _output = if (output.toTensor[T].nDimension() != 1 &&
+    if (output.toTensor[T].nDimension() != 1 &&
       output.toTensor[T].size().head != _target.size().head) {
       output.toTensor[T].narrow(1, 1, _target.size().head)
     } else {
       output.toTensor[T]
     }
+  }
 
-    if (_output.dim() == 2) {
-      (if (_output.size(2) == 1) {
-        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
-      } else {
-        _output.max(2)._2.squeeze()
-      }).map(_target, (b, a) => {
-        if (a == b) {
-          if (a == _class) {
-            tpByClass += 1
-          }
+  def transformOutput[T: ClassTag, A](output: Tensor[T], target: Tensor[T])
+   (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val nDim = output.dim()
+    nDim match {
+      case 2 =>
+        if (output.size(2) == 1) {
+          output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
         } else {
-          if (b == _class) {
-            lcByClass += 1
-          }
+          output.max(2)._2.squeeze()
         }
-        a
-      })
-    } else if (_output.dim == 1) {
-      require(_target.size(1) == 1)
-      (if (_output.size(1) == 1) {
-        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
-      } else {
-        _output.max(1)._2
-      }).map(_target, (b, a) => {
-        if (a == b) {
-          if (a == _class) {
-            tpByClass += 1
-          }
+      case 1 =>
+        require(target.size(1) == 1)
+        if (output.size(1) == 1) {
+          output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
         } else {
-          // Each key corresponds to the false predictions that have been  made
-          if (b == _class) {
-            lcByClass += 1
-          }
+          output.max(1)._2
         }
-        a
-      })
-    } else {
-      throw new IllegalArgumentException
+      case _ =>
+        throw new IllegalArgumentException
     }
+  }
+}
 
-    new RecallResult(_class, tpByClass, lcByClass)
+import TensorValidationOps._
+
+/**
+This validation method is used to obtain the performance in therms of recall:
+  tp / (tp + fn). This class requires an input class as parameter.
+  */
+class Recall[T: ClassTag](classId: T)
+ (implicit ev: TensorNumeric[T])
+  extends ValidationMethod[T] {
+
+  override def apply(output: Activity, target: Activity):
+  ValidationResult = {
+
+    var tpByClass : Int = 0
+    var lcByClass : Int = 0
+
+    val _target = target.asInstanceOf[Tensor[T]]
+    val _output = checkTensorDims(output, target)
+
+    transformOutput(_output, _target).map(_target, (b, a) => {
+      // bs are the predictions
+      if (b == classId) {
+        if (a == b) {
+          tpByClass += 1
+        }
+      }
+      if(a == classId) {
+        if (a != b) {
+          lcByClass += 1
+        }
+      }
+      a
+    })
+
+    new RecallResult(classId, tpByClass, lcByClass)
   }
 
   override def format(): String = "RECALL"
 }
 
 class RecallResult[T: ClassTag]
-(_class: T, private var tpByClass: Int, private var lcByClass: Int)
-(implicit ev: TensorNumeric[T])
-  extends ValidationResult {
+ (classId: T, private var tpByClass: Int, private var lcByClass: Int)
+ (implicit ev: TensorNumeric[T]) extends ValidationResult {
 
   override def result(): (Float, Int) = {
     if (tpByClass != 0.0f || lcByClass != 0.0f) {
-      (tpByClass.toFloat / (tpByClass + lcByClass), ev.toType[Int](_class))
+      (tpByClass.toFloat / (tpByClass + lcByClass), ev.toType[Int](classId))
     }
     else {
-      (0.0f, ev.toType[Int](_class))
+      (0.0f, ev.toType[Int](classId))
     }
   } // Apply the recall formula TP /(TP + FN)
 
@@ -605,7 +617,8 @@ class RecallResult[T: ClassTag]
 
   // scalastyle:on methodName
   override protected def format(): String = {
-    s"Recall for class ${_class}: ${result()._1}"
+    s"Recall for class ${classId}: ${result()._1}." +
+    s"True Predictions: ${tpByClass}. Incorrect predictions in other classes: ${lcByClass}"
   }
 
   override def equals(obj: Any): Boolean = {
@@ -632,83 +645,54 @@ class RecallResult[T: ClassTag]
 }
 
 /**
-This validation method is used to obtain the performance in therms of precision:
+  This validation method is used to obtain the performance in therms of precision:
   tp / (tp + fp). This class requires an input parameter which is the class
   for which we need to obtain the precision.
   */
-class Precision[T: ClassTag](_class: T)
+class Precision[T: ClassTag](classId: T)
   (implicit ev: TensorNumeric[T])
   extends ValidationMethod[T] {
-
-  var tpByClass : Int = 0
-  var fpByClass : Int = 0
 
   override def apply(output: Activity, target: Activity):
 
   ValidationResult = {
+
+    var tpByClass : Int = 0
+    var fpByClass : Int = 0
+
     val _target = target.asInstanceOf[Tensor[T]]
-    val _output = if (output.toTensor[T].nDimension() != 1 &&
-      output.toTensor[T].size().head != _target.size().head) {
-      output.toTensor[T].narrow(1, 1, _target.size().head)
-    } else {
-      output.toTensor[T]
-    }
+    val _output = checkTensorDims(output, target)
 
-    if (_output.dim() == 2) {
-      (if (_output.size(2) == 1) {
-        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
-      } else {
-        _output.max(2)._2.squeeze()
-      }).map(_target, (b, a) => {
-        if (a == _class) {
-          if (a == b) {
-            tpByClass += 1
-          }
-          else {
-            fpByClass += 1
-          }
+    transformOutput(_output, _target).map(_target, (b, a) => {
+      // bs are the predictions
+      if (b == classId) {
+        if (a == b) {
+          tpByClass += 1
         }
-        a
-      })
-    } else if (_output.dim == 1) {
-      require(_target.size(1) == 1)
-      (if (_output.size(1) == 1) {
-        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
-      } else {
-        _output.max(1)._2
-      }).map(_target, (b, a) => {
-        if (a == _class) {
-          if (a == b) {
-            tpByClass += 1
-          }
-          else {
-            fpByClass += 1
-          }
+        else {
+          fpByClass += 1
         }
-        a
-      })
-    } else {
-      throw new IllegalArgumentException
-    }
+      }
+      a
+    })
 
-    new PrecisionResult(_class, tpByClass, fpByClass)
+    new PrecisionResult(classId, tpByClass, fpByClass)
   }
 
   override def format(): String = "PRECISION"
 }
 
-class PrecisionResult[T: ClassTag](_class: T,
-                                   private var tpByClass: Int,
-                                   private var fpByClass: Int)
-                                  (implicit ev: TensorNumeric[T])
+class PrecisionResult[T: ClassTag](classId: T,
+  private var tpByClass: Int, private var fpByClass: Int)
+  (implicit ev: TensorNumeric[T])
   extends ValidationResult {
 
   override def result(): (Float, Int) = {
     if (tpByClass != 0 || fpByClass != 0) {
-      (tpByClass.toFloat / (tpByClass + fpByClass), ev.toType[Int](_class))
+      (tpByClass.toFloat / (tpByClass + fpByClass), ev.toType[Int](classId))
     }
     else {
-      (0.0f, ev.toType[Int](_class))
+      (0.0f, ev.toType[Int](classId))
     }
   }
 
@@ -742,85 +726,144 @@ class PrecisionResult[T: ClassTag](_class: T,
     hash
   }
 
-  override protected def format(): String = s"Precision for class ${_class}: ${result()._1}"
+  override protected def format(): String = s"Precision for class ${classId}: " +
+    s"${result()._1}. True Predictions: ${tpByClass}. False Predictions: ${fpByClass}"
 }
 
-class F1Score[T: ClassTag](_class: T)
-                          (implicit ev: TensorNumeric[T])
+
+// Available average methods. Thin about including
+// weighted macro average.
+
+sealed trait AverageMethod
+case object MicroAverage extends AverageMethod
+case object MacroAverage extends AverageMethod
+
+class F1ScoreAvg[T: ClassTag](average: AverageMethod)
+  (implicit ev: TensorNumeric[T], order: Ordering[T])
   extends ValidationMethod[T] {
 
-  var tpByClass : Int = 0
-  var fpByClass : Int = 0
-  val lcByClass : Int = 0
+  // Using in macro case
 
   override def apply(output: Activity, target: Activity) :
   ValidationResult = {
-    val pr = new Precision[T](_class)
-    val rc = new Recall[T](_class)
-    pr.apply(output, target)
-    rc.apply(output, target)
-    new F1ScoreResult[T](_class, pr.tpByClass, pr.fpByClass, rc.lcByClass)
-  }
 
-  override protected def format(): String = "F1Score"
-}
+    // Using in micro case
+    var tpByClass : Map[T, Int] = Map()
+    var fpByClass : Map[T, Int] = Map()
+    var lcByClass : Map[T, Int] = Map()
 
-class F1ScoreResult[T: ClassTag](_class: T, private var tpByClass: Int,
-  private var fpByClass: Int, private var lcByClass: Int)
-  (implicit ev: TensorNumeric[T]) extends ValidationResult {
-  override def result(): (Float, Int) = {
+    val _target = target.asInstanceOf[Tensor[T]]
+    val _output = checkTensorDims(output, target)
 
-    val precision = if (tpByClass != 0 || fpByClass != 0) {
-      (tpByClass.toFloat / (tpByClass + fpByClass), tpByClass)
-    }
-    else {
-      (0.0f, tpByClass)
-    }
-
-    val recall = {
-      if (tpByClass != 0.0f || lcByClass != 0.0f) {
-        (tpByClass.toFloat / (tpByClass + lcByClass), ev.toType[Int](_class))
+    transformOutput(_output, _target).map(_target, (b, a) => {
+      if (a == b) {
+        tpByClass = tpByClass + (b -> (tpByClass.getOrElse(b, 0) + 1))
       }
       else {
-        (0.0f, ev.toType[Int](_class))
-      }
-    }
+        // Check if there is no pair for true positives
+        if (!tpByClass.get(b).isDefined) {
+          tpByClass = tpByClass + (b -> 0)
+        }
 
-    // harmonic mean
-    ((2 * (precision._1 * recall._1)) / ( precision._1 + recall._1), ev.toType[Int](_class))
+        fpByClass = fpByClass + (b -> (fpByClass.getOrElse(b, 0) + 1))
+        lcByClass = lcByClass + (a -> (lcByClass.getOrElse(a, 0) + 1))
+      }
+      a
+    })
+
+    new F1ScoreAvgResult(average, tpByClass, fpByClass, lcByClass)
+  }
+
+  override protected def format(): String = "F1ScoreAvg"
+}
+
+class F1ScoreAvgResult[T: ClassTag](average: AverageMethod, private var tpByClass: Map[T, Int],
+  private var fpByClass: Map[T, Int],
+  private var lcByClass: Map[T, Int])
+ (implicit ev: TensorNumeric[T], order: Ordering[T]) extends ValidationResult {
+
+  private var precisionValue : Float = 0.0F
+  private var recallValue : Float = 0.0F
+  private var f1score : Float = 0.0F
+
+  override def result(): (Float, Int) = {
+    /*
+      Using micro or macro average
+     */
+    average match {
+      case MicroAverage =>
+        // Sum tp and fp
+        val tps = tpByClass.values.sum
+
+        precisionValue = {
+          val fps = fpByClass.values.sum
+          tps.toFloat / (tps + fps)
+        }
+
+        recallValue = {
+          val lcs = lcByClass.values.sum
+          tps.toFloat / (tps + lcs)
+        }
+
+        ((2 * (precisionValue * recallValue)) / ( precisionValue + recallValue), 0)
+
+      case MacroAverage =>
+        // Macro weight
+        val tupledMetrics =
+          (tpByClass.toSeq.sortBy(_._1),
+            fpByClass.toSeq.sortBy(_._1), lcByClass.toSeq.sortBy(_._1)).zipped
+
+        val results = tupledMetrics.map {
+          case ((cls, tp), (cls2, fp), (cls3, lc)) =>
+            val precision = tp.toFloat / (tp + fp)
+            val recall = tp.toFloat / (lc + tp)
+            (cls, (precision, recall))
+        }
+
+
+        val metricsList = results.map { case (classId, (precision, recall)) =>
+          val f1scorePerClass = {
+            if (precision != 0 || recall != 0) {
+              (2 * (precision * recall)) / ( precision + recall)
+            } else {
+              0
+            }
+          }
+          (f1scorePerClass, precision, recall)
+        }
+
+        f1score = metricsList.map(_._1).sum / results.size
+        precisionValue = metricsList.map(_._2).sum / results.size
+        recallValue = metricsList.map(_._3).sum / results.size
+
+        (f1score, 0)
+    }
   }
 
   override def +(other: ValidationResult): ValidationResult = {
-    val otherResult = other.asInstanceOf[F1ScoreResult[T]]
-    this.lcByClass += otherResult.lcByClass
-    this.tpByClass += otherResult.tpByClass
-    this.fpByClass += otherResult.fpByClass
+    val otherResult = other.asInstanceOf[F1ScoreAvgResult[T]]
+    this.lcByClass ++= otherResult.lcByClass
+    this.tpByClass ++= otherResult.tpByClass
+    this.fpByClass ++= otherResult.fpByClass
     this
   }
 
   override def equals(obj: Any): Boolean = {
-    if (obj == null) {
-      return false
-    }
-    if (!obj.isInstanceOf[F1ScoreResult[T]]) {
-      return false
-    }
-    val other = obj.asInstanceOf[F1ScoreResult[T]]
-    if (this.eq(other)) {
-      return true
-    }
-    this.tpByClass == other.tpByClass && this.fpByClass == other.fpByClass &&
-      this.lcByClass == other.lcByClass
+    tpByClass.eq(fpByClass) && fpByClass.eq(lcByClass)
   }
 
   override def hashCode(): Int = {
     val seed = 37
     var hash = 1
-    hash = hash * seed + this.fpByClass
-    hash = hash * seed + this.tpByClass
-    hash = hash * seed + this.lcByClass
+    hash = hash * seed + this.fpByClass.hashCode()
+    hash = hash * seed + this.tpByClass.hashCode()
+    hash = hash * seed + this.lcByClass.hashCode()
     hash
   }
 
-  override protected def format(): String = s"F1Score for class ${_class}: ${result()._1}"
+  override protected def format(): String = {
+    val (v, _) = result()
+    s"Results for type ${average}: " +
+      s"Precision ${precisionValue}. Recall ${recallValue}. F1 ${v}"
+  }
 }
