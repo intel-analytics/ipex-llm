@@ -58,8 +58,6 @@ class ValidationSpec extends FlatSpec with Matchers {
     f1ScoreAvgMacroResult.result()._1 should be (0.35555556F)
     f1ScoreAvgMicroResult.result()._1 should be (0.44444445F)
 
-    println("Mqcro " + f1ScoreAvgMacroResult)
-    println("Micro " + f1ScoreAvgMicroResult)
   }
 
   "precision for a class" should "be correct on 2d tensor" in {
