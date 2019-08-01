@@ -24,6 +24,12 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * Feature Pyramid Network.
+ * @param in_channels_list number of channels of feature maps
+ * @param out_channels number of channels of FPN output
+ */
+
 class FPN[T : ClassTag](
   val in_channels_list: Array[Int],
   val out_channels: Int
@@ -37,7 +43,7 @@ class FPN[T : ClassTag](
 
   private val graph: Graph[T] = buildGraph()
 
-  def buildGraph(): Graph[T] = {
+  private def buildGraph(): Graph[T] = {
     for (i <- 0 to num_feature_maps - 1) {
       if (in_channels_list(i) != 0) {
         val inner_block_module =
@@ -81,7 +87,7 @@ class FPN[T : ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = null
+    gradInput = graph.backward(input, gradOutput).toTable
     gradInput
   }
 
@@ -103,6 +109,11 @@ class FPN[T : ClassTag](
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), in_channels_list, out_channels)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    this
   }
 
   override def reset(): Unit = {
