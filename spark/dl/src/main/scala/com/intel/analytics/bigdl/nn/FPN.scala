@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -35,15 +35,12 @@ class FPN[T : ClassTag](
   val out_channels: Int
 )
   (implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Table, T]{
+  extends BaseModule[T]{
+  override def buildModel(): Module[T] = {
+    val num_feature_maps = in_channels_list.length
+    val inner_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
+    val layer_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
 
-  private val num_feature_maps = in_channels_list.length
-  private val inner_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
-  private val layer_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
-
-  private val graph: Graph[T] = buildGraph()
-
-  private def buildGraph(): Graph[T] = {
     for (i <- 0 to num_feature_maps - 1) {
       if (in_channels_list(i) != 0) {
         val inner_block_module =
@@ -81,20 +78,6 @@ class FPN[T : ClassTag](
     Graph(Array(input), results)
   }
 
-  override def updateOutput(input: Table): Table = {
-    output = graph.forward(input).toTable
-    output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = graph.backward(input, gradOutput).toTable
-    gradInput
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    graph.parameters()
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[FPN[T]]
 
   override def equals(other: Any): Boolean = other match {
@@ -111,14 +94,9 @@ class FPN[T : ClassTag](
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
-  override def clearState() : this.type = {
-    super.clearState()
-    this
-  }
-
   override def reset(): Unit = {
     super.reset()
-    graph.reset()
+    model.reset()
   }
 
   override def toString: String = s"FPN($out_channels)"
