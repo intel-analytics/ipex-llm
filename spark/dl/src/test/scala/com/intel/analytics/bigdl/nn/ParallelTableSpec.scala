@@ -133,6 +133,38 @@ class ParallelTableSpec extends FlatSpec with Matchers {
     }
   }
 
+  "A ParallelTable in Graph" should "generate correct output" in {
+    val input = T(
+      Tensor[Float](10).randn(),
+      Tensor[Float](10).randn())
+
+    val gradOutput = T(
+      Tensor[Float](3).randn(),
+      Tensor[Float](3).randn())
+
+    val linear1 = new Linear[Float](10, 3)
+    val linear2 = new Linear[Float](10, 3)
+    val expectedOutput = T(
+      linear1.updateOutput(input(1)),
+      linear2.updateOutput(input(2)))
+
+    val input_node = Input[Float]()
+    val module = ParallelTable[Float]()
+    module.add(linear1)
+    module.add(linear2)
+    val output = module.inputs(input_node)
+    val graph = Graph(Array(input_node), Array(output))
+    val mapOutput = graph.forward(input)
+    mapOutput should equal (expectedOutput)
+
+    val expectedGradInput = T(
+      linear1.updateGradInput(input(1), gradOutput(1)),
+      linear2.updateGradInput(input(2), gradOutput(2)))
+    val mapGradInput = graph.backward(input, gradOutput)
+
+    mapGradInput should equal (expectedGradInput)
+  }
+
 }
 
 class ParallelTableSerialTest extends ModuleSerializationTest {
