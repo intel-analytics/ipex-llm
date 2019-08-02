@@ -21,14 +21,18 @@ package com.intel.analytics.bigdl.onnx
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.bytedeco.javacpp._
 import org.bytedeco.onnx._
 import org.bytedeco.onnx.global.onnx._
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
+import scala.tools.scalap.ByteArrayReader
 
 
-class BigDLModel {
+class BigDLModel[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   // The version of the IR this model targets. See Version enum above.
   // This field MUST be present.
@@ -76,7 +80,7 @@ class BigDLModel {
 
   // The parameterized graph that is evaluated to execute the model.
   // optional GraphProto graph = 7;
-  val graph: BigDLGraph = null
+  val graph: BigDLGraph[T] = null
 
   // Named metadata values; keys should be distinct.
   // repeated StringStringEntryProto metadata_props = 14;
@@ -146,9 +150,9 @@ class BigDLModel {
 
 object BigDLModel {
 
-  def load(fileName: String): BigDLModel = {
+  def load[T: ClassTag](fileName: String)(implicit ev: TensorNumeric[T]): BigDLModel[T] = {
     val allSchemas: OpSchemaVector = OpSchemaRegistry.get_all_schemas();
-    println(allSchemas.size())
+    // println(allSchemas.size())
 
     val onnxModel: ModelProto = new ModelProto()
 
@@ -172,75 +176,73 @@ object BigDLModel {
 
   }
 
-  private def convertModel(model: ModelProto): BigDLModel = {
-    val convertedModel = new BigDLModel()
+  private def convertModel[T: ClassTag](model: ModelProto)
+           (implicit ev: TensorNumeric[T]): BigDLModel[T] = {
+    val bModel = new BigDLModel[T]()
 
+    // set meta in model level
     if (model.has_ir_version()) {
-      convertedModel.setIRVersion(model.ir_version())
+      bModel.setIRVersion(model.ir_version())
     } else {
 
     }
 
     if (model.has_producer_name()) {
-      convertedModel.setProducerName(model.producer_name().getString())
+      bModel.setProducerName(model.producer_name().getString())
     } else {
 
     }
 
     if (model.has_producer_version()) {
-      convertedModel.setProducerVersion(model.producer_version().getString())
+      bModel.setProducerVersion(model.producer_version().getString())
     } else {
 
     }
 
     if (model.has_domain()) {
-      convertedModel.setDomain(model.domain().getString())
+      bModel.setDomain(model.domain().getString())
     } else {
 
     }
 
     if (model.has_model_version()) {
-      convertedModel.setModelVersion(model.model_version())
+      bModel.setModelVersion(model.model_version())
     } else {
 
     }
 
     if (model.has_doc_string()) {
-      convertedModel.setDocString(model.doc_string().getString())
+      bModel.setDocString(model.doc_string().getString())
     } else {
 
     }
 
-
     val opsetSize = model.opset_import_size()
     for(i <- 0 until opsetSize) {
       val currOp = model.opset_import(i)
-      val opDomain = if (currOp.has_domain()) currOp.domain().getString else null
-      val opVersion =
-        if (currOp.has_version()) currOp.version() else throw new IllegalArgumentException()
-      convertedModel.getOptsetImport().put(opDomain, opVersion)
+      println(currOp == null)
+//      val opDomain = if (currOp.has_domain()) currOp.domain().getString else null
+//      val opVersion =
+//        if (currOp.has_version()) currOp.version() else throw new IllegalArgumentException()
+//      bModel.getOptsetImport().put(opDomain, opVersion)
     }
-    val bigdlGraph = convertGraph(model.graph())
 
-    convertedModel
+    val bigdlGraph = BigDLGraph.fromOnnx(model.graph())
+
+    bModel
   }
 
-  private def convertGraph(proto: GraphProto): BigDLGraph = {
-    null
-  }
+
 
   def save(fileName: String): Unit = {
     throw new UnsupportedOperationException("Unimplemented")
   }
 
-  val modelPath = "/home/leicongl/Workground/myData/models/onnx/alexnet.onnx"
+  val modelPath = "/home/leicongl/Workground/myData/models/onnx/resnet-50.onnx"
 
   def main(args: Array[String]): Unit = {
 
-    val allSchemas: OpSchemaVector = OpSchemaRegistry.get_all_schemas();
-    println(allSchemas.size())
-
-    load(modelPath)
+    load[Float](modelPath)
 
   }
 
@@ -338,5 +340,19 @@ object BigDLModel {
       (intBits >> 24).toByte, (intBits >> 16).toByte, (intBits >> 8).toByte, (intBits).toByte)
 
   }
+
+  private def getFloatArray(tensor: TensorProto, size: Int): Array[Float] = {
+    (0 until size).map(i => tensor.float_data(i)).toArray[Float]
+  }
+
+  private def getInt32Array(tensor: TensorProto, size: Int): Array[Int] = {
+    (0 until size).map(i => tensor.int32_data(i)).toArray[Int]
+  }
+
+  private def getInt64Array(tensor: TensorProto, size: Int): Array[Long] = {
+    (0 until size).map(i => tensor.int64_data(i)).toArray[Long]
+  }
+
+
 
 }

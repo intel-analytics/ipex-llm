@@ -233,7 +233,7 @@ private[bigdl] object ReflectionUtils {
    * @param target
    * @return
    */
-  private def getPrimCtorParamList(target: Class[_]): List[CtorParam] = {
+  def getPrimCtorParamList(target: Class[_]): List[CtorParam] = {
 
     val ctorMirror = getPrimCtorMirror(target)
     val ctorParamSymbols = ctorMirror.symbol.paramss
@@ -312,5 +312,5 @@ private[bigdl] object ReflectionUtils {
 
 }
 
-private case class CtorParam(index: Int, symbol: universe.Symbol)
+private[bigdl] case class CtorParam(index: Int, symbol: universe.Symbol)
 

@@ -42,6 +42,7 @@ class ParseExample extends TensorflowOpsLoader {
         case DataType.DT_FLOAT => FloatType
         case DataType.DT_DOUBLE => DoubleType
         case DataType.DT_STRING => StringType
+        case _ => throw new IllegalArgumentException
       }
     val denseShapes = nodeDef.getAttrMap.get("dense_shapes")
       .getList.getShapeList.asScala
