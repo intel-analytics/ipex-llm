@@ -218,6 +218,141 @@ class Top1Accuracy[T: ClassTag](
   override def format(): String = "Top1Accuracy"
 }
 
+object MAPUtil {
+
+  // find top k values & indices in a column of a matrix
+  def findTopK(k: Int, arr: Array[Array[Float]], column: Int): Array[(Int, Float)] = {
+    val q = collection.mutable.PriorityQueue[(Int, Float)]()(Ordering.by[(Int, Float), Float](_._2))
+    arr.indices.foreach(i => {
+      q.enqueue((i, arr(i)(column)))
+    })
+    val end = Math.min(k, q.size)
+    (1 to end).map(_ => q.dequeue()).toArray
+  }
+}
+
+
+class MAPValidationResult(
+  private val nClass: Int,
+  private val k: Int,
+  private var rawConfidence: Array[Array[Float]],
+  private var groundTruth: Array[Float]
+)
+extends ValidationResult {
+  private[optim] def calculateClassAP(posCnt: Array[Int], clz: Int): Float = {
+    val _target = groundTruth
+    val _output = rawConfidence
+    // for each class, first find top k confident samples
+    val indices = MAPUtil.findTopK(k, _output, clz - 1)
+    var tp = 0
+    // calculate the max precision for each different recall
+    // for each top-j items, calculate the (precision, recall)
+    val PnR = indices.indices.flatMap(j => {
+      // get the top j-th sample's index
+      val sampleIdx = indices(j)._1
+      val groundTruthClz = _target(sampleIdx).toInt
+      if (groundTruthClz == clz) {
+        // if it is a hit
+        tp += 1
+        // j + 1 is the total number of samples marked positive by the model
+        val precision = tp.toFloat / (j + 1)
+        val recall = tp.toFloat / posCnt(clz)
+        Iterator.single(recall, precision)
+      } else {
+        Iterator.empty
+      }
+    })
+
+    // get Average precision over each different recall
+    (0 to posCnt(clz)).map(r => {
+      val recall = r.toFloat / posCnt(clz)
+      // for every (R,P), where R>=recall, get max(P)
+      PnR.filter(_._1 >= recall).map(_._2).reduceOption(_ max _).getOrElse(0f)
+    })
+      .reduceOption(_ + _)
+      .map(_ / (posCnt(clz) + 1))
+      .getOrElse(0f)
+  }
+
+  private[optim] def calculateClassPositiveCnt(posCnt: Array[Int]): Unit = {
+    val _target = groundTruth
+    for (i <- _target.indices) {
+      val clazz = _target(i)
+      require(clazz == math.ceil(clazz), s"The class for $i-th test sample should be an integer, "
+        + s"got $clazz")
+      val intClazz = clazz.toInt
+      require(intClazz > 0 && intClazz <= nClass, s"The class for $i-th test sample should be "
+        + s"> 0 and <= $nClass, but got $intClazz")
+      posCnt(intClazz) += 1
+    }
+  }
+
+  override def result(): (Float, Int) = {
+    // the count of positive samples for each class
+    // index starts from 1
+    val posCnt = new Array[Int](nClass + 1)
+    calculateClassPositiveCnt(posCnt)
+
+    // get the indices of top-k confident samples
+    val AP = (1 to nClass).map { clz => calculateClassAP(posCnt, clz) }
+    // APs are got. Now we get MAP
+    val result = AP.sum / nClass
+    (result, 1)
+  }
+  // scalastyle:off methodName
+  override def +(other: ValidationResult): ValidationResult = {
+    val o = other.asInstanceOf[MAPValidationResult]
+    rawConfidence ++= o.rawConfidence
+    groundTruth ++= o.groundTruth
+    this
+  }
+  // scalastyle:on methodName
+
+  override protected def format(): String = {
+    s"MeanAveragePrecision@$k(${result()._1})"
+  }
+}
+/**
+ * Calculate the Mean Average Precision (MAP). The algorithm follows VOC Challenge after 2010
+ */
+class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
+  implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
+
+  require(classes > 0 && classes <= classes, s"The number of classes should be "
+    + s"> 0 and <= $classes, but got $classes")
+  require(k > 0, s"k should be > 0, but got $k")
+
+  override def apply(output: Activity, target: Activity): ValidationResult = {
+    var _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
+
+    val outTensor = output.toTensor[T]
+    val _output = if (outTensor.nDimension() != 1 &&
+      outTensor.size(1) != _target.size(1)) {
+      outTensor.narrow(1, 1, _target.size().head)
+    } else {
+      outTensor
+    }
+
+    val targetArr = _target.toArray().asInstanceOf[Array[Float]]
+    require(targetArr != null, "MAP only support floats")
+    require(_output.dim()==1 && targetArr.length==1 ||
+      _output.size(1) == targetArr.length, "The number of samples in the output should " +
+      "be the same as in the target")
+
+    val confidenceArr = if (_output.nDimension() == 2) {
+      (1 to _output.size(1)).map(i => {
+        _output.select(1, i).toArray().asInstanceOf[Array[Float]]
+      }).toArray
+    } else {
+      require(_output.dim() == 1, "The output should have 1 or 2 dimensions")
+      Array[Array[Float]](_output.toArray().asInstanceOf[Array[Float]])
+    }
+    new MAPValidationResult(classes, k, confidenceArr, targetArr)
+  }
+
+  override def format(): String = s"MAP@$k"
+}
+
 /**
  * Caculate the percentage that target in output's top5 probability indexes
  */
