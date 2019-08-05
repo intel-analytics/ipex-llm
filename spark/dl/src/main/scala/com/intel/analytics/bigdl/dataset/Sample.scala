@@ -117,8 +117,15 @@ abstract class Sample[T: ClassTag] extends Serializable {
    * @param labelData
    * @return
    */
-  def setLabel(labelData: Activity)(implicit ev: TensorNumeric[T]): Sample[T] = {
-    throw new UnsupportedOperationException("Sample.setLabel(): unimplemented deprecated method")
+  def setLabel(labelData: Activity)(implicit ev: TensorNumeric[T]): Unit = {
+    throw new UnsupportedOperationException("Sample.setLabel(): unimplemented method")
+  }
+  /**
+    * Get data of label.
+    * @return label
+    */
+  def getLabel(): Array[Int] = {
+    throw new UnsupportedOperationException("Sample.getLabel(): unimplemented method")
   }
 
   /**
