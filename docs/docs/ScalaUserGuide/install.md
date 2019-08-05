@@ -9,14 +9,14 @@ Currently, Analytics Zoo releases are hosted on maven central; here's an example
 ```xml
 <dependency>
     <groupId>com.intel.analytics.zoo</groupId>
-    <artifactId>analytics-zoo-bigdl_0.7.1-[spark_1.6.2|spark_2.1.1|spark_2.2.0|spark_2.3.1]</artifactId>
+    <artifactId>analytics-zoo-bigdl_0.9.0-[spark_2.1.1|spark_2.2.0|spark_2.3.1|spark_2.4.3]</artifactId>
     <version>${ANALYTICS_ZOO_VERSION}</version>
 </dependency>
 ```
 
 SBT developers can use
 ```sbt
-libraryDependencies += "com.intel.analytics.zoo" % "analytics-zoo-bigdl_0.7.1-[spark_1.6.2|spark_2.1.1|spark_2.2.0|spark_2.3.1]" % "${ANALYTICS_ZOO_VERSION}"
+libraryDependencies += "com.intel.analytics.zoo" % "analytics-zoo-bigdl_0.9.0-[spark_2.1.1|spark_2.2.0|spark_2.3.1|spark_2.4.3]" % "${ANALYTICS_ZOO_VERSION}"
 ```
 
 Remarks:
