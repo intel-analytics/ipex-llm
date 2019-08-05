@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.nn.{Container, Graph, InitializationMethod}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
-import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.zoo.models.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
 import com.intel.analytics.zoo.pipeline.api.autograd.Variable
