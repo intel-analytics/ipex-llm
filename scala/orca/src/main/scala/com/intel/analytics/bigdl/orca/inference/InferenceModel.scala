@@ -523,7 +523,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   /**
    * release original model and all the cloned ones in the queue
    */
-  def release(): Unit = {
+  def doRelease(): Unit = {
     clearModelQueue()
   }
 
