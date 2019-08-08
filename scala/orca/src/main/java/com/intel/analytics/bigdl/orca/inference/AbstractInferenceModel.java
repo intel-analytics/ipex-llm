@@ -117,7 +117,7 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
   }
 
   public void release() {
-    release();
+    doRelease();
   }
 
   @Deprecated
