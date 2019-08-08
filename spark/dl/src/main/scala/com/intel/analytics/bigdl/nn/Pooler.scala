@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-import scala.reflect.ClassTag
+import scala.reflect._
 
 class Pooler[T: ClassTag] (
   val resolution: Int,
@@ -35,8 +35,21 @@ class Pooler[T: ClassTag] (
     poolers(i) = RoiAlign[T](scales(i), samplingRatio, resolution, resolution)
   }
 
-  private val lvl_min = (-Math.log(scales(0).asInstanceOf[Double])/Math.log(2)).toInt
-  private val lvl_max = (-Math.log(scales(num_levels - 1).asInstanceOf[Double])/Math.log(2)).toInt
+  private val lvl_min = if (classTag[T] == classTag[Float]) {
+    (-Math.log(scales(0).asInstanceOf[Float].toDouble)/Math.log(2.0)).toInt
+  } else if (classTag[T] == classTag[Double]) {
+    (-Math.log(scales(0).asInstanceOf[Double])/Math.log(2.0)).toInt
+  } else {
+    throw new IllegalArgumentException("currently only Double and Float types are supported")
+  }
+
+  private val lvl_max = if (classTag[T] == classTag[Float]) {
+    (-Math.log(scales(num_levels - 1).asInstanceOf[Float].toDouble)/Math.log(2.0)).toInt
+  } else if (classTag[T] == classTag[Double]) {
+    (-Math.log(scales(num_levels - 1).asInstanceOf[Double])/Math.log(2.0)).toInt
+  } else {
+    throw new IllegalArgumentException("currently only Double and Float types are supported")
+  }
 
   private def levelMapping(
     k_min: Int,
@@ -51,10 +64,18 @@ class Pooler[T: ClassTag] (
 
     val target_lvls = new Array[Int](rois.size(1))
     for (i <- 1 to rois.size(1)) {
-      val s = Math.sqrt(area(rois(i)).asInstanceOf[Double])
+      val a = if (classTag[T] == classTag[Float]) {
+        area(rois(i)).asInstanceOf[Float].toDouble
+      } else if (classTag[T] == classTag[Double]) {
+        area(rois(i)).asInstanceOf[Double]
+      } else {
+        throw new IllegalArgumentException("currently only Double and Float types are supported")
+      }
+
+      val s = Math.sqrt(a)
       var target_lvl = Math.floor(lvl0 + Math.log(s / s0 + eps) / Math.log(2))
       target_lvl = Math.min(Math.max(target_lvl, k_min), k_max)
-      target_lvls(i) = (target_lvl - k_min).toInt
+      target_lvls(i - 1) = (target_lvl - k_min).toInt
     }
 
     target_lvls
@@ -79,24 +100,26 @@ class Pooler[T: ClassTag] (
 
     val roi_levels = levelMapping(lvl_min, lvl_max, rois)
     val num_rois = rois.size(1)
-    val num_channels = feature_maps.get[Tensor[T]]().get(1).size(2)
+    val num_channels = feature_maps.get[Tensor[T]](1).get.size(2)
 
     output.resize(num_rois, num_channels, resolution, resolution)
       .fill(ev.fromType[Float](Float.MinValue))
 
     for (level <- 0 until num_levels) {
-      val feature_per_level = feature_maps.get[Tensor[T]]().get(level + 1)
+      val feature_per_level = feature_maps.get[Tensor[T]](level + 1).get
       val rois_ind_per_level = roi_levels.zipWithIndex.filter(_._1 == level).map(_._2)
       val num_rois_per_level = rois_ind_per_level.length
 
-      val rois_per_level = Tensor[T](Array(num_rois_per_level, 5))
-      for (i <- 0 until num_rois_per_level) {
-        rois_per_level(i + 1) = rois(rois_ind_per_level(i))
-      }
+      if (num_rois_per_level > 0) {
+        val rois_per_level = Tensor[T](Array(num_rois_per_level, 5))
+        for (i <- 0 until num_rois_per_level) {
+          rois_per_level(i + 1) = rois(rois_ind_per_level(i) + 1)
+        }
 
-      val res = poolers(level).forward(T(feature_per_level, rois_per_level))
-      for (i <- 0 until num_rois_per_level) {
-        output(rois_ind_per_level(i) + 1) = res(i + 1)
+        val res = poolers(level).forward(T(feature_per_level, rois_per_level))
+        for (i <- 0 until num_rois_per_level) {
+          output(rois_ind_per_level(i) + 1) = res(i + 1)
+        }
       }
     }
 
@@ -107,5 +130,20 @@ class Pooler[T: ClassTag] (
     gradInput = null
     gradInput
   }
+
+  override def toString: String = "nn.Pooler"
+
+  override def clearState(): this.type = {
+    super.clearState()
+    this
+  }
+}
+
+object Pooler {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    resolution: Int,
+    scales: Array[T],
+    samplingRatio: Int) (implicit ev: TensorNumeric[T]): Pooler[T] =
+    new Pooler[T](resolution, scales, samplingRatio)
 }
 
