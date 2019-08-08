@@ -23,6 +23,12 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect._
 
+/**
+ * @param resolution The resolution of pooled feature maps. Height equals width.
+ * @param scales Spatial scales of each feature map
+ * @param samplingRatio Sampling ratio
+ */
+
 class Pooler[T: ClassTag] (
   val resolution: Int,
   val scales: Array[T],
@@ -95,18 +101,18 @@ class Pooler[T: ClassTag] (
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
-    val feature_maps = input[Table](1)
+    val featureMaps = input[Table](1)
     val rois = input[Tensor[T]](2)
 
     val roi_levels = levelMapping(lvl_min, lvl_max, rois)
     val num_rois = rois.size(1)
-    val num_channels = feature_maps.get[Tensor[T]](1).get.size(2)
+    val num_channels = featureMaps.get[Tensor[T]](1).get.size(2)
 
     output.resize(num_rois, num_channels, resolution, resolution)
       .fill(ev.fromType[Float](Float.MinValue))
 
     for (level <- 0 until num_levels) {
-      val feature_per_level = feature_maps.get[Tensor[T]](level + 1).get
+      val feature_per_level = featureMaps.get[Tensor[T]](level + 1).get
       val rois_ind_per_level = roi_levels.zipWithIndex.filter(_._1 == level).map(_._2)
       val num_rois_per_level = rois_ind_per_level.length
 
@@ -135,6 +141,9 @@ class Pooler[T: ClassTag] (
 
   override def clearState(): this.type = {
     super.clearState()
+    for (i <- 0 until num_levels) {
+      poolers(i).clearState()
+    }
     this
   }
 }
