@@ -157,7 +157,7 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     threads2.foreach(_.join())
 
     fasterrcnnModel.release()
-    fasterrcnnInferenceModel.release()
+    fasterrcnnInferenceModel.doRelease()
   }
 
   def almostEqual(x: Float, y: Float, precision: Float): Boolean = {
