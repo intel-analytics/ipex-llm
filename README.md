@@ -49,7 +49,7 @@ In addition, Analytics Zoo also provides a rich set of analytics and AI support 
   - [Object detection API](#object-detection-api): high-level API and pretrained models (e.g., SSD and Faster-RCNN) for *object detection*
   - [Image classification API](#image-classification-api): high-level API and pretrained models (e.g., VGG, Inception, ResNet, MobileNet, etc.) for *image classification*
   - [Text classification API](#text-classification-api): high-level API and pre-defined models (using CNN, LSTM, etc.) for *text classification*
-  - [Recommendation API](#recommendation-api): high-level API and pre-defined models (e.g., Neural Collaborative Filtering, Wide and Deep Learning, etc.) for *recommendation*
+  - [Recommendation API](#recommendation-api): high-level API and pre-defined models (e.g., Neural Collaborative Filtering, Wide and Deep Learning, Session Recommender, etc.) for *recommendation*
   - [Anomaly detection API](#anomaly-detection-api): high-level API and pre-defined models based on LSTM for *anomaly detection*
   - [Text matching API](#text-matching-api): high-level API and pre-defined KNRM model for *text matching*
   - [Sequence to sequence API](#sequence-to-sequence-api): high-level API and pre-defined models for *sequence to sequence*
@@ -294,7 +294,7 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 *Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/text-classification/))
 
 ### _Recommendation API_
-*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for recommendations. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/recommendation/))
+*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, Session Recommender etc.) for recommendations. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/recommendation/))
 
 ### _Anomaly detection API_
 *Analytics Zoo Anomaly Detection API* provides a set of pre-defined models based on LSTM to detect anomalies for time series data. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/anomaly-detection/))
