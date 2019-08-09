@@ -280,23 +280,6 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   override def release(): Unit = {
-    val tensors: ArrayBuffer[DnnTensor[Float]] = ArrayBuffer.empty
-    List(output, gradInput).filter(_ != null).foreach { t =>
-      if (t.isTensor && t.toTensor[Float].getTensorType == MklDnnType) {
-        tensors.append(t.asInstanceOf[DnnTensor[Float]])
-      }
-
-      if (t.isTable) {
-        val table = t.toTable
-        var i = 1
-        while (i <= table.length()) {
-          tensors.append(table(i))
-          i += 1
-        }
-      }
-    }
-
-    tensors.foreach(_.release())
     this.releaseNativeMklDnnMemory()
   }
 

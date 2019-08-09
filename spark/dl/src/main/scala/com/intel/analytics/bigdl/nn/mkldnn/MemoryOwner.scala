@@ -18,37 +18,37 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.tensor.DnnTensor
 import scala.collection.mutable.ArrayBuffer
 
-trait MemoryOwner {
+/**
+ * This trait is a owner of MKLDNN native memory. It will track all native resources
+ * (Primitives, tensor, ReorderMemory). You can call releaseNativeMklDnnMemory to relase all the
+ * memory at once. These resources will require an implicit MemoryOwner at
+ * the constructors. The constructors of the resources will register themselves to the MemoryOwner.
+ * For DNN Layer classes, they extends MemoryOwner and have a implicit value of "this" as a
+ * MemoryOwner. ReorderMemory is a kind of special resource. They can be a normal layer or a
+ * resource of another layer.
+ */
+private[bigdl] trait MemoryOwner {
   @transient
   private lazy val _nativeMemory: ArrayBuffer[MklDnnNativeMemory] =
     new ArrayBuffer[MklDnnNativeMemory]()
-
-  @transient
-  private lazy val _tensorMMaps: ArrayBuffer[TensorMMap] =
-    new ArrayBuffer[TensorMMap]()
 
   @transient
   private lazy val _tensors: ArrayBuffer[DnnTensor[_]] =
     new ArrayBuffer[DnnTensor[_]]()
 
   @transient
-  private  var _reorderManager: ReorderManager = _
+  private lazy val _reorderMemory: ArrayBuffer[ReorderMemory] = _
 
   def registerMklNativeMemory(m: MklDnnNativeMemory): Unit = {
     _nativeMemory.append(m)
-  }
-
-  def registerTensorMMap(m: TensorMMap): Unit = {
-    _tensorMMaps.append(m)
   }
 
   def registerTensor(m: DnnTensor[_]): Unit = {
     _tensors.append(m)
   }
 
-  def registerReorderManager(m: ReorderManager): Unit = {
-    require(_reorderManager == null, "reorderManager should be null in MemoryOwner")
-    _reorderManager = m
+  def registerReorderMemory(m: ReorderMemory): Unit = {
+    _reorderMemory.append(m)
   }
 
   def releaseNativeMklDnnMemory(): Unit = {
@@ -59,13 +59,9 @@ trait MemoryOwner {
       }
     })
     _nativeMemory.clear()
-    _tensorMMaps.foreach(_.release())
-    _tensorMMaps.clear()
     _tensors.foreach(_.release())
     _tensors.clear()
-    if (_reorderManager != null) {
-      _reorderManager.release()
-    }
-    _reorderManager = null
+    _reorderMemory.foreach(_.release())
+    _reorderMemory.clear()
   }
 }

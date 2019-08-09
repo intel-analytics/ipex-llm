@@ -20,9 +20,16 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
 class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
-  gradInputFormat: MemoryData, gradOutputFormat: MemoryData
-) extends MklDnnLayer {
+  gradInputFormat: MemoryData, gradOutputFormat: MemoryData,
+  memoryOwner: MemoryOwner = null)  extends MklDnnLayer {
 
+  // ReorderMemory is a special layer. It can be owned by other layers.
+  // So there is an optional MemoryOwner that can be null.
+  // If it is null, this means the ReorderMemory is a normal layer.
+  // If it is not null, it means ReorderMemory is owned by another layer
+  if (memoryOwner!=null) {
+    memoryOwner.registerReorderMemory(this)
+  }
   _outputFormats = Array(outputFormat)
   _gradInputFormats = Array(gradInputFormat)
 
@@ -222,15 +229,18 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 
 object ReorderMemory {
   def apply(inputFormat: MemoryData, outputFormat: MemoryData, gradInputFormat: MemoryData,
-    gradOutputFomat: MemoryData): ReorderMemory = {
-    new ReorderMemory(inputFormat, outputFormat, gradInputFormat, gradOutputFomat)
+    gradOutputFomat: MemoryData)(implicit memoryOwner: MemoryOwner = null): ReorderMemory = {
+    new ReorderMemory(inputFormat, outputFormat, gradInputFormat, gradOutputFomat, memoryOwner)
   }
 
-  def apply(outputFormat: MemoryData, gradInputFormat: MemoryData): ReorderMemory = {
-    new ReorderMemory(null, outputFormat, gradInputFormat, null)
+  def apply(outputFormat: MemoryData, gradInputFormat: MemoryData)
+    (implicit memoryOwner: MemoryOwner = null): ReorderMemory = {
+    new ReorderMemory(null, outputFormat, gradInputFormat, null,
+      memoryOwner)
   }
 
-  def apply(outputFormat: MemoryData): ReorderMemory = {
-    new ReorderMemory(null, outputFormat, null, null)
+  def apply(outputFormat: MemoryData)(implicit memoryOwner: MemoryOwner = null): ReorderMemory = {
+    new ReorderMemory(null, outputFormat,
+      null, null, memoryOwner)
   }
 }

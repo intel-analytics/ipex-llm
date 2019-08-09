@@ -23,7 +23,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
-  owner.registerReorderManager(this)
   // (MemoryFormatId, TargetFormat) -> Reorder
   val reorders = mutable.HashMap[(Int, MemoryData), ReorderMemory]()
   // ReorderId -> RefCount
@@ -118,7 +117,5 @@ private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
     }
   }
 
-  def release(): Unit = {
-    reorders.values.foreach(_.release())
-  }
+  def release(): Unit = { }
 }
