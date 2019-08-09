@@ -180,7 +180,7 @@ object Predictor {
     }
   }
 
-  def predictClassTest[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
+  def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
     batchPerPartition: Int, featurePaddingParam: Option[PaddingParam[T]])(
     implicit ev: TensorNumeric[T]): RDD[Sample[T]] = {
     val shareBuffer = false
@@ -214,7 +214,7 @@ object Predictor {
     })
     dataSet
   }
-
+/*
   def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
     batchPerPartition: Int, featurePaddingParam: Option[PaddingParam[T]])(
     implicit ev: TensorNumeric[T]): RDD[Int] = {
@@ -229,7 +229,7 @@ object Predictor {
       })
     }
   }
-
+*/
 }
 
 /**
@@ -252,7 +252,7 @@ class Predictor[T: ClassTag] private[optim](
    batchPerPartition: Int = 4)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
-  def predictClass(dataSet: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
+  def predictClass(dataSet: RDD[Sample[T]], batchSize: Int = -1): RDD[Sample[T]] = {
     Predictor.predictClass(dataSet, batchSize, model, batchPerPartition, featurePaddingParam)
   }
 

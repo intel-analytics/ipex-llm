@@ -124,7 +124,7 @@ abstract class Sample[T: ClassTag] extends Serializable {
     * Get data of label.
     * @return label
     */
-  def getLabel(): Array[Int] = {
+  def getLabel(): Activity = {
     throw new UnsupportedOperationException("Sample.getLabel(): unimplemented method")
   }
 
@@ -218,6 +218,11 @@ class ArraySample[T: ClassTag] private[bigdl](
     } else {
       null
     }
+  }
+
+  def setLabel(labelData: Array[T])(implicit ev: TensorNumeric[T]): Sample[T] = {
+    ev.arraycopy(labelData, 0, data, featureSize.length, labelData.length)
+    this
   }
 
   override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
@@ -513,6 +518,7 @@ class TensorSample[T: ClassTag] private[bigdl] (
     require(index < this.numFeature, "Index out of range")
     if (index < this.numLabel) this.labels(index) else null
   }
+
 }
 
 object TensorSample {
