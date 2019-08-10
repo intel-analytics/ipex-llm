@@ -17,7 +17,7 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
@@ -30,18 +30,20 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  * Currently only support apply softmax normalization to the last dim.
  */
-private[zoo] class InternalSoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
+private[zoo] class InternalSoftMax[T: ClassTag]()
+   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dim = input.dim()
     val sizes = input.size()
     val shift = input.max(dim)._1
 
-    val shiftedInput = input.sub(shift.expand(sizes))
+    val shiftedInput = input.clone().sub(shift.expand(sizes).contiguous())
     val exp = shiftedInput.exp()
 
     val sum = exp.sum(dim)
-    output = exp.div(sum.expand(sizes))
+    output = exp.div(sum.expand(sizes).contiguous())
+
     output
   }
 
@@ -54,7 +56,7 @@ private[zoo] class InternalSoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T])
 }
 
 private[zoo] object InternalSoftMax{
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : InternalSoftMax[T] = {
     new InternalSoftMax[T]()
   }

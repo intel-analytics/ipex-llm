@@ -77,5 +77,3 @@ object Dense {
       wRegularizer, bRegularizer, bias, inputShape)
   }
 }
-
-
