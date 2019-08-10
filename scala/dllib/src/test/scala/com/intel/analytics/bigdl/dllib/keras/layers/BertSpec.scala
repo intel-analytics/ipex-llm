@@ -41,7 +41,7 @@ class BertSpec extends ZooSpecHelper {
     val shape = Shape(List(Shape(1, 10), Shape(1, 10), Shape(1, 10), Shape(1, 1, 1, 10)))
     layer.build(shape)
     val w = layer.parameters()._1
-    require(w.length == 43)
+//    require(w.length == 43)
     val inputIds = Tensor[Float](Array[Float](7, 20, 39, 27, 10,
       39, 30, 21, 17, 15), Array(1, 10))
     val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1), Array(1, 10))
@@ -67,7 +67,7 @@ class BertSpec extends ZooSpecHelper {
     val shape = Shape(List(Shape(1, 10), Shape(1, 10), Shape(1, 10), Shape(1, 1, 1, 10)))
     layer.build(shape)
     val w = layer.parameters()._1
-    require(w.length == 43)
+//    require(w.length == 43)
     val inputIds = Tensor[Float](Array[Float](7, 20, 39, 27, 10,
       39, 30, 21, 17, 15), Array(1, 10))
     val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1), Array(1, 10))
@@ -215,11 +215,11 @@ class BertSpec extends ZooSpecHelper {
       0.0200f, 0.0007f,
       0.0046f, -0.0397f, -0.0036f, 0.0179f, 0.0010f, -0.0106f, 0.0115f, 0.0077f,
       0.0054f, 0.0092f), Array(10, 10))
-//    wb(5).set(queryW)
-    wb(5).narrow(1, 1, 10).copy(queryW)
+    wb(5).set(queryW)
+//    wb(5).narrow(1, 1, 10).copy(queryW)
 
-//    val queryB = Tensor[Float](10)
-//    wb(6).set(queryB)
+    val queryB = Tensor[Float](10)
+    wb(6).set(queryB)
 
     val keyW = Tensor[Float](Array[Float](-0.0040f, 0.0094f, 0.0217f, -0.0098f, 0.0350f,
       -0.0075f, 0.0190f, 0.0261f, 0.0226f, -0.0024f,
@@ -242,11 +242,11 @@ class BertSpec extends ZooSpecHelper {
       0.0126f, -0.0046f, 0.0042f, -0.0291f, 0.0046f, -0.0052f, 0.0210f, 0.0109f,
       0.0345f, 0.0108f),
       Array(10, 10))
-//    wb(7).set(keyW)
-    wb(5).narrow(1, 11, 10).copy(keyW)
+    wb(7).set(keyW)
+//    wb(5).narrow(1, 11, 10).copy(keyW)
 
-//    val keyB = Tensor[Float](10)
-//    wb(8).set(keyB)
+    val keyB = Tensor[Float](10)
+    wb(8).set(keyB)
 
     val valueW = Tensor[Float](Array[Float](0.0014f, 0.0066f, 0.0252f, 0.0175f,
       -0.0458f, 0.0379f, -0.0464f, -0.0128f, -0.0171f, -0.0013f,
@@ -268,12 +268,12 @@ class BertSpec extends ZooSpecHelper {
       -0.0345f, -0.0198f,
       0.0391f, -0.0013f, 0.0171f, -0.0002f, 0.0223f, -0.0236f, 0.0137f, 0.0313f,
       0.0203f, -0.0230f), Array(10, 10))
-//    wb(9).set(valueW)
-    wb(5).narrow(1, 21, 10).copy(valueW)
+    wb(9).set(valueW)
+//    wb(5).narrow(1, 21, 10).copy(valueW)
 
-//    val valueB = Tensor[Float](10)
-//    wb(10).set(valueB)
-    wb(6).set(Tensor[Float](30))
+    val valueB = Tensor[Float](10)
+    wb(10).set(valueB)
+//    wb(6).set(Tensor[Float](30))
 
     val outputDenseW = Tensor[Float](Array[Float](0.0080f, 0.0329f, -0.0080f,
       -0.0139f, 0.0116f, -0.0004f, -0.0028f, 0.0020f, 0.0338f, -0.0377f,
@@ -296,12 +296,12 @@ class BertSpec extends ZooSpecHelper {
       0.0145f, 0.0027f, -0.0126f, -0.0029f, -0.0085f, -0.0298f, 0.0172f, 0.0607f,
       -0.0230f, 0.0045f),
       Array(10, 10))
-//    wb(11).set(outputDenseW)
-    wb(7).set(outputDenseW)
+    wb(11).set(outputDenseW)
+//    wb(7).set(outputDenseW)
 
     val outputDenseB = Tensor[Float](10)
-//    wb(12).set(outputDenseB)
-    wb(8).set(outputDenseB)
+    wb(12).set(outputDenseB)
+//    wb(8).set(outputDenseB)
 
     val intermediateDenseW = Tensor[Float](Array[Float](0.0006f, 0.0003f, 0.0235f,
       -0.0193f, -0.0049f, -0.0136f, -0.0202f, -0.0078f, -0.0276f, 0.0214f,
@@ -431,12 +431,12 @@ class BertSpec extends ZooSpecHelper {
       0.0228f, 0.0083f,
       0.0405f, -0.0203f, 0.0070f, 0.0116f, -0.0079f, 0.0091f, -0.0236f, 0.0158f,
       0.0228f, 0.0111f), Array(64, 10))
-//    wb(15).set(intermediateDenseW)
-    wb(11).set(intermediateDenseW)
+    wb(15).set(intermediateDenseW)
+//    wb(11).set(intermediateDenseW)
 
     val intermediateDenseB = Tensor[Float](64)
-//    wb(16).set(intermediateDenseB)
-    wb(12).set(intermediateDenseB)
+    wb(16).set(intermediateDenseB)
+//    wb(12).set(intermediateDenseB)
 
     val denseW = Tensor[Float](Array[Float](0.0024f, 0.0089f, -0.0195f, -0.0117f,
       -0.0310f, 0.0060f, -0.0069f, -0.0041f,
@@ -519,12 +519,12 @@ class BertSpec extends ZooSpecHelper {
       -0.0162f, 0.0019f, 0.0055f, 0.0109f, -0.0495f, 0.0042f, 0.0051f, -0.0146f,
       -0.0276f, -0.0042f, 0.0178f, 0.0037f, 0.0101f, -0.0201f, -0.0268f, -0.0090f,
       -0.0032f, -0.0322f, 0.0036f, 0.0373f, -0.0240f, -0.0014f, 0.0029f, -0.0030f), Array(10, 64))
-//    wb(17).set(denseW)
-    wb(13).set(denseW)
+    wb(17).set(denseW)
+//    wb(13).set(denseW)
 
     val denseB = Tensor[Float](10)
-//    wb(18).set(denseB)
-    wb(14).set(denseB)
+    wb(18).set(denseB)
+//    wb(14).set(denseB)
 
     val input = Tensor[Float](data, Array(2, 6))
     val tokenTypeInput = Tensor[Float](2, 6)
@@ -582,15 +582,23 @@ class BertSpec extends ZooSpecHelper {
     val grads = layer.parameters()._2
 
     val expectGrad = new Array[Tensor[Float]](grads.size - 2)
-    expectGrad(20 - 4) = Tensor[Float](Array[Float](429f, 578f, 472f, 800f, 598f, 478f,
+//    expectGrad(20 - 4) =
+    expectGrad(20) =
+      Tensor[Float](Array[Float](429f, 578f, 472f, 800f, 598f, 478f,
       568f, 610f, 517f, 563f), Array(1, 10))
-    expectGrad(19 - 4) = Tensor[Float](Array[Float](-308.3242f, 73.9104f, 415.4557f,
+//    expectGrad(19 - 4) =
+    expectGrad(19) =
+      Tensor[Float](Array[Float](-308.3242f, 73.9104f, 415.4557f,
       -667.1381f, 372.1354f, -32.4430f,
       -20.9703f, 388.4782f, -109.3576f, -259.4818f), Array(1, 10))
-    expectGrad(18 - 4) = Tensor[Float](Array[Float](-102.6976f, -1.5482f, -77.3635f,
+//    expectGrad(18 - 4) =
+    expectGrad(18) =
+      Tensor[Float](Array[Float](-102.6976f, -1.5482f, -77.3635f,
       190.8914f, 33.2574f, -53.2304f,
       -18.3125f, 52.5667f, -15.7316f, -7.8316f), Array(10))
-    expectGrad(17 - 4) = Tensor[Float](Array[Float](-1.0580f, -3.3393f, 2.1110f, 0.1864f,
+//    expectGrad(17 - 4) =
+    expectGrad(17) =
+      Tensor[Float](Array[Float](-1.0580f, -3.3393f, 2.1110f, 0.1864f,
       2.7355f, -0.9865f, -0.4861f, 0.0079f,
       -7.1003f, -1.7762f, 2.8341f, -2.3958f, 2.1112f, 1.3432f, 1.8933f, 4.7895f,
       1.5008f, 3.9667f, 2.8231f, 2.4426f, -2.2035f, -5.1837f, 0.1428f, 0.7536f,
@@ -671,7 +679,9 @@ class BertSpec extends ZooSpecHelper {
       -1.4407f, 1.4072f, 0.5985f, 2.0130f, 1.1370f, -1.0839f, 0.5995f, 0.4831f,
       0.1396f, 1.3082f, -1.7404f, 1.3033f, 2.0517f, 0.3871f, -1.4191f, -0.0428f,
       -0.6149f, 0.4659f, 0.7178f, -1.7426f, 1.5739f, 0.3461f, -2.7757f, 0.2737f), Array(10, 64))
-    expectGrad(16 - 4) = Tensor[Float](Array[Float](-3.3787f, -2.6050f, -1.0664f, -2.2213f,
+//    expectGrad(16 - 4) =
+    expectGrad(16) =
+      Tensor[Float](Array[Float](-3.3787f, -2.6050f, -1.0664f, -2.2213f,
       1.6643f, -2.3580f, 1.3027f, 2.4582f,
       1.4468f, -1.7931f, 1.6253f, -3.0072f, 6.0387f, -0.3518f, 0.6676f, 1.1960f,
       3.7489f, 2.8823f, -1.1145f, 4.6594f, 1.1728f, -3.7206f, 4.0018f, -1.1291f,
@@ -680,7 +690,9 @@ class BertSpec extends ZooSpecHelper {
       0.3507f, 2.5811f, 3.8588f, 0.7987f, -5.3275f, 1.7393f, 1.4253f, 0.3357f,
       1.0857f, -0.7352f, -2.9298f, -1.1984f, 4.9273f, 2.2179f, 5.9523f, -3.1779f,
       0.4895f, -2.3895f, -0.2659f, 2.5864f, -1.4725f, 2.9910f, 2.7749f, -0.5007f), Array(64))
-    expectGrad(15 - 4) = Tensor[Float](Array[Float]( 0.5872f, -2.5162f, -1.3089f, 2.6942f,
+//    expectGrad(15 - 4) =
+    expectGrad(15) =
+      Tensor[Float](Array[Float]( 0.5872f, -2.5162f, -1.3089f, 2.6942f,
       -1.8444f, 2.8932f, -0.6094f, -4.4749f, 2.9703f, 1.6089f,
       -0.1863f, -1.3689f, -1.6873f, 4.4071f, -1.3313f, -0.6168f, -1.6696f, -3.1148f,
       3.2937f, 2.2741f,
@@ -808,16 +820,24 @@ class BertSpec extends ZooSpecHelper {
       -3.1080f, 3.1534f,
       -0.4814f, -1.4524f, 0.6254f, 1.4415f, 0.2565f, 0.7982f, -0.3457f, -2.5523f,
       1.6931f, 0.0170f), Array(64, 10))
-    expectGrad(14 - 4) = Tensor[Float](Array[Float](-102.0154f, -2.0866f, -78.0799f,
+//    expectGrad(14 - 4) =
+    expectGrad(14) =
+      Tensor[Float](Array[Float](-102.0154f, -2.0866f, -78.0799f,
       190.8661f, 33.5124f, -53.4546f,
       -18.0541f, 52.2774f, -15.8880f, -7.4727f), Array(1, 10))
-    expectGrad(13 - 4) = Tensor[Float](Array[Float](8.0734f, 8.6608f, -22.1519f,
+//    expectGrad(13 - 4) =
+    expectGrad(13) =
+      Tensor[Float](Array[Float](8.0734f, 8.6608f, -22.1519f,
       -103.3919f, -39.7637f, 128.0594f,
       -29.7084f, 55.4173f, 14.1729f, -19.3239f), Array(1, 10))
-    expectGrad(12 - 4) = Tensor[Float](Array[Float](-102.0217f, -2.0389f, -78.0332f,
+//    expectGrad(12 - 4) =
+    expectGrad(12) =
+      Tensor[Float](Array[Float](-102.0217f, -2.0389f, -78.0332f,
       190.8739f, 33.5608f, -53.3832f,
       -18.0584f, 52.2859f, -15.7794f, -7.4057f), Array(10))
-    expectGrad(11 - 4) = Tensor[Float](Array[Float](2.4003f, -3.1011f, 4.0827f, 0.9945f,
+//    expectGrad(11 - 4) =
+    expectGrad(11) =
+      Tensor[Float](Array[Float](2.4003f, -3.1011f, 4.0827f, 0.9945f,
       1.6197f, 4.0893f, 1.0422f, -6.7701f, -1.8708f, -2.9517f,
       1.5749f, -0.0829f, 1.1692f, -1.4690f, 0.6115f, 0.1689f, 0.9442f,
       1.4587f, -0.0923f, -0.8213f,
@@ -838,79 +858,10 @@ class BertSpec extends ZooSpecHelper {
       -0.0717f, -0.2233f, 0.1252f, 0.3035f, 0.0310f, 0.2783f, -0.0776f,
       -0.7444f, -0.1201f, -0.1000f), Array(10, 10))
 
-//    expectGrad(10) = Tensor[Float](Array[Float](0.3589f, 0.4846f, -0.6027f,
-//      9.1532f, -3.3322f, 0.7664f, 2.8848f, -6.0095f,
-//      -2.2415f, 6.5400f), Array(10))
-//    expectGrad(9) = Tensor[Float](Array[Float](-1.7866f, -3.2862f, 1.7699f,
-//      0.2298f, 2.0777f, -1.4149f, 0.9542f, 0.0221f, 1.8769f, -0.4430f,
-//      -0.6441f, -0.7191f, 0.7529f, -0.2866f, 0.7656f, -0.4070f, 0.2325f, 0.2394f,
-//      0.3241f, -0.2578f,
-//      0.6840f, 0.6616f, -0.8314f, 0.3911f, -0.8294f, 0.4195f, -0.2283f, -0.3129f,
-//      -0.2573f, 0.3031f,
-//      -6.4642f, -1.4962f, 8.9090f, -7.4525f, 7.8305f, -2.7669f, 0.7754f, 5.3710f,
-//      -0.8061f, -3.9001f,
-//      1.1580f, -1.9868f, -2.1267f, 3.1284f, -1.4594f, -0.0207f, 0.4580f, -2.1208f,
-//      1.7725f, 1.1973f,
-//      -0.1231f, 0.7463f, 0.3599f, -0.7667f, 0.1794f, 0.1171f, -0.1847f, 0.5071f,
-//      -0.5829f, -0.2525f,
-//      -1.9889f, -0.3771f, 2.7664f, -2.3662f, 2.4143f, -0.8295f, 0.2176f, 1.6964f,
-//      -0.3128f, -1.2203f,
-//      2.6044f, -2.4214f, -4.3527f, 5.4365f, -3.2773f, 0.4465f, 0.4439f, -3.7094f,
-//      2.5734f, 2.2560f,
-//      1.5517f, 0.3009f, -2.1554f, 1.8380f, -1.8780f, 0.6440f, -0.1707f, -1.3124f,
-//      0.2364f, 0.9456f,
-//      -2.7177f, 2.8929f, 4.6267f, -5.9531f, 3.4265f, -0.3818f, -0.5521f, 4.0397f,
-//      -2.9541f, -2.4271f), Array(10, 10))
-//    expectGrad(8) = Tensor[Float](Array[Float](0.0000f, -0.0000f, 0.0000f, 0.0000f,
-//      0.0000f, -0.0000f, 0.0000f, -0.0000f, 0.0000f, 0.0000f), Array(10))
-//    expectGrad(7) = Tensor[Float](Array[Float](0.0080f, 0.0061f, -0.0098f, 0.0001f,
-//      0.0032f, -0.0079f, -0.0049f, 0.0140f, -0.0031f, -0.0058f,
-//      0.0077f, 0.0045f, -0.0067f, -0.0003f, 0.0014f, -0.0057f, 0.0027f, 0.0072f,
-//      -0.0102f, -0.0008f,
-//      -0.0026f, 0.0046f, -0.0021f, 0.0001f, -0.0005f, -0.0017f, 0.0001f, -0.0004f,
-//      0.0001f, 0.0024f,
-//      -0.0030f, 0.0250f, -0.0207f, 0.0004f, 0.0013f, -0.0149f, -0.0011f, 0.0147f,
-//      -0.0054f, 0.0038f,
-//      -0.0033f, 0.0138f, -0.0095f, -0.0004f, 0.0008f, -0.0062f, -0.0077f, 0.0119f,
-//      0.0026f, -0.0021f,
-//      -0.0041f, -0.0010f, 0.0002f, 0.0066f, 0.0017f, -0.0034f, 0.0042f, -0.0036f,
-//      -0.0030f, 0.0024f,
-//      -0.0051f, 0.0016f, -0.0014f, -0.0011f, -0.0019f, 0.0018f, -0.0036f, 0.0024f,
-//      0.0046f, 0.0027f,
-//      -0.0015f, 0.0024f, -0.0063f, 0.0029f, 0.0028f, -0.0053f, -0.0026f, 0.0050f,
-//      0.0022f, 0.0004f,
-//      0.0010f, 0.0021f, -0.0040f, -0.0018f, 0.0010f, -0.0018f, -0.0034f, 0.0044f,
-//      0.0031f, -0.0005f,
-//      -0.0092f, -0.0015f, 0.0076f, -0.0002f, -0.0057f, 0.0073f, 0.0027f, -0.0060f,
-//      0.0002f, 0.0047f), Array(10, 10))
-//    expectGrad(6) = Tensor[Float](Array[Float](0.0013f, -0.0066f, -0.0002f, 0.0076f,
-//      0.0070f, -0.0041f, -0.0065f, -0.0103f,
-//      0.0085f, 0.0022f), Array(10))
-//    expectGrad(5) = Tensor[Float](Array[Float]( 0.0001f, 0.0019f, -0.0018f, -0.0019f,
-//      0.0014f, -0.0010f, -0.0005f, 0.0061f, 0.0001f, -0.0043f,
-//      -0.0042f, -0.0064f, -0.0023f, 0.0140f, -0.0014f, -0.0049f, 0.0085f, -0.0165f,
-//      0.0007f, 0.0123f,
-//      -0.0027f, -0.0011f, 0.0032f, 0.0060f, 0.0001f, -0.0058f, 0.0046f, -0.0072f,
-//      -0.0046f, 0.0075f,
-//      -0.0013f, 0.0030f, -0.0026f, -0.0060f, 0.0096f, -0.0084f, -0.0067f, 0.0242f,
-//      0.0040f, -0.0156f,
-//      0.0036f, 0.0054f, -0.0015f, -0.0130f, 0.0047f, 0.0016f, -0.0077f, 0.0234f,
-//      0.0015f, -0.0181f,
-//      0.0027f, 0.0032f, -0.0101f, 0.0100f, -0.0001f, -0.0063f, 0.0020f, -0.0064f,
-//      0.0037f, 0.0012f,
-//      -0.0010f, -0.0001f, -0.0065f, 0.0028f, -0.0063f, 0.0030f, 0.0005f, -0.0007f,
-//      0.0037f, 0.0047f,
-//      0.0030f, -0.0022f, -0.0121f, 0.0127f, -0.0072f, -0.0008f, 0.0025f, -0.0148f,
-//      0.0074f, 0.0115f,
-//      0.0019f, -0.0024f, 0.0109f, -0.0038f, 0.0068f, -0.0026f, 0.0011f, -0.0021f,
-//      -0.0068f, -0.0031f,
-//      0.0000f, -0.0011f, 0.0047f, -0.0051f, 0.0001f, 0.0023f, 0.0001f, 0.0037f,
-//      -0.0035f, -0.0013f), Array(10, 10))
-
-    val vb = Tensor[Float](Array[Float](0.3589f, 0.4846f, -0.6027f,
+    expectGrad(10) = Tensor[Float](Array[Float](0.3589f, 0.4846f, -0.6027f,
       9.1532f, -3.3322f, 0.7664f, 2.8848f, -6.0095f,
       -2.2415f, 6.5400f), Array(10))
-    val vw = Tensor[Float](Array[Float](-1.7866f, -3.2862f, 1.7699f,
+    expectGrad(9) = Tensor[Float](Array[Float](-1.7866f, -3.2862f, 1.7699f,
       0.2298f, 2.0777f, -1.4149f, 0.9542f, 0.0221f, 1.8769f, -0.4430f,
       -0.6441f, -0.7191f, 0.7529f, -0.2866f, 0.7656f, -0.4070f, 0.2325f, 0.2394f,
       0.3241f, -0.2578f,
@@ -930,9 +881,9 @@ class BertSpec extends ZooSpecHelper {
       0.2364f, 0.9456f,
       -2.7177f, 2.8929f, 4.6267f, -5.9531f, 3.4265f, -0.3818f, -0.5521f, 4.0397f,
       -2.9541f, -2.4271f), Array(10, 10))
-    val kb = Tensor[Float](Array[Float](0.0000f, -0.0000f, 0.0000f, 0.0000f,
+    expectGrad(8) = Tensor[Float](Array[Float](0.0000f, -0.0000f, 0.0000f, 0.0000f,
       0.0000f, -0.0000f, 0.0000f, -0.0000f, 0.0000f, 0.0000f), Array(10))
-    val kw = Tensor[Float](Array[Float](0.0080f, 0.0061f, -0.0098f, 0.0001f,
+    expectGrad(7) = Tensor[Float](Array[Float](0.0080f, 0.0061f, -0.0098f, 0.0001f,
       0.0032f, -0.0079f, -0.0049f, 0.0140f, -0.0031f, -0.0058f,
       0.0077f, 0.0045f, -0.0067f, -0.0003f, 0.0014f, -0.0057f, 0.0027f, 0.0072f,
       -0.0102f, -0.0008f,
@@ -952,10 +903,10 @@ class BertSpec extends ZooSpecHelper {
       0.0031f, -0.0005f,
       -0.0092f, -0.0015f, 0.0076f, -0.0002f, -0.0057f, 0.0073f, 0.0027f, -0.0060f,
       0.0002f, 0.0047f), Array(10, 10))
-    val qb = Tensor[Float](Array[Float](0.0013f, -0.0066f, -0.0002f, 0.0076f,
+    expectGrad(6) = Tensor[Float](Array[Float](0.0013f, -0.0066f, -0.0002f, 0.0076f,
       0.0070f, -0.0041f, -0.0065f, -0.0103f,
       0.0085f, 0.0022f), Array(10))
-    val qw = Tensor[Float](Array[Float]( 0.0001f, 0.0019f, -0.0018f, -0.0019f,
+    expectGrad(5) = Tensor[Float](Array[Float]( 0.0001f, 0.0019f, -0.0018f, -0.0019f,
       0.0014f, -0.0010f, -0.0005f, 0.0061f, 0.0001f, -0.0043f,
       -0.0042f, -0.0064f, -0.0023f, 0.0140f, -0.0014f, -0.0049f, 0.0085f, -0.0165f,
       0.0007f, 0.0123f,
@@ -976,14 +927,83 @@ class BertSpec extends ZooSpecHelper {
       0.0000f, -0.0011f, 0.0047f, -0.0051f, 0.0001f, 0.0023f, 0.0001f, 0.0037f,
       -0.0035f, -0.0013f), Array(10, 10))
 
-    expectGrad(6) = Tensor[Float](30)
-    expectGrad(6).narrow(1, 1, 10).copy(qb)
-    expectGrad(6).narrow(1, 11, 10).copy(kb)
-    expectGrad(6).narrow(1, 21, 10).copy(vb)
-    expectGrad(5) = Tensor[Float](30, 10)
-    expectGrad(5).narrow(1, 1, 10).copy(qw)
-    expectGrad(5).narrow(1, 11, 10).copy(kw)
-    expectGrad(5).narrow(1, 21, 10).copy(vw)
+//    val vb = Tensor[Float](Array[Float](0.3589f, 0.4846f, -0.6027f,
+//      9.1532f, -3.3322f, 0.7664f, 2.8848f, -6.0095f,
+//      -2.2415f, 6.5400f), Array(10))
+//    val vw = Tensor[Float](Array[Float](-1.7866f, -3.2862f, 1.7699f,
+//      0.2298f, 2.0777f, -1.4149f, 0.9542f, 0.0221f, 1.8769f, -0.4430f,
+//      -0.6441f, -0.7191f, 0.7529f, -0.2866f, 0.7656f, -0.4070f, 0.2325f, 0.2394f,
+//      0.3241f, -0.2578f,
+//      0.6840f, 0.6616f, -0.8314f, 0.3911f, -0.8294f, 0.4195f, -0.2283f, -0.3129f,
+//      -0.2573f, 0.3031f,
+//      -6.4642f, -1.4962f, 8.9090f, -7.4525f, 7.8305f, -2.7669f, 0.7754f, 5.3710f,
+//      -0.8061f, -3.9001f,
+//      1.1580f, -1.9868f, -2.1267f, 3.1284f, -1.4594f, -0.0207f, 0.4580f, -2.1208f,
+//      1.7725f, 1.1973f,
+//      -0.1231f, 0.7463f, 0.3599f, -0.7667f, 0.1794f, 0.1171f, -0.1847f, 0.5071f,
+//      -0.5829f, -0.2525f,
+//      -1.9889f, -0.3771f, 2.7664f, -2.3662f, 2.4143f, -0.8295f, 0.2176f, 1.6964f,
+//      -0.3128f, -1.2203f,
+//      2.6044f, -2.4214f, -4.3527f, 5.4365f, -3.2773f, 0.4465f, 0.4439f, -3.7094f,
+//      2.5734f, 2.2560f,
+//      1.5517f, 0.3009f, -2.1554f, 1.8380f, -1.8780f, 0.6440f, -0.1707f, -1.3124f,
+//      0.2364f, 0.9456f,
+//      -2.7177f, 2.8929f, 4.6267f, -5.9531f, 3.4265f, -0.3818f, -0.5521f, 4.0397f,
+//      -2.9541f, -2.4271f), Array(10, 10))
+//    val kb = Tensor[Float](Array[Float](0.0000f, -0.0000f, 0.0000f, 0.0000f,
+//      0.0000f, -0.0000f, 0.0000f, -0.0000f, 0.0000f, 0.0000f), Array(10))
+//    val kw = Tensor[Float](Array[Float](0.0080f, 0.0061f, -0.0098f, 0.0001f,
+//      0.0032f, -0.0079f, -0.0049f, 0.0140f, -0.0031f, -0.0058f,
+//      0.0077f, 0.0045f, -0.0067f, -0.0003f, 0.0014f, -0.0057f, 0.0027f, 0.0072f,
+//      -0.0102f, -0.0008f,
+//      -0.0026f, 0.0046f, -0.0021f, 0.0001f, -0.0005f, -0.0017f, 0.0001f, -0.0004f,
+//      0.0001f, 0.0024f,
+//      -0.0030f, 0.0250f, -0.0207f, 0.0004f, 0.0013f, -0.0149f, -0.0011f, 0.0147f,
+//      -0.0054f, 0.0038f,
+//      -0.0033f, 0.0138f, -0.0095f, -0.0004f, 0.0008f, -0.0062f, -0.0077f, 0.0119f,
+//      0.0026f, -0.0021f,
+//      -0.0041f, -0.0010f, 0.0002f, 0.0066f, 0.0017f, -0.0034f, 0.0042f, -0.0036f,
+//      -0.0030f, 0.0024f,
+//      -0.0051f, 0.0016f, -0.0014f, -0.0011f, -0.0019f, 0.0018f, -0.0036f, 0.0024f,
+//      0.0046f, 0.0027f,
+//      -0.0015f, 0.0024f, -0.0063f, 0.0029f, 0.0028f, -0.0053f, -0.0026f, 0.0050f,
+//      0.0022f, 0.0004f,
+//      0.0010f, 0.0021f, -0.0040f, -0.0018f, 0.0010f, -0.0018f, -0.0034f, 0.0044f,
+//      0.0031f, -0.0005f,
+//      -0.0092f, -0.0015f, 0.0076f, -0.0002f, -0.0057f, 0.0073f, 0.0027f, -0.0060f,
+//      0.0002f, 0.0047f), Array(10, 10))
+//    val qb = Tensor[Float](Array[Float](0.0013f, -0.0066f, -0.0002f, 0.0076f,
+//      0.0070f, -0.0041f, -0.0065f, -0.0103f,
+//      0.0085f, 0.0022f), Array(10))
+//    val qw = Tensor[Float](Array[Float]( 0.0001f, 0.0019f, -0.0018f, -0.0019f,
+//      0.0014f, -0.0010f, -0.0005f, 0.0061f, 0.0001f, -0.0043f,
+//      -0.0042f, -0.0064f, -0.0023f, 0.0140f, -0.0014f, -0.0049f, 0.0085f, -0.0165f,
+//      0.0007f, 0.0123f,
+//      -0.0027f, -0.0011f, 0.0032f, 0.0060f, 0.0001f, -0.0058f, 0.0046f, -0.0072f,
+//      -0.0046f, 0.0075f,
+//      -0.0013f, 0.0030f, -0.0026f, -0.0060f, 0.0096f, -0.0084f, -0.0067f, 0.0242f,
+//      0.0040f, -0.0156f,
+//      0.0036f, 0.0054f, -0.0015f, -0.0130f, 0.0047f, 0.0016f, -0.0077f, 0.0234f,
+//      0.0015f, -0.0181f,
+//      0.0027f, 0.0032f, -0.0101f, 0.0100f, -0.0001f, -0.0063f, 0.0020f, -0.0064f,
+//      0.0037f, 0.0012f,
+//      -0.0010f, -0.0001f, -0.0065f, 0.0028f, -0.0063f, 0.0030f, 0.0005f, -0.0007f,
+//      0.0037f, 0.0047f,
+//      0.0030f, -0.0022f, -0.0121f, 0.0127f, -0.0072f, -0.0008f, 0.0025f, -0.0148f,
+//      0.0074f, 0.0115f,
+//      0.0019f, -0.0024f, 0.0109f, -0.0038f, 0.0068f, -0.0026f, 0.0011f, -0.0021f,
+//      -0.0068f, -0.0031f,
+//      0.0000f, -0.0011f, 0.0047f, -0.0051f, 0.0001f, 0.0023f, 0.0001f, 0.0037f,
+//      -0.0035f, -0.0013f), Array(10, 10))
+//
+//    expectGrad(6) = Tensor[Float](30)
+//    expectGrad(6).narrow(1, 1, 10).copy(qb)
+//    expectGrad(6).narrow(1, 11, 10).copy(kb)
+//    expectGrad(6).narrow(1, 21, 10).copy(vb)
+//    expectGrad(5) = Tensor[Float](30, 10)
+//    expectGrad(5).narrow(1, 1, 10).copy(qw)
+//    expectGrad(5).narrow(1, 11, 10).copy(kw)
+//    expectGrad(5).narrow(1, 21, 10).copy(vw)
 
     expectGrad(4) = Tensor[Float](Array[Float](-101.5845f, -2.2855f, -78.2359f,
       190.9308f, 33.9887f, -53.8646f,
@@ -1101,11 +1121,11 @@ class BertSpec extends ZooSpecHelper {
     }
   }
 
-  // TODO: uncomment this ut after we have put zoo model in a public place
+//   TODO: uncomment this ut after we have put zoo model in a public place
 //  "Bert with pretrained model " should "be able to work" in {
 //    // TODO: put zoo model in a public place
-//    val layer = BERT[Float]("/tmp/zoo-bert.model", null, inputSeqLen = 11, hiddenPDrop = 0.0,
-//      attnPDrop = 0.0, true)
+//    val layer = BERT[Float]("/tmp/zoo-bert-splitprojection.model", null,
+//      inputSeqLen = 11, hiddenPDrop = 0.0, attnPDrop = 0.0, true)
 //
 //    val inputIds = Tensor[Float](Array[Float](2040f, 2001, 3958, 27227, 1029, 3958, 103,
 //      2001, 1037, 13997, 11510), Array(1, 11))
