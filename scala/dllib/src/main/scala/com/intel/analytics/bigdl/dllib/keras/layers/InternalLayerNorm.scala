@@ -16,14 +16,15 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
 
-import com.intel.analytics.bigdl.nn.{Mean, Sum}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.zoo.common.TensorOperation
 
 import scala.reflect.ClassTag
 
-private[zoo] class InternalLayerNorm[T: ClassTag](val nOutput: Int = 768, val eps: Double = 1e-5)
+private[zoo] class InternalLayerNorm[T: ClassTag](
+  val nOutput: Int = 768, val eps: Double = 1e-5)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T]{
   val weight = Tensor.ones[T](nOutput).view(1, nOutput)
   val bias = Tensor[T](nOutput).view(1, nOutput)
@@ -39,12 +40,13 @@ private[zoo] class InternalLayerNorm[T: ClassTag](val nOutput: Int = 768, val ep
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dim = input.dim()
     val u = input.sum(dim).div(ev.fromType(input.size(dim)))
-    divInput1 = input.clone().sub(u) // x - u
+
+    divInput1 = TensorOperation.subTensor(input.clone(), u)
     val square = divInput1.clone().square()
     val s = square.sum(square.dim()).div(ev.fromType(square.size(square.dim())))
     sqrtInput = s.add(ev.fromType(eps))
     divInput2 = sqrtInput.clone().sqrt()
-    y = divInput1.clone.div(divInput2)
+    y = TensorOperation.divTensor(divInput1.clone(), divInput2)
     output = y.clone().cmul(weight).add(bias)
     output
   }

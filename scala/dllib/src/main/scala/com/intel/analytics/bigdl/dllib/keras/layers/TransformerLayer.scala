@@ -130,10 +130,14 @@ private[layers] class TransformerLayer[T: ClassTag](
 
   def multiHeadSelfAttention(x: Variable[T], hiddenSize: Int,
     attention_mask: Variable[T] = null): Variable[T] = {
-    val c = projectionLayer(hiddenSize * 3).from(x)
-    val query = c.slice(2, 0, hiddenSize)
-    val key = c.slice(2, hiddenSize, hiddenSize)
-    val value = c.slice(2, hiddenSize * 2, hiddenSize)
+//    val c = projectionLayer(hiddenSize * 3).from(x)
+//    val query = c.slice(2, 0, hiddenSize)
+//    val key = c.slice(2, hiddenSize, hiddenSize)
+//    val value = c.slice(2, hiddenSize * 2, hiddenSize)
+    val query = projectionLayer(hiddenSize).from(x)
+    val key = projectionLayer(hiddenSize).from(x)
+    val value = projectionLayer(hiddenSize).from(x)
+
     val q = splitHeads(query, nHead)
     val k = splitHeads(key, nHead, k = true)
     val v = splitHeads(value, nHead)
