@@ -89,7 +89,8 @@ class Pooler[T: ClassTag] (
 
   private def area(roi: Tensor[T]): T = {
     require(roi.size().length == 1 && roi.size(1) == 5,
-      "ROI bounding box should be 1 dimensional and have 5 elements")
+      s"ROI bounding box should be 1 dimensional and have 5 elements " +
+        s"(batch, xlow, ylow, xhigh, yhigh)")
     val xlow = roi.valueAt(2)
     val ylow = roi.valueAt(3)
     val xhigh = roi.valueAt(4)
@@ -103,6 +104,9 @@ class Pooler[T: ClassTag] (
   override def updateOutput(input: Table): Tensor[T] = {
     val featureMaps = input[Table](1)
     val rois = input[Tensor[T]](2)
+
+    require(featureMaps.length() == num_levels,
+      "The number of feature maps should be same as the size of scales")
 
     val roi_levels = levelMapping(lvl_min, lvl_max, rois)
     val num_rois = rois.size(1)
