@@ -83,9 +83,7 @@ object TrainImageNet {
         batch size will increase the instability of convergence, the synchronization among BN
         layers basically do the parameters synchronization among cores and thus will avoid the
         instability while improves the performance a lot. */
-        val parallisim = Engine.coreNumber
-        setParallism(curModel, parallisim)
-
+        if (Engine.getEngineType() == MklBlas) setParallism(curModel, Engine.coreNumber)
         curModel
       }
 
