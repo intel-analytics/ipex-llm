@@ -329,11 +329,9 @@ abstract class Graph[T: ClassTag](
       .foreach(n => {
         val otherActivity = if (n._1.element.gradInput.isTensor || n._1.nextEdges.length == 1) {
           n._1.element.gradInput
-        } else if (curNode.element.output.isTensor) {
+        } else {
           val index = n._1.nextEdges.indexOf(n._2) + 1
           n._1.element.gradInput.toTable.apply[Activity](index)
-        } else {
-          n._1.element.gradInput
         }
 
         n._2.fromIndex match {

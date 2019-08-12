@@ -52,30 +52,33 @@ class FPN[T : ClassTag](
       }
     }
 
-    val input = Input[T]()
-    val inner_conv = ParallelTable[T]()
+    val inputs = new Array[ModuleNode[T]](num_feature_maps)
     for (i <- 0 to num_feature_maps - 1) {
-      inner_conv.add(inner_blocks_modules(i))
+      inputs(i) = Input[T]()
     }
-    val inner_block = inner_conv.inputs(input)
+
+    val inner_blocks = new Array[ModuleNode[T]](num_feature_maps)
+    for (i <- 0 to num_feature_maps - 1) {
+      inner_blocks(i) = inner_blocks_modules(i).inputs(inputs(i))
+    }
 
     var count = 0
     var results = new Array[ModuleNode[T]](num_feature_maps)
-    var last_inner = SelectTable[T](num_feature_maps).inputs(inner_block)
+    var last_inner = inner_blocks(num_feature_maps - 1)
     results(count) = layer_blocks_modules(num_feature_maps - 1).inputs(last_inner)
 
-    for(i <- num_feature_maps - 1 to 1 by -1) {
-      val layer_block = layer_blocks_modules(i - 1)
+    for(i <- num_feature_maps - 2 to 0 by -1) {
+      val layer_block = layer_blocks_modules(i)
       if (layer_block != null) {
         val inner_topdown = UpSampling2D[T](Array(2, 2)).inputs(last_inner)
-        val inner_lateral = SelectTable[T](i).inputs(inner_block)
+        val inner_lateral = inner_blocks(i)
         last_inner = CAddTable[T]().inputs(inner_lateral, inner_topdown)
         count += 1
         results(count) = layer_block.inputs(last_inner)
       }
     }
 
-    Graph(Array(input), results)
+    Graph(inputs, results)
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[FPN[T]]
