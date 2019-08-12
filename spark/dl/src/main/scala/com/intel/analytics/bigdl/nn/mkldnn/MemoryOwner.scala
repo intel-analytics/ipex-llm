@@ -37,7 +37,7 @@ private[bigdl] trait MemoryOwner {
     new ArrayBuffer[DnnTensor[_]]()
 
   @transient
-  private lazy val _reorderMemory: ArrayBuffer[ReorderMemory] = _
+  private lazy val _reorderMemory: ArrayBuffer[ReorderMemory] = new ArrayBuffer[ReorderMemory]()
 
   def registerMklNativeMemory(m: MklDnnNativeMemory): Unit = {
     _nativeMemory.append(m)

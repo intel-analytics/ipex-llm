@@ -228,19 +228,17 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 }
 
 object ReorderMemory {
-  def apply(inputFormat: MemoryData, outputFormat: MemoryData, gradInputFormat: MemoryData,
-    gradOutputFomat: MemoryData)(implicit memoryOwner: MemoryOwner = null): ReorderMemory = {
+  // We don't use "apply" as the function name here. The reason is that scala does not
+  // allow overloaded function (functions having the same name) with default parameters
+  // Hence, we bypass this issue by defining two functions.
+  def create(inputFormat: MemoryData, outputFormat: MemoryData, gradInputFormat: MemoryData,
+    gradOutputFomat: MemoryData)(implicit  memoryOwner: MemoryOwner = null): ReorderMemory = {
     new ReorderMemory(inputFormat, outputFormat, gradInputFormat, gradOutputFomat, memoryOwner)
   }
 
-  def apply(outputFormat: MemoryData, gradInputFormat: MemoryData)
+  def apply(outputFormat: MemoryData, gradInputFormat: MemoryData = null)
     (implicit memoryOwner: MemoryOwner = null): ReorderMemory = {
     new ReorderMemory(null, outputFormat, gradInputFormat, null,
       memoryOwner)
-  }
-
-  def apply(outputFormat: MemoryData)(implicit memoryOwner: MemoryOwner = null): ReorderMemory = {
-    new ReorderMemory(null, outputFormat,
-      null, null, memoryOwner)
   }
 }
