@@ -209,7 +209,9 @@ object Predictor {
       })
     }
     dataSet.zip(batchOut).map(sample => {
-      sample(sample._1, sample._2)
+      val data = sample._1.feature()
+      val label = sample._2.toTensor
+      Sample(data, label)
     })
     dataSet
   }
