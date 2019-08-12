@@ -209,8 +209,7 @@ object Predictor {
       })
     }
     dataSet.zip(batchOut).map(sample => {
-      sample._1.setLabel(sample._2)
-      sample
+      sample(sample._1, sample._2)
     })
     dataSet
   }
