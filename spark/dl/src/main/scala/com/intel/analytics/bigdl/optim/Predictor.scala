@@ -213,7 +213,6 @@ object Predictor {
       val label = sample._2.toTensor
       Sample(data, label)
     })
-    dataSet
   }
 /*
   def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
