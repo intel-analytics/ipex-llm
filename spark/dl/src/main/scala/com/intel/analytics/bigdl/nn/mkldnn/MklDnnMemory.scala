@@ -23,9 +23,7 @@ extends Releasable {
   private val UNDEFINED: Long = -1
   private val ERROR: Long = 0
 
-  if(owner != null) {
-    owner.registerResource(this)
-  }
+  owner.registerResource(this)
 
   def isUndefOrError : Boolean = __ptr == UNDEFINED || __ptr == ERROR
   def release(): Unit = {
