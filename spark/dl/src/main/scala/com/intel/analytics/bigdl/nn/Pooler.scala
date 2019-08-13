@@ -88,13 +88,13 @@ class Pooler[T: ClassTag] (
   }
 
   private def area(roi: Tensor[T]): T = {
-    require(roi.size().length == 1 && roi.size(1) == 5,
-      s"ROI bounding box should be 1 dimensional and have 5 elements " +
-        s"(batch, xlow, ylow, xhigh, yhigh)")
-    val xlow = roi.valueAt(2)
-    val ylow = roi.valueAt(3)
-    val xhigh = roi.valueAt(4)
-    val yhigh = roi.valueAt(5)
+    require(roi.size().length == 1 && roi.size(1) == 4,
+      s"ROI bounding box should be 1 dimensional and have 4 elements " +
+        s"(xlow, ylow, xhigh, yhigh)")
+    val xlow = roi.valueAt(1)
+    val ylow = roi.valueAt(2)
+    val xhigh = roi.valueAt(3)
+    val yhigh = roi.valueAt(4)
 
     val area = ev.times(ev.plus(ev.minus(xhigh, xlow), ev.fromType(1)),
       ev.plus(ev.minus(yhigh, ylow), ev.fromType(1)))
@@ -121,7 +121,7 @@ class Pooler[T: ClassTag] (
       val num_rois_per_level = rois_ind_per_level.length
 
       if (num_rois_per_level > 0) {
-        val rois_per_level = Tensor[T](Array(num_rois_per_level, 5))
+        val rois_per_level = Tensor[T](Array(num_rois_per_level, 4)) // bbox has 4 elements
         for (i <- 0 until num_rois_per_level) {
           rois_per_level(i + 1) = rois(rois_ind_per_level(i) + 1)
         }

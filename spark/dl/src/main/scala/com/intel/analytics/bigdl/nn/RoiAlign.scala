@@ -110,13 +110,12 @@ class RoiAlign[T: ClassTag] (
     width: Int,
     spatialScale: Float
   ): Unit = {
-    val roi_cols = 5
+    val roi_cols = 4 // bbox has 4 elements
 
     for (n <- 0 until num_rois) {
       val index_n = n * channels * pooledW * pooledH
       var offset_rois = n * roi_cols
-      val roi_batch_ind = roisFloat(offset_rois)
-      offset_rois = offset_rois + 1
+      val roi_batch_ind = 0 // bbox has 4 elements
 
       val roi_start_w = roisFloat(offset_rois) * spatialScale
       val roi_start_h = roisFloat(offset_rois + 1) * spatialScale
@@ -296,13 +295,12 @@ class RoiAlign[T: ClassTag] (
     width: Int,
     spatialScale: Double
   ): Unit = {
-    val roi_cols = 5
+    val roi_cols = 4 // bbox has 4 elements
 
     for (n <- 0 until num_rois) {
       val index_n = n * channels * pooledW * pooledH
       var offset_rois = n * roi_cols
-      val roi_batch_ind = roisDouble(offset_rois)
-      offset_rois = offset_rois + 1
+      val roi_batch_ind = 0
 
       val roi_start_w = roisDouble(offset_rois) * spatialScale
       val roi_start_h = roisDouble(offset_rois + 1) * spatialScale
