@@ -21,14 +21,14 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
 class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
   gradInputFormat: MemoryData, gradOutputFormat: MemoryData,
-  memoryOwner: MemoryOwner = null)  extends MklDnnLayer {
+  memoryOwner: MemoryOwner = null) extends MklDnnLayer with Releasable {
 
   // ReorderMemory is a special layer. It can be owned by other layers.
   // So there is an optional MemoryOwner that can be null.
   // If it is null, this means the ReorderMemory is a normal layer.
   // If it is not null, it means ReorderMemory is owned by another layer
   if (memoryOwner!=null) {
-    memoryOwner.registerReorderMemory(this)
+    memoryOwner.registerResource(this)
   }
   _outputFormats = Array(outputFormat)
   _gradInputFormats = Array(gradInputFormat)

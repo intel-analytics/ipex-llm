@@ -15,13 +15,21 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.tensor.DnnTensor
 import scala.collection.mutable.ArrayBuffer
 
+
 /**
- * This trait is a owner of MKLDNN native memory. It will track all native resources
- * (Primitives, tensor, ReorderMemory). You can call releaseNativeMklDnnMemory to relase all the
- * memory at once. These resources will require an implicit MemoryOwner at
+ * The trait for resources that need to be released
+ */
+private[bigdl] trait Releasable {
+  def release(): Unit
+}
+
+/**
+ * This trait is a owner of the resources that need to be released.
+ * It will track all Releasable resources (Primitives, tensor, ReorderMemory).
+ * You can call releaseResources to release all the
+ * resources at once. These resources will require an implicit MemoryOwner at
  * the constructors. The constructors of the resources will register themselves to the MemoryOwner.
  * For DNN Layer classes, they extends MemoryOwner and have a implicit value of "this" as a
  * MemoryOwner. ReorderMemory is a kind of special resource. They can be a normal layer or a
@@ -29,39 +37,15 @@ import scala.collection.mutable.ArrayBuffer
  */
 private[bigdl] trait MemoryOwner {
   @transient
-  private lazy val _nativeMemory: ArrayBuffer[MklDnnNativeMemory] =
-    new ArrayBuffer[MklDnnNativeMemory]()
+  private lazy val _resources: ArrayBuffer[Releasable] =
+    new ArrayBuffer[Releasable]()
 
-  @transient
-  private lazy val _tensors: ArrayBuffer[DnnTensor[_]] =
-    new ArrayBuffer[DnnTensor[_]]()
-
-  @transient
-  private lazy val _reorderMemory: ArrayBuffer[ReorderMemory] = new ArrayBuffer[ReorderMemory]()
-
-  def registerMklNativeMemory(m: MklDnnNativeMemory): Unit = {
-    _nativeMemory.append(m)
+  def registerResource(m: Releasable): Unit = {
+    _resources.append(m)
   }
 
-  def registerTensor(m: DnnTensor[_]): Unit = {
-    _tensors.append(m)
-  }
-
-  def registerReorderMemory(m: ReorderMemory): Unit = {
-    _reorderMemory.append(m)
-  }
-
-  def releaseNativeMklDnnMemory(): Unit = {
-    _nativeMemory.foreach(m => {
-      if (!m.isUndefOrError) {
-        m.release()
-        m.reset()
-      }
-    })
-    _nativeMemory.clear()
-    _tensors.foreach(_.release())
-    _tensors.clear()
-    _reorderMemory.foreach(_.release())
-    _reorderMemory.clear()
+  def releaseResources(): Unit = {
+    _resources.foreach(_.release())
+    _resources.clear()
   }
 }

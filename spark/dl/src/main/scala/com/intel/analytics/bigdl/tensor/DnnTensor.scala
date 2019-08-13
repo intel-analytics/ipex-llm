@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.mkldnn.MemoryOwner
+import com.intel.analytics.bigdl.nn.mkldnn.{MemoryOwner, Releasable}
 import com.intel.analytics.bigdl.tensor.DnnTensor.DnnTensorUnsupportOperations
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -29,9 +29,9 @@ class DnnTensor[T: ClassTag](
   private var _storage: DnnStorage[T],
   private var sizes: Array[Int]
 ) (implicit ev: TensorNumeric[T], owner: MemoryOwner)
-  extends DnnTensorUnsupportOperations[T]{
+  extends DnnTensorUnsupportOperations[T] with Releasable {
 
-  owner.registerTensor(this)
+  owner.registerResource(this)
   // performance regression, the sizes.product will make the performance downgrade.
   private val _nElement: Int = sizes.product
 

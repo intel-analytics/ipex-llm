@@ -18,16 +18,24 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.MklDnn
 
-abstract class MklDnnNativeMemory(protected var __ptr: Long)(implicit owner: MemoryOwner) {
+abstract class MklDnnNativeMemory(protected var __ptr: Long)(implicit owner: MemoryOwner)
+extends Releasable {
   private val UNDEFINED: Long = -1
   private val ERROR: Long = 0
 
   if(owner != null) {
-    owner.registerMklNativeMemory(this)
+    owner.registerResource(this)
   }
 
   def isUndefOrError : Boolean = __ptr == UNDEFINED || __ptr == ERROR
-  def release(): Unit
+  def release(): Unit = {
+    if (!isUndefOrError) {
+      doRelease()
+      reset()
+    }
+  }
+
+  def doRelease(): Unit
   def ptr: Long = __ptr
   def reset(): Unit = {
     __ptr = ERROR
@@ -36,28 +44,28 @@ abstract class MklDnnNativeMemory(protected var __ptr: Long)(implicit owner: Mem
 }
 class MklMemoryPrimitiveDesc(_ptr: Long)(implicit owner: MemoryOwner)
   extends MklDnnNativeMemory(_ptr) {
-  def release(): Unit = MklDnn.PrimitiveDescDestroy(ptr)
+  def doRelease(): Unit = MklDnn.PrimitiveDescDestroy(ptr)
 }
 
 class MklMemoryAttr(_ptr: Long)(implicit owner: MemoryOwner)
   extends MklDnnNativeMemory(_ptr) {
-  def release(): Unit = MklDnn.DestroyAttr(ptr)
+  def doRelease(): Unit = MklDnn.DestroyAttr(ptr)
 }
 
 class MklMemoryPostOps(_ptr: Long)(implicit owner: MemoryOwner)
   extends MklDnnNativeMemory(_ptr) {
-  def release(): Unit = MklDnn.DestroyPostOps(ptr)
+  def doRelease(): Unit = MklDnn.DestroyPostOps(ptr)
 }
 
 // All *DescInit memory objects share the same dealloactor
 class MklMemoryDescInit(_ptr: Long)(implicit owner: MemoryOwner)
   extends MklDnnNativeMemory(_ptr) {
-  def release(): Unit = MklDnn.FreeMemoryDescInit(ptr)
+  def doRelease(): Unit = MklDnn.FreeMemoryDescInit(ptr)
 }
 
 class MklMemoryPrimitive(_ptr: Long)(implicit owner: MemoryOwner)
   extends MklDnnNativeMemory(_ptr) {
-  def release(): Unit = MklDnn.PrimitiveDestroy(ptr)
+  def doRelease(): Unit = MklDnn.PrimitiveDestroy(ptr)
 }
 
 

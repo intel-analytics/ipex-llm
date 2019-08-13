@@ -280,7 +280,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   override def release(): Unit = {
-    this.releaseNativeMklDnnMemory()
+    this.releaseResources()
   }
 
   override def setQuantize(value: Boolean): MklDnnLayer.this.type = this
@@ -373,7 +373,7 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
 
   override def release(): Unit = {
     super.release()
-    this.releaseNativeMklDnnMemory()
+    this.releaseResources()
   }
 
   override def setQuantize(value: Boolean): this.type = {

@@ -95,7 +95,7 @@ class CAddTableSpec extends BigDLSpecHelper {
 
     Tools.dense(cat.gradInput.toTable(1)) should be (Tools.dense(cloned.gradInput.toTable(1)))
     Tools.dense(cat.gradInput.toTable(2)) should be (Tools.dense(cloned.gradInput.toTable(2)))
-    Owner.releaseNativeMklDnnMemory()
+    Owner.releaseResources()
   }
 
   "CAddTable u8" should "be correct" in {
