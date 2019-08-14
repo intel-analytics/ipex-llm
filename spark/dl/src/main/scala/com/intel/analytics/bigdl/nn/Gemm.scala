@@ -41,8 +41,8 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in this module parameters.
  */
 class Gemm[T: ClassTag](
-  alpha: Float = 1, beta: Float = 1,
-  transA: Boolean = false, transB: Boolean = false
+  val alpha: Float = 1, val beta: Float = 1,
+  val transA: Boolean = false, val transB: Boolean = false
 )(implicit ev: TensorNumeric[T])
 extends AbstractModule[Table, Tensor[T], T] {
 

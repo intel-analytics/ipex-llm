@@ -369,6 +369,6 @@ object ParentModuleSerializer extends ModuleSerializable {
   }
 }
 
-private[bigdl] abstract class ModuleSerializationTest extends SerializerSpecHelper {
+abstract class ModuleSerializationTest extends SerializerSpecHelper {
   def test(): Unit
 }
