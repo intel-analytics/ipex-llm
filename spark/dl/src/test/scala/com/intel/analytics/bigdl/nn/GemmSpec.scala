@@ -69,7 +69,7 @@ class GemmSpec extends FlatSpec with Matchers {
 
 class GemmSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val gemm = Gemm[Float](1, 1).setName("Gemm")
+    val gemm = Gemm[Float]().setName("Gemm")
 
     val inputA = Tensor(2, 2)
     val inputB = Tensor(2, 2)
