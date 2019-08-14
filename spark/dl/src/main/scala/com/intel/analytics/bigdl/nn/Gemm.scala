@@ -86,7 +86,7 @@ object Gemm {
     alpha: Int, beta: Int,
     transA: Boolean = false, transB: Boolean = false
   )(implicit ev: TensorNumeric[T]): Gemm[T] = {
-    new Gemm[T](alpha = alpha, beta = beta, transA = transA, transB = transB)
+    new Gemm[T](alpha, beta, transA, transB)
   }
 
 }
