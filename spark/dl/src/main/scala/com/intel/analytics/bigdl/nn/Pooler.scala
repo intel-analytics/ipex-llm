@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect._
 
 /**
+ * Pooler selects the feature map which matches the size of RoI for RoIAlign
  * @param resolution The resolution of pooled feature maps. Height equals width.
  * @param scales Spatial scales of each feature map
  * @param samplingRatio Sampling ratio
@@ -31,7 +32,7 @@ import scala.reflect._
 
 class Pooler[T: ClassTag] (
   val resolution: Int,
-  val scales: Array[T],
+  val scales: Array[Float],
   val samplingRatio: Int
 ) (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
   private val num_levels = scales.length
@@ -42,17 +43,17 @@ class Pooler[T: ClassTag] (
   }
 
   private val lvl_min = if (classTag[T] == classTag[Float]) {
-    (-Math.log(scales(0).asInstanceOf[Float].toDouble)/Math.log(2.0)).toInt
+    (-Math.log(scales(0))/Math.log(2.0)).toInt
   } else if (classTag[T] == classTag[Double]) {
-    (-Math.log(scales(0).asInstanceOf[Double])/Math.log(2.0)).toInt
+    (-Math.log(scales(0))/Math.log(2.0)).toInt
   } else {
     throw new IllegalArgumentException("currently only Double and Float types are supported")
   }
 
   private val lvl_max = if (classTag[T] == classTag[Float]) {
-    (-Math.log(scales(num_levels - 1).asInstanceOf[Float].toDouble)/Math.log(2.0)).toInt
+    (-Math.log(scales(num_levels - 1))/Math.log(2.0)).toInt
   } else if (classTag[T] == classTag[Double]) {
-    (-Math.log(scales(num_levels - 1).asInstanceOf[Double])/Math.log(2.0)).toInt
+    (-Math.log(scales(num_levels - 1))/Math.log(2.0)).toInt
   } else {
     throw new IllegalArgumentException("currently only Double and Float types are supported")
   }
@@ -155,7 +156,7 @@ class Pooler[T: ClassTag] (
 object Pooler {
   def apply[@specialized(Float, Double) T: ClassTag](
     resolution: Int,
-    scales: Array[T],
+    scales: Array[Float],
     samplingRatio: Int) (implicit ev: TensorNumeric[T]): Pooler[T] =
     new Pooler[T](resolution, scales, samplingRatio)
 }

@@ -24,13 +24,26 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect._
 
 /**
+ * Region of interest aligning (RoIAlign) for Mask-RCNN
+ *
+ * The RoIAlign uses average pooling on bilinear-interpolated sub-windows to convert
+ * the features inside any valid region of interest into a small feature map with a
+ * fixed spatial extent of pooledH * pooledW (e.g., 7 * 7).
+ * An RoI is a rectangular window into a conv feature map.
+ * Each RoI is defined by a four-tuple (x1, y1, x2, y2) that specifies its
+ * top-left corner (x1, y1) and its bottom-right corner (x2, y2).
+ * RoIAlign works by dividing the h * w RoI window into an pooledH * pooledW grid of
+ * sub-windows of approximate size h/H * w/W. In each sub-window, compute exact values
+ * of input features at four regularly sampled locations, and then do average pooling on
+ * the values in each sub-window.
+ * Pooling is applied independently to each feature map channel
  * @param spatialScale Spatial scale
  * @param samplingRatio Sampling ratio
- * @param pooledH spatial extent in width
- * @param pooledW spatial extent in height
+ * @param pooledH spatial extent in height
+ * @param pooledW spatial extent in width
  */
 class RoiAlign[T: ClassTag] (
-  val spatialScale: T,
+  val spatialScale: Float,
   val samplingRatio: Int,
   val pooledH: Int,
   val pooledW: Int
@@ -61,7 +74,7 @@ class RoiAlign[T: ClassTag] (
         channels,
         height,
         width,
-        spatialScale.asInstanceOf[Float])
+        spatialScale)
     } else if (classTag[T] == classTag[Double]) {
       val data = input[Tensor[Double]](1)
       val rois = input[Tensor[Double]](2)
@@ -87,7 +100,7 @@ class RoiAlign[T: ClassTag] (
         channels,
         height,
         width,
-        spatialScale.asInstanceOf[Double])
+        spatialScale)
     } else {
       throw new IllegalArgumentException("currently only Double and Float types are supported")
     }
@@ -293,7 +306,7 @@ class RoiAlign[T: ClassTag] (
     channels: Int,
     height: Int,
     width: Int,
-    spatialScale: Double
+    spatialScale: Float
   ): Unit = {
     val roi_cols = 4 // bbox has 4 elements
 
@@ -302,10 +315,10 @@ class RoiAlign[T: ClassTag] (
       var offset_rois = n * roi_cols
       val roi_batch_ind = 0
 
-      val roi_start_w = roisDouble(offset_rois) * spatialScale
-      val roi_start_h = roisDouble(offset_rois + 1) * spatialScale
-      val roi_end_w = roisDouble(offset_rois + 2) * spatialScale
-      val roi_end_h = roisDouble(offset_rois + 3) * spatialScale
+      val roi_start_w = roisDouble(offset_rois) * spatialScale.toDouble
+      val roi_start_h = roisDouble(offset_rois + 1) * spatialScale.toDouble
+      val roi_end_w = roisDouble(offset_rois + 2) * spatialScale.toDouble
+      val roi_end_h = roisDouble(offset_rois + 3) * spatialScale.toDouble
 
       val roi_width = Math.max(roi_end_w - roi_start_w, 1.0)
       val roi_height = Math.max(roi_end_h - roi_start_h, 1.0)
@@ -480,7 +493,7 @@ class RoiAlign[T: ClassTag] (
 
 object RoiAlign {
   def apply[@specialized(Float, Double) T: ClassTag](
-    spatialScale: T,
+    spatialScale: Float,
     samplingRatio: Int,
     pooledH: Int,
     pooledW: Int) (implicit ev: TensorNumeric[T]): RoiAlign[T] =

@@ -101,7 +101,7 @@ class RoiAlignSpec extends FlatSpec with Matchers {
   }
 
   "updateOutput Double type" should "work properly" in {
-    val spatio_scale: Double = 1.0
+    val spatio_scale: Float = 1.0f
     val sampling_ratio: Int = 3
     val pooled_height: Int = 2
     val pooled_width: Int = 2

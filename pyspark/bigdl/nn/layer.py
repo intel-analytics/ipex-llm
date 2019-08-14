@@ -5612,6 +5612,79 @@ class Cropping3D(Layer):
     def __init__(self, dim1Crop, dim2Crop, dim3Crop, data_format="channel_first", bigdl_type="float"):
         super(Cropping3D, self).__init__(None, bigdl_type, dim1Crop, dim2Crop, dim3Crop, data_format)
 
+class RoiAlign(Layer):
+    """
+    Region of interest aligning (RoIAlign) for Mask-RCNN
+
+    The RoIAlign uses average pooling on bilinear-interpolated sub-windows to convert
+    the features inside any valid region of interest into a small feature map with a
+    fixed spatial extent of pooledH * pooledW (e.g., 7 * 7).
+
+    An RoI is a rectangular window into a conv feature map.
+    Each RoI is defined by a four-tuple (x1, y1, x2, y2) that specifies its
+    top-left corner (x1, y1) and its bottom-right corner (x2, y2).
+
+    RoIAlign works by dividing the h * w RoI window into an pooledH * pooledW grid of
+    sub-windows of approximate size h/H * w/W. In each sub-window, compute exact values
+    of input features at four regularly sampled locations, and then do average pooling on
+    the values in each sub-window.
+
+    Pooling is applied independently to each feature map channel
+
+    :param spatial_scale:  spatial scale
+    :param sampling_ratio: sampling ratio
+    :param pooled_h:       spatial extent in height
+    :param pooled_w:       spatial extent in width
+
+    >>> import numpy as np
+    >>> input_data = np.random.rand(1,2,6,8)
+    >>> input_rois = np.array([0, 0, 7, 5, 6, 2, 7, 5, 3, 1, 6, 4, 3, 3, 3, 3],dtype='float').reshape(4,4)
+    >>> m = RoiAlign(1.0,3,2,2)
+    creating: createRoiAlign
+    >>> out = m.forward([input_data,input_rois])
+    """
+
+    def __init__(self,
+                 spatial_scale,
+                 sampling_ratio,
+                 pooled_h,
+                 pooled_w,
+                 bigdl_type="float"):
+        super(RoiAlign, self).__init__(None, bigdl_type,
+                                         spatial_scale,
+                                         sampling_ratio,
+                                         pooled_h,
+                                         pooled_w)
+
+class Pooler(Layer):
+    """
+    Pooler selects the feature map which matches the size of RoI for RoIAlign
+
+    :param resolution:     the resolution of pooled feature maps. Height equals width.
+    :param scales:         spatial scales of each feature map
+    :param sampling_ratio: sampling ratio
+
+    >>> import numpy as np
+    >>> feature0 = np.random.rand(1,2,2,2)
+    >>> feature1 = np.random.rand(1,2,4,4)
+    >>> feature2 = np.random.rand(1,2,8,8)
+    >>> features = [feature0, feature1, feature2]
+    >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],dtype='float').reshape(3,4)
+    >>> m = Pooler(2,[1.0, 0.5, 0.25],2)
+    creating: createPooler
+    >>> out = m.forward([features,input_rois])
+    """
+
+    def __init__(self,
+                 resolution,
+                 scales,
+                 sampling_ratio,
+                 bigdl_type="float"):
+        super(Pooler, self).__init__(None, bigdl_type,
+                                       resolution,
+                                       scales,
+                                       sampling_ratio)
+
 def _test():
     import doctest
     from pyspark import SparkContext

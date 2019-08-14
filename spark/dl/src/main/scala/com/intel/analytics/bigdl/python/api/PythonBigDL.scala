@@ -1148,6 +1148,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       ev.fromType(spatial_scale))
   }
 
+  def createRoiAlign(spatial_scale: Float, sampling_ratio: Int, pooled_h: Int, pooled_w: Int)
+  : RoiAlign[T] = {
+    RoiAlign[T](spatial_scale,
+      sampling_ratio,
+      pooled_h,
+      pooled_w)
+  }
+
+  def createPooler(resolution: Int, scales: JList[Float], sampling_ratio: Int)
+  : Pooler[T] = {
+    Pooler[T](resolution,
+      scales.asScala.toArray,
+      sampling_ratio)
+  }
+
   def createScale(size: JList[Int])
   : Scale[T] = {
     Scale[T](size.asScala.toArray)
