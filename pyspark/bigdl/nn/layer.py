@@ -448,7 +448,7 @@ class Layer(JavaValue, SharedStaticUtils):
                                "modelPredictClass", self.value, data_rdd)
         return result
 
-    def get_label(self, data_rdd):
+    def get_sample_label(self, data_rdd):
         """
         Get the predict label from Rdd data
 

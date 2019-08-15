@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.dataset
 
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils

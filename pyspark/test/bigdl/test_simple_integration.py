@@ -545,7 +545,7 @@ class TestSimple():
 
         predict_class = model.predict_class(predict_data)
         if isinstance(predict_data, RDD):
-            predict_labels = model.get_label(predict_class)
+            predict_labels = model.get_sample_label(predict_class).take(6)
         else:
             predict_labels = predict_class.take(6)
 
