@@ -448,6 +448,17 @@ class Layer(JavaValue, SharedStaticUtils):
                                "modelPredictClass", self.value, data_rdd)
         return result
 
+    def get_label(self, data_rdd):
+        """
+        Get the predict label from Rdd data
+
+        :param data_rdd: the data to be predict.
+        :return: An RDD represent the predict label.
+        """
+        result = callBigDlFunc(self.bigdl_type,
+                               "getSampleLabel", self.value, data_rdd)
+        return result
+
     def predict_image(self, image_frame, output_layer=None, share_buffer=False,
                       batch_per_partition=4, predict_key="predict"):
         """
