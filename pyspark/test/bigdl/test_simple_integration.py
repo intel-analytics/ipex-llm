@@ -22,6 +22,7 @@ from bigdl.util.common import *
 from bigdl.util.common import _py2java
 from bigdl.nn.initialization_method import *
 from bigdl.dataset import movielens
+from pyspark.rdd import RDD
 import numpy as np
 import tempfile
 import pytest
