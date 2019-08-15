@@ -909,7 +909,11 @@ class Model(Container):
         :param bigdl_type:
         :return:
         """
-        callBigDlFunc(bigdl_type, "setInputFormats", self.value, input_formats)
+        jname = callBigDlFunc(bigdl_type,
+                              "getRealClassNameOfJValue",
+                              self.value)
+        if jname.split(".")[-1] == "StaticGraph" :
+            callBigDlFunc(bigdl_type, "setInputFormats", self.value, input_formats)
         return self
 
     def set_output_formats(self, output_formats, bigdl_type="float"):
@@ -919,7 +923,11 @@ class Model(Container):
         :param bigdl_type:
         :return:
         """
-        callBigDlFunc(bigdl_type, "setOutputFormats", self.value, output_formats)
+        jname = callBigDlFunc(bigdl_type,
+                              "getRealClassNameOfJValue",
+                              self.value)
+        if jname.split(".")[-1] == "StaticGraph":
+            callBigDlFunc(bigdl_type, "setOutputFormats", self.value, output_formats)
         return self
 
 class Attention(Layer):
