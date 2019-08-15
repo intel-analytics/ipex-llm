@@ -60,8 +60,7 @@ if __name__ == '__main__':
     def lossFunc(input, target):
         return nn.CrossEntropyLoss().forward(input, target.flatten().long())
 
-    torchcriterion = TorchCriterion.from_pytorch(loss=lossFunc, input_shape=[1, 2],
-                                                 sample_label=torch.LongTensor([1]))
+    torchcriterion = TorchCriterion.from_pytorch(lossFunc, [1, 2], torch.LongTensor([1]))
 
     # prepare training data as Spark DataFrame
     image_path = sys.argv[1]
@@ -75,8 +74,7 @@ if __name__ == '__main__':
     # run training and evaluation
     featureTransformer = ChainedPreprocessing(
         [RowToImageFeature(), ImageCenterCrop(224, 224),
-         ImageChannelNormalize(0, 0, 0, 255.0, 255.0, 255.0),
-         ImageChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+         ImageChannelNormalize(123.0, 117.0, 104.0, 255.0, 255.0, 255.0),
          ImageMatToTensor(), ImageFeatureToTensor()])
 
     classifier = NNClassifier(torchnet, torchcriterion, featureTransformer) \
