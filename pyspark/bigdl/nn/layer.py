@@ -5668,7 +5668,7 @@ class Pooler(Layer):
     >>> feature0 = np.random.rand(1,2,2,2)
     >>> feature1 = np.random.rand(1,2,4,4)
     >>> feature2 = np.random.rand(1,2,8,8)
-    >>> features = [feature0, feature1, feature2]
+    >>> features = np.array([feature0, feature1, feature2])
     >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],dtype='float').reshape(3,4)
     >>> m = Pooler(2,[1.0, 0.5, 0.25],2)
     creating: createPooler
