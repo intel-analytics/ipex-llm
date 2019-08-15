@@ -5656,35 +5656,6 @@ class RoiAlign(Layer):
                                          pooled_h,
                                          pooled_w)
 
-class Pooler(Layer):
-    """
-    Pooler selects the feature map which matches the size of RoI for RoIAlign
-
-    :param resolution:     the resolution of pooled feature maps. Height equals width.
-    :param scales:         spatial scales of each feature map
-    :param sampling_ratio: sampling ratio
-
-    >>> import numpy as np
-    >>> feature0 = np.random.rand(1,2,2,2)
-    >>> feature1 = np.random.rand(1,2,4,4)
-    >>> feature2 = np.random.rand(1,2,8,8)
-    >>> features = np.array([feature0, feature1, feature2])
-    >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],dtype='float').reshape(3,4)
-    >>> m = Pooler(2,[1.0, 0.5, 0.25],2)
-    creating: createPooler
-    >>> out = m.forward([features,input_rois])
-    """
-
-    def __init__(self,
-                 resolution,
-                 scales,
-                 sampling_ratio,
-                 bigdl_type="float"):
-        super(Pooler, self).__init__(None, bigdl_type,
-                                       resolution,
-                                       scales,
-                                       sampling_ratio)
-
 def _test():
     import doctest
     from pyspark import SparkContext

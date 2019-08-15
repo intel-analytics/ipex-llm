@@ -1156,13 +1156,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       pooled_w)
   }
 
-  def createPooler(resolution: Int, scales: JList[Double], sampling_ratio: Int)
-  : Pooler[T] = {
-    Pooler[T](resolution,
-      scales.asScala.toArray.map(_.toFloat),
-      sampling_ratio)
-  }
-
   def createScale(size: JList[Int])
   : Scale[T] = {
     Scale[T](size.asScala.toArray)
