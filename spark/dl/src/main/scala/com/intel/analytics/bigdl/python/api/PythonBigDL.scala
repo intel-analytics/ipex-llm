@@ -2006,7 +2006,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample]): JavaRDD[Sample] = {
     val sampleRdd = toJSample(dataRdd)
-    model.predictClass(sampleRdd).map(Sample => Sample[T]).toJavaRDD()
+    val tensorRDD = model.predictClass(sampleRdd).map(toPySample(_))
+    new JavaRDD[Sample](tensorRDD)
   }
 
   def getSampleLabel(model: AbstractModule[Activity, Activity, T],
