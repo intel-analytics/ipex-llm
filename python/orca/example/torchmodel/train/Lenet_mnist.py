@@ -49,8 +49,7 @@ class LeNet(nn.Module):
 
 
 if __name__ == '__main__':
-    sparkConf = init_spark_conf().setAppName("test_pytorch_lenet").setMaster("local[1]")\
-        .set('spark.driver.memory', '10g')
+    sparkConf = init_spark_conf().setAppName("test_pytorch_lenet")
     sc = init_nncontext(sparkConf)
     spark = SparkSession.builder.config(conf=sparkConf).getOrCreate()
 
@@ -70,9 +69,8 @@ if __name__ == '__main__':
         return nn.CrossEntropyLoss().forward(input, target.flatten().long())
 
     torch_model = LeNet()
-    model = TorchNet.from_pytorch(module=torch_model, input_shape=[1, 1, 28, 28])
-    criterion = TorchCriterion.from_pytorch(loss=lossFunc, input_shape=[1, 10],
-                                            sample_label=torch.LongTensor([5]))
+    model = TorchNet.from_pytorch(torch_model, [1, 1, 28, 28])
+    criterion = TorchCriterion.from_pytorch(lossFunc, [1, 10], torch.LongTensor([5]))
     classifier = NNClassifier(model, criterion, SeqToTensor([1, 28, 28])) \
         .setBatchSize(64) \
         .setOptimMethod(Adam()) \

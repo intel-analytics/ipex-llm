@@ -1,24 +1,21 @@
 ## Torch ResNet Prediction Example
 
-TorchNet wraps a TorchScript model as a single layer, thus the Pytorch model can be used for
-distributed inference. This example illustrates that a PyTorch program, with One line of change,
+TorchNet wraps a Pytorch model as Analytics Zoo module, thus the Pytorch model can be used for
+distributed inference. This example illustrates that a PyTorch program, with few lines of change,
 can be executed on Apache Spark.
 
 ## Install or download Analytics Zoo
-Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
+Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/)
+to install analytics-zoo via __pip__ or __download the prebuilt package__.
 
 ## Model and Data Preparation
 
-1. Prepare the image dataset for inference. Put the images to do prediction in the same folder.
-
+We use ResNet 18 from torchvision and run inference on some images, e.g. images from ImageNet.
 
 ## Run this example after pip install
 ```bash
 python predict.py --image path_to_image_folder
 ```
-
-__Options:__
-* `--image` The path where the images are stored. 
 
 ## Run this example with prebuilt package
 ```bash

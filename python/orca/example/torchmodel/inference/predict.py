@@ -49,10 +49,6 @@ if __name__ == "__main__":
     parser.add_option("--image", type=str, dest="img_path",
                       help="The path where the images are stored, "
                            "can be either a folder or an image path")
-    parser.add_option("--model", type=str, dest="model_path",
-                      help="The path of the TensorFlow object detection model")
-    parser.add_option("--partition_num", type=int, dest="partition_num", default=4,
-                      help="The number of partitions")
     (options, args) = parser.parse_args(sys.argv)
 
     sc = init_nncontext("Torch ResNet Prediction Example")
