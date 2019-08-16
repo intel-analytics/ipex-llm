@@ -2597,6 +2597,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     model.saveGraphTopology(logPath)
   }
 
+  def setInputFormats(graph: StaticGraph[T], inputFormat: JList[Int]): StaticGraph[T] = {
+    graph.setInputFormats(inputFormat.asScala.toList)
+  }
+
+  def setOutputFormats(graph: StaticGraph[T], outputFormat: JList[Int]): StaticGraph[T] = {
+    graph.setOutputFormats(outputFormat.asScala.toList)
+  }
+
   def createResizeBilinear(
     outputHeight: Int,
     outputWidth: Int,
