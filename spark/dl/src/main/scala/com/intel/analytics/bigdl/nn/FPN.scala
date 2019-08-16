@@ -107,6 +107,11 @@ class FPN[T : ClassTag](
     model.reset()
   }
 
+  override def clearState(): this.type = {
+    super.clearState()
+    this
+  }
+
   override def toString: String = s"FPN($out_channels)"
 }
 
