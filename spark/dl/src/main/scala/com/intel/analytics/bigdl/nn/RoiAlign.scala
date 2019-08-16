@@ -109,8 +109,7 @@ class RoiAlign[T: ClassTag] (
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    gradInput = null
-    gradInput
+    throw new UnsupportedOperationException("Not support backward propagation")
   }
 
   private def poolOneRoiFloat(
