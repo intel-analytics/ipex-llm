@@ -31,7 +31,7 @@ def extract_scala_class(class_path):
     exclude_key_words = set(["*", "abstract", "Const", "Fill", "Shape",
                              "SplitAndSelect", "StrideSlice", "Scheduler",
                              "StaticGraph", "DynamicGraph", "DynamicContainer",
-                             "SplitHeads", "CombineHeads", "VectorProduct"])   # noqa
+                             "SplitHeads", "CombineHeads", "VectorProduct", "Pooler"])   # noqa
     include_key_words = set(["Module", "Criterion", "Container", "Cell", "TensorNumeric"])  # noqa
     content = "\n".join([line for line in open(class_path).readlines() if all([key not in line for key in exclude_key_words])])  # noqa
     match = re.search(r"class ([\w]+)[^{]+", content)
