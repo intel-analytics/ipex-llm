@@ -523,7 +523,6 @@ class TestSimple():
         SpatialFullConvolution(1, 1, 1, 1).set_init_method(BilinearFiller(), Zeros())
 
     def test_predict(self):
-        from bigdl.nn.layer import SharedStaticUtils
         np.random.seed(100)
         total_length = 6
         features = np.random.uniform(0, 1, (total_length, 2))
@@ -547,7 +546,7 @@ class TestSimple():
 
         predict_class = model.predict_class(predict_data)
         if isinstance(predict_data, RDD):
-            predict_labels = SharedStaticUtils.get_sample_label(predict_class).take(6)
+            predict_labels = model.get_sample_label(predict_class).take(6)
         else:
             predict_labels = predict_class.take(6)
 
