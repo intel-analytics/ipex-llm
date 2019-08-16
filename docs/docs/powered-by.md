@@ -1,11 +1,11 @@
 ---
 * __Alibaba__
-  <br>[Deploy Analytics Zoo in Aliyun EMR](https://partners-intl.aliyun.com/help/doc-detail/93155.htm )
+  <br>[Deploy Analytics Zoo in Aliyun EMR](https://partners-intl.aliyun.com/help/doc-detail/93155.htm) (in Chinese)
 * __Baosight__
   <br>[LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://software.intel.com/en-us/articles/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl)
 * __CERN__
- <br>[Topology classification at CERN’s Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
- <br>[Deep Learning on Apache Spark at CERN’s Large Hadron Collider with Intel Technologies](https://databricks.com/session/deep-learning-on-apache-spark-at-cerns-large-hadron-collider-with-intel-technologies)
+ <br>[Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
+ <br>[Deep Learning on Apache Spark at CERN's Large Hadron Collider with Intel Technologies](https://databricks.com/session/deep-learning-on-apache-spark-at-cerns-large-hadron-collider-with-intel-technologies)
 * __China Telecom__
  <br>[Face Recognition Application and Practice Based on Intel Analytics Zoo: Part 1](https://mp.weixin.qq.com/s/FEiXoTDi-yy04PJ2Mlfl4A) (in Chinese)
  <br>[Face Recognition Application and Practice Based on Intel Analytics Zoo: Part 2](https://mp.weixin.qq.com/s/VIyWRORTAVAAsC4v6Fi0xw) (in Chinese)
