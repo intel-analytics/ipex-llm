@@ -20,6 +20,9 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class FPNSpec extends FlatSpec with Matchers {
   "FPN updateOutput" should "work correctly" in {
@@ -216,5 +219,20 @@ class FPNSpec extends FlatSpec with Matchers {
       expectedOutput.get[Tensor[Float]](2).get) should be(true)
     Equivalent.nearequals(output.toTable.get[Tensor[Float]](3).get,
       expectedOutput.get[Tensor[Float]](3).get) should be(true)
+  }
+}
+
+class FPNSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input = T()
+    val feature1 = Tensor[Float](1, 1, 8, 8).apply1(_ => Random.nextFloat())
+    val feature2 = Tensor[Float](1, 2, 4, 4).apply1(_ => Random.nextFloat())
+    val feature3 = Tensor[Float](1, 4, 2, 2).apply1(_ => Random.nextFloat())
+    input(1.0f) = feature1
+    input(2.0f) = feature2
+    input(3.0f) = feature3
+
+    val fpn = new FPN[Float](in_channels_list = Array(1, 2, 4), out_channels = 2).setName("FPN")
+    runSerializationTest(fpn, input)
   }
 }
