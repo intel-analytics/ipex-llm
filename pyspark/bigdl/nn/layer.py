@@ -103,6 +103,8 @@ class SharedStaticUtils():
             base_module = importlib.import_module('bigdl.nn.keras.topology')
         elif "com.intel.analytics.bigdl.nn.keras" == jpackage_name:
             base_module = importlib.import_module('bigdl.nn.keras.layer')
+        elif "com.intel.analytics.bigdl.nn.onnx" == jpackage_name:
+            base_module = importlib.import_module('bigdl.nn.onnx')
         else:
             base_module = importlib.import_module('bigdl.nn.layer')
 
@@ -5611,17 +5613,6 @@ class Cropping3D(Layer):
     """
     def __init__(self, dim1Crop, dim2Crop, dim3Crop, data_format="channel_first", bigdl_type="float"):
         super(Cropping3D, self).__init__(None, bigdl_type, dim1Crop, dim2Crop, dim3Crop, data_format)
-
-class Shape(Layer):
-    """
-    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
-
-    >>> shape = Shape()
-    creating: createCropping3D
-    """
-    def __init__(self, bigdl_type="float"):
-        super(Shape, self).__init__(None, bigdl_type)
-
 
 def _test():
     import doctest
