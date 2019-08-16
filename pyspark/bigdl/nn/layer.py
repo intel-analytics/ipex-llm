@@ -1752,8 +1752,8 @@ class LSTMPeephole(Layer):
 
 
 class Gemm(Layer):
-    def __init__(self, alpha=1.0, beta=1.0, transA=False, transB=False, bigdl_type="float"):
-        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, transA, transB)
+    def __init__(self, alpha=1.0, beta=1.0, trans_a=False, trans_b=False, bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
 
 
 class GRU(Layer):

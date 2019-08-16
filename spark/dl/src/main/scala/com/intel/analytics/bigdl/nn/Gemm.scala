@@ -56,27 +56,35 @@ extends AbstractModule[Table, Tensor[T], T] {
   }
 
 
+
   override def updateOutput(input: Table): Tensor[T] = {
     require(input.length() == 3)
 
-    input.get(1).get.asInstanceOf[Tensor[T]].mul(alpha.asInstanceOf[T])
+    val transformedInput = input.clone()
+
+    transformedInput.get(1).get.asInstanceOf[Tensor[T]].mul(alpha.asInstanceOf[T])
 
     if (transA) {
-      input.update(1, input.get(1).get.asInstanceOf[Tensor[T]].t())
+      transformedInput.update(1, input.get(1).get.asInstanceOf[Tensor[T]].t())
     }
 
     if (transB) {
-      input.update(2, input.get(2).get.asInstanceOf[Tensor[T]].t())
+      transformedInput.update(2, input.get(2).get.asInstanceOf[Tensor[T]].t())
     }
 
-    internalModel.forward(input)
+    internalModel.forward(transformedInput)
     output = internalModel.output.asInstanceOf[Tensor[T]]
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
+    internalModel.updateGradInput(input, gradOutput)
     gradInput = internalModel.gradInput.asInstanceOf[Table]
     gradInput
+  }
+
+  override def release(): Unit = {
+    internalModel.release()
   }
 
 }
