@@ -2010,8 +2010,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new JavaRDD[Sample](tensorRDD)
   }
 
-  def getSampleLabel(model: AbstractModule[Activity, Activity, T],
-                        dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
+  def getSampleLabel(dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
     val sampleRdd = toJSample(dataRdd)
     val tensorRDD = sampleRdd.map(sample => {
       val _label = sample.label()

@@ -65,6 +65,17 @@ class Node(JavaValue):
 class SharedStaticUtils():
 
     @staticmethod
+    def get_sample_label(data_rdd):
+        """
+        Get the predict label from Rdd data
+
+        :param data_rdd: the data to be predict.
+        :return: An RDD represent the predict label.
+        """
+        result = callBigDlFunc("getSampleLabel", data_rdd)
+        return result
+
+    @staticmethod
     def load(path, bigdl_type="float"):
         """
         Load a pre-trained Bigdl model.
@@ -113,18 +124,6 @@ class SharedStaticUtils():
         jvalue_creator = getattr(module, "from_jvalue")
         model = jvalue_creator(jvalue, bigdl_type)
         return model
-
-    @staticmethod
-    def get_sample_label(self, data_rdd):
-        """
-        Get the predict label from Rdd data
-
-        :param data_rdd: the data to be predict.
-        :return: An RDD represent the predict label.
-        """
-        result = callBigDlFunc(self.bigdl_type,
-                               "getSampleLabel", self.value, data_rdd)
-        return result
 
 class Layer(JavaValue, SharedStaticUtils):
     """
