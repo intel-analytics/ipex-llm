@@ -351,8 +351,6 @@ abstract class Graph[T: ClassTag](
       })
 
     if (curNode.element.output.isTable) {
-      output.toTable
-      curGradOutput.toTable
       addZeroTensorToMissingGradOutput(curNode.element.output.toTable, curGradOutput.toTable)
     }
 

@@ -209,7 +209,6 @@ class FPNSpec extends FlatSpec with Matchers {
     model.parameters()._1(11).copy(layer3_b)
 
     val output = model.forward(input)
-    val gradInput = model.backward(input, output)
 
     Equivalent.nearequals(output.toTable.get[Tensor[Float]](1).get,
       expectedOutput.get[Tensor[Float]](1).get) should be(true)
