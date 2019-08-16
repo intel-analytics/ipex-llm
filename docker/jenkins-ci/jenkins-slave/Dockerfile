@@ -1,7 +1,5 @@
 FROM ubuntu:16.04
 
-MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytics-zoo
-
 WORKDIR /opt/work
 
 ENV JAVA_7_HOME         /opt/work/jdk7
