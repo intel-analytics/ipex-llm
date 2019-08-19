@@ -23,7 +23,7 @@ import scala.util.Random
 
 class ShapeSpec extends FlatSpec with Matchers {
 
-  "Shape" should "worke" in {
+  "Shape" should "work" in {
     val inputTensor = Tensor[Float](20, 1, 9).rand()
     val shape = Shape[Float]()
     val output = shape.forward(inputTensor)

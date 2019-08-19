@@ -32,7 +32,11 @@ import scala.reflect.ClassTag
 class Shape[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output = Tensor(Storage(input.size())).asInstanceOf[Tensor[T]]
+    val dimSize = input.nDimension()
+    output = Tensor(dimSize)
+    (1 to dimSize).foreach(i => {
+      output.setValue(i, input.size(i).toFloat.asInstanceOf[T])
+    })
     output
   }
 
