@@ -45,6 +45,10 @@ class Shape[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] 
     gradInput
   }
 
+  override def toString(): String = {
+    s"${getPrintName}"
+  }
+
 }
 
 object Shape {
