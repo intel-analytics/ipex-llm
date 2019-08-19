@@ -32,10 +32,12 @@ class ShapeSpec extends FlatSpec with Matchers {
     ans.setValue(2, 1)
     ans.setValue(3, 9)
 
-    output.size().length should be (ans.toArray().length)
+    output.nDimension() should be (1)
+    output.nDimension() should be (ans.nDimension())
+    output.size(1) should be (ans.size(1))
 
-    (0 until output.size().length).foreach(i => {
-      output.size()(i) should be (ans.toArray()(i))
+    (0 until output.size(1)).foreach(i => {
+      output.valueAt(i) should be (ans.valueAt(i))
     })
 
   }
