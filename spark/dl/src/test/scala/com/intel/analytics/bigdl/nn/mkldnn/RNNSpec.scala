@@ -1178,4 +1178,99 @@ class RNNSpec extends FlatSpec with Matchers{
 
     System.clearProperty("bigdl.engineType")
   }
+
+  "GRU UnidirectionalInference updateOutput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.UnidirectionalLeft2Right
+
+    val n_layers = 1
+    val gru_n_gates = 3
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
+    var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
+
+    var initWeight = Tensor[Float](
+      Array(n_layers, 1, inputSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(n_layers, 1, hiddenSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(n_layers, 1, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    val mkldnnGRU1 = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(RNN(AlgKind.VanillaGru, inputSize, hiddenSize, f, direction,
+        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnGRU1.evaluate()
+    mkldnnGRU1.compile(InferencePhase)
+    val mkldnn_output1 = mkldnnGRU1.forward(input)
+
+    direction = Direction.UnidirectionalRight2Left
+    val mkldnnGRU2 = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(RNN(AlgKind.VanillaGru, inputSize, hiddenSize, f, direction,
+        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnGRU2.evaluate()
+    mkldnnGRU2.compile(InferencePhase)
+    val mkldnn_output2 = mkldnnGRU2.forward(input)
+
+    var inputt = input.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(inputSize, gru_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    initWeightIter = initWeightIter.resize(Array(hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    initBias = initBias.resize(Array(gru_n_gates, hiddenSize))
+
+    var initWeight0 = Tensor[Float](Array(hiddenSize * gru_n_gates, inputSize))
+    var initBias0 = Tensor[Float](Array(gru_n_gates * hiddenSize))
+    var initWeightIter0 = Tensor[Float](Array(hiddenSize * 2, hiddenSize))
+    var initWeightIter1 = Tensor[Float](Array(hiddenSize * 1, hiddenSize))
+
+    val concat = nn.JoinTable(1, 0)
+    initWeight0 = concat.forward(T(initWeight(2), initWeight(1),
+      initWeight(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0 = concat.forward(T(initWeightIter(2), initWeightIter(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1 = initWeightIter(3)
+    initBias0 = concat.forward(T(initBias(2), initBias(1), initBias(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    val blasGRU = nn.Recurrent().add(nn.GRU(inputSize, hiddenSize))
+
+    val uniParams = blasGRU.parameters()._1
+    initWeight0 = initWeight0.resizeAs(uniParams(0))
+    initBias0 = initBias0.resizeAs(uniParams(1))
+    initWeightIter0 = initWeightIter0.resizeAs(uniParams(2))
+    initWeightIter1 = initWeightIter1.resizeAs(uniParams(3))
+
+    uniParams(0).copy(initWeight0)
+    uniParams(1).copy(initBias0)
+    uniParams(2).copy(initWeightIter0)
+    uniParams(3).copy(initWeightIter1)
+
+    val blas_output1 = blasGRU.forward(inputt).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_output1).asInstanceOf[Tensor[Float]],
+      blas_output1) should be(true)
+
+    /**
+      * nn/GRU Right2Left
+      */
+    val reverse = nn.Reverse(2)
+    inputt = reverse.forward(inputt)
+
+    var blas_output2 = blasGRU.forward(inputt)
+    blas_output2 = reverse.forward(blas_output2).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_output2).asInstanceOf[Tensor[Float]],
+      blas_output2) should be(true)
+
+    println()
+  }
 }

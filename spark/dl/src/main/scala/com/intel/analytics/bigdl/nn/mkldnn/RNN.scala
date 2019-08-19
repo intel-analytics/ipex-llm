@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * @param mode       : the type of RNN cell
+ * @param mode       : the type of RNN cell (LSTM / GRU)
  * @param inputSize  : the size of input vector
  * @param hiddenSize : the size of hidden state
  * @param f          : the type of output activation function
@@ -86,18 +86,19 @@ class RNN(
 
   if(layers > 1) {
     require(inputSize == hiddenSize,
-      "If layers of LSTM is more than 1, the input size and the hidden size should equal.\n"
+      "If layer number of RNN is more than 1, the input size and the hidden size should equal.\n"
       + "inputSize: " + inputSize + '\n'
       + "hiddenSize: " + hiddenSize)
   }
 
   var (ngates, nstates) = mode match {
     case AlgKind.VanillaLstm => (4, 2)
+    case AlgKind.VanillaGru => (3, 1)
     case _ =>
       throw new UnsupportedOperationException("Not support such RNN Cell. Cell type: " + mode)
   }
 
-  /** TODO: Multi-layer Bidirectional Sum LSTM is available in MKLDNN,
+  /** TODO: Multi-layer Bidirectional Sum RNN is available in MKLDNN,
    *  TODO: but the current version of BigDL BLAS does not support it.
    */
 
@@ -105,7 +106,7 @@ class RNN(
     case Direction.UnidirectionalLeft2Right
          | Direction.UnidirectionalRight2Left => (1, 1)
     case Direction.BidirectionalConcat =>
-      require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers. " +
+      require(layers == 1, "Bidirectional Concat RNN does not support multiple layers. " +
         "layers = " + layers)
       (2, 2)
     case Direction.BidirectionalSum => (2, 1)
@@ -165,14 +166,6 @@ class RNN(
       PropKind.ForwardTraining
     }
 
-    /**
-     * TODO: The default format of input is TNC
-     * Batch size of input is needed by creating memory descriptors of src iter and dst iter.
-     * Step size of input is needed by creating memory descriptor of dst layer.
-     * By default, batch size of input is the second element of inputShape
-     * and step size is the first element of inputShape.
-     */
-
     inputs(0).layout match {
       case Memory.Format.tnc =>
         batchSize = inputs(0).shape(1)
@@ -181,8 +174,8 @@ class RNN(
         batchSize = inputs(0).shape(0)
         stepSize = inputs(0).shape(1)
       case _ =>
-        throw new UnsupportedOperationException("Not support such input format. " +
-          "The input format is: " + inputs(0).layout)
+        throw new UnsupportedOperationException("Not support such input format: " +
+          inputs(0).layout)
     }
 
     inputShape = Array(stepSize, batchSize, inputSize)
@@ -208,6 +201,8 @@ class RNN(
     rnnCellDesc = mode match {
       case AlgKind.VanillaLstm =>
         MklDnnMemory.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
+      case AlgKind.VanillaGru =>
+        MklDnnMemory.RNNCellDescInit(AlgKind.VanillaGru, f, flags, alpha, clipping)
       case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
         "Cell type: " + mode)
     }
