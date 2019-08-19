@@ -36,7 +36,7 @@ class ShapeSpec extends FlatSpec with Matchers {
     output.nDimension() should be (ans.nDimension())
     output.size(1) should be (ans.size(1))
 
-    (0 until output.size(1)).foreach(i => {
+    (1 to output.size(1)).foreach(i => {
       output.valueAt(i) should be (ans.valueAt(i))
     })
 
