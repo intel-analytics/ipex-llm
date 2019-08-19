@@ -42,3 +42,11 @@ class Shape[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] 
   }
 
 }
+
+object Shape {
+  def apply[T: ClassTag]()(
+    implicit ev: TensorNumeric[T]): Shape[T] = {
+    new Shape[T]()
+  }
+}
+
