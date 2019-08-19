@@ -31,3 +31,6 @@ class Shape(Layer):
     def __init__(self, bigdl_type="float"):
         super(Shape, self).__init__(None, bigdl_type)
 
+    def __str__(self):
+        return self.value.toString()
+
