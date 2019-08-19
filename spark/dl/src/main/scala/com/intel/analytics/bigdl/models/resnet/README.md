@@ -75,7 +75,8 @@ We support Local and Spark versions of training. Users can define <code>env</cod
     --nesterov      [default true]
 ```
 ## Train ResNet on ImageNet
-This example shows the best practise we've experimented in multi-node training
+This example shows the best practise we've experimented in multi-node training. It's recommended to enable MKL-DNN acceleration by specifying `bigdl.engineType` as `mkldnn`. Then you can train ResNet on ImageNet with extremely high performance.
+ 
 ### Prepare ImageNet DataSet
 The imagenet dataset preparation can be found from
 [BigDL inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data).
@@ -88,6 +89,8 @@ spark-submit \
 --driver-memory 200g \
 --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" \
 --conf "spark.network.timeout=1000000" \
+--conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn" \
+--conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn" \
 --executor-memory 200g \
 --executor-cores 32 \
 --total-executor-cores 2048 \
@@ -106,6 +109,8 @@ spark-submit \
 --driver-memory 200g \
 --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" \
 --conf "spark.network.timeout=1000000" \
+--conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn" \
+--conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn" \
 --executor-memory 200g \
 --executor-cores 32 \
 --total-executor-cores 2048 \
