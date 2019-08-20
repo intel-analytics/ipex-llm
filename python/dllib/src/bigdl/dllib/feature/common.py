@@ -143,6 +143,15 @@ class SeqToTensor(Preprocessing):
         super(SeqToTensor, self).__init__(bigdl_type, size)
 
 
+class SeqToMultipleTensors(Preprocessing):
+    """
+    a Transformer that converts an Array[_] or Seq[_] or ML Vector to several tensors.
+    :param size, list of int list, dimensions of target Tensors, e.g. [[2],[4]]
+    """
+    def __init__(self, size=[], bigdl_type="float"):
+        super(SeqToMultipleTensors, self).__init__(bigdl_type, size)
+
+
 class ArrayToTensor(Preprocessing):
     """
     a Transformer that converts an Array[_] to a Tensor.
