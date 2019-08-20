@@ -31,6 +31,9 @@ import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.feature.common.{TensorToSample, _}
 import com.intel.analytics.zoo.feature.image._
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{Input, Dense}
+import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -595,6 +598,24 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     } finally {
       Path(tmpFile).deleteRecursively()
     }
+  }
+
+  "An NNEstimator" should "support multi-input model" in {
+    val input1 = Input(Shape(4))
+    val input2 = Input(Shape(2))
+    val latent = merge(inputs = List(input1, input2), mode = "concat")
+    val output = Dense(2, activation = "log_softmax").inputs(latent)
+    val model = Model(Array(input1, input2), output)
+
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = NNEstimator(model, criterion, Array(Array(4), Array(2)), Array(1))
+      .setBatchSize(nRecords)
+      .setMaxEpoch(5)
+
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val nnmodel = estimator.fit(df)
+    nnmodel.transform(df).collect()
   }
 }
 
