@@ -26,7 +26,7 @@ class Shape(Layer):
     """
     A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
 
-    >>> Shape()
+    >>> shape = Shape()
     creating: createShape
     """
     def __init__(self, bigdl_type="float"):
