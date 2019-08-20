@@ -1394,4 +1394,558 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(mkldnn_gradWeight_i1, blas_gradWeight_i_1) should be(true)
     Equivalent.nearequals(mkldnn_gradBias0, blas_gradBias) should be(true)
   }
+
+  "GRU BidirectionalConcatInference updateOutput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.BidirectionalConcat
+
+    val common_n_layers = 1
+    val gru_n_gates = 3
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
+    var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
+
+    var initWeight = Tensor[Float](
+      Array(common_n_layers, 2,
+        inputSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(common_n_layers, 2,
+        hiddenSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(common_n_layers, 2,
+        gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    val mkldnnGRU = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(RNN(AlgKind.VanillaGru, inputSize, hiddenSize, f, direction,
+        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnGRU.evaluate()
+    mkldnnGRU.compile(InferencePhase)
+    val mkldnn_output = mkldnnGRU.forward(input)
+
+    /**
+      * Reorder to formats of BLAS.
+      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+      */
+    val inputt = input.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(2, inputSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initWeightIter = initWeightIter.resize(Array(2, hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initBias = initBias.resize(Array(2, gru_n_gates, hiddenSize))
+
+    var initWeight0 = Tensor[Float](Array(2, hiddenSize * gru_n_gates, inputSize))
+    var initWeightIter0 = Tensor[Float](Array(2, hiddenSize * 2, hiddenSize))
+    var initWeightIter1 = Tensor[Float](Array(2, hiddenSize * 1, hiddenSize))
+    var initBias0 = Tensor[Float](Array(2, gru_n_gates * hiddenSize))
+
+    val concat = nn.JoinTable(1, 0)
+    initWeight0(1) = concat.forward(T(initWeight(1)(2), initWeight(1)(1),
+      initWeight(1)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(1) = concat.forward(T(initWeightIter(1)(2), initWeightIter(1)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(1) = initWeightIter(1)(3).clone()
+    initBias0(1) = concat.forward(T(initBias(1)(2), initBias(1)(1), initBias(1)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    initWeight0(2) = concat.forward(T(initWeight(2)(2), initWeight(2)(1),
+      initWeight(2)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(2) = concat.forward(T(initWeightIter(2)(2), initWeightIter(2)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(2) = initWeightIter(2)(3).clone()
+    initBias0(2) = concat.forward(T(initBias(2)(2), initBias(2)(1), initBias(2)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    val blasGRU = nn.BiRecurrent[Float](nn.JoinTable[Float](3, 0)
+      .asInstanceOf[AbstractModule[Table, Tensor[Float], Float]])
+      .add(nn.GRU(inputSize, hiddenSize))
+
+    val biParams = blasGRU.parameters()._1
+    initWeight0(1).resizeAs(biParams(0))
+    initBias0(1).resizeAs(biParams(1))
+    initWeightIter0(1).resizeAs(biParams(2))
+    initWeightIter1(1).resizeAs(biParams(3))
+    initWeight0(2).resizeAs(biParams(4))
+    initBias0(2).resizeAs(biParams(5))
+    initWeightIter0(2).resizeAs(biParams(6))
+    initWeightIter1(2).resizeAs(biParams(7))
+
+    biParams(0).copy(initWeight0(1))
+    biParams(1).copy(initBias0(1))
+    biParams(2).copy(initWeightIter0(1))
+    biParams(3).copy(initWeightIter1(1))
+    biParams(4).copy(initWeight0(2))
+    biParams(5).copy(initBias0(2))
+    biParams(6).copy(initWeightIter0(2))
+    biParams(7).copy(initWeightIter1(2))
+
+    val blas_output = blasGRU.forward(inputt).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_output).asInstanceOf[Tensor[Float]],
+      blas_output) should be(true)
+  }
+
+  "GRU BidirectionalConcatTraining updateGradInput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.BidirectionalConcat
+
+    val common_n_layers = 1
+    val gru_n_gates = 3
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
+    val gradOutputFormat = HeapData(Array(seqLength, batchSize, 2 * hiddenSize), Memory.Format.tnc)
+    var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
+    val gradOutput = Tensor(Array(seqLength, batchSize, 2 * hiddenSize)).rand(1.0, 1.0)
+
+    var initWeight = Tensor[Float](
+      Array(common_n_layers, 2,
+        inputSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(common_n_layers, 2,
+        hiddenSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(common_n_layers, 2,
+        gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    val rnn = RNN(AlgKind.VanillaGru, inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
+    val mkldnnGRU = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(rnn)
+
+    mkldnnGRU.compile(TrainingPhase)
+    mkldnnGRU.forward(input)
+    val mkldnn_gradInput = mkldnnGRU.backward(input, gradOutput)
+
+    /**
+      * Reorder to formats of BLAS.
+      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+      */
+    val inputt = input.transpose(1, 2).clone()
+    val gradOutputt = gradOutput.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(2, inputSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initWeightIter = initWeightIter.resize(Array(2, hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initBias = initBias.resize(Array(2, gru_n_gates, hiddenSize))
+
+    var initWeight0 = Tensor[Float](Array(2, hiddenSize * gru_n_gates, inputSize))
+    var initWeightIter0 = Tensor[Float](Array(2, hiddenSize * 2, hiddenSize))
+    var initWeightIter1 = Tensor[Float](Array(2, hiddenSize * 1, hiddenSize))
+    var initBias0 = Tensor[Float](Array(2, gru_n_gates * hiddenSize))
+
+    val concat = nn.JoinTable(1, 0)
+    initWeight0(1) = concat.forward(T(initWeight(1)(2), initWeight(1)(1),
+      initWeight(1)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(1) = concat.forward(T(initWeightIter(1)(2), initWeightIter(1)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(1) = initWeightIter(1)(3).clone()
+    initBias0(1) = concat.forward(T(initBias(1)(2), initBias(1)(1), initBias(1)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    initWeight0(2) = concat.forward(T(initWeight(2)(2), initWeight(2)(1),
+      initWeight(2)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(2) = concat.forward(T(initWeightIter(2)(2), initWeightIter(2)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(2) = initWeightIter(2)(3).clone()
+    initBias0(2) = concat.forward(T(initBias(2)(2), initBias(2)(1), initBias(2)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    val blasGRU = nn.BiRecurrent[Float](nn.JoinTable[Float](3, 0)
+      .asInstanceOf[AbstractModule[Table, Tensor[Float], Float]])
+      .add(nn.GRU(inputSize, hiddenSize))
+
+    val biParams = blasGRU.parameters()._1
+    initWeight0(1).resizeAs(biParams(0))
+    initBias0(1).resizeAs(biParams(1))
+    initWeightIter0(1).resizeAs(biParams(2))
+    initWeightIter1(1).resizeAs(biParams(3))
+    initWeight0(2).resizeAs(biParams(4))
+    initBias0(2).resizeAs(biParams(5))
+    initWeightIter0(2).resizeAs(biParams(6))
+    initWeightIter1(2).resizeAs(biParams(7))
+
+    biParams(0).copy(initWeight0(1))
+    biParams(1).copy(initBias0(1))
+    biParams(2).copy(initWeightIter0(1))
+    biParams(3).copy(initWeightIter1(1))
+    biParams(4).copy(initWeight0(2))
+    biParams(5).copy(initBias0(2))
+    biParams(6).copy(initWeightIter0(2))
+    biParams(7).copy(initWeightIter1(2))
+
+    blasGRU.forward(inputt).toTensor.transpose(1, 2)
+
+    val blas_gradInput = blasGRU.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
+      blas_gradInput) should be(true)
+
+    var mkldnn_gradWeight = Tools.dense(rnn.gradWeight.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradWeight_i = Tools.dense(rnn.gradWeight_i.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradBias = Tools.dense(rnn.gradBias.native).asInstanceOf[Tensor[Float]]
+
+    mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(2, inputSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradWeight_i = mkldnn_gradWeight_i.resize(Array(2, hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradBias = mkldnn_gradBias.resize(Array(2, gru_n_gates, hiddenSize))
+
+    var mkldnn_gradWeight0 = Tensor[Float](Array(2, hiddenSize * gru_n_gates, inputSize))
+    var mkldnn_gradWeight_i0 = Tensor[Float](Array(2, hiddenSize * 2, hiddenSize))
+    var mkldnn_gradWeight_i1 = Tensor[Float](Array(2, hiddenSize * 1, hiddenSize))
+    var mkldnn_gradBias0 = Tensor[Float](Array(2, gru_n_gates * hiddenSize))
+
+    mkldnn_gradWeight0(1) = concat.forward(T(mkldnn_gradWeight(1)(2), mkldnn_gradWeight(1)(1),
+      mkldnn_gradWeight(1)(3))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(1) = concat.forward(T(mkldnn_gradWeight_i(1)(2),
+      mkldnn_gradWeight_i(1)(1))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i1(1) = mkldnn_gradWeight_i(1)(3).clone()
+    mkldnn_gradBias0(1) = concat.forward(T(mkldnn_gradBias(1)(2), mkldnn_gradBias(1)(1),
+      mkldnn_gradBias(1)(3))).asInstanceOf[Tensor[Float]].clone()
+
+    mkldnn_gradWeight0(2) = concat.forward(T(mkldnn_gradWeight(2)(2), mkldnn_gradWeight(2)(1),
+      mkldnn_gradWeight(2)(3))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(2) = concat.forward(T(mkldnn_gradWeight_i(2)(2),
+      mkldnn_gradWeight_i(2)(1))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i1(2) = mkldnn_gradWeight_i(2)(3).clone()
+    mkldnn_gradBias0(2) = concat.forward(T(mkldnn_gradBias(2)(2), mkldnn_gradBias(2)(1),
+      mkldnn_gradBias(2)(3))).asInstanceOf[Tensor[Float]].clone()
+
+    val blas_gradWeight_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i0_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(2)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i0_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(2)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i1_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(10)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i1_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(10)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradBias_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    val blas_gradBias_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    Equivalent.nearequals(mkldnn_gradWeight0(1), blas_gradWeight_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight0(2), blas_gradWeight_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(1), blas_gradWeight_i0_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(2), blas_gradWeight_i0_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i1(1), blas_gradWeight_i1_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i1(2), blas_gradWeight_i1_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(1), blas_gradBias_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(2), blas_gradBias_2) should be(true)
+  }
+
+  "GRU BidirectionalSumInference updateOutput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.BidirectionalSum
+
+    val common_n_layers = 1
+    val gru_n_gates = 3
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
+    var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
+
+    var initWeight = Tensor[Float](
+      Array(common_n_layers, 2,
+        inputSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(common_n_layers, 2,
+        hiddenSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(common_n_layers, 2,
+        gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    val mkldnnGRU = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(RNN(AlgKind.VanillaGru, inputSize, hiddenSize, f, direction,
+        initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias))
+    mkldnnGRU.evaluate()
+    mkldnnGRU.compile(InferencePhase)
+    val mkldnn_output = mkldnnGRU.forward(input)
+
+    /**
+      * Reorder to formats of BLAS.
+      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+      */
+    val inputt = input.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(2, inputSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initWeightIter = initWeightIter.resize(Array(2, hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initBias = initBias.resize(Array(2, gru_n_gates, hiddenSize))
+
+    var initWeight0 = Tensor[Float](Array(2, hiddenSize * gru_n_gates, inputSize))
+    var initWeightIter0 = Tensor[Float](Array(2, hiddenSize * 2, hiddenSize))
+    var initWeightIter1 = Tensor[Float](Array(2, hiddenSize * 1, hiddenSize))
+    var initBias0 = Tensor[Float](Array(2, gru_n_gates * hiddenSize))
+
+    val concat = nn.JoinTable(1, 0)
+    initWeight0(1) = concat.forward(T(initWeight(1)(2), initWeight(1)(1),
+      initWeight(1)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(1) = concat.forward(T(initWeightIter(1)(2), initWeightIter(1)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(1) = initWeightIter(1)(3).clone()
+    initBias0(1) = concat.forward(T(initBias(1)(2), initBias(1)(1), initBias(1)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    initWeight0(2) = concat.forward(T(initWeight(2)(2), initWeight(2)(1),
+      initWeight(2)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(2) = concat.forward(T(initWeightIter(2)(2), initWeightIter(2)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(2) = initWeightIter(2)(3).clone()
+    initBias0(2) = concat.forward(T(initBias(2)(2), initBias(2)(1), initBias(2)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    val blasGRU = nn.BiRecurrent[Float](nn.CAddTable()
+      .asInstanceOf[AbstractModule[Table, Tensor[Float], Float]])
+      .add(nn.GRU(inputSize, hiddenSize))
+
+    val biParams = blasGRU.parameters()._1
+    initWeight0(1).resizeAs(biParams(0))
+    initBias0(1).resizeAs(biParams(1))
+    initWeightIter0(1).resizeAs(biParams(2))
+    initWeightIter1(1).resizeAs(biParams(3))
+    initWeight0(2).resizeAs(biParams(4))
+    initBias0(2).resizeAs(biParams(5))
+    initWeightIter0(2).resizeAs(biParams(6))
+    initWeightIter1(2).resizeAs(biParams(7))
+
+    biParams(0).copy(initWeight0(1))
+    biParams(1).copy(initBias0(1))
+    biParams(2).copy(initWeightIter0(1))
+    biParams(3).copy(initWeightIter1(1))
+    biParams(4).copy(initWeight0(2))
+    biParams(5).copy(initBias0(2))
+    biParams(6).copy(initWeightIter0(2))
+    biParams(7).copy(initWeightIter1(2))
+
+    val blas_output = blasGRU.forward(inputt).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_output).asInstanceOf[Tensor[Float]],
+      blas_output) should be(true)
+  }
+
+  "GRU BidirectionalSumTraining updateGradInput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.BidirectionalSum
+
+    val common_n_layers = 1
+    val gru_n_gates = 3
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
+    val gradOutputFormat = HeapData(Array(seqLength, batchSize, hiddenSize), Memory.Format.tnc)
+    var input = Tensor(Array(seqLength, batchSize, inputSize)).rand()
+    val gradOutput = Tensor(Array(seqLength, batchSize, hiddenSize)).rand(1.0, 1.0)
+
+    var initWeight = Tensor[Float](
+      Array(common_n_layers, 2,
+        inputSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(common_n_layers, 2,
+        hiddenSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(common_n_layers, 2,
+        gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    val rnn = RNN(AlgKind.VanillaGru, inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
+    val mkldnnGRU = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(rnn)
+
+    mkldnnGRU.compile(TrainingPhase)
+    mkldnnGRU.forward(input)
+    val mkldnn_gradInput = mkldnnGRU.backward(input, gradOutput)
+
+    /**
+      * Reorder to formats of BLAS.
+      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+      */
+    val inputt = input.transpose(1, 2).clone()
+    val gradOutputt = gradOutput.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(2, inputSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initWeightIter = initWeightIter.resize(Array(2, hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    initBias = initBias.resize(Array(2, gru_n_gates, hiddenSize))
+
+    var initWeight0 = Tensor[Float](Array(2, hiddenSize * gru_n_gates, inputSize))
+    var initWeightIter0 = Tensor[Float](Array(2, hiddenSize * 2, hiddenSize))
+    var initWeightIter1 = Tensor[Float](Array(2, hiddenSize * 1, hiddenSize))
+    var initBias0 = Tensor[Float](Array(2, gru_n_gates * hiddenSize))
+
+    val concat = nn.JoinTable(1, 0)
+    initWeight0(1) = concat.forward(T(initWeight(1)(2), initWeight(1)(1),
+      initWeight(1)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(1) = concat.forward(T(initWeightIter(1)(2), initWeightIter(1)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(1) = initWeightIter(1)(3).clone()
+    initBias0(1) = concat.forward(T(initBias(1)(2), initBias(1)(1), initBias(1)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    initWeight0(2) = concat.forward(T(initWeight(2)(2), initWeight(2)(1),
+      initWeight(2)(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0(2) = concat.forward(T(initWeightIter(2)(2), initWeightIter(2)(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1(2) = initWeightIter(2)(3).clone()
+    initBias0(2) = concat.forward(T(initBias(2)(2), initBias(2)(1), initBias(2)(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    val blasGRU = nn.BiRecurrent[Float](nn.CAddTable()
+      .asInstanceOf[AbstractModule[Table, Tensor[Float], Float]])
+      .add(nn.GRU(inputSize, hiddenSize))
+
+    val biParams = blasGRU.parameters()._1
+    initWeight0(1).resizeAs(biParams(0))
+    initBias0(1).resizeAs(biParams(1))
+    initWeightIter0(1).resizeAs(biParams(2))
+    initWeightIter1(1).resizeAs(biParams(3))
+    initWeight0(2).resizeAs(biParams(4))
+    initBias0(2).resizeAs(biParams(5))
+    initWeightIter0(2).resizeAs(biParams(6))
+    initWeightIter1(2).resizeAs(biParams(7))
+
+    biParams(0).copy(initWeight0(1))
+    biParams(1).copy(initBias0(1))
+    biParams(2).copy(initWeightIter0(1))
+    biParams(3).copy(initWeightIter1(1))
+    biParams(4).copy(initWeight0(2))
+    biParams(5).copy(initBias0(2))
+    biParams(6).copy(initWeightIter0(2))
+    biParams(7).copy(initWeightIter1(2))
+
+    blasGRU.forward(inputt).toTensor.transpose(1, 2)
+
+    val blas_gradInput = blasGRU.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
+      blas_gradInput) should be(true)
+
+    var mkldnn_gradWeight = Tools.dense(rnn.gradWeight.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradWeight_i = Tools.dense(rnn.gradWeight_i.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradBias = Tools.dense(rnn.gradBias.native).asInstanceOf[Tensor[Float]]
+
+    mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(2, inputSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradWeight_i = mkldnn_gradWeight_i.resize(Array(2, hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(2, 3).transpose(3, 4)
+    mkldnn_gradBias = mkldnn_gradBias.resize(Array(2, gru_n_gates, hiddenSize))
+
+    var mkldnn_gradWeight0 = Tensor[Float](Array(2, hiddenSize * gru_n_gates, inputSize))
+    var mkldnn_gradWeight_i0 = Tensor[Float](Array(2, hiddenSize * 2, hiddenSize))
+    var mkldnn_gradWeight_i1 = Tensor[Float](Array(2, hiddenSize * 1, hiddenSize))
+    var mkldnn_gradBias0 = Tensor[Float](Array(2, gru_n_gates * hiddenSize))
+
+    mkldnn_gradWeight0(1) = concat.forward(T(mkldnn_gradWeight(1)(2), mkldnn_gradWeight(1)(1),
+      mkldnn_gradWeight(1)(3))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(1) = concat.forward(T(mkldnn_gradWeight_i(1)(2),
+      mkldnn_gradWeight_i(1)(1))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i1(1) = mkldnn_gradWeight_i(1)(3).clone()
+    mkldnn_gradBias0(1) = concat.forward(T(mkldnn_gradBias(1)(2), mkldnn_gradBias(1)(1),
+      mkldnn_gradBias(1)(3))).asInstanceOf[Tensor[Float]].clone()
+
+    mkldnn_gradWeight0(2) = concat.forward(T(mkldnn_gradWeight(2)(2), mkldnn_gradWeight(2)(1),
+      mkldnn_gradWeight(2)(3))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0(2) = concat.forward(T(mkldnn_gradWeight_i(2)(2),
+      mkldnn_gradWeight_i(2)(1))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i1(2) = mkldnn_gradWeight_i(2)(3).clone()
+    mkldnn_gradBias0(2) = concat.forward(T(mkldnn_gradBias(2)(2), mkldnn_gradBias(2)(1),
+      mkldnn_gradBias(2)(3))).asInstanceOf[Tensor[Float]].clone()
+
+    val blas_gradWeight_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i0_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(2)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i0_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(2)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i1_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(10)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradWeight_i1_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .cell.asInstanceOf[nn.StaticGraph[Float]].modules(10)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    val blas_gradBias_1 = blasGRU
+      .layer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    val blas_gradBias_2 = blasGRU
+      .revLayer.modules(1).asInstanceOf[nn.GRU[Float]]
+      .preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+
+    Equivalent.nearequals(mkldnn_gradWeight0(1), blas_gradWeight_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight0(2), blas_gradWeight_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(1), blas_gradWeight_i0_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0(2), blas_gradWeight_i0_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i1(1), blas_gradWeight_i1_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i1(2), blas_gradWeight_i1_2) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(1), blas_gradBias_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0(2), blas_gradBias_2) should be(true)
+  }
 }
