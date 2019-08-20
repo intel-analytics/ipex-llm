@@ -103,8 +103,6 @@ class SharedStaticUtils():
             base_module = importlib.import_module('bigdl.nn.keras.topology')
         elif "com.intel.analytics.bigdl.nn.keras" == jpackage_name:
             base_module = importlib.import_module('bigdl.nn.keras.layer')
-        elif "com.intel.analytics.bigdl.nn.onnx" == jpackage_name:
-            base_module = importlib.import_module('bigdl.nn.onnx')
         else:
             base_module = importlib.import_module('bigdl.nn.layer')
 
