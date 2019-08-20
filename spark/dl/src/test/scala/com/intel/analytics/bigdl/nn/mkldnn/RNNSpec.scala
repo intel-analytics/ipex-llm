@@ -928,7 +928,7 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(mkldnn_gradBias0(2), blas_gradBias_2) should be(true)
   }
 
-  "LSTM UnidirectionalInference Multilayers updateGradInput" should "work correctly" in {
+  "LSTM UnidirectionalTraining Multilayers updateGradInput" should "work correctly" in {
     val seqLength = 3
     val batchSize = 2
     val commonSize = 5
@@ -1270,7 +1270,128 @@ class RNNSpec extends FlatSpec with Matchers{
 
     Equivalent.nearequals(Tools.dense(mkldnn_output2).asInstanceOf[Tensor[Float]],
       blas_output2) should be(true)
+  }
 
-    println()
+  "GRU UnidirectionalTraining updateGradInput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val inputSize = 3
+    val hiddenSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.UnidirectionalLeft2Right
+
+    val common_n_layers = 1
+    val gru_n_gates = 3
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, inputSize), Memory.Format.tnc)
+    val gradOutputFormat = HeapData(Array(seqLength, batchSize, hiddenSize), Memory.Format.tnc)
+    val input = Tensor(Array(seqLength, batchSize, inputSize)).rand(-1.0, 1.0)
+    val gradOutput = Tensor(Array(seqLength, batchSize, hiddenSize)).rand(1.0, 1.0)
+
+    var initWeight = Tensor[Float](
+      Array(common_n_layers, 1,
+        inputSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(common_n_layers, 1,
+        hiddenSize, gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(common_n_layers, 1,
+        gru_n_gates, hiddenSize)).rand(-1.0, 1.0)
+
+    val rnn = RNN(AlgKind.VanillaGru, inputSize, hiddenSize, f, direction,
+      initWeight = initWeight, initWeightIter = initWeightIter, initBias = initBias)
+
+    val mkldnnGRU = Sequential()
+      .add(Input(inputFormat.shape, inputFormat.layout))
+      .add(rnn)
+
+    mkldnnGRU.compile(TrainingPhase)
+    mkldnnGRU.forward(input)
+    val mkldnn_gradInput = mkldnnGRU.backward(input, gradOutput)
+
+    /**
+      * Reorder to formats of BLAS.
+      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+      */
+    var inputt = input.transpose(1, 2).clone()
+    var gradOutputt = gradOutput.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(inputSize, gru_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    initWeightIter = initWeightIter.resize(Array(hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    initBias = initBias.resize(Array(gru_n_gates, hiddenSize))
+
+    var initWeight0 = Tensor[Float](Array(hiddenSize * gru_n_gates, inputSize))
+    var initBias0 = Tensor[Float](Array(gru_n_gates * hiddenSize))
+    var initWeightIter0 = Tensor[Float](Array(hiddenSize * 2, hiddenSize))
+    var initWeightIter1 = Tensor[Float](Array(hiddenSize * 1, hiddenSize))
+
+    val concat = nn.JoinTable(1, 0)
+    initWeight0 = concat.forward(T(initWeight(2), initWeight(1),
+      initWeight(3))).asInstanceOf[Tensor[Float]].clone()
+    initWeightIter0 = concat.forward(T(initWeightIter(2), initWeightIter(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    initWeightIter1 = initWeightIter(3)
+    initBias0 = concat.forward(T(initBias(2), initBias(1), initBias(3)))
+      .asInstanceOf[Tensor[Float]].clone()
+
+    val blasrnn = nn.GRU(inputSize, hiddenSize)
+    val blasGRU = nn.Recurrent().add(blasrnn)
+
+    val uniParams = blasGRU.parameters()._1
+    initWeight0 = initWeight0.resizeAs(uniParams(0))
+    initBias0 = initBias0.resizeAs(uniParams(1))
+    initWeightIter0 = initWeightIter0.resizeAs(uniParams(2))
+    initWeightIter1 = initWeightIter1.resizeAs(uniParams(3))
+
+    uniParams(0).copy(initWeight0)
+    uniParams(1).copy(initBias0)
+    uniParams(2).copy(initWeightIter0)
+    uniParams(3).copy(initWeightIter1)
+
+    blasGRU.forward(inputt).toTensor.transpose(1, 2)
+
+    val blas_gradInput = blasGRU.backward(inputt, gradOutputt).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(mkldnn_gradInput).asInstanceOf[Tensor[Float]],
+      blas_gradInput) should be(true)
+
+    var mkldnn_gradWeight = Tools.dense(rnn.gradWeight.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradWeight_i = Tools.dense(rnn.gradWeight_i.native).asInstanceOf[Tensor[Float]]
+    var mkldnn_gradBias = Tools.dense(rnn.gradBias.native).asInstanceOf[Tensor[Float]]
+
+    var blas_gradWeight = blasrnn.preTopology.asInstanceOf[nn.Linear[Float]].gradWeight
+    var blas_gradBias = blasrnn.preTopology.asInstanceOf[nn.Linear[Float]].gradBias
+    var blas_gradWeight_i_0 = blasrnn.cell.asInstanceOf[nn.StaticGraph[Float]].modules(2)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+    var blas_gradWeight_i_1 = blasrnn.cell.asInstanceOf[nn.StaticGraph[Float]].modules(10)
+      .asInstanceOf[nn.Linear[Float]].gradWeight
+
+    mkldnn_gradWeight = mkldnn_gradWeight.resize(Array(inputSize, gru_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    mkldnn_gradWeight_i = mkldnn_gradWeight_i.resize(Array(hiddenSize, gru_n_gates, hiddenSize))
+      .transpose(1, 2).transpose(2, 3)
+    mkldnn_gradBias = mkldnn_gradBias.resize(Array(gru_n_gates, hiddenSize))
+
+    var mkldnn_gradWeight0 = Tensor[Float](Array(hiddenSize * gru_n_gates, inputSize))
+    var mkldnn_gradWeight_i0 = Tensor[Float](Array(hiddenSize * 2, hiddenSize))
+    var mkldnn_gradWeight_i1 = Tensor[Float](Array(hiddenSize * 1, hiddenSize))
+    var mkldnn_gradBias0 = Tensor[Float](Array(gru_n_gates * hiddenSize))
+
+    mkldnn_gradWeight0 = concat.forward(T(mkldnn_gradWeight(2), mkldnn_gradWeight(1),
+      mkldnn_gradWeight(3))).asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i0 = concat.forward(T(mkldnn_gradWeight_i(2), mkldnn_gradWeight_i(1)))
+      .asInstanceOf[Tensor[Float]].clone()
+    mkldnn_gradWeight_i1 = mkldnn_gradWeight_i(3)
+    mkldnn_gradBias0 = concat.forward(T(mkldnn_gradBias(2), mkldnn_gradBias(1),
+      mkldnn_gradBias(3))).asInstanceOf[Tensor[Float]].clone()
+
+    Equivalent.nearequals(mkldnn_gradWeight0, blas_gradWeight) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i0, blas_gradWeight_i_0) should be(true)
+    Equivalent.nearequals(mkldnn_gradWeight_i1, blas_gradWeight_i_1) should be(true)
+    Equivalent.nearequals(mkldnn_gradBias0, blas_gradBias) should be(true)
   }
 }
