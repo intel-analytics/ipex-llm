@@ -109,9 +109,7 @@ class JavaValue(object):
     def __init__(self, jvalue, bigdl_type, *args):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), *args)
-        print("after creating")
         self.bigdl_type = bigdl_type
-        print("after creating 2")
 
     def __str__(self):
         return self.value.toString()
@@ -587,9 +585,7 @@ def callBigDlFunc(bigdl_type, name, *args):
         # so you need to invoke the method to check if it exist or not
         try:
             api = getattr(jinvoker, name)
-            print('api', api)
             result = callJavaFunc(api, *args)
-            print('result')
         except Exception as e:
             error = e
             if "does not exist" not in str(e):
@@ -636,7 +632,6 @@ def _java2py(gateway, r, encoding="bytes"):
 
 def callJavaFunc(func, *args):
     """ Call Java Function """
-    print('call Java Func')
     gateway = _get_gateway()
     args = [_py2java(gateway, a) for a in args]
     result = func(*args)
