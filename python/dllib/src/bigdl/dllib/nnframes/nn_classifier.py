@@ -190,8 +190,10 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
             label_preprocessing = SeqToTensor()
 
         if type(feature_preprocessing) is list:
-            assert(all(isinstance(x, int) for x in feature_preprocessing))
-            feature_preprocessing = SeqToTensor(feature_preprocessing)
+            if type(feature_preprocessing[0]) is list:
+                feature_preprocessing = SeqToMultipleTensors(feature_preprocessing)
+            elif isinstance(feature_preprocessing[0], int):
+                feature_preprocessing = SeqToTensor(feature_preprocessing)
 
         if type(label_preprocessing) is list:
             assert(all(isinstance(x, int) for x in label_preprocessing))
@@ -461,8 +463,10 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
                 feature_preprocessing = SeqToTensor()
 
             if type(feature_preprocessing) is list:
-                assert(all(isinstance(x, int) for x in feature_preprocessing))
-                feature_preprocessing = SeqToTensor(feature_preprocessing)
+                if type(feature_preprocessing[0]) is list:
+                    feature_preprocessing = SeqToMultipleTensors(feature_preprocessing)
+                elif isinstance(feature_preprocessing[0], int):
+                    feature_preprocessing = SeqToTensor(feature_preprocessing)
 
             sample_preprocessing = ChainedPreprocessing([feature_preprocessing, TensorToSample()])
             self.value = callBigDlFunc(
