@@ -30,29 +30,44 @@ import scala.reflect.ClassTag
  * @tparam F data type from feature column, E.g. Array[_] or Vector
  * @tparam L data type from label column, E.g. Float, Double, Array[_] or Vector
  */
-class FeatureLabelPreprocessing[F, L, T: ClassTag](
-    featureStep: Preprocessing[F, Tensor[T]],
-    labelStep: Preprocessing[L, Tensor[T]])(implicit ev: TensorNumeric[T])
-  extends Preprocessing[(F, Option[L]), Sample[T]] {
+class FeatureLabelPreprocessing[F, X, L, T: ClassTag] private[zoo] (
+    featureStep: Preprocessing[F, X],
+    labelStep: Preprocessing[L, Tensor[T]]
+  )(implicit ev: TensorNumeric[T]) extends Preprocessing[(F, Option[L]), Sample[T]] {
 
   override def apply(prev: Iterator[(F, Option[L])]): Iterator[Sample[T]] = {
     prev.map { case (feature, label ) =>
-      val featureTensor = featureStep(Iterator(feature)).next()
-      label match {
-        case Some(l) =>
-          val labelTensor = labelStep(Iterator(l)).next()
-          Sample[T](featureTensor, labelTensor)
-        case None =>
-          Sample[T](featureTensor)
+      val featureTensors = featureStep(Iterator(feature)).next()
+      featureTensors match {
+        case ft: Tensor[T] =>
+          val ft = featureTensors.asInstanceOf[Tensor[T]]
+          label match {
+            case Some(l) =>
+              val labelTensor = labelStep(Iterator(l)).next()
+              Sample[T](ft, labelTensor)
+            case None =>
+              Sample[T](ft)
+          }
+        case fat: Array[Tensor[T]] =>
+          label match {
+            case Some(l) =>
+              val labelTensor = labelStep(Iterator(l)).next()
+              Sample[T](fat, labelTensor)
+            case None =>
+              Sample[T](fat)
+          }
+        case _ =>
+          throw new UnsupportedOperationException(
+            s"FeatureLabelPreprocessing expects table or tensor, but got $featureTensors")
       }
     }
   }
 }
 
 object FeatureLabelPreprocessing {
-  def apply[F, L, T: ClassTag](
-      featureStep: Preprocessing[F, Tensor[T]],
+  def apply[F, X, L, T: ClassTag](
+      featureStep: Preprocessing[F, X],
       labelStep: Preprocessing[L, Tensor[T]]
-    )(implicit ev: TensorNumeric[T]): FeatureLabelPreprocessing[F, L, T] =
+    )(implicit ev: TensorNumeric[T]): FeatureLabelPreprocessing[F, X, L, T] =
     new FeatureLabelPreprocessing(featureStep, labelStep)
 }
