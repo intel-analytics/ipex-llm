@@ -5691,7 +5691,6 @@ def _test():
     import doctest
     from pyspark import SparkContext
     from bigdl.nn import layer
-    import bigdl.nn.onnx.layer as onnx_layer
     from bigdl.util.common import init_engine
     from bigdl.util.common import create_spark_conf
     globs = layer.__dict__.copy()
