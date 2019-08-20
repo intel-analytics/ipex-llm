@@ -106,6 +106,10 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     SeqToTensor(size.asScala.toArray)
   }
 
+  def createSeqToMultipleTensors(size: JArrayList[JArrayList[Int]]): SeqToMultipleTensors[T] = {
+    SeqToMultipleTensors(size.asScala.map(x => x.asScala.toArray).toArray)
+  }
+
   def createArrayToTensor(size: JArrayList[Int]): ArrayToTensor[T] = {
     ArrayToTensor(size.asScala.toArray)
   }
@@ -121,9 +125,9 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def createFeatureLabelPreprocessing(
       featureTransfomer: Preprocessing[Any, Tensor[T]],
       labelTransformer: Preprocessing[Any, Tensor[T]]
-    ): FeatureLabelPreprocessing[Any, Any, Sample[T]] = {
+    ): FeatureLabelPreprocessing[Any, Any, Any, Sample[T]] = {
     FeatureLabelPreprocessing(featureTransfomer, labelTransformer)
-      .asInstanceOf[FeatureLabelPreprocessing[Any, Any, Sample[T]]]
+      .asInstanceOf[FeatureLabelPreprocessing[Any, Any, Any, Sample[T]]]
   }
 
   def createChainedPreprocessing(list: JList[Preprocessing[Any, Any]]): Preprocessing[Any, Any] = {
