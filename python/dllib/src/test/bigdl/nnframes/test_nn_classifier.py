@@ -29,6 +29,8 @@ from pyspark.sql.types import *
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes import *
 from zoo.pipeline.api.keras.optimizers import Adam as KAdam
+from zoo.pipeline.api.keras import layers as ZLayer
+from zoo.pipeline.api.keras.models import Model as ZModel
 from zoo.feature.common import *
 from zoo.feature.image import *
 from zoo.util.tf import *
@@ -310,6 +312,66 @@ class TestNNClassifer():
             except OSError as exc:
                 if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
                     raise  # re-raise exception
+
+    def test_NNEstimator_multi_input(self):
+        zx1 = ZLayer.Input(shape=(1, ))
+        zx2 = ZLayer.Input(shape=(1, ))
+        zz = ZLayer.merge([zx1, zx2], mode="concat")
+        zy = ZLayer.Dense(2)(zz)
+        zmodel = ZModel([zx1, zx2], zy)
+
+        criterion = MSECriterion()
+        df = self.get_estimator_df()
+        estimator = NNEstimator(zmodel, criterion, [[1], [1]]).setMaxEpoch(5) \
+            .setBatchSize(4)
+        nnmodel = estimator.fit(df)
+        nnmodel.transform(df).collect()
+
+    def test_NNEstimator_works_with_VectorAssembler_multi_input(self):
+        if self.sc.version.startswith("2"):
+            from pyspark.ml.linalg import Vectors
+            from pyspark.ml.feature import VectorAssembler
+            from pyspark.sql import SparkSession
+
+            spark = SparkSession \
+                .builder \
+                .getOrCreate()
+
+            df = spark.createDataFrame(
+                [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 1.0),
+                 (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 2.0),
+                 (3, 18, 123.0, Vectors.dense([3.0, 15.0, 0.5, 0.5]), 1.0)],
+                ["user", "age", "income", "history", "label"])
+
+            assembler = VectorAssembler(
+                inputCols=["user", "age", "income", "history"],
+                outputCol="features")
+
+            df = assembler.transform(df)
+
+            x1 = ZLayer.Input(shape=(1,))
+            x2 = ZLayer.Input(shape=(2,))
+            x3 = ZLayer.Input(shape=(2, 2,))
+
+            user_embedding = ZLayer.Embedding(5, 10)(x1)
+            flatten = ZLayer.Flatten()(user_embedding)
+            dense1 = ZLayer.Dense(2)(x2)
+            gru = ZLayer.LSTM(4, input_shape=(2, 2))(x3)
+
+            merged = ZLayer.merge([flatten, dense1, gru], mode="concat")
+            zy = ZLayer.Dense(2)(merged)
+
+            zmodel = ZModel([x1, x2, x3], zy)
+            criterion = ClassNLLCriterion()
+            classifier = NNClassifier(zmodel, criterion, [[1], [2], [2, 2]]) \
+                .setOptimMethod(Adam()) \
+                .setLearningRate(0.1) \
+                .setBatchSize(2) \
+                .setMaxEpoch(10)
+
+            nnClassifierModel = classifier.fit(df)
+            print(nnClassifierModel.getBatchSize())
+            res = nnClassifierModel.transform(df).collect()
 
     def test_NNModel_transform_with_nonDefault_featureCol(self):
         model = Sequential().add(Linear(2, 2))
