@@ -119,6 +119,11 @@ class RNN(
    * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
    * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
    * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+   *
+   * Gate order matching between MKLDNN GRU and nn/GRU:
+   * MKLDNN Gate 1 -> nn/GRU Gate 2
+   * MKLDNN Gate 2 -> nn/GRU Gate 1
+   * MKLDNN Gate 3 -> nn/GRU Gate 3
    */
 
   weightShape = Array(layers, numOfDirections, inputSize, ngates, hiddenSize)
