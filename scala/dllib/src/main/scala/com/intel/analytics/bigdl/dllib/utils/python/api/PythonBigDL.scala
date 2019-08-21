@@ -1156,6 +1156,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       pooled_w)
   }
 
+  def createFPN(in_channels_list: JList[Int], out_channels: Int)
+  : FPN[T] = {
+    FPN[T](in_channels_list.asScala.toArray,
+      out_channels)
+  }
+
   def createScale(size: JList[Int])
   : Scale[T] = {
     Scale[T](size.asScala.toArray)
