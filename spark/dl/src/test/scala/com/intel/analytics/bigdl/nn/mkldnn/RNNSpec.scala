@@ -1948,4 +1948,99 @@ class RNNSpec extends FlatSpec with Matchers{
     Equivalent.nearequals(mkldnn_gradBias0(1), blas_gradBias_1) should be(true)
     Equivalent.nearequals(mkldnn_gradBias0(2), blas_gradBias_2) should be(true)
   }
+
+  "GRU UnidirectionalInference Multilayers updateOutput" should "work correctly" in {
+    val seqLength = 3
+    val batchSize = 2
+    val commonSize = 5
+
+    val f = AlgKind.EltwiseTanh
+    var direction = Direction.UnidirectionalLeft2Right
+
+    val common_n_layers = 3
+    val gru_n_gates = 3
+
+    val inputFormat = HeapData(Array(seqLength, batchSize, commonSize), Memory.Format.tnc)
+    var input = Tensor(Array(seqLength, batchSize, commonSize)).rand()
+
+    var initWeight = Tensor[Float](
+      Array(common_n_layers, 1,
+        commonSize, gru_n_gates, commonSize)).rand(-1.0, 1.0)
+
+    var initWeightIter = Tensor[Float](
+      Array(common_n_layers, 1,
+        commonSize, gru_n_gates, commonSize)).rand(-1.0, 1.0)
+
+    var initBias = Tensor[Float](
+      Array(common_n_layers, 1,
+        gru_n_gates, commonSize)).rand(-1.0, 1.0)
+
+    val mkldnnGRU = Sequential()
+      .add(Input(input.size(), Memory.Format.tnc))
+      .add(RNN(AlgKind.VanillaGru, commonSize, commonSize, f, direction,
+        initWeight = initWeight, initWeightIter = initWeightIter,
+        initBias = initBias, layers = common_n_layers))
+    mkldnnGRU.evaluate()
+    mkldnnGRU.compile(InferencePhase)
+    val output = mkldnnGRU.forward(input)
+
+    /**
+      * Reorder to formats of BLAS.
+      * The input format of MKLDNN is TNC, while that of BLAS is NTC.
+      */
+    var inputt = input.transpose(1, 2).clone()
+    initWeight = initWeight.resize(Array(common_n_layers, commonSize, gru_n_gates, commonSize))
+      .transpose(2, 3).transpose(3, 4)
+    initWeightIter = initWeightIter
+      .resize(Array(common_n_layers, commonSize, gru_n_gates, commonSize))
+      .transpose(2, 3).transpose(3, 4)
+    initBias = initBias.resize(Array(common_n_layers, gru_n_gates, commonSize))
+
+    var initWeight0 = Tensor[Float](Array(common_n_layers, commonSize * gru_n_gates, commonSize))
+    var initWeightIter0 =
+      Tensor[Float](Array(common_n_layers, commonSize * 2, commonSize))
+    var initWeightIter1 =
+      Tensor[Float](Array(common_n_layers, commonSize * 1, commonSize))
+    var initBias0 = Tensor[Float](Array(common_n_layers, gru_n_gates * commonSize))
+
+    val concat = nn.JoinTable(1, 0)
+    for(l <- 1 to common_n_layers) {
+      initWeight0(l).copy(concat.forward(T(initWeight(l)(2), initWeight(l)(1),
+        initWeight(l)(3))).asInstanceOf[Tensor[Float]].clone())
+      initWeightIter0(l).copy(concat.forward(T(initWeightIter(l)(2), initWeightIter(l)(1)))
+        .asInstanceOf[Tensor[Float]].clone())
+      initWeightIter1(l).copy(initWeightIter(l)(3)
+        .asInstanceOf[Tensor[Float]].clone())
+      initBias0(l).copy(concat.forward(T(initBias(l)(2), initBias(l)(1),
+        initBias(l)(3))).asInstanceOf[Tensor[Float]].clone())
+    }
+
+    val nn_input = nn.Input()
+    var nn_gru = nn.Recurrent().add(nn.GRU(commonSize, commonSize)).inputs(nn_input)
+
+    for(i <- 1 until common_n_layers) {
+      nn_gru = nn.Recurrent().add(nn.GRU(commonSize, commonSize)).inputs(nn_gru)
+    }
+
+    val blasGRU = nn.Graph(nn_input, nn_gru)
+
+    val uniParams = blasGRU.parameters()._1
+
+    for(l <- 0 until common_n_layers) {
+      initWeight0(l + 1) = initWeight0(l + 1).resizeAs(uniParams(4 * l))
+      initBias0(l + 1) = initBias0(l + 1).resizeAs(uniParams(4 * l + 1))
+      initWeightIter0(l + 1) = initWeightIter0(l + 1).resizeAs(uniParams(4 * l + 2))
+      initWeightIter1(l + 1) = initWeightIter1(l + 1).resizeAs(uniParams(4 * l + 3))
+
+      uniParams(4 * l).copy(initWeight0(l + 1))
+      uniParams(4 * l + 1).copy(initBias0(l + 1))
+      uniParams(4 * l + 2).copy(initWeightIter0(l + 1))
+      uniParams(4 * l + 3).copy(initWeightIter1(l + 1))
+    }
+
+    val blas_output = blasGRU.forward(inputt).toTensor.transpose(1, 2)
+
+    Equivalent.nearequals(Tools.dense(output).asInstanceOf[Tensor[Float]],
+      blas_output) should be(true)
+  }
 }
