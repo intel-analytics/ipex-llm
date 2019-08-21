@@ -232,7 +232,7 @@ class FPNSerialTest extends ModuleSerializationTest {
     input(2.0f) = feature2
     input(3.0f) = feature3
 
-    val fpn = new FPN[Float](in_channels_list = Array(1, 2, 4), out_channels = 2).setName("FPN")
+    val fpn = new FPN[Float](inChannels = Array(1, 2, 4), outChannels = 2).setName("FPN")
     runSerializationTest(fpn, input)
   }
 }

@@ -27,55 +27,55 @@ import scala.reflect.ClassTag
 
 /**
  * Feature Pyramid Network.
- * @param in_channels_list number of channels of feature maps
- * @param out_channels number of channels of FPN output
+ * @param inChannels number of channels of feature maps
+ * @param outChannels number of channels of FPN output
  */
 
 class FPN[T : ClassTag](
-  val in_channels_list: Array[Int],
-  val out_channels: Int
+  val inChannels: Array[Int],
+  val outChannels: Int
 )
   (implicit ev: TensorNumeric[T])
   extends BaseModule[T]{
   override def buildModel(): Module[T] = {
-    val num_feature_maps = in_channels_list.length
-    val inner_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
-    val layer_blocks_modules = new Array[SpatialConvolution[T]](num_feature_maps)
+    val featureMapsNum = inChannels.length
+    val innerBlockModules = new Array[SpatialConvolution[T]](featureMapsNum)
+    val layerBlockModules = new Array[SpatialConvolution[T]](featureMapsNum)
 
-    for (i <- 0 to num_feature_maps - 1) {
-      if (in_channels_list(i) != 0) {
-        val inner_block_module =
-          SpatialConvolution[T](in_channels_list(i), out_channels, 1, 1, 1, 1)
-        val layer_block_module =
-          SpatialConvolution[T](out_channels, out_channels, 3, 3, 1, 1, 1, 1)
-        inner_blocks_modules(i) = inner_block_module
-        layer_blocks_modules(i) = layer_block_module
+    for (i <- 0 to featureMapsNum - 1) {
+      if (inChannels(i) != 0) {
+        val innerBlockModule =
+          SpatialConvolution[T](inChannels(i), outChannels, 1, 1, 1, 1)
+        val layerBlockModule =
+          SpatialConvolution[T](outChannels, outChannels, 3, 3, 1, 1, 1, 1)
+        innerBlockModules(i) = innerBlockModule
+        layerBlockModules(i) = layerBlockModule
       }
     }
 
-    val inputs = new Array[ModuleNode[T]](num_feature_maps)
-    for (i <- 0 to num_feature_maps - 1) {
+    val inputs = new Array[ModuleNode[T]](featureMapsNum)
+    for (i <- 0 to featureMapsNum - 1) {
       inputs(i) = Input[T]()
     }
 
-    val inner_blocks = new Array[ModuleNode[T]](num_feature_maps)
-    for (i <- 0 to num_feature_maps - 1) {
-      inner_blocks(i) = inner_blocks_modules(i).inputs(inputs(i))
+    val innerBlocks = new Array[ModuleNode[T]](featureMapsNum)
+    for (i <- 0 to featureMapsNum - 1) {
+      innerBlocks(i) = innerBlockModules(i).inputs(inputs(i))
     }
 
     var count = 0
-    var results = new Array[ModuleNode[T]](num_feature_maps)
-    var last_inner = inner_blocks(num_feature_maps - 1)
-    results(count) = layer_blocks_modules(num_feature_maps - 1).inputs(last_inner)
+    val results = new Array[ModuleNode[T]](featureMapsNum)
+    var lastInner = innerBlocks(featureMapsNum - 1)
+    results(count) = layerBlockModules(featureMapsNum - 1).inputs(lastInner)
 
-    for(i <- num_feature_maps - 2 to 0 by -1) {
-      val layer_block = layer_blocks_modules(i)
-      if (layer_block != null) {
-        val inner_topdown = UpSampling2D[T](Array(2, 2)).inputs(last_inner)
-        val inner_lateral = inner_blocks(i)
-        last_inner = CAddTable[T]().inputs(inner_lateral, inner_topdown)
+    for(i <- featureMapsNum - 2 to 0 by -1) {
+      val layerBlock = layerBlockModules(i)
+      if (layerBlock != null) {
+        val innerTopDown = UpSampling2D[T](Array(2, 2)).inputs(lastInner)
+        val innerLateral = innerBlocks(i)
+        lastInner = CAddTable[T]().inputs(innerLateral, innerTopDown)
         count += 1
-        results(count) = layer_block.inputs(last_inner)
+        results(count) = layerBlock.inputs(lastInner)
       }
     }
 
@@ -92,13 +92,13 @@ class FPN[T : ClassTag](
     case that: FPN[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        in_channels_list.deep == that.in_channels_list.deep &&
-        out_channels == that.out_channels
+        inChannels.deep == that.inChannels.deep &&
+        outChannels == that.outChannels
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), in_channels_list, out_channels)
+    val state = Seq(super.hashCode(), inChannels, outChannels)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
@@ -107,19 +107,14 @@ class FPN[T : ClassTag](
     model.reset()
   }
 
-  override def clearState(): this.type = {
-    super.clearState()
-    this
-  }
-
-  override def toString: String = s"FPN($out_channels)"
+  override def toString: String = s"FPN($outChannels)"
 }
 
 object FPN {
   def apply[@specialized(Float, Double) T: ClassTag](
-    in_channels_list: Array[Int],
-    out_channels: Int
+    inChannels: Array[Int],
+    outChannels: Int
   )(implicit ev: TensorNumeric[T]): FPN[T] = {
-    new FPN[T](in_channels_list, out_channels)
+    new FPN[T](inChannels, outChannels)
   }
 }
