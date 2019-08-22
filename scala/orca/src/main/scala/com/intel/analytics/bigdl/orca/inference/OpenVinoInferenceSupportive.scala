@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.inference
 import java.io.{ByteArrayInputStream, File, FileOutputStream, InputStream}
 import java.nio.channels.Channels
 
-import com.google.common.io.Files
+import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 import com.intel.analytics.zoo.core.openvino.OpenvinoNativeLoader
 import org.slf4j.LoggerFactory
@@ -77,7 +77,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
   var calibrationLibPath: String = _
 
   timing("prepare openvino scripts") {
-    val ovtmpDir = Files.createTempDir()
+    val ovtmpDir = Utils.createTmpDir("ZooVino").toFile()
     openvinoTempDirPath = ovtmpDir.getCanonicalPath
     optimizeObjectDetectionSHPath = s"$openvinoTempDirPath$optimizeObjectDetectionRelativePath"
     optimizeImageClassificationSHPath =
@@ -370,7 +370,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
                           modelType: String,
                           pipelineConfigPath: String,
                           extensionsConfigPath: String): OpenVINOModel = {
-    val tmpDir = Files.createTempDir()
+    val tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val outputPath: String = tmpDir.getCanonicalPath
 
     optimizeTFObjectDetectionModel(modelPath, modelType,
@@ -387,7 +387,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
                           ifReverseInputChannels: Boolean,
                           meanValues: Array[Float],
                           scale: Float): OpenVINOModel = {
-    val tmpDir = Files.createTempDir()
+    val tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val outputPath: String = tmpDir.getCanonicalPath
 
     optimizeTFImageClassificationModel(modelPath, modelType,
@@ -405,7 +405,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
                           ifReverseInputChannels: Boolean,
                           meanValues: Array[Float],
                           scale: Float): OpenVINOModel = {
-    val tmpDir = Files.createTempDir()
+    val tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val outputPath: String = tmpDir.getCanonicalPath
     val modelPath = (modelBytes == null) match {
       case true => null
@@ -442,7 +442,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
                           meanValues: Array[Float],
                           scale: Float,
                           input: String): OpenVINOModel = {
-    val tmpDir = Files.createTempDir()
+    val tmpDir = Utils.createTmpDir("ZooVino").toFile
     val outputPath: String = tmpDir.getCanonicalPath
 
     optimizeTFImageClassificationModel(savedModelDir, inputShape, ifReverseInputChannels,
@@ -459,7 +459,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
                           meanValues: Array[Float],
                           scale: Float,
                           input: String): OpenVINOModel = {
-    val tmpDir = Files.createTempDir()
+    val tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val outputPath: String = tmpDir.getCanonicalPath
 
     val tarFilePath = (savedModelBytes == null) match {
@@ -498,7 +498,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
                                       validationFilePath: String,
                                       subset: Int,
                                       opencvLibPath: String): OpenVINOModel = {
-    val tmpDir = Files.createTempDir()
+    val tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val outputPath: String = tmpDir.getCanonicalPath
 
     optimizeTFImageClassificationModel(modelPath, modelType,
@@ -594,7 +594,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
                      deviceType: DeviceTypeEnumVal,
                      batchSize: Int): OpenVINOModel = {
     timing("load openvino IR") {
-      val tmpDir = Files.createTempDir()
+      val tmpDir = Utils.createTmpDir("ZooVino").toFile()
       val modelFilePath = (modelBytes == null) match {
         case true => null
         case false => val modelFileName = "model.xml"
