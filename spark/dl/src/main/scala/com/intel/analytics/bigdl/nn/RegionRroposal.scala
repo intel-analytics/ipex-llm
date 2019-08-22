@@ -16,15 +16,16 @@
 package com.intel.analytics.bigdl.nn
 
 import breeze.linalg
-import breeze.linalg.dim
+import breeze.linalg.{dim, min}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.Convolution2D
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{LayerException, T, Table}
 import com.sun.tracing.dtrace.ModuleName
 import org.apache.spark.api.java.function
+import org.dmg.pmml.True
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -42,7 +43,7 @@ import scala.reflect.ClassTag
  * @param min_size
  * @param rpnPostNmsTopNTrain
  */
-class RegionRroposal[T: ClassTag](inChannels: Int,
+class RegionRroposal(inChannels: Int,
    anchorSizes: Array[Float],
    aspectRatios: Array[Float],
    anchorStride: Array[Float],
@@ -50,28 +51,18 @@ class RegionRroposal[T: ClassTag](inChannels: Int,
    postNmsTopNTest: Int,
    nmsThread: Float,
    min_size: Int,
-   rpnPostNmsTopNTrain: Int)(implicit ev: TensorNumeric[T])
-   extends AbstractModule[Table, Tensor[T], T] {
+   rpnPostNmsTopNTrain: Int)(implicit ev: TensorNumeric[Float])
+   extends AbstractModule[Table, Tensor[Float], Float] {
+
+  private val fpn_post_nms_top_n = 1000
   // for anchor generate
   require(anchorSizes.length == anchorStride.length, s"anchor size and stride should be same")
+
   private val scalesForStride = new Array[Float](1)
   private val anchors = new ArrayBuffer[Anchor]
   for (i <- 0 to anchorSizes.length - 1) {
     scalesForStride(0) = anchorSizes(i) / anchorStride(i)
     anchors.append(Anchor(aspectRatios, scalesForStride))
-  }
-  private[nn] def anchorGenerater(featuresMap: Tensor[T]): Table = {
-    val res = T()
-    val length = Math.min(anchorSizes.length, featuresMap.size(1))
-    for (i <- 0 to length - 1) {
-      val size = anchorSizes(i)
-      val stride = anchorStride(i)
-      val feature = featuresMap.select(1, i + 1)
-      val height = feature.size(2)
-      val width = feature.size(3)
-      res(i + 1) = anchors(i).generateAnchors(width, height, stride)
-    }
-    res
   }
 
   private val numAnchors = anchors(0).anchorNum
@@ -79,33 +70,96 @@ class RegionRroposal[T: ClassTag](inChannels: Int,
   private val boxSelector = new ProposalPostProcessor(preNmsTopNTest, postNmsTopNTest,
     nmsThread, min_size, rpnPostNmsTopNTrain)
 
+  private[nn] def anchorGenerater(featuresMap: Table): Table = {
+    val res = T()
+    val length = Math.min(anchorSizes.length, featuresMap.length())
+    for (i <- 0 to length - 1) {
+      val size = anchorSizes(i)
+      val stride = anchorStride(i)
+      val feature = featuresMap[Tensor[Float]](i + 1)
+      val height = feature.size(3)
+      val width = feature.size(4)
+      res(i + 1) = anchors(i).generateAnchors(width, height, stride)
+    }
+    res
+  }
+
   /**
    * input is a table and contains:
    * first tensor: images: images for which we want to compute the predictions
    * second tensor: features: features computed from the images that are used for
    *  computing the predictions.
    */
-  override def updateOutput(input: Table): Tensor[T] = {
+  override def updateOutput(input: Table): Tensor[Float] = {
     require(input.length() == 2 && !this.isTraining(), "Only support tests")
-    val images = input[Tensor[T]](1)
-    val features = input[Tensor[T]](2)
-
+    val images = input[Tensor[Float]](1)
+    val features = input[Table](2)
     val anchors = this.anchorGenerater(features)
-    val headOutput = head.forward(features).toTable
-    val objectness = headOutput.apply[Tensor[T]](1)
-    val rpn_box_regression = headOutput.apply[Tensor[T]](2)
 
-    output = boxSelector.forward(T(anchors[Tensor[T]](1), objectness,
-      rpn_box_regression, images))
-    output.toTensor[T]
+    val res = T()
+    var bboxNumber = 0
+    var i = 1
+    while (i <= anchors.length()) {
+      val headOutput = head.forward(features(i)).toTable
+      val objectness = headOutput.apply[Tensor[Float]](1)
+      val rpn_box_regression = headOutput.apply[Tensor[Float]](2)
+
+      res(i) = boxSelector.forward(T(anchors[Tensor[Float]](i), objectness,
+        rpn_box_regression, images)).clone()
+
+      bboxNumber += res[Table](i)[Tensor[Float]](1).size(1)
+      i += 1
+    }
+
+    output.resize(bboxNumber, 4)
+
+//    i = 1
+//    var startOffset = 1
+//    while (i <= anchors.length()) {
+//      val tmp = res[Tensor[Float]](i)
+//      output.narrow(1, startOffset, tmp.size(1)).copy(tmp)
+//      startOffset = startOffset + tmp.size(1)
+//      i += 1
+//    }
+
+    val post_nms_top_n = min(fpn_post_nms_top_n, bboxNumber)
+
+    // sort
+    selectOverAllLevels(res, post_nms_top_n)
+
+    output.toTensor[Float]
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
+  private def selectOverAllLevels(res: Table, post_nms_top_n: Int): Unit = {
+    val scoreResult = Tensor[Float]().resize(post_nms_top_n)
+    val bboxResult = Tensor[Float]().resize(post_nms_top_n, 4)
+    var i = 1
+    var startOffset = 1
+    while (i <= res.length()) {
+      val tmpScore = res[Table](i)[Tensor[Float]](2)
+      val tmpBbox = res[Table](i)[Tensor[Float]](1)
+      scoreResult.narrow(1, startOffset, tmpScore.size(1)).copy(tmpScore)
+      bboxResult.narrow(1, startOffset, tmpBbox.size(1)).copy(tmpBbox)
+      startOffset = startOffset + tmpScore.size(1)
+      i += 1
+    }
+
+    val inds = scoreResult.topk(post_nms_top_n, dim = 1, sortedResult = true, increase = false)
+
+    i = 1
+    while (i <= inds._2.nElement()) {
+      val index = inds._2.valueAt(i).toInt
+      output.narrow(1, i, 1).copy(bboxResult.narrow(1, index, 1))
+      i += 1
+    }
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Tensor[Float]): Table = {
     gradInput = null
     gradInput
   }
 
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
     head.parameters()
   }
 
@@ -114,12 +168,12 @@ class RegionRroposal[T: ClassTag](inChannels: Int,
   }
 }
 
-private[bigdl] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
+private[nn] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
   postNmsTopNTest: Int,
   nms_thread: Float,
   min_size: Int,
   rpnPostNmsTopNTrain: Int)
-  (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Tensor[Float], Float]{
+  (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Table, Float]{
 
   @transient private val sortedScores: Tensor[Float] = Tensor[Float]()
   @transient private val sortedInds: Tensor[Float] = Tensor[Float]()
@@ -127,15 +181,15 @@ private[bigdl] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
   @transient private val nms = new Nms()
 
   /**
-    * Arguments:
-    *    anchors: list[BoxList] -> should be Tensor with shape (N, nums, 4)
-    *    objectness: tensor of size N, A, H, W
-    *    box_regression: tensor of size N, A * 4, H, W
-    *    img_info: image size
-    * @param input
-    * @return
-    */
-  override def updateOutput(input: Table): Tensor[Float] = {
+   * Arguments:
+   *    anchors: list[BoxList] -> should be Tensor with shape (N, nums, 4)
+   *    objectness: tensor of size N, A, H, W
+   *    box_regression: tensor of size N, A * 4, H, W
+   *    img_info: image size
+   * @param input
+   * @return
+   */
+  override def updateOutput(input: Table): Table = {
     //  for memory case, input may be changed
     val anchors = input[Tensor[Float]](1)
     var objectness = input[Tensor[Float]](2)
@@ -165,6 +219,8 @@ private[bigdl] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
     objectness.topk(topNum, dim = 2, increase = false,
       result = sortedScores, indices = sortedInds)
 
+    objectness.copy(sortedScores)
+
     val tmp = Tensor[Float]().resizeAs(box_regression)
     tmp.index(2, sortedInds.squeeze(1), box_regression)
 
@@ -188,11 +244,16 @@ private[bigdl] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
     val arrFilter = arr.filter(_ > 0).map(_.toFloat)
 
     val indices = Tensor[Float]().set(Storage(arrFilter), 1, Array(arrFilter.length))
-    output.index(1, indices, proposals)
+    val tmp2 = Tensor[Float]()
+    tmp2.index(1, indices, proposals)
+    val tt = Tensor[Float]()
+    objectness.resize(objectness.nElement())
+    tt.index(1, indices, objectness)
+    output = T(tmp2, tt)
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[Float]): Table = {
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
     gradInput = null
     gradInput
   }
