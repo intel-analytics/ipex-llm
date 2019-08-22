@@ -17,11 +17,13 @@
 package com.intel.analytics.zoo.common
 
 import java.io._
+import java.nio.file.attribute.PosixFilePermissions
 
 import com.intel.analytics.bigdl.utils.File
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
+import java.nio.file.{Path => JPath}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
@@ -188,6 +190,11 @@ private[zoo] object Utils {
     logger.error(s"********************************Usage Error****************************\n"
       + errMessage)
     throw new AnalyticsZooException(errMessage, cause)
+  }
+
+  def createTmpDir(prefix: String = "Zoo", permissions: String = "rwx------"): JPath = {
+    java.nio.file.Files.createTempDirectory(prefix,
+      PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString(permissions)))
   }
 }
 
