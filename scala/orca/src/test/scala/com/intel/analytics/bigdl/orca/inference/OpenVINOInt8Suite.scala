@@ -20,10 +20,10 @@ import java.io.{File, FileInputStream}
 import java.util
 import java.util.{Arrays, Properties}
 
-import com.google.common.io.Files
 import org.scalatest._
 import org.slf4j.LoggerFactory
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.zoo.common.Utils
 
 import scala.io.Source
 import scala.language.postfixOps
@@ -80,7 +80,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
   var savedModelPath: String = _
 
   override def beforeAll() {
-    tmpDir = Files.createTempDir()
+    tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val dir = new File(s"${tmpDir.getAbsolutePath}/OpenVinoInt8Spec").getCanonicalPath
 
     s"wget -P $dir $resnet_v1_50_url" !;
