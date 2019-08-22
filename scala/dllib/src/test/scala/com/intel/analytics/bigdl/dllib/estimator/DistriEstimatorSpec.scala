@@ -236,7 +236,7 @@ class DistriEstimatorSpec extends ZooSpecHelper {
 
   "Estimator" should "works with model dir" in {
     LoggerFilter.redirectSparkInfoLogs()
-    val tmpdir = com.google.common.io.Files.createTempDir().getPath()
+    val tmpdir = createTmpDir().getPath()
     val mm = mse
     mm.parameters()._1.foreach(_.fill(0.125))
     val estimator = Estimator(mm, new SGD[Double](20), tmpdir)
