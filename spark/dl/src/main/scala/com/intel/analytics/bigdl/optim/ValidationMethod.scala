@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang3.SerializationUtils
-
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -231,27 +231,27 @@ object MAPUtil {
   }
 }
 
-
+// require class label beginning from 0
 class MAPValidationResult(
   private val nClass: Int,
+  // take the first k samples, or -1 for all samples
   private val k: Int,
-  private var rawConfidence: Array[Array[Float]],
-  private var groundTruth: Array[Float]
+  // the predicts for each classes. (Confidence, GT)
+  private var predictForClass: Array[ArrayBuffer[(Float, Boolean)]],
+  private var gtCntForClass: Array[Int]
 )
 extends ValidationResult {
-  private[optim] def calculateClassAP(posCnt: Array[Int], clz: Int): Float = {
-    val _target = groundTruth
-    val _output = rawConfidence
+
+  private[optim] def calculateClassAP(clz: Int): Float = {
+    val posCnt = gtCntForClass
     // for each class, first find top k confident samples
-    val indices = MAPUtil.findTopK(k, _output, clz - 1)
+    val sorted = predictForClass(clz).sortBy(v => v._1)(Ordering.Float.reverse) // decending order
     var tp = 0
+    val refinedK = if (k > 0) k else sorted.size
     // calculate the max precision for each different recall
     // for each top-j items, calculate the (precision, recall)
-    val PnR = indices.indices.flatMap(j => {
-      // get the top j-th sample's index
-      val sampleIdx = indices(j)._1
-      val groundTruthClz = _target(sampleIdx).toInt
-      if (groundTruthClz == clz) {
+    val PnR = sorted.take(refinedK).zipWithIndex.flatMap { case (predict, j) =>
+      if (predict._2) {
         // if it is a hit
         tp += 1
         // j + 1 is the total number of samples marked positive by the model
@@ -261,7 +261,7 @@ extends ValidationResult {
       } else {
         Iterator.empty
       }
-    })
+    }
 
     // get Average precision over each different recall
     (0 to posCnt(clz)).map(r => {
@@ -270,31 +270,14 @@ extends ValidationResult {
       PnR.filter(_._1 >= recall).map(_._2).reduceOption(_ max _).getOrElse(0f)
     })
       .reduceOption(_ + _)
-      .map(_ / (posCnt(clz) + 1))
+      .map(_ / (posCnt(clz) + 1)) // +1 because we start from 0
       .getOrElse(0f)
   }
 
-  private[optim] def calculateClassPositiveCnt(posCnt: Array[Int]): Unit = {
-    val _target = groundTruth
-    for (i <- _target.indices) {
-      val clazz = _target(i)
-      require(clazz == math.ceil(clazz), s"The class for $i-th test sample should be an integer, "
-        + s"got $clazz")
-      val intClazz = clazz.toInt
-      require(intClazz > 0 && intClazz <= nClass, s"The class for $i-th test sample should be "
-        + s"> 0 and <= $nClass, but got $intClazz")
-      posCnt(intClazz) += 1
-    }
-  }
 
   override def result(): (Float, Int) = {
-    // the count of positive samples for each class
-    // index starts from 1
-    val posCnt = new Array[Int](nClass + 1)
-    calculateClassPositiveCnt(posCnt)
-
     // get the indices of top-k confident samples
-    val AP = (1 to nClass).map { clz => calculateClassAP(posCnt, clz) }
+    val AP = (0 until nClass).map { clz => calculateClassAP(clz) }
     // APs are got. Now we get MAP
     val result = AP.sum / nClass
     (result, 1)
@@ -302,8 +285,12 @@ extends ValidationResult {
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {
     val o = other.asInstanceOf[MAPValidationResult]
-    rawConfidence ++= o.rawConfidence
-    groundTruth ++= o.groundTruth
+    require(predictForClass.length == o.predictForClass.length)
+    require(gtCntForClass.length == o.gtCntForClass.length)
+    predictForClass.zip(o.predictForClass).foreach {
+      case (left, right) => left ++= right
+    }
+    gtCntForClass.indices.foreach( i => gtCntForClass(i) += o.gtCntForClass(i))
     this
   }
   // scalastyle:on methodName
@@ -333,28 +320,154 @@ class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
       outTensor
     }
 
-    val targetArr = _target.toArray().asInstanceOf[Array[Float]]
-    require(targetArr != null, "MAP only support floats")
-    require(_output.dim()==1 && targetArr.length==1 ||
-      _output.size(1) == targetArr.length, "The number of samples in the output should " +
+    require(_output.dim()==1 && _target.nElement() == 1 ||
+      _output.size(1) == _target.nElement(), "The number of samples in the output should " +
       "be the same as in the target")
 
-    val confidenceArr = if (_output.nDimension() == 2) {
-      (1 to _output.size(1)).map(i => {
-        _output.select(1, i).toArray().asInstanceOf[Array[Float]]
-      }).toArray
+    val posCnt = new Array[Int](classes)
+    for (i <- 1 to _target.nElement()) {
+      val clazz = ev.toType[Float](_target.valueAt(i))
+      require(clazz == math.ceil(clazz), s"The class for $i-th test sample should be an integer, "
+        + s"got $clazz")
+      val intClazz = clazz.toInt
+      require(intClazz >= 0 && intClazz < classes, s"The class for $i-th test sample should be "
+        + s">= 0 and < $classes, but got $intClazz")
+      posCnt(intClazz) += 1
+    }
+
+    val confidenceArr = new Array[ArrayBuffer[(Float, Boolean)]](classes)
+    if (_output.nDimension() == 2) {
+      (1 to _output.size(1)).foreach(i => {
+        val row = _output.select(1, i)
+        val gtClz = ev.toType[Float](_target.valueAt(i))
+        for(clz <- 0 until classes) {
+          confidenceArr(clz) += ((ev.toType[Float](row.valueAt(clz + 1)), gtClz == clz))
+        }
+      })
     } else {
       require(_output.dim() == 1, "The output should have 1 or 2 dimensions")
-      Array[Array[Float]](_output.toArray().asInstanceOf[Array[Float]])
+      val row = _output
+      val gtClz = ev.toType[Float](_target.valueAt(1))
+      for(clz <- 0 until classes) {
+        confidenceArr(clz) += ((ev.toType[Float](row.valueAt(clz + 1)), gtClz == clz))
+      }
     }
-    new MAPValidationResult(classes, k, confidenceArr, targetArr)
+    new MAPValidationResult(classes, k, confidenceArr, posCnt)
   }
 
   override def format(): String = s"MAP@$k"
 }
 
+private[bigdl] class GroundTruthBBox(val label: Int, val diff: Float,
+  val xmin: Float, val ymin: Float, val xmax: Float, val ymax: Float) {
+    private val area = (xmax - xmin) * (ymax - ymin)
+
+  // if is 0, the bbox is not matched with any predictions
+  // if != 0, the maxConfidence of the bbox which is matched with this GT
+    private var isOccupied = false
+
+    def canOccupy: Boolean = isOccupied
+    def occupy(): Unit = {
+      isOccupied = true
+    }
+
+    def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float): Float = {
+      val ixmin = Math.max(xmin, x1)
+      val iymin = Math.max(ymin, y1)
+      val ixmax = Math.min(xmax, x2)
+      val iymax = Math.min(ymax, y2)
+      val inter = Math.max(ixmax - ixmin, 0) * Math.max(iymax - iymin, 0)
+      inter / ((x2 - x1) * (y2 - y1) + area - inter)
+    }
+}
+
+// label begins from 0. imgId begins from 0
+class MeanAveragePrecisionObjectDetection[T: ClassTag](iou: Float, classes: Int)(
+  implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
+  override def apply(output: Activity, target: Activity): ValidationResult = {
+    val gtTensor = target.toTensor[Float]
+    require(gtTensor.dim() == 2 && gtTensor.size(2) == 7,
+      "the ground truth tensor should have 2 dimensions " +
+        "and the second dimension should have size of 7")
+
+    // the number of GT bboxes for each class
+    val gtCntByClass = new Array[Int](classes)
+
+    // one image may contain multiple Ground truth bboxes
+    val gtImages = new ArrayBuffer[ArrayBuffer[GroundTruthBBox]]
+    // this converts the image-id in target tensor to the index within the image array
+    // imgId is for output tensor and target tensor. imgIdx is for gtImages
+    // the imgId should start from 0
+    val imgId2imgIdx = scala.collection.mutable.Map[Int, Int]()
+    for(i <- 1 to gtTensor.size(1)) {
+      // the tensor is: (imgId, label, diff, bbox x4)
+      val imgId = gtTensor.valueAt(i, 1).toInt
+      val label = gtTensor.valueAt(i, 2).toInt
+      val diff = gtTensor.valueAt(i, 3).toInt
+      val imgIdx = if (!imgId2imgIdx.contains(imgId)) {
+        val sz = gtImages.size
+        imgId2imgIdx(imgId) = sz
+        gtImages += new ArrayBuffer[GroundTruthBBox]()
+        sz
+      } else {
+        imgId2imgIdx(imgId)
+      }
+      gtImages(imgIdx) += new GroundTruthBBox(label, diff, gtTensor.valueAt(i, 4),
+        gtTensor.valueAt(i, 5), gtTensor.valueAt(i, 6), gtTensor.valueAt(i, 7))
+      gtCntByClass(label) += 1
+    }
+
+    // the predicted bboxes for each classes
+    // predictByClass(classIdx)(bboxNum) is (Confidence, GT)
+    val predictByClass = new Array[ArrayBuffer[(Float, Boolean)]](classes)
+    for (i <- predictByClass.indices) {
+      predictByClass(i) = new ArrayBuffer[(Float, Boolean)]
+    }
+    // output is [num_of_batch X (1 + maxDetection * 6)] matrix
+    // The format should be [<batch>, <batch>, ...], where <batch> = [<size_of_batch>, <sample>,...]
+    // <sample> = <label, score, bbox x4>
+    val outTensor = output.toTensor[Float]
+    require(outTensor.dim() == 2, "the output tensor should have 2 dimensions")
+    for (imgId <- 0 until outTensor.size(1)) {
+      // for each image
+      if (imgId2imgIdx.contains(imgId)) {
+        val imgIdx = imgId2imgIdx(imgId) // index within gtImages
+        val gtBbox = gtImages(imgIdx)
+        val batch = outTensor.select(1, imgId + 1)
+        val batchSize = batch.valueAt(1).toInt
+        var offset = 2
+        for (bboxIdx <- 0 until batchSize) {
+          // for each predicted bboxes
+          val label = batch.valueAt(offset).toInt
+          val score = batch.valueAt(offset + 1)
+          val x1 = batch.valueAt(offset + 2)
+          val y1 = batch.valueAt(offset + 3)
+          val x2 = batch.valueAt(offset + 4)
+          val y2 = batch.valueAt(offset + 5)
+          // for each GT boxes, try to find a matched one with current predict
+          val matchedGt = gtBbox.find(gt => {
+            if (gt.getIOURate(x1, y1, x2, y2) >= iou && label == gt.label && gt.canOccupy) {
+              // if overlap is large enough && the label matches && the bbox is not occupied
+              gt.occupy()
+              true
+            } else {
+              false
+            }
+          })
+          predictByClass(label).append((score, matchedGt.isDefined))
+          offset += 6
+        }
+      }
+      // if the image id does not have ground truth, do nothing
+    }
+    new MAPValidationResult(classes, -1, predictByClass, gtCntByClass)
+  }
+
+  override protected def format(): String = s"MAPObjectDetection"
+}
+
 /**
- * Caculate the percentage that target in output's top5 probability indexes
+ * Calculate the percentage that target in output's top5 probability indexes
  */
 class Top5Accuracy[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
