@@ -21,6 +21,7 @@ import java.io.File
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.{ModuleLoader, ModulePersister}
+import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 
@@ -34,6 +35,10 @@ private[zoo] abstract class ModuleSerializationTest
   val postFix = "analytics-zoo"
 
   def test(): Unit
+
+  protected def createTmpDir() = {
+    ZooSpecHelper.createTmpDir()
+  }
 
   protected def runSerializationTest(
       module: AbstractModule[_, _, Float],
