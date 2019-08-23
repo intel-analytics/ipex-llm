@@ -105,3 +105,20 @@ class AdamWeightDecay(OptimMethod, ZooKerasCreator):
             epsilon,
             weight_decay)
         self.bigdl_type = bigdl_type
+
+
+class PolyEpochDecay(ZooKerasCreator):
+    """
+    A learning rate decay policy, where the effective learning rate
+    follows a polynomial decay, to be zero by the max_epochs.
+    Calculation: init_lr * (1 - epoch/max_iteration) ^ (power)
+
+
+    :param power: The coefficient of decay.
+    :param max_epochs: The maximum number of epochs when lr becomes zero.
+
+    >>> poly = PolyEpochDecay(0.5, 5)
+    creating: createZooKerasPolyEpochDecay
+    """
+    def __init__(self, power, max_epochs, bigdl_type="float"):
+            JavaValue.__init__(self, None, bigdl_type, power, max_epochs)
