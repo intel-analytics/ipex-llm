@@ -66,6 +66,7 @@ class OptimizersSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Default(),
       Plateau("Loss", 0.1f, 1, "min", 0.01f, 0, 1e-15f),
       Poly(0.1, 50),
+      PolyEpochDecay(3.0, 5),
       SequentialSchedule(5).add(Warmup(1e-4), 10).add(Default(), 40)
     ).foreach { schedule =>
       val classifier = NNClassifier(model, criterion, Array(6))
