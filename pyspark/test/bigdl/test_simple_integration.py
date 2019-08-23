@@ -546,12 +546,14 @@ class TestSimple():
 
         predict_class = model.predict_class(predict_data)
         if isinstance(predict_data, RDD):
-            predict_labels = model.get_sample_label(predict_class).take(6)
+            output_samples = predict_class.take(6)
+            for i in range(0, total_length):
+                assert model.get_sample_label(output_samples[i]) == 1
         else:
             predict_labels = predict_class.take(6)
+            for i in range(0, total_length):
+                assert predict_labels[i] == 1
 
-        for i in range(0, total_length):
-            assert predict_labels[i] == 1
 
     def test_predict_image(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "resources")

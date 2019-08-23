@@ -202,6 +202,7 @@ class ArraySample[T: ClassTag] private[bigdl](
       null
     }
   }
+
 /*
   def setLabel(labelData: Array[T])(implicit ev: TensorNumeric[T]): Sample[T] = {
     ev.arraycopy(labelData, 0, data, featureSize.length, labelData.length)
