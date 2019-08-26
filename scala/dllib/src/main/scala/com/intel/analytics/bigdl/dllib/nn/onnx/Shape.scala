@@ -49,4 +49,3 @@ object Shape {
     new Shape[T]()
   }
 }
-
