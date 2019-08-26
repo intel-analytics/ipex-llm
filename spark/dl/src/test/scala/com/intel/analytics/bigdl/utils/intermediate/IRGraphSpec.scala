@@ -16,11 +16,12 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
+import com.intel.analytics.bigdl.example.languagemodel.PTBModel
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.mkldnn.{Equivalent, HeapData}
+import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.{Module, nn, utils}
-import com.intel.analytics.bigdl.nn.{Graph, Reshape, StaticGraph}
+import com.intel.analytics.bigdl.nn.{Graph, Reshape, StaticGraph, TimeDistributed}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils._
 
@@ -154,5 +155,91 @@ class IRGraphSpec extends BigDLSpecHelper {
       gradInputBlas.get[Tensor[Float]](1).get, 1e-4) should be (true)
     Equivalent.nearequals(gradInputDnn.get[Tensor[Float]](2).get,
       gradInputBlas.get[Tensor[Float]](2).get, 1e-4) should be (true)
+  }
+
+  "PTB LSTM model running with mkldnn" should "work correctly" in {
+    Engine.init(1, 1, true)
+    RandomGenerator.RNG.setSeed(1000)
+
+    val vocabSize = 10001
+    val hiddenSize = 256
+    val numLayers = 1
+    val batchSize = 8
+    val seqLength = 16
+    var i = 2
+
+    Engine.setEngineType(MklBlas)
+    val blas = PTBModel.lstm(
+      inputSize = vocabSize,
+      hiddenSize = hiddenSize,
+      outputSize = vocabSize,
+      numLayers = numLayers,
+      keepProb = 1.0F)
+
+    Engine.setEngineType(MklDnn)
+    val dnn = blas.cloneModule().asInstanceOf[StaticGraph[Float]].toIRgraph()
+
+    val input = Tensor[Float](batchSize, seqLength).apply1(n => {
+      i += 1
+      i
+    })
+
+    val outBlas = blas.forward(input).toTensor[Float]
+    val outDnn = dnn.forward(input).toTensor[Float]
+
+    Equivalent.nearequals(outBlas, outDnn, 1e-6) should be(true)
+
+
+    val gradOutput = Tensor[Float](outBlas.size()).rand()
+
+    val grad1 = blas.backward(input, gradOutput).toTensor[Float]
+    val grad2 = dnn.backward(input, gradOutput).toTensor[Float]
+
+    Equivalent.nearequals(grad1, grad2, 1e-6) should be(true)
+  }
+
+  "timedistributed with softmax" should "work correctly" in {
+    Engine.setEngineType(MklBlas)
+    val input = nn.Input[Float]()
+    val softMax = nn.SoftMax[Float]()
+    val timeDistri = nn.TimeDistributed[Float](softMax).inputs(input)
+    val blas = nn.Graph(input, timeDistri).evaluate()
+
+    Engine.setEngineType(MklDnn)
+    val dnn = blas.cloneModule()
+      .asInstanceOf[StaticGraph[Float]]
+      .setInputFormats(Seq(Memory.Format.ntc))
+      .setOutputFormats(Seq(Memory.Format.ntc))
+      .toIRgraph()
+      .evaluate()
+
+    val data = Tensor[Float](2, 255, 21)
+
+    val outBlas = blas.forward(data).toTensor[Float]
+    val outDnn = dnn.forward(data).toTensor[Float]
+
+    Equivalent.nearequals(outBlas, outDnn, 1e-6) should be (true)
+  }
+
+  "convert softmax" should "work correctly" in {
+    Engine.setEngineType(MklBlas)
+    val input = nn.Input[Float]()
+    val softMax = nn.SoftMax[Float]().inputs(input)
+    val blas = nn.Graph(input, softMax).evaluate()
+
+    Engine.setEngineType(MklDnn)
+    val dnn = blas.cloneModule()
+      .asInstanceOf[StaticGraph[Float]]
+      .setInputFormats(Seq(Memory.Format.nc))
+      .setOutputFormats(Seq(Memory.Format.nc))
+      .toIRgraph()
+      .evaluate()
+
+    val data = Tensor[Float](255, 21)
+
+    val outBlas = blas.forward(data).toTensor[Float]
+    val outDnn = dnn.forward(data).toTensor[Float]
+
+    Equivalent.nearequals(outBlas, outDnn, 1e-6) should be (true)
   }
 }

@@ -77,6 +77,8 @@ class Recurrent[T : ClassTag](
   private var outputBuffers: ArrayBuffer[Tensor[T]] = ArrayBuffer(Tensor())
   private var minLength: Int = 0
 
+  def getCell(): Cell[T] = topology
+
   /**
    *
    *  modules: -- preTopology

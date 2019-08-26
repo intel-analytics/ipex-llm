@@ -19,12 +19,13 @@ import breeze.linalg.*
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule, DataType}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.zookeeper.ZooDefs.Ids
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -60,37 +61,91 @@ class Transformer[T: ClassTag](
    val ffnDropout: Float,
    val paddingValue: Double = 0,
    val withShareWeightsLinear: Boolean = false,
-   val transformerType: TransformerType = LanguageModel)
-  (implicit ev: TensorNumeric[T]) extends BaseModule[T] {
+   val transformerType: TransformerType = LanguageModel,
+   val beamSearch: SequenceBeamSearch[T] = null)
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] {
 
-  private val linearSharedWeigths = TimeDistributed(
-    new Linear(inputSize = hiddenSize, outputSize = vocabSize, withBias = false))
+  // for translation layers
+  private[bigdl] var decoderStack: Module[T] = null
+  private[bigdl] var encoderStack: Module[T] = null
+  private[bigdl] var predictModel: Module[T] = null
+  private var linearSharedWeigths : Module[T] = null
+  // for symbols
+  private val rangeBuffer = Tensor[T]()
+  private val timeBuffer = Tensor[T]()
+  private var decoderBiasBuffer = Tensor[T]()
 
-  override def buildModel(): Module[T] = {
+  private val embeddingLayer = Sequential[T]().add(
+    LookupTable[T](vocabSize, hiddenSize, paddingValue = paddingValue,
+      maskZero = true).setName("embedding")).add(MulConstant(math.sqrt(hiddenSize)))
+
+  private[bigdl] var model : Module[T] = {
     transformerType match {
       case LanguageModel => buildLM()
       case Translation => buildTranslation()
     }
   }
 
+  private def createDecoder(): Module[T] = {
+    val decoderInputNode = Input()
+    val decoderSelfAttentionBiasNode = Input()
+    val encoderOutputNode = Input()
+    val encoderAttentionBiasNode = Input()
+
+    Graph(Array(decoderInputNode, decoderSelfAttentionBiasNode,
+      encoderOutputNode, encoderAttentionBiasNode),
+      Array(block(numHiddenlayers, decoderInputNode, decoderSelfAttentionBiasNode,
+        encoderOutputNode, encoderAttentionBiasNode, blockType = "decoder")))
+  }
+
+  private def createEncoder(): Module[T] = {
+    val encoderInputNode = Input()
+    val encoderAttentionBiasNode = Input()
+    Graph(Array(encoderInputNode, encoderAttentionBiasNode),
+      Array(block(numHiddenlayers, encoderInputNode, encoderAttentionBiasNode,
+        blockType = "encoder")))
+  }
+
   private def buildTranslation(): Module[T] = {
+    // init layers
+    val mask = new PaddingMask()
+    if (linearSharedWeigths == null) {
+      linearSharedWeigths = TimeDistributed(new Linear(
+        inputSize = hiddenSize, outputSize = vocabSize, withBias = false)).asInstanceOf[Module[T]]
+    }
+    if (decoderStack == null) decoderStack = createDecoder()
+    if (encoderStack == null) encoderStack = createEncoder()
+
     // input: int tensor with shape [batch_size, input_length].
     val inputNode = Input()
     // target: int tensor with shape [batch_size, target_length].
     val targetNode = Input()
-    val attentionBias = new PaddingMask().inputs(inputNode)
-
+    val attentionBias = mask.inputs(inputNode)
     val join = JoinTable(1, -1).inputs(inputNode, targetNode)
-    val constantValue = math.sqrt(hiddenSize)
-    val embedding = MulConstant(constantValue).inputs(
-      LookupTable[T](vocabSize, hiddenSize, paddingValue = paddingValue,
-        maskZero = true).setName("embedding").inputs(join))
-    val split = new SplitTensor(1, 2).inputs(embedding)
+    val embeddingForTrain = embeddingLayer.inputs(join)
+    val split = new SplitTensor(1, 2).inputs(embeddingForTrain)
     val embeddingInput = SelectTable(1).inputs(split)
     val embeddingOutput = SelectTable(2).inputs(split)
 
-    val encoderOutput = encode(embeddingInput, attentionBias)
-    val outputNode = decode(embeddingOutput, encoderOutput, attentionBias)
+    // create encode
+    val embeddingNode = Input()
+    val paddingNode = Input()
+    val encoderGraph = Graph(Array(embeddingNode, paddingNode),
+      encode(embeddingNode, paddingNode))
+
+    // create predict model
+    val predictNode = Input()
+    val attentionMask = mask.inputs(predictNode)
+    val embeddingForPredict = embeddingLayer.inputs(predictNode)
+    predictModel = Graph(predictNode,
+      Array(encoderGraph.inputs(embeddingForPredict, attentionMask), attentionMask))
+
+    // init beam search
+    if (beamSearch != null) beamSearch.setLogitFn(symbols)
+
+    // create training model
+    val outputNode = decode(embeddingOutput,
+      encoderGraph.inputs(embeddingInput, attentionBias), attentionBias)
     Graph(Array(inputNode, targetNode), outputNode)
   }
 
@@ -100,22 +155,129 @@ class Transformer[T: ClassTag](
     val embeddingInput = MulConstant(constantValue).inputs(
       LookupTable[T](vocabSize, hiddenSize, paddingValue = paddingValue,
         maskZero = true).setName("embedding").inputs(inputNode))
-    val outputNode = decode(embeddingInput)
+
+    val decoderInput = new PositionEncodeWithShift().inputs(embeddingInput)
+    val decoderSelfAttentionBias = new SelfAttentionMask().inputs(embeddingInput)
+    val decoderInputDrop = Dropout(1- embeddingDropout).inputs(decoderInput)
+
+    val outputNode = block(numHiddenlayers, decoderInputDrop,
+      decoderSelfAttentionBias, blockType = "decode")
     Graph(inputNode, outputNode)
   }
 
-  override def updateOutput(input: Activity): Activity = {
-    output = model.updateOutput(input)
-
-    // sharing weight between embedding and linear
+  private def updateOutputLM(input: Tensor[T]): Tensor[T] = {
+    output = model.forward(input)
     if (withShareWeightsLinear) {
-      val embeddingLayer = model.apply("embedding").get
+      shareWeights(true)
+      output = linearSharedWeigths.updateOutput(model.output.toTensor[T])
+    }
+    output.toTensor[T]
+  }
+
+  private def shareWeights(share: Boolean): Unit = {
+    if (share) {
       val embeddingParams = embeddingLayer.getParameters()
       val linearParams = linearSharedWeigths.getParameters()
       linearParams._1.copy(embeddingParams._1)
-      output = linearSharedWeigths.updateOutput(model.output.toTensor[T])
+    }
+  }
+
+  /**
+   * Pass this function to beam search
+   * @param Ids
+   * @param i index
+   * @param maxDecodeLength max decode length
+   * @param encoder_outputs output from encoder
+   * @param encoder_decoder_attention_bias attention bias
+   * @param cacheValue k and v values for attention layers
+   * @return
+   */
+  def symbols(Ids: Tensor[T], i: Int, maxDecodeLength: Int,
+              encoder_outputs: Tensor[T], encoder_decoder_attention_bias: Tensor[T],
+              cacheValue: Table): (Tensor[T], Table) = {
+    val cache = T() // pass to attention layer
+    for(m <- 1 to hiddenSize) {
+      if (cacheValue.contains(s"layer_${m}_k")) {
+        cache.update(s"decoder_self_attention_${m - 1}/self_attention_k",
+          cacheValue(s"layer_${m}_k"))
+        cache.update(s"decoder_self_attention_${m - 1}/self_attention_v",
+          cacheValue(s"layer_${m}_v"))
+      }
+    }
+
+    val length = maxDecodeLength + 1
+    TransformerOperation.initRangeTensor(length, rangeBuffer)
+    timeBuffer.resize(length, hiddenSize)
+    TransformerOperation.getPositionEncode(length, hiddenSize,
+      rangeBuffer = rangeBuffer, outBuffer = timeBuffer)
+    val timeSignal = TransformerOperation.getPositionEncode(length, hiddenSize,
+      rangeBuffer = rangeBuffer, outBuffer = timeBuffer)
+
+    // size (1, 1, maxDecodeLength, maxDecodeLength)
+    if (decoderBiasBuffer == null
+      || decoderBiasBuffer.nElement() != maxDecodeLength * maxDecodeLength) {
+      decoderBiasBuffer = Tensor[T](1, 1, maxDecodeLength, maxDecodeLength)
+    }
+    TransformerOperation.attentionBiasLowerTriangle(maxDecodeLength, decoderBiasBuffer)
+
+    val decoder_input = Ids.narrow(2, i + 1, 1)
+    val decoder_input_embedding = embeddingLayer.forward(decoder_input).toTensor[T]
+
+    val timeSize = timeSignal.size()
+    val timingTemp = timeSignal.select(1, i + 1)
+    val decoder_input_add = decoder_input_embedding.add(timingTemp)
+
+    val self_attention_bias = decoderBiasBuffer.select(3, i + 1)
+      .select(3, i + 1).resize(Array(1, 1, 1, i + 1))
+
+    val decoder_outputs = decoderStack.forward(T(decoder_input_add,
+      T(self_attention_bias, cache), encoder_outputs, encoder_decoder_attention_bias)).toTensor[T]
+
+    shareWeights(withShareWeightsLinear)
+    val logits = this.linearSharedWeigths.forward(decoder_outputs).toTensor[T]
+
+    for(m <- 1 to hiddenSize) {
+      if (cacheValue.contains(s"layer_${m}_k")) {
+        cacheValue.update(s"layer_${m}_k",
+          cache(s"decoder_self_attention_${m - 1}/self_attention_k"))
+        cacheValue.update(s"layer_${m}_v",
+          cache(s"decoder_self_attention_${m - 1}/self_attention_v"))
+      }
+    }
+
+    (logits.squeeze(2), cacheValue)
+  }
+
+  private def updateOutputTranslation(input: Activity): Activity = {
+    if (input.isTensor) {
+      require(!this.isTraining(),
+        "Input for Transformer should be tensor when doing translation prediction")
+      // inference case, first tensor is encoder_outputs,  another is attention_bias
+      val res = predictModel.forward(input).toTable
+      beamSearch.forward(T(res[Tensor[T]](1), res[Tensor[T]](2)))
+      // output for beamsearch is table, and first tensor is decoder_ids, another is scores
+      val decodedIds = beamSearch.output.toTable.apply[Tensor[T]](1).select(2, 1)
+      val scores = beamSearch.output.toTable.apply[Tensor[T]](2).select(2, 1)
+      output = T(decodedIds.narrow(2, 2, decodedIds.size(2) - 1), scores)
+    } else {
+      require(input.toTable.length() == 2, s"Input should be two tensors when doing " +
+        s"translation training, but get ${input.toTable.length()}")
+      // training case
+      output = model.forward(input)
+      if (withShareWeightsLinear) {
+        shareWeights(true)
+        output = linearSharedWeigths.updateOutput(model.output.toTensor[T])
+      }
     }
     output
+  }
+
+  override def updateOutput(input: Activity): Activity = {
+    if (transformerType == Translation) {
+      updateOutputTranslation(input)
+    } else {
+      updateOutputLM(input.toTensor[T])
+    }
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
@@ -126,14 +288,17 @@ class Transformer[T: ClassTag](
     gradInput
   }
 
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    model.accGradParameters(input, gradOutput)
+  }
+
   private[nn] def encode(inputs: ModuleNode[T], attentionBias: ModuleNode[T]): ModuleNode[T] = {
     // Prepare inputs to the layer stack by adding positional encodings and
     // applying dropout.
     val position = new PositionEncode().inputs(inputs)
     val encoderInput = CAddTable().inputs(inputs, position)
     val encoderInputDrop = Dropout(1- embeddingDropout).inputs(encoderInput)
-
-    block(numHiddenlayers, encoderInputDrop, attentionBias, blockType = "encode")
+    encoderStack.inputs(encoderInputDrop, attentionBias)
   }
 
   private[nn] def decode(targets: ModuleNode[T],
@@ -141,10 +306,10 @@ class Transformer[T: ClassTag](
                      attentionBias: ModuleNode[T] = null): ModuleNode[T] = {
     val decoderInput = new PositionEncodeWithShift().inputs(targets)
     val decoderSelfAttentionBias = new SelfAttentionMask().inputs(targets)
-
     val decoderInputDrop = Dropout(1- embeddingDropout).inputs(decoderInput)
-    block(numHiddenlayers, decoderInputDrop,
-      decoderSelfAttentionBias, encoderOutput, attentionBias, blockType = "decode")
+
+    decoderStack.inputs(Array(decoderInputDrop,
+      decoderSelfAttentionBias, encoderOutput, attentionBias))
   }
 
   private[nn] def block(numLayers: Int,
@@ -214,7 +379,40 @@ class Transformer[T: ClassTag](
 
   override def clearState(): this.type = {
     if (withShareWeightsLinear) linearSharedWeigths.clearState()
-    super.clearState()
+    model.clearState()
+    this
+  }
+
+  override def training(): this.type = {
+    train = true
+    model.training()
+    this
+  }
+
+  override def evaluate(): this.type = {
+    train = false
+    model.evaluate()
+    this
+  }
+
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    model.getExtraParameter()
+  }
+
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    model.getTimes()
+  }
+
+  override def resetTimes(): Unit = {
+    model.resetTimes()
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    model.parameters()
+  }
+
+  override def getParametersTable(): Table = {
+    model.getParametersTable()
   }
 }
 
@@ -230,12 +428,13 @@ object Transformer extends ModuleSerializable {
      ffnDropout: Float,
      paddingValue: Double = 0,
      withShareWeightsLinear: Boolean = false,
-     transformerType: TransformerType = LanguageModel)
+     transformerType: TransformerType = LanguageModel,
+     beamSearch: SequenceBeamSearch[T] = null)
    (implicit ev: TensorNumeric[T]): Transformer[T] = {
     new Transformer(vocabSize, hiddenSize, numHeads,
       filterSize, numHiddenlayers,
       embeddingDropout, attentionDropout, ffnDropout, paddingValue,
-      withShareWeightsLinear = withShareWeightsLinear, transformerType = transformerType)
+      withShareWeightsLinear, transformerType = transformerType, beamSearch)
   }
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
@@ -278,6 +477,10 @@ object Transformer extends ModuleSerializable {
       .getAttributeValue(context, attrMap.get("ffnDropout"))
       .asInstanceOf[Float]
 
+    val beamSearch = DataConverter
+      .getAttributeValue(context, attrMap.get("beamSearch"))
+      .asInstanceOf[Module[T]]
+
     val paddingValue = DataConverter
       .getAttributeValue(context, attrMap.get("paddingValue"))
       .asInstanceOf[Double]
@@ -299,7 +502,7 @@ object Transformer extends ModuleSerializable {
 
     val transformer = Transformer(vocabSize, hiddenSize, numHeads, filterSize,
       numHiddenlayers, embeddingDropout, attentionDropout, ffnDropout, paddingValue,
-      withShareWeightsLinear = withShareWeightsLinear, transformerType)
+      withShareWeightsLinear, transformerType, beamSearch.asInstanceOf[SequenceBeamSearch[T]])
 
     transformer.model = model
     transformer
@@ -377,6 +580,11 @@ object Transformer extends ModuleSerializable {
     DataConverter.setAttributeValue(context, transformerTypeBuilder,
       tag, universe.typeOf[Int])
     transformerBuilder.putAttr("transformerType", transformerTypeBuilder.build)
+
+    val beamSearchBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, beamSearchBuilder,
+      transformer.beamSearch, universe.typeOf[Module[_]])
+    transformerBuilder.putAttr("beamSearch", beamSearchBuilder.build)
   }
 }
 
@@ -394,18 +602,17 @@ private[nn] class PositionEncode[T: ClassTag](implicit ev: TensorNumeric[T])
   @transient private var rangeBuffer : Tensor[T] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!output.isEmpty && output.nElement() == input.nElement()) return output
     val length = input.size(2)
     val channel = input.size(3)
 
-    if (rangeBuffer == null) {
-      rangeBuffer = Tensor[T]()
-      TransformerOperation.initRangeTensor(length, rangeBuffer)
-    }
+    if (!output.isEmpty && output.nElement() == length * channel) return output
+
+    if (rangeBuffer == null) rangeBuffer = Tensor[T]()
+    TransformerOperation.initRangeTensor(length, rangeBuffer)
 
     output.resize(length, channel)
-    TransformerOperation.addTimingSignal1D(length, channel,
-      rangeBuffer = rangeBuffer, timeBuffer = output)
+    TransformerOperation.getPositionEncode(length, channel,
+      rangeBuffer = rangeBuffer, outBuffer = output)
     output
   }
 
@@ -429,15 +636,16 @@ private[nn] class PositionEncodeWithShift[T: ClassTag](implicit ev: TensorNumeri
     val length = output.size(2)
     val channel = output.size(3)
 
-    if (rangeBuffer == null) {
-      rangeBuffer = Tensor[T]()
+    if (rangeBuffer == null) rangeBuffer = Tensor[T]()
+    if (timeBuffer == null) timeBuffer = Tensor[T]()
+
+    if (timeBuffer.nElement() != length * channel) {
       TransformerOperation.initRangeTensor(length, rangeBuffer)
-    }
-    if (timeBuffer == null) {
       timeBuffer = Tensor[T]().resize(length, channel)
-      TransformerOperation.addTimingSignal1D(length, channel,
-        rangeBuffer = rangeBuffer, timeBuffer = timeBuffer)
+      TransformerOperation.getPositionEncode(length, channel,
+        rangeBuffer = rangeBuffer, outBuffer = timeBuffer)
     }
+
     val batchSize = input.size(1)
     var i = 1
     while (i <= batchSize) {

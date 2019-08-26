@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.tensor
 
+import java.util.Comparator
+
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -25,6 +27,7 @@ import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.collection.JavaConverters._
 
 @SerialVersionUID(5876322619614900645L)
 private[tensor] class DenseTensor[@specialized T: ClassTag](
@@ -962,7 +965,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     } else if (DenseTensor.canFastBroadcast(this, x)) {
       // recursive add
       var i = 0
-      while(i < this.size(1)) {
+      while (i < this.size(1)) {
         this.select(1, i + 1).add(x)
         i += 1
       }
@@ -1016,7 +1019,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         this.storage().array(), this.storageOffset() - 1)
     } else {
       val func = new TensorFunc6[T] {
-        override def apply (data: Array[T], offset: Int, data1: Array[T],
+        override def apply(data: Array[T], offset: Int, data1: Array[T],
           offset1: Int, data2: Array[T], offset2: Int): Unit = {
           data(offset1) = ev.plus(data1(offset1), data2(offset2))
         }
@@ -1028,7 +1031,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
   // Puts the result of x + value * y in current tensor
   override def add(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] =
-  DenseTensorMath.cadd(this, x, value, y)
+    DenseTensorMath.cadd(this, x, value, y)
 
   override def add(value: T): Tensor[T] = {
     if (this.isContiguous()) {
@@ -1053,8 +1056,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       }
       else {
         val func = new TensorFunc4[T] {
-          override def apply (data1: Array[T], offset1: Int,
-                              data2: Array[T], offset2: Int): Unit = {
+          override def apply(data1: Array[T], offset1: Int,
+            data2: Array[T], offset2: Int): Unit = {
             data1(offset1) = ev.minus(data1(offset1), data2(offset2))
           }
         }
@@ -1063,7 +1066,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     } else if (DenseTensor.canFastBroadcast(this, x)) {
       // recursive add
       var i = 0
-      while(i < this.size(1)) {
+      while (i < this.size(1)) {
         this.select(1, i + 1).sub(x)
         i += 1
       }
@@ -1717,24 +1720,57 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     val indicesTensor = if (indices == null) Tensor[T]() else indices
     indicesTensor.resize(topKSize)
 
+    @inline
+    def compare(a: T, b: T): Boolean = ev.isGreater(b, a)  ^ !increase
+
     DenseTensorDimApply.dimApply3[T](this, resultTensor, indicesTensor, selectDim,
       (tdata, toffset, tstride, tsize, vdata, voffset, vstride, vsize, idata,
         ioffset, istride, isize) => {
+        val set = new java.util.TreeSet[(T, Int)](new Comparator[(T, Int)] {
+          override def compare(o1: (T, Int), o2: (T, Int)): Int = {
+            val ret = if (ev.isGreaterEq(o1._1, o2._1)) {
+              if (o1._2 == o2._2) {
+                0
+              } else {
+                1
+              }
+            } else {
+              -1
+            }
+
+            if (increase) {
+              -ret
+            } else {
+              ret
+            }
+
+          }
+        })
+
         var i = 0
         while (i < tsize) {
-          tmpResult(i) = (tdata(toffset + i * tstride), i + 1)
+          val v = tdata(toffset + i * tstride)
+          if (set.size() < k) {
+            set.add((v, i + 1))
+          } else if (compare(v, set.first()._1)) {
+            set.remove(set.first())
+            set.add((v, i + 1))
+          }
+
           i += 1
         }
-        val sorted = tmpResult.sortWith((l, r) =>
-          if (increase) ev.isGreater(r._1, l._1) else ev.isGreater(l._1, r._1))
+
+        val sorted = set.descendingIterator().asScala
+
         i = 0
         while (i < k) {
+          val current = sorted.next()
           if (sortedResult) {
-            vdata(voffset + i * vstride) = sorted(i)._1
-            idata(ioffset + i * istride) = ev.fromType(sorted(i)._2)
+            vdata(voffset + i * vstride) = current._1
+            idata(ioffset + i * istride) = ev.fromType(current._2)
           } else {
-            vdata(voffset + (k - i - 1) * vstride) = sorted(i)._1
-            idata(ioffset + (k - i - 1) * istride) = ev.fromType(sorted(i)._2)
+            vdata(voffset + (k - i - 1) * vstride) = current._1
+            idata(ioffset + (k - i - 1) * istride) = ev.fromType(current._2)
           }
           i += 1
         }
