@@ -545,11 +545,9 @@ class TestSimple():
             assert_allclose(p_with_batch[i], ground_label[i], atol=1e-6, rtol=0)
 
         predict_class = model.predict_class(predict_data)
-        if isinstance(predict_data, RDD):
-            output_samples = model.get_sample_label(predict_class)
-            #output_samples = predict_class.take(6)
-            for i in range(0, total_length):
-                assert output_samples[i] == 1
+        if isinstance(predict_class, RDD):
+            for sample in predict_class:
+                assert sample.label == 1
         else:
             predict_labels = predict_class.take(6)
             for i in range(0, total_length):

@@ -2009,7 +2009,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val tensorRDD = model.predictClass(sampleRdd).map(toPySample(_))
     new JavaRDD[Sample](tensorRDD)
   }
-
+/*
   def getSampleLabel(dataRdd: JavaRDD[Sample]): JList[Int] = {
     val sampleRdd = toJSample(dataRdd)
     val tensorRDD = sampleRdd.map(sample => {
@@ -2018,7 +2018,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     })
     tensorRDD.toArray().toList.asJava
   }
-
+*/
   def modelForward(model: AbstractModule[Activity, Activity, T],
     input: JList[JTensor],
     inputIsTable: Boolean): JList[JTensor] = {
