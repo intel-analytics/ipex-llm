@@ -59,7 +59,8 @@ extends Operation[Table, Tensor[T], T] {
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
-    require(input.length() == 3)
+    require(input.length() == 3, "Input should be a table contains 3 tensors, actually has "
+      + input.toTable.length())
     internalModel.forward(input)
     output = internalModel.output.asInstanceOf[Tensor[T]]
     output
