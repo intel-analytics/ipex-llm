@@ -398,6 +398,8 @@ object DataConverter extends DataConverter{
             attrValue.setShape(shape)
             ShapeConverter.getAttributeValue(context, attrValue.build).asInstanceOf[BigDLShape]
           }).toArray
+
+        case _ => throw new UnsupportedOperationException("Unsupported data type: " + listType)
       }
       arr
     }
