@@ -64,7 +64,10 @@ class GatewayWrapper(SingletonMixin):
 
 
 class JavaCreator(SingletonMixin):
-    __creator_class=["com.intel.analytics.bigdl.python.api.PythonBigDLKeras"]
+    __creator_class=[
+        "com.intel.analytics.bigdl.python.api.PythonBigDLKeras",
+        "com.intel.analytics.bigdl.python.api.PythonBigDLOnnx"
+    ]
 
     @classmethod
     def add_creator_class(cls, jinvoker):
