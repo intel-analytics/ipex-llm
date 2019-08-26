@@ -546,9 +546,10 @@ class TestSimple():
 
         predict_class = model.predict_class(predict_data)
         if isinstance(predict_data, RDD):
-            output_samples = predict_class.take(6)
+            output_samples = model.get_sample_label(predict_class)
+            #output_samples = predict_class.take(6)
             for i in range(0, total_length):
-                assert model.get_sample_label(output_samples[i]) == 1
+                assert output_samples[i] == 1
         else:
             predict_labels = predict_class.take(6)
             for i in range(0, total_length):
