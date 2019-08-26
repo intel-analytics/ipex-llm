@@ -1779,6 +1779,11 @@ class LSTMPeephole(Layer):
         super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
 
 
+class Gemm(Layer):
+    def __init__(self, alpha=1.0, beta=1.0, trans_a=False, trans_b=False, bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
+
+
 class GRU(Layer):
     '''
     Gated Recurrent Units architecture.
