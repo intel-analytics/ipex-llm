@@ -49,9 +49,13 @@ extends Operation[Table, Tensor[T], T] {
     val tensorA = Input()
     val tensorB = Input()
     val tensorC = Input()
-    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
-    val add = CAddTable().inputs(Array(mul, tensorC))
-    Graph(Array(tensorA, tensorB, tensorC), add)
+    val alphaMul = MulConstant(scalar = alpha, inplace = true).inputs(
+      BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
+    )
+    val betaAdd = CAddTable().inputs(Array(alphaMul,
+      MulConstant(scalar = beta, inplace = true).inputs(tensorC)))
+
+    Graph(Array(tensorA, tensorB, tensorC), betaAdd)
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
@@ -74,5 +78,4 @@ object Gemm {
   )(implicit ev: TensorNumeric[T]): Gemm[T] = {
     new Gemm[T](alpha, beta, transA, transB)
   }
-
 }
