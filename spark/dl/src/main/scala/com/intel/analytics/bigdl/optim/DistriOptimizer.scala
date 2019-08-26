@@ -252,11 +252,18 @@ object DistriOptimizer extends AbstractOptimizer {
               val input = miniBatchBuffer(i).getInput()
               val target = miniBatchBuffer(i).getTarget()
 
-              if (Engine.getEngineType() == MklBlas || localModel.isInstanceOf[IRGraph[T]]) {
+              if (Engine.getEngineType() == MklBlas) {
                 val output = localModel.forward(input)
                 lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
                 val errors = localCriterion.backward(output, target)
                 localModel.backward(input, errors)
+              } else if (localModel.isInstanceOf[IRGraph[T]]) {
+                val output = localModel.forward(input)
+                Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+                  lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
+                  localCriterion.backward(output, target)
+                }))
+                localModel.backward(input, localCriterion.gradInput)
               } else {
                 Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
                   val output = localModel.forward(input)

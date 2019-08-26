@@ -744,5 +744,15 @@ class TestSimple():
         count = image_frame.get_image().count()
         assert count == 1
 
+    def test_set_input_output_format(self):
+        input1 = Input()
+        lstm1 = Recurrent().add(LSTM(128, 128))(input1)
+        fc1 = Linear(128, 10)
+        t1 = TimeDistributed(fc1)(lstm1)
+        model = Model(inputs=input1, outputs=t1)
+        model.set_input_formats([4])
+        model.set_output_formats([27])
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
