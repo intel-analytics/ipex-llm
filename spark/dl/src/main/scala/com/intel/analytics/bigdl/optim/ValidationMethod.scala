@@ -335,7 +335,7 @@ class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
       posCnt(intClazz) += 1
     }
 
-    val confidenceArr = new Array[ArrayBuffer[(Float, Boolean)]](classes)
+    val confidenceArr = (0 until classes).map(_ => new ArrayBuffer[(Float, Boolean)]).toArray
     if (_output.nDimension() == 2) {
       (1 to _output.size(1)).foreach(i => {
         val row = _output.select(1, i)

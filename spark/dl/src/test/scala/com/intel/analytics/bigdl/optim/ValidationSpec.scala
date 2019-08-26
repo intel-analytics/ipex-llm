@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
+import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ValidationSpec extends FlatSpec with Matchers {
@@ -53,34 +54,49 @@ class ValidationSpec extends FlatSpec with Matchers {
       Array(3f, 5f, 0f, 1f, 9.1f), // 3
       Array(1f, 3f, 3f, 2f, 5f), // 4
       Array(1f, 0f, 4f, 9f, 7f), // 5
-      Array(6f, 4f, 1f, 8f, 2f), // 6
+      Array(6f, 4f, 1f, 8f, 2.1f), // 6
       Array(3f, 5f, 0f, 3f, 9f), // 7
       Array(6f, 4f, 1f, 7f, 2.1f)  // 8
     )
     val gt = Array(
-      2f, // 0
-      1f, // 1
-      5f, // 2
-      5f, // 3
-      4f, // 4
-      4f, // 5
-      4f, // 6
-      3f, // 7
-      4f  // 8
+      1f, // 0
+      0f, // 1
+      4f, // 2
+      4f, // 3
+      3f, // 4
+      3f, // 5
+      3f, // 6
+      2f, // 7
+      3f  // 8
     )
-    val result = new MAPValidationResult(5, 8, confidence, gt)
-    val posCnt = new Array[Int](6)
-    result.calculateClassPositiveCnt(posCnt)
-    posCnt should be (Array(0, 1, 1, 1, 4, 2))
-    val ap1 = result.calculateClassAP(posCnt, 1)
+
+    def mkArray(data: (Float, Boolean)*): ArrayBuffer[(Float, Boolean)] = {
+      val ret = new ArrayBuffer[(Float, Boolean)]()
+      ret.appendAll(data)
+      ret
+    }
+    val result = new MAPValidationResult(5, 8,
+      Array(
+        mkArray((1f, false), (0f, true), (6f, false), (3f, false), (1f, false), (1f, false), (6f,
+          false), (3f, false), (6f, false)),
+        mkArray((2f, true), (0f, false), (4f, false), (5f, false), (3f, false), (0f, false), (4f,
+          false), (5f, false), (4f, false)),
+        mkArray((3f, false), (4f, false), (1f, false), (0f, false), (3f, false), (4f, false),
+          (1f, false), (0f, true), (1f, false)),
+        mkArray((4f, false), (6f, false), (5f, false), (1f, false), (2f, true), (9f, true), (8f,
+          true), (3f, false), (7f, true)),
+        mkArray((5f, false), (7f, false), (2f, true), (9.1f, true), (5f, false), (7f, false),
+          (2.1f, false), (9f, false), (2.1f, false))
+      ), Array(1, 1, 1, 4, 2))
+    val ap1 = result.calculateClassAP(0)
     ap1 should be (0f)
-    val ap2 = result.calculateClassAP(posCnt, 2)
+    val ap2 = result.calculateClassAP(1)
     ap2 should be (1f/7f)
-    val ap3 = result.calculateClassAP(posCnt, 3)
+    val ap3 = result.calculateClassAP(2)
     ap3 should be (0f)
-    val ap4 = result.calculateClassAP(posCnt, 4)
+    val ap4 = result.calculateClassAP(3)
     ap4 should be (0.9f)
-    val ap5 = result.calculateClassAP(posCnt, 5)
+    val ap5 = result.calculateClassAP(4)
     ap5 should be (2f/3)
 
     result.result()._1 should be(0.341904762f +- 1e-5f)
@@ -94,27 +110,27 @@ class ValidationSpec extends FlatSpec with Matchers {
         T(3f, 5f, 0f, 1f, 9.1f), // 3
         T(1f, 3f, 3f, 2f, 5f), // 4
         T(1f, 0f, 4f, 9f, 7f), // 5
-        T(6f, 4f, 1f, 8f, 2f), // 6
+        T(6f, 4f, 1f, 8f, 2.1f), // 6
         T(3f, 5f, 0f, 3f, 9f), // 7
         T(6f, 4f, 1f, 7f, 2.1f)  // 8
      ))
 
     val target = Tensor[Float](
       T(T(
-        5f, // 2
-        5f, // 3
-        4f, // 4
-        4f, // 5
-        4f, // 6
-        3f, // 7
-        4f  // 8
+        4f, // 2
+        4f, // 3
+        3f, // 4
+        3f, // 5
+        3f, // 6
+        2f, // 7
+        3f  // 8
       )))
 
     val r0 = new MeanAveragePrecision(8, 5).apply(output, target)
     val r1 = new MeanAveragePrecision(8, 5).apply(Tensor[Float](T(1f, 2f, 3f, 4f, 5f)),
-      Tensor[Float](T(2f)))
-    val r2 = new MeanAveragePrecision(8, 5).apply(Tensor[Float](T(0f, 0f, 4f, 6f, 7f)),
       Tensor[Float](T(1f)))
+    val r2 = new MeanAveragePrecision(8, 5).apply(Tensor[Float](T(0f, 0f, 4f, 6f, 7f)),
+      Tensor[Float](T(0f)))
     (r0 + r1 + r2).result()._1 should be(0.341904762f +- 1e-5f)
   }
 
@@ -128,22 +144,22 @@ class ValidationSpec extends FlatSpec with Matchers {
         T(3f, 5f, 0f, 1f, 9.1f), // 3
         T(1f, 3f, 3f, 2f, 5f), // 4
         T(1f, 0f, 4f, 9f, 7f), // 5
-        T(6f, 4f, 1f, 8f, 2f), // 6
+        T(6f, 4f, 1f, 8f, 2.1f), // 6
         T(3f, 5f, 0f, 3f, 9f), // 7
         T(6f, 4f, 1f, 7f, 2.1f)  // 8
       ))
 
     val target = Tensor[Float](
       T(T(
-        2f, // 0
-        1f, // 1
-        5f, // 2
-        5f, // 3
-        4f, // 4
-        4f, // 5
-        4f, // 6
-        3f, // 7
-        4f  // 8
+        1f, // 0
+        0f, // 1
+        4f, // 2
+        4f, // 3
+        3f, // 4
+        3f, // 5
+        3f, // 6
+        2f, // 7
+        3f  // 8
       )))
     val v = new MeanAveragePrecision(8, 5)
     val result = v(output, target)
