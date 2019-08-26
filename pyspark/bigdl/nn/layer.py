@@ -1779,6 +1779,11 @@ class LSTMPeephole(Layer):
         super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
 
 
+class Gemm(Layer):
+    def __init__(self, alpha=1.0, beta=1.0, trans_a=False, trans_b=False, bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
+
+
 class GRU(Layer):
     '''
     Gated Recurrent Units architecture.
@@ -5684,6 +5689,30 @@ class RoiAlign(Layer):
                                          sampling_ratio,
                                          pooled_h,
                                          pooled_w)
+
+class FPN(Layer):
+    """
+    Feature Pyramid Network (FPN) for Mask-RCNN
+
+    :param in_channels_list:  number of channels of feature maps
+    :param out_channels:      number of channels of FPN output
+
+    >>> import numpy as np
+    >>> feature1 = np.random.rand(1,1,8,8)
+    >>> feature2 = np.random.rand(1,2,4,4)
+    >>> feature3 = np.random.rand(1,4,2,2)
+    >>> m = FPN([1,2,4],2)
+    creating: createFPN
+    >>> out = m.forward([feature1, feature2, feature3])
+    """
+
+    def __init__(self,
+                 in_channels_list,
+                 out_channels,
+                 bigdl_type="float"):
+        super(FPN, self).__init__(None, bigdl_type,
+                                       in_channels_list,
+                                       out_channels)
 
 def _test():
     import doctest
