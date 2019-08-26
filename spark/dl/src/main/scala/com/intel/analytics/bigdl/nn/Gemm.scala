@@ -17,8 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.ops.BatchMatMul
+import com.intel.analytics.bigdl.nn.ops.{BatchMatMul, Operation}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -44,28 +43,22 @@ class Gemm[T: ClassTag](
   val alpha: Float = 1, val beta: Float = 1,
   val transA: Boolean = false, val transB: Boolean = false
 )(implicit ev: TensorNumeric[T])
-extends AbstractModule[Table, Tensor[T], T] {
+extends Operation[Table, Tensor[T], T] {
 
   private val internalModel: Module[T] = {
-    val tensorA = if (transA) Transpose(Array((1, 2))).inputs() else Input()
-    val tensorB = if (transB) Transpose(Array((1, 2))).inputs() else Input()
+    val tensorA = Input()
+    val tensorB = Input()
     val tensorC = Input()
-    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
     val add = CAddTable().inputs(Array(mul, tensorC))
     Graph(Array(tensorA, tensorB, tensorC), add)
   }
-  
+
   override def updateOutput(input: Table): Tensor[T] = {
     require(input.length() == 3)
     internalModel.forward(input)
     output = internalModel.output.asInstanceOf[Tensor[T]]
     output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    internalModel.updateGradInput(input, gradOutput)
-    gradInput = internalModel.gradInput.asInstanceOf[Table]
-    gradInput
   }
 
   override def release(): Unit = {

@@ -26,6 +26,8 @@ import org.scalatest.{FlatSpec, Matchers}
 class GemmSpec extends FlatSpec with Matchers {
 
   "Gemm forward" should "work" in {
+    val transA = false
+    val transB = false
 
     val inputA = Tensor[Float](4, 2).rand()
     val inputB = Tensor[Float](2, 7).rand()
@@ -35,13 +37,11 @@ class GemmSpec extends FlatSpec with Matchers {
     val tensorB = Input()
     val tensorC = Input()
 
-    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
     val add = CAddTable().inputs(Array(mul, tensorC))
     var model = Graph(Array(tensorA, tensorB, tensorC), add)
 
     var myGemm = new Gemm()
-
-
     val myInput = T(inputA, inputB, inputC)
 
     val out1 = model.forward(myInput)
@@ -53,6 +53,8 @@ class GemmSpec extends FlatSpec with Matchers {
 
 
   "Gemm with transA forward" should "work" in {
+    val transA = true
+    val transB = false
 
     var inputA = Tensor[Float](2, 4).rand()
     var transInputA = inputA.t()
@@ -63,13 +65,13 @@ class GemmSpec extends FlatSpec with Matchers {
     val tensorA = Input()
     val tensorB = Input()
     val tensorC = Input()
-    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
     val add = CAddTable().inputs(Array(mul, tensorC))
     var model = Graph(Array(tensorA, tensorB, tensorC), add)
 
     var myGemm = new Gemm(transA = true)
 
-    val out1 = model.forward(T(transInputA, inputB, inputC))
+    val out1 = model.forward(T(inputA, inputB, inputC))
     val out2 = myGemm.forward(T(inputA, inputB, inputC))
 
     out1 should be(out2)
@@ -78,6 +80,8 @@ class GemmSpec extends FlatSpec with Matchers {
 
 
   "Gemm with transB forward" should "work" in {
+    val transA = false
+    val transB = true
 
     var inputA = Tensor[Float](4, 2).rand()
     var transInputA = inputA.t()
@@ -88,38 +92,40 @@ class GemmSpec extends FlatSpec with Matchers {
     val tensorA = Input()
     val tensorB = Input()
     val tensorC = Input()
-    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
     val add = CAddTable().inputs(Array(mul, tensorC))
     var model = Graph(Array(tensorA, tensorB, tensorC), add)
 
     var myGemm = new Gemm(transB = true)
 
-    val out1 = model.forward(T(inputA, transInputB, inputC))
+    val out1 = model.forward(T(inputA, inputB, inputC))
     val out2 = myGemm.forward(T(inputA, inputB, inputC))
 
     out1 should be(out2)
 
   }
 
+
   "Gemm with transA & transB forward" should "work" in {
+    val transA = true
+    val transB = true
 
-    var inputA = Tensor[Float](2, 4).rand()
-    var transInputA = inputA.t()
-    var inputB = Tensor[Float](7, 2).rand()
-    var transInputB = inputB.t()
-    var inputC = Tensor[Float](4, 7).rand()
+    var tensorA = Tensor[Float](2, 4).rand()
+    var tensorB = Tensor[Float](7, 2).rand()
+    var tensorC = Tensor[Float](4, 7).rand()
 
-    val tensorA = Input()
-    val tensorB = Input()
-    val tensorC = Input()
-    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
-    val add = CAddTable().inputs(Array(mul, tensorC))
-    var model = Graph(Array(tensorA, tensorB, tensorC), add)
+    val inputA = Input()
+    val inputB = Input()
+    val inputC = Input()
 
-    var myGemm = new Gemm(transB = true)
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(inputA, inputB))
+    val add = CAddTable().inputs(Array(mul, inputC))
+    var model = Graph(Array(inputA, inputB, inputC), add)
 
-    val out1 = model.forward(T(transInputA, transInputB, inputC))
-    val out2 = myGemm.forward(T(inputA, inputB, inputC))
+    var myGemm = new Gemm(transA = transA, transB = transB)
+
+    val out1 = model.forward(T(tensorA, tensorB, tensorC))
+    val out2 = myGemm.forward(T(tensorA, tensorB, tensorC))
 
     out1 should be(out2)
 
