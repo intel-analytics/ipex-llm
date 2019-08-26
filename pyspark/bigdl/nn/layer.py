@@ -5645,6 +5645,7 @@ class Cropping3D(Layer):
     def __init__(self, dim1Crop, dim2Crop, dim3Crop, data_format="channel_first", bigdl_type="float"):
         super(Cropping3D, self).__init__(None, bigdl_type, dim1Crop, dim2Crop, dim3Crop, data_format)
 
+        
 class RoiAlign(Layer):
     """
     Region of interest aligning (RoIAlign) for Mask-RCNN
