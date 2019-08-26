@@ -17,15 +17,18 @@ package com.intel.analytics.bigdl.nn
 
 import breeze.linalg
 import breeze.linalg.{dim, min}
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.Convolution2D
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{LayerException, T, Table}
 import com.sun.tracing.dtrace.ModuleName
 import org.apache.spark.api.java.function
 import org.dmg.pmml.True
+import sun.misc.GC
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -40,21 +43,21 @@ import scala.reflect.ClassTag
  * @param preNmsTopNTest
  * @param postNmsTopNTest
  * @param nmsThread
- * @param min_size
- * @param rpnPostNmsTopNTrain
+ * @param minSize
  */
 class RegionRroposal(inChannels: Int,
    anchorSizes: Array[Float],
    aspectRatios: Array[Float],
    anchorStride: Array[Float],
-   preNmsTopNTest: Int,
-   postNmsTopNTest: Int,
-   nmsThread: Float,
-   min_size: Int,
-   rpnPostNmsTopNTrain: Int)(implicit ev: TensorNumeric[Float])
+   preNmsTopNTest: Int = 1000,
+   postNmsTopNTest: Int = 1000,
+   preNmsTopNTrain: Int = 2000,
+   postNmsTopNTrain: Int = 2000,
+   nmsThread: Float = 0.7f,
+   minSize: Int = 0,
+   fpnPostNmsTopN: Int = 2000)(implicit ev: TensorNumeric[Float])
    extends AbstractModule[Table, Tensor[Float], Float] {
 
-  private val fpn_post_nms_top_n = 1000
   // for anchor generate
   require(anchorSizes.length == anchorStride.length, s"anchor size and stride should be same")
 
@@ -66,11 +69,12 @@ class RegionRroposal(inChannels: Int,
   }
 
   private val numAnchors = anchors(0).anchorNum
-  private val head = new RPNHead(inChannels, numAnchors)
+  private val head = new RPNHead[Float](inChannels, numAnchors)
   private val boxSelector = new ProposalPostProcessor(preNmsTopNTest, postNmsTopNTest,
-    nmsThread, min_size, rpnPostNmsTopNTrain)
+    preNmsTopNTrain, postNmsTopNTrain, nmsThread, minSize)
+  private val selectorRes = T()
 
-  private[nn] def anchorGenerater(featuresMap: Table): Table = {
+  private[nn] def anchorGenerator(featuresMap: Table): Table = {
     val res = T()
     val length = Math.min(anchorSizes.length, featuresMap.length())
     for (i <- 0 to length - 1) {
@@ -91,12 +95,11 @@ class RegionRroposal(inChannels: Int,
    *  computing the predictions.
    */
   override def updateOutput(input: Table): Tensor[Float] = {
-    require(input.length() == 2 && !this.isTraining(), "Only support tests")
+    require(!this.isTraining(), "Only support RegionProposal inference")
     val images = input[Tensor[Float]](1)
     val features = input[Table](2)
-    val anchors = this.anchorGenerater(features)
+    val anchors = this.anchorGenerator(features)
 
-    val res = T()
     var bboxNumber = 0
     var i = 1
     while (i <= anchors.length()) {
@@ -104,33 +107,28 @@ class RegionRroposal(inChannels: Int,
       val objectness = headOutput.apply[Tensor[Float]](1)
       val rpn_box_regression = headOutput.apply[Tensor[Float]](2)
 
-      res(i) = boxSelector.forward(T(anchors[Tensor[Float]](i), objectness,
+      val out = boxSelector.forward(T(anchors[Tensor[Float]](i), objectness,
         rpn_box_regression, images)).clone()
 
-      bboxNumber += res[Table](i)[Tensor[Float]](1).size(1)
+      if (!selectorRes.contains(i)) selectorRes(i) = T(Tensor[Float](), Tensor[Float]())
+      selectorRes(i).asInstanceOf[Table].apply[Tensor[Float]](1).resizeAs(out[Tensor[Float]](1))
+        .copy(out[Tensor[Float]](1))
+      selectorRes(i).asInstanceOf[Table].apply[Tensor[Float]](2).resizeAs(out[Tensor[Float]](2))
+        .copy(out[Tensor[Float]](2))
+
+      bboxNumber += selectorRes[Table](i)[Tensor[Float]](1).size(1)
       i += 1
     }
 
     output.resize(bboxNumber, 4)
 
-//    i = 1
-//    var startOffset = 1
-//    while (i <= anchors.length()) {
-//      val tmp = res[Tensor[Float]](i)
-//      output.narrow(1, startOffset, tmp.size(1)).copy(tmp)
-//      startOffset = startOffset + tmp.size(1)
-//      i += 1
-//    }
-
-    val post_nms_top_n = min(fpn_post_nms_top_n, bboxNumber)
-
+    val post_nms_top_n = min(fpnPostNmsTopN, bboxNumber)
     // sort
-    selectOverAllLevels(res, post_nms_top_n)
-
-    output.toTensor[Float]
+    selectOverAllLevels(selectorRes, post_nms_top_n, output)
+    output
   }
 
-  private def selectOverAllLevels(res: Table, post_nms_top_n: Int): Unit = {
+  private def selectOverAllLevels(res: Table, post_nms_top_n: Int, output: Tensor[Float]): Unit = {
     val scoreResult = Tensor[Float]().resize(post_nms_top_n)
     val bboxResult = Tensor[Float]().resize(post_nms_top_n, 4)
     var i = 1
@@ -155,8 +153,11 @@ class RegionRroposal(inChannels: Int,
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[Float]): Table = {
-    gradInput = null
-    gradInput
+    throw new UnsupportedOperationException("RegionRroposal only support inference")
+  }
+
+  override def accGradParameters(input: Table, gradOutput: Tensor[Float]): Unit = {
+    throw new UnsupportedOperationException("RegionRroposal only support inference")
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -166,13 +167,45 @@ class RegionRroposal(inChannels: Int,
   override def getParametersTable(): Table = {
     head.getParametersTable()
   }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    head.clearState()
+    boxSelector.clearState()
+    this
+  }
+
+  override def release(): Unit = {
+    super.release()
+    head.release()
+    boxSelector.release()
+  }
 }
 
-private[nn] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
-  postNmsTopNTest: Int,
-  nms_thread: Float,
-  min_size: Int,
-  rpnPostNmsTopNTrain: Int)
+object RegionRroposal {
+  def apply(inChannels: Int,
+            anchorSizes: Array[Float] = Array[Float](32, 64, 128, 256, 512),
+            aspectRatios: Array[Float] = Array[Float](0.5f, 1.0f, 2.0f),
+            anchorStride: Array[Float] = Array[Float](4, 8, 16, 32, 64),
+            preNmsTopNTest: Int = 1000,
+            postNmsTopNTest: Int = 1000,
+            preNmsTopNTrain: Int = 2000,
+            postNmsTopNTrain: Int = 2000,
+            nmsThread: Float = 0.7f,
+            minSize: Int = 0,
+            fpnPostNmsTopN: Int = 2000)(implicit ev: TensorNumeric[Float]): RegionRroposal =
+    new RegionRroposal(inChannels, anchorSizes, aspectRatios, anchorStride,
+      preNmsTopNTest, postNmsTopNTest, preNmsTopNTrain, postNmsTopNTrain, nmsThread,
+      minSize, fpnPostNmsTopN)
+}
+
+private[nn] class ProposalPostProcessor[T: ClassTag](
+  preNmsTopNTest: Int = 1000,
+  postNmsTopNTest: Int = 1000,
+  preNmsTopNTrain: Int = 2000,
+  postNmsTopNTrain: Int = 2000,
+  nmsThread: Float = 0.7f,
+  minSize: Int = 0)
   (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Table, Float]{
 
   @transient private val sortedScores: Tensor[Float] = Tensor[Float]()
@@ -182,9 +215,9 @@ private[nn] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
 
   /**
    * Arguments:
-   *    anchors: list[BoxList] -> should be Tensor with shape (N, nums, 4)
-   *    objectness: tensor of size N, A, H, W
-   *    box_regression: tensor of size N, A * 4, H, W
+   *    anchors: Tensor with shape (N, nums, 4)
+   *    objectness: Tensor of size N, A, H, W
+   *    box_regression: Tensor of size N, A * 4, H, W
    *    img_info: image size
    * @param input
    * @return
@@ -213,7 +246,9 @@ private[nn] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
       .contiguous().resize(Array(N, A * H * W, 4))
 
     val num_anchors = A * H * W
-    val topNum = Math.min(preNmsTopNTest, num_anchors)
+    val topNum = if (this.isTraining()) {
+      Math.min(preNmsTopNTest, num_anchors)
+    } else Math.min(preNmsTopNTrain, num_anchors)
     // scores ==> objectness
     // sortedScores ===> objectness, sortedInds = topk_idx + 1
     objectness.topk(topNum, dim = 2, increase = false,
@@ -234,28 +269,67 @@ private[nn] class ProposalPostProcessor[T: ClassTag](preNmsTopNTest: Int,
     val proposals = BboxUtil.bboxTransformInv(concat_anchors,
       box_regression_view, normalized = true)
     // remove _small box
-    val minBoxH = min_size
-    val minBoxW = min_size
+    val minBoxH = minSize
+    val minBoxW = minSize
     var keepN = BboxUtil.clipBoxes(proposals, imageSize.valueAt(1), imageSize.valueAt(2), minBoxH
       , minBoxW, sortedScores)
 
     val arr = new Array[Int](1000)
-    nms.nms(sortedScores, proposals, thresh = nms_thread, arr, sorted = true)
+    nms.nms(sortedScores, proposals, thresh = nmsThread, arr, sorted = true)
     val arrFilter = arr.filter(_ > 0).map(_.toFloat)
 
     val indices = Tensor[Float]().set(Storage(arrFilter), 1, Array(arrFilter.length))
-    val tmp2 = Tensor[Float]()
-    tmp2.index(1, indices, proposals)
-    val tt = Tensor[Float]()
+
+    // initial output tensors
+    if (output.length() == 0) {
+      output(1) = Tensor[Float]()
+      output(2) = Tensor[Float]()
+    }
+    output[Tensor[Float]](1).resize(indices.nElement(), 4).zero()
+    output[Tensor[Float]](2).resize(indices.nElement()).zero()
+
+    output[Tensor[Float]](1).index(1, indices, proposals)
     objectness.resize(objectness.nElement())
-    tt.index(1, indices, objectness)
-    output = T(tmp2, tt)
+    output[Tensor[Float]](2).index(1, indices, objectness)
+
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = null
-    gradInput
+    throw new UnsupportedOperationException("ProposalPostProcessor only support inference")
+  }
+}
+
+/**
+ * Adds a simple RPN Head with classification and regression heads
+ * @param inChannels number of channels of the input feature
+ * @param numAnchors number of anchors to be predicted
+ */
+private[nn] class RPNHead[T: ClassTag](inChannels: Int, numAnchors: Int)
+  (implicit ev: TensorNumeric[T]) extends BaseModule {
+
+  override def buildModel(): Module[T] = {
+    val conv = SpatialConvolution[T](inChannels, inChannels,
+      kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
+    conv.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
+    conv.bias.apply1(_ => ev.zero)
+    val relu = ReLU[T]()
+    val conv2 = SpatialConvolution[T](inChannels, numAnchors,
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
+    conv2.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
+    conv2.bias.apply1(_ => ev.zero)
+    val conv3 = SpatialConvolution[T](inChannels, numAnchors * 4,
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
+    conv3.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
+    conv3.bias.apply1(_ => ev.zero)
+
+    val input = Input()
+    val node1 = conv.inputs(input)
+    val node2 = relu.inputs(node1)
+    val node3 = conv2.inputs(node2)
+    val node4 = conv3.inputs(node2)
+
+    Graph(input, Array(node3, node4))
   }
 }
 

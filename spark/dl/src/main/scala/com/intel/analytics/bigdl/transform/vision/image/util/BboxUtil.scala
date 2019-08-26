@@ -145,25 +145,6 @@ object BboxUtil {
     count
   }
 
-  def clipToWindows(windows: Tensor[Float], boxes: Tensor[Float]): Tensor[Float] = {
-    val boxesArr = boxes.storage().array()
-    var offset = boxes.storageOffset() - 1
-    var i = 0
-    val sw = windows.valueAt(1)
-    val sh = windows.valueAt(2)
-    val ew = windows.valueAt(3)
-    val eh = windows.valueAt(4)
-    while (i < boxes.size(1)) {
-      boxesArr(offset) = Math.max(Math.min(boxesArr(offset), ew), sw)
-      boxesArr(offset + 1) = Math.max(Math.min(boxesArr(offset + 1), eh), sh)
-      boxesArr(offset + 2) = Math.max(Math.min(boxesArr(offset + 2), ew), sw)
-      boxesArr(offset + 3) = Math.max(Math.min(boxesArr(offset + 3), eh), sh)
-      offset += 4
-      i += 1
-    }
-    boxes
-  }
-
   def getLocPredictions(loc: Tensor[Float], numPredsPerClass: Int, numClasses: Int,
     shareLocation: Boolean, locPredsBuf: Array[Array[Tensor[Float]]] = null)
   : Array[Array[Tensor[Float]]] = {
