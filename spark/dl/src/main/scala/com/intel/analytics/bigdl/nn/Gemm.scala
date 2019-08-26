@@ -47,32 +47,17 @@ class Gemm[T: ClassTag](
 extends AbstractModule[Table, Tensor[T], T] {
 
   private val internalModel: Module[T] = {
-    val tensorA = Input()
-    val tensorB = Input()
+    val tensorA = if (transA) Transpose(Array((1, 2))).inputs() else Input()
+    val tensorB = if (transB) Transpose(Array((1, 2))).inputs() else Input()
     val tensorC = Input()
     val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
     val add = CAddTable().inputs(Array(mul, tensorC))
     Graph(Array(tensorA, tensorB, tensorC), add)
   }
-
-
-
+  
   override def updateOutput(input: Table): Tensor[T] = {
     require(input.length() == 3)
-
-    val transformedInput = input.clone()
-
-    transformedInput.get(1).get.asInstanceOf[Tensor[T]].mul(alpha.asInstanceOf[T])
-
-    if (transA) {
-      transformedInput.update(1, input.get(1).get.asInstanceOf[Tensor[T]].t())
-    }
-
-    if (transB) {
-      transformedInput.update(2, input.get(2).get.asInstanceOf[Tensor[T]].t())
-    }
-
-    internalModel.forward(transformedInput)
+    internalModel.forward(input)
     output = internalModel.output.asInstanceOf[Tensor[T]]
     output
   }

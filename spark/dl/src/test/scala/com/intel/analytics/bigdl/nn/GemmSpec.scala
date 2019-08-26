@@ -27,28 +27,14 @@ class GemmSpec extends FlatSpec with Matchers {
 
   "Gemm forward" should "work" in {
 
-    val inputA = Tensor[Float](2, 2)
-    val inputB = Tensor[Float](2, 2)
-    val inputC = Tensor[Float](2, 2)
-
-    inputA.setValue(1, 1, 1)
-    inputA.setValue(1, 2, 2)
-    inputA.setValue(2, 1, 3)
-    inputA.setValue(2, 2, 4)
-
-    inputB.setValue(1, 1, 1)
-    inputB.setValue(1, 2, 2)
-    inputB.setValue(2, 1, 3)
-    inputB.setValue(2, 2, 4)
-
-    inputC.setValue(1, 1, 1)
-    inputC.setValue(1, 2, 2)
-    inputC.setValue(2, 1, 3)
-    inputC.setValue(2, 2, 4)
+    val inputA = Tensor[Float](4, 2).rand()
+    val inputB = Tensor[Float](2, 7).rand()
+    val inputC = Tensor[Float](4, 7).rand()
 
     val tensorA = Input()
     val tensorB = Input()
     val tensorC = Input()
+
     val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
     val add = CAddTable().inputs(Array(mul, tensorC))
     var model = Graph(Array(tensorA, tensorB, tensorC), add)
@@ -62,6 +48,81 @@ class GemmSpec extends FlatSpec with Matchers {
     val out2 = myGemm.forward(myInput)
 
     out1 should be(out2)
+
+  }
+
+
+  "Gemm with transA forward" should "work" in {
+
+    var inputA = Tensor[Float](2, 4).rand()
+    var transInputA = inputA.t()
+    var inputB = Tensor[Float](2, 7).rand()
+    var transInputB = inputB.t()
+    var inputC = Tensor[Float](4, 7).rand()
+
+    val tensorA = Input()
+    val tensorB = Input()
+    val tensorC = Input()
+    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
+    val add = CAddTable().inputs(Array(mul, tensorC))
+    var model = Graph(Array(tensorA, tensorB, tensorC), add)
+
+    var myGemm = new Gemm(transA = true)
+
+    val out1 = model.forward(T(transInputA, inputB, inputC))
+    val out2 = myGemm.forward(T(inputA, inputB, inputC))
+
+    out1 should be(out2)
+
+  }
+
+
+  "Gemm with transB forward" should "work" in {
+
+    var inputA = Tensor[Float](4, 2).rand()
+    var transInputA = inputA.t()
+    var inputB = Tensor[Float](7, 2).rand()
+    var transInputB = inputB.t()
+    var inputC = Tensor[Float](4, 7).rand()
+
+    val tensorA = Input()
+    val tensorB = Input()
+    val tensorC = Input()
+    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
+    val add = CAddTable().inputs(Array(mul, tensorC))
+    var model = Graph(Array(tensorA, tensorB, tensorC), add)
+
+    var myGemm = new Gemm(transB = true)
+
+    val out1 = model.forward(T(inputA, transInputB, inputC))
+    val out2 = myGemm.forward(T(inputA, inputB, inputC))
+
+    out1 should be(out2)
+
+  }
+
+  "Gemm with transA & transB forward" should "work" in {
+
+    var inputA = Tensor[Float](2, 4).rand()
+    var transInputA = inputA.t()
+    var inputB = Tensor[Float](7, 2).rand()
+    var transInputB = inputB.t()
+    var inputC = Tensor[Float](4, 7).rand()
+
+    val tensorA = Input()
+    val tensorB = Input()
+    val tensorC = Input()
+    val mul = BatchMatMul().inputs(Array(tensorA, tensorB))
+    val add = CAddTable().inputs(Array(mul, tensorC))
+    var model = Graph(Array(tensorA, tensorB, tensorC), add)
+
+    var myGemm = new Gemm(transB = true)
+
+    val out1 = model.forward(T(transInputA, transInputB, inputC))
+    val out2 = myGemm.forward(T(inputA, inputB, inputC))
+
+    out1 should be(out2)
+
   }
 
 }
@@ -70,25 +131,9 @@ class GemmSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val gemm = Gemm[Float]().setName("Gemm")
 
-    val inputA = Tensor(2, 2)
-    val inputB = Tensor(2, 2)
-    val inputC = Tensor(2, 2)
-
-    inputA.setValue(1, 1, 1)
-    inputA.setValue(1, 2, 2)
-    inputA.setValue(2, 1, 3)
-    inputA.setValue(2, 2, 4)
-
-    inputB.setValue(1, 1, 1)
-    inputB.setValue(1, 2, 2)
-    inputB.setValue(2, 1, 3)
-    inputB.setValue(2, 2, 4)
-
-    inputC.setValue(1, 1, 1)
-    inputC.setValue(1, 2, 2)
-    inputC.setValue(2, 1, 3)
-    inputC.setValue(2, 2, 4)
-
+    val inputA = Tensor(2, 2).rand()
+    val inputB = Tensor(2, 2).rand()
+    val inputC = Tensor(2, 2).rand()
     val input = T(inputA, inputB, inputC)
 
     runSerializationTest(gemm, input)
