@@ -27,13 +27,19 @@ import scala.reflect.ClassTag
 
 /**
  * Feature Pyramid Network.
- * @param inChannels number of channels of feature maps
+ * @param inChannels  number of channels of feature maps
  * @param outChannels number of channels of FPN output
+ * @param topBlocks   0 for null,
+ *                    1 for using max pooling on the last level
+ *                    2 for extra layers P6 and P7 in RetinaNet
  */
 
 class FPN[T : ClassTag](
   val inChannels: Array[Int],
-  val outChannels: Int
+  val outChannels: Int,
+  val topBlocks: Int = 0,
+  val inChannelsP6P7: Int = 0,
+  val outChannelsP6P7: Int = 0
 )
   (implicit ev: TensorNumeric[T])
   extends BaseModule[T]{
@@ -63,8 +69,9 @@ class FPN[T : ClassTag](
       innerBlocks(i) = innerBlockModules(i).inputs(inputs(i))
     }
 
-    var count = 0
-    val results = new Array[ModuleNode[T]](featureMapsNum)
+    val results = new Array[ModuleNode[T]](featureMapsNum + topBlocks)
+    var count = results.length - 1 - topBlocks
+
     var lastInner = innerBlocks(featureMapsNum - 1)
     results(count) = layerBlockModules(featureMapsNum - 1).inputs(lastInner)
 
@@ -74,9 +81,25 @@ class FPN[T : ClassTag](
         val innerTopDown = UpSampling2D[T](Array(2, 2)).inputs(lastInner)
         val innerLateral = innerBlocks(i)
         lastInner = CAddTable[T]().inputs(innerLateral, innerTopDown)
-        count += 1
+        count -= 1
         results(count) = layerBlock.inputs(lastInner)
       }
+    }
+
+    if (topBlocks == 1) {
+      results(results.length - 1) = SpatialMaxPooling(1, 1, 2, 2)
+        .inputs(results(featureMapsNum - 1))
+    }
+
+    if (topBlocks == 2) {
+      val p6_module = SpatialConvolution[T](inChannelsP6P7, outChannelsP6P7, 3, 3, 2, 2, 1, 1)
+      val p7_module = SpatialConvolution[T](outChannelsP6P7, outChannelsP6P7, 3, 3, 2, 2, 1, 1)
+      results(results.length - 2) = if (inChannelsP6P7 == outChannelsP6P7) {
+        p6_module.inputs(results(featureMapsNum - 1))
+      } else {
+        p6_module.inputs(inputs(featureMapsNum - 1))
+      }
+      results(results.length - 1) = p7_module.inputs(ReLU[T]().inputs(results(results.length - 2)))
     }
 
     Graph(inputs, results)
@@ -113,8 +136,11 @@ class FPN[T : ClassTag](
 object FPN {
   def apply[@specialized(Float, Double) T: ClassTag](
     inChannels: Array[Int],
-    outChannels: Int
+    outChannels: Int,
+    topBlocks: Int = 0,
+    inChannelsP6P7: Int = 0,
+    outChannelsP6P7: Int = 0
   )(implicit ev: TensorNumeric[T]): FPN[T] = {
-    new FPN[T](inChannels, outChannels)
+    new FPN[T](inChannels, outChannels, topBlocks, inChannelsP6P7, outChannelsP6P7)
   }
 }
