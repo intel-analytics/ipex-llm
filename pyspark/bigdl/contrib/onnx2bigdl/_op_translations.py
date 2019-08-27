@@ -11,7 +11,6 @@ from onnx.numpy_helper import to_array
 
 # Method definitions for the callable objects mapped in the import_helper module
 def avg_pooling(inputs, prev_modules, attrs, outputs):
-
 	auto_pad = attrs.get('auto_pad', 'NOTSET')
 	ceil_mode = True if attrs.get('ceil_mode', 0) == 1 else False
 	count_include_pad = True if attrs.get('count_include_pad', 0) == 1 else False
