@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.nn.Linear
 import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector}
 import org.scalatest.{FlatSpec, Matchers}
-import spire.syntax.module
 
 @com.intel.analytics.bigdl.tags.Parallel
 class DenseTensorSpec extends FlatSpec with Matchers {

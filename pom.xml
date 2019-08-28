@@ -619,6 +619,85 @@
             </build>
         </profile>
         <profile>
+            <id>spark_2.4_scala_2.12</id>
+            <properties>
+                <spark-version.project>2.0</spark-version.project>
+                <spark.version>2.4.0</spark.version>
+                <scala.major.version>2.12</scala.major.version>
+                <scala.version>2.12.9</scala.version>
+                <scala.macros.version>2.1.1</scala.macros.version>
+                <breeze.version>1.0</breeze.version>
+                <scalatest.version>3.0.8</scalatest.version>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Redefine the plugin to enable fatal warninings -->
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>eclipse-add-source</id>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-compile-first</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-test-compile-first</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>testCompile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>attach-scaladocs</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>doc-jar</goal>
+                                </goals>
+                                <configuration>
+                                    <args>
+                                        <!-- Do not change the arg orders. It is a weird way to pass in
+                                        this arg. Maybe it is a bug of the plugin. -->
+                                        <arg>-skip-packages</arg>
+                                        <arg>caffe:org.tensorflow:netty:org.apache.spark.sparkExtension:org.apache.spark.rdd:org.apache.spark.storage:org.apache.spark.bigdl</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <scalaVersion>${scala.version}</scalaVersion>
+                            <recompileMode>incremental</recompileMode>
+                            <useZincServer>false</useZincServer>
+                            <args>
+                                <arg>-unchecked</arg>
+                                <!-- Too many deprecation usage, let's suspend it temporary-->
+                                <arg>-deprecation:false</arg>
+                                <arg>-feature</arg>
+                                <arg>-Xfatal-warnings</arg>
+                            </args>
+                            <!-- The following plugin is used by Spark SQL for code generation. -->
+                            <compilerPlugins>
+                                <compilerPlugin>
+                                    <groupId>org.scalamacros</groupId>
+                                    <artifactId>paradise_${scala.version}</artifactId>
+                                    <version>${scala.macros.version}</version>
+                                </compilerPlugin>
+                            </compilerPlugins>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>scala_2.11</id>
             <properties>
                 <scala.major.version>2.11</scala.major.version>
