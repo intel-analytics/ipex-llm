@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.onnx.Gemm
 import com.intel.analytics.bigdl.nn.ops.BatchMatMul
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T

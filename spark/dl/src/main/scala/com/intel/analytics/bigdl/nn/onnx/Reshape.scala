@@ -22,13 +22,8 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Gather[T: ClassTag, D: ClassTag] (
-  axis: Int
-)
-
-object Gather {
-  def apply[T: ClassTag, D: ClassTag](
-    axis: Int = 0
-  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  nn.ops.Gather[T, D] = new nn.ops.Gather()
+case class Reshape[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]) {
+  def apply(size: Array[Int]): nn.Reshape[T] = {
+    new nn.Reshape[T](size = size)
+  }
 }

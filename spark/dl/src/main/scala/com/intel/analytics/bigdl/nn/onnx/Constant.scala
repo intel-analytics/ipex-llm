@@ -14,37 +14,45 @@
  * limitations under the License.
  */
 
+
 package com.intel.analytics.bigdl.nn.onnx
 
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.nn.ops.Operation
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
 /**
- * A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
+ * A layer contains a constant tensor.
+ * It forwards the value of constant tensor to next layers.
+ *
+ * @param value constant tensor
  * @param `classTag$T`
  * @param ev
  * @tparam T The numeric type in this module parameters
  */
-class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Tensor[T], Tensor[T], T] {
+class Constant[T: ClassTag](
+  val value: Tensor[T]
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    val dimSize = input.nDimension()
-    output = Tensor[T](dimSize)
-    (1 to dimSize).foreach(i => {
-      output.setValue(i, ev.fromType(input.size(i)))
-    })
+    output = value
     output
   }
 
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput = gradOutput
+    gradInput
+  }
+
 }
 
-object Shape {
-  def apply[T: ClassTag]()(
-    implicit ev: TensorNumeric[T]): Shape[T] = {
-    new Shape[T]()
+object Constant {
+  def apply[@specialized(Float, Double) T: ClassTag](
+        value: Tensor[T]
+    ) (implicit ev: TensorNumeric[T]) : Constant[T] = {
+    new Constant[T](value)
   }
 }
+

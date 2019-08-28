@@ -22,13 +22,13 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Gather[T: ClassTag, D: ClassTag] (
-  axis: Int
-)
+case class Softmax[T: ClassTag](axis: Int)
 
-object Gather {
-  def apply[T: ClassTag, D: ClassTag](
-    axis: Int = 0
-  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  nn.ops.Gather[T, D] = new nn.ops.Gather()
+object Softmax {
+  def apply[T: ClassTag](axis: Int = 1)(implicit ev: TensorNumeric[T]): nn.SoftMax[T] = {
+    if (axis != 1) {
+      throw new IllegalArgumentException("Softmax axis should be default to 1.")
+    }
+    new nn.SoftMax()
+  }
 }

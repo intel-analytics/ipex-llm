@@ -22,13 +22,21 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Gather[T: ClassTag, D: ClassTag] (
-  axis: Int
+case class BatchNormalization[T: ClassTag](
+  nOutput: Int, // number of output channels, BigDL requires.
+  epsilon: Float,
+  momentum: Float
 )
 
-object Gather {
-  def apply[T: ClassTag, D: ClassTag](
-    axis: Int = 0
-  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  nn.ops.Gather[T, D] = new nn.ops.Gather()
+
+object BatchNormalization {
+
+  def apply[T: ClassTag](
+    nOutput: Int, // number of output channels, BigDL requires.
+    epsilon: Float = 1e-05.toFloat,
+    momentum: Float = 0.9.toFloat
+  )(implicit ev: TensorNumeric[T]): nn.SpatialBatchNormalization[T] = {
+   new nn.SpatialBatchNormalization(nOutput, eps = epsilon, momentum = momentum)
+  }
+
 }

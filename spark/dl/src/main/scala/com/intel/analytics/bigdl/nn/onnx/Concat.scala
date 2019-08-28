@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.intel.analytics.bigdl.nn.onnx
 
 import scala.reflect.ClassTag
@@ -22,13 +21,20 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Gather[T: ClassTag, D: ClassTag] (
-  axis: Int
+case class Concat[T: ClassTag] (
+  nInputDims: Int, // specify the number of dimensions of input, BigDL requires.
+  axis: Int // to be join in this dimension
 )
 
-object Gather {
-  def apply[T: ClassTag, D: ClassTag](
-    axis: Int = 0
-  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  nn.ops.Gather[T, D] = new nn.ops.Gather()
+
+/**
+ * Concatenate a list of tensors into a single tensor
+ */
+object Concat {
+  def apply[T: ClassTag](
+        nInputDims: Int, // specify the number of dimensions of input, BigDL requires.
+        axis: Int = 0 // to be join in this dimension
+    )(implicit ev: TensorNumeric[T]): nn.JoinTable[T] = {
+    new nn.JoinTable(dimension = axis, nInputDims = nInputDims)
+  }
 }

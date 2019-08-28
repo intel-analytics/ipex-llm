@@ -22,13 +22,11 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Gather[T: ClassTag, D: ClassTag] (
-  axis: Int
-)
+case class Relu[T: ClassTag] ()
 
-object Gather {
-  def apply[T: ClassTag, D: ClassTag](
-    axis: Int = 0
-  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  nn.ops.Gather[T, D] = new nn.ops.Gather()
+object Relu {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]): nn.ReLU[T] = {
+    new nn.ReLU[T]()
+  }
 }
