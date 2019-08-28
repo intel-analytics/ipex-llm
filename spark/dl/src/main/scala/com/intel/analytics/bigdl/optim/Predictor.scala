@@ -199,20 +199,19 @@ object Predictor {
       batchSize = totalBatch,
       partitionNum = Some(rdd.partitions.length),
       featurePaddingParam = featurePaddingParam))
-    val batchOut = rdd.mapPartitions { partition =>
+    rdd.mapPartitions { partition =>
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
-      miniBatch.flatMap(batch => {
+      val batchOut = miniBatch.flatMap(batch => {
+        val data = batch.getInput()
         val output = localModel.forward(batch.getInput)
         splitBatch(output, shareBuffer, batch.size())
       })
+      partition.zip(batchOut).map(sample => {
+        Sample(sample._1.feature(), sample._2.toTensor)
+      })
     }
-    dataSet.zip(batchOut).map(sample => {
-      val data = sample._1.feature()
-      val label = sample._2.toTensor
-      Sample(data, label)
-    })
   }
 /*
   def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
