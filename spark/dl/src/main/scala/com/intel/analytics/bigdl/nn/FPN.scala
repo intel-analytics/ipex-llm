@@ -19,19 +19,19 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
 /**
  * Feature Pyramid Network.
- * @param inChannels  number of channels of feature maps
- * @param outChannels number of channels of FPN output
- * @param topBlocks   0 for null,
- *                    1 for using max pooling on the last level
- *                    2 for extra layers P6 and P7 in RetinaNet
+ * @param inChannels      number of channels of feature maps
+ * @param outChannels     number of channels of FPN output
+ * @param topBlocks       0 for null,
+ *                        1 for using max pooling on the last level
+ *                        2 for extra layers P6 and P7 in RetinaNet
+ * @param inChannelsP6P7  number of input channels of P6 P7
+ * @param outChannelsP6P7 number of output channels of P6 P7
  */
 
 class FPN[T : ClassTag](
