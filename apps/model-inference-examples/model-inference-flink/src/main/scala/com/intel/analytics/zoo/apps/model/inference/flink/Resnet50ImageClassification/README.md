@@ -1,5 +1,5 @@
 ## Analytics-Zoo InferenceModel with openVINO accelerating on Flink Streaming
-This is the example of streaming with Flink and Resnet50 model, as well as using Analytics-Zoo InferenceModel to acclerate prediction.
+This is the example of streaming with Flink and Resnet50 model, as well as using Analytics-Zoo InferenceModel and OpenVINO backend to acclerate prediction.
 ### Requirements
 * JDK 1.8
 * Flink 1.8.1
@@ -29,7 +29,6 @@ To stop Flink when you're done type:
 * Run `export FLINK_HOME=the root directory of flink`.
 * Run `export ANALYTICS_ZOO_HOME=the folder of Analytics Zoo project`.
 * Download [resnet_v1_50 model](http://download.tensorflow.org/models/resnet_v1_50_2016_08_28.tar.gz). Run `export MODEL_PATH=path to the downloaded model`.
-* Prepare the prediction dataset from [imagenet](http://www.image-net.org/) and extract it.
 * Go to the root directory of model-inference-flink and execute the `mvn clean package` command, which prepares the jar file for model-inference-flink.
 * Edit flink-conf.yaml to set heap size or the number of task slots as you need, ie,  `jobmanager.heap.size: 10g`
 * Run the follwing command with arguments to submit the Flink program. Change parameter settings as you need.
