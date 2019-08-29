@@ -115,9 +115,9 @@ private[nn] class BoxPostProcessor(
   @transient var boxesBuf: Tensor[Float] = _
 
   /**
-    * Returns bounding-box detection results by thresholding on scores and
-    * applying non-maximum suppression (NMS).
-    */
+   * Returns bounding-box detection results by thresholding on scores and
+   * applying non-maximum suppression (NMS).
+   */
   private[nn] def filterResults(boxes: Tensor[Float], scores: Tensor[Float],
                                 num_classes: Int): Array[RoiLabel] = {
     val dim = num_classes * 4
@@ -270,10 +270,10 @@ private[nn] class BoxPostProcessor(
   }
 
   /**
-    * input contains:the class logits, the box_regression and
-    * bounding boxes that are used as reference, one for ech image
-    * @param input
-    * @return boxlist contains labels and scores
+   * input contains:the class logits, the box_regression and
+   * bounding boxes that are used as reference, one for ech image
+   * @param input
+   * @return labels and bbox
     */
   override def updateOutput(input: Table): Table = {
     if (isTraining()) {
