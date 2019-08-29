@@ -22,10 +22,6 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Gather[T: ClassTag, D: ClassTag] (
-  axis: Int
-)
-
 object Gather {
   def apply[T: ClassTag, D: ClassTag](
     axis: Int = 0

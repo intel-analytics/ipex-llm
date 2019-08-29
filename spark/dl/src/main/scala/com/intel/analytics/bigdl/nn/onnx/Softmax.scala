@@ -22,12 +22,10 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Softmax[T: ClassTag](axis: Int)
-
 object Softmax {
   def apply[T: ClassTag](axis: Int = 1)(implicit ev: TensorNumeric[T]): nn.SoftMax[T] = {
     if (axis != 1) {
-      throw new IllegalArgumentException("Softmax axis should be default to 1.")
+      throw new IllegalArgumentException("Softmax axis should default to 1.")
     }
     new nn.SoftMax()
   }

@@ -14,16 +14,27 @@
  * limitations under the License.
  */
 
-
 package com.intel.analytics.bigdl.nn.onnx
 
-import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import org.scalatest.{FlatSpec, Matchers}
 
 
-object Reshape {
-  def apply[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]): nn.Reshape[T] = {
-    new nn.Reshape[T](size = size)
+class ReluSpec extends FlatSpec with Matchers {
+  "Relu" should "work" in {
+    val relu = Relu[Float]()
+    val input = Tensor[Float](5, 5).rand()
+    val out = relu.forward(input)
+    println(out)
+  }
+}
+
+
+class ReluSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val relu = Relu[Float]()
+    val input = Tensor[Float](5, 5).rand()
+    runSerializationTest(relu, input)
   }
 }

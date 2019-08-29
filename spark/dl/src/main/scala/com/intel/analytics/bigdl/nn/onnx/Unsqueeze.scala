@@ -21,8 +21,6 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Unsqueeze[T: ClassTag](axes: List[Int], numInputDims: Int)
-
 object Unsqueeze {
   def apply[@specialized(Float, Double) T: ClassTag](
         axes: List[Int], // List of non-negative integers, indicate the dimensions to be inserted
@@ -30,7 +28,7 @@ object Unsqueeze {
   )(implicit ev: TensorNumeric[T]): nn.Unsqueeze[T] = {
     val pos = axes match {
       case List(elem) => elem
-      case _ => throw new IllegalArgumentException()
+      case _ => throw new IllegalArgumentException("Bad axes value.")
     }
      new nn.Unsqueeze[T](pos = pos, numInputDims = numInputDims)
   }

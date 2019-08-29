@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.python.api
 import scala.collection.JavaConverters._
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.onnx._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -38,31 +39,30 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
 
   def createAveragePool(
     kernel_shape: JList[Int],
-    auto_pad: String = "NOTSET",
-    ceil_mode: Int = 0,
-    count_include_pad: Int = 0,
-    pads: JList[Int] = null,
-    strides: JList[Int] = null): AveragePool[T] = {
-
+    auto_pad: String,
+    ceil_mode: Int,
+    count_include_pad: Int,
+    pads: JList[Int],
+    strides: JList[Int]): nn.SpatialAveragePooling[T] = {
     AveragePool(
-      kernel_shape.asScala.toList,
-      auto_pad,
-      ceil_mode,
-      count_include_pad,
-      pads.asScala.toList,
-      strides.asScala.toList)
+      kernelShape = kernel_shape.asScala.toList,
+      autoPad = auto_pad,
+      ceilMode = ceil_mode,
+      countIncludePad = count_include_pad,
+      pads = if (pads != null) pads.asScala.toList else null,
+      strides = if (strides != null) strides.asScala.toList else null)
   }
+
 
   def createBatchNormalization(
-    n_output: Int, // number of output channels, BigDL requires.
+    num_features: Int, // number of input features, BigDL requires.
     epsilon: Float,
-    momentum: Float): BatchNormalization[T] = {
-    BatchNormalization(nOutput = n_output, epsilon = epsilon, momentum = momentum)
+    momentum: Float): nn.SpatialBatchNormalization[T] = {
+    BatchNormalization(numFeatures = num_features, epsilon = epsilon, momentum = momentum)
   }
 
-  def createConcat(
-    n_input_dims: Int, // BigDL requires
-    axis: Int = 0): Concat[T] = {
+
+  def createConcat(n_input_dims: Int, axis: Int): nn.JoinTable[T] = {
     Concat(nInputDims = n_input_dims, axis = axis)
   }
 
@@ -72,12 +72,12 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     kernel_shape: JList[Int],
     weight: JTensor, // BigDL requires
     bias: JTensor, // BigDL requires
-    auto_pad: String = "NOTSET", // missing in BigDL
-    dilations: JList[Int] = null,
-    group: Int = 1,
-    pads: JList[Int] = null,
-    strides: JList[Int] = null
-  ): Conv[T] = {
+    auto_pad: String, // missing in BigDL
+    dilations: JList[Int],
+    group: Int,
+    pads: JList[Int],
+    strides: JList[Int]
+  ): nn.SpatialConvolution[T] = {
     Conv(
       nInputPlane = n_input_plane,
       nOutputPlane = n_output_plane,
@@ -85,18 +85,18 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
       weight = toTensor(weight),
       bias = toTensor(bias),
       autoPad = auto_pad,
-      dilations = dilations.asScala.toList,
+      dilations = if (dilations != null) dilations.asScala.toList else null,
       group = group,
-      pads = pads.asScala.toList,
-      strides = strides.asScala.toList
+      pads = if (pads != null) pads.asScala.toList else null,
+      strides = if (strides != null) strides.asScala.toList else null
     )
   }
 
-  def createGather(axis: Int = 0): Gather[T, T] = {
+  def createGather(axis: Int = 0): nn.ops.Gather[T, T] = {
     Gather[T, T](axis = axis)
   }
 
-  def createGemm(alpha: Float = Int.int2float(1), beta: Float = Int.int2float(1),
+  def createGemm(alpha: Float = 1, beta: Float = 1,
                  trans_a: Int = 0, trans_b: Int = 0): Gemm[T] = {
     Gemm(alpha, beta,
       if (trans_a == 0) false else true,
@@ -105,38 +105,38 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
 
   def createMaxPool(auto_pad: String = "NOTSET", ceil_mode: Int = 0,
     dilations: JList[Int], kernel_shape: JList[Int], pads: JList[Int],
-    storage_order: Int = 0, strides: JList[Int]): MaxPool[T] = {
+    storage_order: Int = 0, strides: JList[Int]): nn.SpatialMaxPooling[T] = {
     MaxPool(autoPad = auto_pad,
       ceilMode = ceil_mode,
-      dilations = dilations.asScala.toList,
+      dilations = if (dilations != null) dilations.asScala.toList else null,
       kernelShape = kernel_shape.asScala.toList,
-      pads = pads.asScala.toList,
+      pads = if (pads != null) pads.asScala.toList else null,
       storageOrder = storage_order,
-      strides = strides.asScala.toList
+      strides = if (strides != null) strides.asScala.toList else null
     )
   }
 
-  def createRelu(): Relu[T] = {
+  def createRelu(): nn.ReLU[T] = {
     Relu()
   }
 
-  def createReshape(size: Array[Int]): Reshape[T] = {
-    Reshape(size)
+  def createReshape(size: JArrayList[Int]): nn.Reshape[T] = {
+    Reshape(size.asScala.toArray)
   }
 
   def createShape(): Shape[T] = {
     Shape()
   }
 
-  def createSoftmax(axis: Int = 1): Softmax[T] = {
+  def createSoftmax(axis: Int = 1): nn.SoftMax[T] = {
     Softmax(axis = axis)
   }
 
-  def createOnnxSum(inplace: Boolean = false): OnnxSum[T] = {
+  def createOnnxSum(inplace: Boolean = false): nn.CAddTable[T, T] = {
     OnnxSum[T](inplace = inplace)
   }
 
-  def createUnsqueeze(axes: JList[Int], nInputDims: Int): Unsqueeze[T] = {
+  def createUnsqueeze(axes: JList[Int], nInputDims: Int): nn.Unsqueeze[T] = {
     Unsqueeze(axes = axes.asScala.toList, numInputDims = nInputDims)
   }
 }

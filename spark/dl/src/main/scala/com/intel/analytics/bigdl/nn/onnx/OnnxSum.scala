@@ -21,8 +21,6 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class OnnxSum[T: ClassTag](inplace: Boolean)
-
 object OnnxSum {
   def apply[T: ClassTag](inplace: Boolean = false)
         (implicit ev: TensorNumeric[T]): nn.CAddTable[T, T] = {

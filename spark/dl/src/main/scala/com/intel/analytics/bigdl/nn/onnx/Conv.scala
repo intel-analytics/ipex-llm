@@ -23,20 +23,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class Conv[T: ClassTag](
-  nInputPlane: Int, // BigDL requires
-  nOutputPlane: Int, // BigDL requires
-  kernelShape: List[Int],
-  weight: Tensor[T], // BigDL requires
-  bias: Tensor[T], // BigDL requires
-  autoPad: String, // missing in BigDL
-  dilations: List[Int],
-  group: Int,
-  pads: List[Int],
-  strides: List[Int]
-)
-
-
 object Conv {
   def apply[T: ClassTag](
     nInputPlane: Int, // BigDL requires

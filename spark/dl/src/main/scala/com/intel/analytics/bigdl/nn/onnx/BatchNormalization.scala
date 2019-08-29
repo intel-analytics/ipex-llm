@@ -23,20 +23,19 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
 case class BatchNormalization[T: ClassTag](
-  nOutput: Int, // number of output channels, BigDL requires.
+  numFeatures: Int, // number of output channels, BigDL requires.
   epsilon: Float,
   momentum: Float
 )
 
 
 object BatchNormalization {
-
   def apply[T: ClassTag](
-    nOutput: Int, // number of output channels, BigDL requires.
+    numFeatures: Int, // number of input features, BigDL requires.
     epsilon: Float = 1e-05.toFloat,
     momentum: Float = 0.9.toFloat
   )(implicit ev: TensorNumeric[T]): nn.SpatialBatchNormalization[T] = {
-   new nn.SpatialBatchNormalization(nOutput, eps = epsilon, momentum = momentum)
+   new nn.SpatialBatchNormalization(nOutput = numFeatures, eps = epsilon, momentum = momentum)
   }
 
 }

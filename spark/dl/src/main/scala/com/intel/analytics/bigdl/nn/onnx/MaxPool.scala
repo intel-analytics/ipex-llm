@@ -22,48 +22,39 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class MaxPool[T: ClassTag] (
-  autoPad: String,
-  ceilMode: Int,
-  dilations: List[Int],
-  kernelShape: List[Int],
-  pads: List[Int],
-  storageOrder: Int,
-  strides: List[Int]
-)
 
 object MaxPool {
   def apply[T: ClassTag](
+    kernelShape: List[Int],
     autoPad: String = "NOTSET",
     ceilMode: Int = 0,
-    dilations: List[Int] = List(),
-    kernelShape: List[Int],
-    pads: List[Int] = List(),
+    dilations: List[Int] = null,
+    pads: List[Int] = null,
     storageOrder: Int = 0,
-    strides: List[Int] = List()
+    strides: List[Int] = null
   )(implicit ev: TensorNumeric[T]): nn.SpatialMaxPooling[T] = {
 
     val (kW: Int, kH: Int) = kernelShape match {
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException()
+      case _ => throw new IllegalArgumentException("Bad kernel shape value")
     }
     val (dW: Int, dH: Int) = strides match {
-      case List() => (1, 1)
+      case null => (1, 1)
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException()
+      case _ => throw new IllegalArgumentException("Bad strides value")
     }
     val (padW: Int, padH: Int) = pads match {
-      case List() => (0, 0)
+      case null => (0, 0)
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException()
+      case _ => throw new IllegalArgumentException("Bad padding value")
     }
 
     if (ceilMode != 0) {
-      throw new IllegalArgumentException("MaxPool doesnt support ceil mode yet")
+      throw new IllegalArgumentException("MaxPool doesnt support ceil mode yet.")
     }
 
     if (storageOrder != 0) {
-      throw new IllegalArgumentException("MaxPool doesnt support storage order yet")
+      throw new IllegalArgumentException("MaxPool doesnt support storage order yet.")
     }
 
     new nn.SpatialMaxPooling(kW = kW, kH = kH, dW = dW, dH = dH, padW = padW, padH = padH)

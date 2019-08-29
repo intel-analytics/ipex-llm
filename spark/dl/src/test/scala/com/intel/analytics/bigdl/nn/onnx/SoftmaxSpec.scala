@@ -14,16 +14,29 @@
  * limitations under the License.
  */
 
-
 package com.intel.analytics.bigdl.nn.onnx
 
-import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import org.scalatest.{FlatSpec, Matchers}
+
+class SoftmaxSpec extends FlatSpec with Matchers {
+  "Softmax" should "work" in {
+    val softmax = Softmax[Float]()
+    val input = Tensor[Float](1, 3, 5, 5).rand()
+    val out = softmax.forward(input)
+
+    // Todo: verify output
+    println(out)
+
+  }
+}
 
 
-object Reshape {
-  def apply[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]): nn.Reshape[T] = {
-    new nn.Reshape[T](size = size)
+class SoftmaxSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val softmax = Softmax[Float]()
+    val input = Tensor[Float](5, 5).rand()
+    runSerializationTest(softmax, input)
   }
 }
