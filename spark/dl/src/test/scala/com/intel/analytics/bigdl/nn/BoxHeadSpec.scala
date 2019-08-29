@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.dmg.pmml.False
 import org.scalatest.{FlatSpec, Matchers}
@@ -719,5 +720,43 @@ class BoxHeadSpec extends FlatSpec with Matchers {
       a should be(0.1460f +- 1e-3f)
       a
     })
+  }
+}
+
+class BoxHeadSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val inChannels: Int = 6
+    val resolution: Int = 7
+    val scales: Array[Float] = Array[Float](0.25f, 0.125f)
+    val samplingRratio: Float = 2.0f
+    val scoreThresh: Float = 0.012f
+    val nmsThresh: Float = 0.5f
+    val detections_per_img: Int = 100
+    val representation_size: Int = 1024
+    val numClasses: Int = 81
+
+    val layer = new BoxHead(inChannels, resolution, scales, samplingRratio, scoreThresh,
+      nmsThresh, detections_per_img, representation_size, numClasses).setName("BoxHead")
+
+    val feature1 = Tensor[Float](1, 6, 3, 4).rand()
+    val feature2 = Tensor[Float](1, 6, 5, 2).rand()
+    val bbox = Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
+      T(3.0f, 5.0f, 6.0f, 7.0f)))
+    val labels = Tensor[Float](T(1, 3))
+
+    runSerializationTest(layer, T(T(feature1, feature2), bbox, labels))
+  }
+}
+
+class BoxPostProcessorSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = new BoxPostProcessor(0.012f, 0.5f, 100, 81).setName("BoxPostProcessor")
+
+    val classLogits = Tensor[Float](2, 81).rand()
+    val boxRegression = Tensor[Float](2, 324).rand()
+    val bbox = Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
+      T(3.0f, 5.0f, 6.0f, 10.0f)))
+
+    runSerializationTest(layer, T(classLogits, boxRegression, bbox))
   }
 }

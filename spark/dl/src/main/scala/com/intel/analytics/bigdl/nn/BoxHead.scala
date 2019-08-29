@@ -103,11 +103,11 @@ class BoxHead(
 }
 
 private[nn] class BoxPostProcessor(
-    scoreThresh: Float,
-    nmsThresh: Float,
-    maxPerImage: Int,
-    nClasses: Int,
-    weight: Array[Float] = Array(10.0f, 10.0f, 5.0f, 5.0f)
+    val scoreThresh: Float,
+    val nmsThresh: Float,
+    val maxPerImage: Int,
+    val nClasses: Int,
+    val weight: Array[Float] = Array(10.0f, 10.0f, 5.0f, 5.0f)
   ) (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Table, Float] {
 
   private val softMax = SoftMax[Float]()
@@ -274,7 +274,7 @@ private[nn] class BoxPostProcessor(
    * bounding boxes that are used as reference, one for ech image
    * @param input
    * @return labels and bbox
-    */
+   */
   override def updateOutput(input: Table): Table = {
     if (isTraining()) {
       output = input
