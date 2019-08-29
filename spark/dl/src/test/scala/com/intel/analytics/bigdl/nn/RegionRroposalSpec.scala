@@ -28,7 +28,7 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
     val layer = new RegionRroposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
-      Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0, 2000)
+      Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
 
     val images = Tensor[Float](T(20, 38))
 
@@ -263,7 +263,7 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
     }
 
     layer.evaluate()
-    val output = layer.forward(T(images, T(features)))
+    val output = layer.forward(T(T(features), images))
     val outputExpected = Tensor[Float](
       T(T(0.0f, 0.0f, 20.999596f, 19.0f),
       T(0.0f, 0.0f, 12.995603f, 19.0f),
@@ -278,7 +278,7 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
     val layer = new RegionRroposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
-      Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0, 2000)
+      Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
 
     val images = Tensor[Float](T(20, 38))
 
@@ -555,7 +555,7 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
     }
 
     layer.evaluate()
-    val output = layer.forward(T(images, T(features1, features2, features3)))
+    val output = layer.forward(T(T(features1, features2, features3), images))
     val outputExpected = Tensor[Float](T(
       T( 0.0000, 0.0000, 35.0363, 19.0000),
       T( 0.0000, 0.0000, 20.9997, 19.0000),
@@ -741,7 +741,7 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
     val layer = new RegionRroposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
-      Array[Float](4, 8, 16, 32, 64), 2000, 2000,  2000, 2000, 0.7f, 0, 2000)
+      Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
 
     val input = Tensor[Float](T(T(T(T(0.7668, 0.1659, 0.4393, 0.2243),
       T(0.8935, 0.0497, 0.1780, 0.3011),
@@ -767,44 +767,49 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
       T(-10, -22, 13, 25),
       T(-18, -10, 29, 13),
       T(-10, -14, 21, 17),
-      T( -6, -22, 17, 25),
+      T(-6, -22, 17, 25),
       T(-14, -10, 33, 13),
-      T( -6, -14, 25, 17),
-      T( -2, -22, 21, 25),
+      T(-6, -14, 25, 17),
+      T(-2, -22, 21, 25),
       T(-10, -10, 37, 13),
-      T( -2, -14, 29, 17),
-      T(  2, -22, 25, 25),
+      T(-2, -14, 29, 17),
+      T(2, -22, 25, 25),
       T(-22, -6, 25, 17),
       T(-14, -10, 17, 21),
       T(-10, -18, 13, 29),
       T(-18, -6, 29, 17),
       T(-10, -10, 21, 21),
-      T( -6, -18, 17, 29),
+      T(-6, -18, 17, 29),
       T(-14, -6, 33, 17),
-      T( -6, -10, 25, 21),
-      T( -2, -18, 21, 29),
+      T(-6, -10, 25, 21),
+      T(-2, -18, 21, 29),
       T(-10, -6, 37, 17),
-      T( -2, -10, 29, 21),
-      T(  2, -18, 25, 29),
+      T(-2, -10, 29, 21),
+      T(2, -18, 25, 29),
       T(-22, -2, 25, 21),
       T(-14, -6, 17, 25),
       T(-10, -14, 13, 33),
       T(-18, -2, 29, 21),
       T(-10, -6, 21, 25),
-      T( -6, -14, 17, 33),
+      T(-6, -14, 17, 33),
       T(-14, -2, 33, 21),
-      T( -6, -6, 25, 25),
-      T( -2, -14, 21, 33),
+      T(-6, -6, 25, 25),
+      T(-2, -14, 21, 33),
       T(-10, -2, 37, 21),
-      T( -2, -6, 29, 25),
-      T(  2, -14, 25, 33)))
+      T(-2, -6, 29, 25),
+      T(2, -14, 25, 33)))
 
     val output = layer.anchorGenerator(T(input))
 
     output.apply[Tensor[Float]](1) should be(expectedOutput)
   }
   "RPNHead" should "be ok" in {
-    val proposal = new RPNHead(6, 3)
+    val layer = new RegionRroposal(6,
+      Array[Float](32, 64, 128, 256, 512),
+      Array[Float](0.5f, 1.0f, 2.0f),
+      Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
+
+    val proposal = layer.rpnHead(6, 3)
     val input = Tensor[Float](T(T(T(T(0.7668, 0.1659, 0.4393, 0.2243),
       T(0.8935, 0.0497, 0.1780, 0.3011),
       T(0.1893, 0.9186, 0.2131, 0.3957)),
@@ -934,24 +939,24 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
           T(-1.0057e-04, 2.8130e-03, -1.4722e-02),
           T(-5.0060e-03, 8.9401e-04, 4.7907e-03)))))
 
-    val weight_logits = Tensor[Float](T(T(T(T( 0.0013f)),
-      T(T( 0.0136f)),
+    val weight_logits = Tensor[Float](T(T(T(T(0.0013f)),
+      T(T(0.0136f)),
       T(T(-0.0002f)),
       T(T(-0.0085f)),
-      T(T( 0.0003f)),
+      T(T(0.0003f)),
       T(T(-0.0057f))),
       T(T(T(-0.0125f)),
-        T(T( 0.0005f)),
-        T(T( 0.0028f)),
+        T(T(0.0005f)),
+        T(T(0.0028f)),
         T(T(-0.0215f)),
         T(T(-0.0071f)),
-        T(T( 0.0006f))),
-      T(T(T( 0.0063f)),
+        T(T(0.0006f))),
+      T(T(T(0.0063f)),
         T(T(-0.0177f)),
         T(T(-0.0022f)),
-        T(T( 0.0275f)),
+        T(T(0.0275f)),
         T(T(-0.0105f)),
-        T(T( 0.0112f)))))
+        T(T(0.0112f)))))
 
     val weight_pred = Tensor[Float](T(T(T(T( 0.0013f)),
       T(T( 0.0136f)),
@@ -1100,19 +1105,11 @@ class RegionRroposalSerialTest extends ModuleSerializationTest {
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
       Array[Float](4, 8, 16, 32, 64),
-      2000, 2000, 2000, 2000, 0.7f, 0, 2000).setName("RegionRroposal")
+      2000, 2000, 2000, 2000, 0.7f, 0).setName("RegionRroposal")
 
     val features = Tensor[Float](1, 6, 3, 4).rand()
     val imgInfo = Tensor[Float](T(20, 38))
-    runSerializationTest(layer, T(features, imgInfo))
-  }
-}
-
-class RPNHeadSerialTest extends ModuleSerializationTest {
-  override def test(): Unit = {
-    val head = new RPNHead(inChannels = 25, numAnchors = 3).setName("RPNHead")
-    val features = Tensor[Float](1, 25, 3, 7).rand()
-    runSerializationTest(head, features)
+    runSerializationTest(layer, T(T(features), imgInfo))
   }
 }
 
@@ -1120,7 +1117,6 @@ class ProposalPostProcessorSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val proposal = new ProposalPostProcessor(2000, 2000, 2000, 2000, 0.7f, 0)
       .setName("ProposalPostProcessor")
-    val features = Tensor[Float](1, 25, 3, 7).rand()
     val anchors = Tensor[Float](63, 4).rand()
     val objectness = Tensor[Float](1, 3, 3, 7).rand()
     val box_regression = Tensor[Float](1, 12, 3, 7).rand()
