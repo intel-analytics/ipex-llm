@@ -1,4 +1,4 @@
-package com.intel.analytics.zoo.apps.model.inference.flink
+package com.intel.analytics.zoo.apps.model.inference.flink.TextClassification
 
 import scala.collection.JavaConverters._
 import java.util.{List => JList}
