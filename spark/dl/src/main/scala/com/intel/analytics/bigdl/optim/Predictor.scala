@@ -213,22 +213,6 @@ object Predictor {
       })
     }
   }
-/*
-  def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
-    batchPerPartition: Int, featurePaddingParam: Option[PaddingParam[T]])(
-    implicit ev: TensorNumeric[T]): RDD[Int] = {
-    val result = Predictor.predict(dataSet, batchSize, true, model,
-      batchPerPartition, featurePaddingParam)
-    result.mapPartitions { partition =>
-      partition.map(output => {
-        val _output = output.toTensor[T]
-        require(_output.dim() == 1, s"Predictor.predictClass:" +
-          s"Only support one sample has one label, but got ${_output.dim()} label")
-        ev.toType[Int](_output.max(1)._2.valueAt(1))
-      })
-    }
-  }
-*/
 }
 
 /**
