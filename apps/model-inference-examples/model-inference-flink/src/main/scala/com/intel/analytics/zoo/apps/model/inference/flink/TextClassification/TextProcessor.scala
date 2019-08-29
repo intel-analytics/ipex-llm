@@ -1,4 +1,4 @@
-package com.intel.analytics.zoo.apps.model.inference.flink
+package com.intel.analytics.zoo.apps.model.inference.flink.TextClassification
 
 import java.io.File
 
