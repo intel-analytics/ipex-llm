@@ -311,17 +311,14 @@ private[nn] class RPNHead(inChannels: Int, numAnchors: Int)
   override def buildModel(): Module[Float] = {
     val conv = SpatialConvolution[Float](inChannels, inChannels,
       kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
-    conv.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
-    conv.bias.apply1(_ => ev.zero)
+    conv.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
     val relu = ReLU[Float]()
     val conv2 = SpatialConvolution[Float](inChannels, numAnchors,
       kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
-    conv2.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
-    conv2.bias.apply1(_ => ev.zero)
+    conv2.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
     val conv3 = SpatialConvolution[Float](inChannels, numAnchors * 4,
       kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
-    conv3.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
-    conv3.bias.apply1(_ => ev.zero)
+    conv3.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
 
     val input = Input()
     val node1 = conv.inputs(input)
