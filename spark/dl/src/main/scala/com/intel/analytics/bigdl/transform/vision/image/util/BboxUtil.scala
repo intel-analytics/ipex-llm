@@ -532,13 +532,26 @@ object BboxUtil {
     val buffer3 = Tensor[Float]().resizeAs(pred_ctr_x).copy(pred_ctr_x).add(pred_w).add(-1.0f)
     val buffer4 = Tensor[Float]().resizeAs(pred_ctr_y).copy(pred_ctr_y).add(pred_h).add(-1.0f)
 
-    decodeBox.resize(Array(decodeBox.nElement() / 4, 4))
-    decodeBox.select(2, 1).copy(buffer1)
-    decodeBox.select(2, 2).copy(buffer2)
-    decodeBox.select(2, 3).copy(buffer3)
-    decodeBox.select(2, 4).copy(buffer4)
-
     decodeBox.resize(decodeBox.nElement())
+
+    var arr1 = buffer1.storage().array()
+    var arr2 = buffer2.storage().array()
+    var arr3 = buffer3.storage().array()
+    var arr4 = buffer4.storage().array()
+    val arrBox = decodeBox.storage().array()
+    val offsetBox = decodeBox.storageOffset() - 1
+
+    var i = 0
+    var j = 0
+    while (i < arr1.length) {
+      arrBox(j + offsetBox) = arr1(i)
+      arrBox(j + 1 + offsetBox) = arr2(i)
+      arrBox(j + 2 + offsetBox) = arr3(i)
+      arrBox(j + 3 + offsetBox) = arr4(i)
+
+      i += 1
+      j += 4
+    }
   }
 
   def decodeWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],

@@ -28,17 +28,35 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.collection.mutable.ArrayBuffer
 
 class BoxHead(
-  val inChannels: Int = 0,
-  val resolution: Int = 0,
+  val inChannels: Int,
+  val resolution: Int,
   val scales: Array[Float],
-  val samplingRatio: Float = 2.0f,
-  val scoreThresh: Float = 0.05f,
-  val nmsThresh: Float = 0.5f,
-  val maxPerImage: Int = 100,
-  val outputSize: Int = 1024,
-  val numClasses: Int = 81 // coco dataset class number
+  val samplingRatio: Float,
+  val scoreThresh: Float,
+  val nmsThresh: Float,
+  val maxPerImage: Int,
+  val outputSize: Int,
+  val numClasses: Int
   )(implicit ev: TensorNumeric[Float])
   extends BaseModule[Float] {
+
+  val weight = Array(10.0f, 10.0f, 5.0f, 5.0f)
+
+  val features = this.featureExtractor(
+    inChannels, resolution, scales, samplingRatio.toInt, outputSize)
+
+  val clsPre = this.clsPredictor(numClasses, outputSize)
+  val bboxPre = this.bboxPredictor(numClasses, outputSize)
+
+  val postProcessor = new BoxPostProcessor(scoreThresh, nmsThresh,
+    maxPerImage, numClasses, weight = weight)
+
+  // debug
+  features.getParameters()._1.fill(0.001f)
+  clsPre.getParameters()._1.fill(0.001f)
+  bboxPre.getParameters()._1.fill(0.001f)
+
+  val pooler = new Pooler(resolution, scales, samplingRatio.toInt)
 
   override def buildModel(): Module[Float] = {
     val featureExtractor = this.featureExtractor(
@@ -47,7 +65,9 @@ class BoxHead(
     val clsPre = this.clsPredictor(numClasses, outputSize)
     val bboxPre = this.bboxPredictor(numClasses, outputSize)
 
-    val postProcessor = new BoxPostProcessor(scoreThresh, nmsThresh, maxPerImage, numClasses)
+    val weight = Array(10.0f, 10.0f, 5.0f, 5.0f)
+    val postProcessor = new BoxPostProcessor(scoreThresh, nmsThresh,
+      maxPerImage, numClasses, weight = weight)
 
     val features = Input()
     val proposals = Input()
@@ -62,7 +82,7 @@ class BoxHead(
 
   private[nn] def clsPredictor(numClass: Int,
                                inChannels: Int): Module[Float] = {
-    val cls_score = Linear[Float](inChannels, numClass)
+    val cls_score = Linear[Float](inChannels, numClass).setName("forCls")
     cls_score.weight.apply1(_ => RNG.normal(0, 0.01).toFloat)
     cls_score.bias.fill(0.0f)
     cls_score.asInstanceOf[Module[Float]]
@@ -105,8 +125,8 @@ private[nn] class BoxPostProcessor(
     nmsThresh: Float,
     maxPerImage: Int,
     nClasses: Int,
-    weight: Array[Float] = Array(1.0f, 1.0f, 1.0f, 1.0f)
-  ) (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Activity, Float] {
+    weight: Array[Float] = Array(10.0f, 10.0f, 5.0f, 5.0f)
+  ) (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Table, Float] {
 
   private val softMax = SoftMax[Float]()
   private val nmsTool: Nms = new Nms
@@ -143,6 +163,18 @@ private[nn] class BoxPostProcessor(
     val clsScores = selectTensor(scores.select(2, clsInd + 1), inds, 1)
     val clsBoxes = selectTensor(boxes.narrow(2, clsInd * 4 + 1, 4), inds, 1)
 
+    // set to 0 if samller than 0
+    require(clsBoxes.isContiguous())
+    var arr = clsBoxes.storage().array()
+    val offset = clsBoxes.storageOffset() - 1
+    var i = 0
+    while (i < arr.length) {
+      if (arr(i) <  0) {
+        arr(i) = 0
+      }
+      i += 1
+    }
+
     val keepN = nmsTool.nms(clsScores, clsBoxes, nmsThresh, inds)
 
     val bboxNms = selectTensor(clsBoxes, inds, 1, keepN)
@@ -151,7 +183,7 @@ private[nn] class BoxPostProcessor(
     RoiLabel(scoresNms, bboxNms)
   }
 
-  private def selectTensor(matrix: Tensor[Float], indices: Array[Int],
+  private[nn] def selectTensor(matrix: Tensor[Float], indices: Array[Int],
     dim: Int, indiceLen: Int = -1, out: Tensor[Float] = null): Tensor[Float] = {
     assert(dim == 1 || dim == 2)
     var i = 1
@@ -199,33 +231,32 @@ private[nn] class BoxPostProcessor(
     }
   }
 
-  private def resultToTensor(results: Array[RoiLabel]): Tensor[Float] = {
+  private def resultToTensor(results: Array[RoiLabel], labels: Tensor[Float], bbox: Tensor[Float])
+    : Unit = {
     var maxDetection = 0
     results.foreach(res => {
       if (null != res) {
         maxDetection += res.size()
       }
     })
-    val out = Tensor[Float](1, 1 + maxDetection * 6)
-    val outi = out(1)
 
-    outi.setValue(1, maxDetection)
-    var offset = 2
+    labels.resize(maxDetection)
+    bbox.resize(maxDetection, 4)
+
+    var offset = 1
     (0 until nClasses).foreach(c => {
       val label = results(c)
       if (null != label) {
         (1 to label.size()).foreach(j => {
-          outi.setValue(offset, c)
-          outi.setValue(offset + 1, label.classes.valueAt(j))
-          outi.setValue(offset + 2, label.bboxes.valueAt(j, 1))
-          outi.setValue(offset + 3, label.bboxes.valueAt(j, 2))
-          outi.setValue(offset + 4, label.bboxes.valueAt(j, 3))
-          outi.setValue(offset + 5, label.bboxes.valueAt(j, 4))
-          offset += 6
+          labels.setValue(offset, c)
+          bbox.setValue(offset, 1, label.bboxes.valueAt(j, 1))
+          bbox.setValue(offset, 2, label.bboxes.valueAt(j, 2))
+          bbox.setValue(offset, 3, label.bboxes.valueAt(j, 3))
+          bbox.setValue(offset, 4, label.bboxes.valueAt(j, 4))
+          offset += 1
         })
       }
     })
-    out
   }
 
   private def limitMaxPerImage(results: Array[RoiLabel]): Unit = {
@@ -274,11 +305,11 @@ private[nn] class BoxPostProcessor(
     * @param input
     * @return boxlist contains labels and scores
     */
-  override def updateOutput(input: Table): Activity = {
-    if (isTraining()) {
-      output = input
-      return output
-    }
+  override def updateOutput(input: Table): Table = {
+//    if (isTraining()) {
+//      output = input
+//      return output
+//    }
     val classLogits = input[Tensor[Float]](1)
     val boxRegression = input[Tensor[Float]](2)
     val bbox = input[Tensor[Float]](3)
@@ -294,20 +325,26 @@ private[nn] class BoxPostProcessor(
     val class_prob_split = class_prob.split(boxesInImage, dim = 1)
 
     val roilabels = filterResults(proposals_split(0), class_prob_split(0), nClasses)
-    output = resultToTensor(roilabels)
+
+    if (output.toTable.length() == 0) {
+      output.toTable(1) = Tensor[Float]() // for scores
+      output.toTable(2) = Tensor[Float]() // for labels
+    }
+
+    resultToTensor(roilabels, output.toTable(1), output.toTable(2))
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Activity): Table = {
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
     gradInput = gradOutput.toTable
     gradInput
   }
 }
 
 object BoxHead {
-  def apply(inChannels: Int = 0,
-  resolution: Int = 0,
-  scales: Array[Float],
+  def apply(inChannels: Int,
+  resolution: Int = 7,
+  scales: Array[Float] = Array[Float](0.25f, 0.125f, 0.0625f, 0.03125f),
   samplingRatio: Float = 2.0f,
   scoreThresh: Float = 0.05f,
   nmsThresh: Float = 0.5f,
@@ -316,5 +353,5 @@ object BoxHead {
   numClasses: Int = 81 // coco dataset class number
   ) ( implicit ev: TensorNumeric[Float]): BoxHead =
     new BoxHead(inChannels, resolution, scales, samplingRatio,
-      scoreThresh, nmsThresh, maxPerImage, outputSize)
+      scoreThresh, nmsThresh, maxPerImage, outputSize, numClasses)
 }
