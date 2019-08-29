@@ -69,7 +69,7 @@ class RegionRroposal(inChannels: Int,
   }
 
   private val numAnchors = anchors(0).anchorNum
-  private val head = new RPNHead[Float](inChannels, numAnchors)
+  private val head = new RPNHead(inChannels, numAnchors)
   private val boxSelector = new ProposalPostProcessor(preNmsTopNTest, postNmsTopNTest,
     preNmsTopNTrain, postNmsTopNTrain, nmsThread, minSize)
   private val selectorRes = T()
@@ -199,7 +199,7 @@ object RegionRroposal {
       minSize, fpnPostNmsTopN)
 }
 
-private[nn] class ProposalPostProcessor[T: ClassTag](
+private[nn] class ProposalPostProcessor(
   preNmsTopNTest: Int = 1000,
   postNmsTopNTest: Int = 1000,
   preNmsTopNTrain: Int = 2000,
@@ -305,20 +305,20 @@ private[nn] class ProposalPostProcessor[T: ClassTag](
  * @param inChannels number of channels of the input feature
  * @param numAnchors number of anchors to be predicted
  */
-private[nn] class RPNHead[T: ClassTag](inChannels: Int, numAnchors: Int)
-  (implicit ev: TensorNumeric[T]) extends BaseModule {
+private[nn] class RPNHead(inChannels: Int, numAnchors: Int)
+  (implicit ev: TensorNumeric[Float]) extends BaseModule[Float] {
 
-  override def buildModel(): Module[T] = {
-    val conv = SpatialConvolution[T](inChannels, inChannels,
+  override def buildModel(): Module[Float] = {
+    val conv = SpatialConvolution[Float](inChannels, inChannels,
       kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
     conv.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
     conv.bias.apply1(_ => ev.zero)
-    val relu = ReLU[T]()
-    val conv2 = SpatialConvolution[T](inChannels, numAnchors,
+    val relu = ReLU[Float]()
+    val conv2 = SpatialConvolution[Float](inChannels, numAnchors,
       kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
     conv2.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
     conv2.bias.apply1(_ => ev.zero)
-    val conv3 = SpatialConvolution[T](inChannels, numAnchors * 4,
+    val conv3 = SpatialConvolution[Float](inChannels, numAnchors * 4,
       kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
     conv3.weight.apply1(_ => ev.fromType(RNG.normal(0, 0.01)))
     conv3.bias.apply1(_ => ev.zero)
