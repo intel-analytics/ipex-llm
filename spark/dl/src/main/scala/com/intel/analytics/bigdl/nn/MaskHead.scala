@@ -66,7 +66,7 @@ class MaskHead(
     val maskLogits = SpatialConvolution(nInputPlane = dimReduced,
       nOutputPlane = numClasses, kernelW = 1, kernelH = 1, strideH = 1, strideW = 1)
 
-    // init weight & bias, Caffe2 implementation uses MSRAFill,
+    // init weight & bias, MSRAFill by default
     convMask.setInitMethod(MsraFiller(false), Zeros)
     maskLogits.setInitMethod(MsraFiller(false), Zeros)
 
@@ -83,7 +83,7 @@ class MaskHead(
                                        dilation: Int,
                                        useGn: Boolean = false): Module[Float] = {
 
-    require(dilation == 1, s"Only support dilation = 1, but get ${dilation}")
+    require(dilation == 1, s"Only support dilation = 1, but got ${dilation}")
 
     val model = Sequential[Float]()
     model.add(Pooler(resolution, scales, samplingRatio.toInt))
@@ -92,7 +92,7 @@ class MaskHead(
     var i = 0
     while (i < layers.length) {
       val features = layers(i)
-      // todo: not support dilation convolution
+      // todo: support dilation convolution with no bias
       val module = SpatialConvolution[Float](
         nextFeatures,
         features,
@@ -133,11 +133,11 @@ private[nn] class MaskPostProcessor(implicit ev: TensorNumeric[Float])
     val num_masks = maskLogits.size(1)
     if (rangeBuffer == null || rangeBuffer.nElement() != num_masks) {
       rangeBuffer = Tensor[Float](num_masks)
-      TransformerOperation.initRangeTensor(num_masks, rangeBuffer)
+      rangeBuffer.range(0, num_masks - 1, 1)
     }
 
     val mask_prob = sigmoid.forward(maskLogits)
-    require(labels.nDimension() == 1, s"Labels should be tensor with one dimention," +
+    require(labels.nDimension() == 1, s"Labels should be tensor with one dimension," +
       s"but get ${labels.nDimension()}")
     require(rangeBuffer.nElement() == labels.nElement(), s"number of masks should be same" +
       s"with labels, but get ${rangeBuffer.nElement()} ${labels.nElement()}")
