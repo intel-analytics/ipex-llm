@@ -45,20 +45,21 @@ import scala.reflect.ClassTag
  * @param nmsThread
  * @param minSize
  */
-class RegionRroposal(inChannels: Int,
-   anchorSizes: Array[Float],
-   aspectRatios: Array[Float],
-   anchorStride: Array[Float],
-   preNmsTopNTest: Int = 1000,
-   postNmsTopNTest: Int = 1000,
-   preNmsTopNTrain: Int = 2000,
-   postNmsTopNTrain: Int = 2000,
-   nmsThread: Float = 0.7f,
-   minSize: Int = 0,
-   fpnPostNmsTopN: Int = 2000)(implicit ev: TensorNumeric[Float])
+class RegionRroposal(
+   val inChannels: Int,
+   val anchorSizes: Array[Float],
+   val aspectRatios: Array[Float],
+   val anchorStride: Array[Float],
+   val preNmsTopNTest: Int = 1000,
+   val postNmsTopNTest: Int = 1000,
+   val preNmsTopNTrain: Int = 2000,
+   val postNmsTopNTrain: Int = 2000,
+   val nmsThread: Float = 0.7f,
+   val minSize: Int = 0,
+   val fpnPostNmsTopN: Int = 2000)(implicit ev: TensorNumeric[Float])
    extends AbstractModule[Table, Tensor[Float], Float] {
 
-  // for anchor generate
+  // for anchor generation
   require(anchorSizes.length == anchorStride.length, s"anchor size and stride should be same")
 
   private val scalesForStride = new Array[Float](1)
@@ -69,7 +70,7 @@ class RegionRroposal(inChannels: Int,
   }
 
   private val numAnchors = anchors(0).anchorNum
-  private val head = new RPNHead(inChannels, numAnchors)
+  private val head = rpnHead(inChannels, numAnchors)
   private val boxSelector = new ProposalPostProcessor(preNmsTopNTest, postNmsTopNTest,
     preNmsTopNTrain, postNmsTopNTrain, nmsThread, minSize)
   private val selectorRes = T()
@@ -89,6 +90,29 @@ class RegionRroposal(inChannels: Int,
   }
 
   /**
+   * Adds a simple RPN Head with classification and regression heads
+   */
+  private[nn] def rpnHead(inChannels: Int, numAnchors: Int): Module[Float] = {
+    val conv = SpatialConvolution[Float](inChannels, inChannels,
+      kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
+    conv.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
+    val conv2 = SpatialConvolution[Float](inChannels, numAnchors,
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
+    conv2.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
+    val conv3 = SpatialConvolution[Float](inChannels, numAnchors * 4,
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
+    conv3.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
+
+    val input = Input()
+    val node1 = conv.inputs(input)
+    val node2 = ReLU[Float]().inputs(node1)
+    val node3 = conv2.inputs(node2)
+    val node4 = conv3.inputs(node2)
+
+    Graph(input, Array(node3, node4))
+  }
+
+  /**
    * input is a table and contains:
    * first tensor: images: images for which we want to compute the predictions
    * second tensor: features: features computed from the images that are used for
@@ -96,8 +120,8 @@ class RegionRroposal(inChannels: Int,
    */
   override def updateOutput(input: Table): Tensor[Float] = {
     require(!this.isTraining(), "Only support RegionProposal inference")
-    val images = input[Tensor[Float]](1)
-    val features = input[Table](2)
+    val features = input[Table](1)
+    val images = input[Tensor[Float]](2)
     val anchors = this.anchorGenerator(features)
 
     var bboxNumber = 0
@@ -200,12 +224,12 @@ object RegionRroposal {
 }
 
 private[nn] class ProposalPostProcessor(
-  preNmsTopNTest: Int = 1000,
-  postNmsTopNTest: Int = 1000,
-  preNmsTopNTrain: Int = 2000,
-  postNmsTopNTrain: Int = 2000,
-  nmsThread: Float = 0.7f,
-  minSize: Int = 0)
+  val preNmsTopNTest: Int = 1000,
+  val postNmsTopNTest: Int = 1000,
+  val preNmsTopNTrain: Int = 2000,
+  val postNmsTopNTrain: Int = 2000,
+  val nmsThread: Float = 0.7f,
+  val minSize: Int = 0)
   (implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Table, Float]{
 
   @transient private val sortedScores: Tensor[Float] = Tensor[Float]()
@@ -300,33 +324,4 @@ private[nn] class ProposalPostProcessor(
   }
 }
 
-/**
- * Adds a simple RPN Head with classification and regression heads
- * @param inChannels number of channels of the input feature
- * @param numAnchors number of anchors to be predicted
- */
-private[nn] class RPNHead(inChannels: Int, numAnchors: Int)
-  (implicit ev: TensorNumeric[Float]) extends BaseModule[Float] {
-
-  override def buildModel(): Module[Float] = {
-    val conv = SpatialConvolution[Float](inChannels, inChannels,
-      kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
-    conv.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
-    val relu = ReLU[Float]()
-    val conv2 = SpatialConvolution[Float](inChannels, numAnchors,
-      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
-    conv2.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
-    val conv3 = SpatialConvolution[Float](inChannels, numAnchors * 4,
-      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
-    conv3.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
-
-    val input = Input()
-    val node1 = conv.inputs(input)
-    val node2 = relu.inputs(node1)
-    val node3 = conv2.inputs(node2)
-    val node4 = conv3.inputs(node2)
-
-    Graph(input, Array(node3, node4))
-  }
-}
 
