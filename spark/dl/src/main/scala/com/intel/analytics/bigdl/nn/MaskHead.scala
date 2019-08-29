@@ -115,16 +115,16 @@ class MaskHead(
   }
 }
 
-private[nn] class MaskPostProcessor(implicit ev: TensorNumeric[Float])
+private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
   extends AbstractModule[Table, Tensor[Float], Float] {
 
   @transient var rangeBuffer: Tensor[Float] = null
   private val sigmoid = Sigmoid[Float]()
 
   /**
-    * @param input feature-maps from possibly several levels, proposal boxes and labels
-    * @return the predicted boxlists are returned with the `mask` field set
-    */
+   * @param input feature-maps from possibly several levels, proposal boxes and labels
+   * @return the predicted boxlists are returned with the `mask` field set
+   */
   override def updateOutput(input: Table): Tensor[Float] = {
     val maskLogits = input[Tensor[Float]](1)
     val bbox = input[Tensor[Float]](2) // N * 4
@@ -166,7 +166,7 @@ object MaskHead {
   samplingRratio: Float = 0.1f,
   layers: Array[Int] = Array[Int](256, 256, 256, 256),
   dilation: Int = 1,
-  numClasses: Int = 81, // coco dataset class number
+  numClasses: Int = 81,
   useGn: Boolean = false)(implicit ev: TensorNumeric[Float]): Module[Float] = {
     new MaskHead(inChannels, resolution, scales, samplingRratio,
       layers, dilation, numClasses, useGn)

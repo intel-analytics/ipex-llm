@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import org.dmg.pmml.False
 import org.scalatest.{FlatSpec, Matchers}
@@ -852,5 +853,30 @@ class MaskHeadSpec extends FlatSpec with Matchers {
             0.0116, 0.0116, 0.0119, 0.0119, 0.0125, 0.0125, 0.0127, 0.0127)))))
 
     output.almostEqual(expectedOutput, 1e-4) should be(true)
+  }
+}
+
+class MaskHeadSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val inChannels: Int = 6
+    val resolution: Int = 14
+    val scales: Array[Float] = Array[Float](0.25f, 0.125f)
+    val samplingRratio: Float = 2.0f
+    val layers: Array[Int] = Array[Int](4, 4)
+    val dilation: Int = 1
+    val numClasses: Int = 81
+    val useGn: Boolean = false
+
+    val layer = new MaskHead(inChannels, resolution, scales,
+      samplingRratio, layers, dilation, numClasses, useGn).setName("MaskHead")
+
+    val features1 = Tensor[Float](1, 6, 3, 4).rand()
+    val features2 = Tensor[Float](1, 6, 5, 2).rand()
+
+    val bbox = Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
+      T(3.0f, 5.0f, 6.0f, 10.0f)))
+    val labels = Tensor[Float](T(1, 3))
+
+    runSerializationTest(layer, T(T(features1, features2), bbox, labels))
   }
 }

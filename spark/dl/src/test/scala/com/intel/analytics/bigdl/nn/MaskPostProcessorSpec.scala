@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class MaskPostProcessorSpec extends FlatSpec with Matchers {
@@ -515,5 +516,17 @@ class MaskPostProcessorSpec extends FlatSpec with Matchers {
 
 
     output.almostEqual(expectedOutput, 1e-3) should be(true)
+  }
+}
+
+class MaskPostProcessorSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val proposal = new MaskPostProcessor().setName("MaskPostProcessor")
+
+    val bbox = Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
+      T(3.0f, 5.0f, 6.0f, 10.0f)))
+    val labels = Tensor[Float](T(1, 3))
+    val logits = Tensor[Float](2, 81, 18, 18).rand()
+    runSerializationTest(proposal, T(logits, bbox, labels))
   }
 }
