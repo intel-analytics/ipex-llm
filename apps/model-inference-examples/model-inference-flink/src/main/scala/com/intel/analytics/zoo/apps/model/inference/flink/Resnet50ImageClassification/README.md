@@ -1,4 +1,4 @@
-## Analytics-Zoo InferenceModel with openVINO accelerating on Flink Streaming
+## Analytics-Zoo InferenceModel with OpenVINO accelerating on Flink Streaming
 This is the example of streaming with Flink and Resnet50 model, as well as using Analytics-Zoo InferenceModel and OpenVINO backend to acclerate prediction.
 ### Requirements
 * JDK 1.8
