@@ -553,7 +553,6 @@ class TestSimple():
             for i in range(0, total_length):
                 assert predict_labels[i] == 1
 
-
     def test_predict_image(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "resources")
         image_path = os.path.join(resource_path, "pascal/000025.jpg")
