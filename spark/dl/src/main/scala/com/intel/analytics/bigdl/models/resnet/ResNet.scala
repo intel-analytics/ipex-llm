@@ -250,14 +250,33 @@ object ResNet {
         .add(Sbn(64))
         .add(ReLU(true))
         .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
-        .add(layer(block, 64, loopConfig._1))
-        .add(layer(block, 128, loopConfig._2, 2))
-        .add(layer(block, 256, loopConfig._3, 2))
-        .add(layer(block, 512, loopConfig._4, 2))
-        .add(SpatialAveragePooling(7, 7, 1, 1))
+        .add(layer(block, 32, loopConfig._1))
+        .add(layer(block, 64, loopConfig._2, 2))
+        .add(layer(block, 128, loopConfig._3, 2))
+        .add(layer(block, 256, loopConfig._4, 2))
+        .add(SpatialAveragePooling(7, 7, 1, 1).setName("maskrcnn"))
         .add(View(nFeatures).setNumInputDims(3))
         .add(Linear(nFeatures, classNum, true, L2Regularizer(1e-4), L2Regularizer(1e-4))
           .setInitMethod(RandomNormal(0.0, 0.01), Zeros))
+
+//      model.add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet, propagateBack = false))
+//        .add(Sbn(64))
+//        .add(ReLU(true))
+//        .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
+//
+//        val layer1 = layer(block, 64, loopConfig._1)
+//        val layer2 = layer(block, 128, loopConfig._2, 2)
+//        val layer3 = layer(block, 256, loopConfig._3, 2)
+//        val layer4 = layer(block, 512, loopConfig._4, 2)
+//
+//      val node0 = model.inputs()
+//      val node1 = layer1.inputs(node0)
+//      val node2 = layer2.inputs(node1)
+//      val node3 = layer3.inputs(node2)
+//      val node4 = layer4.inputs(node3)
+//
+//      val g = Graph(Array(node0), Array(node1, node2, node3, node4))
+//      return g
     } else if (dataSet == DatasetType.CIFAR10) {
       require((depth - 2)%6 == 0,
         "depth should be one of 20, 32, 44, 56, 110, 1202")

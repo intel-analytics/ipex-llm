@@ -321,6 +321,10 @@ class SpatialAveragePooling[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+
+    if (this.getName() == "maskrcnn") {
+      val tmp = 0
+    }
     require(input.dim() == 3 || input.dim() == 4,
       "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
     s"input dimension ${input.dim()}")

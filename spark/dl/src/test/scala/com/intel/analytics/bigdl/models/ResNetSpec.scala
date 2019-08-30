@@ -179,11 +179,28 @@ class ResNetSpec extends TorchSpec {
     gradInput1 should be(gradInput2)
   }
 
+  "ResNet-50 graph test for maskrcnn" should "be same with original one for ImageNet" in {
+    val batchSize = 4
+    val classNum = 1000
+    val depth = 50
+    val input = Tensor[Float](1, 3, 224, 224).apply1( e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(1000)
+    val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B,
+      "depth" -> depth, "dataSet" -> DatasetType.ImageNet))
+
+    val output1 = model.forward(input)
+//    val output2 = model.backward(input, gradOutput).toTensor[Float]
+
+    println("done")
+  }
+
   "ResNet graph" should "be same with original one for Cifar10" in {
     val batchSize = 4
     val classNum = 10
     val depth = 20
-    val input = Tensor[Float](batchSize, 3, 32, 32).apply1( e => Random.nextFloat())
+    val input = Tensor[Float](32, 64, 128, 256).apply1( e => Random.nextFloat())
     val gradOutput = Tensor[Float](batchSize, classNum).apply1(e => Random.nextFloat())
 
     RNG.setSeed(1000)

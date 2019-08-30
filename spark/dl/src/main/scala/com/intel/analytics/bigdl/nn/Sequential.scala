@@ -36,6 +36,7 @@ class Sequential[T: ClassTag]
     var i = 0
     var result = input.asInstanceOf[Activity]
     while (i < modules.length) {
+      println(i + "\n")
       result = modules(i).forward(result)
       i += 1
     }
