@@ -130,6 +130,9 @@ object ModuleLoader {
       val tensorStorage = tensorValue.getTensorType match {
         case TensorType.DENSE => tensor.storage()
         case TensorType.QUANT => tensor.asInstanceOf[QuantizedTensor[_]].getStorage
+        case _ => throw new UnsupportedOperationException(
+          "Tensor storage does not support tensor type " + tensorValue.getTensorType.toString + "."
+        )
       }
       storages(tensorId) = tensor
       storages(storageId) = tensorStorage

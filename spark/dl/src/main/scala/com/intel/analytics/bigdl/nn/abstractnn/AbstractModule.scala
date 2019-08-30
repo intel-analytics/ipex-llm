@@ -252,7 +252,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param input input data
    * @return output data
    */
-  final def forward(input: A): B = {
+  final def forward(input: A = null.asInstanceOf[A]): B = {
     val before = System.nanoTime()
     try {
       updateParameter

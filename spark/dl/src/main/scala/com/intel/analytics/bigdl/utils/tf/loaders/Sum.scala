@@ -51,6 +51,8 @@ class Sum extends TensorflowOpsLoader {
         SumOps[T, Float](keepDims, startFromZero = true)
       case DataType.DT_DOUBLE =>
         SumOps[T, Double](keepDims, startFromZero = true)
+      case _ => throw new UnsupportedOperationException("Unsupported data type: "
+        + dataType)
     }
   }
 }
