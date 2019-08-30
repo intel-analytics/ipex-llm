@@ -1148,6 +1148,20 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       ev.fromType(spatial_scale))
   }
 
+  def createRoiAlign(spatial_scale: Double, sampling_ratio: Int, pooled_h: Int, pooled_w: Int)
+  : RoiAlign[T] = {
+    RoiAlign[T](spatial_scale.toFloat,
+      sampling_ratio,
+      pooled_h,
+      pooled_w)
+  }
+
+  def createFPN(in_channels_list: JList[Int], out_channels: Int)
+  : FPN[T] = {
+    FPN[T](in_channels_list.asScala.toArray,
+      out_channels)
+  }
+
   def createScale(size: JList[Int])
   : Scale[T] = {
     Scale[T](size.asScala.toArray)
@@ -2587,6 +2601,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def saveGraphTopology(model: Graph[T], logPath: String): Graph[T] = {
     model.saveGraphTopology(logPath)
+  }
+
+  def setInputFormats(graph: StaticGraph[T], inputFormat: JList[Int]): StaticGraph[T] = {
+    graph.setInputFormats(inputFormat.asScala.toList)
+  }
+
+  def setOutputFormats(graph: StaticGraph[T], outputFormat: JList[Int]): StaticGraph[T] = {
+    graph.setOutputFormats(outputFormat.asScala.toList)
   }
 
   def createResizeBilinear(

@@ -902,6 +902,34 @@ class Model(Container):
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
         return self
 
+    def set_input_formats(self, input_formats, bigdl_type="float"):
+        """
+        set input formats for graph.
+        :param input_formats: list of input format numbers
+        :param bigdl_type:
+        :return:
+        """
+        jname = callBigDlFunc(bigdl_type,
+                              "getRealClassNameOfJValue",
+                              self.value)
+        if jname.split(".")[-1] == "StaticGraph" :
+            callBigDlFunc(bigdl_type, "setInputFormats", self.value, input_formats)
+        return self
+
+    def set_output_formats(self, output_formats, bigdl_type="float"):
+        """
+        set output formats for graph.
+        :param output_formats: list of output format numbers
+        :param bigdl_type:
+        :return:
+        """
+        jname = callBigDlFunc(bigdl_type,
+                              "getRealClassNameOfJValue",
+                              self.value)
+        if jname.split(".")[-1] == "StaticGraph":
+            callBigDlFunc(bigdl_type, "setOutputFormats", self.value, output_formats)
+        return self
+
 class Attention(Layer):
 
     '''
@@ -1749,6 +1777,11 @@ class LSTMPeephole(Layer):
 
     def __init__(self, input_size=4, hidden_size=3, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
         super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
+
+
+class Gemm(Layer):
+    def __init__(self, alpha=1.0, beta=1.0, trans_a=False, trans_b=False, bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
 
 
 class GRU(Layer):
@@ -5611,6 +5644,75 @@ class Cropping3D(Layer):
     """
     def __init__(self, dim1Crop, dim2Crop, dim3Crop, data_format="channel_first", bigdl_type="float"):
         super(Cropping3D, self).__init__(None, bigdl_type, dim1Crop, dim2Crop, dim3Crop, data_format)
+
+        
+class RoiAlign(Layer):
+    """
+    Region of interest aligning (RoIAlign) for Mask-RCNN
+
+    The RoIAlign uses average pooling on bilinear-interpolated sub-windows to convert
+    the features inside any valid region of interest into a small feature map with a
+    fixed spatial extent of pooledH * pooledW (e.g., 7 * 7).
+
+    An RoI is a rectangular window into a conv feature map.
+    Each RoI is defined by a four-tuple (x1, y1, x2, y2) that specifies its
+    top-left corner (x1, y1) and its bottom-right corner (x2, y2).
+
+    RoIAlign works by dividing the h * w RoI window into an pooledH * pooledW grid of
+    sub-windows of approximate size h/H * w/W. In each sub-window, compute exact values
+    of input features at four regularly sampled locations, and then do average pooling on
+    the values in each sub-window.
+
+    Pooling is applied independently to each feature map channel
+
+    :param spatial_scale:  spatial scale
+    :param sampling_ratio: sampling ratio
+    :param pooled_h:       spatial extent in height
+    :param pooled_w:       spatial extent in width
+
+    >>> import numpy as np
+    >>> input_data = np.random.rand(1,2,6,8)
+    >>> input_rois = np.array([0, 0, 7, 5, 6, 2, 7, 5, 3, 1, 6, 4, 3, 3, 3, 3],dtype='float').reshape(4,4)
+    >>> m = RoiAlign(1.0,3,2,2)
+    creating: createRoiAlign
+    >>> out = m.forward([input_data,input_rois])
+    """
+
+    def __init__(self,
+                 spatial_scale,
+                 sampling_ratio,
+                 pooled_h,
+                 pooled_w,
+                 bigdl_type="float"):
+        super(RoiAlign, self).__init__(None, bigdl_type,
+                                         spatial_scale,
+                                         sampling_ratio,
+                                         pooled_h,
+                                         pooled_w)
+
+class FPN(Layer):
+    """
+    Feature Pyramid Network (FPN) for Mask-RCNN
+
+    :param in_channels_list:  number of channels of feature maps
+    :param out_channels:      number of channels of FPN output
+
+    >>> import numpy as np
+    >>> feature1 = np.random.rand(1,1,8,8)
+    >>> feature2 = np.random.rand(1,2,4,4)
+    >>> feature3 = np.random.rand(1,4,2,2)
+    >>> m = FPN([1,2,4],2)
+    creating: createFPN
+    >>> out = m.forward([feature1, feature2, feature3])
+    """
+
+    def __init__(self,
+                 in_channels_list,
+                 out_channels,
+                 bigdl_type="float"):
+        super(FPN, self).__init__(None, bigdl_type,
+                                       in_channels_list,
+                                       out_channels)
 
 def _test():
     import doctest
