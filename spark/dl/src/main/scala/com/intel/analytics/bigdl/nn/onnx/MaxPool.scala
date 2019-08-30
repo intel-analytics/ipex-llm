@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-
 object MaxPool {
   def apply[T: ClassTag](
     kernelShape: List[Int],

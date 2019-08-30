@@ -22,18 +22,18 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-case class BatchNormalization[T: ClassTag](
-  numFeatures: Int, // number of output channels, BigDL requires.
-  epsilon: Float,
-  momentum: Float
-)
-
-
+/**
+ * Carries out batch normalization as described in the paper https://arxiv.org/abs/1502.03167.
+ *
+ * epsilon: float (default is 1e-05). The epsilon value to use to avoid division by zero.
+ * momentum: float (default is 0.9). Factor used in computing the running mean and variance.
+ *             e.g., running_mean = running_mean * momentum + mean * (1 - momentum).
+ */
 object BatchNormalization {
   def apply[T: ClassTag](
     numFeatures: Int, // number of input features, BigDL requires.
-    epsilon: Float = 1e-05.toFloat,
-    momentum: Float = 0.9.toFloat
+    epsilon: Float = 1e-05f,
+    momentum: Float = 0.9f
   )(implicit ev: TensorNumeric[T]): nn.SpatialBatchNormalization[T] = {
    new nn.SpatialBatchNormalization(nOutput = numFeatures, eps = epsilon, momentum = momentum)
   }

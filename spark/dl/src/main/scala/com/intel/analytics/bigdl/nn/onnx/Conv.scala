@@ -23,6 +23,21 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
+/**
+ * The convolution operator consumes an input tensor, and computes the output.
+ *
+ * auto_pad : string (default is NOTSET)
+ *  auto_pad must be either NOTSET, SAME_UPPER, SAME_LOWER or VALID.
+ *  Where default value is NOTSET, which means explicit padding is used.
+ *  SAME_UPPER or SAME_LOWER mean pad the input so that the output spatial size match the input.
+ *  In case of odd number add extra padding at the end for SAME_UPPER and the start for SAME_LOWER.
+ *  VALID mean no padding.
+ * dilations : list of ints. Dilation value along each spatial axis of the filter.
+ * group : int (default is 1), number of groups input channels and output channels are divided into.
+ * kernel_shape : list of ints.The shape of the convolution kernel.
+ * pads: Padding for the beginning and ending along each spatial axis,
+ * strides: Stride along each spatial axis.
+ */
 object Conv {
   def apply[T: ClassTag](
     nInputPlane: Int, // BigDL requires

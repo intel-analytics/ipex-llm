@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.onnx
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,7 +31,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
  * @tparam T The numeric type in this module parameters
  */
 class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Tensor[T], Tensor[T], T] {
+  extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dimSize = input.nDimension()
@@ -40,6 +42,11 @@ class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
     output
   }
 
+  // Shape if a constant layer,
+  // which means Output does not depend on Weight which gets updated by Gradient
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput
+  }
 }
 
 object Shape {

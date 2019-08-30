@@ -222,6 +222,8 @@ class Softmax(Layer):
 
 class OnnxSum(Layer):
     """
+    Element-wise sum of each of the input tensors. All inputs and outputs must have the same data type.
+
     >>> gemm = OnnxSum(False)
     creating: createOnnxSum
     """
@@ -231,6 +233,12 @@ class OnnxSum(Layer):
 
 class Unsqueeze(Layer):
     """
+    Insert single-dimensional entries to the shape of a tensor.
+    Takes one required argument axes, a list of dimensions that will be inserted.
+    Dimension indices in axes are as seen in the output tensor.
+    For example: Given a tensor such that tensor with shape [3, 4, 5],
+    then Unsqueeze(tensor, axes=[0, 4]) has shape [1, 3, 4, 5, 1]
+
     >>> unsqueeze = Unsqueeze()
     creating: createUnsqueeze
     """
