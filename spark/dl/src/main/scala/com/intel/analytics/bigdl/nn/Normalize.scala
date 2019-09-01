@@ -69,13 +69,53 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
       } else {
         buffer.resizeAs(inputBuffer).pow(inputBuffer, ev.fromType(p))
       }
-      normp.sum(buffer, 2).add(ev.fromType(eps))
+      // normp.sum(buffer, 2).add(ev.fromType(eps))
+      // perf fix: the sum operation of tensor will call Java + element wise
+      // perf fix: start
+      if (buffer.nDimension() <= 2) {
+         normp.sum(buffer, 2).add(ev.fromType(eps))
+      } else {
+        normp.resize(Array(buffer.size(1), 1, buffer.size(3), buffer.size(4)))
+        var batchSize = 0
+        while (batchSize < normp.size(1)) {
+          val normpPerBatch = normp.select(1, batchSize + 1).zero
+          val inputPerBatch = buffer.narrow(1, batchSize + 1, 1)
+
+          var channel = 0
+          while (channel < buffer.size(2)) {
+            normpPerBatch.add(inputPerBatch.select(2, channel + 1))
+            channel += 1
+          }
+          batchSize += 1
+        }
+        normp.add(ev.fromType(eps))
+      }
+      // perf fix: end
       norm.resizeAs(normp).pow(normp, ev.fromType(1.0 / p))
     }
     if (norm.dim() <= 2) {
       output.cdiv(inputBuffer, norm.view(norm.nElement(), 1).expandAs(inputBuffer))
     } else if (norm.dim() == 4) {
-      output.cdiv(inputBuffer, norm.view(norm.size()).expandAs(inputBuffer))
+      // output.cdiv(inputBuffer, norm.view(norm.size()).expandAs(inputBuffer))
+      // perf fix: after expand, the tensor will be not contiguous.
+      // perf fix: start
+      var batchSize = 0
+      while (batchSize < output.size(1)) {
+
+        val outputPerBatch = output.narrow(1, batchSize + 1, 1)
+        val normPerBatch = norm.select(1, batchSize + 1)
+        val inputPerBatch = inputBuffer.narrow(1, batchSize + 1, 1)
+
+        var channel = 0
+        while (channel < output.size(2)) {
+          outputPerBatch.select(2, channel + 1)
+            .cdiv(inputPerBatch.select(2, channel + 1), normPerBatch)
+          channel += 1
+        }
+
+        batchSize += 1
+      }
+      // perf fix: end
     }
 
     output = output.view(input.size())
