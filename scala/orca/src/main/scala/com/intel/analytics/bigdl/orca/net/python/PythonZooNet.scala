@@ -142,9 +142,14 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     new MergeFeatureLabel()
   }
 
-  def createTFValidationMethod(validationMethod: ValidationMethod[Float],
-                               outputLength: Int, targetLength: Int): TFValidationMethod = {
-    new TFValidationMethod(validationMethod, outputLength, targetLength)
+  def createTFValidationMethod(valMethod: ValidationMethod[Float], name: String,
+                               outputIndices: java.util.List[Int],
+                               labelIndices: java.util.List[Int]): TFValidationMethod = {
+    new TFValidationMethod(valMethod, name, outputIndices, labelIndices)
+  }
+
+  def createStatelessMetric(name: String, idx: Int): StatelessMetric = {
+    new StatelessMetric(name, idx)
   }
 
   def createTFOptimizer(modelPath: String,
