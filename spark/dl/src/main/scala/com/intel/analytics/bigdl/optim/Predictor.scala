@@ -209,7 +209,11 @@ object Predictor {
         splitBatch(output, shareBuffer, batch.size())
       })
       partition.zip(batchOut).map(sample => {
-        Sample(sample._1.feature(), sample._2.toTensor)
+        if (sample._2.toTensor == null) {
+          Sample(sample._1.feature(), sample._2.toTensor)
+        } else {
+          sample._1
+        }
       })
     }
   }
