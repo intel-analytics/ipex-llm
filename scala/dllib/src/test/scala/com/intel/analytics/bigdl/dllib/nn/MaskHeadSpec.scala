@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
-import org.dmg.pmml.False
 import org.scalatest.{FlatSpec, Matchers}
 
 class MaskHeadSpec extends FlatSpec with Matchers {
