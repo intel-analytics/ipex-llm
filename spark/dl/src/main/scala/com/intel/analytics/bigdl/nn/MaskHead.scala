@@ -32,12 +32,6 @@ class MaskHead(
   val useGn: Boolean = false)(implicit ev: TensorNumeric[Float])
   extends BaseModule[Float] {
 
-  val features = this.maskFeatureExtractor(
-    inChannels, resolution, scales, samplingRratio, layers, dilation, useGn)
-  val dimReduced = layers(layers.length - 1)
-  val predictor = this.maskPredictor(dimReduced, numClasses, dimReduced)
-  val postProcessor = new MaskPostProcessor()
-
   override def buildModel(): Module[Float] = {
     val featureExtractor = this.maskFeatureExtractor(
       inChannels, resolution, scales, samplingRratio, layers, dilation, useGn)
@@ -64,14 +58,6 @@ class MaskHead(
     Graph(Array(features, proposals, labels), Array(maskFeatures, result))
   }
 
-  override def updateOutput(input: Activity): Activity = {
-    val out1 = features.forward(input)
-    val out2 = predictor.forward(out1)
-    val out4 = postProcessor.forward(T(out2, input.toTable[Tensor[Float]](2), input.toTable[Tensor[Float]](3)))
-
-    output = T(out1, out4)
-    output
-  }
   private[nn] def maskPredictor(inChannels: Int,
                                 numClasses: Int,
                                 dimReduced: Int): Module[Float] = {

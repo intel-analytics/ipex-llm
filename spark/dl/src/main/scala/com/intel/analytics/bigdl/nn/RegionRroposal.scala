@@ -204,6 +204,20 @@ class RegionRroposal(
     head.release()
     boxSelector.release()
   }
+
+  override def training(): RegionRroposal.this.type = {
+    train = true
+    head.training()
+    boxSelector.training()
+    super.training()
+  }
+
+  override def evaluate(): this.type = {
+    head.evaluate()
+    boxSelector.evaluate()
+    train = false
+    super.evaluate()
+  }
 }
 
 object RegionRroposal {
@@ -278,7 +292,7 @@ private[nn] class ProposalPostProcessor(
     objectness.topk(topNum, dim = 2, increase = false,
       result = sortedScores, indices = sortedInds)
 
-    objectness.copy(sortedScores)
+    objectness.resizeAs(sortedScores).copy(sortedScores)
 
     val tmp = Tensor[Float]().resizeAs(box_regression)
     tmp.index(2, sortedInds.squeeze(1), box_regression)
@@ -298,7 +312,7 @@ private[nn] class ProposalPostProcessor(
     var keepN = BboxUtil.clipBoxes(proposals, imageSize.valueAt(1), imageSize.valueAt(2), minBoxH
       , minBoxW, sortedScores)
 
-    val arr = new Array[Int](1000)
+    val arr = new Array[Int](100000)
     nms.nms(sortedScores, proposals, thresh = nmsThread, arr, sorted = true)
     val arrFilter = arr.filter(_ > 0).map(_.toFloat)
 

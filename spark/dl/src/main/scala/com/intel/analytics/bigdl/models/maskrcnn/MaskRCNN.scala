@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.resnet.ResNet
+import com.intel.analytics.bigdl.models.resnet.{ResNet, ResNetMask}
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -55,8 +55,10 @@ class MaskRCNN(resNetOutChannels: Int,
   val dilation: Int = 1
   val useGn: Boolean = false
 
-  private val backbone = buildBackbone(resNetOutChannels, backboneOutChannels)
-  private val rpn = RegionRroposal(inChannels,
+
+  private var ImageInfo : Tensor[Float] = Tensor[Float](2)
+  val backbone = buildBackbone(resNetOutChannels, backboneOutChannels)
+  val rpn = RegionRroposal(inChannels,
     anchorSizes, aspectRatios, anchorStride, preNmsTopNTest, postNmsTopNTest,
     preNmsTopNTrain, postNmsTopNTrain, rpnNmsThread, minSize, fpnPostNmsTopN)
 
@@ -70,14 +72,12 @@ class MaskRCNN(resNetOutChannels: Int,
   maskHead.getParameters()._1.fill(0.001f)
 
   def buildBackbone(resNetOutChannels: Int, backboneOutChannels: Int): Module[Float] = {
-    val body = ResNet(classNum = 1000, T("shortcutType" -> ShortcutType.B,
-      "depth" -> 50, "optnet" -> false, "dataSet" -> DatasetType.ImageNet))
+    val body = ResNetMask(1000, T("shortcutType" -> ShortcutType.B, "depth" -> 50))
 
     val inChannels = Array(resNetOutChannels, resNetOutChannels*2,
       resNetOutChannels * 4, resNetOutChannels * 8)
     val fpn = FPN(inChannels, backboneOutChannels, topBlocks = 1)
 
-    // val t = fpn_module.LastLevelMaxPool()
     val model = Sequential[Float]().add(body).add(fpn)
     model
   }
@@ -91,9 +91,16 @@ class MaskRCNN(resNetOutChannels: Int,
     maskOutput
   }
 
+
   override def updateOutput(input: Activity): Activity = {
-    val features = this.backbone.forward(input).toTensor[Float]
-    val proposals = this.rpn.forward(T(input, features))
+    val inputWidth = input.toTensor[Float].size(3)
+    val inputHeight = input.toTensor[Float].size(4)
+    ImageInfo.setValue(1, inputWidth)
+    ImageInfo.setValue(2, inputHeight)
+
+    val features = this.backbone.forward(input)
+    rpn.evaluate()
+    val proposals = this.rpn.forward(T(features, ImageInfo))
     output = buildRoiHeads(features, proposals)
     output
   }

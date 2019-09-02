@@ -35,13 +35,10 @@ object ResNetMask {
   val logger = Logger.getLogger(getClass)
 
   var iChannels = 0
-  var lastChannel = 0
+  var lastChannels = 0
 
   def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int,
                useConv: Boolean = false): Module[Float] = {
-    //      val useConv = shortcutType == ShortcutType.C ||
-    //        (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
-
     if (useConv) {
       Sequential()
         .add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
@@ -53,21 +50,24 @@ object ResNetMask {
 
 
   def creatLayer1(): Module[Float] = {
+    val n1 = lastChannels
+    val n3 = iChannels
+
     val number = 2
 
     val s = Sequential()
-    s.add(Convolution(64, 64, 1, 1, 1, 1, 0, 0))
+    s.add(Convolution(n1, 64, 1, 1, 1, 1, 0, 0))
       .add(Sbn(64))
       .add(ReLU(true))
       .add(Convolution(64, 64, 3, 3, 1, 1, 1, 1))
       .add(Sbn(64))
       .add(ReLU(true))
-      .add(Convolution(64, 32, 1, 1, 1, 1, 0, 0))
-      .add(Sbn(32))
+      .add(Convolution(64, n3, 1, 1, 1, 1, 0, 0))
+      .add(Sbn(n3))
     val m1 = Sequential()
       .add(ConcatTable()
         .add(s)
-        .add(shortcut(64, 32, 1, true)))
+        .add(shortcut(n1, n3, 1, true)))
       .add(CAddTable(true))
       .add(ReLU(true))
 
@@ -75,14 +75,14 @@ object ResNetMask {
 
     for (i <- 0 to number - 1) {
       val m2 = Sequential()
-        .add(Convolution(32, 64, 1, 1, 1, 1, 0, 0))
+        .add(Convolution(n3, 64, 1, 1, 1, 1, 0, 0))
         .add(Sbn(64))
         .add(ReLU(true))
         .add(Convolution(64, 64, 3, 3, 1, 1, 1, 1))
         .add(Sbn(64))
         .add(ReLU(true))
-        .add(Convolution(64, 32, 1, 1, 1, 1, 0, 0))
-        .add(Sbn(32))
+        .add(Convolution(64, n3, 1, 1, 1, 1, 0, 0))
+        .add(Sbn(n3))
 
       val short = Sequential()
         .add(ConcatTable()
@@ -97,20 +97,21 @@ object ResNetMask {
   }
 
   def creatLayer2(): Module[Float] = {
-    val n1 = 32
-    val n2 = 128
-    val n3 = 64
+    lastChannels = iChannels
+    iChannels = 512
+    val n1 = lastChannels
+    val n3 = iChannels
 
     val number = 3
 
     val s = Sequential()
-    s.add(Convolution(n1, n2, 1, 1, 2, 2, 0, 0))
-      .add(Sbn(n2))
+    s.add(Convolution(n1, 128, 1, 1, 2, 2, 0, 0))
+      .add(Sbn(128))
       .add(ReLU(true))
-      .add(Convolution(n2, n2, 3, 3, 1, 1, 1, 1, optnet = false))
-      .add(Sbn(n2))
+      .add(Convolution(128, 128, 3, 3, 1, 1, 1, 1, optnet = false))
+      .add(Sbn(128))
       .add(ReLU(true))
-      .add(Convolution(n2, n3, 1, 1, 1, 1, 0, 0, optnet = false))
+      .add(Convolution(128, n3, 1, 1, 1, 1, 0, 0, optnet = false))
       .add(Sbn(n3))
     val m1 = Sequential()
       .add(ConcatTable()
@@ -123,13 +124,13 @@ object ResNetMask {
 
     for (i <- 0 to number - 1) {
       val m2 = Sequential()
-        .add(Convolution(n3, n2, 1, 1, 1, 1, 0, 0, optnet = false))
-        .add(Sbn(n2))
+        .add(Convolution(n3, 128, 1, 1, 1, 1, 0, 0, optnet = false))
+        .add(Sbn(128))
         .add(ReLU(true))
-        .add(Convolution(n2, n2, 3, 3, 1, 1, 1, 1, optnet = false))
-        .add(Sbn(n2))
+        .add(Convolution(128, 128, 3, 3, 1, 1, 1, 1, optnet = false))
+        .add(Sbn(128))
         .add(ReLU(true))
-        .add(Convolution(n2, n3, 1, 1, 1, 1, 0, 0, optnet = false))
+        .add(Convolution(128, n3, 1, 1, 1, 1, 0, 0, optnet = false))
         .add(Sbn(n3))
 
       val short = Sequential()
@@ -145,20 +146,21 @@ object ResNetMask {
   }
 
   def creatLayer3(): Module[Float] = {
-    val n1 = 64
-    val n2 = 256
-    val n3 = 128
+    lastChannels = iChannels
+    iChannels = 1024
+    val n1 = lastChannels
+    val n3 = iChannels
 
     val number = 5
 
     val s = Sequential()
-    s.add(Convolution(n1, n2, 1, 1, 2, 2, 0, 0, optnet = false))
-      .add(Sbn(n2))
+    s.add(Convolution(n1, 256, 1, 1, 2, 2, 0, 0, optnet = false))
+      .add(Sbn(256))
       .add(ReLU(true))
-      .add(Convolution(n2, n2, 3, 3, 1, 1, 1, 1, optnet = false))
-      .add(Sbn(n2))
+      .add(Convolution(256, 256, 3, 3, 1, 1, 1, 1, optnet = false))
+      .add(Sbn(256))
       .add(ReLU(true))
-      .add(Convolution(n2, n3, 1, 1, 1, 1, 0, 0, optnet = false))
+      .add(Convolution(256, n3, 1, 1, 1, 1, 0, 0, optnet = false))
       .add(Sbn(n3))
     val m1 = Sequential()
       .add(ConcatTable()
@@ -171,13 +173,13 @@ object ResNetMask {
 
     for (i <- 0 to number - 1) {
       val m2 = Sequential()
-        .add(Convolution(n3, n2, 1, 1, 1, 1, 0, 0, optnet = false))
-        .add(Sbn(n2))
+        .add(Convolution(n3, 256, 1, 1, 1, 1, 0, 0, optnet = false))
+        .add(Sbn(256))
         .add(ReLU(true))
-        .add(Convolution(n2, n2, 3, 3, 1, 1, 1, 1, optnet = false))
-        .add(Sbn(n2))
+        .add(Convolution(256, 256, 3, 3, 1, 1, 1, 1, optnet = false))
+        .add(Sbn(256))
         .add(ReLU(true))
-        .add(Convolution(n2, n3, 1, 1, 1, 1, 0, 0, optnet = false))
+        .add(Convolution(256, n3, 1, 1, 1, 1, 0, 0, optnet = false))
         .add(Sbn(n3))
 
       val short = Sequential()
@@ -193,20 +195,21 @@ object ResNetMask {
   }
 
   def creatLayer4(): Module[Float] = {
-    val n1 = 128
-    val n2 = 512
-    val n3 = 256
+    lastChannels = iChannels
+    iChannels = 2048
+    val n1 = lastChannels
+    val n3 = iChannels
 
     val number = 2
 
     val s = Sequential()
-    s.add(Convolution(n1, n2, 1, 1, 2, 2, 0, 0, optnet = false))
-      .add(Sbn(n2))
+    s.add(Convolution(n1, 512, 1, 1, 2, 2, 0, 0, optnet = false))
+      .add(Sbn(512))
       .add(ReLU(true))
-      .add(Convolution(n2, n2, 3, 3, 1, 1, 1, 1, optnet = false))
-      .add(Sbn(n2))
+      .add(Convolution(512, 512, 3, 3, 1, 1, 1, 1, optnet = false))
+      .add(Sbn(512))
       .add(ReLU(true))
-      .add(Convolution(n2, n3, 1, 1, 1, 1, 0, 0, optnet = false))
+      .add(Convolution(512, n3, 1, 1, 1, 1, 0, 0, optnet = false))
       .add(Sbn(n3))
     val m1 = Sequential()
       .add(ConcatTable()
@@ -219,13 +222,13 @@ object ResNetMask {
 
     for (i <- 0 to number - 1) {
       val m2 = Sequential()
-        .add(Convolution(n3, n2, 1, 1, 1, 1, 0, 0, optnet = false))
-        .add(Sbn(n2))
+        .add(Convolution(n3, 512, 1, 1, 1, 1, 0, 0, optnet = false))
+        .add(Sbn(512))
         .add(ReLU(true))
-        .add(Convolution(n2, n2, 3, 3, 1, 1, 1, 1, optnet = false))
-        .add(Sbn(n2))
+        .add(Convolution(512, 512, 3, 3, 1, 1, 1, 1, optnet = false))
+        .add(Sbn(512))
         .add(ReLU(true))
-        .add(Convolution(n2, n3, 1, 1, 1, 1, 0, 0, optnet = false))
+        .add(Convolution(512, n3, 1, 1, 1, 1, 0, 0, optnet = false))
         .add(Sbn(n3))
 
       val short = Sequential()
@@ -247,8 +250,8 @@ object ResNetMask {
 
     val model = Sequential()
     if (true) {
-      iChannels = 32
-      lastChannel = 32
+      iChannels = 256 // 64
+      lastChannels = 64 // 256
       logger.info(" | ResNet-" + depth + " ImageNet")
 
       model.add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet, propagateBack = false))
@@ -256,13 +259,19 @@ object ResNetMask {
         .add(ReLU(true))
         .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
 
-//      val layer1 = creatLayer1()
-//      val layer2 = creatLayer2()
-//      val layer3 = creatLayer3()
-//      val layer4 = creatLayer4()
-//      model.add(layer1)
+      val layer1 = creatLayer1()
+      val layer2 = creatLayer2()
+      val layer3 = creatLayer3()
+      val layer4 = creatLayer4()
 
-      return model
+      val input = Input()
+      val node0 = model.setName("pre").inputs(input)
+      val node1 = layer1.inputs(node0)
+      val node2 = layer2.inputs(node1)
+      val node3 = layer3.inputs(node2)
+      val node4 = layer4.inputs(node3)
+
+      Graph(input, Array(node1, node2, node3, node4))
     } else {
       throw new IllegalArgumentException(s"Invalid dataset")
     }
