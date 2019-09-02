@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.onnx
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{BatchMatMul, Operation}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.ops.BatchMatMul
+import com.intel.analytics.bigdl.nn.{CAddTable, Graph, Input, MulConstant}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -43,13 +45,14 @@ class Gemm[T: ClassTag](
   val alpha: Float = 1, val beta: Float = 1,
   val transA: Boolean = false, val transB: Boolean = false
 )(implicit ev: TensorNumeric[T])
-extends Operation[Table, Tensor[T], T] {
+extends AbstractModule[Table, Tensor[T], T] {
 
   private val internalModel: Module[T] = {
     val tensorA = Input()
     val tensorB = Input()
     val tensorC = Input()
     val alphaMul = MulConstant(scalar = alpha, inplace = true).inputs(
+      // Todo: BatchMatMul is of Operation, which doesn't support backward
       BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
     )
     val betaAdd = CAddTable().inputs(Array(alphaMul,
@@ -59,11 +62,18 @@ extends Operation[Table, Tensor[T], T] {
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
-    require(input.length() == 3, "Input should be a table contains 3 tensors, actually size is: "
-      + input.toTable.length())
+    require(input.length() == 3,
+      "Input should be a table contains 3 tensors, actually size is: "
+        + input.toTable.length())
     internalModel.forward(input)
     output = internalModel.output.asInstanceOf[Tensor[T]]
     output
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
+    internalModel.updateGradInput(input, gradOutput)
+    gradInput = internalModel.gradInput.asInstanceOf[Table]
+    gradInput
   }
 
   override def release(): Unit = {
@@ -71,6 +81,7 @@ extends Operation[Table, Tensor[T], T] {
   }
 
 }
+
 
 object Gemm {
   def apply[@specialized(Float, Double) T: ClassTag](

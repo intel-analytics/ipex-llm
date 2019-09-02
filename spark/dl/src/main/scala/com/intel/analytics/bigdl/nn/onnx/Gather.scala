@@ -17,12 +17,14 @@
 
 package com.intel.analytics.bigdl.nn.onnx
 
-import com.intel.analytics.bigdl.nn.ops
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
 object Gather {
-  def apply[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  ops.Gather[T, D] = new ops.Gather()
+  def apply[T: ClassTag, D: ClassTag](
+    axis: Int = 0
+  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
+  nn.ops.Gather[T, D] = new nn.ops.Gather()
 }

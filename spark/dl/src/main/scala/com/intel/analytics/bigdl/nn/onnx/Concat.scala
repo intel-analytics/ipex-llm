@@ -17,34 +17,23 @@
 package com.intel.analytics.bigdl.nn.onnx
 
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.nn.ops.Operation
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
 /**
- * A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
- * @param `classTag$T`
- * @param ev
- * @tparam T The numeric type in this module parameters
+ * Concatenate a list of tensors into a single tensor
  */
-class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Tensor[T], Tensor[T], T] {
+object Concat {
+  def apply[T: ClassTag](
+        nInputDims: Int, // specify the number of dimensions of input, BigDL requires.
+        axis: Int = 1 // to be join in this dimension
+    )(implicit ev: TensorNumeric[T]): nn.JoinTable[T] = {
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    val dimSize = input.nDimension()
-    output = Tensor[T](dimSize)
-    (1 to dimSize).foreach(i => {
-      output.setValue(i, ev.fromType(input.size(i)))
-    })
-    output
-  }
-
-}
-
-object Shape {
-  def apply[T: ClassTag]()(
-    implicit ev: TensorNumeric[T]): Shape[T] = {
-    new Shape[T]()
+    // Todo: investigate attribute nInputDims
+    // It seems it doesn't take N or C as a dimension, if input is in the form of (N, C, W, H).
+    // So a Tensor with (n, c, w, h), JoinTable regards nInputDims is 3 instead of 4,
+    // otherwise would get an IndexOutofBound exceaption
+    new nn.JoinTable(dimension = axis, nInputDims = nInputDims)
   }
 }

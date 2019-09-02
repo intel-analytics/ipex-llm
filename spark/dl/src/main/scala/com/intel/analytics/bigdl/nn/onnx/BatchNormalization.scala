@@ -14,37 +14,28 @@
  * limitations under the License.
  */
 
+
 package com.intel.analytics.bigdl.nn.onnx
 
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.nn.ops.Operation
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-/**
- * A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
- * @param `classTag$T`
- * @param ev
- * @tparam T The numeric type in this module parameters
- */
-class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Tensor[T], Tensor[T], T] {
+case class BatchNormalization[T: ClassTag](
+  numFeatures: Int, // number of output channels, BigDL requires.
+  epsilon: Float,
+  momentum: Float
+)
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    val dimSize = input.nDimension()
-    output = Tensor[T](dimSize)
-    (1 to dimSize).foreach(i => {
-      output.setValue(i, ev.fromType(input.size(i)))
-    })
-    output
+
+object BatchNormalization {
+  def apply[T: ClassTag](
+    numFeatures: Int, // number of input features, BigDL requires.
+    epsilon: Float = 1e-05.toFloat,
+    momentum: Float = 0.9.toFloat
+  )(implicit ev: TensorNumeric[T]): nn.SpatialBatchNormalization[T] = {
+   new nn.SpatialBatchNormalization(nOutput = numFeatures, eps = epsilon, momentum = momentum)
   }
 
-}
-
-object Shape {
-  def apply[T: ClassTag]()(
-    implicit ev: TensorNumeric[T]): Shape[T] = {
-    new Shape[T]()
-  }
 }

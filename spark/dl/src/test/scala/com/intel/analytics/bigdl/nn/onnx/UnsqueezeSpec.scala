@@ -13,41 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.bigdl.nn.onnx
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class ShapeSpec extends FlatSpec with Matchers {
+class UnsqueezeSpec extends FlatSpec with Matchers {
+  "Unsqueeze" should "work" in {
+    val unsqueeze = Unsqueeze[Float](List(4), 3)
+    val input = T(
+      Tensor[Float](2, 3, 5).rand(),
+      Tensor[Float](10, 3, 5).rand()
+    )
 
-  "Shape" should "work" in {
-    val inputTensor = Tensor[Float](20, 1, 9).rand()
-    val shape = Shape[Float]()
-    val output = shape.forward(inputTensor)
-    val ans = Tensor[Float](3)
-    ans.setValue(1, 20)
-    ans.setValue(2, 1)
-    ans.setValue(3, 9)
+    val out = unsqueeze.forward(Tensor[Float](3, 4, 5).rand())
 
-    output.nDimension() should be (1)
-    output.nDimension() should be (ans.nDimension())
-    output.size(1) should be (ans.size(1))
-
-    (1 to output.size(1)).foreach(i => {
-      output.valueAt(i) should be (ans.valueAt(i))
-    })
-
+    println(out.size().mkString(" "))
   }
 }
 
-class ShapeSerialTest extends ModuleSerializationTest {
+
+class UnsqueezeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val shape = Shape[Float]()
-    val input = Tensor[Float](5).rand()
-    runSerializationTest(shape, input)
+    val unsqueeze = Unsqueeze[Float](List(0), 3)
+    val input = T(
+      Tensor[Float](2, 3, 5).rand(),
+      Tensor[Float](10, 3, 5).rand()
+    )
+    runSerializationTest(unsqueeze, input)
   }
-
 }
-
