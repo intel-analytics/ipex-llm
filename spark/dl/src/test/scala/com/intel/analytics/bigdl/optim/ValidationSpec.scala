@@ -95,11 +95,11 @@ class ValidationSpec extends FlatSpec with Matchers {
     val ap3 = result.calculateClassAP(2)
     ap3 should be (0f)
     val ap4 = result.calculateClassAP(3)
-    ap4 should be (0.9f)
+    ap4 should be (0.875f)
     val ap5 = result.calculateClassAP(4)
-    ap5 should be (2f/3)
+    ap5 should be (0.5f)
 
-    result.result()._1 should be(0.341904762f +- 1e-5f)
+    result.result()._1 should be(0.303571429f +- 1e-5f)
   }
 
   "MeanAveragePrecision" should "be correct on 1d tensor" in {
@@ -131,7 +131,7 @@ class ValidationSpec extends FlatSpec with Matchers {
       Tensor[Float](T(1f)))
     val r2 = new MeanAveragePrecision(8, 5).apply(Tensor[Float](T(0f, 0f, 4f, 6f, 7f)),
       Tensor[Float](T(0f)))
-    (r0 + r1 + r2).result()._1 should be(0.341904762f +- 1e-5f)
+    (r0 + r1 + r2).result()._1 should be(0.303571429f +- 1e-5f)
   }
 
   "MeanAveragePrecision" should "be correct on 2d tensor" in {
@@ -163,7 +163,44 @@ class ValidationSpec extends FlatSpec with Matchers {
       )))
     val v = new MeanAveragePrecision(8, 5)
     val result = v(output, target)
-    result.result()._1 should be(0.341904762f +- 1e-5f)
+    result.result()._1 should be(0.303571429f +- 1e-5f)
+  }
+
+  "MeanAveragePrecisionObjectDetection" should "be correct on 2d tensor" in {
+    implicit val numeric = TensorNumeric.NumericFloat
+    val output = Tensor[Float](
+      T(
+        T(8f,
+          // label score bbox
+          0, 1, 110, 90, 210, 190,
+          0, 2, 310, 110, 410, 210,
+          0, 4, 320, 290, 420, 390,
+          0, 3, 210, 310, 290, 410,
+          1, 1, 1110, 1090, 1210, 1190,
+          1, 3, 1310, 1110, 1410, 1210,
+          1, 4, 1320, 1290, 1420, 1390,
+          1, 2, 1210, 1310, 1290, 1410
+        )
+      ))
+
+    // <imgId, label, diff, bbox x4>
+    val target = Tensor[Float](
+      T(
+        T(0, 1, 0, 100, 100, 200, 200),
+        T(0, 1, 0, 300, 100, 400, 200),
+        T(0, 1, 0, 100, 300, 200, 400),
+        T(0, 1, 0, 300, 300, 400, 400),
+        T(0, 1, 0, 210, 210, 230, 290),
+        T(0, 2, 0, 1100, 1100, 1200, 1200),
+        T(0, 2, 0, 1300, 1100, 1400, 1200),
+        T(0, 2, 0, 1100, 1300, 1200, 1400),
+        T(0, 2, 0, 1300, 1300, 1400, 1400),
+        T(0, 2, 0, 1210, 1210, 1230, 1290)
+      ))
+    val v = new MeanAveragePrecisionObjectDetection(3, 0.5f)
+    val result = v(output, target)
+    // 0.5f and 0.55f
+    result.result()._1 should be(0.35f +- 1e-5f)
   }
 
   "treeNN accuracy" should "be correct on 2d tensor" in {
