@@ -219,7 +219,10 @@ class Top1Accuracy[T: ClassTag](
 }
 
 /**
- * Calculate the Mean Average Precision (MAP). The algorithm follows VOC Challenge after 2010
+ * Calculate the Mean Average Precision (MAP). The algorithm follows VOC Challenge after 2007
+ * Require class label beginning from 0
+ * @param k Take top-k confident predictions into account. If k=-1, calculate on all predictions
+ * @param classes The number of classes
  */
 class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
   implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
@@ -306,7 +309,6 @@ class MAPValidationResult(
 )
   extends ValidationResult {
 
-
   if (skipClass < 0) {
     require(skipClass == -1, s"Invalid skipClass $skipClass")
   } else {
@@ -388,7 +390,7 @@ private[bigdl] class GroundTruthBBox(val label: Int, val diff: Float,
   val xmin: Float, val ymin: Float, val xmax: Float, val ymax: Float) {
   private val area = (xmax - xmin) * (ymax - ymin)
 
-  // if is 0, the bbox is not matched with any predictions
+  // if is false, the bbox is not matched with any predictions
   private var isOccupied = false
 
   /**
@@ -435,7 +437,7 @@ private[bigdl] class GroundTruthBBox(val label: Int, val diff: Float,
  *
  * @param iou the IOU threshold
  * @param classes the number of classes
- * @param useVoc2007 use validation method before voc2010
+ * @param useVoc2007 use validation method before voc2010 (i.e. voc2007)
  * @param skipClass skip calculating on a specific class (e.g. background)
  *                  the class index starts from 0, or is -1 if no skipping
  */
