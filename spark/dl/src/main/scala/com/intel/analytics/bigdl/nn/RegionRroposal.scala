@@ -265,7 +265,7 @@ private[nn] class ProposalPostProcessor(
     val anchors = input[Tensor[Float]](1)
     var objectness = input[Tensor[Float]](2)
     var box_regression = input[Tensor[Float]](3)
-    val imageSize = input[Tensor[Float]](4) // order: height, width
+    val imageSize = input[Tensor[Float]](4) // height, width
 
     val N = objectness.size(1)
     val A = objectness.size(2)

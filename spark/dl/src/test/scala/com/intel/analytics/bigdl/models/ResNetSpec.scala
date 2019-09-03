@@ -614,27 +614,27 @@ class ResNetSpec extends TorchSpec {
     val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
 
     RNG.setSeed(1000)
-    val model = ResNetMask(classNum, T("shortcutType" -> ShortcutType.B,
-      "depth" -> depth, "dataSet" -> DatasetType.ImageNet))
-
-    model.evaluate()
-//    val layer1 = ResNetMask.creatLayer1()
-//    val layer2 = ResNetMask.creatLayer2()
-//    val layer3 = ResNetMask.creatLayer3()
-//    val layer4 = ResNetMask.creatLayer4()
+//    val model = ResNetMask(classNum, T("shortcutType" -> ShortcutType.B,
+//      "depth" -> depth, "dataSet" -> DatasetType.ImageNet))
 //
-//    layer1.evaluate()
-//    layer2.evaluate()
-//    layer3.evaluate()
-//    layer4.evaluate()
-
-    val output1 = model.forward(input)
-//    val out2 = layer1.forward(output1)
-//    val out3 = layer2.forward(out2)
-//    val out4 = layer3.forward(out3)
-//    val out5 = layer4.forward(out4)
-
-    println("done")
+//    model.evaluate()
+////    val layer1 = ResNetMask.creatLayer1()
+////    val layer2 = ResNetMask.creatLayer2()
+////    val layer3 = ResNetMask.creatLayer3()
+////    val layer4 = ResNetMask.creatLayer4()
+////
+////    layer1.evaluate()
+////    layer2.evaluate()
+////    layer3.evaluate()
+////    layer4.evaluate()
+//
+//    val output1 = model.forward(input)
+////    val out2 = layer1.forward(output1)
+////    val out3 = layer2.forward(out2)
+////    val out4 = layer3.forward(out3)
+////    val out5 = layer4.forward(out4)
+//
+//    println("done")
   }
 
   "ResNet graph" should "be same with original one for Cifar10" in {

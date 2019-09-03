@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.resnet.{ResNet, ResNetMask}
+import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet, ResNetMask, Sbn}
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -25,72 +25,119 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-class MaskRCNN(resNetOutChannels: Int,
-               backboneOutChannels: Int)(implicit ev: TensorNumeric[Float])
-  extends AbstractModule[Activity, Activity, Float] {
+class MaskRCNN(val inChannels: Int,
+               val outChannels: Int)(implicit ev: TensorNumeric[Float])
+  extends Container[Activity, Activity, Float] {
+    val anchorSizes: Array[Float] = Array[Float](32, 64, 128, 256, 512)
+    val aspectRatios: Array[Float] = Array[Float](0.5f, 1.0f, 2.0f)
+    val anchorStride: Array[Float] = Array[Float](4, 8, 16, 32, 64)
+    val preNmsTopNTest: Int = 1000
+    val postNmsTopNTest: Int = 1000
+    val preNmsTopNTrain: Int = 2000
+    val postNmsTopNTrain: Int = 2000
+    val rpnNmsThread: Float = 0.7f
+    val minSize: Int = 0
+    val fpnPostNmsTopN: Int = 2000
 
-  val inChannels: Int = backboneOutChannels
-  val anchorSizes: Array[Float] = Array[Float](32, 64, 128, 256, 512)
-  val aspectRatios: Array[Float] = Array[Float](0.5f, 1.0f, 2.0f)
-  val anchorStride: Array[Float] = Array[Float](4, 8, 16, 32, 64)
-  val preNmsTopNTest: Int = 1000
-  val postNmsTopNTest: Int = 1000
-  val preNmsTopNTrain: Int = 2000
-  val postNmsTopNTrain: Int = 2000
-  val rpnNmsThread: Float = 0.7f
-  val minSize: Int = 0
-  val fpnPostNmsTopN: Int = 2000
+    val boxResolution: Int = 7
+    val maskResolution: Int = 14
+    val resolution: Int = 28
+    val scales: Array[Float] = Array[Float](0.25f, 0.125f, 0.0625f, 0.03125f)
+    val samplingRatio: Float = 2.0f
+    val boxScoreThresh: Float = 0.05f
+    val boxNmsThread: Float = 0.5f
+    val maxPerImage: Int = 100
+    val outputSize: Int = 1024
+    val numClasses: Int = 81
+    val layers: Array[Int] = Array[Int](256, 256, 256, 256)
+    val dilation: Int = 1
+    val useGn: Boolean = false
 
-  val boxResolution: Int = 7
-  val maskResolution: Int = 14
-  val resolution: Int = 28
-  val scales: Array[Float] = Array[Float](0.25f, 0.125f, 0.0625f, 0.03125f)
-  val samplingRatio: Float = 2.0f
-  val boxScoreThresh: Float = 0.012f // 0.05f
-  val boxNmsThread: Float = 0.5f
-  val maxPerImage: Int = 100
-  val outputSize: Int = 1024
-  val numClasses: Int = 81
-  val layers: Array[Int] = Array[Int](4, 4, 4, 4) // Array[Int](256, 256, 256, 256)
-  val dilation: Int = 1
-  val useGn: Boolean = false
+    private val ImageInfo : Tensor[Float] = Tensor[Float](2)
+    private val backbone = buildBackbone(inChannels, outChannels)
+    private val rpn = RegionRroposal(inChannels, anchorSizes, aspectRatios, anchorStride,
+      preNmsTopNTest, postNmsTopNTest, preNmsTopNTrain, postNmsTopNTrain, rpnNmsThread,
+      minSize, fpnPostNmsTopN)
+    private val boxHead = BoxHead(inChannels, boxResolution, scales, samplingRatio,
+      boxScoreThresh, boxNmsThread, maxPerImage, outputSize, numClasses)
+    private val maskHead = MaskHead(inChannels, maskResolution, scales, samplingRatio,
+      layers, dilation, numClasses)
 
+    // add layer to modules
+    modules.append(backbone.asInstanceOf[Module[Float]])
+    modules.append(rpn.asInstanceOf[Module[Float]])
+    modules.append(boxHead.asInstanceOf[Module[Float]])
+    modules.append(maskHead.asInstanceOf[Module[Float]])
 
-  private var ImageInfo : Tensor[Float] = Tensor[Float](2)
-  val backbone = buildBackbone(resNetOutChannels, backboneOutChannels)
-  val rpn = RegionRroposal(inChannels,
-    anchorSizes, aspectRatios, anchorStride, preNmsTopNTest, postNmsTopNTest,
-    preNmsTopNTrain, postNmsTopNTrain, rpnNmsThread, minSize, fpnPostNmsTopN)
+    def buildResNet50(): Module[Float] = {
 
-  private val boxHead = BoxHead(inChannels, boxResolution, scales, samplingRatio,
-    boxScoreThresh, boxNmsThread, maxPerImage, outputSize, numClasses)
-  private val maskHead = MaskHead(inChannels, maskResolution, scales, samplingRatio,
-    layers, dilation, numClasses)
+    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int,
+                 useConv: Boolean = false): Module[Float] = {
+      if (useConv) {
+        Sequential()
+          .add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
+          .add(Sbn(nOutputPlane))
+      } else {
+        Identity()
+      }
+    }
 
-  // debug
-  boxHead.getParameters()._1.fill(0.001f)
-  maskHead.getParameters()._1.fill(0.001f)
+    def bottleneck(nInputPlane: Int, internalPlane: Int, nOutputPlane: Int,
+                   stride: Int, useConv: Boolean = false): Module[Float] = {
+      val s = Sequential()
+        .add(Convolution(nInputPlane, internalPlane, 1, 1, stride, stride, 0, 0))
+        .add(Sbn(internalPlane))
+        .add(ReLU(true))
+        .add(Convolution(internalPlane, internalPlane, 3, 3, 1, 1, 1, 1))
+        .add(Sbn(internalPlane))
+        .add(ReLU(true))
+        .add(Convolution(internalPlane, nOutputPlane, 1, 1, 1, 1, 0, 0))
+        .add(Sbn(nOutputPlane))
 
-  def buildBackbone(resNetOutChannels: Int, backboneOutChannels: Int): Module[Float] = {
-    val body = ResNetMask(1000, T("shortcutType" -> ShortcutType.B, "depth" -> 50))
+      val m = Sequential()
+        .add(ConcatTable()
+          .add(s)
+          .add(shortcut(nInputPlane, nOutputPlane, stride, useConv)))
+        .add(CAddTable(true))
+        .add(ReLU(true))
+      m
+    }
 
-    val inChannels = Array(resNetOutChannels, resNetOutChannels*2,
-      resNetOutChannels * 4, resNetOutChannels * 8)
-    val fpn = FPN(inChannels, backboneOutChannels, topBlocks = 1)
+    def layer(count: Int, nInputPlane: Int, nOutputPlane: Int,
+              downOutputPlane: Int, stride: Int = 1): Module[Float] = {
+      val s = Sequential()
+        .add(bottleneck(nInputPlane, nOutputPlane, downOutputPlane, stride, true))
+      for (i <- 2 to count) {
+        s.add(bottleneck(downOutputPlane, nOutputPlane, downOutputPlane, 1, false))
+      }
+      s
+    }
 
-    val model = Sequential[Float]().add(body).add(fpn)
+    val model = Sequential[Float]()
+      .add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = false, propagateBack = false))
+      .add(Sbn(64))
+      .add(ReLU(true))
+      .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
+
+    val input = Input()
+    val node0 = model.inputs(input)
+
+    val startChannels = 64
+    val node1 = layer(3, startChannels, 64, inChannels, 1).inputs(node0)
+    val node2 = layer(4, inChannels, 128, inChannels * 2, 2).inputs(node1)
+    val node3 = layer(6, inChannels * 2, 256, inChannels * 4, 2).inputs(node2)
+    val node4 = layer(3, inChannels * 4, 512, inChannels * 8, 2).inputs(node3)
+
+    Graph(input, Array(node1, node2, node3, node4))
+  }
+
+  private def buildBackbone(inChannels: Int, outChannels: Int): Module[Float] = {
+    val resnet = buildResNet50()
+    val inChannelList = Array(inChannels, inChannels*2, inChannels * 4, inChannels * 8)
+    val fpn = FPN(inChannelList, outChannels, topBlocks = 1)
+    val model = Sequential[Float]().add(resnet).add(fpn)
     model
   }
-
-  def buildRoiHeads(features: Activity, proposals: Tensor[Float]) : Activity = {
-    val boxOutput = this.boxHead.forward(T(features, proposals)).toTable
-    val postProcessorBox = boxOutput[Table](2)
-    val proposalsBox = postProcessorBox[Tensor[Float]](2)
-    val labelsBox = postProcessorBox[Tensor[Float]](1)
-    val maskOutput = this.maskHead.forward(T(features, proposalsBox, labelsBox))
-    maskOutput
-  }
-
 
   override def updateOutput(input: Activity): Activity = {
     val inputWidth = input.toTensor[Float].size(3)
@@ -99,13 +146,17 @@ class MaskRCNN(resNetOutChannels: Int,
     ImageInfo.setValue(2, inputHeight)
 
     val features = this.backbone.forward(input)
-    rpn.evaluate()
     val proposals = this.rpn.forward(T(features, ImageInfo))
-    output = buildRoiHeads(features, proposals)
+    val boxOutput = this.boxHead.forward(T(features, proposals)).toTable
+    val postProcessorBox = boxOutput[Table](2)
+    val proposalsBox = postProcessorBox[Tensor[Float]](2)
+    val labelsBox = postProcessorBox[Tensor[Float]](1)
+    val mask = this.maskHead.forward(T(features, proposalsBox, labelsBox))
+    output = T(proposalsBox, labelsBox, mask)
     output
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    gradInput
+    throw new UnsupportedOperationException("MaskRCNN model only support inference now")
   }
 }

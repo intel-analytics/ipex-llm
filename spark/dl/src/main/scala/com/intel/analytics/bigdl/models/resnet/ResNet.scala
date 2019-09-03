@@ -60,7 +60,7 @@ object Convolution {
     val conv = SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
         strideW, strideH, padW, padH, nGroup, propagateBack, wReg, bReg, withBias = false)
     conv.setInitMethod(MsraFiller(false), Zeros)
-    conv.weight.fill(ev.fromType(0.001f))
+//    conv.weight.fill(ev.fromType(0.001f))
     conv
   }
 }
