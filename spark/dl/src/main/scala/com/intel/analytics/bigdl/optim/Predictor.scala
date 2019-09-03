@@ -135,13 +135,11 @@ object Predictor {
       batchSize = totalBatch,
       partitionNum = Some(realPartitionLength),
       featurePaddingParam = featurePaddingParam), shareBuffer)
-
     val localBatchPerPartition = totalBatch / realPartitionLength
 
     val result = rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
-
       partition.grouped(localBatchPerPartition).flatMap(imageFeatures => {
         Predictor.predictImageBatch[T](localModel, imageFeatures, outputLayer, predictKey,
           localToBatch, shareBuffer)
@@ -195,26 +193,23 @@ object Predictor {
       batchPerPartition * partitionNum
     }
     val rdd = ConversionUtils.coalesce(dataSet)
+    val realPartitionLength = rdd.partitions.length
     val otherBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = totalBatch,
-      partitionNum = Some(rdd.partitions.length),
+      partitionNum = Some(realPartitionLength),
       featurePaddingParam = featurePaddingParam))
     rdd.mapPartitions { partition =>
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
       val batchOut = miniBatch.flatMap(batch => {
-        val data = batch.getInput()
         val output = localModel.forward(batch.getInput)
         splitBatch(output, shareBuffer, batch.size())
       })
-      partition.zip(batchOut).map(sample => {
-        if (sample._2.toTensor == null) {
-          Sample(sample._1.feature(), sample._2.toTensor)
-        } else {
-          sample._1
-        }
+      partition.zip(batchOut).foreach(sample => {
+        Sample(sample._1.feature(), sample._2.toTensor)
       })
+      partition
     }
   }
 }
