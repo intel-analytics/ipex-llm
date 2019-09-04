@@ -202,14 +202,10 @@ object Predictor {
     rdd.mapPartitions { partition =>
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()
-      val miniBatch = localTransformer(partition)
-      val batchOut = miniBatch.flatMap(batch => {
-        val output = localModel.forward(batch.getInput)
-        splitBatch(output, shareBuffer, batch.size())
-      })
       partition.grouped(localBatchPerPartition).flatMap(samples => {
-        samples.toIterator.zip(batchOut).foreach(sample => {
-          Sample(sample._1.feature(), sample._2.toTensor)
+        val batchOut = predictSamples(localModel, samples, localTransformer, shareBuffer)
+        samples.toIterator.zip(batchOut).foreach(tuple => {
+          Sample(tuple._1.feature(), tuple._2.toTensor)
         })
         samples
       })
