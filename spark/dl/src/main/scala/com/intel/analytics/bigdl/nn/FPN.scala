@@ -25,13 +25,17 @@ import scala.reflect.ClassTag
 
 /**
  * Feature Pyramid Network.
- * @param inChannels      number of channels of feature maps
- * @param outChannels     number of channels of FPN output
- * @param topBlocks       0 for null,
- *                        1 for using max pooling on the last level
- *                        2 for extra layers P6 and P7 in RetinaNet
- * @param inChannelsP6P7  number of input channels of P6 P7
- * @param outChannelsP6P7 number of output channels of P6 P7
+ * @param inChannels        number of channels of feature maps
+ * @param outChannels       number of channels of FPN output
+ * @param topBlocks         Top Blocks option
+ *                          Extra operation to be performed on the smallest
+ *                          resolution FPN output, whose result is appended
+ *                          to the result list
+ *                          0 for null,
+ *                          1 for using max pooling on the last level
+ *                          2 for extra layers P6 and P7 in RetinaNet
+ * @param inChannelsP6P7    number of input channels of P6 P7 in RetinaNet
+ * @param outChannelsP6P7   number of output channels of P6 P7 in RetinaNet
  */
 
 class FPN[T : ClassTag](

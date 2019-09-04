@@ -5688,11 +5688,15 @@ class FPN(Layer):
     """
     Feature Pyramid Network (FPN) for Mask-RCNN
 
-    :param in_channels_list:  number of channels of feature maps
-    :param out_channels:      number of channels of FPN output
-    :param top_blocks:        0 for null,
-                              1 for using max pooling on the last level
-                              2 for extra layers P6 and P7 in RetinaNet
+    :param in_channels_list:    number of channels of feature maps
+    :param out_channels:        number of channels of FPN output
+    :param top_blocks:          top blocks option
+                                extra operation to be performed on the smallest
+                                resolution FPN output, whose result is appended
+                                to the result list
+                                0 for null,
+                                1 for using max pooling on the last level
+                                2 for extra layers P6 and P7 in RetinaNet
     :param in_channels_p6p7     number of input channels of P6 P7
     :param out_channels_p6p7    number of output channels of P6 P7
 
