@@ -34,16 +34,16 @@ import scala.reflect.ClassTag
  *                          0 for null,
  *                          1 for using max pooling on the last level
  *                          2 for extra layers P6 and P7 in RetinaNet
- * @param inChannelsP6P7    number of input channels of P6 P7 in RetinaNet
- * @param outChannelsP6P7   number of output channels of P6 P7 in RetinaNet
+ * @param inChannelsOfP6P7    number of input channels of P6 P7 in RetinaNet
+ * @param outChannelsOfP6P7   number of output channels of P6 P7 in RetinaNet
  */
 
 class FPN[T : ClassTag](
   val inChannels: Array[Int],
   val outChannels: Int,
   val topBlocks: Int = 0,
-  val inChannelsP6P7: Int = 0,
-  val outChannelsP6P7: Int = 0
+  val inChannelsOfP6P7: Int = 0,
+  val outChannelsOfP6P7: Int = 0
 )
   (implicit ev: TensorNumeric[T])
   extends BaseModule[T]{
@@ -96,9 +96,9 @@ class FPN[T : ClassTag](
     }
 
     if (topBlocks == 2) {
-      val p6_module = SpatialConvolution[T](inChannelsP6P7, outChannelsP6P7, 3, 3, 2, 2, 1, 1)
-      val p7_module = SpatialConvolution[T](outChannelsP6P7, outChannelsP6P7, 3, 3, 2, 2, 1, 1)
-      results(results.length - 2) = if (inChannelsP6P7 == outChannelsP6P7) {
+      val p6_module = SpatialConvolution[T](inChannelsOfP6P7, outChannelsOfP6P7, 3, 3, 2, 2, 1, 1)
+      val p7_module = SpatialConvolution[T](outChannelsOfP6P7, outChannelsOfP6P7, 3, 3, 2, 2, 1, 1)
+      results(results.length - 2) = if (inChannelsOfP6P7 == outChannelsOfP6P7) {
         p6_module.inputs(results(featureMapsNum - 1))
       } else {
         p6_module.inputs(inputs(featureMapsNum - 1))
@@ -142,9 +142,9 @@ object FPN {
     inChannels: Array[Int],
     outChannels: Int,
     topBlocks: Int = 0,
-    inChannelsP6P7: Int = 0,
-    outChannelsP6P7: Int = 0
+    inChannelsOfP6P7: Int = 0,
+    outChannelsOfP6P7: Int = 0
   )(implicit ev: TensorNumeric[T]): FPN[T] = {
-    new FPN[T](inChannels, outChannels, topBlocks, inChannelsP6P7, outChannelsP6P7)
+    new FPN[T](inChannels, outChannels, topBlocks, inChannelsOfP6P7, outChannelsOfP6P7)
   }
 }

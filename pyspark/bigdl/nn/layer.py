@@ -5697,8 +5697,8 @@ class FPN(Layer):
                                 0 for null,
                                 1 for using max pooling on the last level
                                 2 for extra layers P6 and P7 in RetinaNet
-    :param in_channels_p6p7     number of input channels of P6 P7
-    :param out_channels_p6p7    number of output channels of P6 P7
+    :param in_channels_of_p6p7     number of input channels of P6 P7
+    :param out_channels_of_p6p7    number of output channels of P6 P7
 
     >>> import numpy as np
     >>> feature1 = np.random.rand(1,1,8,8)
@@ -5713,15 +5713,15 @@ class FPN(Layer):
                  in_channels_list,
                  out_channels,
                  top_blocks=0,
-                 in_channels_p6p7=0,
-                 out_channels_p6p7=0,
+                 in_channels_of_p6p7=0,
+                 out_channels_of_p6p7=0,
                  bigdl_type="float"):
         super(FPN, self).__init__(None, bigdl_type,
                                         in_channels_list,
                                         out_channels,
                                         top_blocks,
-                                        in_channels_p6p7,
-                                        out_channels_p6p7)
+                                        in_channels_of_p6p7,
+                                        out_channels_of_p6p7)
 
 def _test():
     import doctest

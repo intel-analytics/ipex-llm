@@ -427,7 +427,7 @@ class FPNSpec extends FlatSpec with Matchers {
     val in_channels_list = Array(1, 2, 4)
     val out_channels = 2
     val model = FPN[Float](in_channels_list, out_channels, topBlocks = 2,
-      inChannelsP6P7 = 4, outChannelsP6P7 = 2) // inChannelsP6P7 != outChannelsP6P7
+      inChannelsOfP6P7 = 4, outChannelsOfP6P7 = 2) // inChannelsP6P7 != outChannelsP6P7
 
     val feature1 = Tensor(
       T(T(0.10110152, 0.10345000, 0.04320979, 0.84362656,
@@ -684,7 +684,7 @@ class FPNSpec extends FlatSpec with Matchers {
     val in_channels_list = Array(1, 2, 4)
     val out_channels = 2
     val model = FPN[Float](in_channels_list, out_channels, topBlocks = 2,
-      inChannelsP6P7 = 2, outChannelsP6P7 = 2) // inChannelsP6P7 == outChannelsP6P7
+      inChannelsOfP6P7 = 2, outChannelsOfP6P7 = 2) // inChannelsP6P7 == outChannelsP6P7
 
     val feature1 = Tensor(
       T(T(0.10110152, 0.10345000, 0.04320979, 0.84362656,
