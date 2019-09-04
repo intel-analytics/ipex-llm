@@ -68,6 +68,32 @@ class Top5Accuracy(JavaValue):
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
+class MeanAveragePrecision(JavaValue):
+    """
+    Caculate the Mean Average Precision for top-k confident predictions.
+    The algorithm follows VOC Challenge after 2007
+
+    >>> MAP = MeanAveragePrecision(10, 20)
+    creating: createMeanAveragePrecision
+    """
+    def __init__(self, k, classes, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, k, classes)
+
+class MeanAveragePrecisionObjectDetection(JavaValue):
+    """
+    Caculate MeanAveragePrecision for Object Detection.
+
+    >>> MAPObj = MeanAveragePrecisionObjectDetection(20)
+    creating: createMeanAveragePrecisionObjectDetection
+    """
+    def __init__(self, classes, iou=0.5, useVoc2007=False, skipClass=-1, bigdl_type="float"):
+        """
+        :param classes: the number of classes
+        :param iou: the IOU threshold
+        :param useVoc2007: use validation method before voc2010 (i.e. voc2007)
+        :param skipClass: skip calculating on a specific class (e.g. background)
+        """
+        JavaValue.__init__(self, None, bigdl_type, classes, iou, useVoc2007, skipClass)
 
 class Loss(JavaValue):
 
