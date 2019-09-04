@@ -547,7 +547,7 @@ class TestSimple():
         predict_class = model.predict_class(predict_data)
         if isinstance(predict_class, RDD):
             for sample in predict_class.collect():
-                assert sample.label == 1
+                assert sample.label.to_ndarray() == 1
         else:
             predict_labels = predict_class.take(6)
             for i in range(0, total_length):
