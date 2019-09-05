@@ -547,7 +547,7 @@ class TestSimple():
         predict_class = model.predict_class(predict_data)
         if isinstance(predict_class, RDD):
             for sample in predict_class.collect():
-                predict_label=sample.label.to_ndarray()
+                predict_label = sample.label.to_ndarray()
                 assert np.argmax(predict_label) == 0
         else:
             predict_labels = predict_class.take(6)
