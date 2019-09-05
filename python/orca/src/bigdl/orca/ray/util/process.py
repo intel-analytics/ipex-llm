@@ -88,8 +88,9 @@ def session_execute(command, env=None, tag=None, fail_fast=False, timeout=120):
 
 
 class ProcessMonitor:
-    def __init__(self, process_infos, sc, ray_rdd, verbose=False):
+    def __init__(self, process_infos, sc, ray_rdd, raycontext, verbose=False):
         self.sc = sc
+        self.raycontext = raycontext
         self.verbose = verbose
         self.ray_rdd = ray_rdd
         self.master = []
@@ -123,9 +124,13 @@ class ProcessMonitor:
                 print(slave)
 
     def clean_fn(self):
+        if self.raycontext.stopped:
+            return
         import ray
         ray.shutdown()
-        if not is_local(self.sc):
+        if not self.sc:
+            print("WARNING: SparkContext has been stopped before cleaning the Ray resources")
+        if self.sc and (not is_local(self.sc)):
             self.ray_rdd.map(gen_shutdown_per_node(self.pgids, self.node_ips)).collect()
         else:
             gen_shutdown_per_node(self.pgids, self.node_ips)([])
