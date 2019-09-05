@@ -24,7 +24,8 @@ export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
 python -m pytest -v ../test/zoo/ray/ \
-       --ignore=../test/zoo/ray/integration/
+       --ignore=../test/zoo/ray/integration/ \
+       --ignore=../test/zoo/ray/test_reinit_raycontext.py
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
