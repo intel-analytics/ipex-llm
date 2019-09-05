@@ -356,7 +356,7 @@ class RayContext(object):
         :param extra_params: key value dictionary for extra options to launch Ray.
                              i.e extra_params={"temp-dir": "/tmp/ray2/"}
         """
-
+        self.stopped = False
         self._start_cluster()
         if object_store_memory is None:
             object_store_memory = self._get_ray_plasma_memory_local()
@@ -372,7 +372,7 @@ class RayContext(object):
         process_infos = ray_rdd.barrier().mapPartitions(
             self.ray_service.gen_ray_start()).collect()
 
-        self.ray_processesMonitor = ProcessMonitor(process_infos, self.sc, ray_rdd,
+        self.ray_processesMonitor = ProcessMonitor(process_infos, self.sc, ray_rdd, self,
                                                    verbose=self.verbose)
         self.redis_address = self.ray_processesMonitor.master.master_addr
         return self
