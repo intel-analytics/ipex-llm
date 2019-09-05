@@ -42,6 +42,8 @@ class Unsqueeze[T: ClassTag](
 
   private def getActualPosition(input: Tensor[_]) : Int = {
     val dim = if (pos <= 0) {
+      require(pos <= 0, s"valid positions start from 1, " +
+        s"input invalid positions will creates a singleton dim at the end of the input tensor")
       input.dim() + pos + 1
     } else {
       pos
