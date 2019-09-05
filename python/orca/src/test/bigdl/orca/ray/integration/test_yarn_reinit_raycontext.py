@@ -21,7 +21,7 @@ import pytest
 import ray
 import time
 
-from zoo import init_spark_on_local
+from zoo import init_spark_on_yarn
 from zoo.ray.util.raycontext import RayContext
 
 np.random.seed(1337)  # for reproducibility
@@ -34,22 +34,27 @@ class TestRay():
         return socket.gethostname()
 
 
-class TestUtil(TestCase):
+node_num = 4
+sc = init_spark_on_yarn(
+    hadoop_conf="/opt/work/hadoop-2.7.2/etc/hadoop/",
+    conda_name="rayexample",
+    num_executor=node_num,
+    executor_cores=28,
+    executor_memory="10g",
+    driver_memory="2g",
+    driver_cores=4,
+    extra_executor_memory_for_ray="30g")
+ray_ctx = RayContext(sc=sc, object_store_memory="2g")
+ray_ctx.init()
+actors = [TestRay.remote() for i in range(0, node_num)]
+print([ray.get(actor.hostname.remote()) for actor in actors])
+ray_ctx.stop()
+# repeat
+ray_ctx = RayContext(sc=sc, object_store_memory="1g")
+ray_ctx.init()
+actors = [TestRay.remote() for i in range(0, node_num)]
+print([ray.get(actor.hostname.remote()) for actor in actors])
+ray_ctx.stop()
 
-    def test_local(self):
-        node_num = 4
-        sc = init_spark_on_local(cores=node_num)
-        ray_ctx = RayContext(sc=sc, object_store_memory="1g")
-        ray_ctx.init()
-        actors = [TestRay.remote() for i in range(0, node_num)]
-        print([ray.get(actor.hostname.remote()) for actor in actors])
-        ray_ctx.stop()
-        sc.stop()
-        time.sleep(1)
-        for process_info in ray_ctx.ray_processesMonitor.process_infos:
-            for pid in process_info.pids:
-                assert not psutil.pid_exists(pid)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
+sc.stop()
+time.sleep(3)
