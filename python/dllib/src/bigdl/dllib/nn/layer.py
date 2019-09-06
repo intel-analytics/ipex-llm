@@ -114,7 +114,6 @@ class SharedStaticUtils():
         model = jvalue_creator(jvalue, bigdl_type)
         return model
 
-
 class Layer(JavaValue, SharedStaticUtils):
     """
     Layer is the basic component of a neural network
