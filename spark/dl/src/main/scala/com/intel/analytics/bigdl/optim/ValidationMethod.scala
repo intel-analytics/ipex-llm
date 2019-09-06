@@ -220,7 +220,7 @@ class Top1Accuracy[T: ClassTag](
 
 /**
  * Calculate the Mean Average Precision (MAP). The algorithm follows VOC Challenge after 2007
- * Require class label beginning from 0
+ * Require class label beginning with 0
  * @param k Take top-k confident predictions into account. If k=-1, calculate on all predictions
  * @param classes The number of classes
  */
@@ -295,7 +295,7 @@ object MAPUtil {
 
 /**
  * The MAP Validation Result. The results are not calculated until result() or format() is called
- * require class label beginning from 0
+ * require class label beginning with 0
  */
 class MAPValidationResult(
   private val nClass: Int,
@@ -315,7 +315,7 @@ class MAPValidationResult(
     require(skipClass >= 0 && skipClass < nClass, s"Invalid skipClass $skipClass")
   }
 
-  def calculateClassAP(clz: Int): Float = {
+  private[bigdl] def calculateClassAP(clz: Int): Float = {
     val posCnt = gtCntForClass
     // for each class, first find top k confident samples
     val sorted = predictForClass(clz).sortBy(v => v._1)(Ordering.Float.reverse) // decending order
@@ -421,19 +421,19 @@ private[bigdl] class GroundTruthBBox(val label: Int, val diff: Float,
 }
 
 /** MeanAveragePrecision for Object Detection
- * IMPORTANT: The labels in the target vector (Ground truth) begin from 0. BUT in the
- * NN output, the labels begins from 1
+ * IMPORTANT: The labels in the target vector (Ground truth) begin with 0. BUT in the
+ * NN output, the labels begins with 1
  *
  * The expected output from the last layer should be [num_of_batch X (1 + maxDetection * 6)] matrix
  * The format of the matrix should be [<batch>, <batch>, ...], where each row vector is
  * <batch> = [<size_of_batch>, <sample>,...]. Each sample has format:
- * <sample> = <label, score, bbox x4>   the labels begins from 1
- * imgId is the batch number of the sample. imgId begins from 0.
+ * <sample> = <label, score, bbox x4>   the labels begins with 1
+ * imgId is the batch number of the sample. imgId begins with 0.
  * Multiple samples may share one imgId
  *
  * The target vector (Ground truth) is a [num_of_gt X 7] matrix
  * having format [<sample_gt>, <sample_gt>, <sample_gt>, ...]
- * where <sample_gt> = <imgId, label, diff, bbox x4>  the labels begins from 0
+ * where <sample_gt> = <imgId, label, diff, bbox x4>  the labels begins with 0
  *
  * @param iou the IOU threshold
  * @param classes the number of classes

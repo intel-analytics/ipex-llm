@@ -86,14 +86,14 @@ class MeanAveragePrecisionObjectDetection(JavaValue):
     >>> MAPObj = MeanAveragePrecisionObjectDetection(20)
     creating: createMeanAveragePrecisionObjectDetection
     """
-    def __init__(self, classes, iou=0.5, useVoc2007=False, skipClass=-1, bigdl_type="float"):
+    def __init__(self, classes, iou=0.5, use_voc2007=False, skip_class=-1, bigdl_type="float"):
         """
         :param classes: the number of classes
         :param iou: the IOU threshold
         :param useVoc2007: use validation method before voc2010 (i.e. voc2007)
         :param skipClass: skip calculating on a specific class (e.g. background)
         """
-        JavaValue.__init__(self, None, bigdl_type, classes, iou, useVoc2007, skipClass)
+        JavaValue.__init__(self, None, bigdl_type, classes, iou, use_voc2007, skip_class)
 
 class Loss(JavaValue):
 
