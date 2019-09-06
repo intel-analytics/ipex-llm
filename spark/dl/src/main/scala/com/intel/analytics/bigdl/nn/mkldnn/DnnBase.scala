@@ -26,7 +26,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Helper utilities when integrating Module with MKL-DNN
  */
-trait MklDnnModule extends MklDnnModuleHelper  {
+trait MklDnnModule extends MklDnnModuleHelper {
   /**
    * MklDnn runtime, which includes a MKL-DNN engine and a MKL-DNN stream.
    * Note that this instance will be erased when send to remote worker, so you
@@ -80,7 +80,7 @@ trait MklDnnModule extends MklDnnModuleHelper  {
 
 trait MklDnnModuleHelper extends MemoryOwner {
 
-  @transient protected implicit lazy val _this : MemoryOwner = this
+  @transient protected implicit lazy val _implicitMemoryOwner : MemoryOwner = this
 
   protected def initActivity(formats: Array[MemoryData]): Activity = {
     if (formats.length == 1) {
@@ -126,7 +126,7 @@ trait MklDnnModuleHelper extends MemoryOwner {
   }
 }
 
-trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule{
+trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule {
   /**
    * MKL-DNN primitives of the module. Note you should only initialize this field by calling
    * initPrimitives method. This field will be erased when sending model to remote worker. So you
