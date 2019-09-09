@@ -49,17 +49,23 @@ object AveragePool {
   )(implicit ev: TensorNumeric[T]): nn.SpatialAveragePooling[T] = {
     val (kW: Int, kH: Int) = kernelShape match {
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException("Bad kernel value: " + kernelShape)
+      case _ => throw new IllegalArgumentException(
+        "Kernel shape is expected in the form of List(width, height)," +
+        "the input kernel shape: " + kernelShape)
     }
     val (dW: Int, dH: Int) = strides match {
       case null => (1, 1)
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException("Bad strides value: " + strides)
+      case _ => throw new IllegalArgumentException(
+        "Strides is expected in the form of List(width, height)," +
+        "the input strides: " + strides)
     }
     val (padW: Int, padH: Int) = pads match {
       case null => (0, 0)
       case width :: height :: _ => (width, height)
-      case _ => throw new IllegalArgumentException("Bad pads value: " + pads)
+      case _ => throw new IllegalArgumentException(
+        "Pads is expected in the form of List(width, height)," +
+        "the input pads: " + pads)
     }
     new nn.SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH,
       ceilMode = if (ceilMode == 0) false else true,

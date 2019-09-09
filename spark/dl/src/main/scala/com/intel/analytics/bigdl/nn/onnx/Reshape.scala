@@ -25,7 +25,14 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
 
-
+/**
+ * Reshape the input tensor similar to numpy.reshape.
+ * First input is the data tensor, second input is a shape tensor which specifies the output shape.
+ * It outputs the reshaped tensor.
+ * @param `classTag$T`
+ * @param ev
+ * @tparam T The numeric type in this module parameters.
+ */
 class Reshape[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T] {
 

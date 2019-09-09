@@ -20,7 +20,9 @@ import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-
+/**
+ * Element-wise sum of each of the input tensors.
+ */
 object OnnxSum {
   def apply[T: ClassTag](inplace: Boolean = false)
         (implicit ev: TensorNumeric[T]): nn.CAddTable[T, T] = {

@@ -21,7 +21,11 @@ import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-
+/**
+ * The operator computes the normalized exponential values for each layer in the given input.
+ * The input is a 2-D tensor (Tensor) of size (batch_size x input_feature_dimensions).
+ * The output tensor has the same shape and contains the softmax values of the corresponding input.
+ */
 object Softmax {
   def apply[T: ClassTag](axis: Int = 1)(implicit ev: TensorNumeric[T]): nn.SoftMax[T] = {
     if (axis != 1) {

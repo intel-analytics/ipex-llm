@@ -21,7 +21,19 @@ import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-
+/**
+ * Given data tensor of rank r >= 1, and indices tensor of rank q, gather entries of the
+ * axis dimension of data (by default outer-most one as axis=0) indexed by indices, and
+ * concatenates them in an output tensor of rank q + (r - 1).
+ * Example 1:
+ *    data = [ [1.0, 1.2], [2.3, 3.4], [4.5, 5.7], ]
+ *    indices = [ [0, 1], [1, 2], ]
+ *    output = [ [ [1.0, 1.2], [2.3, 3.4], ], [ [2.3, 3.4], [4.5, 5.7], ], ]
+ * Example 2:
+ *    data = [ [1.0, 1.2, 1.9], [2.3, 3.4, 3.9], [4.5, 5.7, 5.9], ]
+ *    indices = [ [0, 2], ] axis = 1,
+ *    output = [ [ [1.0, 1.9], [2.3, 3.9], [4.5, 5.9], ], ]
+ */
 object Gather {
   def apply[T: ClassTag, D: ClassTag](
     axis: Int = 0

@@ -20,7 +20,11 @@ import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-
+/**
+ * Insert single-dimensional entries to the shape of a tensor.
+ * Takes one required argument axes, a list of dimensions that will be inserted.
+ * Dimension indices in axes are as seen in the output tensor.
+ */
 object Unsqueeze {
   def apply[@specialized(Float, Double) T: ClassTag](
         axes: List[Int], // List of non-negative integers, indicate the dimensions to be inserted

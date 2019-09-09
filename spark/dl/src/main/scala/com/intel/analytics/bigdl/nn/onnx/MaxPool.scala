@@ -34,17 +34,23 @@ object MaxPool {
 
     val (kW: Int, kH: Int) = kernelShape match {
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException("Bad kernel shape value")
+      case _ => throw new IllegalArgumentException(
+        "Kernel shape is expected in the form of List(width, height)," +
+        "the input kernel shape: " + kernelShape)
     }
     val (dW: Int, dH: Int) = strides match {
       case null => (1, 1)
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException("Bad strides value")
+      case _ => throw new IllegalArgumentException(
+        "Strides is expected in the form of List(width, height)," +
+        "the input strides: " + strides)
     }
     val (padW: Int, padH: Int) = pads match {
       case null => (0, 0)
       case List(width, height) => (width, height)
-      case _ => throw new IllegalArgumentException("Bad padding value")
+      case _ => throw new IllegalArgumentException(
+        "Pads is expected in the form of List(width, height)," +
+        "the input pads: " + pads)
     }
 
     if (ceilMode != 0) {

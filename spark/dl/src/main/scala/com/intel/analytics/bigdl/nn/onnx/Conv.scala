@@ -55,31 +55,39 @@ object Conv {
     val (dilationW: Int, dilationH: Int) = dilations match {
       case null => (1, 1)
       case List(width: Int, height: Int) => (width.toInt, height.toInt)
-      case _ => throw new IllegalArgumentException("dilations: "
-        + dilations.mkString(" "))
+      case _ => throw new IllegalArgumentException(
+        "Dilations is expected in the form of List(width, height)," +
+        "the input dilations: " + dilations)
     }
 
     val (kW: Int, kH: Int) = kernelShape match {
       case List(width: Int, height: Int) => (width, height)
-      case _ => throw new IllegalArgumentException()
+      case _ => throw new IllegalArgumentException(
+        "Kernel shape is expected in the form of List(width, height)," +
+        "the input kernel shape: " + kernelShape)
     }
 
     val (dW: Int, dH: Int) = strides match {
       case null => (1, 1)
       case List(width: Int, height: Int) => (width, height)
-      case _ => throw new IllegalArgumentException()
+      case _ => throw new IllegalArgumentException(
+        "Strides is expected in the form of List(width, height)," +
+        "the input strides: " + strides)
     }
 
     val (padW: Int, padH: Int) = pads match {
       case null => (0, 0)
       case List(width: Int, height: Int) => (width, height)
-      case _ => throw new IllegalArgumentException()
+      case _ => throw new IllegalArgumentException(
+        "Pads is expected in the form of List(width, height)," +
+        "the input pads: " + strides)
     }
 
 
     if (dilationH != 1 && dilationW != 1) {
-      throw new UnsupportedOperationException("(dilationH, dilationsW): " +
-        "(" + dilationH + ", " + dilationW + ")")
+      throw new UnsupportedOperationException(
+        "Dilations is expected to be (1, 1)" +
+        "the input dilations: " + (dilationW, dilationH))
     }
 
 
@@ -90,8 +98,6 @@ object Conv {
       strideW = dW, strideH = dH,
       padW = padW, padH = padH, nGroup = group,
       initWeight = weight, initBias = bias)
-
-    // conv.setWeightsBias(Array(weight, bias))
 
     conv
   }

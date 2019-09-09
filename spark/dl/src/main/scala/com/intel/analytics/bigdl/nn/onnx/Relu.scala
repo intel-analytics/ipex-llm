@@ -21,7 +21,10 @@ import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-
+/**
+ * Relu takes one input data (Tensor) and produces one output data (Tensor) where the
+ * rectified linear function, y = max(0, x), is applied to the tensor elementwise.
+ */
 object Relu {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]): nn.ReLU[T] = {
