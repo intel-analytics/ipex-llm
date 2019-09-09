@@ -57,7 +57,7 @@ class MaskRCNN(val inChannels: Int,
     private val backbone = buildBackbone(inChannels, outChannels)
     private val rpn = RegionRroposal(inChannels, anchorSizes, aspectRatios, anchorStride,
       preNmsTopNTest, postNmsTopNTest, preNmsTopNTrain, postNmsTopNTrain, rpnNmsThread,
-      minSize, fpnPostNmsTopN)
+      minSize)
     private val boxHead = BoxHead(inChannels, boxResolution, scales, samplingRatio,
       boxScoreThresh, boxNmsThread, maxPerImage, outputSize, numClasses)
     private val maskHead = MaskHead(inChannels, maskResolution, scales, samplingRatio,
