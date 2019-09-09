@@ -1,6 +1,4 @@
-# *Visualization*
 
----
 
 ## Generating Summary
 To enable visualization support, you need first properly configure to collect statistics summary in different stages of training. It should be done before the training starts. See examples below: 
