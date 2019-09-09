@@ -14,22 +14,43 @@
  * limitations under the License.
  */
 
+
 package com.intel.analytics.bigdl.nn.onnx
 
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.nn
+// import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn
 
 
-object Unsqueeze {
+/**
+ * A layer contains a constant tensor.
+ * It forwards the value of constant tensor to next layers.
+ *
+ */
+// class Constant[T: ClassTag](
+//  val value: Tensor[T]
+// )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+//
+//  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+//    output = value
+//    output
+//  }
+//
+//  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+//    gradInput = gradOutput
+//    gradInput
+//  }
+//
+// }
+
+object Constant {
   def apply[@specialized(Float, Double) T: ClassTag](
-        axes: List[Int], // List of non-negative integers, indicate the dimensions to be inserted
-        numInputDims: Int = Int.MinValue // BigDL requires
-  )(implicit ev: TensorNumeric[T]): nn.Unsqueeze[T] = {
-    val pos = axes match {
-      case List(elem) => elem + 1 // Todo
-      case _ => throw new IllegalArgumentException("Bad axes value: " + axes)
-    }
-     new nn.Unsqueeze[T](pos = pos, numInputDims = numInputDims)
+        value: Tensor[T]
+    ) (implicit ev: TensorNumeric[T]) : nn.tf.Const[T, T] = {
+    print("Init Constant...")
+    new nn.tf.Const[T, T](value)
   }
 }
+

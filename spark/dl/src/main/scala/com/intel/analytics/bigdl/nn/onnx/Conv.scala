@@ -54,33 +54,44 @@ object Conv {
 
     val (dilationW: Int, dilationH: Int) = dilations match {
       case null => (1, 1)
-      // case List(weight, height) => (weight, height)
-      case _ => throw new IllegalArgumentException("dilation")
+      case List(width: Int, height: Int) => (width.toInt, height.toInt)
+      case _ => throw new IllegalArgumentException("dilations: "
+        + dilations.mkString(" "))
     }
 
     val (kW: Int, kH: Int) = kernelShape match {
-      case List(width, height) => (width, height)
+      case List(width: Int, height: Int) => (width, height)
       case _ => throw new IllegalArgumentException()
     }
+
     val (dW: Int, dH: Int) = strides match {
       case null => (1, 1)
-      case List(width, height) => (width, height)
+      case List(width: Int, height: Int) => (width, height)
       case _ => throw new IllegalArgumentException()
     }
+
     val (padW: Int, padH: Int) = pads match {
       case null => (0, 0)
-      case List(width, height) => (width, height)
+      case List(width: Int, height: Int) => (width, height)
       case _ => throw new IllegalArgumentException()
     }
+
+
+    if (dilationH != 1 && dilationW != 1) {
+      throw new UnsupportedOperationException("(dilationH, dilationsW): " +
+        "(" + dilationH + ", " + dilationW + ")")
+    }
+
 
     val conv = new nn.SpatialConvolution(
       nInputPlane = nInputPlane,
       nOutputPlane = nOutputPlane,
       kernelW = kW, kernelH = kH,
       strideW = dW, strideH = dH,
-      nGroup = group)
+      padW = padW, padH = padH, nGroup = group,
+      initWeight = weight, initBias = bias)
 
-    conv.setWeightsBias(Array(weight, bias))
+    // conv.setWeightsBias(Array(weight, bias))
 
     conv
   }
