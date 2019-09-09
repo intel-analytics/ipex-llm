@@ -70,7 +70,7 @@ class Top5Accuracy(JavaValue):
 
 class MeanAveragePrecision(JavaValue):
     """
-    Caculate the Mean Average Precision for top-k confident predictions.
+    Calculate the Mean Average Precision for top-k confident predictions.
     The algorithm follows VOC Challenge after 2007
 
     >>> MAP = MeanAveragePrecision(10, 20)
@@ -81,7 +81,7 @@ class MeanAveragePrecision(JavaValue):
 
 class MeanAveragePrecisionObjectDetection(JavaValue):
     """
-    Caculate MeanAveragePrecision for Object Detection.
+    Calculate the Mean Average Precision for Object Detection.
 
     >>> MAPObj = MeanAveragePrecisionObjectDetection(20)
     creating: createMeanAveragePrecisionObjectDetection
@@ -90,8 +90,8 @@ class MeanAveragePrecisionObjectDetection(JavaValue):
         """
         :param classes: the number of classes
         :param iou: the IOU threshold
-        :param useVoc2007: use validation method before voc2010 (i.e. voc2007)
-        :param skipClass: skip calculating on a specific class (e.g. background)
+        :param use_voc2007: use validation method before voc2010 (i.e. voc2007)
+        :param skip_class: skip calculation on a specific class (e.g. background)
         """
         JavaValue.__init__(self, None, bigdl_type, classes, iou, use_voc2007, skip_class)
 
