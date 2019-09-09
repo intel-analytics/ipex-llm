@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 5180889605872472241L)
 class Unsqueeze[T: ClassTag](
-  val pos: Int,
+  val pos: Array[Int],
   var numInputDims: Int = Int.MinValue
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
 
@@ -40,26 +40,33 @@ class Unsqueeze[T: ClassTag](
     this.numInputDims = numInputDims
   }
 
-  private def getActualPosition(input: Tensor[_]) : Int = {
-    val dim = if (pos <= 0) {
-      input.dim() + pos + 1
-    } else {
-      pos
-    }
+  private def getActualPosition(input: Tensor[_]) : Array[Int] = {
+    pos.foreach(pos => {
+      val dim = if (pos <= 0) {
+        require(pos <= 0, s"invalid input: index start from 1, " +
+          s"creates a singleton dim at the end of the input tensor")
+        input.dim() + pos + 1
+      } else {
+        pos
+      }
+      // get valid dimension offset for batchMode (if any)
+      val inputDim = input.dim() // data batch dim
+      numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
+      val offsetDim = inputDim - numInputDims
+      require(offsetDim >= 0, "input feature map dim (numInputDims) must be <= input:dim()," +
+        s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
 
-    // get valid dimension offset for batchMode (if any)
-    val inputDim = input.dim() // data batch dim
-    numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
-    val offsetDim = inputDim - numInputDims
-    require(offsetDim >= 0, "input feature map dim (numInputDims) must be <= input:dim()," +
-      s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
-
-    // the actual position; clearer error message for batchMode (if any)
-    val actualPos = dim + offsetDim
-    require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: $pos. " +
-      s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
-
-    actualPos
+      // the actual position; clearer error message for batchMode (if any)
+      val actualPos = dim + offsetDim
+      require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: $pos. " +
+        s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
+      actualPos
+    })
+    for {
+      i <- 1 to pos.length
+      j <- i to pos.length
+    } if (pos(j) > pos(i)) { pos(j) = pos(j) + 1}
+    pos
   }
 
   override def updateOutput(input: Tensor[_]): Tensor[_] = {
@@ -67,11 +74,9 @@ class Unsqueeze[T: ClassTag](
     if (input.getType() != output.getType()) {
       output = input.emptyInstance()
     }
-
-    output
+    actualPos.foreach(output
       .asInstanceOf[Tensor[NumericWildcard]]
-      .addSingletonDimension(input.asInstanceOf[Tensor[NumericWildcard]], actualPos)
-
+      .addSingletonDimension(input.asInstanceOf[Tensor[NumericWildcard]], _))
     output
   }
 
@@ -108,6 +113,12 @@ object Unsqueeze {
   def apply[@specialized(Float, Double) T: ClassTag](
     pos: Int,
     numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
-    new Unsqueeze[T](pos, numInputDims)
+    new Unsqueeze[T](Array(pos), numInputDims)
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+    posList: Array[Int],
+    numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
+    new Unsqueeze[T](posList, numInputDims)
   }
 }
