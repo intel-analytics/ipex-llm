@@ -16,21 +16,33 @@
 
 package com.intel.analytics.zoo.pipeline.api
 
+import java.io.{BufferedReader, BufferedWriter, FileOutputStream, FileWriter, InputStreamReader, File => JFile}
 import java.nio.ByteOrder
+import java.util
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer}
 import com.intel.analytics.bigdl.nn.{Container, Graph, InitializationMethod}
+import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.python.api.PythonBigDL
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.utils.{File, Shape}
 import com.intel.analytics.zoo.models.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
+import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.pipeline.api.autograd.Variable
-import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasLayerWrapper, WordEmbedding}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils}
+import org.apache.commons.io.FileUtils
+import org.apache.log4j.Logger
+import org.apache.spark.bigdl.api.python.BigDLSerDe
+import org.apache.zookeeper.KeeperException.UnimplementedException
 
 import scala.reflect.ClassTag
 
@@ -52,6 +64,23 @@ trait Net {
   def from[T: ClassTag](vars : Variable[T]*)(implicit ev: TensorNumeric[T]): Variable[T] = {
     new Variable(
       this.asInstanceOf[AbstractModule[Activity, Activity, T]].inputs(vars.map(_.node): _*))
+  }
+
+  private[zoo] def toKeras2(dir: String): String = {
+    throw new UnimplementedException()
+  }
+
+  /**
+   * Get keras-like weights.
+   * @tparam T
+   * @return
+   */
+  private[zoo] def getKerasWeights(): Array[Tensor[Float]] = {
+    if (this.asInstanceOf[AbstractModule[_, _, _]].parameters()._1.length != 0) {
+      throw new UnimplementedException()
+    } else {
+      Array()
+    }
   }
 }
 
@@ -185,5 +214,223 @@ object Net {
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(
       implicit ev: TensorNumeric[T]): Session[T] = {
     TensorflowLoader.checkpoints(graphFile, binFile, byteOrder)
+  }
+
+  private[zoo] def saveToKeras2[T: ClassTag](
+        model: Net,
+        filePath: String,
+        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
+    NetSaver.saveToKeras2(model.asInstanceOf[Module[T]], filePath, python)
+  }
+
+  private[zoo] def saveToTf[T: ClassTag](
+        model: Net,
+        dir: String,
+        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
+    NetSaver.saveToTf(model.asInstanceOf[Module[T]], dir, python)
+  }
+
+  private[zoo] def getName(name: String): String = {
+    name.split("\\.").last
+  }
+
+  private[zoo] def inputShapeToString(
+        inputShape: Shape,
+        paramName: String = "inputShape"): Map[String, String] = {
+    if (inputShape != null) {
+      Map("input_shape" -> s"(${inputShape.toSingle().mkString(", ")},)")
+    } else {
+      Map()
+    }
+  }
+
+  private[zoo] def arrayToString(array: Seq[Int], name: String): Map[String, String] = {
+    Map(name -> s"(${array.mkString(", ")})")
+  }
+
+  private[zoo] def activationToString(
+        activation: AbstractModule[_, _, _],
+        paramName: String = "activation"): Map[String, String] = {
+    val trueActivation = if (activation.isInstanceOf[KerasIdentityWrapper[_]]) {
+      activation.asInstanceOf[KerasIdentityWrapper[_]].layer
+    } else {
+      activation
+    }
+    if (activation != null) {
+      Map(paramName -> s"'${KerasUtils.getActivationName(trueActivation)}'")
+    } else {
+      Map()
+    }
+
+  }
+
+  private[zoo] def param(
+        boolean: Boolean,
+        paramName: String): Map[String, String] = {
+    Map(paramName -> s"${if (boolean) "True" else "False"}")
+  }
+
+  private[zoo] def param(
+        integer: Int,
+        paramName: String): Map[String, String] = {
+    Map(paramName -> integer.toString)
+  }
+
+  private[zoo] def param(
+        double: Double,
+        paramName: String): Map[String, String] = {
+    Map(paramName -> double.toString)
+  }
+
+  private[zoo] def param(
+        name: String,
+        paramName: String = "name"): Map[String, String] = {
+    Map(paramName -> s"'$name'")
+  }
+
+  private[zoo] def kerasDef(
+        module: Module[_],
+        params: Map[String, String]): String = {
+    s"${Net.getName(module.getClass.getName)}(" +
+      params.map(v => s"${v._1}=${v._2}").mkString(", ") + ")"
+  }
+
+  protected object NetSaver {
+    private val logger = Logger.getLogger(getClass)
+
+    protected val header =
+      """
+        |from tensorflow.keras.models import Sequential
+        |from tensorflow.keras.layers import *
+        |from pyspark.serializers import PickleSerializer
+        |
+        |def load_to_numpy(file):
+        |    in_file = open(file, "rb")
+        |    data = in_file.read()
+        |    in_file.close()
+        |    r=PickleSerializer().loads(data, encoding="bytes")
+        |    return r.to_ndarray()
+      """.stripMargin + "\n"
+
+    protected val tfHeader =
+      """
+        |from zoo.util.tf import export_tf
+        |from tensorflow.keras import backend as K
+        |import tensorflow as tf
+      """.stripMargin + "\n"
+
+    def save[T: ClassTag](
+          m: Module[T],
+          path: String,
+          python: String,
+          saveCommand: String)
+          (implicit ev: TensorNumeric[T]): Unit = {
+      val tmpDir = Utils.createTmpDir("ZooKeras")
+      logger.info(s"Write model's temp file to ${tmpDir}")
+      val modelFile = tmpDir.toString + s"/${m.getName()}.py"
+      val bw = new BufferedWriter(new FileWriter(modelFile))
+      bw.write(header)
+      if (m.isInstanceOf[Sequential[T]]) {
+        export(m.asInstanceOf[Sequential[T]], tmpDir.toString, bw)
+      } else {
+        throw new IllegalArgumentException(s"${m.getClass.getName} is not supported.")
+      }
+      bw.write(saveWeights(m, tmpDir.toString))
+      bw.write(saveCommand)
+      bw.flush()
+      bw.close()
+      execCommand(s"${python} ${modelFile}")
+      FileUtils.deleteDirectory(tmpDir.toFile())
+    }
+
+    def saveToTf[T: ClassTag](m: Module[T], path: String, python: String)
+                                 (implicit ev: TensorNumeric[T]): Unit = {
+      val saveCommand = tfHeader +
+        s"export_tf(K.get_session(), '${path}', model.inputs, model.outputs)\n"
+      save(m, path, python, saveCommand)
+    }
+
+    def saveToKeras2[T: ClassTag](m: Module[T], path: String, python: String)
+                      (implicit ev: TensorNumeric[T]): Unit = {
+      save(m, path, python, s"model.save('$path')\n")
+    }
+
+    def execCommand(command: String): Unit = {
+      val proc = Runtime.getRuntime().exec(command)
+      proc.waitFor()
+      if (proc.exitValue() != 0) {
+        val error = new BufferedReader(new InputStreamReader(proc.getErrorStream()))
+        val errorMsg = new StringBuilder()
+        var line = error.readLine()
+        while(line != null) {
+          errorMsg.append(line + "\n")
+          line = error.readLine()
+        }
+        throw new RuntimeException(s"Export Keras2 model failed:\n" + errorMsg.toString())
+      }
+
+    }
+
+    def export[T: ClassTag](
+          sequential: Sequential[T],
+          path: String,
+          writer: BufferedWriter): Unit = {
+      writer.write(s"${sequential.getName()} = " +
+        s"Sequential(name='${(sequential.getName())}')\n")
+      val modules = sequential.modules(0).asInstanceOf[TSequential[T]].modules
+      modules.foreach{ module =>
+        if (module.isInstanceOf[Sequential[T]]) {
+          export(module.asInstanceOf[Sequential[T]], path, writer)
+          writer.write(s"${sequential.getName()}.add(${module.getName})\n")
+        } else if (module.isInstanceOf[Net]) {
+          writer.write(s"${module.getName()} = ${module.asInstanceOf[Net].toKeras2(path)}\n")
+          writer.write(s"${sequential.getName()}.add(${module.getName})\n")
+        } else {
+          throw new IllegalArgumentException(s"unkown type ${this.getClass.getName}")
+        }
+      }
+    }
+
+    private[zoo] def saveWeights[T: ClassTag](
+                                                 module: AbstractModule[_, _, T], path: String)
+                                             (implicit ev: TensorNumeric[T]): String = {
+      val moduleName = module.getName()
+      var i = 0
+      val wStrings = module.asInstanceOf[Net].getKerasWeights().map{p =>
+        val pName = s"${moduleName}_p${i}"
+        val pPath = getUniqueFile(s"${path}/${pName}")
+        saveToJTensor(p, pPath)
+        i += 1
+        (s"${pName} = load_to_numpy('${pPath}')",
+          pName)
+      }
+      val loadWeights = wStrings.map(_._1).mkString("\n")
+      val weightsList = wStrings.map(_._2).mkString(",")
+      loadWeights + "\n" +
+        s"${moduleName}.set_weights([${weightsList}])\n"
+    }
+
+    private def getUniqueFile(path: String): JFile = {
+      var file = new JFile(path)
+      var i = 0
+      while(file.exists()) {
+        file = new JFile(path + s".$i")
+        i += 1
+      }
+      file
+    }
+
+    private def saveToJTensor[T: ClassTag](
+                                              tensor: Tensor[T], file: JFile)
+                                          (implicit ev: TensorNumeric[T]): Unit = {
+      val pythonBigDL = new PythonBigDL[T]()
+      val jt = pythonBigDL.toJTensor(tensor)
+      val bytes = BigDLSerDe.dumps(jt)
+      val fio = new FileOutputStream(file)
+      fio.write(bytes)
+      fio.flush()
+      fio.close()
+    }
+
   }
 }
