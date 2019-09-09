@@ -547,6 +547,29 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
 
   def toModel(): Model[T]
 
+
+  /**
+   * Save model to keras2 h5 file. Only for inference
+   * @param filePath path to save model.
+   * @param python python path, need analytics-zoo and tensorflow installed.
+   */
+  def saveToKeras2[T: ClassTag](
+        filePath: String,
+        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
+    Net.saveToKeras2[T](this, filePath, python)
+  }
+
+  /**
+   * Save model to tensorflow protobuf. Only for inference.
+   * @param dir directory to save model.
+   * @param python python path, need analytics-zoo and tensorflow installed.
+   */
+  def saveToTf[T: ClassTag](
+        dir: String,
+        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
+    Net.saveToTf[T](this, dir, python)
+  }
+
   /**
    * Print out the summary information of an Analytics Zoo Keras Model.
    *
@@ -891,6 +914,19 @@ class Sequential[T: ClassTag] private ()
       positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
     val graph = this.toModel()
     graph.summary(lineLength, positions)
+  }
+
+  override private[zoo] def getKerasWeights(): Array[Tensor[Float]] = {
+    val weights = new ArrayBuffer[Tensor[Float]]()
+    modules(0).asInstanceOf[TSequential[T]].modules.foreach(m => {
+      val params = m.asInstanceOf[Net].getKerasWeights()
+      if (params != null) {
+        params.foreach{p =>
+          weights += p
+        }
+      }
+    })
+    weights.toArray
   }
 }
 

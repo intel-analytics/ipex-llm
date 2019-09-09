@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer, KerasLayerWrapper, Sequential => KSequential, SoftMax => KSoftMax}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -82,6 +82,32 @@ object KerasUtils {
       new KerasIdentityWrapper[T](torchActivation)
         .asInstanceOf[KerasLayer[Tensor[T], Tensor[T], T]]
     }
+  }
+
+  def getActivationName[T: ClassTag](activation: AbstractModule[_, _, T]): String = {
+    if (activation == null) {
+      throw new IllegalArgumentException("activation is null")
+    } else {
+      activation match {
+        case _: Tanh[T] => "tanh"
+        case _: Sigmoid[T] => "sigmoid"
+        case _: ReLU[T] => "relu"
+        case _: com.intel.analytics.bigdl.nn.SoftMax[T] => "softmax"
+        case _: SoftPlus[T] => "softplus"
+        case _: SoftSign[T] => "softsign"
+        case _: HardSigmoid[T] => "hard_sigmoid"
+        case _: ReLU6[T] => "relu6"
+        case _: TanhShrink[T] => "tanh_shrink"
+        case _: SoftMin[T] => "softmin"
+        case _: LogSigmoid[T] => "log_sigmoid"
+        case _: LogSoftMax[T] => "log_softmax"
+        case _: Identity[T] => "linear"
+        case _: com.intel.analytics.zoo.pipeline.api.keras.layers.SoftMax[T] => "softmax"
+        case _ => throw new IllegalArgumentException("unkown activation"
+          + activation.getClass.getName)
+      }
+    }
+
   }
 
   def getTorchActivation[T : ClassTag] (activation: String)

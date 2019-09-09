@@ -36,7 +36,16 @@ class Dropout[T: ClassTag](
   override val p: Double,
   override val inputShape: Shape = null)
   (implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.Dropout[T](p, inputShape) with Net {}
+  extends com.intel.analytics.bigdl.nn.keras.Dropout[T](p, inputShape) with Net {
+
+  override private[zoo] def toKeras2(dir: String): String = {
+    val params = Net.inputShapeToString(inputShape) ++
+      Net.param(getName()) ++
+      Net.param(p, "rate")
+    Net.kerasDef(this, params)
+  }
+
+}
 
 object Dropout {
   def apply[@specialized(Float, Double) T: ClassTag](

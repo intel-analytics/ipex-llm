@@ -98,6 +98,13 @@ class Reshape[T: ClassTag](
     }
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
+
+  override private[zoo] def toKeras2(dir: String): String = {
+    val params = Net.inputShapeToString(inputShape) ++
+      Net.param(getName()) ++
+      Net.arrayToString(targetShape, "target_shape")
+    Net.kerasDef(this, params)
+  }
 }
 
 object Reshape {
