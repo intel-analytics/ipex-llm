@@ -481,12 +481,13 @@ object BboxUtil {
   private def decodeSignalBoxWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],
              weight: Array[Float], decodeBox: Tensor[Float]): Unit = {
     require(bbox.nDimension() == 1 && encodeBox.nDimension() == 1 && decodeBox.dim() == 1,
-    s"Only support decode single bbox, but get ${bbox.nDimension()}, ${encodeBox.nDimension()}")
+    s"Only support decode single bbox, but " +
+      s"get ${bbox.nDimension()}, ${encodeBox.nDimension()}, ${decodeBox.dim()}")
 
     require(encodeBox.nElement() == decodeBox.nElement(), s"element number of encode tensor" +
       s" and decode tensor should be same, but get ${encodeBox.nElement()} ${decodeBox.nElement()}")
 
-    val TO_REMOVE = 1
+    val TO_REMOVE = 1 // refer to pytorch, maybe it will be removed in future
     val x1 = bbox.valueAt(1)
     val y1 = bbox.valueAt(2)
     val x2 = bbox.valueAt(3)
@@ -513,11 +514,10 @@ object BboxUtil {
     // not change original input
     encodeBox.resize(encodeBox.nElement())
 
-    val bbox_xform_clip = 1000.toFloat / 16
-
     // clamp, dw,  dh
-    clamp(dw, 0.0f, bbox_xform_clip)
-    clamp(dh, 0.0f, bbox_xform_clip)
+    val bboxClip = 62.5f
+    clamp(dw, 0.0f, bboxClip)
+    clamp(dh, 0.0f, bboxClip)
 
     val pred_ctr_x = dx * priorWidth + pCenterX
     val pred_ctr_y = dy * priorHight + pCenterY

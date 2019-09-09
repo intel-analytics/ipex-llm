@@ -29,7 +29,7 @@ class BoxHeadSpec extends FlatSpec with Matchers {
     val inChannels: Int = 6
     val resolution: Int = 7
     val scales: Array[Float] = Array[Float](0.25f, 0.125f)
-    val samplingRratio: Float = 2.0f
+    val samplingRratio: Int = 2
     val scoreThresh: Float = 0.012f
     val nmsThresh: Float = 0.5f
     val detections_per_img: Int = 100
@@ -295,7 +295,7 @@ class BoxHeadSpec extends FlatSpec with Matchers {
     val inChannels: Int = 6
     val resolution: Int = 7
     val scales: Array[Float] = Array[Float](0.25f, 0.125f)
-    val samplingRratio: Float = 2.0f
+    val samplingRratio: Int = 2
     val scoreThresh: Float = 0.012f
     val nmsThresh: Float = 0.5f
     val detections_per_img: Int = 100
@@ -728,7 +728,7 @@ class BoxHeadSerialTest extends ModuleSerializationTest {
     val inChannels: Int = 6
     val resolution: Int = 7
     val scales: Array[Float] = Array[Float](0.25f, 0.125f)
-    val samplingRratio: Float = 2.0f
+    val samplingRratio: Int = 2
     val scoreThresh: Float = 0.012f
     val nmsThresh: Float = 0.5f
     val detections_per_img: Int = 100
