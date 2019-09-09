@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-
 package com.intel.analytics.bigdl.nn.onnx
 
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
 
 
 object MaxPool {

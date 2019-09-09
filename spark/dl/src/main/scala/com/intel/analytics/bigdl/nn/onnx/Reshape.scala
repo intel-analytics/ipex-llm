@@ -19,11 +19,35 @@ package com.intel.analytics.bigdl.nn.onnx
 
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
+
+
+class Reshape[T: ClassTag]()(implicit ev: TensorNumeric[T])
+  extends AbstractModule[Table, Tensor[T], T] {
+
+  override def updateOutput(input: Table): Tensor[T] = {
+    require(input.length() == 2)
+    val dataTensor: Tensor[T] = input.get[Tensor[T]](1).get
+    val shape: Array[Int] = input.get[Tensor[T]](2).get.squeeze().toArray().map(ev.toType[Int])
+    val innerReshaper = nn.Reshape(shape, batchMode = Option(false))
+
+    output = innerReshaper.forward(dataTensor)
+    output
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
+    gradInput = input
+    gradInput
+  }
+
+}
 
 object Reshape {
-  def apply[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]): nn.Reshape[T] = {
-    new nn.Reshape[T](size = size)
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Reshape[T] = {
+    new Reshape[T]()
   }
 }

@@ -3,7 +3,7 @@
 """ Module for translating ONNX operators into Mxnet operatoes"""
 # pylint: disable=unused-argument,protected-access
 import numpy as np
-from bigdl.nn.layer import *
+from bigdl.nn.onnx.layer import *
 from translation_utils import *
 
 from onnx.numpy_helper import to_array
@@ -115,8 +115,8 @@ def conv(inputs, prev_modules, attrs, outputs):
 	if len(inputs) == 3:
 		bias_tensor_val, _ = inputs[2]
 
-	nInputPlane = data_tensor_shape[1]
-	nOutputPlane = weight_tensor_shape[0]
+	n_input_plane = int(data_tensor_shape[1])
+	n_output_plane = int(weight_tensor_shape[0])
 	input_height, input_width = data_tensor_shape[-2:]
 
 	kernelW, kernelH = kernel_shape
@@ -125,18 +125,23 @@ def conv(inputs, prev_modules, attrs, outputs):
 	nGroup = group
 	withBias = len(inputs) == 3 
 
-	module = SpatialConvolution(nInputPlane, nOutputPlane,
-		kernelW, kernelH, stride_w = strideW, stride_h = strideH,
-		pad_w = padW, pad_h = padH,
-		n_group = nGroup,
-		init_weight = weight_tensor_val,
-		init_bias = bias_tensor_val,
-		with_bias = withBias)(prev_modules)
+	module = Conv(
+		n_input_plane = n_input_plane,
+		n_output_plane = n_output_plane,
+		kernel_shape = kernel_shape,
+		weight = weight_tensor_val,
+		bias = bias_tensor_val,
+		auto_pad=auto_pad,
+		dilations=dilations,
+		group = group,
+		pads = pads[-2:],
+		strides = strides
+		)(prev_modules)
 	
 	output_height = calc_output_shape(input_height, kernelH)
 	output_width  = calc_output_shape(input_width, kernelW)
 
-	out_tensor_shape = (nInputPlane, nOutputPlane, output_height, output_width)
+	out_tensor_shape = (n_input_plane, n_output_plane, output_height, output_width)
 
 	return module, [out_tensor_shape]
 

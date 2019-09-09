@@ -27,8 +27,8 @@ object Unsqueeze {
         numInputDims: Int = Int.MinValue // BigDL requires
   )(implicit ev: TensorNumeric[T]): nn.Unsqueeze[T] = {
     val pos = axes match {
-      case List(elem) => elem
-      case _ => throw new IllegalArgumentException("Bad axes value.")
+      case List(elem) => elem + 1 // Todo
+      case _ => throw new IllegalArgumentException("Bad axes value: " + axes)
     }
      new nn.Unsqueeze[T](pos = pos, numInputDims = numInputDims)
   }

@@ -27,13 +27,13 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 object Concat {
   def apply[T: ClassTag](
         nInputDims: Int, // specify the number of dimensions of input, BigDL requires.
-        axis: Int = 1 // to be join in this dimension
+        axis: Int = 0 // to be join in this dimension
     )(implicit ev: TensorNumeric[T]): nn.JoinTable[T] = {
 
     // Todo: investigate attribute nInputDims
     // It seems it doesn't take N or C as a dimension, if input is in the form of (N, C, W, H).
     // So a Tensor with (n, c, w, h), JoinTable regards nInputDims is 3 instead of 4,
     // otherwise would get an IndexOutofBound exceaption
-    new nn.JoinTable(dimension = axis, nInputDims = nInputDims)
+    new nn.JoinTable(dimension = axis + 1, nInputDims = nInputDims)
   }
 }
