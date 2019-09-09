@@ -80,7 +80,7 @@ trait MklDnnModule extends MklDnnModuleHelper {
 
 trait MklDnnModuleHelper extends MemoryOwner {
 
-  @transient protected implicit lazy val _implicitMemoryOwner : MemoryOwner = this
+  @transient protected implicit lazy val _this : MemoryOwner = this
 
   protected def initActivity(formats: Array[MemoryData]): Activity = {
     if (formats.length == 1) {
