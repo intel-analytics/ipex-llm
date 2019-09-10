@@ -106,9 +106,6 @@ class Pooler[T: ClassTag] (
     val featureMaps = input[Table](1)
     val rois = input[Tensor[T]](2)
 
-    require(featureMaps.length() == num_levels,
-      "The number of feature maps should be same as the size of scales")
-
     val roi_levels = levelMapping(lvl_min, lvl_max, rois)
     val num_rois = rois.size(1)
     val num_channels = featureMaps.get[Tensor[T]](1).get.size(2)
