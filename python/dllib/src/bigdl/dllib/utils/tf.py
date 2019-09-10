@@ -39,6 +39,14 @@ def process_grad(grad):
     return grad
 
 
+def _to_operation_name(name):
+    return name.split(":")[0]
+
+
+def _to_floats(vs):
+    return [float(v) for v in vs]
+
+
 def export_tf(sess, folder, inputs, outputs,
               generate_backward=False, allow_non_differentiable_input=True):
     """
