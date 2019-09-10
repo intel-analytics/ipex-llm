@@ -26,7 +26,11 @@ import os
 from zoo.tfpark import KerasModel, TFDataset
 
 
-class TestTFParkModel(ZooTestCase):
+class TestTFParkTFOptimizer(ZooTestCase):
+
+    def setup_method(self, method):
+        tf.keras.backend.clear_session()
+        super(TestTFParkTFOptimizer, self).setup_method(method)
 
     def test_tf_optimizer_with_sparse_gradient(self):
         ids = np.random.randint(0, 10, size=[40])

@@ -23,6 +23,11 @@ from zoo.tfpark.text.keras import *
 
 class TestTextModels(ZooTestCase):
 
+    def setup_method(self, method):
+        import tensorflow as tf
+        tf.keras.backend.clear_session()
+        super(TestTextModels, self).setup_method(method)
+
     def test_intent_entity(self):
         model = IntentEntity(num_intents=8, num_entities=5, word_length=10,
                              word_vocab_size=200, char_vocab_size=50)

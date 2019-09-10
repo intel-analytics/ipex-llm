@@ -27,6 +27,10 @@ from zoo.tfpark.estimator import TFEstimatorSpec, TFEstimator
 
 class TestTFParkEstimator(ZooTestCase):
 
+    def setup_method(self, method):
+        tf.keras.backend.clear_session()
+        super(TestTFParkEstimator, self).setup_method(method)
+
     def create_model_fn(self):
         def model_fn(features, labels, mode):
             features = tf.layers.flatten(features)

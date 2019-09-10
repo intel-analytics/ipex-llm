@@ -27,6 +27,10 @@ bert_config_path = os.path.join(resource_path, "bert/bert_config.json")
 
 class TestTextEstimators(ZooTestCase):
 
+    def setup_method(self, method):
+        tf.keras.backend.clear_session()
+        super(TestTextEstimators, self).setup_method(method)
+
     def test_bert_classifier(self):
         def gen_record(has_label=True):
             res = dict()
