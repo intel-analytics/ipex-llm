@@ -17,6 +17,7 @@
 import zoo.pipeline.api.autograd as autograd
 from zoo.feature.image import ImageSet
 from zoo.feature.text import TextSet
+from zoo.feature.common import FeatureSet
 from zoo.pipeline.api.keras.base import ZooKerasLayer
 from zoo.pipeline.api.keras.utils import *
 from bigdl.nn.layer import Layer
@@ -212,7 +213,7 @@ class KerasNet(ZooKerasLayer):
                     validation_data = to_sample_rdd(*validation_data)
                 training_data = to_sample_rdd(x, y)
             elif (isinstance(x, RDD) or isinstance(x, ImageSet) or isinstance(x, TextSet))\
-                    and not y:
+                    or isinstance(x, FeatureSet) and not y:
                 training_data = x
             else:
                 raise TypeError("Unsupported training data type: %s" % type(x))
