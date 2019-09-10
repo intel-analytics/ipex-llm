@@ -39,6 +39,7 @@ import scala.collection.mutable.ListBuffer
 import java.util.ArrayList
 import java.util.concurrent.{CopyOnWriteArrayList, TimeUnit}
 
+import com.intel.analytics.bigdl.Module
 import org.apache.log4j.{Level, Logger}
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
@@ -126,8 +127,16 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     TFNet(path, config)
   }
 
-  def createTFTrainingHelper(modelPath: String, config: Array[Byte] = null): TFTrainingHelper = {
+  def createTFTrainingHelper(modelPath: String, config: Array[Byte] = null): Module[Float] = {
     TFTrainingHelper(modelPath, config)
+  }
+
+  def createTFTrainingHelper2(modelPath: String, config: Array[Byte] = null): Module[Float] = {
+    TFTrainingHelper2(modelPath, config)
+  }
+
+  def saveCheckpoint(model: TFTrainingHelper2): Unit = {
+    model.saveCheckpoint()
   }
 
   def createIdentityCriterion(): IdentityCriterion = {
