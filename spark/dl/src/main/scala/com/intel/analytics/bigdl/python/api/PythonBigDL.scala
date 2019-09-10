@@ -1531,6 +1531,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       numInputDims)
   }
 
+  def createMultipleDimUnsqueeze(pos: Array[Int],
+    numInputDims: Int = Int.MinValue)
+  : Unsqueeze[T] = {
+    Unsqueeze[T](pos,
+      numInputDims)
+  }
+
   def createBCECriterion(weights: JTensor = null,
     sizeAverage: Boolean = true)
   : BCECriterion[T] = {

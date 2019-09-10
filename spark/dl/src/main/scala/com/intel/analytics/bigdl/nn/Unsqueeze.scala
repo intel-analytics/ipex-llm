@@ -72,7 +72,7 @@ class Unsqueeze[T: ClassTag](
     })
     for {
       i <- 1 to pos.length
-      j <- i to pos.length
+      j <- i + 1 to pos.length
     } if (pos(j) > pos(i)) { pos(j) = pos(j) + 1}
     pos
   }
