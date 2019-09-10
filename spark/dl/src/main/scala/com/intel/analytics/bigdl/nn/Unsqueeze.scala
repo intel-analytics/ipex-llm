@@ -36,6 +36,14 @@ class Unsqueeze[T: ClassTag](
   var numInputDims: Int = Int.MinValue
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
 
+  def this( pos: Int, numInputDims: Int )(implicit ev: TensorNumeric[T]) = {
+    this(Array(pos), numInputDims)
+  }
+
+  def this( pos: Int )(implicit ev: TensorNumeric[T]) = {
+    this(Array(pos))
+  }
+
   def setNumInputDims(numInputDims: Int): Unit = {
     this.numInputDims = numInputDims
   }
@@ -116,9 +124,14 @@ object Unsqueeze {
     new Unsqueeze[T](Array(pos), numInputDims)
   }
 
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
     posList: Array[Int],
-    numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
+    numInputDims: Int)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
     new Unsqueeze[T](posList, numInputDims)
+  }
+
+  def apply[T: ClassTag](
+    posList: Array[Int])(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
+    new Unsqueeze[T](posList)
   }
 }
