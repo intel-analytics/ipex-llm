@@ -29,20 +29,15 @@ def _find_placeholders(grads):
     :param forward_ops:
     :return:
     '''
-    import sys
-    is_py2 = sys.version[0] == '2'
-    if is_py2:
-        import Queue as queue
-    else:
-        import queue as queue
-    queue = queue.Queue()
+    from collections import deque
+    queue = deque([])
     for grad in grads:
-        queue.put(grad)
+        queue.append(grad)
 
     placeholders = set()
     visited = set()
-    while not queue.empty():
-        tensor = queue.get()
+    while len(queue) > 0:
+        tensor = queue.popleft()
         # this is necessary, because input may not be differentiable
         if tensor is None:
             continue
@@ -54,7 +49,7 @@ def _find_placeholders(grads):
             for input_tensor in tensor.op.inputs:
                 # this is necessary because there may be a cycle in the graph such as tf.while_loop
                 if input_tensor.name not in visited:
-                    queue.put(input_tensor)
+                    queue.append(input_tensor)
     return list(placeholders)
 
 
