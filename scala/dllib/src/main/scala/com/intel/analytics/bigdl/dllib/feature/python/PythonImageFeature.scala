@@ -220,12 +220,21 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
     ImageBytesToMat(byteKey, imageCodec)
   }
 
+  def createImagePixelBytesToMat(
+      byteKey: String = ImageFeature.bytes): ImagePixelBytesToMat = {
+    ImagePixelBytesToMat(byteKey)
+  }
+
   def createImageBrightness(deltaLow: Double, deltaHigh: Double): ImageBrightness = {
     ImageBrightness(deltaLow, deltaHigh)
   }
 
   def createImageFeatureToTensor(): ImageFeatureToTensor[T] = {
     ImageFeatureToTensor()
+  }
+
+  def createImageFeatureToSample(): ImageFeatureToSample[T] = {
+    ImageFeatureToSample()
   }
 
   def createImageChannelNormalizer(
@@ -345,6 +354,10 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
 
   def createImageHFlip(): ImageHFlip = {
     ImageHFlip()
+  }
+
+  def createImageMirror(): ImageMirror = {
+    ImageMirror()
   }
 
   def createImageSetToSample(inputKeys: JList[String],
