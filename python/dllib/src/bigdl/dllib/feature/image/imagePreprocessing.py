@@ -41,6 +41,15 @@ class ImageBytesToMat(ImagePreprocessing):
         super(ImageBytesToMat, self).__init__(bigdl_type, byte_key, image_codec)
 
 
+class ImagePixelBytesToMat(ImagePreprocessing):
+    """
+    Transform byte array(pixels in byte) to OpenCVMat
+    :param byte_key key that maps byte array
+    """
+    def __init__(self, byte_key="bytes", bigdl_type="float"):
+        super(ImagePixelBytesToMat, self).__init__(bigdl_type, byte_key)
+
+
 class ImageResize(ImagePreprocessing):
     """
     Resize image
@@ -331,12 +340,28 @@ class ImageHFlip(ImagePreprocessing):
         super(ImageHFlip, self).__init__(bigdl_type)
 
 
+class ImageMirror(ImagePreprocessing):
+    """
+    Flip the image horizontally and vertically
+    """
+    def __init__(self, bigdl_type="float"):
+        super(ImageMirror, self).__init__(bigdl_type)
+
+
 class ImageFeatureToTensor(Preprocessing):
     """
     a Transformer that convert ImageFeature to a Tensor.
     """
     def __init__(self, bigdl_type="float"):
         super(ImageFeatureToTensor, self).__init__(bigdl_type)
+
+
+class ImageFeatureToSample(Preprocessing):
+    """
+    A transformer that get Sample from ImageFeature.
+    """
+    def __init__(self, bigdl_type="float"):
+        super(ImageFeatureToSample, self).__init__(bigdl_type)
 
 
 class RowToImageFeature(Preprocessing):
