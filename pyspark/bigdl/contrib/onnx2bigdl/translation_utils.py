@@ -3,8 +3,12 @@ import math
 import numpy as np
 
 def calc_output_shape(input, kernel, padding = 0, stride = 1, dilation = 1, ceil_mode = False):
+	def dilated_kernel_size(kernel, dilation):
+		return kernel + (kernel - 1) * (dilation - 1)
 	rounding = math.ceil if ceil_mode else math.floor
-	out = int(rounding(input + 2 * padding - dilation * (kernel - 1) - 1) / stride + 1)
+	out = (input + 2 * padding - dilated_kernel_size(kernel, dilation)) / stride + 1
+	out = int(rounding(out))
+	print(input, kernel, padding, stride, dilation, ceil_mode, out)
 	return out
 
 def parse_tensor_data(tensor_proto):

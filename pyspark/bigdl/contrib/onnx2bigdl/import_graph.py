@@ -1,24 +1,40 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 import numpy as np
-from op_mapping import _convert_map as convert_map
-from bigdl.nn.layer import *
- 
+from bigdl.nn.onnx.layer import *
+from bigdl.nn.layer import Identity, Model
+
+from .ops_mapping import _convert_map as convert_map
+
 
 class BigDLGraph(object):
-	
 	def __init__(self, graph_proto = None):
+		self._inputs = list()   # input module list
+		self._outputs = list()  # output module list
+		self._tensors = dict()  # (tensor_name, tensor_val)
+		self._modules = dict()  # (module_name, module_obj) pairs
+		self._root = list()
+		self._dummy_root = Identity()()
 		self._graph = self.load_graph(graph_proto)
-		self._inputs = [] # input module list
-		self._outputs = [] # output module list
-		self._tensors = {} # (tensor_name, tensor_val)
-		self._modules = {} # (module_name, module_obj) pairs
 		return
 
 	def load_graph(self, graph_proto):
 		if not graph_proto:
 			return None
-
-		meta = self._parse_graph_metadata(graph_proto) 
 		tensor_set = set()
 
 		for tensor in graph_proto.initializer:
@@ -26,48 +42,46 @@ class BigDLGraph(object):
 				raise ValueError("Tensor's name is required")
 			tensor_set.add(tensor.name)
 			tensor_data = self._parse_tensor_data(tensor)
+			self._modules[tensor.name] = Constant(tensor_data)(self._dummy_root)
 			self._tensors[tensor.name] = (tensor_data, tensor_data.shape)
 			
 		for gin in graph_proto.input:
 			if gin.name not in tensor_set:
 				self._inputs.append(gin.name)
-				input_tensor_data = meta['input_tensor_data']
-				self._modules[gin.name] = Input()
-				self._tensors[gin.name] = (None, input_tensor_data[gin.name])
+				shape = tuple([dim.dim_value for dim in gin.type.tensor_type.shape.dim])
+				# input_tensor_data = meta['input_tensor_data']
+				self._modules[gin.name] = Identity()(self._dummy_root)  # Input()
+				self._tensors[gin.name] = (None, shape)
 
 		for gout in graph_proto.output:
-			self._outputs.append(gout.name)
+			if gout.name not in tensor_set:
+				self._outputs.append(gout.name)
 
 		for node in graph_proto.node:
 			name = node.name.strip()
 			op_type = node.op_type
-
-			print("start", name, op_type)
-
 			inputs = [self._tensors[n] for n in node.input]
-			prev_modules = [self._modules[n] for n in node.input if n not in tensor_set]
+			prev_modules = [self._modules[n] for n in node.input]
 			attrs = self._parse_node_attr(node)
 			outputs = node.output
+
+			if len(prev_modules) == 0:
+				self._root.append((name, op_type))
+				prev_modules = [self._dummy_root]
 
 			bigdl_module, outputs_shape = self._make_module_from_onnx_node(op_type, inputs, prev_modules, attrs, outputs)
 
 			assert len(outputs) == len(outputs_shape)
 
 			for out, out_shape in zip(outputs, outputs_shape):
-				print(out, bigdl_module)
 				self._modules[out] = bigdl_module
 				self._tensors[out] = (None, out_shape)
 
-			print("end")
-
-		in_modules = [self._modules[m] for m in meta['input_tensor_data'].keys()]
+		in_modules = [self._modules[m] for m in self._inputs]
 		out_modules = [self._modules[m] for m in self._outputs]
-
-		print("Graph loaded.")
-		model = Model(in_modules, out_modules)
+		model = Model([self._dummy_root], out_modules)
 
 		return model
-
 
 	def _make_module_from_onnx_node(self, op_type, inputs, prev_modules, attrs, outputs):
 		module = None
@@ -76,32 +90,7 @@ class BigDLGraph(object):
 			module, out_shapes = convert_map[op_type](inputs, prev_modules, attrs, outputs)
 		else:
 			raise NotImplemented(op_type)
-		return module, out_shapes  
-
-
-	def _parse_graph_metadata(self, graph_proto):
-		_params = set()
-		for tensor in graph_proto.initializer:
-			_params.add(tensor.name)
-
-		input_data = {}
-		for gin in graph_proto.input:
-			if gin.name not in _params:
-				shape = [dim.dim_value for dim in gin.type.tensor_type.shape.dim]
-				input_data[gin.name] = tuple(shape)
-
-		output_data = {}
-		for gout in graph_proto.output:
-			shape = [dim.dim_value for dim in gout.type.tensor_type.shape.dim]
-			output_data[gout.name] = tuple(shape)
-
-		metadata = {
-			'input_tensor_data' : input_data,
-			'output_tensor_data' : output_data
-		}
-		
-		return metadata 
-		
+		return module, out_shapes
 
 	def _parse_tensor_data(self, tensor_proto):
 		try:
@@ -114,7 +103,6 @@ class BigDLGraph(object):
 			# If it is a scalar tensor
 			np_array = np.array([to_array(tensor_proto)])
 		return np_array
-
 
 	def _parse_node_attr(self, node_proto):
 		attrs = {}
@@ -142,7 +130,3 @@ class BigDLGraph(object):
 				raise ValueError("Cannot parse attribute: \n{}\n.".format(attr))
 
 		return attrs
-
-
-if __name__ == '__main__':
-	print()

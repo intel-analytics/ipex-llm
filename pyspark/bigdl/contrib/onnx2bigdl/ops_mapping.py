@@ -1,33 +1,27 @@
-# coding: utf-8_
-# pylint: disable=invalid-name
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
 """Operator attributes conversion"""
-# from _op_translations import identity, random_uniform, random_normal, sample_multinomial
-# from _op_translations import add, subtract, multiply, divide, absolute, negative, add_n
-# from _op_translations import tanh, arccos, arcsin, arctan, _cos, _sin, _tan
-# from _op_translations import softplus, shape, gather, lp_pooling, size
-# from _op_translations import ceil, floor, hardsigmoid, global_lppooling
-# from _op_translations import concat, hardmax
-# from _op_translations import leaky_relu, _elu, _prelu, _selu, softmax, fully_connected
-# from _op_translations import global_avgpooling, global_maxpooling, linalg_gemm
-# from _op_translations import sigmoid, pad, relu, matrix_multiplication, batch_norm
-# from _op_translations import dropout, local_response_norm, conv, deconv
-# from _op_translations import reshape, cast, split, _slice, transpose, squeeze, flatten
-# from _op_translations import reciprocal, squareroot, power, exponent, _log, unsqueeze
-# from _op_translations import reduce_max, reduce_mean, reduce_min, reduce_sum
-# from _op_translations import reduce_prod, avg_pooling, max_pooling, instance_norm
-# from _op_translations import argmax, argmin, maximum, minimum
-# from _op_translations import clip, reduce_log_sum, reduce_log_sum_exp
-# from _op_translations import reduce_sum_square, reduce_l1, reduce_l2, max_roi_pooling
-# from _op_translations import log_softmax, softsign, lesser, greater, equal
-# from _op_translations import logical_and, logical_or, logical_xor, logical_not
-# from _op_translations import mean, depthtospace, spacetodepth, lpnormalization
-
-from _op_translations import conv, batch_norm, relu, max_pooling, _sum, avg_pooling
-from _op_translations import reshape, linalg_gemm, softmax, constant, shape, gather
-from _op_translations import unsqueeze, concat
+from .ops_translation import conv, batch_norm, relu, max_pool, _sum, average_pool
+from .ops_translation import reshape, gemm, softmax, constant, shape, gather
+from .ops_translation import unsqueeze, concat
 
 
-# convert_map defines maps of ONNX operator names to converter functor(callable)
+# convert_map defines maps of operator names to converter functor(callable)
 # defined in the op_translations module.
 _convert_map = {
     # Generator Functions
@@ -70,7 +64,7 @@ _convert_map = {
     # 'GlobalAveragePool' : global_avgpooling,
     # 'GlobalMaxPool'     : global_maxpooling,
     # 'GlobalLpPool'      : global_lppooling,
-    'Gemm'              : linalg_gemm,
+    'Gemm'              : gemm,
     # 'LRN'               : local_response_norm,
     # 'Dropout'           : dropout,
     # # Changing shape and type.
@@ -95,8 +89,8 @@ _convert_map = {
     # 'ReduceMin'         : reduce_min,
     # 'ReduceSum'         : reduce_sum,
     # 'ReduceProd'        : reduce_prod,
-    'AveragePool'       : avg_pooling,
-    'MaxPool'           : max_pooling,
+    'AveragePool'       : average_pool,
+    'MaxPool'           : max_pool,
     # # Sorting and Searching
     # 'ArgMax'            : argmax,
     # 'ArgMin'            : argmin,
@@ -135,6 +129,5 @@ _convert_map = {
     # 'DepthToSpace'      : depthtospace,
     # 'SpaceToDepth'      : spacetodepth,
     # 'Hardmax'           : hardmax,
-    # 'LpNormalization'   : lpnormalization,
-    'Dummy'             : conv
+    # 'LpNormalization'   : lpnormalization
 }

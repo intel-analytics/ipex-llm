@@ -42,7 +42,8 @@ class GemmSpec extends FlatSpec with Matchers {
     val add = CAddTable().inputs(Array(mul, tensorC))
     var model = Graph(Array(tensorA, tensorB, tensorC), add)
 
-    var myGemm = new Gemm()
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = false, transB = false)
+
     val myInput = T(inputA, inputB, inputC)
 
     val out1 = model.forward(myInput)
@@ -70,7 +71,7 @@ class GemmSpec extends FlatSpec with Matchers {
     val add = CAddTable().inputs(Array(mul, tensorC))
     var model = Graph(Array(tensorA, tensorB, tensorC), add)
 
-    var myGemm = new Gemm(transA = true)
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = true, transB = false)
 
     val out1 = model.forward(T(inputA, inputB, inputC))
     val out2 = myGemm.forward(T(inputA, inputB, inputC))
@@ -97,7 +98,7 @@ class GemmSpec extends FlatSpec with Matchers {
     val add = CAddTable().inputs(Array(mul, tensorC))
     var model = Graph(Array(tensorA, tensorB, tensorC), add)
 
-    var myGemm = new Gemm(transB = true)
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = false, transB = true)
 
     val out1 = model.forward(T(inputA, inputB, inputC))
     val out2 = myGemm.forward(T(inputA, inputB, inputC))
@@ -123,7 +124,7 @@ class GemmSpec extends FlatSpec with Matchers {
     val add = CAddTable().inputs(Array(mul, inputC))
     var model = Graph(Array(inputA, inputB, inputC), add)
 
-    var myGemm = new Gemm(transA = transA, transB = transB)
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = transA, transB = transB)
 
     val out1 = model.forward(T(tensorA, tensorB, tensorC))
     val out2 = myGemm.forward(T(tensorA, tensorB, tensorC))
@@ -136,7 +137,7 @@ class GemmSpec extends FlatSpec with Matchers {
 
 class GemmSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val gemm = Gemm[Float]().setName("Gemm")
+    val gemm = Gemm[Float](alpha = 1, beta = 1, transA = false, transB = false).setName("Gemm")
 
     val inputA = Tensor(2, 2).rand()
     val inputB = Tensor(2, 2).rand()
