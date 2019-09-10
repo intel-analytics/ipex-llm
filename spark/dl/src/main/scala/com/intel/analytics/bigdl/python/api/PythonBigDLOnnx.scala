@@ -66,6 +66,11 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     Concat(nInputDims = n_input_dims, axis = axis)
   }
 
+
+  def createConstant(value: JTensor): nn.tf.Const[T, T] = {
+    Constant(toTensor(value))
+  }
+
   def createConv(
     n_input_plane: Int, // BigDL requires
     n_output_plane: Int, // BigDL requires
@@ -92,24 +97,23 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     )
   }
 
-  def createGather(axis: Int = 0): nn.ops.Gather[T, T] = {
+  def createGather(axis: Int): nn.ops.Gather[T, T] = {
     Gather[T, T](axis = axis)
   }
 
-  def createGemm(alpha: Float = 1, beta: Float = 1,
-                 trans_a: Int = 0, trans_b: Int = 0): Gemm[T] = {
-    Gemm(alpha, beta,
-      if (trans_a == 0) false else true,
-      if (trans_b == 0) false else true)
+
+  def createGemm(alpha: Float, beta: Float, trans_a: Int, trans_b: Int): Gemm[T] = {
+    Gemm(alpha = alpha, beta = beta,
+      transA = (if (trans_a == 0) false else true),
+      transB = (if (trans_b == 0) false else true))
   }
 
-  def createMaxPool(auto_pad: String = "NOTSET", ceil_mode: Int = 0,
-    dilations: JList[Int], kernel_shape: JList[Int], pads: JList[Int],
-    storage_order: Int = 0, strides: JList[Int]): nn.SpatialMaxPooling[T] = {
-    MaxPool(autoPad = auto_pad,
-      ceilMode = ceil_mode,
+  def createMaxPool(kernel_shape: JList[Int], auto_pad: String,
+    ceil_mode: Int, dilations: JList[Int], pads: JList[Int],
+    storage_order: Int, strides: JList[Int]): nn.SpatialMaxPooling[T] = {
+
+    MaxPool(kernelShape = kernel_shape.asScala.toList, autoPad = auto_pad, ceilMode = ceil_mode,
       dilations = if (dilations != null) dilations.asScala.toList else null,
-      kernelShape = kernel_shape.asScala.toList,
       pads = if (pads != null) pads.asScala.toList else null,
       storageOrder = storage_order,
       strides = if (strides != null) strides.asScala.toList else null
@@ -120,8 +124,8 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     Relu()
   }
 
-  def createReshape(size: JArrayList[Int]): nn.Reshape[T] = {
-    Reshape(size.asScala.toArray)
+  def createReshape(): Reshape[T] = {
+    Reshape()
   }
 
   def createShape(): Shape[T] = {
@@ -136,7 +140,7 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     OnnxSum[T](inplace = inplace)
   }
 
-  def createUnsqueeze(axes: JList[Int], nInputDims: Int): nn.Unsqueeze[T] = {
-    Unsqueeze(axes = axes.asScala.toList, numInputDims = nInputDims)
+  def createUnsqueeze(axes: JList[Int], num_input_dims: Int): nn.Unsqueeze[T] = {
+    Unsqueeze(axes = axes.asScala.toList, numInputDims = num_input_dims)
   }
 }

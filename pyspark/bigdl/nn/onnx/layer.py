@@ -87,6 +87,11 @@ class Concat(Layer):
         super(Concat, self).__init__(None, bigdl_type, input_dims, axis)
 
 
+class Constant(Layer):
+    def __init__(self, value, bigdl_type="float"):
+        super(Constant, self).__init__(None, bigdl_type, JTensor.from_ndarray(value))
+
+
 class Conv(Layer):
     """
     The convolution operator consumes an input tensor and a filter, and computes the output.
@@ -94,27 +99,20 @@ class Conv(Layer):
     >>> n_input_plane = 3
     >>> n_output_plane = 7
     >>> kernel_shape = [2, 2]
-    >>> weight = JTensor.from_ndarray(np.random.random(84))
-    >>> bias = JTensor.from_ndarray(np.random.random(7))
+    >>> weight = np.random.random(84)
+    >>> bias = np.random.random(7)
     >>> conv = Conv(n_input_plane, n_output_plane, kernel_shape, weight, bias)
     creating: createConv
     """
     def __init__(self,
-        n_input_plane,
-        n_output_plane,
-        kernel_shape,
-        weight,
-        bias,
-        auto_pad='NOTSET',
-        dilations=None,
-        group=1,
-        pads=None,
-        strides=None,
+        n_input_plane, n_output_plane, kernel_shape, weight, bias,
+        auto_pad='NOTSET', dilations=None, group=1, pads=None, strides=None,
         bigdl_type="float"):
         super(Conv, self).__init__(None, bigdl_type,
             n_input_plane, n_output_plane, kernel_shape,
             JTensor.from_ndarray(weight), JTensor.from_ndarray(bias),
-            auto_pad, dilations, group, pads, strides)
+            auto_pad, dilations, group,
+            pads, strides)
 
 
 class Gather(Layer):
@@ -146,8 +144,7 @@ class Gemm(Layer):
     creating: createGemm
     """
     def __init__(self, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0, bigdl_type="float"):
-        super(Gemm, self).__init__(None, bigdl_type,
-           alpha, beta, trans_a, trans_b)
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
 
 
 class MaxPool(Layer):
@@ -169,8 +166,9 @@ class MaxPool(Layer):
         storage_order=0,
         strides=None,
         bigdl_type="float"):
-        super(MaxPool, self).__init__(None, bigdl_type, kernel_shape,
-            auto_pad, ceil_mode, dilations, pads, storage_order, strides)
+        super(MaxPool, self).__init__(None, bigdl_type,
+            kernel_shape, auto_pad, ceil_mode,
+            dilations, pads, storage_order, strides)
 
 
 class Relu(Layer):
@@ -189,11 +187,11 @@ class Reshape(Layer):
     """
     Reshape the input tensor similar to numpy.reshape.
 
-    >>> reshape = Reshape((2, 2))
+    >>> reshape = Reshape()
     creating: createGemm
     """
-    def __init__(self, size, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type, size)
+    def __init__(self, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type)
 
 
 class Shape(Layer):
@@ -242,5 +240,5 @@ class Unsqueeze(Layer):
     >>> unsqueeze = Unsqueeze()
     creating: createUnsqueeze
     """
-    def __init__(self, axes, numInputDims, bigdl_type="float"):
-        super(Unsqueeze, self).__init__(None, bigdl_type, axes, numInputDims)
+    def __init__(self, axes, num_input_dims, bigdl_type="float"):
+        super(Unsqueeze, self).__init__(None, bigdl_type, axes, num_input_dims)

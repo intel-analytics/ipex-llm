@@ -40,6 +40,7 @@ class Reshape[T: ClassTag]()(implicit ev: TensorNumeric[T])
     require(input.length() == 2)
     val dataTensor: Tensor[T] = input.get[Tensor[T]](1).get
     val shape: Array[Int] = input.get[Tensor[T]](2).get.squeeze().toArray().map(ev.toType[Int])
+
     val innerReshaper = nn.Reshape(shape, batchMode = Option(false))
 
     output = innerReshaper.forward(dataTensor)
