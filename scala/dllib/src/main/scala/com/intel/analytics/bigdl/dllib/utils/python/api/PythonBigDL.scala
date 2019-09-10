@@ -2167,6 +2167,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new Top5Accuracy()
   }
 
+  def createMeanAveragePrecision(k: Int, classes: Int): ValidationMethod[T] = {
+    new MeanAveragePrecision(k, classes)
+  }
+
+  def createMeanAveragePrecisionObjectDetection(classes: Int, iou: Float, useVoc2007: Boolean,
+    skipClass: Int): ValidationMethod[T] = {
+    new MeanAveragePrecisionObjectDetection(classes, iou, useVoc2007, skipClass)
+  }
+
   def createLoss(criterion: Criterion[T]): ValidationMethod[T] = {
     new Loss(criterion)
   }
