@@ -646,7 +646,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param batchSize total batchSize for all partitions.
    *                  if -1, default is 4 * partitionNumber of dataset
    */
-  final def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
+
+  final def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Sample[T]] = {
     Predictor(this).predictClass(dataset, batchSize)
   }
 

@@ -22,6 +22,7 @@ from bigdl.util.common import *
 from bigdl.util.common import _py2java
 from bigdl.nn.initialization_method import *
 from bigdl.dataset import movielens
+from pyspark.rdd import RDD
 import numpy as np
 import tempfile
 import pytest
@@ -544,9 +545,14 @@ class TestSimple():
             assert_allclose(p_with_batch[i], ground_label[i], atol=1e-6, rtol=0)
 
         predict_class = model.predict_class(predict_data)
-        predict_labels = predict_class.take(6)
-        for i in range(0, total_length):
-            assert predict_labels[i] == 1
+        if isinstance(predict_class, RDD):
+            for sample in predict_class.collect():
+                predict_label = sample.label.to_ndarray()
+                assert np.argmax(predict_label) == 0
+        else:
+            predict_labels = predict_class.take(6)
+            for i in range(0, total_length):
+                assert predict_labels[i] == 1
 
     def test_predict_image(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "resources")
@@ -743,6 +749,16 @@ class TestSimple():
         image_frame = ImageFrame.read(image_path, self.sc)
         count = image_frame.get_image().count()
         assert count == 1
+
+    def test_set_input_output_format(self):
+        input1 = Input()
+        lstm1 = Recurrent().add(LSTM(128, 128))(input1)
+        fc1 = Linear(128, 10)
+        t1 = TimeDistributed(fc1)(lstm1)
+        model = Model(inputs=input1, outputs=t1)
+        model.set_input_formats([4])
+        model.set_output_formats([27])
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

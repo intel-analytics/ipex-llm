@@ -14,4 +14,20 @@
 # limitations under the License.
 #
 
-__version__ = "0.10.0.dev0"
+import sys
+from bigdl.nn.layer import Layer
+
+if sys.version >= '3':
+    long = int
+    unicode = str
+
+
+class Shape(Layer):
+    """
+    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
+
+    >>> shape = Shape()
+    creating: createShape
+    """
+    def __init__(self, bigdl_type="float"):
+        super(Shape, self).__init__(None, bigdl_type)

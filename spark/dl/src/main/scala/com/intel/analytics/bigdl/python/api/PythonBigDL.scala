@@ -1148,6 +1148,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       ev.fromType(spatial_scale))
   }
 
+  def createRoiAlign(spatial_scale: Double, sampling_ratio: Int, pooled_h: Int, pooled_w: Int)
+  : RoiAlign[T] = {
+    RoiAlign[T](spatial_scale.toFloat,
+      sampling_ratio,
+      pooled_h,
+      pooled_w)
+  }
+
+  def createFPN(in_channels_list: JList[Int], out_channels: Int,
+                top_blocks: Int = 0, in_channels_of_p6p7: Int = 0, out_channels_of_p6p7: Int = 0)
+  : FPN[T] = {
+    FPN[T](in_channels_list.asScala.toArray, out_channels,
+      top_blocks, in_channels_of_p6p7, out_channels_of_p6p7)
+  }
+
   def createScale(size: JList[Int])
   : Scale[T] = {
     Scale[T](size.asScala.toArray)
@@ -2023,10 +2038,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
-    val sampleRdd = toJSample(dataRdd)
-    val tensorRDD = model.predictClass(sampleRdd)
-    new JavaRDD[Int](tensorRDD)
+                      dataRdd: JavaRDD[Sample]): JavaRDD[Sample] = {
+    val sampleRDD = toJSample(dataRdd)
+    val pySampleRDD = model.predictClass(sampleRDD).map(toPySample(_))
+    new JavaRDD[Sample](pySampleRDD)
   }
 
   def modelForward(model: AbstractModule[Activity, Activity, T],
@@ -2596,6 +2611,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def saveGraphTopology(model: Graph[T], logPath: String): Graph[T] = {
     model.saveGraphTopology(logPath)
+  }
+
+  def setInputFormats(graph: StaticGraph[T], inputFormat: JList[Int]): StaticGraph[T] = {
+    graph.setInputFormats(inputFormat.asScala.toList)
+  }
+
+  def setOutputFormats(graph: StaticGraph[T], outputFormat: JList[Int]): StaticGraph[T] = {
+    graph.setOutputFormats(outputFormat.asScala.toList)
   }
 
   def createResizeBilinear(

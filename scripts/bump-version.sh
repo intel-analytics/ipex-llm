@@ -47,7 +47,7 @@ update_file()
 verify_python_version()
 {
     VERSION=$1
-    if ! [[ $VERSION =~ ^[0-9]\.[0-9]\.[0-9]$ ]] && ! [[ $VERSION =~ ^[0-9]\.[0-9]\.[0-9]\.dev[0-9]$ ]]; then
+    if ! [[ $VERSION =~ ^[0-9]\.[0-9]+\.[0-9]$ ]] && ! [[ $VERSION =~ ^[0-9]\.[0-9]+\.[0-9]\.dev[0-9]$ ]]; then
         echo "Invalid python version $VERSION. It should be x.x.x or x.x.x.devx"
         exit 1
     fi
@@ -56,7 +56,7 @@ verify_python_version()
 verify_scala_version()
 {
     VERSION=$1
-    if ! [[ $VERSION =~ ^[0-9]\.[0-9]\.[0-9]$ ]] && ! [[ $VERSION =~ ^[0-9]\.[0-9]\.[0-9]-SNAPSHOT$ ]]; then
+    if ! [[ $VERSION =~ ^[0-9]\.[0-9]+\.[0-9]$ ]] && ! [[ $VERSION =~ ^[0-9]\.[0-9]+\.[0-9]-SNAPSHOT$ ]]; then
         echo "Invalid scala version $VERSION. It should be x.x.x or x.x.x-SNAPSHOT"
         exit 1
     fi
