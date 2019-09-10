@@ -5693,14 +5693,23 @@ class FPN(Layer):
     """
     Feature Pyramid Network (FPN) for Mask-RCNN
 
-    :param in_channels_list:  number of channels of feature maps
-    :param out_channels:      number of channels of FPN output
+    :param in_channels_list:    number of channels of feature maps
+    :param out_channels:        number of channels of FPN output
+    :param top_blocks:          top blocks option
+                                extra operation to be performed on the smallest
+                                resolution FPN output, whose result is appended
+                                to the result list
+                                0 for null,
+                                1 for using max pooling on the last level
+                                2 for extra layers P6 and P7 in RetinaNet
+    :param in_channels_of_p6p7     number of input channels of P6 P7
+    :param out_channels_of_p6p7    number of output channels of P6 P7
 
     >>> import numpy as np
     >>> feature1 = np.random.rand(1,1,8,8)
     >>> feature2 = np.random.rand(1,2,4,4)
     >>> feature3 = np.random.rand(1,4,2,2)
-    >>> m = FPN([1,2,4],2)
+    >>> m = FPN([1,2,4],2,2,4,2)
     creating: createFPN
     >>> out = m.forward([feature1, feature2, feature3])
     """
@@ -5708,10 +5717,16 @@ class FPN(Layer):
     def __init__(self,
                  in_channels_list,
                  out_channels,
+                 top_blocks=0,
+                 in_channels_of_p6p7=0,
+                 out_channels_of_p6p7=0,
                  bigdl_type="float"):
         super(FPN, self).__init__(None, bigdl_type,
-                                       in_channels_list,
-                                       out_channels)
+                                        in_channels_list,
+                                        out_channels,
+                                        top_blocks,
+                                        in_channels_of_p6p7,
+                                        out_channels_of_p6p7)
 
 def _test():
     import doctest
