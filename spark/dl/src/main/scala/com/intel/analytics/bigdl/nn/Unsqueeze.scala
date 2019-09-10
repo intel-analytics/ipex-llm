@@ -70,6 +70,7 @@ class Unsqueeze[T: ClassTag](
         s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
       actualPos
     })
+    //increase 1 to the following pos after a previous smaller pos have one dimension inserted.
     for {
       i <- 1 to pos.length
       j <- i + 1 to pos.length
