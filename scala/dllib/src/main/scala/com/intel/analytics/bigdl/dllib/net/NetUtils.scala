@@ -15,8 +15,6 @@
  */
 package com.intel.analytics.zoo.pipeline.api.net
 
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
-
 import com.esotericsoftware.kryo.{Kryo, KryoSerializable}
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.intel.analytics.bigdl.Module
@@ -206,6 +204,16 @@ object NetUtils {
   } catch {
     case e: NullPointerException =>
       true
+  }
+
+  @inline
+  def timeIt[T](name: String, logger: Logger)(f: => T): T = {
+    val begin = System.nanoTime()
+    val result = f
+    val end = System.nanoTime()
+    val cost = end - begin
+    logger.debug(s"$name time [${cost / 1.0e9} s].")
+    result
   }
 }
 
