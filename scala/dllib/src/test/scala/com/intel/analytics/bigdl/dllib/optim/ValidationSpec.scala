@@ -16,12 +16,193 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
+import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ValidationSpec extends FlatSpec with Matchers {
+  "MAPUtil" should "be correct for find top k" in {
+    val arr = Array(
+      Array(1f, 2f, 3f, 4f, 5f), // 0
+      Array(0f, 0f, 4f, 6f, 7f), // 1
+      Array(6f, 4f, 1f, 5f, 2f), // 2
+      Array(3f, 5f, 0f, 1f, 9f), // 3
+      Array(1f, 2f, 3f, 2f, 5f), // 4
+      Array(0f, 0f, 4f, 9f, 7f), // 5
+      Array(6f, 4f, 1f, 8f, 2f), // 6
+      Array(3f, 5f, 0f, 3f, 9f), // 7
+      Array(6f, 4f, 1f, 7f, 2f)  // 8
+    )
+    val result = MAPUtil.findTopK(16, arr, 3)
+    val test = Array((5, 9f), (6, 8f), (8, 7f), (1, 6f), (2, 5f), (0, 4f), (7, 3f), (4, 2f),
+      (3, 1f))
+    result should be(test)
+
+    val result2 = MAPUtil.findTopK(5, arr, 3)
+    val test2 = Array((5, 9f), (6, 8f), (8, 7f), (1, 6f), (2, 5f))
+    result2 should be(test2)
+  }
+
+  "MAPValidationResult" should "function well" in {
+    val confidence = Array(
+      Array(1f, 2f, 3f, 4f, 5f), // 0
+      Array(0f, 0f, 4f, 6f, 7f), // 1
+      Array(6f, 4f, 1f, 5f, 2f), // 2
+      Array(3f, 5f, 0f, 1f, 9.1f), // 3
+      Array(1f, 3f, 3f, 2f, 5f), // 4
+      Array(1f, 0f, 4f, 9f, 7f), // 5
+      Array(6f, 4f, 1f, 8f, 2.1f), // 6
+      Array(3f, 5f, 0f, 3f, 9f), // 7
+      Array(6f, 4f, 1f, 7f, 2.1f)  // 8
+    )
+    val gt = Array(
+      1f, // 0
+      0f, // 1
+      4f, // 2
+      4f, // 3
+      3f, // 4
+      3f, // 5
+      3f, // 6
+      2f, // 7
+      3f  // 8
+    )
+
+    def mkArray(data: (Float, Boolean)*): ArrayBuffer[(Float, Boolean)] = {
+      val ret = new ArrayBuffer[(Float, Boolean)]()
+      ret.appendAll(data)
+      ret
+    }
+    val result = new MAPValidationResult(5, 8,
+      Array(
+        mkArray((1f, false), (0f, true), (6f, false), (3f, false), (1f, false), (1f, false), (6f,
+          false), (3f, false), (6f, false)),
+        mkArray((2f, true), (0f, false), (4f, false), (5f, false), (3f, false), (0f, false), (4f,
+          false), (5f, false), (4f, false)),
+        mkArray((3f, false), (4f, false), (1f, false), (0f, false), (3f, false), (4f, false),
+          (1f, false), (0f, true), (1f, false)),
+        mkArray((4f, false), (6f, false), (5f, false), (1f, false), (2f, true), (9f, true), (8f,
+          true), (3f, false), (7f, true)),
+        mkArray((5f, false), (7f, false), (2f, true), (9.1f, true), (5f, false), (7f, false),
+          (2.1f, false), (9f, false), (2.1f, false))
+      ), Array(1, 1, 1, 4, 2))
+    val ap1 = result.calculateClassAP(0)
+    ap1 should be (0f)
+    val ap2 = result.calculateClassAP(1)
+    ap2 should be (1f/7f)
+    val ap3 = result.calculateClassAP(2)
+    ap3 should be (0f)
+    val ap4 = result.calculateClassAP(3)
+    ap4 should be (0.875f)
+    val ap5 = result.calculateClassAP(4)
+    ap5 should be (0.5f)
+
+    result.result()._1 should be(0.303571429f +- 1e-5f)
+  }
+
+  "MeanAveragePrecision" should "be correct on 1d tensor" in {
+    implicit val numeric = TensorNumeric.NumericFloat
+    val output = Tensor[Float](
+      T(
+        T(6f, 4f, 1f, 5f, 2f), // 2
+        T(3f, 5f, 0f, 1f, 9.1f), // 3
+        T(1f, 3f, 3f, 2f, 5f), // 4
+        T(1f, 0f, 4f, 9f, 7f), // 5
+        T(6f, 4f, 1f, 8f, 2.1f), // 6
+        T(3f, 5f, 0f, 3f, 9f), // 7
+        T(6f, 4f, 1f, 7f, 2.1f)  // 8
+     ))
+
+    val target = Tensor[Float](
+      T(T(
+        4f, // 2
+        4f, // 3
+        3f, // 4
+        3f, // 5
+        3f, // 6
+        2f, // 7
+        3f  // 8
+      )))
+
+    val r0 = new MeanAveragePrecision(8, 5).apply(output, target)
+    val r1 = new MeanAveragePrecision(8, 5).apply(Tensor[Float](T(1f, 2f, 3f, 4f, 5f)),
+      Tensor[Float](T(1f)))
+    val r2 = new MeanAveragePrecision(8, 5).apply(Tensor[Float](T(0f, 0f, 4f, 6f, 7f)),
+      Tensor[Float](T(0f)))
+    (r0 + r1 + r2).result()._1 should be(0.303571429f +- 1e-5f)
+  }
+
+  "MeanAveragePrecision" should "be correct on 2d tensor" in {
+    implicit val numeric = TensorNumeric.NumericFloat
+    val output = Tensor[Float](
+      T(
+        T(1f, 2f, 3f, 4f, 5f), // 0
+        T(0f, 0f, 4f, 6f, 7f), // 1
+        T(6f, 4f, 1f, 5f, 2f), // 2
+        T(3f, 5f, 0f, 1f, 9.1f), // 3
+        T(1f, 3f, 3f, 2f, 5f), // 4
+        T(1f, 0f, 4f, 9f, 7f), // 5
+        T(6f, 4f, 1f, 8f, 2.1f), // 6
+        T(3f, 5f, 0f, 3f, 9f), // 7
+        T(6f, 4f, 1f, 7f, 2.1f)  // 8
+      ))
+
+    val target = Tensor[Float](
+      T(T(
+        1f, // 0
+        0f, // 1
+        4f, // 2
+        4f, // 3
+        3f, // 4
+        3f, // 5
+        3f, // 6
+        2f, // 7
+        3f  // 8
+      )))
+    val v = new MeanAveragePrecision(8, 5)
+    val result = v(output, target)
+    result.result()._1 should be(0.303571429f +- 1e-5f)
+  }
+
+  "MeanAveragePrecisionObjectDetection" should "be correct on 2d tensor" in {
+    implicit val numeric = TensorNumeric.NumericFloat
+    val output = Tensor[Float](
+      T(
+        T(8f,
+          // label score bbox
+          0, 1, 110, 90, 210, 190,
+          0, 2, 310, 110, 410, 210,
+          0, 4, 320, 290, 420, 390,
+          0, 3, 210, 310, 290, 410,
+          1, 1, 1110, 1090, 1210, 1190,
+          1, 3, 1310, 1110, 1410, 1210,
+          1, 4, 1320, 1290, 1420, 1390,
+          1, 2, 1210, 1310, 1290, 1410
+        )
+      ))
+
+    // <imgId, label, diff, bbox x4>
+    val target = Tensor[Float](
+      T(
+        T(0, 1, 0, 100, 100, 200, 200),
+        T(0, 1, 0, 300, 100, 400, 200),
+        T(0, 1, 0, 100, 300, 200, 400),
+        T(0, 1, 0, 300, 300, 400, 400),
+        T(0, 1, 0, 210, 210, 230, 290),
+        T(0, 2, 0, 1100, 1100, 1200, 1200),
+        T(0, 2, 0, 1300, 1100, 1400, 1200),
+        T(0, 2, 0, 1100, 1300, 1200, 1400),
+        T(0, 2, 0, 1300, 1300, 1400, 1400),
+        T(0, 2, 0, 1210, 1210, 1230, 1290)
+      ))
+    val v = new MeanAveragePrecisionObjectDetection(3, 0.5f)
+    val result = v(output, target)
+    // 0.5f and 0.55f
+    result.result()._1 should be(0.35f +- 1e-5f)
+  }
+
   "treeNN accuracy" should "be correct on 2d tensor" in {
     val output = Tensor[Double](
       T(
