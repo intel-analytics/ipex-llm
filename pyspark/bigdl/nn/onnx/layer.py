@@ -88,7 +88,9 @@ class Concat(Layer):
 
 class Constant(Layer):
     """
-    >>> constant = Constant()
+
+    >>> value = np.random.random([3, 3])
+    >>> constant = Constant(value=value)
     creating: createConstant
     """
     def __init__(self, value, bigdl_type="float"):
@@ -193,7 +195,7 @@ class Reshape(Layer):
     Reshape the input tensor similar to numpy.reshape.
 
     >>> reshape = Reshape()
-    creating: createGemm
+    creating: createReshape
     """
     def __init__(self, bigdl_type="float"):
         super(Reshape, self).__init__(None, bigdl_type)
