@@ -253,8 +253,8 @@ object ImageSet {
     if (withLabel) {
       val path = new Path(pathStr)
 
-      val fullPath = path.toUri.getPath
       val fsSys = path.getFileSystem(sc.hadoopConfiguration)
+      val dirPath = fsSys.getFileStatus(path).getPath.toUri.getRawPath
       val classFolders = fsSys.listStatus(path).filter(_.isDirectory)
       val newPathsString = classFolders.map(_.getPath.toUri.toString).mkString(",")
       val labelMap = classFolders.map(_.getPath.getName)
@@ -263,8 +263,11 @@ object ImageSet {
         else c._1 -> c._2
       }.toMap
       val images = sc.binaryFiles(newPathsString, minPartitions).map { case (p, stream) =>
-        val classStr = new Path(p).toUri.getPath
-          .substring(fullPath.length + 1).split(File.separator)(0)
+        val rawFilePath = new Path(p).toUri.getRawPath
+        assert(rawFilePath.startsWith(dirPath),
+          s"directory path: $dirPath does not match file path $rawFilePath")
+        val classStr = rawFilePath
+          .substring(dirPath.length + 1).split(File.separator)(0)
         val label = labelMap(classStr)
         ImageFeature(stream.toArray(), uri = p, label = Tensor[Float](T(label)))
       }
