@@ -171,6 +171,14 @@ class RNN(
       PropKind.ForwardTraining
     }
 
+    /**
+     * TODO: The default format of input is TNC
+     * Batch size of input is needed by creating memory descriptors of src iter and dst iter.
+     * Step size of input is needed by creating memory descriptor of dst layer.
+     * By default, batch size of input is the second element of inputShape
+     * and step size is the first element of inputShape.
+     */
+
     inputs(0).layout match {
       case Memory.Format.tnc =>
         batchSize = inputs(0).shape(1)
@@ -179,7 +187,7 @@ class RNN(
         batchSize = inputs(0).shape(0)
         stepSize = inputs(0).shape(1)
       case _ =>
-        throw new UnsupportedOperationException("Not support such input format: " +
+        throw new UnsupportedOperationException("Unsupported input format: " +
           inputs(0).layout)
     }
 
