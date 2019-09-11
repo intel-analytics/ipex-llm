@@ -50,13 +50,7 @@ class Unsqueeze[T: ClassTag](
 
   private def getActualPosition(input: Tensor[_]) : Array[Int] = {
     pos.foreach(pos => {
-      val dim = if (pos <= 0) {
-        require(pos <= 0, s"invalid input: index starts from 1, " +
-          s"creating a singleton dim at the end of the input tensor")
-        input.dim() + pos + 1
-      } else {
-        pos
-      }
+      require(pos > 0, s"invalid input: index starts from 1" )
       // get valid dimension offset for batchMode (if any)
       val inputDim = input.dim() // data batch dim
       numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
@@ -65,7 +59,7 @@ class Unsqueeze[T: ClassTag](
         s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
 
       // the actual position; clearer error message for batchMode (if any)
-      val actualPos = dim + offsetDim
+      val actualPos = pos + offsetDim
       require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: $pos. " +
         s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
       actualPos
