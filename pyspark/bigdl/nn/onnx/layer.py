@@ -52,10 +52,9 @@ class BatchNormalization(Layer):
     Applies Batch Normalization over a 4D input (a mini-batch of 2D inputs with additional channel dimension)
     as described in the paper: https://arxiv.org/abs/1502.03167
 
-    num_features – C from an expected input of size (N, C, H, W)(N,C,H,W)
-    eps – a value added to the denominator for numerical stability. Default: 1e-5
-    momentum – the value used for the running_mean and running_var computation.
-     Can be set to None for cumulative moving average (i.e. simple average). Default: 0.1
+    num_features: C from an expected input of size (N, C, H, W).
+    eps: a value added to the denominator for numerical stability, default: 1e-5
+    momentum: the value used for the running_mean and running_var computation, default to 0.1
 
     Input:  (N, C, H, W)
     Output: (N, C, H, W) (same shape as input)
@@ -73,8 +72,8 @@ class Concat(Layer):
     """
     Concatenate a list of tensors into a single tensor
 
-    input_dims - dimension number of input
-    axis - which axis to concat on
+    input_dims: dimension number of input
+    axis: which axis to concat on
 
     Input: a BigDL table contains multiple tensors
     Output: a concatenated tensor
