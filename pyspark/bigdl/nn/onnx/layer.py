@@ -79,7 +79,7 @@ class Concat(Layer):
     Output: a concatenated tensor
 
     >>> input_dims = 3
-    >>> concat = Concat(input_dims)
+    >>> concat = Concat(input_dims=input_dims)
     creating: createConcat
     """
     def __init__(self, input_dims, axis=0, bigdl_type="float"):
@@ -87,6 +87,10 @@ class Concat(Layer):
 
 
 class Constant(Layer):
+    """
+    >>> constant = Constant()
+    creating: createConstant
+    """
     def __init__(self, value, bigdl_type="float"):
         super(Constant, self).__init__(None, bigdl_type, JTensor.from_ndarray(value))
 
@@ -120,7 +124,8 @@ class Gather(Layer):
     gather entries of the axis dimension of data (by default outer-most one as axis=0) indexed by indices,
     and concatenates them in an output tensor of rank q + (r - 1).
 
-    >>> gather = Gather()
+    >>> axis = 1
+    >>> gather = Gather(axis=axis)
     creating: createGather
     """
     def __init__(self, axis=0, bigdl_type="float"):
@@ -153,7 +158,8 @@ class MaxPool(Layer):
     of the input tensor according to the kernel size and downsampling the data into the output tensor Y for
     further processing.
 
-    >>> max_pool = MaxPool([2, 2])
+    >>> kernel_shape = (2, 2)
+    >>> max_pool = MaxPool(kernel_shape=kernel_shape)
     creating: createMaxPool
     """
     def __init__(self,
@@ -210,7 +216,8 @@ class Softmax(Layer):
     of the given input. The input is a 2-D tensor (Tensor) of size (batch_size x input_feature_dimensions).
     The output tensor has the same shape and contains the softmax values of the corresponding input.
 
-    >>> softmax = Softmax(1)
+    >>> axis = 1
+    >>> softmax = Softmax(axis=axis)
     creating: createSoftmax
     """
     def __init__(self, axis=1, bigdl_type="float"):
@@ -221,7 +228,8 @@ class OnnxSum(Layer):
     """
     Element-wise sum of each of the input tensors. All inputs and outputs must have the same data type.
 
-    >>> gemm = OnnxSum(False)
+    >>> inplace = False
+    >>> gemm = OnnxSum(inplace=inplace)
     creating: createOnnxSum
     """
     def __init__(self, inplace=False, bigdl_type="float"):
@@ -236,7 +244,9 @@ class Unsqueeze(Layer):
     For example: Given a tensor such that tensor with shape [3, 4, 5],
     then Unsqueeze(tensor, axes=[0, 4]) has shape [1, 3, 4, 5, 1]
 
-    >>> unsqueeze = Unsqueeze()
+    >>> axes = [1]
+    >>> num_input_dim = 3
+    >>> unsqueeze = Unsqueeze(axes=axes, num_input_dims=num_input_dim)
     creating: createUnsqueeze
     """
     def __init__(self, axes, num_input_dims, bigdl_type="float"):
