@@ -4891,9 +4891,9 @@ class Unsqueeze(Layer):
     '''
 
     def __init__(self, pos, num_input_dims=INTMIN, bigdl_type="float"):
-        if isInstance(pos, int):
+        if isinstance(pos, int):
             super(Unsqueeze, self).__init__(None, bigdl_type, pos, num_input_dims)
-        elif isInstance(pos, list):
+        elif isinstance(pos, list):
             self.bigdl_type = bigdl_type
             self.value = callBigDlFunc(bigdl_type, "createMultipleDimUnsqueeze", pos, num_input_dims)
 
