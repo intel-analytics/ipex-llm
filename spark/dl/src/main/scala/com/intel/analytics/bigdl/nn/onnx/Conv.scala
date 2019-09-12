@@ -90,6 +90,7 @@ object Conv {
         "the input dilations: " + (dilationW, dilationH))
     }
 
+    val withBias = if (bias != null) true else false
 
     val conv = new nn.SpatialConvolution(
       nInputPlane = nInputPlane,
@@ -97,7 +98,8 @@ object Conv {
       kernelW = kW, kernelH = kH,
       strideW = dW, strideH = dH,
       padW = padW, padH = padH, nGroup = group,
-      initWeight = weight, initBias = bias)
+      initWeight = weight, initBias = bias,
+      withBias = withBias)
 
     conv
   }
