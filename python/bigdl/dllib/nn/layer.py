@@ -226,10 +226,19 @@ class Layer(JavaValue, SharedStaticUtils):
                 return i
             else:
                 raise Exception("Error unknown input type %s" % type(i))
+
+        def check_list(input):
+            if type(input) is list:
+                if len(input) == 0:
+                    raise Exception('Error when checking: empty input')
+                return list(map(lambda i: check_list(i), input))
+            else:
+                return to_jtensor(input)
+
         if type(input) is list:
             if len(input) == 0:
                 raise Exception('Error when checking: empty input')
-            return list(map(lambda i: to_jtensor(i), input)), True
+            return list(map(lambda i: check_list(i), input)), True
         else:
             return [to_jtensor(input)], False
 
@@ -5688,6 +5697,35 @@ class RoiAlign(Layer):
                                          sampling_ratio,
                                          pooled_h,
                                          pooled_w)
+
+class Pooler(Layer):
+    """
+    Pooler selects the feature map which matches the size of RoI for RoIAlign
+
+    :param resolution:     the resolution of pooled feature maps. Height equals width.
+    :param scales:         spatial scales of each feature map
+    :param sampling_ratio: sampling ratio
+
+    >>> import numpy as np
+    >>> feature0 = np.random.rand(1,2,2,2)
+    >>> feature1 = np.random.rand(1,2,4,4)
+    >>> feature2 = np.random.rand(1,2,8,8)
+    >>> features = [feature0, feature1, feature2]
+    >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],dtype='float').reshape(3,4)
+    >>> m = Pooler(2,[1.0, 0.5, 0.25],2)
+    creating: createPooler
+    >>> out = m.forward([features,input_rois])
+    """
+
+    def __init__(self,
+                 resolution,
+                 scales,
+                 sampling_ratio,
+                 bigdl_type="float"):
+        super(Pooler, self).__init__(None, bigdl_type,
+                                     resolution,
+                                     scales,
+                                     sampling_ratio)
 
 class FPN(Layer):
     """
