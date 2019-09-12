@@ -24,7 +24,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class UnsqueezeSpec extends FlatSpec with Matchers {
   "Unsqueeze" should "work" in {
-    val unsqueeze = Unsqueeze[Float](List(4), 3)
+    val unsqueeze = Unsqueeze[Float](List(2), 3)
     val input = T(
       Tensor[Float](2, 3, 5).rand(),
       Tensor[Float](10, 3, 5).rand()
