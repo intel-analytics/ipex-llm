@@ -97,9 +97,9 @@ object ImageNetSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val imageIter = if (param.isResize) {
-                LocalImgReaderWithName(param.scaleSize, param.scaleSize, 255f)(iter)
+                LocalImgReader(param.scaleSize, param.scaleSize, 255f, true)(iter)
               } else {
-                LocalImgReaderWithName(param.scaleSize)(iter)
+                LocalImgReader(param.scaleSize, hasName = true)(iter)
               }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"), param.hasName)(imageIter)
@@ -129,9 +129,9 @@ object ImageNetSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val imageIter = if (param.isResize) {
-                LocalImgReaderWithName(param.scaleSize, param.scaleSize, 255f)(iter)
+                LocalImgReader(param.scaleSize, param.scaleSize, 255f, true)(iter)
               } else {
-                LocalImgReaderWithName(param.scaleSize)(iter)
+                LocalImgReader(param.scaleSize, hasName = true)(iter)
               }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"), param.hasName)(imageIter)

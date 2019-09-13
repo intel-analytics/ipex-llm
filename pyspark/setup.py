@@ -32,7 +32,6 @@ except IOError:
     sys.exit(-1)
 
 VERSION = __version__
-
 building_error_msg = """
 If you are packing python API from BigDL source, you must build BigDL first
 and run sdist.
