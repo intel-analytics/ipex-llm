@@ -328,7 +328,7 @@ class SpatialConvolution(
     val scaleWeight = this.getWeightScales().flatten.map { w => Scale.S8_MAX / w }
 
     // TODO check wether ForwardInference and ForwardTraining is the same
-    val desc = MklDnn.DilatedConvForwardDescInit(
+    val desc = MklDnnMemory.DilatedConvForwardDescInit(
       PropKind.ForwardTraining, AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
@@ -339,14 +339,14 @@ class SpatialConvolution(
       MklDnn.PaddingKind.mkldnnPaddingZero)
 
     forwardPrimDesc = if (relu || sum) {
-      val attr = MklDnn.CreateAttr()
+      val attr = MklDnnMemory.CreateAttr()
 
       // create output scales for s8/u8 output
       if (needQuantize) {
         setScalesOutForAttr(scaleIn, scaleOut, attr)
       }
 
-      val postOps = MklDnn.CreatePostOps()
+      val postOps = MklDnnMemory.CreatePostOps()
       if (sum) {
         val sumScale = if (needQuantize) {
           require(scaleOut.length == sumOp.outputFormats()(0).scales.length,
@@ -363,17 +363,17 @@ class SpatialConvolution(
       }
       MklDnn.AttrSetPostOps(attr, postOps)
 
-      MklDnn.PrimitiveDescCreateV2(desc, attr, runtime.engine, 0)
+      MklDnnMemory.PrimitiveDescCreateV2(desc, attr, runtime.engine, 0)
       // TODO we should destroy these ops
     } else if (needQuantize) {
-      val attr = MklDnn.CreateAttr()
+      val attr = MklDnnMemory.CreateAttr()
 
       setScalesOutForAttr(scaleIn, scaleOut, attr)
 
-      MklDnn.PrimitiveDescCreateV2(desc, attr, runtime.engine, 0)
+      MklDnnMemory.PrimitiveDescCreateV2(desc, attr, runtime.engine, 0)
       // TODO we should destroy these ops
     } else {
-      MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0)
+      MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, 0)
     }
 
     val List(realSrc, realWei, realDst) = List(Query.SrcPd, Query.WeightsPd, Query.DstPd).map {x =>
@@ -409,7 +409,7 @@ class SpatialConvolution(
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realDst.getPrimitive(runtime))
 
-    val primitive = MklDnn.PrimitiveCreate2(forwardPrimDesc, srcs, indexes, srcs.length,
+    val primitive = MklDnnMemory.PrimitiveCreate2(forwardPrimDesc, srcs, indexes, srcs.length,
       dsts, dsts.length)
 
     updateOutputMemoryPrimitives = srcs ++ dsts
@@ -478,7 +478,7 @@ class SpatialConvolution(
     val bis = NativeData(Array(nOutputPlane), Memory.Format.x)
     val dst = NativeData(outputShape, Memory.Format.any)
 
-    val desc = MklDnn.DilatedConvBackwardDataDescInit(
+    val desc = MklDnnMemory.DilatedConvBackwardDataDescInit(
       AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(), // TODO check correctness of strides and padding
@@ -487,7 +487,7 @@ class SpatialConvolution(
       paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
 
-    val backwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
+    val backwardPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
     val List(realDiffSrc, realWei, realDiffDst) =
       List(Query.DiffSrcPd, Query.WeightsPd, Query.DiffDstPd).map {x =>
@@ -503,7 +503,7 @@ class SpatialConvolution(
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realDiffSrc.getPrimitive(runtime))
 
-    val primitive = MklDnn.PrimitiveCreate2(backwardPrimDesc, srcs, indexes, srcs.length,
+    val primitive = MklDnnMemory.PrimitiveCreate2(backwardPrimDesc, srcs, indexes, srcs.length,
       dsts, dsts.length)
 
     updateGradInputMemoryPrimitives = srcs ++ dsts
@@ -548,7 +548,7 @@ class SpatialConvolution(
     // Use format "any" to init weight desc, otherwise maybe poor performance
     val gradMemoryData = NativeData(grad(0).shape, Memory.Format.any)
 
-    val desc = MklDnn.DilatedConvBackwardWeightsDescInit(
+    val desc = MklDnnMemory.DilatedConvBackwardWeightsDescInit(
       AlgKind.ConvolutionDirect,
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
@@ -558,7 +558,7 @@ class SpatialConvolution(
       paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
 
-    val gradWeightPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
+    val gradWeightPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
     // TODO here seems some errors ?????? check the realSrc format.
     val List(realSrc, realWei, realDiffDst) =
@@ -586,7 +586,7 @@ class SpatialConvolution(
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realWei.getPrimitive(runtime), bis.getPrimitive(runtime))
 
-    val primitive = MklDnn.PrimitiveCreate2(gradWeightPrimDesc, srcs, indexes, srcs.length,
+    val primitive = MklDnnMemory.PrimitiveCreate2(gradWeightPrimDesc, srcs, indexes, srcs.length,
       dsts, dsts.length)
 
     updateGradWMemoryPrimitives = srcs ++ dsts
@@ -643,12 +643,6 @@ class SpatialConvolution(
 
   // we need not implement it, because the grad parameters will clean by mkldnn
   override def zeroGradParameters(): Unit = {
-  }
-
-  override def release(): Unit = {
-    super.release()
-    List(weight, bias, gradWeight, gradBias).foreach(_.release())
-    if (weightForBackward != null) { weightForBackward.release() }
   }
 
   override def setQuantize(value: Boolean): this.type = {

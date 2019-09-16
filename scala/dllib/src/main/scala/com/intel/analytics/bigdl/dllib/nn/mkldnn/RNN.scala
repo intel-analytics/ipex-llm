@@ -207,15 +207,15 @@ class RNN(
 
     rnnCellDesc = mode match {
       case AlgKind.VanillaLstm =>
-        MklDnn.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
+        MklDnnMemory.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
       case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
         "Cell type: " + mode)
     }
 
-    val description = MklDnn.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,
+    val description = MklDnnMemory.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,
       src_iter_MD, weights_layer_MD, weights_iter_MD, bis_MD, dist_layer_MD, dist_iter_MD)
 
-    fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
+    fwdPD = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, 0L)
 
     val realSrc = MemoryData.operationWant(fwdPD, Query.SrcPd, 0)
     val realSrc_iter = MemoryData.operationWant(fwdPD, Query.SrcPd, 1)
@@ -265,7 +265,8 @@ class RNN(
         realDst_iter.getPrimitive(runtime))
     }
 
-    val primitive = MklDnn.PrimitiveCreate2(fwdPD, srcs, indexes, srcs.length, dsts, dsts.length)
+    val primitive = MklDnnMemory.PrimitiveCreate2(fwdPD, srcs, indexes,
+      srcs.length, dsts, dsts.length)
 
     updateOutputMemoryPrimitives = srcs ++ dsts
     updateOutputPrimitives = Array(primitive)
@@ -343,7 +344,7 @@ class RNN(
     val diff_dist_layer_MD = diff_dist_layer.getMemoryDescription()
     val diff_dist_iter_MD = diff_dist_iter.getMemoryDescription()
 
-    val description = MklDnn.RNNBackwardDescInit(PropKind.Backward, rnnCellDesc,
+    val description = MklDnnMemory.RNNBackwardDescInit(PropKind.Backward, rnnCellDesc,
       direction, src_layer_bw_MD,
       src_iter_bw_MD, weights_layer_bw_MD,
       weights_iter_bw_MD, bis_bw_MD,
@@ -355,7 +356,7 @@ class RNN(
       diff_dist_iter_MD
     )
 
-    val bwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPD)
+    val bwdPD = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, fwdPD)
 
     val realSrc = MemoryData.operationWant(bwdPD, Query.SrcPd, 0)
     val realSrc_iter = MemoryData.operationWant(bwdPD, Query.SrcPd, 1)
@@ -411,7 +412,7 @@ class RNN(
       realDiffBias.getPrimitive(runtime)
     )
 
-    val primitive = MklDnn.PrimitiveCreate2(bwdPD, srcs, indexes, srcs.length,
+    val primitive = MklDnnMemory.PrimitiveCreate2(bwdPD, srcs, indexes, srcs.length,
       dsts, dsts.length)
 
     updateGradInputMemoryPrimitives = srcs ++ dsts
@@ -471,12 +472,6 @@ class RNN(
   override def zeroGradParameters(): Unit = {
   }
 
-  override def release(): Unit = {
-    super.release()
-    List(weight, bias, weight_i, gradWeight, gradBias, gradWeight_i).foreach(_.release())
-    List(src_i, dst_i, gradsrc_i, graddst_i).foreach(_.release())
-    reorderManager.release()
-  }
 }
 
 object RNN{

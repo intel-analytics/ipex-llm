@@ -47,28 +47,28 @@ sealed trait MemoryData extends Serializable {
   @transient private var primitiveDesc: Long = UNDEFINED
   @transient private var description: Long = UNDEFINED
 
-  def getMemoryDescription(): Long = {
+  def getMemoryDescription()(implicit owner: MemoryOwner): Long = {
     if (description == UNDEFINED || description == ERROR) {
       checkConsistency(shape, layout)
-      description = MklDnn.MemoryDescInit(shape.length, shape, dataType, layout)
+      description = MklDnnMemory.MemoryDescInit(shape.length, shape, dataType, layout)
     }
     description
   }
 
-  def getPrimitiveDescription(runtime: MklDnnRuntime): Long = {
+  def getPrimitiveDescription(runtime: MklDnnRuntime)(implicit owner: MemoryOwner): Long = {
     require(runtime != null, s"Have you initialized the MklDnnRuntime?")
     if (primitiveDesc == UNDEFINED || primitiveDesc == ERROR) {
       primitiveDesc =
-        MklDnn.MemoryPrimitiveDescCreate(getMemoryDescription(), runtime.engine)
+        MklDnnMemory.MemoryPrimitiveDescCreate(getMemoryDescription(), runtime.engine)
     }
     primitiveDesc
   }
 
-  def getPrimitive(runtime: MklDnnRuntime): Long = {
+  def getPrimitive(runtime: MklDnnRuntime)(implicit owner: MemoryOwner): Long = {
     require(runtime != null, s"Have you initialized the MklDnnRuntime?")
     if (primitive == UNDEFINED || primitive == ERROR) {
       primitive =
-        MklDnn.PrimitiveCreate0(getPrimitiveDescription(runtime))
+        MklDnnMemory.PrimitiveCreate0(getPrimitiveDescription(runtime))
     }
     primitive
   }

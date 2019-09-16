@@ -25,15 +25,15 @@ class JoinTableSpec extends BigDLSpecHelper {
     val layer = JoinTable(1)
     val model = Sequential()
     val concat = ConcatTable()
-    concat.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
+    concat.add(ReorderMemory.create(HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc), HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc)))
-    concat.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
+    concat.add(ReorderMemory.create(HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc), HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc)))
     model.add(concat)
     model.add(layer)
-    model.add(ReorderMemory(NativeData(Array(4, 2), Memory.Format.nc),
+    model.add(ReorderMemory.create(NativeData(Array(4, 2), Memory.Format.nc),
       HeapData(Array(4, 2), Memory.Format.nc), NativeData(Array(4, 2), Memory.Format.nc),
       HeapData(Array(4, 2), Memory.Format.nc)))
     model.compile(Phase.TrainingPhase, Array(HeapData(Array(2, 2), Memory.Format.nc)))
