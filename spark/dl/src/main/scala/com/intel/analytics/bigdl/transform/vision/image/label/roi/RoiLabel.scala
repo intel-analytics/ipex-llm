@@ -25,26 +25,39 @@ import com.intel.analytics.bigdl.utils.{T, Table}
  * @param classes N (class labels) or 2 * N, the first row is class labels,
  * the second line is difficults
  * @param bboxes N * 4
+ * @param masks the array of annotation masks of the targets
  */
-case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float]) {
+case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
+  masks: Option[Array[Tensor[Byte]]] = None) {
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
+    require(!target.masks.isDefined, "Do not support support copying RoiLabels with masks")
   }
 
   if (classes.dim() == 1) {
-    require(classes.size(1) == bboxes.size(1), "the number of classes should be" +
-      " equal to the number of bounding box numbers")
+    require(classes.size(1) == bboxes.size(1), s"the number of classes ${classes.size(1)} should " +
+      s"be equal to the number of bounding box numbers ${bboxes.size(1)}")
+    masks.foreach( m =>
+      require(classes.size(1) == m.length, s"the number of classes ${classes.size(1)} should be" +
+        s" equal to the number of mask array ${m.length}")
+    )
   } else if (classes.nElement() > 0 && classes.dim() == 2) {
     require(classes.size(2) == bboxes.size(1), s"the number of classes ${ classes.size(2) }" +
       s"should be equal to the number of bounding box numbers ${ bboxes.size(1) }")
+    masks.foreach( m =>
+      require(classes.size(2) == m.length, s"the number of classes ${ classes.size(2) }" +
+        s"should be equal to the number of bounding box numbers ${m.length}")
+    )
   }
 
 
   def toTable: Table = {
     val table = T()
-    table.insert(classes)
-    table.insert(bboxes)
+    masks.foreach(table(RoiLabel.MASKS) = _)
+    table(RoiLabel.CLASSES) = classes
+    table(RoiLabel.BBOXES) = bboxes
+    table
   }
 
   def size(): Int = {
@@ -53,6 +66,9 @@ case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float]) {
 }
 
 object RoiLabel {
+  val CLASSES = "classes"
+  val BBOXES = "bboxes"
+  val MASKS = "masks"
   def fromTensor(tensor: Tensor[Float]): RoiLabel = {
     val label = tensor.narrow(2, 1, 2).transpose(1, 2).contiguous()
     val rois = tensor.narrow(2, 3, 4)

@@ -33,20 +33,21 @@ object MTImageFeatureToBatch {
 }
 
 /**
- * A transformer pipleline wrapper to create Minibatch in multiple threads
- * @param width final image width
- * @param height final image height
+ * An abstract class to convert ImageFeature iterator to MiniBatches. This transformer will run
+ * on each image frame. "onEachImageFeature" will be called to buffer the image features. When there
+ * are enough buffered image features to form a batch, "onEachBatch" will be called.
+ * You should override onEachImageFeature to buffer each image feature, and onEachBatch
+ * to convert the buffered data into a mini-batch
  * @param totalBatchSize global batch size
- * @param transformer pipleline for pre-processing
- * @param toRGB  if converted to RGB, default format is BGR
+ * @param transformer pipeline for pre-processing
  */
-class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+abstract class ImageFeatureToBatch private[bigdl](
+  totalBatchSize: Int, transformer: FeatureTransformer)
   extends Transformer[ImageFeature, MiniBatch[Float]] {
 
-  private val batchSize = Utils.getBatchSize(totalBatchSize)
+  protected val batchSize: Int = Utils.getBatchSize(totalBatchSize)
 
-  private val parallelism = Engine.coreNumber()
+  protected val parallelism: Int = Engine.coreNumber()
 
   private def getPosition(count: AtomicInteger): Int = {
     val position = count.getAndIncrement()
@@ -57,11 +58,9 @@ class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     _ => new PreFetch -> transformer.cloneTransformer()
   ).toArray
 
-  private val frameLength = height * width
-  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
-  private val labelData: Array[Float] = new Array[Float](batchSize)
-  private val featureTensor: Tensor[Float] = Tensor[Float]()
-  private val labelTensor: Tensor[Float] = Tensor[Float]()
+  protected def onEachImageFeature(img: ImageFeature, position: Int)
+
+  protected def onEachBatch(batchSize: Int): MiniBatch[Float]
 
   override def apply(prev: Iterator[ImageFeature]): Iterator[MiniBatch[Float]] = {
     val iterators = transformers.map(_.apply(prev))
@@ -81,25 +80,17 @@ class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
             position != -1
           }) {
             val img = iterators(tid).next()
-            img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
-            labelData(position) = img.getLabel.asInstanceOf[Tensor[Float]].valueAt(1)
+            onEachImageFeature(img, position)
             record += 1
           }
           record
         })).sum
-
-        if (labelTensor.nElement() != batch) {
-          featureTensor.set(Storage[Float](featureData),
-            storageOffset = 1, sizes = Array(batch, 3, height, width))
-          labelTensor.set(Storage[Float](labelData),
-            storageOffset = 1, sizes = Array(batch))
-        }
-
-        MiniBatch(featureTensor, labelTensor)
+        onEachBatch(batch)
       }
     }
   }
 }
+
 
 private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
@@ -125,5 +116,40 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
         }
       }
     }
+  }
+}
+
+/**
+ * A transformer pipeline wrapper to create Minibatch in multiple threads
+ * @param width final image width
+ * @param height final image height
+ * @param totalBatchSize global batch size
+ * @param transformer pipeline for pre-processing
+ * @param toRGB  if converted to RGB, default format is BGR
+ */
+class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+  extends ImageFeatureToBatch(totalBatchSize, transformer) {
+
+  private val frameLength = height * width
+  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
+  private val labelData: Array[Float] = new Array[Float](batchSize)
+  private val featureTensor: Tensor[Float] = Tensor[Float]()
+  private val labelTensor: Tensor[Float] = Tensor[Float]()
+
+  override protected def onEachImageFeature(img: ImageFeature, position: Int): Unit = {
+    img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
+    labelData(position) = img.getLabel.asInstanceOf[Tensor[Float]].valueAt(1)
+  }
+
+  override protected def onEachBatch(batch: Int): MiniBatch[Float] = {
+    if (labelTensor.nElement() != batch) {
+      featureTensor.set(Storage[Float](featureData),
+        storageOffset = 1, sizes = Array(batch, 3, height, width))
+      labelTensor.set(Storage[Float](labelData),
+        storageOffset = 1, sizes = Array(batch))
+    }
+
+    MiniBatch(featureTensor, labelTensor)
   }
 }
