@@ -107,6 +107,7 @@ class UnsqueezeSpec extends TorchSpec {
 
   "A Unsqueeze(-2)" should "produce IllegalArgumentException when requirement failed" in {
     torchCheck()
+    val layer = new Unsqueeze[Double](-2)
     intercept[IllegalArgumentException]{
       println("invalid input: index starts from 1")
     }
@@ -148,6 +149,7 @@ class UnsqueezeSpec extends TorchSpec {
 */
   "A Unsqueeze(0)" should "produce IllegalArgumentException when requirement failed" in {
     torchCheck()
+    val layer = new Unsqueeze[Double](0)
     intercept[IllegalArgumentException]{
       println("invalid input: index starts from 1")
     }
