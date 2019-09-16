@@ -40,8 +40,8 @@ class AveragePool(Layer):
         auto_pad="NOTSET",
         ceil_mode=0,
         count_include_pad=0,
-        pads=None,
-        strides=None,
+        pads=(0, 0),
+        strides=(1, 1),
         bigdl_type="float"):
         super(AveragePool, self).__init__(None, bigdl_type,
             kernel_shape, auto_pad, ceil_mode, count_include_pad, pads, strides)
@@ -111,7 +111,7 @@ class Conv(Layer):
     """
     def __init__(self,
         n_input_plane, n_output_plane, kernel_shape, weight, bias,
-        auto_pad='NOTSET', dilations=None, group=1, pads=None, strides=None,
+        auto_pad='NOTSET', dilations=(1, 1), group=1, pads=(0, 0), strides=(1, 1),
         bigdl_type="float"):
         super(Conv, self).__init__(None, bigdl_type,
             n_input_plane, n_output_plane, kernel_shape,
@@ -168,10 +168,10 @@ class MaxPool(Layer):
         kernel_shape,
         auto_pad="NOTSET",
         ceil_mode=0,
-        dilations=None,
-        pads=None,
+        dilations=(1, 1),
+        pads=(0, 0),
         storage_order=0,
-        strides=None,
+        strides=(1, 1),
         bigdl_type="float"):
         super(MaxPool, self).__init__(None, bigdl_type,
             kernel_shape, auto_pad, ceil_mode,
