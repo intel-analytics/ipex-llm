@@ -35,13 +35,13 @@ class ConcatTableSpec extends BigDLSpecHelper {
 
   "ConcatTable" should "be good" in {
     val container = ConcatTable()
-    container.add(ReorderMemory(
+    container.add(ReorderMemory.create(
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc)))
     val subcontainer = Sequential()
-    subcontainer.add(ReorderMemory(
+    subcontainer.add(ReorderMemory.create(
       HeapData(Array(3, 4), Memory.Format.nc),
       NativeData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),

@@ -29,7 +29,8 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, FloatType, Tensor}
  *
  * @param _size the shape of Tensor, such as Array(4, 3, 224, 224)
  */
-private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
+private[mkldnn] class TensorMMap(_size: Array[Int])(implicit owner: MemoryOwner)
+  extends Serializable {
   // dense weight on heap is used to optimizer and so on, which is exposed to
   // AbstractModule level.
   val dense: Tensor[Float] = Tensor[Float](_size)
@@ -114,9 +115,4 @@ private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
     dense.size(index)
   }
 
-  def release(): Unit = {
-    if (native != null) {
-      native.release()
-    }
-  }
 }

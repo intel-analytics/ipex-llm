@@ -64,17 +64,17 @@ class SequentialSpec extends BigDLSpecHelper {
   }
 
   "Sequential" should "be correct when auto add memory reorder" in {
-    val layer1 = ReorderMemory(
+    val layer1 = ReorderMemory.create(
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc))
-    val layer2 = ReorderMemory(
+    val layer2 = ReorderMemory.create(
       NativeData(Array(3, 4), Memory.Format.nc),
       NativeData(Array(3, 4), Memory.Format.io),
       NativeData(Array(3, 4), Memory.Format.nc),
       NativeData(Array(3, 4), Memory.Format.io))
-    val layer3 = ReorderMemory(
+    val layer3 = ReorderMemory.create(
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
@@ -103,17 +103,17 @@ class SequentialSpec extends BigDLSpecHelper {
   }
 
   "seq with java serialization" should "work correctly" in {
-    val layer1 = ReorderMemory(
+    val layer1 = ReorderMemory.create(
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc))
-    val layer2 = ReorderMemory(
+    val layer2 = ReorderMemory.create(
       NativeData(Array(3, 4), Memory.Format.nc),
       NativeData(Array(3, 4), Memory.Format.io),
       NativeData(Array(3, 4), Memory.Format.nc),
       NativeData(Array(3, 4), Memory.Format.io))
-    val layer3 = ReorderMemory(
+    val layer3 = ReorderMemory.create(
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
