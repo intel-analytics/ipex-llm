@@ -496,6 +496,7 @@ class TensorSample[T: ClassTag] private[bigdl] (
     require(index < this.numFeature, "Index out of range")
     if (index < this.numLabel) this.labels(index) else null
   }
+
 }
 
 object TensorSample {

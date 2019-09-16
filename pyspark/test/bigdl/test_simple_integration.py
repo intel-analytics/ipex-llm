@@ -22,6 +22,7 @@ from bigdl.util.common import *
 from bigdl.util.common import _py2java
 from bigdl.nn.initialization_method import *
 from bigdl.dataset import movielens
+from pyspark.rdd import RDD
 import numpy as np
 import tempfile
 import pytest
@@ -544,9 +545,14 @@ class TestSimple():
             assert_allclose(p_with_batch[i], ground_label[i], atol=1e-6, rtol=0)
 
         predict_class = model.predict_class(predict_data)
-        predict_labels = predict_class.take(6)
-        for i in range(0, total_length):
-            assert predict_labels[i] == 1
+        if isinstance(predict_class, RDD):
+            for sample in predict_class.collect():
+                predict_label = sample.label.to_ndarray()
+                assert np.argmax(predict_label) == 0
+        else:
+            predict_labels = predict_class.take(6)
+            for i in range(0, total_length):
+                assert predict_labels[i] == 1
 
     def test_predict_image(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "resources")

@@ -114,7 +114,6 @@ class SharedStaticUtils():
         model = jvalue_creator(jvalue, bigdl_type)
         return model
 
-
 class Layer(JavaValue, SharedStaticUtils):
     """
     Layer is the basic component of a neural network
@@ -227,10 +226,19 @@ class Layer(JavaValue, SharedStaticUtils):
                 return i
             else:
                 raise Exception("Error unknown input type %s" % type(i))
+
+        def check_list(input):
+            if type(input) is list:
+                if len(input) == 0:
+                    raise Exception('Error when checking: empty input')
+                return list(map(lambda i: check_list(i), input))
+            else:
+                return to_jtensor(input)
+
         if type(input) is list:
             if len(input) == 0:
                 raise Exception('Error when checking: empty input')
-            return list(map(lambda i: to_jtensor(i), input)), True
+            return list(map(lambda i: check_list(i), input)), True
         else:
             return [to_jtensor(input)], False
 
@@ -1777,6 +1785,11 @@ class LSTMPeephole(Layer):
 
     def __init__(self, input_size=4, hidden_size=3, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
         super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
+
+
+class Gemm(Layer):
+    def __init__(self, alpha=1.0, beta=1.0, trans_a=False, trans_b=False, bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
 
 
 class GRU(Layer):
@@ -5640,6 +5653,7 @@ class Cropping3D(Layer):
     def __init__(self, dim1Crop, dim2Crop, dim3Crop, data_format="channel_first", bigdl_type="float"):
         super(Cropping3D, self).__init__(None, bigdl_type, dim1Crop, dim2Crop, dim3Crop, data_format)
 
+        
 class RoiAlign(Layer):
     """
     Region of interest aligning (RoIAlign) for Mask-RCNN
@@ -5684,18 +5698,56 @@ class RoiAlign(Layer):
                                          pooled_h,
                                          pooled_w)
 
+class Pooler(Layer):
+    """
+    Pooler selects the feature map which matches the size of RoI for RoIAlign
+
+    :param resolution:     the resolution of pooled feature maps. Height equals width.
+    :param scales:         spatial scales of each feature map
+    :param sampling_ratio: sampling ratio
+
+    >>> import numpy as np
+    >>> feature0 = np.random.rand(1,2,2,2)
+    >>> feature1 = np.random.rand(1,2,4,4)
+    >>> feature2 = np.random.rand(1,2,8,8)
+    >>> features = [feature0, feature1, feature2]
+    >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],dtype='float').reshape(3,4)
+    >>> m = Pooler(2,[1.0, 0.5, 0.25],2)
+    creating: createPooler
+    >>> out = m.forward([features,input_rois])
+    """
+
+    def __init__(self,
+                 resolution,
+                 scales,
+                 sampling_ratio,
+                 bigdl_type="float"):
+        super(Pooler, self).__init__(None, bigdl_type,
+                                     resolution,
+                                     scales,
+                                     sampling_ratio)
+
 class FPN(Layer):
     """
     Feature Pyramid Network (FPN) for Mask-RCNN
 
-    :param in_channels_list:  number of channels of feature maps
-    :param out_channels:      number of channels of FPN output
+    :param in_channels_list:    number of channels of feature maps
+    :param out_channels:        number of channels of FPN output
+    :param top_blocks:          top blocks option
+                                extra operation to be performed on the smallest
+                                resolution FPN output, whose result is appended
+                                to the result list
+                                0 for null,
+                                1 for using max pooling on the last level
+                                2 for extra layers P6 and P7 in RetinaNet
+    :param in_channels_of_p6p7     number of input channels of P6 P7
+    :param out_channels_of_p6p7    number of output channels of P6 P7
 
     >>> import numpy as np
     >>> feature1 = np.random.rand(1,1,8,8)
     >>> feature2 = np.random.rand(1,2,4,4)
     >>> feature3 = np.random.rand(1,4,2,2)
-    >>> m = FPN([1,2,4],2)
+    >>> m = FPN([1,2,4],2,2,4,2)
     creating: createFPN
     >>> out = m.forward([feature1, feature2, feature3])
     """
@@ -5703,10 +5755,16 @@ class FPN(Layer):
     def __init__(self,
                  in_channels_list,
                  out_channels,
+                 top_blocks=0,
+                 in_channels_of_p6p7=0,
+                 out_channels_of_p6p7=0,
                  bigdl_type="float"):
         super(FPN, self).__init__(None, bigdl_type,
-                                       in_channels_list,
-                                       out_channels)
+                                        in_channels_list,
+                                        out_channels,
+                                        top_blocks,
+                                        in_channels_of_p6p7,
+                                        out_channels_of_p6p7)
 
 def _test():
     import doctest
