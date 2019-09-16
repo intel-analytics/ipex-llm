@@ -87,7 +87,7 @@ class AvgPooling(
 
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
-    val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
+    val outputMD = MklDnnMemory.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
       Memory.Format.any)
 
     val kind = if (phase == InferencePhase) {
@@ -96,14 +96,14 @@ class AvgPooling(
       PropKind.ForwardTraining
     }
 
-    val description = MklDnn.PoolingForwardDescInit(
+    val description = MklDnnMemory.PoolingForwardDescInit(
       kind, algKind,
       _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
-    fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
+    fwdPD = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, 0L)
     _outputFormats = Array(MemoryData.primitiveOutput(fwdPD))
     output = initTensor(_outputFormats(0))
-    updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(fwdPD,
+    updateOutputPrimitives = Array(MklDnnMemory.PrimitiveCreate2(fwdPD,
       _inputFormats.map(_.getPrimitive(runtime)), Array(0), 1,
       _outputFormats.map(_.getPrimitive(runtime)), 2))
     (_inputFormats, _outputFormats)
@@ -114,14 +114,14 @@ class AvgPooling(
     _gradOutputFormatsForWeight = _gradOutputFormats
     val strides = Array(dW, dH)
     val kernel = Array(kH, kW)
-    val description = MklDnn.PoolingBackwardDescInit(algKind,
+    val description = MklDnnMemory.PoolingBackwardDescInit(algKind,
       _inputFormats(0).getMemoryDescription(),
       _gradOutputFormats(0).getMemoryDescription(),
       strides, kernel, paddingTL, paddingBR, MklDnn.PaddingKind.mkldnnPaddingZero)
 
-    val pd = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPD)
+    val pd = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, fwdPD)
     _gradInputFormats = Array(MemoryData.operationWant(pd, Query.DiffSrcPd))
-    updateGradInputPrimitives = Array(MklDnn.PrimitiveCreate2(pd,
+    updateGradInputPrimitives = Array(MklDnnMemory.PrimitiveCreate2(pd,
       _gradOutputFormats.map(_.getPrimitive(runtime)),
       Array(0, 0), 2, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
     gradInput = initTensor(_gradInputFormats(0))

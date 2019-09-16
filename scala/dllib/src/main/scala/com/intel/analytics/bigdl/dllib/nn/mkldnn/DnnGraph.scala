@@ -492,7 +492,8 @@ class DnnGraph(
   override def release(): Unit = {
     // do not call super.release, it will call MklDnnLayer.release()
     modules.foreach(_.release())
-    reorderManager.release()
+    // we need to call releaseResources here because super.release will never be called
+    this.releaseResources()
   }
 
   override def calcScales(input: Activity): Unit = {

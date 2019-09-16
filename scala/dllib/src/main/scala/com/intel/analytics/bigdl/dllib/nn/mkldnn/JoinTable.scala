@@ -51,12 +51,13 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
       }
       i += 1
     }
-    val primDesc = MklDnn.ConcatPrimitiveDescCreate(
-      MklDnn.MemoryDescInit(totalShape.length, totalShape, inputs(0).dataType, Memory.Format.any),
+    val primDesc = MklDnnMemory.ConcatPrimitiveDescCreate(
+      MklDnnMemory.MemoryDescInit(totalShape.length, totalShape,
+        inputs(0).dataType, Memory.Format.any),
       inputs.length, dimension - 1, _inputFormats.map(_.getPrimitiveDescription(runtime)))
 
     _outputFormats = Array(MemoryData.primitiveOutput(primDesc))
-    updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(primDesc,
+    updateOutputPrimitives = Array(MklDnnMemory.PrimitiveCreate2(primDesc,
       _inputFormats.map(_.getPrimitive(runtime)),
       new Array[Int](inputs.length), inputs.length,
       _outputFormats.map(_.getPrimitive(runtime)), 1)
@@ -75,13 +76,13 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     val buffer = new ArrayBuffer[Array[Long]]()
     val offset = new Array[Int](_gradOutputFormats(0).shape.length)
     for(i <- 0 until _gradInputFormats.length) {
-      val viewPD = MklDnn.ViewPrimitiveDescCreate(
+      val viewPD = MklDnnMemory.ViewPrimitiveDescCreate(
         _gradOutputFormats(0).getPrimitiveDescription(runtime), _gradInputFormats(i).shape, offset)
       val viewFormat = MemoryData.primitiveOutput(viewPD)
-      val reorderPD = MklDnn.ReorderPrimitiveDescCreate(
+      val reorderPD = MklDnnMemory.ReorderPrimitiveDescCreate(
         viewFormat.getPrimitiveDescription(runtime),
         _gradInputFormats(i).getPrimitiveDescription(runtime))
-      val reorderPrim = MklDnn.PrimitiveCreate2(reorderPD,
+      val reorderPrim = MklDnnMemory.PrimitiveCreate2(reorderPD,
         Array(viewFormat.getPrimitive(runtime)), Array(0), 1,
         Array(_gradInputFormats(i).getPrimitive(runtime)), 1)
       prims.append(reorderPrim)

@@ -104,7 +104,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "From heap to heap" should "be correct" in {
-    val layer = ReorderMemory(
+    val layer = ReorderMemory.create(
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc),
@@ -127,7 +127,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val gradInputFormats = HeapData(shapeNCHW, Memory.Format.nchw)
     val gradOutputFormats = HeapData(shapeNHWC, Memory.Format.nhwc)
 
-    val layer = ReorderMemory(inputFormat = inputFormats, outputFormat = outputFormats,
+    val layer = ReorderMemory.create(inputFormat = inputFormats, outputFormat = outputFormats,
       gradInputFormat = gradInputFormats, gradOutputFomat = gradOutputFormats)
 
     layer.setRuntime(new MklDnnRuntime())
@@ -156,7 +156,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val gradInputFormats = HeapData(shapeTNC, Memory.Format.tnc)
     val gradOutputFormats = HeapData(shapeNTC, Memory.Format.ntc)
 
-    val layer = ReorderMemory(inputFormat = inputFormats, outputFormat = outputFormats,
+    val layer = ReorderMemory.create(inputFormat = inputFormats, outputFormat = outputFormats,
       gradInputFormat = gradInputFormats, gradOutputFomat = gradOutputFormats)
 
     layer.setRuntime(new MklDnnRuntime())
@@ -183,7 +183,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val gradInputFormats = HeapData(shapeNTC, Memory.Format.ntc)
     val gradOutputFormats = HeapData(shapeTNC, Memory.Format.tnc)
 
-    val layer = ReorderMemory(inputFormat = inputFormats, outputFormat = outputFormats,
+    val layer = ReorderMemory.create(inputFormat = inputFormats, outputFormat = outputFormats,
       gradInputFormat = gradInputFormats, gradOutputFomat = gradOutputFormats)
 
     layer.setRuntime(new MklDnnRuntime())
@@ -208,7 +208,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val gradInputFormats = HeapData(shapeNHWC, Memory.Format.nhwc)
     val gradOutputFormats = HeapData(shapeNCHW, Memory.Format.nchw)
 
-    val layer = ReorderMemory(inputFormat = inputFormats, outputFormat = outputFormats,
+    val layer = ReorderMemory.create(inputFormat = inputFormats, outputFormat = outputFormats,
       gradInputFormat = gradInputFormats, gradOutputFomat = gradOutputFormats)
 
     layer.setRuntime(new MklDnnRuntime())
