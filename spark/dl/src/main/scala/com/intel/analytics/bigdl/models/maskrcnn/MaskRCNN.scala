@@ -17,51 +17,51 @@
 package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet, ResNetMask, Sbn}
-import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
+import com.intel.analytics.bigdl.models.resnet.{Convolution, Sbn}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-class MaskRCNN(val inChannels: Int,
-               val outChannels: Int)(implicit ev: TensorNumeric[Float])
-  extends Container[Activity, Activity, Float] {
-    val anchorSizes: Array[Float] = Array[Float](32, 64, 128, 256, 512)
-    val aspectRatios: Array[Float] = Array[Float](0.5f, 1.0f, 2.0f)
-    val anchorStride: Array[Float] = Array[Float](4, 8, 16, 32, 64)
-    val preNmsTopNTest: Int = 1000
-    val postNmsTopNTest: Int = 1000
-    val preNmsTopNTrain: Int = 2000
-    val postNmsTopNTrain: Int = 2000
-    val rpnNmsThread: Float = 0.7f
-    val minSize: Int = 0
-    val fpnPostNmsTopN: Int = 2000
+case class MaskRCNNParams(
+  anchorSizes: Array[Float] = Array[Float](32, 64, 128, 256, 512),
+  aspectRatios: Array[Float] = Array[Float](0.5f, 1.0f, 2.0f),
+  anchorStride: Array[Float] = Array[Float](4, 8, 16, 32, 64),
+  preNmsTopNTest: Int = 1000,
+  postNmsTopNTest: Int = 1000,
+  preNmsTopNTrain: Int = 2000,
+  postNmsTopNTrain: Int = 2000,
+  rpnNmsThread: Float = 0.7f,
+  minSize: Int = 0,
+  boxResolution: Int = 7,
+  maskResolution: Int = 14,
+  scales: Array[Float] = Array[Float](0.25f, 0.125f, 0.0625f, 0.03125f),
+  samplingRatio: Int = 2,
+  boxScoreThresh: Float = 0.05f,
+  boxNmsThread: Float = 0.5f,
+  maxPerImage: Int = 100,
+  outputSize: Int = 1024,
+  layers: Array[Int] = Array[Int](256, 256, 256, 256),
+  dilation: Int = 1,
+  useGn: Boolean = false)
 
-    val boxResolution: Int = 7
-    val maskResolution: Int = 14
-    val resolution: Int = 28
-    val scales: Array[Float] = Array[Float](0.25f, 0.125f, 0.0625f, 0.03125f)
-    val samplingRatio: Float = 2.0f
-    val boxScoreThresh: Float = 0.05f
-    val boxNmsThread: Float = 0.5f
-    val maxPerImage: Int = 100
-    val outputSize: Int = 1024
-    val numClasses: Int = 81
-    val layers: Array[Int] = Array[Int](256, 256, 256, 256)
-    val dilation: Int = 1
-    val useGn: Boolean = false
+class MaskRCNN(val inChannels: Int,
+               val outChannels: Int,
+               val numClasses: Int = 81,
+               val config: MaskRCNNParams = new MaskRCNNParams)(implicit ev: TensorNumeric[Float])
+  extends Container[Activity, Activity, Float] {
 
     private val ImageInfo : Tensor[Float] = Tensor[Float](2)
     private val backbone = buildBackbone(inChannels, outChannels)
-    private val rpn = RegionRroposal(inChannels, anchorSizes, aspectRatios, anchorStride,
-      preNmsTopNTest, postNmsTopNTest, preNmsTopNTrain, postNmsTopNTrain, rpnNmsThread,
-      minSize)
-    private val boxHead = BoxHead(inChannels, boxResolution, scales, samplingRatio,
-      boxScoreThresh, boxNmsThread, maxPerImage, outputSize, numClasses)
-    private val maskHead = MaskHead(inChannels, maskResolution, scales, samplingRatio,
-      layers, dilation, numClasses)
+    private val rpn = RegionRroposal(inChannels, config.anchorSizes, config.aspectRatios,
+      config.anchorStride, config.preNmsTopNTest, config.postNmsTopNTest, config.preNmsTopNTrain,
+      config.postNmsTopNTrain, config.minSize)
+    private val boxHead = BoxHead(inChannels, config.boxResolution, config.scales,
+      config.samplingRatio, config.boxScoreThresh, config.boxNmsThread, config.maxPerImage,
+      config.outputSize, numClasses)
+    private val maskHead = MaskHead(inChannels, config.maskResolution, config.scales,
+      config.samplingRatio, config.layers, config.dilation, numClasses)
 
     // add layer to modules
     modules.append(backbone.asInstanceOf[Module[Float]])
@@ -69,7 +69,7 @@ class MaskRCNN(val inChannels: Int,
     modules.append(boxHead.asInstanceOf[Module[Float]])
     modules.append(maskHead.asInstanceOf[Module[Float]])
 
-    def buildResNet50(): Module[Float] = {
+    private def buildResNet50(): Module[Float] = {
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int,
                  useConv: Boolean = false): Module[Float] = {
@@ -159,4 +159,10 @@ class MaskRCNN(val inChannels: Int,
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     throw new UnsupportedOperationException("MaskRCNN model only support inference now")
   }
+}
+
+object MaskRCNN {
+  def apply(inChannels: Int, outChannels: Int, numClasses: Int = 81,
+    config: MaskRCNNParams = new MaskRCNNParams)(implicit ev: TensorNumeric[Float]): MaskRCNN =
+    new MaskRCNN(inChannels, outChannels, numClasses, config)
 }
