@@ -108,13 +108,29 @@ class UnsqueezeSpec extends TorchSpec {
   "A Unsqueeze(-2)" should "produce IllegalArgumentException when requirement failed" in {
     torchCheck()
     val layer = new Unsqueeze[Double](-2)
+    val input = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 2, 1).apply1(_ => Random.nextDouble())
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.Unsqueeze(1)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     intercept[IllegalArgumentException]{
       println("invalid input: index starts from 1")
     }
   }
 
-
-    "A Unsqueeze(4, 3)" should "generate correct output and grad" in {
+  "A Unsqueeze(4, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](4, 3)
     val input = Tensor[Double](5, 2, 4, 3).apply1(_ => Random.nextDouble())
@@ -150,6 +166,8 @@ class UnsqueezeSpec extends TorchSpec {
   "A Unsqueeze(0)" should "produce IllegalArgumentException when requirement failed" in {
     torchCheck()
     val layer = new Unsqueeze[Double](0)
+    val input = Tensor[Double](2, 2).rand()
+    layer.forward(input).size()
     intercept[IllegalArgumentException]{
       println("invalid input: index starts from 1")
     }
