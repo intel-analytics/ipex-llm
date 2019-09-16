@@ -80,9 +80,9 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
           _inputFormats(0)
         }
 
-        val desc = MklDnn.SoftMaxForwardDescInit(PropKind.ForwardInference,
+        val desc = MklDnnMemory.SoftMaxForwardDescInit(PropKind.ForwardInference,
           localInputFormat.getMemoryDescription(), if (axis == -1) defaultAxis else axis)
-        val forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0L)
+        val forwardPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, 0L)
 
         _outputFormats = if (inputs(0).shape.length ==3 &&
           inputs(0).layout == Memory.Format.ntc) {
@@ -96,8 +96,8 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
         val indexes = Array(0)
         val dsts = Array(_outputFormats(0).getPrimitive(runtime))
 
-        val primitive = MklDnn.PrimitiveCreate2(forwardPrimDesc, srcs, indexes, srcs.length, dsts,
-          dsts.length)
+        val primitive = MklDnnMemory.PrimitiveCreate2(forwardPrimDesc, srcs, indexes,
+          srcs.length, dsts, dsts.length)
 
         updateOutputPrimitives = Array(primitive)
         updateOutputMemoryPrimitives = srcs ++ dsts

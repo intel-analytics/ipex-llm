@@ -84,7 +84,7 @@ class Linear(
 
     val outputShape = Array(inputs(0).shape(0), outputSize)
 
-    MklDnn.MemoryDescInit(inputShape.length, inputShape,
+    MklDnnMemory.MemoryDescInit(inputShape.length, inputShape,
       DataType.F32, Memory.Format.any)
 
     val src = NativeData(inputShape, Memory.Format.any)
@@ -92,13 +92,13 @@ class Linear(
     val bis = NativeData(bias.size(), Memory.Format.x)
     val dst = NativeData(outputShape, Memory.Format.any)
 
-    val desc = MklDnn.LinearForwardDescInit(
+    val desc = MklDnnMemory.LinearForwardDescInit(
       PropKind.Forward,
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
       bis.getMemoryDescription(),
       dst.getMemoryDescription())
-    forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0)
+    forwardPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, 0)
 
     val List(realSrc, realWei, realDst) = List(Query.SrcPd, Query.WeightsPd, Query.DstPd).map {x =>
       MemoryData.operationWant(forwardPrimDesc, x)
@@ -118,7 +118,7 @@ class Linear(
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realDst.getPrimitive(runtime))
 
-    val primitive = MklDnn.PrimitiveCreate2(forwardPrimDesc, srcs, indexes, srcs.length,
+    val primitive = MklDnnMemory.PrimitiveCreate2(forwardPrimDesc, srcs, indexes, srcs.length,
       dsts, dsts.length)
 
     updateOutputMemoryPrimitives = srcs ++ dsts
@@ -168,11 +168,11 @@ class Linear(
     val bis = NativeData(bias.size(), Memory.Format.x)
     val dst = NativeData(outputShape, Memory.Format.any)
 
-    val desc = MklDnn.LinearBackwardDataDescInit(
+    val desc = MklDnnMemory.LinearBackwardDataDescInit(
       src.getMemoryDescription(),
       wei.getMemoryDescription(),
       grad(0).getMemoryDescription())
-    val backwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
+    val backwardPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
     val List(realDiffSrc, realWei, realDiffDst) =
       List(Query.DiffSrcPd, Query.WeightsPd, Query.DiffDstPd).map { x =>
@@ -183,7 +183,7 @@ class Linear(
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realDiffSrc.getPrimitive(runtime))
 
-    val primitive = MklDnn.PrimitiveCreate2(backwardPrimDesc, srcs, indexes, srcs.length,
+    val primitive = MklDnnMemory.PrimitiveCreate2(backwardPrimDesc, srcs, indexes, srcs.length,
       dsts, dsts.length)
 
     updateGradInputMemoryPrimitives = srcs ++ dsts
@@ -215,10 +215,10 @@ class Linear(
     val bis = NativeData(bias.size(), Memory.Format.x)
     val dst = NativeData(outputShape, Memory.Format.any)
 
-    val desc = MklDnn.LinearBackwardWeightsDescInit(
+    val desc = MklDnnMemory.LinearBackwardWeightsDescInit(
       src.getMemoryDescription(), wei.getMemoryDescription(), bis.getMemoryDescription(),
       dst.getMemoryDescription())
-    val gradWeightPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
+    val gradWeightPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
     val List(realWei, realDiffDst) = List(Query.DiffWeightsPd, Query.DiffDstPd).map { x =>
       MemoryData.operationWant(gradWeightPrimDesc, x)
@@ -235,7 +235,7 @@ class Linear(
     val indexes = Array.fill(srcs.length)(0)
     val dsts = Array(realWei.getPrimitive(runtime), bis.getPrimitive(runtime))
 
-    val primitive = MklDnn.PrimitiveCreate2(gradWeightPrimDesc, srcs, indexes, srcs.length,
+    val primitive = MklDnnMemory.PrimitiveCreate2(gradWeightPrimDesc, srcs, indexes, srcs.length,
       dsts, dsts.length)
 
     updateGradWMemoryPrimitives = srcs ++ dsts
@@ -297,10 +297,6 @@ class Linear(
   override def zeroGradParameters(): Unit = {
   }
 
-  override def release(): Unit = {
-    super.release()
-    List(weight, bias, gradWeight, gradBias).foreach(_.release())
-  }
 }
 
 object Linear {

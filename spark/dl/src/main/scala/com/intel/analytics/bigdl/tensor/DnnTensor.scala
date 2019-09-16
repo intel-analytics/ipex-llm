@@ -17,20 +17,21 @@ package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn.{MemoryOwner, Releasable}
 import com.intel.analytics.bigdl.tensor.DnnTensor.DnnTensorUnsupportOperations
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import org.apache.spark.mllib.linalg
 import org.apache.spark.mllib.linalg.Matrix
-
 import scala.reflect.ClassTag
 
 class DnnTensor[T: ClassTag](
   private var _storage: DnnStorage[T],
   private var sizes: Array[Int]
-) (implicit ev: TensorNumeric[T])
-  extends DnnTensorUnsupportOperations[T]{
+) (implicit ev: TensorNumeric[T], owner: MemoryOwner)
+  extends DnnTensorUnsupportOperations[T] with Releasable {
 
+  owner.registerResource(this)
   // performance regression, the sizes.product will make the performance downgrade.
   private val _nElement: Int = sizes.product
 
@@ -206,40 +207,44 @@ object DnnTensor {
     return true
   }
 
-  def apply[T: ClassTag](sizes: Array[Int])(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+  def apply[T: ClassTag](sizes: Array[Int])(
+    implicit ev: TensorNumeric[T], owner: MemoryOwner): DnnTensor[T] = {
     val storage = new DnnStorage[T](sizes.product)
     new DnnTensor[T](storage, sizes)
   }
 
   def apply[T: ClassTag](sizes: Array[Int], realSize: Long)(
-    implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    implicit ev: TensorNumeric[T], owner: MemoryOwner): DnnTensor[T] = {
     val storage = new DnnStorage[T](realSize.toInt) // FIXME if size more than int ?
     new DnnTensor[T](storage, sizes)
   }
 
-  def apply[T: ClassTag](d1: Int)(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+  def apply[T: ClassTag](d1: Int)(
+    implicit ev: TensorNumeric[T], owner: MemoryOwner): DnnTensor[T] = {
     val storage = new DnnStorage[T](d1)
     new DnnTensor[T](storage, Array(d1))
   }
 
-  def apply[T: ClassTag](d1: Int, d2: Int)(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+  def apply[T: ClassTag](d1: Int, d2: Int)(
+    implicit ev: TensorNumeric[T], owner: MemoryOwner): DnnTensor[T] = {
     val storage = new DnnStorage[T](d1 * d2)
     new DnnTensor[T](storage, Array(d1, d2))
   }
 
-  def apply[T: ClassTag](d1: Int, d2: Int, d3: Int)(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+  def apply[T: ClassTag](d1: Int, d2: Int, d3: Int)(
+    implicit ev: TensorNumeric[T], owner: MemoryOwner): DnnTensor[T] = {
     val storage = new DnnStorage[T](d1 * d2 * d3)
     new DnnTensor[T](storage, Array(d1, d2, d3))
   }
 
   def apply[T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int)(
-    implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    implicit ev: TensorNumeric[T], owner: MemoryOwner): DnnTensor[T] = {
     val storage = new DnnStorage[T](d1 * d2 * d3 * d4)
     new DnnTensor[T](storage, Array(d1, d2, d3, d4))
   }
 
   def apply[T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
-    implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    implicit ev: TensorNumeric[T], owner: MemoryOwner): DnnTensor[T] = {
     val storage = new DnnStorage[T](d1 * d2 * d3 * d4 * d5)
     new DnnTensor[T](storage, Array(d1, d2, d3, d4, d5))
   }

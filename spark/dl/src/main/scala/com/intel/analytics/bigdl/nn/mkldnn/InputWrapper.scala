@@ -52,4 +52,11 @@ private[bigdl] class InputWrapper extends MklDnnLayer {
   override def toString(): String = {
     s"nn.mkl.InputWrapper"
   }
+
+  override def release(): Unit = {
+    super.release()
+    if(inputLayer != null) {
+      inputLayer.release()
+    }
+  }
 }
