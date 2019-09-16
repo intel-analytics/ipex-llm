@@ -51,7 +51,9 @@ class RegionRroposal(
    extends AbstractModule[Table, Tensor[Float], Float] {
 
   // for anchor generation
-  require(anchorSizes.length == anchorStride.length, s"anchor size and stride should be same")
+  require(anchorSizes.length == anchorStride.length,
+      s"length of anchor size and stride should be same, " +
+      s"but get size length ${anchorSizes.length}, stride length ${anchorStride.length}")
 
   private val scalesForStride = new Array[Float](1)
   private val anchors = new ArrayBuffer[Anchor]
@@ -81,24 +83,24 @@ class RegionRroposal(
   }
 
   /**
-   * Adds a simple RPN Head with classification and regression heads
+   * Add a simple RPN Head with classification and regression heads
    */
   private[nn] def rpnHead(inChannels: Int, numAnchors: Int): Module[Float] = {
     val conv = SpatialConvolution[Float](inChannels, inChannels,
       kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
     conv.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
-    val conv2 = SpatialConvolution[Float](inChannels, numAnchors,
+    val clsLogits = SpatialConvolution[Float](inChannels, numAnchors,
       kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
-    conv2.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
-    val conv3 = SpatialConvolution[Float](inChannels, numAnchors * 4,
+    clsLogits.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
+    val bboxPred = SpatialConvolution[Float](inChannels, numAnchors * 4,
       kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
-    conv3.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
+    bboxPred.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
 
     val input = Input()
     val node1 = conv.inputs(input)
     val node2 = ReLU[Float]().inputs(node1)
-    val node3 = conv2.inputs(node2)
-    val node4 = conv3.inputs(node2)
+    val node3 = clsLogits.inputs(node2)
+    val node4 = bboxPred.inputs(node2)
 
     Graph(input, Array(node3, node4))
   }
@@ -248,9 +250,9 @@ private[nn] class ProposalPostProcessor(
 
   /**
    * Arguments:
-   *    anchors: Tensor with shape (N, nums, 4)
-   *    objectness: Tensor of size N, A, H, W
-   *    box_regression: Tensor of size N, A * 4, H, W
+   *    anchors: Tensor with shape (batchsize, nums, 4)
+   *    objectness: Tensor of size (batchsize, anchornumber, height, width)
+   *    box_regression: Tensor of size (batchsize, anchornumber * 4, height, width)
    *    img_info: image size
    * @param input
    * @return
@@ -260,12 +262,12 @@ private[nn] class ProposalPostProcessor(
     val anchors = input[Tensor[Float]](1)
     var objectness = input[Tensor[Float]](2)
     var boxRegression = input[Tensor[Float]](3)
-    val imageSize = input[Tensor[Float]](4) // height, width
+    val imageSize = input[Tensor[Float]](4) // original image height & width
 
-    val N = objectness.size(1)
-    val A = objectness.size(2)
-    val H = objectness.size(3)
-    val W = objectness.size(4)
+    val N = objectness.size(1) // batch size
+    val A = objectness.size(2) // anchor number
+    val H = objectness.size(3) // height
+    val W = objectness.size(4) // width
 
     // permute_and_flatten
     objectness = objectness.transpose(3, 1).transpose(2, 4).contiguous()
