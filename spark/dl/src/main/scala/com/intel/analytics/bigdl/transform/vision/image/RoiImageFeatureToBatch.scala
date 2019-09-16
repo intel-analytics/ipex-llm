@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.collection.mutable.IndexedSeqView
 
-object ROIImageFeatureToBatch {
+object RoiImageFeatureToBatch {
   def apply(width: Int, height: Int, batchSize: Int,
     transformer: FeatureTransformer, toRGB: Boolean = true)
   : RoiImageFeatureToBatch = {
