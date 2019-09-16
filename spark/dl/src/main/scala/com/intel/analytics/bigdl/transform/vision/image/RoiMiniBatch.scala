@@ -17,53 +17,10 @@ package com.intel.analytics.bigdl.transform.vision.image
 
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.collection.mutable.IndexedSeqView
-
-object RoiImageFeatureToBatch {
-  def apply(width: Int, height: Int, batchSize: Int,
-    transformer: FeatureTransformer, toRGB: Boolean = true)
-  : RoiImageFeatureToBatch = {
-    new RoiImageFeatureToBatch (
-      width, height, batchSize, transformer, toRGB)
-  }
-}
-
-/**
- * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads
- * The output "target" is a Table. The keys are from 1 to sizeof(batch). The values are
- * the fields of RoiLabel
- * @param width final image width
- * @param height final image height
- * @param totalBatchSize global batch size
- * @param transformer pipeline for pre-processing
- * @param toRGB  if converted to RGB, default format is BGR
- */
-class RoiImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
-  extends ImageFeatureToBatch(totalBatchSize, transformer) {
-
-  private val frameLength = height * width
-  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
-  private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
-  private var featureTensor: Tensor[Float] = null
-
-
-  override protected def onEachImageFeature(img: ImageFeature, position: Int): Unit = {
-    img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
-    labelData(position) = img.getLabel.asInstanceOf[RoiLabel]
-  }
-
-  override protected def onEachBatch(batchSize: Int): MiniBatch[Float] = {
-    if (featureTensor == null) {
-      featureTensor = Tensor(Storage[Float](featureData),
-        storageOffset = 1, size = Array(batchSize, 3, height, width))
-    }
-    RoiMiniBatch(featureTensor, labelData.view.view)
-  }
-}
 
 class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeqView[RoiLabel,
   IndexedSeq[RoiLabel]])

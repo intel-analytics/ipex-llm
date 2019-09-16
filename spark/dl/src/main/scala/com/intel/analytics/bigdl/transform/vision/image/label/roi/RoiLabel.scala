@@ -28,33 +28,35 @@ import com.intel.analytics.bigdl.utils.{T, Table}
  * @param masks the array of annotation masks of the targets
  */
 case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
-  masks: Option[Array[Tensor[Byte]]] = None) {
+  masks: Array[Tensor[Byte]] = null) {
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
-    require(!target.masks.isDefined, "Do not support support copying RoiLabels with masks")
+    require(target.masks == null, "Do not support support copying RoiLabels with masks")
   }
 
   if (classes.dim() == 1) {
     require(classes.size(1) == bboxes.size(1), s"the number of classes ${classes.size(1)} should " +
       s"be equal to the number of bounding box numbers ${bboxes.size(1)}")
-    masks.foreach( m =>
-      require(classes.size(1) == m.length, s"the number of classes ${classes.size(1)} should be" +
-        s" equal to the number of mask array ${m.length}")
-    )
+    if (masks != null) {
+      require(classes.size(1) == masks.length, s"the number of classes ${classes.size(1)} should " +
+        s"be equal to the number of mask array ${masks.length}")
+    }
   } else if (classes.nElement() > 0 && classes.dim() == 2) {
     require(classes.size(2) == bboxes.size(1), s"the number of classes ${ classes.size(2) }" +
       s"should be equal to the number of bounding box numbers ${ bboxes.size(1) }")
-    masks.foreach( m =>
-      require(classes.size(2) == m.length, s"the number of classes ${ classes.size(2) }" +
-        s"should be equal to the number of bounding box numbers ${m.length}")
-    )
+    if (masks != null) {
+      require(classes.size(2) == masks.length, s"the number of classes ${classes.size(2)}" +
+        s"should be equal to the number of bounding box numbers ${masks.length}")
+    }
   }
 
 
   def toTable: Table = {
     val table = T()
-    masks.foreach(table(RoiLabel.MASKS) = _)
+    if (masks != null) {
+      table(RoiLabel.MASKS) = masks
+    }
     table(RoiLabel.CLASSES) = classes
     table(RoiLabel.BBOXES) = bboxes
     table

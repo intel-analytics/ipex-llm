@@ -16,32 +16,36 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 import java.util.concurrent.atomic.AtomicInteger
-
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer, Utils}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.Engine
-
 import scala.reflect.ClassTag
 
 object MTImageFeatureToBatch {
   def apply(width: Int, height: Int, batchSize: Int,
-            transformer: FeatureTransformer, toRGB: Boolean = true)
+            transformer: FeatureTransformer, toRGB: Boolean = true, isRoi: Boolean = false)
   : MTImageFeatureToBatch = {
-    new MTImageFeatureToBatch (
-      width, height, batchSize, transformer, toRGB)
+    if (isRoi) {
+      new RoiMTImageFeatureToBatch (
+        width, height, batchSize, transformer, toRGB)
+    } else {
+      new ClassificationMTImageFeatureToBatch (
+        width, height, batchSize, transformer, toRGB)
+    }
   }
 }
 
 /**
- * An abstract class to convert ImageFeature iterator to MiniBatches. This transformer will run
- * on each image frame. "onEachImageFeature" will be called to buffer the image features. When there
- * are enough buffered image features to form a batch, "onEachBatch" will be called.
- * You should override onEachImageFeature to buffer each image feature, and onEachBatch
+ * An abstract class to convert ImageFeature iterator to MiniBatches. This transformer will be run
+ * on each image feature. "processImageFeature" will be called to buffer the image features. When
+ * there are enough buffered image features to form a batch, "createBatch" will be called.
+ * You should override processImageFeature to buffer each image feature, and createBatch
  * to convert the buffered data into a mini-batch
  * @param totalBatchSize global batch size
  * @param transformer pipeline for pre-processing
  */
-abstract class ImageFeatureToBatch private[bigdl](
+abstract class MTImageFeatureToBatch private[bigdl](
   totalBatchSize: Int, transformer: FeatureTransformer)
   extends Transformer[ImageFeature, MiniBatch[Float]] {
 
@@ -58,9 +62,9 @@ abstract class ImageFeatureToBatch private[bigdl](
     _ => new PreFetch -> transformer.cloneTransformer()
   ).toArray
 
-  protected def onEachImageFeature(img: ImageFeature, position: Int)
+  protected def processImageFeature(img: ImageFeature, position: Int)
 
-  protected def onEachBatch(batchSize: Int): MiniBatch[Float]
+  protected def createBatch(batchSize: Int): MiniBatch[Float]
 
   override def apply(prev: Iterator[ImageFeature]): Iterator[MiniBatch[Float]] = {
     val iterators = transformers.map(_.apply(prev))
@@ -80,12 +84,12 @@ abstract class ImageFeatureToBatch private[bigdl](
             position != -1
           }) {
             val img = iterators(tid).next()
-            onEachImageFeature(img, position)
+            processImageFeature(img, position)
             record += 1
           }
           record
         })).sum
-        onEachBatch(batch)
+        createBatch(batch)
       }
     }
   }
@@ -120,16 +124,16 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
 }
 
 /**
- * A transformer pipeline wrapper to create Minibatch in multiple threads
+ * A transformer pipeline wrapper to create Minibatch in multiple threads for classification
  * @param width final image width
  * @param height final image height
  * @param totalBatchSize global batch size
  * @param transformer pipeline for pre-processing
  * @param toRGB  if converted to RGB, default format is BGR
  */
-class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
+class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
   totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
-  extends ImageFeatureToBatch(totalBatchSize, transformer) {
+  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
 
   private val frameLength = height * width
   private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
@@ -137,12 +141,12 @@ class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
   private val featureTensor: Tensor[Float] = Tensor[Float]()
   private val labelTensor: Tensor[Float] = Tensor[Float]()
 
-  override protected def onEachImageFeature(img: ImageFeature, position: Int): Unit = {
+  override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
     labelData(position) = img.getLabel.asInstanceOf[Tensor[Float]].valueAt(1)
   }
 
-  override protected def onEachBatch(batch: Int): MiniBatch[Float] = {
+  override protected def createBatch(batch: Int): MiniBatch[Float] = {
     if (labelTensor.nElement() != batch) {
       featureTensor.set(Storage[Float](featureData),
         storageOffset = 1, sizes = Array(batch, 3, height, width))
@@ -151,5 +155,39 @@ class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     }
 
     MiniBatch(featureTensor, labelTensor)
+  }
+}
+
+/**
+ * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads
+ * The output "target" is a Table. The keys are from 1 to sizeof(batch). The values are
+ * the tables for each RoiLabel. Each Roi label table, contains fields of RoiLabel class.
+ * @param width final image width
+ * @param height final image height
+ * @param totalBatchSize global batch size
+ * @param transformer pipeline for pre-processing
+ * @param toRGB  if converted to RGB, default format is BGR
+ */
+class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+
+  private val frameLength = height * width
+  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
+  private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
+  private var featureTensor: Tensor[Float] = null
+
+
+  override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
+    img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
+    labelData(position) = img.getLabel.asInstanceOf[RoiLabel]
+  }
+
+  override protected def createBatch(batchSize: Int): MiniBatch[Float] = {
+    if (featureTensor == null) {
+      featureTensor = Tensor(Storage[Float](featureData),
+        storageOffset = 1, size = Array(batchSize, 3, height, width))
+    }
+    RoiMiniBatch(featureTensor, labelData.view.view)
   }
 }
