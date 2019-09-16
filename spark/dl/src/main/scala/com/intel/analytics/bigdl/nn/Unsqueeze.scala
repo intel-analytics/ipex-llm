@@ -35,7 +35,6 @@ class Unsqueeze[T: ClassTag](
   val pos: Array[Int],
   var numInputDims: Int = Int.MinValue
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
-
   def this( pos: Int, numInputDims: Int )(implicit ev: TensorNumeric[T]) = {
     this(Array(pos), numInputDims)
   }
@@ -49,26 +48,28 @@ class Unsqueeze[T: ClassTag](
   }
 
   private def getActualPosition(input: Tensor[_]) : Array[Int] = {
-    pos.foreach(pos => {
-      require(pos > 0, s"invalid input: index starts from 1" )
+    for (index <- 0 until pos.length) {
+      require(pos(index) > 0, s"invalid input: index starts from 1" )
       // get valid dimension offset for batchMode (if any)
       val inputDim = input.dim() // data batch dim
       numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
       val offsetDim = inputDim - numInputDims
       require(offsetDim >= 0, "input feature map dim (numInputDims) must be <= input:dim()," +
         s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
-
       // the actual position; clearer error message for batchMode (if any)
-      val actualPos = pos + offsetDim
+      val actualPos = pos(index) + offsetDim
       require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: $pos. " +
         s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
-      actualPos
-    })
-    //increase 1 to the following pos after a previous smaller pos have one dimension inserted.
-    for {
-      i <- 1 to pos.length
-      j <- i + 1 to pos.length
-    } if (pos(j) > pos(i)) { pos(j) = pos(j) + 1}
+      pos(index) = actualPos
+    }
+    // increase 1 to the following pos after a previous smaller pos have one dimension inserted.
+    for (i <- 0 until pos.length) {
+      for (j <- i + 1 until pos.length) {
+        if (pos(j) > pos(i)) {
+          pos(j) = pos(j) + 1
+        }
+      }
+    }
     pos
   }
 
@@ -77,9 +78,11 @@ class Unsqueeze[T: ClassTag](
     if (input.getType() != output.getType()) {
       output = input.emptyInstance()
     }
-    actualPos.foreach(output
+    for (index <- 0 until actualPos.length) {
+      output
       .asInstanceOf[Tensor[NumericWildcard]]
-      .addSingletonDimension(input.asInstanceOf[Tensor[NumericWildcard]], _))
+      .addSingletonDimension(input.asInstanceOf[Tensor[NumericWildcard]], actualPos(index))
+    }
     output
   }
 
