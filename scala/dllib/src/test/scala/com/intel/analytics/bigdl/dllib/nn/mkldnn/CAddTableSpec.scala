@@ -27,15 +27,15 @@ class CAddTableSpec extends BigDLSpecHelper {
     val layer = CAddTable()
     val model = Sequential()
     val concat = ConcatTable()
-    concat.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
+    concat.add(ReorderMemory.create(HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc), HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc)))
-    concat.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
+    concat.add(ReorderMemory.create(HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc), HeapData(Array(2, 2), Memory.Format.nc),
       NativeData(Array(2, 2), Memory.Format.nc)))
     model.add(concat)
     model.add(layer)
-    model.add(ReorderMemory(NativeData(Array(2, 2), Memory.Format.nc),
+    model.add(ReorderMemory.create(NativeData(Array(2, 2), Memory.Format.nc),
       HeapData(Array(2, 2), Memory.Format.nc), NativeData(Array(2, 2), Memory.Format.nc),
       HeapData(Array(2, 2), Memory.Format.nc)))
     model.compile(Phase.TrainingPhase, Array(HeapData(Array(2, 2), Memory.Format.nc)))
@@ -57,6 +57,8 @@ class CAddTableSpec extends BigDLSpecHelper {
   }
 
   "caddtable with java serialization" should "work correctly" in {
+    implicit object Owner extends MemoryOwner {
+    }
     val shape = Array(2, 3, 4, 4)
     val _1 = Tensor(shape).rand(-1, 1)
     val _2 = Tensor(shape).rand(-1, 1)
@@ -93,6 +95,7 @@ class CAddTableSpec extends BigDLSpecHelper {
 
     Tools.dense(cat.gradInput.toTable(1)) should be (Tools.dense(cloned.gradInput.toTable(1)))
     Tools.dense(cat.gradInput.toTable(2)) should be (Tools.dense(cloned.gradInput.toTable(2)))
+    Owner.releaseResources()
   }
 
   "CAddTable u8" should "be correct" in {
