@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.transform.vision.image.augmentation.ChannelScal
  *
  * @param meanR Integer. The mean value for channel R.
  * @param meanG Integer. The mean value for channel G.
- * @param meanB Integer. The mean value for channel R.
+ * @param meanB Integer. The mean value for channel B.
  * @param scale Double. The scale value applied for all channels.
  */
 class ImageChannelScaledNormalizer(meanR: Int, meanG: Int,
