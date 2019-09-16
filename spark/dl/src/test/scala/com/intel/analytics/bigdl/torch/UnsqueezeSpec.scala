@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Unsqueeze
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.LayerException
 
 import scala.util.Random
 
@@ -105,7 +106,7 @@ class UnsqueezeSpec extends TorchSpec {
   }
 */
 
-  "A Unsqueeze(-2)" should "produce IllegalArgumentException when requirement failed" in {
+  "A Unsqueeze(-2)" should "produce LayerException when requirement failed" in {
     torchCheck()
     val layer = new Unsqueeze[Double](-2)
     val input = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
@@ -125,7 +126,7 @@ class UnsqueezeSpec extends TorchSpec {
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-    intercept[IllegalArgumentException]{
+    intercept[LayerException]{
       println("invalid input: index starts from 1")
     }
   }
@@ -163,12 +164,12 @@ class UnsqueezeSpec extends TorchSpec {
     layer.forward(input).size() should be(Array(2, 2, 1))
   }
 */
-  "A Unsqueeze(0)" should "produce IllegalArgumentException when requirement failed" in {
+  "A Unsqueeze(0)" should "produce LayerException when requirement failed" in {
     torchCheck()
     val layer = new Unsqueeze[Double](0)
     val input = Tensor[Double](2, 2).rand()
     layer.forward(input).size()
-    intercept[IllegalArgumentException]{
+    intercept[LayerException]{
       println("invalid input: index starts from 1")
     }
   }
