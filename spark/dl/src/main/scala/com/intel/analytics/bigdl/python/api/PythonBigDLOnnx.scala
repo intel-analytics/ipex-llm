@@ -185,10 +185,12 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
 
-  def createGemm(alpha: Float, beta: Float, transA: Int, transB: Int): Gemm[T] = {
+  def createGemm(alpha: Float, beta: Float, transA: Int, transB: Int,
+                 matrixB: JTensor, matrixC: JTensor): Gemm[T] = {
     OnnxOpsMapper.gemm.apply(alpha, beta,
       (if (transA == 0) false else true),
-      (if (transB == 0) false else true))
+      (if (transB == 0) false else true),
+      toTensor(matrixB), toTensor(matrixC))
   }
 
 
@@ -287,7 +289,7 @@ object OnnxOpsMapper {
   () => nn.ops.Gather[T, D] = nn.ops.Gather[T, D]
 
   def gemm[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Float, Float, Boolean, Boolean) => nn.onnx.Gemm[T] = nn.onnx.Gemm[T]
+  (Float, Float, Boolean, Boolean, Tensor[T], Tensor[T]) => nn.onnx.Gemm[T] = nn.onnx.Gemm[T]
 
   def maxPool[T: ClassTag](implicit ev: TensorNumeric[T]):
   (Int, Int, Int, Int, Int, Int, DataFormat) => nn.SpatialMaxPooling[T] = nn.SpatialMaxPooling[T]

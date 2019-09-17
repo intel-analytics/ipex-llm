@@ -30,24 +30,25 @@ class GemmSpec extends FlatSpec with Matchers {
     val transA = false
     val transB = false
 
-    val inputA = Tensor[Float](4, 2).rand()
-    val inputB = Tensor[Float](2, 7).rand()
-    val inputC = Tensor[Float](4, 7).rand()
+    val tensorA = Tensor[Float](4, 2).rand()
+    val tensorB = Tensor[Float](2, 7).rand()
+    val tensorC = Tensor[Float](4, 7).rand()
 
-    val tensorA = Input()
-    val tensorB = Input()
-    val tensorC = Input()
+    val inputA = Input()
+    val inputB = Input()
+    val inputC = Input()
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(inputA, inputB))
+    val add = CAddTable().inputs(Array(mul, inputC))
+    var model = Graph(Array(inputA, inputB, inputC), add)
 
-    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
-    val add = CAddTable().inputs(Array(mul, tensorC))
-    var model = Graph(Array(tensorA, tensorB, tensorC), add)
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = false, transB = false,
+      matrixB = tensorB, matrixC = tensorC
+    )
 
-    var myGemm = new Gemm(alpha = 1, beta = 1, transA = false, transB = false)
-
-    val myInput = T(inputA, inputB, inputC)
+    val myInput = T(tensorA, tensorB, tensorC)
 
     val out1 = model.forward(myInput)
-    val out2 = myGemm.forward(myInput)
+    val out2 = myGemm.forward(tensorA)
 
     out1 should be(out2)
 
@@ -58,23 +59,23 @@ class GemmSpec extends FlatSpec with Matchers {
     val transA = true
     val transB = false
 
-    var inputA = Tensor[Float](2, 4).rand()
-    var transInputA = inputA.t()
-    var inputB = Tensor[Float](2, 7).rand()
-    var transInputB = inputB.t()
-    var inputC = Tensor[Float](4, 7).rand()
+    val tensorA = Tensor[Float](2, 4).rand()
+    val tensorB = Tensor[Float](2, 7).rand()
+    val tensorC = Tensor[Float](4, 7).rand()
 
-    val tensorA = Input()
-    val tensorB = Input()
-    val tensorC = Input()
-    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
-    val add = CAddTable().inputs(Array(mul, tensorC))
-    var model = Graph(Array(tensorA, tensorB, tensorC), add)
+    val inputA = Input()
+    val inputB = Input()
+    val inputC = Input()
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(inputA, inputB))
+    val add = CAddTable().inputs(Array(mul, inputC))
+    var model = Graph(Array(inputA, inputB, inputC), add)
 
-    var myGemm = new Gemm(alpha = 1, beta = 1, transA = true, transB = false)
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = transA, transB = transB,
+      matrixB = tensorB, matrixC = tensorC
+    )
 
-    val out1 = model.forward(T(inputA, inputB, inputC))
-    val out2 = myGemm.forward(T(inputA, inputB, inputC))
+    val out1 = model.forward(T(tensorA, tensorB, tensorC))
+    val out2 = myGemm.forward(tensorA)
 
     out1 should be(out2)
 
@@ -85,23 +86,23 @@ class GemmSpec extends FlatSpec with Matchers {
     val transA = false
     val transB = true
 
-    var inputA = Tensor[Float](4, 2).rand()
-    var transInputA = inputA.t()
-    var inputB = Tensor[Float](7, 2).rand()
-    var transInputB = inputB.t()
-    var inputC = Tensor[Float](4, 7).rand()
+    val tensorA = Tensor[Float](4, 2).rand()
+    val tensorB = Tensor[Float](7, 2).rand()
+    val tensorC = Tensor[Float](4, 7).rand()
 
-    val tensorA = Input()
-    val tensorB = Input()
-    val tensorC = Input()
-    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
-    val add = CAddTable().inputs(Array(mul, tensorC))
-    var model = Graph(Array(tensorA, tensorB, tensorC), add)
+    val inputA = Input()
+    val inputB = Input()
+    val inputC = Input()
+    val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(inputA, inputB))
+    val add = CAddTable().inputs(Array(mul, inputC))
+    var model = Graph(Array(inputA, inputB, inputC), add)
 
-    var myGemm = new Gemm(alpha = 1, beta = 1, transA = false, transB = true)
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = transA, transB = transB,
+      matrixB = tensorB, matrixC = tensorC
+    )
 
-    val out1 = model.forward(T(inputA, inputB, inputC))
-    val out2 = myGemm.forward(T(inputA, inputB, inputC))
+    val out1 = model.forward(T(tensorA, tensorB, tensorC))
+    val out2 = myGemm.forward(tensorA)
 
     out1 should be(out2)
 
@@ -112,22 +113,23 @@ class GemmSpec extends FlatSpec with Matchers {
     val transA = true
     val transB = true
 
-    var tensorA = Tensor[Float](2, 4).rand()
-    var tensorB = Tensor[Float](7, 2).rand()
-    var tensorC = Tensor[Float](4, 7).rand()
+    val tensorA = Tensor[Float](2, 4).rand()
+    val tensorB = Tensor[Float](7, 2).rand()
+    val tensorC = Tensor[Float](4, 7).rand()
 
     val inputA = Input()
     val inputB = Input()
     val inputC = Input()
-
     val mul = BatchMatMul(adjX = transA, adjY = transB).inputs(Array(inputA, inputB))
     val add = CAddTable().inputs(Array(mul, inputC))
     var model = Graph(Array(inputA, inputB, inputC), add)
 
-    var myGemm = new Gemm(alpha = 1, beta = 1, transA = transA, transB = transB)
+    var myGemm = new Gemm(alpha = 1, beta = 1, transA = transA, transB = transB,
+      matrixB = tensorB, matrixC = tensorC
+    )
 
     val out1 = model.forward(T(tensorA, tensorB, tensorC))
-    val out2 = myGemm.forward(T(tensorA, tensorB, tensorC))
+    val out2 = myGemm.forward(tensorA)
 
     out1 should be(out2)
 
@@ -137,13 +139,14 @@ class GemmSpec extends FlatSpec with Matchers {
 
 class GemmSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val gemm = Gemm[Float](alpha = 1, beta = 1, transA = false, transB = false).setName("Gemm")
+    val tensorA = Tensor[Float](2, 2).rand()
+    val tensorB = Tensor[Float](2, 2).rand()
+    val tensorC = Tensor[Float](2, 2).rand()
 
-    val inputA = Tensor(2, 2).rand()
-    val inputB = Tensor(2, 2).rand()
-    val inputC = Tensor(2, 2).rand()
-    val input = T(inputA, inputB, inputC)
+    val gemm = Gemm[Float](alpha = 1, beta = 1, transA = false, transB = false,
+      matrixB = tensorB, matrixC = tensorC
+    ).setName("Gemm")
 
-    runSerializationTest(gemm, input)
+    runSerializationTest(gemm, tensorA)
   }
 }

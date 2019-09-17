@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.nn.onnx
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.ops.BatchMatMul
-import com.intel.analytics.bigdl.nn.{CAddTable, Graph, Input, MulConstant}
+import com.intel.analytics.bigdl.nn.ops.{BatchMatMul, Operation}
+import com.intel.analytics.bigdl.nn.{CAddTable, Graph, Input, MulConstant, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -34,50 +34,52 @@ import scala.reflect.ClassTag
  * input tensor B has shape (K, N) or (N, K), input tensor C is broadcastable to shape (M, N),
  * and output tensor Y has shape (M, N).
  *
- * @param alpha Scalar multiplier for the product of input tensors A * B.
- * @param beta  Scalar multiplier for input tensor C.
+ * @param alpha  Scalar multiplier for the product of input tensors A * B.
+ * @param beta   Scalar multiplier for input tensor C.
  * @param transA Whether A should be transposed
  * @param transB Whether B should be transposed
+ * @param matrixB matrix B
+ * @param matrixC matrix C
  * @param ev
  * @tparam T The numeric type in this module parameters.
  */
 class Gemm[T: ClassTag](
   val alpha: Float, val beta: Float,
-  val transA: Boolean, val transB: Boolean
+  val transA: Boolean, val transB: Boolean,
+  val matrixB: Tensor[T],
+  val matrixC: Tensor[T]
 )(implicit ev: TensorNumeric[T])
-extends AbstractModule[Table, Tensor[T], T] {
+extends Operation[Tensor[T], Tensor[T], T] {
 
-  private val internalModel: Module[T] = {
-    val tensorA = Input()
-    val tensorB = Input()
-    val tensorC = Input()
-    val alphaMul = MulConstant(scalar = alpha, inplace = true).inputs(
-      // Todo: BatchMatMul is of Operation, which doesn't support backward
-      BatchMatMul(adjX = transA, adjY = transB).inputs(Array(tensorA, tensorB))
-    )
-    val betaAdd = CAddTable().inputs(Array(alphaMul,
-      MulConstant(scalar = beta, inplace = true).inputs(tensorC)))
+  require(matrixB.dim() == 2, "Matrix B should be 2D")
+  require(matrixC.dim() == 2, "Matrix C should be 2D")
 
-    Graph(Array(tensorA, tensorB, tensorC), betaAdd)
+  // alpha * B'
+  val transformedMatrixB = (if (transB == true) matrixB.t() else matrixB).mul(ev.fromType(alpha))
+  // beta * C
+  val transformedMatrixC = matrixC.mul(ev.fromType(beta))
+
+  // alpha * A' * B' + beta * C
+  val gemmGraph: Module[T] = {
+    val inputA = Input()
+    val inputB = Input()
+    val inputC = Input()
+    // alpha * A' * B'
+    val alphaMul = BatchMatMul(adjX = transA).inputs(Array(inputA, inputB))
+    // alpha * A' * B' + beta * C
+    val betaAdd = CAddTable().inputs(Array(alphaMul, inputC))
+    Graph(Array(inputA, inputB, inputC), betaAdd)
   }
 
-  override def updateOutput(input: Table): Tensor[T] = {
-    require(input.length() == 3,
-      "Input should be a table contains 3 tensors, actually size is: "
-        + input.toTable.length())
-    internalModel.forward(input)
-    output = internalModel.output.asInstanceOf[Tensor[T]]
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    output = gemmGraph.forward(T(input,
+      transformedMatrixB, transformedMatrixC)).asInstanceOf[Tensor[T]]
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    internalModel.updateGradInput(input, gradOutput)
-    gradInput = internalModel.gradInput.asInstanceOf[Table]
-    gradInput
-  }
-
   override def release(): Unit = {
-    internalModel.release()
+    gemmGraph.release()
+    release()
   }
 
 }
@@ -86,8 +88,10 @@ extends AbstractModule[Table, Tensor[T], T] {
 object Gemm {
   def apply[@specialized(Float, Double) T: ClassTag](
     alpha: Float, beta: Float,
-    transA: Boolean, transB: Boolean
+    transA: Boolean, transB: Boolean,
+    matrixB: Tensor[T], matrixC: Tensor[T]
   )(implicit ev: TensorNumeric[T]): Gemm[T] = {
-    new Gemm[T](alpha = alpha, beta = beta, transA = transA, transB = transB)
+    new Gemm[T](alpha = alpha, beta = beta, transA = transA, transB = transB,
+      matrixB = matrixB, matrixC = matrixC)
   }
 }

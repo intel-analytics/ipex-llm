@@ -17,7 +17,6 @@
 import sys
 import numpy as np
 from bigdl.nn.layer import Layer
-from bigdl.nn.layer import ReLU
 from bigdl.util.common import JTensor
 
 if sys.version >= '3':
