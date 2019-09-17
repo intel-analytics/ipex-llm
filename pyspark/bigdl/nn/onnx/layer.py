@@ -195,7 +195,8 @@ class Reshape(Layer):
     """
     Reshape the input tensor similar to numpy.reshape.
 
-    >>> reshape = Reshape()
+    >>> shape = (2, 2)
+    >>> reshape = Reshape(shape)
     creating: createReshape
     """
     def __init__(self, bigdl_type="float"):
