@@ -50,7 +50,8 @@ object BboxUtil {
    * @param deltas (N, 4a)
    * @return
    */
-  def bboxTransformInv(boxes: Tensor[Float], deltas: Tensor[Float]): Tensor[Float] = {
+  def bboxTransformInv(boxes: Tensor[Float], deltas: Tensor[Float],
+                       normalized: Boolean = false): Tensor[Float] = {
     if (boxes.size(1) == 0) {
       return boxes
     }
@@ -69,8 +70,8 @@ object BboxUtil {
     while (i < boxes.size(1)) {
       val x1 = boxesArr(offset)
       val y1 = boxesArr(offset + 1)
-      val width = boxesArr(offset + 2) - x1 + 1
-      val height = boxesArr(offset + 3) - y1 + 1
+      val width = if (!normalized) boxesArr(offset + 2) - x1 + 1 else boxesArr(offset + 2) - x1
+      val height = if (!normalized) boxesArr(offset + 3) - y1 + 1 else boxesArr(offset + 3) - y1
       var j = 0
       while (j < repeat) {
         j += 1
