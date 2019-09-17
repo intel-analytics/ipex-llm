@@ -106,9 +106,7 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
 
 
   def createConcat(nInputDims: Int, axis: Int): nn.JoinTable[T] = {
-    val dimension = axis
-    val nInputDims = nInputDims
-    OnnxOpsMapper.concat.apply(dimension, nInputDims)
+    OnnxOpsMapper.concat.apply(axis, nInputDims)
   }
 
 
@@ -163,15 +161,12 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
           "the input dilations: " + (dilationW, dilationH))
     }
 
-    val nInputPlane = nInputPlane
-    val nOutputPlane = nOutputPlane
-    val autoPad = autoPad
     val nGroup = group
     val propagateBack: Boolean = true
     val wRegularizer: Regularizer[T] = null
     val bRegularizer: Regularizer[T] = null
-    val initWeight: Tensor[T] = null
-    val initBias: Tensor[T] = null
+    val initWeight: Tensor[T] = toTensor(weight)
+    val initBias: Tensor[T] = toTensor(bias)
     val initGradWeight: Tensor[T] = null
     val initGradBias: Tensor[T] = null
     val withBias = if (bias != null) true else false
