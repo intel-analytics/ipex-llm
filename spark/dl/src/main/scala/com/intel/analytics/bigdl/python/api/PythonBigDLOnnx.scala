@@ -235,8 +235,8 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
 
   }
 
-  def createRelu(inplace: Boolean = false): nn.ReLU[T] = {
-    OnnxOpsMapper.relu.apply(inplace)
+  def createRelu(): nn.ReLU[T] = {
+    OnnxOpsMapper.relu.apply(false)
   }
 
   def createReshape(): Reshape[T] = {
