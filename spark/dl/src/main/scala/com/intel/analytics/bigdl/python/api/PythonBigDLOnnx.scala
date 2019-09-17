@@ -42,18 +42,18 @@ object PythonBigDLOnnx {
 class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
 
   def createAveragePool(
-    kernel_shape: JList[Int],
-    auto_pad: String,
-    ceil_mode: Int,
-    count_include_pad: Int,
+    kernelShape: JList[Int],
+    autoPad: String,
+    ceilMode: Int,
+    countIncludePad: Int,
     pads: JList[Int],
     strides: JList[Int]): nn.SpatialAveragePooling[T] = {
 
-    val (kW: Int, kH: Int) = kernel_shape.asScala.toList match {
+    val (kW: Int, kH: Int) = kernelShape.asScala.toList match {
       case List(width, height) => (width, height)
       case _ => throw new IllegalArgumentException(
         "Kernel shape is expected in the form of List(width, height)," +
-          "the input kernel shape: " + kernel_shape)
+          "the input kernel shape: " + kernelShape)
     }
     val (dW: Int, dH: Int) = strides.asScala.toList match {
       case List(width, height) => (width, height)
@@ -69,25 +69,26 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     }
 
     val globalPooling = false
-    val ceilMode = if (ceil_mode == 0) false else true
-    val countIncludePad = if (count_include_pad == 0) false else true
     val divide = false
     val format = DataFormat.NCHW
 
     OnnxOpsMapper.averagePool.apply(
       kW, kH, dW, dH, padW, padH,
-      globalPooling, ceilMode, countIncludePad, divide, format
+      globalPooling,
+      if (ceilMode == 0) false else true,
+      if (countIncludePad == 0) false else true,
+      divide, format
     )
 
   }
 
 
   def createBatchNormalization(
-    num_features: Int, // number of input features, BigDL requires.
+    numFeatures: Int, // number of input features, BigDL requires.
     epsilon: Float,
     momentum: Float): nn.SpatialBatchNormalization[T] = {
 
-    val nOutput = num_features
+    val nOutput = numFeatures
     val eps = epsilon.toDouble
     val affine = true
     val initWeight = null
@@ -104,9 +105,9 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
 
-  def createConcat(n_input_dims: Int, axis: Int): nn.JoinTable[T] = {
+  def createConcat(nInputDims: Int, axis: Int): nn.JoinTable[T] = {
     val dimension = axis
-    val nInputDims = n_input_dims
+    val nInputDims = nInputDims
     OnnxOpsMapper.concat.apply(dimension, nInputDims)
   }
 
@@ -116,12 +117,12 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
   def createConv(
-    n_input_plane: Int, // BigDL requires
-    n_output_plane: Int, // BigDL requires
-    kernel_shape: JList[Int],
+    nInputPlane: Int, // BigDL requires
+    nOutputPlane: Int, // BigDL requires
+    kernelShape: JList[Int],
     weight: JTensor, // BigDL requires
     bias: JTensor, // BigDL requires
-    auto_pad: String, // missing in BigDL
+    autoPad: String, // missing in BigDL
     dilations: JList[Int],
     group: Int,
     pads: JList[Int],
@@ -134,11 +135,11 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
           "the input dilations: " + dilations)
     }
 
-    val (kernelW: Int, kernelH: Int) = kernel_shape.asScala.toList match {
+    val (kernelW: Int, kernelH: Int) = kernelShape.asScala.toList match {
       case List(width: Int, height: Int) => (width, height)
       case _ => throw new IllegalArgumentException(
         "Kernel shape is expected in the form of List(width, height)," +
-          "the input kernel shape: " + kernel_shape)
+          "the input kernel shape: " + kernelShape)
     }
 
     val (strideW: Int, strideH: Int) = strides.asScala.toList match {
@@ -162,9 +163,9 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
           "the input dilations: " + (dilationW, dilationH))
     }
 
-    val nInputPlane = n_input_plane
-    val nOutputPlane = n_output_plane
-    val autoPad = auto_pad
+    val nInputPlane = nInputPlane
+    val nOutputPlane = nOutputPlane
+    val autoPad = autoPad
     val nGroup = group
     val propagateBack: Boolean = true
     val wRegularizer: Regularizer[T] = null
@@ -189,22 +190,22 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
 
-  def createGemm(alpha: Float, beta: Float, trans_a: Int, trans_b: Int): Gemm[T] = {
-    val transA = (if (trans_a == 0) false else true)
-    val transB = (if (trans_b == 0) false else true)
-    OnnxOpsMapper.gemm.apply(alpha, beta, transA, transB)
+  def createGemm(alpha: Float, beta: Float, transA: Int, transB: Int): Gemm[T] = {
+    OnnxOpsMapper.gemm.apply(alpha, beta,
+      (if (transA == 0) false else true),
+      (if (transB == 0) false else true))
   }
 
 
-  def createMaxPool(kernel_shape: JList[Int], auto_pad: String,
-    ceil_mode: Int, dilations: JList[Int], pads: JList[Int],
-    storage_order: Int, strides: JList[Int]): nn.SpatialMaxPooling[T] = {
+  def createMaxPool(kernelShape: JList[Int], autoPad: String,
+    ceilMode: Int, dilations: JList[Int], pads: JList[Int],
+    storageOrder: Int, strides: JList[Int]): nn.SpatialMaxPooling[T] = {
 
-    val (kW: Int, kH: Int) = kernel_shape.asScala.toList match {
+    val (kW: Int, kH: Int) = kernelShape.asScala.toList match {
       case List(width, height) => (width, height)
       case _ => throw new IllegalArgumentException(
         "Kernel shape is expected in the form of List(width, height)," +
-          "the input kernel shape: " + kernel_shape)
+          "the input kernel shape: " + kernelShape)
     }
     val (dW: Int, dH: Int) = strides.asScala.toList match {
       case null => (1, 1)
@@ -221,11 +222,11 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
           "the input pads: " + pads)
     }
 
-    if (ceil_mode != 0) {
+    if (ceilMode != 0) {
       throw new IllegalArgumentException("MaxPool doesnt support ceil mode yet.")
     }
 
-    if (storage_order != 0) {
+    if (storageOrder != 0) {
       throw new IllegalArgumentException("MaxPool doesnt support storage order yet.")
     }
 
@@ -255,12 +256,11 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     OnnxOpsMapper.sum.apply(inplace)
   }
 
-  def createUnsqueeze(axes: JList[Int], num_input_dims: Int): nn.Unsqueeze[T] = {
+  def createUnsqueeze(axes: JList[Int], numInputDims: Int): nn.Unsqueeze[T] = {
     val pos = axes.asScala.toList match {
       case List(elem) => elem + 1 // Todo
       case _ => throw new IllegalArgumentException("Bad axes value: " + axes)
     }
-    val numInputDims: Int = num_input_dims
     OnnxOpsMapper.unsqueeze.apply(pos, numInputDims)
   }
 }
