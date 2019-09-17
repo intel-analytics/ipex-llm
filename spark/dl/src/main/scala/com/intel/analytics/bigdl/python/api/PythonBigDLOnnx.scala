@@ -235,8 +235,8 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     OnnxOpsMapper.relu.apply(false)
   }
 
-  def createReshape(shape: Array[Int]): nn.Reshape[T] = {
-    OnnxOpsMapper.reshape.apply(shape, Option(false))
+  def createReshape(shape: JArrayList[Int]): nn.Reshape[T] = {
+    OnnxOpsMapper.reshape.apply(shape.asScala.toArray, Some(false))
   }
 
   def createShape(): Shape[T] = {

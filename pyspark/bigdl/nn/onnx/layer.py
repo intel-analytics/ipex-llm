@@ -199,8 +199,8 @@ class Reshape(Layer):
     >>> reshape = Reshape(shape)
     creating: createReshape
     """
-    def __init__(self, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type)
+    def __init__(self, shape, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type, shape)
 
 
 class Shape(Layer):
