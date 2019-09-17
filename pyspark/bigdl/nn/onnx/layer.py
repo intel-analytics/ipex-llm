@@ -146,11 +146,15 @@ class Gemm(Layer):
     and output tensor Y has shape (M, N). A will be transposed before doing the computation if
     attribute transA is non-zero, same for B and transB.
 
-    >>> gemm = Gemm()
+    >>> matrix_b = np.random.random([2, 2])
+    >>> matrix_c = np.random.random([2, 2])
+    >>> gemm = Gemm(matrix_b=matrix_b, matrix_c=matrix_c)
     creating: createGemm
     """
-    def __init__(self, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0, bigdl_type="float"):
-        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
+    def __init__(self, matrix_b, matrix_c, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0,
+                 bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b,
+                                   JTensor.from_ndarray(matrix_b), JTensor.from_ndarray(matrix_c))
 
 
 class MaxPool(Layer):
