@@ -24,7 +24,8 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
  */
 class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
 
-  private val basicAnchors: Tensor[Float] = generateBasicAnchors(ratios, scales)
+  private var baseSize = 16
+  private var basicAnchors: Tensor[Float] = generateBasicAnchors(ratios, scales, baseSize)
 
   val anchorNum = ratios.length * scales.length
   /**
@@ -37,6 +38,10 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
    */
   def generateAnchors(width: Int, height: Int, featStride: Float = 16): Tensor[Float] = {
     val (shiftX, shiftY) = generateShifts(width, height, featStride)
+    if (featStride != baseSize) {
+      basicAnchors = generateBasicAnchors(ratios, scales, featStride)
+      baseSize = featStride.toInt
+    }
     getAllAnchors(shiftX, shiftY, basicAnchors)
   }
 
