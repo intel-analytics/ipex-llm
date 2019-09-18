@@ -45,7 +45,8 @@ class Cast extends TensorflowOpsLoader {
       case DataType.DT_STRING => CastOps[T, String]()
       case DataType.DT_FLOAT => CastOps[T, Float]()
       case DataType.DT_DOUBLE => CastOps[T, Double]()
-      case _ => throw new UnsupportedOperationException()
+      case _ => throw new UnsupportedOperationException("Unsupported data type: "
+        + dataType.toString)
     }
     layer
   }

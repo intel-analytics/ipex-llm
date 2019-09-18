@@ -68,18 +68,11 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
           "the input pads: " + pads)
     }
 
-    val globalPooling = false
-    val divide = false
-    val format = DataFormat.NCHW
-
-    OnnxOpsMapper.averagePool.apply(
-      kW, kH, dW, dH, padW, padH,
-      globalPooling,
-      if (ceilMode == 0) false else true,
-      if (countIncludePad == 0) false else true,
-      divide, format
+    nn.SpatialAveragePooling[T](
+      kW = kW, kH = kH, dW = dW, dH = dH, padW = padW, padH = padH,
+      ceilMode = if (ceilMode == 0) false else true,
+      countIncludePad = if (countIncludePad == 0) false else true
     )
-
   }
 
 
@@ -88,31 +81,21 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     epsilon: Float,
     momentum: Float): nn.SpatialBatchNormalization[T] = {
 
-    val nOutput = numFeatures
-    val eps = epsilon.toDouble
-    val affine = true
-    val initWeight = null
-    val initBias = null
-    val initGradWeight = null
-    val initGradBias = null
-    val dataFormat = DataFormat.NCHW
-
-    OnnxOpsMapper.batchNormalization.apply(
-      nOutput, eps.toDouble, momentum.toDouble,
-      affine, initWeight, initBias, initGradWeight, initGradBias, dataFormat
+    nn.SpatialBatchNormalization[T](
+      nOutput = numFeatures, eps = epsilon.toDouble, momentum = momentum.toDouble
     )
-
   }
 
 
   def createConcat(nInputDims: Int, axis: Int): nn.JoinTable[T] = {
-    OnnxOpsMapper.concat.apply(axis, nInputDims)
+    nn.JoinTable[T](dimension = axis, nInputDims = nInputDims)
   }
 
 
   def createConstant(value: JTensor): nn.tf.Const[T, T] = {
-    OnnxOpsMapper.constant.apply(toTensor(value))
+    nn.tf.Const[T, T](toTensor(value))
   }
+
 
   def createConv(
     nInputPlane: Int, // BigDL requires
@@ -154,40 +137,30 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
           "the input pads: " + strides)
     }
 
-
     if (dilationH != 1 && dilationW != 1) {
       throw new UnsupportedOperationException(
         "Dilations is expected to be (1, 1)" +
           "the input dilations: " + (dilationW, dilationH))
     }
 
-    val nGroup = group
-    val propagateBack: Boolean = true
-    val wRegularizer: Regularizer[T] = null
-    val bRegularizer: Regularizer[T] = null
-    val initWeight: Tensor[T] = toTensor(weight)
-    val initBias: Tensor[T] = toTensor(bias)
-    val initGradWeight: Tensor[T] = null
-    val initGradBias: Tensor[T] = null
-    val withBias = if (bias != null) true else false
-    val format: DataFormat = DataFormat.NCHW
-
-    OnnxOpsMapper.conv.apply(
-      nInputPlane, nOutputPlane, kernelW, kernelH, strideW, strideH,
-      padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
-      initWeight, initBias, initGradWeight, initGradBias, withBias, format
+    nn.SpatialConvolution[T](
+      nInputPlane = nInputPlane, nOutputPlane = nOutputPlane,
+      kernelW = kernelW, kernelH = kernelH, strideW = strideW, strideH = strideH,
+      padW = padW, padH = padH, nGroup = group,
+      initWeight = toTensor(weight), initBias = toTensor(bias),
+      withBias = if (bias != null) true else false
     )
-
   }
 
+
   def createGather(axis: Int): nn.ops.Gather[T, T] = {
-    OnnxOpsMapper.gather.apply()
+    nn.ops.Gather[T, T]()
   }
 
 
   def createGemm(alpha: Float, beta: Float, transA: Int, transB: Int,
                  matrixB: JTensor, matrixC: JTensor): Gemm[T] = {
-    OnnxOpsMapper.gemm.apply(alpha, beta,
+    Gemm(alpha, beta,
       (if (transA == 0) false else true),
       (if (transB == 0) false else true),
       toTensor(matrixB), toTensor(matrixC))
@@ -227,86 +200,41 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
       throw new IllegalArgumentException("MaxPool doesnt support storage order yet.")
     }
 
-    val format = DataFormat.NCHW
-
-    OnnxOpsMapper.maxPool.apply(kW, kH, dW, dH, padW, padH, format)
-
+    nn.SpatialMaxPooling[T](kW = kW, kH = kH, dW = dW, dH = dH,
+      padW = padW, padH = padH)
   }
+
 
   def createRelu(): nn.ReLU[T] = {
-    OnnxOpsMapper.relu.apply(false)
+    nn.ReLU[T](ip = true)
   }
+
 
   def createReshape(shape: JArrayList[Int]): nn.Reshape[T] = {
-    OnnxOpsMapper.reshape.apply(shape.asScala.toArray, Some(false))
+    nn.Reshape[T](shape.asScala.toArray, Some(false))
   }
+
 
   def createShape(): Shape[T] = {
-    OnnxOpsMapper.shape.apply()
+    nn.onnx.Shape[T]()
   }
+
 
   def createSoftmax(axis: Int = 1): nn.SoftMax[T] = {
-    OnnxOpsMapper.softmax.apply()
+    nn.SoftMax[T]()
   }
+
 
   def createOnnxSum(inplace: Boolean = false): nn.CAddTable[T, T] = {
-    OnnxOpsMapper.sum.apply(inplace)
+    nn.CAddTable[T](inplace)
   }
 
+  
   def createUnsqueeze(axes: JList[Int], numInputDims: Int): nn.Unsqueeze[T] = {
     val pos = axes.asScala.toList match {
       case List(elem) => elem + 1 // Todo
       case _ => throw new IllegalArgumentException("Bad axes value: " + axes)
     }
-    OnnxOpsMapper.unsqueeze.apply(pos, numInputDims)
+    nn.Unsqueeze[T](pos = pos, numInputDims = numInputDims)
   }
-}
-
-
-object OnnxOpsMapper {
-
-  def averagePool[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Int, Int, Int, Int, Int, Int, Boolean, Boolean, Boolean, Boolean, DataFormat)
-    => nn.SpatialAveragePooling[T] = nn.SpatialAveragePooling[T]
-
-  def batchNormalization[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Int, Double, Double, Boolean, Tensor[T], Tensor[T], Tensor[T],
-    Tensor[T], DataFormat) => nn.SpatialBatchNormalization[T] = nn.SpatialBatchNormalization[T]
-
-  def concat[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Int, Int) => nn.JoinTable[T] = nn.JoinTable[T]
-
-  def constant[T: ClassTag](implicit ev: TensorNumeric[T]):
-  Tensor[T] => nn.tf.Const[T, T] = nn.tf.Const[T, T]
-
-  def conv[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Int, Int, Int, Int, Int, Int, Int, Int, Int,
-    Boolean, Regularizer[T], Regularizer[T], Tensor[T], Tensor[T],
-    Tensor[T], Tensor[T], Boolean, DataFormat) => nn.SpatialConvolution[T]
-  = nn.SpatialConvolution[T]
-
-  def gather[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  () => nn.ops.Gather[T, D] = nn.ops.Gather[T, D]
-
-  def gemm[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Float, Float, Boolean, Boolean, Tensor[T], Tensor[T]) => nn.onnx.Gemm[T] = nn.onnx.Gemm[T]
-
-  def maxPool[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Int, Int, Int, Int, Int, Int, DataFormat) => nn.SpatialMaxPooling[T] = nn.SpatialMaxPooling[T]
-
-  def relu[T: ClassTag](implicit ev: TensorNumeric[T]): Boolean => nn.ReLU[T] = nn.ReLU[T]
-
-  def reshape[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Array[Int], Option[Boolean]) => nn.Reshape[T] = nn.Reshape[T]
-
-  def shape[T: ClassTag](implicit ev: TensorNumeric[T]): () => nn.onnx.Shape[T] = nn.onnx.Shape[T]
-
-  def softmax[T: ClassTag](implicit ev: TensorNumeric[T]): () => nn.SoftMax[T] = nn.SoftMax[T]
-
-  def sum[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Boolean) => nn.CAddTable[T, T] = nn.CAddTable[T]
-
-  def unsqueeze[T: ClassTag](implicit ev: TensorNumeric[T]):
-  (Int, Int) => nn.Unsqueeze[T] = nn.Unsqueeze[T]
-
 }

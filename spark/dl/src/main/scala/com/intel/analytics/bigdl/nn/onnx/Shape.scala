@@ -35,7 +35,6 @@ class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dimSize = input.nDimension()
-    Tensor[T]()
     output = Tensor[T](dimSize)
     (1 to dimSize).foreach(i => {
       output.setValue(i, ev.fromType(input.size(i)))
