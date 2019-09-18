@@ -2092,7 +2092,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.set(t.storage(), t.storageOffset(), size, stride)
   }
 
-  override def addMultiDimension(t: Tensor[T], dims: Array[Int] = Array(1)): Tensor[T] = {
+  override def addMultiDimension( t: Tensor[T], dims: Array[Int] = Array(1)): Tensor[T] = {
     // increase 1 to the following pos after a previous smaller pos have one dimension inserted.
     for (i <- 0 until dims.length) {
       for (j <- i + 1 until dims.length) {
@@ -2101,14 +2101,16 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         }
       }
     }
-    val temp = t
+    var temp = t.clone()
+    var size = new Array[Int](t.dim())
+    var stride = new Array[Int](t.dim())
+
     for ( i <- 0 until dims.length) {
       require(dims(i) > 0 && dims(i) <= temp.dim() + 1, s"invalid dimension: ${dims(i)}. " +
         s"Tensor is of ${temp.dim()} dimensions.")
 
-      val size = new Array[Int](temp.dim() + 1)
-      val stride = new Array[Int](temp.dim() + 1)
-
+      size = new Array[Int](temp.dim() + 1)
+      stride = new Array[Int](temp.dim() + 1)
       var d = 0
       while (d < dims(i) - 1) {
         size(d) = temp.size(d + 1)
