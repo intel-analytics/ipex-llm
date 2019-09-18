@@ -32,7 +32,7 @@ case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
-    require(target.masks == null, "Do not support support copying RoiLabels with masks")
+    require(target.masks == null, "Copying RoiLabels with masks not supported")
   }
 
   if (classes.dim() == 1) {
