@@ -96,18 +96,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     cls.getSimpleName
   }
 
-  private def toTable(input: JList[JTensor]): Table = {
-    input.asScala.foldLeft(new Table())((t, jtensor) => t.insert(toTensor(jtensor)))
+  private def toTable(input: JList[_ <: Object]): Table = {
+    input.asScala.foldLeft(new Table())((t, e) =>
+      if (e.isInstanceOf[JTensor]) {
+        t.insert(toTensor(e.asInstanceOf[JTensor]))
+      } else {
+        t.insert(toTable(e.asInstanceOf[JList[Object]]))
+      })
   }
 
-  def jTensorsToActivity(input: JList[JTensor], isTable: Boolean): Activity = {
+  def jTensorsToActivity(input: JList[_ <: Object], isTable: Boolean): Activity = {
     if (input.isEmpty) {
       throw new IllegalArgumentException("Empty input")
     }
     if (isTable) {
       toTable(input)
     } else {
-      toTensor(input.iterator().next())
+      toTensor(input.asInstanceOf[JList[JTensor]].iterator().next())
     }
   }
 
@@ -1156,10 +1161,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       pooled_w)
   }
 
-  def createFPN(in_channels_list: JList[Int], out_channels: Int)
+  def createFPN(in_channels_list: JList[Int], out_channels: Int,
+                top_blocks: Int = 0, in_channels_of_p6p7: Int = 0, out_channels_of_p6p7: Int = 0)
   : FPN[T] = {
-    FPN[T](in_channels_list.asScala.toArray,
-      out_channels)
+    FPN[T](in_channels_list.asScala.toArray, out_channels,
+      top_blocks, in_channels_of_p6p7, out_channels_of_p6p7)
+  }
+
+  def createPooler(resolution: Int, scales: JList[Double], sampling_ratio: Int)
+  : Pooler[T] = {
+    Pooler[T](resolution,
+      scales.asScala.toArray.map(_.toFloat),
+      sampling_ratio)
   }
 
   def createScale(size: JList[Int])
@@ -2037,14 +2050,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
-    val sampleRdd = toJSample(dataRdd)
-    val tensorRDD = model.predictClass(sampleRdd)
-    new JavaRDD[Int](tensorRDD)
+                      dataRdd: JavaRDD[Sample]): JavaRDD[Sample] = {
+    val sampleRDD = toJSample(dataRdd)
+    val pySampleRDD = model.predictClass(sampleRDD).map(toPySample(_))
+    new JavaRDD[Sample](pySampleRDD)
   }
 
   def modelForward(model: AbstractModule[Activity, Activity, T],
-    input: JList[JTensor],
+    input: JList[_ <: Object],
     inputIsTable: Boolean): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val outputActivity = model.forward(inputActivity)
@@ -2052,9 +2065,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelBackward(model: AbstractModule[Activity, Activity, T],
-    input: JList[JTensor],
+    input: JList[_ <: Object],
     inputIsTable: Boolean,
-    gradOutput: JList[JTensor],
+    gradOutput: JList[_ <: Object],
     gradOutputIsTable: Boolean): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val gradOutputActivity = jTensorsToActivity(gradOutput, gradOutputIsTable)
@@ -2080,9 +2093,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def criterionForward(criterion: AbstractCriterion[Activity, Activity, T],
-    input: JList[JTensor],
+    input: JList[_ <: Object],
     inputIsTable: Boolean,
-    target: JList[JTensor],
+    target: JList[_ <: Object],
     targetIsTable: Boolean): T = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val targetActivity = jTensorsToActivity(target, targetIsTable)
@@ -2090,9 +2103,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def criterionBackward(criterion: AbstractCriterion[Activity, Activity, T],
-    input: JList[JTensor],
+    input: JList[_ <: Object],
     inputIsTable: Boolean,
-    target: JList[JTensor],
+    target: JList[_ <: Object],
     targetIsTable: Boolean): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val targetActivity = jTensorsToActivity(target, targetIsTable)
@@ -2164,6 +2177,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createTop5Accuracy(): ValidationMethod[T] = {
     new Top5Accuracy()
+  }
+
+  def createMeanAveragePrecision(k: Int, classes: Int): ValidationMethod[T] = {
+    new MeanAveragePrecision(k, classes)
+  }
+
+  def createMeanAveragePrecisionObjectDetection(classes: Int, iou: Float, useVoc2007: Boolean,
+    skipClass: Int): ValidationMethod[T] = {
+    new MeanAveragePrecisionObjectDetection(classes, iou, useVoc2007, skipClass)
   }
 
   def createLoss(criterion: Criterion[T]): ValidationMethod[T] = {
