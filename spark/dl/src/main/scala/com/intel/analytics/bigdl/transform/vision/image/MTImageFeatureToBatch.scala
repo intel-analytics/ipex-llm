@@ -16,10 +16,12 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 import java.util.concurrent.atomic.AtomicInteger
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer, Utils}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import scala.collection.mutable.IndexedSeqView
 import scala.reflect.ClassTag
 
 object MTImageFeatureToBatch {
@@ -157,6 +159,37 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
     MiniBatch(featureTensor, labelTensor)
   }
 }
+
+
+class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeqView[RoiLabel,
+  IndexedSeq[RoiLabel]])
+  extends MiniBatch[Float] {
+
+  override def size(): Int = {
+    input.size(1)
+  }
+
+  override def getInput(): Tensor[Float] = input
+
+  override def getTarget(): Table = T(target.map(_.toTable))
+
+  override def slice(offset: Int, length: Int): MiniBatch[Float] = {
+    val subInput = input.narrow(1, offset, length)
+    val subTarget = target.view(offset - 1, length) // offset starts from 1
+    RoiMiniBatch(subInput, subTarget)
+  }
+
+  override def set(samples: Seq[Sample[Float]])(implicit ev: TensorNumeric[Float])
+  : RoiMiniBatch.this.type = {
+    throw new NotImplementedError("do not use Sample here")
+  }
+}
+
+object RoiMiniBatch {
+  def apply(data: Tensor[Float], target: IndexedSeqView[RoiLabel, IndexedSeq[RoiLabel]]):
+  RoiMiniBatch = new RoiMiniBatch(data, target)
+}
+
 
 /**
  * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads
