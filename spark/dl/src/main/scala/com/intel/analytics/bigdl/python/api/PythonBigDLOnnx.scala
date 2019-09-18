@@ -232,7 +232,6 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
 
   def createUnsqueeze(axes: JList[Int], numInputDims: Int): nn.Unsqueeze[T] = {
     val pos = axes.asScala.toList match {
-      // Todo
       case List(elem) => elem + 1
       case _ => throw new IllegalArgumentException("Bad axes value: " + axes)
     }
