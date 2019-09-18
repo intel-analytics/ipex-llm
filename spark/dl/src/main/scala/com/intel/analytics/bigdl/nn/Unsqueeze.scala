@@ -62,14 +62,6 @@ class Unsqueeze[T: ClassTag](
         s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
       pos(index) = actualPos
     }
-    // increase 1 to the following pos after a previous smaller pos have one dimension inserted.
-    for (i <- 0 until pos.length) {
-      for (j <- i + 1 until pos.length) {
-        if (pos(j) > pos(i)) {
-          pos(j) = pos(j) + 1
-        }
-      }
-    }
     pos
   }
 
@@ -78,11 +70,10 @@ class Unsqueeze[T: ClassTag](
     if (input.getType() != output.getType()) {
       output = input.emptyInstance()
     }
-    for (index <- 0 until actualPos.length) {
-      output
-      .asInstanceOf[Tensor[NumericWildcard]]
-      .addSingletonDimension(input.asInstanceOf[Tensor[NumericWildcard]], actualPos(index))
-    }
+
+    output.asInstanceOf[Tensor[NumericWildcard]]
+    .addMultiDimension(input.asInstanceOf[Tensor[NumericWildcard]], actualPos)
+
     output
   }
 
