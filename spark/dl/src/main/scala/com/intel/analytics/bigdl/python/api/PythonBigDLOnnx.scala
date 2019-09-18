@@ -229,10 +229,11 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     nn.CAddTable[T](inplace)
   }
 
-  
+
   def createUnsqueeze(axes: JList[Int], numInputDims: Int): nn.Unsqueeze[T] = {
     val pos = axes.asScala.toList match {
-      case List(elem) => elem + 1 // Todo
+      // Todo
+      case List(elem) => elem + 1
       case _ => throw new IllegalArgumentException("Bad axes value: " + axes)
     }
     nn.Unsqueeze[T](pos = pos, numInputDims = numInputDims)
