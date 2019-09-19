@@ -133,8 +133,8 @@ class UnsqueezeSpec extends TorchSpec {
     println("Test case : Unsqueeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A Unsqueeze(0)" should "generate IllegalArgumentException" in {
-    intercept[IllegalArgumentException]{
+  "A Unsqueeze(0)" should "generate LayerException" in {
+    intercept[LayerException]{
       val layer = new Unsqueeze[Double](0)
       val input = Tensor[Double](2, 2).rand()
       layer.forward(input).size()
