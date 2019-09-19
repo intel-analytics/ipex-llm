@@ -106,7 +106,6 @@ class UnsqueezeSpec extends TorchSpec {
   }
 */
 
-
   "A Unsqueeze(4, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](4, 3)
@@ -133,11 +132,12 @@ class UnsqueezeSpec extends TorchSpec {
 
     println("Test case : Unsqueeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
-/*
-  "A Unsqueeze(0)" should "generate correct output and grad" in {
-    val layer = new Unsqueeze[Double](0)
-    val input = Tensor[Double](2, 2).rand()
-    layer.forward(input).size() should be(Array(2, 2, 1))
+
+  "A Unsqueeze(0)" should "generate IllegalArgumentException" in {
+    intercept[IllegalArgumentException]{
+      val layer = new Unsqueeze[Double](0)
+      val input = Tensor[Double](2, 2).rand()
+      layer.forward(input).size()
+    }
   }
-*/
 }
