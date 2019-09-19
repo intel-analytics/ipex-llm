@@ -35,7 +35,7 @@ class MultiCriterionSpec extends TorchSpec {
     module.add(nll, 0.5)
     module.add(nll2)
 
-    val input = Tensor[Double](5).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](5).rand()
     val target = Tensor[Double](5)
     target(Array(1)) = 1
     target(Array(2)) = 2
