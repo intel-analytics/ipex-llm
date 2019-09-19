@@ -26,9 +26,9 @@ import scala.util.Random
 class MultiCriterionSpec extends TorchSpec {
     "A MultiCriterion Module " should "generate correct output and grad with Tensor input" in {
     torchCheck()
-    val seed = 100
+    val seed = 1
     RNG.setSeed(seed)
-    Random.setSeed(100)
+    Random.setSeed(1)
     val module = new MultiCriterion[Double]()
     val nll = new ClassNLLCriterion[Double]()
     val nll2 = new MSECriterion[Double]()
