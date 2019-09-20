@@ -26,6 +26,11 @@ Each`Preprocessing` conducts a data conversion step in the preprocessing phase, 
 `Preprocessing` for popular data types like Image, Array or Vector are provided in package
 `com.intel.analytics.zoo.feature`, while user can also develop customized `Preprocessing`.
 
+NNEstimator and NNClassifier also supports setting the caching level for the training data.
+Options are "DRAM", "PMEM" or "DISK_AND_DRAM". If DISK_AND_DRAM(numSlice) is used, only 1/numSlice
+data will be loaded into memory during training time. By default, DRAM mode is used and all data
+are cached in memory.
+
 By default, `SeqToTensor` is used to convert an array or Vector to a 1-dimension Tensor.
 Using the `Preprocessing` allows `NNEstimator` to cache only the raw data and decrease the 
 memory consumption during feature conversion and training, it also enables the model to digest
@@ -113,7 +118,7 @@ df = self.sqlContext.createDataFrame(data, schema)
 model = Sequential().add(Linear(2, 2))
 criterion = MSECriterion()
 estimator = NNEstimator(model, criterion, SeqToTensor([2]), ArrayToTensor([2]))\
-    .setBatchSize(4).setLearningRate(0.2).setMaxEpoch(40)
+    .setBatchSize(4).setLearningRate(0.2).setMaxEpoch(40) \
 nnModel = estimator.fit(df)
 res = nnModel.transform(df)
 ```
