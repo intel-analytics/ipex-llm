@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.common._
 import com.intel.analytics.zoo.feature.image.RowToImageFeature
+import com.intel.analytics.zoo.feature.pmem._
 import com.intel.analytics.zoo.pipeline.nnframes._
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
@@ -166,6 +167,20 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def setEndWhen(estimator: NNEstimator[T], trigger: Trigger): NNEstimator[T] = {
     estimator.setEndWhen(trigger)
+  }
+
+  def setDataCacheLevel(
+      estimator: NNEstimator[T],
+      level: String,
+      numSlice: Int = 4): NNEstimator[T] = {
+    val memType = level.trim.toUpperCase match {
+      case "DRAM" => DRAM
+      case "PMEM" => PMEM
+      case "DISK_AND_DRAM" => DISK_AND_DRAM(numSlice)
+      case "DIRECT" => DIRECT
+      case _ => throw new IllegalArgumentException(s"$level is not supported.")
+    }
+    estimator.setDataCacheLevel(memType)
   }
 
   def setCheckpoint(

@@ -25,9 +25,12 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.{File, T}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
+import com.intel.analytics.zoo.feature.FeatureSet
 import com.intel.analytics.zoo.feature.common.{Preprocessing, _}
+import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.zoo.pipeline.api.keras.models.InternalDistriOptimizer
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -134,6 +137,20 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
    * Get check point path.
    */
   def getCheckpointPath: String = $(checkpointPath)
+
+  /**
+   * How to cache the training data, options are defined in com.intel.analytics.zoo.feature.pmem.
+   * If it's DRAM, will cache dataset into dynamic random-access memory
+   * If it's PMEM, will cache dataset into Intel Optane DC Persistent Memory
+   * If it's DISK_AND_DRAM(numSlice: Int), will cache dataset into disk, and only hold 1/n
+   *      of the data into memory during the training. After going through the 1/n, we will
+   *      release the current cache, and load another 1/n into memory.
+   * By default, DRAM is used.
+   */
+  final val dataCacheLevel = new Param[MemoryType](
+    this, "dataCacheLevel", "cache the data in memory, disk, ")
+
+  def getDataCacheLevel: MemoryType = $(dataCacheLevel)
 }
 
 /**
@@ -235,6 +252,11 @@ class NNEstimator[T: ClassTag] private[zoo] (
     set(cachingSample, value)
   }
   setDefault(cachingSample, true)
+
+  def setDataCacheLevel(value: MemoryType): this.type = {
+    set(dataCacheLevel, value)
+  }
+  setDefault(dataCacheLevel, DRAM)
 
   /**
    * Clear clipping params, in this case, clipping will not be applied.
@@ -358,7 +380,7 @@ class NNEstimator[T: ClassTag] private[zoo] (
 
   private def getDataSet(
       dataFrame: DataFrame,
-      batchSize: Int): DataSet[MiniBatch[T]] = {
+      batchSize: Int): FeatureSet[MiniBatch[T]] = {
 
     val sp = $(samplePreprocessing).asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
@@ -378,10 +400,11 @@ class NNEstimator[T: ClassTag] private[zoo] (
       val labels = labelFunc(row)
       (features, labels)
     }
+
     val initialDataSet = if ($(cachingSample)) {
-      DataSet.rdd(sp.apply(featureAndLabel))
+      FeatureSet.rdd(sp.apply(featureAndLabel), memoryType = $(dataCacheLevel))
     } else {
-      DataSet.rdd(featureAndLabel).transform(sp)
+      FeatureSet.rdd(featureAndLabel, memoryType = $(dataCacheLevel)).transform(sp)
     }
 
     initialDataSet.transform(SampleToMiniBatch[T](batchSize))
@@ -390,7 +413,7 @@ class NNEstimator[T: ClassTag] private[zoo] (
   protected override def internalFit(dataFrame: DataFrame): NNModel[T] = {
     val trainingDataSet = getDataSet(dataFrame, $(batchSize))
     val endTrigger = if (isSet(endWhen)) $(endWhen) else Trigger.maxEpoch($(maxEpoch))
-    val optimizer = Optimizer(model, trainingDataSet, criterion)
+    val optimizer = new InternalDistriOptimizer(model, null, criterion)
       .setOptimMethod($(optimMethod))
       .setEndWhen(endTrigger)
 
@@ -416,11 +439,16 @@ class NNEstimator[T: ClassTag] private[zoo] (
       optimizer.setConstantGradientClipping(constantClippingValues._1, constantClippingValues._2)
     }
 
+    val validationFeatureset = if (validationTrigger.isDefined) {
+      getDataSet(validationDF, validationBatchSize)
+    } else {
+      null
+    }
+
     if (validationTrigger.isDefined) {
-      val validationSamples = getDataSet(validationDF, validationBatchSize)
       optimizer.setValidation(
         validationTrigger.get,
-        validationSamples,
+        validationFeatureset,
         validationMethods)
       if (this.validationSummary.isDefined) {
         optimizer.setValidationSummary(this.validationSummary.get)
@@ -438,8 +466,15 @@ class NNEstimator[T: ClassTag] private[zoo] (
       }
     }
 
-    val optimizedModel = optimizer.optimize()
-    wrapBigDLModel(optimizedModel)
+    optimizer.train(
+      trainingDataSet,
+      criterion,
+      Some(endTrigger),
+      if (isSet(this.checkpointPath)) Some($(checkpointTrigger)) else None,
+      validationFeatureset,
+      validationMethods
+    )
+    wrapBigDLModel(model)
   }
 
   /**
