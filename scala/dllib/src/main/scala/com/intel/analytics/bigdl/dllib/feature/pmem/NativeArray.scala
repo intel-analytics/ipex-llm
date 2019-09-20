@@ -18,7 +18,7 @@ package com.intel.analytics.zoo.feature.pmem
 
 import scala.collection.mutable.ArrayBuffer
 
-sealed trait MemoryType
+sealed trait MemoryType extends Serializable
 
 case object PMEM extends MemoryType
 
