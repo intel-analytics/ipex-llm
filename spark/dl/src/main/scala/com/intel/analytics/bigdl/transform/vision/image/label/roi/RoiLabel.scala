@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
  * @param masks the array of annotation masks of the targets
  */
 case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
-  masks: Array[Tensor[Byte]] = null) {
+  masks: Array[Tensor[Float]] = null) {
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
