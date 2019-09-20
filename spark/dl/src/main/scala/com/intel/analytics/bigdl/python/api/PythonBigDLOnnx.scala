@@ -16,18 +16,13 @@
 
 package com.intel.analytics.bigdl.python.api
 
+import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.onnx._
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-
-import scala.reflect.ClassTag
 
 
 object PythonBigDLOnnx {
@@ -50,19 +45,19 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     strides: JList[Int]): nn.SpatialAveragePooling[T] = {
 
     val (kW: Int, kH: Int) = kernelShape.asScala.toList match {
-      case List(width, height) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Kernel shape is expected in the form of List(width, height)," +
           "the input kernel shape: " + kernelShape)
     }
     val (dW: Int, dH: Int) = strides.asScala.toList match {
-      case List(width, height) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Strides is expected in the form of List(width, height)," +
           "the input strides: " + strides)
     }
     val (padW: Int, padH: Int) = pads.asScala.toList match {
-      case List(width, height) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Pads is expected in the form of List(width, height)," +
           "the input pads: " + pads)
@@ -110,28 +105,28 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     strides: JList[Int]
   ): nn.SpatialConvolution[T] = {
     val (dilationW: Int, dilationH: Int) = dilations.asScala.toList match {
-      case List(width: Int, height: Int) => (width.toInt, height.toInt)
+      case width :: height :: _ => (width.toInt, height.toInt)
       case _ => throw new IllegalArgumentException(
         "Dilations is expected in the form of List(width, height)," +
           "the input dilations: " + dilations)
     }
 
     val (kernelW: Int, kernelH: Int) = kernelShape.asScala.toList match {
-      case List(width: Int, height: Int) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Kernel shape is expected in the form of List(width, height)," +
           "the input kernel shape: " + kernelShape)
     }
 
     val (strideW: Int, strideH: Int) = strides.asScala.toList match {
-      case List(width: Int, height: Int) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Strides is expected in the form of List(width, height)," +
           "the input strides: " + strides)
     }
 
     val (padW: Int, padH: Int) = pads.asScala.toList match {
-      case List(width: Int, height: Int) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Pads is expected in the form of List(width, height)," +
           "the input pads: " + strides)
@@ -172,21 +167,19 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     storageOrder: Int, strides: JList[Int]): nn.SpatialMaxPooling[T] = {
 
     val (kW: Int, kH: Int) = kernelShape.asScala.toList match {
-      case List(width, height) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Kernel shape is expected in the form of List(width, height)," +
           "the input kernel shape: " + kernelShape)
     }
     val (dW: Int, dH: Int) = strides.asScala.toList match {
-      case null => (1, 1)
-      case List(width, height) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Strides is expected in the form of List(width, height)," +
           "the input strides: " + strides)
     }
     val (padW: Int, padH: Int) = pads.asScala.toList match {
-      case null => (0, 0)
-      case List(width, height) => (width, height)
+      case width :: height :: _ => (width, height)
       case _ => throw new IllegalArgumentException(
         "Pads is expected in the form of List(width, height)," +
           "the input pads: " + pads)

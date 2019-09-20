@@ -45,6 +45,7 @@ class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
   // Shape if a constant layer,
   // which means Output does not depend on Weight which gets updated by Gradient
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput.resizeAs(input)
     gradInput
   }
 }
