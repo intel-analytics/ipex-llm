@@ -41,7 +41,7 @@ Using TFDataset as data input
 export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
 export SPARK_HOME=... # the root directory of Spark
 
-sh $ANALYTICS_ZOO_HOME/bin/spark-submit-with-zoo.sh --master local[4] keras_dataset.py
+sh $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] keras_dataset.py
 ```
 
 Using numpy.ndarray as data input
@@ -49,7 +49,7 @@ Using numpy.ndarray as data input
 export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
 export SPARK_HOME=... # the root directory of Spark
 
-sh $ANALYTICS_ZOO_HOME/bin/spark-submit-with-zoo.sh --master local[4] keras_ndarray.py
+sh $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] keras_ndarray.py
 ```
 
 ## Run the TFEstimator example after pip install
@@ -86,7 +86,7 @@ Using TFDataset as data input
 export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
 export SPARK_HOME=... # the root directory of Spark
 
-sh $ANALYTICS_ZOO_HOME/bin/spark-submit-with-zoo.sh --master local[4] estimator_dataset.py
+sh $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] estimator_dataset.py
 ```
 
 Using FeatureSet as data input
@@ -110,5 +110,5 @@ IMAGE_PATH=...
 NUM_CLASSES=..
 
 
-sh $ANALYTICS_ZOO_HOME/bin/spark-submit-with-zoo.sh --master local[4] estimator_inception.py --image-path $IMAGE_PATH --num-classes $NUM_CLASSES
+sh $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] estimator_inception.py --image-path $IMAGE_PATH --num-classes $NUM_CLASSES
 ```
