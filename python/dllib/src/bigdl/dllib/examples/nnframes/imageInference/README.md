@@ -37,7 +37,7 @@ Run the following command for Spark local mode (`MASTER=local[*]`) or cluster mo
     export SPARK_HOME=the root directory of Spark
     export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
 
-    ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+    ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --master local[1] \
     --driver-memory 3g \
     ImageInferenceExample.py \
