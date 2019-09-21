@@ -50,7 +50,7 @@ MASTER=local[*]
 image_path=directory path that contain images
 model_path=dir contains frozen_inference_graph.pb and pipeline.config
 
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --master $MASTER \
     --driver-memory 10g \
     --executor-memory 10g \
