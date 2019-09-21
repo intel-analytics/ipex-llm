@@ -32,7 +32,7 @@ imagePath=... // image path. Local file system/HDFS are supported. With local fi
 topN=... // top n prediction
 partitionNum=... // A suggestion value of the minimal partition number
 
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --master local[4] \
     --driver-memory 10g \
     --executor-memory 10g \
