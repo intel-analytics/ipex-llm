@@ -96,7 +96,7 @@ in `spark-submit/pyspark`, you can add these customized properties into ${ANALYT
 ---
 #### ***Run with pyspark***
 ```bash
-${ANALYTICS_ZOO_HOME}/bin/pyspark-with-zoo.sh --master local[*]
+${ANALYTICS_ZOO_HOME}/bin/pyspark-shell-with-zoo.sh --master local[*]
 ```
 * `--master` set the master URL to connect to
 * `--jars` if there are extra jars needed.
@@ -114,7 +114,7 @@ running the Analytics Zoo [Object Detection Python example](https://github.com/i
 as follows:
 
 ```bash
-${ANALTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh --master local[*] predict.py model_path image_path output_path
+${ANALTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh --master local[*] predict.py model_path image_path output_path
 ```
 
 ---
@@ -163,7 +163,7 @@ export SPARK_HOME=the root directory of Spark
 export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
 export VENV_HOME=the parent directory of venv.zip and venv folder
 
-PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+PYSPARK_PYTHON=${VENV_HOME}/venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=venv.zip/venv/bin/python \
     --master yarn-cluster \
     --executor-memory 10g \
@@ -180,7 +180,7 @@ export SPARK_HOME=the root directory of Spark
 export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
 export VENV_HOME=the parent directory of venv.zip and venv folder
 
-PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-with-zoo.sh \
+PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=venv.zip/venv/bin/python ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --master yarn \
     --deploy-mode client \
     --executor-memory 10g \
