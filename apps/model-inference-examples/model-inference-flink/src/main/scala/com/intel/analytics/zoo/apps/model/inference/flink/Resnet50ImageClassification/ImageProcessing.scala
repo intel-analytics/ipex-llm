@@ -1,10 +1,8 @@
 package com.intel.analytics.zoo.apps.model.inference.flink.Resnet50ImageClassification
 
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import com.intel.analytics.zoo.feature.image.OpenCVMethod
-import org.apache.commons.io.FileUtils
 import org.opencv.core.Rect
 import org.opencv.imgcodecs.Imgcodecs
 import org.slf4j.LoggerFactory
@@ -40,34 +38,24 @@ trait ImageProcessing {
     cropedMat
   }
 
-  def matToNCHWAndRGBTensor(mat: OpenCVMat) = {
+
+  def matToNCHWAndArray(mat: OpenCVMat) = {
     val (height, width, channel) = (mat.height(), mat.width(), mat.channels())
     val data = new Array[Float](height * width * channel)
     OpenCVMat.toFloatPixels(mat, data)
-    val imageTensor: Tensor[Float] = Tensor[Float]()
-    imageTensor.resize(channel, height, width)
-    val storage = imageTensor.storage().array()
-    imageTensor.transpose(1, 2).transpose(2, 3)
-    val offset = 0
-    val frameLength = width * height
-    var j = 0
-    while (j < frameLength) {
-      storage(offset + j) = data(j * 3 + 2)
-      storage(offset + j + frameLength) = data(j * 3 + 1)
-      storage(offset + j + frameLength * 2) = data(j * 3)
-      j += 1
+    val resArray = new Array[Float](height * width * channel)
+    for (h <- 0 to height - 1) {
+      for (w <- 0 to width - 1) {
+        for (c <- 0 to 2) {
+          resArray(c * 224 * 224 + h * 224 + w) = data(h * 224 * 3 + w * 3 + c)
+        }
+      }
     }
-    imageTensor
+    resArray
   }
 
-  def channelScaledNormalize(tensor: Tensor[Float], meanR: Int, meanG: Int, meanB: Int, scale: Double) = {
-    val content = tensor.storage().array()
-    val frameLength = content.length / 3
-    val channel = tensor.size(1)
-    val height = tensor.size(2)
-    val width = tensor.size(3)
-    //println(channel, height, width)
-
+  def channelScaledNormalize(array: Array[Float], meanR: Int, meanG: Int, meanB: Int, scale: Double) = {
+    val frameLength = array.length / 3
     val channels = 3
     val mean = Array(meanR, meanG, meanB)
     var c = 0
@@ -76,13 +64,13 @@ trait ImageProcessing {
       while (i < frameLength) {
         val data_index = c * frameLength + i
         //println(content(data_index), ((content(data_index) - mean(c)) * scale).toFloat)
-        content(data_index) = ((content(data_index) - mean(c)) * scale).toFloat
+        array(data_index) = ((array(data_index) - mean(c)) * scale).toFloat
         //println(content(data_index))
         i += 1
       }
       c += 1
     }
-    tensor
+    array
   }
 
 }
