@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
-import scala.collection.mutable.IndexedSeqView
+import scala.collection.mutable.IndexedSeq
 import scala.reflect.ClassTag
 
 object MTImageFeatureToBatch {
@@ -161,8 +161,7 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
 }
 
 
-class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeqView[RoiLabel,
-  IndexedSeq[RoiLabel]])
+class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel])
   extends MiniBatch[Float] {
 
   override def size(): Int = {
@@ -186,7 +185,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeqView[RoiLabel
 }
 
 object RoiMiniBatch {
-  def apply(data: Tensor[Float], target: IndexedSeqView[RoiLabel, IndexedSeq[RoiLabel]]):
+  def apply(data: Tensor[Float], target: IndexedSeq[RoiLabel]):
   RoiMiniBatch = new RoiMiniBatch(data, target)
 }
 
@@ -220,6 +219,6 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
       featureTensor = Tensor(Storage[Float](featureData),
         storageOffset = 1, size = Array(batchSize, 3, height, width))
     }
-    RoiMiniBatch(featureTensor, labelData.view.view)
+    RoiMiniBatch(featureTensor, labelData.view)
   }
 }
