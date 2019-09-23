@@ -22,11 +22,124 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.{JsonReader, JsonWriter}
 import java.io.{BufferedReader, FileReader}
 import java.lang.reflect.Type
+import java.nio.ByteBuffer
 import scala.collection.mutable.ArrayBuffer
+
+private[COCO] class COCOSerializeContext {
+  private val converter4 = ByteBuffer.allocate(4)
+  private val converter8 = ByteBuffer.allocate(8)
+  private val buffer = new ArrayBuffer[Byte]()
+
+  def dump(v: Float): Unit = {
+    converter4.clear()
+    converter4.putFloat(v)
+    buffer.appendAll(converter4.array())
+  }
+
+  def dump(v: Double): Unit = {
+    converter8.clear()
+    converter8.putDouble(v)
+    buffer.appendAll(converter8.array())
+  }
+
+
+  def dump(v: Int): Unit = {
+    converter4.clear()
+    converter4.putInt(v)
+    buffer.appendAll(converter4.array())
+  }
+
+  def dump(v: Long): Unit = {
+    converter8.clear()
+    converter8.putLong(v)
+    buffer.appendAll(converter8.array())
+  }
+
+  def dump(v: Boolean): Unit = {
+    val d: Byte = if (v) 1 else 0
+    buffer.append(d)
+  }
+
+  def dump(v: String): Unit = {
+    val bytes = v.getBytes
+    dump(bytes)
+  }
+
+  def clear(): Unit = buffer.clear()
+
+  def dump(v: Array[Byte]): Unit = {
+    dump(v.length)
+    buffer.appendAll(v)
+  }
+
+  def toByteArray: Array[Byte] = buffer.toArray
+}
+
+
+private[COCO] class COCODeserializer(buffer: ByteBuffer) {
+  private def getFloat: Float = buffer.getFloat
+  private def getDouble: Double = buffer.getDouble
+  private def getInt: Int = buffer.getInt
+  private def getLong: Long = buffer.getLong
+  private def getBoolean: Boolean = buffer.get != 0
+
+  def getString: String = {
+    val len = getInt
+    val arr = new Array[Byte](len)
+    buffer.get(arr)
+    new String(arr)
+  }
+  case class SimpleAnnotation(categoryId: Int, area: Float, bbox1: Float, bbox2: Float,
+    bbox3: Float, bbox4: Float, isCrowd: Boolean, rleCounts: Array[Float])
+
+  // returns an image's height, width, all annotations
+  def getAnnotations: (Int, Int, Array[SimpleAnnotation]) = {
+    val height = getInt
+    val width = getInt
+    val nAnnotations = getInt
+    val anno = (0 until nAnnotations).map(_ => getAnnotation(height, width))
+    (height, width, anno.toArray)
+  }
+
+  private def getAnnotation(height: Int, width: Int): SimpleAnnotation = {
+    val categoryId = getInt
+    val area = getFloat
+    val bbox1 = getFloat
+    val bbox2 = getFloat
+    val bbox3 = getFloat
+    val bbox4 = getFloat
+    val isCrowd = getBoolean
+    val rle = if (isCrowd) {
+      // is RLE
+      val countLen = getInt
+      val arr = new Array[Float](countLen)
+      for (i <- 0 until countLen) {
+        arr(i) = MaskAPI.uint2long(getInt)
+      }
+      arr
+    } else {
+      val firstDimLen = getInt
+      val poly = new Array[Array[Double]](firstDimLen)
+      for (i <- 0 until firstDimLen) {
+        val secondDimLen = getInt
+        val inner = new Array[Double](secondDimLen)
+        for (j <- 0 until secondDimLen) {
+          inner(j) = getDouble
+        }
+        poly(i) = inner
+      }
+      val cocoRLE = MaskAPI.mergeRLEs(MaskAPI.poly2RLE(COCOPoly(poly), height, width), false)
+      cocoRLE.counts.map(MaskAPI.uint2long(_).toFloat)
+    }
+    SimpleAnnotation(categoryId, area, bbox1, bbox2, bbox3, bbox4, isCrowd, rle)
+  }
+}
 
 case class COCODataset(info: COCOInfo, images: Array[COCOImage],
   annotations: Array[COCOAnotationOD],
   licenses: Array[COCOLicence], categories: Array[COCOCategory]) {
+
+  private lazy val cateId2catIdx = scala.collection.mutable.Map[Long, Int]()
   def init(): Unit = {
     val id2img = images.toIterator.map(img => (img.id, img)).toMap
     annotations.foreach(anno => {
@@ -35,7 +148,12 @@ case class COCODataset(info: COCOInfo, images: Array[COCOImage],
       anno.image = img
       img.annotations += anno
     })
+    categories.zipWithIndex.foreach { case (cate, idx) =>
+      cateId2catIdx(cate.id) = idx
+    }
   }
+
+  def categoryId2Idx(id: Long): Int = cateId2catIdx(id)
 }
 
 case class COCOInfo(
@@ -59,12 +177,31 @@ case class COCOImage(
   @SerializedName("coco_url") var cocoUrl: String = _
   @SerializedName("date_captured") var dateCaptured: String = _
   @SerializedName("file_name") var fileName: String = _
+
+  def dumpTo(context: COCOSerializeContext, dataset: COCODataset): Unit = {
+    context.dump(height)
+    context.dump(width)
+    context.dump(annotations.size)
+    annotations.foreach(_.dumpTo(context, dataset))
+  }
+
 }
 
 case class COCOAnotationOD(id: Long, imageId: Long, categoryId: Long,
   segmentation: COCOSegmentation, area: Float, bbox: (Float, Float, Float, Float), isCrowd: Boolean,
   @transient var image: COCOImage = null
-)
+) {
+  def dumpTo(context: COCOSerializeContext, dataSet: COCODataset): Unit = {
+    context.dump(dataSet.categoryId2Idx(categoryId))
+    context.dump(area)
+    context.dump(bbox._1)
+    context.dump(bbox._2)
+    context.dump(bbox._3)
+    context.dump(bbox._4)
+    context.dump(isCrowd)
+    segmentation.dumpTo(context)
+  }
+}
 
 case class COCOLicence(
   id: Long, name: String, url: String
@@ -75,24 +212,40 @@ case class COCOCategory(
   @SerializedName("supercategory") var superCategory: String = _
 }
 
-class COCOSegmentation{}
+abstract class COCOSegmentation{
+  def dumpTo(context: COCOSerializeContext): Unit
+}
 
-case class COCOPoly(poly: Array[Array[Double]]) extends COCOSegmentation
-
-case class COCORLE(counts: Array[Int], height: Int, width: Int) extends COCOSegmentation {
-  /**
-   * Get an element in the counts. Process the overflowed int
-   * @param idx
-   * @return
-   */
-  def get(idx: Int): Long = {
-    MaskAPI.uint2long(counts(idx))
+case class COCOPoly(poly: Array[Array[Double]]) extends COCOSegmentation {
+  override def dumpTo(context: COCOSerializeContext): Unit = {
+    context.dump(poly.length)
+    poly.foreach(p => {
+      context.dump(p.length)
+      p.foreach(xy => {
+        context.dump(xy)
+      })
+    })
   }
 }
 
+ case class COCORLE(counts: Array[Int], height: Int, width: Int) extends COCOSegmentation {
+   /**
+    * Get an element in the counts. Process the overflowed int
+    *
+    * @param idx
+    * @return
+    */
+   def get(idx: Int): Long = {
+     MaskAPI.uint2long(counts(idx))
+   }
 
-
-
+   override def dumpTo(context: COCOSerializeContext): Unit = {
+     context.dump(counts.length)
+     counts.foreach(p => {
+       context.dump(p)
+     })
+   }
+ }
 
 object COCODataset {
 
