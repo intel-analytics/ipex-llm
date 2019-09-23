@@ -208,7 +208,7 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
   private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
   private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
   private var featureTensor: Tensor[Float] = null
-  
+
   override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
     labelData(position) = img.getLabel.asInstanceOf[RoiLabel]
