@@ -1,9 +1,11 @@
 package com.intel.analytics.zoo.apps.model.inference.flink.Resnet50ImageClassification
 
 import java.io.{File, FileInputStream}
-import java.util.{Arrays, List => JList}
+import java.util
+import java.util.{List => JList}
 
 import com.intel.analytics.zoo.pipeline.inference.JTensor
+import org.apache.commons.io.FileUtils
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.configuration.Configuration
@@ -11,12 +13,13 @@ import org.apache.flink.streaming.api.datastream.DataStreamUtils
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 
 object ImageClassificationStreaming {
 
   def main(args: Array[String]): Unit = {
     var modelType = "resnet_v1_50"
-    var checkpointPathcheckpointPath: String = "/path/to/models/resnet_v1_50.ckpt"
+    var checkpointPath: String = "/path/to/model"
     var ifReverseInputChannels = true
     var inputShape = Array(1, 224, 224, 3)
     var meanValues = Array(123.68f, 116.78f, 103.94f)
@@ -25,7 +28,7 @@ object ImageClassificationStreaming {
     try {
       val params = ParameterTool.fromArgs(args)
       modelType = params.get("modelType")
-      checkpointPathcheckpointPath = params.get("checkpointPathcheckpointPath")
+      checkpointPath = params.get("checkpointPath")
       inputShape = if (params.has("inputShape")) {
         val inputShapeStr = params.get("inputShape")
         inputShapeStr.split(",").map(_.toInt).toArray
@@ -38,7 +41,7 @@ object ImageClassificationStreaming {
       scale = if (params.has("scale")) params.getFloat("scale") else 1.0f
     } catch {
       case e: Exception => {
-        System.err.println("Please run 'ImageClassificationStreaming --modelType <modelType> --checkpointPathcheckpointPath <checkpointPathcheckpointPath> " +
+        System.err.println("Please run 'ImageClassificationStreaming --modelType <modelType> --checkpointPath <checkpointPath> " +
           "--inputShape <inputShapes> --ifReverseInputChannels <ifReverseInputChannels> --meanValues <meanValues> --scale <scale>" +
           "--parallelism <parallelism>'.")
         return
@@ -46,51 +49,58 @@ object ImageClassificationStreaming {
     }
 
     println("start ImageClassificationStreaming job...")
-    println("params resolved", modelType, checkpointPathcheckpointPath, inputShape.mkString(","), ifReverseInputChannels, meanValues.mkString(","), scale)
+    println("params resolved", modelType, checkpointPath, inputShape.mkString(","), ifReverseInputChannels, meanValues.mkString(","), scale)
 
-    val classLoader = this.getClass.getClassLoader
-    val content = classLoader.getResourceAsStream("n02110063_11239.JPEG")
-    val imageBytes = Stream.continually(content.read).takeWhile(_ != -1).map(_.toByte).toArray
-    val imageProcess = new ImageProcesser(imageBytes, 224, 224)
-    val res = imageProcess.preProcess(imageBytes, 224, 224)
-    val input = new Array[Float](res.nElement())
-    val inputs = List.fill(100)(input)
-
-    val fileSize = new File(checkpointPathcheckpointPath).length()
-    val inputStream = new FileInputStream(checkpointPathcheckpointPath)
+    val fileSize = new File(checkpointPath).length()
+    val inputStream = new FileInputStream(checkpointPath)
     val modelBytes = new Array[Byte](fileSize.toInt)
     inputStream.read(modelBytes)
 
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    println(env.getConfig)
+    val imageFolder = new File("/path/to/your/images")
+    val fileList = imageFolder.listFiles.toList
 
-    val dataStream: DataStream[Array[Float]] = env.fromCollection(inputs)
-    val tensorStream: DataStream[JList[JList[JTensor]]] = dataStream.map(value => {
-      val input = new JTensor(value, Array(1, 224, 224, 3))
-      val data = Arrays.asList(input)
-      List(data).asJava
+    println("fileList", fileList)
+
+    val inputs = fileList.map(file => {
+      val imageBytes = FileUtils.readFileToByteArray(file)
+      val imageProcess = new ImageProcessor
+      val res = imageProcess.preProcess(imageBytes, 224, 224, 123, 116, 103, 1.0)
+      val input = new JTensor(res, Array(1, 224, 224, 3))
+      List(util.Arrays.asList(input)).asJava
     })
 
-    val resultStream = tensorStream.map(new ModelPredictionMapFunction(modelType, modelBytes, inputShape, ifReverseInputChannels, meanValues, scale))
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+
+    val dataStream: DataStream[JList[JList[JTensor]]] = env.fromCollection(inputs)
+
+    val resultStream = dataStream.map(new ModelPredictionMapFunction(modelType, modelBytes, inputShape, ifReverseInputChannels, meanValues, scale))
 
     env.execute("ImageClassificationStreaming")
 
     val results = DataStreamUtils.collect(resultStream.javaStream).asScala
 
-    println(" Printing result to stdout.")
-    results.foreach(println)
+    println("Printing result ...")
+    val labels = Source.fromFile("/path/to/your/labels").getLines.toList
+    results.foreach((i) => println(labels(i)))
   }
+
 }
 
-class ModelPredictionMapFunction(modelType: String, modelBytes: Array[Byte], inputShape: Array[Int], ifReverseInputChannels: Boolean, meanValues: Array[Float], scale: Float) extends RichMapFunction[JList[JList[JTensor]], JList[JList[JTensor]]] {
+class ModelPredictionMapFunction(modelType: String, modelBytes: Array[Byte], inputShape: Array[Int], ifReverseInputChannels: Boolean, meanValues: Array[Float], scale: Float) extends RichMapFunction[JList[JList[JTensor]], Int] {
   var resnet50InferenceModel: Resnet50InferenceModel = _
+
   override def open(parameters: Configuration): Unit = {
     resnet50InferenceModel = new Resnet50InferenceModel(1, modelType, modelBytes, inputShape, ifReverseInputChannels, meanValues, scale)
   }
+
   override def close(): Unit = {
     resnet50InferenceModel.doRelease()
   }
-  override def map(in: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    resnet50InferenceModel.doPredict(in)
+
+  override def map(in: JList[JList[JTensor]]): (Int) = {
+    val outputData = resnet50InferenceModel.doPredict(in).get(0).get(0).getData
+    val max: Float = outputData.max
+    val index = outputData.indexOf(max)
+    (index)
   }
 }
