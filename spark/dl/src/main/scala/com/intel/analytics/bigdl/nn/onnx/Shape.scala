@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
  * @param ev
  * @tparam T The numeric type in this module parameters
  */
-class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
+private[bigdl] class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -46,6 +46,7 @@ class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
   // which means Output does not depend on Weight which gets updated by Gradient
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
+    gradInput.zero()
     gradInput
   }
 }

@@ -43,7 +43,7 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T The numeric type in this module parameters.
  */
-class Gemm[T: ClassTag](
+private[bigdl] class Gemm[T: ClassTag](
   val alpha: Float, val beta: Float,
   val transA: Boolean, val transB: Boolean,
   val matrixB: Tensor[T],
