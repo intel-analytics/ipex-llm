@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.models.maskrcnn
 
-import com.intel.analytics.bigdl.models.maskrcnn.MaskRCNN
+import com.intel.analytics.bigdl.nn.Nms
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
