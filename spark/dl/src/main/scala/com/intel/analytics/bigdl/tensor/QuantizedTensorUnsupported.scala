@@ -526,12 +526,12 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
     throw new UnsupportedOperationException(errorString)
 
   /**
-    * view this.tensor and add multiple Dimensions to `dim` dimension
-    *
-    * @param t source tensor
-    * @param dim the specific dimension array, default is [1]
-    * @return this
-    */
+   * view this.tensor and add multiple Dimensions to `dim` dimension
+   *
+   * @param t source tensor
+   * @param dim the specific dimension array, default is [1]
+   * @return this
+   */
   override def addMultiDimension(t: Tensor[T], dims: Array[Int]): Tensor[T] = {
     throw new UnsupportedOperationException(errorString)
   }
