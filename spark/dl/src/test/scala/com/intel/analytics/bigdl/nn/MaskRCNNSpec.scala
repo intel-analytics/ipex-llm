@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.models.maskrcnn.MaskRCNN
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -156,5 +157,18 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
     for (i <- 0 to keepN - 1) {
       require(expectedOutput.contains(inds(i) - 1), s"${i} ${inds(i)}")
     }
+  }
+}
+
+class MaskRCNNSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val resNetOutChannels = 32
+    val backboneOutChannels = 32
+    val mask = new MaskRCNN(resNetOutChannels, backboneOutChannels).setName("MaskRCNN")
+    mask.evaluate()
+    val input = Tensor[Float](1, 3, 224, 256).rand()
+    val output = mask.forward(input)
+
+    runSerializationTest(mask, input)
   }
 }
