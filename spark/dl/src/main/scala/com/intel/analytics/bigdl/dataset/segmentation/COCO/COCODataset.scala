@@ -79,7 +79,7 @@ private[COCO] class COCOSerializeContext {
 private[COCO] class COCODeserializer(buffer: ByteBuffer) {
   private def getFloat: Float = buffer.getFloat
   private def getDouble: Double = buffer.getDouble
-  private def getInt: Int = buffer.getInt
+  def getInt: Int = buffer.getInt
   private def getLong: Long = buffer.getLong
   private def getBoolean: Boolean = buffer.get != 0
 

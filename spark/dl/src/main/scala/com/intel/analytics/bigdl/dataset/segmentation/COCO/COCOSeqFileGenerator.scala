@@ -86,6 +86,7 @@ object COCOSeqFileGenerator {
           context.clear()
           context.dump(img.fileName)
           img.dumpTo(context, meta)
+          context.dump(COCOSeqFileLoader.MAGIC_NUM)
           val keyBytes = context.toByteArray
           key.set(keyBytes, 0, keyBytes.length)
           val bytes = Files.readAllBytes(Paths.get(param.folder, img.fileName))
