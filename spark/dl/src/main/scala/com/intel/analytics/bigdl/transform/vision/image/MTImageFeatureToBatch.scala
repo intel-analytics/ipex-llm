@@ -25,6 +25,17 @@ import scala.collection.mutable.IndexedSeq
 import scala.reflect.ClassTag
 
 object MTImageFeatureToBatch {
+  /**
+   * The transformer from ImageFeature to mini-batches
+   * @param width width of the output images
+   * @param height height of the output images
+   * @param batchSize batch size
+   * @param transformer pipeline for pre-processing, finally outputting ImageFeature
+   * @param toRGB if converted to RGB, default format is BGR
+   * @param extractRoi if true, extract ROI labels for segmentation; else the labels are for
+   *                   classification
+   * @return
+   */
   def apply(width: Int, height: Int, batchSize: Int,
             transformer: FeatureTransformer, toRGB: Boolean = true, extractRoi: Boolean = false)
   : MTImageFeatureToBatch = {
@@ -192,7 +203,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
         .update(RoiLabel.ISCROWD, crowd)
         .update(RoiLabel.ORIGSIZE, size)
     }
-    T(tables)
+    T.seq(tables)
   }
 
   override def slice(offset: Int, length: Int): MiniBatch[Float] = {
@@ -239,8 +250,12 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
 
   override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
-    isCrowdData(position) = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Float]]
-    labelData(position) = img.getLabel.asInstanceOf[RoiLabel]
+    val isCrowd = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Float]]
+    val label = img.getLabel.asInstanceOf[RoiLabel]
+    require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
+      "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
+    isCrowdData(position) = isCrowd
+    labelData(position) = label
     origSizeData(position) = img.getOriginalSize
   }
 
