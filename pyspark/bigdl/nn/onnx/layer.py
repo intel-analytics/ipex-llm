@@ -15,11 +15,37 @@
 #
 
 import sys
+import numpy as np
 from bigdl.nn.layer import Layer
+from bigdl.util.common import JTensor
 
 if sys.version >= '3':
     long = int
     unicode = str
+
+
+
+class Gemm(Layer):
+    """
+    General Matrix multiplication: https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#Level_3
+
+    A' = transpose(A) if transA else A
+    B' = transpose(B) if transB else B
+
+    Compute Y = alpha * A' * B' + beta * C, where input tensor A has shape (M, K) or (K, M),
+    input tensor B has shape (K, N) or (N, K), input tensor C is broadcastable to shape (M, N),
+    and output tensor Y has shape (M, N). A will be transposed before doing the computation if
+    attribute transA is non-zero, same for B and transB.
+
+    >>> matrix_b = np.random.random([2, 2])
+    >>> matrix_c = np.random.random([2, 2])
+    >>> gemm = Gemm(matrix_b=matrix_b, matrix_c=matrix_c)
+    creating: createGemm
+    """
+    def __init__(self, matrix_b, matrix_c, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0,
+                 bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b,
+                                   JTensor.from_ndarray(matrix_b), JTensor.from_ndarray(matrix_c))
 
 
 class Shape(Layer):
@@ -31,3 +57,4 @@ class Shape(Layer):
     """
     def __init__(self, bigdl_type="float"):
         super(Shape, self).__init__(None, bigdl_type)
+

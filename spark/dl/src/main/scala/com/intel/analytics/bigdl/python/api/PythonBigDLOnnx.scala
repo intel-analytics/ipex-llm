@@ -16,24 +16,34 @@
 
 package com.intel.analytics.bigdl.python.api
 
-import com.intel.analytics.bigdl.nn.onnx.Shape
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
-
-class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
-
-  def createShape(): Shape[T] = {
-    Shape()
-  }
-
-}
+import com.intel.analytics.bigdl.nn.onnx._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
-object PythonBigDLOnnx {
+private[bigdl] object PythonBigDLOnnx {
 
   def ofFloat(): PythonBigDLOnnx[Float] = new PythonBigDLOnnx[Float]()
 
   def ofDouble(): PythonBigDLOnnx[Double] = new PythonBigDLOnnx[Double]()
+
+}
+
+
+class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
+
+  def createGemm(alpha: Float, beta: Float, transA: Int, transB: Int,
+                 matrixB: JTensor, matrixC: JTensor): Gemm[T] = {
+    Gemm(alpha, beta,
+      (if (transA == 0) false else true),
+      (if (transB == 0) false else true),
+      toTensor(matrixB), toTensor(matrixC))
+  }
+
+
+  def createShape(): Shape[T] = {
+    Shape[T]()
+  }
 
 }
