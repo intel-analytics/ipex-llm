@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 /**
@@ -71,8 +72,25 @@ object RoiLabel {
   val CLASSES = "classes"
   val BBOXES = "bboxes"
   val MASKS = "masks"
+  // ISCROWD and ORIGSIZE are stored in ImageFeature
   val ISCROWD = "is_crowd"
   val ORIGSIZE = "size"
+
+
+  def getClassesFromImgFeature(imf: ImageFeature): Tensor[Float] = imf[Tensor[Float]](CLASSES)
+  def getBBoxesFromImgFeature(imf: ImageFeature): Tensor[Float] = imf[Tensor[Float]](BBOXES)
+  def getMasksFromImgFeature(imf: ImageFeature): Array[Tensor[Float]] =
+    imf[Array[Tensor[Float]]](MASKS)
+  def getIsCrowdFromImgFeature(imf: ImageFeature): Tensor[Float] =
+    imf[Tensor[Float]](ISCROWD)
+
+  /**
+   * @return (height, width, channel)
+   */
+  def getOrigSizeFromImgFeature(imf: ImageFeature): (Int, Int, Int) =
+    imf[(Int, Int, Int)](ORIGSIZE)
+
+
   def fromTensor(tensor: Tensor[Float]): RoiLabel = {
     val label = tensor.narrow(2, 1, 2).transpose(1, 2).contiguous()
     val rois = tensor.narrow(2, 3, 4)

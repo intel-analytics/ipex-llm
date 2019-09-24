@@ -25,6 +25,17 @@ import scala.collection.mutable.IndexedSeq
 import scala.reflect.ClassTag
 
 object MTImageFeatureToBatch {
+  /**
+   * The transformer from ImageFeature to mini-batches
+   * @param width width of the output images
+   * @param height height of the output images
+   * @param batchSize batch size
+   * @param transformer pipeline for pre-processing, finally outputting ImageFeature
+   * @param toRGB if converted to RGB, default format is BGR
+   * @param extractRoi if true, extract ROI labels for segmentation; else the labels are for
+   *                   classification
+   * @return
+   */
   def apply(width: Int, height: Int, batchSize: Int,
             transformer: FeatureTransformer, toRGB: Boolean = true, extractRoi: Boolean = false)
   : MTImageFeatureToBatch = {
@@ -160,9 +171,24 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
   }
 }
 
-
+/**
+ * A batch of images with flattened RoiLabels
+ * the getTarget() returns a Table with key from 1 to batchSize. Each key in the table is mapped to
+ * a Table for the annotation of an image in the batch. The annotation table holds the annotation
+ * info for one image (assume the image has N detections). The annotation table has
+ *
+ * Key                Value
+ * RoiLabel.CLASSES   the categories for each detections (see RoiLabel.clasees field)
+ *                    (1 x N), or (2 x N) Tensor[Float]
+ * RoiLabel.BBOXES    the bboxes, (N x 4) Tensor[Float]
+ * RoiLabel.MASKS     (Optional) the mask data, Array[Tensor[Float]\]. The outer array has N
+ *                    elements. The inner tensor holds the data for segmentation
+ * RoiLabel.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
+ *                    -1: unknown, 0: not crowd, 1: is crowd
+ * RoiLabel.ORIGSIZE  The original size of the image, tuple of (height, width, channels)
+ */
 class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
-  val isCrowd: IndexedSeq[Tensor[Boolean]], val originalSizes: IndexedSeq[(Int, Int, Int)])
+  val isCrowd: IndexedSeq[Tensor[Float]], val originalSizes: IndexedSeq[(Int, Int, Int)])
   extends MiniBatch[Float] {
 
   override def size(): Int = {
@@ -177,7 +203,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
         .update(RoiLabel.ISCROWD, crowd)
         .update(RoiLabel.ORIGSIZE, size)
     }
-    T(tables)
+    T.seq(tables)
   }
 
   override def slice(offset: Int, length: Int): MiniBatch[Float] = {
@@ -196,7 +222,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
 
 object RoiMiniBatch {
   def apply(data: Tensor[Float], target: IndexedSeq[RoiLabel],
-    isCrowd: IndexedSeq[Tensor[Boolean]], originalSizes: IndexedSeq[(Int, Int, Int)]):
+    isCrowd: IndexedSeq[Tensor[Float]], originalSizes: IndexedSeq[(Int, Int, Int)]):
   RoiMiniBatch = new RoiMiniBatch(data, target, isCrowd, originalSizes)
 }
 
@@ -218,14 +244,18 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
   private val frameLength = height * width
   private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
   private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
-  private val isCrowdData: Array[Tensor[Boolean]] = new Array[Tensor[Boolean]](batchSize)
+  private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
   private val origSizeData: Array[(Int, Int, Int)] = new Array[(Int, Int, Int)](batchSize)
   private var featureTensor: Tensor[Float] = null
 
   override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
-    isCrowdData(position) = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Boolean]]
-    labelData(position) = img.getLabel.asInstanceOf[RoiLabel]
+    val isCrowd = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Float]]
+    val label = img.getLabel.asInstanceOf[RoiLabel]
+    require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
+      "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
+    isCrowdData(position) = isCrowd
+    labelData(position) = label
     origSizeData(position) = img.getOriginalSize
   }
 
