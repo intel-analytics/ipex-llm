@@ -170,7 +170,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
   }
 
   override def getInput(): Tensor[Float] = input
-  
+
   override def getTarget(): Table = {
     val tables = (target, isCrowd, originalSizes).zipped.map { case (roiLabel, crowd, size) =>
       roiLabel.toTable
