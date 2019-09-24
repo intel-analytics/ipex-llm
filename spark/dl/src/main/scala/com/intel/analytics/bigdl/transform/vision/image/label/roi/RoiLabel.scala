@@ -71,6 +71,8 @@ object RoiLabel {
   val CLASSES = "classes"
   val BBOXES = "bboxes"
   val MASKS = "masks"
+  val ISCROWD = "is_crowd"
+  val ORIGSIZE = "size"
   def fromTensor(tensor: Tensor[Float]): RoiLabel = {
     val label = tensor.narrow(2, 1, 2).transpose(1, 2).contiguous()
     val rois = tensor.narrow(2, 3, 4)
