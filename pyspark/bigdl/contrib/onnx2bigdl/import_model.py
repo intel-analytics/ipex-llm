@@ -20,34 +20,45 @@ from .import_graph import BigDLGraph
 
 class BigDLModel(object):
 
-	def __init__(self, file_path):
-		onnx_model = onnx.load_model(file_path)
-		self._onnx_graph = onnx_model.graph
-		self._ir_version = onnx_model.ir_version
-		self._opset_import = onnx_model.opset_import
-		self._producer_name = onnx_model.producer_name
-		self._producer_version = onnx_model.producer_version
-		self._domain = onnx_model.domain
-		self._model_version = onnx_model.model_version
-		self._doc_string = onnx_model.doc_string
-		self._graph = None
+	def __init__(self, file_path=None):
+		if file_path:
+			self._model_proto = onnx.load_model(file_path)
+		else:
+			self._model_proto = None
+		# self._onnx_graph = self._model_proto.graph
+		# self._ir_version = self._model_proto.ir_version
+		# self._opset_import = self._model_proto.opset_import
+		# self._producer_name = self._model_proto.producer_name
+		# self._producer_version = self._model_proto.producer_version
+		# self._domain = self._model_proto.domain
+		# self._model_version = self._model_proto.model_version
+		# self._doc_string = self._model_proto.doc_string
+	
+	def get_model_proto(self):
+		return self._model_proto
 
-	def load_model(self):
+	def load_model(self, model_proto):
+		if not model_proto:
+			model_proto = self._model_proto
 		bgraph = BigDLGraph()
-		graph_proto = self._onnx_graph
-		self._graph = bgraph.load_graph(graph_proto)
-		self._debug_graph = bgraph
-		return self._graph
+		graph_proto = model_proto.graph
+		return bgraph.load_graph(graph_proto)
 
-	def summary(self):
-		print("IR version: " + str(self._ir_version))
-		print("Producer: " + self._producer_name + " " + self._producer_version)
-		print("Domain: " + self._domain)
-		print("Model version: " + str(self._model_version))
-		print("Doc string: " + self._doc_string)
+	# def summary(self):
+	# 	print("IR version: " + str(self._ir_version))
+	# 	print("Producer: " + self._producer_name + " " + self._producer_version)
+	# 	print("Domain: " + self._domain)
+	# 	print("Model version: " + str(self._model_version))
+	# 	print("Doc string: " + self._doc_string)
 
 
 def load_onnx(model_path):
 	model = BigDLModel(model_path)
-	bmodel = model.load_model()
-	return bmodel
+	model_proto = model.get_model_proto()
+	bigdl_model = model.load_model(model_proto)
+	return bigdl_model
+
+def load_model_proto(model_proto):
+	model = BigDLModel()
+	bigdl_model = model.load_model(model_proto)
+	return bigdl_model

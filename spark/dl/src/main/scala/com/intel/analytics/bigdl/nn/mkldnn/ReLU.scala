@@ -25,12 +25,12 @@ class ReLU(value: Float = 0.0f) extends MklDnnLayer with MklInt8Convertible {
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)
-    val description = MklDnn.EltwiseForwardDescInit(
+    val description = MklDnnMemory.EltwiseForwardDescInit(
       PropKind.Forward, AlgKind.EltwiseRelu, _inputFormats(0).getMemoryDescription(), value, 0)
-    fwdPrimDesc = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
+    fwdPrimDesc = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, 0L)
     _outputFormats = Array(MemoryData.primitiveOutput(fwdPrimDesc))
     updateOutputPrimitives = Array(
-      MklDnn.PrimitiveCreate2(fwdPrimDesc,
+      MklDnnMemory.PrimitiveCreate2(fwdPrimDesc,
         Array(_inputFormats(0).getPrimitive(runtime)), Array(0), _inputFormats.length,
         _outputFormats.map(_.getPrimitive(runtime)), _outputFormats.length)
     )
@@ -41,14 +41,14 @@ class ReLU(value: Float = 0.0f) extends MklDnnLayer with MklInt8Convertible {
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
     _gradOutputFormats = singleNativeData(grad)
     _gradOutputFormatsForWeight = _gradOutputFormats
-    val description = MklDnn.EltwiseBackwardDescInit(AlgKind.EltwiseRelu,
+    val description = MklDnnMemory.EltwiseBackwardDescInit(AlgKind.EltwiseRelu,
       _gradOutputFormats(0).getMemoryDescription(), _inputFormats(0).getMemoryDescription(),
       value, 0)
     require(fwdPrimDesc != UNDEFINED, "You should call initFwdPrimitives first")
-    val primDesc = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPrimDesc)
+    val primDesc = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, fwdPrimDesc)
     _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(
-      MklDnn.PrimitiveCreate2(primDesc, Array(_inputFormats(0),
+      MklDnnMemory.PrimitiveCreate2(primDesc, Array(_inputFormats(0),
         _gradOutputFormats(0)).map(_.getPrimitive(runtime)), Array(0), 2,
         _gradInputFormats.map(_.getPrimitive(runtime)), _gradInputFormats.length))
     gradInput = initTensor(_gradInputFormats(0))

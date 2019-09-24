@@ -320,7 +320,7 @@ object Tools {
   def toNCHW(src: Tensor[Float], inputFormat: MemoryData): Tensor[Float] = {
     val outputFormat = HeapData(inputFormat.shape,
       if (src.size().length == 2) { Memory.Format.nc } else { Memory.Format.nchw })
-    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+    val reorder = ReorderMemory.create(inputFormat, outputFormat, null, null)
 
     reorder.setRuntime(new MklDnnRuntime)
     reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
@@ -335,7 +335,7 @@ object Tools {
     }
 
     val inputFormat = HeapData(src.size(), defaultFormat)
-    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+    val reorder = ReorderMemory.create(inputFormat, outputFormat, null, null)
     reorder.setRuntime(new MklDnnRuntime)
     reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
     reorder.forward(src).toTensor
@@ -349,7 +349,7 @@ object Tools {
     }
 
     val inputFormat = HeapData(outputFormat.shape, defaultFormat)
-    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+    val reorder = ReorderMemory.create(inputFormat, outputFormat, null, null)
     reorder.setRuntime(new MklDnnRuntime)
     reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
     reorder.updateOutput(src).toTensor
@@ -364,7 +364,7 @@ object Tools {
     }
 
     val outputFormat = HeapData(inputFormat.shape, defaultFormat)
-    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+    val reorder = ReorderMemory.create(inputFormat, outputFormat, null, null)
     reorder.setRuntime(new MklDnnRuntime)
     reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
     reorder.updateOutput(src).toTensor

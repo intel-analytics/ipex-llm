@@ -24,8 +24,8 @@ def average_pool(inputs, prev_modules, attrs, outputs):
 	ceil_mode = attrs.get('ceil_mode', 0)
 	ceil_mode_flag = True if attrs.get('ceil_mode', 0) == 1 else False
 	count_include_pad = attrs.get('count_include_pad', 0)
-	kernel_shape = attrs.get('kernel_shape', (0, 0))
-	strides = attrs.get('strides', (0, 0))
+	kernel_shape = attrs.get('kernel_shape', (1, 1))
+	strides = attrs.get('strides', (1, 1))
 	pads = attrs.get('pads', (0, 0, 0, 0))
 
 	kernel_width, kernel_height = kernel_shape[:2]

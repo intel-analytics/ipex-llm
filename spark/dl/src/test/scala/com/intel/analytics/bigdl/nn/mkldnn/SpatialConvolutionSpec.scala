@@ -872,7 +872,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     if (defaultFormat != outputFormat.layout) {
       val inputFormat = HeapData(src.size(), defaultFormat)
-      val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+      val reorder = ReorderMemory.create(inputFormat, outputFormat, null, null)
       reorder.setRuntime(new MklDnnRuntime)
       reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
       reorder.updateOutput(src).toTensor

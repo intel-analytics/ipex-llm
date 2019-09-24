@@ -16,9 +16,8 @@
 package com.intel.analytics.bigdl.tensor
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
-
 import com.intel.analytics.bigdl.mkl.Memory
-
+import com.intel.analytics.bigdl.nn.mkldnn.MemoryOwner
 import scala.reflect._
 
 /**
@@ -27,7 +26,6 @@ import scala.reflect._
  * @tparam T data type, only support float now
  */
 private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
-
   private def checkIsInstanceOf(that: Any): Boolean = {
     scala.reflect.classTag[T] == that
   }
