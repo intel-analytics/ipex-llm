@@ -39,8 +39,8 @@ class Gemm(Layer):
     >>> gemm = Gemm()
     creating: createGemm
     """
-    def __init__(self, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0, bigdl_type="float"):
-        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b)
+    def __init__(self, matrix_b, matrix_c, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0, bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b, matrix_b, matrix_c)
 
 
 class Shape(Layer):

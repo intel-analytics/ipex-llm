@@ -43,7 +43,8 @@ import scala.reflect.ClassTag
  */
 class Gemm[T: ClassTag](
   val alpha: Float, val beta: Float,
-  val transA: Boolean, val transB: Boolean
+  val transA: Boolean, val transB: Boolean,
+  val matrixB: Tensor[T], val matrixC: Tensor[T]
 )(implicit ev: TensorNumeric[T])
 extends AbstractModule[Table, Tensor[T], T] {
 
@@ -86,8 +87,10 @@ extends AbstractModule[Table, Tensor[T], T] {
 object Gemm {
   def apply[@specialized(Float, Double) T: ClassTag](
     alpha: Float, beta: Float,
-    transA: Boolean, transB: Boolean
+    transA: Boolean, transB: Boolean,
+    matrixB: Tensor[T], matrixC: Tensor[T]
   )(implicit ev: TensorNumeric[T]): Gemm[T] = {
-    new Gemm[T](alpha = alpha, beta = beta, transA = transA, transB = transB)
+    new Gemm[T](alpha = alpha, beta = beta,
+      transA = transA, transB = transB, matrixB = matrixB, matrixC = matrixC)
   }
 }
