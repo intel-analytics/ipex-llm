@@ -25,7 +25,7 @@ class MaskHead(
   val inChannels: Int,
   val resolution: Int,
   val scales: Array[Float],
-  val samplingRratio: Float,
+  val samplingRratio: Int,
   val layers: Array[Int],
   val dilation: Int,
   val numClasses: Int,
@@ -78,7 +78,7 @@ class MaskHead(
   private[nn] def maskFeatureExtractor(inChannels: Int,
                                        resolution: Int,
                                        scales: Array[Float],
-                                       samplingRatio: Float,
+                                       samplingRatio: Int,
                                        layers: Array[Int],
                                        dilation: Int,
                                        useGn: Boolean = false): Module[Float] = {
@@ -86,7 +86,7 @@ class MaskHead(
     require(dilation == 1, s"Only support dilation = 1, but got ${dilation}")
 
     val model = Sequential[Float]()
-    model.add(Pooler(resolution, scales, samplingRatio.toInt))
+    model.add(Pooler(resolution, scales, samplingRatio))
 
     var nextFeatures = inChannels
     var i = 0
@@ -103,15 +103,15 @@ class MaskHead(
         padW = dilation,
         padH = dilation,
         withBias = if (useGn) false else true
-      ).setName(s"mask_fcn{${i}}")
+      ).setName(s"mask_fcn${i + 1}")
 
       // weight init
       module.setInitMethod(MsraFiller(false), Zeros)
-      model.add(module)
+      model.add(module).add(ReLU[Float]())
       nextFeatures = features
       i += 1
     }
-    model.add(ReLU[Float]())
+    model
   }
 }
 
@@ -163,7 +163,7 @@ object MaskHead {
   def apply(inChannels: Int,
   resolution: Int = 14,
   scales: Array[Float] = Array[Float](0.25f, 0.125f, 0.0625f, 0.03125f),
-  samplingRratio: Float = 0.1f,
+  samplingRratio: Int = 2,
   layers: Array[Int] = Array[Int](256, 256, 256, 256),
   dilation: Int = 1,
   numClasses: Int = 81,

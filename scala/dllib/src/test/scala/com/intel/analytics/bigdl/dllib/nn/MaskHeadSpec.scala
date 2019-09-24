@@ -25,7 +25,7 @@ class MaskHeadSpec extends FlatSpec with Matchers {
     val inChannels: Int = 6
     val resolution: Int = 14
     val scales: Array[Float] = Array[Float](0.25f, 0.125f)
-    val samplingRratio: Float = 2.0f
+    val samplingRratio: Int = 2
     val layers: Array[Int] = Array[Int](4, 4)
     val dilation: Int = 1
     val numClasses: Int = 81
@@ -704,7 +704,7 @@ class MaskHeadSpec extends FlatSpec with Matchers {
     val dim_reduced: Int = 10
     val resolution: Int = 14
     val scales: Array[Float] = Array[Float](0.25f, 0.125f)
-    val samplingRratio: Float = 2.0f
+    val samplingRratio: Int = 2
     val layers: Array[Int] = Array[Int](4, 4)
     val dilation: Int = 1
     val numClasses: Int = 81
@@ -860,7 +860,7 @@ class MaskHeadSerialTest extends ModuleSerializationTest {
     val inChannels: Int = 6
     val resolution: Int = 14
     val scales: Array[Float] = Array[Float](0.25f, 0.125f)
-    val samplingRratio: Float = 2.0f
+    val samplingRratio: Int = 2
     val layers: Array[Int] = Array[Int](4, 4)
     val dilation: Int = 1
     val numClasses: Int = 81
