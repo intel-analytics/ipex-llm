@@ -71,6 +71,7 @@ object RoiLabel {
   val CLASSES = "classes"
   val BBOXES = "bboxes"
   val MASKS = "masks"
+  // ISCROWD and ORIGSIZE are stored in ImageFeature
   val ISCROWD = "is_crowd"
   val ORIGSIZE = "size"
   def fromTensor(tensor: Tensor[Float]): RoiLabel = {
