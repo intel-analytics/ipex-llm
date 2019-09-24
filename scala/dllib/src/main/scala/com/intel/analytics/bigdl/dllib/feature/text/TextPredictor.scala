@@ -49,13 +49,14 @@ object TextPredictor {
     batchPerThread: Int,
     shareBuffer: Boolean = false)(implicit ev: TensorNumeric[T]): DistributedTextSet = {
     val rdd = textSet.rdd
-    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
+    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model)
     val partitionNum = rdd.partitions.length
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch[T](
       batchSize = partitionNum * batchPerThread,
       partitionNum = Some(partitionNum)))
     val result = rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
+      localModel.evaluate()
       val localToBatch = toBatchBroad.value.cloneTransformer()
       partition.grouped(batchPerThread).flatMap(textFeatures => {
         predictTextBatch[T](localModel, textFeatures, localToBatch, shareBuffer)
