@@ -689,6 +689,7 @@ class NNModel[T: ClassTag] private[zoo] (
     // concat the prediction and other columns in DF. avoid zip between RDD
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
       val localModel = modelBroadCast.value()
+      localModel.evaluate()
       val featureSteps = featureTransformersBC.value.cloneTransformer()
       val toBatch = toBatchBC.value.cloneTransformer()
 
