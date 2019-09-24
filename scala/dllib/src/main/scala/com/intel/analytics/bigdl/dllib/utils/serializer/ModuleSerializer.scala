@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.utils.serializer
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.models.maskrcnn.MaskRCNN
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
@@ -268,6 +269,8 @@ object ModuleSerializer extends ModuleSerializable{
       SpatialSeparableConvolution)
     registerModule("com.intel.analytics.bigdl.nn.Transformer",
       Transformer)
+    registerModule("com.intel.analytics.bigdl.models.maskrcnn.MaskRCNN",
+      MaskRCNN)
   }
 }
 
