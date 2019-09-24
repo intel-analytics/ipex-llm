@@ -127,7 +127,7 @@ object Predictor {
     val localBatchPerPartition = batchPerPartition
 
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
-    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
+    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model)
     val partitionNum = rdd.partitions.length
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = partitionNum * batchPerPartition,
@@ -135,6 +135,7 @@ object Predictor {
       featurePaddingParam = featurePaddingParam), shareBuffer)
     val result = rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
+      localModel.evaluate()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
       val batchedIter = partition.grouped(localBatchPerPartition) ++ Array(null)
       batchedIter.flatMap { imageFeatures =>
@@ -155,7 +156,7 @@ object Predictor {
       shareBuffer: Boolean = false, model: Module[T], batchPerPartition: Int,
       featurePaddingParam: Option[PaddingParam[T]])
                           (implicit ev: TensorNumeric[T]): RDD[Activity] = {
-    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, model.evaluate())
+    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, model)
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
       require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
@@ -170,6 +171,7 @@ object Predictor {
       featurePaddingParam = featurePaddingParam))
     dataSet.mapPartitions { partition =>
       val localModel = modelBroad.value()
+      localModel.evaluate()
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition) ++ Array(null)
       miniBatch.flatMap { batch =>
