@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Unsqueeze
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.LayerException
 
 import scala.util.Random
 
@@ -105,7 +104,6 @@ class UnsqueezeSpec extends TorchSpec {
     println("Test case : Unsqueeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-
   "A Unsqueeze(4, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](4, 3)
@@ -134,8 +132,8 @@ class UnsqueezeSpec extends TorchSpec {
   }
 
   "A Unsqueeze(0)" should "generate correct output and grad" in {
-      val layer = new Unsqueeze[Double](0)
-      val input = Tensor[Double](2, 2).rand()
-      layer.forward(input).size() should be (Array(2, 2, 1))
+    val layer = new Unsqueeze[Double](0)
+    val input = Tensor[Double](2, 2).rand()
+    layer.forward(input).size() should be (Array(2, 2, 1))
   }
 }
