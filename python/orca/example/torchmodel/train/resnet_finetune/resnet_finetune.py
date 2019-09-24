@@ -50,15 +50,28 @@ if __name__ == '__main__':
         print("Need parameters: <imagePath>")
         exit(-1)
 
-    sparkConf = init_spark_conf().setAppName("resnet").setMaster("local[2]") \
-        .set('spark.driver.memory', '10g')
-    sc = init_nncontext(sparkConf)
-    spark = SparkSession.builder.config(conf=sparkConf).getOrCreate()
+    hadoop_conf_dir = os.environ.get('HADOOP_CONF_DIR')
+
+    if hadoop_conf_dir:
+        num_executors = 2
+        num_cores_per_executor = 4
+        sc = init_spark_on_yarn(
+            hadoop_conf=hadoop_conf_dir,
+            conda_name=os.environ["ZOO_CONDA_NAME"],  # The name of the created conda-env
+            num_executor=num_executors,
+            executor_cores=num_cores_per_executor,
+            executor_memory="8g",
+            driver_memory="2g",
+            driver_cores=1)
+    else:
+        num_executors = 1
+        num_cores_per_executor = 4
+        sc = init_spark_on_local(cores=4, conf={"spark.driver.memory": "10g"})
 
     torchnet = TorchNet.from_pytorch(CatDogModel(), [4, 3, 224, 224])
 
     def lossFunc(input, target):
-        return nn.CrossEntropyLoss().forward(input, target.flatten().long())
+        return nn.NLLLoss().forward(input, target.flatten().long())
 
     torchcriterion = TorchCriterion.from_pytorch(lossFunc, [1, 2], torch.LongTensor([1]))
 
@@ -79,11 +92,11 @@ if __name__ == '__main__':
 
     classifier = NNClassifier(torchnet, torchcriterion, featureTransformer) \
         .setLearningRate(0.001) \
-        .setBatchSize(8) \
-        .setMaxEpoch(2) \
+        .setBatchSize(16) \
+        .setMaxEpoch(1) \
         .setFeaturesCol("image") \
         .setCachingSample(False) \
-        .setValidation(EveryEpoch(), validationDF, [Accuracy()], 8)
+        .setValidation(EveryEpoch(), validationDF, [Accuracy()], 16)
 
     catdogModel = classifier.fit(trainingDF)
 
