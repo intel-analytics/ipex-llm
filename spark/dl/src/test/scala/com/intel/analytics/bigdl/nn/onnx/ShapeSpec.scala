@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.nn.onnx
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
-import scala.util.Random
 
 
 class ShapeSpec extends FlatSpec with Matchers {
