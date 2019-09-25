@@ -21,7 +21,6 @@ import scala.collection.JavaConverters._
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.onnx._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 
@@ -46,7 +45,7 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
   def createGemm(alpha: Float, beta: Float, transA: Int, transB: Int,
-                 matrixB: JTensor, matrixC: JTensor): Gemm[T] = {
+                 matrixB: JTensor, matrixC: JTensor): nn.onnx.Gemm[T] = {
     nn.onnx.Gemm(alpha, beta,
       (if (transA == 0) false else true),
       (if (transB == 0) false else true),
@@ -59,7 +58,7 @@ class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     )
   }
 
-  def createShape(): Shape[T] = {
+  def createShape(): nn.onnx.Shape[T] = {
     nn.onnx.Shape[T]()
   }
 
