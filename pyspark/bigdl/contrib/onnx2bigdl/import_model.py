@@ -25,40 +25,27 @@ class BigDLModel(object):
 			self._model_proto = onnx.load_model(file_path)
 		else:
 			self._model_proto = None
-		# self._onnx_graph = self._model_proto.graph
-		# self._ir_version = self._model_proto.ir_version
-		# self._opset_import = self._model_proto.opset_import
-		# self._producer_name = self._model_proto.producer_name
-		# self._producer_version = self._model_proto.producer_version
-		# self._domain = self._model_proto.domain
-		# self._model_version = self._model_proto.model_version
-		# self._doc_string = self._model_proto.doc_string
+
 	
 	def get_model_proto(self):
 		return self._model_proto
 
 	def load_model(self, model_proto):
-		if not model_proto:
-			model_proto = self._model_proto
+		self._model_proto = model_proto
+		# self._ir_version = model_proto.ir_version
+		# self._opset_import = model_proto.opset_import
+		# self._producer_name = model_proto.producer_name
+		# self._producer_version = model_proto.producer_version
+		# self._domain = model_proto.domain
+		# self._model_version = model_proto.model_version
+		# self._doc_string = model_proto.doc_string
 		bgraph = BigDLGraph()
 		graph_proto = model_proto.graph
 		return bgraph.load_graph(graph_proto)
-
-	# def summary(self):
-	# 	print("IR version: " + str(self._ir_version))
-	# 	print("Producer: " + self._producer_name + " " + self._producer_version)
-	# 	print("Domain: " + self._domain)
-	# 	print("Model version: " + str(self._model_version))
-	# 	print("Doc string: " + self._doc_string)
 
 
 def load_onnx(model_path):
 	model = BigDLModel(model_path)
 	model_proto = model.get_model_proto()
-	bigdl_model = model.load_model(model_proto)
-	return bigdl_model
-
-def load_model_proto(model_proto):
-	model = BigDLModel()
 	bigdl_model = model.load_model(model_proto)
 	return bigdl_model

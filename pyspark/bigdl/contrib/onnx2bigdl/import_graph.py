@@ -22,11 +22,11 @@ from .ops_mapping import _convert_map as convert_map
 
 
 class BigDLGraph(object):
-	def __init__(self, graph_proto = None):
-		self._inputs = list()   # input module list
-		self._outputs = list()  # output module list
-		self._tensors = dict()  # (tensor_name, tensor_val)
-		self._modules = dict()  # (module_name, module_obj) pairs
+	def __init__(self, graph_proto=None):
+		self._inputs = list()
+		self._outputs = list()
+		self._tensors = dict()
+		self._modules = dict()
 		self._root = list()
 		self._dummy_root = Identity()()
 		self._graph = self.load_graph(graph_proto)
@@ -42,14 +42,12 @@ class BigDLGraph(object):
 				raise ValueError("Tensor's name is required")
 			tensor_set.add(tensor.name)
 			tensor_data = self._parse_tensor_data(tensor)
-			self._modules[tensor.name] = Constant(tensor_data)(self._dummy_root)
 			self._tensors[tensor.name] = (tensor_data, tensor_data.shape)
 			
 		for gin in graph_proto.input:
 			if gin.name not in tensor_set:
 				self._inputs.append(gin.name)
 				shape = tuple([dim.dim_value for dim in gin.type.tensor_type.shape.dim])
-				# input_tensor_data = meta['input_tensor_data']
 				self._modules[gin.name] = Identity()(self._dummy_root)  # Input()
 				self._tensors[gin.name] = (None, shape)
 
@@ -61,7 +59,7 @@ class BigDLGraph(object):
 			name = node.name.strip()
 			op_type = node.op_type
 			inputs = [self._tensors[n] for n in node.input]
-			prev_modules = [self._modules[n] for n in node.input]
+			prev_modules = [self._modules[n] for n in node.input if n not in tensor_set]
 			attrs = self._parse_node_attr(node)
 			outputs = node.output
 

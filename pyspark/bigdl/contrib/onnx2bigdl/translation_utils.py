@@ -22,6 +22,3 @@ def parse_tensor_data(tensor_proto):
 		# If it is a scalar tensor
 		np_array = np.array([to_array(tensor_proto)])
 	return np_array
-
-if __name__ == '__main__':
-	print()

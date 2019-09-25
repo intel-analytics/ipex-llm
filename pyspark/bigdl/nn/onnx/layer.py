@@ -24,6 +24,31 @@ if sys.version >= '3':
     unicode = str
 
 
+class Constant(Layer):
+    """
+
+    >>> value = np.random.random([3, 3])
+    >>> constant = Constant(value=value)
+    creating: createConstant
+    """
+    def __init__(self, value, bigdl_type="float"):
+        super(Constant, self).__init__(None, bigdl_type, JTensor.from_ndarray(value))
+
+
+class Gather(Layer):
+    """
+    Given data tensor of rank r >= 1, and indices tensor of rank q,
+    gather entries of the axis dimension of data (by default outer-most one as axis=0) indexed by indices,
+    and concatenates them in an output tensor of rank q + (r - 1).
+
+    >>> axis = 1
+    >>> gather = Gather()
+    creating: createGather
+    """
+    def __init__(self, bigdl_type="float"):
+        super(Gather, self).__init__(None, bigdl_type)
+
+
 class Gemm(Layer):
     """
     General Matrix multiplication: https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#Level_3
@@ -36,11 +61,27 @@ class Gemm(Layer):
     and output tensor Y has shape (M, N). A will be transposed before doing the computation if
     attribute transA is non-zero, same for B and transB.
 
-    >>> gemm = Gemm()
+    >>> matrix_b = np.random.random([2, 2])
+    >>> matrix_c = np.random.random([2, 2])
+    >>> gemm = Gemm(matrix_b=matrix_b, matrix_c=matrix_c)
     creating: createGemm
     """
-    def __init__(self, matrix_b, matrix_c, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0, bigdl_type="float"):
-        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b, matrix_b, matrix_c)
+    def __init__(self, matrix_b, matrix_c, alpha=float(1.0), beta=float(1.0), trans_a=0, trans_b=0,
+                 bigdl_type="float"):
+        super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b,
+                                   JTensor.from_ndarray(matrix_b), JTensor.from_ndarray(matrix_c))
+
+
+class Reshape(Layer):
+    """
+    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
+
+    >>> shape = (2, 2)
+    >>> reshape = Reshape(shape)
+    creating: createReshape
+    """
+    def __init__(self, shape=None, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type, shape)
 
 
 class Shape(Layer):
