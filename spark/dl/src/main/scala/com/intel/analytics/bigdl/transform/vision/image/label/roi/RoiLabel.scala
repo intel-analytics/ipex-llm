@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 /**
@@ -77,18 +76,18 @@ object RoiLabel {
   val ORIGSIZE = "size"
 
 
-  def getClassesFromImgFeature(imf: ImageFeature): Tensor[Float] = imf[Tensor[Float]](CLASSES)
-  def getBBoxesFromImgFeature(imf: ImageFeature): Tensor[Float] = imf[Tensor[Float]](BBOXES)
-  def getMasksFromImgFeature(imf: ImageFeature): Array[Tensor[Float]] =
-    imf[Array[Tensor[Float]]](MASKS)
-  def getIsCrowdFromImgFeature(imf: ImageFeature): Tensor[Float] =
-    imf[Tensor[Float]](ISCROWD)
+  def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
+  def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
+  def getMasks(tab: Table): Array[Tensor[Float]] =
+    tab[Array[Tensor[Float]]](MASKS)
+  def getIsCrowd(tab: Table): Tensor[Float] =
+    tab[Tensor[Float]](ISCROWD)
 
   /**
    * @return (height, width, channel)
    */
-  def getOrigSizeFromImgFeature(imf: ImageFeature): (Int, Int, Int) =
-    imf[(Int, Int, Int)](ORIGSIZE)
+  def getOrigSize(tab: Table): (Int, Int, Int) =
+    tab[(Int, Int, Int)](ORIGSIZE)
 
 
   def fromTensor(tensor: Tensor[Float]): RoiLabel = {
