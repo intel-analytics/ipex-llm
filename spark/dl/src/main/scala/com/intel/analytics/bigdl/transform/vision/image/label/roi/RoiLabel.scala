@@ -76,17 +76,17 @@ object RoiLabel {
   val ORIGSIZE = "size"
 
 
-  def getClassesFromTable(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
-  def getBBoxesFromTable(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
-  def getMasksFromTable(tab: Table): Array[Tensor[Float]] =
+  def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
+  def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
+  def getMasks(tab: Table): Array[Tensor[Float]] =
     tab[Array[Tensor[Float]]](MASKS)
-  def getIsCrowdFromTable(tab: Table): Tensor[Float] =
+  def getIsCrowd(tab: Table): Tensor[Float] =
     tab[Tensor[Float]](ISCROWD)
 
   /**
    * @return (height, width, channel)
    */
-  def getOrigSizeFromTable(tab: Table): (Int, Int, Int) =
+  def getOrigSize(tab: Table): (Int, Int, Int) =
     tab[(Int, Int, Int)](ORIGSIZE)
 
 
