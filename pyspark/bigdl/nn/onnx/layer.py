@@ -41,7 +41,6 @@ class Gather(Layer):
     gather entries of the axis dimension of data (by default outer-most one as axis=0) indexed by indices,
     and concatenates them in an output tensor of rank q + (r - 1).
 
-    >>> axis = 1
     >>> gather = Gather()
     creating: createGather
     """
