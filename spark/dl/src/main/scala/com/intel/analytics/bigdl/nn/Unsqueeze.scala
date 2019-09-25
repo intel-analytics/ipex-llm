@@ -23,10 +23,13 @@ import com.intel.analytics.bigdl.tensor._
 import scala.reflect.ClassTag
 
 /**
- * Insert singleton dim (i.e., dimension 1) at position pos. For an input with dim = input.dim(),
+ * Insert singleton dim (i.e., dimension 1) at position array pos.
+ * For an input with dim = input.dim(),
  * there are dim + 1 possible positions to insert the singleton dimension.
+ * Dimension index are 1-based. 0 and negative pos correspond to unsqueeze() applied at
+ * pos = pos + input.dim() + 1
  *
- * @param pos The position will be insert singleton.
+ * @param pos The array of position will insert singleton.
  * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
 
@@ -49,6 +52,7 @@ class Unsqueeze[T: ClassTag](
 
   private def getActualPosition(input: Tensor[_]) : Array[Int] = {
     for (index <- 0 until pos.length) {
+      // dimension index are 1-based
       pos(index) = if (pos(index) <= 0) {
         input.dim() + pos(index) + 1
       }
