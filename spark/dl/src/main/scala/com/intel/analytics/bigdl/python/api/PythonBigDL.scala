@@ -1524,14 +1524,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       ip)
   }
 
-  def createUnsqueeze(pos: Int,
-    numInputDims: Int = Int.MinValue)
-  : Unsqueeze[T] = {
-    Unsqueeze[T](pos,
-      numInputDims)
-  }
-
-  def createMultipleDimUnsqueeze(pos: Array[Int],
+  def createUnsqueeze(pos: Array[Int],
     numInputDims: Int = Int.MinValue)
   : Unsqueeze[T] = {
     Unsqueeze[T](pos,

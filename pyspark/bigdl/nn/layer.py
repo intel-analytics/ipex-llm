@@ -4892,10 +4892,12 @@ class Unsqueeze(Layer):
 
     def __init__(self, pos, num_input_dims=INTMIN, bigdl_type="float"):
         if isinstance(pos, int):
-            super(Unsqueeze, self).__init__(None, bigdl_type, pos, num_input_dims)
+            posList=[pos]
+            super(Unsqueeze, self).__init__(None, bigdl_type, posList, num_input_dims)
         elif isinstance(pos, list):
-            self.bigdl_type = bigdl_type
-            self.value = callBigDlFunc(bigdl_type, "createMultipleDimUnsqueeze", pos, num_input_dims)
+            super(Unsqueeze, self).__init__(None, bigdl_type, pos, num_input_dims)
+        else:
+            raise Exception("Error invalid input")
 
 class Reshape(Layer):
     '''
