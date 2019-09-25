@@ -70,9 +70,34 @@ object COCOSeqFileLoader {
     val conf = Engine.createSparkConf().setAppName("Load COCO")
     val sc = new SparkContext(conf)
     Engine.init
+    val ds = COCODataset.load("/home/menooker/work/coco/instances_val2014.json")
+    val index = ds.images.toIterator.map(im => (im.fileName, im)).toMap
     filesToImageFrame("/home/menooker/work/coco/seq2014", sc).toDistributed().rdd
-      .foreach(imf => {
-        println(imf(ImageFeature.uri))
+      .map(imf => {
+        (imf(ImageFeature.uri).asInstanceOf[String], imf.getOriginalSize, imf.getLabel[RoiLabel],
+          imf[Tensor[Float]](RoiLabel.ISCROWD))
       })
+      .collect()
+      // .take(10)
+      .foreach({ case (uri, size, label, iscrowd) =>
+        val img = index(uri)
+        require(size == (img.height, img.width, 3))
+        require(label.masks.length == img.annotations.length)
+        require(java.util.Arrays.equals(iscrowd.toArray(),
+          img.annotations.map(a => if (a.isCrowd) 1f else 0f).toArray))
+        img.annotations.zipWithIndex.foreach { case (ann, idx) =>
+          if (ann.isCrowd) {
+            val rle = label.masks(idx).toArray()
+            ann.segmentation.asInstanceOf[COCORLE].counts.zip(rle).foreach { case (real, data) =>
+              require(Math.abs(data - MaskAPI.uint2long(real)) < 0.01f)
+            }
+          }
+          val bb = label.bboxes.narrow(1, idx + 1, 1).squeeze().toArray()
+          val annbb = Array(ann.bbox._1, ann.bbox._2, ann.bbox._3, ann.bbox._4)
+          require(java.util.Arrays.equals(bb, annbb))
+        }
+    })
+    println("OK")
+
   }
 }
