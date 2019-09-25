@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dataset.segmentation.COCO
 
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.{PolyMasks, RLEMasks}
 import scala.collection.mutable.ArrayBuffer
 
 object MaskAPI {
@@ -35,7 +36,7 @@ object MaskAPI {
   }
 
   // scalastyle:off methodName
-  def RLE2String(rle: COCORLE): String = {
+  def RLE2String(rle: RLEMasks): String = {
     // Similar to LEB128 but using 6 bits/char and ascii chars 48-111.
     val m = rle.counts.length
     val s = new ArrayBuffer[Char]()
@@ -57,7 +58,7 @@ object MaskAPI {
   // scalastyle:on methodName
 
 
-  def string2RLE(s: String, h: Int, w: Int): COCORLE = {
+  def string2RLE(s: String, h: Int, w: Int): RLEMasks = {
     val cnts = new ArrayBuffer[Int]()
     var m = 0
     var p = 0
@@ -77,10 +78,10 @@ object MaskAPI {
       cnts += x.toInt
       m += 1
     }
-    COCORLE(cnts.toArray, h, w)
+    RLEMasks(cnts.toArray, h, w)
   }
 
-  def poly2RLE(poly: COCOPoly, height: Int, width: Int): Array[COCORLE] = {
+  def poly2RLE(poly: PolyMasks, height: Int, width: Int): Array[RLEMasks] = {
     poly.poly.map(xy => {
       // upsample and get discrete points densely along entire boundary
       val scale = 5d
@@ -202,12 +203,12 @@ object MaskAPI {
             }
           }
         }
-        COCORLE(b.toArray, height, width)
+        RLEMasks(b.toArray, height, width)
       }
     })
   }
 
-  def mergeRLEs(R: Array[COCORLE], intersect: Boolean): COCORLE = {
+  def mergeRLEs(R: Array[RLEMasks], intersect: Boolean): RLEMasks = {
     val n = R.length
     if (n == 1) return R(0)
     val h = R(0).height
@@ -259,6 +260,6 @@ object MaskAPI {
         }
       }
     }
-    COCORLE(cnts.toArray, h, w)
+    RLEMasks(cnts.toArray, h, w)
   }
 }

@@ -20,6 +20,7 @@ import com.google.gson.{Gson, GsonBuilder, JsonDeserializationContext, JsonDeser
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.{JsonReader, JsonWriter}
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.{PolyMasks, RLEMasks, SegmentationMasks}
 import java.io.{BufferedReader, FileReader}
 import java.lang.reflect.Type
 import java.nio.ByteBuffer
@@ -90,7 +91,7 @@ private[COCO] class COCODeserializer(buffer: ByteBuffer) {
     new String(arr)
   }
   case class SimpleAnnotation(categoryId: Int, area: Float, bbox1: Float, bbox2: Float,
-    bbox3: Float, bbox4: Float, isCrowd: Boolean, rleCounts: Array[Float])
+    bbox3: Float, bbox4: Float, isCrowd: Boolean, masks: SegmentationMasks)
 
   // returns an image's height, width, all annotations
   def getAnnotations: (Int, Int, Array[SimpleAnnotation]) = {
@@ -112,24 +113,23 @@ private[COCO] class COCODeserializer(buffer: ByteBuffer) {
     val rle = if (isCrowd) {
       // is RLE
       val countLen = getInt
-      val arr = new Array[Float](countLen)
+      val arr = new Array[Int](countLen)
       for (i <- 0 until countLen) {
-        arr(i) = MaskAPI.uint2long(getInt)
+        arr(i) = getInt
       }
-      arr
+      RLEMasks(arr, height, width)
     } else {
       val firstDimLen = getInt
-      val poly = new Array[Array[Double]](firstDimLen)
+      val poly = new Array[Array[Float]](firstDimLen)
       for (i <- 0 until firstDimLen) {
         val secondDimLen = getInt
-        val inner = new Array[Double](secondDimLen)
+        val inner = new Array[Float](secondDimLen)
         for (j <- 0 until secondDimLen) {
-          inner(j) = getDouble
+          inner(j) = getFloat
         }
         poly(i) = inner
       }
-      val cocoRLE = MaskAPI.mergeRLEs(MaskAPI.poly2RLE(COCOPoly(poly), height, width), false)
-      cocoRLE.counts.map(MaskAPI.uint2long(_).toFloat)
+      PolyMasks(poly, height, width)
     }
     SimpleAnnotation(categoryId, area, bbox1, bbox2, bbox3, bbox4, isCrowd, rle)
   }
@@ -212,11 +212,12 @@ case class COCOCategory(
   @SerializedName("supercategory") var superCategory: String = _
 }
 
-abstract class COCOSegmentation{
+trait COCOSegmentation extends SegmentationMasks {
   def dumpTo(context: COCOSerializeContext): Unit
 }
 
-case class COCOPoly(poly: Array[Array[Double]]) extends COCOSegmentation {
+case class COCOPoly(_poly: Array[Array[Float]])
+  extends PolyMasks(_poly, -1, -1) with COCOSegmentation {
   override def dumpTo(context: COCOSerializeContext): Unit = {
     context.dump(poly.length)
     poly.foreach(p => {
@@ -228,17 +229,8 @@ case class COCOPoly(poly: Array[Array[Double]]) extends COCOSegmentation {
   }
 }
 
- case class COCORLE(counts: Array[Int], height: Int, width: Int) extends COCOSegmentation {
-   /**
-    * Get an element in the counts. Process the overflowed int
-    *
-    * @param idx
-    * @return
-    */
-   def get(idx: Int): Long = {
-     MaskAPI.uint2long(counts(idx))
-   }
-
+ case class COCORLE(_counts: Array[Int], _height: Int, _width: Int)
+   extends RLEMasks(_counts, _height, _width) with COCOSegmentation {
    override def dumpTo(context: COCOSerializeContext): Unit = {
      context.dump(counts.length)
      counts.foreach(p => {
@@ -252,7 +244,7 @@ object COCODataset {
   private[COCO] class AnnotationDeserializer extends
     JsonDeserializer[COCOAnotationOD] {
     private lazy val intArrAdapter = COCODataset.gson.getAdapter(classOf[Array[Int]])
-    private lazy val polyAdapter = COCODataset.gson.getAdapter(classOf[Array[Array[Double]]])
+    private lazy val polyAdapter = COCODataset.gson.getAdapter(classOf[Array[Array[Float]]])
     override def deserialize(json: JsonElement, ty: Type,
       context: JsonDeserializationContext): COCOAnotationOD = {
       val obj = json.getAsJsonObject

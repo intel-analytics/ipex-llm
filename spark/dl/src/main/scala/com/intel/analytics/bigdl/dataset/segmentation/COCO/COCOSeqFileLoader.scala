@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dataset.segmentation.COCO
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.{PolyMasks, RLEMasks, RoiLabel}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import java.awt.image.DataBufferByte
@@ -52,7 +52,7 @@ object COCOSeqFileLoader {
           }).toArray,
           Array(anno.length, 4))
         val isCrowd = Tensor(anno.map(ann => if (ann.isCrowd) 1f else 0f), Array(anno.length))
-        val masks = anno.map(ann => Tensor(ann.rleCounts, Array(ann.rleCounts.length)))
+        val masks = anno.map(ann => ann.masks)
         require(metaBytes.getInt == MAGIC_NUM, "Corrupt metadata")
 
         val bis = new ByteArrayInputStream(data._2.getBytes)
@@ -72,7 +72,7 @@ object COCOSeqFileLoader {
     Engine.init
     val ds = COCODataset.load("/home/menooker/work/coco/instances_val2014.json")
     val index = ds.images.toIterator.map(im => (im.fileName, im)).toMap
-    filesToImageFrame("/home/menooker/work/coco/seq2014", sc).toDistributed().rdd
+    filesToImageFrame("/home/menooker/work/coco/seq2014", sc, Some(4)).toDistributed().rdd
       .map(imf => {
         (imf(ImageFeature.uri).asInstanceOf[String], imf.getOriginalSize, imf.getLabel[RoiLabel],
           imf[Tensor[Float]](RoiLabel.ISCROWD))
@@ -80,22 +80,28 @@ object COCOSeqFileLoader {
       .collect()
       // .take(10)
       .foreach({ case (uri, size, label, iscrowd) =>
-        val img = index(uri)
-        require(size == (img.height, img.width, 3))
-        require(label.masks.length == img.annotations.length)
-        require(java.util.Arrays.equals(iscrowd.toArray(),
-          img.annotations.map(a => if (a.isCrowd) 1f else 0f).toArray))
-        img.annotations.zipWithIndex.foreach { case (ann, idx) =>
-          if (ann.isCrowd) {
-            val rle = label.masks(idx).toArray()
-            ann.segmentation.asInstanceOf[COCORLE].counts.zip(rle).foreach { case (real, data) =>
-              require(Math.abs(data - MaskAPI.uint2long(real)) < 0.01f)
-            }
-          }
-          val bb = label.bboxes.narrow(1, idx + 1, 1).squeeze().toArray()
-          val annbb = Array(ann.bbox._1, ann.bbox._2, ann.bbox._3, ann.bbox._4)
-          require(java.util.Arrays.equals(bb, annbb))
+      val img = index(uri)
+      require(size == (img.height, img.width, 3))
+      require(label.masks.length == img.annotations.length)
+      require(java.util.Arrays.equals(iscrowd.toArray(),
+        img.annotations.map(a => if (a.isCrowd) 1f else 0f).toArray))
+      img.annotations.zipWithIndex.foreach { case (ann, idx) =>
+        label.masks(idx) match {
+          case rle: RLEMasks =>
+            val realArr = ann.segmentation.asInstanceOf[COCORLE].counts
+            val seqArr = rle.counts
+            require(java.util.Arrays.equals(realArr, seqArr))
+          case poly: PolyMasks =>
+            val realArr = ann.segmentation.asInstanceOf[PolyMasks].poly.flatten
+            val seqArr = poly.poly.flatten
+            require(java.util.Arrays.equals(realArr, seqArr))
         }
+
+        val bb = label.bboxes.narrow(1, idx + 1, 1).squeeze().toArray()
+        val annbb = Array(ann.bbox._1, ann.bbox._2, ann.bbox._3, ann.bbox._4)
+        require(java.util.Arrays.equals(bb, annbb))
+      }
+
     })
     println("OK")
 

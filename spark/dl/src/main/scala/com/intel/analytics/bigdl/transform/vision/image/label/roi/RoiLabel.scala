@@ -16,8 +16,47 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
+import com.intel.analytics.bigdl.dataset.segmentation.COCO.MaskAPI
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
+
+abstract class SegmentationMasks extends Serializable {
+  def toRLETensor: Tensor[Float]
+}
+
+class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) extends
+  SegmentationMasks {
+  override def toRLETensor: Tensor[Float] = {
+    require(height > 0 && width > 0, "the height and width must > 0 for toRLETensor()")
+    MaskAPI.mergeRLEs(MaskAPI.poly2RLE(this, height, width), false).toRLETensor
+  }
+}
+
+object PolyMasks {
+  def apply(poly: Array[Array[Float]], height: Int, width: Int): PolyMasks =
+    new PolyMasks(poly, height, width)
+}
+
+class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends SegmentationMasks {
+  override def toRLETensor: Tensor[Float] = {
+    Tensor(counts.map(MaskAPI.uint2long(_).toFloat), Array(counts.length))
+  }
+
+  /**
+   * Get an element in the counts. Process the overflowed int
+   *
+   * @param idx
+   * @return
+   */
+  def get(idx: Int): Long = {
+    MaskAPI.uint2long(counts(idx))
+  }
+}
+
+object RLEMasks {
+  def apply(counts: Array[Int], height: Int, width: Int): RLEMasks =
+    new RLEMasks(counts, height, width)
+}
 
 /**
  * image target with classes and bounding boxes
@@ -28,7 +67,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
  * @param masks the array of annotation masks of the targets
  */
 case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
-  masks: Array[Tensor[Float]] = null) {
+  masks: Array[SegmentationMasks] = null) {
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
@@ -43,8 +82,8 @@ case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
         s"be equal to the number of mask array ${masks.length}")
     }
   } else if (classes.nElement() > 0 && classes.dim() == 2) {
-    require(classes.size(2) == bboxes.size(1), s"the number of classes ${ classes.size(2) }" +
-      s"should be equal to the number of bounding box numbers ${ bboxes.size(1) }")
+    require(classes.size(2) == bboxes.size(1), s"the number of classes ${classes.size(2)}" +
+      s"should be equal to the number of bounding box numbers ${bboxes.size(1)}")
     if (masks != null) {
       require(classes.size(2) == masks.length, s"the number of classes ${classes.size(2)}" +
         s"should be equal to the number of bounding box numbers ${masks.length}")
@@ -55,7 +94,7 @@ case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
   def toTable: Table = {
     val table = T()
     if (masks != null) {
-      table(RoiLabel.MASKS) = masks
+      table(RoiLabel.MASKS) = masks.map(_.toRLETensor)
     }
     table(RoiLabel.CLASSES) = classes
     table(RoiLabel.BBOXES) = bboxes
@@ -77,9 +116,12 @@ object RoiLabel {
 
 
   def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
+
   def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
+
   def getMasks(tab: Table): Array[Tensor[Float]] =
     tab[Array[Tensor[Float]]](MASKS)
+
   def getIsCrowd(tab: Table): Tensor[Float] =
     tab[Tensor[Float]](ISCROWD)
 
