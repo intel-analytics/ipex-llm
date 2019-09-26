@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * @param mode       : the type of RNN cell
+ * @param mode       : the type of RNN cell (LSTM / GRU)
  * @param inputSize  : the size of input vector
  * @param hiddenSize : the size of hidden state
  * @param f          : the type of output activation function
@@ -86,18 +86,19 @@ class RNN(
 
   if(layers > 1) {
     require(inputSize == hiddenSize,
-      "If layers of LSTM is more than 1, the input size and the hidden size should equal.\n"
+      "If layer number of RNN is more than 1, the input size and the hidden size should equal.\n"
       + "inputSize: " + inputSize + '\n'
       + "hiddenSize: " + hiddenSize)
   }
 
   var (ngates, nstates) = mode match {
     case AlgKind.VanillaLstm => (4, 2)
+    case AlgKind.VanillaGru => (3, 1)
     case _ =>
       throw new UnsupportedOperationException("Not support such RNN Cell. Cell type: " + mode)
   }
 
-  /** TODO: Multi-layer Bidirectional Sum LSTM is available in MKLDNN,
+  /** TODO: Multi-layer Bidirectional Sum RNN is available in MKLDNN,
    *  TODO: but the current version of BigDL BLAS does not support it.
    */
 
@@ -105,7 +106,7 @@ class RNN(
     case Direction.UnidirectionalLeft2Right
          | Direction.UnidirectionalRight2Left => (1, 1)
     case Direction.BidirectionalConcat =>
-      require(layers == 1, "Bidirectional Concat LSTM does not support multiple layers. " +
+      require(layers == 1, "Bidirectional Concat RNN does not support multiple layers. " +
         "layers = " + layers)
       (2, 2)
     case Direction.BidirectionalSum => (2, 1)
@@ -118,6 +119,11 @@ class RNN(
    * MKLDNN Gate 2 -> nn/LSTM Gate 3 (forget gate)
    * MKLDNN Gate 3 -> nn/LSTM Gate 2 (hidden)
    * MKLDNN Gate 4 -> nn/LSTM Gate 4 (output gate)
+   *
+   * Gate order matching between MKLDNN GRU and nn/GRU:
+   * MKLDNN Gate 1 -> nn/GRU Gate 2
+   * MKLDNN Gate 2 -> nn/GRU Gate 1
+   * MKLDNN Gate 3 -> nn/GRU Gate 3
    */
 
   weightShape = Array(layers, numOfDirections, inputSize, ngates, hiddenSize)
@@ -181,8 +187,8 @@ class RNN(
         batchSize = inputs(0).shape(0)
         stepSize = inputs(0).shape(1)
       case _ =>
-        throw new UnsupportedOperationException("Not support such input format. " +
-          "The input format is: " + inputs(0).layout)
+        throw new UnsupportedOperationException("Unsupported input format: " +
+          inputs(0).layout)
     }
 
     inputShape = Array(stepSize, batchSize, inputSize)
@@ -208,6 +214,8 @@ class RNN(
     rnnCellDesc = mode match {
       case AlgKind.VanillaLstm =>
         MklDnnMemory.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
+      case AlgKind.VanillaGru =>
+        MklDnnMemory.RNNCellDescInit(AlgKind.VanillaGru, f, flags, alpha, clipping)
       case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
         "Cell type: " + mode)
     }
