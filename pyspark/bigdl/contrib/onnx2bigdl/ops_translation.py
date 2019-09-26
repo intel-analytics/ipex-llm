@@ -67,8 +67,9 @@ def batch_norm(inputs, prev_modules, attrs, outputs):
 	n_output = data_tensor_shape[1]
 	temp_module = SpatialBatchNormalization(n_output=n_output, eps=epsilon, momentum=momentum,
 		init_weight=scale_tensor_val, init_bias=bias_tensor_val)
-	temp_module.set_running_mean(mean_tensor_val)
-	temp_module.set_running_std(var_tensor_val)
+	print("running meaning", mean_tensor_val)
+	# temp_module.set_running_mean(mean_tensor_val)
+	# temp_module.set_running_std(var_tensor_val)
 	module = temp_module(prev_modules[0])
 	return module, [out_tensor_shape]
 
@@ -93,6 +94,7 @@ def concat(inputs, prev_modules, attrs, outputs):
 	out_tensor_shape[axis] = dim_rank
 	out_tensor_shape = tuple(out_tensor_shape)
 	# create module node
+	print('concat prev module', len(prev_modules))
 	module = JoinTable(dimension=axis+1, n_input_dims=len(data_tensor_shape))(prev_modules)
 	return module, [out_tensor_shape]
 
