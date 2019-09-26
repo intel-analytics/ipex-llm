@@ -149,7 +149,7 @@ case class COCODataset(info: COCOInfo, images: Array[COCOImage],
       img.annotations += anno
     })
     categories.zipWithIndex.foreach { case (cate, idx) =>
-      cateId2catIdx(cate.id) = idx
+      cateId2catIdx(cate.id) = idx + 1 // the ids starts from 1, because 0 is for background
     }
   }
 
