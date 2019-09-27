@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import java.util.NoSuchElementException
 import scala.collection.mutable.IndexedSeq
 import scala.reflect.ClassTag
 
@@ -118,14 +119,22 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
         if (buffer != null) {
           true
         } else {
-          buffer = prev.next()
+          prev.synchronized {
+            try {
+              buffer = prev.next()
+            } catch {
+              case e: NoSuchElementException => return false
+            }
+          }
           if (buffer == null) false else true
         }
       }
 
       override def next(): ImageFeature = {
         if (buffer == null) {
-          prev.next()
+          prev.synchronized {
+            prev.next()
+          }
         } else {
           val tmp = buffer
           buffer = null.asInstanceOf[ImageFeature]
@@ -171,6 +180,58 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
   }
 }
 
+
+object RoiImageInfo {
+  // the keys in the target table
+  // fields from RoiLabel
+  val CLASSES = "classes"
+  val BBOXES = "bboxes"
+  val MASKS = "masks"
+  // ISCROWD and ORIGSIZE are stored in ImageFeature
+  val ISCROWD = "is_crowd"
+  val ORIGSIZE = "size"
+
+  /**
+   * Get the class label tensor from the table. See RoiLabel.classes
+   *    the categories for each detections (see RoiLabel.clasees field)
+   *    (1 x N), or (2 x N) Tensor[Float]
+   *
+   * @param tab
+   * @return
+   */
+  def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
+
+  /**
+   * Get the bbox tensor from the table. See RoiLabel.bboxes
+   * @param tab
+   * @return
+   */
+  def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
+
+  /**
+   * Get the (optional) mask data from the table. See RoiLabel.masks
+   * @param tab
+   * @return
+   */
+  def getMasks(tab: Table): Array[Tensor[Float]] =
+    tab[Array[Tensor[Float]]](MASKS)
+
+  /**
+   * Get the isCrowd tensor from the table. Should be 1 x N vector (N is the # of detections)
+   * @param tab
+   * @return
+   */
+  def getIsCrowd(tab: Table): Tensor[Float] =
+    tab[Tensor[Float]](ISCROWD)
+
+  /**
+   * Get the size of the image before resizing
+   * @return (height, width, channel)
+   */
+  def getOrigSize(tab: Table): (Int, Int, Int) =
+    tab[(Int, Int, Int)](ORIGSIZE)
+
+}
 /**
  * A batch of images with flattened RoiLabels
  * the getTarget() returns a Table with key from 1 to batchSize. Each key in the table is mapped to
@@ -200,8 +261,8 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
   override def getTarget(): Table = {
     val tables = (target, isCrowd, originalSizes).zipped.map { case (roiLabel, crowd, size) =>
       roiLabel.toTable
-        .update(RoiLabel.ISCROWD, crowd)
-        .update(RoiLabel.ORIGSIZE, size)
+        .update(RoiImageInfo.ISCROWD, crowd)
+        .update(RoiImageInfo.ORIGSIZE, size)
     }
     T.seq(tables)
   }
@@ -250,7 +311,7 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
 
   override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
-    val isCrowd = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Float]]
+    val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
     val label = img.getLabel.asInstanceOf[RoiLabel]
     require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
       "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")

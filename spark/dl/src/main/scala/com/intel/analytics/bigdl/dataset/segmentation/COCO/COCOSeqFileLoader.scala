@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dataset.segmentation.COCO
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.{PolyMasks, RLEMasks, RoiLabel}
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, RoiImageInfo}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import java.awt.image.DataBufferByte
 import java.io.ByteArrayInputStream
@@ -60,7 +60,7 @@ object COCOSeqFileLoader {
         val rawdata = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
         val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
         imf(ImageFeature.originalSize) = (height, width, 3)
-        imf(RoiLabel.ISCROWD) = isCrowd
+        imf(RoiImageInfo.ISCROWD) = isCrowd
         imf
       }
     ImageFrame.rdd(rawData)
@@ -75,7 +75,7 @@ object COCOSeqFileLoader {
     filesToImageFrame("/home/menooker/work/coco/seq2014", sc, Some(4)).toDistributed().rdd
       .map(imf => {
         (imf(ImageFeature.uri).asInstanceOf[String], imf.getOriginalSize, imf.getLabel[RoiLabel],
-          imf[Tensor[Float]](RoiLabel.ISCROWD))
+          imf[Tensor[Float]](RoiImageInfo.ISCROWD))
       })
       .collect()
       // .take(10)
