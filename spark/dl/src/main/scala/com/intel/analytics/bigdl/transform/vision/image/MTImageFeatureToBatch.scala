@@ -190,7 +190,7 @@ object RoiImageInfo {
   // ISCROWD and ORIGSIZE are stored in ImageFeature
   val ISCROWD = "is_crowd"
   val ORIGSIZE = "size"
-  val SCORE = "score"
+  val SCORES = "scores"
 
   /**
    * Get the output score tensor from the table.
@@ -199,7 +199,7 @@ object RoiImageInfo {
    * @param tab
    * @return
    */
-  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORE)
+  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
 
   /**
    * Get the class label tensor from the table. See RoiLabel.classes
