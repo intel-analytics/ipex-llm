@@ -19,17 +19,20 @@ package com.intel.analytics.bigdl.dataset
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
-
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
+import com.intel.analytics.bigdl.dataset.segmentation.COCO.{COCODataset, COCODeserializer}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
-import org.apache.hadoop.io.Text
+import java.awt.image.DataBufferByte
+import java.io.ByteArrayInputStream
+import javax.imageio.ImageIO
+import org.apache.hadoop.io.{BytesWritable, Text}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
 import scala.reflect._
 
 /**
@@ -583,6 +586,48 @@ object DataSet {
         imf(ImageFeature.originalSize) = (height, width, 3)
         imf
       }).filter(_[Tensor[Float]](ImageFeature.label).valueAt(1) <= classNum)
+      ImageFrame.rdd(rawData)
+    }
+
+    /**
+     * Extract hadoop sequence files from an HDFS path as ImageFrame
+     * @param url sequence files folder path
+     * @param sc spark context
+     * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
+     * @return
+     */
+    def filesToRoiImageFrame(url: String, sc: SparkContext,
+      partitionNum: Option[Int] = None): ImageFrame = {
+      val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
+      val rawData = sc.sequenceFile(url, classOf[BytesWritable], classOf[BytesWritable], num)
+        .map { data =>
+          val metaBytes = new COCODeserializer(ByteBuffer.wrap(data._1.getBytes))
+          val fileName = metaBytes.getString
+          val (height, width, anno) = metaBytes.getAnnotations
+
+          val labelClasses = Tensor(anno.map(_.categoryId.toFloat), Array(anno.length))
+          val bboxes = Tensor(
+            anno.toIterator.flatMap(ann => {
+              val x1 = Math.max(0, ann.bbox1)
+              val y1 = Math.max(0, ann.bbox2)
+              val x2 = Math.min(width - 1, x1 + Math.max(0, ann.bbox3 - 1))
+              val y2 = Math.min(height - 1, y1 + Math.max(0, ann.bbox4 - 1))
+              Iterator(x1, y1, x2, y2)
+            }).toArray,
+            Array(anno.length, 4))
+          val isCrowd = Tensor(anno.map(ann => if (ann.isCrowd) 1f else 0f), Array(anno.length))
+          val masks = anno.map(ann => ann.masks)
+          require(metaBytes.getInt == COCODataset.MAGIC_NUM, "Corrupt metadata")
+
+          val bis = new ByteArrayInputStream(data._2.getBytes)
+          val image = ImageIO.read(bis)
+          val rawdata = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
+          val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
+          imf(ImageFeature.originalSize) = (height, width, 3)
+          imf(RoiImageInfo.ISCROWD) = isCrowd
+          imf
+        }
+        .coalesce(num)
       ImageFrame.rdd(rawData)
     }
 

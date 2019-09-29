@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.segmentation.COCO
+package com.intel.analytics.bigdl.models.utils
 
+import com.intel.analytics.bigdl.dataset.segmentation.COCO.{COCODataset, COCOSerializeContext}
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.SequenceFile.Writer
-import org.apache.hadoop.io.{BytesWritable, SequenceFile, Text}
-import org.apache.hadoop.io.compress.BZip2Codec
-import scopt.OptionParser
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.SequenceFile.Writer
+import org.apache.hadoop.io.compress.BZip2Codec
+import org.apache.hadoop.io.{BytesWritable, SequenceFile}
 import scala.collection.parallel.ForkJoinTaskSupport
+import scopt.OptionParser
 
 object COCOSeqFileGenerator {
 
   /**
-   * Configuration class for ImageNet sequence file
+   * Configuration class for COCO sequence file
    * generator
    *
-   * @param folder the ImageNet data location
+   * @param folder the COCO JPG file location
    * @param metaPath the metadata json file location
    * @param output generated seq files location
    * @param parallel number of parallel
@@ -70,7 +71,7 @@ object COCOSeqFileGenerator {
     parser.parse(args, COCOSeqFileGeneratorParams()).foreach { param =>
       val meta = COCODataset.load(param.metaPath)
       val conf: Configuration = new Configuration
-      val doneCoount = new AtomicInteger(0)
+      val doneCount = new AtomicInteger(0)
       val tasks = meta.images.grouped(param.blockSize).zipWithIndex.toArray.par
       tasks.tasksupport = new ForkJoinTaskSupport(
         new scala.concurrent.forkjoin.ForkJoinPool(param.parallel))
@@ -86,13 +87,13 @@ object COCOSeqFileGenerator {
           context.clear()
           context.dump(img.fileName)
           img.dumpTo(context, meta)
-          context.dump(COCOSeqFileLoader.MAGIC_NUM)
+          context.dump(COCODataset.MAGIC_NUM)
           val keyBytes = context.toByteArray
           key.set(keyBytes, 0, keyBytes.length)
           val bytes = Files.readAllBytes(Paths.get(param.folder, img.fileName))
           value.set(bytes, 0, bytes.length)
           writer.append(key, value)
-          val cnt = doneCoount.incrementAndGet()
+          val cnt = doneCount.incrementAndGet()
           if (cnt % 500 == 0) {
             System.err.print(s"\r$cnt / ${meta.images.length} = ${cnt.toFloat/meta.images.length}")
           }

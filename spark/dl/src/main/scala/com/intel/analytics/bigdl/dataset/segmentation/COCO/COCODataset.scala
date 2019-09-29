@@ -26,7 +26,7 @@ import java.lang.reflect.Type
 import java.nio.ByteBuffer
 import scala.collection.mutable.ArrayBuffer
 
-private[COCO] class COCOSerializeContext {
+private[bigdl] class COCOSerializeContext {
   private val converter4 = ByteBuffer.allocate(4)
   private val converter8 = ByteBuffer.allocate(8)
   private val buffer = new ArrayBuffer[Byte]()
@@ -77,7 +77,7 @@ private[COCO] class COCOSerializeContext {
 }
 
 
-private[COCO] class COCODeserializer(buffer: ByteBuffer) {
+private[bigdl] class COCODeserializer(buffer: ByteBuffer) {
   private def getFloat: Float = buffer.getFloat
   private def getDouble: Double = buffer.getDouble
   def getInt: Int = buffer.getInt
@@ -240,7 +240,7 @@ case class COCOPoly(_poly: Array[Array[Float]])
  }
 
 object COCODataset {
-
+  private[bigdl] val MAGIC_NUM = 0x1f3d4e5a
   private[COCO] class AnnotationDeserializer extends
     JsonDeserializer[COCOAnotationOD] {
     private lazy val intArrAdapter = COCODataset.gson.getAdapter(classOf[Array[Int]])
