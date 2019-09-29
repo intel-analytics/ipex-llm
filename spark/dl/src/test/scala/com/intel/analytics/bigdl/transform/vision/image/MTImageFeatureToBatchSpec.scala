@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.{RLEMasks, RoiLabel}
 import com.intel.analytics.bigdl.utils.{Engine, Table}
@@ -46,9 +47,9 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         imf(ImageFeature.label) = lab
         imf(ImageFeature.originalSize) = (10, 10, 3)
         imf
-      })
+      }).toArray
     val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {}, toRGB = false)
-    val miniBatch = transformer(imgData.toIterator)
+    val miniBatch = transformer(DataSet.array(imgData).data(false))
     val imgCheck = new Array[Boolean](1001)
     miniBatch
       .foreach(batch => {
@@ -90,10 +91,10 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         imf(RoiImageInfo.ISCROWD) = Tensor(Array(0f, 1f), Array(2))
         imf(ImageFeature.originalSize) = (10, 10, 3)
         imf
-      })
+      }).toArray
     val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
       toRGB = false, extractRoi = true)
-    val miniBatch = transformer(imgData.toIterator)
+    val miniBatch = transformer(DataSet.array(imgData).data(false))
     miniBatch
       .foreach(batch => {
       (batch.size() <= 19) should be (true)

@@ -119,22 +119,14 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
         if (buffer != null) {
           true
         } else {
-          prev.synchronized {
-            try {
-              buffer = prev.next()
-            } catch {
-              case e: NoSuchElementException => return false
-            }
-          }
+          buffer = prev.next()
           if (buffer == null) false else true
         }
       }
 
       override def next(): ImageFeature = {
         if (buffer == null) {
-          prev.synchronized {
-            prev.next()
-          }
+          prev.next()
         } else {
           val tmp = buffer
           buffer = null.asInstanceOf[ImageFeature]

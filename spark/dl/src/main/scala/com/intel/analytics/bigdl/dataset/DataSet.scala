@@ -596,7 +596,7 @@ object DataSet {
      * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
      * @return
      */
-    def filesToRoiImageFrame(url: String, sc: SparkContext,
+    private[bigdl] def filesToRoiImageFrame(url: String, sc: SparkContext,
       partitionNum: Option[Int] = None): ImageFrame = {
       val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
       val rawData = sc.sequenceFile(url, classOf[BytesWritable], classOf[BytesWritable], num)
