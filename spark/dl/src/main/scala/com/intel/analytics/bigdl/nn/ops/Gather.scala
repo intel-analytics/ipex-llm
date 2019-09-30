@@ -26,7 +26,8 @@ import scala.reflect.ClassTag
  * Input should be two tensors, the first one is the tensor which to gather values;
  * the second one is Index tensor.
  */
-class Gather[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+class Gather[T: ClassTag, D: ClassTag](
+  var dim: Int = 1)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
   output = Tensor[D]()
 
@@ -44,13 +45,20 @@ class Gather[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Ten
       intBuffer
     }
     val inputSizes = inputTensor.size()
+    val inputDim = inputTensor.dim() // data batch dim
+    dim = if (dim <= 0) {
+      inputDim + dim
+    }
+    else dim
+    require(dim >= 1 && dim <= inputDim, s"Invalid position: $dim. " +
+      s"input:dim() is $inputTensor, input feature map dim (numInputDims) is $inputDim.")
 
     if (indices.isScalar) {
       val index = indices.value()
-      require(index < inputSizes(0),
-        s"index should smaller than ${inputSizes(0)}, but got $index")
-      val theOutput = inputTensor.select(1, index + 1)
-      inputSizes(0) = 1
+      require(index < inputSizes(dim - 1),
+        s"index should smaller than ${inputSizes(dim-1)}, but got $index")
+      val theOutput = inputTensor.select(dim, index + 1)
+      inputSizes(dim - 1) = 1
       this.output.resize(inputSizes).copy(theOutput)
     } else {
       val indicesSize = indices.size()
@@ -61,16 +69,15 @@ class Gather[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Ten
       var i = 0
       while (i < indices.nElement()) {
         val index = indices.valueAt(i + 1)
-        require(index < inputSizes(0),
-          s"index should smaller than ${inputSizes(0)}, but got $index")
-        output.select(1, i + 1).copy(inputTensor.select(1, index + 1))
+        require(index < inputSizes(dim - 1),
+          s"index should smaller than ${inputSizes(dim - 1)}, but got $index")
+        output.select(dim, i + 1).copy(inputTensor.select(dim, index + 1))
         i += 1
       }
 
       indices.resize(indicesSize)
       output.resize(outputSizes)
     }
-
     output
   }
 
@@ -88,7 +95,8 @@ class Gather[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Ten
 }
 
 object Gather {
-  def apply[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  Gather[T, D] = new Gather()
-
+  def apply[T: ClassTag, D: ClassTag](
+    dim: Int = 1
+  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
+  Gather[T, D] = new Gather(dim)
 }
