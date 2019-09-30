@@ -24,8 +24,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
 import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer}
-import com.intel.analytics.bigdl.nn.{Container, Graph, InitializationMethod}
-import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Container, Graph, InitializationMethod, StaticGraph, Identity => BIdentity, Sequential => TSequential}
 import com.intel.analytics.bigdl.python.api.PythonBigDL
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -35,7 +34,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.pipeline.api.autograd.Variable
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasLayerWrapper, WordEmbedding}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils}
@@ -66,18 +65,22 @@ trait Net {
       this.asInstanceOf[AbstractModule[Activity, Activity, T]].inputs(vars.map(_.node): _*))
   }
 
-  private[zoo] def toKeras2(dir: String): String = {
+  private[zoo] def toKeras2(): String = {
     throw new UnimplementedException()
   }
 
   /**
    * Get keras-like weights.
-   * @tparam T
-   * @return
+   * Need to override this when this default weights doesn't match the weights in Keras.
+   * @return keras-like weights.
    */
   private[zoo] def getKerasWeights(): Array[Tensor[Float]] = {
     if (this.asInstanceOf[AbstractModule[_, _, _]].parameters()._1.length != 0) {
-      throw new UnimplementedException()
+      val weights = this.asInstanceOf[AbstractModule[_, _, _]].parameters()._1
+      val kWeights = Array.tabulate(weights.length)(_ => Tensor[Float]())
+      (0 until weights.length).foreach(i =>
+        weights(i).cast[Float](kWeights(i).resizeAs(weights(i))))
+      kWeights
     } else {
       Array()
     }
@@ -236,9 +239,9 @@ object Net {
 
   private[zoo] def inputShapeToString(
         inputShape: Shape,
-        paramName: String = "inputShape"): Map[String, String] = {
+        paramName: String = "input_shape"): Map[String, String] = {
     if (inputShape != null) {
-      Map("input_shape" -> s"(${inputShape.toSingle().mkString(", ")},)")
+      Map(paramName -> s"(${inputShape.toSingle().mkString(", ")},)")
     } else {
       Map()
     }
@@ -295,12 +298,19 @@ object Net {
       params.map(v => s"${v._1}=${v._2}").mkString(", ") + ")"
   }
 
+  private[zoo] def kerasDef(
+       moduleType: String,
+       params: Map[String, String]): String = {
+    s"${moduleType}(" +
+      params.map(v => s"${v._1}=${v._2}").mkString(", ") + ")"
+  }
+
   protected object NetSaver {
     private val logger = Logger.getLogger(getClass)
 
     protected val header =
       """
-        |from tensorflow.keras.models import Sequential
+        |from tensorflow.keras.models import Sequential, Model
         |from tensorflow.keras.layers import *
         |from pyspark.serializers import PickleSerializer
         |
@@ -320,22 +330,23 @@ object Net {
       """.stripMargin + "\n"
 
     def save[T: ClassTag](
-          m: Module[T],
+          module: Module[T],
           path: String,
           python: String,
           saveCommand: String)
           (implicit ev: TensorNumeric[T]): Unit = {
       val tmpDir = Utils.createTmpDir("ZooKeras")
       logger.info(s"Write model's temp file to ${tmpDir}")
-      val modelFile = tmpDir.toString + s"/${m.getName()}.py"
+      val modelFile = tmpDir.toString + s"/${module.getName()}.py"
       val bw = new BufferedWriter(new FileWriter(modelFile))
       bw.write(header)
-      if (m.isInstanceOf[Sequential[T]]) {
-        export(m.asInstanceOf[Sequential[T]], tmpDir.toString, bw)
-      } else {
-        throw new IllegalArgumentException(s"${m.getClass.getName} is not supported.")
+      module match {
+        case s: Sequential[T] => export(s, bw)
+        case m: Model[T] => export(m, bw)
+        case _ =>
+          throw new IllegalArgumentException(s"${module.getClass.getName} is not supported.")
       }
-      bw.write(saveWeights(m, tmpDir.toString))
+      bw.write(saveWeights(module, tmpDir.toString))
       bw.write(saveCommand)
       bw.flush()
       bw.close()
@@ -368,22 +379,52 @@ object Net {
         }
         throw new RuntimeException(s"Export Keras2 model failed:\n" + errorMsg.toString())
       }
+    }
 
+    def export[T: ClassTag](
+          model: Model[T],
+          writer: BufferedWriter): Unit = {
+      val inputs = model.getInputs()
+      val outputs = model.getOutputs()
+      val nodes = model.labor.asInstanceOf[StaticGraph[T]].getSortedForwardExecutions()
+      nodes.foreach(export(_, writer))
+      val inputsName = inputs.map(_.element.getName).mkString(", ")
+      val outputsName = outputs.map(_.element.getName).mkString(", ")
+      writer.write(s"${model.getName()} = Model(inputs=[${inputsName}]," +
+        s" outputs=[${outputsName}])\n")
+    }
+
+    def export[T: ClassTag](
+          node: ModuleNode[T],
+          writer: BufferedWriter): Unit = {
+      val element = node.element
+      if (!element.isInstanceOf[Net]) {
+        throw new IllegalArgumentException(s"Unsupported layer ${element.getName()}")
+      } else {
+        val pre = if (node.prevNodes.length == 1) {
+          s"(${node.prevNodes(0).element.getName})"
+        } else if (node.prevNodes.length > 1) {
+          s"([${node.prevNodes.map(_.element.getName).mkString(", ")}])"
+        } else {
+          ""
+        }
+        writer.write(s"${element.getName()} = ${element.asInstanceOf[Net].toKeras2()}${pre}\n")
+        writer.flush()
+      }
     }
 
     def export[T: ClassTag](
           sequential: Sequential[T],
-          path: String,
           writer: BufferedWriter): Unit = {
       writer.write(s"${sequential.getName()} = " +
         s"Sequential(name='${(sequential.getName())}')\n")
       val modules = sequential.modules(0).asInstanceOf[TSequential[T]].modules
       modules.foreach{ module =>
         if (module.isInstanceOf[Sequential[T]]) {
-          export(module.asInstanceOf[Sequential[T]], path, writer)
+          export(module.asInstanceOf[Sequential[T]], writer)
           writer.write(s"${sequential.getName()}.add(${module.getName})\n")
         } else if (module.isInstanceOf[Net]) {
-          writer.write(s"${module.getName()} = ${module.asInstanceOf[Net].toKeras2(path)}\n")
+          writer.write(s"${module.getName()} = ${module.asInstanceOf[Net].toKeras2()}\n")
           writer.write(s"${sequential.getName()}.add(${module.getName})\n")
         } else {
           throw new IllegalArgumentException(s"unkown type ${this.getClass.getName}")
