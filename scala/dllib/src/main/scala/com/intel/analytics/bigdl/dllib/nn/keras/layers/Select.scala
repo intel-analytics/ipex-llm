@@ -78,6 +78,13 @@ class Select[T: ClassTag](
     val layer = com.intel.analytics.bigdl.nn.Select(positiveDim + 1, positiveIndex + 1)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
+
+  override private[zoo] def toKeras2(): String = {
+    val params = Net.inputShapeToString(inputShape) ++
+      Net.param(getName()) ++
+      Net.param(dim, "dim")
+    Net.kerasDef(this, params)
+  }
 }
 
 object Select {

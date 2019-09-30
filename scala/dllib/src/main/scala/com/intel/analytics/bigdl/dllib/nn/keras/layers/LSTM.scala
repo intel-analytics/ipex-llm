@@ -79,7 +79,7 @@ class LSTM[T: ClassTag](
       bRegularizer = bRegularizer)
   }
 
-  override private[zoo] def toKeras2(dir: String): String = {
+  override private[zoo] def toKeras2(): String = {
     val params = Net.inputShapeToString(inputShape) ++
       Net.activationToString(activation) ++
       Net.activationToString(innerActivation, "recurrent_activation") ++

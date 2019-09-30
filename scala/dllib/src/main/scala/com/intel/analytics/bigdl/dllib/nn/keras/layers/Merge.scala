@@ -53,6 +53,26 @@ class Merge[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](Merge.calcBatchInputShape(inputShape, layers))
   with Net {
 
+  override private[zoo] def toKeras2(): String = {
+    var params = Net.inputShapeToString(inputShape) ++
+      Net.param(getName())
+    val kerasLayerName = mode match {
+      case "sum" => "Add"
+      case "mul" => "Multiply"
+      case "max" => "Maximum"
+      case "ave" => "Average"
+      case "sub" => "Subtract"
+      case "min" => "Minimum"
+      case "concat" =>
+        params ++= Net.param(concatAxis, "axis")
+        "Concatenate"
+      case "dot" => "Dot"
+      case _ =>
+        throw new IllegalArgumentException(s"Merge ${mode} is not supported in Keras2")
+    }
+    Net.kerasDef(kerasLayerName, params)
+  }
+
   private val mergeMode = mode.toLowerCase()
   private var axis = concatAxis
 

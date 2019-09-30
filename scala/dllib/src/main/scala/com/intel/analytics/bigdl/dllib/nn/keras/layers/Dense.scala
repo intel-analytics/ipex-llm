@@ -60,7 +60,7 @@ class Dense[T: ClassTag](
   extends BigDLDense[T](outputDim, init, activation, wRegularizer, bRegularizer, bias,
     inputShape) with Net {
 
-  override private[zoo] def toKeras2(dir: String): String = {
+  override private[zoo] def toKeras2(): String = {
     val params = Net.inputShapeToString(inputShape) ++
       Net.activationToString(activation) ++
       Net.param(getName()) ++
