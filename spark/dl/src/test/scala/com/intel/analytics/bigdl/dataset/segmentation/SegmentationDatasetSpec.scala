@@ -54,8 +54,6 @@ class SegmentationDatasetSpec extends FlatSpec with Matchers with BeforeAndAfter
     MaskUtils.RLE2String(RLEMasks(arr1, 100, 200)) should be (compressed1)
   }
 
-  /*
-  // the tests are commented out, because the accuracy of "Float" is not enough.
   // real data in instances_val2014.json
   // annId = 455475
   val poly1 = Array(426.91, 58.24, 434.49, 77.74, 467.0, 80.99, 485.42, 86.41, 493.0, 129.75,
@@ -76,7 +74,7 @@ class SegmentationDatasetSpec extends FlatSpec with Matchers with BeforeAndAfter
 
   "poly2RLE" should "run well" in {
     val rle = MaskUtils.poly2RLE(PolyMasks(Array(poly1), 480, 640), 480, 640)
-    MaskUtils.RLE2String(rle(0)) should be(
+    val targetRle = MaskUtils.string2RLE(
       "Xnc51n>2N2O0O2N2O1N101N10O0100O100O01000O10O10O100000O010000O01000O1000000O1001O00ZBAk" +
         "<?TCFh<:WCHh<8VCJj<6UCLj<4TCOd1Ih88cE1V18T9HcE2k0g0_9WOeE4>T1k9hNfE64_1S:[NhE84`1Q:X" +
         "NjE95a1P:UNkE:5d1m9RNnE96e1l9RNnE87f1k9RNnE78g1j9RNmE7:g1i9RNmE6;h1h9RNmE5<i1g9RNmE5" +
@@ -97,8 +95,12 @@ class SegmentationDatasetSpec extends FlatSpec with Matchers with BeforeAndAfter
         "2\\OUMd0l2\\OTMd0l2\\OTMc0m2]ORMc0o2]OQMb0P3^OPMb0P3^OoLb0R3^OnLa0S3_OmL`0T3@kLa0U3_" +
         "OkL`0V3@jL?W3AhL`0X3@hL?Y3AgL>Z3BeL>\\3BdL>\\3BdL=]3CcL<^3DaL=_3CaL<`3D`L;a3E^L;c3E]" +
         "L;c3E]L:d3F[L:f3FZL:f3FZL9g3GXL9i3GWL8j3HVL8j3HUL8l3HTL7m3ISL6n3JQL7o3IQL6P4JPL5Q4Ko" +
-        "K5Q4KnK5S4KmK4T4LlK3U4M_50000000000000000n>"
+        "K5Q4KnK5S4KmK4T4LlK3U4M_50000000000000000n>", 480, 640
     )
+    rle(0).counts.length should be (targetRle.counts.length)
+    rle(0).counts.zip(targetRle.counts).foreach{case (rleCount, targetCount) =>
+      rleCount should be (targetCount +- 1)
+    }
 
     val rle2 = MaskUtils.poly2RLE(PolyMasks(Array(poly2), 480, 640), 480, 640)
     MaskUtils.RLE2String(rle2(0)) should be(
@@ -114,7 +116,8 @@ class SegmentationDatasetSpec extends FlatSpec with Matchers with BeforeAndAfter
   "mergeRLEs" should "run well" in {
     val rle1 = MaskUtils.poly2RLE(PolyMasks(Array(poly1), 480, 640), 480, 640)(0)
     val rle2 = MaskUtils.poly2RLE(PolyMasks(Array(poly2), 480, 640), 480, 640)(0)
-    MaskUtils.RLE2String(MaskUtils.mergeRLEs(Array(rle1, rle2), false)) should be(
+    val merged = MaskUtils.mergeRLEs(Array(rle1, rle2), false)
+    val targetRle = MaskUtils.string2RLE(
       "la^31o>1O001N101O001O001O001N2O001O001O001O0O1000001O00000O10001O000000000O2O0000000000" +
         "1O0000000000001O00000000010O00000000001O00000000001O01O00000001O00000000001O0001O0000" +
         "0001O00000000001O0001O000001O00000000001O00000001O01O00000000001O0000000001O01O000000" +
@@ -139,9 +142,13 @@ class SegmentationDatasetSpec extends FlatSpec with Matchers with BeforeAndAfter
         "WOYMh0h2XOXMg0i2ZOVMf0j2ZOWMd0j2\\OUMd0l2\\OTMd0l2\\OTMc0m2]ORMc0o2]OQMb0P3^OPMb0P3^O" +
         "oLb0R3^OnLa0S3_OmL`0T3@kLa0U3_OkL`0V3@jL?W3AhL`0X3@hL?Y3AgL>Z3BeL>\\3BdL>\\3BdL=]3CcL" +
         "<^3DaL=_3CaL<`3D`L;a3E^L;c3E]L;c3E]L:d3F[L:f3FZL:f3FZL9g3GXL9i3GWL8j3HVL8j3HUL8l3HTL7" +
-        "m3ISL6n3JQL7o3IQL6P4JPL5Q4KoK5Q4KnK5S4KmK4T4LlK3U4M_50000000000000000n>"
+        "m3ISL6n3JQL7o3IQL6P4JPL5Q4KoK5Q4KnK5S4KmK4T4LlK3U4M_50000000000000000n>", 480, 640
     )
+    merged.counts.length should be (targetRle.counts.length)
+    merged.counts.zip(targetRle.counts).foreach{case (rleCount, targetCount) =>
+      rleCount should be (targetCount +- 1)
+    }
   }
-  */
+
 }
 

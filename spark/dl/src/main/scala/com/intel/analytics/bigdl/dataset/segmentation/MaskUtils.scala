@@ -21,9 +21,19 @@ import scala.collection.mutable.ArrayBuffer
 
 
 abstract class SegmentationMasks extends Serializable {
+  /**
+   * Convert to a RLE encoded tensor
+   */
   def toRLETensor: Tensor[Float]
 }
 
+/**
+ * A mask of regions defined by one or more polygons. The masked object(s) should have the same
+ * label.
+ * @param poly An array of polygons. The inner array defines one polygon, with [x1,y1,x2,y2,...]
+ * @param height the height of the image
+ * @param width the width of the image
+ */
 class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) extends
   SegmentationMasks {
   override def toRLETensor: Tensor[Float] = {
@@ -37,6 +47,24 @@ object PolyMasks {
     new PolyMasks(poly, height, width)
 }
 
+/**
+ * A mask of regions defined by RLE. The masked object(s) should have the same label.
+ * This class corresponds to "uncompressed RLE" of COCO dataset.
+ * RLE is a compact format for binary masks. Binary masks defines the region by assigning a boolean
+ * to every pixel of the image. RLE compresses the binary masks by instead recording the runs of
+ * trues and falses in the binary masks. RLE is an array of integer.
+ * The first element is the length of run of falses staring from the first pixel.
+ * The second element of RLE is the is the length of first run of trues.
+ * e.g. binary masks: 00001110000011
+ *      RLE:          ---4--3----5-2 ====> 4,3,5,2
+ *
+ * Also note that we don't use COCO's "compact" RLE string here because this RLE class has better
+ * time & space performance.
+ *
+ * @param counts the RLE counts
+ * @param height height of the image
+ * @param width width of the image
+ */
 class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends SegmentationMasks {
   override def toRLETensor: Tensor[Float] = {
     Tensor(counts.map(MaskUtils.uint2long(_).toFloat), Array(counts.length))
@@ -75,6 +103,12 @@ object MaskUtils {
     }
   }
 
+  /**
+   * Convert "uncompressed" RLE to "compact" RLE string of COCO
+   * Implementation based in COCO's MaskApi.c
+   * @param rle
+   * @return RLE string
+   */
   // scalastyle:off methodName
   def RLE2String(rle: RLEMasks): String = {
     // Similar to LEB128 but using 6 bits/char and ascii chars 48-111.
@@ -97,7 +131,14 @@ object MaskUtils {
   }
   // scalastyle:on methodName
 
-
+  /**
+   * Convert "compact" RLE string of COCO to "uncompressed" RLE
+   * Implementation based in COCO's MaskApi.c
+   * @param s the RLE string
+   * @param h height of the image
+   * @param w width of the image
+   * @return RLE string
+   */
   def string2RLE(s: String, h: Int, w: Int): RLEMasks = {
     val cnts = new ArrayBuffer[Int]()
     var m = 0
@@ -121,6 +162,15 @@ object MaskUtils {
     RLEMasks(cnts.toArray, h, w)
   }
 
+  /**
+   * Convert a PolyMasks to an array of RLEMasks. Note that a PolyMasks may have multiple
+   * polygons. This function does not merge them. Instead, it returns the RLE for each polygon.
+   * Implementation based in COCO's MaskApi.c
+   * @param poly
+   * @param height height of the image
+   * @param width width of the image
+   * @return The converted RLEs
+   */
   def poly2RLE(poly: PolyMasks, height: Int, width: Int): Array[RLEMasks] = {
     poly.poly.map(xy => {
       // upsample and get discrete points densely along entire boundary
@@ -248,6 +298,13 @@ object MaskUtils {
     })
   }
 
+  /**
+   * Merge multiple RLEs into one (union or intersect)
+   * Implementation based in COCO's MaskApi.c
+   * @param R the RLEs
+   * @param intersect if true, do intersection; else find union
+   * @return the merged RLE
+   */
   def mergeRLEs(R: Array[RLEMasks], intersect: Boolean): RLEMasks = {
     val n = R.length
     if (n == 1) return R(0)
