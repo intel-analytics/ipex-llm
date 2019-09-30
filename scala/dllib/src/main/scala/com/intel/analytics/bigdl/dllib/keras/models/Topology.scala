@@ -609,6 +609,10 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
 
   KerasLayerRef(this).setOutShape(Shape(_outputs.map{_.element.getOutputShape()}.toList))
 
+  private[zoo] def getInputs(): Seq[ModuleNode[T]] = _inputs
+
+  private[zoo] def getOutputs(): Seq[ModuleNode[T]] = _outputs
+
   override def isKerasStyle(): Boolean = true
 
   override def computeOutputShape(inputShape: Shape): Shape = {
@@ -663,6 +667,18 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
   override def toModel(): Model[T] = this
 
   override def toKeras(): Model[T] = this
+
+  override private[zoo] def getKerasWeights(): Array[Tensor[Float]] = {
+    val weights = new ArrayBuffer[Tensor[Float]]()
+    modules(0).asInstanceOf[StaticGraph[T]].modules.foreach(m => {
+      val params = m.asInstanceOf[Net].getKerasWeights()
+      if (params != null) {
+        params.foreach(weights += _)
+      }
+    })
+    weights.toArray
+  }
+
 
   override def summary(
       lineLength: Int = 120,

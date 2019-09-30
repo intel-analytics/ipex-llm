@@ -44,6 +44,12 @@ class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   override def allowRebuilt(): Boolean = true
 
   override def skipDuplicateCheck(): Boolean = skipDuplicate
+
+  override private[zoo] def toKeras2(): String = {
+    val params = Net.inputShapeToString(inputShape, "shape") ++
+      Net.param(getName())
+    Net.kerasDef(this, params)
+  }
 }
 
 /**

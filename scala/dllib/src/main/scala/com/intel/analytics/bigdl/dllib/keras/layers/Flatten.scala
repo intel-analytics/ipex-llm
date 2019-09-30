@@ -47,6 +47,12 @@ class Flatten[T: ClassTag](
         Array(input.slice(1, input.length).product), batchMode = Some(true))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
+
+  override private[zoo] def toKeras2(): String = {
+    val params = Net.inputShapeToString(inputShape) ++
+      Net.param(getName())
+    Net.kerasDef(this, params)
+  }
 }
 
 object Flatten {
