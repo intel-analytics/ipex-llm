@@ -718,6 +718,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def addSingletonDimension(t: Tensor[T] = this, dim: Int = 1): Tensor[T]
 
   /**
+   * view this.tensor and add multiple Dimensions to `dim` dimension
+   *
+   * @param t source tensor
+   * @param dim the specific dimension array, default is [1]
+   * @return this
+   */
+  def addMultiDimension(t: Tensor[T] = this, dims: Array[Int] = Array(1)): Tensor[T]
+
+  /**
    * create a new tensor without any change of the tensor
    *
    * @param sizes the size of the new Tensor

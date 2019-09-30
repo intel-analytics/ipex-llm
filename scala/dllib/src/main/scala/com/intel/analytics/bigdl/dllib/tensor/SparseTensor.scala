@@ -445,6 +445,10 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
+  override def addMultiDimension(t: Tensor[T], dims: Array[Int]): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
   override def reshape(sizes: Array[Int]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }

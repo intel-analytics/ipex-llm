@@ -332,6 +332,7 @@ object DnnTensor {
     override def getType(): TensorDataType = ???
     override def diff(other: Tensor[T], count: Int, reverse: Boolean): Boolean = ???
     override def addSingletonDimension(t: Tensor[T], dim: Int): Tensor[T] = ???
+    override def addMultiDimension(t: Tensor[T], dims: Array[Int]): Tensor[T] = ???
     override def reshape(sizes: Array[Int]): Tensor[T] = ???
     override def save(path: String, overWrite: Boolean): DnnTensorUnsupportOperations.this.type = ???
     override def getTensorNumeric(): TensorNumeric[T] = ???
