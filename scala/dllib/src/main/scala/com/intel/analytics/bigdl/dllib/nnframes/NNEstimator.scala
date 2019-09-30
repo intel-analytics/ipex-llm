@@ -31,6 +31,7 @@ import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import com.intel.analytics.zoo.pipeline.api.keras.models.InternalDistriOptimizer
+import com.intel.analytics.zoo.pipeline.api.net.TorchNet
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -827,22 +828,38 @@ object NNModel extends MLReadable[NNModel[_]] {
   private[nnframes] def getMetaAndModel(path: String, sc: SparkContext) = {
     Net // this is necessary to load Net and register the serializer
     val meta = DefaultParamsWriterWrapper.loadMetadata(path, sc)
-    val (modulePath, weightPath) =
-      new Path(path, "module").toString -> new Path(path, "weight").toString
     val typeTag = (meta.metadata \ "tensorDataType").extract[String]
-    val model = typeTag match {
-      case "TensorDouble" =>
-        ModuleLoader.loadFromFile[Double](modulePath, weightPath)
-      case "TensorFloat" =>
-        ModuleLoader.loadFromFile[Float](modulePath, weightPath)
+    val modelType = try {
+      (meta.metadata \ "modelType").extract[String]
+    } catch {
+      // for compatibility with previous AZ versions
+      case _: Throwable => "default"
+    }
+
+    val model = modelType match {
+      case "TorchNet" =>
+        val torchPath = new Path(path, "torchscript.pt").toString
+        TorchNet(torchPath)
+      case "default" =>
+        val (modulePath, weightPath) =
+          new Path(path, "module").toString -> new Path(path, "weight").toString
+        typeTag match {
+          case "TensorDouble" =>
+            ModuleLoader.loadFromFile[Double](modulePath, weightPath)
+          case "TensorFloat" =>
+            ModuleLoader.loadFromFile[Float](modulePath, weightPath)
+          case _ =>
+            throw new Exception("Only support float and double for now")
+        }
       case _ =>
-        throw new Exception("Only support float and double for now")
+        throw new IllegalArgumentException(s"unsupported modelType: $modelType")
     }
 
     val featurePreprocessing =
       File.load[Preprocessing[Any, Any]](new Path(path, "samplePreprocessing").toString)
 
     (meta, model, typeTag, featurePreprocessing)
+
   }
 
   class NNModelWriter[@specialized(Float, Double) T: ClassTag](
@@ -869,23 +886,35 @@ object NNModel extends MLReadable[NNModel[_]] {
       sc: SparkContext,
       isOverWrite: Boolean = false,
       extraMetadata: Option[JObject] = None)(implicit ev: TensorNumeric[T]): Unit = {
+
     val tensorDataType = ev.getType() match {
       case TensorDouble => "TensorDouble"
       case TensorFloat => "TensorFloat"
       case _ => throw new Exception("Only support Double and Float for now")
     }
 
-    val extra = extraMetadata.getOrElse(JObject()) ~ ("tensorDataType" -> tensorDataType)
-    // bypass the default save for samplePreprocessing
     val spCache = instance.getSamplePreprocessing
+    File.save(spCache, new Path(path, "samplePreprocessing").toString, isOverWrite)
+
+    val modelType = module match {
+      case torchnet: TorchNet =>
+        val modulePath = new Path(path, "torchscript.pt").toString
+        torchnet.savePytorch(modulePath, isOverWrite)
+        "TorchNet"
+      case _ =>
+        val (modulePath, weightPath) =
+          new Path(path, "module").toString -> new Path(path, "weight").toString
+        module.saveModule(modulePath, weightPath, isOverWrite)
+        "default"
+    }
+
+    val extra = extraMetadata.getOrElse(JObject()) ~ ("tensorDataType" -> tensorDataType) ~ (
+      "modelType" -> modelType)
+
+    // bypass the default save for samplePreprocessing
     instance.clear(instance.samplePreprocessing)
     DefaultParamsWriterWrapper.saveMetadata(instance, path, sc, Option(extra))
     instance.setSamplePreprocessing(spCache)
-    val (modulePath, weightPath) =
-      new Path(path, "module").toString -> new Path(path, "weight").toString
-    module.saveModule(modulePath, weightPath, isOverWrite)
-
-    File.save(spCache, new Path(path, "samplePreprocessing").toString, isOverWrite)
   }
 
   override def read: MLReader[NNModel[_]] = new NNModelReader
