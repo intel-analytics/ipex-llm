@@ -22,5 +22,4 @@ class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
       cancel("Torch is not installed")
     }
   }
-
 }

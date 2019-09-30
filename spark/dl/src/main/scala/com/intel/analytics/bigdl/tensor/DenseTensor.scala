@@ -2092,6 +2092,44 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.set(t.storage(), t.storageOffset(), size, stride)
   }
 
+  override def addMultiDimension( t: Tensor[T], dims: Array[Int] = Array(1)): Tensor[T] = {
+    // increase 1 to the following pos after a previous smaller pos have one dimension inserted.
+    for (i <- 0 until dims.length) {
+      for (j <- i + 1 until dims.length) {
+        if (dims(j) > dims(i)) {
+          dims(j) = dims(j) + 1
+        }
+      }
+    }
+    var temp = t.clone()
+    var size = new Array[Int](t.dim())
+    var stride = new Array[Int](t.dim())
+
+    for ( i <- 0 until dims.length) {
+      require(dims(i) > 0 && dims(i) <= temp.dim() + 1, s"invalid dimension: ${dims(i)}. " +
+        s"Tensor is of ${temp.dim()} dimensions.")
+
+      size = new Array[Int](temp.dim() + 1)
+      stride = new Array[Int](temp.dim() + 1)
+      var d = 0
+      while (d < dims(i) - 1) {
+        size(d) = temp.size(d + 1)
+        stride(d) = temp.stride(d + 1)
+        d += 1
+      }
+      size(dims(i) - 1) = 1
+      stride(dims(i) - 1) = 1
+      d += 1
+      while (d < temp.dim + 1) {
+        size(d) = temp.size(d)
+        stride(d) = temp.stride(d)
+        d += 1
+      }
+      temp.set(temp.storage(), temp.storageOffset(), size, stride)
+    }
+    this.set(temp.storage(), temp.storageOffset(), size, stride)
+  }
+
   /**
    * Implements >= operator comparing each element in x with value
    *

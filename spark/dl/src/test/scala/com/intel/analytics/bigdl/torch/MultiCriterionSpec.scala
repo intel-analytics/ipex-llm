@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
 import scala.util.Random
 
@@ -25,13 +26,14 @@ import scala.util.Random
 class MultiCriterionSpec extends TorchSpec {
     "A MultiCriterion Module " should "generate correct output and grad with Tensor input" in {
     torchCheck()
+    RNG.setSeed(10)
     val module = new MultiCriterion[Double]()
     val nll = new ClassNLLCriterion[Double]()
     val nll2 = new MSECriterion[Double]()
     module.add(nll, 0.5)
     module.add(nll2)
 
-    val input = Tensor[Double](5).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](5).rand()
     val target = Tensor[Double](5)
     target(Array(1)) = 1
     target(Array(2)) = 2
