@@ -53,32 +53,26 @@ class Gather[T: ClassTag, D: ClassTag](
     require(dim >= 1 && dim <= inputDim, s"Invalid position: $dim. " +
       s"input:dim() is $inputTensor, input feature map dim (numInputDims) is $inputDim.")
 
-    if (indices.isScalar) {
-      val index = indices.value()
-      require(index < inputSizes(dim - 1),
-        s"index should smaller than ${inputSizes(dim-1)}, but got $index")
-      val theOutput = inputTensor.select(dim, index + 1)
-      inputSizes(dim - 1) = 1
-      this.output.resize(inputSizes).copy(theOutput)
+    val indicesSize = indices.size()
+
+    val outputSizes = if (indices.isScalar) {
+      Array(1) ++ inputSizes.slice(1, inputSizes.length)
     } else {
-      val indicesSize = indices.size()
-      val outputSizes = indicesSize ++ inputSizes.slice(1, inputSizes.length)
-
-      output.resize(Array(indices.nElement()) ++ inputSizes.slice(1, inputSizes.length))
-      indices.resize(indices.nElement())
-      var i = 0
-      while (i < indices.nElement()) {
-        val index = indices.valueAt(i + 1)
-        require(index < inputSizes(dim - 1),
-          s"index should smaller than ${inputSizes(dim - 1)}, but got $index")
-        output.select(dim, i + 1).copy(inputTensor.select(dim, index + 1))
-        i += 1
-      }
-
-      indices.resize(indicesSize)
-      output.resize(outputSizes)
+      indicesSize ++ inputSizes.slice(1, inputSizes.length)
     }
-    output
+    output.resize(Array(indices.nElement()) ++ inputSizes.slice(1, inputSizes.length))
+    indices.resize(indices.nElement())
+    var i = 0
+    while (i < indices.nElement()) {
+      val index = indices.valueAt(i + 1)
+      require(index < inputSizes(dim - 1),
+        s"index should smaller than ${inputSizes(dim - 1)}, but got $index")
+      output.select(dim, i + 1).copy(inputTensor.select(dim, index + 1))
+      i += 1
+    }
+
+    indices.resize(indicesSize)
+    output.resize(outputSizes)
   }
 
   override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
