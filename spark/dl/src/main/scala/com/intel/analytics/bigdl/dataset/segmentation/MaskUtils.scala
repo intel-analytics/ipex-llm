@@ -105,7 +105,7 @@ object MaskUtils {
 
   /**
    * Convert "uncompressed" RLE to "compact" RLE string of COCO
-   * Implementation based in COCO's MaskApi.c
+   * Implementation based on COCO's MaskApi.c
    * @param rle
    * @return RLE string
    */
@@ -133,7 +133,7 @@ object MaskUtils {
 
   /**
    * Convert "compact" RLE string of COCO to "uncompressed" RLE
-   * Implementation based in COCO's MaskApi.c
+   * Implementation based on COCO's MaskApi.c
    * @param s the RLE string
    * @param h height of the image
    * @param w width of the image
@@ -165,7 +165,7 @@ object MaskUtils {
   /**
    * Convert a PolyMasks to an array of RLEMasks. Note that a PolyMasks may have multiple
    * polygons. This function does not merge them. Instead, it returns the RLE for each polygon.
-   * Implementation based in COCO's MaskApi.c
+   * Implementation based on COCO's MaskApi.c
    * @param poly
    * @param height height of the image
    * @param width width of the image
@@ -300,7 +300,7 @@ object MaskUtils {
 
   /**
    * Merge multiple RLEs into one (union or intersect)
-   * Implementation based in COCO's MaskApi.c
+   * Implementation based on COCO's MaskApi.c
    * @param R the RLEs
    * @param intersect if true, do intersection; else find union
    * @return the merged RLE
