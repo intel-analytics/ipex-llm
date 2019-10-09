@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
+import com.intel.analytics.bigdl.dataset.segmentation.SegmentationMasks
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -28,7 +29,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
  * @param masks the array of annotation masks of the targets
  */
 case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
-  masks: Array[Tensor[Float]] = null) {
+  masks: Array[SegmentationMasks] = null) {
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
