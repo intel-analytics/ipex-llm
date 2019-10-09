@@ -54,13 +54,18 @@ class Gather[T: ClassTag, D: ClassTag](
       s"input:dim() is $inputTensor, input feature map dim (numInputDims) is $inputDim.")
 
     val indicesSize = indices.size()
-
     val outputSizes = if (indices.isScalar) {
-      Array(1) ++ inputSizes.slice(1, inputSizes.length)
+      output.resize(inputSizes.slice(0, dim-1)
+        ++ Array(1)
+        ++ inputSizes.slice(dim, inputSizes.length))
+      inputSizes.slice(0, dim-1) ++ Array(1) ++ inputSizes.slice(dim, inputSizes.length)
     } else {
-      indicesSize ++ inputSizes.slice(1, inputSizes.length)
+      output.resize(inputSizes.slice(0, dim-1)
+        ++ Array(indices.nElement())
+        ++ inputSizes.slice(dim, inputSizes.length))
+      inputSizes.slice(0, dim-1) ++ indicesSize ++ inputSizes.slice(dim, inputSizes.length)
     }
-    output.resize(Array(indices.nElement()) ++ inputSizes.slice(1, inputSizes.length))
+
     indices.resize(indices.nElement())
     var i = 0
     while (i < indices.nElement()) {
