@@ -5,7 +5,7 @@ import numpy as np
 
 from onnx import helper
 from onnx import AttributeProto, TensorProto, GraphProto
-from .import_model import BigDLModel
+from .import_model import OnnxModel
 
 class TestExample(object):
 
