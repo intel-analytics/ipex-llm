@@ -44,14 +44,13 @@ class Reshape[T: ClassTag](var shape: Array[Int] = null)(implicit ev: TensorNume
       val inputTable = input.toTable
       require(inputTable.length() == 2)
       dataTensor = inputTable.get[Tensor[T]](1).get
-      shape = inputTable.get[Tensor[T]](2).get
-        .squeeze().toArray().map(ev.toType[Int])
+      shape = inputTable.get[Tensor[T]](2).get.squeeze().toArray().map(ev.toType[Int])
     } else if (input.isTensor) {
       dataTensor = input.toTensor[T]
     } else {
       throw new IllegalArgumentException()
     }
-    require(shape != null)
+    require(shape != null, "shape should not be null")
     val innerReshaper = nn.Reshape(shape, batchMode = Option(false))
     output = innerReshaper.forward(dataTensor)
     output
@@ -73,7 +72,7 @@ class Reshape[T: ClassTag](var shape: Array[Int] = null)(implicit ev: TensorNume
 
 
 object Reshape {
-  def apply[T: ClassTag](shape: Array[Int])
+  def apply[T: ClassTag](shape: Array[Int] = null)
     (implicit ev: TensorNumeric[T]): Reshape[T] = {
     new Reshape[T](shape)
   }

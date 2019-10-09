@@ -17,11 +17,10 @@
 import numpy as np
 from bigdl.nn.onnx.layer import *
 from bigdl.nn.layer import Identity, Model
-
 from .ops_mapping import _convert_map as convert_map
 
 
-class BigDLGraph(object):
+class OnnxGraph(object):
 	def __init__(self, graph_proto=None):
 		self._inputs = list()
 		self._outputs = list()
@@ -48,7 +47,7 @@ class BigDLGraph(object):
 			if gin.name not in tensor_set:
 				self._inputs.append(gin.name)
 				shape = tuple([dim.dim_value for dim in gin.type.tensor_type.shape.dim])
-				self._modules[gin.name] = Identity()(self._dummy_root)  # Input()
+				self._modules[gin.name] = Identity()(self._dummy_root)
 				self._tensors[gin.name] = (None, shape)
 
 		for gout in graph_proto.output:
@@ -59,9 +58,9 @@ class BigDLGraph(object):
 			name = node.name.strip()
 			op_type = node.op_type
 			inputs = [self._tensors[n] for n in node.input]
+			outputs = node.output
 			prev_modules = [self._modules[n] for n in node.input if n not in tensor_set]
 			attrs = self._parse_node_attr(node)
-			outputs = node.output
 
 			if len(prev_modules) == 0:
 				self._root.append((name, op_type))
@@ -81,6 +80,7 @@ class BigDLGraph(object):
 
 		return model
 
+
 	def _make_module_from_onnx_node(self, op_type, inputs, prev_modules, attrs, outputs):
 		module = None
 		out_shapes = []
@@ -89,6 +89,7 @@ class BigDLGraph(object):
 		else:
 			raise NotImplemented(op_type)
 		return module, out_shapes
+
 
 	def _parse_tensor_data(self, tensor_proto):
 		try:
@@ -101,6 +102,7 @@ class BigDLGraph(object):
 			# If it is a scalar tensor
 			np_array = np.array([to_array(tensor_proto)])
 		return np_array
+
 
 	def _parse_node_attr(self, node_proto):
 		attrs = {}

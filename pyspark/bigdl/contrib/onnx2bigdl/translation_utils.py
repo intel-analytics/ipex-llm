@@ -8,7 +8,6 @@ def calc_output_shape(input, kernel, padding = 0, stride = 1, dilation = 1, ceil
 	rounding = math.ceil if ceil_mode else math.floor
 	out = (input + 2 * padding - dilated_kernel_size(kernel, dilation)) / stride + 1
 	out = int(rounding(out))
-	print(input, kernel, padding, stride, dilation, ceil_mode, out)
 	return out
 
 def parse_tensor_data(tensor_proto):

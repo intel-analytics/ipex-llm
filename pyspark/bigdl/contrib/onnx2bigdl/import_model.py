@@ -15,10 +15,10 @@
 #
 
 import onnx
-from .import_graph import BigDLGraph
+from .import_graph import OnnxGraph
 
 
-class BigDLModel(object):
+class OnnxModel(object):
 
 	def __init__(self, file_path=None):
 		if file_path:
@@ -39,13 +39,18 @@ class BigDLModel(object):
 		# self._domain = model_proto.domain
 		# self._model_version = model_proto.model_version
 		# self._doc_string = model_proto.doc_string
-		bgraph = BigDLGraph()
+		bgraph = OnnxGraph()
 		graph_proto = model_proto.graph
 		return bgraph.load_graph(graph_proto)
 
 
 def load_onnx(model_path):
-	model = BigDLModel(model_path)
+	model = OnnxModel(model_path)
 	model_proto = model.get_model_proto()
 	bigdl_model = model.load_model(model_proto)
 	return bigdl_model
+
+
+def load_model_proto(model_proto):
+	bigdl_model = OnnxModel()
+	return bigdl_model.load_model(model_proto)

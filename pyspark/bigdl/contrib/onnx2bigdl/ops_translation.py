@@ -65,11 +65,13 @@ def batch_norm(inputs, prev_modules, attrs, outputs):
 	out_tensor_shape = data_tensor_shape
 	# create module node
 	n_output = data_tensor_shape[1]
+
 	temp_module = SpatialBatchNormalization(n_output=n_output, eps=epsilon, momentum=momentum,
 		init_weight=scale_tensor_val, init_bias=bias_tensor_val)
-	print("running meaning", mean_tensor_val)
-	# temp_module.set_running_mean(mean_tensor_val)
-	# temp_module.set_running_std(var_tensor_val)
+	if mean_tensor_val is not None:
+		temp_module.set_running_mean(mean_tensor_val)
+	if var_tensor_val is not None:
+		temp_module.set_running_std(var_tensor_val)
 	module = temp_module(prev_modules[0])
 	return module, [out_tensor_shape]
 
@@ -94,7 +96,6 @@ def concat(inputs, prev_modules, attrs, outputs):
 	out_tensor_shape[axis] = dim_rank
 	out_tensor_shape = tuple(out_tensor_shape)
 	# create module node
-	print('concat prev module', len(prev_modules))
 	module = JoinTable(dimension=axis+1, n_input_dims=len(data_tensor_shape))(prev_modules)
 	return module, [out_tensor_shape]
 
@@ -102,6 +103,7 @@ def concat(inputs, prev_modules, attrs, outputs):
 def constant(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	value = parse_tensor_data(attrs.get('value'))
+		## .flatten()
 	# calc output tensor shape
 	out_tensor_shape = value.shape
 	# create module node
@@ -215,7 +217,7 @@ def reshape(inputs, prev_modules, attrs, outputs):
 	shape_tensor_val, _ = inputs[1]
 	shape_arry = None
 	if shape_tensor_val is not None:
-		shape_arry = shape_tensor_val.tolist()
+		shape_arry = np.squeeze(shape_tensor_val).astype(int).tolist()
 	# create module node
 	module = Reshape(shape_arry)(prev_modules)
 	return module, [shape_tensor_val]
