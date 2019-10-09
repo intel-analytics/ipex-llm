@@ -37,7 +37,7 @@ object MTImageFeatureToBatch {
    * @return
    */
   def apply(width: Int, height: Int, batchSize: Int,
-            transformer: FeatureTransformer, toRGB: Boolean = true, extractRoi: Boolean = false)
+            transformer: FeatureTransformer, toRGB: Boolean = false, extractRoi: Boolean = false)
   : MTImageFeatureToBatch = {
     if (extractRoi) {
       new RoiMTImageFeatureToBatch (
@@ -145,7 +145,7 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
  * @param toRGB  if converted to RGB, default format is BGR
  */
 class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
   extends MTImageFeatureToBatch(totalBatchSize, transformer) {
 
   private val frameLength = height * width
@@ -300,7 +300,7 @@ object RoiMiniBatch {
  * @param toRGB  if converted to RGB, default format is BGR
  */
 class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
   extends MTImageFeatureToBatch(totalBatchSize, transformer) {
 
   private val frameLength = height * width
@@ -308,7 +308,7 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
   private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
   private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
   private val origSizeData: Array[(Int, Int, Int)] = new Array[(Int, Int, Int)](batchSize)
-  private var featureTensor: Tensor[Float] = null
+  private var featureTensor: Tensor[Float] = Tensor[Float]()
 
   override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
@@ -321,11 +321,12 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     origSizeData(position) = img.getOriginalSize
   }
 
-  override protected def createBatch(batchSize: Int): MiniBatch[Float] = {
-    if (featureTensor == null) {
-      featureTensor = Tensor(Storage[Float](featureData),
-        storageOffset = 1, size = Array(batchSize, 3, height, width))
+  override protected def createBatch(curBatchSize: Int): MiniBatch[Float] = {
+    if (featureTensor.nElement() != curBatchSize) {
+      featureTensor.set(Storage[Float](featureData),
+        storageOffset = 1, sizes = Array(curBatchSize, 3, height, width))
     }
-    RoiMiniBatch(featureTensor, labelData.view, isCrowdData.view, origSizeData.view)
+    RoiMiniBatch(featureTensor, labelData.view(0, curBatchSize), isCrowdData.view(0, curBatchSize),
+      origSizeData.view(0, curBatchSize) )
   }
 }

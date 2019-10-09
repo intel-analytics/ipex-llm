@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.transform.vision.image
 
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
+import com.intel.analytics.bigdl.tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{Engine, Table}
@@ -39,7 +40,6 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
   }
 
   "MTImageFeatureToBatch classification" should "work well" in {
-    //
     val imgData = (0 to 1000).map(idx => (idx to (idx + 10*10*3)).map(_.toFloat).toArray)
       .map(arr => {
         val imf = ImageFeature()
@@ -77,7 +77,7 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
   }
 
   "MTImageFeatureToBatch with ROI" should "work well" in {
-    //
+    val imgCheck = new Array[Boolean](1001)
     val imgData = (0 to 1000).map(idx => (idx to (idx + 10*10*3)).map(_.toFloat).toArray)
       .map(arr => {
         val imf = ImageFeature()
@@ -108,9 +108,14 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         RoiImageInfo.getBBoxes(t).size() should be (Array(2, 4))
         RoiImageInfo.getClasses(t).size() should be (Array(2))
         RoiImageInfo.getMasks(t).length should be (2)
+        val idx = batch.getInput().asInstanceOf[Tensor[Float]]
+          .valueAt(i, 1, 1, 1).toInt
+        imgCheck(idx) should be (false)
+        imgCheck(idx) = true
       }
 
     })
+    imgCheck.count(!_) should be (0)
 
   }
 
