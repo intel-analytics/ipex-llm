@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{Engine, Table}
@@ -36,8 +38,6 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     if (null != sc) sc.stop()
   }
 
-  // todo: There is a race-condition bug in MTImageFeatureToBatch
-  /*
   "MTImageFeatureToBatch classification" should "work well" in {
     //
     val imgData = (0 to 1000).map(idx => (idx to (idx + 10*10*3)).map(_.toFloat).toArray)
@@ -48,13 +48,11 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         imf(ImageFeature.label) = lab
         imf(ImageFeature.originalSize) = (10, 10, 3)
         imf
-      })
+      }).toArray
     val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {}, toRGB = false)
-    val miniBatch = transformer(imgData.toIterator)
-    // val imgCheck = new Array[Boolean](1000)
+    val miniBatch = transformer(DataSet.array(imgData).data(false))
+    val imgCheck = new Array[Boolean](1001)
     miniBatch
-      .take(5)
-      // .take(1000 / 19)
       .foreach(batch => {
       (batch.size() <= 19) should be (true)
       val input = batch.getInput().asInstanceOf[Tensor[Float]]
@@ -70,11 +68,11 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         B should be (G + 1)
         input.valueAt(i, 3, 10, 10) should be((idx.toFloat + 10 * 10 * 3 - 1) +- 0.000001f)
         target.valueAt(i) should be (idx.toFloat)
-        /* imgCheck(idx) should be (false)
-        imgCheck(idx) = true */
+        imgCheck(idx) should be (false)
+        imgCheck(idx) = true
       }
-
     })
+    imgCheck.count(!_) should be (0)
 
   }
 
@@ -87,34 +85,33 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         imf(ImageFeature.label) = RoiLabel(
           Tensor(new Array[Float](2), Array(2)),
           Tensor(new Array[Float](2*4), Array(2, 4)),
-          Array(Tensor[Float](), Tensor[Float]())
+          Array(new RLEMasks(Array(), 10, 10),
+            new RLEMasks(Array(), 10, 10)
+          )
         )
-        imf(RoiLabel.ISCROWD) = Tensor(Array(0f, 1f), Array(2))
+        imf(RoiImageInfo.ISCROWD) = Tensor(Array(0f, 1f), Array(2))
         imf(ImageFeature.originalSize) = (10, 10, 3)
         imf
-      })
+      }).toArray
     val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
       toRGB = false, extractRoi = true)
-    val miniBatch = transformer(imgData.toIterator)
-    // val imgCheck = new Array[Boolean](1000)
+    val miniBatch = transformer(DataSet.array(imgData).data(false))
     miniBatch
-      .take(5)
-      // .take(1000 / 19)
       .foreach(batch => {
       (batch.size() <= 19) should be (true)
       val target = batch.getTarget().asInstanceOf[Table]
       target.length() should be (batch.size())
       for(i <- 1 to batch.size()) {
         val t = target(i).asInstanceOf[Table]
-        t[Tensor[Float]](RoiLabel.ISCROWD) should be (Tensor(Array(0f, 1f), Array(2)))
-        t[(Int, Int, Int)](RoiLabel.ORIGSIZE) should be((10, 10, 3))
-        t[Tensor[Float]](RoiLabel.BBOXES).size() should be (Array(2, 4))
-        t[Tensor[Float]](RoiLabel.CLASSES).size() should be (Array(2))
-        t[Array[Tensor[Float]]](RoiLabel.MASKS).length should be (2)
+        RoiImageInfo.getIsCrowd(t) should be (Tensor(Array(0f, 1f), Array(2)))
+        RoiImageInfo.getOrigSize(t) should be((10, 10, 3))
+        RoiImageInfo.getBBoxes(t).size() should be (Array(2, 4))
+        RoiImageInfo.getClasses(t).size() should be (Array(2))
+        RoiImageInfo.getMasks(t).length should be (2)
       }
 
     })
 
-  } */
+  }
 
 }
