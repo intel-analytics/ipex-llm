@@ -148,7 +148,7 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
     while (i <= rangeBuffer.nElement()) {
       val dim = rangeBuffer.valueAt(i).toInt + 1
       val index = labels.valueAt(i).toInt // start from 1
-      output.narrow(1, i, 1).copy(mask_prob.narrow(1, i, 1).narrow(2, index, 1))
+      output.narrow(1, i, 1).copy(mask_prob.narrow(1, i, 1).narrow(2, index + 1, 1))
       i += 1
     }
     output
