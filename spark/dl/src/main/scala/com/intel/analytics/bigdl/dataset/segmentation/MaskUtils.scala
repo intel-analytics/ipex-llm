@@ -34,7 +34,7 @@ abstract class SegmentationMasks extends Serializable {
  * @param height the height of the image
  * @param width the width of the image
  */
-class PolyMasks(var poly: Array[Array[Float]], var height: Int, var width: Int) extends
+class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) extends
   SegmentationMasks {
   override def toRLETensor: Tensor[Float] = {
     require(height > 0 && width > 0, "the height and width must > 0 for toRLETensor()")
@@ -65,7 +65,7 @@ object PolyMasks {
  * @param height height of the image
  * @param width width of the image
  */
-class RLEMasks(var counts: Array[Int], var height: Int, var width: Int) extends SegmentationMasks {
+class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends SegmentationMasks {
   override def toRLETensor: Tensor[Float] = {
     Tensor(counts.map(MaskUtils.uint2long(_).toFloat), Array(counts.length))
   }
