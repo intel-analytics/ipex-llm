@@ -104,8 +104,11 @@ class Pooler[T: ClassTag] (
 
   override def updateOutput(input: Table): Tensor[T] = {
     val featureMaps = input[Table](1)
-    // for batch support
-    val roiBatch = input[Table](2)
+    val roiBatch = if (input(2).isInstanceOf[Tensor[T]]) {
+      T(input[Tensor[T]](2))
+    } else { // for batch support
+      input[Table](2)
+    }
     var totalNum = 0
     val num_channels = featureMaps.get[Tensor[T]](1).get.size(2)
     val out = T()

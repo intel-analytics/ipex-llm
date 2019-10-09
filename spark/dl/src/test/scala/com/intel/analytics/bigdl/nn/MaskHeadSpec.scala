@@ -338,14 +338,14 @@ class MaskHeadSpec extends FlatSpec with Matchers {
     val inChannels: Int = 6
     val resolution: Int = 14
     val scales: Array[Float] = Array[Float](0.25f, 0.125f)
-    val samplingRratio: Float = 2.0f
+    val samplingRatio: Int = 2
     val layers: Array[Int] = Array[Int](4, 4)
     val dilation: Int = 1
     val numClasses: Int = 81
     val useGn: Boolean = false
 
     val layer = new MaskHead(inChannels, resolution, scales,
-      samplingRratio, layers, dilation, numClasses, useGn)
+      samplingRatio, layers, dilation, numClasses, useGn)
 
     val params = layer.getParameters()
     params._1.fill(0.001f)
@@ -1202,6 +1202,6 @@ class MaskHeadSerialTest extends ModuleSerializationTest {
       T(3.0f, 5.0f, 6.0f, 10.0f)))
     val labels = Tensor[Float](T(1, 3))
 
-    runSerializationTest(layer, T(T(features1, features2), bbox, labels))
+    runSerializationTest(layer, T(T(features1, features2), T(bbox), labels))
   }
 }
