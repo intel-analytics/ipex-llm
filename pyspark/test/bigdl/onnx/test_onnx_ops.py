@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import sys, os
 import onnx
 import pytest
 import numpy as np
@@ -136,7 +135,7 @@ class TestBatchNormalization(object):
 
         # Create a node (NodeProto)
         batch_norm_node = onnx.helper.make_node(
-            op_type='BatchNormalization', # node name
+            op_type='BatchNormalization',  # node name
             inputs=['X', 'scale', 'bias', 'mean', 'var'],  # inputs
             outputs=['Y'],  # outputs
             epsilon=epsilon,
@@ -262,7 +261,7 @@ class TestConstant(object):
             outputs=['Y'],
             value=onnx.helper.make_tensor(
                 name='const_tensor',
-                data_type = onnx.TensorProto.FLOAT,
+                data_type=onnx.TensorProto.FLOAT,
                 dims=values.shape,
                 vals=values.flatten().tolist(),
             ),
@@ -366,8 +365,7 @@ class TestGather(object):
                                  [[2.3, 3.4], [4.5, 5.7]]], dtype=float)
         input_shape = input_x.shape
         indices_shape = indices_val.shape
-        output_shape=[2, 2, 2]
-
+        output_shape = [2, 2, 2]
 
         # Create one output (ValueInfoProto)
         data = onnx.helper.make_tensor_value_info('data', onnx.TensorProto.FLOAT, input_shape)
@@ -416,7 +414,7 @@ class TestGemm(object):
         output_shape = [2, 4]
         alpha = np.round(np.random.rand(), 2)
         beta = np.round(np.random.rand(), 2)
-        transA, transB = 0, 0
+        trans_a, trans_b = 0, 0
         input_x = np.random.random(mata_shape)
         b_val = np.random.random(matb_shape)
         c_val = np.random.random(matc_shape)
@@ -447,8 +445,8 @@ class TestGemm(object):
             outputs=['Y'],
             alpha=alpha,
             beta=beta,
-            transA=transA,
-            transB=transB
+            transA=trans_a,
+            transB=trans_b
         )
 
         # Create the graph (GraphProto)
@@ -465,7 +463,7 @@ class TestGemm(object):
         onnx.checker.check_model(onnx_model)
 
         bigdl_model = Gemm(b_val, c_val,
-                           alpha=alpha, beta=beta, trans_a=transA, trans_b=transB)
+                           alpha=alpha, beta=beta, trans_a=trans_a, trans_b=trans_b)
         loaded_model = load_model_proto(onnx_model)
 
         expected_out = bigdl_model.forward(input_x)
@@ -523,6 +521,7 @@ class TestMaxPool(object):
         expected_out = bigdl_model.forward(input_x)
 
         assert(np.array_equal(expected_out, loaded_out))
+
 
 class TestRelu(object):
 
@@ -614,7 +613,7 @@ class TestShape(object):
         input_x = np.random.random(input_shape)
         # Create one output (ValueInfoProto)
         X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [1,])
+        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [1])
 
         shape_node = onnx.helper.make_node(
             op_type='Shape',
@@ -646,8 +645,8 @@ class TestShape(object):
 class TestSoftmax(object):
 
     def test_softmax(self):
-        input_shape=[1, 3, 224, 224]
-        output_shape=[1, 3, 224, 224]
+        input_shape = [1, 3, 224, 224]
+        output_shape = [1, 3, 224, 224]
         input_x = np.random.random(input_shape)
         # Create one output (ValueInfoProto)
         X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
@@ -759,6 +758,7 @@ class TestUnsqueeze(object):
 
 def main():
     pytest.main([__file__])
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
