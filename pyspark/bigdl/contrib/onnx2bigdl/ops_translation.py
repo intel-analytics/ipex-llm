@@ -78,7 +78,7 @@ def batch_norm(inputs, prev_modules, attrs, outputs):
 
 def concat(inputs, prev_modules, attrs, outputs):
 	# extract attributes
-	axis = attrs.get('axis')
+	axis = int(attrs.get('axis'))
 	# extract inputs
 	_, data_tensor_shape = inputs[0]
 	# calc output tensor shape
