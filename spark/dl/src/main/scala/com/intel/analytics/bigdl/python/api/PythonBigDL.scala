@@ -42,6 +42,7 @@ import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image.label.roi._
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.utils.intermediate.IRGraph
 import com.intel.analytics.bigdl.utils.tf.TensorflowDataFormat
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.parse
 import com.intel.analytics.bigdl.utils.tf._
@@ -2631,6 +2632,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def setOutputFormats(graph: StaticGraph[T], outputFormat: JList[Int]): StaticGraph[T] = {
     graph.setOutputFormats(outputFormat.asScala.toList)
+  }
+
+  def toStaticGraph(graph: Graph[T]): StaticGraph[T] = {
+    graph.asInstanceOf[StaticGraph[T]]
+  }
+
+  def toIRGraph(graph: StaticGraph[T]): IRGraph[T] = {
+    graph.toIRgraph()
   }
 
   def createResizeBilinear(
