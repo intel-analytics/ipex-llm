@@ -41,6 +41,7 @@ class Filler(startX: Float, startY: Float, endX: Float, endY: Float, value: Int 
 
   override def transformMat(feature: ImageFeature): Unit = {
     var fillMat: Mat = null
+    var submat: Mat = null
     try {
       val mat = feature.opencvMat()
       val x1 = (startX * mat.cols()).ceil.toInt
@@ -48,9 +49,11 @@ class Filler(startX: Float, startY: Float, endX: Float, endY: Float, value: Int 
       val y1 = (startY * mat.rows()).ceil.toInt
       val y2 = (endY * mat.rows()).ceil.toInt
       fillMat = new core.Mat(y2 - y1, x2 - x1, mat.`type`(), new core.Scalar(value, value, value))
-      fillMat.copyTo(mat.submat(y1, y2, x1, x2))
+      submat = mat.submat(y1, y2, x1, x2)
+      fillMat.copyTo(submat)
     } finally {
       if (null != fillMat) fillMat.release()
+      if (null != submat) submat.release()
     }
   }
 }
