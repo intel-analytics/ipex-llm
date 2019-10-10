@@ -86,8 +86,8 @@ class TestAveragePool(object):
 class TestBatchNormalization(object):
 
     def test_batch_normalization(self):
-        input_shape=[1, 3, 224, 224]
-        output_shape=[1, 3, 224, 224]
+        input_shape = [1, 3, 224, 224]
+        output_shape = [1, 3, 224, 224]
         # Create inputs (ValueInfoProto)
         X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
         scale = onnx.helper.make_tensor_value_info('scale', onnx.TensorProto.FLOAT, input_shape[:2])
@@ -369,7 +369,8 @@ class TestGather(object):
 
         # Create one output (ValueInfoProto)
         data = onnx.helper.make_tensor_value_info('data', onnx.TensorProto.FLOAT, input_shape)
-        indices = onnx.helper.make_tensor_value_info('indices', onnx.TensorProto.FLOAT, indices_shape)
+        indices = onnx.helper.make_tensor_value_info('indices',
+                                                     onnx.TensorProto.FLOAT, indices_shape)
         Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
 
         init_indices = onnx.helper.make_tensor(
@@ -479,8 +480,8 @@ class TestMaxPool(object):
         stride_width, stride_height = 1, 1
         pad_width, pad_height = 0, 0
         ceil_mode = 0
-        input_shape=[1, 3, 224, 224]
-        output_shape=[1, 3, 223, 223]
+        input_shape = [1, 3, 224, 224]
+        output_shape = [1, 3, 223, 223]
         input_x = np.random.random(input_shape)
 
         # Create one output (ValueInfoProto)
@@ -609,7 +610,7 @@ class TestReshape(object):
 class TestShape(object):
 
     def test_shape(self):
-        input_shape=[3, 4, 5]
+        input_shape = [3, 4, 5]
         input_x = np.random.random(input_shape)
         # Create one output (ValueInfoProto)
         X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
