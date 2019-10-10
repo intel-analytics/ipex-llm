@@ -237,17 +237,17 @@ else
    export PYTHONPATH=`pwd`/analytics-zoo-tensorflow-models/slim:$PYTHONPATH
  fi
 
-echo "start example test for tensorflow distributed_training train_lenet 1"
+echo "start example test for TFPark tf_optimizer train_lenet 1"
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 200g \
     --executor-memory 200g \
     --properties-file ${ANALYTICS_ZOO_CONF} \
-    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/train_lenet.py \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_lenet.py \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/train_lenet.py 1 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_lenet.py 1 1000\
 
 sed "s%/tmp%analytics-zoo-tensorflow-models%g;s%models/slim%slim%g"
 if [ -d analytics-zoo-tensorflow-models/slim ]
@@ -269,11 +269,11 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-memory 200g \
     --executor-memory 200g \
     --properties-file ${ANALYTICS_ZOO_CONF} \
-    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/evaluate_lenet.py \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_lenet.py \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/evaluate_lenet.py 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_lenet.py 1000\
 
 echo "start example test for tensorflow distributed_training train_mnist_keras 3"
 ${SPARK_HOME}/bin/spark-submit \
@@ -281,11 +281,11 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-memory 200g \
     --executor-memory 200g \
     --properties-file ${ANALYTICS_ZOO_CONF} \
-    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/train_mnist_keras.py \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_mnist_keras.py \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/train_mnist_keras.py 1 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_mnist_keras.py 1 1000\
 
 echo "start example test for tensorflow distributed_training evaluate_lenet 4"
 ${SPARK_HOME}/bin/spark-submit \
@@ -293,11 +293,11 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-memory 200g \
     --executor-memory 200g \
     --properties-file ${ANALYTICS_ZOO_CONF} \
-    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/evaluate_mnist_keras.py \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_mnist_keras.py \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/distributed_training/evaluate_mnist_keras.py 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_mnist_keras.py 1000\
 
     
 now=$(date "+%s")
