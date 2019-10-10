@@ -80,7 +80,6 @@ class OnnxGraph(object):
 
 		return model
 
-
 	def _make_module_from_onnx_node(self, op_type, inputs, prev_modules, attrs, outputs):
 		module = None
 		out_shapes = []
@@ -89,7 +88,6 @@ class OnnxGraph(object):
 		else:
 			raise NotImplemented(op_type)
 		return module, out_shapes
-
 
 	def _parse_tensor_data(self, tensor_proto):
 		try:
@@ -103,7 +101,6 @@ class OnnxGraph(object):
 			np_array = np.array([to_array(tensor_proto)])
 		return np_array
 
-
 	def _parse_node_attr(self, node_proto):
 		attrs = {}
 		attr_proto = node_proto.attribute
@@ -112,9 +109,11 @@ class OnnxGraph(object):
 			for field in ['f', 'i', 's']:
 				if attr.HasField(field):
 					attrs[attr.name] = getattr(attr, field)
+
 					# Needed for supporting python version > 3.5
 					if isinstance(attrs[attr.name], bytes):
 						attrs[attr.name] = attrs[attr.name].decode(encoding='utf-8')
+
 			for field in ['floats', 'ints', 'strings']:
 				if list(getattr(attr, field)):
 					assert attr.name not in attrs, "Only one type of attr is allowed"

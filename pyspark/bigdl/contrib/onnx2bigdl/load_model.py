@@ -15,18 +15,16 @@
 #
 
 import onnx
-from .import_graph import OnnxGraph
+from .load_graph import OnnxGraph
 
 
 class OnnxModel(object):
-
 	def __init__(self, file_path=None):
 		if file_path:
 			self._model_proto = onnx.load_model(file_path)
 		else:
 			self._model_proto = None
 
-	
 	def get_model_proto(self):
 		return self._model_proto
 

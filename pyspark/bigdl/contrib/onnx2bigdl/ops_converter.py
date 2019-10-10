@@ -14,22 +14,23 @@
 # limitations under the License.
 #
 
+import sys
+
 from bigdl.nn.layer import SpatialAveragePooling, SpatialBatchNormalization
 from bigdl.nn.layer import SpatialConvolution, SpatialMaxPooling, JoinTable
 from bigdl.nn.layer import ReLU, SoftMax, CAddTable, Unsqueeze
 from bigdl.nn.onnx.layer import Constant, Gather, Gemm, Shape, Reshape
-from .translation_utils import *
+from .converter_utils import *
 
 
-# Method definitions for the callable objects mapped in the import_helper module
 def average_pool(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	auto_pad = attrs.get('auto_pad', 'NOTSET')
 	ceil_mode = True if attrs.get('ceil_mode', 0) == 1 else False
 	count_include_pad = True if attrs.get('count_include_pad', 0) == 1 else False
-	kernel_width, kernel_height = attrs.get('kernel_shape', (1, 1))[:2]
-	stride_width, stride_height = attrs.get('strides', (1, 1))[:2]
-	padding_width, padding_height = attrs.get('pads', (0, 0))[:2]
+	kernel_width, kernel_height = map(int, attrs.get('kernel_shape', (1, 1))[:2])
+	stride_width, stride_height = map(int, attrs.get('strides', (1, 1))[:2])
+	padding_width, padding_height = map(int, attrs.get('pads', (0, 0))[:2])
 	# extract inputs
 	_, data_tensor_shape = inputs[0]
 	# calc output tensor shape
@@ -64,10 +65,10 @@ def batch_norm(inputs, prev_modules, attrs, outputs):
 	# calc output tensor shape
 	out_tensor_shape = data_tensor_shape
 	# create module node
-	n_output = data_tensor_shape[1]
+	n_output = int(data_tensor_shape[1])
 
-	temp_module = SpatialBatchNormalization(n_output=n_output, eps=epsilon, momentum=momentum,
-		init_weight=scale_tensor_val, init_bias=bias_tensor_val)
+	temp_module = SpatialBatchNormalization(n_output=n_output, eps=epsilon,
+		momentum=momentum, init_weight=scale_tensor_val, init_bias=bias_tensor_val)
 	if mean_tensor_val is not None:
 		temp_module.set_running_mean(mean_tensor_val)
 	if var_tensor_val is not None:
@@ -103,7 +104,7 @@ def concat(inputs, prev_modules, attrs, outputs):
 def constant(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	value = parse_tensor_data(attrs.get('value'))
-		## .flatten()
+
 	# calc output tensor shape
 	out_tensor_shape = value.shape
 	# create module node
@@ -114,12 +115,12 @@ def constant(inputs, prev_modules, attrs, outputs):
 def conv(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	auto_pad = attrs.get('auto_pad', 'NOTSET')
-	padW, padH = attrs.get('pads', (0, 0))[:2]
-	kernelW, kernelH = attrs.get('kernel_shape', (0, 0))[:2]
-	strideW, strideH = attrs.get('strides', (1, 1))[:2]
-	dilationW, dilationH = attrs.get('dilations', (1, 1))[:2]
-	group = attrs.get('group', 1)
-	withBias = len(inputs) == 3
+	padW, padH = map(int, attrs.get('pads', (0, 0))[:2])
+	kernelW, kernelH = map(int, attrs.get('kernel_shape', (0, 0))[:2])
+	strideW, strideH = map(int, attrs.get('strides', (1, 1))[:2])
+	dilationW, dilationH = map(int, attrs.get('dilations', (1, 1))[:2])
+	group = int(attrs.get('group', 1))
+	withBias = len(inputs) == 3 and inputs[2] is not None
 	# extract inputs
 	data_tensor_val, data_tensor_shape = inputs[0]
 	weight_tensor_val, weight_tensor_shape = inputs[1]
@@ -127,7 +128,7 @@ def conv(inputs, prev_modules, attrs, outputs):
 	if withBias:
 		bias_tensor_val, _ = inputs[2]
 	# calc output tensor shape
-	input_batch_size, n_input_plane = data_tensor_shape[:2]
+	input_batch_size, n_input_plane = map(int, data_tensor_shape[:2])
 	n_output_plane = weight_tensor_shape[0]
 	input_height, input_width = data_tensor_shape[-2:]
 	output_height = calc_output_shape(input_height, kernelH, padding = padH, stride=strideH)
@@ -145,7 +146,7 @@ def conv(inputs, prev_modules, attrs, outputs):
 
 def gather(inputs, prev_modules, attrs, outputs):
 	# extract attributes
-	axis = attrs.get('axis', 0)
+	axis = int(attrs.get('axis', 0))
 	if axis != 0:
 		raise ValueError("Gather layer axis value")
 	# extract inputs
@@ -162,27 +163,27 @@ def gemm(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	alpha = float(attrs.get("alpha", 1.0))
 	beta = float(attrs.get("beta", 1.0))
-	trans_a = attrs.get("transA", 0)
-	trans_b = attrs.get("transB", 0)
+	trans_a = int(attrs.get("transA", 0))
+	trans_b = int(attrs.get("transB", 0))
 	# extract inputs
 	_, tensor_a_shape = inputs[0]
 	tensor_b_val, tensor_b_shape = inputs[1]
 	tensor_c_val, tensor_c_shape = inputs[2]
 	# create module node
 	module = Gemm(alpha=alpha, beta=beta, trans_a=trans_a, trans_b=trans_b,
-				  matrix_b=tensor_b_val, matrix_c=tensor_c_val)(prev_modules)
+				matrix_b=tensor_b_val, matrix_c=tensor_c_val)(prev_modules)
 	return module, [tensor_c_shape]
 
 
 def max_pool(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	auto_pad = attrs.get("auto_pad", 'NOTSET')
-	kernelW, kernelH = attrs.get("kernel_shape")[:2]
-	strideW, strideH = attrs.get("strides", (1, 1))[:2]
-	dilationW, dilationH = attrs.get('dilations', (1, 1))[:2]
-	padW, padH = attrs.get("pads", (0, 0))[:2]
+	kernelW, kernelH = map(int, attrs.get("kernel_shape")[:2])
+	strideW, strideH = map(int, attrs.get("strides", (1, 1))[:2])
+	dilationW, dilationH = map(int, attrs.get('dilations', (1, 1))[:2])
+	padW, padH = map(int, attrs.get("pads", (0, 0))[:2])
 	ceil_mode = True if (attrs.get("ceil_mode", 0) != 0) else False
-	storage_order = attrs.get("storage_order", 0)
+	storage_order = int(attrs.get("storage_order", 0))
 	# extract inputs
 	_, data_tensor_shape = inputs[0]
 	input_width, input_height = data_tensor_shape[-2:]
@@ -234,7 +235,7 @@ def shape(inputs, prev_modules, attrs, outputs):
 def softmax(inputs, prev_modules, attrs, outputs):
 	_, data_tensor_shape = inputs[0]
 	out_tensor_shape = data_tensor_shape
-	axis = attrs.get('axis', 1)
+	axis = int(attrs.get('axis', 1))
 	module = SoftMax()(prev_modules[0])
 	return module, [out_tensor_shape]
 
@@ -247,7 +248,7 @@ def _sum(inputs, prev_modules, attrs, outputs):
 
 
 def unsqueeze(inputs, prev_modules, attrs, outputs):
-	axes = attrs.get('axes')
+	axes = map(int, attrs.get('axes'))
 	data_tensor_val, data_tensor_shape = inputs[0]
 	out_tensor_shape = list(data_tensor_shape)
 	for idx in axes:

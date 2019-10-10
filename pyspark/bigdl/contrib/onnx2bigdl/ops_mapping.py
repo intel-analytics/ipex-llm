@@ -16,9 +16,9 @@
 
 
 """Operator attributes conversion"""
-from .ops_translation import conv, batch_norm, relu, max_pool, _sum, average_pool
-from .ops_translation import reshape, gemm, softmax, constant, shape, gather
-from .ops_translation import unsqueeze, concat
+from .ops_converter import conv, batch_norm, relu, max_pool, _sum, average_pool
+from .ops_converter import reshape, gemm, softmax, constant, shape, gather
+from .ops_converter import unsqueeze, concat
 
 
 # convert_map defines maps of operator names to converter functor(callable)
