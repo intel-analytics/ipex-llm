@@ -115,10 +115,10 @@ def constant(inputs, prev_modules, attrs, outputs):
 def conv(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	auto_pad = attrs.get('auto_pad', 'NOTSET')
-	padW, padH = map(int, attrs.get('pads', (0, 0))[:2])
-	kernelW, kernelH = map(int, attrs.get('kernel_shape', (0, 0))[:2])
-	strideW, strideH = map(int, attrs.get('strides', (1, 1))[:2])
-	dilationW, dilationH = map(int, attrs.get('dilations', (1, 1))[:2])
+	padW, padH = list(map(int, attrs.get('pads', (0, 0))[:2]))
+	kernelW, kernelH = list(map(int, attrs.get('kernel_shape', (0, 0))[:2]))
+	strideW, strideH = list(map(int, attrs.get('strides', (1, 1))[:2]))
+	dilationW, dilationH = list(map(int, attrs.get('dilations', (1, 1))[:2]))
 	group = int(attrs.get('group', 1))
 	withBias = len(inputs) == 3 and inputs[2] is not None
 	# extract inputs
@@ -178,10 +178,10 @@ def gemm(inputs, prev_modules, attrs, outputs):
 def max_pool(inputs, prev_modules, attrs, outputs):
 	# extract attributes
 	auto_pad = attrs.get("auto_pad", 'NOTSET')
-	kernelW, kernelH = map(int, attrs.get("kernel_shape")[:2])
-	strideW, strideH = map(int, attrs.get("strides", (1, 1))[:2])
-	dilationW, dilationH = map(int, attrs.get('dilations', (1, 1))[:2])
-	padW, padH = map(int, attrs.get("pads", (0, 0))[:2])
+	kernelW, kernelH = list(map(int, attrs.get("kernel_shape")[:2]))
+	strideW, strideH = list(map(int, attrs.get("strides", (1, 1))[:2]))
+	dilationW, dilationH = list(map(int, attrs.get('dilations', (1, 1))[:2]))
+	padW, padH = list(map(int, attrs.get("pads", (0, 0))[:2]))
 	ceil_mode = True if (attrs.get("ceil_mode", 0) != 0) else False
 	storage_order = int(attrs.get("storage_order", 0))
 	# extract inputs
@@ -248,7 +248,7 @@ def _sum(inputs, prev_modules, attrs, outputs):
 
 
 def unsqueeze(inputs, prev_modules, attrs, outputs):
-	axes = map(int, attrs.get('axes'))
+	axes = list(map(int, attrs.get('axes')))
 	data_tensor_val, data_tensor_shape = inputs[0]
 	out_tensor_shape = list(data_tensor_shape)
 	for idx in axes:
