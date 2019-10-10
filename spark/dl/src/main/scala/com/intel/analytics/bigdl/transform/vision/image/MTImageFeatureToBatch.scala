@@ -286,7 +286,8 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
  * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads.
  * Image features may have different sizes, so firstly we need to calculate max size in one batch,
  * then padding all features to one batch with max size.
- * @param sizeDivisible when it's greater than 0, height and wide should be divisible by this size
+ * @param sizeDivisible when it's greater than 0,
+ *                      height and wide will be round up to multiple of this divisible size
  * @param totalBatchSize global batch size
  * @param transformer pipeline for pre-processing
  * @param toRGB
@@ -304,9 +305,9 @@ class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, t
   private def getFrameSize(batchSize: Int): (Int, Int) = {
     var maxHeight = 0
     var maxWide = 0
-    for (i <- 0 to (batchSize - 1)) {
-      if (maxHeight < imageBuffer(i).size(2)) maxHeight = imageBuffer(i).size(2)
-      if (maxWide < imageBuffer(i).size(3)) maxWide = imageBuffer(i).size(3)
+    for (i <- 0 until batchSize) {
+      maxHeight = math.max(maxHeight, imageBuffer(i).size(2))
+      maxWide = math.max(maxWide, imageBuffer(i).size(3))
     }
 
     if (sizeDivisible > 0) {
