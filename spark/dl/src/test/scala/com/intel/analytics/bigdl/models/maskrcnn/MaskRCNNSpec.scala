@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.models.maskrcnn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Nms
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 class MaskRCNNSpec extends FlatSpec with Matchers {
@@ -31,6 +33,59 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
     mask.evaluate()
     val input = Tensor[Float](1, 3, 224, 256).rand()
     val output = mask.forward(input)
+  }
+
+  "build maskrcnn with batch size > 1" should "be ok" in {
+    RandomGenerator.RNG.setSeed(1)
+    val resNetOutChannels = 32
+    val backboneOutChannels = 32
+    val mask = new MaskRCNN(resNetOutChannels, backboneOutChannels)
+    mask.evaluate()
+    val maskBatch = mask.asInstanceOf[Module[Float]].cloneModule()
+    maskBatch.evaluate()
+    val mask3 = mask.asInstanceOf[Module[Float]].cloneModule()
+    mask3.evaluate()
+
+    val input1 = Tensor[Float](1, 3, 224, 256).rand()
+    val input2 = Tensor[Float](1, 3, 224, 256).rand()
+
+    val input = Tensor[Float](2, 3, 224, 256)
+    input.narrow(1, 1, 1).copy(input1)
+    input.narrow(1, 2, 1).copy(input2)
+
+    val output1 = mask.forward(input1).toTable[Table](1)
+    val output2 = mask3.forward(input2).toTable[Table](1)
+    val output = maskBatch.forward(input).toTable
+    val first = output[Table](1)
+    val second = output[Table](2)
+
+    first.get[Tensor[Float]](RoiLabel.BBOXES) should be(
+      output1.get[Tensor[Float]](RoiLabel.BBOXES))
+    first.get[Tensor[Float]](RoiLabel.CLASSES) should be(
+      output1.get[Tensor[Float]](RoiLabel.CLASSES))
+    first.get[Tensor[Float]](RoiLabel.SCORES) should be(
+      output1.get[Tensor[Float]](RoiLabel.SCORES))
+
+    second.get[Tensor[Float]](RoiLabel.BBOXES) should be(
+      output2.get[Tensor[Float]](RoiLabel.BBOXES))
+    second.get[Tensor[Float]](RoiLabel.CLASSES) should be(
+      output2.get[Tensor[Float]](RoiLabel.CLASSES))
+    second.get[Tensor[Float]](RoiLabel.SCORES) should be(
+      output2.get[Tensor[Float]](RoiLabel.SCORES))
+
+    // for masks
+    val firstMasks = first.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
+    val expectedMasks = output1.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
+    for (i <- 0 to firstMasks.length - 1) {
+      firstMasks(i) should be(expectedMasks(i))
+    }
+
+    val secondMasks = second.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
+    val expectedMasks2 = output2.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
+
+    for (i <- 0 to secondMasks.length - 1) {
+      secondMasks(i) should be(expectedMasks2(i))
+    }
   }
 
   "NMS" should "be ok" in {

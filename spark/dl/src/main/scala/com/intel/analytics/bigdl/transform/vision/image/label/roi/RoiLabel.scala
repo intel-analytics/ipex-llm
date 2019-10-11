@@ -75,6 +75,7 @@ object RoiLabel {
   // ISCROWD and ORIGSIZE are stored in ImageFeature
   val ISCROWD = "is_crowd"
   val ORIGSIZE = "size"
+  val SCORES = "imageSize"
 
 
   def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
