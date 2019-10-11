@@ -25,6 +25,11 @@ abstract class SegmentationMasks extends Serializable {
    * Convert to a RLE encoded tensor
    */
   def toRLETensor: Tensor[Float]
+
+  /**
+   * Get the height and width
+   */
+  def size: (Int, Int)
 }
 
 /**
@@ -40,6 +45,11 @@ class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) 
     require(height > 0 && width > 0, "the height and width must > 0 for toRLETensor()")
     MaskUtils.mergeRLEs(MaskUtils.poly2RLE(this, height, width), false).toRLETensor
   }
+
+  /**
+   * Get the height and width
+   */
+  override def size: (Int, Int) = (height, width)
 }
 
 object PolyMasks {
@@ -69,6 +79,8 @@ class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends 
   override def toRLETensor: Tensor[Float] = {
     Tensor(counts.map(MaskUtils.uint2long(_).toFloat), Array(counts.length))
   }
+
+  override def size: (Int, Int) = (height, width)
 
   /**
    * Get an element in the counts. Process the overflowed int

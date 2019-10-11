@@ -180,8 +180,9 @@ object RoiImageInfo {
   val MASKS = "masks"
   // ISCROWD and ORIGSIZE are stored in ImageFeature
   val ISCROWD = "is_crowd"
-  val ORIGSIZE = "size"
+  val ORIGSIZE = "orig_size"
   val SCORES = "scores"
+  val ROISIZE = "roi_size"
 
   /**
    * Get the output score tensor from the table.
@@ -232,6 +233,12 @@ object RoiImageInfo {
   def getOrigSize(tab: Table): (Int, Int, Int) =
     tab[(Int, Int, Int)](ORIGSIZE)
 
+  /**
+   * Get the size of the image before resizing
+   * @return (height, width)
+   */
+  def getRoiSize(tab: Table): (Int, Int) =
+    tab[(Int, Int)](ROISIZE)
 }
 /**
  * A batch of images with flattened RoiLabels
@@ -240,14 +247,16 @@ object RoiImageInfo {
  * info for one image (assume the image has N detections). The annotation table has
  *
  * Key                Value
- * RoiLabel.CLASSES   the categories for each detections (see RoiLabel.clasees field)
+ * RoiImageInfo.CLASSES   the categories for each detections (see RoiLabel.clasees field)
  *                    (1 x N), or (2 x N) Tensor[Float]
- * RoiLabel.BBOXES    the bboxes, (N x 4) Tensor[Float]
- * RoiLabel.MASKS     (Optional) the mask data, Array[Tensor[Float]\]. The outer array has N
+ * RoiImageInfo.BBOXES    the bboxes, (N x 4) Tensor[Float]
+ * RoiImageInfo.MASKS     (Optional) the mask data, Array[Tensor[Float]\]. The outer array has N
  *                    elements. The inner tensor holds the data for segmentation
- * RoiLabel.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
+ * RoiImageInfo.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
  *                    -1: unknown, 0: not crowd, 1: is crowd
- * RoiLabel.ORIGSIZE  The original size of the image, tuple of (height, width, channels)
+ * RoiImageInfo.ORIGSIZE  The original size of the image, tuple of (height, width, channels)
+ * RoiImageInfo.ROIGSIZE  (Optional) The size for ROI masks of the scaled image,
+ *                    tuple of (height, width)
  */
 class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
   val isCrowd: IndexedSeq[Tensor[Float]], val originalSizes: IndexedSeq[(Int, Int, Int)])
