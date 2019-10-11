@@ -38,6 +38,8 @@ pages:
     - Text Models: ProgrammingGuide/text-models.md
     - BERT Classifier: ProgrammingGuide/bert-classifier.md
   - PyTorch: ProgrammingGuide/pytorch.md
+  - Ray:
+    - RayOnSpark: ProgrammingGuide/rayonspark.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
@@ -71,8 +73,6 @@ pages:
     - Relation: APIGuide/FeatureEngineering/relation.md
     - Image: APIGuide/FeatureEngineering/image.md
     - Text: APIGuide/FeatureEngineering/text.md
-  - Ray:
-    - RayOnSpark: APIGuide/Ray/rayonspark.md
   - Models:
     - Object Detection: APIGuide/Models/object-detection.md
     - Image Classification: APIGuide/Models/image-classification.md

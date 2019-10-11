@@ -9,12 +9,12 @@ in a pythonic way on yarn without `spark-submit` or installing Analytics-Zoo or 
 
 1) You should install [Conda](https://docs.conda.io/projects/conda/en/latest/commands/install.html) and create a conda-env named "ray36"
 
-2) Install some essential dependencies inthe conda env
+2) Install some essential dependencies in the conda env.
 
 ```
 pip install analytics-zoo
 pip install pyspark==2.4.0 # 2.4.3 is OK as well.
-pip install ray
+pip install ray==0.6.6
 pip install conda-pack
 pip install psutil
 pip install aiohttp
@@ -92,5 +92,7 @@ print([ray.get(actor.ip.remote()) for actor in actors])
 ray_ctx.stop()
 
 ```
+
+- NOTE: This was test on Ray 0.6.6. Ideally, we can upgrade to the latest version once the following issue is addressed.(https://github.com/ray-project/ray/issues/5223)
 
 
