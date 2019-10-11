@@ -109,12 +109,23 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
     writeFile(calibrateTFInputStream, openvinoTempDirPath, calibrateTFPath)
 
     val moTarPath = "/model-optimizer.tar.gz"
-    val moTarInputStream = OpenvinoNativeLoaderClass.getResourceAsStream(moTarPath)
+
+    val moTarInputStream = scala.util.Properties.isMac match {
+      case true => OpenvinoNativeLoaderClass
+        .getResourceAsStream("/darwin-x86_64" + moTarPath)
+      case false => OpenvinoNativeLoaderClass
+        .getResourceAsStream(moTarPath)
+    }
     val moTarFile = writeFile(moTarInputStream, openvinoTempDirPath, moTarPath)
     s"tar -xzvf ${moTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
 
     val ieTarPath = "/inference-engine-bin.tar.gz"
-    val ieTarInputStream = OpenvinoNativeLoaderClass.getResourceAsStream(ieTarPath)
+    val ieTarInputStream = scala.util.Properties.isMac match {
+      case true => OpenvinoNativeLoaderClass
+        .getResourceAsStream("/darwin-x86_64" + ieTarPath)
+      case false => OpenvinoNativeLoaderClass
+        .getResourceAsStream(ieTarPath)
+    }
     val ieTarFile = writeFile(ieTarInputStream, openvinoTempDirPath, ieTarPath)
     s"tar -xzvf ${ieTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
 
