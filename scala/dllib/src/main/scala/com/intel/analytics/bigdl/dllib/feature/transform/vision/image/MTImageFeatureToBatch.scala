@@ -49,6 +49,20 @@ object MTImageFeatureToBatch {
   }
 }
 
+object MTImageFeatureToBatchWithResize {
+  /**
+   * The transformer from ImageFeature to mini-batches, and extract ROI labels for segmentation
+   * if roi labels are set.
+   * @param sizeDivisible when it's greater than 0, height and wide should be divisible by this size
+   * @param batchSize global batch size
+   * @param transformer pipeline for pre-processing
+   * @param toRGB if converted to RGB, default format is BGR
+   */
+  def apply(sizeDivisible: Int = -1, batchSize: Int, transformer: FeatureTransformer,
+    toRGB : Boolean = false): MTImageFeatureToBatch =
+    new RoiImageFeatureToBatchWithResize(sizeDivisible, batchSize, transformer, toRGB)
+}
+
 /**
  * An abstract class to convert ImageFeature iterator to MiniBatches. This transformer will be run
  * on each image feature. "processImageFeature" will be called to buffer the image features. When
@@ -265,5 +279,68 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
         storageOffset = 1, size = Array(batchSize, 3, height, width))
     }
     RoiMiniBatch(featureTensor, labelData.view, isCrowdData.view, origSizeData.view)
+  }
+}
+
+/**
+ * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads.
+ * Image features may have different sizes, so firstly we need to calculate max size in one batch,
+ * then padding all features to one batch with max size.
+ * @param sizeDivisible when it's greater than 0,
+ *                      height and wide will be round up to multiple of this divisible size
+ * @param totalBatchSize global batch size
+ * @param transformer pipeline for pre-processing
+ * @param toRGB
+ */
+class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, totalBatchSize: Int,
+  transformer: FeatureTransformer, toRGB: Boolean = false)
+  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+
+  private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
+  private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
+  private val origSizeData: Array[(Int, Int, Int)] = new Array[(Int, Int, Int)](batchSize)
+  private var featureTensor: Tensor[Float] = null
+  private val imageBuffer = new Array[Tensor[Float]](batchSize)
+
+  private def getFrameSize(batchSize: Int): (Int, Int) = {
+    var maxHeight = 0
+    var maxWide = 0
+    for (i <- 0 until batchSize) {
+      maxHeight = math.max(maxHeight, imageBuffer(i).size(2))
+      maxWide = math.max(maxWide, imageBuffer(i).size(3))
+    }
+
+    if (sizeDivisible > 0) {
+      maxHeight = (math.ceil(maxHeight.toFloat / sizeDivisible) * sizeDivisible).toInt
+      maxWide = (math.ceil(maxWide.toFloat / sizeDivisible) * sizeDivisible).toInt
+    }
+    (maxHeight, maxWide)
+  }
+
+  override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
+    if (imageBuffer(position) == null) imageBuffer(position) = Tensor[Float]()
+    imageBuffer(position).resize(3, img.getHeight(), img.getWidth())
+    // save img to buffer
+    img.copyTo(imageBuffer(position).storage().array(), 0, toRGB = toRGB)
+    val isCrowd = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Float]]
+    val label = img.getLabel.asInstanceOf[RoiLabel]
+    require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
+      "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
+    isCrowdData(position) = isCrowd
+    labelData(position) = label
+    origSizeData(position) = img.getOriginalSize
+  }
+
+  override protected def createBatch(batchSize: Int): MiniBatch[Float] = {
+    val (height, wide) = getFrameSize(batchSize)
+    if (featureTensor == null) featureTensor = Tensor()
+    featureTensor.resize(batchSize, 3, height, wide).fill(0.0f)
+    // copy img buffer to feature tensor
+    for (i <- 0 to (batchSize - 1)) {
+      featureTensor.select(1, i + 1).narrow(2, 1, imageBuffer(i).size(2))
+        .narrow(3, 1, imageBuffer(i).size(3)).copy(imageBuffer(i))
+    }
+    RoiMiniBatch(featureTensor, labelData.view(0, batchSize),
+      isCrowdData.view(0, batchSize), origSizeData.view(0, batchSize))
   }
 }
