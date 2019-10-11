@@ -54,7 +54,7 @@ config = ImageConfigure(preprocessing)
 output = imc.predict_image_set(image_set)
 ```
 
-For preprocessors for Image Classification models, please check [Image Classification Config](https://github.com/intel-analytics/zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/models/image/imageclassification/ImageClassificationConfig.scala)
+For preprocessors for Image Classification models, please check [Image Classification Config](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/models/image/imageclassification/ImageClassificationConfig.scala)
 
 ## Download link
 
