@@ -33,7 +33,7 @@ object COCOSeqFileGenerator {
    * Configuration class for COCO sequence file
    * generator
    *
-   * @param folder the COCO JPG file location
+   * @param folder the COCO image files location
    * @param metaPath the metadata json file location
    * @param output generated seq files location
    * @param parallel number of parallel
