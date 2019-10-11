@@ -37,6 +37,7 @@ pages:
     - TFPark: ProgrammingGuide/tensorflow.md
     - Text Models: ProgrammingGuide/text-models.md
     - BERT Classifier: ProgrammingGuide/bert-classifier.md
+  - PyTorch: ProgrammingGuide/pytorch.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
