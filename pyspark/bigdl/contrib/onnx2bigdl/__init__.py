@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .load_model import load_onnx
+from .OnnxLoader import load

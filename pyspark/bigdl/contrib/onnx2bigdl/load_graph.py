@@ -28,7 +28,6 @@ class OnnxGraph(object):
 		self._modules = dict()
 		self._root = list()
 		self._dummy_root = Identity()()
-		self._graph = self.load_graph(graph_proto)
 		return
 
 	def load_graph(self, graph_proto):
