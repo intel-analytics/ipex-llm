@@ -80,6 +80,12 @@ ${SPARK_HOME}/bin/spark-submit \
        ${BigDL_HOME}/pyspark/bigdl/models/mkldnn_lstm/mkldnn_lstm.py --folder /tmp/rnn/ --batchSize 12
 ```
 
+Make sure MKLDNN engine type is set using:
+```
+--conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+--conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+```
+
 * `--folder` directory where `input.txt` is located. the default value is /tmp/rnn.
 * `--batchSize` option can be used to set batch size, the default value is 12.
 * `--hiddenSize` hidden unit size in the rnn cell, the default value is 40.
