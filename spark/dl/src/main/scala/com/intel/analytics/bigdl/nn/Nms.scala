@@ -61,12 +61,12 @@ class Nms extends Serializable {
    * @param thresh  overlap thresh
    * @param indices buffer to store indices after nms
    * @param sorted whether the scores are sorted
-   * @param orderWithBbox whether return indices in the order with original bbox index
+   * @param orderWithBBox whether return indices in the order with original bbox index
    * @return the length of indices after nms
    */
   def nms(scores: Tensor[Float], boxes: Tensor[Float], thresh: Float,
     indices: Array[Int], sorted: Boolean = false,
-    orderWithBbox: Boolean = false): Int = {
+    orderWithBBox: Boolean = false): Int = {
     if (scores.nElement() == 0) return 0
     require(indices.length >= scores.nElement() && boxes.size(2) == 4)
 
@@ -110,7 +110,7 @@ class Nms extends Serializable {
     }
 
     // use suppressed
-    if (orderWithBbox) {
+    if (orderWithBBox) {
       var j = 0
       for (i <- 0 to (orderLength - 1)) {
         if (suppressed(i) == 0) {

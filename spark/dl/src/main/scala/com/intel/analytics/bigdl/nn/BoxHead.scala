@@ -147,7 +147,7 @@ private[nn] class BoxPostProcessor(
     val clsScores = selectTensor(scores.select(2, clsInd + 1), inds, 1)
     val clsBoxes = selectTensor(boxes.narrow(2, clsInd * 4 + 1, 4), inds, 1)
 
-    val keepN = nmsTool.nms(clsScores, clsBoxes, nmsThresh, inds, orderWithBbox = true)
+    val keepN = nmsTool.nms(clsScores, clsBoxes, nmsThresh, inds, orderWithBBox = true)
 
     val bboxNms = selectTensor(clsBoxes, inds, 1, keepN)
     val scoresNms = selectTensor(clsScores, inds, 1, keepN)
@@ -285,15 +285,8 @@ private[nn] class BoxPostProcessor(
     val classLogits = input[Tensor[Float]](1)
     val boxRegression = input[Tensor[Float]](2)
     val bbox = if (input(3).isInstanceOf[Tensor[Float]]) {
-      input[Tensor[Float]](3)
-    } else input[Table](3)[Tensor[Float]](1)
-    require(input(3).isInstanceOf[Table], s"bbox should be table, but gte ${input(3)}")
-    val bbox = input[Table](3)
-
-    val boxesInImage = new Array[Int](bbox.length())
-    for (i <- 0 to boxesInImage.length - 1) {
-      boxesInImage(i) = bbox[Tensor[Float]](i + 1).size(1)
-    }
+      T(input[Tensor[Float]](3))
+    } else input[Table](3)
 
     val boxesInImage = new Array[Int](bbox.length())
     for (i <- 0 to boxesInImage.length - 1) {
