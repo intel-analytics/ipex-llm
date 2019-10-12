@@ -104,31 +104,54 @@ class Pooler[T: ClassTag] (
 
   override def updateOutput(input: Table): Tensor[T] = {
     val featureMaps = input[Table](1)
-    val rois = input[Tensor[T]](2)
-
-    val roi_levels = levelMapping(lvl_min, lvl_max, rois)
-    val num_rois = rois.size(1)
+    val roiBatch = if (input(2).isInstanceOf[Tensor[T]]) {
+      T(input[Tensor[T]](2))
+    } else { // for batch support
+      input[Table](2)
+    }
+    var totalNum = 0
     val num_channels = featureMaps.get[Tensor[T]](1).get.size(2)
+    val out = T()
+    for (i <- 0 to roiBatch.length() - 1) {
+      val rois = roiBatch[Tensor[T]](i + 1)
 
-    output.resize(num_rois, num_channels, resolution, resolution)
-      .fill(ev.fromType[Float](Float.MinValue))
+      val roi_levels = levelMapping(lvl_min, lvl_max, rois)
+      val num_rois = rois.size(1)
+      totalNum += num_rois
 
-    for (level <- 0 until num_levels) {
-      val feature_per_level = featureMaps.get[Tensor[T]](level + 1).get
-      val rois_ind_per_level = roi_levels.zipWithIndex.filter(_._1 == level).map(_._2)
-      val num_rois_per_level = rois_ind_per_level.length
+      if (out.getOrElse(i + 1, null) == null) out(i + 1) = Tensor[T]()
+      val outROI = out[Tensor[T]](i + 1)
+      outROI.resize(num_rois, num_channels, resolution, resolution)
+        .fill(ev.fromType[Float](Float.MinValue))
 
-      if (num_rois_per_level > 0) {
-        val rois_per_level = Tensor[T](Array(num_rois_per_level, 4)) // bbox has 4 elements
-        for (i <- 0 until num_rois_per_level) {
-          rois_per_level(i + 1) = rois(rois_ind_per_level(i) + 1)
-        }
+      for (level <- 0 until num_levels) {
+        val tmp = featureMaps.get[Tensor[T]](level + 1).get.narrow(1, i + 1, 1)
+        val feature_per_level = Tensor[T]().resizeAs(tmp).copy(tmp)
+        val rois_ind_per_level = roi_levels.zipWithIndex.filter(_._1 == level).map(_._2)
+        val num_rois_per_level = rois_ind_per_level.length
 
-        val res = poolers(level).forward(T(feature_per_level, rois_per_level))
-        for (i <- 0 until num_rois_per_level) {
-          output(rois_ind_per_level(i) + 1) = res(i + 1)
+        if (num_rois_per_level > 0) {
+          val rois_per_level = Tensor[T](Array(num_rois_per_level, 4)) // bbox has 4 elements
+          for (i <- 0 until num_rois_per_level) {
+            rois_per_level(i + 1) = rois(rois_ind_per_level(i) + 1)
+          }
+
+          val res = poolers(level).forward(T(feature_per_level, rois_per_level))
+          for (i <- 0 until num_rois_per_level) {
+            outROI(rois_ind_per_level(i) + 1) = res(i + 1)
+          }
         }
       }
+    }
+
+    // merge to one tensor
+    output.resize(totalNum, num_channels, resolution, resolution)
+    var start = 1
+    for (i <- 0 to roiBatch.length() - 1) {
+      val tmp = out[Tensor[T]](i + 1)
+      val length = tmp.size(1)
+      output.narrow(1, start, length).copy(tmp)
+      start += length
     }
 
     output

@@ -522,11 +522,8 @@ class MaskPostProcessorSpec extends FlatSpec with Matchers {
 class MaskPostProcessorSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val proposal = new MaskPostProcessor().setName("MaskPostProcessor")
-
-    val bbox = Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
-      T(3.0f, 5.0f, 6.0f, 10.0f)))
     val labels = Tensor[Float](T(1, 3))
     val logits = Tensor[Float](2, 81, 18, 18).rand()
-    runSerializationTest(proposal, T(logits, bbox, labels))
+    runSerializationTest(proposal, T(logits, labels))
   }
 }
