@@ -23,9 +23,9 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
-class RegionRroposalSpec extends FlatSpec with Matchers {
-  "RegionRroposal" should "be ok" in {
-    val layer = new RegionRroposal(6,
+class RegionProposalSpec extends FlatSpec with Matchers {
+  "RegionProposal" should "be ok" in {
+    val layer = new RegionProposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
       Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
@@ -274,8 +274,8 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
     output[Tensor[Float]](1) should be(outputExpected)
   }
 
-  "RegionRroposal with multi features" should "be ok" in {
-    val layer = new RegionRroposal(6,
+  "RegionProposal with multi features" should "be ok" in {
+    val layer = new RegionProposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
       Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
@@ -738,7 +738,7 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
   }
 
   "AnchorGenerate" should "be ok" in {
-    val layer = new RegionRroposal(6,
+    val layer = new RegionProposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
       Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
@@ -805,7 +805,7 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
   }
 
   "RPNHead" should "be ok" in {
-    val layer = new RegionRroposal(6,
+    val layer = new RegionProposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
       Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
@@ -1099,8 +1099,8 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
     Equivalent.nearequals(out.apply[Tensor[Float]](2), expectOut2, 1e-4) should be(true)
   }
 
-  "RegionRroposal with batch size > 1" should "be ok" in {
-    val layer = new RegionRroposal(6,
+  "RegionProposal with batch size > 1" should "be ok" in {
+    val layer = new RegionProposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
       Array[Float](4, 8, 16, 32, 64), 2000, 2000, 2000, 2000, 0.7f, 0)
@@ -1409,13 +1409,13 @@ class RegionRroposalSpec extends FlatSpec with Matchers {
   }
 }
 
-class RegionRroposalSerialTest extends ModuleSerializationTest {
+class RegionProposalSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val layer = new RegionRroposal(6,
+    val layer = new RegionProposal(6,
       Array[Float](32, 64, 128, 256, 512),
       Array[Float](0.5f, 1.0f, 2.0f),
       Array[Float](4, 8, 16, 32, 64),
-      2000, 2000, 2000, 2000, 0.7f, 0).setName("RegionRroposal")
+      2000, 2000, 2000, 2000, 0.7f, 0).setName("RegionProposal")
 
     val features = Tensor[Float](1, 6, 3, 4).rand()
     val imgInfo = Tensor[Float](T(20, 38))

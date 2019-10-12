@@ -37,7 +37,7 @@ import scala.collection.mutable.ArrayBuffer
  * @param nmsThread
  * @param minSize
  */
-class RegionRroposal(
+class RegionProposal(
    val inChannels: Int,
    val anchorSizes: Array[Float],
    val aspectRatios: Array[Float],
@@ -185,11 +185,11 @@ class RegionRroposal(
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    throw new UnsupportedOperationException("RegionRroposal only support inference")
+    throw new UnsupportedOperationException("RegionProposal only support inference")
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    throw new UnsupportedOperationException("RegionRroposal only support inference")
+    throw new UnsupportedOperationException("RegionProposal only support inference")
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -213,7 +213,7 @@ class RegionRroposal(
     boxSelector.release()
   }
 
-  override def training(): RegionRroposal.this.type = {
+  override def training(): RegionProposal.this.type = {
     train = true
     head.training()
     boxSelector.training()
@@ -228,7 +228,7 @@ class RegionRroposal(
   }
 }
 
-object RegionRroposal {
+object RegionProposal {
   def apply(inChannels: Int,
             anchorSizes: Array[Float] = Array[Float](32, 64, 128, 256, 512),
             aspectRatios: Array[Float] = Array[Float](0.5f, 1.0f, 2.0f),
@@ -238,8 +238,8 @@ object RegionRroposal {
             preNmsTopNTrain: Int = 2000,
             postNmsTopNTrain: Int = 2000,
             nmsThread: Float = 0.7f,
-            minSize: Int = 0)(implicit ev: TensorNumeric[Float]): RegionRroposal =
-    new RegionRroposal(inChannels, anchorSizes, aspectRatios, anchorStride,
+            minSize: Int = 0)(implicit ev: TensorNumeric[Float]): RegionProposal =
+    new RegionProposal(inChannels, anchorSizes, aspectRatios, anchorStride,
       preNmsTopNTest, postNmsTopNTest, preNmsTopNTrain, postNmsTopNTrain, nmsThread,
       minSize)
 }
