@@ -53,18 +53,19 @@ class Gather[T: ClassTag, D: ClassTag](
     require(dim >= 1 && dim <= inputDim, s"Invalid position: $dim. " +
       s"input:dim() is $inputTensor, input feature map dim (numInputDims) is $inputDim.")
 
-    // set output size
-    output.resize(inputSizes.slice(0, dim-1)++
-      Array(indices.nElement())++
-      inputSizes.slice(dim, inputSizes.length))
-
+    // set output shape
     val indicesSize = indices.size()
     val outputSizes = if (indices.isScalar) {
       inputSizes.slice(0, dim-1) ++ Array(1) ++ inputSizes.slice(dim, inputSizes.length)
     } else {
       inputSizes.slice(0, dim-1) ++ indicesSize ++ inputSizes.slice(dim, inputSizes.length)
     }
+    // set the insert position in output to one-dim array
+    output.resize(inputSizes.slice(0, dim-1)++
+      Array(indices.nElement())++
+      inputSizes.slice(dim, inputSizes.length))
 
+    // copy selected element to the insert position
     indices.resize(indices.nElement())
     var i = 0
     while (i < indices.nElement()) {
@@ -74,7 +75,7 @@ class Gather[T: ClassTag, D: ClassTag](
       output.select(dim, i + 1).copy(inputTensor.select(dim, index + 1))
       i += 1
     }
-
+    // resize the output to expected shape
     indices.resize(indicesSize)
     output.resize(outputSizes)
   }
