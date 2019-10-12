@@ -24,9 +24,10 @@ import org.scalatest.{FlatSpec, Matchers}
 class UtilsSpec extends FlatSpec with Matchers {
   "expandBoxes" should "be ok" in {
     val bbox = Tensor[Float](T(415.3202, 176.3966, 441.3445, 251.7300))
-    val box = Utils.expandBoxes(bbox, 1.0714285714285714f)
+    val bboxExpand = Tensor[Float](4)
+    Utils.expandBoxes(bbox, bboxExpand, 1.0714285714285714f)
     val expectedBBox = Tensor[Float](T(414.3907, 173.7061, 442.2739, 254.4204))
-    box should be(expectedBBox)
+    bboxExpand should be(expectedBBox)
   }
 
   "expandMask" should "be ok" in {
@@ -382,7 +383,7 @@ class UtilsSpec extends FlatSpec with Matchers {
           0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
           0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00))))
 
-    val out = Utils.expandMasks(mask, 1)
+    val out = Utils.expandMasks(mask, padding = 1)
 
     out._1 should be(expectedMask)
     out._2 should be(1.0714285f)
@@ -1005,7 +1006,7 @@ class UtilsSpec extends FlatSpec with Matchers {
     out.counts should be(expectedOut)
   }
 
-  "pasteMaskInImage" should "be ok" in {
+  "decodeMaskInImage" should "be ok" in {
     val mask = Tensor[Float](T(T(
       T(1.7928e-04, 2.0692e-04, 1.1419e-04, 2.0437e-04, 4.1835e-04, 9.4657e-04,
         4.6943e-03, 1.4078e-02, 6.6533e-02, 2.0986e-01, 4.7807e-01, 6.9845e-01,
@@ -1151,7 +1152,7 @@ class UtilsSpec extends FlatSpec with Matchers {
 
     val bbox = Tensor[Float](T(215.8138, 206.8337, 252.0270, 249.3495))
     val binaryMask = Tensor[Float](480, 640)
-    Utils.pasteMaskInImage(mask, bbox, binaryMask = binaryMask)
+    Utils.decodeMaskInImage(mask, bbox, binaryMask = binaryMask)
 
     val str = "f_U33`>NhA6Q>`0M3O1O1O100" +
       "O100HWOXBj0g=8N2O100000000001O1O2N1POYBe0R>O1O2N3L3M3M2O2M2O0O2N101Nbde5"

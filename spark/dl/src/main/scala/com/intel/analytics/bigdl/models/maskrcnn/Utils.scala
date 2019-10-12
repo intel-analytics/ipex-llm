@@ -26,27 +26,30 @@ import com.sun.xml.internal.bind.v2.TODO
 import scala.collection.mutable.ArrayBuffer
 
 object Utils {
-  // boxes with one dim
-  def expandBoxes(boxes: Tensor[Float], scale: Float): Tensor[Float] = {
-    val box0 = boxes.valueAt(1)
-    val box1 = boxes.valueAt(2)
-    val box2 = boxes.valueAt(3)
-    val box3 = boxes.valueAt(4)
+  // box with 4 element (xyxy)
+  def expandBoxes(bbox: Tensor[Float], bboxExpand: Tensor[Float], scale: Float)
+  : Unit = {
+    require(bbox.nElement() == 4 && bboxExpand.nElement() == 4
+      && bbox.dim() == 1 && bboxExpand.dim() == 1,
+      "Box and expected Box should have 4 elements with one dim")
 
-    var w_half = (box2 - box0) * 0.5f
-    var h_half = (box3  - box1) * 0.5f
+    val box0 = bbox.valueAt(1)
+    val box1 = bbox.valueAt(2)
+    val box2 = bbox.valueAt(3)
+    val box3 = bbox.valueAt(4)
+
+    var wHalf = (box2 - box0) * 0.5f
+    var hHalf = (box3  - box1) * 0.5f
     val x_c = (box2 + box0) * 0.5f
     val y_c = (box3 + box1) * 0.5f
 
-    w_half *= scale
-    h_half *= scale
+    wHalf *= scale
+    hHalf *= scale
 
-    val boxes_exp = Tensor[Float]().resizeAs(boxes)
-    boxes_exp.setValue(1, x_c - w_half)
-    boxes_exp.setValue(3, x_c + w_half)
-    boxes_exp.setValue(2, y_c - h_half)
-    boxes_exp.setValue(4, y_c + h_half)
-    return boxes_exp
+    bboxExpand.setValue(1, x_c - wHalf)
+    bboxExpand.setValue(3, x_c + wHalf)
+    bboxExpand.setValue(2, y_c - hHalf)
+    bboxExpand.setValue(4, y_c + hHalf)
   }
 
   // mask with three dims (channel, height, wide)
@@ -64,8 +67,7 @@ object Utils {
     val padHeight = paddedMask.size(2)
     val padWidth = paddedMask.size(3)
 
-    var i = 1
-    while (i <= N) {
+    for (i <- 1 to  N) {
       val maskPart = mask.select(1, i)
       val maskArray = maskPart.storage().array()
       val maskOffset = maskPart.storageOffset() - 1
@@ -75,8 +77,7 @@ object Utils {
       val padOffset = padPart.storageOffset() - 1
 
       val nElement = padPart.nElement()
-      var j = 0
-      while (j < nElement) {
+      for (j <- 0 until nElement) {
         val tempHeight = j / padWidth + 1
         val tempWidth = j % padWidth + 1
         val tempMaskHeight =
@@ -91,19 +92,18 @@ object Utils {
           val offset = (tempMaskHeight - 1) * maskWidth + tempMaskWidth - 1
           padArray(j + padOffset) = maskArray(offset + maskOffset)
         }
-        j += 1
       }
-      i += 1
     }
     (paddedMask, scale)
   }
 
   // mask and box should be one by one
-  def pasteMaskInImage(mask: Tensor[Float], box: Tensor[Float],
-                       thresh: Float = 0.5f, padding : Int = 1, binaryMask: Tensor[Float]): Unit = {
+  def decodeMaskInImage(mask: Tensor[Float], box: Tensor[Float],
+    thresh: Float = 0.5f, padding : Int = 1, binaryMask: Tensor[Float]): Unit = {
 
     val (paddedMask, scale) = expandMasks(mask, padding)
-    val boxExpand = expandBoxes(box, scale)
+    val boxExpand = Tensor[Float]().resizeAs(box)
+    expandBoxes(box, boxExpand, scale)
 
     val TO_REMOVE = 1
     val w = math.max(boxExpand.valueAt(3).toInt - boxExpand.valueAt(1).toInt + TO_REMOVE, 1)
@@ -139,6 +139,9 @@ object Utils {
   // input & output should be 3 dims with (n, height, width)
   def bilinear(input: Tensor[Float], output: Tensor[Float],
                alignCorners: Boolean = false): Unit = {
+    require(input.dim() == 3 && output.dim() == 3, s"Only support 3 dims bilinear," +
+      s"but get ${input.dim()} ${output.dim()}")
+
     val input_height = input.size(2)
     val input_width = input.size(3)
     val output_height = output.size(2)
@@ -151,7 +154,6 @@ object Utils {
 
     require(input.isContiguous() && output.isContiguous(),
       "Only support contiguous tensor for bilinear")
-
     val channels = input.size(1)
     val idata = input.storage().array()
     val odata = output.storage().array()
@@ -160,32 +162,26 @@ object Utils {
 
     val rheight = areaPixelComputeScale(
       input_height, output_height, alignCorners)
-
     val rwidth = areaPixelComputeScale(
       input_width, output_width, alignCorners)
 
-    for (h2 <- 0 to (output_height - 1)) {
+    for (h2 <- 0 until output_height) {
       val h1r = areaPixelComputeSourceIndex(rheight, h2, alignCorners)
-
       val h1 = h1r.toInt
       val h1p = if (h1 < input_height - 1) 1 else 0
       val h1lambda = h1r - h1
       val h0lambda = 1.0f - h1lambda
 
-      for (w2 <- 0 to (output_width - 1)) {
-        val w1r = areaPixelComputeSourceIndex(
-          rwidth, w2, alignCorners)
-
+      for (w2 <- 0 until output_width) {
+        val w1r = areaPixelComputeSourceIndex(rwidth, w2, alignCorners)
         val w1 = w1r.toInt
         val w1p = if (w1 < input_width - 1) 1 else 0
-
         val w1lambda = w1r - w1
         val w0lambda = 1.0f - w1lambda
 
         val pos1 = h1 * input_width + w1 + ioffset
         val pos2 = h2 * output_width + w2 + ooffset
 
-        //  todo: now only support 1 channel
         for (c <- 0 to (channels - 1)) {
           odata(pos2) = h0lambda * (w0lambda * idata(pos1) + w1lambda * idata(pos1 + w1p)) +
             h1lambda * (w0lambda * idata(pos1 + h1p * input_width) +
@@ -209,8 +205,8 @@ object Utils {
     if (alignCorners) {
       scale * dstIndex
     } else {
-      val src_idx = scale * (dstIndex + 0.5f) - 0.5f
-      if (src_idx < 0) 0.0f else src_idx
+      val srcIdx = scale * (dstIndex + 0.5f) - 0.5f
+      if (srcIdx < 0) 0.0f else srcIdx
     }
   }
 }

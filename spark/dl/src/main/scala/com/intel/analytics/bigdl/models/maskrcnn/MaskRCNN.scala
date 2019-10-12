@@ -199,7 +199,7 @@ class MaskRCNN(val inChannels: Int,
       val masksRLE = new Array[Tensor[Float]](boxNumber)
       for (j <- 0 to boxNumber - 1) {
         binaryMask.fill(0.0f)
-        Utils.pasteMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
+        Utils.decodeMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
           binaryMask = binaryMask)
         masksRLE(j) = MaskUtils.binaryToRLE(binaryMask).toRLETensor
       }
