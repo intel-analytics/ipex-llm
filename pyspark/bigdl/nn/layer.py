@@ -938,18 +938,6 @@ class Model(Container):
             callBigDlFunc(bigdl_type, "setOutputFormats", self.value, output_formats)
         return self
 
-    def to_staticgraph(self, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type,
-                              "toStaticGraph",
-                              self.value)
-        return self
-
-    def to_irgraph(self, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type,
-                                   "toIRGraph",
-                                   self.value)
-        return self
-
 class Attention(Layer):
 
     '''
