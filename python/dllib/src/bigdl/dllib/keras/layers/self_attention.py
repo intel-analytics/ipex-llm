@@ -47,6 +47,14 @@ class TransformerLayer(ZooKerasLayer):
     """
     A self attention layer
 
+    Input is a list which consists of 2 ndarrays.
+    1. Token id ndarray: shape [batch, seqLen] with the word token indices in the vocabulary
+    2. Position id ndarray: shape [batch, seqLen] with positions in the sentence.
+    Output is a list which contains:
+    1. The states of Transformer layer.
+    2. The pooled output which processes the hidden state of the last layer with regard to the first
+    token of the sequence. This would be useful for segment-level tasks.
+
     # Arguments
     nBlock: block number
     hidden_drop: drop probability off projection
@@ -202,7 +210,7 @@ class TransformerLayer(ZooKerasLayer):
         output_all_block: whether output all blocks' output
         """
         if hidden_size < 0:
-            raise TypeError('hidden_size must be greater than 0 with default embeddding layer')
+            raise TypeError('hidden_size must be greater than 0 with default embedding layer')
         from bigdl.nn.layer import Squeeze
         word_input = InputLayer(input_shape=(seq_len,))
         postion_input = InputLayer(input_shape=(seq_len,))
@@ -226,21 +234,24 @@ class TransformerLayer(ZooKerasLayer):
 class BERT(TransformerLayer):
     """
     A self attention layer.
-    Input is a List which consists of 4 ndarrays.
+    Input is a list which consists of 4 ndarrays.
     1. Token id ndarray: shape [batch, seqLen] with the word token indices in the vocabulary
     2. Token type id ndarray: shape [batch, seqLen] with the token types in [0, 1].
-       0 menas `sentence A` and 1 means a `sentence B` (see BERT paper for more details).
+       0 means `sentence A` and 1 means a `sentence B` (see BERT paper for more details).
     3. Position id ndarray: shape [batch, seqLen] with positions in the sentence.
     4. Attention_mask ndarray: shape [batch, seqLen] with indices in [0, 1].
        It's a mask to be used if the input sequence length is smaller than seqLen in
        the current batch.
-    Output is a list which output the states of BERT layer
+    Output is a list which contains:
+    1. The states of BERT layer.
+    2. The pooled output which processes the hidden state of the last layer with regard to the first
+    token of the sequence. This would be useful for segment-level tasks.
 
     # Arguments
     n_block: block number
     n_head: head number
     intermediate_size: The size of the "intermediate" (i.e., feed-forward)
-    hidden_drop: The dropout probabilitiy for all fully connected layers
+    hidden_drop: The dropout probability for all fully connected layers
     attn_drop: drop probability of attention
     initializer_ranger: weight initialization range
     output_all_block: whether output all blocks' output
