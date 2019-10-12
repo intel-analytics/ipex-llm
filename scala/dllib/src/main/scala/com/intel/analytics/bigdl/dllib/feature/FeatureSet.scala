@@ -38,9 +38,6 @@ import scala.reflect.ClassTag
  *
  * The sequence of the data is not fixed. It can be changed by the shuffle() method.
  *
- * User can create a dataset from a RDD, an array and a folder, etc. The DataSet object provides
- * many factory methods.
- *
  * @tparam D Data type
  * @tparam DataSequence Represent a sequence of data
  */
