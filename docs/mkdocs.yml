@@ -63,6 +63,7 @@ pages:
     - Autograd-Variable: APIGuide/PipelineAPI/variable.md
     - Net: APIGuide/PipelineAPI/net.md
     - Inference: APIGuide/PipelineAPI/inference.md
+    - Estimator: APIGuide/PipelineAPI/estimator.md
   - TFPark API:
     - KerasModel: APIGuide/TFPark/model.md
     - TFEstimator: APIGuide/TFPark/estimator.md
