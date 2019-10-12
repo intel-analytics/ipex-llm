@@ -56,8 +56,10 @@ class FPN[T : ClassTag](
       if (inChannels(i) != 0) {
         val innerBlockModule =
           SpatialConvolution[T](inChannels(i), outChannels, 1, 1, 1, 1)
+            .setName(s"fpn_inner${i + 1}")
         val layerBlockModule =
           SpatialConvolution[T](outChannels, outChannels, 3, 3, 1, 1, 1, 1)
+            .setName(s"fpn_layer${i + 1}")
         innerBlockModules(i) = innerBlockModule
         layerBlockModules(i) = layerBlockModule
       }
@@ -84,7 +86,8 @@ class FPN[T : ClassTag](
       if (layerBlock != null) {
         val innerTopDown = UpSampling2D[T](Array(2, 2)).inputs(lastInner)
         val innerLateral = innerBlocks(i)
-        lastInner = CAddTable[T]().inputs(innerLateral, innerTopDown)
+        lastInner = CAddTable[T]().setName(s"number_${i}_${featureMapsNum}")
+          .inputs(innerLateral, innerTopDown)
         count -= 1
         results(count) = layerBlock.inputs(lastInner)
       }
