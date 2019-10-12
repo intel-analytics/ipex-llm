@@ -45,7 +45,8 @@ ENV JAVA_HOME                       /opt/jdk
 ENV PATH                            ${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update && \
-    apt-get install -y apt-utils vim curl nano wget unzip maven git
+    apt-get install -y apt-utils vim curl nano wget unzip maven git && \
+    apt-get install -y libsm6
 
 #java
 RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
