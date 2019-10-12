@@ -99,6 +99,7 @@ pages:
     - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
     - Advanced Activations: KerasStyleAPIGuide/Layers/advanced-activation.md
     - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
+    - Self Attention Layers: KerasStyleAPIGuide/Layers/self-attention.md
   - Optimization:
     - Train, evaluate or predict a model: KerasStyleAPIGuide/Optimization/training.md
     - Optimizers: KerasStyleAPIGuide/Optimization/optimizers.md
