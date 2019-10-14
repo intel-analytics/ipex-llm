@@ -270,7 +270,7 @@ object COCODataset {
     }
   }
 
-  lazy val gson = {
+  private lazy val gson = {
     val gsonBuilder = new GsonBuilder()
     val theType = new TypeToken[COCOAnotationOD]() {}.getType
     val deserializer = new AnnotationDeserializer
@@ -283,10 +283,5 @@ object COCODataset {
       new BufferedReader(new FileReader(path)), classOf[COCODataset])
     d.init()
     d
-  }
-
-  def main(args: Array[String]): Unit = {
-    val ds = load("/home/menooker/work/coco/instances_val2014.json")
-    println(ds.licenses(0).name)
   }
 }
