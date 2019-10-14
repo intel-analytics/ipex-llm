@@ -25,7 +25,7 @@ import scala.util.Random
 class SoftMaxSpec extends TorchSpec {
     "A SoftMax 1D input" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new SoftMax[Double]()
+    val layer = new SoftMax[Double](0)
     val input = Tensor[Double](10)
     input.apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](10)
@@ -54,7 +54,7 @@ class SoftMaxSpec extends TorchSpec {
 
   "A SoftMax 2D input" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new SoftMax[Double]()
+    val layer = new SoftMax[Double](1)
     val input = Tensor[Double](3, 5)
     input.apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](3, 5)
