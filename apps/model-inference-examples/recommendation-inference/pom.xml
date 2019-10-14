@@ -10,8 +10,8 @@
     <name>recommendation-inference</name>
     <description>simple example of ncf recommender inference</description>
     <properties>
-        <spark.version>2.1.0</spark.version>
-        <bigdl.version>0.8.0</bigdl.version>
+        <spark.version>2.4.3</spark.version>
+        <bigdl.version>0.9.1</bigdl.version>
         <zoo.version>0.6.0-SNAPSHOT</zoo.version>
     </properties>
 
