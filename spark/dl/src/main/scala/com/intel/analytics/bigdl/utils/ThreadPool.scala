@@ -110,6 +110,10 @@ class ThreadPool(private var poolSize: Int) {
       if (!System.getProperty("bigdl.disableOmpAffinity", "false").toBoolean) {
         Affinity.setOmpAffinity()
       }
+
+      if (System.getProperty("bigdl.flushDenormalState", "true").toBoolean) {
+        BackendMklDnn.setFlushDenormalState()
+      }
     }))
 
     this
