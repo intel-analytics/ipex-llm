@@ -1,11 +1,11 @@
-## **Release 0.6.0 nightly build**
+## **Release 0.6.0**
 
 | | BigDL 0.9.1 | 
 | ------------- | --------- |
-| Spark 2.1.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.1.1/0.6.0-SNAPSHOT/)|
-| Spark 2.2.0   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.2.0/0.6.0-SNAPSHOT/)|
-| Spark 2.3.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.3.1/0.6.0-SNAPSHOT/)|
-| Spark 2.4.3   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.4.3/0.6.0-SNAPSHOT/)
+| Spark 2.1.1   | [download](http://central.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.1.1/0.6.0/analytics-zoo-bigdl_0.9.1-spark_2.1.1-0.6.0-dist-all.zip)|
+| Spark 2.2.1   | [download](http://central.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.2.1/0.6.0/analytics-zoo-bigdl_0.9.1-spark_2.2.1-0.6.0-dist-all.zip)|
+| Spark 2.3.1   | [download](http://central.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.3.1/0.6.0/analytics-zoo-bigdl_0.9.1-spark_2.3.1-0.6.0-dist-all.zip)|
+| Spark 2.4.3   | [download](http://central.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.9.1-spark_2.4.3/0.6.0/analytics-zoo-bigdl_0.9.1-spark_2.4.3-0.6.0-dist-all.zip)
 
 ---
 ## **Release 0.5.1**
