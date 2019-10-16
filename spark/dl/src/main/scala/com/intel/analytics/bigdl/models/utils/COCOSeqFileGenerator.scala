@@ -69,7 +69,7 @@ object COCOSeqFileGenerator {
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, COCOSeqFileGeneratorParams()).foreach { param =>
-      val meta = COCODataset.load(param.metaPath)
+      val meta = COCODataset.load(param.metaPath, param.folder)
       val conf: Configuration = new Configuration
       val doneCount = new AtomicInteger(0)
       val tasks = meta.images.grouped(param.blockSize).zipWithIndex.toArray.par
@@ -90,7 +90,7 @@ object COCOSeqFileGenerator {
           context.dump(COCODataset.MAGIC_NUM)
           val keyBytes = context.toByteArray
           key.set(keyBytes, 0, keyBytes.length)
-          val bytes = Files.readAllBytes(Paths.get(param.folder, img.fileName))
+          val bytes = img.data
           value.set(bytes, 0, bytes.length)
           writer.append(key, value)
           val cnt = doneCount.incrementAndGet()

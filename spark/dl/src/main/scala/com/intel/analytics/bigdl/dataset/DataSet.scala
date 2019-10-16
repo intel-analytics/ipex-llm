@@ -610,8 +610,8 @@ object DataSet {
             anno.toIterator.flatMap(ann => {
               val x1 = ann.bbox1
               val y1 = ann.bbox2
-              val x2 = x1 + ann.bbox3
-              val y2 = y1 + ann.bbox4
+              val x2 = ann.bbox3
+              val y2 = ann.bbox4
               Iterator(x1, y1, x2, y2)
             }).toArray,
             Array(anno.length, 4))

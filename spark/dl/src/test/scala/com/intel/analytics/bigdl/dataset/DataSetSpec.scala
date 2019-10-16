@@ -114,7 +114,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
 
           val bb = label.bboxes.narrow(1, idx + 1, 1).squeeze().toArray()
           val annbb = Array(ann.bbox._1, ann.bbox._2,
-            ann.bbox._3 + ann.bbox._1, ann.bbox._4 + ann.bbox._2)
+            ann.bbox._3, ann.bbox._4)
           require(java.util.Arrays.equals(bb, annbb))
         }
 
