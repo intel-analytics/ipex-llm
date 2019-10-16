@@ -63,12 +63,19 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
         anno.segmentation.isInstanceOf[COCORLE] should be (true)
       } else {
         anno.segmentation.isInstanceOf[COCOPoly] should be (true)
+        val poly = anno.segmentation.asInstanceOf[COCOPoly]
+        poly.height should be (anno.image.height)
+        poly.width should be (anno.image.width)
       }
     }
     for (img <- dataSet.images) {
       val size = sizes.next()
       img.height should be (size._1)
       img.width should be (size._2)
+    }
+    for (i <- 1 to dataSet.categories.length) {
+      val cate = dataSet.getCategoryByIdx(i)
+      dataSet.categoryId2Idx(cate.id) should be (i)
     }
   }
 

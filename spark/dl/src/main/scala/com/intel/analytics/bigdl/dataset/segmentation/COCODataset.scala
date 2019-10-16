@@ -162,13 +162,20 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
 
   /**
    * Convert COCO categoryId into category index.
-   * COCO dataset's categoryId is not continuous from 0 to number of categories.
-   * This function maps every categoryId to a number from 0 to number of categories - which is
-   * called category index
+   * COCO dataset's categoryId is not continuous from 1 to number of categories.
+   * This function maps every categoryId to a number from 1 to number of categories - The result is
+   * called category index. The category index 0 is reserved for "background" class.
    * @param id categoryId
    * @return category index
    */
   def categoryId2Idx(id: Long): Int = cateId2catIdx(id)
+
+  /**
+   * Get the category data by the category index
+   * @param idx category index
+   * @return category data
+   */
+  def getCategoryByIdx(idx: Int): COCOCategory = categories(idx - 1)
 }
 
 case class COCODatasetInfo(
