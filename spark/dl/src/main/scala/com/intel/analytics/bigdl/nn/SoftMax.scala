@@ -53,16 +53,14 @@ class SoftMax[T: ClassTag](var pos: Int = 1)(implicit ev: TensorNumeric[T])
       "1D, 2D, 3D or 4D tensor expected" +
         s"input dimension ${input.nDimension()}")
     pos = getPositiveDimension(input)
-
-    val (nFrame, stride) = if (input.nDimension() - pos == 0) {
-      (1, 1)
-    } else if (input.nDimension() - pos == 1) {
-      (input.size(pos), 1)
-    } else if (input.nDimension() - pos == 2) {
-      (1, input.size(pos + 1) * input.size(pos + 2))
-    } else {
-      (input.size(pos), input.size(pos + 2) * input.size(pos + 3))
+    // get nFrame and stride value based on the input
+    val (nFrame, stride) = input.nDimension() - pos match {
+      case 0 => (1, 1)
+      case 1 => (input.size(pos), 1)
+      case 2 => (1, input.size(pos + 1) * input.size(pos + 2))
+      case _ => (input.size(pos), input.size(pos + 2) * input.size(pos + 3))
     }
+
     if (results == null || results.length != nFrame * stride) {
       results = new Array[Future[Unit]](nFrame * stride)
     }
@@ -71,7 +69,6 @@ class SoftMax[T: ClassTag](var pos: Int = 1)(implicit ev: TensorNumeric[T])
     output
   }
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    pos = getPositiveDimension(input)
     gradInput.resizeAs(output)
     SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results, pos)
     gradInput
@@ -90,15 +87,12 @@ object SoftMax{
   // Notice: SoftMin will call this function
   private[nn] def updateOutput[T: ClassTag](input: Tensor[T], output: Tensor[T],
     results: Array[Future[Unit]], pos: Int = 1) (implicit ev: TensorNumeric[T]): Tensor[T] = {
-
-    val (nFrame, dim, stride) = if (input.nDimension() - pos == 0) {
-      (1, input.size(pos), 1)
-    } else if (input.nDimension() - pos == 1) {
-      (input.size(pos), input.size(pos + 1), 1)
-    } else if (input.nDimension() -pos == 2) {
-      (1, input.size(pos), input.size(pos + 1) * input.size(pos + 2))
-    } else {
-      (input.size(pos), input.size(pos + 1), input.size(pos + 2) * input.size(pos + 3))
+    // get nFrame, dim and stride value based on the input tensor and pos
+    val (nFrame, dim, stride) = input.nDimension() - pos match {
+      case 0 => (1, input.size(pos), 1)
+      case 1 => (input.size(pos), input.size(pos + 1), 1)
+      case 2 => (1, input.size(pos), input.size(pos + 1) * input.size(pos + 2))
+      case _ => (input.size(pos), input.size(pos + 1), input.size(pos + 2) * input.size(pos + 3))
     }
 
     val outputArray = output.storage().array()
@@ -108,7 +102,7 @@ object SoftMax{
       input.contiguous().storage().array()
     }
     val storageOffset = input.storageOffset() - 1
-
+    // calculate softmax
     var t = 0
     while (t < stride * nFrame) {
       val _t = t
@@ -158,14 +152,13 @@ object SoftMax{
     require(input.size().deep == gradOutput.size().deep,
       "input should have the same size with gradOutput" +
         s"inputsize ${input.size().deep} gradOutput ${gradOutput.size().deep}")
-    val (nFrame, dim, stride) = if (output.nDimension() - pos == 0) {
-      (1, output.size(pos), 1)
-    } else if (output.nDimension() - pos == 1) {
-      (output.size(pos), output.size(pos + 1), 1)
-    } else if (output.nDimension() - pos == 2) {
-      (1, output.size(pos), output.size(pos + 1) * output.size(pos + 2))
-    } else {
-      (output.size(pos), output.size(pos + 1), output.size(pos + 2) * output.size(pos + 3))
+    // get nFrame, dim and stride value based on the output tensor and pos
+    val (nFrame, dim, stride) = output.nDimension() - pos match {
+      case 0 => (1, output.size(pos), 1)
+      case 1 => (output.size(pos), output.size(pos + 1), 1)
+      case 2 => (1, output.size(pos), output.size(pos + 1) * output.size(pos + 2))
+      case _ =>
+        (output.size(pos), output.size(pos + 1), output.size(pos + 2) * output.size(pos + 3))
     }
 
     val gradInputArray = gradInput.storage().array()
@@ -179,7 +172,7 @@ object SoftMax{
     } else {
       gradOutput.contiguous().storage().array()
     }
-
+    // calculate softmax
     var t = 0
     while (t < stride * nFrame) {
       val _t = t
