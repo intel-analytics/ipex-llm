@@ -413,6 +413,10 @@ class SpatialBatchNormalization(
     (Array(weightAndBias.dense), Array(gradWeightAndBias.dense))
   }
 
+  override def paramsMMap(): (Array[TensorMMap], Array[TensorMMap]) = {
+    (Array(weightAndBias), Array(gradWeightAndBias))
+  }
+
   override def getExtraParameter(): Array[Tensor[Float]] = {
     if (needScale) {
       runningMeanScaled.copy(runningMean.dense).div(scaleFactor)
