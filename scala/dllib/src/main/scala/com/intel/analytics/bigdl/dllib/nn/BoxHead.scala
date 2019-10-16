@@ -283,7 +283,9 @@ private[nn] class BoxPostProcessor(
     }
     val classLogits = input[Tensor[Float]](1)
     val boxRegression = input[Tensor[Float]](2)
-    val bbox = input[Tensor[Float]](3)
+    val bbox = if (input(3).isInstanceOf[Tensor[Float]]) {
+      input[Tensor[Float]](3)
+    } else input[Table](3)[Tensor[Float]](1)
 
     if (boxesBuf == null) boxesBuf = Tensor[Float]
     boxesBuf.resizeAs(boxRegression)
