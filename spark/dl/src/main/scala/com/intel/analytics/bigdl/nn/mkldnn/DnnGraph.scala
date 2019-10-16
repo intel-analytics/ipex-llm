@@ -394,7 +394,7 @@ class DnnGraph(
    */
   private def fusion(): Unit = {
     if (!this.train) {
-      for (j <- 0 to 3) {
+      for (j <- 0 to 4) {
         var i = forwardExecution.length - 1
         while (i >= 0) {
           if (j == 0) Fusion.fuseModule(forwardExecution(i))
@@ -402,6 +402,7 @@ class DnnGraph(
           if (j == 1) Fusion.setNegativeInputOfConv(forwardExecution(i))
           if (j == 2) Fusion.fuseCAdd(forwardExecution(i))
           if (j == 3) Fusion.setScalesPrevousJoinTable(forwardExecution(i))
+          if (j == 4) Fusion.fuseModule(forwardExecution(i))
           i -= 1
         }
       }

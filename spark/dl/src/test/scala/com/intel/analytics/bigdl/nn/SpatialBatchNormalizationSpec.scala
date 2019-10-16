@@ -219,6 +219,32 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
     bnNCHW.gradWeight.almostEqual(bnNHWC.gradWeight, 1e-5)
     bnNCHW.gradBias.almostEqual(bnNHWC.gradBias, 1e-5)
   }
+
+  "bn + scale" should "work correctly" in {
+    val bn = SpatialBatchNormalization[Float](64)
+    val scale = Scale[Float](Array(1, 64, 1, 1))
+    val seq = Sequential[Float]().add(bn).add(scale)
+
+    bn.parameters()._1(0).fill(1.0f)
+    bn.parameters()._1(1).fill(0.0f)
+    bn.getExtraParameter().foreach(_.rand(-1, 1))
+    scale.getParameters()._1.rand(-1, 1)
+
+    val input = Tensor[Float](Array(4, 64, 3, 3)).rand(-1, 1)
+    seq.forward(input)
+
+    val output1 = Tensor[Float]().resizeAs(seq.output.toTensor[Float]).copy(seq.output.toTensor)
+
+    bn.parameters()._1(0).copy(scale.parameters()._1(0))
+    bn.parameters()._1(1).copy(scale.parameters()._1(1))
+
+    scale.parameters()._1(0).fill(1.0f)
+    scale.parameters()._1(1).fill(0.0f)
+
+    val output2 = bn.forward(input)
+
+    println("")
+  }
 }
 
 class SpatialBatchNormalizationSerialTest extends ModuleSerializationTest {
