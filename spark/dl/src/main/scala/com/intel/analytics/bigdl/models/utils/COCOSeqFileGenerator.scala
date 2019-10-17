@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.dataset.segmentation.{COCODataset, COCOSerializeContext}
+import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 import org.apache.hadoop.conf.Configuration
@@ -69,10 +70,19 @@ object COCOSeqFileGenerator {
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, COCOSeqFileGeneratorParams()).foreach { param =>
+      println("Loading COCO metadata")
       val meta = COCODataset.load(param.metaPath, param.folder)
+      println("Metadata loaded")
       val conf: Configuration = new Configuration
       val doneCount = new AtomicInteger(0)
-      val tasks = meta.images.grouped(param.blockSize).zipWithIndex.toArray.par
+      val tasks = meta.images.filter(img => {
+        val path = img.path
+        val valid = Files.exists(path) && !Files.isDirectory(path)
+        if (!valid) {
+          System.err.print(s"[Warning] The image file ${path.getFileName} does not exist.\n")
+        }
+        valid
+      }).grouped(param.blockSize).zipWithIndex.toArray.par
       tasks.tasksupport = new ForkJoinTaskSupport(
         new scala.concurrent.forkjoin.ForkJoinPool(param.parallel))
       tasks.foreach { case (imgs, blkId) =>
