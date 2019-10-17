@@ -22,6 +22,8 @@ import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.utils.Table
 import org.apache.commons.lang3.SerializationUtils
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -291,7 +293,107 @@ object MAPUtil {
     val end = Math.min(k, q.size)
     (1 to end).map(_ => q.dequeue()).toArray
   }
+
+  /**
+   * convert the ground truth into parsed GroundTruthBBoxes
+   * @param gtTable
+   * @param classes
+   * @param isCOCO if using COCO's algorithm for IOU computation
+   * @return (array of GT BBoxes of images, # of GT bboxes for each class)
+   */
+  def gtTablesToGroundTruthBBoxes(gtTable: Table, classes: Int, numIOU: Int, isCOCO: Boolean):
+  (Array[ArrayBuffer[GroundTruthBBox]], Array[Int]) = {
+    // the number of GT bboxes for each class
+    val gtCntByClass = new Array[Int](classes)
+
+    // one image may contain multiple Ground truth bboxes
+    val gtImages = (1 to gtTable.length()).map { case i =>
+      val gtImage = new ArrayBuffer[GroundTruthBBox]()
+      val roiLabel = gtTable[Table](i)
+      val bbox = RoiLabel.getBBoxes(roiLabel)
+      val tclasses = RoiLabel.getClasses(roiLabel)
+      val isCrowd = RoiLabel.getIsCrowd(roiLabel)
+      for (j <- 1 to bbox.size(1)) {
+        val (label, _diff) = if (tclasses.dim() == 2) {
+          (tclasses.valueAt(1, j).toInt, tclasses.valueAt(2, j))
+        } else {
+          (tclasses.valueAt(j).toInt, 0f)
+        }
+        val diff = if (isCrowd.valueAt(j) != 0 || _diff != 0) 1f else 0f
+        gtImage += new GroundTruthBBox(isCOCO, numIOU, label, diff, bbox.valueAt(j, 1),
+          bbox.valueAt(j, 2), bbox.valueAt(j, 3), bbox.valueAt(j, 4))
+        require(label >= 0 && label < classes, s"Bad label id $label")
+
+        if (diff == 0) {
+          gtCntByClass(label) += 1
+        }
+      }
+      gtImage
+    }.toArray
+    (gtImages, gtCntByClass)
+  }
+
+  /**
+   * For a detection, match it with all GT boxes. Record the match in "predictByClass"
+   */
+  def parseDetection(gtBbox: ArrayBuffer[GroundTruthBBox], label: Int, score: Float, x1: Float,
+    y1: Float, x2: Float, y2: Float, classes: Int, iou: Array[Float],
+    predictByClasses: Array[Array[ArrayBuffer[(Float, Boolean)]]]): Unit = {
+    require(label >= 0 && label < classes, s"Bad label id $label")
+    for (i <- iou.indices) {
+      // for each GT boxes, try to find a matched one with current prediction
+      val matchedGt = gtBbox.toIterator.filter(gt => label == gt.label && gt.canOccupy(i))
+        .flatMap(gt => { // calculate and filter out the bbox
+          val iouRate = gt.getIOURate(x1, y1, x2, y2)
+          if (iouRate >= iou(i)) Iterator.single((gt, iouRate)) else Iterator.empty
+        })
+        .reduceOption((gtArea1, gtArea2) => { // find max IOU bbox
+          if (gtArea1._1.diff != gtArea2._1.diff) {
+            if (gtArea1._1.diff > gtArea2._1.diff) gtArea2 else gtArea1
+          } else {
+            if (gtArea1._2 > gtArea2._2) gtArea1 else gtArea2
+          }
+        })
+        .map(bbox => { // occupy the bbox
+          bbox._1.occupy(i)
+          bbox._1
+        })
+      if (matchedGt.isEmpty || matchedGt.get.diff == 0) {
+        predictByClasses(i)(label).append((score, matchedGt.isDefined))
+      }
+      // else: when the prediction matches a "difficult" GT, do nothing
+      // it is neither TP nor FP
+      // "difficult" is defined in PASCAL VOC dataset, meaning the image is difficult to detect
+    }
+  }
+
+  def parseSegmentationTensorResult(outTensor: Tensor[Float],
+    func: (Int, Int, Float, Float, Float, Float, Float) => Unit): Unit = {
+    require(outTensor.dim() == 2, "the output tensor should have 2 dimensions")
+    for (imgId <- 0 until outTensor.size(1)) {
+      // for each image
+      val batch = outTensor.select(1, imgId + 1)
+      val batchSize = batch.valueAt(1).toInt
+      var offset = 2
+      for (bboxIdx <- 0 until batchSize) {
+        // for each predicted bboxes
+        val label = batch.valueAt(offset).toInt
+        val score = batch.valueAt(offset + 1)
+        val x1 = batch.valueAt(offset + 2)
+        val y1 = batch.valueAt(offset + 3)
+        val x2 = batch.valueAt(offset + 4)
+        val y2 = batch.valueAt(offset + 5)
+        func(imgId, label, score, x1, y1, x2, y2)
+        offset += 6
+      }
+    }
+  }
 }
+
+class MAPType extends Serializable
+object MAPPascalVoc2007 extends MAPType
+object MAPPascalVoc2010 extends MAPType
+object MAPCOCO extends MAPType
 
 /**
  * The MAP Validation Result. The results are not calculated until result() or format() is called
@@ -304,7 +406,7 @@ class MAPValidationResult(
   // the predicts for each classes. (Confidence, GT)
   private var predictForClass: Array[ArrayBuffer[(Float, Boolean)]],
   private var gtCntForClass: Array[Int],
-  private val useVoc2007: Boolean = false,
+  private val theType: MAPType = MAPPascalVoc2010,
   private val skipClass: Int = -1
 )
   extends ValidationResult {
@@ -315,10 +417,14 @@ class MAPValidationResult(
     require(skipClass >= 0 && skipClass < nClass, s"Invalid skipClass $skipClass")
   }
 
+  private def sortPredictions(p: ArrayBuffer[(Float, Boolean)]): ArrayBuffer[(Float, Boolean)] = {
+    p.sortBy(v => v._1)(Ordering.Float.reverse) // decending order
+  }
+
   private[bigdl] def calculateClassAP(clz: Int): Float = {
     val posCnt = gtCntForClass
     // for each class, first find top k confident samples
-    val sorted = predictForClass(clz).sortBy(v => v._1)(Ordering.Float.reverse) // decending order
+    val sorted = sortPredictions(predictForClass(clz))
     var tp = 0
     val refinedK = if (k > 0) k else sorted.size
     // calculate the max precision for each different recall
@@ -337,24 +443,38 @@ class MAPValidationResult(
     }
 
     // get Average precision over each different recall
-    if (useVoc2007) {
-      (0 to 10).map(r => {
-        val recall = 0.1f * r
-        // for every (R,P), where R>=recall, get max(P)
-        PnR.filter(_._1 >= recall).map(_._2).reduceOption(_ max _).getOrElse(0f)
-      })
-        .reduceOption(_ + _)
-        .map(_ / 11)
-        .getOrElse(0f)
-    } else {
-      (1 to posCnt(clz)).map(r => {
-        val recall = r.toFloat / posCnt(clz)
-        // for every (R,P), where R>=recall, get max(P)
-        PnR.filter(_._1 >= recall).map(_._2).reduceOption(_ max _).getOrElse(0f)
-      })
-        .reduceOption(_ + _)
-        .map(_ / posCnt(clz))
-        .getOrElse(0f)
+    theType match {
+      case _: MAPPascalVoc2007.type =>
+        (0 to 10).map(r => {
+          val recall = 0.1f * r
+          // for every (R,P), where R>=recall, get max(P)
+          PnR.filter(_._1 >= recall).map(_._2).reduceOption(_ max _).getOrElse(0f)
+        })
+          .reduceOption(_ + _)
+          .map(_ / 11)
+          .getOrElse(0f)
+      case _: MAPPascalVoc2010.type =>
+        (1 to posCnt(clz)).map(r => {
+          val recall = r.toFloat / posCnt(clz)
+          // for every (R,P), where R>=recall, get max(P)
+          PnR.filter(_._1 >= recall).map(_._2).reduceOption(_ max _).getOrElse(0f)
+        })
+          .reduceOption(_ + _)
+          .map(_ / posCnt(clz))
+          .getOrElse(0f)
+      case _: MAPCOCO.type =>
+        if (posCnt(clz) == 0) {
+          -1f
+        } else {
+          (0 to 100).map(r => {
+            val recall = 0.01f * r
+            // for every (R,P), where R>=recall, get max(P)
+            PnR.filter(_._1 >= recall).map(_._2).reduceOption(_ max _).getOrElse(0f)
+          })
+            .reduceOption(_ + _)
+            .map(_ / 101)
+            .getOrElse(0f)
+        }
     }
   }
 
@@ -363,17 +483,31 @@ class MAPValidationResult(
     // get the indices of top-k confident samples
     val AP = (0 until nClass).filter(_ != skipClass).map { clz => calculateClassAP(clz) }
     // APs are got. Now we get MAP
-    val result = AP.sum / (nClass - (if (skipClass == -1) 0 else 1))
+    val result = theType match {
+      case t: MAPCOCO.type =>
+        val filtered = AP.filter(_ != -1f)
+        filtered.sum / filtered.length
+      case _ => AP.sum / (nClass - (if (skipClass == -1) 0 else 1))
+    }
     (result, 1)
   }
+
+  private[optim] def mergeWithoutGtCnt(o: MAPValidationResult): MAPValidationResult = {
+    require(predictForClass.length == o.predictForClass.length)
+    require(gtCntForClass.length == o.gtCntForClass.length)
+    for (i <- predictForClass.indices) {
+      val (left, right) = (predictForClass(i), o.predictForClass(i))
+      val sorted = sortPredictions(left ++ right)
+      val refinedK = if (k > 0) k else sorted.size
+      predictForClass(i) = sorted.take(refinedK)
+    }
+    this
+  }
+
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {
     val o = other.asInstanceOf[MAPValidationResult]
-    require(predictForClass.length == o.predictForClass.length)
-    require(gtCntForClass.length == o.gtCntForClass.length)
-    predictForClass.zip(o.predictForClass).foreach {
-      case (left, right) => left ++= right
-    }
+    mergeWithoutGtCnt(o)
     gtCntForClass.indices.foreach( i => gtCntForClass(i) += o.gtCntForClass(i))
     this
   }
@@ -386,20 +520,21 @@ class MAPValidationResult(
   }
 }
 
-private[bigdl] class GroundTruthBBox(val label: Int, val diff: Float,
+private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, val label: Int, val diff: Float,
   val xmin: Float, val ymin: Float, val xmax: Float, val ymax: Float) {
   private val area = (xmax - xmin) * (ymax - ymin)
 
   // if is false, the bbox is not matched with any predictions
-  private var isOccupied = false
+  // indexed by the IOU index
+  private val isOccupied = new Array[Boolean](numIOU)
 
   /**
    * Returns if any previous prediction is matched with the current bbox
    * @return
    */
-  def canOccupy: Boolean = !isOccupied
-  def occupy(): Unit = {
-    isOccupied = true
+  def canOccupy(iouIdx: Int): Boolean = diff==1 || !isOccupied(iouIdx)
+  def occupy(iouIdx: Int): Unit = {
+    isOccupied(iouIdx) = true
   }
 
   /** get the IOU rate of another bbox with the current bbox
@@ -416,126 +551,173 @@ private[bigdl] class GroundTruthBBox(val label: Int, val diff: Float,
     val ixmax = Math.min(xmax, x2)
     val iymax = Math.min(ymax, y2)
     val inter = Math.max(ixmax - ixmin, 0) * Math.max(iymax - iymin, 0)
-    inter / ((x2 - x1) * (y2 - y1) + area - inter)
+    val detectionArea = (x2 - x1) * (y2 - y1)
+    val union = if (isCOCO && diff != 0) detectionArea else (detectionArea + area - inter)
+    inter / union
+  }
+}
+
+class MAPMultiIOUValidationResult(
+  private val nClass: Int,
+  // take the first k samples, or -1 for all samples
+  private val k: Int,
+  // the predicts for each classes.
+  // predictForClassIOU(iouIdx)(cls) is an array of (Confidence, GT)
+  private val predictForClassIOU: Array[Array[ArrayBuffer[(Float, Boolean)]]],
+  private var gtCntForClass: Array[Int],
+  private val iouRange: (Float, Float),
+  private val theType: MAPType = MAPPascalVoc2010,
+  private val skipClass: Int = -1
+)
+  extends ValidationResult {
+
+  val impl = predictForClassIOU.map(predictForClass => {
+    new MAPValidationResult(nClass, k, predictForClass, gtCntForClass, theType, skipClass)
+  })
+  override def result(): (Float, Int) = (impl.map(_.result()._1).sum / impl.length, 1)
+
+  // scalastyle:off methodName
+  override def +(other: ValidationResult): ValidationResult = {
+    val o = other.asInstanceOf[MAPMultiIOUValidationResult]
+    require(o.predictForClassIOU.length == predictForClassIOU.length,
+      "To merge MAPMultiIOUValidationResult, the length of predictForClassIOU should be" +
+        "the same")
+    impl.zip(o.impl).foreach { case (v1, v2) => v1.mergeWithoutGtCnt(v2) }
+    gtCntForClass.indices.foreach( i => gtCntForClass(i) += o.gtCntForClass(i))
+    this
+  }
+  // scalastyle:on methodName
+
+  override protected def format(): String = {
+    val step = (iouRange._2 - iouRange._1) / (predictForClassIOU.length - 1)
+    val results = impl.map(_.result()._1)
+    val resultStr = results.zipWithIndex
+      .map { t => s"\t IOU(${iouRange._1 + t._2 * step}) = ${t._1}\n"}
+      .reduceOption( _ + _).getOrElse("")
+    s"MAP@IOU(${iouRange._1}:$step:${iouRange._2})=${results.sum / impl.length}\n$resultStr"
   }
 }
 
 /** MeanAveragePrecision for Object Detection
- * IMPORTANT: The labels in the target vector (Ground truth) begin with 0. BUT in the
- * NN output, the labels begins with 1
+ * The class label begins with 0
  *
- * The expected output from the last layer should be [num_of_batch X (1 + maxDetection * 6)] matrix
+ * The expected output from the last layer should be a Tensor[Float] or a Table
+ * If output is a tensor, it should be [num_of_batch X (1 + maxDetection * 6)] matrix
  * The format of the matrix should be [<batch>, <batch>, ...], where each row vector is
  * <batch> = [<size_of_batch>, <sample>,...]. Each sample has format:
- * <sample> = <label, score, bbox x4>   the labels begins with 1
+ * <sample> = <label, score, bbox x4>
  * imgId is the batch number of the sample. imgId begins with 0.
  * Multiple samples may share one imgId
  *
- * The target vector (Ground truth) is a [num_of_gt X 7] matrix
- * having format [<sample_gt>, <sample_gt>, <sample_gt>, ...]
- * where <sample_gt> = <imgId, label, diff, bbox x4>  the labels begins with 0
+ * If output is a table, it is a table of tables.
+ * output(i) is the results of the i-th image in the batch, where i = 1 to sizeof(batch)
+ * output(i) is a table, which contains the same keys (fields) of image info in the "target"
+ * Please refer to RoiMiniBatch/RoiImageInfo's documents. Besides, the inner tables also contain
+ * the scores for the detections in the image.
  *
- * @param iou the IOU threshold
+ * The "target" (Ground truth) is a table with the same structure of "output", except that
+ * it does not have "score" field
+ *
  * @param classes the number of classes
- * @param useVoc2007 use validation method before voc2010 (i.e. voc2007)
+ * @param topK only take topK confident predictions (-1 for all predictions)
+ * @param iouThres the IOU thresholds
+ * @param theType the type of MAP algorithm. (voc2007/voc2010/COCO)
  * @param skipClass skip calculating on a specific class (e.g. background)
  *                  the class index starts from 0, or is -1 if no skipping
  */
 class MeanAveragePrecisionObjectDetection[T: ClassTag](
-  classes: Int, iou: Float = 0.5f, useVoc2007: Boolean = false, skipClass: Int = -1)(
+  classes: Int, topK: Int = -1, iouThres: Array[Float] = Array(0.5f),
+  theType: MAPType = MAPPascalVoc2010, skipClass: Int = -1)(
   implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity): ValidationResult = {
-    val gtTensor = target.toTensor[Float]
-    require(gtTensor.dim() == 2 && gtTensor.size(2) == 7,
-      "the ground truth tensor should have 2 dimensions " +
-        "and the second dimension should have size of 7")
-
-    // the number of GT bboxes for each class
-    val gtCntByClass = new Array[Int](classes)
-
     // one image may contain multiple Ground truth bboxes
-    val gtImages = new ArrayBuffer[ArrayBuffer[GroundTruthBBox]]
-    // this converts the image-id in target tensor to the index within the image array
-    // imgId is for output tensor and target tensor. imgIdx is for gtImages
-    // the imgId should start from 0
-    val imgId2imgIdx = scala.collection.mutable.Map[Int, Int]()
-    for(i <- 1 to gtTensor.size(1)) {
-      // the tensor is: (imgId, label, diff, bbox x4)
-      val imgId = gtTensor.valueAt(i, 1).toInt
-      val label = gtTensor.valueAt(i, 2).toInt - 1
-      val diff = gtTensor.valueAt(i, 3).toInt
-
-      val imgIdx = if (!imgId2imgIdx.contains(imgId)) {
-        val sz = gtImages.size
-        imgId2imgIdx(imgId) = sz
-        gtImages += new ArrayBuffer[GroundTruthBBox]()
-        sz
-      } else {
-        imgId2imgIdx(imgId)
-      }
-      gtImages(imgIdx) += new GroundTruthBBox(label, diff, gtTensor.valueAt(i, 4),
-        gtTensor.valueAt(i, 5), gtTensor.valueAt(i, 6), gtTensor.valueAt(i, 7))
-      require(label >= 0 && label < classes, s"Bad label id $label")
-
-      if (diff == 0) {
-        gtCntByClass(label) += 1
-      }
-    }
+    val (gtImages, gtCntByClass) =
+      MAPUtil.gtTablesToGroundTruthBBoxes(target.toTable, classes, iouThres.length,
+        theType.isInstanceOf[MAPCOCO.type])
 
     // the predicted bboxes for each classes
-    // predictByClass(classIdx)(bboxNum) is (Confidence, GT)
-    val predictByClass = new Array[ArrayBuffer[(Float, Boolean)]](classes)
-    for (i <- predictByClass.indices) {
-      predictByClass(i) = new ArrayBuffer[(Float, Boolean)]
-    }
+    // predictByClasses(iouIdx)(classIdx)(bboxNum) is (Confidence, GT)
+    val predictByClasses = iouThres.map(_iou => {
+      (0 until classes).map(_ => new ArrayBuffer[(Float, Boolean)]).toArray
+    })
 
-    val outTensor = output.toTensor[Float]
-    require(outTensor.dim() == 2, "the output tensor should have 2 dimensions")
-    for (imgId <- 0 until outTensor.size(1)) {
-      // for each image
-      if (imgId2imgIdx.contains(imgId)) {
-        val imgIdx = imgId2imgIdx(imgId) // index within gtImages
-        val gtBbox = gtImages(imgIdx)
-        val batch = outTensor.select(1, imgId + 1)
-        val batchSize = batch.valueAt(1).toInt
-        var offset = 2
-        for (bboxIdx <- 0 until batchSize) {
-          // for each predicted bboxes
-          val label = batch.valueAt(offset).toInt
-          require(label >= 0 && label < classes, s"Bad label id $label")
-          val score = batch.valueAt(offset + 1)
-          val x1 = batch.valueAt(offset + 2)
-          val y1 = batch.valueAt(offset + 3)
-          val x2 = batch.valueAt(offset + 4)
-          val y2 = batch.valueAt(offset + 5)
-          // for each GT boxes, try to find a matched one with current prediction
-          val matchedGt = gtBbox.filter(gt => label == gt.label && gt.canOccupy)
-            .flatMap(gt => { // calculate and filter out the bbox
-              val iouRate = gt.getIOURate(x1, y1, x2, y2)
-              if (iouRate >= iou) Iterator.single((gt, iouRate)) else Iterator.empty
-            })
-            .reduceOption( (gtArea1, gtArea2) => { // find max IOU bbox
-              if (gtArea1._2 > gtArea2._2) gtArea1 else gtArea2
-            })
-            .map(bbox => { // occupy the bbox
-              bbox._1.occupy()
-              bbox._1
-            })
-          if (matchedGt.isEmpty || matchedGt.get.diff == 0) {
-            predictByClass(label).append((score, matchedGt.isDefined))
+    output match {
+      case _outTensor: Tensor[_] =>
+        val outTensor = _outTensor.asInstanceOf[Tensor[Float]]
+        MAPUtil.parseSegmentationTensorResult(outTensor,
+          (imgIdx, label, score, x1, y1, x2, y2) => {
+            val gtBbox = gtImages(imgIdx)
+            MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, classes, iouThres,
+              predictByClasses = predictByClasses)
+          })
+      case outTable: Table =>
+        for (imgId <- 1 to outTable.length()) {
+          val gtBbox = gtImages(imgId - 1)
+          val imgOut = outTable[Table](imgId)
+          val bboxes = RoiLabel.getBBoxes(imgOut)
+          val scores = RoiLabel.getScores(imgOut)
+          val labels = RoiLabel.getClasses(imgOut)
+          require(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
+          val batchSize = bboxes.size(1)
+          for (bboxIdx <- 1 to batchSize) {
+            val score = scores.valueAt(bboxIdx)
+            val x1 = bboxes.valueAt(bboxIdx, 1)
+            val y1 = bboxes.valueAt(bboxIdx, 2)
+            val x2 = bboxes.valueAt(bboxIdx, 3)
+            val y2 = bboxes.valueAt(bboxIdx, 4)
+            val label = labels.valueAt(bboxIdx).toInt
+            MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, classes, iouThres,
+              predictByClasses)
           }
-          // else: when the prediction matches a "difficult" GT, do nothing
-          // it is neither TP nor FP
-          // what is "difficult"? I have no idea...
-          offset += 6
         }
-      }
-      // if the image id does not have ground truth, do nothing
     }
-    new MAPValidationResult(classes, -1, predictByClass, gtCntByClass, useVoc2007, skipClass)
+    if (iouThres.length != 1) {
+      new MAPMultiIOUValidationResult(classes, topK, predictByClasses, gtCntByClass,
+        (iouThres.head, iouThres.last), theType, skipClass)
+    } else {
+      new MAPValidationResult(classes, topK, predictByClasses.head, gtCntByClass, theType,
+        skipClass)
+    }
   }
 
   override protected def format(): String = s"MAPObjectDetection"
+}
+
+object MeanAveragePrecisionObjectDetection {
+  /**
+   * Create MeanAveragePrecision validation method using COCO's algorithm
+   *
+   * @param nClasses the number of classes
+   * @param topK only take topK confident predictions (-1 for all predictions)
+   * @param skipClass skip calculating on a specific class (e.g. background)
+   *                  the class index starts from 0, or is -1 if no skipping
+   * @param iouThres the IOU thresholds, (rangeStart, stepSize, numOfThres), inclusive
+   * @return MeanAveragePrecisionObjectDetection
+   */
+  def createCOCO(nClasses: Int, topK: Int = 100, skipClass: Int = 0,
+    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10))
+  : MeanAveragePrecisionObjectDetection[Float] = {
+    new MeanAveragePrecisionObjectDetection[Float](nClasses, topK,
+      (0 until iouThres._3).map(iouThres._1 + _ * iouThres._2).toArray,
+      MAPCOCO, skipClass)
+  }
+
+  /**
+   * Create MeanAveragePrecision validation method using Pascal VOC's algorithm
+   *
+   * @param nClasses the number of classes
+   * @param useVoc2007 if using the algorithm in Voc2007 (11 points)
+   * @param topK only take topK confident predictions (-1 for all predictions)
+   * @param skipClass skip calculating on a specific class (e.g. background)
+   *                  the class index starts from 0, or is -1 if no skipping
+   * @return MeanAveragePrecisionObjectDetection
+   */
+  def createPascalVOC(nClasses: Int, useVoc2007: Boolean = false, topK: Int = -1,
+    skipClass: Int = 0) : MeanAveragePrecisionObjectDetection[Float] = {
+    new MeanAveragePrecisionObjectDetection[Float](nClasses, topK,
+      theType = if (useVoc2007) MAPPascalVoc2007 else MAPPascalVoc2010,
+      skipClass = skipClass)
+  }
 }
 
 /**
