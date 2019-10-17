@@ -240,7 +240,8 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
 
   override def broadcast(sc: SparkContext, model: Module[T],
     dummyInput: Activity): this.type = {
-    if (model.isInstanceOf[IRGraph[T]] && Engine.getEngineType() == MklDnn) {
+    if (model.isInstanceOf[IRGraph[T]] && Engine.getEngineType() == MklDnn &&
+      Engine.isMultiModels) {
       val clonedModel = model.asInstanceOf[IRGraph[T]].cloneModule()
       clonedModel.forward(dummyInput)
 
@@ -254,19 +255,22 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
   override def value(initGradient: Boolean, shareWeight: Boolean,
     dummyInput: Activity): Module[T] = {
     val model = value(initGradient, shareWeight)
-    model.forward(dummyInput)
 
-    if (shareWeight && model.isInstanceOf[IRGraph[T]] && Engine.getEngineType() == MklDnn) {
-      getTensorMMaps(model.asInstanceOf[IRGraph[T]]).zip(broadcastParametersNative.value)
-        .foreach { case (src, dst) =>
-          if (src._1 == dst._1) {
-            src._2._1.zip(dst._2._1)
-              .filter(x => x._1 != null && x._2 != null)
-              .foreach{ case (x, y) => x.setNative(y) }
+    if (model.isInstanceOf[IRGraph[T]] && Engine.getEngineType() == MklDnn &&
+      Engine.isMultiModels) {
+      model.forward(dummyInput)
+
+      if (shareWeight) {
+        getTensorMMaps(model.asInstanceOf[IRGraph[T]]).zip(broadcastParametersNative.value)
+          .foreach { case (src, dst) =>
+            if (src._1 == dst._1) {
+              src._2._1.zip(dst._2._1)
+                .filter(x => x._1 != null && x._2 != null)
+                .foreach{ case (x, y) => x.setNative(y) }
+            }
           }
-        }
+      }
     }
-
     model
   }
 }

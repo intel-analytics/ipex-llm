@@ -43,7 +43,7 @@ object Engine {
   // Initialize some properties for mkldnn engine. We should call it at the beginning.
   // Otherwise some properties will have no effect.
   if (System.getProperty("bigdl.engineType") == "mkldnn" &&
-    System.getProperty("bigdl.multiModels") == "false") {
+    System.getProperty("bigdl.multiModels", "false") == "false") {
     setMklDnnEnvironments()
   }
 
