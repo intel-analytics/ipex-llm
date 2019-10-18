@@ -19,7 +19,7 @@ from bigdl.contrib.onnx2bigdl import load
 
 
 def load_onnx_resnet():
-    restnet_path = "./resnet-50.onnx"
+    restnet_path = "file/path/resnet-50.onnx"
     restnet_tensor = np.random.random([10, 3, 224, 224])
     restnet = load(restnet_path)
     restnet_out = restnet.forward(restnet_tensor)
