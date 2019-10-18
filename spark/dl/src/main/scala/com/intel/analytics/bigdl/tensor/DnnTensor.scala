@@ -164,6 +164,7 @@ class DnnTensor[T: ClassTag](
 
   override def set(other: Tensor[T]): Tensor[T] = {
     require(other.isInstanceOf[DnnTensor[T]], s"only support to set DnnTensor")
+    this._storage.release()
     this._storage = other.storage().asInstanceOf[DnnStorage[T]]
     this
   }
