@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.mkl.{MklDnn => BackendMklDnn}
 
 import scala.concurrent.ExecutionException
 
@@ -120,5 +121,50 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
       val results = threadPool.invoke2( (0 until 1).map( i => task ))
       results.foreach(_.get())
     }
+  }
+
+  "setFlushDenormalState" should "influence float arithmetic operations" in {
+    val threadPool = new ThreadPool(1)
+
+    threadPool.invokeAndWait2( (0 until 1).map(i => () => {
+      // A denormalized value is in the range
+      // from 1.4E-45 to 1.18E-38,
+      // or from -1.18E-38 to -1.4E-45
+      val denormal: Float = -1.234E-41F
+      val floatOne: Float = 1.0F
+
+      var result: Float = denormal * floatOne
+      // The result should not be zero without setting
+      (result == 0.0F) should be (false)
+
+      BackendMklDnn.setFlushDenormalState()
+      result = denormal * floatOne
+      // The result should be zero with setting
+      (result == 0.0F) should be (true)
+    }))
+  }
+
+  "setFlushDenormalState" should "not influence other threads" in {
+    val threadPool1 = new ThreadPool(1)
+    val threadPool2 = new ThreadPool(1)
+
+    // A denormalized value is in the range
+    // from 1.4E-45 to 1.18E-38,
+    // or from -1.18E-38 to -1.4E-45
+    val denormal: Float = -1.234E-41F
+    val floatOne: Float = 1.0F
+
+    threadPool1.invokeAndWait2( (0 until 1).map(i => () => {
+      BackendMklDnn.setFlushDenormalState()
+      val result = denormal * floatOne
+      // The result should be zero with setting
+      (result == 0.0F) should be (true)
+    }))
+
+    threadPool2.invokeAndWait2( (0 until 1).map(i => () => {
+      val result = denormal * floatOne
+      // The result should not be zero without setting
+      (result == 0.0F) should be (false)
+    }))
   }
 }
