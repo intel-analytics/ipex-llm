@@ -61,29 +61,72 @@ object PolyMasks {
  * Also note that we don't use COCO's "compact" RLE string here because this RLE class has better
  * time & space performance.
  *
- * @param counts the RLE counts
  * @param height height of the image
  * @param width width of the image
  */
-class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends SegmentationMasks {
-  override def toRLETensor: Tensor[Float] = {
-    Tensor(counts.map(MaskUtils.uint2long(_).toFloat), Array(counts.length))
-  }
+abstract class RLEMasks(val height: Int, val width: Int)
+  extends SegmentationMasks {
+  override def toRLETensor: Tensor[Float]
 
+  // cached bbox value
+  @transient
+  lazy val bbox: (Float, Float, Float, Float) = MaskUtils.rleToOneBbox(this)
+
+  // cached area value
+  @transient
+  lazy val area: Long = MaskUtils.rleArea(this)
+
+  /**
+   * @return The length of counts data
+   */
+  def countsLength: Int
+  def counts: Array[Int]
   /**
    * Get an element in the counts. Process the overflowed int
    *
    * @param idx
    * @return
    */
-  def get(idx: Int): Long = {
-    MaskUtils.uint2long(counts(idx))
+  def get(idx: Int): Long
+}
+
+class RLEMasksInt(private val _counts: Array[Int], height: Int, width: Int)
+  extends RLEMasks(height, width) {
+  override def toRLETensor: Tensor[Float] = {
+    Tensor(_counts.map(MaskUtils.uint2long(_).toFloat), Array(_counts.length))
+  }
+
+  override def countsLength: Int = _counts.length
+
+  override def get(idx: Int): Long = {
+    MaskUtils.uint2long(_counts(idx))
+  }
+
+  override def counts: Array[Int] = _counts
+}
+
+class RLEMasksFloat(private val _counts: Tensor[Float], height: Int, width: Int)
+  extends RLEMasks(height, width) {
+  override def toRLETensor: Tensor[Float] = _counts
+
+  override def countsLength: Int = _counts.nElement()
+
+  override def get(idx: Int): Long = {
+    _counts.valueAt(idx + 1).toLong
+  }
+
+  override def counts: Array[Int] = {
+    val ret = new Array[Int](_counts.nElement())
+    for (i <- ret.indices) {
+      ret(i) = _counts.valueAt(i + 1).toInt
+    }
+    ret
   }
 }
 
 object RLEMasks {
   def apply(counts: Array[Int], height: Int, width: Int): RLEMasks =
-    new RLEMasks(counts, height, width)
+    new RLEMasksInt(counts, height, width)
 }
 
 
@@ -112,7 +155,7 @@ object MaskUtils {
   // scalastyle:off methodName
   def RLE2String(rle: RLEMasks): String = {
     // Similar to LEB128 but using 6 bits/char and ascii chars 48-111.
-    val m = rle.counts.length
+    val m = rle.countsLength
     val s = new ArrayBuffer[Char]()
     for (i <- 0 until m) {
       var x = rle.get(i)
@@ -320,7 +363,7 @@ object MaskUtils {
       val am = cnts.length
       cnts.clear()
       var ca = uint2long(acnt(0))
-      var cb = uint2long(B.counts(0))
+      var cb = B.get(0)
       var (v, va, vb) = (false, false, false)
       var a = 1
       var b = 1
@@ -339,7 +382,7 @@ object MaskUtils {
         }
         ct += ca
         cb -= c
-        if (cb == 0 && b < B.counts.length) {
+        if (cb == 0 && b < B.countsLength) {
           cb = B.get(b)
           b += 1
           vb = !vb
@@ -358,5 +401,138 @@ object MaskUtils {
       }
     }
     RLEMasks(cnts.toArray, h, w)
+  }
+
+  private[segmentation] def rleArea(R: RLEMasks): Long = {
+    var a = 0L
+    for (j <- 1.until(R.countsLength, 2))
+      a += R.get(j)
+    a.toInt
+  }
+
+  /**
+   * Calculate the intersection over union (IOU) of two RLEs
+   * @param detection the detection RLE
+   * @param groundTruth the ground truth RLE
+   * @param isCrowd if groundTruth is isCrowd
+   * @return IOU
+   */
+  def rleIOU(detection: RLEMasks, groundTruth: RLEMasks, isCrowd: Boolean): Float = {
+    val gtBbox = groundTruth.bbox
+    val dtBbox = detection.bbox
+    require((detection.width, detection.height) == (groundTruth.width, groundTruth.height),
+      "The sizes of RLEs must be the same to compute IOU")
+    val iou = bboxIOU(gtBbox, dtBbox, isCrowd)
+
+    if (iou > 0) {
+      val crowd = isCrowd
+
+      val dCnts = detection
+      val gCnts = groundTruth
+
+      var a = 1
+      var b = 1
+
+      var ca = dCnts.get(0)
+      val ka = dCnts.countsLength
+      var va: Boolean = false
+      var vb: Boolean = false
+
+      var cb = gCnts.get(0)
+      val kb = gCnts.countsLength
+      var i = 0.0f
+      var u = 0.0f
+      var ct = 1.0f
+
+      while (ct > 0) {
+        val c = math.min(ca, cb)
+        if (va || vb) {
+          u = u + c
+          if (va && vb) i += c
+        }
+        ct = 0
+
+        ca = ca - c
+        if (ca == 0 && a < ka) {
+          ca = dCnts.get(a)
+          a += 1
+          va = !va
+        }
+        ct += ca
+
+        cb = cb - c
+        if (cb == 0 && b < kb) {
+          cb = gCnts.get(b)
+          b += 1
+          vb = !vb
+        }
+        ct += cb
+      }
+      if (i == 0) {
+        u = 1
+      } else if (crowd) {
+        u = dCnts.area
+      }
+      i / u
+    } else {
+      iou
+    }
+  }
+
+  /**
+   * Get the iou of two bounding box
+   * @param groundTruth
+   * @param detection
+   * @param isCrowd if groundTruth is isCrowd
+   * @return
+   */
+  def bboxIOU(groundTruth: (Float, Float, Float, Float),
+    detection: (Float, Float, Float, Float), isCrowd: Boolean): Float = {
+    val (xmin, ymin, xmax, ymax) = groundTruth
+    val (x1, y1, x2, y2) = detection
+    val area = (xmax - xmin) * (ymax - ymin)
+    val ixmin = Math.max(xmin, x1)
+    val iymin = Math.max(ymin, y1)
+    val ixmax = Math.min(xmax, x2)
+    val iymax = Math.min(ymax, y2)
+    val inter = Math.max(ixmax - ixmin, 0) * Math.max(iymax - iymin, 0)
+    val detectionArea = (x2 - x1) * (y2 - y1)
+    val union = if (isCrowd) detectionArea else (detectionArea + area - inter)
+    inter / union
+  }
+
+  // convert one rle to one bbox
+  private[segmentation] def rleToOneBbox(rle: RLEMasks): (Float, Float, Float, Float) = {
+    val m = rle.countsLength / 2 * 2
+
+    val h = rle.height.toLong
+    var xp = 0.0f
+    var cc = 0L
+    var xs = rle.width.toLong
+    var ys = rle.height.toLong
+    var ye = 0.0f
+    var xe = 0.0f
+
+    if(m == 0) {
+      (0, 0, 0, 0)
+    } else {
+      for (j <- 0 until m) {
+        cc += rle.get(j)
+        val t = cc - j % 2
+        val y = t % h
+        val x = (t - y) / h
+        if (j % 2 == 0) {
+          xp = x
+        } else if (xp < x) {
+          ys = 0
+          ye = h - 1
+        }
+        xs = math.min(xs, x)
+        xe = math.max(xe, x)
+        ys = math.min(ys, y)
+        ye = math.max(ye, y)
+      }
+      (xs, ys, xe + 1, ye + 1)
+    }
   }
 }

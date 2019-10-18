@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasksFloat}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
@@ -295,24 +296,27 @@ object MAPUtil {
   }
 
   /**
-   * convert the ground truth into parsed GroundTruthBBoxes
+   * convert the ground truth into parsed GroundTruthRegions
    * @param gtTable
    * @param classes
    * @param isCOCO if using COCO's algorithm for IOU computation
+   * @param isSegmentation
    * @return (array of GT BBoxes of images, # of GT bboxes for each class)
    */
-  def gtTablesToGroundTruthBBoxes(gtTable: Table, classes: Int, numIOU: Int, isCOCO: Boolean):
-  (Array[ArrayBuffer[GroundTruthBBox]], Array[Int]) = {
+  def gtTablesToGroundTruthRegions(gtTable: Table, classes: Int, numIOU: Int, isCOCO: Boolean,
+    isSegmentation: Boolean): (Array[ArrayBuffer[GroundTruthRegion]], Array[Int]) = {
     // the number of GT bboxes for each class
     val gtCntByClass = new Array[Int](classes)
 
     // one image may contain multiple Ground truth bboxes
     val gtImages = (1 to gtTable.length()).map { case i =>
-      val gtImage = new ArrayBuffer[GroundTruthBBox]()
+      val gtImage = new ArrayBuffer[GroundTruthRegion]()
       val roiLabel = gtTable[Table](i)
       val bbox = RoiLabel.getBBoxes(roiLabel)
       val tclasses = RoiLabel.getClasses(roiLabel)
       val isCrowd = RoiLabel.getIsCrowd(roiLabel)
+      val masks = if (isSegmentation) RoiLabel.getMasks(roiLabel) else null
+      val (height, width, _) = if (isSegmentation) RoiLabel.getOrigSize(roiLabel) else (0, 0, 0)
       for (j <- 1 to bbox.size(1)) {
         val (label, _diff) = if (tclasses.dim() == 2) {
           (tclasses.valueAt(1, j).toInt, tclasses.valueAt(2, j))
@@ -320,8 +324,13 @@ object MAPUtil {
           (tclasses.valueAt(j).toInt, 0f)
         }
         val diff = if (isCrowd.valueAt(j) != 0 || _diff != 0) 1f else 0f
-        gtImage += new GroundTruthBBox(isCOCO, numIOU, label, diff, bbox.valueAt(j, 1),
-          bbox.valueAt(j, 2), bbox.valueAt(j, 3), bbox.valueAt(j, 4))
+        val newGt = if (isSegmentation) {
+          new GroundTruthRLE(numIOU, label, diff, masks(j - 1), height, width)
+        } else {
+          new GroundTruthBBox(isCOCO, numIOU, label, diff, bbox.valueAt(j, 1),
+            bbox.valueAt(j, 2), bbox.valueAt(j, 3), bbox.valueAt(j, 4))
+        }
+        gtImage += newGt
         require(label >= 0 && label < classes, s"Bad label id $label")
 
         if (diff == 0) {
@@ -336,15 +345,15 @@ object MAPUtil {
   /**
    * For a detection, match it with all GT boxes. Record the match in "predictByClass"
    */
-  def parseDetection(gtBbox: ArrayBuffer[GroundTruthBBox], label: Int, score: Float, x1: Float,
-    y1: Float, x2: Float, y2: Float, classes: Int, iou: Array[Float],
+  def parseDetection(gtBbox: ArrayBuffer[GroundTruthRegion], label: Int, score: Float, x1: Float,
+    y1: Float, x2: Float, y2: Float, mask: Tensor[Float], classes: Int, iou: Array[Float],
     predictByClasses: Array[Array[ArrayBuffer[(Float, Boolean)]]]): Unit = {
     require(label >= 0 && label < classes, s"Bad label id $label")
     for (i <- iou.indices) {
       // for each GT boxes, try to find a matched one with current prediction
       val matchedGt = gtBbox.toIterator.filter(gt => label == gt.label && gt.canOccupy(i))
         .flatMap(gt => { // calculate and filter out the bbox
-          val iouRate = gt.getIOURate(x1, y1, x2, y2)
+          val iouRate = gt.getIOURate(x1, y1, x2, y2, mask)
           if (iouRate >= iou(i)) Iterator.single((gt, iouRate)) else Iterator.empty
         })
         .reduceOption((gtArea1, gtArea2) => { // find max IOU bbox
@@ -520,32 +529,42 @@ class MAPValidationResult(
   }
 }
 
-private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, val label: Int, val diff: Float,
-  val xmin: Float, val ymin: Float, val xmax: Float, val ymax: Float) {
-  private val area = (xmax - xmin) * (ymax - ymin)
-
-  // if is false, the bbox is not matched with any predictions
-  // indexed by the IOU index
+abstract private[bigdl] class GroundTruthRegion(isCOCO: Boolean, numIOU: Int, val label: Int,
+  val diff: Float) {
+  // if is false, the region is not matched with any predictions
+  // indexed by the IOU threshold index
   private val isOccupied = new Array[Boolean](numIOU)
 
   /**
-   * Returns if any previous prediction is matched with the current bbox
+   * Returns if any previous prediction is matched with the current region
+   *
    * @return
    */
-  def canOccupy(iouIdx: Int): Boolean = diff==1 || !isOccupied(iouIdx)
+  def canOccupy(iouIdx: Int): Boolean = (isCOCO && diff == 1) || !isOccupied(iouIdx)
+
   def occupy(iouIdx: Int): Unit = {
     isOccupied(iouIdx) = true
   }
 
-  /** get the IOU rate of another bbox with the current bbox
+  /** get the IOU rate of another region with the current region
    *
    * @param x1 the min x
    * @param y1 the min y
    * @param x2 the max x
    * @param y2 the max y
+   * @param rle RLE mask data, can be null
    * @return
    */
-  def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float): Float = {
+  def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float, rle: Tensor[Float] = null): Float
+}
+
+private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, label: Int, diff: Float,
+  val xmin: Float, val ymin: Float, val xmax: Float, val ymax: Float)
+  extends GroundTruthRegion(isCOCO, numIOU, label, diff) {
+  private val area = (xmax - xmin) * (ymax - ymin)
+
+  override def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float,
+      rle: Tensor[Float] = null): Float = {
     val ixmin = Math.max(xmin, x1)
     val iymin = Math.max(ymin, y1)
     val ixmax = Math.min(xmax, x2)
@@ -554,6 +573,18 @@ private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, val label: In
     val detectionArea = (x2 - x1) * (y2 - y1)
     val union = if (isCOCO && diff != 0) detectionArea else (detectionArea + area - inter)
     inter / union
+  }
+}
+
+private[bigdl] class GroundTruthRLE(numIOU: Int, label: Int, diff: Float, rle: Tensor[Float],
+  height: Int, width: Int)
+  extends GroundTruthRegion(true, numIOU, label, diff) {
+
+  val rleMasks = new RLEMasksFloat(rle, height, width)
+  override def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float,
+    detRLE: Tensor[Float]): Float = {
+    MaskUtils.rleIOU(new RLEMasksFloat(detRLE, rleMasks.height, rleMasks.width),
+      rleMasks, diff != 0)
   }
 }
 
@@ -624,16 +655,18 @@ class MAPMultiIOUValidationResult(
  * @param theType the type of MAP algorithm. (voc2007/voc2010/COCO)
  * @param skipClass skip calculating on a specific class (e.g. background)
  *                  the class index starts from 0, or is -1 if no skipping
+ * @param isSegmentation if check the IOU of segmentations instead of bounding boxes. If true,
+ *                       the output and target must have "masks" data
  */
 class MeanAveragePrecisionObjectDetection[T: ClassTag](
   classes: Int, topK: Int = -1, iouThres: Array[Float] = Array(0.5f),
-  theType: MAPType = MAPPascalVoc2010, skipClass: Int = -1)(
+  theType: MAPType = MAPPascalVoc2010, skipClass: Int = -1, isSegmentation: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity): ValidationResult = {
     // one image may contain multiple Ground truth bboxes
     val (gtImages, gtCntByClass) =
-      MAPUtil.gtTablesToGroundTruthBBoxes(target.toTable, classes, iouThres.length,
-        theType.isInstanceOf[MAPCOCO.type])
+      MAPUtil.gtTablesToGroundTruthRegions(target.toTable, classes, iouThres.length,
+        theType.isInstanceOf[MAPCOCO.type], isSegmentation)
 
     // the predicted bboxes for each classes
     // predictByClasses(iouIdx)(classIdx)(bboxNum) is (Confidence, GT)
@@ -643,11 +676,12 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
 
     output match {
       case _outTensor: Tensor[_] =>
+        require(!isSegmentation, "Cannot get segmentation data from tensor output for MAP")
         val outTensor = _outTensor.asInstanceOf[Tensor[Float]]
         MAPUtil.parseSegmentationTensorResult(outTensor,
           (imgIdx, label, score, x1, y1, x2, y2) => {
             val gtBbox = gtImages(imgIdx)
-            MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, classes, iouThres,
+            MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, null, classes, iouThres,
               predictByClasses = predictByClasses)
           })
       case outTable: Table =>
@@ -658,6 +692,7 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
           val scores = RoiLabel.getScores(imgOut)
           val labels = RoiLabel.getClasses(imgOut)
           require(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
+          val masks = if (isSegmentation) Some(RoiLabel.getMasks(imgOut)) else None
           val batchSize = bboxes.size(1)
           for (bboxIdx <- 1 to batchSize) {
             val score = scores.valueAt(bboxIdx)
@@ -666,7 +701,8 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
             val x2 = bboxes.valueAt(bboxIdx, 3)
             val y2 = bboxes.valueAt(bboxIdx, 4)
             val label = labels.valueAt(bboxIdx).toInt
-            MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, classes, iouThres,
+            val mask = masks.map(_(bboxIdx - 1)).orNull
+            MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, mask, classes, iouThres,
               predictByClasses)
           }
         }
@@ -687,19 +723,21 @@ object MeanAveragePrecisionObjectDetection {
   /**
    * Create MeanAveragePrecision validation method using COCO's algorithm
    *
-   * @param nClasses the number of classes
+   * @param nClasses the number of classes (including skipped class)
    * @param topK only take topK confident predictions (-1 for all predictions)
    * @param skipClass skip calculating on a specific class (e.g. background)
    *                  the class index starts from 0, or is -1 if no skipping
    * @param iouThres the IOU thresholds, (rangeStart, stepSize, numOfThres), inclusive
+   * @param isSegmentation if true, compute the IOU of the segmentation masks. Otherwise,
+   *                       IOU of bounding boxes are computed
    * @return MeanAveragePrecisionObjectDetection
    */
   def createCOCO(nClasses: Int, topK: Int = 100, skipClass: Int = 0,
-    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10))
+    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10), isSegmentation: Boolean = false)
   : MeanAveragePrecisionObjectDetection[Float] = {
     new MeanAveragePrecisionObjectDetection[Float](nClasses, topK,
       (0 until iouThres._3).map(iouThres._1 + _ * iouThres._2).toArray,
-      MAPCOCO, skipClass)
+      MAPCOCO, skipClass, isSegmentation)
   }
 
   /**
