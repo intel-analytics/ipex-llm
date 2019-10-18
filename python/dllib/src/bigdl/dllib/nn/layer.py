@@ -4119,8 +4119,9 @@ class SoftMax(Layer):
     '''
 
     def __init__(self,
+                 pos=1,
                  bigdl_type="float"):
-        super(SoftMax, self).__init__(None, bigdl_type)
+        super(SoftMax, self).__init__(None, bigdl_type, pos)
 
 
 class SoftMin(Layer):
