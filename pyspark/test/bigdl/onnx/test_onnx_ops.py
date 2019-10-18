@@ -18,7 +18,7 @@ import onnx
 import pytest
 import numpy as np
 
-from bigdl.contrib.onnx2bigdl.OnnxLoader import load_model_proto
+from bigdl.contrib.onnx.onnx_loader import load_model_proto
 from bigdl.nn.layer import CAddTable, JoinTable, ReLU
 from bigdl.nn.layer import SoftMax, SpatialAveragePooling, SpatialBatchNormalization
 from bigdl.nn.layer import SpatialConvolution, SpatialMaxPooling
