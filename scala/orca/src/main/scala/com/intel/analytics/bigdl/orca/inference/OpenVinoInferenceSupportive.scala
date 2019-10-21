@@ -117,7 +117,8 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
         .getResourceAsStream(moTarPath)
     }
     val moTarFile = writeFile(moTarInputStream, openvinoTempDirPath, moTarPath)
-    s"tar -xzvf ${moTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
+    logger.info("Extracting model-optimizer.tar.gz")
+    s"tar -xzf ${moTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
 
     val ieTarPath = "/inference-engine-bin.tar.gz"
     val ieTarInputStream = scala.util.Properties.isMac match {
@@ -127,19 +128,22 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
         .getResourceAsStream(ieTarPath)
     }
     val ieTarFile = writeFile(ieTarInputStream, openvinoTempDirPath, ieTarPath)
-    s"tar -xzvf ${ieTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
+    logger.info("Extracting inference-engine-bin.tar.gz")
+    s"tar -xzf ${ieTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
 
     val igTarPath = "/inference-graphs.tar.gz"
     val igTarInputStream = OpenvinoNativeLoaderClass.getResourceAsStream(igTarPath)
     val igTarFile = writeFile(igTarInputStream, openvinoTempDirPath, igTarPath)
-    s"tar -xzvf ${igTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
+    logger.info("Extracting inference-graphs.tar.gz")
+    s"tar -xzf ${igTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
 
     val pcTarPath = "/pipeline-configs.tar.gz"
     val pcTarInputStream = OpenvinoNativeLoaderClass.getResourceAsStream(pcTarPath)
     val pcTarFile = writeFile(pcTarInputStream, openvinoTempDirPath, pcTarPath)
-    s"tar -xzvf ${pcTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
+    logger.info("Extracting pipeline-configs.tar.gz")
+    s"tar -xzf ${pcTarFile.getAbsolutePath} -C $openvinoTempDirPath" !;
 
-    s"ls -alh $openvinoTempDirPath" !;
+    // s"ls -alh $openvinoTempDirPath" !;
   }
 
   def optimizeTFImageClassificationModel(modelPath: String,
@@ -486,7 +490,7 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
         tarFile.getAbsolutePath
     }
     s"mkdir -p $tmpDir/saved-model" !;
-    s"tar xvf $tarFilePath -C $tmpDir/saved-model" !;
+    s"tar xf $tarFilePath -C $tmpDir/saved-model" !;
     s"ls $tmpDir/saved-model" !;
     val savedModelDir = new File(s"$tmpDir/saved-model").listFiles()(0).getAbsolutePath
 
