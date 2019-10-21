@@ -12,7 +12,7 @@
     <properties>
         <spark.version>2.4.3</spark.version>
         <bigdl.version>0.9.1</bigdl.version>
-        <zoo.version>0.6.0-SNAPSHOT</zoo.version>
+        <zoo.version>0.7.0-SNAPSHOT</zoo.version>
     </properties>
 
 
