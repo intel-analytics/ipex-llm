@@ -16,11 +16,10 @@
 
 package com.intel.analytics.bigdl.optim
 
-import scala.reflect.ClassTag
-
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.optim.{ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
 
 class PrecisionRecallAUC[T: ClassTag](val ignoreBadMetric: Boolean = false)(
     implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
