@@ -15,10 +15,10 @@
     ```
 
 ## How to run this example:
- * Import library dependency
+ * Import library dependencies
 ```
 import numpy as np
-from bigdl.contrib.onnx2bigdl import load
+from bigdl.contrib.onnx import load
 ```
 
  * Set target ONNX ResNet-50 model path
@@ -37,3 +37,9 @@ from bigdl.contrib.onnx2bigdl import load
  restnet_out = restnet.forward(restnet_tensor)
  ```
  
+ 
+## Known issues:
+  * ONNX feature only has Python API in BigDL.
+  * Loaded ONNX model is limited for inference.
+  * Most of operators defined in ONNX are not being supported by BigDL for now.
+  * Missing feature of exporting BigDL model into ONNX format.
