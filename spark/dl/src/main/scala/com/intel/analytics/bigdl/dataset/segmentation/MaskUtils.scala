@@ -90,7 +90,7 @@ abstract class RLEMasks(val height: Int, val width: Int)
   def get(idx: Int): Long
 }
 
-class RLEMasksInt(private val _counts: Array[Int], height: Int, width: Int)
+class RLEMasksIntArray(private val _counts: Array[Int], height: Int, width: Int)
   extends RLEMasks(height, width) {
   override def toRLETensor: Tensor[Float] = {
     Tensor(_counts.map(MaskUtils.uint2long(_).toFloat), Array(_counts.length))
@@ -105,7 +105,7 @@ class RLEMasksInt(private val _counts: Array[Int], height: Int, width: Int)
   override def counts: Array[Int] = _counts
 }
 
-class RLEMasksFloat(private val _counts: Tensor[Float], height: Int, width: Int)
+class RLEMasksFloatTensor(private val _counts: Tensor[Float], height: Int, width: Int)
   extends RLEMasks(height, width) {
   override def toRLETensor: Tensor[Float] = _counts
 
@@ -126,7 +126,10 @@ class RLEMasksFloat(private val _counts: Tensor[Float], height: Int, width: Int)
 
 object RLEMasks {
   def apply(counts: Array[Int], height: Int, width: Int): RLEMasks =
-    new RLEMasksInt(counts, height, width)
+    new RLEMasksIntArray(counts, height, width)
+
+  def apply(counts: Tensor[Float], height: Int, width: Int): RLEMasks =
+    new RLEMasksFloatTensor(counts, height, width)
 }
 
 
@@ -480,7 +483,35 @@ object MaskUtils {
   }
 
   /**
-   * Get the iou of two bounding box
+   * Get the iou of two bounding boxes
+   * @param gtx1 Ground truth x1
+   * @param gty1 Ground truth y1
+   * @param gtx2 Ground truth x2
+   * @param gty2 Ground truth y2
+   * @param dtx1 Detection x1
+   * @param dty1 Detection y1
+   * @param dtx2 Detection x2
+   * @param dty2 Detection y2
+   * @param isCrowd if ground truth is is crowd
+   * @return
+   */
+  def bboxIOU(gtx1: Float, gty1: Float, gtx2: Float, gty2: Float, dtx1: Float, dty1: Float,
+    dtx2: Float, dty2: Float, isCrowd: Boolean): Float = {
+    val (xmin, ymin, xmax, ymax) = (gtx1, gty1, gtx2, gty2)
+    val (x1, y1, x2, y2) = (dtx1, dty1, dtx2, dty2)
+    val area = (xmax - xmin + 1) * (ymax - ymin + 1)
+    val ixmin = Math.max(xmin, x1)
+    val iymin = Math.max(ymin, y1)
+    val ixmax = Math.min(xmax, x2)
+    val iymax = Math.min(ymax, y2)
+    val inter = Math.max(ixmax - ixmin + 1, 0) * Math.max(iymax - iymin + 1, 0)
+    val detectionArea = (x2 - x1 + 1) * (y2 - y1 + 1)
+    val union = if (isCrowd) detectionArea else (detectionArea + area - inter)
+    inter / union
+  }
+
+  /**
+   * Get the iou of two bounding boxes
    * @param groundTruth
    * @param detection
    * @param isCrowd if groundTruth is isCrowd
@@ -488,17 +519,8 @@ object MaskUtils {
    */
   def bboxIOU(groundTruth: (Float, Float, Float, Float),
     detection: (Float, Float, Float, Float), isCrowd: Boolean): Float = {
-    val (xmin, ymin, xmax, ymax) = groundTruth
-    val (x1, y1, x2, y2) = detection
-    val area = (xmax - xmin) * (ymax - ymin)
-    val ixmin = Math.max(xmin, x1)
-    val iymin = Math.max(ymin, y1)
-    val ixmax = Math.min(xmax, x2)
-    val iymax = Math.min(ymax, y2)
-    val inter = Math.max(ixmax - ixmin, 0) * Math.max(iymax - iymin, 0)
-    val detectionArea = (x2 - x1) * (y2 - y1)
-    val union = if (isCrowd) detectionArea else (detectionArea + area - inter)
-    inter / union
+    bboxIOU(groundTruth._1, groundTruth._2, groundTruth._3, groundTruth._4,
+      detection._1, detection._2, detection._3, detection._4, isCrowd)
   }
 
   // convert one rle to one bbox
@@ -532,7 +554,7 @@ object MaskUtils {
         ys = math.min(ys, y)
         ye = math.max(ye, y)
       }
-      (xs, ys, xe + 1, ye + 1)
+      (xs, ys, xe, ye)
     }
   }
 }

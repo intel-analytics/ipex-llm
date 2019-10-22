@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasksFloat}
+import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasks, RLEMasksFloatTensor}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
@@ -561,7 +561,7 @@ abstract private[bigdl] class GroundTruthRegion(isCOCO: Boolean, numIOU: Int, va
 private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, label: Int, diff: Float,
   val xmin: Float, val ymin: Float, val xmax: Float, val ymax: Float)
   extends GroundTruthRegion(isCOCO, numIOU, label, diff) {
-  private val area = (xmax - xmin) * (ymax - ymin)
+  private val area = (xmax - xmin + 1) * (ymax - ymin + 1)
 
   override def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float,
       rle: Tensor[Float] = null): Float = {
@@ -569,8 +569,8 @@ private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, label: Int, d
     val iymin = Math.max(ymin, y1)
     val ixmax = Math.min(xmax, x2)
     val iymax = Math.min(ymax, y2)
-    val inter = Math.max(ixmax - ixmin, 0) * Math.max(iymax - iymin, 0)
-    val detectionArea = (x2 - x1) * (y2 - y1)
+    val inter = Math.max(ixmax - ixmin + 1, 0) * Math.max(iymax - iymin + 1, 0)
+    val detectionArea = (x2 - x1 + 1) * (y2 - y1 + 1)
     val union = if (isCOCO && diff != 0) detectionArea else (detectionArea + area - inter)
     inter / union
   }
@@ -580,10 +580,10 @@ private[bigdl] class GroundTruthRLE(numIOU: Int, label: Int, diff: Float, rle: T
   height: Int, width: Int)
   extends GroundTruthRegion(true, numIOU, label, diff) {
 
-  val rleMasks = new RLEMasksFloat(rle, height, width)
+  val rleMasks = RLEMasks(rle, height, width)
   override def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float,
     detRLE: Tensor[Float]): Float = {
-    MaskUtils.rleIOU(new RLEMasksFloat(detRLE, rleMasks.height, rleMasks.width),
+    MaskUtils.rleIOU(RLEMasks(detRLE, rleMasks.height, rleMasks.width),
       rleMasks, diff != 0)
   }
 }
