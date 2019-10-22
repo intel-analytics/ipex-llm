@@ -140,6 +140,8 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
   licenses: Array[COCOLicence], categories: Array[COCOCategory]) {
 
   private lazy val cateId2catIdx = scala.collection.mutable.Map[Long, Int]()
+  private lazy val imageId2Image = scala.collection.mutable.Map[Long, COCOImage]()
+
   private[segmentation] def init(imgRoot: String): Unit = {
     val id2img = images.toIterator.map(img => (img.id, img)).toMap
     annotations.foreach(anno => {
@@ -153,11 +155,16 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
         case _ =>
       }
     })
-    images.foreach(img => img.imgRootPath = imgRoot)
+    images.foreach(img => {
+      img.imgRootPath = imgRoot
+      imageId2Image(img.id) = img
+    })
     categories.zipWithIndex.foreach { case (cate, idx) =>
       cateId2catIdx(cate.id) = idx + 1 // the ids starts from 1, because 0 is for background
     }
   }
+
+  def getImageById(id: Long): COCOImage = imageId2Image(id)
 
   /**
    * Convert COCO categoryId into category index.

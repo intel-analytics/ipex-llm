@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasks, RLEMasksFloatTensor}
+import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasks}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
