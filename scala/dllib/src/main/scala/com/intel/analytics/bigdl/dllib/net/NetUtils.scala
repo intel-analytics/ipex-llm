@@ -33,8 +33,10 @@ import org.apache.spark.utils.SparkUtils
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.slf4j.{Logger, LoggerFactory}
+import org.tensorflow.DataType
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable.VectorBuilder
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -152,11 +154,11 @@ object NetUtils {
   }
 
   private[zoo] def dynamic[T](
-       input : Array[ModuleNode[T]],
-       output : Array[ModuleNode[T]],
-       variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-       generateBackward: Boolean = true)
-       (implicit ev: TensorNumeric[T], ev2: ClassTag[T]): Graph[T] = {
+                               input: Array[ModuleNode[T]],
+                               output: Array[ModuleNode[T]],
+                               variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
+                               generateBackward: Boolean = true)
+                             (implicit ev: TensorNumeric[T], ev2: ClassTag[T]): Graph[T] = {
     import scala.reflect.runtime.{universe => ru}
     val m = ru.runtimeMirror(Graph.getClass.getClassLoader)
     val mirror = m.reflect(Graph)
@@ -215,6 +217,50 @@ object NetUtils {
     logger.debug(s"$name time [${cost / 1.0e9} s].")
     result
   }
+
+  def activity2VectorBuilder(data: Activity):
+  mutable.Builder[Tensor[Float], Vector[Tensor[Float]]] = {
+    val vec = Vector.newBuilder[Tensor[Float]]
+    if (data.isTensor) {
+      vec += data.toTensor[Float]
+    } else {
+      var i = 0
+      while (i < data.toTable.length()) {
+        vec += data.toTable(i + 1)
+        i += 1
+      }
+    }
+    vec
+  }
+
+  def tfenum2datatype(enum: Int): DataType = {
+    enum match {
+      case 1 => DataType.FLOAT
+      case 2 => DataType.DOUBLE
+      case 3 => DataType.INT32
+      case 4 => DataType.UINT8
+      case 7 => DataType.STRING
+      case 9 => DataType.INT64
+      case 10 => DataType.BOOL
+      case _ => throw new IllegalArgumentException(s"unsupported tensorflow datatype $enum")
+
+    }
+  }
+
+  def tfdatatype2enum(dataType: DataType): Int = {
+    dataType match {
+      case DataType.FLOAT => 1
+      case DataType.DOUBLE => 2
+      case DataType.INT32 => 3
+      case DataType.UINT8 => 4
+      case DataType.STRING => 7
+      case DataType.INT64 => 9
+      case DataType.BOOL => 10
+      case _ => throw new IllegalArgumentException(s"unsupported tensorflow datatype $dataType")
+
+    }
+  }
+
 }
 
 private[zoo] case class Meta(inputNames: Array[String],
