@@ -51,8 +51,8 @@ private[bigdl] class Gemm[T: ClassTag](
 )(implicit ev: TensorNumeric[T])
 extends Operation[Tensor[T], Tensor[T], T] {
 
-  require(matrixB.dim() == 2, "Matrix B should be 2D")
-  require(matrixC.dim() == 2, "Matrix C should be 2D")
+//  require(matrixB.dim() == 2, "Matrix B should be 2D")
+//  require(matrixC.dim() == 2, "Matrix C should be 2D")
 
   // alpha * B'
   val transformedMatrixB = (if (transB == true) matrixB.t() else matrixB).mul(ev.fromType(alpha))
