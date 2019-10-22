@@ -31,35 +31,46 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  */
 @SerialVersionUID(- 7842335603491194236L)
-class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class SoftMax[T: ClassTag](var pos: Int = 1)(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
 
   @transient
   private var results: Array[Future[Unit]] = null
+
+  private def getPositiveDimension(input: Tensor[T]): Int = {
+    val inputDim = input.nDimension() // data batch dim
+    pos = if (pos <= 0) {
+      inputDim + pos
+    }
+    else pos
+    require(1 <= pos && pos <= input.nDimension(),
+      s"Invalid position: $pos ." + s"input dimension ${input.nDimension()}")
+    pos
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(1 <= input.nDimension() && input.nDimension() <= 4,
       "1D, 2D, 3D or 4D tensor expected" +
         s"input dimension ${input.nDimension()}")
-    val (nFrame, stride) = if (input.nDimension() == 1) {
-      (1, 1)
-    } else if (input.nDimension() == 2) {
-      (input.size(1), 1)
-    } else if (input.nDimension() == 3) {
-      (1, input.size(2) * input.size(3))
-    } else {
-      (input.size(1), input.size(3) * input.size(4))
+    pos = getPositiveDimension(input)
+    // get nFrame and stride value based on the input
+    val (nFrame, stride) = input.nDimension() - pos match {
+      case 0 => (1, 1)
+      case 1 => (input.size(pos), 1)
+      case 2 => (1, input.size(pos + 1) * input.size(pos + 2))
+      case _ => (input.size(pos), input.size(pos + 2) * input.size(pos + 3))
     }
+
     if (results == null || results.length != nFrame * stride) {
       results = new Array[Future[Unit]](nFrame * stride)
     }
     output.resizeAs(input)
-    SoftMax.updateOutput[T](input, output, results)
+    SoftMax.updateOutput[T](input, output, results, pos)
     output
   }
-
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(output)
-    SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results)
+    SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results, pos)
     gradInput
   }
 
@@ -67,25 +78,21 @@ class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
     inputShape
   }
 }
-
 object SoftMax{
 
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](pos: Int = 1)
       (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
-    new SoftMax[T]()
+    new SoftMax[T](pos)
   }
   // Notice: SoftMin will call this function
   private[nn] def updateOutput[T: ClassTag](input: Tensor[T], output: Tensor[T],
-    results: Array[Future[Unit]]) (implicit ev: TensorNumeric[T]): Tensor[T] = {
-
-    val (nFrame, dim, stride) = if (input.nDimension() == 1) {
-      (1, input.size(1), 1)
-    } else if (input.nDimension() == 2) {
-      (input.size(1), input.size(2), 1)
-    } else if (input.nDimension() == 3) {
-      (1, input.size(1), input.size(2) * input.size(3))
-    } else {
-      (input.size(1), input.size(2), input.size(3) * input.size(4))
+    results: Array[Future[Unit]], pos: Int = 1) (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    // get nFrame, dim and stride value based on the input tensor and pos
+    val (nFrame, dim, stride) = input.nDimension() - pos match {
+      case 0 => (1, input.size(pos), 1)
+      case 1 => (input.size(pos), input.size(pos + 1), 1)
+      case 2 => (1, input.size(pos), input.size(pos + 1) * input.size(pos + 2))
+      case _ => (input.size(pos), input.size(pos + 1), input.size(pos + 2) * input.size(pos + 3))
     }
 
     val outputArray = output.storage().array()
@@ -95,7 +102,7 @@ object SoftMax{
       input.contiguous().storage().array()
     }
     val storageOffset = input.storageOffset() - 1
-
+    // calculate softmax
     var t = 0
     while (t < stride * nFrame) {
       val _t = t
@@ -139,19 +146,19 @@ object SoftMax{
 
   private[nn] def updateGradInput[T: ClassTag](input: Tensor[T], gradOutput: Tensor[T],
     gradInput: Tensor[T], output: Tensor[T],
-    results: Array[Future[Unit]])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    results: Array[Future[Unit]], pos: Int = 1
+    )(implicit ev: TensorNumeric[T]): Tensor[T] = {
 
     require(input.size().deep == gradOutput.size().deep,
       "input should have the same size with gradOutput" +
         s"inputsize ${input.size().deep} gradOutput ${gradOutput.size().deep}")
-    val (nFrame, dim, stride) = if (output.nDimension() == 1) {
-      (1, output.size(1), 1)
-    } else if (output.nDimension() == 2) {
-      (output.size(1), output.size(2), 1)
-    } else if (output.nDimension() == 3) {
-      (1, output.size(1), output.size(2) * output.size(3))
-    } else {
-      (output.size(1), output.size(2), output.size(3) * output.size(4))
+    // get nFrame, dim and stride value based on the output tensor and pos
+    val (nFrame, dim, stride) = output.nDimension() - pos match {
+      case 0 => (1, output.size(pos), 1)
+      case 1 => (output.size(pos), output.size(pos + 1), 1)
+      case 2 => (1, output.size(pos), output.size(pos + 1) * output.size(pos + 2))
+      case _ =>
+        (output.size(pos), output.size(pos + 1), output.size(pos + 2) * output.size(pos + 3))
     }
 
     val gradInputArray = gradInput.storage().array()
@@ -165,7 +172,7 @@ object SoftMax{
     } else {
       gradOutput.contiguous().storage().array()
     }
-
+    // calculate softmax
     var t = 0
     while (t < stride * nFrame) {
       val _t = t

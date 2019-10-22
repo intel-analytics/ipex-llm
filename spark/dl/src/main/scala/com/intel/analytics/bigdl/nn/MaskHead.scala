@@ -25,7 +25,7 @@ class MaskHead(
   val inChannels: Int,
   val resolution: Int,
   val scales: Array[Float],
-  val samplingRratio: Int,
+  val samplingRatio: Int,
   val layers: Array[Int],
   val dilation: Int,
   val numClasses: Int,
@@ -34,7 +34,7 @@ class MaskHead(
 
   override def buildModel(): Module[Float] = {
     val featureExtractor = this.maskFeatureExtractor(
-      inChannels, resolution, scales, samplingRratio, layers, dilation, useGn)
+      inChannels, resolution, scales, samplingRatio, layers, dilation, useGn)
     val dimReduced = layers(layers.length - 1)
     val predictor = this.maskPredictor(dimReduced, numClasses, dimReduced)
     val postProcessor = new MaskPostProcessor()
@@ -53,7 +53,7 @@ class MaskHead(
 
     val maskFeatures = featureExtractor.inputs(features, proposals)
     val maskLogits = predictor.inputs(maskFeatures)
-    val result = postProcessor.inputs(maskLogits, proposals, labels)
+    val result = postProcessor.inputs(maskLogits, labels)
 
     Graph(Array(features, proposals, labels), Array(maskFeatures, result))
   }
@@ -127,8 +127,7 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
    */
   override def updateOutput(input: Table): Tensor[Float] = {
     val maskLogits = input[Tensor[Float]](1)
-    val bbox = input[Tensor[Float]](2) // N * 4
-    val labels = input[Tensor[Float]](3)
+    val labels = input[Tensor[Float]](2)
 
     val num_masks = maskLogits.size(1)
     if (rangeBuffer == null || rangeBuffer.nElement() != num_masks) {
@@ -148,7 +147,7 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
     while (i <= rangeBuffer.nElement()) {
       val dim = rangeBuffer.valueAt(i).toInt + 1
       val index = labels.valueAt(i).toInt // start from 1
-      output.narrow(1, i, 1).copy(mask_prob.narrow(1, i, 1).narrow(2, index, 1))
+      output.narrow(1, i, 1).copy(mask_prob.narrow(1, i, 1).narrow(2, index + 1, 1))
       i += 1
     }
     output

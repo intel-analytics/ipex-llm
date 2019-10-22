@@ -37,7 +37,7 @@ import scala.collection.mutable.ArrayBuffer
  * @param nmsThread
  * @param minSize
  */
-class RegionRroposal(
+class RegionProposal(
    val inChannels: Int,
    val anchorSizes: Array[Float],
    val aspectRatios: Array[Float],
@@ -48,7 +48,7 @@ class RegionRroposal(
    val postNmsTopNTrain: Int = 2000,
    val nmsThread: Float = 0.7f,
    val minSize: Int = 0)(implicit ev: TensorNumeric[Float])
-   extends AbstractModule[Table, Tensor[Float], Float] {
+   extends AbstractModule[Table, Table, Float] {
 
   // for anchor generation
   require(anchorSizes.length == anchorStride.length,
@@ -90,10 +90,10 @@ class RegionRroposal(
       kernelH = 3, kernelW = 3, strideH = 1, strideW = 1, padH = 1, padW = 1)
     conv.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
     val clsLogits = SpatialConvolution[Float](inChannels, numAnchors,
-      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_cls_logits")
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "cls_logits")
     clsLogits.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
     val bboxPred = SpatialConvolution[Float](inChannels, numAnchors * 4,
-      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "_bbox_pred")
+      kernelH = 1, kernelW = 1, strideH = 1, strideW = 1).setName(this.getName() + "bbox_pred")
     bboxPred.setInitMethod(RandomNormal(0.0, 0.01), Zeros)
 
     val input = Input()
@@ -107,44 +107,58 @@ class RegionRroposal(
 
   /**
    * input is a table and contains:
-   * first tensor: images: images for which we want to compute the predictions
-   * second tensor: features: features computed from the images that are used for
-   *  computing the predictions.
+   * first tensor: features: features computed from the images that are used for
+   * computing the predictions.
+   * second tensor: image height and image width
    */
-  override def updateOutput(input: Table): Tensor[Float] = {
+  override def updateOutput(input: Table): Table = {
     val features = input[Table](1)
-    val images = input[Tensor[Float]](2)
+    val imageSize = input[Tensor[Float]](2)
     val anchors = this.anchorGenerator(features)
 
-    var bboxNumber = 0
-    var i = 1
-    while (i <= anchors.length()) {
-      val headOutput = head.forward(features(i)).toTable
-      val objectness = headOutput.apply[Tensor[Float]](1)
-      val boxRegression = headOutput.apply[Tensor[Float]](2)
+    // for batch
+    val batchSize = features[Tensor[Float]](1).size(1)
+    for (b <- 1 to batchSize) {
+      var bboxNumber = 0
+      var i = 1
+      while (i <= anchors.length()) {
+        val singleFeatures = features[Tensor[Float]](i).narrow(1, b, 1)
+        val headOutput = head.forward(singleFeatures).toTable
+        val objectness = headOutput.apply[Tensor[Float]](1)
+        val boxRegression = headOutput.apply[Tensor[Float]](2)
 
-      val out = boxSelector.forward(T(anchors[Tensor[Float]](i), objectness,
-        boxRegression, images))
+        val out = boxSelector.forward(T(anchors[Tensor[Float]](i), objectness,
+          boxRegression, imageSize))
 
-      if (!selectorRes.contains(i)) selectorRes(i) = T(Tensor[Float](), Tensor[Float]())
-      selectorRes(i).asInstanceOf[Table].apply[Tensor[Float]](1).resizeAs(out[Tensor[Float]](1))
-        .copy(out[Tensor[Float]](1))
-      selectorRes(i).asInstanceOf[Table].apply[Tensor[Float]](2).resizeAs(out[Tensor[Float]](2))
-        .copy(out[Tensor[Float]](2))
+        if (!selectorRes.contains(i)) selectorRes(i) = T(Tensor[Float](), Tensor[Float]())
+        selectorRes(i).asInstanceOf[Table].apply[Tensor[Float]](1).resizeAs(out[Tensor[Float]](1))
+          .copy(out[Tensor[Float]](1))
+        selectorRes(i).asInstanceOf[Table].apply[Tensor[Float]](2).resizeAs(out[Tensor[Float]](2))
+          .copy(out[Tensor[Float]](2))
 
-      bboxNumber += selectorRes[Table](i)[Tensor[Float]](1).size(1)
-      i += 1
+        bboxNumber += selectorRes[Table](i)[Tensor[Float]](1).size(1)
+        i += 1
+      }
+
+      val postNmsTopN = if (this.isTraining()) min(postNmsTopNTrain, bboxNumber)
+      else min(postNmsTopNTest, bboxNumber)
+
+      if (output.getOrElse(b, null) == null) {
+        output(b) = Tensor[Float]()
+      }
+      output[Tensor[Float]](b).resize(postNmsTopN, 4)
+
+      // sort
+      selectOverAllLevels(selectorRes, postNmsTopN, bboxNumber, output[Tensor[Float]](b))
     }
-
-    val postNmsTopN = if (this.isTraining()) min(postNmsTopNTrain, bboxNumber)
-    else min(postNmsTopNTest, bboxNumber)
-    output.resize(postNmsTopN, 4)
-
-    // sort
-    selectOverAllLevels(selectorRes, postNmsTopN, bboxNumber, output)
     output
   }
 
+  /**
+   * different behavior during training and during testing:
+   * during training, post_nms_top_n is over *all* the proposals combined, while
+   * during testing, it is over the proposals for each image
+   */
   private def selectOverAllLevels(res: Table, postNmsTopN: Int, totalNumber: Int,
                                   output: Tensor[Float]): Unit = {
     val scoreResult = Tensor[Float]().resize(totalNumber)
@@ -170,12 +184,12 @@ class RegionRroposal(
     }
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[Float]): Table = {
-    throw new UnsupportedOperationException("RegionRroposal only support inference")
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    throw new UnsupportedOperationException("RegionProposal only support inference")
   }
 
-  override def accGradParameters(input: Table, gradOutput: Tensor[Float]): Unit = {
-    throw new UnsupportedOperationException("RegionRroposal only support inference")
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+    throw new UnsupportedOperationException("RegionProposal only support inference")
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -199,7 +213,7 @@ class RegionRroposal(
     boxSelector.release()
   }
 
-  override def training(): RegionRroposal.this.type = {
+  override def training(): RegionProposal.this.type = {
     train = true
     head.training()
     boxSelector.training()
@@ -214,7 +228,7 @@ class RegionRroposal(
   }
 }
 
-object RegionRroposal {
+object RegionProposal {
   def apply(inChannels: Int,
             anchorSizes: Array[Float] = Array[Float](32, 64, 128, 256, 512),
             aspectRatios: Array[Float] = Array[Float](0.5f, 1.0f, 2.0f),
@@ -224,8 +238,8 @@ object RegionRroposal {
             preNmsTopNTrain: Int = 2000,
             postNmsTopNTrain: Int = 2000,
             nmsThread: Float = 0.7f,
-            minSize: Int = 0)(implicit ev: TensorNumeric[Float]): RegionRroposal =
-    new RegionRroposal(inChannels, anchorSizes, aspectRatios, anchorStride,
+            minSize: Int = 0)(implicit ev: TensorNumeric[Float]): RegionProposal =
+    new RegionProposal(inChannels, anchorSizes, aspectRatios, anchorStride,
       preNmsTopNTest, postNmsTopNTest, preNmsTopNTrain, postNmsTopNTrain, nmsThread,
       minSize)
 }
