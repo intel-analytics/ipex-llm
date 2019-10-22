@@ -1216,9 +1216,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Sigmoid[T]()
   }
 
-  def createSoftMax()
+  def createSoftMax(pos: Int = 1)
   : SoftMax[T] = {
-    SoftMax[T]()
+    SoftMax[T](pos)
   }
 
   def createSoftMin()

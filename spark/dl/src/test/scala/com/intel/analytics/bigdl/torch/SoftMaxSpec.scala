@@ -81,6 +81,35 @@ class SoftMaxSpec extends TorchSpec {
     println("Test case : SoftMax, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
+  "A SoftMax 2D input with pos parameter" should "generate correct output and grad" in {
+    torchCheck()
+    val layer = new SoftMax[Double](-1)
+    val input = Tensor[Double](3, 5)
+    input.apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](3, 5)
+    gradOutput.apply1(_ => Random.nextDouble())
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.SoftMax()\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+
+    println("Test case : SoftMax, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
   "A SoftMax 3D input" should "generate correct output and grad" in {
     torchCheck()
     val layer = new SoftMax[Double]()
