@@ -24,6 +24,24 @@ if sys.version >= '3':
     unicode = str
 
 
+class Constant(Layer):
+    """
+    >>> value = np.random.random((3, 3))
+    >>> constant = Constant(value)
+    creating: createConstant
+    """
+    def __init__(self, value, bigdl_type="float"):
+        super(Constant, self).__init__(None, bigdl_type, JTensor.from_ndarray(value))
+
+
+class Gather(Layer):
+    """
+    >>> constant = Gather()
+    creating: createGather
+    """
+    def __init__(self, bigdl_type="float"):
+        super(Gather, self).__init__(None, bigdl_type)
+
 
 class Gemm(Layer):
     """
@@ -46,6 +64,17 @@ class Gemm(Layer):
                  bigdl_type="float"):
         super(Gemm, self).__init__(None, bigdl_type, alpha, beta, trans_a, trans_b,
                                    JTensor.from_ndarray(matrix_b), JTensor.from_ndarray(matrix_c))
+
+
+class Reshape(Layer):
+    """
+    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
+    >>> shape = (2, 2)
+    >>> reshape = Reshape(shape)
+    creating: createReshape
+    """
+    def __init__(self, shape=None, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type, shape)
 
 
 class Shape(Layer):
