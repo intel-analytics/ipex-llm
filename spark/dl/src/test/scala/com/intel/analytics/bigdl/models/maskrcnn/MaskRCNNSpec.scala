@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import com.intel.analytics.bigdl.nn.Nms
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
@@ -471,8 +472,8 @@ class MaskRCNNSerialTest extends ModuleSerializationTest {
     val backboneOutChannels = 32
     val mask = new MaskRCNN(resNetOutChannels, backboneOutChannels).setName("MaskRCNN")
     mask.evaluate()
-    val input = Tensor[Float](1, 3, 224, 256).rand()
-    val output = mask.forward(input)
+    val input = T(Tensor[Float](1, 3, 224, 256).rand(),
+      Tensor[Float](T(T(224f, 256f, 224f, 256f))))
 
     runSerializationTest(mask, input)
   }

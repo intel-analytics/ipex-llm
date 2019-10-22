@@ -65,7 +65,8 @@ object PolyMasks {
  * @param height height of the image
  * @param width width of the image
  */
-class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends SegmentationMasks {
+class RLEMasks(val counts: Array[Int], val height: Int, val width: Int)
+  extends SegmentationMasks {
   override def toRLE: RLEMasks = this
 
   /**
@@ -76,6 +77,34 @@ class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends 
    */
   def get(idx: Int): Long = {
     MaskUtils.uint2long(counts(idx))
+  }
+
+  override def equals(obj: Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[RLEMasks]) {
+      return false
+    }
+    val other = obj.asInstanceOf[RLEMasks]
+    if (this.eq(other)) {
+      return true
+    }
+
+    this.counts.deep == other.counts.deep &&
+      this.height == other.height &&
+      this.width == other.width
+  }
+
+  override def hashCode() : Int = {
+    val seed = 37
+    var hash = 1
+    hash = hash * seed + height
+    hash = hash * seed + width
+    this.counts.foreach(key => {
+      hash = hash * seed + key.hashCode()
+    })
+    hash
   }
 }
 

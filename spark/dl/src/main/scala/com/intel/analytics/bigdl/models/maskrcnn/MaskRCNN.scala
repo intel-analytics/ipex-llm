@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.segmentation.MaskUtils
+import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasks}
 import com.intel.analytics.bigdl.models.resnet.{Convolution, Sbn}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -211,12 +211,12 @@ class MaskRCNN(val inChannels: Int,
           originalHeight.toFloat / height, originalWidth.toFloat / width)
       }
       // mask decode to original size
-      val masksRLE = new Array[Tensor[Float]](boxNumber)
+      val masksRLE = new Array[RLEMasks](boxNumber)
       for (j <- 0 to boxNumber - 1) {
         binaryMask.fill(0.0f)
         Utils.decodeMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
           binaryMask = binaryMask)
-        masksRLE(j) = MaskUtils.binaryToRLE(binaryMask).toRLETensor
+        masksRLE(j) = MaskUtils.binaryToRLE(binaryMask)
       }
       start += boxNumber
 

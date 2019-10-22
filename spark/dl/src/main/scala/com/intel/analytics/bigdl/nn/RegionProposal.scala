@@ -323,7 +323,7 @@ private[nn] class ProposalPostProcessor(
 
     val proposals = BboxUtil.bboxTransformInv(anchorsIndex,
       boxRegressionIndex, normalized = true)
-    // remove _small box
+    // remove _small box and clip to images
     val minBoxH = minSize
     val minBoxW = minSize
     var keepN = BboxUtil.clipBoxes(proposals, imageSize.valueAt(1), imageSize.valueAt(2), minBoxH
