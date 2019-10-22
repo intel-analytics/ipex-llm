@@ -24,7 +24,7 @@ abstract class SegmentationMasks extends Serializable {
   /**
    * Convert to a RLE encoded tensor
    */
-  def toRLETensor: Tensor[Float]
+  def toRLE: RLEMasks
 }
 
 /**
@@ -36,9 +36,9 @@ abstract class SegmentationMasks extends Serializable {
  */
 class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) extends
   SegmentationMasks {
-  override def toRLETensor: Tensor[Float] = {
-    require(height > 0 && width > 0, "the height and width must > 0 for toRLETensor()")
-    MaskUtils.mergeRLEs(MaskUtils.poly2RLE(this, height, width), false).toRLETensor
+  override def toRLE: RLEMasks = {
+    require(height > 0 && width > 0, "the height and width must > 0 for toRLE")
+    MaskUtils.mergeRLEs(MaskUtils.poly2RLE(this, height, width), false)
   }
 }
 
@@ -61,12 +61,12 @@ object PolyMasks {
  * Also note that we don't use COCO's "compact" RLE string here because this RLE class has better
  * time & space performance.
  *
+ * @param counts the RLE counts
  * @param height height of the image
  * @param width width of the image
  */
-abstract class RLEMasks(val height: Int, val width: Int)
-  extends SegmentationMasks {
-  override def toRLETensor: Tensor[Float]
+class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends SegmentationMasks {
+  override def toRLE: RLEMasks = this
 
   // cached bbox value
   @transient
@@ -77,59 +77,19 @@ abstract class RLEMasks(val height: Int, val width: Int)
   lazy val area: Long = MaskUtils.rleArea(this)
 
   /**
-   * @return The length of counts data
-   */
-  def countsLength: Int
-  def counts: Array[Int]
-  /**
    * Get an element in the counts. Process the overflowed int
    *
    * @param idx
    * @return
    */
-  def get(idx: Int): Long
-}
-
-class RLEMasksIntArray(private val _counts: Array[Int], height: Int, width: Int)
-  extends RLEMasks(height, width) {
-  override def toRLETensor: Tensor[Float] = {
-    Tensor(_counts.map(MaskUtils.uint2long(_).toFloat), Array(_counts.length))
-  }
-
-  override def countsLength: Int = _counts.length
-
-  override def get(idx: Int): Long = {
-    MaskUtils.uint2long(_counts(idx))
-  }
-
-  override def counts: Array[Int] = _counts
-}
-
-class RLEMasksFloatTensor(private val _counts: Tensor[Float], height: Int, width: Int)
-  extends RLEMasks(height, width) {
-  override def toRLETensor: Tensor[Float] = _counts
-
-  override def countsLength: Int = _counts.nElement()
-
-  override def get(idx: Int): Long = {
-    _counts.valueAt(idx + 1).toLong
-  }
-
-  override def counts: Array[Int] = {
-    val ret = new Array[Int](_counts.nElement())
-    for (i <- ret.indices) {
-      ret(i) = _counts.valueAt(i + 1).toInt
-    }
-    ret
+  def get(idx: Int): Long = {
+    MaskUtils.uint2long(counts(idx))
   }
 }
 
 object RLEMasks {
   def apply(counts: Array[Int], height: Int, width: Int): RLEMasks =
-    new RLEMasksIntArray(counts, height, width)
-
-  def apply(counts: Tensor[Float], height: Int, width: Int): RLEMasks =
-    new RLEMasksFloatTensor(counts, height, width)
+    new RLEMasks(counts, height, width)
 }
 
 
@@ -158,7 +118,7 @@ object MaskUtils {
   // scalastyle:off methodName
   def RLE2String(rle: RLEMasks): String = {
     // Similar to LEB128 but using 6 bits/char and ascii chars 48-111.
-    val m = rle.countsLength
+    val m = rle.counts.length
     val s = new ArrayBuffer[Char]()
     for (i <- 0 until m) {
       var x = rle.get(i)
@@ -385,7 +345,7 @@ object MaskUtils {
         }
         ct += ca
         cb -= c
-        if (cb == 0 && b < B.countsLength) {
+        if (cb == 0 && b < B.counts.length) {
           cb = B.get(b)
           b += 1
           vb = !vb
@@ -408,7 +368,7 @@ object MaskUtils {
 
   private[segmentation] def rleArea(R: RLEMasks): Long = {
     var a = 0L
-    for (j <- 1.until(R.countsLength, 2))
+    for (j <- 1.until(R.counts.length, 2))
       a += R.get(j)
     a.toInt
   }
@@ -437,12 +397,12 @@ object MaskUtils {
       var b = 1
 
       var ca = dCnts.get(0)
-      val ka = dCnts.countsLength
+      val ka = dCnts.counts.length
       var va: Boolean = false
       var vb: Boolean = false
 
       var cb = gCnts.get(0)
-      val kb = gCnts.countsLength
+      val kb = gCnts.counts.length
       var i = 0.0f
       var u = 0.0f
       var ct = 1.0f
@@ -525,7 +485,7 @@ object MaskUtils {
 
   // convert one rle to one bbox
   private[segmentation] def rleToOneBbox(rle: RLEMasks): (Float, Float, Float, Float) = {
-    val m = rle.countsLength / 2 * 2
+    val m = rle.counts.length / 2 * 2
 
     val h = rle.height.toLong
     var xp = 0.0f

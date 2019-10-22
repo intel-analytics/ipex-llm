@@ -346,7 +346,7 @@ object MAPUtil {
    * For a detection, match it with all GT boxes. Record the match in "predictByClass"
    */
   def parseDetection(gtBbox: ArrayBuffer[GroundTruthRegion], label: Int, score: Float, x1: Float,
-    y1: Float, x2: Float, y2: Float, mask: Tensor[Float], classes: Int, iou: Array[Float],
+    y1: Float, x2: Float, y2: Float, mask: RLEMasks, classes: Int, iou: Array[Float],
     predictByClasses: Array[Array[ArrayBuffer[(Float, Boolean)]]]): Unit = {
     require(label >= 0 && label < classes, s"Bad label id $label")
     for (i <- iou.indices) {
@@ -555,7 +555,7 @@ abstract private[bigdl] class GroundTruthRegion(isCOCO: Boolean, numIOU: Int, va
    * @param rle RLE mask data, can be null
    * @return
    */
-  def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float, rle: Tensor[Float] = null): Float
+  def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float, rle: RLEMasks = null): Float
 }
 
 private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, label: Int, diff: Float,
@@ -564,7 +564,7 @@ private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, label: Int, d
   private val area = (xmax - xmin + 1) * (ymax - ymin + 1)
 
   override def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float,
-      rle: Tensor[Float] = null): Float = {
+      rle: RLEMasks = null): Float = {
     val ixmin = Math.max(xmin, x1)
     val iymin = Math.max(ymin, y1)
     val ixmax = Math.min(xmax, x2)
@@ -576,15 +576,13 @@ private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, label: Int, d
   }
 }
 
-private[bigdl] class GroundTruthRLE(numIOU: Int, label: Int, diff: Float, rle: Tensor[Float],
+private[bigdl] class GroundTruthRLE(numIOU: Int, label: Int, diff: Float, rle: RLEMasks,
   height: Int, width: Int)
   extends GroundTruthRegion(true, numIOU, label, diff) {
 
-  val rleMasks = RLEMasks(rle, height, width)
   override def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float,
-    detRLE: Tensor[Float]): Float = {
-    MaskUtils.rleIOU(RLEMasks(detRLE, rleMasks.height, rleMasks.width),
-      rleMasks, diff != 0)
+    detRLE: RLEMasks): Float = {
+    MaskUtils.rleIOU(detRLE, rle, diff != 0)
   }
 }
 
