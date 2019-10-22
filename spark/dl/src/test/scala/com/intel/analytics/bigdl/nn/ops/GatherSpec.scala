@@ -66,6 +66,32 @@ class GatherSpec extends FlatSpec with Matchers {
     output should be (exceptedOutput)
   }
 
+  "gather with scalar and specific dimension" should "works fine" in {
+    val gather = Gather[Float, Float](2)
+    val indices = Tensor[Int](Array(1), Array[Int]())
+    val input = Tensor.range(1, 24).resize(2, 3, 4)
+    val output = gather.forward(T(input, indices))
+
+    output should be (input.narrow(2, 2, 1))
+  }
+
+  "gather with scalar from last dimension" should "works fine" in {
+    val gather = Gather[Float, Float](0)
+    val indices = Tensor[Int](Array(1), Array[Int]())
+    val input = Tensor.range(1, 24).resize(2, 3, 4, 5)
+    val output = gather.forward(T(input, indices))
+
+    output should be (input.narrow(4, 2, 1))
+  }
+
+  "gather with scalar from negative dimension" should "works fine" in {
+    val gather = Gather[Float, Float](-2)
+    val indices = Tensor[Int](Array(1), Array[Int]())
+    val input = Tensor.range(1, 24).resize(2, 3, 4)
+    val output = gather.forward(T(input, indices))
+
+    output should be (input.narrow(1, 2, 1))
+  }
 }
 
 class GatherSerialTest extends ModuleSerializationTest {

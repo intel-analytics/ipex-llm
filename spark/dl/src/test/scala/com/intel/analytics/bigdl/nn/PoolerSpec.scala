@@ -96,7 +96,7 @@ class PoolerSpec extends FlatSpec with Matchers {
       T(T(0, 0, 10, 10),
         T(0, 0, 60, 60),
         T(0, 0, 500, 500))).resize(3, 4)
-    val input = T(features, rois)
+    val input = T(features, T(rois))
 
     val pooler = Pooler[Float](
       resolution = 2, scales = Array(0.125f, 0.0625f, 0.03125f), samplingRatio = 2)
@@ -192,7 +192,7 @@ class PoolerSpec extends FlatSpec with Matchers {
       T(T(0, 0, 10, 10),
         T(0, 0, 60, 60),
         T(0, 0, 500, 500))).resize(3, 4)
-    val input = T(features, rois)
+    val input = T(features, T(rois))
 
     val pooler = Pooler[Double](resolution = 2, scales = Array(0.125f, 0.0625f, 0.03125f),
       samplingRatio = 2)

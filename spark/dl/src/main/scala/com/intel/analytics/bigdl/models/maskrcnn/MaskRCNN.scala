@@ -60,7 +60,7 @@ class MaskRCNN(val inChannels: Int,
 
     private val ImageInfo : Tensor[Float] = Tensor[Float](2)
     private val backbone = buildBackbone(inChannels, outChannels)
-    private val rpn = RegionRroposal(inChannels, config.anchorSizes, config.aspectRatios,
+    private val rpn = RegionProposal(inChannels, config.anchorSizes, config.aspectRatios,
       config.anchorStride, config.preNmsTopNTest, config.postNmsTopNTest, config.preNmsTopNTrain,
       config.postNmsTopNTrain, config.minSize)
     private val boxHead = BoxHead(inChannels, config.boxResolution, config.scales,
@@ -155,7 +155,7 @@ class MaskRCNN(val inChannels: Int,
     val proposals = this.rpn.forward(T(features, ImageInfo))
     val boxOutput = this.boxHead.forward(T(features, proposals)).toTable
     val postProcessorBox = boxOutput[Table](2)
-    val proposalsBox = postProcessorBox[Tensor[Float]](2)
+    val proposalsBox = postProcessorBox[Table](2)
     val labelsBox = postProcessorBox[Tensor[Float]](1)
     val mask = this.maskHead.forward(T(features, proposalsBox, labelsBox))
     output = T(proposalsBox, labelsBox, mask)

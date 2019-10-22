@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.transform.vision.image
 
+import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -196,7 +197,6 @@ object RoiImageInfo {
   val ISCROWD = "is_crowd"
   val ORIGSIZE = "orig_size"
   val SCORES = "scores"
-  val ROISIZE = "roi_size"
 
   /**
    * Get the output score tensor from the table.
@@ -229,30 +229,20 @@ object RoiImageInfo {
    * @param tab
    * @return
    */
-  def getMasks(tab: Table): Array[Tensor[Float]] =
-    tab[Array[Tensor[Float]]](MASKS)
+  def getMasks(tab: Table): Array[RLEMasks] = tab[Array[RLEMasks]](MASKS)
 
   /**
    * Get the isCrowd tensor from the table. Should be 1 x N vector (N is the # of detections)
    * @param tab
    * @return
    */
-  def getIsCrowd(tab: Table): Tensor[Float] =
-    tab[Tensor[Float]](ISCROWD)
+  def getIsCrowd(tab: Table): Tensor[Float] = tab[Tensor[Float]](ISCROWD)
 
   /**
    * Get the size of the image before resizing
    * @return (height, width, channel)
    */
-  def getOrigSize(tab: Table): (Int, Int, Int) =
-    tab[(Int, Int, Int)](ORIGSIZE)
-
-  /**
-   * Get the size of the image before resizing
-   * @return (height, width)
-   */
-  def getRoiSize(tab: Table): (Int, Int) =
-    tab[(Int, Int)](ROISIZE)
+  def getOrigSize(tab: Table): (Int, Int, Int) = tab[(Int, Int, Int)](ORIGSIZE)
 }
 /**
  * A batch of images with flattened RoiLabels
