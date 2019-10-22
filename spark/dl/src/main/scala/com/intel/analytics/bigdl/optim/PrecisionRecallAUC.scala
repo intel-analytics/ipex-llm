@@ -25,8 +25,8 @@ import scala.reflect.ClassTag
  * Precision Recall Area Under Curve will compute the precision-recall pairs and
  * get the area under the curve.
  *
- * Note: It will gather all output probabilities and target to driver and will compute the
- * precision, recall and the auc every call of `result()`
+ * Note: It will gather all output probabilities and targets to driver and will compute the
+ * precision, recall and the auc every calling of `result()`
  *
  * @param ev tensor numeric environments
  * @tparam T class tag for tensor numeric
@@ -34,6 +34,8 @@ import scala.reflect.ClassTag
 class PrecisionRecallAUC[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity): ValidationResult = {
     require(output.isTensor && target.isTensor, s"only support tensor output and tensor target")
+    require(!output.toTensor.isEmpty && !target.toTensor.isEmpty,
+      s"the output and target should not be empty")
     val array = List(output, target).map(_.toTensor[Float].storage().array())
     val results = array.head.zip(array.last).toArray
     new PRAUCResult(results)

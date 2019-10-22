@@ -537,4 +537,15 @@ class ValidationSpec extends FlatSpec with Matchers {
     auc should be (0.7916667f)
     num should be (4)
   }
+
+  "precision recall auc with empty tensor" should "work correctly" in {
+    val output = Tensor[Float]()
+    val target = Tensor[Float]()
+
+    val validation = new PrecisionRecallAUC[Float]()
+
+    val thrown = intercept[IllegalArgumentException] {
+      validation(output, target)
+    }
+  }
 }
