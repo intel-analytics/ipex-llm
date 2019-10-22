@@ -155,7 +155,7 @@ class MaskRCNN(val inChannels: Int,
     val proposals = this.rpn.forward(T(features, ImageInfo))
     val boxOutput = this.boxHead.forward(T(features, proposals)).toTable
     val postProcessorBox = boxOutput[Table](2)
-    val proposalsBox = postProcessorBox[Tensor[Float]](2)
+    val proposalsBox = postProcessorBox[Table](2)
     val labelsBox = postProcessorBox[Tensor[Float]](1)
     val mask = this.maskHead.forward(T(features, proposalsBox, labelsBox))
     output = T(proposalsBox, labelsBox, mask)
