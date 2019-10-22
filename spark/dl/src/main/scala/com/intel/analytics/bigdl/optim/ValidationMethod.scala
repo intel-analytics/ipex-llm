@@ -316,7 +316,6 @@ object MAPUtil {
       val tclasses = RoiLabel.getClasses(roiLabel)
       val isCrowd = RoiLabel.getIsCrowd(roiLabel)
       val masks = if (isSegmentation) RoiLabel.getMasks(roiLabel) else null
-      val (height, width, _) = if (isSegmentation) RoiLabel.getOrigSize(roiLabel) else (0, 0, 0)
       for (j <- 1 to bbox.size(1)) {
         val (label, _diff) = if (tclasses.dim() == 2) {
           (tclasses.valueAt(1, j).toInt, tclasses.valueAt(2, j))
@@ -325,7 +324,7 @@ object MAPUtil {
         }
         val diff = if (isCrowd.valueAt(j) != 0 || _diff != 0) 1f else 0f
         val newGt = if (isSegmentation) {
-          new GroundTruthRLE(numIOU, label, diff, masks(j - 1), height, width)
+          new GroundTruthRLE(numIOU, label, diff, masks(j - 1))
         } else {
           new GroundTruthBBox(isCOCO, numIOU, label, diff, bbox.valueAt(j, 1),
             bbox.valueAt(j, 2), bbox.valueAt(j, 3), bbox.valueAt(j, 4))
@@ -576,8 +575,7 @@ private[bigdl] class GroundTruthBBox(isCOCO: Boolean, numIOU: Int, label: Int, d
   }
 }
 
-private[bigdl] class GroundTruthRLE(numIOU: Int, label: Int, diff: Float, rle: RLEMasks,
-  height: Int, width: Int)
+private[bigdl] class GroundTruthRLE(numIOU: Int, label: Int, diff: Float, rle: RLEMasks)
   extends GroundTruthRegion(true, numIOU, label, diff) {
 
   override def getIOURate(x1: Float, y1: Float, x2: Float, y2: Float,
@@ -730,7 +728,7 @@ object MeanAveragePrecisionObjectDetection {
    *                       IOU of bounding boxes are computed
    * @return MeanAveragePrecisionObjectDetection
    */
-  def createCOCO(nClasses: Int, topK: Int = 100, skipClass: Int = 0,
+  def createCOCO(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
     iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10), isSegmentation: Boolean = false)
   : MeanAveragePrecisionObjectDetection[Float] = {
     new MeanAveragePrecisionObjectDetection[Float](nClasses, topK,
