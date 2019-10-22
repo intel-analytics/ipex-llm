@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.python.api
 
 import scala.reflect.ClassTag
+import scala.collection.JavaConverters._
+import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.onnx._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -33,12 +36,27 @@ private[bigdl] object PythonBigDLOnnx {
 
 class PythonBigDLOnnx[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
 
+  def createConstant(value: JTensor): nn.tf.Const[T, T] = {
+    nn.tf.Const[T, T](toTensor(value))
+  }
+
+
+  def createGather(): nn.ops.Gather[T, T] = {
+    nn.ops.Gather()
+  }
+
+
   def createGemm(alpha: Float, beta: Float, transA: Int, transB: Int,
                  matrixB: JTensor, matrixC: JTensor): Gemm[T] = {
     Gemm(alpha, beta,
       (if (transA == 0) false else true),
       (if (transB == 0) false else true),
       toTensor(matrixB), toTensor(matrixC))
+  }
+
+
+  def createReshape(shape: JArrayList[Int]): nn.onnx.Reshape[T] = {
+    nn.onnx.Reshape(if (shape == null) null else shape.asScala.toArray)
   }
 
 
