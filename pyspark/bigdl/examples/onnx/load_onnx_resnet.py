@@ -15,7 +15,7 @@
 #
 
 import numpy as np
-from bigdl.contrib.onnx2bigdl import load
+from bigdl.contrib.onnx import load
 
 
 def load_onnx_resnet():
