@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
-import com.intel.analytics.bigdl.dataset.segmentation.SegmentationMasks
+import com.intel.analytics.bigdl.dataset.segmentation.{RLEMasks, SegmentationMasks}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -56,11 +56,7 @@ case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
   def toTable: Table = {
     val table = T()
     if (masks != null) {
-      val masksRLE = new Array[Tensor[Float]](masks.length)
-      for (i <- 0 to masks.length - 1) {
-        masksRLE(i) = masks(i).toRLETensor
-      }
-      table(RoiLabel.MASKS) = masksRLE
+      table(RoiLabel.MASKS) = masks.map(_.toRLE)
     }
     table(RoiLabel.CLASSES) = classes
     table(RoiLabel.BBOXES) = bboxes
@@ -83,10 +79,8 @@ object RoiLabel {
 
   def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
   def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
-  def getMasks(tab: Table): Array[Tensor[Float]] =
-    tab[Array[Tensor[Float]]](MASKS)
-  def getIsCrowd(tab: Table): Tensor[Float] =
-    tab[Tensor[Float]](ISCROWD)
+  def getMasks(tab: Table): Array[RLEMasks] = tab[Array[RLEMasks]](MASKS)
+  def getIsCrowd(tab: Table): Tensor[Float] = tab[Tensor[Float]](ISCROWD)
 
   /**
    * @return (height, width, channel)
