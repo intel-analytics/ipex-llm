@@ -16,17 +16,21 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.io.File
+import java.io.{ByteArrayInputStream, File, FileInputStream}
 import java.nio.file.Paths
 import java.util.concurrent.{Callable, Executors}
-
 import com.intel.analytics.bigdl.dataset.image._
+import com.intel.analytics.bigdl.dataset.segmentation.{COCODataset, COCOPoly, COCORLE, PolyMasks, RLEMasks}
+import com.intel.analytics.bigdl.models.utils.COCOSeqFileGenerator
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils, SparkContextLifeCycle}
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, SparkContextLifeCycle, TestUtils}
+import java.awt.image.DataBufferByte
+import javax.imageio.ImageIO
 import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -42,6 +46,94 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
       path
     }
   }
+
+  "COCODataset" should "correctly be loaded" in {
+    val resource = getClass().getClassLoader().getResource("coco")
+
+    val dataSet = COCODataset.load(processPath(resource.getPath())
+      + File.separator + "cocomini.json")
+    dataSet.images.length should be (5)
+    dataSet.annotations.length should be (6)
+    val cateIdx = Array(53, 53, 53, 1, 19, 1).toIterator
+    val sizes = Array((428, 640), (480, 640), (427, 640), (480, 640), (427, 640)).toIterator
+    for (anno <- dataSet.annotations) {
+      anno.image.id should be (anno.imageId)
+      dataSet.categoryId2Idx(anno.categoryId) should be (cateIdx.next())
+      if (anno.isCrowd) {
+        anno.segmentation.isInstanceOf[COCORLE] should be (true)
+      } else {
+        anno.segmentation.isInstanceOf[COCOPoly] should be (true)
+        val poly = anno.segmentation.asInstanceOf[COCOPoly]
+        poly.height should be (anno.image.height)
+        poly.width should be (anno.image.width)
+      }
+    }
+    for (img <- dataSet.images) {
+      val size = sizes.next()
+      img.height should be (size._1)
+      img.width should be (size._2)
+    }
+    for (i <- 1 to dataSet.categories.length) {
+      val cate = dataSet.getCategoryByIdx(i)
+      dataSet.categoryId2Idx(cate.id) should be (i)
+    }
+  }
+
+  "COCODataset" should "correctly transform into sequence file" in {
+    val resource = getClass().getClassLoader().getResource("coco")
+
+    // load data from JSON for comparision
+    val ds = COCODataset.load(processPath(resource.getPath())
+      + File.separator + "cocomini.json")
+    val index = ds.images.toIterator.map(im => (im.fileName, im)).toMap
+
+    val dataSetFolder = processPath(resource.getPath()) + File.separator
+    val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
+    require(tmpFile.delete())
+    require(tmpFile.mkdir())
+    COCOSeqFileGenerator.main(Array("-f", dataSetFolder, "-o", tmpFile.getPath, "-p", "4",
+      "-b", "2", "-m", dataSetFolder + "cocomini.json"))
+
+    // write done, now read and check
+    DataSet.SeqFileFolder.filesToRoiImageFrame(tmpFile.getPath, sc).toDistributed()
+      .data(false)
+      .map(imf => {
+        (imf(ImageFeature.uri).asInstanceOf[String], imf.getOriginalSize, imf.getLabel[RoiLabel],
+          imf[Tensor[Float]](RoiLabel.ISCROWD), imf[Array[Byte]](ImageFeature.bytes))
+      })
+      .collect()
+      .foreach({ case (uri, size, label, iscrowd, bytes) =>
+        val img = index(uri)
+        require(size == (img.height, img.width, 3))
+        require(label.masks.length == img.annotations.length)
+        require(java.util.Arrays.equals(iscrowd.toArray(),
+          img.annotations.map(a => if (a.isCrowd) 1f else 0f).toArray))
+        img.annotations.zipWithIndex.foreach { case (ann, idx) =>
+          label.masks(idx) match {
+            case rle: RLEMasks =>
+              val realArr = ann.segmentation.asInstanceOf[COCORLE].counts
+              val seqArr = rle.counts
+              require(java.util.Arrays.equals(realArr, seqArr))
+            case poly: PolyMasks =>
+              val realArr = ann.segmentation.asInstanceOf[PolyMasks].poly.flatten
+              val seqArr = poly.poly.flatten
+              require(java.util.Arrays.equals(realArr, seqArr))
+          }
+
+          val bb = label.bboxes.narrow(1, idx + 1, 1).squeeze().toArray()
+          val annbb = Array(ann.bbox._1, ann.bbox._2,
+            ann.bbox._3, ann.bbox._4)
+          require(java.util.Arrays.equals(bb, annbb))
+        }
+
+        // label checking done, now check the image data
+        val inputStream = new FileInputStream(dataSetFolder + uri)
+        val image = ImageIO.read(inputStream)
+        val rawdata = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
+        require(java.util.Arrays.equals(rawdata, bytes))
+      })
+  }
+
 
   "mnist data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
