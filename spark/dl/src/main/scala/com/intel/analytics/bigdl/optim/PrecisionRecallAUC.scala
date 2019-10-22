@@ -21,8 +21,17 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class PrecisionRecallAUC[T: ClassTag](val ignoreBadMetric: Boolean = false)(
-    implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
+/**
+ * Precision Recall Area Under Curve will compute the precision-recall pairs and
+ * get the area under the curve.
+ *
+ * Note: It will gather all output probabilities and target to driver and will compute the
+ * precision, recall and the auc every call of `result()`
+ *
+ * @param ev tensor numeric environments
+ * @tparam T class tag for tensor numeric
+ */
+class PrecisionRecallAUC[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity): ValidationResult = {
     require(output.isTensor && target.isTensor, s"only support tensor output and tensor target")
     val array = List(output, target).map(_.toTensor[Float].storage().array())
