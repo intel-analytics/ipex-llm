@@ -330,7 +330,7 @@ private[nn] class ProposalPostProcessor(
       , minBoxW, sortedScores)
 
     util.Arrays.fill(arr, 0, arr.length, 0)
-    nms.nms(sortedScores, proposals, thresh = nmsThread, arr, sorted = true)
+    nms.nms(sortedScores, proposals, thresh = nmsThread, arr, sorted = true, orderWithBBox = false)
     val arrFilter = arr.filter(_ > 0).map(_.toFloat)
 
     val indices = Tensor[Float]().set(Storage(arrFilter), 1, Array(arrFilter.length))
