@@ -287,7 +287,7 @@ private[mkldnn] object Fusion {
     }
   }
 
-  private def fuseScale(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
+  def fuseScale(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
     // check all prevNodes are SpatialBatchNormalization
     val isValid = node.prevNodes.forall(_.element.isInstanceOf[SpatialBatchNormalization])
     if (!isValid) { return }

@@ -402,7 +402,7 @@ class DnnGraph(
           if (j == 1) Fusion.setNegativeInputOfConv(forwardExecution(i))
           if (j == 2) Fusion.fuseCAdd(forwardExecution(i))
           if (j == 3) Fusion.setScalesPrevousJoinTable(forwardExecution(i))
-          if (j == 4) Fusion.fuseModule(forwardExecution(i))
+          if (j == 4) Fusion.fuseScale(forwardExecution(i))
           i -= 1
         }
       }
