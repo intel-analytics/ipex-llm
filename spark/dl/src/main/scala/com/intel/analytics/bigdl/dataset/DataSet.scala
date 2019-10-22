@@ -597,7 +597,7 @@ object DataSet {
      * @return
      */
     private[bigdl] def filesToRoiImageFrame(url: String, sc: SparkContext,
-      partitionNum: Option[Int] = None): ImageFrame = {
+      partitionNum: Option[Int] = None): DataSet[ImageFeature] = {
       val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
       val rawData = sc.sequenceFile(url, classOf[BytesWritable], classOf[BytesWritable], num)
         .map { data =>
@@ -628,7 +628,7 @@ object DataSet {
           imf
         }
         .coalesce(num)
-      ImageFrame.rdd(rawData)
+     DataSet.rdd(rawData)
     }
 
     private[bigdl] def filesToImageFeatureDataset(url: String, sc: SparkContext,

@@ -149,8 +149,7 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
       img.annotations += anno
       anno.segmentation match {
         case poly: COCOPoly =>
-          poly._width = img.width
-          poly._height = img.height
+          anno.segmentation = COCOPoly(poly.poly, img.height, img.width)
         case _ =>
       }
     })
@@ -237,9 +236,9 @@ case class COCOImage(
  * @param image the reference to the image
  */
 case class COCOAnotationOD(id: Long, imageId: Long, categoryId: Long,
-  segmentation: COCOSegmentation, area: Float, bbox: (Float, Float, Float, Float), isCrowd: Boolean,
-  @transient var image: COCOImage = null
-) {
+  var segmentation: COCOSegmentation, area: Float,
+  bbox: (Float, Float, Float, Float), isCrowd: Boolean, @transient var image: COCOImage = null) {
+
   def dumpTo(context: COCOSerializeContext, dataSet: COCODataset): Unit = {
     context.dump(dataSet.categoryId2Idx(categoryId))
     context.dump(area)
@@ -265,10 +264,8 @@ trait COCOSegmentation {
   def dumpTo(context: COCOSerializeContext): Unit
 }
 
-case class COCOPoly(_poly: Array[Array[Float]])
-  extends PolyMasks(_poly, -1, -1) with COCOSegmentation {
-  private[segmentation] var _height: Int = -1
-  private[segmentation] var _width: Int = -1
+case class COCOPoly(_poly: Array[Array[Float]], _height: Int, _width: Int)
+  extends PolyMasks(_poly, _height, _width) with COCOSegmentation {
   override def dumpTo(context: COCOSerializeContext): Unit = {
     context.dump(poly.length)
     poly.foreach(p => {
@@ -278,8 +275,6 @@ case class COCOPoly(_poly: Array[Array[Float]])
       })
     })
   }
-  override def height: Int = _height
-  override def width: Int = _width
 }
 
  case class COCORLE(_counts: Array[Int], _height: Int, _width: Int)
@@ -309,7 +304,7 @@ object COCODataset {
       require(rawBbox.size() == 4, "The bbox in the COCO annotation data should have 4 elements")
       val (x1, y1, w, h) = (rawBbox.get(0).getAsFloat, rawBbox.get(1).getAsFloat,
         rawBbox.get(2).getAsFloat, rawBbox.get(3).getAsFloat)
-      val bbox = (x1, y1, x1 + w, y1 + h)
+      val bbox = (x1, y1, x1 + w - 1, y1 + h - 1)
       val isCrowd = if (obj.get("iscrowd").getAsInt == 1) true else false
       val seg = if (isCrowd) {
         val segJson = obj.getAsJsonObject("segmentation")
@@ -319,7 +314,7 @@ object COCODataset {
         COCORLE(cnts, size(0), size(1))
       } else {
         val polys = polyAdapter.fromJsonTree(obj.get("segmentation"))
-        COCOPoly(polys)
+        COCOPoly(polys, -1, -1)
       }
       COCOAnotationOD(id, imageId, categoryId, seg, area, bbox, isCrowd)
     }

@@ -24,24 +24,22 @@ abstract class SegmentationMasks extends Serializable {
   /**
    * Convert to a RLE encoded tensor
    */
-  def toRLETensor: Tensor[Float]
+  def toRLE: RLEMasks
 }
 
 /**
  * A mask of regions defined by one or more polygons. The masked object(s) should have the same
  * label.
  * @param poly An array of polygons. The inner array defines one polygon, with [x1,y1,x2,y2,...]
- * @param _height the height of the image
- * @param _width the width of the image
+ * @param height the height of the image
+ * @param width the width of the image
  */
-class PolyMasks(val poly: Array[Array[Float]],
-  private val _height: Int, private val _width: Int) extends SegmentationMasks {
-  override def toRLETensor: Tensor[Float] = {
-    require(height > 0 && width > 0, "the height and width must > 0 for toRLETensor()")
-    MaskUtils.mergeRLEs(MaskUtils.poly2RLE(this, height, width), false).toRLETensor
+class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) extends
+  SegmentationMasks {
+  override def toRLE: RLEMasks = {
+    require(height > 0 && width > 0, "the height and width must > 0 for toRLE")
+    MaskUtils.mergeRLEs(MaskUtils.poly2RLE(this, height, width), false)
   }
-  def height: Int = _height
-  def width: Int = _width
 }
 
 object PolyMasks {
@@ -68,9 +66,7 @@ object PolyMasks {
  * @param width width of the image
  */
 class RLEMasks(val counts: Array[Int], val height: Int, val width: Int) extends SegmentationMasks {
-  override def toRLETensor: Tensor[Float] = {
-    Tensor(counts.map(MaskUtils.uint2long(_).toFloat), Array(counts.length))
-  }
+  override def toRLE: RLEMasks = this
 
   /**
    * Get an element in the counts. Process the overflowed int
