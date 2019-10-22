@@ -815,6 +815,35 @@ object TFNet {
     TFNet(graphDef, model, meta, config)
   }
 
+  def fromSavedModel(modelPath: String, tag: String,
+                     inputs: Array[String],
+                     outputs: Array[String],
+                     sessionConfig: SessionConfig): AbstractModule[Activity, Activity, Float] = {
+    TFNetForInference.fromSavedModel(modelPath, tag, inputs, outputs, sessionConfig.toByteArray())
+  }
+
+  def fromSavedModel(modelPath: String,
+                     inputs: Array[String],
+                     outputs: Array[String],
+                     sessionConfig: SessionConfig): AbstractModule[Activity, Activity, Float] = {
+    TFNetForInference.fromSavedModel(modelPath, "serve", inputs, outputs,
+      sessionConfig.toByteArray())
+  }
+
+  def fromSavedModel(modelPath: String, tag: String,
+                     inputs: Array[String],
+                     outputs: Array[String]): AbstractModule[Activity, Activity, Float] = {
+    TFNetForInference.fromSavedModel(modelPath, "serve", inputs, outputs,
+      TFNet.defaultSessionConfig.toByteArray())
+  }
+
+  def fromSavedModel(modelPath: String,
+                     inputs: Array[String],
+                     outputs: Array[String]): AbstractModule[Activity, Activity, Float] = {
+    TFNetForInference.fromSavedModel(modelPath, "serve", inputs, outputs,
+      defaultSessionConfig.toByteArray())
+  }
+
   private[zoo] def parseGraph(graphProtoTxt: String) : GraphDef = {
     var fr: File = null
     var in: InputStream = null
