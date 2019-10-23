@@ -26,7 +26,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
-import java.awt.image.DataBufferByte
+import java.awt.Color
+import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 import org.apache.hadoop.io.{BytesWritable, Text}
@@ -589,6 +590,41 @@ object DataSet {
       ImageFrame.rdd(rawData)
     }
 
+    private def isGrayScale(image: BufferedImage): Boolean = { // Test the type
+      if (image.getType == BufferedImage.TYPE_BYTE_GRAY) return true
+      if (image.getType == BufferedImage.TYPE_USHORT_GRAY) return true
+      // Test the number of channels / bands
+      if (image.getRaster.getNumBands == 1) return true// Single channel => gray scale
+      // Multi-channels image; then you have to test the color for each pixel.
+      var y = 0
+      while ( {
+        y < image.getHeight
+      }) {
+        var x = 0
+        while ( {
+          x < image.getWidth
+        }) {
+          var c = 1
+          while ( {
+            c < image.getRaster.getNumBands
+          }) {
+            if (image.getRaster.getSample(x, y, c - 1) != image.getRaster.getSample(x, y, c)) {
+              return false
+            }
+            {
+              c += 1; c - 1
+            }
+          }
+          {
+            x += 1; x - 1
+          }
+        }
+        {
+          y += 1; y - 1
+        }
+      }
+      true
+    }
     /**
      * Extract hadoop sequence files from an HDFS path as ImageFrame
      * @param url sequence files folder path
@@ -620,8 +656,19 @@ object DataSet {
           require(metaBytes.getInt == COCODataset.MAGIC_NUM, "Corrupted metadata")
 
           val inputStream = new ByteArrayInputStream(data._2.getBytes)
-          val image = ImageIO.read(inputStream)
+          val image = {
+            val img = ImageIO.read(inputStream)
+            if (isGrayScale(img)) {
+              val imageBuff: BufferedImage =
+                new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
+              imageBuff.getGraphics.drawImage(img, 0, 0, new Color(0, 0, 0), null)
+              imageBuff
+            } else {
+              img
+            }
+          }
           val rawdata = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
+          require(rawdata.length == height * width * 3)
           val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
           imf(ImageFeature.originalSize) = (height, width, 3)
           imf(RoiLabel.ISCROWD) = isCrowd
