@@ -590,37 +590,19 @@ object DataSet {
       ImageFrame.rdd(rawData)
     }
 
-    private def isGrayScale(image: BufferedImage): Boolean = { // Test the type
+    private def isGrayScaleImage(image: BufferedImage): Boolean = { // Test the type
       if (image.getType == BufferedImage.TYPE_BYTE_GRAY) return true
       if (image.getType == BufferedImage.TYPE_USHORT_GRAY) return true
       // Test the number of channels / bands
       if (image.getRaster.getNumBands == 1) return true// Single channel => gray scale
       // Multi-channels image; then you have to test the color for each pixel.
-      var y = 0
-      while ( {
-        y < image.getHeight
-      }) {
-        var x = 0
-        while ( {
-          x < image.getWidth
-        }) {
-          var c = 1
-          while ( {
-            c < image.getRaster.getNumBands
-          }) {
+      for (y <- 0 until image.getHeight) {
+        for (x <- 0 until image.getWidth) {
+          for (c <- 1 until image.getRaster.getNumBands) {
             if (image.getRaster.getSample(x, y, c - 1) != image.getRaster.getSample(x, y, c)) {
               return false
             }
-            {
-              c += 1; c - 1
-            }
           }
-          {
-            x += 1; x - 1
-          }
-        }
-        {
-          y += 1; y - 1
         }
       }
       true
@@ -658,7 +640,7 @@ object DataSet {
           val inputStream = new ByteArrayInputStream(data._2.getBytes)
           val image = {
             val img = ImageIO.read(inputStream)
-            if (isGrayScale(img)) {
+            if (isGrayScaleImage(img)) {
               val imageBuff: BufferedImage =
                 new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
               imageBuff.getGraphics.drawImage(img, 0, 0, new Color(0, 0, 0), null)
