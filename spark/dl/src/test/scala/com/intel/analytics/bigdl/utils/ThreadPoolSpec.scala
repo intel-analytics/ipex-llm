@@ -138,7 +138,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
       val denormal: Float = -1.234E-41F
       val floatOne: Float = 1.0F
 
-      var result: Float = denormal * floatOne
+      val result: Float = denormal * floatOne
       // The result should not be zero without setting
       (result == 0.0F) should be(false)
     }))
@@ -158,7 +158,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
       (result == 0.0F) should be (true)
     }))
 
-    System.clearProperty("bigdl.engineType")
+    System.clearProperty("bigdl.flushDenormalState")
   }
 
   "setFlushDenormalState" should "not influence other threads" in {
@@ -191,6 +191,6 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
       (result == 0.0F) should be (false)
     }))
 
-    System.clearProperty("bigdl.engineType")
+    System.clearProperty("bigdl.flushDenormalState")
   }
 }
