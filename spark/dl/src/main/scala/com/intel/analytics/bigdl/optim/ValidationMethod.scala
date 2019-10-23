@@ -415,7 +415,8 @@ class MAPValidationResult(
   private var predictForClass: Array[ArrayBuffer[(Float, Boolean)]],
   private var gtCntForClass: Array[Int],
   private val theType: MAPType = MAPPascalVoc2010,
-  private val skipClass: Int = -1
+  private val skipClass: Int = -1,
+  private val isSegmentation: Boolean = false
 )
   extends ValidationResult {
 
@@ -522,9 +523,10 @@ class MAPValidationResult(
   // scalastyle:on methodName
 
   override protected def format(): String = {
+    val segOrBbox = if (isSegmentation) "segm" else "bbox"
     val resultStr = (0 until nClass).map { clz => calculateClassAP(clz) }.zipWithIndex
       .map { t => s"AP of class ${t._2} = ${t._1}\n"}.reduceOption( _ + _).getOrElse("")
-    s"MeanAveragePrecision@$k(${result()._1})\n $resultStr"
+    s"MeanAveragePrecision_$segOrBbox@$k(${result()._1})\n $resultStr"
   }
 }
 
@@ -594,12 +596,12 @@ class MAPMultiIOUValidationResult(
   private var gtCntForClass: Array[Int],
   private val iouRange: (Float, Float),
   private val theType: MAPType = MAPPascalVoc2010,
-  private val skipClass: Int = -1
-)
-  extends ValidationResult {
+  private val skipClass: Int = -1,
+  private val isSegmentation: Boolean = false) extends ValidationResult {
 
   val impl = predictForClassIOU.map(predictForClass => {
-    new MAPValidationResult(nClass, k, predictForClass, gtCntForClass, theType, skipClass)
+    new MAPValidationResult(nClass, k, predictForClass,
+      gtCntForClass, theType, skipClass, isSegmentation)
   })
   override def result(): (Float, Int) = (impl.map(_.result()._1).sum / impl.length, 1)
 
@@ -621,7 +623,9 @@ class MAPMultiIOUValidationResult(
     val resultStr = results.zipWithIndex
       .map { t => s"\t IOU(${iouRange._1 + t._2 * step}) = ${t._1}\n"}
       .reduceOption( _ + _).getOrElse("")
-    s"MAP@IOU(${iouRange._1}:$step:${iouRange._2})=${results.sum / impl.length}\n$resultStr"
+    val segOrBbox = if (isSegmentation) "segm" else "bbox"
+    f"MAP_$segOrBbox@IOU(${iouRange._1}%1.3f:$step%1.3f:${iouRange._2}%1.3f)=" +
+      s"${results.sum / impl.length}\n$resultStr"
   }
 }
 
@@ -705,10 +709,10 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
     }
     if (iouThres.length != 1) {
       new MAPMultiIOUValidationResult(classes, topK, predictByClasses, gtCntByClass,
-        (iouThres.head, iouThres.last), theType, skipClass)
+        (iouThres.head, iouThres.last), theType, skipClass, isSegmentation)
     } else {
       new MAPValidationResult(classes, topK, predictByClasses.head, gtCntByClass, theType,
-        skipClass)
+        skipClass, isSegmentation)
     }
   }
 
@@ -728,12 +732,31 @@ object MeanAveragePrecisionObjectDetection {
    *                       IOU of bounding boxes are computed
    * @return MeanAveragePrecisionObjectDetection
    */
-  def createCOCO(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
+  def coco(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
     iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10), isSegmentation: Boolean = false)
   : MeanAveragePrecisionObjectDetection[Float] = {
     new MeanAveragePrecisionObjectDetection[Float](nClasses, topK,
       (0 until iouThres._3).map(iouThres._1 + _ * iouThres._2).toArray,
       MAPCOCO, skipClass, isSegmentation)
+  }
+
+  /**
+   * Create MeanAveragePrecision validation method using COCO's algorithm for both segmentation
+   * and bbox
+   *
+   * @param nClasses the number of classes (including skipped class)
+   * @param topK only take topK confident predictions (-1 for all predictions)
+   * @param skipClass skip calculating on a specific class (e.g. background)
+   *                  the class index starts from 0, or is -1 if no skipping
+   * @param iouThres the IOU thresholds, (rangeStart, stepSize, numOfThres), inclusive
+   * @return two MeanAveragePrecisionObjectDetections, the first for segmentation
+   *         and the second for bbox
+   */
+  def cocoSegmentationAndBBox(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
+    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10))
+  : Array[MeanAveragePrecisionObjectDetection[Float]] = {
+    Array(coco(nClasses, topK, skipClass, iouThres, isSegmentation = true),
+      coco(nClasses, topK, skipClass, iouThres, isSegmentation = false))
   }
 
   /**
@@ -746,7 +769,7 @@ object MeanAveragePrecisionObjectDetection {
    *                  the class index starts from 0, or is -1 if no skipping
    * @return MeanAveragePrecisionObjectDetection
    */
-  def createPascalVOC(nClasses: Int, useVoc2007: Boolean = false, topK: Int = -1,
+  def pascalVOC(nClasses: Int, useVoc2007: Boolean = false, topK: Int = -1,
     skipClass: Int = 0) : MeanAveragePrecisionObjectDetection[Float] = {
     new MeanAveragePrecisionObjectDetection[Float](nClasses, topK,
       theType = if (useVoc2007) MAPPascalVoc2007 else MAPPascalVoc2010,
