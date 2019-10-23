@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.mkl.{MklDnn => BackendMklDnn}
 
 import scala.concurrent.ExecutionException
 
@@ -124,7 +123,13 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
   }
 
   "setFlushDenormalState" should "influence float arithmetic operations" in {
-    val threadPool = new ThreadPool(1)
+    val poolSize = 1
+    val ompSize = 4
+
+    val threadPool = new ThreadPool(poolSize)
+
+    System.setProperty("bigdl.flushDenormalState", "false")
+    threadPool.setMKLThreadOfMklDnnBackend(ompSize)
 
     threadPool.invokeAndWait2( (0 until 1).map(i => () => {
       // A denormalized value is in the range
@@ -135,18 +140,38 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
       var result: Float = denormal * floatOne
       // The result should not be zero without setting
-      (result == 0.0F) should be (false)
+      (result == 0.0F) should be(false)
+    }))
 
-      BackendMklDnn.setFlushDenormalState()
-      result = denormal * floatOne
+    System.setProperty("bigdl.flushDenormalState", "true")
+    threadPool.setMKLThreadOfMklDnnBackend(ompSize)
+
+    threadPool.invokeAndWait2( (0 until 1).map(i => () => {
+      // A denormalized value is in the range
+      // from 1.4E-45 to 1.18E-38,
+      // or from -1.18E-38 to -1.4E-45
+      val denormal: Float = -1.234E-41F
+      val floatOne: Float = 1.0F
+
+      val result = denormal * floatOne
       // The result should be zero with setting
       (result == 0.0F) should be (true)
     }))
+
+    System.clearProperty("bigdl.engineType")
   }
 
   "setFlushDenormalState" should "not influence other threads" in {
-    val threadPool1 = new ThreadPool(1)
-    val threadPool2 = new ThreadPool(1)
+    val poolSize = 1
+    val ompSize = 4
+
+    val threadPool1 = new ThreadPool(poolSize)
+    System.setProperty("bigdl.flushDenormalState", "true")
+    threadPool1.setMKLThreadOfMklDnnBackend(ompSize)
+
+    val threadPool2 = new ThreadPool(poolSize)
+    System.setProperty("bigdl.flushDenormalState", "false")
+    threadPool2.setMKLThreadOfMklDnnBackend(ompSize)
 
     // A denormalized value is in the range
     // from 1.4E-45 to 1.18E-38,
@@ -155,7 +180,6 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
     val floatOne: Float = 1.0F
 
     threadPool1.invokeAndWait2( (0 until 1).map(i => () => {
-      BackendMklDnn.setFlushDenormalState()
       val result = denormal * floatOne
       // The result should be zero with setting
       (result == 0.0F) should be (true)
@@ -166,5 +190,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
       // The result should not be zero without setting
       (result == 0.0F) should be (false)
     }))
+
+    System.clearProperty("bigdl.engineType")
   }
 }
