@@ -719,21 +719,52 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
   override protected def format(): String = s"MAPObjectDetection"
 }
 
-object MeanAveragePrecisionObjectDetection {
+object MeanAveragePrecision {
   /**
-   * Create MeanAveragePrecision validation method using COCO's algorithm
+   * Create MeanAveragePrecision validation method using COCO's algorithm.
+   * IOU computed by the segmentation masks
    *
    * @param nClasses the number of classes (including skipped class)
    * @param topK only take topK confident predictions (-1 for all predictions)
    * @param skipClass skip calculating on a specific class (e.g. background)
    *                  the class index starts from 0, or is -1 if no skipping
    * @param iouThres the IOU thresholds, (rangeStart, stepSize, numOfThres), inclusive
-   * @param isSegmentation if true, compute the IOU of the segmentation masks. Otherwise,
-   *                       IOU of bounding boxes are computed
    * @return MeanAveragePrecisionObjectDetection
    */
-  def coco(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
-    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10), isSegmentation: Boolean = false)
+  def cocoSegmentation(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
+    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10))
+  : MeanAveragePrecisionObjectDetection[Float] = {
+    createCOCOMAP(nClasses, topK, skipClass, iouThres, true)
+  }
+
+  /**
+   * Create MeanAveragePrecision validation method using COCO's algorithm.
+   * IOU computed by the bounding boxes
+   *
+   * @param nClasses the number of classes (including skipped class)
+   * @param topK only take topK confident predictions (-1 for all predictions)
+   * @param skipClass skip calculating on a specific class (e.g. background)
+   *                  the class index starts from 0, or is -1 if no skipping
+   * @param iouThres the IOU thresholds, (rangeStart, stepSize, numOfThres), inclusive
+   * @return MeanAveragePrecisionObjectDetection
+   */
+  def cocoBBox(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
+    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10))
+  : MeanAveragePrecisionObjectDetection[Float] = {
+    createCOCOMAP(nClasses, topK, skipClass, iouThres, false)
+  }
+
+  /**
+   * Calculate the Mean Average Precision (MAP). The algorithm follows VOC Challenge after 2007
+   * Require class label beginning with 0
+   * @param nClasses The number of classes
+   * @param topK Take top-k confident predictions into account. If k=-1,calculate on all predictions
+   */
+  def classification(nClasses: Int, topK: Int = -1)
+  : MeanAveragePrecision[Float] = new MeanAveragePrecision[Float](topK, nClasses)
+
+  private def createCOCOMAP(nClasses: Int, topK: Int, skipClass: Int,
+    iouThres: (Float, Float, Int), isSegmentation: Boolean)
   : MeanAveragePrecisionObjectDetection[Float] = {
     new MeanAveragePrecisionObjectDetection[Float](nClasses, topK,
       (0 until iouThres._3).map(iouThres._1 + _ * iouThres._2).toArray,
@@ -741,29 +772,10 @@ object MeanAveragePrecisionObjectDetection {
   }
 
   /**
-   * Create MeanAveragePrecision validation method using COCO's algorithm for both segmentation
-   * and bbox
-   *
-   * @param nClasses the number of classes (including skipped class)
-   * @param topK only take topK confident predictions (-1 for all predictions)
-   * @param skipClass skip calculating on a specific class (e.g. background)
-   *                  the class index starts from 0, or is -1 if no skipping
-   * @param iouThres the IOU thresholds, (rangeStart, stepSize, numOfThres), inclusive
-   * @return two MeanAveragePrecisionObjectDetections, the first for segmentation
-   *         and the second for bbox
-   */
-  def cocoSegmentationAndBBox(nClasses: Int, topK: Int = -1, skipClass: Int = 0,
-    iouThres: (Float, Float, Int) = (0.5f, 0.05f, 10))
-  : Array[MeanAveragePrecisionObjectDetection[Float]] = {
-    Array(coco(nClasses, topK, skipClass, iouThres, isSegmentation = true),
-      coco(nClasses, topK, skipClass, iouThres, isSegmentation = false))
-  }
-
-  /**
    * Create MeanAveragePrecision validation method using Pascal VOC's algorithm
    *
    * @param nClasses the number of classes
-   * @param useVoc2007 if using the algorithm in Voc2007 (11 points)
+   * @param useVoc2007 if using the algorithm in Voc2007 (11 points). Otherwise, use Voc2010
    * @param topK only take topK confident predictions (-1 for all predictions)
    * @param skipClass skip calculating on a specific class (e.g. background)
    *                  the class index starts from 0, or is -1 if no skipping
