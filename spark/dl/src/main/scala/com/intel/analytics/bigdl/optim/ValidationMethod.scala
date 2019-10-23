@@ -721,7 +721,7 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
 
 object MeanAveragePrecision {
   /**
-   * Create MeanAveragePrecision validation method using COCO's algorithm.
+   * Create MeanAveragePrecision validation method using COCO's algorithm for object detection.
    * IOU computed by the segmentation masks
    *
    * @param nClasses the number of classes (including skipped class)
@@ -738,7 +738,7 @@ object MeanAveragePrecision {
   }
 
   /**
-   * Create MeanAveragePrecision validation method using COCO's algorithm.
+   * Create MeanAveragePrecision validation method using COCO's algorithm for object detection.
    * IOU computed by the bounding boxes
    *
    * @param nClasses the number of classes (including skipped class)
@@ -755,8 +755,10 @@ object MeanAveragePrecision {
   }
 
   /**
-   * Calculate the Mean Average Precision (MAP). The algorithm follows VOC Challenge after 2007
+   * Calculate the Mean Average Precision (MAP) for classification output and target
+   * The algorithm follows VOC Challenge after 2007
    * Require class label beginning with 0
+   *
    * @param nClasses The number of classes
    * @param topK Take top-k confident predictions into account. If k=-1,calculate on all predictions
    */
@@ -772,7 +774,7 @@ object MeanAveragePrecision {
   }
 
   /**
-   * Create MeanAveragePrecision validation method using Pascal VOC's algorithm
+   * Create MeanAveragePrecision validation method using Pascal VOC's algorithm for object detection
    *
    * @param nClasses the number of classes
    * @param useVoc2007 if using the algorithm in Voc2007 (11 points). Otherwise, use Voc2010
