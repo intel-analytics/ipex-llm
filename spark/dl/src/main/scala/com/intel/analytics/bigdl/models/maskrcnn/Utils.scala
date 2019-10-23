@@ -25,13 +25,13 @@ import com.sun.xml.internal.bind.v2.TODO
 
 import scala.collection.mutable.ArrayBuffer
 
-object Utils {
+private[bigdl] object Utils {
   // box with 4 element (xyxy)
   def expandBoxes(bbox: Tensor[Float], bboxExpand: Tensor[Float], scale: Float)
   : Unit = {
     require(bbox.nElement() == 4 && bboxExpand.nElement() == 4
       && bbox.dim() == 1 && bboxExpand.dim() == 1,
-      "Box and expected Box should have 4 elements with one dim")
+      "Box and expanded box should have 4 elements with one dim")
 
     val box0 = bbox.valueAt(1)
     val box1 = bbox.valueAt(2)
@@ -56,18 +56,18 @@ object Utils {
   def expandMasks(mask: Tensor[Float], padding: Int): (Tensor[Float], Float) = {
     require(mask.isContiguous(), "Only support contiguous mask")
 
-    val N = mask.size(1)
-    val M = mask.size(mask.dim() - 1)
-    val pad2 = 2 * padding
-    val scale = (M + pad2).toFloat / M
-    val paddedMask = Tensor[Float](N, M + pad2, M + pad2)
+    val channel = mask.size(1)
+    val width = mask.size(mask.dim() - 1) // height equals to width
+    val expandPadding = 2 * padding
+    val scale = (width + expandPadding).toFloat / width
+    val paddedMask = Tensor[Float](channel, width + expandPadding, width + expandPadding)
 
     val maskHeight = mask.size(2)
     val maskWidth = mask.size(3)
     val padHeight = paddedMask.size(2)
     val padWidth = paddedMask.size(3)
 
-    for (i <- 1 to  N) {
+    for (i <- 1 to  channel) {
       val maskPart = mask.select(1, i)
       val maskArray = maskPart.storage().array()
       val maskOffset = maskPart.storageOffset() - 1
@@ -98,8 +98,8 @@ object Utils {
   }
 
   // mask and box should be one by one
-  def decodeMaskInImage(mask: Tensor[Float], box: Tensor[Float],
-    thresh: Float = 0.5f, padding : Int = 1, binaryMask: Tensor[Float]): Unit = {
+  def decodeMaskInImage(mask: Tensor[Float], box: Tensor[Float], binaryMask: Tensor[Float],
+    thresh: Float = 0.5f, padding : Int = 1): Unit = {
 
     val (paddedMask, scale) = expandMasks(mask, padding)
     val boxExpand = Tensor[Float]().resizeAs(box)
@@ -155,37 +155,38 @@ object Utils {
     require(input.isContiguous() && output.isContiguous(),
       "Only support contiguous tensor for bilinear")
     val channels = input.size(1)
-    val idata = input.storage().array()
-    val odata = output.storage().array()
-    val ioffset = input.storageOffset() - 1
-    val ooffset = output.storageOffset() - 1
+    val inputData = input.storage().array()
+    val outputData = output.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val outputOffset = output.storageOffset() - 1
 
-    val rheight = areaPixelComputeScale(
+    val realHeight = areaPixelComputeScale(
       input_height, output_height, alignCorners)
-    val rwidth = areaPixelComputeScale(
+    val realWidth = areaPixelComputeScale(
       input_width, output_width, alignCorners)
 
     for (h2 <- 0 until output_height) {
-      val h1r = areaPixelComputeSourceIndex(rheight, h2, alignCorners)
+      val h1r = areaPixelComputeSourceIndex(realHeight, h2, alignCorners)
       val h1 = h1r.toInt
       val h1p = if (h1 < input_height - 1) 1 else 0
       val h1lambda = h1r - h1
       val h0lambda = 1.0f - h1lambda
 
       for (w2 <- 0 until output_width) {
-        val w1r = areaPixelComputeSourceIndex(rwidth, w2, alignCorners)
+        val w1r = areaPixelComputeSourceIndex(realWidth, w2, alignCorners)
         val w1 = w1r.toInt
         val w1p = if (w1 < input_width - 1) 1 else 0
         val w1lambda = w1r - w1
         val w0lambda = 1.0f - w1lambda
 
-        val pos1 = h1 * input_width + w1 + ioffset
-        val pos2 = h2 * output_width + w2 + ooffset
+        val pos1 = h1 * input_width + w1 + inputOffset
+        val pos2 = h2 * output_width + w2 + outputOffset
 
         for (c <- 0 to (channels - 1)) {
-          odata(pos2) = h0lambda * (w0lambda * idata(pos1) + w1lambda * idata(pos1 + w1p)) +
-            h1lambda * (w0lambda * idata(pos1 + h1p * input_width) +
-              w1lambda * idata(pos1 + h1p * input_width + w1p))
+          outputData(pos2) = h0lambda * (w0lambda * inputData(pos1) +
+            w1lambda * inputData(pos1 + w1p)) +
+            h1lambda * (w0lambda * inputData(pos1 + h1p * input_width) +
+              w1lambda * inputData(pos1 + h1p * input_width + w1p))
         }
       }
     }
