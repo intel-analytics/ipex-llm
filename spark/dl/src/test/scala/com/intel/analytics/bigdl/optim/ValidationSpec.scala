@@ -230,6 +230,26 @@ class ValidationSpec extends FlatSpec with Matchers {
     result2.result()._1 should be(0.35f +- 1e-5f)
   }
 
+  "MeanAveragePrecisionObjectDetection" should "be correct on empty detections" in {
+    val target = T(
+      T()
+        .update(RoiLabel.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiLabel.BBOXES, Tensor[Float](T(
+          T(100, 100, 200, 200),
+          T(300, 100, 400, 200),
+          T(100, 300, 200, 400),
+          T(300, 300, 400, 400),
+          T(210, 210, 230, 290)
+        ))
+        )
+    )
+    val outputTable = T(T())
+    val v = new MeanAveragePrecisionObjectDetection[Float](3)
+    val result = v(outputTable, target)
+    result.result()._1 should be(0f)
+  }
+
   "treeNN accuracy" should "be correct on 2d tensor" in {
     val output = Tensor[Double](
       T(

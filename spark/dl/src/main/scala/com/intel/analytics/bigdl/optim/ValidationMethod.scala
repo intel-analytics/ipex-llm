@@ -316,7 +316,14 @@ object MAPUtil {
       val tclasses = RoiLabel.getClasses(roiLabel)
       val isCrowd = RoiLabel.getIsCrowd(roiLabel)
       val masks = if (isSegmentation) RoiLabel.getMasks(roiLabel) else null
-      for (j <- 1 to bbox.size(1)) {
+      val bboxCnt = bbox.size(1)
+      require(bboxCnt == tclasses.size(1), "CLASSES of target tables should have the" +
+        "same size of the bbox counts")
+      require(bboxCnt == isCrowd.nElement(), "ISCROWD of target tables should have the" +
+        "same size of the bbox counts")
+      require(masks == null || bboxCnt == masks.length, "MASKS of target tables should have the" +
+        "same size of the bbox counts")
+      for (j <- 1 to bboxCnt) {
         val (label, _diff) = if (tclasses.dim() == 2) {
           (tclasses.valueAt(1, j).toInt, tclasses.valueAt(2, j))
         } else {
@@ -688,22 +695,31 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
         for (imgId <- 1 to outTable.length()) {
           val gtBbox = gtImages(imgId - 1)
           val imgOut = outTable[Table](imgId)
-          val bboxes = RoiLabel.getBBoxes(imgOut)
-          val scores = RoiLabel.getScores(imgOut)
-          val labels = RoiLabel.getClasses(imgOut)
-          require(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
-          val masks = if (isSegmentation) Some(RoiLabel.getMasks(imgOut)) else None
-          val batchSize = bboxes.size(1)
-          for (bboxIdx <- 1 to batchSize) {
-            val score = scores.valueAt(bboxIdx)
-            val x1 = bboxes.valueAt(bboxIdx, 1)
-            val y1 = bboxes.valueAt(bboxIdx, 2)
-            val x2 = bboxes.valueAt(bboxIdx, 3)
-            val y2 = bboxes.valueAt(bboxIdx, 4)
-            val label = labels.valueAt(bboxIdx).toInt
-            val mask = masks.map(_(bboxIdx - 1)).orNull
-            MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, mask, classes, iouThres,
-              predictByClasses)
+          // if the image contains empty predictions, do nothing
+          if (imgOut.length() > 0) {
+            val bboxes = RoiLabel.getBBoxes(imgOut)
+            val scores = RoiLabel.getScores(imgOut)
+            val labels = RoiLabel.getClasses(imgOut)
+            require(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
+            val masks = if (isSegmentation) Some(RoiLabel.getMasks(imgOut)) else None
+            val batchSize = bboxes.size(1)
+            require(batchSize == labels.size(1), "CLASSES of target tables should have the" +
+              "same size of the bbox counts")
+            require(batchSize == scores.nElement(), "ISCROWD of target tables should have the" +
+              "same size of the bbox counts")
+            require(masks.isEmpty || batchSize == masks.get.length, "MASKS of target tables " +
+              "should have the same size of the bbox counts")
+            for (bboxIdx <- 1 to batchSize) {
+              val score = scores.valueAt(bboxIdx)
+              val x1 = bboxes.valueAt(bboxIdx, 1)
+              val y1 = bboxes.valueAt(bboxIdx, 2)
+              val x2 = bboxes.valueAt(bboxIdx, 3)
+              val y2 = bboxes.valueAt(bboxIdx, 4)
+              val label = labels.valueAt(bboxIdx).toInt
+              val mask = masks.map(_ (bboxIdx - 1)).orNull
+              MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, mask, classes, iouThres,
+                predictByClasses)
+            }
           }
         }
     }
