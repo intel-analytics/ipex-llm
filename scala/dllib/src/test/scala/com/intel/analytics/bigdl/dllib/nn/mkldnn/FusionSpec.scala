@@ -17,11 +17,13 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.{Module, StaticGraph}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 
 class FusionSpec extends FlatSpec with Matchers {
   "Conv with relu" should "work correctly" in {
@@ -369,6 +371,38 @@ class FusionSpec extends FlatSpec with Matchers {
     fused.forward(tensor)
 
     model.output should be (fused.output)
+
+    System.clearProperty("bigdl.mkldnn.fusion")
+  }
+
+  "bn and scale fusion" should "work correctly" in {
+    import com.intel.analytics.bigdl.nn.{Scale => NNScale}
+    val inputShape = Array(4, 64, 3, 3)
+    val input = Input(inputShape, Memory.Format.nchw).inputs()
+    val bn1 = SpatialBatchNormalization(64).inputs(input)
+    val scale1 = BlasWrapper(NNScale[Float](Array(1, 64, 1, 1))).inputs(bn1)
+    val output = Output(Memory.Format.nchw).inputs(scale1)
+
+    // the running mean and running variance should be 1.
+    bn1.element.getExtraParameter().foreach(_.fill(1))
+
+    val model = DnnGraph(Seq(input), Seq(output))
+    val fused = model.cloneModule()
+
+    model.evaluate()
+    fused.evaluate()
+
+    val tensor = Tensor[Float](inputShape).rand(-1, 1)
+
+    System.setProperty("bigdl.mkldnn.fusion", "false")
+    model.compile(InferencePhase)
+    model.forward(tensor)
+
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+    fused.compile(InferencePhase)
+    fused.forward(tensor)
+
+    Equivalent.nearequals(model.output.toTensor[Float], fused.output.toTensor[Float], 1e-7)
 
     System.clearProperty("bigdl.mkldnn.fusion")
   }
