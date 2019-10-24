@@ -78,17 +78,17 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
       output2.get[Tensor[Float]](RoiLabel.SCORES))
 
     // for masks
-    val firstMasks = first.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
-    val expectedMasks = output1.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
+    val firstMasks = first.get[Array[RLEMasks]](RoiLabel.MASKS).get
+    val expectedMasks = output1.get[Array[RLEMasks]](RoiLabel.MASKS).get
     for (i <- 0 to firstMasks.length - 1) {
-      firstMasks(i) should be(expectedMasks(i))
+      firstMasks(i).counts should be(expectedMasks(i).counts)
     }
 
-    val secondMasks = second.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
-    val expectedMasks2 = output2.get[Array[Tensor[Float]]](RoiLabel.MASKS).get
+    val secondMasks = second.get[Array[RLEMasks]](RoiLabel.MASKS).get
+    val expectedMasks2 = output2.get[Array[RLEMasks]](RoiLabel.MASKS).get
 
     for (i <- 0 to secondMasks.length - 1) {
-      secondMasks(i) should be(expectedMasks2(i))
+      secondMasks(i).counts should be(expectedMasks2(i).counts)
     }
   }
 
