@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image.label.roi
 import com.intel.analytics.bigdl.dataset.segmentation.{RLEMasks, SegmentationMasks}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dataset.segmentation.{RLEMasks, SegmentationMasks}
 
 /**
  * image target with classes and bounding boxes
@@ -75,12 +76,14 @@ object RoiLabel {
   // ISCROWD and ORIGSIZE are stored in ImageFeature
   val ISCROWD = "is_crowd"
   val ORIGSIZE = "size"
+  val SCORES = "scores"
 
 
   def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
   def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
   def getMasks(tab: Table): Array[RLEMasks] = tab[Array[RLEMasks]](MASKS)
   def getIsCrowd(tab: Table): Tensor[Float] = tab[Tensor[Float]](ISCROWD)
+  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
 
   /**
    * @return (height, width, channel)
