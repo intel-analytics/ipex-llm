@@ -356,13 +356,14 @@ object DataSet {
   /**
    * Wrap a RDD as a DataSet.
    * @param data
+   * @param partitionNum repartition data rdd to partition number, default node number.
    * @tparam T
    * @return
    */
-  def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
-    val nodeNumber = Engine.nodeNumber()
+  def rdd[T: ClassTag](data: RDD[T], partitionNum: Int = Engine.nodeNumber()
+    ): DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
-      data.coalesce(nodeNumber, true)
+      data.coalesce(partitionNum, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")

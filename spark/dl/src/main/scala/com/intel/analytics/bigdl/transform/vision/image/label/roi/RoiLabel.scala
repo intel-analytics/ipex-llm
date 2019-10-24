@@ -75,20 +75,16 @@ object RoiLabel {
   val MASKS = "masks"
   // ISCROWD and ORIGSIZE are stored in ImageFeature
   val ISCROWD = "is_crowd"
-  val ORIGSIZE = "size"
+  val IMGINFO = "imgInfo"
   val SCORES = "scores"
 
-  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
+
   def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
   def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
   def getMasks(tab: Table): Array[RLEMasks] = tab[Array[RLEMasks]](MASKS)
   def getIsCrowd(tab: Table): Tensor[Float] = tab[Tensor[Float]](ISCROWD)
-
-  /**
-   * @return (height, width, channel)
-   */
-  def getOrigSize(tab: Table): (Int, Int, Int) =
-    tab[(Int, Int, Int)](ORIGSIZE)
+  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
+  def getImgInfo(tab: Table): Tensor[Float] = tab[Tensor[Float]](IMGINFO)
 
 
   def fromTensor(tensor: Tensor[Float]): RoiLabel = {
