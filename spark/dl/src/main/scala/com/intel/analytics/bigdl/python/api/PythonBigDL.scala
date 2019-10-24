@@ -2503,6 +2503,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Engine.init
   }
 
+  def getEngineType(): String = {
+    Engine.getEngineType().toString
+  }
+
   def getNodeAndCoreNumber(): Array[Int] = {
     Array(Engine.nodeNumber(), Engine.coreNumber())
   }

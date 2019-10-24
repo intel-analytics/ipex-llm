@@ -24,19 +24,41 @@ from bigdl.util.common import *
 
 
 def build_model(class_num):
-    model = Sequential()
-    model.add(Reshape([1, 28, 28]))
-    model.add(SpatialConvolution(1, 6, 5, 5))
-    model.add(Tanh())
-    model.add(SpatialMaxPooling(2, 2, 2, 2))
-    model.add(SpatialConvolution(6, 12, 5, 5))
-    model.add(Tanh())
-    model.add(SpatialMaxPooling(2, 2, 2, 2))
-    model.add(Reshape([12 * 4 * 4]))
-    model.add(Linear(12 * 4 * 4, 100))
-    model.add(Tanh())
-    model.add(Linear(100, class_num))
-    model.add(LogSoftMax())
+    if get_bigdl_engine_type() == "MklBlas":
+        model = Sequential()
+        model.add(Reshape([1, 28, 28]))
+        model.add(SpatialConvolution(1, 6, 5, 5))
+        model.add(Tanh())
+        model.add(SpatialMaxPooling(2, 2, 2, 2))
+        model.add(SpatialConvolution(6, 12, 5, 5))
+        model.add(Tanh())
+        model.add(SpatialMaxPooling(2, 2, 2, 2))
+        model.add(Reshape([12 * 4 * 4]))
+        model.add(Linear(12 * 4 * 4, 100))
+        model.add(Tanh())
+        model.add(Linear(100, class_num))
+        model.add(LogSoftMax())
+
+    else:
+        input = Input()
+        reshape1 = Reshape([1, 28, 28])(input)
+        conv1 = SpatialConvolution(1, 6, 5, 5)(reshape1)
+        tanh1 = Tanh()(conv1)
+        mp1 = SpatialMaxPooling(2, 2, 2, 2)(tanh1)
+        conv2 = SpatialConvolution(6, 12, 5, 5)(mp1)
+        tanh2 = Tanh()(conv2)
+        mp2 = SpatialMaxPooling(2, 2, 2, 2)(tanh2)
+        reshape2 = Reshape([12 * 4 * 4])(mp2)
+        linear1 = Linear(12 * 4 * 4, 100)(reshape2)
+        tanh3 = Tanh()(linear1)
+        linear2 = Linear(100, class_num)(tanh3)
+        logsoftmax = LogSoftMax()(linear2)
+
+        model = Model([input], [logsoftmax])
+
+        model.set_input_formats([7]) # Set input format to nchw
+        model.set_output_formats([4]) # Set output format to nc
+
     return model
 
 

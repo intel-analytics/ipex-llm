@@ -48,6 +48,12 @@ We would train a LeNet model in spark local mode with the following commands and
         --dataPath /tmp/mnist
  ```
 
+To use MKL-DNN backend, make sure the engine type is set correctly:
+```
+ --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+ --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+ ```
+
 
 * ```--action``` it can be train or test.
 
