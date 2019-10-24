@@ -309,38 +309,40 @@ object MAPUtil {
     val gtCntByClass = new Array[Int](classes)
 
     // one image may contain multiple Ground truth bboxes
-    val gtImages = (1 to gtTable.length()).map { case i =>
+    val gtImages = (1 to gtTable.length()).map { i =>
       val gtImage = new ArrayBuffer[GroundTruthRegion]()
       val roiLabel = gtTable[Table](i)
-      val bbox = RoiLabel.getBBoxes(roiLabel)
-      val tclasses = RoiLabel.getClasses(roiLabel)
-      val isCrowd = RoiLabel.getIsCrowd(roiLabel)
-      val masks = if (isSegmentation) RoiLabel.getMasks(roiLabel) else null
-      val bboxCnt = bbox.size(1)
-      require(bboxCnt == tclasses.size(1), "CLASSES of target tables should have the" +
-        "same size of the bbox counts")
-      require(bboxCnt == isCrowd.nElement(), "ISCROWD of target tables should have the" +
-        "same size of the bbox counts")
-      require(masks == null || bboxCnt == masks.length, "MASKS of target tables should have the" +
-        "same size of the bbox counts")
-      for (j <- 1 to bboxCnt) {
-        val (label, _diff) = if (tclasses.dim() == 2) {
-          (tclasses.valueAt(1, j).toInt, tclasses.valueAt(2, j))
-        } else {
-          (tclasses.valueAt(j).toInt, 0f)
-        }
-        val diff = if (isCrowd.valueAt(j) != 0 || _diff != 0) 1f else 0f
-        val newGt = if (isSegmentation) {
-          new GroundTruthRLE(numIOU, label, diff, masks(j - 1))
-        } else {
-          new GroundTruthBBox(isCOCO, numIOU, label, diff, bbox.valueAt(j, 1),
-            bbox.valueAt(j, 2), bbox.valueAt(j, 3), bbox.valueAt(j, 4))
-        }
-        gtImage += newGt
-        require(label >= 0 && label < classes, s"Bad label id $label")
+      if (roiLabel.length() > 0) {
+        val bbox = RoiLabel.getBBoxes(roiLabel)
+        val tclasses = RoiLabel.getClasses(roiLabel)
+        val isCrowd = RoiLabel.getIsCrowd(roiLabel)
+        val masks = if (isSegmentation) RoiLabel.getMasks(roiLabel) else null
+        val bboxCnt = bbox.size(1)
+        require(bboxCnt == tclasses.size(1), "CLASSES of target tables should have the" +
+          "same size of the bbox counts")
+        require(bboxCnt == isCrowd.nElement(), "ISCROWD of target tables should have the" +
+          "same size of the bbox counts")
+        require(masks == null || bboxCnt == masks.length, "MASKS of target tables should have the" +
+          "same size of the bbox counts")
+        for (j <- 1 to bboxCnt) {
+          val (label, _diff) = if (tclasses.dim() == 2) {
+            (tclasses.valueAt(1, j).toInt, tclasses.valueAt(2, j))
+          } else {
+            (tclasses.valueAt(j).toInt, 0f)
+          }
+          val diff = if (isCrowd.valueAt(j) != 0 || _diff != 0) 1f else 0f
+          val newGt = if (isSegmentation) {
+            new GroundTruthRLE(numIOU, label, diff, masks(j - 1))
+          } else {
+            new GroundTruthBBox(isCOCO, numIOU, label, diff, bbox.valueAt(j, 1),
+              bbox.valueAt(j, 2), bbox.valueAt(j, 3), bbox.valueAt(j, 4))
+          }
+          gtImage += newGt
+          require(label >= 0 && label < classes, s"Bad label id $label")
 
-        if (diff == 0) {
-          gtCntByClass(label) += 1
+          if (diff == 0) {
+            gtCntByClass(label) += 1
+          }
         }
       }
       gtImage
@@ -692,6 +694,8 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
               predictByClasses = predictByClasses)
           })
       case outTable: Table =>
+        require(gtImages.length == outTable.length(), "The number of images in the output and " +
+          "in the target should be the same")
         for (imgId <- 1 to outTable.length()) {
           val gtBbox = gtImages(imgId - 1)
           val imgOut = outTable[Table](imgId)
