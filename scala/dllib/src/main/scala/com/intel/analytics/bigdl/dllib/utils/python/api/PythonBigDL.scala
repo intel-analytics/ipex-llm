@@ -387,8 +387,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTimeDistributedCriterion(critrn: TensorCriterion[T],
-    sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
-    TimeDistributedCriterion[T](critrn, sizeAverage)
+    sizeAverage: Boolean = false, dimension: Int = 2): TimeDistributedCriterion[T] = {
+    TimeDistributedCriterion[T](critrn, sizeAverage, dimension)
   }
 
   def createGRU(
