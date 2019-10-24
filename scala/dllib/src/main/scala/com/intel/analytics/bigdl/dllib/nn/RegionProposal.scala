@@ -276,7 +276,7 @@ private[nn] class ProposalPostProcessor(
     val anchors = input[Tensor[Float]](1)
     var objectness = input[Tensor[Float]](2)
     var boxRegression = input[Tensor[Float]](3)
-    val imageSize = input[Tensor[Float]](4) // original image height & width
+    val imageSize = input[Tensor[Float]](4) // image height & width
 
     val N = objectness.size(1) // batch size
     val A = objectness.size(2) // anchor number
@@ -323,7 +323,7 @@ private[nn] class ProposalPostProcessor(
 
     val proposals = BboxUtil.bboxTransformInv(anchorsIndex,
       boxRegressionIndex, normalized = true)
-    // remove _small box
+    // remove _small box and clip to images
     val minBoxH = minSize
     val minBoxW = minSize
     var keepN = BboxUtil.clipBoxes(proposals, imageSize.valueAt(1), imageSize.valueAt(2), minBoxH
