@@ -102,6 +102,10 @@ class ThreadPool(private var poolSize: Int) {
 
 
     this.invokeAndWait2((0 until 1).map(_ => () => {
+      if (System.getProperty("bigdl.flushDenormalState", "true").toBoolean) {
+        BackendMklDnn.setFlushDenormalState()
+      }
+
       require(MKL.isMKLLoaded)
       require(BackendMklDnn.isLoaded)
 
@@ -109,10 +113,6 @@ class ThreadPool(private var poolSize: Int) {
       BackendMklDnn.setNumThreads(size)
       if (!System.getProperty("bigdl.disableOmpAffinity", "false").toBoolean) {
         Affinity.setOmpAffinity()
-      }
-
-      if (System.getProperty("bigdl.flushDenormalState", "true").toBoolean) {
-        BackendMklDnn.setFlushDenormalState()
       }
     }))
 
