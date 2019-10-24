@@ -635,9 +635,9 @@ class TimeDistributedCriterion(Criterion):
     creating: createTimeDistributedCriterion
     '''
 
-    def __init__(self, criterion, size_average=False, bigdl_type="float"):
+    def __init__(self, criterion, size_average=False, dimension=2, bigdl_type="float"):
         super(TimeDistributedCriterion, self).__init__(
-            None, bigdl_type, criterion, size_average)
+            None, bigdl_type, criterion, size_average, dimension)
 
 
 class CrossEntropyCriterion(Criterion):
