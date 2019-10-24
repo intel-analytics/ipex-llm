@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.MklInt8Convertible
+import com.intel.analytics.bigdl.nn.{MklInt8Convertible, Scale => ScaleLayer}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Node
@@ -38,6 +38,8 @@ private[mkldnn] object Fusion {
     node.element match {
       case relu: ReLU => fusionRelu(node)
       case bn: SpatialBatchNormalization => fusionBN(node)
+      case blasWrapper: BlasWrapper if blasWrapper.module.isInstanceOf[ScaleLayer[Float]] =>
+        fuseScale(node)
       case _ =>
     }
   }
@@ -76,7 +78,8 @@ private[mkldnn] object Fusion {
    */
   private def fusionRelu(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
     node.prevNodes.foreach(n => {
-      n.element match {
+      val notIdentity = findPrevious(n)
+      notIdentity.element match {
         case conv: SpatialConvolution =>
           if (!conv.relu) {
             conv.setReLU(true)
@@ -282,6 +285,34 @@ private[mkldnn] object Fusion {
     preConvs.foreach { conv =>
       conv.setOutputScales(scales)
     }
+  }
+
+  def fuseScale(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
+    // check all prevNodes are SpatialBatchNormalization
+    val isValid = node.prevNodes.forall(_.element.isInstanceOf[SpatialBatchNormalization])
+    if (!isValid) { return }
+
+    node.prevNodes.foreach { prevNode =>
+      val bn = prevNode.element.asInstanceOf[SpatialBatchNormalization]
+      val weightAndBias = bn.weightAndBias.dense
+      val weight = weightAndBias.narrow(1, 1, bn.nOutput)
+      val bias = weightAndBias.narrow(1, bn.nOutput + 1, bn.nOutput)
+
+      val scale = node.element.asInstanceOf[BlasWrapper].module.asInstanceOf[ScaleLayer[Float]]
+      val scaleWeight = scale.parameters()._1(0)
+      val scaleBias = scale.parameters()._1(1)
+
+      weight.cmul(scaleWeight)
+      bias.cmul(scaleWeight)
+      bias.add(scaleBias)
+
+
+      // set the weight and bias to new tensor, we do not modify the original model's tensor.
+      // sometimes, the model need to be reused.
+      bn.weightAndBias.dense.set(weightAndBias)
+    }
+
+    node.element = Identity[Float]() // set the BlasWrapper to Identity, we need no scale now
   }
 
   private def findAllNonIdentityPrevs(node: Node[AbstractModule[Activity, Activity, Float]])
