@@ -122,7 +122,7 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
    public static final int nchw = 7;
    means the index of format nchw is 7.
    ```
-3. Running spark-submit command with correct configurations
+3. Run spark-submit command with correct configurations
    ```
    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
