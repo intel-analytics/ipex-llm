@@ -48,13 +48,6 @@ We would train a LeNet model in spark local mode with the following commands and
         --dataPath /tmp/mnist
  ```
 
-To use MKL-DNN backend, make sure the engine type is set correctly:
-```
- --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
- --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
- ```
-
-
 * ```--action``` it can be train or test.
 
 * ```--dataPath``` option can be used to set the path for downloading mnist data, the default value is /tmp/mnist. Make sure that you have write permission to the specified path.
@@ -68,6 +61,31 @@ To use MKL-DNN backend, make sure the engine type is set correctly:
 * ```--modelPath``` option can be used to set model path for testing, the default value is /tmp/lenet5/model.470.
 
 * ```--checkpointPath``` option can be used to set checkpoint path for saving model, the default value is /tmp/lenet5/.
+
+#####In order to use MKL-DNN as the backend, you should:
+1. Define a model with Model(graph container)
+2. Specify the input and output formats of it.
+   For example:
+   ```
+   theDefinedModel.set_input_formats([theInputFormatIndex])
+   theDefinedModel.set_output_formats([theOutputFormatIndex])
+   ```
+   BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing.
+   
+   The format index of input or output format can be checked
+   in: 
+   ```
+   ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
+   
+   For instance:
+   public static final int nchw = 7;
+   means the index of format nchw is 7.
+   ```
+3. Running spark-submit command with correct configurations
+   ```
+   --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+   --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+   ```
 
 To verify the accuracy, search "accuracy" from log:
 

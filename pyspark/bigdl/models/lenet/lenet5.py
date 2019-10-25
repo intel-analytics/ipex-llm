@@ -24,6 +24,8 @@ from bigdl.util.common import *
 
 
 def build_model(class_num):
+    # Sequential can be used for MklBlas only. To use MklDnn backend,
+    # you should define the model with Model(graph container)
     if get_bigdl_engine_type() == "MklBlas":
         model = Sequential()
         model.add(Reshape([1, 28, 28]))
@@ -39,6 +41,13 @@ def build_model(class_num):
         model.add(Linear(100, class_num))
         model.add(LogSoftMax())
 
+    # In order to use MklDnn as the backend, you should:
+    # 1. Define a model with Model(graph container)
+    # 2. Specify the input and output formats of it.
+    #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
+    # 3. Running spark-submit command with correct configurations
+    #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+    #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
     else:
         input = Input()
         reshape1 = Reshape([1, 28, 28])(input)
@@ -56,6 +65,8 @@ def build_model(class_num):
 
         model = Model([input], [logsoftmax])
 
+        # The format index of input or output format can be checked
+        # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
         model.set_input_formats([7]) # Set input format to nchw
         model.set_output_formats([4]) # Set output format to nc
 
