@@ -104,7 +104,8 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
 * `--maxEpoch` max number of epochs to train, the default value is 30.
 
 #####In order to use MKL-DNN as the backend, you should:
-1. Define a model with Model(graph container)
+1. Define a model with Model(graph container). For RNN models, currently we have MKL-DNN support 
+   for LSTM and GRU.
 2. Specify the input and output formats of it.
    For example:
    ```
@@ -119,8 +120,8 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
    ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
    
    For instance:
-   public static final int nchw = 7;
-   means the index of format nchw is 7.
+   public static final int ntc = 27;
+   means the index of format ntc is 27.
    ```
 3. Run spark-submit command with correct configurations
    ```

@@ -24,46 +24,22 @@ from bigdl.util.common import *
 
 
 def build_model(class_num):
-    # Sequential can be used for MklBlas only. To use MklDnn backend,
-    # you should define the model with Model(graph container)
-    if get_bigdl_engine_type() == "MklBlas":
-        model = Sequential()
-        model.add(Reshape([1, 28, 28]))
-        model.add(SpatialConvolution(1, 6, 5, 5))
-        model.add(Tanh())
-        model.add(SpatialMaxPooling(2, 2, 2, 2))
-        model.add(SpatialConvolution(6, 12, 5, 5))
-        model.add(Tanh())
-        model.add(SpatialMaxPooling(2, 2, 2, 2))
-        model.add(Reshape([12 * 4 * 4]))
-        model.add(Linear(12 * 4 * 4, 100))
-        model.add(Tanh())
-        model.add(Linear(100, class_num))
-        model.add(LogSoftMax())
+    model = Sequential()
+    model.add(Reshape([1, 28, 28]))
+    model.add(SpatialConvolution(1, 6, 5, 5))
+    model.add(Tanh())
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+    model.add(SpatialConvolution(6, 12, 5, 5))
+    model.add(Tanh())
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+    model.add(Reshape([12 * 4 * 4]))
+    model.add(Linear(12 * 4 * 4, 100))
+    model.add(Tanh())
+    model.add(Linear(100, class_num))
+    model.add(LogSoftMax())
 
-    # In order to use MklDnn as the backend, you should:
-    # 1. Define a model with Model(graph container)
-    # 2. Specify the input and output formats of it.
-    #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
-    # 3. Running spark-submit command with correct configurations
-    #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
-    #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
-    else:
-        input = Input()
-        reshape1 = Reshape([1, 28, 28])(input)
-        conv1 = SpatialConvolution(1, 6, 5, 5)(reshape1)
-        tanh1 = Tanh()(conv1)
-        mp1 = SpatialMaxPooling(2, 2, 2, 2)(tanh1)
-        conv2 = SpatialConvolution(6, 12, 5, 5)(mp1)
-        tanh2 = Tanh()(conv2)
-        mp2 = SpatialMaxPooling(2, 2, 2, 2)(tanh2)
-        reshape2 = Reshape([12 * 4 * 4])(mp2)
-        linear1 = Linear(12 * 4 * 4, 100)(reshape2)
-        tanh3 = Tanh()(linear1)
-        linear2 = Linear(100, class_num)(tanh3)
-        logsoftmax = LogSoftMax()(linear2)
-
-        model = Model([input], [logsoftmax])
+    if get_bigdl_engine_type() == "MklDnn":
+        model = model.to_model()
 
         # The format index of input or output format can be checked
         # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
@@ -89,6 +65,14 @@ if __name__ == "__main__":
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
+
+    # In order to use MklDnn as the backend, you should:
+    # 1. Define a model with Model(graph container)
+    # 2. Specify the input and output formats of it.
+    #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
+    # 3. Running spark-submit command with correct configurations
+    #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+    #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
 
     if options.action == "train":
         (train_data, test_data) = preprocess_mnist(sc, options)

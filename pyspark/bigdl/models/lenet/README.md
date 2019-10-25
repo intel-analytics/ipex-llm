@@ -80,6 +80,10 @@ We would train a LeNet model in spark local mode with the following commands and
    For instance:
    public static final int nchw = 7;
    means the index of format nchw is 7.
+   
+   public static final int nc = 4;
+   means the index of format nc is 4.
+   
    ```
 3. Run spark-submit command with correct configurations
    ```

@@ -1251,6 +1251,15 @@ class Sequential(Container):
         model.value = jvalue
         return model
 
+    def to_model(self):
+        jvalue = callBigDlFunc(self.bigdl_type,
+                               "toModel",
+                               self.value)
+        model = Model.from_jvalue(jvalue)
+        return model
+
+
+
 class TemporalConvolution(Layer):
 
     '''

@@ -126,14 +126,7 @@ def build_model(input_size, hidden_size, output_size):
             .add(TimeDistributed(Linear(hidden_size, output_size)))
         model.reset()
 
-    # In order to use MklDnn as the backend, you should:
-    # 1. Define a model with Model(graph container)
-    # 2. Specify the input and output formats of it.
-    #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
-    # 3. Running spark-submit command with correct configurations
-    #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
-    #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
-    # LSTM supports MklDnn backend. Simple RNN does not for now.
+    # For MklDnn case the model is a LSTM, since simple RNN has no MKL-DNN support for now
     else:
         input1 = Input()
         lstm = Recurrent().add(LSTM(input_size, hidden_size))(input1)
@@ -178,6 +171,15 @@ if __name__ == "__main__":
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
+
+    # In order to use MklDnn as the backend, you should:
+    # 1. Define a model with Model(graph container)
+    # 2. Specify the input and output formats of it.
+    #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
+    # 3. Running spark-submit command with correct configurations
+    #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+    #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+    # LSTM supports MklDnn backend. Simple RNN does not for now.
 
     (train_rdd, val_rdd, vob_size) = prepare_data(sc, folder, vob_size, training_split)
 
