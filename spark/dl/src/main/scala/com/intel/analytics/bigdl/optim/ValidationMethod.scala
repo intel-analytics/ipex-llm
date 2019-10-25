@@ -421,8 +421,8 @@ class MAPValidationResult(
   // take the first k samples, or -1 for all samples
   private val k: Int,
   // the predicts for each classes. (Confidence, GT)
-  private var predictForClass: Array[ArrayBuffer[(Float, Boolean)]],
-  private var gtCntForClass: Array[Int],
+  private[bigdl] var predictForClass: Array[ArrayBuffer[(Float, Boolean)]],
+  private[bigdl] var gtCntForClass: Array[Int],
   private val theType: MAPType = MAPPascalVoc2010,
   private val skipClass: Int = -1,
   private val isSegmentation: Boolean = false
@@ -515,9 +515,13 @@ class MAPValidationResult(
     require(gtCntForClass.length == o.gtCntForClass.length)
     for (i <- predictForClass.indices) {
       val (left, right) = (predictForClass(i), o.predictForClass(i))
-      val sorted = sortPredictions(left ++ right)
-      val refinedK = if (k > 0) k else sorted.size
-      predictForClass(i) = sorted.take(refinedK)
+      left ++= right
+      predictForClass(i) = if (k < 0) {
+        left
+      } else {
+        val sorted = sortPredictions(left)
+        sorted.take(k)
+      }
     }
     this
   }
@@ -713,6 +717,8 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
               "same size of the bbox counts")
             require(masks.isEmpty || batchSize == masks.get.length, "MASKS of target tables " +
               "should have the same size of the bbox counts")
+            val detections = new ArrayBuffer[(Int, Float, Float, Float, Float,
+              Float, RLEMasks)]()
             for (bboxIdx <- 1 to batchSize) {
               val score = scores.valueAt(bboxIdx)
               val x1 = bboxes.valueAt(bboxIdx, 1)
@@ -721,8 +727,12 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
               val y2 = bboxes.valueAt(bboxIdx, 4)
               val label = labels.valueAt(bboxIdx).toInt
               val mask = masks.map(_ (bboxIdx - 1)).orNull
-              MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, mask, classes, iouThres,
-                predictByClasses)
+              detections.append((label, score, x1, y1, x2, y2, mask))
+            }
+            detections.sortBy(v => v._2)(Ordering.Float.reverse).foreach {
+              case (label, score, x1, y1, x2, y2, mask) =>
+                MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, mask, classes,
+                  iouThres, predictByClasses)
             }
           }
         }

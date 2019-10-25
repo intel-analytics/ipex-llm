@@ -103,6 +103,67 @@ class ValidationSpec extends FlatSpec with Matchers {
     result.result()._1 should be(0.303571429f +- 1e-5f)
   }
 
+  "MAPValidationResult" should "merge well" in {
+    def predictForClass1: Array[ArrayBuffer[(Float, Boolean)]] = (1 to 5).map(i => {
+      val p = new ArrayBuffer[(Float, Boolean)]
+      for (j <- 101 to 200) {
+        p.append((j.toFloat, true))
+      }
+      p
+    }).toArray
+
+    def predictForClass2: Array[ArrayBuffer[(Float, Boolean)]] = (1 to 5).map(i => {
+      val p = new ArrayBuffer[(Float, Boolean)]
+      for (j <- 201 to 210) {
+        p.append((j.toFloat, true))
+      }
+      p
+    }).toArray
+
+    def predictForClass3: Array[ArrayBuffer[(Float, Boolean)]] = (1 to 5).map(i => {
+      val p = new ArrayBuffer[(Float, Boolean)]
+      for (j <- 51 to 100) {
+        p.append((j.toFloat, true))
+      }
+      for (j <- 211 to 260) {
+        p.append((j.toFloat, true))
+      }
+      p
+    }).toArray
+
+    {
+      val vr1 = new MAPValidationResult(5, -1, predictForClass1, Array(1, 2, 3, 4, 5))
+      val vr2 = new MAPValidationResult(5, -1, predictForClass2, Array(6, 7, 8, 9, 10))
+      val vr3 = new MAPValidationResult(5, -1, predictForClass3, Array(3, 2, 1, 0, 2))
+
+      val tmpv = vr1 + vr2
+      tmpv.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.zip(101 to 210).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+      vr1 + vr3
+      vr1.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.sortBy(_._1).zip(51 to 260).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+    }
+
+    {
+      val vr1 = new MAPValidationResult(5, 150, predictForClass1, Array(1, 2, 3, 4, 5))
+      val vr2 = new MAPValidationResult(5, 150, predictForClass2, Array(6, 7, 8, 9, 10))
+      val vr3 = new MAPValidationResult(5, 150, predictForClass3, Array(3, 2, 1, 0, 2))
+
+      val tmpv = vr1 + vr2
+      tmpv.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.sortBy(_._1).zip(101 to 210).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+      vr1 + vr3
+      vr1.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.sortBy(_._1).zip(111 to 260).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+      vr1.gtCntForClass.zip(Array(10, 11, 12, 13, 17)).foreach(p => p._1 should be (p._2))
+    }
+
+  }
+
   "MeanAveragePrecision" should "be correct on 1d tensor" in {
     implicit val numeric = TensorNumeric.NumericFloat
     val output = Tensor[Float](
