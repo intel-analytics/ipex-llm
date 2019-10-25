@@ -17,12 +17,15 @@
 package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasks}
 import com.intel.analytics.bigdl.models.resnet.{Convolution, Sbn}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -58,11 +61,11 @@ class MaskRCNN(val inChannels: Int,
                val config: MaskRCNNParams = new MaskRCNNParams)(implicit ev: TensorNumeric[Float])
   extends Container[Activity, Activity, Float] {
 
-    private val ImageInfo : Tensor[Float] = Tensor[Float](2)
+    private val batchImgInfo : Tensor[Float] = Tensor[Float](2)
     private val backbone = buildBackbone(inChannels, outChannels)
     private val rpn = RegionProposal(inChannels, config.anchorSizes, config.aspectRatios,
       config.anchorStride, config.preNmsTopNTest, config.postNmsTopNTest, config.preNmsTopNTrain,
-      config.postNmsTopNTrain, config.minSize)
+      config.postNmsTopNTrain, config.rpnNmsThread, config.minSize)
     private val boxHead = BoxHead(inChannels, config.boxResolution, config.scales,
       config.samplingRatio, config.boxScoreThresh, config.boxNmsThread, config.maxPerImage,
       config.outputSize, numClasses)
@@ -146,19 +149,86 @@ class MaskRCNN(val inChannels: Int,
   }
 
   override def updateOutput(input: Activity): Activity = {
-    val inputWidth = input.toTensor[Float].size(3)
-    val inputHeight = input.toTensor[Float].size(4)
-    ImageInfo.setValue(1, inputWidth)
-    ImageInfo.setValue(2, inputHeight)
+    val inputFeatures = input.toTable[Tensor[Float]](1)
+    // image info with shape (batchSize, 4)
+    // contains all images info (height, width, original height, original width)
+    val imageInfo = input.toTable[Tensor[Float]](2)
 
-    val features = this.backbone.forward(input)
-    val proposals = this.rpn.forward(T(features, ImageInfo))
-    val boxOutput = this.boxHead.forward(T(features, proposals)).toTable
+    batchImgInfo.setValue(1, inputFeatures.size(3))
+    batchImgInfo.setValue(2, inputFeatures.size(4))
+
+    val features = this.backbone.forward(inputFeatures)
+    val proposals = this.rpn.forward(T(features, batchImgInfo))
+    val boxOutput = this.boxHead.forward(T(features, proposals, batchImgInfo)).toTable
     val postProcessorBox = boxOutput[Table](2)
-    val proposalsBox = postProcessorBox[Table](2)
     val labelsBox = postProcessorBox[Tensor[Float]](1)
-    val mask = this.maskHead.forward(T(features, proposalsBox, labelsBox))
-    output = T(proposalsBox, labelsBox, mask)
+    val proposalsBox = postProcessorBox[Table](2)
+    val scores = postProcessorBox[Tensor[Float]](3)
+    val masks = this.maskHead.forward(T(features, proposalsBox, labelsBox)).toTable
+    if (this.isTraining()) {
+      output = T(proposalsBox, labelsBox, masks, scores)
+    } else {
+      output = postProcessorForMaskRCNN(proposalsBox, labelsBox, masks[Tensor[Float]](2),
+        scores, imageInfo)
+    }
+
+    output
+  }
+
+  @transient var binaryMask : Tensor[Float] = null
+  private def postProcessorForMaskRCNN(bboxes: Table, labels: Tensor[Float],
+    masks: Tensor[Float], scores: Tensor[Float], imageInfo: Tensor[Float]): Table = {
+    val batchSize = bboxes.length()
+    val boxesInImage = new Array[Int](batchSize)
+    for (i <- 0 to batchSize - 1) {
+      boxesInImage(i) = bboxes[Tensor[Float]](i + 1).size(1)
+    }
+
+    if (binaryMask == null) binaryMask = Tensor[Float]()
+    val output = T()
+    var start = 1
+    for (i <- 0 to batchSize - 1) {
+      val info = imageInfo.select(1, i + 1)
+      val height = info.valueAt(1).toInt // image height after scale, no padding
+      val width = info.valueAt(2).toInt // image width after scale, no padding
+      val originalHeight = info.valueAt(3).toInt // Original height
+      val originalWidth = info.valueAt(4).toInt // Original width
+
+      binaryMask.resize(originalHeight, originalWidth)
+
+      val boxNumber = boxesInImage(i)
+      val maskPerImg = masks.narrow(1, start, boxNumber)
+      val bboxPerImg = bboxes[Tensor[Float]](i + 1)
+      val classPerImg = labels.narrow(1, start, boxNumber)
+      val scorePerImg = scores.narrow(1, start, boxNumber)
+
+      require(maskPerImg.size(1) == bboxPerImg.size(1),
+        s"mask number ${maskPerImg.size(1)} should be same with box number ${bboxPerImg.size(1)}")
+
+      // bbox resize to original size
+      if (height != originalHeight || width != originalWidth) {
+        BboxUtil.scaleBBox(bboxPerImg,
+          originalHeight.toFloat / height, originalWidth.toFloat / width)
+      }
+      // mask decode to original size
+      val masksRLE = new Array[RLEMasks](boxNumber)
+      for (j <- 0 to boxNumber - 1) {
+        binaryMask.fill(0.0f)
+        Utils.decodeMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
+          binaryMask = binaryMask)
+        masksRLE(j) = MaskUtils.binaryToRLE(binaryMask)
+      }
+      start += boxNumber
+
+      // prepare for evaluation
+      val postOutput = T()
+      postOutput.update(RoiLabel.MASKS, masksRLE)
+      postOutput.update(RoiLabel.BBOXES, bboxPerImg)
+      postOutput.update(RoiLabel.CLASSES, classPerImg)
+      postOutput.update(RoiLabel.SCORES, scorePerImg)
+
+      output(i + 1) = postOutput
+    }
     output
   }
 

@@ -504,13 +504,12 @@ object BboxUtil {
     val wh = weight(3)
 
     encodeBox.resize(Array(encodeBox.nElement() / 4, 4))
-    decodeBox.resize(Array(4, decodeBox.nElement() / 4))
 
     // copy for contigious
-    val dx = decodeBox.select(1, 1).copy(encodeBox.select(2, 1)).div(wx)
-    val dy = decodeBox.select(1, 2).copy(encodeBox.select(2, 2)).div(wy)
-    val dw = decodeBox.select(1, 3).copy(encodeBox.select(2, 3)).div(ww)
-    val dh = decodeBox.select(1, 4).copy(encodeBox.select(2, 4)).div(wh)
+    val dx = encodeBox.select(2, 1).contiguous().div(wx)
+    val dy = encodeBox.select(2, 2).contiguous().div(wy)
+    val dw = encodeBox.select(2, 3).contiguous().div(ww)
+    val dh = encodeBox.select(2, 4).contiguous().div(wh)
 
     // not change original input
     encodeBox.resize(encodeBox.nElement())
@@ -531,7 +530,6 @@ object BboxUtil {
     val buffer2 = Tensor[Float]().resizeAs(pred_ctr_y).copy(pred_ctr_y).sub(pred_h)
     val buffer3 = Tensor[Float]().resizeAs(pred_ctr_x).copy(pred_ctr_x).add(pred_w).add(-1.0f)
     val buffer4 = Tensor[Float]().resizeAs(pred_ctr_y).copy(pred_ctr_y).add(pred_h).add(-1.0f)
-    decodeBox.resize(decodeBox.nElement())
 
     val arrBuffer1 = buffer1.storage().array()
     val arrBuffer2 = buffer2.storage().array()
@@ -558,9 +556,7 @@ object BboxUtil {
     require(encodeBox.size(1) == decodeBox.size(1))
 
     val numBboxes = bbox.size(1)
-    if (numBboxes > 0) {
-      require(bbox.size(2) == 4)
-    }
+    if (numBboxes > 0) require(bbox.size(2) == 4)
 
     var i = 1
     while (i <= numBboxes) {

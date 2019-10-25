@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image.label.roi
 import com.intel.analytics.bigdl.dataset.segmentation.{RLEMasks, SegmentationMasks}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dataset.segmentation.{RLEMasks, SegmentationMasks}
 
 /**
  * image target with classes and bounding boxes
