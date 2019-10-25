@@ -126,7 +126,7 @@ def build_model(input_size, hidden_size, output_size):
             .add(TimeDistributed(Linear(hidden_size, output_size)))
         model.reset()
 
-    # For MklDnn case the model is a LSTM, since simple RNN has no MKL-DNN support for now
+    # For MklDnn case the model is an LSTM, since simple RNN has no MKL-DNN support for now
     else:
         input1 = Input()
         lstm = Recurrent().add(LSTM(input_size, hidden_size))(input1)
