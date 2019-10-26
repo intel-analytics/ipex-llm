@@ -641,6 +641,10 @@ class SpatialConvolution(
 
   }
 
+  override def paramsMMap(): (Array[TensorMMap], Array[TensorMMap]) = {
+    (Array(weight, bias), Array(gradWeight, gradBias))
+  }
+
   // we need not implement it, because the grad parameters will clean by mkldnn
   override def zeroGradParameters(): Unit = {
   }

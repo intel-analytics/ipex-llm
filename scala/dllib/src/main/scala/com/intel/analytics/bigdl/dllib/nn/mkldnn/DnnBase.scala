@@ -284,6 +284,11 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   override def setQuantize(value: Boolean): MklDnnLayer.this.type = this
+
+  def paramsMMap(): (Array[TensorMMap], Array[TensorMMap]) = {
+    // return null for weight and gradWeight by default
+    (Array.empty[TensorMMap], Array.empty[TensorMMap])
+  }
 }
 
 /**
