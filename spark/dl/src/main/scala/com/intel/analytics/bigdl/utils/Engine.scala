@@ -42,7 +42,8 @@ object Engine {
 
   // Initialize some properties for mkldnn engine. We should call it at the beginning.
   // Otherwise some properties will have no effect.
-  if (System.getProperty("bigdl.engineType") == "mkldnn") {
+  if (System.getProperty("bigdl.engineType") == "mkldnn" &&
+    System.getProperty("bigdl.multiModels", "false") == "false") {
     setMklDnnEnvironments()
   }
 
@@ -324,6 +325,13 @@ object Engine {
 
   private[bigdl] def getEngineType(): EngineType = {
     this.engineType
+  }
+
+  private[bigdl] def isMultiModels: Boolean = {
+    getEngineType() match {
+      case MklBlas => true
+      case MklDnn => System.getProperty("bigdl.multiModels", "false").toBoolean
+    }
   }
 
   private[bigdl] def model: ThreadPool = {
