@@ -63,10 +63,17 @@ private[bigdl] class IRGraph[T: ClassTag](
       throw new UnsupportedOperationException("forward not supported, Please build graph first")
     }
     if (graph.isInstanceOf[DnnGraph]) {
-      Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+      // if using multi MKL-DNN model, we just use current thread directly
+      // because it's in sequential mode of MKL and MKL-DNN
+      if (Engine.isMultiModels) {
         initPrimitives(input)
         graph.updateOutput(input)
-      }))
+      } else {
+        Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
+          initPrimitives(input)
+          graph.updateOutput(input)
+        }))
+      }
     } else graph.updateOutput(input)
     output = graph.output
     output

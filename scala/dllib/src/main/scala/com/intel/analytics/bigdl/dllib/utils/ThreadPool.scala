@@ -63,7 +63,7 @@ class ThreadPool(private var poolSize: Int) {
         threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
-            t.setName("default-thread-computing")
+            t.setName("default-thread-computing " + t.getId)
             t.setDaemon(true)
             t
           }
@@ -91,6 +91,7 @@ class ThreadPool(private var poolSize: Int) {
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
+      BackendMklDnn.setNumThreads(size)
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
