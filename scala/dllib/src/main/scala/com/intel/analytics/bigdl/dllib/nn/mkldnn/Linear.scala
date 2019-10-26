@@ -294,6 +294,10 @@ class Linear(
     (Array(weight.dense, bias.dense), Array(gradWeight.dense, gradBias.dense))
   }
 
+  override def paramsMMap(): (Array[TensorMMap], Array[TensorMMap]) = {
+    (Array(weight, bias), Array(gradWeight, gradBias))
+  }
+
   override def zeroGradParameters(): Unit = {
   }
 
