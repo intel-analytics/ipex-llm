@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.mutable.ArrayBuffer
@@ -102,6 +103,67 @@ class ValidationSpec extends FlatSpec with Matchers {
     result.result()._1 should be(0.303571429f +- 1e-5f)
   }
 
+  "MAPValidationResult" should "merge well" in {
+    def predictForClass1: Array[ArrayBuffer[(Float, Boolean)]] = (1 to 5).map(i => {
+      val p = new ArrayBuffer[(Float, Boolean)]
+      for (j <- 101 to 200) {
+        p.append((j.toFloat, true))
+      }
+      p
+    }).toArray
+
+    def predictForClass2: Array[ArrayBuffer[(Float, Boolean)]] = (1 to 5).map(i => {
+      val p = new ArrayBuffer[(Float, Boolean)]
+      for (j <- 201 to 210) {
+        p.append((j.toFloat, true))
+      }
+      p
+    }).toArray
+
+    def predictForClass3: Array[ArrayBuffer[(Float, Boolean)]] = (1 to 5).map(i => {
+      val p = new ArrayBuffer[(Float, Boolean)]
+      for (j <- 51 to 100) {
+        p.append((j.toFloat, true))
+      }
+      for (j <- 211 to 260) {
+        p.append((j.toFloat, true))
+      }
+      p
+    }).toArray
+
+    {
+      val vr1 = new MAPValidationResult(5, -1, predictForClass1, Array(1, 2, 3, 4, 5))
+      val vr2 = new MAPValidationResult(5, -1, predictForClass2, Array(6, 7, 8, 9, 10))
+      val vr3 = new MAPValidationResult(5, -1, predictForClass3, Array(3, 2, 1, 0, 2))
+
+      val tmpv = vr1 + vr2
+      tmpv.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.zip(101 to 210).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+      vr1 + vr3
+      vr1.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.sortBy(_._1).zip(51 to 260).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+    }
+
+    {
+      val vr1 = new MAPValidationResult(5, 150, predictForClass1, Array(1, 2, 3, 4, 5))
+      val vr2 = new MAPValidationResult(5, 150, predictForClass2, Array(6, 7, 8, 9, 10))
+      val vr3 = new MAPValidationResult(5, 150, predictForClass3, Array(3, 2, 1, 0, 2))
+
+      val tmpv = vr1 + vr2
+      tmpv.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.sortBy(_._1).zip(101 to 210).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+      vr1 + vr3
+      vr1.asInstanceOf[MAPValidationResult].predictForClass.foreach(p => {
+        p.sortBy(_._1).zip(111 to 260).foreach(p => p._1._1 should be (p._2.toFloat))
+      })
+      vr1.gtCntForClass.zip(Array(10, 11, 12, 13, 17)).foreach(p => p._1 should be (p._2))
+    }
+
+  }
+
   "MeanAveragePrecision" should "be correct on 1d tensor" in {
     implicit val numeric = TensorNumeric.NumericFloat
     val output = Tensor[Float](
@@ -166,7 +228,7 @@ class ValidationSpec extends FlatSpec with Matchers {
     result.result()._1 should be(0.303571429f +- 1e-5f)
   }
 
-  "MeanAveragePrecisionObjectDetection" should "be correct on 2d tensor" in {
+  "MeanAveragePrecisionObjectDetection" should "be correct" in {
     implicit val numeric = TensorNumeric.NumericFloat
     val output = Tensor[Float](
       T(
@@ -183,24 +245,113 @@ class ValidationSpec extends FlatSpec with Matchers {
         )
       ))
 
-    // <imgId, label, diff, bbox x4>
-    val target = Tensor[Float](
-      T(
-        T(0, 1, 0, 100, 100, 200, 200),
-        T(0, 1, 0, 300, 100, 400, 200),
-        T(0, 1, 0, 100, 300, 200, 400),
-        T(0, 1, 0, 300, 300, 400, 400),
-        T(0, 1, 0, 210, 210, 230, 290),
-        T(0, 2, 0, 1100, 1100, 1200, 1200),
-        T(0, 2, 0, 1300, 1100, 1400, 1200),
-        T(0, 2, 0, 1100, 1300, 1200, 1400),
-        T(0, 2, 0, 1300, 1300, 1400, 1400),
-        T(0, 2, 0, 1210, 1210, 1230, 1290)
-      ))
-    val v = new MeanAveragePrecisionObjectDetection(3, 0.5f)
+    val target = T(
+        T()
+          .update(RoiLabel.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+          .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)))
+          .update(RoiLabel.BBOXES, Tensor[Float](T(
+              T(100, 100, 200, 200),
+              T(300, 100, 400, 200),
+              T(100, 300, 200, 400),
+              T(300, 300, 400, 400),
+              T(210, 210, 230, 290),
+              T(1100, 1100, 1200, 1200),
+              T(1300, 1100, 1400, 1200),
+              T(1100, 1300, 1200, 1400),
+              T(1300, 1300, 1400, 1400),
+              T(1210, 1210, 1230, 1290)
+            ))
+          )
+      )
+
+    val v = new MeanAveragePrecisionObjectDetection(3)
     val result = v(output, target)
     // 0.5f and 0.55f
     result.result()._1 should be(0.35f +- 1e-5f)
+
+    val outputTable = T(
+      T()
+        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 1, 1, 1, 1)))
+        .update(RoiLabel.BBOXES, Tensor[Float](T(
+          T(110, 90, 210, 190),
+          T(310, 110, 410, 210),
+          T(320, 290, 420, 390),
+          T(210, 310, 290, 410),
+          T(1110, 1090, 1210, 1190),
+          T(1310, 1110, 1410, 1210),
+          T(1320, 1290, 1420, 1390),
+          T(1210, 1310, 1290, 1410)
+        ))
+        )
+        .update(RoiLabel.SCORES, Tensor[Float](T(1, 2, 4, 3, 1, 3, 4, 2)))
+    )
+    val v2 = new MeanAveragePrecisionObjectDetection(3)
+    val result2 = v2(outputTable, target)
+    // 0.5f and 0.55f
+    result2.result()._1 should be(0.35f +- 1e-5f)
+  }
+
+  "MeanAveragePrecisionObjectDetection" should "be correct on empty detections" in {
+    val target = T(
+      T()
+        .update(RoiLabel.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiLabel.BBOXES, Tensor[Float](T(
+          T(100, 100, 200, 200),
+          T(300, 100, 400, 200),
+          T(100, 300, 200, 400),
+          T(300, 300, 400, 400),
+          T(210, 210, 230, 290)
+        ))
+        )
+    )
+    val outputTable = T(T())
+    val v = new MeanAveragePrecisionObjectDetection[Float](3)
+    val result = v(outputTable, target)
+    result.result()._1 should be(0f)
+  }
+
+  "MeanAveragePrecisionObjectDetection" should "be correct on empty targets" in {
+    val target = T(
+      T()
+        .update(RoiLabel.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiLabel.BBOXES, Tensor[Float](T(
+          T(100, 100, 200, 200),
+          T(300, 100, 400, 200),
+          T(100, 300, 200, 400),
+          T(300, 300, 400, 400),
+          T(210, 210, 230, 290)
+        ))
+        ),
+      // Empty target
+      T()
+    )
+    val outputTable = T(
+      T()
+        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0)))
+        .update(RoiLabel.BBOXES, Tensor[Float](T(
+          T(110, 90, 210, 190),
+          T(310, 110, 410, 210),
+          T(320, 290, 420, 390),
+          T(210, 310, 290, 410)
+        ))
+        )
+        .update(RoiLabel.SCORES, Tensor[Float](T(1, 2, 9, 7))),
+      T()
+        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0)))
+        .update(RoiLabel.BBOXES, Tensor[Float](T(
+          T(1110, 1090, 1210, 1190),
+          T(1310, 1110, 1410, 1210),
+          T(1320, 1290, 1420, 1390),
+          T(1210, 1310, 1290, 1410)
+        ))
+        )
+        .update(RoiLabel.SCORES, Tensor[Float](T(0, 5, 4, 8)))
+    )
+    val v = new MeanAveragePrecisionObjectDetection[Float](3)
+    val result = v(outputTable, target)
+    result.result()._1 should be(0.123809524f +- 0.00000001f)
   }
 
   "treeNN accuracy" should "be correct on 2d tensor" in {
