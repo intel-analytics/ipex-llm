@@ -78,12 +78,11 @@ object RoiLabel {
   val ORIGSIZE = "size"
   val SCORES = "scores"
 
-
+  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
   def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
   def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
   def getMasks(tab: Table): Array[RLEMasks] = tab[Array[RLEMasks]](MASKS)
   def getIsCrowd(tab: Table): Tensor[Float] = tab[Tensor[Float]](ISCROWD)
-  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
 
   /**
    * @return (height, width, channel)
