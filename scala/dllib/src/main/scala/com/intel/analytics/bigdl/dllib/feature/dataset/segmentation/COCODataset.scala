@@ -140,11 +140,12 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
   licenses: Array[COCOLicence], categories: Array[COCOCategory]) {
 
   private lazy val cateId2catIdx = scala.collection.mutable.Map[Long, Int]()
+  private lazy val imageId2Image = images.toIterator.map(img => (img.id, img)).toMap
+
   private[segmentation] def init(imgRoot: String): Unit = {
-    val id2img = images.toIterator.map(img => (img.id, img)).toMap
     annotations.foreach(anno => {
-      require(id2img.contains(anno.imageId), s"Cannot find image_id ${anno.imageId}")
-      val img = id2img(anno.imageId)
+      require(imageId2Image.contains(anno.imageId), s"Cannot find image_id ${anno.imageId}")
+      val img = imageId2Image(anno.imageId)
       anno.image = img
       img.annotations += anno
       anno.segmentation match {
@@ -153,11 +154,18 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
         case _ =>
       }
     })
-    images.foreach(img => img.imgRootPath = imgRoot)
+    images.foreach(_.imgRootPath = imgRoot)
     categories.zipWithIndex.foreach { case (cate, idx) =>
       cateId2catIdx(cate.id) = idx + 1 // the ids starts from 1, because 0 is for background
     }
   }
+
+  /**
+   * Find a COCOImage by the image id
+   * @param id image id
+   * @return the COCOImage with the given id
+   */
+  def getImageById(id: Long): COCOImage = imageId2Image(id)
 
   /**
    * Convert COCO categoryId into category index.
