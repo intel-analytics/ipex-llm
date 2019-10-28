@@ -23,12 +23,12 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
-
 import scala.reflect.ClassTag
 import scala.reflect.runtime._
 
@@ -243,10 +243,10 @@ class MaskRCNN(val inChannels: Int,
         }
         start += boxNumber
 
-        postOutput.update(RoiLabel.MASKS, masksRLE)
-        postOutput.update(RoiLabel.BBOXES, bboxPerImg)
-        postOutput.update(RoiLabel.CLASSES, classPerImg)
-        postOutput.update(RoiLabel.SCORES, scorePerImg)
+        postOutput.update(RoiImageInfo.MASKS, masksRLE)
+        postOutput.update(RoiImageInfo.BBOXES, bboxPerImg)
+        postOutput.update(RoiImageInfo.CLASSES, classPerImg)
+        postOutput.update(RoiImageInfo.SCORES, scorePerImg)
       }
 
       output(i + 1) = postOutput
