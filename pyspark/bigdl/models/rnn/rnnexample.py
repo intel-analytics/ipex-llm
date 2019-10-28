@@ -171,6 +171,7 @@ if __name__ == "__main__":
     max_epoch = int(options.max_epoch)
     folder = options.folder
     training_split = 0.8
+    model_type = str(options.model_type)
 
     sc = SparkContext(appName="simplernn_example",
                       conf=create_spark_conf())
@@ -190,7 +191,7 @@ if __name__ == "__main__":
     (train_rdd, val_rdd, vob_size) = prepare_data(sc, folder, vob_size, training_split)
 
     optimizer = Optimizer(
-        model=build_model(vob_size, hidden_size, vob_size),
+        model=build_model(vob_size, hidden_size, vob_size, model_type),
         training_rdd=train_rdd,
         criterion=TimeDistributedCriterion(CrossEntropyCriterion(), size_average=True),
         batch_size=batch_size,
