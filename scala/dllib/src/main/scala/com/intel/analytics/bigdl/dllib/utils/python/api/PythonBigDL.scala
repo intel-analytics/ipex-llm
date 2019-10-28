@@ -20,7 +20,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
-import com.intel.analytics.bigdl.nn.{PGCriterion, Zeros, _}
+import com.intel.analytics.bigdl.nn.{PGCriterion, Sequential, Zeros, _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
@@ -273,6 +273,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createSequential(): Container[Activity, Activity, T] = {
       Sequential[T]()
+  }
+
+  def toGraph(sequential: Sequential[T]): StaticGraph[T] = {
+    sequential.toGraph().asInstanceOf[StaticGraph[T]]
   }
 
   def createAttention(hiddenSize: Int, numHeads: Int, attentionDropout: Float): Attention[T] = {
@@ -2502,6 +2506,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def initEngine(): Unit = {
     Engine.init
+  }
+
+  def getEngineType(): String = {
+    Engine.getEngineType().toString
   }
 
   def getNodeAndCoreNumber(): Array[Int] = {
