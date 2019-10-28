@@ -171,7 +171,8 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
 
     miniBatch.foreach(batch => {
       (batch.size() <= 3) should be (true)
-      val input = batch.getInput().asInstanceOf[Tensor[Float]]
+      val inputAll = batch.getInput().asInstanceOf[Table]
+      val input = inputAll[Tensor[Float]](1)
       val target = batch.getTarget().asInstanceOf[Table]
       input.size() should be (Array(batch.size(), 3, 10, 20))
       target.length() should be (batch.size())
@@ -180,7 +181,7 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         in should be(expectedOutput)
         val t = target(i).asInstanceOf[Table]
         t[Tensor[Float]](RoiImageInfo.ISCROWD) should be (Tensor(Array(0f, 1f), Array(2)))
-        t[(Int, Int, Int)](RoiImageInfo.ORIGSIZE) should be((8, 16, 3))
+        // t[(Int, Int, Int)](RoiImageInfo.ORIGSIZE) should be((8, 16, 3))
         t[Tensor[Float]](RoiImageInfo.BBOXES).size() should be (Array(2, 4))
         t[Tensor[Float]](RoiImageInfo.CLASSES).size() should be (Array(2))
       }
@@ -192,7 +193,7 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
       Tensor[Float](),
       Array[RoiLabel](RoiLabel(Tensor[Float](), Tensor[Float]())),
       Array[Tensor[Float]](Tensor[Float]()),
-      Array[(Int, Int, Int)]((1, 2, 3)))
+      Tensor())
     val result = sc.parallelize(Array(batch, batch, batch, batch, batch), 3)
       .coalesce(2, true)
       .takeSample(false, 3).head
@@ -263,11 +264,11 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
       for(i <- 1 to batch.size()) {
         val t = target(i).asInstanceOf[Table]
         RoiImageInfo.getIsCrowd(t) should be (Tensor(Array(0f, 1f), Array(2)))
-        RoiImageInfo.getOrigSize(t) should be((10, 10, 3))
+        RoiImageInfo.getImageInfo(t).size() should be(Array(4))
         RoiImageInfo.getBBoxes(t).size() should be (Array(2, 4))
         RoiImageInfo.getClasses(t).size() should be (Array(2))
         RoiImageInfo.getMasks(t).length should be (2)
-        val idx = batch.getInput().asInstanceOf[Tensor[Float]]
+        val idx = batch.getInput().asInstanceOf[Table].apply[Tensor[Float]](1)
           .valueAt(i, 1, 1, 1).toInt
         imgCheck(idx) should be (false)
         imgCheck(idx) = true

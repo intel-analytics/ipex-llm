@@ -88,14 +88,14 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
            vMethods: Array[ValidationMethod[T]]
           ): Array[(ValidationResult, ValidationMethod[T])] = {
 
-    val dummyInput = dataset.takeSample(withReplacement = false, num = 1).head.getInput()
     val rdd = ConversionUtils.coalesce(dataset)
     val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext,
-      ConversionUtils.convert(model.evaluate()), dummyInput)
+      ConversionUtils.convert(model.evaluate()))
     val otherBroad = rdd.sparkContext.broadcast(vMethods)
 
+
     rdd.mapPartitions(miniBatch => {
-      val localModel = modelBroad.value(false, true, dummyInput)
+      val localModel = modelBroad.value()
       val localMethod = otherBroad.value
       miniBatch.map(batch => {
         val output = localModel.forward(batch.getInput())
