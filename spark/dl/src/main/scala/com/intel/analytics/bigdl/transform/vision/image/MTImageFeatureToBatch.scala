@@ -266,7 +266,7 @@ object RoiImageInfo {
  *                    elements. The inner tensor holds the data for segmentation
  * RoiImageInfo.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
  *                    -1: unknown, 0: not crowd, 1: is crowd
- * RoiLabel.IMGINFO  with shape (batchSize, 4), contains all images info
+ * RoiImageInfo.IMGINFO  with shape (batchSize, 4), contains all images info
  *                 (height, width, original height, original width)
  */
 class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
