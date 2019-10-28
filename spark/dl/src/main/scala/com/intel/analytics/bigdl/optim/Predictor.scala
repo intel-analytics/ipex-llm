@@ -197,14 +197,19 @@ object Predictor {
   // because Evaluator will use it too, we extend the scope out of Predictor
   private[optim] def getDummyData[T: ClassTag, R](dataSet: RDD[R],
     batchSize: Int)(implicit ev: TensorNumeric[T]): Activity = {
-    // here has an assumption, batchSizePerPar is not very large.
-    val samples = dataSet.takeSample(withReplacement = false, num = batchSize)
-      .map {
-        case feature: ImageFeature => feature[Sample[T]](ImageFeature.sample)
-        case sample => sample.asInstanceOf[Sample[T]]
-      }
-    val sampleToMiniBatch = SampleToMiniBatch(batchSize)
-    sampleToMiniBatch(samples.toIterator).toSeq.head.getInput()
+    if (Engine.getEngineType() == MklDnn && Engine.isMultiModels) {
+      // here has an assumption, batchSizePerPar is not very large.
+      val samples = dataSet.takeSample(withReplacement = false, num = batchSize)
+        .map {
+          case feature: ImageFeature => feature[Sample[T]](ImageFeature.sample)
+          case sample => sample.asInstanceOf[Sample[T]]
+        }
+      val sampleToMiniBatch = SampleToMiniBatch(batchSize, partitionNum = Some(1))
+      val miniBatch = sampleToMiniBatch(samples.toIterator).toSeq
+      miniBatch.head.getInput()
+    } else {
+      Tensor()
+    }
   }
 }
 
