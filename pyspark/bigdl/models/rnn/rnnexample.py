@@ -116,7 +116,7 @@ def prepare_data(sc, folder, vocabsize, training_split):
 
     return sample_rdd, val_sample_rdd, total_vocab_len
 
-def build_model(input_size, hidden_size, output_size):
+def build_model(input_size, hidden_size, output_size, model_type):
     # Sequential can be used for MklBlas only. To use MklDnn backend,
     # you should define the model with Model(graph container)
     if get_bigdl_engine_type() == "MklBlas":
@@ -128,15 +128,20 @@ def build_model(input_size, hidden_size, output_size):
 
     # For MklDnn case the model is an LSTM, since simple RNN has no MKL-DNN support for now
     else:
-        input1 = Input()
-        lstm = Recurrent().add(LSTM(input_size, hidden_size))(input1)
-        output1 = TimeDistributed(Linear(hidden_size, output_size))(lstm)
-        model = Model([input1], [output1])
+        if model_type == "lstm":
+            input1 = Input()
+            lstm = Recurrent().add(LSTM(input_size, hidden_size))(input1)
+            output1 = TimeDistributed(Linear(hidden_size, output_size))(lstm)
+            model = Model([input1], [output1])
 
-        # The format index of input or output format can be checked
-        # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
-        model.set_input_formats([27]) # Set input format to ntc
-        model.set_output_formats([27]) # Set output format to ntc
+            # The format index of input or output format can be checked
+            # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
+            model.set_input_formats([27]) # Set input format to ntc
+            model.set_output_formats([27]) # Set output format to ntc
+
+        else:
+            raise Exception("Simple RNN is unsupported with MKL-DNN backend")
+
 
     return model
 
@@ -152,6 +157,7 @@ if __name__ == "__main__":
     parser.add_option("--hiddenSize", dest="hidden_size", default="40")
     parser.add_option("--vocabSize", dest="vob_size", default="4000")
     parser.add_option("--maxEpoch", dest="max_epoch", default="30")
+    parser.add_option("--modelType", dest="model_type", default="rnn")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -173,9 +179,9 @@ if __name__ == "__main__":
     init_engine()
 
     # In order to use MklDnn as the backend, you should:
-    # 1. Define a model with Model(graph container)
+    # 1. Define a model with Model(graph container) or convert a sequential model to a graph model
     # 2. Specify the input and output formats of it.
-    #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
+    #    BigDL needs these format information to build a graph running with MKL-DNN backend
     # 3. Run spark-submit command with correct configurations
     #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
     #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"

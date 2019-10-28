@@ -38,8 +38,10 @@ def build_model(class_num):
     model.add(Linear(100, class_num))
     model.add(LogSoftMax())
 
+    # To use MKL-DNN backend, the model has to be a graph model with input and output formats set.
+    # Sequential model cannot be used in this case, so we convert it to a graph model.
     if get_bigdl_engine_type() == "MklDnn":
-        model = model.to_model()
+        model = model.to_graph()
 
         # The format index of input or output format can be checked
         # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
@@ -67,9 +69,9 @@ if __name__ == "__main__":
     init_engine()
 
     # In order to use MklDnn as the backend, you should:
-    # 1. Define a model with Model(graph container)
+    # 1. Define a graph model with Model(graph container) or convert a sequential model to a graph model
     # 2. Specify the input and output formats of it.
-    #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
+    #    BigDL needs these format information to build a graph running with MKL-DNN backend
     # 3. Run spark-submit command with correct configurations
     #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
     #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"

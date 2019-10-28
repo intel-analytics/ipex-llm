@@ -275,7 +275,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       Sequential[T]()
   }
 
-  def toModel(sequential: Sequential[T]): StaticGraph[T] = {
+  def toGraph(sequential: Sequential[T]): StaticGraph[T] = {
     sequential.toGraph().asInstanceOf[StaticGraph[T]]
   }
 
