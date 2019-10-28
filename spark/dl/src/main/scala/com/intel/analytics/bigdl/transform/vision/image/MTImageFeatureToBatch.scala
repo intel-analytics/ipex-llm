@@ -259,8 +259,6 @@ object RoiImageInfo {
  * RoiImageInfo.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
  *                    -1: unknown, 0: not crowd, 1: is crowd
  * RoiImageInfo.ORIGSIZE  The original size of the image, tuple of (height, width, channels)
- * RoiImageInfo.ROIGSIZE  (Optional) The size for ROI masks of the scaled image,
- *                    tuple of (height, width)
  */
 class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
   val isCrowd: IndexedSeq[Tensor[Float]], val originalSizes: IndexedSeq[(Int, Int, Int)])
