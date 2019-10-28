@@ -22,9 +22,14 @@ import scala.collection.mutable.ArrayBuffer
 
 abstract class SegmentationMasks extends Serializable {
   /**
-   * Convert to a RLE encoded tensor
+   * Convert to a RLE encoded masks
    */
   def toRLE: RLEMasks
+
+  /**
+   * Get the height and width
+   */
+  def size: (Int, Int)
 }
 
 /**
@@ -40,6 +45,11 @@ class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) 
     require(height > 0 && width > 0, "the height and width must > 0 for toRLE")
     MaskUtils.mergeRLEs(MaskUtils.poly2RLE(this, height, width), false)
   }
+
+  /**
+   * Get the height and width
+   */
+  override def size: (Int, Int) = (height, width)
 }
 
 object PolyMasks {
@@ -68,6 +78,8 @@ object PolyMasks {
 class RLEMasks(val counts: Array[Int], val height: Int, val width: Int)
   extends SegmentationMasks {
   override def toRLE: RLEMasks = this
+
+  override def size: (Int, Int) = (height, width)
 
   // cached bbox value
   @transient
