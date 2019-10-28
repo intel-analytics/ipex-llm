@@ -16,11 +16,14 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 import java.util.concurrent.atomic.AtomicInteger
+
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+
 import scala.collection.mutable.IndexedSeq
 import scala.reflect.ClassTag
 
@@ -199,7 +202,8 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
  *                    elements. The inner tensor holds the data for segmentation
  * RoiLabel.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
  *                    -1: unknown, 0: not crowd, 1: is crowd
- * RoiLabel.ORIGSIZE  The original size of the image, tuple of (height, width, channels)
+ * RoiLabel.ImageInfo  with shape (batchSize, 4), contains all images info
+ *                 (height, width, original height, original width)
  */
 class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
   val isCrowd: IndexedSeq[Tensor[Float]], val imageInfo: Tensor[Float])
@@ -261,7 +265,6 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
   private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
   private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
   private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
-  private val origSizeData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
   private var featureTensor: Tensor[Float] = null
 
   override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
@@ -272,7 +275,6 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
       "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
     isCrowdData(position) = isCrowd
     labelData(position) = label
-    origSizeData(position) = img.getImInfo()
   }
 
   override protected def createBatch(batchSize: Int): MiniBatch[Float] = {

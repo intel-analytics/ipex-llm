@@ -172,7 +172,11 @@ class MaskRCNN(val inChannels: Int,
         output = postProcessorForMaskRCNN(proposalsBox, labelsBox, masks[Tensor[Float]](2),
           scores, imageInfo)
       }
-    } else output = T() // detect nothing
+    } else { // detect nothing
+      for (i <- 1 to inputFeatures.size(1)) {
+        output.toTable(i) = T()
+      }
+    }
 
     output
   }
@@ -220,7 +224,7 @@ class MaskRCNN(val inChannels: Int,
         val masksRLE = new Array[RLEMasks](boxNumber)
         for (j <- 0 to boxNumber - 1) {
           binaryMask.fill(0.0f)
-          MaskRCNNUtils.pasteMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
+          Utils.decodeMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
             binaryMask = binaryMask)
           masksRLE(j) = MaskUtils.binaryToRLE(binaryMask)
         }

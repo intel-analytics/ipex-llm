@@ -23,11 +23,12 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import scopt.OptionParser
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, segmentation}
 import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.optim.MeanAveragePrecision
 import org.apache.spark.{SparkContext, rdd}
 object Test {
   case class TestParams(
      folder: String = "./",
-     model: String,
+     model: String = "",
      batchSize: Int = 2,
      partitionNum: Int = -1
    )
@@ -72,15 +73,14 @@ object Test {
             ScaleResize(minSize = 800, maxSize = 1333) ->
             ChannelNormalize(122.7717f, 115.9465f, 102.9801f) ->
             MatToTensor[Float](),
-        toRGB = false
-      )
+            toRGB = false
+        )
       val evaluationSet = transformer(rddData)
 
       val model = Module.loadModule[Float](param.model)
 
       val result = model.evaluate(evaluationSet,
-        Array(MeanAveragePrecisionObjectDetection.createCOCO(81, topK = -1),
-          MeanAveragePrecisionObjectDetection.createCOCO(81, topK = -1, isSegmentation = true)))
+        Array(MeanAveragePrecision.cocoBBox(81), MeanAveragePrecision.cocoSegmentation(81)))
       result.foreach(r => println(s"${r._2} is ${r._1}"))
 
       sc.stop()

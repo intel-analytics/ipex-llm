@@ -647,7 +647,7 @@ object DataSet {
           imf
         }
         .coalesce(num)
-     DataSet.rdd(rawData)
+     DataSet.rdd(rawData, num)
     }
 
     private[bigdl] def filesToImageFeatureDataset(url: String, sc: SparkContext,
