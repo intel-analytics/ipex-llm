@@ -89,7 +89,6 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
            vMethods: Array[ValidationMethod[T]]
           ): Array[(ValidationResult, ValidationMethod[T])] = {
 
-    // TODO this should be fixed next release because of some objects can't be serialized
     val dummyInput = if (Engine.getEngineType() == MklDnn) {
       dataset.takeSample(withReplacement = false, num = 1).head.getInput()
     } else {
