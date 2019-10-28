@@ -151,6 +151,10 @@ class RegionProposal(
       // sort
       selectOverAllLevels(selectorRes, postNmsTopN, bboxNumber, output[Tensor[Float]](b))
     }
+    // clear others tensors in output
+    for (i <- (batchSize + 1) to output.length()) {
+     output.remove[Tensor[Float]](i)
+    }
     output
   }
 
