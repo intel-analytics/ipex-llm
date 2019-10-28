@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
 import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
@@ -88,6 +87,7 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
   private[bigdl] def testMiniBatch(dataset: RDD[MiniBatch[T]],
            vMethods: Array[ValidationMethod[T]]
           ): Array[(ValidationResult, ValidationMethod[T])] = {
+
     val rdd = ConversionUtils.coalesce(dataset)
     val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext,
       ConversionUtils.convert(model.evaluate()))
