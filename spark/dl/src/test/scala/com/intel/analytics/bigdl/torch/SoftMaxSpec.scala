@@ -77,8 +77,6 @@ class SoftMaxSpec extends TorchSpec {
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
-
-    println("Test case : SoftMax, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
   "A SoftMax 2D input" should "generate correct output and grad" in {
