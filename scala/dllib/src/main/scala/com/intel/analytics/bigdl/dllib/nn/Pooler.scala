@@ -109,10 +109,12 @@ class Pooler[T: ClassTag] (
     } else { // for batch support
       input[Table](2)
     }
+
+    val batchSize = featureMaps.get[Tensor[Float]](1).get.size(1)
     var totalNum = 0
     val num_channels = featureMaps.get[Tensor[T]](1).get.size(2)
     val out = T()
-    for (i <- 0 to roiBatch.length() - 1) {
+    for (i <- 0 to batchSize - 1) {
       val rois = roiBatch[Tensor[T]](i + 1)
 
       val roi_levels = levelMapping(lvl_min, lvl_max, rois)
@@ -147,10 +149,10 @@ class Pooler[T: ClassTag] (
     // merge to one tensor
     output.resize(totalNum, num_channels, resolution, resolution)
     var start = 1
-    for (i <- 0 to roiBatch.length() - 1) {
+    for (i <- 0 to batchSize - 1) {
       val tmp = out[Tensor[T]](i + 1)
       val length = tmp.size(1)
-      output.narrow(1, start, length).copy(tmp)
+      if (length > 0) output.narrow(1, start, length).copy(tmp)
       start += length
     }
 
