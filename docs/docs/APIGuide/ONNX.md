@@ -61,5 +61,3 @@ from bigdl.contrib.onnx import load
   * Loaded ONNX model is limited for inference.
   * Most of operators defined in ONNX are not being supported by BigDL for now.
   * Missing feature of exporting BigDL model into ONNX format.
-
-   
