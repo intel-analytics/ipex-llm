@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -247,9 +248,9 @@ class ValidationSpec extends FlatSpec with Matchers {
 
     val target = T(
         T()
-          .update(RoiLabel.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
-          .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)))
-          .update(RoiLabel.BBOXES, Tensor[Float](T(
+          .update(RoiImageInfo.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+          .update(RoiImageInfo.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)))
+          .update(RoiImageInfo.BBOXES, Tensor[Float](T(
               T(100, 100, 200, 200),
               T(300, 100, 400, 200),
               T(100, 300, 200, 400),
@@ -271,8 +272,8 @@ class ValidationSpec extends FlatSpec with Matchers {
 
     val outputTable = T(
       T()
-        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 1, 1, 1, 1)))
-        .update(RoiLabel.BBOXES, Tensor[Float](T(
+        .update(RoiImageInfo.CLASSES, Tensor[Float](T(0, 0, 0, 0, 1, 1, 1, 1)))
+        .update(RoiImageInfo.BBOXES, Tensor[Float](T(
           T(110, 90, 210, 190),
           T(310, 110, 410, 210),
           T(320, 290, 420, 390),
@@ -283,7 +284,7 @@ class ValidationSpec extends FlatSpec with Matchers {
           T(1210, 1310, 1290, 1410)
         ))
         )
-        .update(RoiLabel.SCORES, Tensor[Float](T(1, 2, 4, 3, 1, 3, 4, 2)))
+        .update(RoiImageInfo.SCORES, Tensor[Float](T(1, 2, 4, 3, 1, 3, 4, 2)))
     )
     val v2 = new MeanAveragePrecisionObjectDetection(3)
     val result2 = v2(outputTable, target)
@@ -294,9 +295,9 @@ class ValidationSpec extends FlatSpec with Matchers {
   "MeanAveragePrecisionObjectDetection" should "be correct on empty detections" in {
     val target = T(
       T()
-        .update(RoiLabel.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0)))
-        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0)))
-        .update(RoiLabel.BBOXES, Tensor[Float](T(
+        .update(RoiImageInfo.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiImageInfo.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiImageInfo.BBOXES, Tensor[Float](T(
           T(100, 100, 200, 200),
           T(300, 100, 400, 200),
           T(100, 300, 200, 400),
@@ -314,9 +315,9 @@ class ValidationSpec extends FlatSpec with Matchers {
   "MeanAveragePrecisionObjectDetection" should "be correct on empty targets" in {
     val target = T(
       T()
-        .update(RoiLabel.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0)))
-        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0)))
-        .update(RoiLabel.BBOXES, Tensor[Float](T(
+        .update(RoiImageInfo.ISCROWD, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiImageInfo.CLASSES, Tensor[Float](T(0, 0, 0, 0, 0)))
+        .update(RoiImageInfo.BBOXES, Tensor[Float](T(
           T(100, 100, 200, 200),
           T(300, 100, 400, 200),
           T(100, 300, 200, 400),
@@ -329,25 +330,25 @@ class ValidationSpec extends FlatSpec with Matchers {
     )
     val outputTable = T(
       T()
-        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0)))
-        .update(RoiLabel.BBOXES, Tensor[Float](T(
+        .update(RoiImageInfo.CLASSES, Tensor[Float](T(0, 0, 0, 0)))
+        .update(RoiImageInfo.BBOXES, Tensor[Float](T(
           T(110, 90, 210, 190),
           T(310, 110, 410, 210),
           T(320, 290, 420, 390),
           T(210, 310, 290, 410)
         ))
         )
-        .update(RoiLabel.SCORES, Tensor[Float](T(1, 2, 9, 7))),
+        .update(RoiImageInfo.SCORES, Tensor[Float](T(1, 2, 9, 7))),
       T()
-        .update(RoiLabel.CLASSES, Tensor[Float](T(0, 0, 0, 0)))
-        .update(RoiLabel.BBOXES, Tensor[Float](T(
+        .update(RoiImageInfo.CLASSES, Tensor[Float](T(0, 0, 0, 0)))
+        .update(RoiImageInfo.BBOXES, Tensor[Float](T(
           T(1110, 1090, 1210, 1190),
           T(1310, 1110, 1410, 1210),
           T(1320, 1290, 1420, 1390),
           T(1210, 1310, 1290, 1410)
         ))
         )
-        .update(RoiLabel.SCORES, Tensor[Float](T(0, 5, 4, 8)))
+        .update(RoiImageInfo.SCORES, Tensor[Float](T(0, 5, 4, 8)))
     )
     val v = new MeanAveragePrecisionObjectDetection[Float](3)
     val result = v(outputTable, target)
