@@ -18,7 +18,7 @@ coco
 * Generate the hadoop sequence files for COCO dataset
 The following command will transform the images and annotations into hadoop sequence files.
 ```bash
-java -cp com.intel.analytics.bigdl.models.utils.COCOSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f ./coco/coco_val2017 -m ./coco/annotations/instances_val2017.json -p 4 -o ./coco/output -p 4
+java -cp com.intel.analytics.bigdl.models.utils.COCOSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f ./coco/coco_val2017 -m ./coco/annotations/instances_val2017.json -p 4 -o ./coco/output
 ```
 In the above commands:
 -f: the COCO image files location
@@ -30,7 +30,11 @@ In the above commands:
 Input data are transformed by several pipeline classes, such as ScaleResize, ChannelNormalize, ImageFeatureToBatch, etc.
 
 ## Model
-You can download [preTrain MaskRCNN model](.....) for BigDL. This MaskRCNN model refers to [facebookresearch/maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark), and the model backbone is **R-50-FPN**.
+You can download **preTrain-MaskRCNN model** for BigDL by running
+```bash
+wget https://bigdlmodels.s3-us-west-2.amazonaws.com/segmentation/bigdl_mask-rcnn_COCO_0.10.0.model
+```
+This MaskRCNN model refers to [facebookresearch/maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark), and the model backbone is **R-50-FPN**.
 
 ## Test the Model
 * Spark standalone, example command
@@ -64,3 +68,4 @@ In the above command
 * -f: where you put your COCO data, it should be a hdfs folder
 * --model: the model snapshot file
 * --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
+* --partitionNum: the partition number, default is node_number * core_number.

@@ -33,7 +33,7 @@ object Test {
      partitionNum: Int = -1
    )
 
-  val testParser = new OptionParser[TestParams]("BigDL ResNet on Cifar10 Test Example") {
+  val testParser = new OptionParser[TestParams]("BigDL Mask-RCNN on COCO Test Example") {
     opt[String]('f', "folder")
       .text("the location of COCO dataset")
       .action((x, c) => c.copy(folder = x))
@@ -43,7 +43,7 @@ object Test {
       .action((x, c) => c.copy(model = x))
 
     opt[Int]('b', "batchSize")
-      .text("batch size")
+      .text("total batch size")
       .action((x, c) => c.copy(batchSize = x))
 
     opt[Int]('p', "partitionNum")
@@ -67,7 +67,7 @@ object Test {
 
       val transformer = MTImageFeatureToBatchWithResize(
         sizeDivisible = 32,
-        batchSize = param.batchSize,
+        batchSize = param.batchSize / Engine.nodeNumber(),
         transformer =
           PixelBytesToMat() ->
             ScaleResize(minSize = 800, maxSize = 1333) ->

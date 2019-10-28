@@ -206,7 +206,7 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
  *                 (height, width, original height, original width)
  */
 class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
-  val isCrowd: IndexedSeq[Tensor[Float]], val imageInfo: Tensor[Float])
+  val isCrowd: IndexedSeq[Tensor[Float]], val imageInfo: Tensor[Float] = null)
   extends MiniBatch[Float] {
 
   override def size(): Int = input.size(1)
@@ -242,7 +242,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
 
 object RoiMiniBatch {
   def apply(data: Tensor[Float], target: IndexedSeq[RoiLabel],
-    isCrowd: IndexedSeq[Tensor[Float]], imageInfo: Tensor[Float]):
+    isCrowd: IndexedSeq[Tensor[Float]], imageInfo: Tensor[Float] = null):
   RoiMiniBatch = new RoiMiniBatch(data, target, isCrowd, imageInfo)
 }
 
@@ -282,7 +282,7 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
       featureTensor = Tensor(Storage[Float](featureData),
         storageOffset = 1, size = Array(batchSize, 3, height, width))
     }
-    RoiMiniBatch(featureTensor, labelData.view, isCrowdData.view, null)
+    RoiMiniBatch(featureTensor, labelData.view, isCrowdData.view)
   }
 }
 
