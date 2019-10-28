@@ -104,8 +104,10 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
 * `--maxEpoch` max number of epochs to train, the default value is 30.
 
 #####In order to use MKL-DNN as the backend, you should:
-1. Define a model with Model(graph container). For RNN models, currently we have MKL-DNN support 
-   for LSTM and GRU.
+1. Define a graph model with Model or convert a sequential model to a graph model using:
+   ```
+   convertedModel = sequentialModel.to_graph()
+   ```
 2. Specify the input and output formats of it.
    For example:
    ```
