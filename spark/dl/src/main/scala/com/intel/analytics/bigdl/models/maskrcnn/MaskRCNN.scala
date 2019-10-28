@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasks}
-import com.intel.analytics.bigdl.models.resnet.{Convolution, Sbn}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -78,14 +77,28 @@ class MaskRCNN(val inChannels: Int,
     modules.append(boxHead.asInstanceOf[Module[Float]])
     modules.append(maskHead.asInstanceOf[Module[Float]])
 
-    private def buildResNet50(): Module[Float] = {
+  private def buildResNet50(): Module[Float] = {
+
+    def convolution (nInputPlane: Int, nOutputPlane: Int, kernelW: Int, kernelH: Int,
+      strideW: Int = 1, strideH: Int = 1, padW: Int = 0, padH: Int = 0,
+      nGroup: Int = 1, propagateBack: Boolean = true): SpatialConvolution[Float] = {
+        val conv = SpatialConvolution[Float](nInputPlane, nOutputPlane, kernelW, kernelH,
+          strideW, strideH, padW, padH, nGroup, propagateBack, withBias = false)
+        conv.setInitMethod(MsraFiller(false), Zeros)
+        conv
+      }
+
+    def sbn(nOutput: Int, eps: Double = 1e-3, momentum: Double = 0.1, affine: Boolean = true)
+      : SpatialBatchNormalization[Float] = {
+        SpatialBatchNormalization[Float](nOutput, eps, momentum, affine).setInitMethod(Ones, Zeros)
+      }
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int,
                  useConv: Boolean = false): Module[Float] = {
       if (useConv) {
         Sequential()
-          .add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
-          .add(Sbn(nOutputPlane))
+          .add(convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
+          .add(sbn(nOutputPlane))
       } else {
         Identity()
       }
@@ -94,14 +107,14 @@ class MaskRCNN(val inChannels: Int,
     def bottleneck(nInputPlane: Int, internalPlane: Int, nOutputPlane: Int,
                    stride: Int, useConv: Boolean = false): Module[Float] = {
       val s = Sequential()
-        .add(Convolution(nInputPlane, internalPlane, 1, 1, stride, stride, 0, 0))
-        .add(Sbn(internalPlane))
+        .add(convolution(nInputPlane, internalPlane, 1, 1, stride, stride, 0, 0))
+        .add(sbn(internalPlane))
         .add(ReLU(true))
-        .add(Convolution(internalPlane, internalPlane, 3, 3, 1, 1, 1, 1))
-        .add(Sbn(internalPlane))
+        .add(convolution(internalPlane, internalPlane, 3, 3, 1, 1, 1, 1))
+        .add(sbn(internalPlane))
         .add(ReLU(true))
-        .add(Convolution(internalPlane, nOutputPlane, 1, 1, 1, 1, 0, 0))
-        .add(Sbn(nOutputPlane))
+        .add(convolution(internalPlane, nOutputPlane, 1, 1, 1, 1, 0, 0))
+        .add(sbn(nOutputPlane))
 
       val m = Sequential()
         .add(ConcatTable()
@@ -123,8 +136,8 @@ class MaskRCNN(val inChannels: Int,
     }
 
     val model = Sequential[Float]()
-      .add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = false, propagateBack = false))
-      .add(Sbn(64))
+      .add(convolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false))
+      .add(sbn(64))
       .add(ReLU(true))
       .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
 
@@ -164,12 +177,18 @@ class MaskRCNN(val inChannels: Int,
     val labelsBox = postProcessorBox[Tensor[Float]](1)
     val proposalsBox = postProcessorBox[Table](2)
     val scores = postProcessorBox[Tensor[Float]](3)
-    val masks = this.maskHead.forward(T(features, proposalsBox, labelsBox)).toTable
-    if (this.isTraining()) {
-      output = T(proposalsBox, labelsBox, masks, scores)
-    } else {
-      output = postProcessorForMaskRCNN(proposalsBox, labelsBox, masks[Tensor[Float]](2),
-        scores, imageInfo)
+    if (labelsBox.size(1) > 0) {
+      val masks = this.maskHead.forward(T(features, proposalsBox, labelsBox)).toTable
+      if (this.isTraining()) {
+        output = T(proposalsBox, labelsBox, masks, scores)
+      } else {
+        output = postProcessorForMaskRCNN(proposalsBox, labelsBox, masks[Tensor[Float]](2),
+          scores, imageInfo)
+      }
+    } else { // detect nothing
+      for (i <- 1 to inputFeatures.size(1)) {
+        output.toTable(i) = T()
+      }
     }
 
     output
@@ -196,36 +215,39 @@ class MaskRCNN(val inChannels: Int,
 
       binaryMask.resize(originalHeight, originalWidth)
 
-      val boxNumber = boxesInImage(i)
-      val maskPerImg = masks.narrow(1, start, boxNumber)
-      val bboxPerImg = bboxes[Tensor[Float]](i + 1)
-      val classPerImg = labels.narrow(1, start, boxNumber)
-      val scorePerImg = scores.narrow(1, start, boxNumber)
-
-      require(maskPerImg.size(1) == bboxPerImg.size(1),
-        s"mask number ${maskPerImg.size(1)} should be same with box number ${bboxPerImg.size(1)}")
-
-      // bbox resize to original size
-      if (height != originalHeight || width != originalWidth) {
-        BboxUtil.scaleBBox(bboxPerImg,
-          originalHeight.toFloat / height, originalWidth.toFloat / width)
-      }
-      // mask decode to original size
-      val masksRLE = new Array[RLEMasks](boxNumber)
-      for (j <- 0 to boxNumber - 1) {
-        binaryMask.fill(0.0f)
-        Utils.decodeMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
-          binaryMask = binaryMask)
-        masksRLE(j) = MaskUtils.binaryToRLE(binaryMask)
-      }
-      start += boxNumber
-
       // prepare for evaluation
       val postOutput = T()
-      postOutput.update(RoiLabel.MASKS, masksRLE)
-      postOutput.update(RoiLabel.BBOXES, bboxPerImg)
-      postOutput.update(RoiLabel.CLASSES, classPerImg)
-      postOutput.update(RoiLabel.SCORES, scorePerImg)
+
+      val boxNumber = boxesInImage(i)
+      if (boxNumber > 0) {
+        val maskPerImg = masks.narrow(1, start, boxNumber)
+        val bboxPerImg = bboxes[Tensor[Float]](i + 1)
+        val classPerImg = labels.narrow(1, start, boxNumber)
+        val scorePerImg = scores.narrow(1, start, boxNumber)
+
+        require(maskPerImg.size(1) == bboxPerImg.size(1), s"mask number ${maskPerImg.size(1)} " +
+          s"should be the same with box number ${bboxPerImg.size(1)}")
+
+        // resize bbox to original size
+        if (height != originalHeight || width != originalWidth) {
+          BboxUtil.scaleBBox(bboxPerImg,
+            originalHeight.toFloat / height, originalWidth.toFloat / width)
+        }
+        // decode mask to original size
+        val masksRLE = new Array[RLEMasks](boxNumber)
+        for (j <- 0 to boxNumber - 1) {
+          binaryMask.fill(0.0f)
+          Utils.decodeMaskInImage(maskPerImg.select(1, j + 1), bboxPerImg.select(1, j + 1),
+            binaryMask = binaryMask)
+          masksRLE(j) = MaskUtils.binaryToRLE(binaryMask)
+        }
+        start += boxNumber
+
+        postOutput.update(RoiLabel.MASKS, masksRLE)
+        postOutput.update(RoiLabel.BBOXES, bboxPerImg)
+        postOutput.update(RoiLabel.CLASSES, classPerImg)
+        postOutput.update(RoiLabel.SCORES, scorePerImg)
+      }
 
       output(i + 1) = postOutput
     }

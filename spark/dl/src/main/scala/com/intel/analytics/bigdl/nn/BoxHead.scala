@@ -342,6 +342,11 @@ private[nn] class BoxPostProcessor(
       totalDetections += maxDetection
       outBBoxs[Tensor[Float]](i + 1).resize(maxDetection, 4)
       totalROILables(i + 1) = roilabels
+      boxesInImage(i) = maxDetection
+    }
+    // clear others tensors in output
+    for (i <- (boxesInImage.length + 1) to outBBoxs.length()) {
+      outBBoxs.remove[Tensor[Float]](i)
     }
 
     // resize labels and scores
@@ -353,13 +358,15 @@ private[nn] class BoxPostProcessor(
     var labelsOffset = outLabels.storageOffset() - 1
     var scoresOffset = outScores.storageOffset() - 1
     for (i <- 0 to boxesInImage.length - 1) {
-      val roilabels = totalROILables[Array[RoiLabel]](i + 1)
-      val bbox = outBBoxs[Tensor[Float]](i + 1).storage().array()
-      val bboxOffset = outBBoxs[Tensor[Float]](i + 1).storageOffset() - 1
+      if (boxesInImage(i) > 0) {
+        val roilabels = totalROILables[Array[RoiLabel]](i + 1)
+        val bbox = outBBoxs[Tensor[Float]](i + 1).storage().array()
+        val bboxOffset = outBBoxs[Tensor[Float]](i + 1).storageOffset() - 1
 
-      resultToTensor(roilabels, labels, labelsOffset, bbox, bboxOffset, scores, scoresOffset)
-      labelsOffset += outBBoxs[Tensor[Float]](i + 1).size(1)
-      scoresOffset += outBBoxs[Tensor[Float]](i + 1).size(1)
+        resultToTensor(roilabels, labels, labelsOffset, bbox, bboxOffset, scores, scoresOffset)
+        labelsOffset += outBBoxs[Tensor[Float]](i + 1).size(1)
+        scoresOffset += outBBoxs[Tensor[Float]](i + 1).size(1)
+      }
     }
 
     output
