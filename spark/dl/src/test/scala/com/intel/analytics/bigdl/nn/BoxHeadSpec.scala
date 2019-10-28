@@ -105,11 +105,11 @@ class BoxHeadSpec extends FlatSpec with Matchers {
 
     val bbox = T(Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
       T(3.0f, 5.0f, 6.0f, 7.0f))))
-    val labels = Tensor[Float](T(1, 3))
+    val imageInfo = Tensor[Float](T(10, 10))
 
     layer.evaluate()
 
-    val output = layer.forward(T(T(features1, features2), bbox, labels)).toTable[Table](2)
+    val output = layer.forward(T(T(features1, features2), bbox, imageInfo)).toTable[Table](2)
 
     val expectedBbox = Tensor[Float](T(
       T(0.9995, 2.9991, 2.0602, 6.1203),
@@ -388,7 +388,7 @@ class BoxHeadSpec extends FlatSpec with Matchers {
       T(3.0f, 5.0f, 6.0f, 7.0f))), Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
       T(3.0f, 5.0f, 6.0f, 7.0f))))
 
-    val labels2 = T(Tensor[Float](T(1, 3)), Tensor[Float](T(1, 3)))
+    val labels2 = Tensor[Float](T(10, 10))
 
     // val output = layer.forward(T(T(features1, features2), T(bbox), T(labels))).toTable[Table](2)
 
@@ -1038,9 +1038,9 @@ class BoxHeadSerialTest extends ModuleSerializationTest {
     val feature2 = Tensor[Float](1, 6, 5, 2).rand()
     val bbox = Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
       T(3.0f, 5.0f, 6.0f, 7.0f)))
-    val labels = Tensor[Float](T(1, 3))
+    val imageInfo = Tensor[Float](T(10, 10))
 
-    runSerializationTest(layer, T(T(feature1, feature2), bbox, labels))
+    runSerializationTest(layer, T(T(feature1, feature2), bbox, imageInfo))
   }
 }
 
@@ -1053,6 +1053,6 @@ class BoxPostProcessorSerialTest extends ModuleSerializationTest {
     val bbox = Tensor[Float](T(T(1.0f, 3.0f, 2.0f, 6.0f),
       T(3.0f, 5.0f, 6.0f, 10.0f)))
 
-    runSerializationTest(layer, T(classLogits, boxRegression, bbox))
+    runSerializationTest(layer, T(classLogits, boxRegression, bbox, Tensor[Float](T(10, 10))))
   }
 }

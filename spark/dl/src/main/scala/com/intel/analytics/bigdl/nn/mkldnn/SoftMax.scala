@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn, PropKind, Stream => DnnStream}
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, PropKind, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -68,7 +68,7 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
           case _ => throw new UnsupportedOperationException("1D, 2D, 3D or 4D tensor expected")
         }
 
-        _inputFormats = singleNativeData(inputs)
+        _inputFormats = Array(NativeData(inputs(0).shape, inputs(0).layout, DataType.F32))
 
         val localInputFormat = if (inputs(0).shape.length == 3 &&
           inputs(0).layout == Memory.Format.ntc) {

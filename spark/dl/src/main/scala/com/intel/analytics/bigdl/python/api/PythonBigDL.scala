@@ -387,8 +387,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTimeDistributedCriterion(critrn: TensorCriterion[T],
-    sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
-    TimeDistributedCriterion[T](critrn, sizeAverage)
+    sizeAverage: Boolean = false, dimension: Int = 2): TimeDistributedCriterion[T] = {
+    TimeDistributedCriterion[T](critrn, sizeAverage, dimension)
   }
 
   def createGRU(
@@ -2050,10 +2050,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[Sample] = {
-    val sampleRDD = toJSample(dataRdd)
-    val pySampleRDD = model.predictClass(sampleRDD).map(toPySample(_))
-    new JavaRDD[Sample](pySampleRDD)
+                        dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
+    val sampleRdd = toJSample(dataRdd)
+    val tensorRDD = model.predictClass(sampleRdd)
+    new JavaRDD[Int](tensorRDD)
   }
 
   def modelForward(model: AbstractModule[Activity, Activity, T],
@@ -2185,7 +2185,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createMeanAveragePrecisionObjectDetection(classes: Int, iou: Float, useVoc2007: Boolean,
     skipClass: Int): ValidationMethod[T] = {
-    new MeanAveragePrecisionObjectDetection(classes, iou, useVoc2007, skipClass)
+    new MeanAveragePrecisionObjectDetection(classes, iouThres = Array(iou),
+      theType = if (useVoc2007) MAPPascalVoc2007 else MAPPascalVoc2010, skipClass = skipClass)
   }
 
   def createLoss(criterion: Criterion[T]): ValidationMethod[T] = {

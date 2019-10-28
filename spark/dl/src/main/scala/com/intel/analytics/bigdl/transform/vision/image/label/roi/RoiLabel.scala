@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
-import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, SegmentationMasks}
+import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, SegmentationMasks, RLEMasks}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.utils.{T, Table}
