@@ -73,7 +73,7 @@ We would train a LeNet model in spark local mode with the following commands and
    theDefinedModel.set_input_formats([theInputFormatIndex])
    theDefinedModel.set_output_formats([theOutputFormatIndex])
    ```
-   BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing.
+   BigDL needs these format information to build a graph running with MKL-DNN backend.
    
    The format index of input or output format can be checked
    in: 
