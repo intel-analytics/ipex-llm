@@ -117,31 +117,37 @@ def prepare_data(sc, folder, vocabsize, training_split):
     return sample_rdd, val_sample_rdd, total_vocab_len
 
 def build_model(input_size, hidden_size, output_size, model_type):
-    # Sequential can be used for MklBlas only. To use MklDnn backend,
-    # you should define the model with Model(graph container)
-    if get_bigdl_engine_type() == "MklBlas":
+    # Model Type is simple RNN
+    if model_type == "rnn":
         model = Sequential()
         model.add(Recurrent()
                   .add(RnnCell(input_size, hidden_size, Tanh())))\
             .add(TimeDistributed(Linear(hidden_size, output_size)))
         model.reset()
 
-    # For MklDnn case the model is an LSTM, since simple RNN has no MKL-DNN support for now
-    else:
-        if model_type == "lstm":
-            input1 = Input()
-            lstm = Recurrent().add(LSTM(input_size, hidden_size))(input1)
-            output1 = TimeDistributed(Linear(hidden_size, output_size))(lstm)
-            model = Model([input1], [output1])
+        # Simple RNN with MKL-DNN backend is unsupported for now.
+        if get_bigdl_engine_type() == "MklDnn":
+            raise Exception("Simple RNN is unsupported with MKL-DNN backend")
+
+    # Model Type is LSTM
+    elif model_type == "lstm":
+        model = Sequential()
+        model.add(Recurrent()
+                  .add(LSTM(input_size, hidden_size)))\
+            .add(TimeDistributed(Linear(hidden_size, output_size)))
+        model.reset()
+
+        # LSTM with MKL-DNN backend
+        if get_bigdl_engine_type() == "MklDnn":
+            # To use MKL-DNN backend, the model has to be a graph model with
+            # input and output formats set. Sequential model cannot be used in
+            # this case, so we convert it to a graph model.
+            model = model.to_graph()
 
             # The format index of input or output format can be checked
             # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
             model.set_input_formats([27]) # Set input format to ntc
             model.set_output_formats([27]) # Set output format to ntc
-
-        else:
-            raise Exception("Simple RNN is unsupported with MKL-DNN backend")
-
 
     return model
 
