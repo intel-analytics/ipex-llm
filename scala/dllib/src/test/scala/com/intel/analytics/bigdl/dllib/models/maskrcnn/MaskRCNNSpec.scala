@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import com.intel.analytics.bigdl.nn.Nms
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
@@ -63,29 +64,29 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
     val first = output[Table](1)
     val second = output[Table](2)
 
-    first.get[Tensor[Float]](RoiLabel.BBOXES) should be(
-      output1.get[Tensor[Float]](RoiLabel.BBOXES))
-    first.get[Tensor[Float]](RoiLabel.CLASSES) should be(
-      output1.get[Tensor[Float]](RoiLabel.CLASSES))
-    first.get[Tensor[Float]](RoiLabel.SCORES) should be(
-      output1.get[Tensor[Float]](RoiLabel.SCORES))
+    first.get[Tensor[Float]](RoiImageInfo.BBOXES) should be(
+      output1.get[Tensor[Float]](RoiImageInfo.BBOXES))
+    first.get[Tensor[Float]](RoiImageInfo.CLASSES) should be(
+      output1.get[Tensor[Float]](RoiImageInfo.CLASSES))
+    first.get[Tensor[Float]](RoiImageInfo.SCORES) should be(
+      output1.get[Tensor[Float]](RoiImageInfo.SCORES))
 
-    second.get[Tensor[Float]](RoiLabel.BBOXES) should be(
-      output2.get[Tensor[Float]](RoiLabel.BBOXES))
-    second.get[Tensor[Float]](RoiLabel.CLASSES) should be(
-      output2.get[Tensor[Float]](RoiLabel.CLASSES))
-    second.get[Tensor[Float]](RoiLabel.SCORES) should be(
-      output2.get[Tensor[Float]](RoiLabel.SCORES))
+    second.get[Tensor[Float]](RoiImageInfo.BBOXES) should be(
+      output2.get[Tensor[Float]](RoiImageInfo.BBOXES))
+    second.get[Tensor[Float]](RoiImageInfo.CLASSES) should be(
+      output2.get[Tensor[Float]](RoiImageInfo.CLASSES))
+    second.get[Tensor[Float]](RoiImageInfo.SCORES) should be(
+      output2.get[Tensor[Float]](RoiImageInfo.SCORES))
 
     // for masks
-    val firstMasks = first.get[Array[RLEMasks]](RoiLabel.MASKS).get
-    val expectedMasks = output1.get[Array[RLEMasks]](RoiLabel.MASKS).get
+    val firstMasks = first.get[Array[RLEMasks]](RoiImageInfo.MASKS).get
+    val expectedMasks = output1.get[Array[RLEMasks]](RoiImageInfo.MASKS).get
     for (i <- 0 to firstMasks.length - 1) {
       firstMasks(i).counts should be(expectedMasks(i).counts)
     }
 
-    val secondMasks = second.get[Array[RLEMasks]](RoiLabel.MASKS).get
-    val expectedMasks2 = output2.get[Array[RLEMasks]](RoiLabel.MASKS).get
+    val secondMasks = second.get[Array[RLEMasks]](RoiImageInfo.MASKS).get
+    val expectedMasks2 = output2.get[Array[RLEMasks]](RoiImageInfo.MASKS).get
 
     for (i <- 0 to secondMasks.length - 1) {
       secondMasks(i).counts should be(expectedMasks2(i).counts)

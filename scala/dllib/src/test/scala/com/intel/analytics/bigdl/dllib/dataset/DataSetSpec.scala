@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.dataset.segmentation.{COCODataset, COCOPoly, COCORLE, PolyMasks, RLEMasks}
 import com.intel.analytics.bigdl.models.utils.COCOSeqFileGenerator
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, RoiImageInfo}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, SparkContextLifeCycle, TestUtils}
 import java.awt.image.DataBufferByte
@@ -99,7 +99,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
       .data(false)
       .map(imf => {
         (imf(ImageFeature.uri).asInstanceOf[String], imf.getOriginalSize, imf.getLabel[RoiLabel],
-          imf[Tensor[Float]](RoiLabel.ISCROWD), imf[Array[Byte]](ImageFeature.bytes))
+          imf[Tensor[Float]](RoiImageInfo.ISCROWD), imf[Array[Byte]](ImageFeature.bytes))
       })
       .collect()
       .foreach({ case (uri, size, label, iscrowd, bytes) =>

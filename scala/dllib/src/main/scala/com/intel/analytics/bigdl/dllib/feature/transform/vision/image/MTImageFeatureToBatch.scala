@@ -15,17 +15,14 @@
  */
 package com.intel.analytics.bigdl.transform.vision.image
 
+import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import java.util.concurrent.atomic.AtomicInteger
-
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
-
-import scala.collection.mutable.IndexedSeq
-import scala.reflect.ClassTag
 
 object MTImageFeatureToBatch {
   /**
@@ -40,7 +37,7 @@ object MTImageFeatureToBatch {
    * @return
    */
   def apply(width: Int, height: Int, batchSize: Int,
-            transformer: FeatureTransformer, toRGB: Boolean = true, extractRoi: Boolean = false)
+            transformer: FeatureTransformer, toRGB: Boolean = false, extractRoi: Boolean = false)
   : MTImageFeatureToBatch = {
     if (extractRoi) {
       new RoiMTImageFeatureToBatch (
@@ -162,7 +159,7 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
  * @param toRGB  if converted to RGB, default format is BGR
  */
 class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
   extends MTImageFeatureToBatch(totalBatchSize, transformer) {
 
   private val frameLength = height * width
@@ -188,6 +185,73 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
   }
 }
 
+
+object RoiImageInfo {
+  // the keys in the target table
+  // fields from RoiLabel
+  val CLASSES = "classes"
+  val BBOXES = "bboxes"
+  val MASKS = "masks"
+  // ISCROWD and ORIGSIZE are stored in ImageFeature
+  val ISCROWD = "is_crowd"
+  val ORIGSIZE = "orig_size"
+  val SCORES = "scores"
+  val IMGINFO = "imginfo"
+
+  /**
+   * Get the output score tensor from the table.
+   *    (1 x N) tensor for N detections
+   *
+   * @param tab
+   * @return
+   */
+  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
+
+  /**
+   * Get the class label tensor from the table. See RoiLabel.classes
+   *    the categories for each detections (see RoiLabel.clasees field)
+   *    (1 x N), or (2 x N) Tensor[Float]
+   *
+   * @param tab
+   * @return
+   */
+  def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
+
+  /**
+   * Get the bbox tensor from the table. See RoiLabel.bboxes
+   * @param tab
+   * @return
+   */
+  def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
+
+  /**
+   * Get the (optional) mask data from the table. See RoiLabel.masks
+   * @param tab
+   * @return
+   */
+  def getMasks(tab: Table): Array[RLEMasks] = tab[Array[RLEMasks]](MASKS)
+
+  /**
+   * Get the isCrowd tensor from the table. Should be 1 x N vector (N is the # of detections)
+   * @param tab
+   * @return
+   */
+  def getIsCrowd(tab: Table): Tensor[Float] = tab[Tensor[Float]](ISCROWD)
+
+  /**
+   * Get the size of the image before resizing
+   * @return (height, width, channel)
+   */
+  def getOrigSize(tab: Table): (Int, Int, Int) = tab[(Int, Int, Int)](ORIGSIZE)
+
+  /**
+   * Get the isCrowd tensor from the table. Should be 1 x N vector (N is the # of detections)
+   * @param tab
+   * @return
+   */
+  def getImageInfo(tab: Table): Tensor[Float] = tab[Tensor[Float]](IMGINFO)
+
+}
 /**
  * A batch of images with flattened RoiLabels
  * the getTarget() returns a Table with key from 1 to batchSize. Each key in the table is mapped to
@@ -195,18 +259,18 @@ class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int
  * info for one image (assume the image has N detections). The annotation table has
  *
  * Key                Value
- * RoiLabel.CLASSES   the categories for each detections (see RoiLabel.clasees field)
+ * RoiImageInfo.CLASSES   the categories for each detections (see RoiLabel.clasees field)
  *                    (1 x N), or (2 x N) Tensor[Float]
- * RoiLabel.BBOXES    the bboxes, (N x 4) Tensor[Float]
- * RoiLabel.MASKS     (Optional) the mask data, Array[Tensor[Float]\]. The outer array has N
+ * RoiImageInfo.BBOXES    the bboxes, (N x 4) Tensor[Float]
+ * RoiImageInfo.MASKS     (Optional) the mask data, Array[Tensor[Float]\]. The outer array has N
  *                    elements. The inner tensor holds the data for segmentation
- * RoiLabel.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
+ * RoiImageInfo.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
  *                    -1: unknown, 0: not crowd, 1: is crowd
- * RoiLabel.ImageInfo  with shape (batchSize, 4), contains all images info
+ * RoiImageInfo.IMGINFO  with shape (batchSize, 4), contains all images info
  *                 (height, width, original height, original width)
  */
-class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
-  val isCrowd: IndexedSeq[Tensor[Float]], val imageInfo: Tensor[Float] = null)
+class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
+  val isCrowd: Array[Tensor[Float]], val imageInfo: Tensor[Float] = null)
   extends MiniBatch[Float] {
 
   override def size(): Int = input.size(1)
@@ -216,20 +280,18 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
   }
 
   override def getTarget(): Table = {
-    var i = 0
-    val tables = (target, isCrowd).zipped.map { case (roiLabel, crowd) =>
-      i += 1
+    val tables = (target, isCrowd, 1 to isCrowd.length).zipped.map { case (roiLabel, crowd, i) =>
       roiLabel.toTable
-        .update(RoiLabel.ISCROWD, crowd)
-        .update(RoiLabel.IMGINFO, imageInfo.select(1, i))
+        .update(RoiImageInfo.ISCROWD, crowd)
+        .update(RoiImageInfo.IMGINFO, imageInfo.select(1, i))
     }
     T.seq(tables)
   }
 
   override def slice(offset: Int, length: Int): MiniBatch[Float] = {
     val subInput = input.narrow(1, offset, length)
-    val subTarget = target.view(offset - 1, length) // offset starts from 1
-    val subIsCrowd = isCrowd.view(offset - 1, length) // offset starts from 1
+    val subTarget = target.slice(offset - 1, length) // offset starts from 1
+    val subIsCrowd = isCrowd.slice(offset - 1, length) // offset starts from 1
     val subSize = imageInfo.narrow(1, offset, length)
     RoiMiniBatch(subInput, subTarget, subIsCrowd, subSize)
   }
@@ -241,8 +303,8 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
 }
 
 object RoiMiniBatch {
-  def apply(data: Tensor[Float], target: IndexedSeq[RoiLabel],
-    isCrowd: IndexedSeq[Tensor[Float]], imageInfo: Tensor[Float] = null):
+  def apply(data: Tensor[Float], target: Array[RoiLabel],
+    isCrowd: Array[Tensor[Float]], imageInfo: Tensor[Float] = null):
   RoiMiniBatch = new RoiMiniBatch(data, target, isCrowd, imageInfo)
 }
 
@@ -258,31 +320,40 @@ object RoiMiniBatch {
  * @param toRGB  if converted to RGB, default format is BGR
  */
 class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
   extends MTImageFeatureToBatch(totalBatchSize, transformer) {
 
   private val frameLength = height * width
   private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
   private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
   private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
-  private var featureTensor: Tensor[Float] = null
+  private val imgInfoData: Tensor[Float] = Tensor[Float](batchSize, 4)
+  private var featureTensor: Tensor[Float] = Tensor[Float]()
 
   override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
-    val isCrowd = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Float]]
+    val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
     val label = img.getLabel.asInstanceOf[RoiLabel]
     require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
       "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
     isCrowdData(position) = isCrowd
     labelData(position) = label
+    imgInfoData.setValue(position + 1, 1, img.getHeight())
+    imgInfoData.setValue(position + 1, 2, img.getWidth())
+    imgInfoData.setValue(position + 1, 3, img.getOriginalHeight)
+    imgInfoData.setValue(position + 1, 4, img.getOriginalWidth)
   }
 
-  override protected def createBatch(batchSize: Int): MiniBatch[Float] = {
-    if (featureTensor == null) {
-      featureTensor = Tensor(Storage[Float](featureData),
-        storageOffset = 1, size = Array(batchSize, 3, height, width))
+  override protected def createBatch(curBatchSize: Int): MiniBatch[Float] = {
+    if (featureTensor.nElement() != curBatchSize) {
+      featureTensor.set(Storage[Float](featureData),
+        storageOffset = 1, sizes = Array(curBatchSize, 3, height, width))
     }
-    RoiMiniBatch(featureTensor, labelData.view, isCrowdData.view)
+    def arraySlice[T](array: Array[T]) = {
+      if (array.length == curBatchSize) array else array.slice(0, curBatchSize)
+    }
+    RoiMiniBatch(featureTensor, arraySlice(labelData), arraySlice(isCrowdData),
+      imgInfoData.narrow(1, 1, curBatchSize))
   }
 }
 
@@ -326,7 +397,7 @@ class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, t
     imageBuffer(position).resize(3, img.getHeight(), img.getWidth())
     // save img to buffer
     img.copyTo(imageBuffer(position).storage().array(), 0, toRGB = toRGB)
-    val isCrowd = img(RoiLabel.ISCROWD).asInstanceOf[Tensor[Float]]
+    val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
     val label = img.getLabel.asInstanceOf[RoiLabel]
     if (isCrowd != null && label != null) {
       require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
@@ -345,11 +416,14 @@ class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, t
     if (featureTensor == null) featureTensor = Tensor()
     featureTensor.resize(batchSize, 3, height, wide).fill(0.0f)
     // copy img buffer to feature tensor
-    for (i <- 0 to (batchSize - 1)) {
+    for (i <- 0 until batchSize) {
       featureTensor.select(1, i + 1).narrow(2, 1, imageBuffer(i).size(2))
         .narrow(3, 1, imageBuffer(i).size(3)).copy(imageBuffer(i))
     }
-    RoiMiniBatch(featureTensor, labelData.view(0, batchSize),
-      isCrowdData.view(0, batchSize), imgInfoData.narrow(1, 1, batchSize))
+    def arraySlice[T](array: Array[T]) = {
+      if (array.length == batchSize) array else array.slice(0, batchSize)
+    }
+    RoiMiniBatch(featureTensor, arraySlice(labelData),
+      arraySlice(isCrowdData), imgInfoData.narrow(1, 1, batchSize))
   }
 }
