@@ -422,6 +422,8 @@ def init_engine(bigdl_type="float"):
     # Spark context is supposed to have been created when init_engine is called
     get_spark_context()._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.initialize()
 
+def get_bigdl_engine_type(bigdl_type="float"):
+    return callBigDlFunc(bigdl_type, "getEngineType")
 
 def init_executor_gateway(sc, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
