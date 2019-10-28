@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.Table
 import org.apache.commons.lang3.SerializationUtils
@@ -313,10 +314,10 @@ object MAPUtil {
       val gtImage = new ArrayBuffer[GroundTruthRegion]()
       val roiLabel = gtTable[Table](i)
       if (roiLabel.length() > 0) {
-        val bbox = RoiLabel.getBBoxes(roiLabel)
-        val tclasses = RoiLabel.getClasses(roiLabel)
-        val isCrowd = RoiLabel.getIsCrowd(roiLabel)
-        val masks = if (isSegmentation) RoiLabel.getMasks(roiLabel) else null
+        val bbox = RoiImageInfo.getBBoxes(roiLabel)
+        val tclasses = RoiImageInfo.getClasses(roiLabel)
+        val isCrowd = RoiImageInfo.getIsCrowd(roiLabel)
+        val masks = if (isSegmentation) RoiImageInfo.getMasks(roiLabel) else null
         val bboxCnt = bbox.size(1)
         require(bboxCnt == tclasses.size(1), "CLASSES of target tables should have the" +
           "same size of the bbox counts")
@@ -705,11 +706,11 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
           val imgOut = outTable[Table](imgId)
           // if the image contains empty predictions, do nothing
           if (imgOut.length() > 0) {
-            val bboxes = RoiLabel.getBBoxes(imgOut)
-            val scores = RoiLabel.getScores(imgOut)
-            val labels = RoiLabel.getClasses(imgOut)
+            val bboxes = RoiImageInfo.getBBoxes(imgOut)
+            val scores = RoiImageInfo.getScores(imgOut)
+            val labels = RoiImageInfo.getClasses(imgOut)
             require(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
-            val masks = if (isSegmentation) Some(RoiLabel.getMasks(imgOut)) else None
+            val masks = if (isSegmentation) Some(RoiImageInfo.getMasks(imgOut)) else None
             val batchSize = bboxes.size(1)
             require(batchSize == labels.size(1), "CLASSES of target tables should have the" +
               "same size of the bbox counts")
