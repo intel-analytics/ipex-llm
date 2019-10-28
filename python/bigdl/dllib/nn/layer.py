@@ -1251,6 +1251,19 @@ class Sequential(Container):
         model.value = jvalue
         return model
 
+    def to_graph(self):
+        """
+        Convert a sequential model (Sequential) to a graph model (Model)
+        :return: A Python graph model
+        """
+        jvalue = callBigDlFunc(self.bigdl_type,
+                               "toGraph",
+                               self.value)
+        model = Model.from_jvalue(jvalue)
+        return model
+
+
+
 class TemporalConvolution(Layer):
 
     '''
