@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # 1. Define a model with Model(graph container)
     # 2. Specify the input and output formats of it.
     #    BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing
-    # 3. Running spark-submit command with correct configurations
+    # 3. Run spark-submit command with correct configurations
     #    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
     #    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
 
