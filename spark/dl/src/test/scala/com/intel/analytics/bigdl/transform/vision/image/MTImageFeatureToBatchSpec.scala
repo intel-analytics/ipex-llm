@@ -187,6 +187,17 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     })
   }
 
+  "RoiMiniBatch" should "serialize well" in {
+    def batch: RoiMiniBatch = RoiMiniBatch(
+      Tensor[Float](),
+      Array[RoiLabel](RoiLabel(Tensor[Float](), Tensor[Float]())),
+      Array[Tensor[Float]](Tensor[Float]()),
+      Array[(Int, Int, Int)]((1, 2, 3)))
+    val result = sc.parallelize(Array(batch, batch, batch, batch, batch), 3)
+      .coalesce(2, true)
+      .takeSample(false, 3).head
+  }
+
   "MTImageFeatureToBatch classification" should "work well" in {
     val imgData = (0 to 1000).map(idx => (idx to (idx + 10*10*3)).map(_.toFloat).toArray)
       .map(arr => {

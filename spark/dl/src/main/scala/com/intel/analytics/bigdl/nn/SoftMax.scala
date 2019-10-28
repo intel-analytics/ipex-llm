@@ -84,6 +84,10 @@ object SoftMax{
       (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
     new SoftMax[T](pos)
   }
+  def apply[@specialized(Float, Double) T: ClassTag]
+    (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
+    new SoftMax[T](1)
+  }
   // Notice: SoftMin will call this function
   private[nn] def updateOutput[T: ClassTag](input: Tensor[T], output: Tensor[T],
     results: Array[Future[Unit]], pos: Int = 1) (implicit ev: TensorNumeric[T]): Tensor[T] = {

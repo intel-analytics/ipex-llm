@@ -260,8 +260,8 @@ object RoiImageInfo {
  *                    -1: unknown, 0: not crowd, 1: is crowd
  * RoiImageInfo.ORIGSIZE  The original size of the image, tuple of (height, width, channels)
  */
-class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
-  val isCrowd: IndexedSeq[Tensor[Float]], val originalSizes: IndexedSeq[(Int, Int, Int)])
+class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
+  val isCrowd: Array[Tensor[Float]], val originalSizes: Array[(Int, Int, Int)])
   extends MiniBatch[Float] {
 
   override def size(): Int = {
@@ -281,9 +281,9 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
 
   override def slice(offset: Int, length: Int): MiniBatch[Float] = {
     val subInput = input.narrow(1, offset, length)
-    val subTarget = target.view(offset - 1, length) // offset starts from 1
-    val subIsCrowd = isCrowd.view(offset - 1, length) // offset starts from 1
-    val subSize = originalSizes.view(offset - 1, length) // offset starts from 1
+    val subTarget = target.slice(offset - 1, length) // offset starts from 1
+    val subIsCrowd = isCrowd.slice(offset - 1, length) // offset starts from 1
+    val subSize = originalSizes.slice(offset - 1, length) // offset starts from 1
     RoiMiniBatch(subInput, subTarget, subIsCrowd, subSize)
   }
 
@@ -294,8 +294,8 @@ class RoiMiniBatch(val input: Tensor[Float], val target: IndexedSeq[RoiLabel],
 }
 
 object RoiMiniBatch {
-  def apply(data: Tensor[Float], target: IndexedSeq[RoiLabel],
-    isCrowd: IndexedSeq[Tensor[Float]], originalSizes: IndexedSeq[(Int, Int, Int)]):
+  def apply(data: Tensor[Float], target: Array[RoiLabel],
+    isCrowd: Array[Tensor[Float]], originalSizes: Array[(Int, Int, Int)]):
   RoiMiniBatch = new RoiMiniBatch(data, target, isCrowd, originalSizes)
 }
 
@@ -337,8 +337,11 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
       featureTensor.set(Storage[Float](featureData),
         storageOffset = 1, sizes = Array(curBatchSize, 3, height, width))
     }
-    RoiMiniBatch(featureTensor, labelData.view(0, curBatchSize), isCrowdData.view(0, curBatchSize),
-      origSizeData.view(0, curBatchSize) )
+    def arraySlice[T](array: Array[T]) = {
+      if (array.length == curBatchSize) array else array.slice(0, curBatchSize)
+    }
+    RoiMiniBatch(featureTensor, arraySlice(labelData),
+      arraySlice(isCrowdData), arraySlice(origSizeData))
   }
 }
 
@@ -396,11 +399,14 @@ class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, t
     if (featureTensor == null) featureTensor = Tensor()
     featureTensor.resize(batchSize, 3, height, wide).fill(0.0f)
     // copy img buffer to feature tensor
-    for (i <- 0 to (batchSize - 1)) {
+    for (i <- 0 until batchSize) {
       featureTensor.select(1, i + 1).narrow(2, 1, imageBuffer(i).size(2))
         .narrow(3, 1, imageBuffer(i).size(3)).copy(imageBuffer(i))
     }
-    RoiMiniBatch(featureTensor, labelData.view(0, batchSize),
-      isCrowdData.view(0, batchSize), origSizeData.view(0, batchSize))
+    def arraySlice[T](array: Array[T]) = {
+      if (array.length == batchSize) array else array.slice(0, batchSize)
+    }
+    RoiMiniBatch(featureTensor, arraySlice(labelData),
+      arraySlice(isCrowdData), arraySlice(origSizeData))
   }
 }
