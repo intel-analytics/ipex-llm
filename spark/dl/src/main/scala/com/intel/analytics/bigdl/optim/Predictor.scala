@@ -197,7 +197,7 @@ object Predictor {
   // because Evaluator will use it too, we extend the scope out of Predictor
   private[optim] def getDummyData[T: ClassTag, R](dataSet: RDD[R],
     batchSize: Int)(implicit ev: TensorNumeric[T]): Activity = {
-    if (Engine.getEngineType() == MklDnn) {
+    if (Engine.getEngineType() == MklDnn && Engine.isMultiModels) {
       // here has an assumption, batchSizePerPar is not very large.
       val samples = dataSet.takeSample(withReplacement = false, num = batchSize)
         .map {
