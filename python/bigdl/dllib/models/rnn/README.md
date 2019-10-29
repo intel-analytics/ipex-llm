@@ -103,7 +103,7 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
 * `--dampening` dampening for momentum, the default value is 0.
 * `--maxEpoch` max number of epochs to train, the default value is 30.
 
-#####In order to use MKL-DNN as the backend, you should:
+##### In order to use MKL-DNN as the backend, you should:
 1. Define a graph model with Model or convert a sequential model to a graph model using:
    ```
    convertedModel = sequentialModel.to_graph()
@@ -114,7 +114,7 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
    theDefinedModel.set_input_formats([theInputFormatIndex])
    theDefinedModel.set_output_formats([theOutputFormatIndex])
    ```
-   BigDL needs these format information to build IRGraph from StaticGraph for MklDnn computing.
+   BigDL needs these format information to build a graph running with MKL-DNN backend.
    
    The format index of input or output format can be checked
    in: 
