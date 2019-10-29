@@ -598,13 +598,13 @@ object DataSet {
       false
     }
     /**
-     * Extract hadoop sequence files from an HDFS path as ImageFrame
+     * Extract hadoop sequence files from an HDFS path as ImageFeatures
      * @param url sequence files folder path
      * @param sc spark context
      * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
      * @return
      */
-    private[bigdl] def filesToRoiImageFrame(url: String, sc: SparkContext,
+    def filesToRoiImageFeatures(url: String, sc: SparkContext,
       partitionNum: Option[Int] = None): DataSet[ImageFeature] = {
       val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
       val rawData = sc.sequenceFile(url, classOf[BytesWritable], classOf[BytesWritable], num)

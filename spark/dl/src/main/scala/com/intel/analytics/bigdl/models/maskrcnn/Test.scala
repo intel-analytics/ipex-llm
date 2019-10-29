@@ -62,7 +62,8 @@ object Test {
       val partitionNum = if (param.partitionNum > 0) param.partitionNum
       else Engine.nodeNumber() * Engine.coreNumber()
 
-      val rddData = DataSet.SeqFileFolder.filesToRoiImageFrame(param.folder, sc, Some(partitionNum))
+      val rddData = DataSet.SeqFileFolder.filesToRoiImageFeatures(param.folder,
+        sc, Some(partitionNum))
         .toDistributed().data(train = false)
 
       val transformer = MTImageFeatureToBatchWithResize(
