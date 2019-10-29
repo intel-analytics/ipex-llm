@@ -372,6 +372,7 @@ object Engine {
     // this thread and the omp threads forked from computing.
     if (engineType == MklDnn) {
       dnnComputing.setMKLThreadOfMklDnnBackend(MKL.getMklNumThreads)
+      _model.setMKLThreadOfMklDnnBackend(MKL.getMklNumThreads)
     }
     if (System.getProperty("multiThread", "false").toBoolean) {
       wrapperComputing.setMKLThread(1)
