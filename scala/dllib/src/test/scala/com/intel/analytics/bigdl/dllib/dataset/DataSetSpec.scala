@@ -95,7 +95,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
       "-b", "2", "-m", dataSetFolder + "cocomini.json"))
 
     // write done, now read and check
-    DataSet.SeqFileFolder.filesToRoiImageFrame(tmpFile.getPath, sc).toDistributed()
+    DataSet.SeqFileFolder.filesToRoiImageFeatures(tmpFile.getPath, sc).toDistributed()
       .data(false)
       .map(imf => {
         (imf(ImageFeature.uri).asInstanceOf[String], imf.getOriginalSize, imf.getLabel[RoiLabel],
