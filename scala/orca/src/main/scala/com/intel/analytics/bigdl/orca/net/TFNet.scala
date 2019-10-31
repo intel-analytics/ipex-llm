@@ -331,7 +331,7 @@ class TFNet(private val graphDef: TFGraphHolder,
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     try {
       if (graphMeta.variables.isEmpty) {
-        generateZeroGrad(input)
+        NetUtils.generateZeroGrad(input, gradInput)
       } else {
 
         val runner = sess.runner()
@@ -565,20 +565,6 @@ class TFNet(private val graphDef: TFGraphHolder,
         tfTensors(i - 1) = tfTensor
         i += 1
       }
-    }
-  }
-
-  private def generateZeroGrad(input: Activity) = {
-    if (gradInput.isTable) {
-      var i = 0
-      while (i < gradInput.toTable.length()) {
-        gradInput.toTable[Tensor[Float]](i + 1)
-          .resizeAs(input.toTable[Tensor[Float]](i + 1))
-        i = i + 1
-      }
-    } else {
-      gradInput.toTensor[Float]
-        .resizeAs(input.toTensor[Float])
     }
   }
 

@@ -233,6 +233,20 @@ object NetUtils {
     vec
   }
 
+  def generateZeroGrad(input: Activity, grad: Activity): Unit = {
+    if (grad.isTable) {
+      var i = 0
+      while (i < grad.toTable.length()) {
+        grad.toTable[Tensor[Float]](i + 1)
+          .resizeAs(input.toTable[Tensor[Float]](i + 1))
+        i = i + 1
+      }
+    } else {
+      grad.toTensor[Float]
+        .resizeAs(input.toTensor[Float])
+    }
+  }
+
   def tfenum2datatype(enum: Int): DataType = {
     enum match {
       case 1 => DataType.FLOAT
