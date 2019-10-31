@@ -18,7 +18,7 @@ spark jars directory to `SPARK_JAR`.
 
 set -x
 
-VERSION=0.10.0-SNAPSHOT
+VERSION=0.10.0
 BIGDL_HOME=${WORKSPACE}/dist
 JAR_HOME=${BIGDL_HOME}/lib/target
 SPARK_JAR=/opt/spark/jars/*
