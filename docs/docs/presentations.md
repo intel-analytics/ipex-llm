@@ -1,5 +1,9 @@
 **Talks:**
 
+* Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo, [Spark+AI Summit](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo), Oct 2019, Amsterdam ([slides](https://www.slideshare.net/databricks/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo))
+
+* Apache Spark AI Use Case in Telco: Network Quality Analysis and Prediction with Geospatial Visualization, [Spark+AI Summit](https://databricks.com/session_eu19/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization), Oct 2019, Amsterdam ([slides](https://www.slideshare.net/databricks/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization))
+
 * LSTM-based time series anomaly detection using Analytics Zoo for Spark and BigDL, [Strata Data conference](https://conferences.oreilly.com/strata/strata-eu/public/schedule/detail/74077), May 2019, London ([slides](https://cdn.oreillystatic.com/en/assets/1/event/292/LSTM-based%20time%20series%20anomaly%20detection%20using%20Analytics%20Zoo%20for%20Spark%20and%20BigDL%20Presentation.pptx))
 
 * Game Playing Using AI on Apache Spark, [Spark+AI Summit](https://databricks.com/session/game-playing-using-ai-on-apache-spark), April 2019, San Francisco ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/game-playing-using-ai-on-apache-spark.pdf))

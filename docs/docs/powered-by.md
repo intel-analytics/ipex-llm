@@ -4,6 +4,7 @@
 * __Baosight__
   <br>[LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://software.intel.com/en-us/articles/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl)
 * __CERN__
+ <br>[Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
  <br>[Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
  <br>[Deep Learning on Apache Spark at CERN's Large Hadron Collider with Intel Technologies](https://databricks.com/session/deep-learning-on-apache-spark-at-cerns-large-hadron-collider-with-intel-technologies)
 * __China Telecom__
@@ -28,7 +29,9 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __Office Depot__
 <br>[Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://software.intel.com/en-us/articles/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on)
 <br>[Office Depot product recommender using Analytics Zoo on AWS](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079)
-* __Talroo__
+* __SK Telecom__
+ <br>[Apache Spark AI Use Case in Telco: Network Quality Analysis and Prediction with Geospatial Visualization](https://databricks.com/session_eu19/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization)
+ * __Talroo__
 <br>[Uses Analytics Zoo and AWS to Leverage Deep Learning for Job Recommendations](https://software.intel.com/en-us/articles/talroo-uses-analytics-zoo-and-aws-to-leverage-deep-learning-for-job-recommendations)
 <br>[Job recommendations leveraging deep learning using Analytics Zoo on Apache Spark and BigDL](https://conferences.oreilly.com/strata/strata-ny-2018/public/schedule/detail/69113)
 * __Telefonica__
