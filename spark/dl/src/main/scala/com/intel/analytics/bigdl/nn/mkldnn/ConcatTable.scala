@@ -102,13 +102,13 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
         }
       }
     }
-    val outputMD = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
+    val outputMD = MklDnnMemory.MemoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
     val scales = grads.map(_ => 1f)
-    val pd = MklDnn.SumPrimitiveDescCreate(outputMD, grads.length, scales,
+    val pd = MklDnnMemory.SumPrimitiveDescCreate(outputMD, grads.length, scales,
       subGradInputs.map(_.getPrimitiveDescription(runtime)))
     _gradInputFormats = Array(MemoryData.primitiveOutput(pd))
     tensorPrimitives(grads.length) = _gradInputFormats(0).getPrimitive(runtime)
-    sumPrimitive = Array(MklDnn.PrimitiveCreate2(pd,
+    sumPrimitive = Array(MklDnnMemory.PrimitiveCreate2(pd,
       subGradInputs.map(_.getPrimitive(runtime)), new Array[Int](grads.length),
       grads.length, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
     gradInput = initTensor(_gradInputFormats(0))

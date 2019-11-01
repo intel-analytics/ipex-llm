@@ -25,7 +25,7 @@ class MaskHead(
   val inChannels: Int,
   val resolution: Int,
   val scales: Array[Float],
-  val samplingRratio: Float,
+  val samplingRatio: Int,
   val layers: Array[Int],
   val dilation: Int,
   val numClasses: Int,
@@ -34,7 +34,7 @@ class MaskHead(
 
   override def buildModel(): Module[Float] = {
     val featureExtractor = this.maskFeatureExtractor(
-      inChannels, resolution, scales, samplingRratio, layers, dilation, useGn)
+      inChannels, resolution, scales, samplingRatio, layers, dilation, useGn)
     val dimReduced = layers(layers.length - 1)
     val predictor = this.maskPredictor(dimReduced, numClasses, dimReduced)
     val postProcessor = new MaskPostProcessor()
@@ -53,7 +53,7 @@ class MaskHead(
 
     val maskFeatures = featureExtractor.inputs(features, proposals)
     val maskLogits = predictor.inputs(maskFeatures)
-    val result = postProcessor.inputs(maskLogits, proposals, labels)
+    val result = postProcessor.inputs(maskLogits, labels)
 
     Graph(Array(features, proposals, labels), Array(maskFeatures, result))
   }
@@ -78,7 +78,7 @@ class MaskHead(
   private[nn] def maskFeatureExtractor(inChannels: Int,
                                        resolution: Int,
                                        scales: Array[Float],
-                                       samplingRatio: Float,
+                                       samplingRatio: Int,
                                        layers: Array[Int],
                                        dilation: Int,
                                        useGn: Boolean = false): Module[Float] = {
@@ -86,7 +86,7 @@ class MaskHead(
     require(dilation == 1, s"Only support dilation = 1, but got ${dilation}")
 
     val model = Sequential[Float]()
-    model.add(Pooler(resolution, scales, samplingRatio.toInt))
+    model.add(Pooler(resolution, scales, samplingRatio))
 
     var nextFeatures = inChannels
     var i = 0
@@ -103,15 +103,15 @@ class MaskHead(
         padW = dilation,
         padH = dilation,
         withBias = if (useGn) false else true
-      ).setName(s"mask_fcn{${i}}")
+      ).setName(s"mask_fcn${i + 1}")
 
       // weight init
       module.setInitMethod(MsraFiller(false), Zeros)
-      model.add(module)
+      model.add(module).add(ReLU[Float]())
       nextFeatures = features
       i += 1
     }
-    model.add(ReLU[Float]())
+    model
   }
 }
 
@@ -127,8 +127,7 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
    */
   override def updateOutput(input: Table): Tensor[Float] = {
     val maskLogits = input[Tensor[Float]](1)
-    val bbox = input[Tensor[Float]](2) // N * 4
-    val labels = input[Tensor[Float]](3)
+    val labels = input[Tensor[Float]](2)
 
     val num_masks = maskLogits.size(1)
     if (rangeBuffer == null || rangeBuffer.nElement() != num_masks) {
@@ -148,7 +147,7 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
     while (i <= rangeBuffer.nElement()) {
       val dim = rangeBuffer.valueAt(i).toInt + 1
       val index = labels.valueAt(i).toInt // start from 1
-      output.narrow(1, i, 1).copy(mask_prob.narrow(1, i, 1).narrow(2, index, 1))
+      output.narrow(1, i, 1).copy(mask_prob.narrow(1, i, 1).narrow(2, index + 1, 1))
       i += 1
     }
     output
@@ -163,7 +162,7 @@ object MaskHead {
   def apply(inChannels: Int,
   resolution: Int = 14,
   scales: Array[Float] = Array[Float](0.25f, 0.125f, 0.0625f, 0.03125f),
-  samplingRratio: Float = 0.1f,
+  samplingRratio: Int = 2,
   layers: Array[Int] = Array[Int](256, 256, 256, 256),
   dilation: Int = 1,
   numClasses: Int = 81,

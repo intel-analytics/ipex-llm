@@ -680,7 +680,7 @@ class TestSimple():
         model = Linear(3, 2)
         broadcasted = broadcast_model(self.sc, model)
         input_data = np.random.rand(3)
-        output = self.sc.parallelize([input_data], 1)\
+        output = self.sc.parallelize([input_data], 1) \
             .map(lambda x: broadcasted.value.forward(x)).first()
         expected = model.forward(input_data)
 

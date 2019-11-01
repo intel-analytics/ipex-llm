@@ -21,6 +21,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, FloatType, Tensor}
 
+import scala.reflect.ClassTag
+
 /**
  * `TensorMMap` contains two tensors, dense and native, which are a map of each other.
  * It's used in the layer which contains weights. For the weight, we should sync the
@@ -29,7 +31,8 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, FloatType, Tensor}
  *
  * @param _size the shape of Tensor, such as Array(4, 3, 224, 224)
  */
-private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
+private[bigdl] class TensorMMap(_size: Array[Int])(implicit owner: MemoryOwner)
+  extends Serializable {
   // dense weight on heap is used to optimizer and so on, which is exposed to
   // AbstractModule level.
   val dense: Tensor[Float] = Tensor[Float](_size)
@@ -117,6 +120,12 @@ private[mkldnn] class TensorMMap(_size: Array[Int]) extends Serializable {
   def release(): Unit = {
     if (native != null) {
       native.release()
+    }
+  }
+
+  def setNative(another: TensorMMap): Unit = {
+    if (native != null && another.native != null) {
+      native.set(another.native.asInstanceOf[Tensor[_]])
     }
   }
 }

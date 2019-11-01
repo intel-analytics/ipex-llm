@@ -103,6 +103,34 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
 * `--dampening` dampening for momentum, the default value is 0.
 * `--maxEpoch` max number of epochs to train, the default value is 30.
 
+##### In order to use MKL-DNN as the backend, you should:
+1. Define a graph model with Model or convert a sequential model to a graph model using:
+   ```
+   convertedModel = sequentialModel.to_graph()
+   ```
+2. Specify the input and output formats of it.
+   For example:
+   ```
+   theDefinedModel.set_input_formats([theInputFormatIndex])
+   theDefinedModel.set_output_formats([theOutputFormatIndex])
+   ```
+   BigDL needs these format information to build a graph running with MKL-DNN backend.
+   
+   The format index of input or output format can be checked
+   in: 
+   ```
+   ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
+   
+   For instance:
+   public static final int ntc = 27;
+   means the index of format ntc is 27.
+   ```
+3. Run spark-submit command with correct configurations
+   ```
+   --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+   --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
+   ```
+
 ## Expected Training Output
 Users can see the Loss of the model printed by the program. The Loss, in this case, is the perplexity of the language model. The lower, the better.
 ```

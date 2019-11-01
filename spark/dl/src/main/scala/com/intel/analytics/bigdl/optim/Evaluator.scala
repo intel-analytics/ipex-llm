@@ -52,17 +52,19 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
    vMethods: Array[ValidationMethod[T]],
    batchSize: Option[Int] = None): Array[(ValidationResult, ValidationMethod[T])] = {
 
-    val modelBroad = ModelBroadcast[T]().broadcast(dataset.sparkContext,
-      ConversionUtils.convert(model.evaluate()))
     val partitionNum = dataset.partitions.length
-
     val totalBatch = batchSize.getOrElse(batchPerPartition * partitionNum)
+
+    val dummyInput = Predictor.getDummyData(dataset, totalBatch / partitionNum)
+
+    val modelBroad = ModelBroadcast[T]().broadcast(dataset.sparkContext,
+      ConversionUtils.convert(model.evaluate()), dummyInput)
     val rdd = ConversionUtils.coalesce(dataset)
     val otherBroad = rdd.sparkContext.broadcast(vMethods, SampleToMiniBatch(
       batchSize = totalBatch, partitionNum = Some(rdd.partitions.length)))
 
     rdd.mapPartitions(partition => {
-      val localModel = modelBroad.value()
+      val localModel = modelBroad.value(false, true, dummyInput)
       val localMethod = otherBroad.value._1.map(_.clone())
       val localTransformer = otherBroad.value._2.cloneTransformer()
       val miniBatch = localTransformer(partition)

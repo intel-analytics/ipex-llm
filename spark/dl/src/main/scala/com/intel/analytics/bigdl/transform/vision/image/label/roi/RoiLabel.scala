@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
+import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, SegmentationMasks, RLEMasks}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 /**
@@ -24,27 +26,43 @@ import com.intel.analytics.bigdl.utils.{T, Table}
  *
  * @param classes N (class labels) or 2 * N, the first row is class labels,
  * the second line is difficults
- * @param bboxes N * 4
+ * @param bboxes N * 4, (xmin, ymin, xmax, ymax)
+ * @param masks the array of annotation masks of the targets
  */
-case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float]) {
+case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
+  masks: Array[SegmentationMasks] = null) {
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
+    require(target.masks == null, "Copying RoiLabels with masks not supported")
   }
 
   if (classes.dim() == 1) {
-    require(classes.size(1) == bboxes.size(1), "the number of classes should be" +
-      " equal to the number of bounding box numbers")
+    require(classes.size(1) == bboxes.size(1), s"the number of classes ${classes.size(1)} should " +
+      s"be equal to the number of bounding box numbers ${bboxes.size(1)}")
+    if (masks != null) {
+      require(classes.size(1) == masks.length, s"the number of classes ${classes.size(1)} should " +
+        s"be equal to the number of mask array ${masks.length}")
+    }
   } else if (classes.nElement() > 0 && classes.dim() == 2) {
-    require(classes.size(2) == bboxes.size(1), s"the number of classes ${ classes.size(2) }" +
-      s"should be equal to the number of bounding box numbers ${ bboxes.size(1) }")
+    require(classes.size(2) == bboxes.size(1), s"the number of classes ${classes.size(2)}" +
+      s"should be equal to the number of bounding box numbers ${bboxes.size(1)}")
+    if (masks != null) {
+      require(classes.size(2) == masks.length, s"the number of classes ${classes.size(2)}" +
+        s"should be equal to the number of bounding box numbers ${masks.length}")
+    }
   }
 
 
   def toTable: Table = {
     val table = T()
-    table.insert(classes)
-    table.insert(bboxes)
+    if (masks != null) {
+      require(masks.length > 0, "The masks can either be null or a non-empty array")
+      table(RoiImageInfo.MASKS) = masks.map(_.toRLE)
+    }
+    table(RoiImageInfo.CLASSES) = classes
+    table(RoiImageInfo.BBOXES) = bboxes
+    table
   }
 
   def size(): Int = {

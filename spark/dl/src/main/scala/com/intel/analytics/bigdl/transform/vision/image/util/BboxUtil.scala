@@ -50,7 +50,8 @@ object BboxUtil {
    * @param deltas (N, 4a)
    * @return
    */
-  def bboxTransformInv(boxes: Tensor[Float], deltas: Tensor[Float]): Tensor[Float] = {
+  def bboxTransformInv(boxes: Tensor[Float], deltas: Tensor[Float],
+                       normalized: Boolean = false): Tensor[Float] = {
     if (boxes.size(1) == 0) {
       return boxes
     }
@@ -69,8 +70,8 @@ object BboxUtil {
     while (i < boxes.size(1)) {
       val x1 = boxesArr(offset)
       val y1 = boxesArr(offset + 1)
-      val width = boxesArr(offset + 2) - x1 + 1
-      val height = boxesArr(offset + 3) - y1 + 1
+      val width = if (!normalized) boxesArr(offset + 2) - x1 + 1 else boxesArr(offset + 2) - x1
+      val height = if (!normalized) boxesArr(offset + 3) - y1 + 1 else boxesArr(offset + 3) - y1
       var j = 0
       while (j < repeat) {
         j += 1
@@ -476,5 +477,105 @@ object BboxUtil {
       i += 1
     }
     indices
+  }
+
+  private def decodeSignalBoxWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],
+             weight: Array[Float], decodeBox: Tensor[Float]): Unit = {
+    require(bbox.nDimension() == 1 && encodeBox.nDimension() == 1 && decodeBox.dim() == 1,
+    s"Only support decode single bbox, but " +
+      s"get ${bbox.nDimension()}, ${encodeBox.nDimension()}, ${decodeBox.dim()}")
+
+    require(encodeBox.nElement() == decodeBox.nElement(), s"element number of encode tensor" +
+      s" and decode tensor should be same, but get ${encodeBox.nElement()} ${decodeBox.nElement()}")
+
+    val TO_REMOVE = 1 // refer to pytorch, maybe it will be removed in future
+    val x1 = bbox.valueAt(1)
+    val y1 = bbox.valueAt(2)
+    val x2 = bbox.valueAt(3)
+    val y2 = bbox.valueAt(4)
+    val priorWidth = x2 - x1 + TO_REMOVE
+    val priorHight = y2 - y1 + TO_REMOVE
+    val pCenterX = x1 + priorWidth/ 2
+    val pCenterY = y1 + priorHight / 2
+
+    val wx = weight(0)
+    val wy = weight(1)
+    val ww = weight(2)
+    val wh = weight(3)
+
+    encodeBox.resize(Array(encodeBox.nElement() / 4, 4))
+
+    // copy for contigious
+    val dx = encodeBox.select(2, 1).contiguous().div(wx)
+    val dy = encodeBox.select(2, 2).contiguous().div(wy)
+    val dw = encodeBox.select(2, 3).contiguous().div(ww)
+    val dh = encodeBox.select(2, 4).contiguous().div(wh)
+
+    // not change original input
+    encodeBox.resize(encodeBox.nElement())
+
+    // clamp, dw,  dh
+    val bboxClip = 62.5f
+    clamp(dw, 0.0f, bboxClip)
+    clamp(dh, 0.0f, bboxClip)
+
+    val pred_ctr_x = dx * priorWidth + pCenterX
+    val pred_ctr_y = dy * priorHight + pCenterY
+
+    val pred_w = dw.exp().mul(priorWidth).mul(0.5f)
+    val pred_h = dh.exp().mul(priorHight).mul(0.5f)
+
+    // todo: memory optimzation
+    val buffer1 = Tensor[Float]().resizeAs(pred_ctr_x).copy(pred_ctr_x).sub(pred_w)
+    val buffer2 = Tensor[Float]().resizeAs(pred_ctr_y).copy(pred_ctr_y).sub(pred_h)
+    val buffer3 = Tensor[Float]().resizeAs(pred_ctr_x).copy(pred_ctr_x).add(pred_w).add(-1.0f)
+    val buffer4 = Tensor[Float]().resizeAs(pred_ctr_y).copy(pred_ctr_y).add(pred_h).add(-1.0f)
+
+    val arrBuffer1 = buffer1.storage().array()
+    val arrBuffer2 = buffer2.storage().array()
+    val arrBuffer3 = buffer3.storage().array()
+    val arrBuffer4 = buffer4.storage().array()
+    val arrBox = decodeBox.storage().array()
+    val offset = decodeBox.storageOffset() - 1
+
+    var i = 0
+    var j = 0
+    while (i < arrBuffer1.length) {
+      arrBox(j + offset) = arrBuffer1(i)
+      arrBox(j + 1 + offset) = arrBuffer2(i)
+      arrBox(j + 2 + offset) = arrBuffer3(i)
+      arrBox(j + 3 + offset) = arrBuffer4(i)
+      i += 1
+      j += 4
+    }
+  }
+
+  def decodeWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],
+             weight: Array[Float], decodeBox: Tensor[Float]): Unit = {
+    require(encodeBox.size(1) == bbox.size(1))
+    require(encodeBox.size(1) == decodeBox.size(1))
+
+    val numBboxes = bbox.size(1)
+    if (numBboxes > 0) require(bbox.size(2) == 4)
+
+    var i = 1
+    while (i <= numBboxes) {
+      decodeSignalBoxWithWeight(encodeBox.select(1, i), bbox.select(1, i),
+        weight, decodeBox.select(1, i))
+      i += 1
+    }
+  }
+
+  private def clamp(input: Tensor[Float], min: Float, max: Float): Unit = {
+    require(input.isContiguous(), "input for clamp should be contiguous")
+    val arr = input.storage().array()
+    val offset = input.storageOffset() - 1
+    var i = 0
+    while (i < arr.length) {
+      val value = arr(i)
+      if (value < min) arr(i) = value
+      if (value > max) arr(i) = max
+      i += 1
+    }
   }
 }

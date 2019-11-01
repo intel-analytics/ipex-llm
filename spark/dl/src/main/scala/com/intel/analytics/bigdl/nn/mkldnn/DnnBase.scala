@@ -78,7 +78,10 @@ trait MklDnnModule extends MklDnnModuleHelper {
   def setQuantize(value: Boolean): this.type
 }
 
-trait MklDnnModuleHelper {
+trait MklDnnModuleHelper extends MemoryOwner {
+
+  @transient protected implicit lazy val _this : MemoryOwner = this
+
   protected def initActivity(formats: Array[MemoryData]): Activity = {
     if (formats.length == 1) {
       initTensor(formats(0))
@@ -162,7 +165,8 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   def getUpdateOutputMemoryPrimitives(): Array[Long] = {
-    inputFormats().map(_.getPrimitive(runtime)) ++ outputFormats().map(_.getPrimitive(runtime))
+    inputFormats().map(_.getPrimitive(runtime)) ++
+      outputFormats().map(_.getPrimitive(runtime))
   }
   def getUpdateGradInputMemoryPrimitives(): Array[Long] = {
     gradOutputFormats().map(_.getPrimitive(runtime)) ++
@@ -276,26 +280,15 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   override def release(): Unit = {
-    val tensors: ArrayBuffer[DnnTensor[Float]] = ArrayBuffer.empty
-    List(output, gradInput).filter(_ != null).foreach { t =>
-      if (t.isTensor && t.toTensor[Float].getTensorType == MklDnnType) {
-        tensors.append(t.asInstanceOf[DnnTensor[Float]])
-      }
-
-      if (t.isTable) {
-        val table = t.toTable
-        var i = 1
-        while (i <= table.length()) {
-          tensors.append(table(i))
-          i += 1
-        }
-      }
-    }
-
-    tensors.foreach(_.release())
+    this.releaseResources()
   }
 
   override def setQuantize(value: Boolean): MklDnnLayer.this.type = this
+
+  def paramsMMap(): (Array[TensorMMap], Array[TensorMMap]) = {
+    // return null for weight and gradWeight by default
+    (Array.empty[TensorMMap], Array.empty[TensorMMap])
+  }
 }
 
 /**
@@ -385,7 +378,7 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
 
   override def release(): Unit = {
     super.release()
-    reorderManager.release()
+    this.releaseResources()
   }
 
   override def setQuantize(value: Boolean): this.type = {

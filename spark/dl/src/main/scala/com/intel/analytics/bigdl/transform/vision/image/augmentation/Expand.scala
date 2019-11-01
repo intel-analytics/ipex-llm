@@ -65,7 +65,9 @@ class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
     channels.get(1).setTo(new Scalar(meansG))
     channels.get(2).setTo(new Scalar(meansR))
     Core.merge(channels, output)
-    input.copyTo(output.submat(bboxRoi))
+    val submat = output.submat(bboxRoi)
+    input.copyTo(submat)
+    submat.release()
     // release memory
     (0 to 2).foreach(channels.get(_).release())
     expandBbox
@@ -112,7 +114,9 @@ class FixExpand(expandHeight: Int, expandWidth: Int) extends FeatureTransformer 
       val leftPad = ((expandWidth - input.width()) / 2).floor
       val bboxRoi = new Rect(leftPad.toInt, topPad.toInt, width, height)
       output.create(expandHeight, expandWidth, input.`type`())
-      input.copyTo(output.submat(bboxRoi))
+      val submat = output.submat(bboxRoi)
+      input.copyTo(submat)
+      submat.release()
       output.copyTo(input)
       feature(ImageFeature.boundingBox) =
         BoundingBox(leftPad, topPad, leftPad + width, topPad + height)

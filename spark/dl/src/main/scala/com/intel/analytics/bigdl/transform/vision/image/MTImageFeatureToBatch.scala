@@ -15,38 +15,70 @@
  */
 package com.intel.analytics.bigdl.transform.vision.image
 
+import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import java.util.concurrent.atomic.AtomicInteger
-
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer, Utils}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.Engine
-
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 
 object MTImageFeatureToBatch {
+  /**
+   * The transformer from ImageFeature to mini-batches
+   * @param width width of the output images
+   * @param height height of the output images
+   * @param batchSize batch size
+   * @param transformer pipeline for pre-processing, finally outputting ImageFeature
+   * @param toRGB if converted to RGB, default format is BGR
+   * @param extractRoi if true, extract ROI labels for segmentation; else the labels are for
+   *                   classification
+   * @return
+   */
   def apply(width: Int, height: Int, batchSize: Int,
-            transformer: FeatureTransformer, toRGB: Boolean = true)
+            transformer: FeatureTransformer, toRGB: Boolean = false, extractRoi: Boolean = false)
   : MTImageFeatureToBatch = {
-    new MTImageFeatureToBatch (
-      width, height, batchSize, transformer, toRGB)
+    if (extractRoi) {
+      new RoiMTImageFeatureToBatch (
+        width, height, batchSize, transformer, toRGB)
+    } else {
+      new ClassificationMTImageFeatureToBatch (
+        width, height, batchSize, transformer, toRGB)
+    }
   }
 }
 
+object MTImageFeatureToBatchWithResize {
+  /**
+   * The transformer from ImageFeature to mini-batches, and extract ROI labels for segmentation
+   * if roi labels are set.
+   * @param sizeDivisible when it's greater than 0, height and wide should be divisible by this size
+   * @param batchSize global batch size
+   * @param transformer pipeline for pre-processing
+   * @param toRGB if converted to RGB, default format is BGR
+   */
+  def apply(sizeDivisible: Int = -1, batchSize: Int, transformer: FeatureTransformer,
+    toRGB : Boolean = false): MTImageFeatureToBatch =
+    new RoiImageFeatureToBatchWithResize(sizeDivisible, batchSize, transformer, toRGB)
+}
+
 /**
- * A transformer pipleline wrapper to create Minibatch in multiple threads
- * @param width final image width
- * @param height final image height
+ * An abstract class to convert ImageFeature iterator to MiniBatches. This transformer will be run
+ * on each image feature. "processImageFeature" will be called to buffer the image features. When
+ * there are enough buffered image features to form a batch, "createBatch" will be called.
+ * You should override processImageFeature to buffer each image feature, and createBatch
+ * to convert the buffered data into a mini-batch
  * @param totalBatchSize global batch size
- * @param transformer pipleline for pre-processing
- * @param toRGB  if converted to RGB, default format is BGR
+ * @param transformer pipeline for pre-processing
  */
-class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
+abstract class MTImageFeatureToBatch private[bigdl](
+  totalBatchSize: Int, transformer: FeatureTransformer)
   extends Transformer[ImageFeature, MiniBatch[Float]] {
 
-  private val batchSize = Utils.getBatchSize(totalBatchSize)
+  protected val batchSize: Int = Utils.getBatchSize(totalBatchSize)
 
-  private val parallelism = Engine.coreNumber()
+  protected val parallelism: Int = Engine.coreNumber()
 
   private def getPosition(count: AtomicInteger): Int = {
     val position = count.getAndIncrement()
@@ -57,11 +89,9 @@ class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     _ => new PreFetch -> transformer.cloneTransformer()
   ).toArray
 
-  private val frameLength = height * width
-  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
-  private val labelData: Array[Float] = new Array[Float](batchSize)
-  private val featureTensor: Tensor[Float] = Tensor[Float]()
-  private val labelTensor: Tensor[Float] = Tensor[Float]()
+  protected def processImageFeature(img: ImageFeature, position: Int)
+
+  protected def createBatch(batchSize: Int): MiniBatch[Float]
 
   override def apply(prev: Iterator[ImageFeature]): Iterator[MiniBatch[Float]] = {
     val iterators = transformers.map(_.apply(prev))
@@ -81,25 +111,17 @@ class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
             position != -1
           }) {
             val img = iterators(tid).next()
-            img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
-            labelData(position) = img.getLabel.asInstanceOf[Tensor[Float]].valueAt(1)
+            processImageFeature(img, position)
             record += 1
           }
           record
         })).sum
-
-        if (labelTensor.nElement() != batch) {
-          featureTensor.set(Storage[Float](featureData),
-            storageOffset = 1, sizes = Array(batch, 3, height, width))
-          labelTensor.set(Storage[Float](labelData),
-            storageOffset = 1, sizes = Array(batch))
-        }
-
-        MiniBatch(featureTensor, labelTensor)
+        createBatch(batch)
       }
     }
   }
 }
+
 
 private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
@@ -125,5 +147,283 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
         }
       }
     }
+  }
+}
+
+/**
+ * A transformer pipeline wrapper to create Minibatch in multiple threads for classification
+ * @param width final image width
+ * @param height final image height
+ * @param totalBatchSize global batch size
+ * @param transformer pipeline for pre-processing
+ * @param toRGB  if converted to RGB, default format is BGR
+ */
+class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
+  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+
+  private val frameLength = height * width
+  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
+  private val labelData: Array[Float] = new Array[Float](batchSize)
+  private val featureTensor: Tensor[Float] = Tensor[Float]()
+  private val labelTensor: Tensor[Float] = Tensor[Float]()
+
+  override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
+    img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
+    labelData(position) = img.getLabel.asInstanceOf[Tensor[Float]].valueAt(1)
+  }
+
+  override protected def createBatch(batch: Int): MiniBatch[Float] = {
+    if (labelTensor.nElement() != batch) {
+      featureTensor.set(Storage[Float](featureData),
+        storageOffset = 1, sizes = Array(batch, 3, height, width))
+      labelTensor.set(Storage[Float](labelData),
+        storageOffset = 1, sizes = Array(batch))
+    }
+
+    MiniBatch(featureTensor, labelTensor)
+  }
+}
+
+
+object RoiImageInfo {
+  // the keys in the target table
+  // fields from RoiLabel
+  val CLASSES = "classes"
+  val BBOXES = "bboxes"
+  val MASKS = "masks"
+  // ISCROWD and ORIGSIZE are stored in ImageFeature
+  val ISCROWD = "is_crowd"
+  val ORIGSIZE = "orig_size"
+  val SCORES = "scores"
+  val IMGINFO = "imginfo"
+
+  /**
+   * Get the output score tensor from the table.
+   *    (1 x N) tensor for N detections
+   *
+   * @param tab
+   * @return
+   */
+  def getScores(tab: Table): Tensor[Float] = tab[Tensor[Float]](SCORES)
+
+  /**
+   * Get the class label tensor from the table. See RoiLabel.classes
+   *    the categories for each detections (see RoiLabel.clasees field)
+   *    (1 x N), or (2 x N) Tensor[Float]
+   *
+   * @param tab
+   * @return
+   */
+  def getClasses(tab: Table): Tensor[Float] = tab[Tensor[Float]](CLASSES)
+
+  /**
+   * Get the bbox tensor from the table. See RoiLabel.bboxes
+   * @param tab
+   * @return
+   */
+  def getBBoxes(tab: Table): Tensor[Float] = tab[Tensor[Float]](BBOXES)
+
+  /**
+   * Get the (optional) mask data from the table. See RoiLabel.masks
+   * @param tab
+   * @return
+   */
+  def getMasks(tab: Table): Array[RLEMasks] = tab[Array[RLEMasks]](MASKS)
+
+  /**
+   * Get the isCrowd tensor from the table. Should be 1 x N vector (N is the # of detections)
+   * @param tab
+   * @return
+   */
+  def getIsCrowd(tab: Table): Tensor[Float] = tab[Tensor[Float]](ISCROWD)
+
+  /**
+   * Get the size of the image before resizing
+   * @return (height, width, channel)
+   */
+  def getOrigSize(tab: Table): (Int, Int, Int) = tab[(Int, Int, Int)](ORIGSIZE)
+
+  /**
+   * Get the isCrowd tensor from the table. Should be 1 x N vector (N is the # of detections)
+   * @param tab
+   * @return
+   */
+  def getImageInfo(tab: Table): Tensor[Float] = tab[Tensor[Float]](IMGINFO)
+
+}
+/**
+ * A batch of images with flattened RoiLabels
+ * the getTarget() returns a Table with key from 1 to batchSize. Each key in the table is mapped to
+ * a Table for the annotation of an image in the batch. The annotation table holds the annotation
+ * info for one image (assume the image has N detections). The annotation table has
+ *
+ * Key                Value
+ * RoiImageInfo.CLASSES   the categories for each detections (see RoiLabel.clasees field)
+ *                    (1 x N), or (2 x N) Tensor[Float]
+ * RoiImageInfo.BBOXES    the bboxes, (N x 4) Tensor[Float]
+ * RoiImageInfo.MASKS     (Optional) the mask data, Array[Tensor[Float]\]. The outer array has N
+ *                    elements. The inner tensor holds the data for segmentation
+ * RoiImageInfo.ISCROWD   Whether each detection is crowd. (1 x N) Tensor[Float].
+ *                    -1: unknown, 0: not crowd, 1: is crowd
+ * RoiImageInfo.IMGINFO  with shape (batchSize, 4), contains all images info
+ *                 (height, width, original height, original width)
+ */
+class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
+  val isCrowd: Array[Tensor[Float]], val imageInfo: Tensor[Float] = null)
+  extends MiniBatch[Float] {
+
+  override def size(): Int = input.size(1)
+
+  override def getInput(): Activity = {
+    if (imageInfo == null) input else T(input, imageInfo)
+  }
+
+  override def getTarget(): Table = {
+    val tables = (target, isCrowd, 1 to isCrowd.length).zipped.map { case (roiLabel, crowd, i) =>
+      roiLabel.toTable
+        .update(RoiImageInfo.ISCROWD, crowd)
+        .update(RoiImageInfo.IMGINFO, imageInfo.select(1, i))
+    }
+    T.seq(tables)
+  }
+
+  override def slice(offset: Int, length: Int): MiniBatch[Float] = {
+    val subInput = input.narrow(1, offset, length)
+    val subTarget = target.slice(offset - 1, length) // offset starts from 1
+    val subIsCrowd = isCrowd.slice(offset - 1, length) // offset starts from 1
+    val subSize = imageInfo.narrow(1, offset, length)
+    RoiMiniBatch(subInput, subTarget, subIsCrowd, subSize)
+  }
+
+  override def set(samples: Seq[Sample[Float]])(implicit ev: TensorNumeric[Float])
+  : RoiMiniBatch.this.type = {
+    throw new NotImplementedError("do not use Sample here")
+  }
+}
+
+object RoiMiniBatch {
+  def apply(data: Tensor[Float], target: Array[RoiLabel],
+    isCrowd: Array[Tensor[Float]], imageInfo: Tensor[Float] = null):
+  RoiMiniBatch = new RoiMiniBatch(data, target, isCrowd, imageInfo)
+}
+
+
+/**
+ * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads
+ * The output "target" is a Table. The keys are from 1 to sizeof(batch). The values are
+ * the tables for each RoiLabel. Each Roi label table, contains fields of RoiLabel class.
+ * @param width final image width
+ * @param height final image height
+ * @param totalBatchSize global batch size
+ * @param transformer pipeline for pre-processing
+ * @param toRGB  if converted to RGB, default format is BGR
+ */
+class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
+  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+
+  private val frameLength = height * width
+  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
+  private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
+  private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
+  private val imgInfoData: Tensor[Float] = Tensor[Float](batchSize, 4)
+  private var featureTensor: Tensor[Float] = Tensor[Float]()
+
+  override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
+    img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
+    val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
+    val label = img.getLabel.asInstanceOf[RoiLabel]
+    require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
+      "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
+    isCrowdData(position) = isCrowd
+    labelData(position) = label
+    imgInfoData.setValue(position + 1, 1, img.getHeight())
+    imgInfoData.setValue(position + 1, 2, img.getWidth())
+    imgInfoData.setValue(position + 1, 3, img.getOriginalHeight)
+    imgInfoData.setValue(position + 1, 4, img.getOriginalWidth)
+  }
+
+  override protected def createBatch(curBatchSize: Int): MiniBatch[Float] = {
+    if (featureTensor.nElement() != curBatchSize) {
+      featureTensor.set(Storage[Float](featureData),
+        storageOffset = 1, sizes = Array(curBatchSize, 3, height, width))
+    }
+    def arraySlice[T](array: Array[T]) = {
+      if (array.length == curBatchSize) array else array.slice(0, curBatchSize)
+    }
+    RoiMiniBatch(featureTensor, arraySlice(labelData), arraySlice(isCrowdData),
+      imgInfoData.narrow(1, 1, curBatchSize))
+  }
+}
+
+/**
+ * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads.
+ * Image features may have different sizes, so firstly we need to calculate max size in one batch,
+ * then padding all features to one batch with max size.
+ * @param sizeDivisible when it's greater than 0,
+ *                      height and wide will be round up to multiple of this divisible size
+ * @param totalBatchSize global batch size
+ * @param transformer pipeline for pre-processing
+ * @param toRGB
+ */
+class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, totalBatchSize: Int,
+  transformer: FeatureTransformer, toRGB: Boolean = false)
+  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+
+  private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
+  private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)
+  private val imgInfoData: Tensor[Float] = Tensor[Float](batchSize, 4)
+  private var featureTensor: Tensor[Float] = null
+  private val imageBuffer = new Array[Tensor[Float]](batchSize)
+
+  private def getFrameSize(batchSize: Int): (Int, Int) = {
+    var maxHeight = 0
+    var maxWide = 0
+    for (i <- 0 until batchSize) {
+      maxHeight = math.max(maxHeight, imageBuffer(i).size(2))
+      maxWide = math.max(maxWide, imageBuffer(i).size(3))
+    }
+
+    if (sizeDivisible > 0) {
+      maxHeight = (math.ceil(maxHeight.toFloat / sizeDivisible) * sizeDivisible).toInt
+      maxWide = (math.ceil(maxWide.toFloat / sizeDivisible) * sizeDivisible).toInt
+    }
+    (maxHeight, maxWide)
+  }
+
+  override protected def processImageFeature(img: ImageFeature, position: Int): Unit = {
+    if (imageBuffer(position) == null) imageBuffer(position) = Tensor[Float]()
+    imageBuffer(position).resize(3, img.getHeight(), img.getWidth())
+    // save img to buffer
+    img.copyTo(imageBuffer(position).storage().array(), 0, toRGB = toRGB)
+    val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
+    val label = img.getLabel.asInstanceOf[RoiLabel]
+    if (isCrowd != null && label != null) {
+      require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
+        "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
+    }
+    isCrowdData(position) = isCrowd
+    labelData(position) = label
+    imgInfoData.setValue(position + 1, 1, img.getHeight())
+    imgInfoData.setValue(position + 1, 2, img.getWidth())
+    imgInfoData.setValue(position + 1, 3, img.getOriginalHeight)
+    imgInfoData.setValue(position + 1, 4, img.getOriginalWidth)
+  }
+
+  override protected def createBatch(batchSize: Int): MiniBatch[Float] = {
+    val (height, wide) = getFrameSize(batchSize)
+    if (featureTensor == null) featureTensor = Tensor()
+    featureTensor.resize(batchSize, 3, height, wide).fill(0.0f)
+    // copy img buffer to feature tensor
+    for (i <- 0 until batchSize) {
+      featureTensor.select(1, i + 1).narrow(2, 1, imageBuffer(i).size(2))
+        .narrow(3, 1, imageBuffer(i).size(3)).copy(imageBuffer(i))
+    }
+    def arraySlice[T](array: Array[T]) = {
+      if (array.length == batchSize) array else array.slice(0, batchSize)
+    }
+    RoiMiniBatch(featureTensor, arraySlice(labelData),
+      arraySlice(isCrowdData), imgInfoData.narrow(1, 1, batchSize))
   }
 }

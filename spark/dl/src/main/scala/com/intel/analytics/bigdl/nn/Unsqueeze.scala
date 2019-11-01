@@ -23,43 +23,55 @@ import com.intel.analytics.bigdl.tensor._
 import scala.reflect.ClassTag
 
 /**
- * Insert singleton dim (i.e., dimension 1) at position pos. For an input with dim = input.dim(),
+ * Insert singleton dim (i.e., dimension 1) at position array pos.
+ * For an input with dim = input.dim(),
  * there are dim + 1 possible positions to insert the singleton dimension.
+ * Dimension index are 1-based. 0 and negative pos correspond to unsqueeze() applied at
+ * pos = pos + input.dim() + 1
  *
- * @param pos The position will be insert singleton.
+ * @param pos The array of position will insert singleton.
  * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
 
 @SerialVersionUID(- 5180889605872472241L)
 class Unsqueeze[T: ClassTag](
-  val pos: Int,
+  val pos: Array[Int],
   var numInputDims: Int = Int.MinValue
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
+  def this( pos: Int, numInputDims: Int )(implicit ev: TensorNumeric[T]) = {
+    this(Array(pos), numInputDims)
+  }
+
+  def this( pos: Int )(implicit ev: TensorNumeric[T]) = {
+    this(Array(pos))
+  }
 
   def setNumInputDims(numInputDims: Int): Unit = {
     this.numInputDims = numInputDims
   }
 
-  private def getActualPosition(input: Tensor[_]) : Int = {
-    val dim = if (pos <= 0) {
-      input.dim() + pos + 1
-    } else {
-      pos
+  private def getActualPosition(input: Tensor[_]) : Array[Int] = {
+    for (index <- 0 until pos.length) {
+      // dimension index are 1-based
+      pos(index) = if (pos(index) <= 0) {
+        input.dim() + pos(index) + 1
+      }
+      else {
+        pos(index)
+      }
+      // get valid dimension offset for batchMode (if any)
+      val inputDim = input.dim() // data batch dim
+      numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
+      val offsetDim = inputDim - numInputDims
+      require(offsetDim >= 0, "input feature map dim (numInputDims) must be <= input:dim()," +
+        s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
+      // the actual position; clearer error message for batchMode (if any)
+      val actualPos = pos(index) + offsetDim
+      require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: ${pos(index)}. " +
+        s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
+      pos(index) = actualPos
     }
-
-    // get valid dimension offset for batchMode (if any)
-    val inputDim = input.dim() // data batch dim
-    numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
-    val offsetDim = inputDim - numInputDims
-    require(offsetDim >= 0, "input feature map dim (numInputDims) must be <= input:dim()," +
-      s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
-
-    // the actual position; clearer error message for batchMode (if any)
-    val actualPos = dim + offsetDim
-    require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: $pos. " +
-      s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
-
-    actualPos
+    pos
   }
 
   override def updateOutput(input: Tensor[_]): Tensor[_] = {
@@ -68,9 +80,8 @@ class Unsqueeze[T: ClassTag](
       output = input.emptyInstance()
     }
 
-    output
-      .asInstanceOf[Tensor[NumericWildcard]]
-      .addSingletonDimension(input.asInstanceOf[Tensor[NumericWildcard]], actualPos)
+    output.asInstanceOf[Tensor[NumericWildcard]]
+    .addMultiDimension(input.asInstanceOf[Tensor[NumericWildcard]], actualPos)
 
     output
   }
@@ -108,6 +119,17 @@ object Unsqueeze {
   def apply[@specialized(Float, Double) T: ClassTag](
     pos: Int,
     numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
-    new Unsqueeze[T](pos, numInputDims)
+    new Unsqueeze[T](Array(pos), numInputDims)
+  }
+
+  def apply[T: ClassTag](
+    posList: Array[Int],
+    numInputDims: Int)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
+    new Unsqueeze[T](posList, numInputDims)
+  }
+
+  def apply[T: ClassTag](
+    posList: Array[Int])(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
+    new Unsqueeze[T](posList)
   }
 }

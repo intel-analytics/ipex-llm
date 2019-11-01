@@ -19,10 +19,10 @@ import com.intel.analytics.bigdl.mkl.DataType
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
-private[mkldnn] class ReorderManager() {
+private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
   // (MemoryFormatId, TargetFormat) -> Reorder
   val reorders = mutable.HashMap[(Int, MemoryData), ReorderMemory]()
   // ReorderId -> RefCount
@@ -117,7 +117,5 @@ private[mkldnn] class ReorderManager() {
     }
   }
 
-  def release(): Unit = {
-    reorders.values.foreach(_.release())
-  }
+  def release(): Unit = { }
 }

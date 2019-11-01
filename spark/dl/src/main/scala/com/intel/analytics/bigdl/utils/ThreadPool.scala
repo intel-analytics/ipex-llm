@@ -63,7 +63,7 @@ class ThreadPool(private var poolSize: Int) {
         threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
-            t.setName("default-thread-computing")
+            t.setName("default-thread-computing " + t.getId)
             t.setDaemon(true)
             t
           }
@@ -102,6 +102,10 @@ class ThreadPool(private var poolSize: Int) {
 
 
     this.invokeAndWait2((0 until 1).map(_ => () => {
+      if (System.getProperty("bigdl.flushDenormalState", "true").toBoolean) {
+        BackendMklDnn.setFlushDenormalState()
+      }
+
       require(MKL.isMKLLoaded)
       require(BackendMklDnn.isLoaded)
 

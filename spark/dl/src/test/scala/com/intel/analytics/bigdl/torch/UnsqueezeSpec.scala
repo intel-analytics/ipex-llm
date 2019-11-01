@@ -134,6 +134,6 @@ class UnsqueezeSpec extends TorchSpec {
   "A Unsqueeze(0)" should "generate correct output and grad" in {
     val layer = new Unsqueeze[Double](0)
     val input = Tensor[Double](2, 2).rand()
-    layer.forward(input).size() should be(Array(2, 2, 1))
+    layer.forward(input).size() should be (Array(2, 2, 1))
   }
 }
