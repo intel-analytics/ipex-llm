@@ -66,7 +66,7 @@ object Test {
         sc, Some(partitionNum))
         .toDistributed().data(train = false)
 
-      val transformer = MTImageFeatureToBatchWithResize(
+      val transformer = RoiImageFeatureToBatch.withResize(
         sizeDivisible = 32,
         batchSize = param.batchSize / Engine.nodeNumber(),
         transformer =

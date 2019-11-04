@@ -103,8 +103,8 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         imf
       }).toArray
 
-    val transformer = MTImageFeatureToBatchWithResize(10, 3,
-      new FeatureTransformer {}, toRGB = false)
+    val transformer = RoiImageFeatureToBatch.withResize(3,
+      new FeatureTransformer {}, toRGB = false, 10)
     val miniBatch = transformer(DataSet.array(imgData).data(false))
 
     val expectedOutput = Tensor[Float](T(T(
@@ -253,8 +253,8 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         imf(ImageFeature.originalSize) = (10, 10, 3)
         imf
       }).toArray
-    val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
-      toRGB = false, extractRoi = true)
+    val transformer = RoiImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
+      toRGB = false)
     val miniBatch = transformer(DataSet.array(imgData).data(false))
     miniBatch
       .foreach(batch => {
