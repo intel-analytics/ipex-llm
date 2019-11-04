@@ -281,6 +281,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: SerializableIndexedSeq[
   }
 
   override def getTarget(): Table = {
+    require(target != null, "The target should not be null")
     val tables = (target, isCrowd, 1 to isCrowd.length).zipped.map { case (roiLabel, crowd, i) =>
       val ret = roiLabel.toTable
         .update(RoiImageInfo.ISCROWD, crowd)
@@ -294,9 +295,13 @@ class RoiMiniBatch(val input: Tensor[Float], val target: SerializableIndexedSeq[
 
   override def slice(offset: Int, length: Int): MiniBatch[Float] = {
     val subInput = input.narrow(1, offset, length)
-    val subTarget = target.view(offset - 1, offset + length - 1) // offset starts from 1
+    val subTarget = if (target != null) {
+      target.view(offset - 1, offset + length - 1) // offset starts from 1
+    } else {
+      null
+    }
     val subIsCrowd = isCrowd.view(offset - 1, offset + length - 1) // offset starts from 1
-    val subSize = imageInfo.narrow(1, offset, length)
+    val subSize = if (imageInfo != null) imageInfo.narrow(1, offset, length) else null
     RoiMiniBatch(subInput, subTarget, subIsCrowd, subSize)
   }
 

@@ -52,6 +52,6 @@ object SerializableIndexedSeq {
     new SerializableIndexedSeq(impl)
 
   implicit def indexedSeq2Serializable[T: ClassTag](impl: IndexedSeq[T])
-  : SerializableIndexedSeq[T] = apply(impl)
+  : SerializableIndexedSeq[T] = if (impl != null) apply(impl) else null
 
 }

@@ -327,6 +327,21 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     // check slice of slice
     val s2 = s1.slice(3, 10)
     checkSlice(s2, 5, 10)
+
+    val b2 = RoiMiniBatch(
+      arrayToTensor((1 to 100).toArray.map(_.toFloat)),
+      null,
+      isCrowds,
+      arrayToTensor((1 to 100).toArray.map(_.toFloat))
+    )
+    b2.slice(12, 80).slice(2, 20)
+
+    val b3 = RoiMiniBatch(
+      arrayToTensor((1 to 100).toArray.map(_.toFloat)),
+      null,
+      isCrowds
+    )
+    b3.slice(12, 80).slice(2, 20)
   }
 
 }
