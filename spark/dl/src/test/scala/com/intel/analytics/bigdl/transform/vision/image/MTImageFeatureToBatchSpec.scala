@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
@@ -277,6 +277,56 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     })
     imgCheck.count(!_) should be (0)
 
+  }
+
+  def arrayToTensor(a: Array[Float]): Tensor[Float] = Tensor[Float](a, Array(a.length))
+
+  "RoiMiniBatch" should "correctly slice" in {
+    val dummyBBox = Tensor[Float](Array(1f, 2, 3, 4), Array(1, 4))
+    val roiLables = (0 until 100).map(i => {
+      RoiLabel(arrayToTensor(Array(i.toFloat)), dummyBBox)
+    }).toArray
+    val isCrowds = (0 until 100).map(i => {
+      arrayToTensor(Array(i.toFloat))
+    }).toArray
+    val b = RoiMiniBatch(
+      arrayToTensor((1 to 100).toArray.map(_.toFloat)),
+      roiLables,
+      isCrowds,
+      arrayToTensor((1 to 100).toArray.map(_.toFloat))
+    )
+
+    val s1 = b.slice(3, 20)
+
+    def checkSlice(s1: MiniBatch[Float], start: Int, len: Int): Unit = {
+      val input = s1.getInput().toTable
+      val imgData = input[Tensor[Float]](1)
+      imgData.nElement() should be (len)
+      imgData.valueAt(1) should be (start.toFloat)
+      imgData.valueAt(len) should be (start.toFloat + len -1)
+
+      val imgInfo = input[Tensor[Float]](2)
+      imgInfo.nElement() should be (len)
+      imgInfo.valueAt(1) should be (start.toFloat)
+      imgInfo.valueAt(len) should be (start.toFloat + len -1)
+
+      val target = s1.getTarget().asInstanceOf[Table]
+      target.length() should be (len)
+      for (i <- 1 to target.length()) {
+        val imgTarget = target[Table](i)
+        RoiImageInfo.getBBoxes(imgTarget).size() should be (Array(1, 4))
+        RoiImageInfo.getClasses(imgTarget).valueAt(1) should be (i.toFloat + start - 2)
+        RoiImageInfo.getIsCrowd(imgTarget).nElement() should be (1)
+        RoiImageInfo.getIsCrowd(imgTarget).valueAt(1) should be (i.toFloat + start - 2)
+        RoiImageInfo.getImageInfo(imgTarget).value() should be (i.toFloat + start - 1)
+      }
+    }
+
+    checkSlice(s1, 3, 20)
+
+    // check slice of slice
+    val s2 = s1.slice(3, 10)
+    checkSlice(s2, 5, 10)
   }
 
 }
