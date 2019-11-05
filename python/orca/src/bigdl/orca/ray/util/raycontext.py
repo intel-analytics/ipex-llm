@@ -303,13 +303,13 @@ class RayContext(object):
         self.stopped = True
 
     def _get_mkl_cores(self):
-        if "local" in self.sc.master:
+        if self.is_local:
             return 1
         else:
             return int(self.sc._conf.get("spark.executor.cores"))
 
     def _get_ray_node_cpu_cores(self):
-        if "local" in self.sc.master:
+        if self.is_local:
 
             assert self._get_spark_local_cores() % self.local_ray_node_num == 0, \
                 "Spark cores number: {} should be divided by local_ray_node_num {} ".format(
@@ -322,7 +322,7 @@ class RayContext(object):
         """
         :return: memory in bytes
         """
-        if "local" in self.sc.master:
+        if self.is_local:
             from psutil import virtual_memory
             # Memory in bytes
             total_mem = virtual_memory().total
@@ -341,7 +341,7 @@ class RayContext(object):
             return int(local_symbol)
 
     def _get_num_ray_nodes(self):
-        if "local" in self.sc.master:
+        if self.is_local:
             return int(self.local_ray_node_num)
         else:
             return int(self.sc._conf.get("spark.executor.instances"))
