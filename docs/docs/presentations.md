@@ -1,5 +1,8 @@
 **Talks:**
 
+* Building AI to play the FIFA video game using distributed TensorFlow, [TensorFlow World](https://conferences.oreilly.com/tensorflow/tf-ca/public/schedule/detail/78309), Oct 2019, Santa Clara ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Building%20AI%20to%20play%20the%20FIFA%20video%20game%20using%20distributed%20TensorFlow.pdf))
+
+
 * Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo, [Spark+AI Summit](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo), Oct 2019, Amsterdam ([slides](https://www.slideshare.net/databricks/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo))
 
 * Apache Spark AI Use Case in Telco: Network Quality Analysis and Prediction with Geospatial Visualization, [Spark+AI Summit](https://databricks.com/session_eu19/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization), Oct 2019, Amsterdam ([slides](https://www.slideshare.net/databricks/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization))
