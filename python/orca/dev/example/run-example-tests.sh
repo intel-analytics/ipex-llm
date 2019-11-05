@@ -141,6 +141,11 @@ else
    mkdir -p analytics-zoo-data/data/dogs-vs-cats/samples
    cp analytics-zoo-data/data/dogs-vs-cats/train/cat.71* analytics-zoo-data/data/dogs-vs-cats/samples
    cp analytics-zoo-data/data/dogs-vs-cats/train/dog.71* analytics-zoo-data/data/dogs-vs-cats/samples
+
+   mkdir -p analytics-zoo-data/data/dogs-vs-cats/demo/cats
+   mkdir -p analytics-zoo-data/data/dogs-vs-cats/demo/dogs
+   cp analytics-zoo-data/data/dogs-vs-cats/train/cat.71* analytics-zoo-data/data/dogs-vs-cats/demo/cats
+   cp analytics-zoo-data/data/dogs-vs-cats/train/dog.71* analytics-zoo-data/data/dogs-vs-cats/demo/dogs
    # echo "Finished downloading images"
 fi
 # total batch size: 32 should be divided by total core number: 28
@@ -214,7 +219,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --image hdfs://172.168.2.181:9000/kaggle/train_100 \
     --model analytics-zoo-models/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb
 
-echo "start example test for tensorflow distributed_training"
+echo "start example test for tfpark"
 if [ ! -d analytics-zoo-tensorflow-models ]
 then
     mkdir analytics-zoo-tensorflow-models
@@ -247,7 +252,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_lenet.py 1 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_lenet.py 1 1000
 
 sed "s%/tmp%analytics-zoo-tensorflow-models%g;s%models/slim%slim%g"
 if [ -d analytics-zoo-tensorflow-models/slim ]
@@ -263,7 +268,7 @@ else
    export PYTHONPATH=`pwd`/analytics-zoo-tensorflow-models/slim:$PYTHONPATH
 fi
 
-echo "start example test for tensorflow distributed_training evaluate_lenet 2"
+echo "start example test for TFPark tf_optimizer evaluate_lenet 2"
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 200g \
@@ -273,9 +278,9 @@ ${SPARK_HOME}/bin/spark-submit \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_lenet.py 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_lenet.py 1000
 
-echo "start example test for tensorflow distributed_training train_mnist_keras 3"
+echo "start example test for TFPark tf_optimizer train_mnist_keras 3"
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 200g \
@@ -285,9 +290,9 @@ ${SPARK_HOME}/bin/spark-submit \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_mnist_keras.py 1 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/train_mnist_keras.py 1 1000
 
-echo "start example test for tensorflow distributed_training evaluate_lenet 4"
+echo "start example test for TFPark tf_optimizer evaluate_lenet 4"
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 200g \
@@ -297,7 +302,39 @@ ${SPARK_HOME}/bin/spark-submit \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_mnist_keras.py 1000\
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/tf_optimizer/evaluate_mnist_keras.py 1000
+
+echo "start example test for TFPark keras keras_dataset 5"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/keras/keras_dataset.py 1
+
+
+echo "start example test for TFPark keras keras_ndarray 6"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/keras/keras_ndarray.py 1
+
+
+echo "start example test for TFPark estimator estimator_dataset 7"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/estimator/estimator_dataset.py
+
+
+echo "start example test for TFPark estimator estimator_inception 8"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 20g \
+    --executor-memory 20g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/estimator/estimator_inception.py \
+        --image-path analytics-zoo-data/data/dogs-vs-cats/demo --num-classes 2
 
     
 now=$(date "+%s")
