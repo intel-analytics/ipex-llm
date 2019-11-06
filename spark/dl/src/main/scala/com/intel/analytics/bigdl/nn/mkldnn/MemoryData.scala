@@ -22,6 +22,7 @@ sealed trait MemoryData extends Serializable {
   def shape: Array[Int]
   def layout: Int
   def dataType: Int
+
   def setShape(shape: Array[Int]): Unit
   def setLayout(layout: Int): Unit
   def setDataType(dataType: Int): Unit
@@ -254,33 +255,22 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int,
 }
 
 private[mkldnn] object MemoryData {
-  def noUndef(formats: Array[MemoryData]): Boolean = {
-    if (formats == null || formats.length == 0) return true
-    formats.foreach(f => if (f.layout == Memory.Format.format_undef) return false)
-    return true
-  }
-
-  def isSizeCompatible(actual: MemoryData, expect: MemoryData): Boolean = {
-    if (expect == null) return true
-    if (actual == null) return false
-    if (actual.shape.length != expect.shape.length) return false
-    actual.shape.zip(expect.shape).foreach {case (a, e) => if (a != e) return false}
-    return true
-  }
+//  def noUndef(formats: Array[MemoryData]): Boolean = {
+//    if (formats == null || formats.length == 0) return true
+//    formats.foreach(f => if (f.layout == Memory.Format.format_undef) return false)
+//    return true
+//  }
+//
+//  def isSizeCompatible(actual: MemoryData, expect: MemoryData): Boolean = {
+//    if (expect == null) return true
+//    if (actual == null) return false
+//    if (actual.shape.length != expect.shape.length) return false
+//    actual.shape.zip(expect.shape).foreach {case (a, e) => if (a != e) return false}
+//    return true
+//  }
 
   def primitiveOutput(pd: Long): NativeData = {
-    val outputPD = MklDnn.PrimitiveDescQueryPd(pd, Query.DstPd, 0)
-    val memoryDesc = MklDnn.PrimitiveDescQueryMemory(outputPD)
-    val shape = Memory.GetShape(memoryDesc)
-    val paddingShape = Memory.GetPaddingShape(memoryDesc)
-    val layout = Memory.GetLayout(memoryDesc)
-    val dataType = Memory.GetDataType(memoryDesc)
-    val size = MklDnn.PrimitiveDescGetSize(outputPD)
-
-    val memory = NativeData(shape, layout, dataType)
-    memory.setMemoryDescription(memoryDesc)
-    memory.setPrimitiveDescription(outputPD)
-    memory
+    operationWant(pd, Query.DstPd, 0)
   }
 
   def operationWant(primDesc: Long, queryType: Int, index: Int = 0): NativeData = {
