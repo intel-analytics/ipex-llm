@@ -23,10 +23,6 @@ sealed trait MemoryData extends Serializable {
   def layout: Int
   def dataType: Int
 
-  def setShape(shape: Array[Int]): Unit
-  def setLayout(layout: Int): Unit
-  def setDataType(dataType: Int): Unit
-
   private var _mask: Int = -1
   private var _scales: Array[Float] = Array.emptyFloatArray
 
@@ -34,10 +30,6 @@ sealed trait MemoryData extends Serializable {
   def setMask(s: Int): Unit = _mask = s
   def scales: Array[Float] = _scales
   def setScales(f: Array[Float]): Unit = _scales = f
-
-  def isLayoutFixed(): Boolean = {
-    layout != Memory.Format.format_undef && layout != Memory.Format.any
-  }
 
   def cloneFormat(): MemoryData
 
@@ -121,11 +113,11 @@ case class HeapData(private var _shape: Array[Int], private var _layout: Int,
 
   override def dataType: Int = _dataType
 
-  override def setDataType(dataType: Int): Unit = _dataType = dataType
+//  override def setDataType(dataType: Int): Unit = _dataType = dataType
 
-  override def setShape(shape: Array[Int]): Unit = _shape = shape.clone()
-
-  override def setLayout(layout: Int): Unit = _layout = layout
+//  override def setShape(shape: Array[Int]): Unit = _shape = shape.clone()
+//
+//  override def setLayout(layout: Int): Unit = _layout = layout
 
   override def shape: Array[Int] = _shape.clone()
 
@@ -194,10 +186,6 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int,
 
   override def layout: Int = _layout
 
-  override def setShape(shape: Array[Int]): Unit = _shape = shape.clone()
-
-  override def setLayout(layout: Int): Unit = _layout = layout
-
   override def hashCode(): Int = {
     val seed = 41
     var hash = 1
@@ -250,24 +238,10 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int,
   override def cloneFormat(): MemoryData = new NativeData(_shape, _layout, _dataType)
 
   override def dataType: Int = _dataType
-
-  override def setDataType(dataType: Int): Unit = _dataType = dataType
+  
 }
 
 private[mkldnn] object MemoryData {
-//  def noUndef(formats: Array[MemoryData]): Boolean = {
-//    if (formats == null || formats.length == 0) return true
-//    formats.foreach(f => if (f.layout == Memory.Format.format_undef) return false)
-//    return true
-//  }
-//
-//  def isSizeCompatible(actual: MemoryData, expect: MemoryData): Boolean = {
-//    if (expect == null) return true
-//    if (actual == null) return false
-//    if (actual.shape.length != expect.shape.length) return false
-//    actual.shape.zip(expect.shape).foreach {case (a, e) => if (a != e) return false}
-//    return true
-//  }
 
   def primitiveOutput(pd: Long): NativeData = {
     operationWant(pd, Query.DstPd, 0)

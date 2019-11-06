@@ -42,7 +42,7 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     : Array[MemoryData] = {
     val ret = src match {
       case h: HeapData => Array(HeapData(shape, layout, src.dataType))
-      case n: NativeData => Array(src)
+      case n: NativeData => Array(NativeData(shape, layout, src.dataType))
       case _ => throw new UnsupportedOperationException("Not support such memory format")
     }
 
