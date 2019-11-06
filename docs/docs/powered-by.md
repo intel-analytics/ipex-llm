@@ -38,7 +38,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
  <br>[Running Analytics Zoo jobs on Telefónica Open Cloud’s MRS Service](https://medium.com/@fernando.delaiglesia/running-analytics-zoo-jobs-on-telef%C3%B3nica-open-clouds-mrs-service-2e64bc823c50)
 * __Tencent__
 <br>[Enhance Tencent's TUSI Identity Practice with Intel Analytics Zoo](https://mp.weixin.qq.com/s?__biz=MzAwNzc5NzM5Mw==&mid=2651030944&idx=1&sn=d6e06c6e14a7355971953a501689b232&chksm=808f8a5eb7f80348fc8e88c4c9e415341bf43ef6bdf3fd4f3001da89e2c9ba7fa2ed5deeb09a&mpshare=1&scene=1&srcid=0412WxM3eWdsLLoO2TYJGWbS&pass_ticket=E6l%2FfOZNKjhr05lsU7inAVCi7mAy5LFEehvEJOS2ZGdHg6%2FH%2BeBQisHA9sfXDOoy#rd) (in Chinese)
-* __UCBerkeley RISELab__
+* __UC Berkeley RISELab__
 <br>[RayOnSpark: Running Emerging AI Applications on Big Data Clusters with Ray and Analytics Zoo](https://medium.com/riselab/rayonspark-running-emerging-ai-applications-on-big-data-clusters-with-ray-and-analytics-zoo-923e0136ed6a)
 <br>[Scalable AutoML for Time Series Prediction Using Ray and Analytics Zoo](https://medium.com/riselab/scalable-automl-for-time-series-prediction-using-ray-and-analytics-zoo-b79a6fd08139)
 * __World Bank__
