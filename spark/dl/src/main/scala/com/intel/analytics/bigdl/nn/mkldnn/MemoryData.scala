@@ -238,7 +238,6 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int,
   override def cloneFormat(): MemoryData = new NativeData(_shape, _layout, _dataType)
 
   override def dataType: Int = _dataType
-  
 }
 
 private[mkldnn] object MemoryData {
