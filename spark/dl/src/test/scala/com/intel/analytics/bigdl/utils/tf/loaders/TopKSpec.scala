@@ -27,6 +27,8 @@ class TopKSpec extends TensorflowSpecHelper {
         .setName("topk_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
         .putAttr("k", intAttr(2))
+        .putAttr("dim", intAttr(-1))
+        .putAttr("increase", booleanAttr(false))
         .setOp("TopK"),
       Seq(Tensor[Float](5, 5, 6).rand()),
       0

@@ -23,10 +23,10 @@ import scala.reflect.ClassTag
 
 class TopK[T: ClassTag, D: ClassTag](
   val k: Int,
-  val dim: Int = -1,
-  val increase: Boolean = false,
   val sorted: Boolean = true,
-  val startIndex: Int = 1)
+  val startIndex: Int = 1,
+  val dim: Int = -1,
+  val increase: Boolean = false)
 (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[D], Table, T] {
 
@@ -60,10 +60,10 @@ class TopK[T: ClassTag, D: ClassTag](
 object TopK {
   def apply[T: ClassTag, D: ClassTag](
   k: Int,
-  dim: Int = -1,
-  increase: Boolean = false,
   sorted: Boolean = true,
-  startIndex : Int = 1)
+  startIndex : Int = 1,
+  dim: Int = -1,
+  increase: Boolean = false)
   (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  TopK[T, D] = new TopK(k, dim, increase, sorted, startIndex)
+  TopK[T, D] = new TopK(k, sorted, startIndex, dim, increase)
 }
