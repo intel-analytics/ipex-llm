@@ -224,7 +224,9 @@ class FeatureSet(DataSet):
             self.value = jvalue
 
     @classmethod
-    def image_frame(cls, image_frame, memory_type="DRAM", bigdl_type="float"):
+    def image_frame(cls, image_frame, memory_type="DRAM",
+                    sequential_order=False,
+                    shuffle=True, bigdl_type="float"):
         """
         Create FeatureSet from ImageFrame.
         :param image_frame: ImageFrame
@@ -235,15 +237,21 @@ class FeatureSet(DataSet):
                               of the data into memory during the training. After going through the
                               1/n, we will release the current cache, and load another 1/n into
                               memory.
+        :param sequential_order: whether to iterate the elements in the feature set
+                                 in sequential order for training.
+        :param shuffle: whether to shuffle the elements in each partition before each epoch
+                        when training
         :param bigdl_type: numeric type
         :return: A feature set
         """
         jvalue = callBigDlFunc(bigdl_type, "createFeatureSetFromImageFrame",
-                               image_frame, memory_type)
+                               image_frame, memory_type, sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     @classmethod
-    def image_set(cls, imageset, memory_type="DRAM", bigdl_type="float"):
+    def image_set(cls, imageset, memory_type="DRAM",
+                  sequential_order=False,
+                  shuffle=True, bigdl_type="float"):
         """
         Create FeatureSet from ImageFrame.
         :param imageset: ImageSet
@@ -254,15 +262,22 @@ class FeatureSet(DataSet):
                               of the data into memory during the training. After going through the
                               1/n, we will release the current cache, and load another 1/n into
                               memory.
+        :param sequential_order: whether to iterate the elements in the feature set
+                                 in sequential order for training.
+        :param shuffle: whether to shuffle the elements in each partition before each epoch
+                        when training
         :param bigdl_type: numeric type
         :return: A feature set
         """
         jvalue = callBigDlFunc(bigdl_type, "createFeatureSetFromImageFrame",
-                               imageset.to_image_frame(), memory_type)
+                               imageset.to_image_frame(), memory_type,
+                               sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     @classmethod
-    def sample_rdd(cls, rdd, memory_type="DRAM", bigdl_type="float"):
+    def sample_rdd(cls, rdd, memory_type="DRAM",
+                   sequential_order=False,
+                   shuffle=True, bigdl_type="float"):
         """
         Create FeatureSet from RDD[Sample].
         :param rdd: A RDD[Sample]
@@ -273,14 +288,20 @@ class FeatureSet(DataSet):
                               of the data into memory during the training. After going through the
                               1/n, we will release the current cache, and load another 1/n into
                               memory.
+        :param sequential_order: whether to iterate the elements in the feature set
+                                 in sequential order when training.
+        :param shuffle: whether to shuffle the elements in each partition before each epoch
+                        when training
         :param bigdl_type:numeric type
         :return: A feature set
         """
-        jvalue = callBigDlFunc(bigdl_type, "createSampleFeatureSetFromRDD", rdd, memory_type)
+        jvalue = callBigDlFunc(bigdl_type, "createSampleFeatureSetFromRDD", rdd,
+                               memory_type, sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     @classmethod
-    def rdd(cls, rdd, memory_type="DRAM", bigdl_type="float"):
+    def rdd(cls, rdd, memory_type="DRAM", sequential_order=False,
+            shuffle=True, bigdl_type="float"):
         """
         Create FeatureSet from RDD.
         :param rdd: A RDD
@@ -291,10 +312,15 @@ class FeatureSet(DataSet):
                               of the data into memory during the training. After going through the
                               1/n, we will release the current cache, and load another 1/n into
                               memory.
+        :param sequential_order: whether to iterate the elements in the feature set
+                                 in sequential order when training.
+        :param shuffle: whether to shuffle the elements in each partition before each epoch
+                        when training
         :param bigdl_type:numeric type
         :return: A feature set
         """
-        jvalue = callBigDlFunc(bigdl_type, "createFeatureSetFromRDD", rdd, memory_type)
+        jvalue = callBigDlFunc(bigdl_type, "createFeatureSetFromRDD", rdd,
+                               memory_type, sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     def transform(self, transformer):
