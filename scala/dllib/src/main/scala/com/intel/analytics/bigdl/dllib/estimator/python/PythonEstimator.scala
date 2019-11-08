@@ -72,7 +72,8 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
                      endTrigger: Trigger = null,
                      checkPointTrigger: Trigger = null,
                      validationSet: FeatureSet[Sample[T]] = null,
-                     validationMethod: Array[ValidationMethod[T]] = null, batchSize: Int)
+                     validationMethod: JList[ValidationMethod[T]] = null,
+                     batchSize: Int)
   : estimator.type = {
     val sample2batch = SampleToMiniBatch(batchSize)
     val trainMiniBatch = trainSet -> sample2batch
@@ -84,7 +85,7 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
 
     estimator.train(trainMiniBatch, criterion,
       Some(endTrigger), Some(checkPointTrigger),
-      validationMiniBatch, validationMethod)
+      validationMiniBatch, Option(validationMethod).map(_.asScala.toArray).orNull)
   }
 
   def estimatorTrainImageFeature(estimator: Estimator[T],
