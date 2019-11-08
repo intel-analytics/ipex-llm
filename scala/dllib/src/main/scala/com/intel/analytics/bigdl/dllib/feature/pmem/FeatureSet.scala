@@ -171,7 +171,9 @@ private[zoo] case class ImageFeatureArray(
 object PmemFeatureSet {
 
   private def rdd[T: ClassTag](data: RDD[T],
-      nativeArrayConverter: NativeArrayConverter[T]):
+      nativeArrayConverter: NativeArrayConverter[T],
+      sequentialOrder: Boolean,
+      shuffle: Boolean):
   DistributedFeatureSet[T] = {
     val countPerPartition = data.mapPartitions { iter =>
       require(iter.hasNext)
@@ -192,22 +194,28 @@ object PmemFeatureSet {
       nativeArrayConverter.toArray(dataIter, countIter)
     }.setName(s"FeatureSet: ${data.name} cached in PMEM")
       .cache()
-    new CachedDistributedFeatureSet[T](arrayRDD.asInstanceOf[RDD[ArrayLike[T]]])
+    new CachedDistributedFeatureSet[T](arrayRDD.asInstanceOf[RDD[ArrayLike[T]]],
+      sequentialOrder, shuffle)
   }
 
   def rdd[T: ClassTag](data: RDD[T],
-      memoryType: MemoryType = PMEM): DistributedFeatureSet[T] = {
+      memoryType: MemoryType = PMEM,
+      sequentialOrder: Boolean = false,
+      shuffle: Boolean = true): DistributedFeatureSet[T] = {
     var clazz: ClassTag[T] = implicitly[ClassTag[T]]
     implicitly[ClassTag[T]].runtimeClass match {
       case t if t == classOf[ByteRecord] =>
         rdd[ByteRecord](data.asInstanceOf[RDD[ByteRecord]],
-          new ByteRecordConverter(memoryType)).asInstanceOf[DistributedFeatureSet[T]]
+          new ByteRecordConverter(memoryType),
+          sequentialOrder, shuffle).asInstanceOf[DistributedFeatureSet[T]]
       case t if t == classOf[Sample[Float]] =>
         rdd[Sample[Float]](data.asInstanceOf[RDD[Sample[Float]]],
-          new SampleConverter(memoryType)).asInstanceOf[DistributedFeatureSet[T]]
+          new SampleConverter(memoryType),
+          sequentialOrder, shuffle).asInstanceOf[DistributedFeatureSet[T]]
       case t if t == classOf[ImageFeature] =>
         rdd[ImageFeature](data.asInstanceOf[RDD[ImageFeature]],
-          new ImageFeatureConverter(memoryType)).asInstanceOf[DistributedFeatureSet[T]]
+          new ImageFeatureConverter(memoryType),
+          sequentialOrder, shuffle).asInstanceOf[DistributedFeatureSet[T]]
       case _ =>
         throw new IllegalArgumentException(
           s"${implicitly[ClassTag[T]].runtimeClass} is not supported for now")
