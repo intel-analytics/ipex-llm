@@ -16,15 +16,15 @@
 
 package com.intel.analytics.zoo.pipeline.estimator.python
 
-import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
+import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.dataset.{ByteRecord, MiniBatch, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
 import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.feature.{DistributedFeatureSet, FeatureSet}
+import com.intel.analytics.zoo.feature.FeatureSet
 import com.intel.analytics.zoo.pipeline.estimator.Estimator
 
 import scala.reflect.ClassTag
@@ -50,21 +50,21 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
   def estimatorEvaluate(estimator: Estimator[T], validationSet: FeatureSet[Sample[T]],
-                        validationMethod: Array[ValidationMethod[T]], batchSize: Int
+                        validationMethod: JList[ValidationMethod[T]], batchSize: Int
                        ): Map[ValidationMethod[T], ValidationResult] = {
     val sample2batch = SampleToMiniBatch(batchSize)
     val validationMiniBatch = validationSet -> sample2batch
-    estimator.evaluate(validationMiniBatch, validationMethod)
+    estimator.evaluate(validationMiniBatch, validationMethod.asScala.toArray)
   }
 
   def estimatorEvaluateImageFeature(estimator: Estimator[T],
                                     validationSet: FeatureSet[ImageFeature],
-                                    validationMethod: Array[ValidationMethod[T]],
+                                    validationMethod: JList[ValidationMethod[T]],
                                     batchSize: Int
                                    ): Map[ValidationMethod[T], ValidationResult] = {
     val imageFeature2batch = ImageFeatureToMiniBatch(batchSize)
     val validationMiniBatch = validationSet -> imageFeature2batch
-    estimator.evaluate(validationMiniBatch, validationMethod)
+    estimator.evaluate(validationMiniBatch, validationMethod.asScala.toArray)
   }
 
   def estimatorTrain(estimator: Estimator[T], trainSet: FeatureSet[Sample[T]],
@@ -84,7 +84,7 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     }
 
     estimator.train(trainMiniBatch, criterion,
-      Some(endTrigger), Some(checkPointTrigger),
+      Option(endTrigger), Option(checkPointTrigger),
       validationMiniBatch, Option(validationMethod).map(_.asScala.toArray).orNull)
   }
 
@@ -111,7 +111,7 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     }
 
     estimator.train(trainMiniBatch, criterion,
-      Some(endTrigger), Some(checkPointTrigger),
+      Option(endTrigger), Option(checkPointTrigger),
       validationMiniBatch, valMethods)
   }
 
