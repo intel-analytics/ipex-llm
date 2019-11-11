@@ -437,11 +437,7 @@ object FeatureSet {
     dataStrategy match {
       case PARTITIONED =>
         val nodeNumber = EngineRef.getNodeNumber()
-        val repartitionedData = if (sequentialOrder && data.partitions.length == nodeNumber) {
-          data
-        } else {
-          data.coalesce(nodeNumber, true).setName(data.name)
-        }
+        val repartitionedData = data.coalesce(nodeNumber, true).setName(data.name)
         memoryType match {
           case DRAM =>
             DRAMFeatureSet.rdd(repartitionedData, sequentialOrder, shuffle)
