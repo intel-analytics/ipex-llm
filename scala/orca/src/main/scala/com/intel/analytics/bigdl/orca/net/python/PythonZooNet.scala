@@ -147,8 +147,8 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     new MergeFeatureLabel()
   }
 
-  def createMergeFeatureLabelFeatureTransformer(): MergeFeatureLabel = {
-    new MergeFeatureLabel()
+  def createMergeFeatureLabelFeatureTransformer(): MergeFeatureLabelFeatureTransformer = {
+    new MergeFeatureLabelFeatureTransformer()
   }
 
   def createTFValidationMethod(valMethod: ValidationMethod[Float], name: String,
