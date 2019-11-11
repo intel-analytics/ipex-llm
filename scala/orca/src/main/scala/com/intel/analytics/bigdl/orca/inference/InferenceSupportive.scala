@@ -93,14 +93,21 @@ trait InferenceSupportive {
     require(outputLength == outputShape.product,
       "data length should be equal to the product of shape")
     val outputs = new util.ArrayList[JList[JTensor]]()
-    var i = 0
-    while(i < batchSize) {
-      val storageOffset = batchTensor.storageOffset - 1 + i * outputLength
-      val res = new Array[Float](outputLength)
-      System.arraycopy(batchTensor.storage().array(), storageOffset, res, 0, res.length)
-      val outputTensor = new JTensor(res, outputShape, false)
+    if (batchSize == 1) {
+      // Avoid copy from Tensor to JTensor
+      // When the are only 1 batch
+      val outputTensor = new JTensor(batchTensor.storage().array(), outputShape, false)
       outputs.add(util.Arrays.asList({outputTensor}))
-      i += 1
+    } else {
+      var i = 0
+      while(i < batchSize) {
+        val storageOffset = batchTensor.storageOffset - 1 + i * outputLength
+        val res = new Array[Float](outputLength)
+        System.arraycopy(batchTensor.storage().array(), storageOffset, res, 0, res.length)
+        val outputTensor = new JTensor(res, outputShape, false)
+        outputs.add(util.Arrays.asList({outputTensor}))
+        i += 1
+      }
     }
     outputs
   }
@@ -128,11 +135,9 @@ trait InferenceSupportive {
   }
 
   def transferTensorToJTensor(input: Tensor[Float]): JTensor = {
-    val storageOffset = input.storageOffset - 1
-    val res = new Array[Float](input.nElement())
-    System.arraycopy(input.storage().array(), storageOffset, res, 0, res.length)
     val outputShape = input.size()
-    new JTensor(res, outputShape, false)
+    // Share Tensor Storage
+    new JTensor(input.storage().array(), outputShape, false)
   }
 
   def transferListOfActivityToActivityOfBatch(inputs: JList[JList[JTensor]], batchSize: Int)
