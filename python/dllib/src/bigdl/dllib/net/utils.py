@@ -15,6 +15,7 @@
 #
 
 import sys
+import warnings
 
 if sys.version >= '3':
     long = int
@@ -63,3 +64,104 @@ def _check_the_same(all_required_inputs, inputs_in_datasets):
                                       all_required_inputs]
         raise ValueError("You should use all the placeholders that are defined in dataset, " +
                          "%s are not used" % inputs_not_require_by_loss)
+
+
+def to_bigdl_optim_method(koptim_method):
+    # koptim_method is always an object
+    import tensorflow.keras.backend as K
+    import tensorflow.keras.optimizers as koptimizers
+    import bigdl.optim.optimizer as boptimizer
+    import tensorflow.train as tftrain
+    import tensorflow as tf
+    from tensorflow.python.keras.optimizers import TFOptimizer
+
+    if isinstance(koptim_method, TFOptimizer):
+        koptim_method = koptim_method.optimizer
+
+    if isinstance(koptim_method, boptimizer.OptimMethod):
+        return koptim_method
+    elif isinstance(koptim_method, koptimizers.Optimizer):
+        lr = float(K.eval(koptim_method.lr))
+        decay = float(K.eval(koptim_method.decay))
+        if isinstance(koptim_method, koptimizers.Adagrad):
+            warnings.warn("For Adagrad, we don't support epsilon for now")
+            return boptimizer.Adagrad(learningrate=lr,
+                                      learningrate_decay=decay)
+        elif isinstance(koptim_method, koptimizers.SGD):
+            momentum = float(K.eval(koptim_method.momentum))
+            return boptimizer.SGD(learningrate=lr,
+                                  learningrate_decay=decay,
+                                  momentum=momentum,
+                                  nesterov=koptim_method.nesterov)
+        elif isinstance(koptim_method, koptimizers.Adam):
+            beta1 = float(K.eval(koptim_method.beta_1))
+            beta2 = float(K.eval(koptim_method.beta_2))
+            return boptimizer.Adam(learningrate=lr,
+                                   learningrate_decay=decay,
+                                   beta1=beta1,
+                                   beta2=beta2,
+                                   epsilon=koptim_method.epsilon)
+        elif isinstance(koptim_method, koptimizers.RMSprop):
+            rho = float(K.eval(koptim_method.rho))
+            return boptimizer.RMSprop(learningrate=lr,
+                                      learningrate_decay=decay,
+                                      decayrate=rho,
+                                      epsilon=koptim_method.epsilon)
+        elif isinstance(koptim_method, koptimizers.Adadelta):
+            warnings.warn(
+                "For Adadelta, we don't support learning rate and learning rate decay for now")
+            return boptimizer.Adadelta(decayrate=koptim_method.rho,
+                                       epsilon=koptim_method.epsilon)
+        elif isinstance(koptim_method, koptimizers.Adamax):
+            beta1 = float(K.eval(koptim_method.beta_1))
+            beta2 = float(K.eval(koptim_method.beta_2))
+            warnings.warn("For Adamax, we don't support learning rate decay for now")
+            return boptimizer.Adamax(learningrate=lr,
+                                     beta1=beta1,
+                                     beta2=beta2,
+                                     epsilon=koptim_method.epsilon)
+    elif isinstance(koptim_method, tftrain.Optimizer):
+        def get_value(v):
+            if isinstance(v, (tf.Tensor, tf.SparseTensor, tf.Variable)):
+                return float(K.eval(v))
+            else:
+                return float(v)
+
+        if isinstance(koptim_method, tftrain.GradientDescentOptimizer):
+            lr = get_value(koptim_method._learning_rate)
+            return boptimizer.SGD(learningrate=lr)
+        elif isinstance(koptim_method, tftrain.MomentumOptimizer):
+            lr = get_value(koptim_method._learning_rate)
+            momentum = get_value(koptim_method._momentum)
+            use_nesterov = koptim_method._use_nesterov
+            return boptimizer.SGD(learningrate=lr, momentum=momentum, nesterov=use_nesterov)
+        elif isinstance(koptim_method, tftrain.AdagradOptimizer):
+            lr = get_value(koptim_method._learning_rate)
+            return boptimizer.Adagrad(learningrate=lr)
+        elif isinstance(koptim_method, tftrain.AdamOptimizer):
+            lr = get_value(koptim_method._lr)
+            beta1 = get_value(koptim_method._beta1)
+            beta2 = get_value(koptim_method._beta2)
+            epsilon = get_value(koptim_method._epsilon)
+            return boptimizer.Adam(learningrate=lr, beta1=beta1, beta2=beta2, epsilon=epsilon)
+        elif isinstance(koptim_method, tftrain.RMSPropOptimizer):
+            lr = get_value(koptim_method._learning_rate)
+            decay = get_value(koptim_method._decay)
+            momentum = get_value(koptim_method._momentum)
+            epsilon = get_value(koptim_method._epsilon)
+            centered = get_value(koptim_method._centered)
+            if momentum != 0.0 or centered:
+                warnings.warn(
+                    "For RMSPropOptimizer, we don't support momentum and centered for now")
+            return boptimizer.RMSprop(learningrate=lr,
+                                      learningrate_decay=decay,
+                                      epsilon=epsilon)
+        elif isinstance(koptim_method, tftrain.AdadeltaOptimizer):
+            lr = get_value(koptim_method._lr)
+            rho = get_value(koptim_method._rho)
+            epsilon = get_value(koptim_method._epsilon)
+            warnings.warn(
+                "For Adadelta, we don't support learning rate for now")
+            return boptimizer.Adadelta(decayrate=rho, epsilon=epsilon)
+
+    raise ValueError("We don't support %s for now" % koptim_method)
