@@ -20,6 +20,7 @@ from bigdl.optim.optimizer import MaxIteration, Loss, TreeNNAccuracy
 from zoo.common import Sample
 from zoo.pipeline.api.keras import metrics
 from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFNet
+from zoo.pipeline.api.net.utils import to_bigdl_optim_method
 
 from zoo.util import nest
 import numpy as np
@@ -238,7 +239,7 @@ class TFEstimator(object):
                                            result.label_tensors,
                                            tf.estimator.ModeKeys.TRAIN,
                                            self.config)
-                optim_method = TFOptimizer.to_bigdl_optim_method(koptim_method=self.optimizer)
+                optim_method = to_bigdl_optim_method(koptim_method=self.optimizer)
                 latest_checkpoint = self.estimator.latest_checkpoint()
 
                 with tf.Session() as sess:
