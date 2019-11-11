@@ -142,6 +142,7 @@ class TestTFDataset(ZooTestCase):
                                                                    target_keys=["label"])
                                                   ])
         feature_set = feature_set.transform(train_transformer)
+        feature_set = feature_set.transform(ImageFeatureToSample())
         return feature_set
 
     def test_training_for_imageset(self):
