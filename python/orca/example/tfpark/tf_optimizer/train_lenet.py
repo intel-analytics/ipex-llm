@@ -66,9 +66,7 @@ def main(max_epoch, data_num):
     optimizer = TFOptimizer(loss, Adam(1e-3),
                             val_outputs=[logits],
                             val_labels=[labels],
-                            val_method=Top1Accuracy())
-    optimizer.set_train_summary(TrainSummary("/tmp/az_lenet", "lenet"))
-    optimizer.set_val_summary(ValidationSummary("/tmp/az_lenet", "lenet"))
+                            val_method=Top1Accuracy(), model_dir="/tmp/lenet/")
     # kick off training
     optimizer.optimize(end_trigger=MaxEpoch(max_epoch))
 
