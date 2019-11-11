@@ -226,6 +226,7 @@ class TestTFParkEstimator(ZooTestCase):
                                                               target_keys=["label"])
                                                           ])
                 feature_set = feature_set.transform(train_transformer)
+                feature_set = feature_set.transform(ImageFeatureToSample())
                 training_dataset = TFDataset.from_feature_set(feature_set,
                                                               features=(tf.float32, [224, 224, 3]),
                                                               labels=(tf.int32, [1]),
