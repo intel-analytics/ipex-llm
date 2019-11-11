@@ -39,7 +39,7 @@ def main(data_num):
 
     model = Model(inputs=data, outputs=predictions)
 
-    model.load_weights("/tmp/mnist_keras.h5")
+    model.load_weights("/tmp/mnist_keras/mnist_keras.h5")
 
     if DISTRIBUTED:
         # using RDD api to do distributed evaluation

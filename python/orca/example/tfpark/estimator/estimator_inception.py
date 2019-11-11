@@ -46,6 +46,7 @@ def main(option):
                                                       ])
             feature_set = FeatureSet.image_frame(image_set.to_image_frame())
             feature_set = feature_set.transform(train_transformer)
+            feature_set = feature_set.transform(ImageFeatureToSample())
             dataset = TFDataset.from_feature_set(feature_set,
                                                  features=(tf.float32, [224, 224, 3]),
                                                  labels=(tf.int32, [1]), batch_size=16)

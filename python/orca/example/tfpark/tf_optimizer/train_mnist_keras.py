@@ -62,14 +62,12 @@ def main(max_epoch, data_num):
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
 
-    optimizer = TFOptimizer.from_keras(model, dataset)
+    optimizer = TFOptimizer.from_keras(model, dataset, model_dir="/tmp/mnist_keras")
 
-    optimizer.set_train_summary(TrainSummary("/tmp/mnist_log", "mnist"))
-    optimizer.set_val_summary(ValidationSummary("/tmp/mnist_log", "mnist"))
     # kick off training
     optimizer.optimize(end_trigger=MaxEpoch(max_epoch))
 
-    model.save_weights("/tmp/mnist_keras.h5")
+    model.save_weights("/tmp/mnist_keras/mnist_keras.h5")
 
 if __name__ == '__main__':
 
