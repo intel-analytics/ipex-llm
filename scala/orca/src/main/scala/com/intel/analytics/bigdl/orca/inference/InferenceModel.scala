@@ -93,18 +93,18 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
-   * loads a TF model as TFNet
+   * loads a TF frozen model as TFNet
    *
-   * @param modelPath the path of the tensorflow model file
+   * @param modelPath the path of the tensorflow frozen model file
    */
   def doLoadTF(modelPath: String): Unit = {
     doLoadTensorflowModel(modelPath, 1, 1, true)
   }
 
   /**
-   * loads a TF model as TFNet
+   * loads a TF frozen model as TFNet
    *
-   * @param modelPath                 the path of the tensorflow model
+   * @param modelPath                 the path of the tensorflow frozen model
    * @param intraOpParallelismThreads the num of intraOpParallelismThreads
    * @param interOpParallelismThreads the num of interOpParallelismThreads
    * @param usePerSessionThreads      whether to perSessionThreads
@@ -115,6 +115,42 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
                usePerSessionThreads: Boolean): Unit = {
     doLoadTensorflowModel(
       modelPath,
+      intraOpParallelismThreads,
+      interOpParallelismThreads,
+      usePerSessionThreads)
+  }
+
+  /**
+   * loads a TF saved model as TFNet
+   *
+   * @param modelPath  the path of the tensorflow saved model dir
+   * @param inputs     the inputs of the model
+   * @param outputs    the outputs of the model
+   */
+  def doLoadTF(modelPath: String, inputs: Array[String], outputs: Array[String]): Unit = {
+    doLoadTensorflowSavedModel(modelPath, inputs, outputs, 1, 1, true)
+  }
+
+  /**
+   * loads a TF saved model as TFNet
+   *
+   * @param modelPath                  the path of the tensorflow saved model dir
+   * @param inputs                     the inputs of the model
+   * @param outputs                    the outputs of the model
+   * @param intraOpParallelismThreads  the num of intraOpParallelismThreads
+   * @param interOpParallelismThreads  the num of interOpParallelismThreads
+   * @param usePerSessionThreads       whether to perSessionThreads
+   */
+  def doLoadTF(modelPath: String,
+               inputs: Array[String],
+               outputs: Array[String],
+               intraOpParallelismThreads: Int,
+               interOpParallelismThreads: Int,
+               usePerSessionThreads: Boolean): Unit = {
+    doLoadTensorflowSavedModel(
+      modelPath,
+      inputs,
+      outputs,
       intraOpParallelismThreads,
       interOpParallelismThreads,
       usePerSessionThreads)
@@ -359,6 +395,19 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     this.originalModel =
       InferenceModelFactory.loadFloatModelForTF(modelPath,
         intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+    offerModelQueue()
+  }
+
+  private def doLoadTensorflowSavedModel(modelPath: String,
+                                         inputs: Array[String],
+                                         outputs: Array[String],
+                                         intraOpParallelismThreads: Int,
+                                         interOpParallelismThreads: Int,
+                                         usePerSessionThreads: Boolean): Unit = {
+    clearModelQueue()
+    this.originalModel =
+      InferenceModelFactory.loadFloatModelForTFSavedModel(modelPath,
+        inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
     offerModelQueue()
   }
 
