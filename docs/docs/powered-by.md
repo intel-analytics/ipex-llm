@@ -13,6 +13,7 @@
 * __Cray__ 
 <br>[A deep learning approach for precipitation nowcasting with RNN using Analytics Zoo in Cray](https://conferences.oreilly.com/strata/strata-ny-2018/public/schedule/detail/69413)
 * __Dell EMC__
+<br>[Build AI on PowerEdge with Domino Data Labs, Apache Spark and Analytics Zoo](https://community.emc.com/community/products/rs_for_ai/blog/2019/09/19/build-ai-on-poweredge-with-domino-data-labs-and-apache-spark)
 <br>[AI-assisted Radiology Using Distributed Deep
 Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en-us/asset/white-papers/solutions/h17686_hornet_wp.pdf)
 <br>[Using Deep Learning on Apache Spark to Diagnose Thoracic Pathology from Chest X-rays](https://databricks.com/session/using-deep-learning-on-apache-spark-to-diagnose-thoracic-pathology-from-chest-x-rays)
