@@ -18,7 +18,6 @@ package com.intel.analytics.zoo.pipeline.inference
 
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding
@@ -33,12 +32,6 @@ object ModelLoader extends InferenceSupportive {
   Sequential
   GraphNet
   WordEmbedding
-
-  timing("bigdl init engine") {
-    System.setProperty("bigdl.localMode", System.getProperty("bigdl.localMode", "true"))
-    System.setProperty("bigdl.coreNumber", System.getProperty("bigdl.coreNumber", "1"))
-    Engine.init
-  }
 
   def loadFloatModel(modelPath: String, weightPath: String)
     : AbstractModule[Activity, Activity, Float] = {
