@@ -16,6 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.objectives
 
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasBaseSpec
 
 class CategoricalCrossEntropySpec extends KerasBaseSpec {
@@ -34,5 +35,15 @@ class CategoricalCrossEntropySpec extends KerasBaseSpec {
       """.stripMargin
     val c = CategoricalCrossEntropy[Float]()
     checkOutputAndGradForLoss(c, kerasCode)
+  }
+
+  "CategoricalCrossEntropy loss forward negative input" should "be ok" in {
+    val input = Tensor[Float](2, 3).rand(-1, 1)
+    val target = Tensor[Float](2, 3)
+    target.setValue(1, 1, 1)
+    target.setValue(2, 2, 1)
+    val c = CategoricalCrossEntropy[Float]()
+    val o = c.forward(input, target)
+    java.lang.Float.isNaN(o) should be (false)
   }
 }
