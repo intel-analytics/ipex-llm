@@ -50,6 +50,8 @@ class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
   var floatInferenceModel: FloatModel = _
 
   before {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("bigdl.coreNumber")
     floatInferenceModel = InferenceModelFactory.loadFloatModelForCaffe(modelPath, weightPath)
   }
 

@@ -67,6 +67,9 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
 
 
   override def beforeAll() {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("bigdl.coreNumber")
+
     tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val dir = new File(s"${tmpDir.getAbsolutePath}/OpenVinoInferenceModelSpec").getCanonicalPath
 

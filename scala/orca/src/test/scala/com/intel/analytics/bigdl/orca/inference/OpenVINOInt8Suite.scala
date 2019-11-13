@@ -80,6 +80,9 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
   var savedModelPath: String = _
 
   override def beforeAll() {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("bigdl.coreNumber")
+
     tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val dir = new File(s"${tmpDir.getAbsolutePath}/OpenVinoInt8Spec").getCanonicalPath
 

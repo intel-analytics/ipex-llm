@@ -88,6 +88,8 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     inputTensorList1, inputTensorList2, inputTensorList3)
 
   before {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("bigdl.coreNumber")
     floatInferenceModel = InferenceModelFactory.loadFloatModelForCaffe(modelPath, weightPath)
   }
 
