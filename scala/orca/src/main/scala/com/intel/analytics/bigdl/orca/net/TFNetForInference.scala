@@ -205,12 +205,12 @@ object TFNetForInference {
       val operationOutput = operation.output(0)
       if (opType == "VarHandleOp") {
         val readVariable = ops.readVariableOp(operationOutput, dataTypeClass)
-        val floatVariable = ops.cast(readVariable, classOf[java.lang.Float])
+        val floatVariable = ops.dtypes.cast(readVariable, classOf[java.lang.Float])
         val placeholder = ops.placeholder(dataTypeClass,
           Placeholder.shape(readVariable.asOutput().shape()))
 
         // do it manually to get a reference of the op and get the op name
-        val builder = ops.scope().graph().opBuilder("AssignVariableOp",
+        val builder = graph.opBuilder("AssignVariableOp",
           ops.scope().makeOpName("AssignVariableOp"))
         builder.addInput(operationOutput)
         builder.addInput(placeholder.asOutput())
@@ -220,12 +220,12 @@ object TFNetForInference {
           dataType, operationOutput.shape(), operation.name())
       } else {
         val readVariable = operationOutput
-        val floatVariable = ops.cast(readVariable, classOf[java.lang.Float])
+        val floatVariable = ops.dtypes.cast(readVariable, classOf[java.lang.Float])
         val placeholder = ops.placeholder(dataTypeClass,
           Placeholder.shape(operationOutput.shape()))
 
         // do it manually to get a reference of the op and get the op name
-        val builder = ops.scope().graph().opBuilder("Assign",
+        val builder = graph.opBuilder("Assign",
           ops.scope().makeOpName("Assign"))
         builder.addInput(operationOutput)
         builder.addInput(placeholder.asOutput())
@@ -242,10 +242,10 @@ object TFNetForInference {
     val dataTypes = newOps.map(_._4)
     val dataShapes = newOps.map(x => (x._5, x._6))
 
-    val graphdef = GraphDef.parseFrom(ops.scope().graph().toGraphDef)
+    val graphdef = GraphDef.parseFrom(graph.toGraphDef)
 
     val graphRunner = new GraphRunner(
-      ops.scope().graph().toGraphDef,
+      graph.toGraphDef,
       null, null, null, null,
       TFNet.defaultSessionConfig.toByteArray())
 
