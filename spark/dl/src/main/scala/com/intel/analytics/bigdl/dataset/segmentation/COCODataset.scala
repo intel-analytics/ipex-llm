@@ -265,7 +265,7 @@ case class COCOImage(
       Array(annotations.length))
     val masks = annotations.map(ann => ann.segmentation.asInstanceOf[SegmentationMasks]).toArray
 
-    val rawdata = SeqFileFolder.decodedRawImageFileBytes(this.data)
+    val rawdata = SeqFileFolder.decodedRawImageToBGR(this.data)
     require(rawdata.length == height * width * 3)
     val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
     imf(ImageFeature.originalSize) = (height, width, 3)
