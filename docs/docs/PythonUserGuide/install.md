@@ -33,7 +33,7 @@ sc = init_nncontext()
 ---
 ## **Install from pip for yarn cluster**
 
-You only need to following these steps on your driver node and we only support yarn-client mode for now.
+You only need to following these steps on your driver node and we only support __yarn-client mode__ for now.
 
 1) Install [Conda](https://docs.conda.io/projects/conda/en/latest/commands/install.html) in your environment.
 
