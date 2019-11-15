@@ -24,8 +24,10 @@ import scala.reflect.ClassTag
 class TopK[T: ClassTag, D: ClassTag](
   val k: Int,
   val sorted: Boolean = true,
-  val startIndex: Int = 1
-)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  val startIndex: Int = 1,
+  val dim: Int = -1,
+  val increase: Boolean = false)
+(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[D], Table, T] {
 
   private val indices = Tensor[Int]()
@@ -35,7 +37,13 @@ class TopK[T: ClassTag, D: ClassTag](
   output = T(values, indices)
 
   override def updateOutput(input: Tensor[D]): Table = {
-    input.topk(k = k, increase = false, result = values, indices = indicesD, sortedResult = sorted)
+    input.topk(
+      k = k,
+      dim = dim,
+      increase = increase,
+      result = values,
+      indices = indicesD,
+      sortedResult = sorted)
     indices.resizeAs(indicesD)
     indices.zipWith[Int, D](indices, indicesD, (a, b) => {
       ev2.toType[Int](b) + startIndex - 1
@@ -50,7 +58,12 @@ class TopK[T: ClassTag, D: ClassTag](
 }
 
 object TopK {
-  def apply[T: ClassTag, D: ClassTag](k: Int, sorted: Boolean = true, startIndex : Int = 1
-  )(implicit ev: TensorNumeric[T],
-    ev2: TensorNumeric[D]): TopK[T, D] = new TopK(k, sorted, startIndex)
+  def apply[T: ClassTag, D: ClassTag](
+  k: Int,
+  sorted: Boolean = true,
+  startIndex : Int = 1,
+  dim: Int = -1,
+  increase: Boolean = false)
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
+  TopK[T, D] = new TopK(k, sorted, startIndex, dim, increase)
 }
