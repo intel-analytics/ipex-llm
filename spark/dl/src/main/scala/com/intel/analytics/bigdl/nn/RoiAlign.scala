@@ -46,8 +46,9 @@ class RoiAlign[T: ClassTag] (
   val spatialScale: Float,
   val samplingRatio: Int,
   val pooledH: Int,
-  val pooledW: Int
-) (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
+  val pooledW: Int,
+  val mode: String = "avg"
+)(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
   override def updateOutput(input: Table): Tensor[T] = {
     if (classTag[T] == classTag[Float]) {
       val data = input[Tensor[Float]](1)
@@ -170,41 +171,83 @@ class RoiAlign[T: ClassTag] (
         pre_cal
       )
 
-      for (c <- 0 until channels) {
-        val index_n_c = index_n + c * pooledW * pooledH
-        val offset_data = (roi_batch_ind * channels + c) * height * width
-        var pre_calc_index: Int = 1
+      mode match {
+        case "avg" =>
+          for (c <- 0 until channels) {
+            val index_n_c = index_n + c * pooledW * pooledH
+            val offset_data = (roi_batch_ind * channels + c) * height * width
+            var pre_calc_index: Int = 1
 
-        for (ph <- 0 until pooledH) {
-          for (pw <- 0 until pooledW) {
-            val index = index_n_c + ph * pooledW + pw
+            for (ph <- 0 until pooledH) {
+              for (pw <- 0 until pooledW) {
+                val index = index_n_c + ph * pooledW + pw
 
-            var output_val: Float = 0.0f
-            for (iy <- 0 until roi_bin_grid_h) {
-              for (ix <- 0 until roi_bin_grid_w) {
-                val pc = pre_cal(pre_calc_index)
-                val pos1 = pc.valueAt(1).toInt
-                val pos2 = pc.valueAt(2).toInt
-                val pos3 = pc.valueAt(3).toInt
-                val pos4 = pc.valueAt(4).toInt
-                val w1 = pc.valueAt(5)
-                val w2 = pc.valueAt(6)
-                val w3 = pc.valueAt(7)
-                val w4 = pc.valueAt(8)
+                var output_val: Float = 0.0f
+                for (iy <- 0 until roi_bin_grid_h) {
+                  for (ix <- 0 until roi_bin_grid_w) {
+                    val pc = pre_cal(pre_calc_index)
+                    val pos1 = pc.valueAt(1).toInt
+                    val pos2 = pc.valueAt(2).toInt
+                    val pos3 = pc.valueAt(3).toInt
+                    val pos4 = pc.valueAt(4).toInt
+                    val w1 = pc.valueAt(5)
+                    val w2 = pc.valueAt(6)
+                    val w3 = pc.valueAt(7)
+                    val w4 = pc.valueAt(8)
 
-                output_val = output_val +  w1 * inputData(offset_data.toInt + pos1) +
-                  w2 * inputData(offset_data.toInt + pos2) +
-                  w3 * inputData(offset_data.toInt + pos3) +
-                  w4 * inputData(offset_data.toInt + pos4)
+                    output_val = output_val + w1 * inputData(offset_data.toInt + pos1) +
+                      w2 * inputData(offset_data.toInt + pos2) +
+                      w3 * inputData(offset_data.toInt + pos3) +
+                      w4 * inputData(offset_data.toInt + pos4)
 
-                pre_calc_index += 1
+                    pre_calc_index += 1
+                  }
+                }
+                output_val /= count
+
+                outputData(index) = output_val
               }
             }
-            output_val /= count
-
-            outputData(index) = output_val
           }
-        }
+        case "max" =>
+          for (c <- 0 until channels) {
+            val index_n_c = index_n + c * pooledW * pooledH
+            val offset_data = (roi_batch_ind * channels + c) * height * width
+            var pre_calc_index: Int = 1
+
+            for (ph <- 0 until pooledH) {
+              for (pw <- 0 until pooledW) {
+                val index = index_n_c + ph * pooledW + pw
+
+                var output_val = Float.MinValue
+                for (iy <- 0 until roi_bin_grid_h) {
+                  for (ix <- 0 until roi_bin_grid_w) {
+                    val pc = pre_cal(pre_calc_index)
+                    val pos1 = pc.valueAt(1).toInt
+                    val pos2 = pc.valueAt(2).toInt
+                    val pos3 = pc.valueAt(3).toInt
+                    val pos4 = pc.valueAt(4).toInt
+                    val w1 = pc.valueAt(5)
+                    val w2 = pc.valueAt(6)
+                    val w3 = pc.valueAt(7)
+                    val w4 = pc.valueAt(8)
+
+                    val value = w1 * inputData(offset_data.toInt + pos1) +
+                      w2 * inputData(offset_data.toInt + pos2) +
+                      w3 * inputData(offset_data.toInt + pos3) +
+                      w4 * inputData(offset_data.toInt + pos4)
+
+                    if (value > output_val) {
+                      output_val = value
+                    }
+
+                    pre_calc_index += 1
+                  }
+                }
+                outputData(index) = output_val
+              }
+            }
+          }
       }
     }
   }
@@ -354,42 +397,83 @@ class RoiAlign[T: ClassTag] (
         roi_bin_grid_w,
         pre_cal
       )
+      mode match {
+        case "avg" =>
+          for (c <- 0 until channels) {
+            val index_n_c = index_n + c * pooledW * pooledH
+            val offset_data = (roi_batch_ind * channels + c) * height * width
+            var pre_calc_index: Int = 1
 
-      for (c <- 0 until channels) {
-        val index_n_c = index_n + c * pooledW * pooledH
-        val offset_data = (roi_batch_ind * channels + c) * height * width
-        var pre_calc_index: Int = 1
+            for (ph <- 0 until pooledH) {
+              for (pw <- 0 until pooledW) {
+                val index = index_n_c + ph * pooledW + pw
 
-        for (ph <- 0 until pooledH) {
-          for (pw <- 0 until pooledW) {
-            val index = index_n_c + ph * pooledW + pw
+                var output_val: Double = 0.0
+                for (iy <- 0 until roi_bin_grid_h) {
+                  for (ix <- 0 until roi_bin_grid_w) {
+                    val pc = pre_cal(pre_calc_index)
+                    val pos1 = pc.valueAt(1).toInt
+                    val pos2 = pc.valueAt(2).toInt
+                    val pos3 = pc.valueAt(3).toInt
+                    val pos4 = pc.valueAt(4).toInt
+                    val w1 = pc.valueAt(5)
+                    val w2 = pc.valueAt(6)
+                    val w3 = pc.valueAt(7)
+                    val w4 = pc.valueAt(8)
 
-            var output_val: Double = 0.0
-            for (iy <- 0 until roi_bin_grid_h) {
-              for (ix <- 0 until roi_bin_grid_w) {
-                val pc = pre_cal(pre_calc_index)
-                val pos1 = pc.valueAt(1).toInt
-                val pos2 = pc.valueAt(2).toInt
-                val pos3 = pc.valueAt(3).toInt
-                val pos4 = pc.valueAt(4).toInt
-                val w1 = pc.valueAt(5)
-                val w2 = pc.valueAt(6)
-                val w3 = pc.valueAt(7)
-                val w4 = pc.valueAt(8)
+                    output_val = output_val +  w1 * inputData(offset_data.toInt + pos1) +
+                      w2 * inputData(offset_data.toInt + pos2) +
+                      w3 * inputData(offset_data.toInt + pos3) +
+                      w4 * inputData(offset_data.toInt + pos4)
 
-                output_val = output_val +  w1 * inputData(offset_data.toInt + pos1) +
-                  w2 * inputData(offset_data.toInt + pos2) +
-                  w3 * inputData(offset_data.toInt + pos3) +
-                  w4 * inputData(offset_data.toInt + pos4)
+                    pre_calc_index += 1
+                  }
+                }
+                output_val /= count
 
-                pre_calc_index += 1
+                outputData(index) = output_val
               }
             }
-            output_val /= count
-
-            outputData(index) = output_val
           }
-        }
+        case "max" =>
+          for (c <- 0 until channels) {
+            val index_n_c = index_n + c * pooledW * pooledH
+            val offset_data = (roi_batch_ind * channels + c) * height * width
+            var pre_calc_index: Int = 1
+
+            for (ph <- 0 until pooledH) {
+              for (pw <- 0 until pooledW) {
+                val index = index_n_c + ph * pooledW + pw
+
+                var output_val = Double.MinValue
+                for (iy <- 0 until roi_bin_grid_h) {
+                  for (ix <- 0 until roi_bin_grid_w) {
+                    val pc = pre_cal(pre_calc_index)
+                    val pos1 = pc.valueAt(1).toInt
+                    val pos2 = pc.valueAt(2).toInt
+                    val pos3 = pc.valueAt(3).toInt
+                    val pos4 = pc.valueAt(4).toInt
+                    val w1 = pc.valueAt(5)
+                    val w2 = pc.valueAt(6)
+                    val w3 = pc.valueAt(7)
+                    val w4 = pc.valueAt(8)
+
+                    val value = w1 * inputData(offset_data.toInt + pos1) +
+                      w2 * inputData(offset_data.toInt + pos2) +
+                      w3 * inputData(offset_data.toInt + pos3) +
+                      w4 * inputData(offset_data.toInt + pos4)
+
+                    if (value > output_val) {
+                      output_val = value
+                    }
+
+                    pre_calc_index += 1
+                  }
+                }
+                outputData(index) = output_val
+              }
+            }
+          }
       }
     }
   }
@@ -495,6 +579,8 @@ object RoiAlign {
     spatialScale: Float,
     samplingRatio: Int,
     pooledH: Int,
-    pooledW: Int) (implicit ev: TensorNumeric[T]): RoiAlign[T] =
-    new RoiAlign[T](spatialScale, samplingRatio, pooledH, pooledW)
+    pooledW: Int,
+    mode: String = "avg"
+  ) (implicit ev: TensorNumeric[T]): RoiAlign[T] =
+    new RoiAlign[T](spatialScale, samplingRatio, pooledH, pooledW, mode)
 }
