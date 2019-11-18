@@ -13,6 +13,7 @@ ${PIP} install --upgrade setuptools
 ${PIP} install numpy scipy
 ${PIP} install --no-binary pandas -I pandas
 ${PIP} install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.10.0
+${PIP} install torch==1.1.0 torchvision==0.3.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 if [[ "$PYTHON" != "python3" ]]; then
     ${PYTHON} -m pip install -U ipykernel
