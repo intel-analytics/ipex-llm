@@ -26,6 +26,8 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.reflect.io.File
+
 class MaskRCNNSpec extends FlatSpec with Matchers {
   "build maskrcnn" should "be ok" in {
     RandomGenerator.RNG.setSeed(100)
@@ -473,10 +475,11 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
 
     mask.getExtraParameter().foreach(_.fill(0.1f))
 
-    mask.saveModule("/tmp/maskrcnn.model", overWrite = true)
-    val maskLoad = Module.loadModule[Float]("/tmp/maskrcnn.model")
-
+    val tempFile = "/tmp/maskrcnn.model"
+    mask.saveModule(tempFile, overWrite = true)
+    val maskLoad = Module.loadModule[Float](tempFile)
     maskLoad.getExtraParameter().foreach(t => require(t.valueAt(1) == 0.1f))
+    File(tempFile).delete()
   }
 }
 
