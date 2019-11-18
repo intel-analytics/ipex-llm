@@ -47,7 +47,8 @@ class RoiAlign[T: ClassTag] (
   val samplingRatio: Int,
   val pooledH: Int,
   val pooledW: Int,
-  val mode: String = "avg"
+  val mode: String = "avg",
+  val aligned: Boolean = false
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
   override def updateOutput(input: Table): Tensor[T] = {
     if (classTag[T] == classTag[Float]) {
@@ -127,16 +128,16 @@ class RoiAlign[T: ClassTag] (
 
     for (n <- 0 until num_rois) {
       val index_n = n * channels * pooledW * pooledH
-      var offset_rois = n * roi_cols
+      val offset_rois = n * roi_cols
       val roi_batch_ind = 0 // bbox has 4 elements
+      val alignedOffset = if (aligned) 0.5f else 0.0f
+      val roi_start_w = roisFloat(offset_rois) * spatialScale  - alignedOffset
+      val roi_start_h = roisFloat(offset_rois + 1) * spatialScale - alignedOffset
+      val roi_end_w = roisFloat(offset_rois + 2) * spatialScale - alignedOffset
+      val roi_end_h = roisFloat(offset_rois + 3) * spatialScale - alignedOffset
+      val roi_width = roi_end_w - roi_start_w
+      val roi_height = roi_end_h - roi_start_h
 
-      val roi_start_w = roisFloat(offset_rois) * spatialScale
-      val roi_start_h = roisFloat(offset_rois + 1) * spatialScale
-      val roi_end_w = roisFloat(offset_rois + 2) * spatialScale
-      val roi_end_h = roisFloat(offset_rois + 3) * spatialScale
-
-      val roi_width = Math.max(roi_end_w - roi_start_w, 1.0f)
-      val roi_height = Math.max(roi_end_h - roi_start_h, 1.0f)
       val bin_size_h = roi_height/ pooledH
       val bin_size_w = roi_width / pooledW
 
@@ -354,16 +355,16 @@ class RoiAlign[T: ClassTag] (
 
     for (n <- 0 until num_rois) {
       val index_n = n * channels * pooledW * pooledH
-      var offset_rois = n * roi_cols
+      val offset_rois = n * roi_cols
       val roi_batch_ind = 0
+      val alignedOffset = if (aligned) 0.5f else 0.0f
+      val roi_start_w = roisDouble(offset_rois) * spatialScale  - alignedOffset
+      val roi_start_h = roisDouble(offset_rois + 1) * spatialScale - alignedOffset
+      val roi_end_w = roisDouble(offset_rois + 2) * spatialScale - alignedOffset
+      val roi_end_h = roisDouble(offset_rois + 3) * spatialScale - alignedOffset
 
-      val roi_start_w = roisDouble(offset_rois) * spatialScale.toDouble
-      val roi_start_h = roisDouble(offset_rois + 1) * spatialScale.toDouble
-      val roi_end_w = roisDouble(offset_rois + 2) * spatialScale.toDouble
-      val roi_end_h = roisDouble(offset_rois + 3) * spatialScale.toDouble
-
-      val roi_width = Math.max(roi_end_w - roi_start_w, 1.0)
-      val roi_height = Math.max(roi_end_h - roi_start_h, 1.0)
+      val roi_width = roi_end_w - roi_start_w
+      val roi_height = roi_end_h - roi_start_h
       val bin_size_h = roi_height/ pooledH
       val bin_size_w = roi_width / pooledW
 
@@ -580,7 +581,8 @@ object RoiAlign {
     samplingRatio: Int,
     pooledH: Int,
     pooledW: Int,
-    mode: String = "avg"
+    mode: String = "avg",
+    aligned: Boolean = false
   ) (implicit ev: TensorNumeric[T]): RoiAlign[T] =
     new RoiAlign[T](spatialScale, samplingRatio, pooledH, pooledW, mode)
 }

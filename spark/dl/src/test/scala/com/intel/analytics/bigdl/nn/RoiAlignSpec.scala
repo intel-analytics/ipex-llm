@@ -67,8 +67,7 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     val rois = Array(
       0, 0, 7, 5,
       6, 2, 7, 5,
-      3, 1, 6, 4,
-      3, 3, 3, 3)
+      3, 1, 6, 4)
 
     val input = new Table
     input.insert(Tensor(Storage(data.map(x => x.toFloat))).resize(1, 2, 6, 8))
@@ -88,11 +87,7 @@ class RoiAlignSpec extends FlatSpec with Matchers {
       0.393088847398757935, 0.704402685165405273,
       0.384622871875762939, 0.530835568904876709,
       0.525619626045227051, 0.501667082309722900,
-      0.407763212919235229, 0.379031181335449219,
-      0.566771149635314941, 0.329488337039947510,
-      0.504409193992614746, 0.318125635385513306,
-      0.405435621738433838, 0.409263730049133301,
-      0.378736764192581177, 0.303221583366394043
+      0.407763212919235229, 0.379031181335449219
     )
 
     for (i <- expectedRes.indices) {
@@ -143,12 +138,11 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     val rois = Array(
       0, 0, 7, 5,
       6, 2, 7, 5,
-      3, 1, 6, 4,
-      3, 3, 3, 3)
+      3, 1, 6, 4)
 
     val input = new Table
     input.insert(Tensor(Storage(data.map(x => x))).resize(1, 2, 6, 8))
-    input.insert(Tensor(Storage(rois.map(x => x.toDouble))).resize(4, 4))
+    input.insert(Tensor(Storage(rois.map(x => x.toDouble))).resize(3, 4))
 
     val roiAlign = RoiAlign[Double](
       spatio_scale, sampling_ratio, pooled_height, pooled_width, "avg")
@@ -165,16 +159,34 @@ class RoiAlignSpec extends FlatSpec with Matchers {
       0.393088847398757935, 0.704402685165405273,
       0.384622871875762939, 0.530835568904876709,
       0.525619626045227051, 0.501667082309722900,
-      0.407763212919235229, 0.379031181335449219,
-      0.566771149635314941, 0.329488337039947510,
-      0.504409193992614746, 0.318125635385513306,
-      0.405435621738433838, 0.409263730049133301,
-      0.378736764192581177, 0.303221583366394043
+      0.407763212919235229, 0.379031181335449219
     )
 
     for (i <- expectedRes.indices) {
       assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
+  }
+
+  "ROIAlign with true aligned" should "be ok" in {
+    val rois = Tensor[Float](T(T(1.0f, 1.0f, 3.0f, 3.0f)))
+    val features = Tensor[Float](T(T(T(
+      T( 0.0f, 1.0f, 2.0f, 3.0f, 4.0f),
+      T( 5.0f, 6.0f, 7.0f, 8.0f, 9.0f),
+      T(10.0f, 11.0f, 12.0f, 13.0f, 14.0f),
+      T(15.0f, 16.0f, 17.0f, 18.0f, 19.0f),
+      T(20.0f, 21.0f, 22.0f, 23.0f, 24.0f)))))
+
+    val expected = Tensor[Float](T(T(T(
+      T(7.5, 8, 8.5, 9.0f),
+      T(10f, 10.5, 11, 11.5),
+      T(12.5, 13, 13.5, 14),
+      T(15, 15.5, 16, 16.5)))))
+
+    val roiAlign = RoiAlign[Float](1.0f, 0, 4, 4, "avg", aligned = true)
+
+    val out = roiAlign.forward(T(features, rois))
+
+    out should be(expected)
   }
 }
 
