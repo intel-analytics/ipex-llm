@@ -96,7 +96,10 @@ private[mkldnn] object Fusion {
 
   private def findPrevious(node: Node[AbstractModule[Activity, Activity, Float]])
   : Node[AbstractModule[Activity, Activity, Float]] = {
-    if (node.element.isInstanceOf[Identity] && node.prevNodes.length == 1) {
+    if (node.element.isInstanceOf[Identity]
+      && node.nextNodes.length == 1
+      && node.prevNodes.length == 1
+      && node.prevNodes(0).nextNodes.length == 1) {
       findPrevious(node.prevNodes(0))
     } else node
   }
