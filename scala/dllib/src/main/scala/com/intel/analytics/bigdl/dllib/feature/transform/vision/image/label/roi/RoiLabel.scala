@@ -57,7 +57,7 @@ case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
   def toTable: Table = {
     val table = T()
     if (masks != null) {
-      require(masks.length > 0, "The masks can either be null or a non-empty array")
+      // masks may be empty array
       table(RoiImageInfo.MASKS) = masks.map(_.toRLE)
     }
     table(RoiImageInfo.CLASSES) = classes
