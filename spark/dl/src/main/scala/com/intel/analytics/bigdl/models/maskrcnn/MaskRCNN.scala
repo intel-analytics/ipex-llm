@@ -340,8 +340,12 @@ object MaskRCNN extends ContainerSerializable {
       .getAttributeValue(context, attrMap.get("useGn"))
       .asInstanceOf[Boolean])
 
-    MaskRCNN(inChannels, outChannels, numClasses, config)
-      .asInstanceOf[AbstractModule[Activity, Activity, T]]
+    val maskrcnn = MaskRCNN(inChannels, outChannels, numClasses, config)
+      .asInstanceOf[Container[Activity, Activity, T]]
+    maskrcnn.modules.clear()
+    loadSubModules(context, maskrcnn)
+
+    maskrcnn
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
@@ -461,5 +465,7 @@ object MaskRCNN extends ContainerSerializable {
     DataConverter.setAttributeValue(context, useGnBuilder,
       config.useGn, universe.typeOf[Boolean])
     maskrcnnBuilder.putAttr("useGn", useGnBuilder.build)
+
+    serializeSubModules(context, maskrcnnBuilder)
   }
 }
