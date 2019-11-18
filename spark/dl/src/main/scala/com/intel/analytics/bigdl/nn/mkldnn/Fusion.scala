@@ -121,49 +121,46 @@ private[mkldnn] object Fusion {
   private def fusionCAddTable(node: Node[AbstractModule[Activity, Activity, Float]]): Unit = {
     if (node.element.isInstanceOf[CAddTable] && node.prevNodes.length == 2) {
       val previousNodes = node.prevNodes.toArray
+      val node1 = findPrevious(previousNodes(0))
+      val node2 = findPrevious(previousNodes(1))
 
-      if (previousNodes(0).nextNodes.length == 1 && previousNodes(1).nextNodes.length == 1) {
-        val node1 = findPrevious(previousNodes(0))
-        val node2 = findPrevious(previousNodes(1))
+      var conv : Node[Module[Float]] = null
+      var otherNumber: Int = 0
 
-        var conv: Node[Module[Float]] = null
-        var otherNumber: Int = 0
+      if (node1.element.isInstanceOf[SpatialConvolution]) {
+        if (requirements(node1)) conv = node1
+        otherNumber = 1
+      } else if (node2.element.isInstanceOf[SpatialConvolution]) {
+        if (requirements(node2)) conv = node2
+        otherNumber = 0
+      }
+      // meet fuse requirements
+      if (conv != null) {
+        node.element = conv.element
+        val element = node.element.asInstanceOf[SpatialConvolution]
+        element.setSumOp(previousNodes(otherNumber).element, otherNumber + 1)
+        conv.element = Identity[Float]().asInstanceOf[AbstractModule[Activity, Activity, Float]]
 
-        if (node1.element.isInstanceOf[SpatialConvolution]) {
-          if (requirements(node1)) conv = node1
-          otherNumber = 1
-        } else if (node2.element.isInstanceOf[SpatialConvolution]) {
-          if (requirements(node2)) conv = node2
-          otherNumber = 0
+        val nexts = node.nextNodes(0)
+        if (nexts.element.isInstanceOf[ReLU] && !element.relu) {
+          node.element.asInstanceOf[SpatialConvolution].setReLU(true)
+          node.element.asInstanceOf[SpatialConvolution].setOutputScales(
+            nexts.element.asInstanceOf[ReLU].getOutputScales())
+          nexts.element = new Identity()
         }
-        // meet fuse requirements
-        if (conv != null) {
-          node.element = conv.element
-          val element = node.element.asInstanceOf[SpatialConvolution]
-          element.setSumOp(previousNodes(otherNumber).element, otherNumber + 1)
-          conv.element = Identity[Float]().asInstanceOf[AbstractModule[Activity, Activity, Float]]
 
-          val nexts = node.nextNodes(0)
-          if (nexts.element.isInstanceOf[ReLU] && !element.relu) {
-            node.element.asInstanceOf[SpatialConvolution].setReLU(true)
-            node.element.asInstanceOf[SpatialConvolution].setOutputScales(
-              nexts.element.asInstanceOf[ReLU].getOutputScales())
-            nexts.element = new Identity()
-          }
+        val prevIsNotIdentity = findPrevious(previousNodes(otherNumber))
 
-          val prevIsNotIdentity = findPrevious(previousNodes(otherNumber))
-
-          prevIsNotIdentity.element match {
-            case conv: SpatialConvolution =>
-              conv.setOutputScales(node.element.asInstanceOf[SpatialConvolution].getOutputScales())
-            case relu: ReLU =>
-              relu.setOutputScales(node.element.asInstanceOf[SpatialConvolution].getOutputScales())
-              prevIsNotIdentity.nextNodes.flatMap(x => findNext(x))
-                .filter(x => x != node && x.element.isInstanceOf[MklInt8Convertible])
-                .foreach(_.element.asInstanceOf[MklInt8Convertible].setInputScales(
-                  node.element.asInstanceOf[SpatialConvolution].getOutputScales()))
-            case _ =>
-          }
+        prevIsNotIdentity.element match {
+          case conv: SpatialConvolution =>
+            conv.setOutputScales(node.element.asInstanceOf[SpatialConvolution].getOutputScales())
+          case relu: ReLU =>
+            relu.setOutputScales(node.element.asInstanceOf[SpatialConvolution].getOutputScales())
+            prevIsNotIdentity.nextNodes.flatMap(x => findNext(x))
+              .filter(x => x != node && x.element.isInstanceOf[MklInt8Convertible])
+              .foreach(_.element.asInstanceOf[MklInt8Convertible].setInputScales(
+                node.element.asInstanceOf[SpatialConvolution].getOutputScales()))
+          case _ =>
         }
       }
     }
