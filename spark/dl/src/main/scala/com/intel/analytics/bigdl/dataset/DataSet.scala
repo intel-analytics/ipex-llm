@@ -604,7 +604,7 @@ object DataSet {
      * @param in the input raw image bytes
      * @return the decoded 3 channel bytes in BGR order
      */
-    private[bigdl] def decodedRawImageToBGR(in: Array[Byte]) : Array[Byte] = {
+    private[bigdl] def decodeRawImageToBGR(in: Array[Byte]) : Array[Byte] = {
       val inputStream = new ByteArrayInputStream(in)
       val image = {
         val img = ImageIO.read(inputStream)
@@ -650,7 +650,7 @@ object DataSet {
           val masks = anno.map(ann => ann.masks)
           require(metaBytes.getInt == COCODataset.MAGIC_NUM, "Corrupted metadata")
 
-          val rawdata = decodedRawImageToBGR(data._2.getBytes)
+          val rawdata = decodeRawImageToBGR(data._2.getBytes)
           require(rawdata.length == height * width * 3)
           val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
           imf(ImageFeature.originalSize) = (height, width, 3)
