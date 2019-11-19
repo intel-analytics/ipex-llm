@@ -327,7 +327,7 @@ case class COCOAnotationOD(id: Long, imageId: Long, categoryId: Long,
 
   def dumpTo(context: COCOSerializeContext): Unit = {
     require(_categoryIdx != -1, "COCOAnotationOD should be initialized")
-    context.dump(_categoryIdx)
+    context.dump(_categoryIdx.toInt)
     context.dump(area)
     context.dump(bbox._1)
     context.dump(bbox._2)
