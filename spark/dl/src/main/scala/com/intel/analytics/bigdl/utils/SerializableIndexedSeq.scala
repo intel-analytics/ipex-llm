@@ -22,7 +22,7 @@ import scala.language.implicitConversions
 import scala.collection.mutable.{IndexedSeq, WrappedArray}
 
 
-class SerializableIndexedSeq[T: ClassTag](@transient private var impl: IndexedSeq[T])
+private[bigdl] class SerializableIndexedSeq[T: ClassTag](@transient private var impl: IndexedSeq[T])
   extends IndexedSeq[T] with Serializable {
 
   override def length: Int = impl.length
@@ -46,7 +46,7 @@ class SerializableIndexedSeq[T: ClassTag](@transient private var impl: IndexedSe
   override def update(idx: Int, elem: T): Unit = impl.update(idx, elem)
 }
 
-object SerializableIndexedSeq {
+private[bigdl] object SerializableIndexedSeq {
 
   def apply[T: ClassTag](impl: IndexedSeq[T]): SerializableIndexedSeq[T] =
     new SerializableIndexedSeq(impl)
