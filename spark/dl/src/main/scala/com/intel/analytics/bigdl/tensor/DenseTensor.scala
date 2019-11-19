@@ -986,7 +986,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       } else {
         val func = new TensorFunc4[T] {
           override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-            data1(offset1) = ev.plus(data1(offset1), data2(offset2))
+            data1(offset1) = ev.and(data1(offset1), data2(offset2))
           }
         }
         DenseTensorApply.apply2[T](this, y, func)
@@ -995,11 +995,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       // recursive add
       var i = 0
       while (i < this.size(1)) {
-        this.select(1, i + 1).add(y)
+        this.select(1, i + 1).and(y)
         i += 1
       }
     } else {
-      this.add(expandTensor(y.asInstanceOf[DenseTensor[T]]))
+      this.and(expandTensor(y.asInstanceOf[DenseTensor[T]]))
     }
     this
   }
