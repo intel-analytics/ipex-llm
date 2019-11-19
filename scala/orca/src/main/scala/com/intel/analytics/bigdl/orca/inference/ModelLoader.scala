@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding
 import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, TFNet}
+import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, TFNet, TorchNet}
 import org.slf4j.LoggerFactory
 
 object ModelLoader extends InferenceSupportive {
@@ -72,6 +72,16 @@ object ModelLoader extends InferenceSupportive {
     timing("load model") {
       logger.info(s"load model from $modelPath")
       val model = TFNet.fromSavedModel(modelPath, inputs, outputs)
+      logger.info(s"loaded model as $model")
+      model
+    }
+  }
+
+  def loadFloatModelForPyTorch(modelPath: String)
+  : AbstractModule[Activity, Activity, Float] = {
+    timing("load model") {
+      logger.info(s"load model from $modelPath")
+      val model = TorchNet(modelPath)
       logger.info(s"loaded model as $model")
       model
     }

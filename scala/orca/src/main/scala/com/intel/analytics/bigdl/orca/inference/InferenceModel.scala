@@ -157,6 +157,15 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
+   * load a Torch model as TorchNet
+   *
+   * @param modelPath the path of the torch model
+   */
+  def doLoadPyTorch(modelPath: String): Unit = {
+    doLoadPyTorchModel(modelPath)
+  }
+
+  /**
    * loads a TF model as OpenVINO
    *
    * @param modelPath the path of the tensorflow model
@@ -408,6 +417,12 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     this.originalModel =
       InferenceModelFactory.loadFloatModelForTFSavedModel(modelPath,
         inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+    offerModelQueue()
+  }
+
+  private def doLoadPyTorchModel(modelPath: String): Unit = {
+    clearModelQueue()
+    this.originalModel = InferenceModelFactory.loadFloatModelForPyTorch(modelPath)
     offerModelQueue()
   }
 
