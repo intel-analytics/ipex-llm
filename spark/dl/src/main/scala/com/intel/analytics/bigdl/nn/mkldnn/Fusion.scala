@@ -38,8 +38,6 @@ private[mkldnn] object Fusion {
     node.element match {
       case relu: ReLU => fusionRelu(node)
       case bn: SpatialBatchNormalization => fusionBN(node)
-      case blasWrapper: BlasWrapper if blasWrapper.module.isInstanceOf[ScaleLayer[Float]] =>
-        fuseScale(node)
       case _ =>
     }
   }
