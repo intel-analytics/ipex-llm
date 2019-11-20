@@ -47,38 +47,6 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
     }
   }
 
-  "COCODataset" should "correctly be loaded" in {
-    val resource = getClass().getClassLoader().getResource("coco")
-
-    val dataSet = COCODataset.load(processPath(resource.getPath())
-      + File.separator + "cocomini.json")
-    dataSet.images.length should be (5)
-    dataSet.annotations.length should be (6)
-    val cateIdx = Array(53, 53, 53, 1, 19, 1).toIterator
-    val sizes = Array((428, 640), (480, 640), (427, 640), (480, 640), (427, 640)).toIterator
-    for (anno <- dataSet.annotations) {
-      anno.image.id should be (anno.imageId)
-      dataSet.categoryId2Idx(anno.categoryId) should be (cateIdx.next())
-      if (anno.isCrowd) {
-        anno.segmentation.isInstanceOf[COCORLE] should be (true)
-      } else {
-        anno.segmentation.isInstanceOf[COCOPoly] should be (true)
-        val poly = anno.segmentation.asInstanceOf[COCOPoly]
-        poly.height should be (anno.image.height)
-        poly.width should be (anno.image.width)
-      }
-    }
-    for (img <- dataSet.images) {
-      val size = sizes.next()
-      img.height should be (size._1)
-      img.width should be (size._2)
-    }
-    for (i <- 1 to dataSet.categories.length) {
-      val cate = dataSet.getCategoryByIdx(i)
-      dataSet.categoryId2Idx(cate.id) should be (i)
-    }
-  }
-
   "COCODataset" should "correctly transform into sequence file" in {
     val resource = getClass().getClassLoader().getResource("coco")
 
