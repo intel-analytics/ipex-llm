@@ -52,7 +52,7 @@ private[bigdl] class IRGraph[T: ClassTag](
   require(inputFormats.length == inputs.length, s"IRGraph: inputFormats" +
     s"length ${inputFormats.length} should be same with input nodes length ${inputs.length}")
   require(outputFormats.length == outputs.length, s"IRGraph: outputFormats" +
-    s"length ${inputFormats.length} should be same with input nodes length ${outputs.length}")
+    s"length ${outputFormats.length} should be same with output nodes length ${outputs.length}")
 
   private[bigdl] var graph: Graph[T] = null
 
