@@ -20,10 +20,18 @@ import com.google.gson.{Gson, GsonBuilder, JsonDeserializationContext, JsonDeser
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.{JsonReader, JsonWriter}
+import com.intel.analytics.bigdl.DataSet
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, RoiImageInfo}
+import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{BufferedReader, FileReader}
 import java.lang.reflect.Type
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
+import org.apache.spark.SparkContext
 import scala.collection.mutable.ArrayBuffer
 
 private[bigdl] class COCOSerializeContext {
@@ -90,7 +98,7 @@ private[bigdl] class COCODeserializer(buffer: ByteBuffer) {
     buffer.get(arr)
     new String(arr)
   }
-  case class SimpleAnnotation(categoryId: Int, area: Float, bbox1: Float, bbox2: Float,
+  case class SimpleAnnotation(categoryIdx: Int, area: Float, bbox1: Float, bbox2: Float,
     bbox3: Float, bbox4: Float, isCrowd: Boolean, masks: SegmentationMasks)
 
   // returns an image's height, width, all annotations
@@ -103,7 +111,7 @@ private[bigdl] class COCODeserializer(buffer: ByteBuffer) {
   }
 
   private def getAnnotation(height: Int, width: Int): SimpleAnnotation = {
-    val categoryId = getInt
+    val categoryIdx = getInt
     val area = getFloat
     val bbox1 = getFloat
     val bbox2 = getFloat
@@ -131,7 +139,7 @@ private[bigdl] class COCODeserializer(buffer: ByteBuffer) {
       }
       PolyMasks(poly, height, width)
     }
-    SimpleAnnotation(categoryId, area, bbox1, bbox2, bbox3, bbox4, isCrowd, masks)
+    SimpleAnnotation(categoryIdx, area, bbox1, bbox2, bbox3, bbox4, isCrowd, masks)
   }
 }
 
@@ -143,9 +151,13 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
   private lazy val imageId2Image = images.toIterator.map(img => (img.id, img)).toMap
 
   private[segmentation] def init(imgRoot: String): Unit = {
+    categories.zipWithIndex.foreach { case (cate, idx) =>
+      cateId2catIdx(cate.id) = idx + 1 // the ids starts from 1, because 0 is for background
+    }
     annotations.foreach(anno => {
       require(imageId2Image.contains(anno.imageId), s"Cannot find image_id ${anno.imageId}")
       val img = imageId2Image(anno.imageId)
+      anno._categoryIdx = cateId2catIdx(anno.categoryId)
       anno.image = img
       img.annotations += anno
       anno.segmentation match {
@@ -155,9 +167,7 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
       }
     })
     images.foreach(_.imgRootPath = imgRoot)
-    categories.zipWithIndex.foreach { case (cate, idx) =>
-      cateId2catIdx(cate.id) = idx + 1 // the ids starts from 1, because 0 is for background
-    }
+
   }
 
   /**
@@ -183,6 +193,13 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
    * @return category data
    */
   def getCategoryByIdx(idx: Int): COCOCategory = categories(idx - 1)
+
+  /**
+   * Convert the images & ground truths into ImageFeatures.
+   * The image feature is in the same format of what COCODataset.loadFromSeqFile returns
+   * @return
+   */
+  def toImageFeatures: Iterator[ImageFeature] = images.toIterator.map(_.toImageFeature)
 }
 
 case class COCODatasetInfo(
@@ -208,11 +225,11 @@ case class COCOImage(
   @SerializedName("date_captured") var dateCaptured: String = _
   @SerializedName("file_name") var fileName: String = _
 
-  def dumpTo(context: COCOSerializeContext, dataset: COCODataset): Unit = {
+  def dumpTo(context: COCOSerializeContext): Unit = {
     context.dump(height)
     context.dump(width)
     context.dump(annotations.size)
-    annotations.foreach(_.dumpTo(context, dataset))
+    annotations.foreach(_.dumpTo(context))
   }
 
   /**
@@ -227,6 +244,64 @@ case class COCOImage(
    */
   def data: Array[Byte] = Files.readAllBytes(path)
 
+  /**
+   * Convert the image's image data and ground truth into an image feature.
+   * The image feature is in the same format of what COCODataset.loadFromSeqFile returns
+   * @return an ImageFeature with ground truth & image data
+   */
+  def toImageFeature: ImageFeature = {
+    val labelClasses = Tensor(annotations.map(_.categoryIdx.toFloat).toArray,
+      Array(annotations.length))
+    val bboxes = Tensor(
+      annotations.toIterator.flatMap(ann => {
+        val x1 = ann.bbox._1
+        val y1 = ann.bbox._2
+        val x2 = ann.bbox._3
+        val y2 = ann.bbox._4
+        Iterator(x1, y1, x2, y2)
+      }).toArray,
+      Array(annotations.length, 4))
+    val isCrowd = Tensor(annotations.map(ann => if (ann.isCrowd) 1f else 0f).toArray,
+      Array(annotations.length))
+    val masks = annotations.map(ann => ann.segmentation.asInstanceOf[SegmentationMasks]).toArray
+
+    val rawdata = SeqFileFolder.decodeRawImageToBGR(this.data)
+    require(rawdata.length == height * width * 3)
+    val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
+    imf(ImageFeature.originalSize) = (height, width, 3)
+    imf(RoiImageInfo.ISCROWD) = isCrowd
+    imf
+  }
+
+  /**
+   * Convert the image's ground truth label & masks into Table for RoiMiniBatch
+   * @return a table with ground truth label & masks for the image
+   */
+  def toTable: Table = {
+    val img = this
+    val bboxes = Tensor(
+      img.annotations.toIterator.flatMap(ann => {
+        val x1 = ann.bbox._1
+        val y1 = ann.bbox._2
+        val x2 = ann.bbox._3
+        val y2 = ann.bbox._4
+        Iterator(x1, y1, x2, y2)
+      }).toArray,
+      Array(img.annotations.length, 4))
+
+    T()
+      .update(RoiImageInfo.ISCROWD,
+        Tensor(img.annotations.map(ann => if (ann.isCrowd) 1f else 0f).toArray,
+          Array(img.annotations.length))
+      )
+      .update(RoiImageInfo.ORIGSIZE, (img.height, img.width, 3))
+      .update(RoiImageInfo.MASKS,
+        img.annotations.map(ann => ann.segmentation.asInstanceOf[SegmentationMasks].toRLE).toArray)
+      .update(RoiImageInfo.BBOXES, bboxes)
+      .update(RoiImageInfo.CLASSES,
+        Tensor(img.annotations.map(ann => ann.categoryIdx.toFloat).toArray,
+          Array(img.annotations.length)))
+  }
 }
 
 /**
@@ -247,8 +322,12 @@ case class COCOAnotationOD(id: Long, imageId: Long, categoryId: Long,
   var segmentation: COCOSegmentation, area: Float,
   bbox: (Float, Float, Float, Float), isCrowd: Boolean, @transient var image: COCOImage = null) {
 
-  def dumpTo(context: COCOSerializeContext, dataSet: COCODataset): Unit = {
-    context.dump(dataSet.categoryId2Idx(categoryId))
+  @transient private[segmentation] var _categoryIdx: Long = -1
+  def categoryIdx: Long = _categoryIdx
+
+  def dumpTo(context: COCOSerializeContext): Unit = {
+    require(_categoryIdx != -1, "COCOAnotationOD should be initialized")
+    context.dump(_categoryIdx.toInt)
     context.dump(area)
     context.dump(bbox._1)
     context.dump(bbox._2)
@@ -337,15 +416,32 @@ object COCODataset {
   }
 
   /**
-   * Load COCO dataset
+   * Load COCO dataset from local file
    * @param jsonPath the JSON metadata file path
    * @param imageRoot the root path of the image files
-   * @return
+   * @return the loaded COCO dataset
    */
   def load(jsonPath: String, imageRoot: String = "."): COCODataset = {
     val d = gson.fromJson(
       new BufferedReader(new FileReader(jsonPath)), classOf[COCODataset])
     d.init(imageRoot)
     d
+  }
+
+  /**
+   * Load COCO dataset from Hadoop sequence files
+   * @param url sequence files folder path on HDFS/Local
+   * @param sc spark context
+   * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
+   * @return ImageFeatures for the dataset.
+   *         Key in ImageFeature    Value               Type
+   *         ImageFeature.bytes     decoded image data  Array[Byte]
+   *         ImageFeature.uri       Image file name     String
+   *         ImageFeature.label     Label & masks       RoiLabel
+   *         RoiImageInfo.ISCROWD   isCrowd             Tensor[Float]
+   */
+  def loadFromSeqFile(url: String, sc: SparkContext,
+    partitionNum: Option[Int] = None): DataSet[ImageFeature] = {
+    SeqFileFolder.filesToRoiImageFeatures(url, sc, partitionNum)
   }
 }

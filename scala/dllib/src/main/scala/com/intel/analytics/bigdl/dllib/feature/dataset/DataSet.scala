@@ -597,6 +597,29 @@ object DataSet {
       if (image.getRaster.getNumBands == 1) return true
       false
     }
+
+    /**
+     * Decode raw bytes read from an image file into decoded bytes. If the file is 1 channel grey
+     * scale image, automatically convert to 3 channels
+     * @param in the input raw image bytes
+     * @return the decoded 3 channel bytes in BGR order
+     */
+    private[bigdl] def decodeRawImageToBGR(in: Array[Byte]) : Array[Byte] = {
+      val inputStream = new ByteArrayInputStream(in)
+      val image = {
+        val img = ImageIO.read(inputStream)
+        if (isSingleChannelImage(img)) {
+          val imageBuff: BufferedImage =
+            new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
+          imageBuff.getGraphics.drawImage(img, 0, 0, new Color(0, 0, 0), null)
+          imageBuff
+        } else {
+          img
+        }
+      }
+      image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
+    }
+
     /**
      * Extract hadoop sequence files from an HDFS path as ImageFeatures
      * @param url sequence files folder path
@@ -604,7 +627,7 @@ object DataSet {
      * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
      * @return
      */
-    def filesToRoiImageFeatures(url: String, sc: SparkContext,
+    private[bigdl] def filesToRoiImageFeatures(url: String, sc: SparkContext,
       partitionNum: Option[Int] = None): DataSet[ImageFeature] = {
       val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
       val rawData = sc.sequenceFile(url, classOf[BytesWritable], classOf[BytesWritable], num)
@@ -613,7 +636,7 @@ object DataSet {
           val fileName = metaBytes.getString
           val (height, width, anno) = metaBytes.getAnnotations
 
-          val labelClasses = Tensor(anno.map(_.categoryId.toFloat), Array(anno.length))
+          val labelClasses = Tensor(anno.map(_.categoryIdx.toFloat), Array(anno.length))
           val bboxes = Tensor(
             anno.toIterator.flatMap(ann => {
               val x1 = ann.bbox1
@@ -627,19 +650,7 @@ object DataSet {
           val masks = anno.map(ann => ann.masks)
           require(metaBytes.getInt == COCODataset.MAGIC_NUM, "Corrupted metadata")
 
-          val inputStream = new ByteArrayInputStream(data._2.getBytes)
-          val image = {
-            val img = ImageIO.read(inputStream)
-            if (isSingleChannelImage(img)) {
-              val imageBuff: BufferedImage =
-                new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
-              imageBuff.getGraphics.drawImage(img, 0, 0, new Color(0, 0, 0), null)
-              imageBuff
-            } else {
-              img
-            }
-          }
-          val rawdata = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
+          val rawdata = decodeRawImageToBGR(data._2.getBytes)
           require(rawdata.length == height * width * 3)
           val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
           imf(ImageFeature.originalSize) = (height, width, 3)

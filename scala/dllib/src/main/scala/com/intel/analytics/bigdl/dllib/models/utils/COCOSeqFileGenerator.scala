@@ -96,7 +96,7 @@ object COCOSeqFileGenerator {
         imgs.foreach { img =>
           context.clear()
           context.dump(img.fileName)
-          img.dumpTo(context, meta)
+          img.dumpTo(context)
           context.dump(COCODataset.MAGIC_NUM)
           val keyBytes = context.toByteArray
           key.set(keyBytes, 0, keyBytes.length)
