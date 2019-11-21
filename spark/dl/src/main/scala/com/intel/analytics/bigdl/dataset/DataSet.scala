@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
 import com.intel.analytics.bigdl.dataset.segmentation.{COCODataset, COCODeserializer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, MTImageFeatureToBatch, RoiImageInfo}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
@@ -127,12 +127,37 @@ trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
   }
 }
 
+private trait ThreadSafeMarker[T] extends Serializable {
+  def apply(v: T): T
+}
+
+private object ThreadSafeMarker {
+
+  def get[T: ClassTag](implicit ev: ClassTag[T]): ThreadSafeMarker[T] = {
+    if (ev.runtimeClass == classOf[ImageFeature]) {
+        new ThreadSafeMarker[T] {
+          override def apply(v: T): T = {
+            v.asInstanceOf[ImageFeature].update(MTImageFeatureToBatch.THREADSAFE, true)
+            v
+          }
+        }
+    } else {
+      new ThreadSafeMarker[T] {
+        override def apply(v: T): T = v
+      }
+    }
+  }
+}
+
 /**
  * Wrap an array as a DataSet.
  * @param buffer
  * @tparam T
  */
-class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataSet[T] {
+class LocalArrayDataSet[T: ClassTag] private[dataset](buffer: Array[T])
+  extends LocalDataSet[T] {
+  private val markThreadSafe = ThreadSafeMarker.get[T]
+
   override def shuffle(): Unit = {
     RandomGenerator.shuffle(buffer)
   }
@@ -152,7 +177,8 @@ class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataS
       override def next(): T = {
         val curIndex = index.getAndIncrement()
         if (train || curIndex < buffer.length) {
-          buffer(if (train) (curIndex % buffer.length) else curIndex)
+          markThreadSafe(
+            buffer(if (train) (curIndex % buffer.length) else curIndex))
         } else {
           null.asInstanceOf[T]
         }
@@ -261,6 +287,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
 
   override def data(train: Boolean): RDD[T] = {
     val _train = train
+    val markThreadSafe = ThreadSafeMarker.get[T]
     val _groupSize = if (isInOrder) Utils.getBatchSize(groupSize) else 1
     buffer.zipPartitions(indexes)((dataIter, indexIter) => {
       val indexes = indexIter.next()
@@ -281,10 +308,10 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
         override def next(): T = {
           val i = _offset.getAndIncrement()
           if (_train) {
-            localData(indexes(i % localData.length))
+            markThreadSafe(localData(indexes(i % localData.length)))
           } else {
             if (i < localData.length) {
-              localData(indexes(i))
+              markThreadSafe(localData(indexes(i)))
             } else {
               null.asInstanceOf[T]
             }
@@ -329,7 +356,7 @@ object DataSet {
   /**
    * Wrap an array as a DataSet.
    */
-  def array[T](data: Array[T]): LocalArrayDataSet[T] = {
+  def array[T: ClassTag](data: Array[T]): LocalArrayDataSet[T] = {
     new LocalArrayDataSet[T](data)
   }
 

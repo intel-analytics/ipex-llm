@@ -47,6 +47,30 @@ object MTImageFeatureToBatch {
         width, height, batchSize, transformer, toRGB)
     }
   }
+
+  private[bigdl] val THREADSAFE = "THREADSAFE"
+  private[bigdl] val THREADSAFE_ERRORMSG = "The input iterator for " +
+    "MTImageFeatureToBatch should be thread-safe! You should either wrap your iterator " +
+    "with MTImageFeatureToBatch.threadSafeIterator or use Dataset.array " +
+    "or Dataset.rdd for the input data of MTImageFeatureToBatch"
+
+  def threadSafeIterator(itr: Iterator[ImageFeature]): Iterator[ImageFeature] = {
+    new Iterator[ImageFeature] {
+      override def hasNext: Boolean = throw new UnsupportedOperationException
+
+      override def next(): ImageFeature = {
+        itr.synchronized {
+          if (!itr.hasNext) {
+            null
+          } else {
+            val ret = itr.next()
+            ret.update(THREADSAFE, true)
+            ret
+          }
+        }
+      }
+    }
+  }
 }
 
 object MTImageFeatureToBatchWithResize {
@@ -122,29 +146,35 @@ abstract class MTImageFeatureToBatch private[bigdl](
   }
 }
 
-
 private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     new Iterator[ImageFeature] {
-      private var buffer: ImageFeature = null.asInstanceOf[ImageFeature]
+      private var buffer: ImageFeature = _
+
+      private def checkThreadSafe(imf: ImageFeature) =
+        require(imf.contains(MTImageFeatureToBatch.THREADSAFE),
+          MTImageFeatureToBatch.THREADSAFE_ERRORMSG)
 
       override def hasNext: Boolean = {
         if (buffer != null) {
           true
         } else {
           buffer = prev.next()
+          checkThreadSafe(buffer)
           if (buffer == null) false else true
         }
       }
 
       override def next(): ImageFeature = {
-        if (buffer == null) {
+        val ret = if (buffer == null) {
           prev.next()
         } else {
           val tmp = buffer
-          buffer = null.asInstanceOf[ImageFeature]
+          buffer = null
           tmp
         }
+        checkThreadSafe(buffer)
+        ret
       }
     }
   }
