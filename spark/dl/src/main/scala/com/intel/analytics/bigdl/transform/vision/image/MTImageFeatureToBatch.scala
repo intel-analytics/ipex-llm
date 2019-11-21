@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import scala.collection.mutable.IndexedSeq
-import com.intel.analytics.bigdl.utils.{Engine, T, SerializableIndexedSeq, Table}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 
 object MTImageFeatureToBatch {
   /**
@@ -270,8 +270,8 @@ object RoiImageInfo {
  * RoiImageInfo.IMGINFO  with shape (batchSize, 4), contains all images info
  *                 (height, width, original height, original width)
  */
-class RoiMiniBatch(val input: Tensor[Float], val target: SerializableIndexedSeq[RoiLabel],
-  val isCrowd: SerializableIndexedSeq[Tensor[Float]], val imageInfo: Tensor[Float] = null)
+class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
+  val isCrowd: Array[Tensor[Float]], val imageInfo: Tensor[Float] = null)
   extends MiniBatch[Float] {
 
   override def size(): Int = input.size(1)
@@ -296,11 +296,11 @@ class RoiMiniBatch(val input: Tensor[Float], val target: SerializableIndexedSeq[
   override def slice(offset: Int, length: Int): MiniBatch[Float] = {
     val subInput = input.narrow(1, offset, length)
     val subTarget = if (target != null) {
-      target.view(offset - 1, offset + length - 1) // offset starts from 1
+      target.slice(offset - 1, offset + length - 1) // offset starts from 1
     } else {
       null
     }
-    val subIsCrowd = isCrowd.view(offset - 1, offset + length - 1) // offset starts from 1
+    val subIsCrowd = isCrowd.slice(offset - 1, offset + length - 1) // offset starts from 1
     val subSize = if (imageInfo != null) imageInfo.narrow(1, offset, length) else null
     RoiMiniBatch(subInput, subTarget, subIsCrowd, subSize)
   }
@@ -312,8 +312,8 @@ class RoiMiniBatch(val input: Tensor[Float], val target: SerializableIndexedSeq[
 }
 
 object RoiMiniBatch {
-  def apply(data: Tensor[Float], target: IndexedSeq[RoiLabel],
-    isCrowd: IndexedSeq[Tensor[Float]], imageInfo: Tensor[Float] = null):
+  def apply(data: Tensor[Float], target: Array[RoiLabel],
+    isCrowd: Array[Tensor[Float]], imageInfo: Tensor[Float] = null):
   RoiMiniBatch = new RoiMiniBatch(data, target, isCrowd, imageInfo)
 }
 

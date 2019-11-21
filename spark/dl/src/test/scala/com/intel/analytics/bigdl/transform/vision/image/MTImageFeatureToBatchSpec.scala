@@ -298,27 +298,37 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
 
     val s1 = b.slice(3, 20)
 
-    def checkSlice(s1: MiniBatch[Float], start: Int, len: Int): Unit = {
-      val input = s1.getInput().toTable
-      val imgData = input[Tensor[Float]](1)
-      imgData.nElement() should be (len)
-      imgData.valueAt(1) should be (start.toFloat)
-      imgData.valueAt(len) should be (start.toFloat + len -1)
+    def checkSlice(s1: MiniBatch[Float], start: Int, len: Int,
+      checkTarget: Boolean = true, checkImgInfo: Boolean = true): Unit = {
 
-      val imgInfo = input[Tensor[Float]](2)
-      imgInfo.nElement() should be (len)
-      imgInfo.valueAt(1) should be (start.toFloat)
-      imgInfo.valueAt(len) should be (start.toFloat + len -1)
+      if (checkImgInfo) {
+        val input = s1.getInput().toTable
+        val imgData = input[Tensor[Float]](1)
+        imgData.nElement() should be(len)
+        imgData.valueAt(1) should be(start.toFloat)
+        imgData.valueAt(len) should be(start.toFloat + len - 1)
 
-      val target = s1.getTarget().asInstanceOf[Table]
-      target.length() should be (len)
-      for (i <- 1 to target.length()) {
-        val imgTarget = target[Table](i)
-        RoiImageInfo.getBBoxes(imgTarget).size() should be (Array(1, 4))
-        RoiImageInfo.getClasses(imgTarget).valueAt(1) should be (i.toFloat + start - 2)
-        RoiImageInfo.getIsCrowd(imgTarget).nElement() should be (1)
-        RoiImageInfo.getIsCrowd(imgTarget).valueAt(1) should be (i.toFloat + start - 2)
-        RoiImageInfo.getImageInfo(imgTarget).value() should be (i.toFloat + start - 1)
+        val imgInfo = input[Tensor[Float]](2)
+        imgInfo.nElement() should be(len)
+        imgInfo.valueAt(1) should be(start.toFloat)
+        imgInfo.valueAt(len) should be(start.toFloat + len - 1)
+      } else {
+        val imgData = s1.getInput().toTensor[Float]
+        imgData.nElement() should be(len)
+        imgData.valueAt(1) should be(start.toFloat)
+        imgData.valueAt(len) should be(start.toFloat + len - 1)
+      }
+      if (checkTarget) {
+        val target = s1.getTarget().asInstanceOf[Table]
+        target.length() should be (len)
+        for (i <- 1 to target.length()) {
+          val imgTarget = target[Table](i)
+          RoiImageInfo.getBBoxes(imgTarget).size() should be (Array(1, 4))
+          RoiImageInfo.getClasses(imgTarget).valueAt(1) should be (i.toFloat + start - 2)
+          RoiImageInfo.getIsCrowd(imgTarget).nElement() should be (1)
+          RoiImageInfo.getIsCrowd(imgTarget).valueAt(1) should be (i.toFloat + start - 2)
+          RoiImageInfo.getImageInfo(imgTarget).value() should be (i.toFloat + start - 1)
+        }
       }
     }
 
@@ -328,20 +338,23 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     val s2 = s1.slice(3, 10)
     checkSlice(s2, 5, 10)
 
+    // this also checks empty target
     val b2 = RoiMiniBatch(
       arrayToTensor((1 to 100).toArray.map(_.toFloat)),
       null,
       isCrowds,
       arrayToTensor((1 to 100).toArray.map(_.toFloat))
     )
-    b2.slice(12, 80).slice(2, 20)
+    checkSlice(b2.slice(12, 80).slice(2, 20),
+      13, 20, false)
 
     val b3 = RoiMiniBatch(
       arrayToTensor((1 to 100).toArray.map(_.toFloat)),
       null,
       isCrowds
     )
-    b3.slice(12, 80).slice(2, 20)
+    checkSlice(b3.slice(12, 80).slice(2, 20),
+      13, 20, false, false)
   }
 
 }
