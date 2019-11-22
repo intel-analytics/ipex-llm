@@ -48,6 +48,20 @@ object MTImageFeatureToBatch {
         width, height, batchSize, transformer, toRGB)
     }
   }
+
+  private[image] def checkLabels(labelData: Array[RoiLabel]): Array[RoiLabel] = {
+    if (labelData.length == 0) {
+      labelData
+    } else {
+      val hasLabel = labelData.head != null
+      for (i <- 1 until labelData.length) {
+        val curHasLabel = labelData(i) != null
+        require(curHasLabel == hasLabel, "The input data must either be all labeled or" +
+          " be all unlabeled")
+      }
+      if (hasLabel) labelData else null
+    }
+  }
 }
 
 object MTImageFeatureToBatchWithResize {
@@ -152,7 +166,7 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
 }
 
 /**
- * A transformer pipeline wrapper to create Minibatch in multiple threads for classification
+ * A transformer pipeline wrapper to create labeled Minibatch in multiple threads for classification
  * @param width final image width
  * @param height final image height
  * @param totalBatchSize global batch size
@@ -343,8 +357,10 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     img.copyTo(featureData, position * frameLength * 3, toRGB = toRGB)
     val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
     val label = img.getLabel.asInstanceOf[RoiLabel]
-    require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
-      "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
+    if (label != null) {
+      require(label.bboxes.size(1) == isCrowd.size(1), "The number of detections" +
+        "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
+    }
     isCrowdData(position) = isCrowd
     labelData(position) = label
     imgInfoData.setValue(position + 1, 1, img.getHeight())
@@ -352,6 +368,8 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     imgInfoData.setValue(position + 1, 3, img.getOriginalHeight)
     imgInfoData.setValue(position + 1, 4, img.getOriginalWidth)
   }
+
+
 
   override protected def createBatch(curBatchSize: Int): MiniBatch[Float] = {
     if (featureTensor.nElement() != curBatchSize) {
@@ -361,7 +379,8 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     def arraySlice[T](array: Array[T]) = {
       if (array.length == curBatchSize) array else array.slice(0, curBatchSize)
     }
-    RoiMiniBatch(featureTensor, arraySlice(labelData), arraySlice(isCrowdData),
+    val labels = MTImageFeatureToBatch.checkLabels(arraySlice(labelData))
+    RoiMiniBatch(featureTensor, labels, arraySlice(isCrowdData),
       imgInfoData.narrow(1, 1, curBatchSize))
   }
 }
@@ -432,7 +451,8 @@ class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, t
     def arraySlice[T](array: Array[T]) = {
       if (array.length == batchSize) array else array.slice(0, batchSize)
     }
-    RoiMiniBatch(featureTensor, arraySlice(labelData),
+    val labels = MTImageFeatureToBatch.checkLabels(arraySlice(labelData))
+    RoiMiniBatch(featureTensor, labels,
       arraySlice(isCrowdData), imgInfoData.narrow(1, 1, batchSize))
   }
 }

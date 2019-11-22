@@ -235,6 +235,30 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     imgCheck.count(!_) should be (0)
 
   }
+  "MTImageFeatureToBatch without labels" should "work well" in {
+    val imgData = (0 to 1000).map(idx => (idx to (idx + 10*10*3)).map(_.toFloat).toArray)
+      .map(arr => {
+        val imf = ImageFeature()
+        imf(ImageFeature.floats) = arr
+        imf(RoiImageInfo.ISCROWD) = Tensor(Array(0f, 1f), Array(2))
+        imf(ImageFeature.originalSize) = (10, 10, 3)
+        imf
+      }).toArray
+    val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
+      toRGB = false, extractRoi = true)
+    val miniBatch = transformer(DataSet.array(imgData).data(false))
+    miniBatch.foreach(batch => {
+      batch.asInstanceOf[RoiMiniBatch].target should be (null)
+    })
+
+    val transformer2 = MTImageFeatureToBatchWithResize(batchSize = 19,
+      transformer = new FeatureTransformer {})
+    val miniBatch2 = transformer(DataSet.array(imgData).data(false))
+    miniBatch2.foreach(batch => {
+      batch.asInstanceOf[RoiMiniBatch].target should be (null)
+    })
+
+  }
 
   "MTImageFeatureToBatch with ROI" should "work well" in {
     val imgCheck = new Array[Boolean](1001)
