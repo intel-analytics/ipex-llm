@@ -48,7 +48,6 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
 
   /**
    * Here, we generate anchors without change area.
-   * Original one will change area and has been deperated in new pytorch code.
    * @param ratios
    * @param scales
    * @param baseSize
@@ -147,34 +146,6 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
     }
     allAnchors
   }
-
-  /**
-   * Generate anchor (reference) windows by enumerating aspect ratios(M) X scales(N)
-   * wrt a reference (0, 0, 15, 15) window.
-   * 1. generate anchors for different ratios (N, 4)
-   * 2. for each anchors generated in 1, scale them to get scaled anchors (M*N, 4)
-   */
-//  private[nn] def generateBasicAnchors(_ratios: Array[Float], _scales: Array[Float],
-//    baseSize: Float = 16): Tensor[Float] = {
-//    val ratios = Tensor(Storage(_ratios))
-//    val scales = Tensor(Storage(_scales))
-//    val baseAnchor = Tensor(Storage(Array(0, 0, baseSize - 1, baseSize - 1)))
-//    val ratioAnchors = ratioEnum(baseAnchor, ratios)
-//    val anchors = Tensor(scales.size(1) * ratioAnchors.size(1), 4)
-//    var idx = 1
-//    var i = 1
-//    while (i <= ratioAnchors.size(1)) {
-//      val scaleAnchors = scaleEnum(ratioAnchors(i), scales)
-//      var j = 1
-//      while (j <= scaleAnchors.size(1)) {
-//        anchors.update(idx, scaleAnchors(j))
-//        idx = idx + 1
-//        j += 1
-//      }
-//      i += 1
-//    }
-//    anchors
-//  }
 
   /**
    * Given a vector of widths (ws) and heights (hs) around a center
