@@ -28,7 +28,7 @@ sc = init_nncontext()
 1. We've tested this package with pip 9.0.1. `pip install --upgrade pip` if necessary.
 2. Pip install supports __Mac__ and __Linux__ platforms.
 3. You need to install Java __>= JDK8__ before running Analytics Zoo, which is required by `pyspark`.
-4. `pyspark==2.4.3`, `bigdl==0.9.1`, `conda-pack==0.3.1` and their dependencies will automatically be installed if they haven't been detected in the current Python environment.
+4. `bigdl==0.10.0`, `pyspark==2.4.3`, `conda-pack==0.3.1` and their dependencies will be automatically installed if they haven't been detected in the current Python environment.
 
 ---
 ## **Install from pip for yarn cluster**
