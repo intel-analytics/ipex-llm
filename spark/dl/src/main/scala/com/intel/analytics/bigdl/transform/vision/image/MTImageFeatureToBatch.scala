@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import scala.collection.mutable.IndexedSeq
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 
 object MTImageFeatureToBatch {
@@ -33,20 +32,13 @@ object MTImageFeatureToBatch {
    * @param batchSize batch size
    * @param transformer pipeline for pre-processing, finally outputting ImageFeature
    * @param toRGB if converted to RGB, default format is BGR
-   * @param extractRoi if true, extract ROI labels for segmentation; else the labels are for
-   *                   classification
    * @return
    */
   def apply(width: Int, height: Int, batchSize: Int,
-            transformer: FeatureTransformer, toRGB: Boolean = false, extractRoi: Boolean = false)
+            transformer: FeatureTransformer, toRGB: Boolean = false)
   : MTImageFeatureToBatch = {
-    if (extractRoi) {
-      new RoiMTImageFeatureToBatch (
-        width, height, batchSize, transformer, toRGB)
-    } else {
       new ClassificationMTImageFeatureToBatch (
         width, height, batchSize, transformer, toRGB)
-    }
   }
 
   private[image] def checkLabels[T](labelData: Array[T]): Array[T] = {
@@ -70,18 +62,36 @@ object MTImageFeatureToBatch {
 
 import MTImageFeatureToBatch._
 
-object MTImageFeatureToBatchWithResize {
+object RoiImageFeatureToBatch {
   /**
    * The transformer from ImageFeature to mini-batches, and extract ROI labels for segmentation
-   * if roi labels are set.
-   * @param sizeDivisible when it's greater than 0, height and wide should be divisible by this size
+   * if roi labels are set. The sizes of the images can be different.
    * @param batchSize global batch size
    * @param transformer pipeline for pre-processing
    * @param toRGB if converted to RGB, default format is BGR
+   * @param sizeDivisible when it's greater than 0, height and wide should be divisible by this size
+   *
    */
-  def apply(sizeDivisible: Int = -1, batchSize: Int, transformer: FeatureTransformer,
-    toRGB : Boolean = false): MTImageFeatureToBatch =
-    new RoiImageFeatureToBatchWithResize(sizeDivisible, batchSize, transformer, toRGB)
+  def withResize(batchSize: Int, transformer: FeatureTransformer,
+    toRGB : Boolean = false, sizeDivisible: Int = -1)
+  : MTImageFeatureToBatch =
+        new RoiImageFeatureToBatchWithResize(sizeDivisible, batchSize, transformer, toRGB)
+
+
+  /**
+   * The transformer from ImageFeature to mini-batches, and extract ROI labels for segmentation
+   * if roi labels are set. The sizes of the images must be the same.
+   * @param width width of the output images
+   * @param height height of the output images
+   * @param batchSize global batch size
+   * @param transformer pipeline for pre-processing
+   * @param toRGB if converted to RGB, default format is BGR
+   *
+   */
+  def apply(width: Int, height: Int, batchSize: Int,
+    transformer: FeatureTransformer, toRGB: Boolean = false) : MTImageFeatureToBatch = {
+    new RoiImageFeatureToBatch(width, height, batchSize, transformer, toRGB)
+  }
 }
 
 /**
@@ -342,13 +352,14 @@ object RoiMiniBatch {
  * A transformer pipeline wrapper to create RoiMiniBatch in multiple threads
  * The output "target" is a Table. The keys are from 1 to sizeof(batch). The values are
  * the tables for each RoiLabel. Each Roi label table, contains fields of RoiLabel class.
+ * The sizes of the input images should be the same
  * @param width final image width
  * @param height final image height
  * @param totalBatchSize global batch size
  * @param transformer pipeline for pre-processing
  * @param toRGB  if converted to RGB, default format is BGR
  */
-class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
+class RoiImageFeatureToBatch private[bigdl](width: Int, height: Int,
   totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
   extends MTImageFeatureToBatch(totalBatchSize, transformer) {
 
@@ -377,7 +388,6 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
     imgInfoData.setValue(position + 1, 3, img.getOriginalHeight)
     imgInfoData.setValue(position + 1, 4, img.getOriginalWidth)
   }
-
 
   override protected def createBatch(curBatchSize: Int): MiniBatch[Float] = {
     if (featureTensor.nElement() != curBatchSize) {
@@ -441,7 +451,6 @@ class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, t
     } else {
       require(isCrowd == null, "ImageFeature's ISCROWD should be not be set if the label is empty")
     }
-
     isCrowdData(position) = isCrowd
     labelData(position) = label
     imgInfoData.setValue(position + 1, 1, img.getHeight())
