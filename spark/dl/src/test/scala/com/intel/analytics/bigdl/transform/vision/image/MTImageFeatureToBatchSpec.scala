@@ -286,9 +286,9 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
 
     checkItr(DataSet.array(imgData).data(false))
 
-    checkItr(MTImageFeatureToBatch.threadSafeIterator(imgData.toIterator))
+    checkItr(imgData.toIterator)
 
-    val rddRet = DataSet.rdd(sc.parallelize(imgData, 1)).data(false)
+    DataSet.rdd(sc.parallelize(imgData, 1)).data(false)
       .foreachPartition(part => {
         // we need to repeat the checking function, because in spark job, "should be" is not allowed
         val imgCheck = new Array[Boolean](1001)
@@ -313,18 +313,6 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         })
       })
 
-  }
-
-  "MTImageFeatureToBatch" should "reject bad iterator" in {
-    try {
-      val t = Array(ImageFeature(), ImageFeature())
-      MTImageFeatureToBatch(10, 10, 1, new FeatureTransformer {},
-        toRGB = false, extractRoi = true).apply(t.toIterator).toArray
-      fail()
-    } catch {
-      case e: IllegalArgumentException =>
-        e.getMessage should be("requirement failed: " + MTImageFeatureToBatch.THREADSAFE_ERRORMSG)
-    }
   }
 
 }

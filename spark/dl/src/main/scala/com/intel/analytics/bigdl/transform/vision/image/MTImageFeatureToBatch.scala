@@ -47,30 +47,6 @@ object MTImageFeatureToBatch {
         width, height, batchSize, transformer, toRGB)
     }
   }
-
-  private[bigdl] val THREADSAFE = "THREADSAFE"
-  private[bigdl] val THREADSAFE_ERRORMSG = "The input iterator for " +
-    "MTImageFeatureToBatch should be thread-safe! You should either wrap your iterator " +
-    "with MTImageFeatureToBatch.threadSafeIterator or use Dataset.array " +
-    "or Dataset.rdd for the input data of MTImageFeatureToBatch"
-
-  def threadSafeIterator(itr: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    new Iterator[ImageFeature] {
-      override def hasNext: Boolean = throw new UnsupportedOperationException
-
-      override def next(): ImageFeature = {
-        itr.synchronized {
-          if (!itr.hasNext) {
-            null
-          } else {
-            val ret = itr.next()
-            ret.update(THREADSAFE, true)
-            ret
-          }
-        }
-      }
-    }
-  }
 }
 
 object MTImageFeatureToBatchWithResize {
@@ -104,13 +80,8 @@ abstract class MTImageFeatureToBatch private[bigdl](
 
   protected val parallelism: Int = Engine.coreNumber()
 
-  private def getPosition(count: AtomicInteger): Int = {
-    val position = count.getAndIncrement()
-    if (position < batchSize) position else -1
-  }
-
   private lazy val transformers = (1 to parallelism).map(
-    _ => new PreFetch -> transformer.cloneTransformer()
+    _ => transformer.cloneTransformer()
   ).toArray
 
   protected def processImageFeature(img: ImageFeature, position: Int)
@@ -118,63 +89,40 @@ abstract class MTImageFeatureToBatch private[bigdl](
   protected def createBatch(batchSize: Int): MiniBatch[Float]
 
   override def apply(prev: Iterator[ImageFeature]): Iterator[MiniBatch[Float]] = {
-    val iterators = transformers.map(_.apply(prev))
 
     new Iterator[MiniBatch[Float]] {
-      override def hasNext: Boolean = {
-        iterators.map(_.hasNext).reduce(_ || _)
-      }
+      override def hasNext: Boolean = prev.hasNext
 
       override def next(): MiniBatch[Float] = {
         val count = new AtomicInteger(0)
+        val buffer = (0 until batchSize).flatMap(i => {
+          if (prev.hasNext) {
+            Iterator(prev.next)
+          } else {
+            Iterator.empty
+          }
+        }).toArray
+
+        def getPosition(count: AtomicInteger): Int = {
+          val position = count.getAndIncrement()
+          if (position < buffer.length) position else -1
+        }
+
         val batch = Engine.default.invokeAndWait((0 until parallelism).map(tid => () => {
           var position = 0
           var record = 0
-          while (iterators(tid).hasNext && {
+          while ({
             position = getPosition(count)
             position != -1
           }) {
-            val img = iterators(tid).next()
+            val img = transformers(tid)(Iterator(buffer(position))).next()
             processImageFeature(img, position)
             record += 1
           }
           record
         })).sum
+        require(batch == buffer.length)
         createBatch(batch)
-      }
-    }
-  }
-}
-
-private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
-  override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    new Iterator[ImageFeature] {
-      private var buffer: ImageFeature = _
-
-      private def checkThreadSafe(imf: ImageFeature) =
-        require(imf.contains(MTImageFeatureToBatch.THREADSAFE),
-          MTImageFeatureToBatch.THREADSAFE_ERRORMSG)
-
-      override def hasNext: Boolean = {
-        if (buffer != null) {
-          true
-        } else {
-          buffer = prev.next()
-          checkThreadSafe(buffer)
-          if (buffer == null) false else true
-        }
-      }
-
-      override def next(): ImageFeature = {
-        val ret = if (buffer == null) {
-          prev.next()
-        } else {
-          val tmp = buffer
-          buffer = null
-          tmp
-        }
-        checkThreadSafe(buffer)
-        ret
       }
     }
   }
