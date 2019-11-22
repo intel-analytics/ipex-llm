@@ -240,7 +240,6 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
       .map(arr => {
         val imf = ImageFeature()
         imf(ImageFeature.floats) = arr
-        imf(RoiImageInfo.ISCROWD) = Tensor(Array(0f, 1f), Array(2))
         imf(ImageFeature.originalSize) = (10, 10, 3)
         imf
       }).toArray
@@ -249,6 +248,7 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     val miniBatch = transformer(DataSet.array(imgData).data(false))
     miniBatch.foreach(batch => {
       batch.asInstanceOf[RoiMiniBatch].target should be (null)
+      batch.getInput().asInstanceOf[Table].get[Tensor[Float]](1) should not be (null)
     })
 
     val transformer2 = MTImageFeatureToBatchWithResize(batchSize = 19,
@@ -256,6 +256,7 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
     val miniBatch2 = transformer(DataSet.array(imgData).data(false))
     miniBatch2.foreach(batch => {
       batch.asInstanceOf[RoiMiniBatch].target should be (null)
+      batch.getInput().asInstanceOf[Table].get[Tensor[Float]](1) should not be (null)
     })
 
   }
