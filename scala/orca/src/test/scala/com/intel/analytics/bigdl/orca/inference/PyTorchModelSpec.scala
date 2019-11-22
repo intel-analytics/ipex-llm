@@ -17,6 +17,7 @@
 package com.intel.analytics.zoo.pipeline.inference
 
 import java.io.File
+import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.zoo.common.Utils
@@ -27,13 +28,14 @@ import sys.process._
 
 
 class PyTorchModelSpec extends FunSuite with Matchers with BeforeAndAfterAll
-with InferenceSupportive {
+  with InferenceSupportive {
 
   val s3Url = "https://s3-ap-southeast-1.amazonaws.com"
   val s3DataUrl = s"$s3Url" + s"/analytics-zoo-models"
   val modelURL = s"$s3DataUrl/pytorch/pytorch-resnet.pt"
   var tmpDir: File = _
   var model: InferenceModel = _
+  var model2: InferenceModel = _
   val currentNum = 10
   var modelPath: String = _
 
@@ -46,10 +48,12 @@ with InferenceSupportive {
 
     modelPath = s"$dir/pytorch-resnet.pt"
     model = new InferenceModel(currentNum) { }
+    model2 = new InferenceModel(currentNum) { }
   }
 
   override def afterAll() {
     model.doRelease()
+    model2.doRelease()
     s"rm -rf $tmpDir" !;
   }
 
@@ -57,6 +61,11 @@ with InferenceSupportive {
     model.doLoadPyTorch(modelPath)
     println(model)
     model shouldNot be(null)
+
+    val modelBytes = Files.readAllBytes(Paths.get(modelPath))
+    model2.doLoadPyTorch(modelBytes)
+    println(model2)
+    model2 shouldNot be(null)
   }
 
   test("pytorch model can do predict") {
@@ -69,13 +78,15 @@ with InferenceSupportive {
           val r = model.doPredict(inputTensor)
           println(r)
           r should be (results)
+
+          val r2 = model2.doPredict(inputTensor)
+          println(r2)
+          r2 should be (results)
         }
       }
     })
     threads.foreach(_.start())
     threads.foreach(_.join())
   }
-
-
 
 }
