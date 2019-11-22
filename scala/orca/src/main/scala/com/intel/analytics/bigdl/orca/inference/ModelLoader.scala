@@ -16,17 +16,21 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import java.util.UUID
+import java.io.{ByteArrayInputStream, File, FileOutputStream}
+import java.nio.channels.Channels
 
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
+import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding
 import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.net.TorchNet.TorchModelHolder
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, TFNet, TorchNet}
 import org.slf4j.LoggerFactory
+
+import scala.language.postfixOps
+import sys.process._
 
 object ModelLoader extends InferenceSupportive {
   val logger = LoggerFactory.getLogger(getClass)
@@ -76,6 +80,40 @@ object ModelLoader extends InferenceSupportive {
       logger.info(s"load model from $modelPath")
       val model = TFNet.fromSavedModel(modelPath, inputs, outputs)
       logger.info(s"loaded model as $model")
+      model
+    }
+  }
+
+  def loadFloatModelForTFSavedModelBytes(savedModelBytes: Array[Byte],
+                                         inputs: Array[String],
+                                         outputs: Array[String],
+                                         config: TFNet.SessionConfig = TFNet.defaultSessionConfig)
+  : AbstractModule[Activity, Activity, Float] = {
+    timing("load model") {
+      logger.info(s"load model from $savedModelBytes")
+      val tmpDir = Utils.createTmpDir("ZOOTFNet").toFile()
+      val outputPath: String = tmpDir.getCanonicalPath
+
+      val tarFilePath = (savedModelBytes == null) match {
+        case true => null
+        case false => val tarFileName = "saved-model.tar"
+          val tarFile = new File(s"$tmpDir/$tarFileName")
+          val tarFileInputStream = new ByteArrayInputStream(savedModelBytes)
+          val tarFileSrc = Channels.newChannel(tarFileInputStream)
+          val tarFileDest = new FileOutputStream(tarFile).getChannel
+          tarFileDest.transferFrom(tarFileSrc, 0, Long.MaxValue)
+          tarFileDest.close()
+          tarFileSrc.close()
+          tarFile.getAbsolutePath
+      }
+      s"mkdir -p $tmpDir/saved-model" !;
+      s"tar xf $tarFilePath -C $tmpDir/saved-model" !;
+      s"ls $tmpDir/saved-model" !;
+      val savedModelDir = new File(s"$tmpDir/saved-model").listFiles()(0).getAbsolutePath
+
+      val model = TFNet.fromSavedModel(savedModelDir, inputs, outputs)
+      logger.info(s"loaded model as $model")
+      s"rm -rf $tmpDir" !;
       model
     }
   }

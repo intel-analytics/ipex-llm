@@ -66,6 +66,21 @@ object InferenceModelFactory extends InferenceSupportive {
     new FloatModel(model, metaModel, true)
   }
 
+  def loadFloatModelForTFSavedModelBytes(savedModelBytes: Array[Byte],
+                                         inputs: Array[String],
+                                         outputs: Array[String],
+                                         intraOpParallelismThreads: Int = 1,
+                                         interOpParallelismThreads: Int = 1,
+                                         usePerSessionThreads: Boolean = true): FloatModel = {
+    val sessionConfig = TFNet.SessionConfig(intraOpParallelismThreads,
+      interOpParallelismThreads, usePerSessionThreads)
+    val model = ModelLoader.
+      loadFloatModelForTFSavedModelBytes(savedModelBytes, inputs, outputs, sessionConfig)
+    model.evaluate()
+    val metaModel = makeMetaModel(model)
+    new FloatModel(model, metaModel, true)
+  }
+
   def loadFloatModelForPyTorch(modelPath: String): FloatModel = {
     val model = ModelLoader.loadFloatModelForPyTorch(modelPath)
     model.evaluate()
