@@ -67,6 +67,14 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadTF(modelPath, inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
   }
 
+  public void loadTF(byte[] savedModelBytes, String[] inputs, String[] outputs) {
+    doLoadTF(savedModelBytes, inputs, outputs);
+  }
+
+  public void loadTF(byte[] savedModelBytes, String[] inputs, String[] outputs, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
+    doLoadTF(savedModelBytes, inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
+  }
+
   public void loadPyTorch(String modelPath) {
     doLoadPyTorch(modelPath);
   }
