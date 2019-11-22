@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
 import com.intel.analytics.bigdl.dataset.segmentation.{COCODataset, COCODeserializer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, MTImageFeatureToBatch, RoiImageInfo}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}

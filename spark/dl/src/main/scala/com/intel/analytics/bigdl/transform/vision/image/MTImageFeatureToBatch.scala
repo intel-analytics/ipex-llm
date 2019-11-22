@@ -34,17 +34,19 @@ object MTImageFeatureToBatch {
    * @param toRGB if converted to RGB, default format is BGR
    * @param extractRoi if true, extract ROI labels for segmentation; else the labels are for
    *                   classification
+   * @param partitionNumber the number of partitions. By default the node number
    * @return
    */
   def apply(width: Int, height: Int, batchSize: Int,
-            transformer: FeatureTransformer, toRGB: Boolean = false, extractRoi: Boolean = false)
+            transformer: FeatureTransformer, toRGB: Boolean = false, extractRoi: Boolean = false,
+            partitionNumber: Option[Int] = None)
   : MTImageFeatureToBatch = {
     if (extractRoi) {
       new RoiMTImageFeatureToBatch (
-        width, height, batchSize, transformer, toRGB)
+        width, height, batchSize, transformer, toRGB, partitionNumber)
     } else {
       new ClassificationMTImageFeatureToBatch (
-        width, height, batchSize, transformer, toRGB)
+        width, height, batchSize, transformer, toRGB, partitionNumber)
     }
   }
 }
@@ -57,10 +59,12 @@ object MTImageFeatureToBatchWithResize {
    * @param batchSize global batch size
    * @param transformer pipeline for pre-processing
    * @param toRGB if converted to RGB, default format is BGR
+   * @param partitionNumber the number of partitions. By default the node number
    */
   def apply(sizeDivisible: Int = -1, batchSize: Int, transformer: FeatureTransformer,
-    toRGB : Boolean = false): MTImageFeatureToBatch =
-    new RoiImageFeatureToBatchWithResize(sizeDivisible, batchSize, transformer, toRGB)
+    toRGB : Boolean = false, partitionNumber: Option[Int] = None): MTImageFeatureToBatch =
+    new RoiImageFeatureToBatchWithResize(sizeDivisible, batchSize, transformer, toRGB,
+      partitionNumber)
 }
 
 /**
@@ -71,22 +75,18 @@ object MTImageFeatureToBatchWithResize {
  * to convert the buffered data into a mini-batch
  * @param totalBatchSize global batch size
  * @param transformer pipeline for pre-processing
+ * @param partitionNumber the number of partitions. By default the node number
  */
 abstract class MTImageFeatureToBatch private[bigdl](
-  totalBatchSize: Int, transformer: FeatureTransformer)
+  totalBatchSize: Int, transformer: FeatureTransformer, partitionNumber: Option[Int])
   extends Transformer[ImageFeature, MiniBatch[Float]] {
 
-  protected val batchSize: Int = Utils.getBatchSize(totalBatchSize)
+  protected val batchSize: Int = Utils.getBatchSize(totalBatchSize, partitionNumber)
 
   protected val parallelism: Int = Engine.coreNumber()
 
-  private def getPosition(count: AtomicInteger): Int = {
-    val position = count.getAndIncrement()
-    if (position < batchSize) position else -1
-  }
-
   private lazy val transformers = (1 to parallelism).map(
-    _ => new PreFetch -> transformer.cloneTransformer()
+    _ => transformer.cloneTransformer()
   ).toArray
 
   protected def processImageFeature(img: ImageFeature, position: Int)
@@ -94,57 +94,40 @@ abstract class MTImageFeatureToBatch private[bigdl](
   protected def createBatch(batchSize: Int): MiniBatch[Float]
 
   override def apply(prev: Iterator[ImageFeature]): Iterator[MiniBatch[Float]] = {
-    val iterators = transformers.map(_.apply(prev))
 
     new Iterator[MiniBatch[Float]] {
-      override def hasNext: Boolean = {
-        iterators.map(_.hasNext).reduce(_ || _)
-      }
+      override def hasNext: Boolean = prev.hasNext
 
       override def next(): MiniBatch[Float] = {
         val count = new AtomicInteger(0)
+        val buffer = (0 until batchSize).flatMap(i => {
+          if (prev.hasNext) {
+            Iterator(prev.next)
+          } else {
+            Iterator.empty
+          }
+        }).toArray
+
+        def getPosition(count: AtomicInteger): Int = {
+          val position = count.getAndIncrement()
+          if (position < buffer.length) position else -1
+        }
+
         val batch = Engine.default.invokeAndWait((0 until parallelism).map(tid => () => {
           var position = 0
           var record = 0
-          while (iterators(tid).hasNext && {
+          while ({
             position = getPosition(count)
             position != -1
           }) {
-            val img = iterators(tid).next()
+            val img = transformers(tid)(Iterator(buffer(position))).next()
             processImageFeature(img, position)
             record += 1
           }
           record
         })).sum
+        require(batch == buffer.length)
         createBatch(batch)
-      }
-    }
-  }
-}
-
-
-private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
-  override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    new Iterator[ImageFeature] {
-      private var buffer: ImageFeature = null.asInstanceOf[ImageFeature]
-
-      override def hasNext: Boolean = {
-        if (buffer != null) {
-          true
-        } else {
-          buffer = prev.next()
-          if (buffer == null) false else true
-        }
-      }
-
-      override def next(): ImageFeature = {
-        if (buffer == null) {
-          prev.next()
-        } else {
-          val tmp = buffer
-          buffer = null.asInstanceOf[ImageFeature]
-          tmp
-        }
       }
     }
   }
@@ -159,8 +142,9 @@ private class PreFetch extends Transformer[ImageFeature, ImageFeature] {
  * @param toRGB  if converted to RGB, default format is BGR
  */
 class ClassificationMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
-  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false,
+  partitionNumber: Option[Int])
+  extends MTImageFeatureToBatch(totalBatchSize, transformer, partitionNumber) {
 
   private val frameLength = height * width
   private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
@@ -320,8 +304,9 @@ object RoiMiniBatch {
  * @param toRGB  if converted to RGB, default format is BGR
  */
 class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false)
-  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+  totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = false,
+  partitionNumber: Option[Int])
+  extends MTImageFeatureToBatch(totalBatchSize, transformer, partitionNumber) {
 
   private val frameLength = height * width
   private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
@@ -368,8 +353,8 @@ class RoiMTImageFeatureToBatch private[bigdl](width: Int, height: Int,
  * @param toRGB
  */
 class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, totalBatchSize: Int,
-  transformer: FeatureTransformer, toRGB: Boolean = false)
-  extends MTImageFeatureToBatch(totalBatchSize, transformer) {
+  transformer: FeatureTransformer, toRGB: Boolean = false, partitionNumber: Option[Int] = None)
+  extends MTImageFeatureToBatch(totalBatchSize, transformer, partitionNumber) {
 
   private val labelData: Array[RoiLabel] = new Array[RoiLabel](batchSize)
   private val isCrowdData: Array[Tensor[Float]] = new Array[Tensor[Float]](batchSize)

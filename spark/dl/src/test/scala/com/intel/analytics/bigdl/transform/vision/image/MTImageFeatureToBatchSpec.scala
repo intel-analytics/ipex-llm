@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
@@ -29,7 +29,7 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
   var sc: SparkContext = null
   before {
     val conf = Engine.createSparkConf().setAppName("MTImageFeatureToBatchSpec")
-      .setMaster("local[2]")
+      .setMaster("local[4]")
     sc = new SparkContext(conf)
     Engine.init
   }
@@ -237,7 +237,6 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
   }
 
   "MTImageFeatureToBatch with ROI" should "work well" in {
-    val imgCheck = new Array[Boolean](1001)
     val imgData = (0 to 1000).map(idx => (idx to (idx + 10*10*3)).map(_.toFloat).toArray)
       .map(arr => {
         val imf = ImageFeature()
@@ -253,29 +252,66 @@ class MTImageFeatureToBatchSpec extends FlatSpec with Matchers with BeforeAndAft
         imf(ImageFeature.originalSize) = (10, 10, 3)
         imf
       }).toArray
-    val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
-      toRGB = false, extractRoi = true)
-    val miniBatch = transformer(DataSet.array(imgData).data(false))
-    miniBatch
-      .foreach(batch => {
-      (batch.size() <= 19) should be (true)
-      val target = batch.getTarget().asInstanceOf[Table]
-      target.length() should be (batch.size())
-      for(i <- 1 to batch.size()) {
-        val t = target(i).asInstanceOf[Table]
-        RoiImageInfo.getIsCrowd(t) should be (Tensor(Array(0f, 1f), Array(2)))
-        RoiImageInfo.getImageInfo(t).size() should be(Array(4))
-        RoiImageInfo.getBBoxes(t).size() should be (Array(2, 4))
-        RoiImageInfo.getClasses(t).size() should be (Array(2))
-        RoiImageInfo.getMasks(t).length should be (2)
-        val idx = batch.getInput().asInstanceOf[Table].apply[Tensor[Float]](1)
-          .valueAt(i, 1, 1, 1).toInt
-        imgCheck(idx) should be (false)
-        imgCheck(idx) = true
-      }
 
-    })
-    imgCheck.count(!_) should be (0)
+    def checkBatch(batch: Iterator[MiniBatch[Float]]): Unit = {
+      val imgCheck = new Array[Boolean](1001)
+      batch
+        .foreach(batch => {
+          (batch.size() <= 19) should be (true)
+          val target = batch.getTarget().asInstanceOf[Table]
+          target.length() should be (batch.size())
+          for(i <- 1 to batch.size()) {
+            val t = target(i).asInstanceOf[Table]
+            RoiImageInfo.getIsCrowd(t) should be (Tensor(Array(0f, 1f), Array(2)))
+            RoiImageInfo.getImageInfo(t).size() should be(Array(4))
+            RoiImageInfo.getBBoxes(t).size() should be (Array(2, 4))
+            RoiImageInfo.getClasses(t).size() should be (Array(2))
+            RoiImageInfo.getMasks(t).length should be (2)
+            val idx = batch.getInput().asInstanceOf[Table].apply[Tensor[Float]](1)
+              .valueAt(i, 1, 1, 1).toInt
+            imgCheck(idx) should be (false)
+            imgCheck(idx) = true
+          }
+
+        })
+      imgCheck.count(!_) should be (0)
+    }
+
+    def checkItr(data: Iterator[ImageFeature]): Unit = {
+      val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
+        toRGB = false, extractRoi = true)
+      val batch = transformer(data)
+      checkBatch(batch)
+    }
+
+    checkItr(DataSet.array(imgData).data(false))
+
+    checkItr(imgData.toIterator)
+
+    DataSet.rdd(sc.parallelize(imgData, 1)).data(false)
+      .foreachPartition(part => {
+        // we need to repeat the checking function, because in spark job, "should be" is not allowed
+        val imgCheck = new Array[Boolean](1001)
+        val transformer = MTImageFeatureToBatch(10, 10, 19, new FeatureTransformer {},
+          toRGB = false, extractRoi = true)
+        transformer(part).foreach( batch => {
+          require(batch.size() <= 19)
+          val target = batch.getTarget().asInstanceOf[Table]
+          require(target.length() == batch.size())
+          for (i <- 1 to batch.size()) {
+            val t = target(i).asInstanceOf[Table]
+            require(RoiImageInfo.getIsCrowd(t) == Tensor(Array(0f, 1f), Array(2)))
+            require(RoiImageInfo.getImageInfo(t).size() sameElements Array(4))
+            require(RoiImageInfo.getBBoxes(t).size() sameElements Array(2, 4))
+            require(RoiImageInfo.getClasses(t).size() sameElements Array(2))
+            require(RoiImageInfo.getMasks(t).length == 2)
+            val idx = batch.getInput().asInstanceOf[Table].apply[Tensor[Float]](1)
+              .valueAt(i, 1, 1, 1).toInt
+            require(!imgCheck(idx))
+            imgCheck(idx) = true
+          }
+        })
+      })
 
   }
 
