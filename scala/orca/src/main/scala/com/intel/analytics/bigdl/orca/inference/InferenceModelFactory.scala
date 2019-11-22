@@ -73,6 +73,12 @@ object InferenceModelFactory extends InferenceSupportive {
     new FloatModel(model, metaModel, true)
   }
 
+  def loadFloatModelForPyTorch(modelBytes: Array[Byte]): FloatModel = {
+    val model = ModelLoader.loadFloatModelForPyTorch(modelBytes)
+    model.evaluate()
+    val metaModel = makeMetaModel(model)
+    new FloatModel(model, metaModel, true)
+  }
 
   def loadOpenVINOModelForTF(modelPath: String,
                              modelType: String,
