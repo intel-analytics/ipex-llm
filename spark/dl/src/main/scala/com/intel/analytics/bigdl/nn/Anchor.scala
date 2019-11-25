@@ -50,8 +50,9 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
    * Here, we generate anchors without change area.
    * @param ratios
    * @param scales
-   * @param baseSize
-   * @return
+   * @param baseSize stride to move
+   * @return anchors with shape (ratios number * scales number, 4).
+   *         And element order is (-width / 2, -height / 2, width / 2, height / 2)
    */
   private def generateBasicAnchors(ratios: Array[Float], scales: Array[Float],
     baseSize: Float = 16): Tensor[Float] = {
@@ -72,8 +73,6 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
     }
     Tensor[Float](data = anchors.toArray, shape = Array[Int](ratios.length * scales.length, 4))
   }
-
-
 
   @transient private var shiftX: Tensor[Float] = _
   @transient private var shiftY: Tensor[Float] = _
