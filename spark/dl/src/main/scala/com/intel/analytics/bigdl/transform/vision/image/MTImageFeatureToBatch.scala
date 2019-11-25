@@ -39,6 +39,8 @@ object MTImageFeatureToBatch {
   : MTImageFeatureToBatch = {
       new ClassificationMTImageFeatureToBatch (
         width, height, batchSize, transformer, toRGB)
+      new ClassificationMTImageFeatureToBatch (
+        width, height, batchSize, transformer, toRGB)
   }
 
   private[image] def checkLabels[T](labelData: Array[T]): Array[T] = {

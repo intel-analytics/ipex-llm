@@ -101,8 +101,6 @@ case class IRLinear[T: ClassTag](
             initGradWeight: Tensor[T] = null,
             initGradBias: Tensor[T] = null) extends IROperator[T]
 
-case class IRSqueeze[T: ClassTag](dims: Array[Int], batchMode: Boolean) extends IROperator[T]
-
 case class IRSpatialCrossMapLRN[T: ClassTag](
             size: Int = 5,
             alpha: Double = 1.0,

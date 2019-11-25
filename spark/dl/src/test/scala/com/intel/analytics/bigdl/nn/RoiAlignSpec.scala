@@ -74,7 +74,7 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     input.insert(Tensor(Storage(data.map(x => x.toFloat))).resize(1, 2, 6, 8))
     input.insert(Tensor(Storage(rois.map(x => x.toFloat))).resize(4, 4))
 
-    val roiAlign = RoiAlign[Float](spatio_scale, sampling_ratio, pooled_height, pooled_width)
+    val roiAlign = RoiAlign[Float](spatio_scale, sampling_ratio, pooled_height, pooled_width, "avg")
     val res = roiAlign.forward(input)
     val expectedRes = Array(
       0.614743709564208984, 0.550280153751373291,
@@ -150,7 +150,8 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     input.insert(Tensor(Storage(data.map(x => x))).resize(1, 2, 6, 8))
     input.insert(Tensor(Storage(rois.map(x => x.toDouble))).resize(4, 4))
 
-    val roiAlign = RoiAlign[Double](spatio_scale, sampling_ratio, pooled_height, pooled_width)
+    val roiAlign = RoiAlign[Double](
+      spatio_scale, sampling_ratio, pooled_height, pooled_width, "avg")
     val res = roiAlign.forward(input)
     val expectedRes = Array(
       0.614743709564208984, 0.550280153751373291,
