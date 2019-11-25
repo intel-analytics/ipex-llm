@@ -16,6 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
+import java.io.FileWriter
 import java.lang.{Float => JFloat, Integer => JInt}
 import java.util
 import java.util.concurrent.LinkedBlockingQueue
@@ -23,6 +24,7 @@ import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
+import com.sun.xml.internal.bind.v2.TODO
 
 import scala.collection.JavaConverters._
 
@@ -35,6 +37,8 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
 
   require(concurrentNum > 0, "concurrentNum should > 0")
 
+  private var batchCnt: Int = 0
+  @transient var inferenceSummary: InferenceSummary = null
   /**
    * default constructor, will create a InferenceModel with auto-scaling enabled.
    *
@@ -633,9 +637,9 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @return the output tensor with batch
    */
   def doPredict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    timing(s"model predict for batch ${inputs.size()}") {
-      val batchSize = inputs.size()
-      require(batchSize > 0, "inputs size should > 0")
+    val batchSize = inputs.size()
+    require(batchSize > 0, "inputs size should > 0")
+    timing(s"model predict batch size " + batchSize) {
       predict(inputs)
     }
   }
@@ -647,9 +651,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @return the output activity
    */
   def doPredict(inputActivity: Activity): Activity = {
-    timing(s"model predict for activity") {
-      predict(inputActivity)
-    }
+    predict(inputActivity)
   }
 
   /**
@@ -662,7 +664,30 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   private def predict(inputActivity: Activity): Activity = {
     val model: AbstractModel = retrieveModel()
     try {
-      model.predict(inputActivity)
+      val begin = System.nanoTime()
+      val batchSize = inputActivity.toTensor[Float].size(1)
+      val result = model.predict(inputActivity)
+      val end = System.nanoTime()
+
+      val latency = end - begin
+      val name = s"model predict for batch ${batchSize}"
+      InferenceSupportive.logger.info(s"$name time elapsed [${latency/1e9} s, ${latency/1e6} ms].")
+
+      if (inferenceSummary != null) {
+        // we do not check all values here
+        // we only check the first value of each output
+        // e.g for a 1000-class classification
+        // we only check the number of zeros of first class output cell
+
+        // TODO: this is just for image classification task
+        // for more task, e.g. object detection, check output dim first
+
+        val throughput = batchSize / (latency / 1e9)
+        inferenceSummary.addScalar("Throughput", throughput.toFloat, batchCnt)
+
+        batchCnt += 1
+      }
+      result
     } finally {
       model match {
         case null =>
@@ -738,11 +763,18 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
         models.map(this.modelQueue.offer(_))
     }
   }
+  def setInferenceSummary(value: InferenceSummary): this.type = {
+    this.inferenceSummary = value
+    this
+  }
+
 
   def getOriginalModel: AbstractModel = originalModel
 
   override def toString: String =
     s"InferenceModel($autoScalingEnabled, $concurrentNum, $originalModel, $modelQueue)"
+
+
 
 }
 
