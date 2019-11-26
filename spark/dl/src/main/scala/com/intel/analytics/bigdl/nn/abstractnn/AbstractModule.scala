@@ -826,7 +826,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
-    val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
+    val starts = if (startNodes.isEmpty) {
+      if (this.isInstanceOf[Sequential[T]]
+        && this.asInstanceOf[Sequential[T]].modules(0).isKerasStyle()) {
+        import com.intel.analytics.bigdl.nn.keras.{Input => kerasInput}
+        Array(kerasInput[T]())
+      } else Array(Input[T]())
+    }
+    else {
+      startNodes.toArray
+    }
+
     val endNodes = this.getEndNodes(starts)
     Graph(starts, endNodes)
   }

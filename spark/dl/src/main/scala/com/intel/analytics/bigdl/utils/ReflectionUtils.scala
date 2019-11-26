@@ -119,8 +119,10 @@ private[bigdl] object ReflectionUtils {
     val (tags, numerics) = source.getClassTagNumerics()
     val op = ReflectionUtils.reflection(target, nameAndValues,
       tags, numerics).asInstanceOf[IROperator[T]]
-    val weightsAndBias =
+    import com.intel.analytics.bigdl.nn.keras.{Input => kerasInput}
+    val weightsAndBias = if (source.isInstanceOf[kerasInput[T]]) (null, null) else {
       if (source.parameters() != null) source.getParameters() else (null, null)
+    }
     val element = IRElement[T](
       source.getName(), op, weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
     if (source.isInstanceOf[MklInt8Convertible]) {
