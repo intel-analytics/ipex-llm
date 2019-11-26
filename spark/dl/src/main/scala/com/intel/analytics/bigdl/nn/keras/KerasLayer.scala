@@ -183,6 +183,15 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   }
  // scalastyle:on
 
+  // TODO: KerasLayer in Analytics Zoo has a toModel() implementation
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    if (this.modules.length > 1) super.parameters()
+    else {
+      labor.parameters()
+    }
+  }
+
   override def updateOutput(input: A): B = {
     output = labor.updateOutput(input)
     output
