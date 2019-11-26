@@ -85,9 +85,7 @@ class SparkRunner():
         from pyspark.sql import SparkSession
         print("pyspark_submit_args is: {}".format(submit_args))
         os.environ['PYSPARK_SUBMIT_ARGS'] = submit_args
-        zoo_conf = init_spark_conf()
-        for key, value in conf.items():
-            zoo_conf.set(key=key, value=value)
+        zoo_conf = init_spark_conf(conf)
         sc = init_nncontext(conf=zoo_conf, redirect_spark_log=self.redirect_spark_log)
         sc.setLogLevel(self.spark_log_level)
 
@@ -140,9 +138,7 @@ class SparkRunner():
         os.environ['PYSPARK_PYTHON'] = \
             python_location if python_location else self._detect_python_location()
         master = "local[{}]".format(cores)
-        zoo_conf = init_spark_conf().setMaster(master)
-        if conf:
-            zoo_conf.setAll(conf.items())
+        zoo_conf = init_spark_conf(conf).setMaster(master)
         sc = init_nncontext(conf=zoo_conf, redirect_spark_log=self.redirect_spark_log)
         sc.setLogLevel(self.spark_log_level)
         print("Successfully got a SparkContext")
@@ -182,6 +178,8 @@ class SparkRunner():
             conf = {
                 "spark.driver.memory": driver_memory,
                 "spark.driver.cores": driver_cores,
+                "spark.executor.cores": executor_cores,
+                "spark.executor.memory": executor_memory,
                 "spark.scheduler.minRegisterreResourcesRatio": "1.0"}
             if extra_executor_memory_for_ray:
                 conf["spark.executor.memoryOverhead"] = extra_executor_memory_for_ray

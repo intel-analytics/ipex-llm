@@ -159,7 +159,7 @@ def get_analytics_zoo_conf():
     return {}
 
 
-def init_env():
+def init_env(conf):
     # Default env
     kmp_affinity = "granularity=fine,compact,1,0"
     kmp_settings = "1"
@@ -174,50 +174,52 @@ def init_env():
         kmp_affinity = os.environ["KMP_AFFINITY"]
     if "KMP_SETTINGS" in os.environ:
         kmp_settings = os.environ["KMP_SETTINGS"]
-    if "OMP_NUM_THREADS" in os.environ:
-        omp_num_threads = os.environ["OMP_NUM_THREADS"]
-    elif "ZOO_NUM_MKLTHREADS" in os.environ:
+    if "ZOO_NUM_MKLTHREADS" in os.environ:
         if os.environ["ZOO_NUM_MKLTHREADS"].lower() == "all":
-            omp_num_threads = multiprocessing.cpu_count()
+            omp_num_threads = conf.get('spark.executor.cores', str(multiprocessing.cpu_count()))
         else:
             omp_num_threads = os.environ["ZOO_NUM_MKLTHREADS"]
+    elif "OMP_NUM_THREADS" in os.environ:
+        omp_num_threads = os.environ["OMP_NUM_THREADS"]
     if "KMP_BLOCKTIME" in os.environ:
         kmp_blocktime = os.environ["KMP_BLOCKTIME"]
 
     # Set env
+    conf.set("spark.executorEnv.KMP_AFFINITY", kmp_affinity)
+    conf.set("spark.executorEnv.KMP_SETTINGS", kmp_settings)
+    conf.set("spark.executorEnv.KMP_BLOCKTIME", kmp_blocktime)
+    conf.set("spark.executorEnv.OMP_NUM_THREADS", omp_num_threads)
     os.environ["KMP_AFFINITY"] = kmp_affinity
     os.environ["KMP_SETTINGS"] = kmp_settings
     os.environ["OMP_NUM_THREADS"] = omp_num_threads
     os.environ["KMP_BLOCKTIME"] = kmp_blocktime
 
 
-def init_spark_conf():
-    init_env()
+def init_spark_conf(conf=None):
+    spark_conf = SparkConf()
+    if conf:
+        spark_conf.setAll(conf.items())
+    init_env(spark_conf)
     zoo_conf = get_analytics_zoo_conf()
     # Set bigDL and TF conf
-    zoo_conf["spark.executorEnv.KMP_AFFINITY"] = os.environ["KMP_AFFINITY"]
-    zoo_conf["spark.executorEnv.KMP_SETTINGS"] = os.environ["KMP_SETTINGS"]
-    zoo_conf["spark.executorEnv.OMP_NUM_THREADS"] = os.environ["OMP_NUM_THREADS"]
-    zoo_conf["spark.executorEnv.KMP_BLOCKTIME"] = os.environ["KMP_BLOCKTIME"]
 
-    sparkConf = SparkConf()
-    sparkConf.setAll(zoo_conf.items())
+    spark_conf.setAll(zoo_conf.items())
     if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
         for jar in os.environ["BIGDL_JARS"].split(":"):
-            extend_spark_driver_cp(sparkConf, jar)
+            extend_spark_driver_cp(spark_conf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
     # This is a workaround for current Spark on k8s
     python_lib = os.environ.get('PYSPARK_FILES', None)
     if python_lib:
-        existing_py_files = sparkConf.get("spark.submit.pyFiles")
+        existing_py_files = spark_conf.get("spark.submit.pyFiles")
         if existing_py_files:
-            sparkConf.set(key="spark.submit.pyFiles",
-                          value="%s,%s" % (python_lib, existing_py_files))
+            spark_conf.set(key="spark.submit.pyFiles",
+                           value="%s,%s" % (python_lib, existing_py_files))
         else:
-            sparkConf.set(key="spark.submit.pyFiles", value=python_lib)
+            spark_conf.set(key="spark.submit.pyFiles", value=python_lib)
 
-    return sparkConf
+    return spark_conf
 
 
 def check_version():
