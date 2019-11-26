@@ -21,6 +21,7 @@ from zoo.feature.common import FeatureSet
 from zoo.pipeline.api.keras.base import ZooKerasLayer
 from zoo.pipeline.api.keras.utils import *
 from bigdl.nn.layer import Layer
+from zoo.common.utils import callZooFunc
 
 if sys.version >= '3':
     long = int
@@ -69,11 +70,11 @@ class KerasNet(ZooKerasLayer):
             criterion = CustomLoss(loss, self.get_output_shape()[1:])
         if metrics and all(isinstance(metric, six.string_types) for metric in metrics):
             metrics = to_bigdl_metrics(metrics, loss)
-        callBigDlFunc(self.bigdl_type, "zooCompile",
-                      self.value,
-                      optimizer,
-                      criterion,
-                      metrics)
+        callZooFunc(self.bigdl_type, "zooCompile",
+                    self.value,
+                    optimizer,
+                    criterion,
+                    metrics)
 
     def set_tensorboard(self, log_dir, app_name):
         """
@@ -88,10 +89,10 @@ class KerasNet(ZooKerasLayer):
         log_dir: The base directory path to store training and validation logs.
         app_name: The name of the application.
         """
-        callBigDlFunc(self.bigdl_type, "zooSetTensorBoard",
-                      self.value,
-                      log_dir,
-                      app_name)
+        callZooFunc(self.bigdl_type, "zooSetTensorBoard",
+                    self.value,
+                    log_dir,
+                    app_name)
 
     def get_train_summary(self, tag=None):
         """
@@ -106,8 +107,8 @@ class KerasNet(ZooKerasLayer):
             raise TypeError('Only "Loss", "LearningRate", "Throughput"'
                             + 'are supported in train summary')
 
-        return callBigDlFunc(self.bigdl_type, "zooGetScalarFromSummary",
-                             self.value, tag, "Train")
+        return callZooFunc(self.bigdl_type, "zooGetScalarFromSummary",
+                           self.value, tag, "Train")
 
     def get_validation_summary(self, tag=None):
         """
@@ -124,8 +125,8 @@ class KerasNet(ZooKerasLayer):
         if tag not in validation_set:
             raise TypeError('Only subclasses of ValidationMethod are supported,'
                             + 'which are ' + str(validation_set))
-        return callBigDlFunc(self.bigdl_type, "zooGetScalarFromSummary",
-                             self.value, tag, "Validation")
+        return callZooFunc(self.bigdl_type, "zooGetScalarFromSummary",
+                           self.value, tag, "Validation")
 
     def set_checkpoint(self, path, over_write=True):
         """
@@ -136,18 +137,18 @@ class KerasNet(ZooKerasLayer):
         path: The path to save snapshots. Make sure this path exists beforehand.
         over_write: Whether to overwrite existing snapshots in the given path. Default is True.
         """
-        callBigDlFunc(self.bigdl_type, "zooSetCheckpoint",
-                      self.value,
-                      path,
-                      over_write)
+        callZooFunc(self.bigdl_type, "zooSetCheckpoint",
+                    self.value,
+                    path,
+                    over_write)
 
     def clear_gradient_clipping(self):
         """
         Clear gradient clipping parameters. In this case, gradient clipping will not be applied.
         In order to take effect, it needs to be called before fit.
         """
-        callBigDlFunc(self.bigdl_type, "zooClearGradientClipping",
-                      self.value)
+        callZooFunc(self.bigdl_type, "zooClearGradientClipping",
+                    self.value)
 
     def set_constant_gradient_clipping(self, min, max):
         """
@@ -158,10 +159,10 @@ class KerasNet(ZooKerasLayer):
         min: The minimum value to clip by. Float.
         max: The maximum value to clip by. Float.
         """
-        callBigDlFunc(self.bigdl_type, "zooSetConstantGradientClipping",
-                      self.value,
-                      float(min),
-                      float(max))
+        callZooFunc(self.bigdl_type, "zooSetConstantGradientClipping",
+                    self.value,
+                    float(min),
+                    float(max))
 
     def set_gradient_clipping_by_l2_norm(self, clip_norm):
         """
@@ -171,16 +172,16 @@ class KerasNet(ZooKerasLayer):
         # Arguments
         clip_norm: Gradient L2-Norm threshold. Float.
         """
-        callBigDlFunc(self.bigdl_type, "zooSetGradientClippingByL2Norm",
-                      self.value,
-                      float(clip_norm))
+        callZooFunc(self.bigdl_type, "zooSetGradientClippingByL2Norm",
+                    self.value,
+                    float(clip_norm))
 
     def set_evaluate_status(self):
         """
         Set the model to be in evaluate status, i.e. remove the effect of Dropout, etc.
         """
-        callBigDlFunc(self.bigdl_type, "zooSetEvaluateStatus",
-                      self.value)
+        callZooFunc(self.bigdl_type, "zooSetEvaluateStatus",
+                    self.value)
         return self
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10,
@@ -212,31 +213,31 @@ class KerasNet(ZooKerasLayer):
                     x, y = x[:split_index], y[:split_index]
                     validation_data = to_sample_rdd(*validation_data)
                 training_data = to_sample_rdd(x, y)
-            elif (isinstance(x, RDD) or isinstance(x, ImageSet) or isinstance(x, TextSet))\
+            elif (isinstance(x, RDD) or isinstance(x, ImageSet) or isinstance(x, TextSet)) \
                     or isinstance(x, FeatureSet) and not y:
                 training_data = x
             else:
                 raise TypeError("Unsupported training data type: %s" % type(x))
-            callBigDlFunc(self.bigdl_type, "zooFit",
-                          self.value,
-                          training_data,
-                          batch_size,
-                          nb_epoch,
-                          validation_data)
+            callZooFunc(self.bigdl_type, "zooFit",
+                        self.value,
+                        training_data,
+                        batch_size,
+                        nb_epoch,
+                        validation_data)
         else:
             if validation_data:
                 val_x = [JTensor.from_ndarray(x) for x in to_list(validation_data[0])]
                 val_y = JTensor.from_ndarray(validation_data[1])
             else:
                 val_x, val_y = None, None
-            callBigDlFunc(self.bigdl_type, "zooFit",
-                          self.value,
-                          [JTensor.from_ndarray(x) for x in to_list(x)],
-                          JTensor.from_ndarray(y),
-                          batch_size,
-                          nb_epoch,
-                          val_x,
-                          val_y)
+            callZooFunc(self.bigdl_type, "zooFit",
+                        self.value,
+                        [JTensor.from_ndarray(x) for x in to_list(x)],
+                        JTensor.from_ndarray(y),
+                        batch_size,
+                        nb_epoch,
+                        val_x,
+                        val_y)
 
     def evaluate(self, x, y=None, batch_size=32):
         """
@@ -254,10 +255,10 @@ class KerasNet(ZooKerasLayer):
             data = x
         else:
             raise TypeError("Unsupported evaluation data type: %s" % type(x))
-        return callBigDlFunc(self.bigdl_type, "zooEvaluate",
-                             self.value,
-                             data,
-                             batch_size)
+        return callZooFunc(self.bigdl_type, "zooEvaluate",
+                           self.value,
+                           data,
+                           batch_size)
 
     def forward(self, input):
         """
@@ -268,11 +269,11 @@ class KerasNet(ZooKerasLayer):
         :return: ndarray or list of ndarray
         """
         jinput, input_is_table = self.check_input(input)
-        output = callBigDlFunc(self.bigdl_type,
-                               "zooForward",
-                               self.value,
-                               jinput,
-                               input_is_table)
+        output = callZooFunc(self.bigdl_type,
+                             "zooForward",
+                             self.value,
+                             jinput,
+                             input_is_table)
         return self.convert_output(output)
 
     @staticmethod
@@ -298,10 +299,10 @@ class KerasNet(ZooKerasLayer):
                      Default is True. In local mode, x must be a Numpy array.
         """
         if isinstance(x, ImageSet) or isinstance(x, TextSet):
-            results = callBigDlFunc(self.bigdl_type, "zooPredict",
-                                    self.value,
-                                    x,
-                                    batch_per_thread)
+            results = callZooFunc(self.bigdl_type, "zooPredict",
+                                  self.value,
+                                  x,
+                                  batch_per_thread)
             return ImageSet(results) if isinstance(x, ImageSet) else TextSet(results)
         if distributed:
             if isinstance(x, np.ndarray):
@@ -310,17 +311,17 @@ class KerasNet(ZooKerasLayer):
                 data_rdd = x
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
-            results = callBigDlFunc(self.bigdl_type, "zooPredict",
-                                    self.value,
-                                    data_rdd,
-                                    batch_per_thread)
+            results = callZooFunc(self.bigdl_type, "zooPredict",
+                                  self.value,
+                                  data_rdd,
+                                  batch_per_thread)
             return results.map(lambda result: Layer.convert_output(result))
         else:
             if isinstance(x, np.ndarray) or isinstance(x, list):
-                results = callBigDlFunc(self.bigdl_type, "zooPredict",
-                                        self.value,
-                                        self._to_jtensors(x),
-                                        batch_per_thread)
+                results = callZooFunc(self.bigdl_type, "zooPredict",
+                                      self.value,
+                                      self._to_jtensors(x),
+                                      batch_per_thread)
                 return [Layer.convert_output(result) for result in results]
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
@@ -344,11 +345,11 @@ class KerasNet(ZooKerasLayer):
             data_rdd = x
         else:
             raise TypeError("Unsupported prediction data type: %s" % type(x))
-        return callBigDlFunc(self.bigdl_type, "zooPredictClasses",
-                             self.value,
-                             data_rdd,
-                             batch_per_thread,
-                             zero_based_label)
+        return callZooFunc(self.bigdl_type, "zooPredictClasses",
+                           self.value,
+                           data_rdd,
+                           batch_per_thread,
+                           zero_based_label)
 
     def get_layer(self, name):
         layer = [l for l in self.layers if l.name() == name]
@@ -384,23 +385,23 @@ class KerasNet(ZooKerasLayer):
                    If the field has a larger length, the remaining part will be trimmed.
                    If the field has a smaller length, the remaining part will be white spaces.
         """
-        callBigDlFunc(self.bigdl_type, "zooKerasNetSummary",
-                      self.value,
-                      line_length,
-                      [float(p) for p in positions])
+        callZooFunc(self.bigdl_type, "zooKerasNetSummary",
+                    self.value,
+                    line_length,
+                    [float(p) for p in positions])
 
     def to_model(self):
         from zoo.pipeline.api.keras.models import Model
-        return Model.from_jvalue(callBigDlFunc(self.bigdl_type, "kerasNetToModel", self.value))
+        return Model.from_jvalue(callZooFunc(self.bigdl_type, "kerasNetToModel", self.value))
 
     @property
     def layers(self):
-        jlayers = callBigDlFunc(self.bigdl_type, "getSubModules", self)
+        jlayers = callZooFunc(self.bigdl_type, "getSubModules", self)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
     def flattened_layers(self, include_container=False):
-        jlayers = callBigDlFunc(self.bigdl_type, "getFlattenSubModules", self, include_container)
+        jlayers = callZooFunc(self.bigdl_type, "getFlattenSubModules", self, include_container)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
@@ -417,6 +418,7 @@ class Input(autograd.Variable):
     >>> input = Input(name="input1", shape=(3, 5))
     creating: createZooKerasInput
     """
+
     def __init__(self, shape=None, name=None, bigdl_type="float"):
         super(Input, self).__init__(input_shape=list(shape) if shape else None,
                                     node=None, jvalue=None, name=name)
@@ -434,6 +436,7 @@ class InputLayer(ZooKerasLayer):
     >>> inputlayer = InputLayer(input_shape=(3, 5), name="input1")
     creating: createZooKerasInputLayer
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(InputLayer, self).__init__(None,
                                          list(input_shape) if input_shape else None,
@@ -466,6 +469,7 @@ class Merge(ZooKerasLayer):
     >>> merge = Merge(layers=[l1, l2], mode='sum', name="merge1")
     creating: createZooKerasMerge
     """
+
     def __init__(self, layers=None, mode="sum", concat_axis=-1,
                  input_shape=None, **kwargs):
         super(Merge, self).__init__(None,
