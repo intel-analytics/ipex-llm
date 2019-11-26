@@ -38,11 +38,11 @@ class JVMGuard():
     def registerPids(pids):
         import traceback
         try:
-            from bigdl.util.common import callBigDlFunc
+            from zoo.common.utils import callZooFunc
             import zoo
-            callBigDlFunc("float",
-                          "jvmGuardRegisterPids",
-                          pids)
+            callZooFunc("float",
+                        "jvmGuardRegisterPids",
+                        pids)
         except Exception as err:
             print(traceback.format_exc())
             print("Cannot sucessfully register pid into JVMGuard")
