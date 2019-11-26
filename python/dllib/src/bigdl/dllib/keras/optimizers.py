@@ -17,6 +17,7 @@
 from bigdl.util.common import *
 from bigdl.optim.optimizer import OptimMethod, Default
 from zoo.pipeline.api.keras.base import ZooKerasCreator
+from zoo.common.utils import callZooFunc
 
 if sys.version >= '3':
     long = int
@@ -30,6 +31,7 @@ class Adam(OptimMethod, ZooKerasCreator):
     creating: createZooKerasAdam
     creating: createDefault
     """
+
     def __init__(self,
                  lr=1e-3,
                  beta_1=0.9,
@@ -51,7 +53,7 @@ class Adam(OptimMethod, ZooKerasCreator):
         # 1. This class need to be a subclass of OptimMethod
         # 2. The constructor of OptimMethod invokes JavaValue.jvm_class_constructor() directly
         #    and does not take the polymorphism.
-        self.value = callBigDlFunc(
+        self.value = callZooFunc(
             bigdl_type, ZooKerasCreator.jvm_class_constructor(self),
             lr,
             beta_1,
@@ -68,6 +70,7 @@ class AdamWeightDecay(OptimMethod, ZooKerasCreator):
     >>> adam = AdamWeightDecay()
     creating: createZooKerasAdamWeightDecay
     """
+
     def __init__(self,
                  lr=1e-3,
                  warmup_portion=-1.0,
@@ -94,7 +97,7 @@ class AdamWeightDecay(OptimMethod, ZooKerasCreator):
         # 1. This class need to be a subclass of OptimMethod
         # 2. The constructor of OptimMethod invokes JavaValue.jvm_class_constructor() directly
         #    and does not take the polymorphism.
-        self.value = callBigDlFunc(
+        self.value = callZooFunc(
             bigdl_type, ZooKerasCreator.jvm_class_constructor(self),
             lr,
             warmup_portion,
@@ -120,5 +123,6 @@ class PolyEpochDecay(ZooKerasCreator):
     >>> poly = PolyEpochDecay(0.5, 5)
     creating: createZooKerasPolyEpochDecay
     """
+
     def __init__(self, power, max_epochs, bigdl_type="float"):
-            JavaValue.__init__(self, None, bigdl_type, power, max_epochs)
+        JavaValue.__init__(self, None, bigdl_type, power, max_epochs)
