@@ -18,7 +18,8 @@ import sys
 
 from zoo.pipeline.api.utils import remove_batch
 from .engine.topology import KerasNet
-from bigdl.util.common import to_list, callBigDlFunc
+from bigdl.util.common import to_list
+from zoo.common.utils import callZooFunc
 
 if sys.version >= '3':
     long = int
@@ -35,6 +36,7 @@ class Sequential(KerasNet):
     >>> sequential = Sequential(name="seq1")
     creating: createZooKerasSequential
     """
+
     def __init__(self, jvalue=None, **kwargs):
         super(Sequential, self).__init__(jvalue, **kwargs)
 
@@ -80,6 +82,7 @@ class Model(KerasNet):
     output: An output node or a list of output nodes.
     name: String to specify the name of the graph model. Default is None.
     """
+
     def __init__(self, input, output, jvalue=None, **kwargs):
         super(Model, self).__init__(jvalue,
                                     to_list(input),
@@ -96,20 +99,20 @@ class Model(KerasNet):
         log_path: The path to save the model graph.
         backward: The name of the application.
         """
-        callBigDlFunc(self.bigdl_type, "zooSaveGraphTopology",
-                      self.value,
-                      log_path,
-                      backward)
+        callZooFunc(self.bigdl_type, "zooSaveGraphTopology",
+                    self.value,
+                    log_path,
+                    backward)
 
     def new_graph(self, outputs):
-        value = callBigDlFunc(self.bigdl_type, "newGraph", self.value, outputs)
+        value = callZooFunc(self.bigdl_type, "newGraph", self.value, outputs)
         return self.from_jvalue(value)
 
     def freeze_up_to(self, names):
-        callBigDlFunc(self.bigdl_type, "freezeUpTo", self.value, names)
+        callZooFunc(self.bigdl_type, "freezeUpTo", self.value, names)
 
     def unfreeze(self, names):
-        callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names)
+        callZooFunc(self.bigdl_type, "unFreeze", self.value, names)
 
     @staticmethod
     def from_jvalue(jvalue, bigdl_type="float"):
