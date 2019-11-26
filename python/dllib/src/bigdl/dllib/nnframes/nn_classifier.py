@@ -17,6 +17,7 @@
 from pyspark.ml.param.shared import *
 from pyspark.ml.wrapper import JavaModel, JavaEstimator, JavaTransformer
 from bigdl.optim.optimizer import SGD
+from zoo.common.utils import callZooFunc
 from bigdl.util.common import *
 from zoo.feature.common import *
 
@@ -67,7 +68,7 @@ class HasSamplePreprocessing:
         Sets samplePreprocessing
         """
         pythonBigDL_method_name = "setSamplePreprocessing"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
         self.samplePreprocessing = val
         return self
 
@@ -87,7 +88,7 @@ class HasOptimMethod:
         default: SGD()
         """
         pythonBigDL_method_name = "setOptimMethod"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
         self.optimMethod = val
         return self
 
@@ -196,12 +197,12 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
                 feature_preprocessing = SeqToTensor(feature_preprocessing)
 
         if type(label_preprocessing) is list:
-            assert(all(isinstance(x, int) for x in label_preprocessing))
+            assert (all(isinstance(x, int) for x in label_preprocessing))
             label_preprocessing = SeqToTensor(label_preprocessing)
 
         sample_preprocessing = FeatureLabelPreprocessing(feature_preprocessing, label_preprocessing)
 
-        self.value = jvalue if jvalue else callBigDlFunc(
+        self.value = jvalue if jvalue else callZooFunc(
             bigdl_type, self.jvm_class_constructor(), model, criterion, sample_preprocessing)
         self.model = model
         self.samplePreprocessing = sample_preprocessing
@@ -246,7 +247,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         When to stop the training, passed in a Trigger. E.g. maxIterations(100)
         """
         pythonBigDL_method_name = "setEndWhen"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, trigger)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, trigger)
         self.endWhen = trigger
         return self
 
@@ -267,7 +268,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
                   memory.
         """
         pythonBigDL_method_name = "setDataCacheLevel"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, level, numSlice)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, level, numSlice)
         self.dataCacheLevel = level if numSlice is None else (level, numSlice)
         return self
 
@@ -326,7 +327,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         :param summary: a TrainSummary object
         """
         pythonBigDL_method_name = "setTrainSummary"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
         self.train_summary = val
         return self
 
@@ -345,7 +346,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         Default: None
         """
         pythonBigDL_method_name = "setValidationSummary"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
         self.validation_summary = val
         return self
 
@@ -365,8 +366,8 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         :param batch_size: validation batch size
         """
         pythonBigDL_method_name = "setValidation"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value,
-                      trigger, val_df, val_method, batch_size)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value,
+                    trigger, val_df, val_method, batch_size)
         self.validation_config = [trigger, val_df, val_method, batch_size]
         return self
 
@@ -383,8 +384,8 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         Clear clipping params, in this case, clipping will not be applied.
         In order to take effect, it needs to be called before fit.
         """
-        callBigDlFunc(self.bigdl_type, "nnEstimatorClearGradientClipping",
-                      self.value)
+        callZooFunc(self.bigdl_type, "nnEstimatorClearGradientClipping",
+                    self.value)
         return self
 
     def setConstantGradientClipping(self, min, max):
@@ -396,10 +397,10 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         min: The minimum value to clip by. Float.
         max: The maximum value to clip by. Float.
         """
-        callBigDlFunc(self.bigdl_type, "nnEstimatorSetConstantGradientClipping",
-                      self.value,
-                      float(min),
-                      float(max))
+        callZooFunc(self.bigdl_type, "nnEstimatorSetConstantGradientClipping",
+                    self.value,
+                    float(min),
+                    float(max))
         return self
 
     def setGradientClippingByL2Norm(self, clip_norm):
@@ -410,9 +411,9 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         # Arguments
         clip_norm: Gradient L2-Norm threshold. Float.
         """
-        callBigDlFunc(self.bigdl_type, "nnEstimatorSetGradientClippingByL2Norm",
-                      self.value,
-                      float(clip_norm))
+        callZooFunc(self.bigdl_type, "nnEstimatorSetGradientClippingByL2Norm",
+                    self.value,
+                    float(clip_norm))
         return self
 
     def setCheckpoint(self, path, trigger, isOverWrite=True):
@@ -424,8 +425,8 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         :return: self
         """
         pythonBigDL_method_name = "setCheckpoint"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value,
-                      path, trigger, isOverWrite)
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value,
+                    path, trigger, isOverWrite)
         self.checkpoint_config = [path, trigger, isOverWrite]
         return self
 
@@ -460,6 +461,7 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
     After transform, the prediction column contains the output of the model as Array[T], where
     T (Double or Float) is decided by the model type.
     """
+
     def __init__(self, model, feature_preprocessing=None, jvalue=None, bigdl_type="float"):
         """
         create a NNModel with a BigDL model
@@ -488,7 +490,7 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
                     feature_preprocessing = SeqToTensor(feature_preprocessing)
 
             sample_preprocessing = ChainedPreprocessing([feature_preprocessing, TensorToSample()])
-            self.value = callBigDlFunc(
+            self.value = callZooFunc(
                 bigdl_type, self.jvm_class_constructor(), model, sample_preprocessing)
             self.samplePreprocessing = sample_preprocessing
 
@@ -499,12 +501,12 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
 
     def save(self, path):
         self._transfer_params_to_java()
-        callBigDlFunc(self.bigdl_type, "saveNNModel", self.value, path)
+        callZooFunc(self.bigdl_type, "saveNNModel", self.value, path)
         return self
 
     @staticmethod
     def load(path):
-        jvalue = callBigDlFunc("float", "loadNNModel", path)
+        jvalue = callZooFunc("float", "loadNNModel", path)
         return NNModel(model=None, feature_preprocessing=None, jvalue=jvalue)
 
 
@@ -514,6 +516,7 @@ class NNClassifier(NNEstimator):
     classification tasks. It only supports label column of DoubleType, and the fitted
     NNClassifierModel will have the prediction column of DoubleType.
     """
+
     def __init__(self, model, criterion, feature_preprocessing=None,
                  jvalue=None, bigdl_type="float"):
         """
@@ -558,7 +561,8 @@ class NNClassifierModel(NNModel, HasThreshold):
     NNClassifierModel is a specialized [[NNModel]] for classification tasks. The prediction
     column will have the datatype of Double.
     """
-    def __init__(self,  model, feature_preprocessing=None, jvalue=None,
+
+    def __init__(self, model, feature_preprocessing=None, jvalue=None,
                  bigdl_type="float"):
         """
         :param model: trained BigDL model to use in prediction.
@@ -573,5 +577,5 @@ class NNClassifierModel(NNModel, HasThreshold):
 
     @staticmethod
     def load(path):
-        jvalue = callBigDlFunc("float", "loadNNClassifierModel", path)
+        jvalue = callZooFunc("float", "loadNNClassifierModel", path)
         return NNClassifierModel(model=None, feature_preprocessing=None, jvalue=jvalue)

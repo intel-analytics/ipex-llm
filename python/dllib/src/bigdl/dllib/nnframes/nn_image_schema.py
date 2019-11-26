@@ -15,7 +15,7 @@
 #
 
 import sys
-from bigdl.util.common import callBigDlFunc
+from zoo.common.utils import callZooFunc
 
 if sys.version >= '3':
     long = int
@@ -23,4 +23,4 @@ if sys.version >= '3':
 
 
 def with_origin_column(dataset, imageColumn="image", originColumn="origin", bigdl_type="float"):
-    return callBigDlFunc(bigdl_type, "withOriginColumn", dataset, imageColumn, originColumn)
+    return callZooFunc(bigdl_type, "withOriginColumn", dataset, imageColumn, originColumn)
