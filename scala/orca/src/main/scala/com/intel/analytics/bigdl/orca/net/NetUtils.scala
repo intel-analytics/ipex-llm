@@ -283,7 +283,19 @@ private[zoo] case class Meta(inputNames: Array[String],
                              variables: Option[Array[String]] = None,
                              gradVariables: Option[Array[String]] = None,
                              gradInputs: Option[Array[String]] = None
-                             )
+                             ) {
+
+  for (name <- inputNames) {
+    require(name.split(":").length == 2, s"Input names require to be Tensor names, " +
+      s"but <${name}> looks like a operation name, please try <${name}:0> instead.")
+  }
+
+  for (name <- outputNames) {
+    require(name.split(":").length == 2, s"Output names require to be Tensor names, " +
+      s"but <${name}> looks like a operation name, please try <${name}:0> instead.")
+  }
+
+}
 
 
 trait NetUtils[T, D <: Module[T] with NetUtils[T, D]] {
