@@ -15,6 +15,7 @@
 #
 
 from bigdl.util.common import *
+from zoo.common.utils import callZooFunc
 from bigdl.dataset.dataset import DataSet
 import sys
 
@@ -27,6 +28,7 @@ class Relation(object):
     """
     It represents the relationship between two items.
     """
+
     def __init__(self, id1, id2, label, bigdl_type="float"):
         self.id1 = id1
         self.id2 = id2
@@ -64,10 +66,10 @@ class Relations(object):
                                texts. Only need to specify this when sc is not None. Default is 1.
         """
         if sc:
-            jvalue = callBigDlFunc(bigdl_type, "readRelations", path, sc, min_partitions)
+            jvalue = callZooFunc(bigdl_type, "readRelations", path, sc, min_partitions)
             res = jvalue.map(lambda x: Relation(str(x[0]), str(x[1]), int(x[2])))
         else:
-            jvalue = callBigDlFunc(bigdl_type, "readRelations", path)
+            jvalue = callZooFunc(bigdl_type, "readRelations", path)
             res = [Relation(str(x[0]), str(x[1]), int(x[2])) for x in jvalue]
         return res
 
@@ -82,7 +84,7 @@ class Relations(object):
         :param sc: An instance of SparkContext.
         :return: RDD of Relation.
         """
-        jvalue = callBigDlFunc(bigdl_type, "readRelationsParquet", path, sc)
+        jvalue = callZooFunc(bigdl_type, "readRelationsParquet", path, sc)
         return jvalue.map(lambda x: Relation(str(x[0]), str(x[1]), int(x[2])))
 
 
@@ -91,9 +93,10 @@ class Preprocessing(JavaValue):
     Preprocessing defines data transform action during feature preprocessing. Python wrapper for
     the scala Preprocessing
     """
+
     def __init__(self, bigdl_type="float", *args):
         self.bigdl_type = bigdl_type
-        self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.value = callZooFunc(bigdl_type, JavaValue.jvm_class_constructor(self), *args)
 
     def __call__(self, input):
         """
@@ -106,10 +109,10 @@ class Preprocessing(JavaValue):
             from zoo.feature.text import TextSet
         # if type(input) is ImageSet:
         if isinstance(input, ImageSet):
-            jset = callBigDlFunc(self.bigdl_type, "transformImageSet", self.value, input)
+            jset = callZooFunc(self.bigdl_type, "transformImageSet", self.value, input)
             return ImageSet(jvalue=jset)
         elif isinstance(input, TextSet):
-            jset = callBigDlFunc(self.bigdl_type, "transformTextSet", self.value, input)
+            jset = callZooFunc(self.bigdl_type, "transformTextSet", self.value, input)
             return TextSet(jvalue=jset)
 
 
@@ -118,6 +121,7 @@ class ChainedPreprocessing(Preprocessing):
     chains two Preprocessing together. The output type of the first
     Preprocessing should be the same with the input type of the second Preprocessing.
     """
+
     def __init__(self, transformers, bigdl_type="float"):
         for transfomer in transformers:
             assert isinstance(transfomer, Preprocessing), \
@@ -130,6 +134,7 @@ class ScalarToTensor(Preprocessing):
     """
     a Preprocessing that converts a number to a Tensor.
     """
+
     def __init__(self, bigdl_type="float"):
         super(ScalarToTensor, self).__init__(bigdl_type)
 
@@ -139,6 +144,7 @@ class SeqToTensor(Preprocessing):
     a Transformer that converts an Array[_] or Seq[_] to a Tensor.
     :param size dimensions of target Tensor.
     """
+
     def __init__(self, size=[], bigdl_type="float"):
         super(SeqToTensor, self).__init__(bigdl_type, size)
 
@@ -148,6 +154,7 @@ class SeqToMultipleTensors(Preprocessing):
     a Transformer that converts an Array[_] or Seq[_] or ML Vector to several tensors.
     :param size, list of int list, dimensions of target Tensors, e.g. [[2],[4]]
     """
+
     def __init__(self, size=[], bigdl_type="float"):
         super(SeqToMultipleTensors, self).__init__(bigdl_type, size)
 
@@ -157,6 +164,7 @@ class ArrayToTensor(Preprocessing):
     a Transformer that converts an Array[_] to a Tensor.
     :param size dimensions of target Tensor.
     """
+
     def __init__(self, size, bigdl_type="float"):
         super(ArrayToTensor, self).__init__(bigdl_type, size)
 
@@ -167,6 +175,7 @@ class MLlibVectorToTensor(Preprocessing):
     .. note:: Deprecated in 0.4.0. NNEstimator will automatically extract Vectors now.
     :param size dimensions of target Tensor.
     """
+
     def __init__(self, size, bigdl_type="float"):
         super(MLlibVectorToTensor, self).__init__(bigdl_type, size)
 
@@ -179,6 +188,7 @@ class FeatureLabelPreprocessing(Preprocessing):
     :param feature_transformer transformer for feature, transform F to Tensor[T]
     :param label_transformer transformer for label, transform L to Tensor[T]
     """
+
     def __init__(self, feature_transformer, label_transformer, bigdl_type="float"):
         super(FeatureLabelPreprocessing, self).__init__(bigdl_type,
                                                         feature_transformer, label_transformer)
@@ -188,6 +198,7 @@ class TensorToSample(Preprocessing):
     """
      a Transformer that converts Tensor to Sample.
     """
+
     def __init__(self, bigdl_type="float"):
         super(TensorToSample, self).__init__(bigdl_type)
 
@@ -206,6 +217,7 @@ class ToTuple(Preprocessing):
     """
      a Transformer that converts Feature to (Feature, None).
     """
+
     def __init__(self, bigdl_type="float"):
         super(ToTuple, self).__init__(bigdl_type)
 
@@ -218,6 +230,7 @@ class FeatureSet(DataSet):
     Different from BigDL's DataSet, this FeatureSet could be cached to Intel Optane DC Persistent
     Memory, if you set memory_type to PMEM when creating FeatureSet.
     """
+
     def __init__(self, jvalue=None, bigdl_type="float"):
         self.bigdl_type = bigdl_type
         if jvalue:
@@ -244,8 +257,8 @@ class FeatureSet(DataSet):
         :param bigdl_type: numeric type
         :return: A feature set
         """
-        jvalue = callBigDlFunc(bigdl_type, "createFeatureSetFromImageFrame",
-                               image_frame, memory_type, sequential_order, shuffle)
+        jvalue = callZooFunc(bigdl_type, "createFeatureSetFromImageFrame",
+                             image_frame, memory_type, sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     @classmethod
@@ -269,9 +282,9 @@ class FeatureSet(DataSet):
         :param bigdl_type: numeric type
         :return: A feature set
         """
-        jvalue = callBigDlFunc(bigdl_type, "createFeatureSetFromImageFrame",
-                               imageset.to_image_frame(), memory_type,
-                               sequential_order, shuffle)
+        jvalue = callZooFunc(bigdl_type, "createFeatureSetFromImageFrame",
+                             imageset.to_image_frame(), memory_type,
+                             sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     @classmethod
@@ -295,8 +308,8 @@ class FeatureSet(DataSet):
         :param bigdl_type:numeric type
         :return: A feature set
         """
-        jvalue = callBigDlFunc(bigdl_type, "createSampleFeatureSetFromRDD", rdd,
-                               memory_type, sequential_order, shuffle)
+        jvalue = callZooFunc(bigdl_type, "createSampleFeatureSetFromRDD", rdd,
+                             memory_type, sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     @classmethod
@@ -319,8 +332,8 @@ class FeatureSet(DataSet):
         :param bigdl_type:numeric type
         :return: A feature set
         """
-        jvalue = callBigDlFunc(bigdl_type, "createFeatureSetFromRDD", rdd,
-                               memory_type, sequential_order, shuffle)
+        jvalue = callZooFunc(bigdl_type, "createFeatureSetFromRDD", rdd,
+                             memory_type, sequential_order, shuffle)
         return cls(jvalue=jvalue)
 
     def transform(self, transformer):
@@ -329,7 +342,7 @@ class FeatureSet(DataSet):
         :param transformer: the transformers to transform this feature set.
         :return: A feature set
         """
-        jvalue = callBigDlFunc(self.bigdl_type, "transformFeatureSet", self.value, transformer)
+        jvalue = callZooFunc(self.bigdl_type, "transformFeatureSet", self.value, transformer)
         return FeatureSet(jvalue=jvalue)
 
     def to_dataset(self):
@@ -337,5 +350,5 @@ class FeatureSet(DataSet):
         To BigDL compatible DataSet
         :return:
         """
-        jvalue = callBigDlFunc(self.bigdl_type, "featureSetToDataSet", self.value)
+        jvalue = callZooFunc(self.bigdl_type, "featureSetToDataSet", self.value)
         return FeatureSet(jvalue=jvalue)
