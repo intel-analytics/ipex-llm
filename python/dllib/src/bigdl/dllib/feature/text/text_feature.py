@@ -16,7 +16,8 @@
 
 import sys
 import six
-from bigdl.util.common import JavaValue, callBigDlFunc
+from bigdl.util.common import JavaValue
+from zoo.common.utils import callZooFunc
 
 if sys.version >= '3':
     long = int
@@ -30,6 +31,7 @@ class TextFeature(JavaValue):
     e.g. original text content, uri, category label, tokens, index representation
     of tokens, BigDL Sample representation, prediction result and so on.
     """
+
     def __init__(self, text=None, label=None, uri=None, jvalue=None, bigdl_type="float"):
         if text is not None:
             assert isinstance(text, six.string_types), "text of a TextFeature should be a string"
@@ -46,7 +48,7 @@ class TextFeature(JavaValue):
 
         :return: String
         """
-        return callBigDlFunc(self.bigdl_type, "textFeatureGetText", self.value)
+        return callZooFunc(self.bigdl_type, "textFeatureGetText", self.value)
 
     def get_label(self):
         """
@@ -55,7 +57,7 @@ class TextFeature(JavaValue):
 
         :return: Int
         """
-        return callBigDlFunc(self.bigdl_type, "textFeatureGetLabel", self.value)
+        return callZooFunc(self.bigdl_type, "textFeatureGetLabel", self.value)
 
     def get_uri(self):
         """
@@ -64,7 +66,7 @@ class TextFeature(JavaValue):
 
         :return: String
         """
-        return callBigDlFunc(self.bigdl_type, "textFeatureGetURI", self.value)
+        return callZooFunc(self.bigdl_type, "textFeatureGetURI", self.value)
 
     def has_label(self):
         """
@@ -72,7 +74,7 @@ class TextFeature(JavaValue):
 
         :return: Boolean
         """
-        return callBigDlFunc(self.bigdl_type, "textFeatureHasLabel", self.value)
+        return callZooFunc(self.bigdl_type, "textFeatureHasLabel", self.value)
 
     def set_label(self, label):
         """
@@ -81,7 +83,7 @@ class TextFeature(JavaValue):
         :param label: Int
         :return: The TextFeature with label.
         """
-        self.value = callBigDlFunc(self.bigdl_type, "textFeatureSetLabel", self.value, int(label))
+        self.value = callZooFunc(self.bigdl_type, "textFeatureSetLabel", self.value, int(label))
         return self
 
     def get_tokens(self):
@@ -91,7 +93,7 @@ class TextFeature(JavaValue):
 
         :return: List of String
         """
-        return callBigDlFunc(self.bigdl_type, "textFeatureGetTokens", self.value)
+        return callZooFunc(self.bigdl_type, "textFeatureGetTokens", self.value)
 
     def get_sample(self):
         """
@@ -100,7 +102,7 @@ class TextFeature(JavaValue):
 
         :return: BigDL Sample
         """
-        return callBigDlFunc(self.bigdl_type, "textFeatureGetSample", self.value)
+        return callZooFunc(self.bigdl_type, "textFeatureGetSample", self.value)
 
     def keys(self):
         """
@@ -108,4 +110,4 @@ class TextFeature(JavaValue):
 
         :return: List of String
         """
-        return callBigDlFunc(self.bigdl_type, "textFeatureGetKeys", self.value)
+        return callZooFunc(self.bigdl_type, "textFeatureGetKeys", self.value)
