@@ -153,3 +153,8 @@ and we expects to see the output like:
 
 More Pytorch examples (ResNet, Lenet etc.) are available [here](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/pytorch).
 
+# Training Best Practise
+As pytorch's `backward()` is serialized per device, see [pytorch issue #18333](https://github.com/pytorch/pytorch/issues/18333) and [pytorch issue #17566](https://github.com/pytorch/pytorch/issues/17566) for details, the performance of default distributed training mode(multi models on each executor) will be very bad. In order to reach the best performance, TorchNet's training should only create one model in each executor, and use multi OMP threads to speedup the single model's training.
+
+We recommend you use [Estimator](../APIGuide/PipelineAPI/estimator.md), [NNEstimator](../APIGuide/PipelineAPI/nnframes.md#nnestimator) or [NNClassifier](../APIGuide/PipelineAPI/nnframes.md#nnclassifier
+) for pytorch model training, and export environment `export ZOO_NUM_MKLTHREADS=all`, when Estimator, NNEstimator and NNClassifier detect TorchNet model, they will optimize training using single model multi OMP threads automatically. Here is a [ResNet50 finetune example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/examples/pytorch/train/resnet_finetune/).
