@@ -1052,7 +1052,7 @@ class TopologySpec extends FlatSpec with Matchers {
 
     val tmp = fusion.output.toTensor.max(1)
 
-    val softmax = SoftMax()
+    val softmax = nn.SoftMax()
 
     softmax.forward(fusion.output).toTensor.max(2) should be (
       softmax.forward(quant.output).toTensor.max(2))
