@@ -237,12 +237,6 @@ class CachedDistributedFeatureSet[T: ClassTag]
       new AtomicInteger(0)))
   }).setName(s"origin index of ${buffer.name}").cache()
 
-
-  protected var offsets: RDD[AtomicInteger] = buffer.mapPartitions(iter => {
-    Iterator.single[AtomicInteger](new AtomicInteger(0))
-  }).setName(s"offsets of ${buffer.name}")
-
-
   override def data(train: Boolean): RDD[T] = {
     val _train = train
     val _seq = sequentialOrder
