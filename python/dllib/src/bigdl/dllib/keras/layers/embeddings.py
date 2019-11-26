@@ -16,7 +16,8 @@
 
 import sys
 
-from bigdl.util.common import callBigDlFunc, JTensor
+from bigdl.util.common import JTensor
+from zoo.common.utils import callZooFunc
 from ..engine.topology import ZooKerasLayer
 
 if sys.version >= '3':
@@ -59,11 +60,12 @@ class Embedding(ZooKerasLayer):
     >>> embedding = Embedding(10, 200, weights=np.random.random([10, 200]), input_length=10)
     creating: createZooKerasEmbedding
     """
+
     def __init__(self, input_dim, output_dim, init="uniform", weights=None, trainable=True,
                  input_length=None, W_regularizer=None, input_shape=None, mask_zero=False,
                  padding_value=0, zero_based_id=True, **kwargs):
         if input_length:
-            input_shape = (input_length, )
+            input_shape = (input_length,)
         super(Embedding, self).__init__(None,
                                         input_dim,
                                         output_dim,
@@ -107,10 +109,11 @@ class WordEmbedding(ZooKerasLayer):
     name: String to set the name of the layer.
           If not specified, its name will by default to be a generated string.
     """
+
     def __init__(self, embedding_file, word_index=None, trainable=False, input_length=None,
                  input_shape=None, **kwargs):
         if input_length:
-            input_shape = (input_length, )
+            input_shape = (input_length,)
         super(WordEmbedding, self).__init__(None,
                                             embedding_file,
                                             word_index,
@@ -134,8 +137,8 @@ class WordEmbedding(ZooKerasLayer):
         Dictionary of word (string) and its corresponding index (int) obtained from
         the given embedding file.
         """
-        return callBigDlFunc(bigdl_type, "wordEmbeddingGetWordIndex",
-                             embedding_file)
+        return callZooFunc(bigdl_type, "wordEmbeddingGetWordIndex",
+                           embedding_file)
 
 
 def prepare_embedding(embedding_file, word_index=None,
@@ -153,11 +156,11 @@ def prepare_embedding(embedding_file, word_index=None,
     # Return
     Pretrained embedding weights as a numpy array.
     """
-    return callBigDlFunc("float", "prepareEmbedding",
-                         embedding_file,
-                         word_index,
-                         randomize_unknown,
-                         normalize).to_ndarray()
+    return callZooFunc("float", "prepareEmbedding",
+                       embedding_file,
+                       word_index,
+                       randomize_unknown,
+                       normalize).to_ndarray()
 
 
 class SparseEmbedding(ZooKerasLayer):
@@ -192,6 +195,7 @@ class SparseEmbedding(ZooKerasLayer):
     >>> sparse_embedding = SparseEmbedding(input_dim=10, output_dim=4, input_shape=(10, ))
     creating: createZooKerasSparseEmbedding
     """
+
     def __init__(self, input_dim, output_dim, combiner="sum", max_norm=-1.0, init="uniform",
                  W_regularizer=None, input_shape=None, **kwargs):
         super(SparseEmbedding, self).__init__(None,

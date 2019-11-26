@@ -20,7 +20,7 @@ import math
 
 from bigdl.nn.layer import Sum
 from bigdl.nn.layer import Layer
-from bigdl.util.common import callBigDlFunc
+from zoo.common.utils import callZooFunc
 
 from zoo.models.common import ZooModel
 from zoo.pipeline.api.keras.engine import ZooKerasLayer
@@ -66,6 +66,7 @@ class TransformerLayer(ZooKerasLayer):
     embedding_layer: embedding layer
     input_shape: input shape
     """
+
     def __init__(self, n_block, hidden_drop, attn_drop, n_head, initializer_range, bidirectional,
                  output_all_block, embedding_layer, input_shape, intermediate_size=0,
                  bigdl_type="float"):
@@ -89,15 +90,15 @@ class TransformerLayer(ZooKerasLayer):
 
         next_input = embedding
 
-        output = [None]*n_block
+        output = [None] * n_block
         output[0] = self.block(next_input, hidden_size, extended_attention_mask)
 
-        for index in range(n_block-1):
+        for index in range(n_block - 1):
             o = self.block(output[index], hidden_size, extended_attention_mask)
-            output[index+1] = o
+            output[index + 1] = o
 
         pooler_output = self.pooler(output[-1], hidden_size)
-        model = Model(inputs, output.append(pooler_output)) if output_all_block\
+        model = Model(inputs, output.append(pooler_output)) if output_all_block \
             else Model(inputs, [output[-1], pooler_output])
         self.value = model.value
 
@@ -125,10 +126,10 @@ class TransformerLayer(ZooKerasLayer):
         return Convolution1D(output_size, 1, "normal", (0.0, self.initializer_range))
 
     def multi_head_self_attention(self, x, size, attention_mask=None):
-        c = self.projection_layer(size*3)(x)
+        c = self.projection_layer(size * 3)(x)
         query = c.slice(2, 0, size)
         key = c.slice(2, size, size)
-        value = c.slice(2, size*2, size)
+        value = c.slice(2, size * 2, size)
         q = self.split_heads(query, self.n_head)
         k = self.split_heads(key, self.n_head, k=True)
         v = self.split_heads(value, self.n_head)
@@ -216,12 +217,12 @@ class TransformerLayer(ZooKerasLayer):
         postion_input = InputLayer(input_shape=(seq_len,))
 
         embedding = Sequential()
-        embedding.add(Merge(layers=[word_input, postion_input], mode='concat'))\
-            .add(Reshape([seq_len * 2]))\
+        embedding.add(Merge(layers=[word_input, postion_input], mode='concat')) \
+            .add(Reshape([seq_len * 2])) \
             .add(Embedding(vocab, hidden_size, input_length=seq_len * 2,
                            weights=np.random.normal(0.0, initializer_range, (vocab, hidden_size))))\
-            .add(Dropout(embedding_drop))\
-            .add(Reshape((seq_len, 2, hidden_size)))\
+            .add(Dropout(embedding_drop)) \
+            .add(Reshape((seq_len, 2, hidden_size))) \
             .add(KerasLayerWrapper(Sum(dimension=3, squeeze=True)))
         # walk around for bug #1208, need remove this line after the bug fixed
         embedding.add(KerasLayerWrapper(Squeeze(dim=3)))
@@ -258,6 +259,7 @@ class BERT(TransformerLayer):
     embedding_layer: embedding layer
     input_shape: input shape
     """
+
     def __init__(self, n_block, n_head, intermediate_size, hidden_drop, attn_drop,
                  initializer_range, output_all_block, embedding_layer,
                  input_shape, bigdl_type="float"):
@@ -285,9 +287,9 @@ class BERT(TransformerLayer):
         model_output = [None] * n_block
         model_output[0] = self.block(next_input, self.hidden_size, extended_attention_mask)
 
-        for _ in range(n_block-1):
+        for _ in range(n_block - 1):
             output = self.block(model_output[_], self.hidden_size, extended_attention_mask)
-            model_output[_+1] = output
+            model_output[_ + 1] = output
 
         pooler_output = self.pooler(model_output[-1], self.hidden_size)
 
@@ -304,7 +306,7 @@ class BERT(TransformerLayer):
         return Dense(output_size, "normal", (0.0, self.initializer_range))
 
     def build_input(self, input_shape):
-        if any(not isinstance(i, list) and not isinstance(i, tuple) for i in input_shape)\
+        if any(not isinstance(i, list) and not isinstance(i, tuple) for i in input_shape) \
                 and len(input_shape) != 4:
             raise TypeError('BERT input must be a list of 4 ndarray (consisting of input'
                             ' sequence, sequence positions, segment id, attention mask)')
@@ -376,8 +378,8 @@ class BERT(TransformerLayer):
               Amazon S3 path should be like 's3a://bucket/xxx'.
         weight_path: The path for pre-trained weights if any. Default is None.
         """
-        jlayer = callBigDlFunc(bigdl_type, "loadBERT", path, weight_path, input_seq_len,
-                               hidden_drop, attn_drop, output_all_block)
+        jlayer = callZooFunc(bigdl_type, "loadBERT", path, weight_path, input_seq_len,
+                             hidden_drop, attn_drop, output_all_block)
 
         model = Layer(jvalue=jlayer, bigdl_type=bigdl_type)
         model.__class__ = BERT
