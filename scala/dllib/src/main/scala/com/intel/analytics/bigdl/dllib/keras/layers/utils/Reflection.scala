@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.utils.{Engine, EngineType, Shape, Table}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.zoo.pipeline.api.keras.optimizers.{Adam, AdamWeightDecay}
 
 import scala.collection.mutable
@@ -84,6 +84,10 @@ object EngineRef {
 
   def getNodeNumber(): Int = {
     KerasUtils.invokeMethod(Engine, "nodeNumber").asInstanceOf[Int]
+  }
+
+  def getDefaultThreadPool(): ThreadPool = {
+    KerasUtils.invokeMethod(Engine, "default").asInstanceOf[ThreadPool]
   }
 
   def getEngineType(): EngineType = {
