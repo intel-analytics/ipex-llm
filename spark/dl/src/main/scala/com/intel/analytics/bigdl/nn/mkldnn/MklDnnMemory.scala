@@ -126,6 +126,11 @@ object MklDnnMemory {
       MklDnn.SoftMaxForwardDescInit(prop_kind, dataDesc, axis)).ptr
   }
 
+  def SoftMaxBackwardDescInit(propKind: Int, diffDesc: Long, dstDesc: Long,
+    axis: Int)(implicit owner: MemoryOwner): Long = {
+    new MklMemoryDescInit(MklDnn.SoftMaxBackwardDescInit(diffDesc, dstDesc, axis)).ptr
+  }
+
   def ConvForwardDescInit(prop_kind: Int, alg_kind: Int, src_desc: Long, weights_desc: Long,
     bias_desc: Long, dst_desc: Long, strides: Array[Int], padding_l: Array[Int],
     padding_r: Array[Int], padding_kind: Int)(implicit owner: MemoryOwner): Long = {
