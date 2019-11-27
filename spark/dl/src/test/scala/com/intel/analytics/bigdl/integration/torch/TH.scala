@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.TorchObject._
 import com.intel.analytics.bigdl.utils.{File, Table}
+import org.apache.commons.lang.SerializationUtils
 
 import scala.io.Source
 import scala.sys.process._
@@ -56,6 +57,8 @@ object TH {
       val tmp: Any = File.loadTorch(subPath + k + suffix)
       resultMap += (k -> tmp)
     }
+
+    File.save(scala.collection.immutable.ListMap.empty ++ resultMap, "/tmp/torch-results/" + id.toString + ".bin")
 
     (luaTime, resultMap)
   }
