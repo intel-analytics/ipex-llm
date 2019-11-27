@@ -125,36 +125,3 @@ class ReLU6Spec extends TorchSpec {
     println("Test case : ReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }
-
-case class TorchTestIdentity(uuid: String)
-
-object TestObj {
-  def run()(implicit id: TorchTestIdentity): Unit = {
-    println(id)
-  }
-
-}
-
-class ExampleSpec extends FlatSpec with BeforeAndAfter {
-
-  implicit var id: TorchTestIdentity = _
-
-  before {
-    id = null
-  }
-
-  override def withFixture(test: NoArgTest): Outcome = {
-    id = TorchTestIdentity(test.name.hashCode.toString)
-    super.withFixture(test)
-  }
-
-  "This test" should "succeed" in {
-    TestObj.run()
-    assert(1 + 1 === 2)
-  }
-
-  it should "fail" in {
-    TestObj.run()
-    assert(1 + 1 === 3)
-  }
-}
