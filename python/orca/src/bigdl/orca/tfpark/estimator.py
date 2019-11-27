@@ -25,6 +25,7 @@ from zoo.pipeline.api.net.utils import to_bigdl_optim_method
 from zoo.util import nest
 import numpy as np
 import six
+import os
 
 
 def add_train_op(model_fn, features, labels, mode, params, config, optimizer):
@@ -137,14 +138,13 @@ class TFEstimator(object):
         estimator = tf.estimator.Estimator(tf_model_fn, model_dir, config, params, warm_start_from)
         self._model_fn = model_fn
         self.optimizer = optimizer
+        self._model_dir = estimator.model_dir
         self.estimator = estimator
         self.config = config
         self.params = params
         self.tf_optimizer = None
         self.gradient_clipping_norm = None
         self.gradient_clipping_constant = None
-        self.train_summary = None
-        self.val_summary = None
 
     def _call_model_fn(self, features, labels, mode, config):
         model_fn_args = function_utils.fn_args(self._model_fn)
@@ -187,22 +187,6 @@ class TFEstimator(object):
         :param clip_norm: gradient L2-Norm threshold
         """
         self.gradient_clipping_norm = clip_norm
-
-    def set_train_summary(self, summary):
-        """
-        Set training summary for visualization.
-
-        :param summary: bigdl.optim.optimizer.TrainSummary
-        """
-        self.train_summary = summary
-
-    def set_val_summary(self, summary):
-        """
-        Set validation summary for visualization.
-
-        :param summary: bigdl.optim.optimizer.ValidationSummary
-        """
-        self.val_summary = summary
 
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
@@ -249,22 +233,19 @@ class TFEstimator(object):
                     else:
                         sess.run(tf.global_variables_initializer())
 
+                    zoo_ckpt_path = os.path.join(self._model_dir, "analytics-zoo")
                     opt = TFOptimizer.from_loss(spec.loss,
                                                 optim_method,
                                                 session=sess,
                                                 clip_norm=self.gradient_clipping_norm,
-                                                clip_value=self.gradient_clipping_constant)
-
-                    if self.train_summary is not None:
-                        opt.set_train_summary(self.train_summary)
-
-                    if self.val_summary is not None:
-                        opt.set_val_summary(self.val_summary)
+                                                clip_value=self.gradient_clipping_constant,
+                                                model_dir=zoo_ckpt_path)
 
                     opt.optimize(MaxIteration(steps))
                     sess.run(assign_step, feed_dict={add_step_input: steps})
                     final_step = sess.run(global_step_tensor)
-                    saver.save(sess, self.estimator.model_dir + "/model", global_step=final_step)
+                    model_path = os.path.join(self._model_dir, "model")
+                    saver.save(sess, model_path, global_step=final_step)
                     return self
 
         return self.estimator.train(input_fn, steps=steps)
