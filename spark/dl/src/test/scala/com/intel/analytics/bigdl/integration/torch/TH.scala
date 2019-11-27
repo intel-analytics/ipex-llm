@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.integration.torch
 
 import java.io._
-import java.nio.file.Files
+import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
@@ -47,20 +47,29 @@ object TH {
   // Run with map
   def run(code: String, parameters: Map[String, Any],
     result: Array[String])(implicit id: TestCaseIdentity): (Double, Map[String, Any]) = {
-    val suffix = id.suffix
-    val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
-    val absolutePath = tmpFile.getAbsolutePath
-    val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
-    var resultMap: Map[String, Any] = Map()
+    val root = "/tmp/torch-results/"
+    val (luaTime, resultMap) = if (Files.exists(Paths.get(root + id.value + ".bin"))) {
+      (File.load[List[Double]](root + id.value + ".time").head,
+        File.load[Map[String, Any]](root + id.value + ".bin"))
+    } else {
+      val suffix = id.suffix
+      val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
+      val absolutePath = tmpFile.getAbsolutePath
+      val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
 
-    val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String], suffix)
+      var resultMap: Map[String, Any] = Map()
 
-    result.foreach { k =>
-      val tmp: Any = File.loadTorch(subPath + k + suffix)
-      resultMap += (k -> tmp)
+      val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String], suffix)
+
+      result.foreach { k =>
+        val tmp: Any = File.loadTorch(subPath + k + suffix)
+        resultMap += (k -> tmp)
+      }
+
+      File.save(ListMap.empty ++ resultMap, "/tmp/torch-results/" + id.value + ".bin")
+      File.save(List(luaTime), "/tmp/torch-results/" + id.value + ".time")
+      (luaTime, resultMap)
     }
-
-    File.save(ListMap.empty ++ resultMap, "/tmp/torch-results/" + id.value + ".bin")
 
     (luaTime, resultMap)
   }
