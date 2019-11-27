@@ -20,7 +20,7 @@ import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.optim.{OptimMethod, Optimizer, Trigger, ValidationMethod}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.python.api.{JTensor, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -167,6 +167,12 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                         batchSize: Int = 32): TFOptimizer = {
     new TFOptimizer(modelPath, optimMethod,
       toJSample(x).asInstanceOf[RDD[JSample[Float]]], batchSize)
+  }
+
+  def createGanOptimMethod(dOptim: OptimMethod[T],
+                           gOptim: OptimMethod[T],
+                           dStep: Int, gStep: Int, gParamSize: Int): OptimMethod[T] = {
+    new GanOptimMethod[T](dOptim, gOptim, dStep, gStep, gParamSize)
   }
 
   def createRDDFromTFRecords(path: String,
