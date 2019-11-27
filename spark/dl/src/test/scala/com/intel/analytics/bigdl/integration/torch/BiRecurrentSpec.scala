@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.sys.process._
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class BiRecurrentSpec  extends TorchSpec {
@@ -119,8 +120,8 @@ class BiRecurrentSpec  extends TorchSpec {
     val input = Tensor[Double](Array(1, seqLength, inputSize))
     val labels = Tensor[Double](Array(1, seqLength))
     for (i <- 1 to seqLength) {
-      val rdmLabel = Math.ceil(math.random * outputSize).toInt
-      val rdmInput = Math.ceil(math.random * inputSize).toInt
+      val rdmLabel = Math.ceil(Random.nextFloat * outputSize).toInt
+      val rdmInput = Math.ceil(Random.nextFloat * inputSize).toInt
       input.setValue(1, i, rdmInput, 1.0)
       labels.setValue(1, i, rdmLabel)
     }
