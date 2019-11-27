@@ -20,7 +20,6 @@ MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytic
 
 WORKDIR /opt/work
 
-ARG PY_VERSION_3
 ARG ANALYTICS_ZOO_VERSION=0.7.0-SNAPSHOT
 ARG BIGDL_VERSION=0.9.1
 ARG SPARK_VERSION=2.4.3
