@@ -49,7 +49,7 @@ object TH {
     result: Array[String])(implicit id: TestCaseIdentity): (Double, Map[String, Any]) = {
     val root = "/tmp/torch-results/"
     val (luaTime, resultMap) = if (Files.exists(Paths.get(root + id.value + ".bin"))) {
-      (File.load[List[Double]](root + id.value + ".time").head,
+      (File.load[Array[Double]](root + id.value + ".time").head,
         File.load[Map[String, Any]](root + id.value + ".bin"))
     } else {
       val suffix = id.suffix
@@ -67,7 +67,7 @@ object TH {
       }
 
       File.save(ListMap.empty ++ resultMap, "/tmp/torch-results/" + id.value + ".bin")
-      File.save(List(luaTime), "/tmp/torch-results/" + id.value + ".time")
+      File.save(Array[Double](luaTime), "/tmp/torch-results/" + id.value + ".time")
       (luaTime, resultMap)
     }
 
