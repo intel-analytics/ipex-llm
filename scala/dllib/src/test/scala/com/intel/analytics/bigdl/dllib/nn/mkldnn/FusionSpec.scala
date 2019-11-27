@@ -406,4 +406,37 @@ class FusionSpec extends FlatSpec with Matchers {
 
     System.clearProperty("bigdl.mkldnn.fusion")
   }
+
+  "bn + scale + relu fusion" should "work correctly" in {
+    import com.intel.analytics.bigdl.nn.{Scale => NNScale}
+    val inputShape = Array(4, 64, 3, 3)
+    val input = Input(inputShape, Memory.Format.nchw).inputs()
+    val bn1 = SpatialBatchNormalization(64).inputs(input)
+    val scale1 = BlasWrapper(NNScale[Float](Array(1, 64, 1, 1))).inputs(bn1)
+    val relu1 = ReLU()
+    val output = Output(Memory.Format.nchw).inputs(scale1)
+
+    // the running mean and running variance should be 1.
+    bn1.element.getExtraParameter().foreach(_.fill(1))
+
+    val model = DnnGraph(Seq(input), Seq(output))
+    val fused = model.cloneModule()
+
+    model.evaluate()
+    fused.evaluate()
+
+    val tensor = Tensor[Float](inputShape).rand(-1, 1)
+
+    System.setProperty("bigdl.mkldnn.fusion", "false")
+    model.compile(InferencePhase)
+    model.forward(tensor)
+
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+    fused.compile(InferencePhase)
+    fused.forward(tensor)
+
+    Equivalent.nearequals(model.output.toTensor[Float], fused.output.toTensor[Float], 1e-7)
+
+    System.clearProperty("bigdl.mkldnn.fusion")
+  }
 }
