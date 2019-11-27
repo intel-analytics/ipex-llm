@@ -16,8 +16,8 @@
 package com.intel.analytics.bigdl.integration.torch
 import org.scalatest._
 
-case class TestCaseIdentity(id: Int /* hash code */) {
-  def suffix: String = List(".t7", id.toString).mkString(".")
+case class TestCaseIdentity(value: String) {
+  def suffix: String = List(".t7", value).mkString(".")
 }
 
 class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
@@ -29,7 +29,9 @@ class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   override def withFixture(test: NoArgTest): Outcome = {
-    testCaseIdentity = TestCaseIdentity(test.name.hashCode)
+    // the identity name is class name + test case name
+    val id = List(this.getClass.getName, test.name.hashCode).mkString("_")
+    testCaseIdentity = TestCaseIdentity(id)
     super.withFixture(test)
   }
 
