@@ -175,3 +175,50 @@ export SPARK_HOME=... # the root directory of Spark
 
 bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] tf_optimizer/evaluate_mnist_keras.py
 ```
+
+## Run the GAN example after pip install
+
+Please first install tensorflow_gan to run this example. (pip install tensorflow_gan==2.0.0)
+
+### Training
+```bash
+python gan/gan_train.py
+```
+The training program will generate a TensorFlow checkpoint at /tmp/gan_model
+
+### Evaluation
+```bash
+python gan/gan_eval.py
+```
+The evaluation program will load the /tmp/gan_model checkpoint and will generate a few hand-written 
+digits and output an image like the following.
+
+![gan](generated_digital_numbers_w_gan_better.png)
+
+
+## Run the GAN with prebuilt package
+
+Please first install tensorflow_gan to run this example. (pip install tensorflow_gan==2.0.0)
+
+### Training
+```bash
+export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
+export SPARK_HOME=... # the root directory of Spark
+
+bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] gan/gan_train.py
+```
+The training program will generate a TensorFlow checkpoint at /tmp/gan_model
+
+
+### Evaluation
+```bash
+export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
+export SPARK_HOME=... # the root directory of Spark
+
+bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] gan/gan_eval.py
+```
+
+The evaluation program will load the /tmp/gan_model checkpoint and will generate a few hand-written 
+digits and output an image like the following.
+
+![gan](generated_digital_numbers_w_gan_better.png)
