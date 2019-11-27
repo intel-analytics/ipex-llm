@@ -58,7 +58,7 @@ object TH {
       resultMap += (k -> tmp)
     }
 
-    File.save(scala.collection.immutable.ListMap.empty ++ resultMap, "/tmp/torch-results/" + id.toString + ".bin")
+    File.save(scala.collection.immutable.ListMap.empty ++ resultMap, "/tmp/torch-results/" + id.id.toString + ".bin")
 
     (luaTime, resultMap)
   }
