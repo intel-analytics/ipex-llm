@@ -24,8 +24,6 @@ case class TestCaseIdentity(value: String) {
 
 class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
-  Random.setSeed(1)
-
   implicit var testCaseIdentity: TestCaseIdentity = _
 
   before {
@@ -33,6 +31,8 @@ class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   override def withFixture(test: NoArgTest): Outcome = {
+    Random.setSeed(1)
+
     // the identity name is class name + test case name
     val id = List(this.getClass.getName, test.name.hashCode).mkString("_")
     testCaseIdentity = TestCaseIdentity(id)
