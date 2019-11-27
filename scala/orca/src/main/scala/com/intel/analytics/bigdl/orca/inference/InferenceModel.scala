@@ -78,9 +78,11 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param modelPath  the file path of the model
    * @param weightPath the file path of the weights
    */
-  def doLoad(modelPath: String, weightPath: String = null): Unit = {
+  def doLoad(modelPath: String,
+             weightPath: String = null,
+             blas: Boolean = true): Unit = {
     clearModelQueue()
-    this.originalModel = InferenceModelFactory.loadFloatModel(modelPath, weightPath)
+    this.originalModel = InferenceModelFactory.loadFloatModel(modelPath, weightPath, blas)
     offerModelQueue()
   }
 
@@ -90,9 +92,11 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param modelPath  the path of the prototxt file
    * @param weightPath the path of the caffemodel file
    */
-  def doLoadCaffe(modelPath: String, weightPath: String): Unit = {
+  def doLoadCaffe(modelPath: String,
+                  weightPath: String,
+                  blas: Boolean = true): Unit = {
     clearModelQueue()
-    this.originalModel = InferenceModelFactory.loadFloatModelForCaffe(modelPath, weightPath)
+    this.originalModel = InferenceModelFactory.loadFloatModelForCaffe(modelPath, weightPath, blas)
     offerModelQueue()
   }
 

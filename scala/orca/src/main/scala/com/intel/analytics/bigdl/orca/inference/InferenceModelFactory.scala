@@ -22,19 +22,30 @@ import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 object InferenceModelFactory extends InferenceSupportive {
 
   def loadFloatModel(modelPath: String): FloatModel = {
-    loadFloatModel(modelPath, null)
+    loadFloatModel(modelPath, null, false)
   }
 
-  def loadFloatModel(modelPath: String, weightPath: String)
+  def loadFloatModel(modelPath: String, weightPath: String, blas: Boolean = true)
   : FloatModel = {
-    val model = ModelLoader.loadFloatModel(modelPath, weightPath)
+    val model = if (blas) {
+      ModelLoader.loadFloatModel(modelPath, weightPath)
+    } else {
+      ModelLoader.loadFloatModel(modelPath, weightPath).quantize()
+    }
+
     model.evaluate()
     val metaModel = makeMetaModel(model)
     new FloatModel(model, metaModel, true)
   }
 
-  def loadFloatModelForCaffe(modelPath: String, weightPath: String): FloatModel = {
-    val model = ModelLoader.loadFloatModelForCaffe(modelPath, weightPath)
+  def loadFloatModelForCaffe(modelPath: String,
+                             weightPath: String,
+                             blas: Boolean = true): FloatModel = {
+    val model = if (blas) {
+      ModelLoader.loadFloatModelForCaffe(modelPath, weightPath)
+    } else {
+      ModelLoader.loadFloatModelForCaffe(modelPath, weightPath).quantize()
+    }
     model.evaluate()
     val metaModel = makeMetaModel(model)
     new FloatModel(model, metaModel, true)
