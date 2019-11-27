@@ -36,19 +36,19 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
   }
 
   public void load(String modelPath) {
-    doLoad(modelPath, null);
+    doLoad(modelPath, null, true);
   }
 
   public void load(String modelPath, String weightPath) {
-    doLoad(modelPath, weightPath);
+    doLoad(modelPath, weightPath, true);
   }
 
   public void loadCaffe(String modelPath) {
-    doLoadCaffe(modelPath, null);
+    doLoadCaffe(modelPath, null, true);
   }
 
   public void loadCaffe(String modelPath, String weightPath) {
-    doLoadCaffe(modelPath, weightPath);
+    doLoadCaffe(modelPath, weightPath, true);
   }
 
   public void loadTF(String modelPath) {
