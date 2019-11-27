@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.integration.torch
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest._
 
 import scala.util.Random
@@ -32,6 +33,7 @@ class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   override def withFixture(test: NoArgTest): Outcome = {
     Random.setSeed(1)
+    RNG.setSeed(100)
 
     // the identity name is class name + test case name
     val id = List(this.getClass.getName, test.name.hashCode).mkString("_")
