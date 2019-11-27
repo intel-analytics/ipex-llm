@@ -1,0 +1,45 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.intel.analytics.bigdl.integration.torch
+import org.scalatest._
+
+case class TestCaseIdentity(id: Int /* hash code */) {
+  def suffix: String = List(".t7", id.toString).mkString(".")
+}
+
+class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
+  implicit var testCaseIdentity: TestCaseIdentity = _
+
+  before {
+    testCaseIdentity = null
+  }
+
+  override def withFixture(test: NoArgTest): Outcome = {
+    testCaseIdentity = TestCaseIdentity(test.name.hashCode)
+    super.withFixture(test)
+  }
+
+  protected def suffix: String = {
+    testCaseIdentity.suffix
+  }
+
+  def torchCheck(): Unit = {
+    if (!TH.hasTorch()) {
+      cancel("Torch is not installed")
+    }
+  }
+}

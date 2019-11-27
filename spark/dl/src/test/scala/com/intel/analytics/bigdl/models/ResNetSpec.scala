@@ -17,27 +17,21 @@
 package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet}
 import com.intel.analytics.bigdl.models.resnet.ResNet._
+import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet}
 import com.intel.analytics.bigdl.nn.Graph.{apply => _, _}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{Graph, _}
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, Table}
-import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
+import org.apache.log4j.Logger
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.{immutable, mutable}
-import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class ResNetSpec extends TorchSpec {
-
-  private val suffix = ".t7" + (new java.util.Random()).nextLong()
+class ResNetSpec extends FlatSpec with Matchers {
 
   "ResNet basicBlockFunc graph" should "be same with original one" in {
     val depth = 16
