@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.integration.torch
 
 import java.io._
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
@@ -44,31 +44,40 @@ object TH {
     return exitValue == 0
   }
 
+  val resultsRoot: Path = {
+    val tmpDir = System.getProperty("java.io.tmpdir")
+    Paths.get(tmpDir, "torch-results")
+  }
+
+  val scriptsRoot: Path = {
+    val tmpDir = System.getProperty("java.io.tmpdir")
+    Paths.get(tmpDir, "torch-scripts")
+  }
+
+  val inputsRoot: Path = {
+    val tmpDir = System.getProperty("java.io.tmpdir")
+    Paths.get(tmpDir, "torch-inputs")
+  }
+
+  val timeSuffix: String = ".time"
+
   // Run with map
   def run(code: String, parameters: Map[String, Any],
     result: Array[String])(implicit id: TestCaseIdentity): (Double, Map[String, Any]) = {
-    val root = "/tmp/torch-results/"
-    val (luaTime, resultMap) = if (Files.exists(Paths.get(root + id.value + ".bin"))) {
-      (File.load[Array[Double]](root + id.value + ".time").head,
-        File.load[Map[String, Any]](root + id.value + ".bin"))
+    val suffix = id.suffix
+    var resultMap: Map[String, Any] = Map()
+
+    val luaTime = if (isExists(result, id.suffix)) {
+      val path = Paths.get(resultsRoot.toAbsolutePath.toString, suffix + timeSuffix).toString
+      File.load[Array[Double]](path).head
     } else {
-      val suffix = id.suffix
-      val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
-      val absolutePath = tmpFile.getAbsolutePath
-      val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
+      runNM(code: String, parameters: Map[String, Any], result: Array[String], suffix)
+    }
 
-      var resultMap: Map[String, Any] = Map()
-
-      val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String], suffix)
-
-      result.foreach { k =>
-        val tmp: Any = File.loadTorch(subPath + k + suffix)
-        resultMap += (k -> tmp)
-      }
-
-      File.save(ListMap.empty ++ resultMap, "/tmp/torch-results/" + id.value + ".bin")
-      File.save(Array[Double](luaTime), "/tmp/torch-results/" + id.value + ".time")
-      (luaTime, resultMap)
+    result.foreach { k =>
+      val subPath = Paths.get(resultsRoot.toAbsolutePath.toString, k + suffix).toString
+      val tmp: Any = File.loadTorch(subPath + k + suffix)
+      resultMap += (k -> tmp)
     }
 
     (luaTime, resultMap)
@@ -86,28 +95,37 @@ object TH {
   // Run without map
   def runNM(code: String, parameters: Map[String, Any], result: Array[String], suffix: String)
   : Double = {
+    if (isExists(result, suffix)) {
+      val luaTime = {
+        val path = Paths.get(resultsRoot.toString, suffix + timeSuffix)
+        File.load[Array[Double]](path.toString).head
+      }
+
+      return luaTime // stop early
+    }
+
     val varCode = new StringBuilder("require 'nn'\n" + "require 'optim'\n")
     val usrCode = new StringBuilder("")
     val resCode = new StringBuilder("")
 
     // Variable load code of lua
     parameters.keys.foreach { k =>
-      val tmp = java.io.File.createTempFile(k + "Tmp", suffix)
-      val tmpPath = tmp.getAbsolutePath
+      val tmp = java.io.File.createTempFile(k, suffix, inputsRoot.toFile)
+      val inputsPath = tmp.getAbsolutePath
       parameters(k) match {
         case _: Tensor[_] =>
           if (parameters(k).asInstanceOf[Tensor[_]].getType() == FloatType) {
-            File.saveTorch(parameters(k), tmpPath, TYPE_FLOAT_TENSOR, true)
+            File.saveTorch(parameters(k), inputsPath, TYPE_FLOAT_TENSOR, true)
           } else {
-            File.saveTorch(parameters(k), tmpPath, TYPE_DOUBLE_TENSOR, true)
+            File.saveTorch(parameters(k), inputsPath, TYPE_DOUBLE_TENSOR, true)
           }
         case _: AbstractModule[_, _, _] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_MODULE, true)
+          File.saveTorch(parameters(k), inputsPath, TYPE_MODULE, true)
         case _: Table =>
-          File.saveTorch(parameters(k).asInstanceOf[Table], tmpPath, TYPE_TABLE, true)
+          File.saveTorch(parameters(k).asInstanceOf[Table], inputsPath, TYPE_TABLE, true)
         case _ =>
       }
-      varCode.append(k + " = torch.load(\'" + tmpPath + "\')\n")
+      varCode.append(k + " = torch.load(\'" + inputsPath + "\')\n")
     }
 
     // Read from user`s code
@@ -115,9 +133,8 @@ object TH {
     usrCode.append(code)
     usrCode.append("\nluaTime = Timer:time().real\nprint(luaTime)")
 
-    val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
-    val absolutePath = tmpFile.getAbsolutePath
-    val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
+    val tmpFile = java.io.File.createTempFile("UnitTest", "lua", scriptsRoot.toFile)
+    val subPath = resultsRoot.toAbsolutePath.toString
 
     // Result save code of lua
     result.foreach { k =>
@@ -133,8 +150,6 @@ object TH {
     writer.write(usrCode.toString() + "\n\n")
     writer.write(resCode.toString() + "\n\n")
     writer.close()
-
-    println(tmpFile.getAbsolutePath)
 
     var luaTime = Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
 
@@ -159,16 +174,29 @@ object TH {
       }
     }
 
+    val timePath = Paths.get(resultsRoot.toAbsolutePath.toString, suffix + timeSuffix)
+    File.save(Array[Double](luaTime.toDouble), timePath.toString)
+
     luaTime.toDouble
   }
 
   // Single map
   def map(result: String, suffix: String): (Any) = {
-    val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
-    val absolutePath = tmpFile.getAbsolutePath
-    val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
-    val tmp: Any = File.loadTorch(subPath + result + suffix)
+    val subPath = Paths.get(resultsRoot.toAbsolutePath.toString, result + suffix)
+    val tmp: Any = File.loadTorch(subPath.toAbsolutePath.toString)
     tmp
   }
 
+  def isExists(results: Array[String], suffix: String): Boolean = {
+    val tensors = results.forall { result =>
+      val path = Paths.get(resultsRoot.toAbsolutePath.toString, result + suffix)
+      Files.exists(path)
+    }
+    val time = {
+      val path = Paths.get(resultsRoot.toAbsolutePath.toString, suffix + timeSuffix)
+      Files.exists(path)
+    }
+
+    tensors && time
+  }
 }
