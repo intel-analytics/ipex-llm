@@ -44,19 +44,25 @@ object TH {
     return exitValue == 0
   }
 
-  val resultsRoot: Path = {
+  private def getRoot(subDir: String): Path = {
     val tmpDir = System.getProperty("java.io.tmpdir")
-    Paths.get(tmpDir, "torch-results")
+    val root = Paths.get(tmpDir, subDir)
+    if (Files.notExists(root)) {
+      Files.createDirectory(root)
+    }
+    root
+  }
+
+  val resultsRoot: Path = {
+    getRoot("torch-results")
   }
 
   val scriptsRoot: Path = {
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    Paths.get(tmpDir, "torch-scripts")
+    getRoot("torch-scripts")
   }
 
   val inputsRoot: Path = {
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    Paths.get(tmpDir, "torch-inputs")
+    getRoot("torch-inputs")
   }
 
   val timeSuffix: String = ".time"
