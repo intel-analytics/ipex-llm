@@ -82,7 +82,7 @@ object TH {
 
     result.foreach { k =>
       val subPath = Paths.get(resultsRoot.toAbsolutePath.toString, k + suffix).toString
-      val tmp: Any = File.loadTorch(subPath + k + suffix)
+      val tmp: Any = File.loadTorch(subPath)
       resultMap += (k -> tmp)
     }
 
