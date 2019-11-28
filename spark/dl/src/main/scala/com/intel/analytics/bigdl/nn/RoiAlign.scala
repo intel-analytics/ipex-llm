@@ -48,7 +48,7 @@ class RoiAlign[T: ClassTag] (
   val pooledH: Int,
   val pooledW: Int,
   val mode: String = "avg",
-  val aligned: Boolean = false
+  val aligned: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
   override def updateOutput(input: Table): Tensor[T] = {
     if (classTag[T] == classTag[Float]) {
@@ -582,7 +582,7 @@ object RoiAlign {
     pooledH: Int,
     pooledW: Int,
     mode: String = "avg",
-    aligned: Boolean = false
+    aligned: Boolean = true
   ) (implicit ev: TensorNumeric[T]): RoiAlign[T] =
     new RoiAlign[T](spatialScale, samplingRatio, pooledH, pooledW, mode)
 }
