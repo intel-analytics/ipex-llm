@@ -140,11 +140,11 @@ object TH {
     usrCode.append("\nluaTime = Timer:time().real\nprint(luaTime)")
 
     val tmpFile = java.io.File.createTempFile("UnitTest", "lua", scriptsRoot.toFile)
-    val subPath = resultsRoot.toAbsolutePath.toString
 
     // Result save code of lua
     result.foreach { k =>
-      resCode.append("torch.save(\'" + subPath + k + suffix + "\', " + k + ")\n")
+      val savePath = Paths.get(resultsRoot.toAbsolutePath.toString, k + suffix)
+      resCode.append("torch.save(\'" + savePath + "\', " + k + ")\n")
     }
     val writer = new PrintWriter(tmpFile)
     println("\n============== lua code start ==============\n")
