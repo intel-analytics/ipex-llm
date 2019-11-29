@@ -13,33 +13,33 @@ export BIGDL_JARS=`find ${ANALYTICS_ZOO_HOME}/lib -type f -name "analytics-zoo*j
 
 set -e
 
-echo "## Start ray exmples tests"
+echo "Start ray example tests"
 #start execute
 echo "#1 Start pong example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/rayexample/rl_pong/rl_pong.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/rl_pong/rl_pong.py --iterations 10
 now=$(date "+%s")
 time1=$((now-start))
 
 echo "#2 Start async_parameter example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/rayexample/parameter_server/async_parameter_server.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/parameter_server/async_parameter_server.py --iterations 10
 now=$(date "+%s")
 time2=$((now-start))
 
 echo "#3 Start sync_parameter example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/rayexample/parameter_server/sync_parameter_server.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/parameter_server/sync_parameter_server.py --iterations 10
 now=$(date "+%s")
 time3=$((now-start))
 
 echo "#4 Start multiagent example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/rayexample/rllibexample/multiagent_two_trainers.py --iterations 5
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/rllib/multiagent_two_trainers.py --iterations 5
 now=$(date "+%s")
 time4=$((now-start))
 
-echo "End ray example tests"
+echo "Ray example tests finished"
 echo "#1 rl_pong time used:$time1 seconds"
 echo "#2 sync_parameter_server time used:$time2 seconds"
 echo "#3 async_parameter_server time used:$time3 seconds"
