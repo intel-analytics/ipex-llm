@@ -116,7 +116,15 @@ object TH {
 
     // Variable load code of lua
     parameters.keys.foreach { k =>
-      val tmp = java.io.File.createTempFile(k, suffix, inputsRoot.toFile)
+      // sometimes the k is too short, createTempFile will failed.
+      // so we just need to swap the k and suffix
+      val tmp = try {
+        java.io.File.createTempFile(k, suffix, inputsRoot.toFile)
+      } catch {
+        case IllegalArgumentException => java.io.File.createTempFile(suffix, k, inputsRoot.toFile)
+        case _ => throw new IOException(s"create input temp file failed.")
+      }
+
       val inputsPath = tmp.getAbsolutePath
       parameters(k) match {
         case _: Tensor[_] =>
