@@ -1729,8 +1729,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         val set = new java.util.TreeSet[(T, Int)](new Comparator[(T, Int)] {
           override def compare(o1: (T, Int), o2: (T, Int)): Int = {
             val ret = if (ev.isGreaterEq(o1._1, o2._1)) {
-              if (o1._2 == o2._2) {
-                0
+              if (o1._1 == o2._1 && o1._2 > o2._2) {
+                -1
               } else {
                 1
               }
