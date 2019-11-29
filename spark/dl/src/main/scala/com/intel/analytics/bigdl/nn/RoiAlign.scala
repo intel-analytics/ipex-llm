@@ -135,8 +135,16 @@ class RoiAlign[T: ClassTag] (
       val roi_start_h = roisFloat(offset_rois + 1) * spatialScale - alignedOffset
       val roi_end_w = roisFloat(offset_rois + 2) * spatialScale - alignedOffset
       val roi_end_h = roisFloat(offset_rois + 3) * spatialScale - alignedOffset
-      val roi_width = roi_end_w - roi_start_w
-      val roi_height = roi_end_h - roi_start_h
+      var roi_width = roi_end_w - roi_start_w
+      var roi_height = roi_end_h - roi_start_h
+
+      if (aligned) {
+        require(roi_width >= 0 && roi_height >= 0,
+          "ROIs in ROIAlign cannot have non-negative size!")
+      } else {
+        roi_width = math.max(roi_width, 1.0f)
+        roi_height = math.max(roi_height, 1.0f)
+      }
 
       val bin_size_h = roi_height/ pooledH
       val bin_size_w = roi_width / pooledW
@@ -153,7 +161,7 @@ class RoiAlign[T: ClassTag] (
         Math.ceil(roi_width / pooledW).toInt
       }
 
-      val count: Float = roi_bin_grid_h * roi_bin_grid_w
+      val count: Float = math.max(roi_bin_grid_h * roi_bin_grid_w, 1.0f)
 
       val pre_cal = Tensor[Float](
         Array(pooledH * pooledW * roi_bin_grid_h * roi_bin_grid_w, 8))
@@ -286,9 +294,7 @@ class RoiAlign[T: ClassTag] (
               pre_cal.setValue(pre_calc_index, 7, 0.0f) // w3
               pre_cal.setValue(pre_calc_index, 8, 0.0f) // w4
               pre_calc_index += 1
-            }
-
-            else {
+            } else {
               if (y <= 0) {
                 y = 0
               }
@@ -357,14 +363,22 @@ class RoiAlign[T: ClassTag] (
       val index_n = n * channels * pooledW * pooledH
       val offset_rois = n * roi_cols
       val roi_batch_ind = 0
+
       val alignedOffset = if (aligned) 0.5f else 0.0f
       val roi_start_w = roisDouble(offset_rois) * spatialScale  - alignedOffset
       val roi_start_h = roisDouble(offset_rois + 1) * spatialScale - alignedOffset
       val roi_end_w = roisDouble(offset_rois + 2) * spatialScale - alignedOffset
       val roi_end_h = roisDouble(offset_rois + 3) * spatialScale - alignedOffset
 
-      val roi_width = roi_end_w - roi_start_w
-      val roi_height = roi_end_h - roi_start_h
+      var roi_width = roi_end_w - roi_start_w
+      var roi_height = roi_end_h - roi_start_h
+      if (aligned) {
+        require(roi_width >= 0 && roi_height >= 0,
+          "ROIs in ROIAlign cannot have non-negative size!")
+      } else {
+        roi_width = math.max(roi_width, 1.0f)
+        roi_height = math.max(roi_height, 1.0f)
+      }
       val bin_size_h = roi_height/ pooledH
       val bin_size_w = roi_width / pooledW
 
@@ -380,8 +394,7 @@ class RoiAlign[T: ClassTag] (
         Math.ceil(roi_width / pooledW).toInt
       }
 
-      val count: Double = roi_bin_grid_h * roi_bin_grid_w
-
+      val count: Double = math.max(roi_bin_grid_h * roi_bin_grid_w, 1.0f)
       val pre_cal = Tensor[Double](
         Array(pooledH * pooledW * roi_bin_grid_h * roi_bin_grid_w, 8))
 
@@ -584,5 +597,5 @@ object RoiAlign {
     mode: String = "avg",
     aligned: Boolean = true
   ) (implicit ev: TensorNumeric[T]): RoiAlign[T] =
-    new RoiAlign[T](spatialScale, samplingRatio, pooledH, pooledW, mode)
+    new RoiAlign[T](spatialScale, samplingRatio, pooledH, pooledW, mode, aligned)
 }
