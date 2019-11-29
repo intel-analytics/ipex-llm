@@ -51,3 +51,15 @@ class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 }
+
+class TorchRNNSpec extends TorchSpec {
+  override def torchCheck(): Unit = {
+    if (!TH.hasTorch()) {
+      cancel("Torch is not installed")
+    }
+
+    if (!TH.hasRNN) {
+      cancel("Torch rnn is not installed")
+    }
+  }
+}

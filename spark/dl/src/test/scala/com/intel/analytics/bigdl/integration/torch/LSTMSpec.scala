@@ -28,23 +28,7 @@ import com.intel.analytics.bigdl.utils.T
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class LSTMSpec  extends TorchSpec {
-  override def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-    val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
-    val writer = new PrintWriter(tmpFile)
-    writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
-    writer.close()
-
-    val existsRNN =
-      Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
-    if (!existsRNN.contains("true")) {
-      cancel("Torch rnn is not installed")
-    }
-  }
-
+class LSTMSpec  extends TorchRNNSpec {
   "A LSTM dropout " should "works correctly" in {
     val inputSize = 6
     val hiddenSize = 5

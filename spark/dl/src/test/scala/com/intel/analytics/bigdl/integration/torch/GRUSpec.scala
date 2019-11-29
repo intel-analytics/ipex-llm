@@ -29,24 +29,9 @@ import scala.collection.mutable.ArrayBuffer
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class GRUSpec  extends TorchSpec {
+class GRUSpec  extends TorchRNNSpec {
   System.setProperty("bigdl.disableCheckSysEnv", "true")
   Engine.init(1, 1, true)
-  override def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-    val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
-    val writer = new PrintWriter(tmpFile)
-    writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
-    writer.close()
-
-    val existsRNN =
-      Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
-    if (!existsRNN.contains("true")) {
-      cancel("Torch rnn is not installed")
-    }
-  }
 
   "A GRU" should " be fast" in {
     val inputSize = 1000

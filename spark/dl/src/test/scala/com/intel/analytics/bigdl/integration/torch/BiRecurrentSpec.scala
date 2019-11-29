@@ -31,20 +31,7 @@ import scala.sys.process._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class BiRecurrentSpec  extends TorchSpec {
-  override def torchCheck(): Unit = {
-    super.torchCheck()
-    val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
-    val writer = new PrintWriter(tmpFile)
-    writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
-    writer.close()
-
-    val existsRNN =
-      Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
-    if (!existsRNN.contains("true")) {
-      cancel("Torch rnn is not installed")
-    }
-  }
+class BiRecurrentSpec  extends TorchRNNSpec {
 
   "A BiRecurrent" should "uses isSplitInput correctly" in {
     val inputSize = 4

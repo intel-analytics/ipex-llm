@@ -128,7 +128,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
 
     val layer = new SpatialCrossMapLRN[Double](5, 1.0, 0.75, 1.0)
 
-    val tmpFile = java.io.File.createTempFile("module", ".t7")
+    val tmpFile = java.io.File.createTempFile("module", ".t7." + suffix, TH.resultsRoot.toFile)
     val absolutePath = tmpFile.getAbsolutePath
     layer.saveTorch(absolutePath, true)
 

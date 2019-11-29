@@ -44,6 +44,18 @@ object TH {
     return exitValue == 0
   }
 
+  def hasRNN: Boolean = {
+    val tmpFile = java.io.File.createTempFile("checkRNN", ".lua", scriptsRoot.toFile)
+    val writer = new PrintWriter(tmpFile)
+    writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
+    writer.close()
+
+    val existsRNN =
+      Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
+
+    existsRNN.contains("true")
+  }
+
   private def getRoot(subDir: String): Path = {
     val tmpDir = System.getProperty("java.io.tmpdir")
     val root = Paths.get(tmpDir, subDir)
@@ -121,8 +133,9 @@ object TH {
       val tmp = try {
         java.io.File.createTempFile(k, suffix, inputsRoot.toFile)
       } catch {
-        case IllegalArgumentException => java.io.File.createTempFile(suffix, k, inputsRoot.toFile)
-        case _ => throw new IOException(s"create input temp file failed.")
+        case illegalArgumentException: IllegalArgumentException =>
+          java.io.File.createTempFile(suffix, k, inputsRoot.toFile)
+        case iOException: IOException => throw iOException
       }
 
       val inputsPath = tmp.getAbsolutePath

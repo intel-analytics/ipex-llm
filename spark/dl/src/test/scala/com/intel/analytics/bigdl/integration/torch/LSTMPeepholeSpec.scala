@@ -32,22 +32,7 @@ import scala.reflect.ClassTag
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class LSTMPeepholeSpec  extends TorchSpec {
-  override def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-    val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
-    val writer = new PrintWriter(tmpFile)
-    writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
-    writer.close()
-
-    val existsRNN =
-      Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
-    if (!existsRNN.contains("true")) {
-      cancel("Torch rnn is not installed")
-    }
-  }
+class LSTMPeepholeSpec  extends TorchRNNSpec {
 
   "A LSTMPeephole" should " be fast" in {
     val inputSize = 300
