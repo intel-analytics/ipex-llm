@@ -149,4 +149,15 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
 
+  "TFNet" should "work with String input" in {
+    val resource = getClass().getClassLoader().getResource("tfnet_string")
+
+    val stringTensor = Tensor[String](Array("123.0", "456.0"), Array[Int](2))
+    val net = TFNet(resource.getPath)
+    val result = net.forward(stringTensor)
+
+    result.toTensor[Float] should be (Tensor[Float](Array(123.0f, 456.0f), Array(2)))
+  }
+
+
 }
