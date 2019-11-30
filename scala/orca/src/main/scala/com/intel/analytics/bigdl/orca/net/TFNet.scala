@@ -58,60 +58,8 @@ class TFNet(private val graphDef: TFGraphHolder,
   implicit val ev = TensorNumeric.NumericFloat
   implicit val tag: ClassTag[Float] = ClassTag.Float
 
-  class ResourceManager() extends java.io.Serializable {
-    private val tensorList: mutable.Set[TTensor[_]] = mutable.Set[TTensor[_]]()
-    def createTFTensor(shape: Array[Long], buffer: FloatBuffer): TTensor[_] = {
-      val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList += TFTensor
-      return TFTensor
-    }
-    def createTFTensor(shape: Array[Long], buffer: ByteBuffer): TTensor[_] = {
-      val TFTensor : TTensor[_] = TTensor.create(classOf[UInt8], shape, buffer)
-      tensorList += TFTensor
-      return TFTensor
-    }
-    def createTFTensor(shape: Array[Long], buffer: IntBuffer): TTensor[_] = {
-      val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList += TFTensor
-      return TFTensor
-    }
-    def createTFTensor(shape: Array[Long], buffer: LongBuffer): TTensor[_] = {
-      val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList += TFTensor
-      return TFTensor
-    }
-    def createTFTensor(shape: Array[Long], buffer: DoubleBuffer): TTensor[_] = {
-      val TFTensor : TTensor[_] = TTensor.create(shape, buffer)
-      tensorList += TFTensor
-      return TFTensor
-    }
-
-    def createBoolTFTensor(shape: Array[Long], bytes: ByteBuffer): TTensor[_] = {
-      val TFTensor : TTensor[_] = TTensor.create(classOf[java.lang.Boolean], shape, bytes)
-      tensorList += TFTensor
-      return TFTensor
-    }
-
-    def releaseTensor(t: TTensor[_]): Unit = {
-      t.close()
-      tensorList -= t
-    }
-
-    def isEmpty: Boolean = {
-      tensorList.isEmpty
-    }
-
-    def destructTFTensors(): Unit = {
-      for (tensor <- tensorList) {
-        tensor.close()
-      }
-
-      tensorList.clear()
-    }
-  }
-
   @transient
-  private lazy val tensorManager = new ResourceManager()
+  private lazy val tensorManager = new TFResourceManager()
 
   private[zoo] def graph = graphDef.tfGraph.graph
 
@@ -230,7 +178,7 @@ class TFNet(private val graphDef: TFGraphHolder,
         s"require ${inputTypes.length} inputs, but ${activityLength(input)} given. " +
           s"The inputs are ${inputNames.toSeq}")
 
-      activity2TFTensors(input, inputTypes, inputTFTensors)
+      tensorManager.tensor2TFTensors(activity2Seq(input), inputTypes, inputTFTensors)
 
       // feed inputs
       inputNames.zipWithIndex.foreach { case (name, idx) =>
@@ -243,7 +191,7 @@ class TFNet(private val graphDef: TFGraphHolder,
           var i = 0
           while (i < variableNames.length) {
             if (weightTFTensors(i) == null) {
-              val tensor = bigdl2Tf(weights(i), DataType.FLOAT)
+              val tensor = tensorManager.bigdl2Tf(weights(i), DataType.FLOAT)
               weightTFTensors(i) = tensor
             }
             i += 1
@@ -254,7 +202,7 @@ class TFNet(private val graphDef: TFGraphHolder,
             if (weightTFTensors(i) != null) {
               weightTFTensors(i).close()
             }
-            val tensor = bigdl2Tf(weights(i), DataType.FLOAT)
+            val tensor = tensorManager.bigdl2Tf(weights(i), DataType.FLOAT)
             weightTFTensors(i) = tensor
             i += 1
           }
@@ -342,7 +290,7 @@ class TFNet(private val graphDef: TFGraphHolder,
 
         val gradOutputTFTensors = new Array[TTensor[_]](outputNames.length)
 
-        activity2TFTensors(gradOutput, outputTypes, gradOutputTFTensors)
+        tensorManager.tensor2TFTensors(activity2Seq(gradOutput), outputTypes, gradOutputTFTensors)
 
         // feed inputs
         inputNames.zipWithIndex.foreach { case (name, idx) =>
@@ -494,39 +442,6 @@ class TFNet(private val graphDef: TFGraphHolder,
     }
   }
 
-  private def bigdl2Tf(t: Tensor[Float], dataType: DataType): TTensor[_] = {
-
-    require(t.isContiguous(), "input to tfnet must be contiguous")
-    val shape = t.size().map(_.toLong)
-    val arr = t.storage().array()
-    val offset: Int = t.storageOffset() - 1
-    val length: Int = shape.product.toInt
-
-    if (dataType == DataType.FLOAT) {
-      val buffer = FloatBuffer.wrap(arr, offset, length)
-      tensorManager.createTFTensor(shape, buffer)
-    } else if (dataType == DataType.UINT8) {
-      val buffer = ByteBuffer.wrap(TFNet.floatToUint8(arr), offset, length)
-      tensorManager.createTFTensor(shape, buffer)
-    } else if (dataType == DataType.INT32) {
-      val buffer = IntBuffer.wrap(TFNet.floatToInt(arr), offset, length)
-      tensorManager.createTFTensor(shape, buffer)
-    } else if (dataType == DataType.INT64) {
-      val buffer = LongBuffer.wrap(TFNet.floatToLong(arr), offset, length)
-      tensorManager.createTFTensor(shape, buffer)
-    } else if (dataType == DataType.DOUBLE) {
-      val buffer = DoubleBuffer.wrap(TFNet.floatToDouble(arr), offset, length)
-      tensorManager.createTFTensor(shape, buffer)
-    } else if (dataType == DataType.BOOL) {
-      val buffer = ByteBuffer.wrap(TFNet.floatToBool(arr), offset, length)
-      tensorManager.createBoolTFTensor(shape, buffer)
-    } else {
-      throw new Exception(s"data type ${dataType} are not supported")
-    }
-
-
-  }
-
   private def tf2bigdl(t: TTensor[_], output: Tensor[Float]) = {
     val shape = t.shape().map(_.toInt)
     output.resize(shape)
@@ -541,30 +456,12 @@ class TFNet(private val graphDef: TFGraphHolder,
     if (a.isTensor) 1 else a.toTable.length()
   }
 
-
-  private def activity2TFTensors(input: Activity, types: Seq[DataType],
-                                 tfTensors: Array[TTensor[_]]) = {
-    if (input.isTensor) {
-      require(tfTensors.length == 1, "activity and tfTensors size does not equal," +
-        s" activity length is 1 tfTensors length is ${tfTensors.length}")
-      val tfTensor = bigdl2Tf(input.toTensor[Float], types.head)
-      if (tfTensors(0) != null) {
-        tfTensors(0).close()
-      }
-      tfTensors(0) = tfTensor
+  private def activity2Seq(a: Activity): Seq[Tensor[_]] = {
+    if (a.isTensor) {
+      Seq(a.asInstanceOf[Tensor[_]])
     } else {
-      val t = input.toTable
-      require(tfTensors.length == t.length(), "activity and tfTensors size does not equal," +
-        s" activity length is ${t.length()} tfTensors length is ${tfTensors.length}")
-      var i = 1
-      while (i <= t.length()) {
-        val tfTensor = bigdl2Tf(t[Tensor[Float]](i), types(i-1))
-        if (tfTensors(i -1) != null) {
-          tfTensors(i - 1).close()
-        }
-        tfTensors(i - 1) = tfTensor
-        i += 1
-      }
+      val t = a.toTable
+      t.toSeq[Tensor[_]]
     }
   }
 
