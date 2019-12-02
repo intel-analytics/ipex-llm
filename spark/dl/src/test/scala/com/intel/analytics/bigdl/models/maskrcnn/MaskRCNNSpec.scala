@@ -472,7 +472,6 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
     val resNetOutChannels = 32
     val backboneOutChannels = 32
     val mask = new MaskRCNN(resNetOutChannels, backboneOutChannels)
-
     mask.getExtraParameter().foreach(_.fill(0.1f))
 
     val tempFile = "/tmp/maskrcnn.model"
