@@ -6,16 +6,17 @@ Suite Teardown   Delete All Sessions
 Test template    BigDL Test
 
 *** Variables ***                                                                                                                                                                     
-@{verticals}    ${spark_200_3_vid}    ${spark_210_3_vid}    ${hdfs_264_3_vid}    ${spark_tf_210_3_vid}    ${spark_tf_163_3_vid}
+# @{verticals}    ${spark_200_3_vid}    ${spark_210_3_vid}    ${hdfs_264_3_vid}    ${spark_tf_210_3_vid}    ${spark_tf_163_3_vid}    ${torch_vid}
 
-*** Test Cases ***   SuiteName                             VerticalId
-1                    Spark2.0 Test Suite                   ${spark_200_3_vid}
-2                    Spark2.1 Test Suite                   ${spark_210_3_vid}
-3                    Hdfs Test Suite                       ${hdfs_264_3_vid}
-4                    Quantization Test Suite               ${hdfs_264_3_vid}
-5                    PySpark2.1 Test Suite                 ${spark_tf_210_3_vid}
-6                    PySpark1.6 Test Suite                 ${spark_tf_163_3_vid}
-7                    Yarn Test Suite                       ${hdfs_264_3_vid}
+*** Test Cases ***   SuiteName                             # VerticalId
+1                    Spark2.0 Test Suite                   # ${spark_200_3_vid}
+2                    Spark2.1 Test Suite                   # ${spark_210_3_vid}
+3                    Hdfs Test Suite                       # ${hdfs_264_3_vid}
+4                    Quantization Test Suite               # ${hdfs_264_3_vid}
+5                    PySpark2.1 Test Suite                 # ${spark_tf_210_3_vid}
+6                    PySpark1.6 Test Suite                 # ${spark_tf_163_3_vid}
+7                    Yarn Test Suite                       # ${hdfs_264_3_vid}
+8                    Torch Test Suite                      # ${torch_vid}
 
 # predefined service masters:
 # hdfs_264_3_master
@@ -162,3 +163,7 @@ PySpark1.6 Test Suite
    Set Environment Variable         SPARK_HOME     /opt/work/spark-1.6.3-bin-hadoop2.6
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-1.6.3-bin-hadoop2.6/bin    spark-submit
    Run Shell                        ${submit} --master ${spark_tf_163_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 56 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-${version}-jar-with-dependencies.jar ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
+
+Torch Test Suite
+   Build SparkJar                   spark_1.6
+   Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.torch
