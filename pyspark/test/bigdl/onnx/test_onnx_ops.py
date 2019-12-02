@@ -17,748 +17,331 @@
 import onnx
 import pytest
 import numpy as np
+import onnxruntime as rt
 
-from bigdl.contrib.onnx.onnx_loader import load_model_proto
-from bigdl.nn.layer import CAddTable, JoinTable, ReLU
-from bigdl.nn.layer import SoftMax, SpatialAveragePooling, SpatialBatchNormalization
-from bigdl.nn.layer import SpatialConvolution, SpatialMaxPooling
-from bigdl.nn.layer import Unsqueeze
-from bigdl.nn.onnx.layer import Gemm, Reshape, Shape
+from bigdl.contrib.onnx import load
+from .test_model_generator import *
 
 
 class TestAveragePool(object):
 
     def test_average_pool(self):
-        ceil_mode = 0
-        kernel_width, kernel_height = 3, 3
-        pad_width, pad_height = 0, 0
-        stride_width, stride_height = 1, 1
-        input_shape = [1, 3, 224, 224]
-        output_shape = [1, 3, 222, 222]
-        input_x = np.random.random(input_shape)
+        avgpool_model_path = make_avgpool_onnx_model()
+        bigdl_avgpool = load(avgpool_model_path)
+        avgpool_sess = rt.InferenceSession(avgpool_model_path)
 
-        # Create one input (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        # Create one output (ValueInfoProto)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        avgpool_input_shape = [1, 3, 224, 224]
+        avgpool_input_x = np.random.random(avgpool_input_shape).astype('float32')
+        avgpool_input_name = avgpool_sess.get_inputs()[0].name
+        avgpool_output_name = avgpool_sess.get_outputs()[0].name
 
-        # Create a node (NodeProto)
-        avgpool_node = onnx.helper.make_node(
-            op_type='AveragePool',  # node name
-            inputs=['X'],  # inputs
-            outputs=['Y'],  # outputs
-            auto_pad='NOTSET',
-            ceil_mode=ceil_mode,
-            kernel_shape=(kernel_width, kernel_height),
-            pads=(pad_width, pad_height),
-            strides=(stride_width, stride_height)
-        )
+        bigdl_avgpool_out = bigdl_avgpool.forward(avgpool_input_x)
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[avgpool_node],
-            name='test-averagePool',
-            inputs=[X],
-            outputs=[Y],
-        )
+        try:
+            rt_avgpool_out = avgpool_sess.run([avgpool_output_name], {avgpool_input_name: avgpool_input_x})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = SpatialAveragePooling(
-            kw=kernel_width,
-            kh=kernel_height,
-            dw=stride_width,
-            dh=stride_height,
-            pad_w=pad_width,
-            pad_h=pad_height,
-            ceil_mode=False if ceil_mode == 0 else True
-        )
-
-        loaded_out = loaded_model.forward(input_x)
-        expected_out = bigdl_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_avgpool_out, rt_avgpool_out, decimal=5))
 
 
-class TestBatchNormalization(object):
-
-    def test_batch_normalization(self):
-        input_shape = [1, 3, 224, 224]
-        output_shape = [1, 3, 224, 224]
-        # Create inputs (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        scale = onnx.helper.make_tensor_value_info('scale', onnx.TensorProto.FLOAT, input_shape[:2])
-        bias = onnx.helper.make_tensor_value_info('bias', onnx.TensorProto.FLOAT, input_shape[:2])
-        mean = onnx.helper.make_tensor_value_info('mean', onnx.TensorProto.FLOAT, input_shape[:2])
-        var = onnx.helper.make_tensor_value_info('var', onnx.TensorProto.FLOAT, input_shape[:2])
-        # Create one output (ValueInfoProto)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
-
-        scale_vals = np.random.random(input_shape[1]) * 10
-        bias_vals = np.random.random(input_shape[1]) * 10
-        mean_vals = np.random.random(input_shape[1]) * 10
-        var_vals = np.random.random(input_shape[1]) * 10
-        input_x = np.random.random(input_shape) * 10
-        epsilon = float(1e-05)
-        momentum = float(0.9)
-
-        init_scale = onnx.helper.make_tensor(
-            name='scale',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=scale_vals.tolist(),
-        )
-
-        init_bias = onnx.helper.make_tensor(
-            name='bias',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=bias_vals.tolist(),
-        )
-
-        init_mean = onnx.helper.make_tensor(
-            name='mean',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=mean_vals.tolist(),
-        )
-
-        init_var = onnx.helper.make_tensor(
-            name='var',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=var_vals.tolist(),
-        )
-
-        # Create a node (NodeProto)
-        batch_norm_node = onnx.helper.make_node(
-            op_type='BatchNormalization',  # node name
-            inputs=['X', 'scale', 'bias', 'mean', 'var'],  # inputs
-            outputs=['Y'],  # outputs
-            epsilon=epsilon,
-            momentum=momentum
-        )
-
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[batch_norm_node],
-            name='test-batch_norm',
-            inputs=[X],
-            outputs=[Y],
-            initializer=[init_scale, init_bias, init_mean, init_var]
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = SpatialBatchNormalization(
-            n_output=input_shape[1],
-            eps=epsilon,
-            momentum=momentum,
-            init_weight=scale_vals,
-            init_bias=bias_vals,
-            init_grad_weight=None,
-            init_grad_bias=None,
-        )
-        bigdl_model.set_running_mean(mean_vals)
-        bigdl_model.set_running_std(var_vals)
-
-        loaded_out = loaded_model.forward(input_x)
-        expected_out = bigdl_model.forward(input_x)
-
-        assert(np.array_equal(loaded_out, expected_out))
+# class TestBatchNormalization(object):
+#
+#     def test_batch_normalization(self):
+#         assert(np.array_equal(loaded_out, expected_out))
 
 
 class TestConcat(object):
 
     def test_concat(self):
-        axis = 0
-        input_shape = [2, 3]
-        output_shape = [4, 3]
-        x1_val = np.random.random(input_shape)
-        x2_val = np.random.random(input_shape)
+        concat_model_path = make_concat_onnx_model()
+        bigdl_concat = load(concat_model_path)
 
-        # Create input (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        X1 = onnx.helper.make_tensor_value_info('X1', onnx.TensorProto.FLOAT, input_shape)
-        X2 = onnx.helper.make_tensor_value_info('X2', onnx.TensorProto.FLOAT, input_shape)
+        concat_sess = rt.InferenceSession(concat_model_path)
+        concat_input_name = concat_sess.get_inputs()[0].name
+        concat_output_name = concat_sess.get_outputs()[0].name
 
-        # Create one output (ValueInfoProto)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        concat_input_shape = [2, 3]
+        concat_x1_val = np.random.random(concat_input_shape).astype("float32")
+        concat_x2_val = np.random.random(concat_input_shape).astype("float32")
 
-        # Create a node (NodeProto)
-        const_X1 = onnx.helper.make_node(
-            op_type='Constant',
-            inputs=[],
-            outputs=['X1'],
-            value=onnx.helper.make_tensor(
-                name='X1',
-                data_type=onnx.TensorProto.FLOAT,
-                dims=input_shape,
-                vals=x1_val.flatten().tolist(),
-            )
-        )
+        bigdl_concat_out = bigdl_concat.forward(np.array([1], dtype='float32'))
 
-        const_X2 = onnx.helper.make_node(
-            op_type='Constant',
-            inputs=[],
-            outputs=['X2'],
-            value=onnx.helper.make_tensor(
-                name='X2',
-                data_type=onnx.TensorProto.FLOAT,
-                dims=input_shape,
-                vals=x2_val.flatten().tolist(),
-            )
-        )
+        try:
+            rt_concat_out = concat_sess.run([concat_output_name],
+                                            {concat_input_name: np.array([concat_x1_val, concat_x2_val])})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        concat_node = onnx.helper.make_node(
-            op_type='Concat',  # node name
-            inputs=['X1', 'X2'],  # inputs
-            outputs=['Y'],  # outputs
-            axis=axis
-        )
+        assert(np.testing.assert_array_almost_equal(bigdl_concat_out, rt_concat_out, decimal=5))
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[const_X1, const_X2, concat_node],
-            name='test-concat',
-            inputs=[X],
-            outputs=[Y],
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = JoinTable(dimension=axis + 1, n_input_dims=len(input_shape))
-
-        loaded_out = loaded_model.forward([x1_val, x2_val])
-        expected_out = bigdl_model.forward([x1_val, x2_val])
-
-        assert(np.array_equal(loaded_out, expected_out))
 
 
 class TestConstant(object):
 
     def test_constant(self):
+        constant_model_path = make_constant_onnx_model()
+        bigdl_constant = load(constant_model_path)
+        constant_sess = rt.InferenceSession(constant_model_path)
+        constant_input_name = constant_sess.get_inputs()[0].name
+        constant_output_name = constant_sess.get_outputs()[0].name
 
-        shape = [5, 5]
-        values = np.float32(np.round(np.random.random(shape), 6))
-        dummy_input = np.random.random([1])
+        bigdl_constant_out = bigdl_constant.forward(np.array([1], dtype='float32'))
 
-        # Create one output (ValueInfoProto)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, values.shape)
+        try:
+            rt_constant_out = constant_sess.run([constant_output_name],
+                                                {constant_input_name: np.array([1]).astype('float32')})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        constant_node = onnx.helper.make_node(
-            op_type='Constant',
-            inputs=[],
-            outputs=['Y'],
-            value=onnx.helper.make_tensor(
-                name='const_tensor',
-                data_type=onnx.TensorProto.FLOAT,
-                dims=values.shape,
-                vals=values.flatten().tolist(),
-            ),
-        )
-
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[constant_node],
-            name='test-constant',
-            inputs=[],
-            outputs=[Y],
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-        loaded_model = load_model_proto(onnx_model)
-
-        loaded_out = loaded_model.forward(dummy_input)
-        expected_out = values
-
-        assert(np.array_equal(loaded_out, expected_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_constant_out, rt_constant_out, decimal=5))
 
 
 class TestConv(object):
 
     def test_conv(self):
-        kernel_width, kernel_height = (3, 3)
-        stride_width, stride_height = (1, 1)
-        pad_width, pad_height = (0, 0)
-        input_shape = [1, 3, 224, 224]
-        output_shape = [1, 8, 222, 222]
-        weight_shape = [8, 3, 3, 3]
-        input_x = np.random.random(input_shape)
-        weight_values = np.random.random(weight_shape)
+        conv_model_path = make_conv_onnx_model()
+        bigdl_conv = load(conv_model_path)
+        conv_sess = rt.InferenceSession(conv_model_path)
+        conv_input_name = conv_sess.get_inputs()[0].name
+        conv_output_name = conv_sess.get_outputs()[0].name
 
-        # Create input (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        W = onnx.helper.make_tensor_value_info('W', onnx.TensorProto.FLOAT, weight_shape)
-        # Create one output (ValueInfoProto)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        conv_input_shape = [1, 3, 224, 224]
+        conv_input_x = np.random.random(conv_input_shape).astype('float32')
 
-        init_weight = onnx.helper.make_tensor(
-            name='W',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=weight_shape,
-            vals=weight_values.flatten().astype(float),
-        )
+        bigdl_conv_out = bigdl_conv.forward(conv_input_x)
 
-        conv_node = onnx.helper.make_node(
-            op_type='Conv',
-            inputs=['X', 'W'],
-            outputs=['Y'],
-            kernel_shape=(kernel_width, kernel_height),
-        )
+        try:
+            rt_conv_out = conv_sess.run([conv_output_name], {conv_input_name: conv_input_x})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[conv_node],
-            name='test-conv',
-            inputs=[X],
-            outputs=[Y],
-            initializer=[init_weight]
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = SpatialConvolution(
-            n_input_plane=3,
-            n_output_plane=8,
-            kernel_w=kernel_width,
-            kernel_h=kernel_height,
-            stride_w=stride_width,
-            stride_h=stride_height,
-            pad_w=pad_width,
-            pad_h=pad_height,
-            init_weight=weight_values,
-            with_bias=False
-        )
-
-        loaded_out = loaded_model.forward(input_x)
-        expected_out = bigdl_model.forward(input_x)
-
-        assert(np.array_equal(loaded_out, expected_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_conv_out, rt_conv_out, decimal=5))
 
 
 class TestGather(object):
 
     def test_gather(self):
-        axis = 0
-        input_x = np.array([
+        gather_model_path = make_gather_onnx_model()
+        bigdl_gather = load(gather_model_path)
+        gather_sess = rt.InferenceSession(gather_model_path)
+        gather_input_x_name = gather_sess.get_inputs()[0].name
+        gather_input_indices_name = gather_sess.get_inputs()[1].name
+        gather_output_name = gather_sess.get_outputs()[0].name
+
+        gather_input_x = np.array([
             [1.0, 1.2],
             [2.3, 3.4],
             [4.5, 5.7],
-        ], dtype=float)
-        indices_val = np.array([[0, 1], [1, 2]], dtype=float)
-        expected_out = np.array([[[1, 1.2], [2.3, 3.4]],
-                                 [[2.3, 3.4], [4.5, 5.7]]], dtype=float)
-        input_shape = input_x.shape
-        indices_shape = indices_val.shape
-        output_shape = [2, 2, 2]
+        ])
+        gather_indices_val = np.array([[0, 1], [1, 2]])
 
-        # Create one output (ValueInfoProto)
-        data = onnx.helper.make_tensor_value_info('data', onnx.TensorProto.FLOAT, input_shape)
-        indices = onnx.helper.make_tensor_value_info('indices',
-                                                     onnx.TensorProto.FLOAT, indices_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        bigdl_gather_out = bigdl_gather.forward(np.array([gather_input_x]))
 
-        init_indices = onnx.helper.make_tensor(
-            name='indices',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=indices_shape,
-            vals=indices_val.flatten().tolist(),
-        )
+        try:
+            rt_gather_out = gather_sess.run([gather_output_name],
+                {gather_input_x_name: gather_input_x.astype('float32'),
+                 gather_input_indices_name: gather_indices_val.astype('int64')})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        gather_node = onnx.helper.make_node(
-            op_type='Gather',
-            inputs=['data', 'indices'],
-            outputs=['Y'],
-            axis=axis
-        )
-
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[gather_node],
-            name='test-gather',
-            inputs=[data, indices],
-            outputs=[Y],
-            initializer=[init_indices]
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        loaded_out = loaded_model.forward([input_x, indices_val])
-
-        assert(np.allclose(loaded_out, expected_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_gather_out, rt_gather_out, decimal=5))
 
 
 class TestGemm(object):
 
     def test_gemm(self):
-        mata_shape = [2, 7]
-        matb_shape = [7, 4]
-        matc_shape = [2, 4]
-        output_shape = [2, 4]
-        alpha = np.round(np.random.rand(), 2)
-        beta = np.round(np.random.rand(), 2)
-        trans_a, trans_b = 0, 0
-        input_x = np.random.random(mata_shape)
-        b_val = np.random.random(matb_shape)
-        c_val = np.random.random(matc_shape)
+        gemm_model_path = make_gemm_onnx_model()
+        bigdl_gemm = load(gemm_model_path)
+        gemm_sess = rt.InferenceSession(gemm_model_path)
+        gemm_input_name = gemm_sess.get_inputs()[0].name
+        gemm_output_name = gemm_sess.get_outputs()[0].name
+        gemm_mata_shape = [2, 7]
+        gemm_input_x = np.random.random(gemm_mata_shape).astype('float32')
 
-        # Create one output (ValueInfoProto)
-        a = onnx.helper.make_tensor_value_info('a', onnx.TensorProto.FLOAT, mata_shape)
-        b = onnx.helper.make_tensor_value_info('b', onnx.TensorProto.FLOAT, matb_shape)
-        c = onnx.helper.make_tensor_value_info('c', onnx.TensorProto.FLOAT, matc_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        bigdl_gemm_out = bigdl_gemm.forward(gemm_input_x)
 
-        init_b = onnx.helper.make_tensor(
-            name='b',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=matb_shape,
-            vals=b_val.flatten().tolist(),
-        )
+        try:
+            rt_gemm_out = gemm_sess.run([gemm_output_name],
+                                        {gemm_input_name: gemm_input_x})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        init_c = onnx.helper.make_tensor(
-            name='c',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=matc_shape,
-            vals=c_val.flatten().tolist(),
-        )
-
-        gemm_node = onnx.helper.make_node(
-            op_type='Gemm',
-            inputs=['a', 'b', 'c'],
-            outputs=['Y'],
-            alpha=alpha,
-            beta=beta,
-            transA=trans_a,
-            transB=trans_b
-        )
-
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[gemm_node],
-            name='test-gather',
-            inputs=[a, b, c],
-            outputs=[Y],
-            initializer=[init_b, init_c]
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        bigdl_model = Gemm(b_val, c_val,
-                           alpha=alpha, beta=beta, trans_a=trans_a, trans_b=trans_b)
-        loaded_model = load_model_proto(onnx_model)
-
-        expected_out = bigdl_model.forward(input_x)
-        loaded_out = loaded_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_gemm_out, rt_gemm_out, decimal=5))
 
 
 class TestMaxPool(object):
 
     def test_max_poll(self):
-        kernel_width, kernel_height = 2, 2
-        stride_width, stride_height = 1, 1
-        pad_width, pad_height = 0, 0
-        ceil_mode = 0
-        input_shape = [1, 3, 224, 224]
-        output_shape = [1, 3, 223, 223]
-        input_x = np.random.random(input_shape)
+        maxpool_model_path = make_maxpool_onnx_model()
+        bigdl_maxpool = load(maxpool_model_path)
+        maxpool_sess = rt.InferenceSession(maxpool_model_path)
+        maxpool_input_name = maxpool_sess.get_inputs()[0].name
+        maxpool_output_name = maxpool_sess.get_outputs()[0].name
+        maxpool_input_shape = [1, 3, 224, 224]
+        maxpool_input = np.random.random(maxpool_input_shape).astype('float32')
 
-        # Create one output (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        bigdl_maxpool_out = bigdl_maxpool.forward(maxpool_input)
 
-        maxpool_node = onnx.helper.make_node(
-            op_type='MaxPool',
-            inputs=['X'],
-            outputs=['Y'],
-            kernel_shape=(kernel_width, kernel_height),
-        )
+        try:
+            rt_maxpool_out = maxpool_sess.run([maxpool_output_name],
+                                              {maxpool_input_name: maxpool_input})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[maxpool_node],
-            name='test-maxpool',
-            inputs=[X],
-            outputs=[Y],
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = SpatialMaxPooling(
-            kw=kernel_width,
-            kh=kernel_height,
-            dw=stride_width,
-            dh=stride_height,
-            pad_w=pad_width,
-            pad_h=pad_height,
-            to_ceil=False if ceil_mode == 0 else True
-        )
-
-        loaded_out = loaded_model.forward(input_x)
-        expected_out = bigdl_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_maxpool_out, rt_maxpool_out, decimal=5))
 
 
 class TestRelu(object):
 
     def test_relu(self):
-        input_shape = [1, 3, 224, 224]
-        output_shape = [1, 3, 224, 224]
-        input_x = np.random.random(input_shape)
+        relu_model_path = make_relu_onnx_model()
+        bigdl_relu = load(relu_model_path)
+        relu_sess = rt.InferenceSession(relu_model_path)
+        relu_input_name = relu_sess.get_inputs()[0].name
+        relu_output_name = relu_sess.get_outputs()[0].name
 
-        # Create one output (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        relu_input_shape = [1, 3, 224, 224]
+        relu_input = np.random.random(relu_input_shape).astype('float32')
 
-        relu_node = onnx.helper.make_node(
-            op_type='Relu',
-            inputs=['X'],
-            outputs=['Y']
-        )
+        bigdl_relu_out = bigdl_relu.forward(relu_input)
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[relu_node],
-            name='test-relu',
-            inputs=[X],
-            outputs=[Y],
-        )
+        try:
+            rt_relu_out = relu_sess.run([relu_output_name],
+                                        {relu_input_name: relu_input})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        bigdl_model = ReLU()
-        loaded_model = load_model_proto(onnx_model)
-
-        expected_out = bigdl_model.forward(input_x)
-        loaded_out = loaded_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_relu_out, rt_relu_out, decimal=5))
 
 
 class TestReshape(object):
 
     def test_reshape(self):
+        reshape_model_path = make_shape_onnx_model()
+        bigdl_reshape = load(reshape_model_path)
+        reshape_sess = rt.InferenceSession(reshape_model_path)
+        reshape_input_data_name = reshape_sess.get_inputs()[0].name
+        reshape_input_shape_name = reshape_sess.get_inputs()[1].name
+        reshape_output_name = reshape_sess.get_outputs()[0].name
 
-        input_x = np.random.random([1, 3, 4, 4])
-        # Create one output (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, [1, 3, 4, 4])
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [2, 3, 8])
-        shape = onnx.helper.make_tensor_value_info('shape', onnx.TensorProto.FLOAT, [1, 3])
+        reshape_data_shape = [1, 3, 4, 4]
+        reshape_data_val = np.random.random(reshape_data_shape).astype('float32')
+        reshape_shape_val = np.array([2, 3, 8])
 
-        init_shape = onnx.helper.make_tensor(
-            name='shape',  # type: Text
-            data_type=onnx.TensorProto.FLOAT,  # type: int
-            dims=[1, 3],  # type: Sequence[int]
-            vals=[2, 3, 8],  # type: Any
-        )
+        bigdl_reshape_out = bigdl_reshape.forward(reshape_data_val)
 
-        reshape_node = onnx.helper.make_node(
-            op_type='Reshape',
-            inputs=['X', 'shape'],
-            outputs=['Y']
-        )
+        try:
+            rt_reshape_out = reshape_sess.run([reshape_output_name],
+                              {reshape_input_data_name: reshape_data_val,
+                               reshape_input_shape_name: reshape_shape_val})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[reshape_node],
-            name='test-reshape',
-            inputs=[X, shape],
-            outputs=[Y],
-            initializer=[init_shape]
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = Reshape([2, 3, 8])
-
-        loaded_out = loaded_model.forward(input_x)
-        expected_out = bigdl_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_reshape_out, rt_reshape_out, decimal=5))
 
 
 class TestShape(object):
 
     def test_shape(self):
-        input_shape = [3, 4, 5]
-        input_x = np.random.random(input_shape)
-        # Create one output (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [1])
+        shape_model_path = make_shape_onnx_model()
+        bigdl_shape = load(shape_model_path)
+        shape_sess = rt.InferenceSession(shape_model_path)
+        shape_input_name = shape_sess.get_inputs()[0].name
+        shape_output_name = shape_sess.get_outputs()[0].name
 
-        shape_node = onnx.helper.make_node(
-            op_type='Shape',
-            inputs=['X'],
-            outputs=['Y'],
-        )
+        shape_input_shape = [3, 4, 5]
+        shape_input_x = np.random.random(shape_input_shape).astype('float32')
+        bigdl_shape_out = bigdl_shape.forward(shape_input_x)
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[shape_node],
-            name='test-shape',
-            inputs=[X],
-            outputs=[Y],
-        )
+        try:
+            rt_shape_out = shape_sess.run([shape_output_name],
+                                          {shape_input_name: shape_input_x})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        bigdl_model = Shape()
-        loaded_model = load_model_proto(onnx_model)
-
-        expected_out = bigdl_model.forward(input_x)
-        loaded_out = loaded_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_shape_out, rt_shape_out, decimal=5))
 
 
-class TestSoftmax(object):
-
-    def test_softmax(self):
-        input_shape = [1, 3, 224, 224]
-        output_shape = [1, 3, 224, 224]
-        input_x = np.random.random(input_shape)
-        # Create one output (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
-
-        softmax_node = onnx.helper.make_node(
-            op_type='Softmax',
-            inputs=['X'],
-            outputs=['Y']
-        )
-
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[softmax_node],
-            name='test-softmax',
-            inputs=[X],
-            outputs=[Y],
-        )
-
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = SoftMax()
-
-        loaded_out = loaded_model.forward(input_x)
-        expected_out = bigdl_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
+# class TestSoftmax(object):
+#
+#     def test_softmax(self):
+#         softmax_model_path = make_softmax_onnx_model()
+#         bigdl_softmax = load(softmax_model_path)
+#         softmax_sess = rt.InferenceSession(softmax_model_path)
+#         softmax_input_name = softmax_sess.get_inputs()[0].name
+#         softmax_output_name = softmax_sess.get_outputs()[0].name
+#
+#         softmax_input_shape = [np.random.randint(1, 100)]
+#         softmax_input_x = np.random.random(softmax_input_shape).astype('float32')
+#         bigdl_softmax_out = bigdl_softmax.forward(softmax_input_x)
+#
+#         try:
+#             rt_softmax_out = softmax_sess.run([softmax_output_name],
+#                                               {softmax_input_name: softmax_input_x})
+#         except Exception as e:
+#             print("Unexpected type")
+#             print("{0}: {1}".format(type(e), e))
+#
+#         assert(np.testing.assert_array_almost_equal(bigdl_softmax_out, rt_softmax_out, decimal=5))
 
 
 class TestSum(object):
 
     def test_sum(self):
-        input_shape = [2, 3]
-        input_x1 = np.random.random(input_shape)
-        input_x2 = np.random.random(input_shape)
-        # Create one output (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, [4, 3])
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [1, 3])
+        sum_model_path = make_sum_onnx_model()
+        bigdl_sum = load(sum_model_path)
+        sum_sess = rt.InferenceSession(sum_model_path)
+        sum_input_name = sum_sess.get_inputs()[0].name
+        sum_output_name = sum_sess.get_outputs()[0].name
 
-        sum_node = onnx.helper.make_node(
-            op_type='Sum',
-            inputs=['X'],
-            outputs=['Y']
-        )
+        sum_input_shape = [2, 3]
+        sum_input0_val = np.random.random(sum_input_shape).astype('float32')
+        sum_input1_val = np.random.random(sum_input_shape).astype('float32')
+        bigdl_sum_out = bigdl_sum.forward([sum_input0_val, sum_input1_val])
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[sum_node],
-            name='test-sum',
-            inputs=[X],
-            outputs=[Y],
-        )
+        try:
+            rt_sum_out = sum_sess.run([sum_output_name],
+              {sum_input_name: np.concatenate([sum_input0_val, sum_input1_val]).astype('float32')})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = CAddTable()
-
-        expected_out = bigdl_model.forward([input_x1, input_x2])
-        loaded_out = loaded_model.forward([input_x1, input_x2])
-
-        assert(np.array_equal(expected_out, loaded_out))
+        assert(np.testing.assert_array_almost_equal(bigdl_sum_out, rt_sum_out, decimal=5))
 
 
 class TestUnsqueeze(object):
 
     def test_unsqueeze(self):
-        axis = 0
-        input_shape = [3, 4, 5]
-        output_shape = [1, 3, 4, 5]
-        input_x = np.random.random([3, 4, 5])
+        unsqueeze_model_path = make_unsqueeze_onnx_model()
+        bigdl_unsqueeze = load(unsqueeze_model_path)
+        unsqueeze_sess = rt.InferenceSession(unsqueeze_model_path)
+        unsqueeze_input_name = unsqueeze_sess.get_inputs()[0].name
+        unsqueeze_output_name = unsqueeze_sess.get_outputs()[0].name
 
-        # Create one output (ValueInfoProto)
-        X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
+        unsqueeze_X_shape = [3, 4, 5]
+        unsqueeze_X_val = np.random.random(unsqueeze_X_shape).astype('float32')
 
-        unsqueeze_node = onnx.helper.make_node(
-            op_type='Unsqueeze',
-            inputs=['X'],
-            outputs=['Y'],
-            axes=[axis],
-        )
+        bigdl_unsqueeze_out = bigdl_unsqueeze.forward(unsqueeze_X_val)
 
-        # Create the graph (GraphProto)
-        onnx_graph = onnx.helper.make_graph(
-            nodes=[unsqueeze_node],
-            name='test-unsqueeze',
-            inputs=[X],
-            outputs=[Y],
-        )
+        try:
+            rt_unsqueeze_out = unsqueeze_sess.run([unsqueeze_output_name],
+                                                  {unsqueeze_input_name: unsqueeze_X_val})[0]
+        except Exception as e:
+            print("Unexpected type")
+            print("{0}: {1}".format(type(e), e))
 
-        # Create the model (ModelProto)
-        onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
-        onnx.checker.check_model(onnx_model)
-
-        bigdl_model = Unsqueeze(pos=axis, num_input_dims=len(input_shape))
-        expected_out = bigdl_model.forward(input_x)
-
-        loaded_model = load_model_proto(onnx_model)
-        loaded_out = loaded_model.forward(input_x)
-
-        assert(np.array_equal(expected_out, loaded_out))
-
-
-def main():
-    pytest.main([__file__])
+        assert(np.testing.assert_array_almost_equal(bigdl_unsqueeze_out, rt_unsqueeze_out, decimal=5))
 
 
 if __name__ == "__main__":

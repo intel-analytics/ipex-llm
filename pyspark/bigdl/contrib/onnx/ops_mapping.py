@@ -53,13 +53,13 @@ _convert_map = {
     # 'MatMul'            : matrix_multiplication, #linalg_gemm2
     'Conv'              : conv,
     # 'ConvTranspose'     : deconv,
-    'BatchNormalization': batch_norm,
+    # 'BatchNormalization': batch_norm, # To be verified
     # 'SpatialBN'         : batch_norm,
     # 'LeakyRelu'         : leaky_relu,
     # 'Elu'               : _elu,
     # 'PRelu'             : _prelu,
     # 'Selu'              : _selu,
-    'Softmax'           : softmax,
+    # 'Softmax'           : softmax, # To be verified
     # 'FC'                : fully_connected,
     # 'GlobalAveragePool' : global_avgpooling,
     # 'GlobalMaxPool'     : global_maxpooling,
