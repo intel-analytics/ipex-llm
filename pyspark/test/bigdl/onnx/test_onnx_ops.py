@@ -38,8 +38,9 @@ class TestAveragePool(object):
         bigdl_avgpool_out = bigdl_avgpool.forward(avgpool_input_x)
 
         try:
-            rt_avgpool_out = avgpool_sess.run([avgpool_output_name],
-                      {avgpool_input_name: avgpool_input_x})[0]
+            rt_avgpool_out = avgpool_sess.run(
+                [avgpool_output_name],
+                {avgpool_input_name: avgpool_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -71,7 +72,8 @@ class TestConcat(object):
         bigdl_concat_out = bigdl_concat.forward(np.array([1], dtype='float32'))
 
         try:
-            rt_concat_out = concat_sess.run([concat_output_name],
+            rt_concat_out = concat_sess.run(
+                [concat_output_name],
                 {concat_input_name: np.array([concat_x1_val, concat_x2_val])})[0]
         except Exception as e:
             print("Unexpected type")
@@ -79,7 +81,6 @@ class TestConcat(object):
 
         assert(np.testing.assert_array_almost_equal(
             bigdl_concat_out, rt_concat_out, decimal=5))
-
 
 
 class TestConstant(object):
@@ -335,8 +336,8 @@ class TestSum(object):
             rt_sum_out = sum_sess.run(
                 [sum_output_name],
                 {sum_input_name:
-                     np.concatenate([sum_input0_val,
-                                     sum_input1_val]).astype('float32')})[0]
+                    np.concatenate([sum_input0_val,
+                                    sum_input1_val]).astype('float32')})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))

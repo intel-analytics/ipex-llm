@@ -81,6 +81,7 @@ def make_avgpool_onnx_model():
 #
 #     return
 
+
 def make_concat_onnx_model():
     # Concat
     concat_axis = 0
@@ -482,12 +483,12 @@ def make_reshape_onnx_model():
         'const_data', onnx.TensorProto.FLOAT, reshape_data_shape)
 
     reshape_shape_tvi = onnx.helper.make_tensor_value_info(
-        'shape', onnx.TensorProto.INT64, [3,])
+        'shape', onnx.TensorProto.INT64, [3, ])
     reshape_const_shape_tvi = onnx.helper.make_tensor_value_info(
-        'const_shape', onnx.TensorProto.INT64, [3,])
+        'const_shape', onnx.TensorProto.INT64, [3, ])
 
-    reshape_Y_tvi = onnx.helper.make_tensor_value_info('Y',
-               onnx.TensorProto.FLOAT, [2, 3, 8])
+    reshape_Y_tvi = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, [2, 3, 8])
 
     # Create a node (NodeProto)
     reshape_const_data = onnx.helper.make_node(
@@ -509,7 +510,7 @@ def make_reshape_onnx_model():
         value=onnx.helper.make_tensor(
             name='const_shape',
             data_type=onnx.TensorProto.INT64,
-            dims=[3,],
+            dims=[3, ],
             vals=reshape_shape_val.flatten().tolist(),
         )
     )
@@ -677,7 +678,7 @@ def make_sum_onnx_model():
 
 def make_unsqueeze_onnx_model():
     # Unsqueeze
-    unsqueeze_axis = 0 # fix axis
+    unsqueeze_axis = 0  # fix axis
     unsqueeze_X_shape = [3, 4, 5]
     unsqueeze_Y_shape = [1, 3, 4, 5]
     unsqueeze_X_val = np.random.random(unsqueeze_X_shape).astype('float32')
