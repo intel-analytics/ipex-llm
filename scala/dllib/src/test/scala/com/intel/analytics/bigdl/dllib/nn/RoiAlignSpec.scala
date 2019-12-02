@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
@@ -74,7 +75,8 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     input.insert(Tensor(Storage(data.map(x => x.toFloat))).resize(1, 2, 6, 8))
     input.insert(Tensor(Storage(rois.map(x => x.toFloat))).resize(4, 4))
 
-    val roiAlign = RoiAlign[Float](spatio_scale, sampling_ratio, pooled_height, pooled_width, "avg")
+    val roiAlign = RoiAlign[Float](spatio_scale, sampling_ratio, pooled_height, pooled_width, "avg",
+      aligned = false)
     val res = roiAlign.forward(input)
     val expectedRes = Array(
       0.614743709564208984, 0.550280153751373291,
@@ -151,7 +153,7 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     input.insert(Tensor(Storage(rois.map(x => x.toDouble))).resize(4, 4))
 
     val roiAlign = RoiAlign[Double](
-      spatio_scale, sampling_ratio, pooled_height, pooled_width, "avg")
+      spatio_scale, sampling_ratio, pooled_height, pooled_width, "avg", aligned = false)
     val res = roiAlign.forward(input)
     val expectedRes = Array(
       0.614743709564208984, 0.550280153751373291,
@@ -176,13 +178,45 @@ class RoiAlignSpec extends FlatSpec with Matchers {
       assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
   }
+
+  "ROIAlign with aligned" should "be ok" in {
+    val rois = Tensor[Float](T(T(1.0f, 1.0f, 3.0f, 3.0f)))
+    val features = Tensor[Float](T(T(T(
+      T( 0.0f, 1.0f, 2.0f, 3.0f, 4.0f),
+      T( 5.0f, 6.0f, 7.0f, 8.0f, 9.0f),
+      T(10.0f, 11.0f, 12.0f, 13.0f, 14.0f),
+      T(15.0f, 16.0f, 17.0f, 18.0f, 19.0f),
+      T(20.0f, 21.0f, 22.0f, 23.0f, 24.0f)))))
+
+    val expectedWithAlign = Tensor[Float](T(T(T(
+      T(4.5, 5.0, 5.5, 6.0),
+      T(7.0, 7.5, 8.0, 8.5),
+      T(9.5, 10.0, 10.5, 11.0),
+      T(12.0, 12.5, 13.0, 13.5)))))
+
+    val expected = Tensor[Float](T(T(T(
+      T(7.5, 8, 8.5, 9),
+      T(10, 10.5, 11, 11.5),
+      T(12.5, 13, 13.5, 14),
+      T(15, 15.5, 16, 16.5)))))
+
+    val roiAlign = RoiAlign[Float](1.0f, 0, 4, 4, "avg", aligned = true)
+    val roiNoAlign = RoiAlign[Float](1.0f, 0, 4, 4, "avg", aligned = false)
+
+    val out = roiAlign.forward(T(features, rois))
+    val out2 = roiNoAlign.forward(T(features, rois))
+
+    out should be(expectedWithAlign)
+    out2 should be(expected)
+  }
 }
 
 class RoiAlignSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val input = T()
-    val input1 = Tensor[Float](1, 1, 2, 2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor[Float](1, 4).apply1(_ => Random.nextFloat())
+    RNG.setSeed(10)
+    val input1 = Tensor[Float](1, 2, 6, 8).apply1(_ => RNG.uniform(-1, 1).toFloat)
+    val input2 = Tensor[Float](T(T( 6, 2, 7, 5)))
     input(1.0f) = input1
     input(2.0f) = input2
     val roiAlign = new RoiAlign[Float](spatialScale = 1.0f, samplingRatio = 1,
