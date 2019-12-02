@@ -301,7 +301,6 @@ class Sequential[T: ClassTag]()
     triggerBuilding(module)
 
     labor.asInstanceOf[TSequential[T]].modules +=
-      // module.asInstanceOf[KerasLayer[Activity, Activity, T]].labor
       module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     checkDuplicate()
     this
