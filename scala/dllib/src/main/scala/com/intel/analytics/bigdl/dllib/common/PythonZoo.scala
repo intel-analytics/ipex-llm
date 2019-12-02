@@ -58,23 +58,27 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
       case "float" =>
         if (null == jTensor.indices) {
           if (jTensor.shape == null || jTensor.shape.product == 0) {
-            Tensor()
+            Tensor[Float]().asInstanceOf[Tensor[T]]
           } else {
-            Tensor(jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+            Tensor[Float](jTensor.storage, jTensor.shape)
+              .asInstanceOf[Tensor[T]]
           }
         } else {
-          Tensor.sparse(jTensor.indices, jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+          Tensor.sparse[Float](jTensor.indices, jTensor.storage, jTensor.shape)
+            .asInstanceOf[Tensor[T]]
         }
       case "double" =>
         if (null == jTensor.indices) {
           if (jTensor.shape == null || jTensor.shape.product == 0) {
-            Tensor()
+            Tensor[Double]().asInstanceOf[Tensor[T]]
           } else {
-            Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+            Tensor[Double](jTensor.storage.map(_.toDouble), jTensor.shape)
+              .asInstanceOf[Tensor[T]]
           }
         } else {
-          Tensor.sparse(jTensor.indices,
-            jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+          Tensor.sparse[Double](jTensor.indices,
+            jTensor.storage.map(_.toDouble), jTensor.shape)
+            .asInstanceOf[Tensor[T]]
         }
       case t: String =>
         throw new IllegalArgumentException(s"Not supported type: ${t}")
