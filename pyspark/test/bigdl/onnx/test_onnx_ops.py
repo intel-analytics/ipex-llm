@@ -44,7 +44,8 @@ class TestAveragePool(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_avgpool_out, rt_avgpool_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_avgpool_out, rt_avgpool_out, decimal=5))
 
 
 # class TestBatchNormalization(object):
@@ -76,7 +77,8 @@ class TestConcat(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_concat_out, rt_concat_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_concat_out, rt_concat_out, decimal=5))
 
 
 
@@ -98,7 +100,8 @@ class TestConstant(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_constant_out, rt_constant_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_constant_out, rt_constant_out, decimal=5))
 
 
 class TestConv(object):
@@ -116,12 +119,14 @@ class TestConv(object):
         bigdl_conv_out = bigdl_conv.forward(conv_input_x)
 
         try:
-            rt_conv_out = conv_sess.run([conv_output_name], {conv_input_name: conv_input_x})[0]
+            rt_conv_out = conv_sess.run([conv_output_name],
+                        {conv_input_name: conv_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_conv_out, rt_conv_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_conv_out, rt_conv_out, decimal=5))
 
 
 class TestGather(object):
@@ -151,7 +156,8 @@ class TestGather(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_gather_out, rt_gather_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_gather_out, rt_gather_out, decimal=5))
 
 
 class TestGemm(object):
@@ -169,12 +175,13 @@ class TestGemm(object):
 
         try:
             rt_gemm_out = gemm_sess.run([gemm_output_name],
-                                        {gemm_input_name: gemm_input_x})[0]
+                        {gemm_input_name: gemm_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_gemm_out, rt_gemm_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_gemm_out, rt_gemm_out, decimal=5))
 
 
 class TestMaxPool(object):
@@ -197,7 +204,8 @@ class TestMaxPool(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_maxpool_out, rt_maxpool_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_maxpool_out, rt_maxpool_out, decimal=5))
 
 
 class TestRelu(object):
@@ -221,7 +229,8 @@ class TestRelu(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_relu_out, rt_relu_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_relu_out, rt_relu_out, decimal=5))
 
 
 class TestReshape(object):
@@ -242,13 +251,14 @@ class TestReshape(object):
 
         try:
             rt_reshape_out = reshape_sess.run([reshape_output_name],
-                              {reshape_input_data_name: reshape_data_val,
-                               reshape_input_shape_name: reshape_shape_val})[0]
+                  {reshape_input_data_name: reshape_data_val,
+                   reshape_input_shape_name: reshape_shape_val})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_reshape_out, rt_reshape_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_reshape_out, rt_reshape_out, decimal=5))
 
 
 class TestShape(object):
@@ -271,7 +281,8 @@ class TestShape(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_shape_out, rt_shape_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_shape_out, rt_shape_out, decimal=5))
 
 
 # class TestSoftmax(object):
@@ -289,12 +300,13 @@ class TestShape(object):
 #
 #         try:
 #             rt_softmax_out = softmax_sess.run([softmax_output_name],
-#                                               {softmax_input_name: softmax_input_x})
+#                                  {softmax_input_name: softmax_input_x})
 #         except Exception as e:
 #             print("Unexpected type")
 #             print("{0}: {1}".format(type(e), e))
 #
-#         assert(np.testing.assert_array_almost_equal(bigdl_softmax_out, rt_softmax_out, decimal=5))
+#         assert(np.testing.assert_array_almost_equal(
+#         bigdl_softmax_out, rt_softmax_out, decimal=5))
 
 
 class TestSum(object):
@@ -319,7 +331,8 @@ class TestSum(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_sum_out, rt_sum_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_sum_out, rt_sum_out, decimal=5))
 
 
 class TestUnsqueeze(object):
@@ -343,7 +356,8 @@ class TestUnsqueeze(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(bigdl_unsqueeze_out, rt_unsqueeze_out, decimal=5))
+        assert(np.testing.assert_array_almost_equal(
+            bigdl_unsqueeze_out, rt_unsqueeze_out, decimal=5))
 
 
 if __name__ == "__main__":
