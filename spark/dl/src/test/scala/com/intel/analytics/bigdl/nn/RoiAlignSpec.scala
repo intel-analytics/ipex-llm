@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
@@ -213,8 +214,9 @@ class RoiAlignSpec extends FlatSpec with Matchers {
 class RoiAlignSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val input = T()
-    val input1 = Tensor[Float](1, 1, 2, 2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor[Float](1, 4).apply1(_ => Random.nextFloat())
+    RNG.setSeed(10)
+    val input1 = Tensor[Float](1, 2, 6, 8).apply1(_ => RNG.uniform(-1, 1).toFloat)
+    val input2 = Tensor[Float](T(T( 6, 2, 7, 5)))
     input(1.0f) = input1
     input(2.0f) = input2
     val roiAlign = new RoiAlign[Float](spatialScale = 1.0f, samplingRatio = 1,
