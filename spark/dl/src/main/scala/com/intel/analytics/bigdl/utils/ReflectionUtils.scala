@@ -18,8 +18,6 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.MklInt8Convertible
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.intermediate.{IRElement, IROperator}
 
@@ -123,14 +121,8 @@ private[bigdl] object ReflectionUtils {
       tags, numerics).asInstanceOf[IROperator[T]]
     val weightsAndBias =
       if (source.parameters() != null) source.getParameters() else (null, null)
-    val element = if (!source.isInstanceOf[KerasLayer[Activity, Activity, T]]) {
-      IRElement[T](
-        source.getName(), op, weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
-    } else {
-      IRElement[T](
-        source.asInstanceOf[KerasLayer[Activity, Activity, T]].labor.getName(), op,
-        weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
-    }
+    val element = IRElement[T](
+      source.getName(), op, weights = weightsAndBias._1, gradWeights = weightsAndBias._2)
     if (source.isInstanceOf[MklInt8Convertible]) {
       setScales(source.asInstanceOf[MklInt8Convertible], element)
     }

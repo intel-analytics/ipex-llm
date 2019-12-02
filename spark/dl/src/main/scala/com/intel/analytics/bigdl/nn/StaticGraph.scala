@@ -103,6 +103,30 @@ class StaticGraph[T: ClassTag](
     this
   }
 
+  // TODO: should support more general cases
+  def toSingleGraph(): Graph[T] = {
+    var i = 0
+    var resultOutputNode = outputs(0)
+    while (i < forwardExecution.length - 1) {
+      if (forwardExecution(i).element.isInstanceOf[StaticGraph[T]]) {
+        val graph = forwardExecution(i).element.asInstanceOf[StaticGraph[T]]
+        val inputNode = graph.inputs(0).nextNodes(0)
+        inputNode.removePrevEdges()
+        val preNode = forwardExecution(i).prevNodes(0)
+        preNode.removeNextEdges()
+        preNode.add(inputNode)
+        val outputNode = graph.outputs(0)
+        outputNode.removeNextEdges()
+        val nextNode = forwardExecution(i).nextNodes(0)
+        nextNode.removePrevEdges()
+        outputNode.add(nextNode)
+        resultOutputNode = nextNode
+      }
+      i += 1
+    }
+    Graph(inputs(0), resultOutputNode)
+  }
+
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     var i = 0
     while (i < backwardExecution.length - 1) {
