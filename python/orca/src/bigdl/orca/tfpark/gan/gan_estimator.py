@@ -67,8 +67,8 @@ class GANEstimator(object):
 
         with tf.Graph().as_default() as g:
 
-            generator_inputs = dataset.feature_tensors
-            real_data = dataset.label_tensors
+            generator_inputs = dataset.tensors[0]
+            real_data = dataset.tensors[1]
 
             counter = tf.Variable(0, dtype=tf.int32)
 
@@ -131,7 +131,10 @@ class GANEstimator(object):
                 sess.run(tf.global_variables_initializer())
                 optimizer = TFOptimizer(loss, GanOptimMethod(self._discriminator_optim_method,
                                                              self._generator_optim_method,
-                                                             g_param_size.value), sess=sess,
+                                                             g_param_size.value,
+                                                             self._discriminator_steps,
+                                                             self._generator_steps),
+                                        sess=sess,
                                         dataset=dataset, inputs=dataset._original_tensors,
                                         grads=grads, variables=variables, graph=g,
                                         updates=[increase_counter],
