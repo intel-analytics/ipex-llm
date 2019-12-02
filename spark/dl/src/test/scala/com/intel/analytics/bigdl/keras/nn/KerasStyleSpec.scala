@@ -281,9 +281,9 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(InputLayer(inputShape = Shape(20, 100)))
     seq.add(Convolution1D(10, 5, activation = "relu"))
     seq.add(GlobalMaxPooling1D())
-//    seq.add(Dense(128))
-//    seq.add(KDropout(0.2))
-//    seq.add(Activation("relu"))
+    seq.add(Dense(128))
+    seq.add(KDropout(0.2))
+    seq.add(Activation("relu"))
 
     // seq.add(Dense(10, activation = "softmax"))
     // TODO cannot with the last Dense added
