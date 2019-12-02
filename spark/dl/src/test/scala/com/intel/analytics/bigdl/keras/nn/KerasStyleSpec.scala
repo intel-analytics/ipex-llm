@@ -279,13 +279,11 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
     val seq = KSequential[Float]()
     seq.add(InputLayer(inputShape = Shape(20, 100)))
-    seq.add(Convolution1D(20, 5, activation = "relu"))
-    /*
-    seq.add(GlobalMaxPooling1D())
-    seq.add(Dense(128))
-    seq.add(KDropout(0.2))
-    seq.add(Activation("relu"))
-    */
+    seq.add(Convolution1D(10, 5, activation = "relu"))
+//    seq.add(GlobalMaxPooling1D())
+//    seq.add(Dense(128))
+//    seq.add(KDropout(0.2))
+//    seq.add(Activation("relu"))
 
     // seq.add(Dense(10, activation = "softmax"))
     // TODO cannot with the last Dense added
@@ -293,10 +291,9 @@ class KerasStyleSpec extends BigDLSpecHelper {
     // For such cases, toSingleGraph() is unnecessary
     val graph = seq.labor.toGraph().asInstanceOf[StaticGraph[Float]]
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
-    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nchw))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.ntc))
     val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
-    val tensor = Tensor[Float](Array(1, 20, 100)).rand()
+    val tensor = Tensor[Float](Array(3, 20, 100)).rand()
     val output = ir.forward(tensor)
-    println()
   }
 }

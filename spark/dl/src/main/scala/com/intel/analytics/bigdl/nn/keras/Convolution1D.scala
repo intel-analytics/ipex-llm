@@ -99,7 +99,7 @@ class Convolution1D[T: ClassTag](
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     model.add(layer)
 // //    model.add(Squeeze(3))
-//      model.add(Squeeze(4))
+    model.add(Squeeze(4))
     // TODO need squeeze computeOutput
 
     if (activation != null) {
