@@ -29,11 +29,11 @@ def make_avgpool_onnx_model():
     avgpool_model_path = "./onnx_model/avgpool.onnx"
 
     # Create one input (ValueInfoProto)
-    avgpool_X = onnx.helper.make_tensor_value_info('X',
-                   onnx.TensorProto.FLOAT, avgpool_input_shape)
+    avgpool_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, avgpool_input_shape)
     # Create one output (ValueInfoProto)
-    avgpool_Y = onnx.helper.make_tensor_value_info('Y',
-                   onnx.TensorProto.FLOAT, avgpool_output_shape)
+    avgpool_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, avgpool_output_shape)
 
     # Create a node (NodeProto)
     avgpool_node = onnx.helper.make_node(
@@ -91,14 +91,14 @@ def make_concat_onnx_model():
     concat_model_path = "./onnx_model/concat.onnx"
 
     # Create input (ValueInfoProto)
-    concat_X1 = onnx.helper.make_tensor_value_info('X1',
-                    onnx.TensorProto.FLOAT, concat_input_shape)
-    concat_X2 = onnx.helper.make_tensor_value_info('X2',
-                   onnx.TensorProto.FLOAT, concat_input_shape)
-    concat_X = onnx.helper.make_tensor_value_info('X',
-                  onnx.TensorProto.FLOAT, [2] + concat_input_shape)
-    concat_Y = onnx.helper.make_tensor_value_info('Y',
-                  onnx.TensorProto.FLOAT, concat_output_shape)
+    concat_X1 = onnx.helper.make_tensor_value_info(
+        'X1', onnx.TensorProto.FLOAT, concat_input_shape)
+    concat_X2 = onnx.helper.make_tensor_value_info(
+        'X2', onnx.TensorProto.FLOAT, concat_input_shape)
+    concat_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, [2] + concat_input_shape)
+    concat_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, concat_output_shape)
 
     # Create a node (NodeProto)
     concat_const_X1 = onnx.helper.make_node(
@@ -141,7 +141,8 @@ def make_concat_onnx_model():
     )
 
     # Create the model (ModelProto)
-    concat_onnx_model = onnx.helper.make_model(concat_onnx_graph, producer_name='ONNX')
+    concat_onnx_model = onnx.helper.make_model(
+        concat_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(concat_onnx_model)
     onnx.save(concat_onnx_model, concat_model_path)
 
@@ -156,10 +157,10 @@ def make_constant_onnx_model():
     constant_model_path = "./onnx_model/constant.onnx"
 
     # Create one output (ValueInfoProto)
-    constant_X = onnx.helper.make_tensor_value_info('X',
-                    onnx.TensorProto.FLOAT, [1])
-    constant_Y = onnx.helper.make_tensor_value_info('Y',
-                    onnx.TensorProto.FLOAT, constant_values.shape)
+    constant_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, [1])
+    constant_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, constant_values.shape)
 
     constant_node = onnx.helper.make_node(
         op_type='Constant',
@@ -203,12 +204,12 @@ def make_conv_onnx_model():
     conv_model_path = "./onnx_model/conv.onnx"
 
     # Create input (ValueInfoProto)
-    conv_X = onnx.helper.make_tensor_value_info('X',
-                    onnx.TensorProto.FLOAT, conv_input_shape)
-    conv_W = onnx.helper.make_tensor_value_info('W',
-                    onnx.TensorProto.FLOAT, conv_weight_shape)
-    conv_Y = onnx.helper.make_tensor_value_info('Y',
-                    onnx.TensorProto.FLOAT, conv_output_shape)
+    conv_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, conv_input_shape)
+    conv_W = onnx.helper.make_tensor_value_info(
+        'W', onnx.TensorProto.FLOAT, conv_weight_shape)
+    conv_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, conv_output_shape)
 
     conv_init_weight = onnx.helper.make_tensor(
         name='W',
@@ -234,7 +235,8 @@ def make_conv_onnx_model():
     )
 
     # Create the model (ModelProto)
-    conv_onnx_model = onnx.helper.make_model(conv_onnx_graph, producer_name='ONNX')
+    conv_onnx_model = onnx.helper.make_model(
+        conv_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(conv_onnx_model)
     onnx.save(conv_onnx_model, conv_model_path)
 
@@ -251,28 +253,28 @@ def make_gather_onnx_model():
     ], dtype=float)
     gather_indices_val = np.array([[0, 1], [1, 2]], dtype=int)
     gather_expected_out = np.array([[[1, 1.2], [2.3, 3.4]],
-                                    [[2.3, 3.4], [4.5, 5.7]]], dtype=float)
+                                    [[2.3, 3.4], [4.5, 5.7]]],
+                                   dtype=float)
     gather_input_shape = gather_input_x.shape
     gather_indices_shape = gather_indices_val.shape
     gather_output_shape = [2, 2, 2]
     gather_model_path = "./onnx_model/gather.onnx"
 
     # Create one output (ValueInfoProto)
-    gather_data_tvi = onnx.helper.make_tensor_value_info('data',
-                         onnx.TensorProto.FLOAT, gather_input_shape)
+    gather_data_tvi = onnx.helper.make_tensor_value_info(
+        'data', onnx.TensorProto.FLOAT, gather_input_shape)
 
-    gather_const_data_tvi = onnx.helper.make_tensor_value_info('const_data',
-                                onnx.TensorProto.FLOAT, gather_input_shape)
+    gather_const_data_tvi = onnx.helper.make_tensor_value_info(
+        'const_data', onnx.TensorProto.FLOAT, gather_input_shape)
 
-    gather_indices_tvi = onnx.helper.make_tensor_value_info('indices',
-                            onnx.TensorProto.INT64, gather_indices_shape)
+    gather_indices_tvi = onnx.helper.make_tensor_value_info(
+        'indices', onnx.TensorProto.INT64, gather_indices_shape)
 
-    gather_const_indices_tvi = onnx.helper.make_tensor_value_info('const_indices',
-                                  onnx.TensorProto.INT64, gather_indices_shape)
+    gather_const_indices_tvi = onnx.helper.make_tensor_value_info(
+        'const_indices', onnx.TensorProto.INT64, gather_indices_shape)
 
-    gather_Y_tvi = onnx.helper.make_tensor_value_info('Y',
-                      onnx.TensorProto.FLOAT, gather_output_shape)
-
+    gather_Y_tvi = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, gather_output_shape)
 
     # Create a node (NodeProto)
     gather_const_data = onnx.helper.make_node(
@@ -315,7 +317,8 @@ def make_gather_onnx_model():
     )
 
     # Create the model (ModelProto)
-    gather_onnx_model = onnx.helper.make_model(gather_onnx_graph, producer_name='ONNX')
+    gather_onnx_model = onnx.helper.make_model(
+        gather_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(gather_onnx_model)
     onnx.save(gather_onnx_model, gather_model_path)
 
@@ -337,14 +340,14 @@ def make_gemm_onnx_model():
     gemm_model_path = "./onnx_model/gemm.onnx"
 
     # Create one output (ValueInfoProto)
-    gemm_a = onnx.helper.make_tensor_value_info('a',
-                    onnx.TensorProto.FLOAT, gemm_mata_shape)
-    gemm_b = onnx.helper.make_tensor_value_info('b',
-                    onnx.TensorProto.FLOAT, gemm_matb_shape)
-    gemm_c = onnx.helper.make_tensor_value_info('c',
-                    onnx.TensorProto.FLOAT, gemm_matc_shape)
-    gemm_Y = onnx.helper.make_tensor_value_info('Y',
-                    onnx.TensorProto.FLOAT, gemm_output_shape)
+    gemm_a = onnx.helper.make_tensor_value_info(
+        'a', onnx.TensorProto.FLOAT, gemm_mata_shape)
+    gemm_b = onnx.helper.make_tensor_value_info(
+        'b', onnx.TensorProto.FLOAT, gemm_matb_shape)
+    gemm_c = onnx.helper.make_tensor_value_info(
+        'c', onnx.TensorProto.FLOAT, gemm_matc_shape)
+    gemm_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, gemm_output_shape)
 
     gemm_init_b = onnx.helper.make_tensor(
         name='b',
@@ -380,8 +383,8 @@ def make_gemm_onnx_model():
     )
 
     # Create the model (ModelProto)
-    gemm_onnx_model = onnx.helper.make_model(gemm_onnx_graph,
-                         producer_name='ONNX')
+    gemm_onnx_model = onnx.helper.make_model(
+        gemm_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(gemm_onnx_model)
     onnx.save(gemm_onnx_model, gemm_model_path)
 
@@ -400,10 +403,10 @@ def make_maxpool_onnx_model():
     maxpool_model_path = "./onnx_model/maxpool.onnx"
 
     # Create one output (ValueInfoProto)
-    maxpool_X = onnx.helper.make_tensor_value_info('X',
-                       onnx.TensorProto.FLOAT, maxpool_input_shape)
-    maxpool_Y = onnx.helper.make_tensor_value_info('Y',
-                       onnx.TensorProto.FLOAT, maxpool_output_shape)
+    maxpool_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, maxpool_input_shape)
+    maxpool_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, maxpool_output_shape)
 
     maxpool_node = onnx.helper.make_node(
         op_type='MaxPool',
@@ -421,8 +424,8 @@ def make_maxpool_onnx_model():
     )
 
     # Create the model (ModelProto)
-    maxpool_onnx_model = onnx.helper.make_model(maxpool_onnx_graph,
-                                        producer_name='ONNX')
+    maxpool_onnx_model = onnx.helper.make_model(
+        maxpool_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(maxpool_onnx_model)
     onnx.save(maxpool_onnx_model, maxpool_model_path)
 
@@ -437,10 +440,10 @@ def make_relu_onnx_model():
     relu_model_path = "./onnx_model/relu.onnx"
 
     # Create one output (ValueInfoProto)
-    relu_X = onnx.helper.make_tensor_value_info('X',
-                    onnx.TensorProto.FLOAT, relu_input_shape)
-    relu_Y = onnx.helper.make_tensor_value_info('Y',
-                    onnx.TensorProto.FLOAT, relu_output_shape)
+    relu_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, relu_input_shape)
+    relu_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, relu_output_shape)
 
     relu_node = onnx.helper.make_node(
         op_type='Relu',
@@ -457,8 +460,8 @@ def make_relu_onnx_model():
     )
 
     # Create the model (ModelProto)
-    relu_onnx_model = onnx.helper.make_model(relu_onnx_graph,
-                         producer_name='ONNX')
+    relu_onnx_model = onnx.helper.make_model(
+        relu_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(relu_onnx_model)
     onnx.save(relu_onnx_model, relu_model_path)
 
@@ -473,17 +476,17 @@ def make_reshape_onnx_model():
     reshape_model_path = "./onnx_model/reshape.onnx"
 
     # Create one output (ValueInfoProto)
-    reshape_data_valInfo = onnx.helper.make_tensor_value_info('data',
-                  onnx.TensorProto.FLOAT, reshape_data_shape)
-    reshape_const_data_valInfo = onnx.helper.make_tensor_value_info('const_data',
-                    onnx.TensorProto.FLOAT, reshape_data_shape)
+    reshape_data_tvi = onnx.helper.make_tensor_value_info(
+        'data', onnx.TensorProto.FLOAT, reshape_data_shape)
+    reshape_const_data_tvi = onnx.helper.make_tensor_value_info(
+        'const_data', onnx.TensorProto.FLOAT, reshape_data_shape)
 
-    reshape_shape_valInfo = onnx.helper.make_tensor_value_info('shape',
-                   onnx.TensorProto.INT64, [3,])
-    reshape_const_shape_valInfo = onnx.helper.make_tensor_value_info('const_shape',
-                 onnx.TensorProto.INT64, [3,])
+    reshape_shape_tvi = onnx.helper.make_tensor_value_info(
+        'shape', onnx.TensorProto.INT64, [3,])
+    reshape_const_shape_tvi = onnx.helper.make_tensor_value_info(
+        'const_shape', onnx.TensorProto.INT64, [3,])
 
-    reshape_Y_valInfo = onnx.helper.make_tensor_value_info('Y',
+    reshape_Y_tvi = onnx.helper.make_tensor_value_info('Y',
                onnx.TensorProto.FLOAT, [2, 3, 8])
 
     # Create a node (NodeProto)
@@ -521,13 +524,13 @@ def make_reshape_onnx_model():
     reshape_onnx_graph = onnx.helper.make_graph(
         nodes=[reshape_const_data, reshape_const_shape, reshape_node],
         name='test-reshape',
-        inputs=[reshape_data_valInfo, reshape_shape_valInfo],
-        outputs=[reshape_Y_valInfo]
+        inputs=[reshape_data_tvi, reshape_shape_tvi],
+        outputs=[reshape_Y_tvi]
     )
 
     # Create the model (ModelProto)
-    reshape_onnx_model = onnx.helper.make_model(reshape_onnx_graph,
-                                producer_name='ONNX')
+    reshape_onnx_model = onnx.helper.make_model(
+        reshape_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(reshape_onnx_model)
     onnx.save(reshape_onnx_model, reshape_model_path)
 
@@ -541,10 +544,10 @@ def make_shape_onnx_model():
     shape_model_path = "./onnx_model/shape.onnx"
 
     # Create one output (ValueInfoProto)
-    shape_X = onnx.helper.make_tensor_value_info('X',
-                     onnx.TensorProto.FLOAT, shape_input_shape)
-    shape_Y = onnx.helper.make_tensor_value_info('Y',
-                     onnx.TensorProto.INT64, [1])
+    shape_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, shape_input_shape)
+    shape_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.INT64, [1])
 
     shape_node = onnx.helper.make_node(
         op_type='Shape',
@@ -561,8 +564,8 @@ def make_shape_onnx_model():
     )
 
     # Create the model (ModelProto)
-    shape_onnx_model = onnx.helper.make_model(shape_onnx_graph,
-                                  producer_name='ONNX')
+    shape_onnx_model = onnx.helper.make_model(
+        shape_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(shape_onnx_model)
     onnx.save(shape_onnx_model, shape_model_path)
 
@@ -578,10 +581,10 @@ def make_softmax_onnx_model():
     softmax_model_path = "./onnx_model/softmax.onnx"
 
     # Create one output (ValueInfoProto)
-    softmax_X = onnx.helper.make_tensor_value_info('X',
-                   onnx.TensorProto.FLOAT, softmax_input_shape)
-    softmax_Y = onnx.helper.make_tensor_value_info('Y',
-                   onnx.TensorProto.FLOAT, softmax_output_shape)
+    softmax_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, softmax_input_shape)
+    softmax_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, softmax_output_shape)
 
     softmax_node = onnx.helper.make_node(
         op_type='Softmax',
@@ -599,8 +602,8 @@ def make_softmax_onnx_model():
     )
 
     # Create the model (ModelProto)
-    softmax_onnx_model = onnx.helper.make_model(softmax_onnx_graph,
-                                producer_name='ONNX')
+    softmax_onnx_model = onnx.helper.make_model(
+        softmax_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(softmax_onnx_model)
     onnx.save(softmax_onnx_model, softmax_model_path)
 
@@ -615,14 +618,14 @@ def make_sum_onnx_model():
     sum_model_path = "./onnx_model/sum.onnx"
 
     # Create one output (ValueInfoProto)
-    sum_X = onnx.helper.make_tensor_value_info('X',
-                       onnx.TensorProto.FLOAT, [4, 3])
-    sum_X1 = onnx.helper.make_tensor_value_info('X0',
-                        onnx.TensorProto.FLOAT, sum_input_shape)
-    sum_X2 = onnx.helper.make_tensor_value_info('X1',
-                    onnx.TensorProto.FLOAT, sum_input_shape)
-    sum_Y = onnx.helper.make_tensor_value_info('Y',
-                   onnx.TensorProto.FLOAT, sum_input_shape)
+    sum_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, [4, 3])
+    sum_X1 = onnx.helper.make_tensor_value_info(
+        'X0', onnx.TensorProto.FLOAT, sum_input_shape)
+    sum_X2 = onnx.helper.make_tensor_value_info(
+        'X1', onnx.TensorProto.FLOAT, sum_input_shape)
+    sum_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, sum_input_shape)
 
     # Create a node (NodeProto)
     sum_const_X0 = onnx.helper.make_node(
@@ -664,7 +667,8 @@ def make_sum_onnx_model():
     )
 
     # Create the model (ModelProto)
-    sum_onnx_model = onnx.helper.make_model(sum_onnx_graph, producer_name='ONNX')
+    sum_onnx_model = onnx.helper.make_model(
+        sum_onnx_graph, producer_name='ONNX')
     onnx.checker.check_model(sum_onnx_model)
     onnx.save(sum_onnx_model, sum_model_path)
 
@@ -680,10 +684,10 @@ def make_unsqueeze_onnx_model():
     unsqueeze_model_path = "./onnx_model/unsqueeze.onnx"
 
     # Create one output (ValueInfoProto)
-    unsqueeze_X = onnx.helper.make_tensor_value_info('X',
-                         onnx.TensorProto.FLOAT, unsqueeze_X_shape)
-    unsqueeze_Y = onnx.helper.make_tensor_value_info('Y',
-                         onnx.TensorProto.FLOAT, unsqueeze_Y_shape)
+    unsqueeze_X = onnx.helper.make_tensor_value_info(
+        'X', onnx.TensorProto.FLOAT, unsqueeze_X_shape)
+    unsqueeze_Y = onnx.helper.make_tensor_value_info(
+        'Y', onnx.TensorProto.FLOAT, unsqueeze_Y_shape)
 
     unsqueeze_node = onnx.helper.make_node(
         op_type='Unsqueeze',

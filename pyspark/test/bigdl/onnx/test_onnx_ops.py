@@ -94,8 +94,9 @@ class TestConstant(object):
         bigdl_constant_out = bigdl_constant.forward(np.array([1], dtype='float32'))
 
         try:
-            rt_constant_out = constant_sess.run([constant_output_name],
-                    {constant_input_name: np.array([1]).astype('float32')})[0]
+            rt_constant_out = constant_sess.run(
+                [constant_output_name],
+                {constant_input_name: np.array([1]).astype('float32')})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -119,8 +120,9 @@ class TestConv(object):
         bigdl_conv_out = bigdl_conv.forward(conv_input_x)
 
         try:
-            rt_conv_out = conv_sess.run([conv_output_name],
-                        {conv_input_name: conv_input_x})[0]
+            rt_conv_out = conv_sess.run(
+                [conv_output_name],
+                {conv_input_name: conv_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -149,7 +151,8 @@ class TestGather(object):
         bigdl_gather_out = bigdl_gather.forward(np.array([gather_input_x]))
 
         try:
-            rt_gather_out = gather_sess.run([gather_output_name],
+            rt_gather_out = gather_sess.run(
+                [gather_output_name],
                 {gather_input_x_name: gather_input_x.astype('float32'),
                  gather_input_indices_name: gather_indices_val.astype('int64')})[0]
         except Exception as e:
@@ -174,8 +177,9 @@ class TestGemm(object):
         bigdl_gemm_out = bigdl_gemm.forward(gemm_input_x)
 
         try:
-            rt_gemm_out = gemm_sess.run([gemm_output_name],
-                        {gemm_input_name: gemm_input_x})[0]
+            rt_gemm_out = gemm_sess.run(
+                [gemm_output_name],
+                {gemm_input_name: gemm_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -198,8 +202,9 @@ class TestMaxPool(object):
         bigdl_maxpool_out = bigdl_maxpool.forward(maxpool_input)
 
         try:
-            rt_maxpool_out = maxpool_sess.run([maxpool_output_name],
-                      {maxpool_input_name: maxpool_input})[0]
+            rt_maxpool_out = maxpool_sess.run(
+                [maxpool_output_name],
+                {maxpool_input_name: maxpool_input})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -223,8 +228,9 @@ class TestRelu(object):
         bigdl_relu_out = bigdl_relu.forward(relu_input)
 
         try:
-            rt_relu_out = relu_sess.run([relu_output_name],
-                                        {relu_input_name: relu_input})[0]
+            rt_relu_out = relu_sess.run(
+                [relu_output_name],
+                {relu_input_name: relu_input})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -250,9 +256,10 @@ class TestReshape(object):
         bigdl_reshape_out = bigdl_reshape.forward(reshape_data_val)
 
         try:
-            rt_reshape_out = reshape_sess.run([reshape_output_name],
-                  {reshape_input_data_name: reshape_data_val,
-                   reshape_input_shape_name: reshape_shape_val})[0]
+            rt_reshape_out = reshape_sess.run(
+                [reshape_output_name],
+                {reshape_input_data_name: reshape_data_val,
+                 reshape_input_shape_name: reshape_shape_val})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -275,8 +282,9 @@ class TestShape(object):
         bigdl_shape_out = bigdl_shape.forward(shape_input_x)
 
         try:
-            rt_shape_out = shape_sess.run([shape_output_name],
-                              {shape_input_name: shape_input_x})[0]
+            rt_shape_out = shape_sess.run(
+                [shape_output_name],
+                {shape_input_name: shape_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -299,8 +307,8 @@ class TestShape(object):
 #         bigdl_softmax_out = bigdl_softmax.forward(softmax_input_x)
 #
 #         try:
-#             rt_softmax_out = softmax_sess.run([softmax_output_name],
-#                                  {softmax_input_name: softmax_input_x})
+#             rt_softmax_out = softmax_sess.run(
+#             [softmax_output_name], {softmax_input_name: softmax_input_x})
 #         except Exception as e:
 #             print("Unexpected type")
 #             print("{0}: {1}".format(type(e), e))
@@ -324,9 +332,11 @@ class TestSum(object):
         bigdl_sum_out = bigdl_sum.forward([sum_input0_val, sum_input1_val])
 
         try:
-            rt_sum_out = sum_sess.run([sum_output_name],
-              {sum_input_name: np.concatenate([sum_input0_val,
-                           sum_input1_val]).astype('float32')})[0]
+            rt_sum_out = sum_sess.run(
+                [sum_output_name],
+                {sum_input_name:
+                     np.concatenate([sum_input0_val,
+                                     sum_input1_val]).astype('float32')})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -350,8 +360,9 @@ class TestUnsqueeze(object):
         bigdl_unsqueeze_out = bigdl_unsqueeze.forward(unsqueeze_X_val)
 
         try:
-            rt_unsqueeze_out = unsqueeze_sess.run([unsqueeze_output_name],
-                                  {unsqueeze_input_name: unsqueeze_X_val})[0]
+            rt_unsqueeze_out = unsqueeze_sess.run(
+                [unsqueeze_output_name],
+                {unsqueeze_input_name: unsqueeze_X_val})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
