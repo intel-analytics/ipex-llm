@@ -38,7 +38,8 @@ class TestAveragePool(object):
         bigdl_avgpool_out = bigdl_avgpool.forward(avgpool_input_x)
 
         try:
-            rt_avgpool_out = avgpool_sess.run([avgpool_output_name], {avgpool_input_name: avgpool_input_x})[0]
+            rt_avgpool_out = avgpool_sess.run([avgpool_output_name],
+                      {avgpool_input_name: avgpool_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -70,7 +71,7 @@ class TestConcat(object):
 
         try:
             rt_concat_out = concat_sess.run([concat_output_name],
-                                            {concat_input_name: np.array([concat_x1_val, concat_x2_val])})[0]
+                {concat_input_name: np.array([concat_x1_val, concat_x2_val])})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -92,7 +93,7 @@ class TestConstant(object):
 
         try:
             rt_constant_out = constant_sess.run([constant_output_name],
-                                                {constant_input_name: np.array([1]).astype('float32')})[0]
+                    {constant_input_name: np.array([1]).astype('float32')})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -191,7 +192,7 @@ class TestMaxPool(object):
 
         try:
             rt_maxpool_out = maxpool_sess.run([maxpool_output_name],
-                                              {maxpool_input_name: maxpool_input})[0]
+                      {maxpool_input_name: maxpool_input})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -265,7 +266,7 @@ class TestShape(object):
 
         try:
             rt_shape_out = shape_sess.run([shape_output_name],
-                                          {shape_input_name: shape_input_x})[0]
+                              {shape_input_name: shape_input_x})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -312,7 +313,8 @@ class TestSum(object):
 
         try:
             rt_sum_out = sum_sess.run([sum_output_name],
-              {sum_input_name: np.concatenate([sum_input0_val, sum_input1_val]).astype('float32')})[0]
+              {sum_input_name: np.concatenate([sum_input0_val,
+                           sum_input1_val]).astype('float32')})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
@@ -336,7 +338,7 @@ class TestUnsqueeze(object):
 
         try:
             rt_unsqueeze_out = unsqueeze_sess.run([unsqueeze_output_name],
-                                                  {unsqueeze_input_name: unsqueeze_X_val})[0]
+                                  {unsqueeze_input_name: unsqueeze_X_val})[0]
         except Exception as e:
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
