@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -102,14 +103,14 @@ class PoolerSpec extends FlatSpec with Matchers {
       resolution = 2, scales = Array(0.125f, 0.0625f, 0.03125f), samplingRatio = 2)
     val res = pooler.forward(input)
     val expectedRes = Array(
-      0.226864114403724670, 0.272973388433456421,
-      0.560893952846527100, 0.552965760231018066,
-      0.641304850578308105, 0.476758182048797607,
-      0.396813184022903442, 0.643787503242492676,
-      0.610044836997985840, 0.499720931053161621,
-      0.440425604581832886, 0.471624016761779785,
-      0.690218806266784668, 0.652535200119018555,
-      0.289968341588973999, 0.477649390697479248,
+      0.023863614098541271, 0.057400867850185459,
+      0.280628564810485104, 0.305623784018421591,
+      0.998104330194710485, 0.700919154915548130,
+      0.622570158108509184, 0.567865130189475190,
+      0.482630044810485019, 0.516544848104851085,
+      0.549660193754091783, 0.254286142185043710,
+      0.634043431284018491, 0.601322654816104865,
+      0.528360197830765149, 0.564136290194751285,
       0.243893563747406006, 0.000000000000000000,
       0.000000000000000000, 0.000000000000000000,
       0.058870539069175720, 0.000000000000000000,
@@ -198,14 +199,14 @@ class PoolerSpec extends FlatSpec with Matchers {
       samplingRatio = 2)
     val res = pooler.forward(input)
     val expectedRes = Array(
-      0.226864114403724670, 0.272973388433456421,
-      0.560893952846527100, 0.552965760231018066,
-      0.641304850578308105, 0.476758182048797607,
-      0.396813184022903442, 0.643787503242492676,
-      0.610044836997985840, 0.499720931053161621,
-      0.440425604581832886, 0.471624016761779785,
-      0.690218806266784668, 0.652535200119018555,
-      0.289968341588973999, 0.477649390697479248,
+      0.023863614098541271, 0.057400867850185459,
+      0.280628564810485104, 0.305623784018421591,
+      0.998104330194710485, 0.700919154915548130,
+      0.622570158108509184, 0.567865130189475190,
+      0.482630044810485019, 0.516544848104851085,
+      0.549660193754091783, 0.254286142185043710,
+      0.634043431284018491, 0.601322654816104865,
+      0.528360197830765149, 0.564136290194751285,
       0.243893563747406006, 0.000000000000000000,
       0.000000000000000000, 0.000000000000000000,
       0.058870539069175720, 0.000000000000000000,
@@ -220,11 +221,15 @@ class PoolerSpec extends FlatSpec with Matchers {
 class PoolerSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val input = T()
-    val feature0 = Tensor[Float](1, 1, 2, 2).apply1(_ => Random.nextFloat())
-    val feature1 = Tensor[Float](1, 1, 4, 4).apply1(_ => Random.nextFloat())
-    val feature2 = Tensor[Float](1, 1, 8, 8).apply1(_ => Random.nextFloat())
+    RNG.setSeed(10)
+    val feature0 = Tensor[Float](1, 2, 8, 8).apply1(_ => RNG.uniform(-1, 1).toFloat)
+    val feature1 = Tensor[Float](1, 2, 4, 4).apply1(_ => RNG.uniform(-1, 1).toFloat)
+    val feature2 = Tensor[Float](1, 2, 2, 2).apply1(_ => RNG.uniform(-1, 1).toFloat)
     val features = T(feature0, feature1, feature2)
-    val rois = Tensor[Float](1, 4).apply1(_ => Random.nextFloat())
+    val rois = Tensor[Float](
+      T(T(0, 0, 10, 10),
+        T(0, 0, 60, 60),
+        T(0, 0, 500, 500))).resize(3, 4)
     input(1.0f) = features
     input(2.0f) = rois
     val pooler = new Pooler[Float](resolution = 2, scales = Array(0.25f, 0.125f, 0.0625f),
