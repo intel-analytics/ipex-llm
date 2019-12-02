@@ -68,9 +68,9 @@ class Convolution1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"Convolution1D requires 3D input, but got input dim ${input.length}")
-    val outputLength = KerasUtils.computeConvOutputLength(input(1), filterLength,
+    val outputLength = KerasUtils.computeConvOutputLength(input(2), filterLength,
       borderMode, subsampleLength)
-    Shape(input(0), outputLength, nbFilter)
+    Shape(input(0), nbFilter, outputLength)
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
