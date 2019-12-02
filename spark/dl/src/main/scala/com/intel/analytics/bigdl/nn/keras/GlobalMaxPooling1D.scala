@@ -46,7 +46,7 @@ class GlobalMaxPooling1D[T: ClassTag](
     val layer = SpatialMaxPooling(
       kW = 1,
       kH = input(1),
-      format = DataFormat.NHWC)
+      format = DataFormat.NCHW)
     model.add(layer)
     model.add(Squeeze(3))
     model.add(Squeeze(2))

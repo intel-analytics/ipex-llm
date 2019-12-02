@@ -161,6 +161,7 @@ class Sequential[T: ClassTag]
       } else {
         modules(i).getEndNodes(startnodes)
       }
+
       startnodes = curNodes
     }
     curNodes

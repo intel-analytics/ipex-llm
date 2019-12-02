@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn.abstractnn.InvalidLayer
-import com.intel.analytics.bigdl.nn.keras.{Activation, Dense, Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{Activation, Convolution1D, Dense, Dropout => KDropout, GlobalMaxPooling1D,
+  Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Input => TInput, Sequential => TSequential, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -277,17 +278,25 @@ class KerasStyleSpec extends BigDLSpecHelper {
     import com.intel.analytics.bigdl.mkl.Memory
 
     val seq = KSequential[Float]()
-    val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
-    val d2 = Dense[Float](5).setName("dense2")
-    seq.add(d1)
-    seq.add(d2)
+    seq.add(InputLayer(inputShape = Shape(20, 100)))
+    seq.add(Convolution1D(20, 5, activation = "relu"))
+    /*
+    seq.add(GlobalMaxPooling1D())
+    seq.add(Dense(128))
+    seq.add(KDropout(0.2))
+    seq.add(Activation("relu"))
+    */
 
-    val test = seq.labor.toGraph().asInstanceOf[StaticGraph[Float]]
-    val singleGraph = test.toSingleGraph()
-    singleGraph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
-    singleGraph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
-    val ir = singleGraph.asInstanceOf[StaticGraph[Float]].toIRgraph()
-    val tensor = Tensor[Float](Array(1, 10)).rand()
-    ir.forward(tensor)
+    // seq.add(Dense(10, activation = "softmax"))
+    // TODO cannot with the last Dense added
+
+    // For such cases, toSingleGraph() is unnecessary
+    val graph = seq.labor.toGraph().asInstanceOf[StaticGraph[Float]]
+    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nchw))
+    val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
+    val tensor = Tensor[Float](Array(1, 20, 100)).rand()
+    val output = ir.forward(tensor)
+    println()
   }
 }
