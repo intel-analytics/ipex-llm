@@ -18,13 +18,15 @@ package com.intel.analytics.bigdl.models.maskrcnn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
-import com.intel.analytics.bigdl.nn.Nms
+import com.intel.analytics.bigdl.nn.{Module, Nms}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.reflect.io.File
 
 class MaskRCNNSpec extends FlatSpec with Matchers {
   "build maskrcnn" should "be ok" in {
@@ -464,6 +466,19 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
     for (i <- 0 to (out - 1)) {
       index(i) should be(expectedOut(i) + 1)
     }
+  }
+
+  "MaskRCNN model load" should "be ok" in {
+    val resNetOutChannels = 32
+    val backboneOutChannels = 32
+    val mask = new MaskRCNN(resNetOutChannels, backboneOutChannels)
+    mask.getExtraParameter().foreach(_.fill(0.1f))
+
+    val tempFile = "/tmp/maskrcnn.model"
+    mask.saveModule(tempFile, overWrite = true)
+    val maskLoad = Module.loadModule[Float](tempFile)
+    maskLoad.getExtraParameter().foreach(t => require(t.valueAt(1) == 0.1f))
+    File(tempFile).delete()
   }
 }
 

@@ -60,22 +60,26 @@ class MaskRCNN(val inChannels: Int,
                val config: MaskRCNNParams = new MaskRCNNParams)(implicit ev: TensorNumeric[Float])
   extends Container[Activity, Activity, Float] {
 
-    private val batchImgInfo : Tensor[Float] = Tensor[Float](2)
-    private val backbone = buildBackbone(inChannels, outChannels)
-    private val rpn = RegionProposal(inChannels, config.anchorSizes, config.aspectRatios,
-      config.anchorStride, config.preNmsTopNTest, config.postNmsTopNTest, config.preNmsTopNTrain,
-      config.postNmsTopNTrain, config.rpnNmsThread, config.minSize)
-    private val boxHead = BoxHead(inChannels, config.boxResolution, config.scales,
-      config.samplingRatio, config.boxScoreThresh, config.boxNmsThread, config.maxPerImage,
-      config.outputSize, numClasses)
-    private val maskHead = MaskHead(inChannels, config.maskResolution, config.scales,
-      config.samplingRatio, config.layers, config.dilation, numClasses)
+  private val batchImgInfo : Tensor[Float] = Tensor[Float](2)
+  initModules()
+  // add layer to modules
+  private def initModules(): Unit = {
+      modules.clear()
+      val backbone = buildBackbone(inChannels, outChannels)
+      val rpn = RegionProposal(inChannels, config.anchorSizes, config.aspectRatios,
+        config.anchorStride, config.preNmsTopNTest, config.postNmsTopNTest, config.preNmsTopNTrain,
+        config.postNmsTopNTrain, config.rpnNmsThread, config.minSize)
+      val boxHead = BoxHead(inChannels, config.boxResolution, config.scales,
+        config.samplingRatio, config.boxScoreThresh, config.boxNmsThread, config.maxPerImage,
+        config.outputSize, numClasses)
+      val maskHead = MaskHead(inChannels, config.maskResolution, config.scales,
+        config.samplingRatio, config.layers, config.dilation, numClasses)
 
-    // add layer to modules
-    modules.append(backbone.asInstanceOf[Module[Float]])
-    modules.append(rpn.asInstanceOf[Module[Float]])
-    modules.append(boxHead.asInstanceOf[Module[Float]])
-    modules.append(maskHead.asInstanceOf[Module[Float]])
+      modules.append(backbone.asInstanceOf[Module[Float]])
+      modules.append(rpn.asInstanceOf[Module[Float]])
+      modules.append(boxHead.asInstanceOf[Module[Float]])
+      modules.append(maskHead.asInstanceOf[Module[Float]])
+    }
 
   private def buildResNet50(): Module[Float] = {
 
@@ -167,18 +171,24 @@ class MaskRCNN(val inChannels: Int,
     // contains all images info (height, width, original height, original width)
     val imageInfo = input.toTable[Tensor[Float]](2)
 
+    // get each layer from modules
+    val backbone = modules(0)
+    val rpn = modules(1)
+    val boxHead = modules(2)
+    val maskHead = modules(3)
+
     batchImgInfo.setValue(1, inputFeatures.size(3))
     batchImgInfo.setValue(2, inputFeatures.size(4))
 
-    val features = this.backbone.forward(inputFeatures)
-    val proposals = this.rpn.forward(T(features, batchImgInfo))
-    val boxOutput = this.boxHead.forward(T(features, proposals, batchImgInfo)).toTable
+    val features = backbone.forward(inputFeatures)
+    val proposals = rpn.forward(T(features, batchImgInfo))
+    val boxOutput = boxHead.forward(T(features, proposals, batchImgInfo)).toTable
     val postProcessorBox = boxOutput[Table](2)
     val labelsBox = postProcessorBox[Tensor[Float]](1)
     val proposalsBox = postProcessorBox[Table](2)
     val scores = postProcessorBox[Tensor[Float]](3)
     if (labelsBox.size(1) > 0) {
-      val masks = this.maskHead.forward(T(features, proposalsBox, labelsBox)).toTable
+      val masks = maskHead.forward(T(features, proposalsBox, labelsBox)).toTable
       if (this.isTraining()) {
         output = T(proposalsBox, labelsBox, masks, scores)
       } else {
@@ -340,8 +350,12 @@ object MaskRCNN extends ContainerSerializable {
       .getAttributeValue(context, attrMap.get("useGn"))
       .asInstanceOf[Boolean])
 
-    MaskRCNN(inChannels, outChannels, numClasses, config)
-      .asInstanceOf[AbstractModule[Activity, Activity, T]]
+    val maskrcnn = MaskRCNN(inChannels, outChannels, numClasses, config)
+      .asInstanceOf[Container[Activity, Activity, T]]
+    maskrcnn.modules.clear()
+    loadSubModules(context, maskrcnn)
+
+    maskrcnn
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
@@ -461,5 +475,7 @@ object MaskRCNN extends ContainerSerializable {
     DataConverter.setAttributeValue(context, useGnBuilder,
       config.useGn, universe.typeOf[Boolean])
     maskrcnnBuilder.putAttr("useGn", useGnBuilder.build)
+
+    serializeSubModules(context, maskrcnnBuilder)
   }
 }
