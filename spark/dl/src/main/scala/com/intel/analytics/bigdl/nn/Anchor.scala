@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Generates a regular grid of multi-scale, multi-aspect anchor boxes.
@@ -43,6 +44,34 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
       baseSize = featStride.toInt
     }
     getAllAnchors(shiftX, shiftY, basicAnchors)
+  }
+
+  /**
+   * Here, we generate anchors without change area.
+   * @param ratios
+   * @param scales
+   * @param baseSize stride to move
+   * @return anchors with shape (ratios number * scales number, 4).
+   *         And element order is (-width / 2, -height / 2, width / 2, height / 2)
+   */
+  private def generateBasicAnchors(ratios: Array[Float], scales: Array[Float],
+    baseSize: Float = 16): Tensor[Float] = {
+    val anchors = new ArrayBuffer[Float]
+    for (i <- 0 until scales.length) {
+      val area = math.pow(scales(i) * baseSize, 2)
+      for (j <- 0 until ratios.length) {
+        val w = math.sqrt(area / ratios(j)).toFloat
+        val h = ratios(j) * w.toFloat
+        val halfW = w / 2.0f
+        val halfH = h / 2.0f
+
+        anchors.append(-halfW)
+        anchors.append(-halfH)
+        anchors.append(halfW)
+        anchors.append(halfH)
+      }
+    }
+    Tensor[Float](data = anchors.toArray, shape = Array[Int](ratios.length * scales.length, 4))
   }
 
   @transient private var shiftX: Tensor[Float] = _
@@ -115,34 +144,6 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
       ysOffset += 1
     }
     allAnchors
-  }
-
-  /**
-   * Generate anchor (reference) windows by enumerating aspect ratios(M) X scales(N)
-   * wrt a reference (0, 0, 15, 15) window.
-   * 1. generate anchors for different ratios (N, 4)
-   * 2. for each anchors generated in 1, scale them to get scaled anchors (M*N, 4)
-   */
-  private[nn] def generateBasicAnchors(_ratios: Array[Float], _scales: Array[Float],
-    baseSize: Float = 16): Tensor[Float] = {
-    val ratios = Tensor(Storage(_ratios))
-    val scales = Tensor(Storage(_scales))
-    val baseAnchor = Tensor(Storage(Array(0, 0, baseSize - 1, baseSize - 1)))
-    val ratioAnchors = ratioEnum(baseAnchor, ratios)
-    val anchors = Tensor(scales.size(1) * ratioAnchors.size(1), 4)
-    var idx = 1
-    var i = 1
-    while (i <= ratioAnchors.size(1)) {
-      val scaleAnchors = scaleEnum(ratioAnchors(i), scales)
-      var j = 1
-      while (j <= scaleAnchors.size(1)) {
-        anchors.update(idx, scaleAnchors(j))
-        idx = idx + 1
-        j += 1
-      }
-      i += 1
-    }
-    anchors
   }
 
   /**
