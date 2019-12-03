@@ -245,7 +245,7 @@ class TestRelu(object):
 class TestReshape(object):
 
     def test_reshape(self):
-        reshape_model_path = os.path.join(MODEL_DIR, 'shape.onnx')
+        reshape_model_path = os.path.join(MODEL_DIR, 'reshape.onnx')
         bigdl_reshape = load(reshape_model_path)
         reshape_sess = rt.InferenceSession(reshape_model_path)
         reshape_input_data_name = reshape_sess.get_inputs()[0].name
