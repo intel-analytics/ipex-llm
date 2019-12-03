@@ -285,7 +285,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(KDropout(0.2))
     seq.add(Activation("relu"))
 
-    // seq.add(Dense(10, activation = "softmax"))
+    seq.add(Dense(10, activation = "softmax"))
     // TODO cannot with the last Dense added
 
     // For such cases, toSingleGraph() is unnecessary
@@ -295,5 +295,6 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
     val tensor = Tensor[Float](Array(3, 20, 100)).rand()
     val output = ir.forward(tensor)
+    println()
   }
 }

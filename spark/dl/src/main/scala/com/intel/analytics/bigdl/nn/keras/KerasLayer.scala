@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Container => TContainer}
+import com.intel.analytics.bigdl.nn.{Identity, Container => TContainer, Sequential => TSequential}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -166,6 +166,24 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 (batchInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends TContainer[A, B, T] {
 
   inputShapeValue = batchInputShape
+
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    var startnodes = startNodes
+    var curNodes: Array[ModuleNode[T]] = null
+    for (i <- 0 to labor.asInstanceOf[TContainer[Activity, Activity, T]].modules.size - 1) {
+      curNodes = if (labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
+        .isKerasStyle()) {
+        labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
+          .asInstanceOf[KerasLayer[Activity, Activity, T]].labor.getEndNodes(startnodes)
+      } else {
+        labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
+          .getEndNodes(startnodes)
+      }
+
+      startnodes = curNodes
+    }
+    curNodes
+  }
 
   def labor: AbstractModule[A, B, T] = {
     if (this.modules.isEmpty) {
