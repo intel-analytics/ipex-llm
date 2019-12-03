@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import onnx
 import numpy as np
 
+
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def make_avgpool_onnx_model():
     # avgpool
@@ -26,7 +29,7 @@ def make_avgpool_onnx_model():
     avgpool_input_shape = [1, 3, 224, 224]
     avgpool_output_shape = [1, 3, 222, 222]
     avgpool_input_x = np.random.random(avgpool_input_shape).astype('float32')
-    avgpool_model_path = "./onnx_model/avgpool.onnx"
+    avgpool_model_path = os.path.join(BASE_DIR, 'models/avgpool.onnx')
 
     # Create one input (ValueInfoProto)
     avgpool_X = onnx.helper.make_tensor_value_info(
@@ -77,7 +80,7 @@ def make_avgpool_onnx_model():
 #     batchnorm_momentum = float(0.9)
 #
 #     batchnorm_input_x = np.random.random(input_shape).astype('float32')
-#     batchnorm_model_path = "./onnx_model/batchnorm.onnx"
+#     batchnorm_model_path = os.path.join(BASE_DIR, 'models/batchnorm.onnx')
 #
 #     return
 
@@ -89,7 +92,7 @@ def make_concat_onnx_model():
     concat_output_shape = [4, 3]
     concat_x1_val = np.random.random(concat_input_shape).astype("float32")
     concat_x2_val = np.random.random(concat_input_shape).astype("float32")
-    concat_model_path = "./onnx_model/concat.onnx"
+    concat_model_path = os.path.join(BASE_DIR, 'models/concat.onnx')
 
     # Create input (ValueInfoProto)
     concat_X1 = onnx.helper.make_tensor_value_info(
@@ -155,7 +158,7 @@ def make_constant_onnx_model():
     constant_shape = [5, 5]
     constant_values = np.float32(np.round(np.random.random(constant_shape), 6))
     constant_dummy_input = np.random.random([1]).astype('float32')
-    constant_model_path = "./onnx_model/constant.onnx"
+    constant_model_path = os.path.join(BASE_DIR, 'models/constant.onnx')
 
     # Create one output (ValueInfoProto)
     constant_X = onnx.helper.make_tensor_value_info(
@@ -202,7 +205,7 @@ def make_conv_onnx_model():
     conv_weight_shape = [8, 3, 3, 3]
     conv_input_x = np.random.random(conv_input_shape).astype('float32')
     conv_weight_values = np.random.random(conv_weight_shape).astype('float32')
-    conv_model_path = "./onnx_model/conv.onnx"
+    conv_model_path = os.path.join(BASE_DIR, 'models/conv.onnx')
 
     # Create input (ValueInfoProto)
     conv_X = onnx.helper.make_tensor_value_info(
@@ -259,7 +262,7 @@ def make_gather_onnx_model():
     gather_input_shape = gather_input_x.shape
     gather_indices_shape = gather_indices_val.shape
     gather_output_shape = [2, 2, 2]
-    gather_model_path = "./onnx_model/gather.onnx"
+    gather_model_path = os.path.join(BASE_DIR, 'models/gather.onnx')
 
     # Create one output (ValueInfoProto)
     gather_data_tvi = onnx.helper.make_tensor_value_info(
@@ -338,7 +341,7 @@ def make_gemm_onnx_model():
     gemm_input_x = np.random.random(gemm_mata_shape).astype('float32')
     gemm_b_val = np.random.random(gemm_matb_shape).astype('float32')
     gemm_c_val = np.random.random(gemm_matc_shape).astype('float32')
-    gemm_model_path = "./onnx_model/gemm.onnx"
+    gemm_model_path = os.path.join(BASE_DIR, 'models/gemm.onnx')
 
     # Create one output (ValueInfoProto)
     gemm_a = onnx.helper.make_tensor_value_info(
@@ -401,7 +404,7 @@ def make_maxpool_onnx_model():
     maxpool_input_shape = [1, 3, 224, 224]
     maxpool_output_shape = [1, 3, 223, 223]
     maxpool_input = np.random.random(maxpool_input_shape).astype('float32')
-    maxpool_model_path = "./onnx_model/maxpool.onnx"
+    maxpool_model_path = os.path.join(BASE_DIR, 'models/maxpool.onnx')
 
     # Create one output (ValueInfoProto)
     maxpool_X = onnx.helper.make_tensor_value_info(
@@ -438,7 +441,7 @@ def make_relu_onnx_model():
     relu_input_shape = [1, 3, 224, 224]
     relu_output_shape = [1, 3, 224, 224]
     relu_input = np.random.random(relu_input_shape).astype('float32')
-    relu_model_path = "./onnx_model/relu.onnx"
+    relu_model_path = os.path.join(BASE_DIR, 'models/relu.onnx')
 
     # Create one output (ValueInfoProto)
     relu_X = onnx.helper.make_tensor_value_info(
@@ -474,7 +477,7 @@ def make_reshape_onnx_model():
     reshape_data_shape = [1, 3, 4, 4]
     reshape_data_val = np.random.random(reshape_data_shape).astype('float32')
     reshape_shape_val = np.array([2, 3, 8])
-    reshape_model_path = "./onnx_model/reshape.onnx"
+    reshape_model_path = os.path.join(BASE_DIR, 'models/reshape.onnx')
 
     # Create one output (ValueInfoProto)
     reshape_data_tvi = onnx.helper.make_tensor_value_info(
@@ -542,7 +545,7 @@ def make_shape_onnx_model():
     # Shape
     shape_input_shape = [3, 4, 5]
     shape_input_x = np.random.random(shape_input_shape).astype('float32')
-    shape_model_path = "./onnx_model/shape.onnx"
+    shape_model_path = os.path.join(BASE_DIR, 'models/shape.onnx')
 
     # Create one output (ValueInfoProto)
     shape_X = onnx.helper.make_tensor_value_info(
@@ -579,7 +582,7 @@ def make_softmax_onnx_model():
     softmax_output_shape = softmax_input_shape
     softmax_input_x = np.random.random(softmax_input_shape).astype('float32')
     # softmax_input_x = np.array([-1, 0, 1]).astype('float32')
-    softmax_model_path = "./onnx_model/softmax.onnx"
+    softmax_model_path = os.path.join(BASE_DIR, 'models/softmax.onnx')
 
     # Create one output (ValueInfoProto)
     softmax_X = onnx.helper.make_tensor_value_info(
@@ -616,7 +619,7 @@ def make_sum_onnx_model():
     sum_input_shape = [2, 3]
     sum_input0_val = np.random.random(sum_input_shape).astype('float32')
     sum_input1_val = np.random.random(sum_input_shape).astype('float32')
-    sum_model_path = "./onnx_model/sum.onnx"
+    sum_model_path = os.path.join(BASE_DIR, 'models/sum.onnx')
 
     # Create one output (ValueInfoProto)
     sum_X = onnx.helper.make_tensor_value_info(
@@ -682,7 +685,7 @@ def make_unsqueeze_onnx_model():
     unsqueeze_X_shape = [3, 4, 5]
     unsqueeze_Y_shape = [1, 3, 4, 5]
     unsqueeze_X_val = np.random.random(unsqueeze_X_shape).astype('float32')
-    unsqueeze_model_path = "./onnx_model/unsqueeze.onnx"
+    unsqueeze_model_path = os.path.join(BASE_DIR, 'models/unsqueeze.onnx')
 
     # Create one output (ValueInfoProto)
     unsqueeze_X = onnx.helper.make_tensor_value_info(
