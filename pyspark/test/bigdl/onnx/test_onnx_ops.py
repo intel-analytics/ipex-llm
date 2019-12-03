@@ -47,14 +47,14 @@ class TestAveragePool(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_avgpool_out, rt_avgpool_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_avgpool_out, rt_avgpool_out, decimal=5)
 
 
 # class TestBatchNormalization(object):
 #
 #     def test_batch_normalization(self):
-#         assert(np.array_equal(loaded_out, expected_out))
+#         np.array_equal(loaded_out, expected_out))
 
 
 class TestConcat(object):
@@ -81,8 +81,8 @@ class TestConcat(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_concat_out, rt_concat_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_concat_out, rt_concat_out, decimal=5)
 
 
 class TestConstant(object):
@@ -104,8 +104,8 @@ class TestConstant(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_constant_out, rt_constant_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_constant_out, rt_constant_out, decimal=5)
 
 
 class TestConv(object):
@@ -130,8 +130,8 @@ class TestConv(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_conv_out, rt_conv_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_conv_out, rt_conv_out, decimal=5)
 
 
 class TestGather(object):
@@ -162,8 +162,8 @@ class TestGather(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_gather_out, rt_gather_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_gather_out, rt_gather_out, decimal=5)
 
 
 class TestGemm(object):
@@ -187,8 +187,8 @@ class TestGemm(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_gemm_out, rt_gemm_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_gemm_out, rt_gemm_out, decimal=5)
 
 
 class TestMaxPool(object):
@@ -212,8 +212,8 @@ class TestMaxPool(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_maxpool_out, rt_maxpool_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_maxpool_out, rt_maxpool_out, decimal=5)
 
 
 class TestRelu(object):
@@ -238,8 +238,8 @@ class TestRelu(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_relu_out, rt_relu_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_relu_out, rt_relu_out, decimal=5)
 
 
 class TestReshape(object):
@@ -267,8 +267,8 @@ class TestReshape(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_reshape_out, rt_reshape_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_reshape_out, rt_reshape_out, decimal=5)
 
 
 class TestShape(object):
@@ -292,8 +292,8 @@ class TestShape(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_shape_out, rt_shape_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_shape_out, rt_shape_out, decimal=5)
 
 
 # class TestSoftmax(object):
@@ -316,7 +316,7 @@ class TestShape(object):
 #             print("Unexpected type")
 #             print("{0}: {1}".format(type(e), e))
 #
-#         assert(np.testing.assert_array_almost_equal(
+#         np.testing.assert_array_almost_equal(
 #         bigdl_softmax_out, rt_softmax_out, decimal=5))
 
 
@@ -344,8 +344,8 @@ class TestSum(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_sum_out, rt_sum_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_sum_out, rt_sum_out, decimal=5)
 
 
 class TestUnsqueeze(object):
@@ -370,8 +370,8 @@ class TestUnsqueeze(object):
             print("Unexpected type")
             print("{0}: {1}".format(type(e), e))
 
-        assert(np.testing.assert_array_almost_equal(
-            bigdl_unsqueeze_out, rt_unsqueeze_out, decimal=5) is None)
+        np.testing.assert_array_almost_equal(
+            bigdl_unsqueeze_out, rt_unsqueeze_out, decimal=5)
 
 
 if __name__ == "__main__":
