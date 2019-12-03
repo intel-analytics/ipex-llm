@@ -13,20 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import onnx
+import os
 import pytest
 import numpy as np
 import onnxruntime as rt
 
 from bigdl.contrib.onnx import load
-from .test_model_generator import *
+from .test_model_generator import BASE_DIR
+
+
+MODEL_DIR = os.path.join(BASE_DIR, 'models')
 
 
 class TestAveragePool(object):
 
     def test_average_pool(self):
-        avgpool_model_path = make_avgpool_onnx_model()
+        avgpool_model_path = os.path.join(MODEL_DIR, 'avgpool.onnx')
         bigdl_avgpool = load(avgpool_model_path)
         avgpool_sess = rt.InferenceSession(avgpool_model_path)
 
@@ -58,7 +60,7 @@ class TestAveragePool(object):
 class TestConcat(object):
 
     def test_concat(self):
-        concat_model_path = make_concat_onnx_model()
+        concat_model_path = os.path.join(MODEL_DIR, 'concat.onnx')
         bigdl_concat = load(concat_model_path)
 
         concat_sess = rt.InferenceSession(concat_model_path)
@@ -86,7 +88,7 @@ class TestConcat(object):
 class TestConstant(object):
 
     def test_constant(self):
-        constant_model_path = make_constant_onnx_model()
+        constant_model_path = os.path.join(MODEL_DIR, 'constant.onnx')
         bigdl_constant = load(constant_model_path)
         constant_sess = rt.InferenceSession(constant_model_path)
         constant_input_name = constant_sess.get_inputs()[0].name
@@ -109,7 +111,7 @@ class TestConstant(object):
 class TestConv(object):
 
     def test_conv(self):
-        conv_model_path = make_conv_onnx_model()
+        conv_model_path = os.path.join(MODEL_DIR, 'conv.onnx')
         bigdl_conv = load(conv_model_path)
         conv_sess = rt.InferenceSession(conv_model_path)
         conv_input_name = conv_sess.get_inputs()[0].name
@@ -135,7 +137,7 @@ class TestConv(object):
 class TestGather(object):
 
     def test_gather(self):
-        gather_model_path = make_gather_onnx_model()
+        gather_model_path = os.path.join(MODEL_DIR, 'gather.onnx')
         bigdl_gather = load(gather_model_path)
         gather_sess = rt.InferenceSession(gather_model_path)
         gather_input_x_name = gather_sess.get_inputs()[0].name
@@ -167,7 +169,7 @@ class TestGather(object):
 class TestGemm(object):
 
     def test_gemm(self):
-        gemm_model_path = make_gemm_onnx_model()
+        gemm_model_path = os.path.join(MODEL_DIR, 'gemm.onnx')
         bigdl_gemm = load(gemm_model_path)
         gemm_sess = rt.InferenceSession(gemm_model_path)
         gemm_input_name = gemm_sess.get_inputs()[0].name
@@ -192,7 +194,7 @@ class TestGemm(object):
 class TestMaxPool(object):
 
     def test_max_poll(self):
-        maxpool_model_path = make_maxpool_onnx_model()
+        maxpool_model_path = os.path.join(MODEL_DIR, 'maxpool.onnx')
         bigdl_maxpool = load(maxpool_model_path)
         maxpool_sess = rt.InferenceSession(maxpool_model_path)
         maxpool_input_name = maxpool_sess.get_inputs()[0].name
@@ -217,7 +219,7 @@ class TestMaxPool(object):
 class TestRelu(object):
 
     def test_relu(self):
-        relu_model_path = make_relu_onnx_model()
+        relu_model_path = os.path.join(MODEL_DIR, 'relu.onnx')
         bigdl_relu = load(relu_model_path)
         relu_sess = rt.InferenceSession(relu_model_path)
         relu_input_name = relu_sess.get_inputs()[0].name
@@ -243,7 +245,7 @@ class TestRelu(object):
 class TestReshape(object):
 
     def test_reshape(self):
-        reshape_model_path = make_shape_onnx_model()
+        reshape_model_path = os.path.join(MODEL_DIR, 'shape.onnx')
         bigdl_reshape = load(reshape_model_path)
         reshape_sess = rt.InferenceSession(reshape_model_path)
         reshape_input_data_name = reshape_sess.get_inputs()[0].name
@@ -272,7 +274,7 @@ class TestReshape(object):
 class TestShape(object):
 
     def test_shape(self):
-        shape_model_path = make_shape_onnx_model()
+        shape_model_path = os.path.join(MODEL_DIR, 'shape.onnx')
         bigdl_shape = load(shape_model_path)
         shape_sess = rt.InferenceSession(shape_model_path)
         shape_input_name = shape_sess.get_inputs()[0].name
@@ -297,8 +299,7 @@ class TestShape(object):
 # class TestSoftmax(object):
 #
 #     def test_softmax(self):
-#         softmax_model_path = make_softmax_onnx_model()
-#         bigdl_softmax = load(softmax_model_path)
+#         softmax_model_path = os.path.join(MODEL_DIR, 'softmax.onnx')#         bigdl_softmax = load(softmax_model_path)
 #         softmax_sess = rt.InferenceSession(softmax_model_path)
 #         softmax_input_name = softmax_sess.get_inputs()[0].name
 #         softmax_output_name = softmax_sess.get_outputs()[0].name
@@ -321,7 +322,7 @@ class TestShape(object):
 class TestSum(object):
 
     def test_sum(self):
-        sum_model_path = make_sum_onnx_model()
+        sum_model_path = os.path.join(MODEL_DIR, 'sum.onnx')
         bigdl_sum = load(sum_model_path)
         sum_sess = rt.InferenceSession(sum_model_path)
         sum_input_name = sum_sess.get_inputs()[0].name
@@ -349,7 +350,7 @@ class TestSum(object):
 class TestUnsqueeze(object):
 
     def test_unsqueeze(self):
-        unsqueeze_model_path = make_unsqueeze_onnx_model()
+        unsqueeze_model_path = os.path.join(MODEL_DIR, 'unsqueeze.onnx')
         bigdl_unsqueeze = load(unsqueeze_model_path)
         unsqueeze_sess = rt.InferenceSession(unsqueeze_model_path)
         unsqueeze_input_name = unsqueeze_sess.get_inputs()[0].name

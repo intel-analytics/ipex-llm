@@ -719,4 +719,18 @@ def make_unsqueeze_onnx_model():
 
 
 if __name__ == '__main__':
+    print()
+    # print(__RESOURCES_DIR__)
     make_avgpool_onnx_model()
+    make_concat_onnx_model()
+    make_constant_onnx_model()
+    make_conv_onnx_model()
+    make_gather_onnx_model()
+    make_gemm_onnx_model()
+    make_maxpool_onnx_model()
+    make_relu_onnx_model()
+    make_reshape_onnx_model()
+    make_shape_onnx_model()
+    make_softmax_onnx_model()
+    make_sum_onnx_model()
+    make_unsqueeze_onnx_model()
