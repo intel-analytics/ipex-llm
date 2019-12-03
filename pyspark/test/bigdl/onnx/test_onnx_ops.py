@@ -299,7 +299,8 @@ class TestShape(object):
 # class TestSoftmax(object):
 #
 #     def test_softmax(self):
-#         softmax_model_path = os.path.join(MODEL_DIR, 'softmax.onnx')#         bigdl_softmax = load(softmax_model_path)
+#         softmax_model_path = os.path.join(MODEL_DIR, 'softmax.onnx')
+#         bigdl_softmax = load(softmax_model_path)
 #         softmax_sess = rt.InferenceSession(softmax_model_path)
 #         softmax_input_name = softmax_sess.get_inputs()[0].name
 #         softmax_output_name = softmax_sess.get_outputs()[0].name
