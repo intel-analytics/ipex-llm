@@ -48,7 +48,7 @@ class TestAveragePool(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_avgpool_out, rt_avgpool_out, decimal=5))
+            bigdl_avgpool_out, rt_avgpool_out, decimal=5) is None)
 
 
 # class TestBatchNormalization(object):
@@ -82,7 +82,7 @@ class TestConcat(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_concat_out, rt_concat_out, decimal=5))
+            bigdl_concat_out, rt_concat_out, decimal=5) is None)
 
 
 class TestConstant(object):
@@ -105,7 +105,7 @@ class TestConstant(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_constant_out, rt_constant_out, decimal=5))
+            bigdl_constant_out, rt_constant_out, decimal=5) is None)
 
 
 class TestConv(object):
@@ -131,7 +131,7 @@ class TestConv(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_conv_out, rt_conv_out, decimal=5))
+            bigdl_conv_out, rt_conv_out, decimal=5) is None)
 
 
 class TestGather(object):
@@ -163,7 +163,7 @@ class TestGather(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_gather_out, rt_gather_out, decimal=5))
+            bigdl_gather_out, rt_gather_out, decimal=5) is None)
 
 
 class TestGemm(object):
@@ -188,7 +188,7 @@ class TestGemm(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_gemm_out, rt_gemm_out, decimal=5))
+            bigdl_gemm_out, rt_gemm_out, decimal=5) is None)
 
 
 class TestMaxPool(object):
@@ -213,7 +213,7 @@ class TestMaxPool(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_maxpool_out, rt_maxpool_out, decimal=5))
+            bigdl_maxpool_out, rt_maxpool_out, decimal=5) is None)
 
 
 class TestRelu(object):
@@ -239,7 +239,7 @@ class TestRelu(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_relu_out, rt_relu_out, decimal=5))
+            bigdl_relu_out, rt_relu_out, decimal=5) is None)
 
 
 class TestReshape(object):
@@ -268,7 +268,7 @@ class TestReshape(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_reshape_out, rt_reshape_out, decimal=5))
+            bigdl_reshape_out, rt_reshape_out, decimal=5) is None)
 
 
 class TestShape(object):
@@ -293,7 +293,7 @@ class TestShape(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_shape_out, rt_shape_out, decimal=5))
+            bigdl_shape_out, rt_shape_out, decimal=5) is None)
 
 
 # class TestSoftmax(object):
@@ -345,7 +345,7 @@ class TestSum(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_sum_out, rt_sum_out, decimal=5))
+            bigdl_sum_out, rt_sum_out, decimal=5) is None)
 
 
 class TestUnsqueeze(object):
@@ -371,7 +371,7 @@ class TestUnsqueeze(object):
             print("{0}: {1}".format(type(e), e))
 
         assert(np.testing.assert_array_almost_equal(
-            bigdl_unsqueeze_out, rt_unsqueeze_out, decimal=5))
+            bigdl_unsqueeze_out, rt_unsqueeze_out, decimal=5) is None)
 
 
 if __name__ == "__main__":
