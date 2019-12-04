@@ -292,9 +292,10 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val graph = seq.labor.toGraph().asInstanceOf[StaticGraph[Float]]
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    // graph.evaluate()
     val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
     val tensor = Tensor[Float](Array(3, 20, 100)).rand()
+    // ir.evaluate()
     val output = ir.forward(tensor)
-    println()
   }
 }

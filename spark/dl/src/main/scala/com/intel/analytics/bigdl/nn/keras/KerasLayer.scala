@@ -168,21 +168,28 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   inputShapeValue = batchInputShape
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    var startnodes = startNodes
-    var curNodes: Array[ModuleNode[T]] = null
-    for (i <- 0 to labor.asInstanceOf[TContainer[Activity, Activity, T]].modules.size - 1) {
-      curNodes = if (labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
-        .isKerasStyle()) {
-        labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
-          .asInstanceOf[KerasLayer[Activity, Activity, T]].labor.getEndNodes(startnodes)
-      } else {
-        labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
-          .getEndNodes(startnodes)
-      }
+//    TODO: Deal with nested KerasLayer
+//    if (this.isInstanceOf[KSequential[T]]) {
+      var startnodes = startNodes
+      var curNodes: Array[ModuleNode[T]] = null
+      for (i <- 0 to labor.asInstanceOf[TContainer[Activity, Activity, T]].modules.size - 1) {
+        curNodes = if (labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
+          .isKerasStyle()) {
+          labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
+            .asInstanceOf[KerasLayer[Activity, Activity, T]].labor.getEndNodes(startnodes)
+        } else {
+          labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
+            .getEndNodes(startnodes)
+        }
 
-      startnodes = curNodes
-    }
-    curNodes
+        startnodes = curNodes
+      }
+      curNodes
+//    } else {
+//      val endNodes = Array(
+//        this.labor.inputs(startNodes))
+//      endNodes
+//    }
   }
 
   def labor: AbstractModule[A, B, T] = {
