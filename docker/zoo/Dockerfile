@@ -43,7 +43,7 @@ ENV ANALYTICS_ZOO_HOME              /opt/work/analytics-zoo-${ANALYTICS_ZOO_VERS
 ENV JAVA_HOME                       /opt/jdk
 ENV PATH                            ${JAVA_HOME}/bin:${PATH}
 
-RUN apt-get update && \
+RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
     apt-get install -y libsm6
 
@@ -55,9 +55,19 @@ RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.
     ln -s /opt/jdk1.8.0_152 /opt/jdk
 
 #python
-ADD ./install-python.sh /opt/work
-RUN chmod a+x /opt/work/install-python.sh
-RUN /opt/work/install-python.sh
+RUN apt-get install -y python3-minimal && \
+    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
+    pip3 install --upgrade pip && \
+    pip install --upgrade setuptools && \
+    pip install numpy scipy && \
+    pip install --no-binary pandas -I pandas && \
+    pip install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
+    pip install torch==1.1.0 torchvision==0.3.0 -f https://download.pytorch.org/whl/torch_stable.html && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    #Fix tornado await process
+    pip uninstall -y -q tornado && \
+    pip install tornado==5.1.1 && \
+    python3 -m ipykernel.kernelspec
 
 #spark
 RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \

@@ -7,7 +7,7 @@
 * git
 * maven
 * Oracle jdk 1.8.0_152 (in /opt/jdk1.8.0_152)
-* python 3.6.8
+* python 3.6.9
 * pip
 * numpy
 * scipy
