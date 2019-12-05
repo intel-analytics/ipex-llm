@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class GlobalMaxPooling1DSpec extends KerasBaseSpec{
 
@@ -48,7 +47,7 @@ class GlobalMaxPooling1DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = GlobalMaxPooling1D[Float](inputShape = Shape(12, 24))
     layer.build(Shape(2, 12, 24))
-    val input = Tensor[Float](2, 12, 24).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 12, 24).rand()
     runSerializationTest(layer, input)
   }
 }

@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class ExpSpec extends ZooSpecHelper {
 
@@ -51,7 +50,7 @@ class ExpSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = ZExp[Float](inputShape = Shape(2, 3, 4))
     layer.build(Shape(2, 2, 3, 4))
-    val input = Tensor[Float](2, 2, 3, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 3, 4).rand()
     runSerializationTest(layer, input)
   }
 }
