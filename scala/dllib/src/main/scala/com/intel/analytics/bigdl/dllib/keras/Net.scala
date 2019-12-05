@@ -126,7 +126,7 @@ object Net {
     val model = ModuleLoader.loadFromFile(path, weightPath)
     if (!model.isInstanceOf[KerasNet[T]]) {
       throw new RuntimeException(
-        "Not an Analytics Zoo Keras-style model. Please use loadBigDL, loadCaffe or loadTF instead")
+        "Not an Analytics Zoo Keras-style model. Please use loadBigDL or loadCaffe instead")
     }
     model.asInstanceOf[KerasNet[T]]
   }
@@ -173,50 +173,6 @@ object Net {
     val graph = CaffeLoader.loadCaffe[T](defPath, modelPath)._1
       .asInstanceOf[Graph[T]]
     new GraphNet[T](graph)
-  }
-
-  /**
-   * Load tensorflow model from its saved protobuf file.
-   * @param graphFile where is the protobuf model file
-   * @param inputs input node names
-   * @param outputs output node names, the output tensor order is same with the node order
-   * @param byteOrder byte order in the tensorflow file. The default value is little endian
-   * @param binFile where is the model variable file
-   * @return model loaded from path
-   */
-  def loadTF[T: ClassTag](graphFile: String, inputs: Seq[String], outputs: Seq[String],
-      byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
-      binFile: Option[String] = None)(
-      implicit ev: TensorNumeric[T]): GraphNet[T] = {
-
-    val graph = TensorflowLoader.load(graphFile, inputs, outputs, byteOrder, binFile)
-      .asInstanceOf[Graph[T]]
-    new GraphNet[T](graph)
-  }
-
-  /**
-   * Load TensorFlow model from exported folder.
-   * @param folder The folder path which contains 'frozen_inference_graph.pb' and
-   *               'graph_meta.json'.
-   * @return model loaded from path
-   */
-  def loadTF[T: ClassTag](folder: String)
-      (implicit ev: TensorNumeric[T]): GraphNet[T] = {
-    val (model, meta) = NetUtils.processTFFolder(folder)
-    loadTF[T](model, NetUtils.removePort(meta.inputNames), NetUtils.removePort(meta.outputNames))
-  }
-
-  /**
-   * Load tensorflow checkpoints
-   * @param graphFile
-   * @param binFile
-   * @tparam T
-   * @return
-   */
-  def loadTFCheckpoints[T: ClassTag](graphFile: String, binFile: String,
-      byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(
-      implicit ev: TensorNumeric[T]): Session[T] = {
-    TensorflowLoader.checkpoints(graphFile, binFile, byteOrder)
   }
 
   private[zoo] def saveToKeras2[T: ClassTag](
