@@ -202,6 +202,21 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 now=$(date "+%s")
 time5=$((now-start))
 
+echo "start example test for inceptionv1 training"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[4] \
+   --driver-memory 10g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/inception/inception.py \
+   --maxIteration 20 \
+   -b 8 \
+   -f hdfs://172.168.2.181:9000/imagenet-small
+
+echo "start example test for pytorch SimpleTrainingExample"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[1] \
+   --driver-memory 5g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/SimpleTrainingExample.py
+
 echo "#6 start example test for tensorflow"
 #timer
 start=$(date "+%s")
