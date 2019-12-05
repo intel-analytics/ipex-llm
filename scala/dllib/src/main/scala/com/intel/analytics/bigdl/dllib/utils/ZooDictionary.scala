@@ -17,11 +17,12 @@
 package com.intel.analytics.zoo.common
 
 import com.intel.analytics.bigdl.dataset.text.Dictionary
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
-import scala.util.Random
+
 
 class ZooDictionary() extends Dictionary {
   private var _vocabSize: Int = 0
@@ -32,6 +33,8 @@ class ZooDictionary() extends Dictionary {
   private var _discardVocab: Seq[String] = null
   @transient
   private val logger = Logger.getLogger(getClass)
+  @transient
+  private val rng = RandomGenerator.RNG
 
   /**
    * The length of the vocabulary
@@ -74,8 +77,8 @@ class ZooDictionary() extends Dictionary {
    */
   override def getWord(index: Int): String = {
     _index2word.getOrElse(index,
-      if (_discardSize > 0) _discardVocab(Random.nextInt(_discardSize))
-      else getWord(Random.nextInt(_vocabSize)))
+      if (_discardSize > 0) _discardVocab(rng.uniform(0, _discardSize).toInt)
+      else getWord(RandomGenerator.RNG.uniform(0, _vocabSize).toInt))
   }
 
   /**
