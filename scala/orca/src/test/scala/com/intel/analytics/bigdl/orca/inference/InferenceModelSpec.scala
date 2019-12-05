@@ -108,7 +108,6 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     aModel.doLoadCaffe(modelPath, weightPath)
 
 
-
     val end1 = System.currentTimeMillis()
     val time1 = end1 - begin1
 
