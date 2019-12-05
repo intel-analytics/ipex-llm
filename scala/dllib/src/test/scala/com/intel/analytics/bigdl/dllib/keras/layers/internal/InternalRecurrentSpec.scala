@@ -27,7 +27,6 @@ import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerialization
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
-import scala.util.Random
 
 class InternalRecurrentSpec extends FlatSpec with Matchers {
 
@@ -493,7 +492,7 @@ class InternalRecurrentSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val InternalRecurrent = new InternalRecurrent[Float]().setName("InternalRecurrent")
       .add(RnnCell[Float](5, 4, Tanh[Float]()))
-    val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](Array(10, 5, 5)).rand()
     runSerializationTest(InternalRecurrent, input)
   }
 }

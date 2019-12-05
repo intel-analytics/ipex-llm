@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Identity => ZIdentity}
 import com.intel.analytics.bigdl.nn.{Module, Identity => BIdentity}
-import scala.util.Random
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, Table}
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
@@ -45,7 +44,7 @@ class IdentitySerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = ZIdentity[Float](inputShape = Shape(Array(3)))
     layer.build(Shape(List(Shape(-1, 3))))
-    val input = Tensor[Float](Array(2, 3)).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](Array(2, 3)).rand()
     runSerializationTest(layer, input)
   }
 }

@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class SoftShrinkSpec extends ZooSpecHelper {
 
@@ -51,7 +50,7 @@ class SoftShrinkSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = SoftShrink[Float](inputShape = Shape(6, 8))
     layer.build(Shape(2, 6, 8))
-    val input = Tensor[Float](2, 6, 8).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 6, 8).rand()
     runSerializationTest(layer, input)
   }
 }

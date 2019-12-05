@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class UpSampling2DSpec extends KerasBaseSpec {
 
@@ -63,7 +62,7 @@ class UpSampling2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = UpSampling2D[Float](inputShape = Shape(4, 8, 8))
     layer.build(Shape(2, 4, 8, 8))
-    val input = Tensor[Float](2, 4, 8, 8).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 4, 8, 8).rand()
     runSerializationTest(layer, input)
   }
 }

@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class SpatialDropout1DSpec extends KerasBaseSpec {
 
@@ -41,7 +40,7 @@ class SpatialDropout1DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = SpatialDropout1D[Float](0.5, inputShape = Shape(3, 4))
     layer.build(Shape(2, 3, 4))
-    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 4).rand()
     runSerializationTest(layer, input)
   }
 }

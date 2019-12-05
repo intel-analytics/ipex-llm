@@ -24,9 +24,6 @@ import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
-
-
 
 class InternalMMSpec extends FlatSpec with Matchers {
 
@@ -80,8 +77,8 @@ class InternalMMSpec extends FlatSpec with Matchers {
 class InternalMMSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val mm = InternalMM[Float]().setName("mm_layer")
-    val input1 = Tensor[Float](2, 3).apply1(e => Random.nextFloat())
-    val input2 = Tensor[Float](3, 4).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](2, 3).rand()
+    val input2 = Tensor[Float](3, 4).rand()
     runSerializationTest(mm, T(input1, input2))
   }
 }

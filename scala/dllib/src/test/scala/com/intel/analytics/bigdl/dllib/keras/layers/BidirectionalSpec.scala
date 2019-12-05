@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class BidirectionalSpec extends KerasBaseSpec {
 
@@ -89,7 +88,7 @@ class BidirectionalSerialTest extends ModuleSerializationTest {
     val layer = Bidirectional[Float](SimpleRNN(4, returnSequences = true),
       inputShape = Shape(8, 12))
     layer.build(Shape(3, 8, 12))
-    val input = Tensor[Float](3, 8, 12).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3, 8, 12).rand()
     runSerializationTest(layer, input)
   }
 }

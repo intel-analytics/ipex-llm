@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class TimeDistributedSpec extends KerasBaseSpec {
 
@@ -102,7 +101,7 @@ class TimeDistributedSerialTest extends ModuleSerializationTest {
     val layer = TimeDistributed[Float](Dense[Float](8)
       .asInstanceOf[KerasLayer[Activity, Tensor[Float], Float]], inputShape = Shape(10, 12))
     layer.build(Shape(3, 10, 12))
-    val input = Tensor[Float](3, 10, 12).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3, 10, 12).rand()
     runSerializationTest(layer, input)
   }
 }

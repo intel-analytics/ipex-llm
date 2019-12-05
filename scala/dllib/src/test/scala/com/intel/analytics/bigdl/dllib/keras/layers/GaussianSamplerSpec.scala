@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, Table}
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class GaussianSamplerSpec extends ZooSpecHelper {
 
@@ -45,8 +44,8 @@ class GaussianSamplerSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = ZGaussianSampler[Float](inputShape = Shape(List(Shape(3), Shape(3))))
     layer.build(Shape(List(Shape(-1, 3), Shape(-1, 3))))
-    val input = T(Tensor[Float](Array(2, 3)).apply1(_ => Random.nextFloat()),
-      Tensor[Float](Array(2, 3)).apply1(_ => Random.nextFloat()))
+    val input = T(Tensor[Float](Array(2, 3)).rand(),
+      Tensor[Float](Array(2, 3)).rand())
 
     val seed = System.currentTimeMillis()
     RandomGenerator.RNG.setSeed(seed)

@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class GRUSpec extends KerasBaseSpec {
 
@@ -98,7 +97,7 @@ class GRUSerialTest extends ModuleSerializationTest {
     val layer = GRU[Float](16, returnSequences = true,
       goBackwards = true, inputShape = Shape(28, 32))
     layer.build(Shape(2, 28, 32))
-    val input = Tensor[Float](2, 28, 32).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 28, 32).rand()
     runSerializationTest(layer, input)
   }
 }
