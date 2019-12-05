@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class GetShapeSpec extends KerasBaseSpec {
 
@@ -44,7 +43,7 @@ class GetShapeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val ss = new GetShape[Float](inputShape = Shape(3, 2))
     ss.build(Shape(2, 3, 2))
-    val input = Tensor[Float](2, 3, 2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 2).rand()
     runSerializationTest(ss, input)
   }
 }

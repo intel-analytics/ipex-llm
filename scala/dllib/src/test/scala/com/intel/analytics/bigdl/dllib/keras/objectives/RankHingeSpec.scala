@@ -17,12 +17,13 @@
 package com.intel.analytics.zoo.pipeline.api.keras.objectives
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import org.scalatest.{FlatSpec, Matchers}
 
 class RankHingeSpec extends FlatSpec with Matchers {
 
   "RankHinge" should "generate the correct output" in {
-    val data = Array.fill(6)(util.Random.nextFloat())
+    val data = Array.fill(6)(RandomGenerator.RNG.uniform(0, 1).toFloat)
     val pos = data.zipWithIndex.filter(_._2 % 2 == 0).map(_._1)
     val neg = data.zipWithIndex.filter(_._2 % 2 == 1).map(_._1)
     val output = Tensor[Float](data, Array(3, 2, 1))

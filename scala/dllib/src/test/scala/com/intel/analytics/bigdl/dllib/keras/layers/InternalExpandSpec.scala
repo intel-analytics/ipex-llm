@@ -21,8 +21,6 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasBaseSpec
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
-
 
 class InternalExpandSpec extends KerasBaseSpec {
   "InternalExpand" should "generate correct output" in {

@@ -31,7 +31,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerialization
 
 import scala.math.log
 import scala.reflect.ClassTag
-import scala.util.Random
+
 
 class ParameterSpec extends KerasBaseSpec {
 

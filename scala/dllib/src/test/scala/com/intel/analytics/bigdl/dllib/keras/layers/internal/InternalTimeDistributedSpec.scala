@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
 
 class InternalTimeDistributedSpec extends FlatSpec with Matchers {
   "A InternalTimeDistributed Module" should "setExtraParam works correctly" in {
@@ -271,7 +270,7 @@ class InternalTimeDistributedSerialTest extends ModuleSerializationTest {
     val InternalTimeDistributed = new InternalTimeDistributed[Float](Linear[Float](5, 5)
       .asInstanceOf[AbstractModule[Activity, Tensor[Float], Float]]).
       setName("InternalTimeDistributed")
-    val input = Tensor[Float](2, 5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5, 5).rand()
     runSerializationTest(
       InternalTimeDistributed, input)
   }

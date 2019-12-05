@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-import scala.util.Random
 
 class ThresholdedReLUSpec extends KerasBaseSpec{
 
@@ -62,7 +61,7 @@ class ThresholdedReLUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = ThresholdedReLU[Float](2.7, inputShape = Shape(3, 128))
     layer.build(Shape(2, 3, 128))
-    val input = Tensor[Float](2, 3, 128).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 128).rand()
     runSerializationTest(layer, input)
   }
 }

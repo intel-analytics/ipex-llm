@@ -28,7 +28,6 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.util.Random
 
 class OptimizersSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
@@ -44,7 +43,6 @@ class OptimizersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     sqlContext = new SQLContext(sc)
     smallData = NNEstimatorSpec.generateTestInput(
       nRecords, Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), -1.0, 42L)
-    Random.setSeed(42)
     RNG.setSeed(42)
 
     Engine.init
