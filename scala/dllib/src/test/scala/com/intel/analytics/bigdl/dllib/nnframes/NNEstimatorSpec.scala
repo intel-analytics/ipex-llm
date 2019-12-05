@@ -24,14 +24,14 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{Engine, Shape}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, Shape}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.feature.common.{TensorToSample, _}
 import com.intel.analytics.zoo.feature.image._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Input, Dense}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import org.apache.spark.SparkContext
@@ -42,7 +42,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 import scala.reflect.io.Path
-import scala.util.Random
+
 
 class NNEstimatorSpec extends ZooSpecHelper {
   var sc : SparkContext = _
@@ -52,7 +52,6 @@ class NNEstimatorSpec extends ZooSpecHelper {
   val maxEpoch = 20
 
   override def doBefore(): Unit = {
-    Random.setSeed(42)
     RNG.setSeed(42)
     val conf = Engine.createSparkConf().setAppName("Test NNEstimator").setMaster("local[2]")
     sc = NNContext.initNNContext(conf)
@@ -446,17 +445,11 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val module = new Sequential[Double]().add(Linear[Double](6, 2)).add(LogSoftMax[Double])
     val nnModel = NNModel(module, SeqToTensor[Double](Array(6)))
 
-    val tmpFile = File.createTempFile("DLModel", "bigdl")
-    val filePath = tmpFile.getPath + Random.nextLong().toString
+    val filePath = createTmpFile().getPath()
     nnModel.setBatchSize(10)
       .setFeaturesCol("test123").setPredictionCol("predict123")
     nnModel.write.overwrite().save(filePath)
-    val nnModel2 = try {
-      NNModel.load(filePath)
-    } finally {
-      Path(tmpFile).deleteRecursively()
-      Path(filePath).deleteRecursively()
-    }
+    val nnModel2 = NNModel.load(filePath)
 
     nnModel2.uid shouldEqual nnModel.uid
     nnModel2.getBatchSize shouldEqual nnModel.getBatchSize
@@ -628,12 +621,12 @@ object NNEstimatorSpec {
       weight: Array[Double],
       intercept: Double,
       seed: Long): Seq[(Array[Double], Double)] = {
-    val rnd = new Random(seed)
+    val rnd = RandomGenerator.RNG
     val data = (1 to numRecords)
-      .map( i => Array.tabulate(weight.length)(index => rnd.nextDouble() * 2 - 1))
+      .map( i => Array.tabulate(weight.length)(index => rnd.uniform(0, 1) * 2 - 1))
       .map { record =>
         val y = record.zip(weight).map(t => t._1 * t._2).sum
-        +intercept + 0.01 * rnd.nextGaussian()
+        +intercept + 0.01 * rnd.normal(0, 1)
         val label = if (y > 0) 2.0 else 1.0
         (record, label)
       }

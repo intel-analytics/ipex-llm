@@ -23,7 +23,6 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.opencv.core.CvType
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.util.Random
 
 class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
@@ -37,7 +36,6 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     sc = SparkContext.getOrCreate(conf)
     sQLContext = new SQLContext(sc)
 
-    Random.setSeed(42)
     RNG.setSeed(42)
 
     Engine.init

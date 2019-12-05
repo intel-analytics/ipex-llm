@@ -41,7 +41,6 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.io.Path
-import scala.util.Random
 
 class NNClassifierSpec extends ZooSpecHelper {
   var sc : SparkContext = _
@@ -57,7 +56,6 @@ class NNClassifierSpec extends ZooSpecHelper {
     smallData = NNEstimatorSpec.generateTestInput(
       nRecords, Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), -1.0, 42L)
     val seed = System.currentTimeMillis()
-    Random.setSeed(seed)
     RNG.setSeed(seed)
     Engine.init
   }
@@ -216,7 +214,7 @@ class NNClassifierSpec extends ZooSpecHelper {
       .setBatchSize(4)
 
     val tensorBuffer = new ArrayBuffer[Data]()
-    val input = Tensor[Float](10, 28, 28).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](10, 28, 28).rand()
     val target = model.forward(input).toTensor[Float]
 
     // test against NNClassifierModel
@@ -294,16 +292,10 @@ class NNClassifierSpec extends ZooSpecHelper {
     val nnModel = NNClassifierModel(module)
     val result = nnModel.transform(data).rdd.map(_.getAs[Double](2)).collect().sorted
 
-    val tmpFile = File.createTempFile("NNModel", "zoo")
-    val filePath = File.createTempFile("NNModel", "zoo").getPath + Random.nextLong().toString
+    val filePath = createTmpFile().getPath
     nnModel.setBatchSize(10).setFeaturesCol("test123").setPredictionCol("predict123")
     nnModel.write.overwrite().save(filePath)
-    val nnModel2 = try {
-      NNClassifierModel.load(filePath)
-    } finally {
-     Path(tmpFile).deleteRecursively()
-     Path(filePath).deleteRecursively()
-    }
+    val nnModel2 = NNClassifierModel.load(filePath)
     nnModel2.uid shouldEqual nnModel.uid
     nnModel2.getBatchSize shouldEqual nnModel.getBatchSize
     nnModel2.getFeaturesCol shouldEqual nnModel.getFeaturesCol
