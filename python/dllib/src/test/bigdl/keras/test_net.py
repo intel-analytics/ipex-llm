@@ -112,22 +112,6 @@ class TestLayer(ZooTestCase):
         zmodel2 = Net.load_keras(hdf5_path=tmp_path_hdf5)
         assert isinstance(zmodel2, Sequential)
 
-    def test_tf_load(self):
-        linear = Linear(10, 2)()
-        sigmoid = Sigmoid()(linear)
-        softmax = SoftMax().set_name("output")(sigmoid)
-        model = BModel(linear, softmax)
-        input = np.random.random((4, 10))
-
-        tmp_path = create_tmp_path() + "/model.pb"
-
-        model.save_tensorflow([("input", [4, 10])], tmp_path)
-
-        model_reloaded = Net.load_tf(tmp_path, ["input"], ["output"])
-        expected_output = model.forward(input)
-        output = model_reloaded.forward(input)
-        self.assert_allclose(output, expected_output)
-
     def test_layers_method(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
         model_path = os.path.join(resource_path, "models/bigdl/bigdl_lenet.model")
