@@ -23,7 +23,6 @@ import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.util.Random
 
 class GraphNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
@@ -54,7 +53,7 @@ class GraphNetSerialTest extends ModuleSerializationTest {
     val tmpFile = ZooSpecHelper.createTmpFile()
     model.saveModule(tmpFile.getAbsolutePath, overWrite = true)
     val reloadModel = Net.loadBigDL[Float](tmpFile.getAbsolutePath)
-    val inputData = Tensor[Float](2, 1, 28, 28).apply1(_ => Random.nextFloat())
+    val inputData = Tensor[Float](2, 1, 28, 28).rand()
     ZooSpecHelper.compareOutputAndGradInput(
       model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
