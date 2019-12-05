@@ -20,7 +20,6 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
-
 class FeatureSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc : SparkContext = _
 
