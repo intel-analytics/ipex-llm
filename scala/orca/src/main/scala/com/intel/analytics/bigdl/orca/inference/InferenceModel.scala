@@ -779,7 +779,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     s"InferenceModel($autoScalingEnabled, $concurrentNum, $originalModel, $modelQueue)"
 
 
-
 }
 
 object InferenceModel {
