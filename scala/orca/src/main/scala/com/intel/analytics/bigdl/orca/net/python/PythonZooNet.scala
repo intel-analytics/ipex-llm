@@ -86,20 +86,6 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     Net.loadTorch[T](path)
   }
 
-  def netLoadTF(path: String, inputs: JList[String], outputs: JList[String],
-      byteOrder: String, binFile: String = null): AbstractModule[Activity, Activity, T] = {
-    val order = byteOrder match {
-      case "little_endian" => ByteOrder.LITTLE_ENDIAN
-      case "big_endian" => ByteOrder.BIG_ENDIAN
-      case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
-    }
-    Net.loadTF[T](path, inputs.asScala, outputs.asScala, order, Option(binFile))
-  }
-
-  def netLoadTF(folder: String): AbstractModule[Activity, Activity, T] = {
-    Net.loadTF[T](folder)
-  }
-
   def netToKeras(value: NetUtils[T, _]): KerasLayer[Activity, Activity, T] = {
     value.toKeras()
   }
