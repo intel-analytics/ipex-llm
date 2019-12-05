@@ -26,7 +26,6 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.util.Random
 
 class ModelSerialTest extends ModuleSerializationTest {
   private def testParameterSerialWithModel(): Unit = {
@@ -36,7 +35,7 @@ class ModelSerialTest extends ModuleSerializationTest {
     val cDense = AutoGrad.mm(input, w, axes = List(1, 1)) + bias
     val model = Model[Float](input = input, output = cDense)
 
-    val inputData = Tensor[Float](8, 3).apply1(_ => Random.nextFloat())
+    val inputData = Tensor[Float](8, 3).rand()
     runSerializationTest(model, inputData)
   }
 
@@ -46,7 +45,7 @@ class ModelSerialTest extends ModuleSerializationTest {
     val tmpFile = ZooSpecHelper.createTmpFile()
     model.saveModule(tmpFile.getAbsolutePath, overWrite = true)
     val reloadModel = Net.load[Float](tmpFile.getAbsolutePath)
-    val inputData = Tensor[Float](2, 10).apply1(_ => Random.nextFloat())
+    val inputData = Tensor[Float](2, 10).rand()
     ZooSpecHelper.compareOutputAndGradInput(
       model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
@@ -63,7 +62,7 @@ class SequentialSerialTest extends ModuleSerializationTest {
     val tmpFile = ZooSpecHelper.createTmpFile()
     model.saveModule(tmpFile.getAbsolutePath, overWrite = true)
     val reloadModel = Net.load[Float](tmpFile.getAbsolutePath)
-    val inputData = Tensor[Float](2, 10).apply1(_ => Random.nextFloat())
+    val inputData = Tensor[Float](2, 10).rand()
     ZooSpecHelper.compareOutputAndGradInput(
       model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape}
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.feature.image._
 import com.intel.analytics.zoo.pipeline.api.autograd.{Variable, AutoGrad => A}
@@ -57,10 +57,8 @@ class TrainingSpec extends ZooSpecHelper {
 
   def generateData(featureShape: Array[Int], labelSize: Int, dataSize: Int): RDD[Sample[Float]] = {
     sc.range(0, dataSize, 1).map { _ =>
-      val featureTensor = Tensor[Float](featureShape)
-      featureTensor.apply1(_ => scala.util.Random.nextFloat())
-      val labelTensor = Tensor[Float](labelSize)
-      labelTensor(Array(labelSize)) = Math.round(scala.util.Random.nextFloat())
+      val featureTensor = Tensor[Float](featureShape).rand()
+      val labelTensor = Tensor[Float](labelSize).rand()
       Sample[Float](featureTensor, labelTensor)
     }
   }
@@ -171,7 +169,7 @@ class TrainingSpec extends ZooSpecHelper {
       feature(ImageFeature.mat) = mat
       feature(ImageFeature.originalSize) = mat.shape()
       val labelTensor = Tensor[Float](1)
-      labelTensor(Array(1)) = Math.round(scala.util.Random.nextInt(20))
+      labelTensor(Array(1)) = Math.floor(RandomGenerator.RNG.uniform(0, 20)).toInt
       feature(ImageFeature.label) = labelTensor
       feature
     }
