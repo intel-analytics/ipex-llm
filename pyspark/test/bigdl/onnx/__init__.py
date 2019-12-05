@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 #
 # Copyright 2016 The BigDL Authors.
 #
