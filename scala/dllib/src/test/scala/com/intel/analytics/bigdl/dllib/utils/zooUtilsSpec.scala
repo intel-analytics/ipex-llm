@@ -16,10 +16,10 @@
 
 package com.intel.analytics.zoo.common
 
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import org.apache.hadoop.fs.Path
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
 
 class UtilsSpec extends FlatSpec with Matchers {
   val path: String = getClass.getClassLoader.getResource("qa").getPath
@@ -43,11 +43,11 @@ class UtilsSpec extends FlatSpec with Matchers {
   "Utils saveBytes" should "work properly" in {
     val fs = Utils.getFileSystem(path)
     // Generate random file
-    val randomFile = Random.nextInt()
+    val tmpFile = System.currentTimeMillis()
     val randomContent = new Array[Byte](1000)
-    Utils.saveBytes(randomContent, path + "/" + randomFile)
+    Utils.saveBytes(randomContent, path + "/" + tmpFile)
     // Delete random file
-    fs.deleteOnExit(new Path(path + "/" + randomFile))
+    fs.deleteOnExit(new Path(path + "/" + tmpFile))
     fs.close()
   }
 }
