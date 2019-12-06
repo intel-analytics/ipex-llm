@@ -22,6 +22,7 @@ import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.SparkConf
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+
 class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "TFNet " should "work with different data types" in {
@@ -129,7 +130,6 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val gradInput = net.backward(input, output).toTensor[Float].clone()
 
     gradInput.size() should be (input.size())
-
   }
 
   "TFNet" should "work with saved_model with resource variable"  in {
@@ -158,6 +158,5 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     result.toTensor[Float] should be (Tensor[Float](Array(123.0f, 456.0f), Array(2)))
   }
-
 
 }
