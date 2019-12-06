@@ -48,7 +48,7 @@ class StaticGraph[T: ClassTag](
   private var gradOutputCache: Array[Activity] = _
 
   if (enableExcludeChecking) {
-    excludeInvalidLayers(forwardExecution.map {_.element})
+    // excludeInvalidLayers(forwardExecution.map {_.element})
   }
 
   buildBackwardGraph()
@@ -145,7 +145,7 @@ class StaticGraph[T: ClassTag](
         .filter(n => !n.eq(dummyOutput)).map(_.element)
         .reverse
     )
-    checkDuplicate()
+    // checkDuplicate()
   }
 
 

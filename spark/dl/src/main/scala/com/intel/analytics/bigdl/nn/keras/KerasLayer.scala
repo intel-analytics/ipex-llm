@@ -169,7 +169,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
 //    TODO: Deal with nested KerasLayer
-//    if (this.isInstanceOf[KSequential[T]]) {
+    if (this.isInstanceOf[KSequential[T]]) {
       var startnodes = startNodes
       var curNodes: Array[ModuleNode[T]] = null
       for (i <- 0 to labor.asInstanceOf[TContainer[Activity, Activity, T]].modules.size - 1) {
@@ -185,11 +185,14 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
         startnodes = curNodes
       }
       curNodes
-//    } else {
-//      val endNodes = Array(
-//        this.labor.inputs(startNodes))
-//      endNodes
-//    }
+    } else {
+      val endNodes = if (modules.length == 0) {
+        Array(this.inputs(startNodes))
+      } else {
+        Array(labor.inputs(startNodes))
+      }
+      endNodes
+    }
   }
 
   def labor: AbstractModule[A, B, T] = {
@@ -273,10 +276,14 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    */
   override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
     validateInput(nodes.map(_.element))
+
+    // If converting from Sequential to Graph, no need to build again.
+    /*
     if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
+    */
 
     processInputs(nodes)
   }
@@ -288,10 +295,15 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    */
   override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
     validateInput(nodes.map(_.element))
+
+    // If converting from Sequential to Graph, no need to build again.
+    /*
     if (!nodes.isEmpty) {
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
+    */
+
     processInputs(nodes)
   }
 
