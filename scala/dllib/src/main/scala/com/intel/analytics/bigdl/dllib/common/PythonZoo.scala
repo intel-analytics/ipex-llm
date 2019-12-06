@@ -25,12 +25,14 @@ import org.apache.spark.api.java.JavaRDD
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dataset.{MiniBatch, SampleToMiniBatch}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.LocalPredictor
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text.TextSet
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.zoo.pipeline.api.net.RDDWrapper
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -151,6 +153,29 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                   x: JavaRDD[Sample],
                   batchPerThread: Int): JavaRDD[JList[Object]] = {
     module.predict(x.rdd.map(toJSample), batchPerThread).map(activityToList).toJavaRDD()
+  }
+
+  def zooPredict(
+                 module: Predictable[T],
+                 x: JavaRDD[MiniBatch[T]]): JavaRDD[JList[Object]] = {
+    module.predictMiniBatch(x.rdd).map(activityToList).toJavaRDD()
+  }
+
+  // todo support featurePaddingParam
+  def zooRDDSampleToMiniBatch(rdd: JavaRDD[Sample],
+                              batchSizePerPartition: Int): RDDWrapper[MiniBatch[T]] = {
+    val partitionNum = rdd.rdd.getNumPartitions
+    val totalBatchSize = batchSizePerPartition * partitionNum
+    val transBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
+      batchSize = totalBatchSize,
+      partitionNum = Some(partitionNum),
+      featurePaddingParam = None))
+
+    val miniBatchRdd = rdd.rdd.map(toJSample).mapPartitions { iter =>
+      val localTransformer = transBroad.value.cloneTransformer()
+      localTransformer(iter)
+    }
+    RDDWrapper(miniBatchRdd)
   }
 
   def zooForward(model: AbstractModule[Activity, Activity, T],
