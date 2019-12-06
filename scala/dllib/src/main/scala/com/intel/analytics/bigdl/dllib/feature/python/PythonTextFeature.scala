@@ -209,24 +209,24 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
     textSet.rdd.map(_.getLabel).toJavaRDD()
   }
 
-  def textSetGetPredicts(textSet: LocalTextSet): JList[JList[JTensor]] = {
+  def textSetGetPredicts(textSet: LocalTextSet): JList[JList[Any]] = {
     textSet.array.map{feature =>
       if (feature.contains(TextFeature.predict)) {
-        activityToJTensors(feature[Activity](TextFeature.predict))
+        List[Any](feature.getURI, activityToJTensors(feature[Activity](TextFeature.predict))).asJava
       }
       else {
-        null
+        List[Any](feature.getURI, null).asJava
       }
     }.toList.asJava
   }
 
-  def textSetGetPredicts(textSet: DistributedTextSet): JavaRDD[JList[JTensor]] = {
+  def textSetGetPredicts(textSet: DistributedTextSet): JavaRDD[JList[Any]] = {
     textSet.rdd.map{feature =>
       if (feature.contains(TextFeature.predict)) {
-        activityToJTensors(feature[Activity](TextFeature.predict))
+        List[Any](feature.getURI, activityToJTensors(feature[Activity](TextFeature.predict))).asJava
       }
       else {
-        null
+        List[Any](feature.getURI, null).asJava
       }
     }.toJavaRDD()
   }
