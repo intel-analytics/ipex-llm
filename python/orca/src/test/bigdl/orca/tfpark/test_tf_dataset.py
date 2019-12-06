@@ -277,6 +277,12 @@ class TestTFDataset(ZooTestCase):
 
         keras_model.fit(dataset)
 
+        predict_dataset = TFDataset.from_tfrecord(test_path,
+                                                  parse_fn=lambda x: (parse_fn(x)[0],),
+                                                  batch_per_thread=1)
+        result = keras_model.predict(predict_dataset)
+        result.collect()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
