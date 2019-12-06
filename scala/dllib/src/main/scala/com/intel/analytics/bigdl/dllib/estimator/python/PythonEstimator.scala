@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.estimator.python
 
-import java.util.{List => JList}
+import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
@@ -44,9 +44,10 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
   def createEstimator(model: Module[T],
-                      optimMethods: Map[String, OptimMethod[T]],
+                      optimMethods: JMap[String, OptimMethod[T]],
                       modelDir: String): Estimator[T] = {
-    Estimator(model, optimMethods, modelDir)
+    require(optimMethods != null, "optimMethods cannot be null")
+    Estimator(model, optimMethods.asScala.toMap, modelDir)
   }
 
   def estimatorEvaluate(estimator: Estimator[T], validationSet: FeatureSet[Sample[T]],
