@@ -15,15 +15,14 @@
 #
 import pytest
 
-from bigdl.optim.optimizer import Adam, MaxEpoch
+from bigdl.optim.optimizer import Adam, SGD, MaxEpoch
 from zoo.pipeline.api.keras.metrics import Accuracy
 from zoo.pipeline.api.net import TFOptimizer
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
-import os
 
-from zoo.tfpark import KerasModel, TFDataset
+from zoo.tfpark import TFDataset
 
 
 class TestTFParkTFOptimizer(ZooTestCase):
@@ -66,15 +65,22 @@ class TestTFParkTFOptimizer(ZooTestCase):
                                               batch_size=4,
                                               val_tensors=(features, labels))
             feature_tensor, label_tensor = dataset.tensors
-            output = tf.layers.dense(feature_tensor, 10)
+            features = tf.layers.dense(feature_tensor, 8)
+            output = tf.layers.dense(features, 10)
             loss = tf.reduce_mean(tf.losses.
                                   sparse_softmax_cross_entropy(logits=output,
                                                                labels=label_tensor))
-            optimizer = TFOptimizer.from_loss(loss, Adam(1e-3),
+            optimizer = TFOptimizer.from_loss(loss, {"dense/": Adam(1e-3), "dense_1/": SGD(0.0)},
                                               val_outputs=[output],
                                               val_labels=[label_tensor],
                                               val_method=Accuracy(), metrics={"loss": loss})
+            initial_weights = optimizer.tf_model.training_helper_layer.get_weights()
             optimizer.optimize(end_trigger=MaxEpoch(1))
+            updated_weights = optimizer.tf_model.training_helper_layer.get_weights()
+            for i in [0, 1]:  # weights and bias combined with "dense/" should be updated
+                assert not np.allclose(initial_weights[i], updated_weights[i])
+            for i in [2, 3]:  # weights and bias combined with "dense_1" should be unchanged
+                assert np.allclose(initial_weights[i], updated_weights[i])
             optimizer.sess.close()
 
 
