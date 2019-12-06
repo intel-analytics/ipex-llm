@@ -18,10 +18,15 @@ import scala.io.Source
 object ImageClassificationStreaming {
 
   def main(args: Array[String]): Unit = {
+
+    // Define parameters
+    // Define and obtain arguments from Params
     var modelType = "resnet_v1_50"
-    var checkpointPath: String = "/path/to/model"
+    var checkpointPath: String = "/path/to/checkpointFile"
     var ifReverseInputChannels = true
     var inputShape = Array(1, 224, 224, 3)
+    var imageDir = "/path/to/imageDir"
+    var classesFile = "/path/to/labelFile"
     var meanValues = Array(123.68f, 116.78f, 103.94f)
     var scale = 1.0f
 
@@ -29,6 +34,8 @@ object ImageClassificationStreaming {
       val params = ParameterTool.fromArgs(args)
       modelType = params.get("modelType")
       checkpointPath = params.get("checkpointPath")
+      imageDir = params.get("image")
+      classesFile = params.get("classes")
       inputShape = if (params.has("inputShape")) {
         val inputShapeStr = params.get("inputShape")
         inputShapeStr.split(",").map(_.toInt).toArray
@@ -42,25 +49,27 @@ object ImageClassificationStreaming {
     } catch {
       case e: Exception => {
         System.err.println("Please run 'ImageClassificationStreaming --modelType <modelType> --checkpointPath <checkpointPath> " +
-          "--inputShape <inputShapes> --ifReverseInputChannels <ifReverseInputChannels> --meanValues <meanValues> --scale <scale>" +
+          "--inputShape <inputShapes> --ifReverseInputChannels <ifReverseInputChannels> --imageDir <imageDir> --classesFile <classesFile> --meanValues <meanValues> --scale <scale>" +
           "--parallelism <parallelism>'.")
         return
       }
     }
 
+    println("params resolved", modelType, checkpointPath, imageDir, classesFile, inputShape.mkString(","), ifReverseInputChannels, meanValues.mkString(","), scale)
     println("start ImageClassificationStreaming job...")
-    println("params resolved", modelType, checkpointPath, inputShape.mkString(","), ifReverseInputChannels, meanValues.mkString(","), scale)
 
+    // Define modelBytes
     val fileSize = new File(checkpointPath).length()
     val inputStream = new FileInputStream(checkpointPath)
     val modelBytes = new Array[Byte](fileSize.toInt)
     inputStream.read(modelBytes)
 
-    val imageFolder = new File("/path/to/your/images")
-    val fileList = imageFolder.listFiles.toList
+    // Image loading and pre-processing
+    // Load images from folder, and hold images as a list
+    val fileList = new File(imageDir).listFiles.toList
+    println("ImageList", fileList)
 
-    println("fileList", fileList)
-
+    // Image pre-processing
     val inputs = fileList.map(file => {
       val imageBytes = FileUtils.readFileToByteArray(file)
       val imageProcess = new ImageProcessor
@@ -69,18 +78,25 @@ object ImageClassificationStreaming {
       List(util.Arrays.asList(input)).asJava
     })
 
+    // Getting started the Flink Program
+    // Obtain a Flink execution environment
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
+    // Create and transform DataStreams
     val dataStream: DataStream[JList[JList[JTensor]]] = env.fromCollection(inputs)
 
+    // Specify the transformation functions
+    // First define an Analytics Zoo InferenceModel class to load the pre-trained model. And specify the map fucntion with InferenceModel predict function.
     val resultStream = dataStream.map(new ModelPredictionMapFunction(modelType, modelBytes, inputShape, ifReverseInputChannels, meanValues, scale))
 
+    // Trigger the program execution on Flink
     env.execute("ImageClassificationStreaming")
 
+    // Collect final results, and print predicted classes
     val results = DataStreamUtils.collect(resultStream.javaStream).asScala
 
     println("Printing result ...")
-    val labels = Source.fromFile("/path/to/your/labels").getLines.toList
+    val labels = Source.fromFile(classesFile).getLines.toList
     results.foreach((i) => println(labels(i)))
   }
 
