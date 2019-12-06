@@ -46,7 +46,8 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
     "com.intel.analytics.zoo.pipeline.api.keras.layers.InternalGetShape",
     "com.intel.analytics.zoo.pipeline.api.net.TFTrainingHelper",
     "com.intel.analytics.zoo.pipeline.api.net.TFTrainingHelper2",
-    "com.intel.analytics.zoo.pipeline.api.net.TFNetForInference")
+    "com.intel.analytics.zoo.pipeline.api.net.TFNetForInference",
+    "com.intel.analytics.zoo.pipeline.api.net.TFSubGraph")
 
   private val unRegularNameMapping = Map[String, String]()
 
