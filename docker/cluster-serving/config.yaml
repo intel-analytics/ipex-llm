@@ -1,0 +1,38 @@
+## Analytics-zoo Cluster Serving
+
+model:
+  # model path must be set
+  path: /opt/work/model/
+data:
+  # default, localhost:6379
+  src: localhost:6379
+
+  # default, 3, 224, 224
+  shape: 3,224,224
+spark:
+  # default, local[*]
+  master: local[*]
+
+  # default, 4g
+  driver_memory: 64g
+
+  # default, 1g
+  executor_memory: 128g
+
+  # default, 1
+  num_executors: 8
+
+  # default, 4
+  executor_cores: 1
+
+  total_executor_cores: 8
+params:
+  # default, 4
+  batch_size: 64
+
+  # default, mklblas
+  engine_type: mkldnn
+
+  # default, 1
+  top_n: 5
+

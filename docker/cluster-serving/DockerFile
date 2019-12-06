@@ -1,0 +1,51 @@
+FROM ubuntu:18.04
+
+MAINTAINER The Analytics Zoo Authors https://github.com/intel-analytics/analytics-zoo
+
+WORKDIR /opt/work
+
+RUN apt-get update && \
+    apt-get install -y apt-utils vim curl nano wget unzip maven git && \
+    apt-get install -y gcc g++ make
+
+#java
+RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
+    gunzip jdk-8u152-linux-x64.tar.gz && \
+    tar -xf jdk-8u152-linux-x64.tar -C /opt && \
+    rm jdk-8u152-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_152 /opt/jdk
+
+#redis
+RUN wget http://download.redis.io/releases/redis-5.0.5.tar.gz && \
+    tar xzf redis-5.0.5.tar.gz && \
+    rm redis-5.0.5.tar.gz && \
+    cd redis-5.0.5 && \
+    make && \
+    cd ..
+
+ARG SPARK_VERSION=2.4.0 
+ARG BIGDL_VERSION=0.10.0
+ARG ZOO_VERSION=0.7.0-SNAPSHOT
+
+ENV SPARK_HOME		/opt/work/spark-${SPARK_VERSION}
+ENV JAVA_HOME		/opt/jdk
+ENV PATH		${JAVA_HOME}/bin:${PATH}
+ENV ZOO_JAR		analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ZOO_VERSION}-jar-with-dependencies.jar
+ENV SPARK_REDIS_JAR	spark-redis-${SPARK_VERSION}-SNAPSHOT-jar-with-dependencies.jar			
+
+#spark
+RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    mv spark-${SPARK_VERSION}-bin-hadoop2.7 spark-${SPARK_VERSION} && \
+    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
+
+RUN wget https://oss.sonatype.org/content/repositories/public/com/redislabs/spark-redis/2.4.0/spark-redis-${SPARK_VERSION}-jar-with-dependencies.jar
+
+RUN wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ZOO_VERSION}-jar-with-dependencies.jar
+
+ADD ./zoo-cluster-serving.sh /opt/work
+RUN chmod a+x /opt/work/zoo-cluster-serving.sh
+
+CMD ["/opt/work/zoo-cluster-serving.sh"]
+
+
