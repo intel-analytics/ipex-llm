@@ -75,6 +75,12 @@ def to_bigdl_optim_method(koptim_method):
     import tensorflow as tf
     from tensorflow.python.keras.optimizers import TFOptimizer
 
+    if isinstance(koptim_method, dict):
+        res = dict()
+        for name, optim_method in koptim_method.items():
+            res[name] = to_bigdl_optim_method(optim_method)
+        return res
+
     if isinstance(koptim_method, TFOptimizer):
         koptim_method = koptim_method.optimizer
 
