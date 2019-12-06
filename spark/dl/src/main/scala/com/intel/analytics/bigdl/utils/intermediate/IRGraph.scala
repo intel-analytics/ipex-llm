@@ -151,6 +151,8 @@ private[bigdl] class IRGraph[T: ClassTag](
         val sizeNew = if (size.length == 3 && inputFormats(0) != Memory.Format.ntc
           && inputFormats(0) != Memory.Format.tnc) {
           Array(size(0), 1, size(1), size(2))
+        } else if (inputFormats(0) == Memory.Format.nhwc) {
+          Array(size(0), size(3), size(1), size(2))
         } else size
         inputMemory(0) = HeapData(sizeNew, inputFormats(0))
       } else {
@@ -162,7 +164,12 @@ private[bigdl] class IRGraph[T: ClassTag](
             "Only support input with tensor type, table not supported")
           val t1 = t._1.asInstanceOf[Int] // starts from 1
           val t2 = t._2.asInstanceOf[Tensor[T]]
-          inputMemory(t1 - 1) = HeapData(t2.size(), inputFormats(t1 - 1))
+          if (inputFormats(t1 -1 ) == Memory.Format.nhwc) {
+            val sizeNew = Array(t2.size(1), t2.size(4), t2.size(2), t2.size(3))
+            inputMemory(t1 - 1) = HeapData(sizeNew, inputFormats(t1 - 1))
+          } else {
+            inputMemory(t1 - 1) = HeapData(t2.size(), inputFormats(t1 - 1))
+          }
         })
       }
       val dnnGraph = graph.asInstanceOf[DnnGraph]

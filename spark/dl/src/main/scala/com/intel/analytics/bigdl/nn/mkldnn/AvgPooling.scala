@@ -64,10 +64,18 @@ class AvgPooling(
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)
-    val n = _inputFormats(0).shape(0)
-    val c = _inputFormats(0).shape(1)
-    val h = _inputFormats(0).shape(2)
-    val w = _inputFormats(0).shape(3)
+    val (n, c, h, w) = if (_inputFormats(0).layout == Memory.Format.nhwc) {
+      (_inputFormats(0).shape(0), _inputFormats(0).shape(3),
+        _inputFormats(0).shape(1), _inputFormats(0).shape(2))
+    } else {
+      (_inputFormats(0).shape(0), _inputFormats(0).shape(1),
+        _inputFormats(0).shape(2), _inputFormats(0).shape(3))
+    }
+
+    // change shape
+    _inputFormats(0).shape(1) = h
+    _inputFormats(0).shape(2) = w
+    _inputFormats(0).shape(3) = c
 
     // global average pooling reduce each feature map to a single average value
     if (globalPooling) {
@@ -90,6 +98,9 @@ class AvgPooling(
     val outputMD = MklDnnMemory.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
       Memory.Format.any)
 
+//    val outputMD = MklDnnMemory.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
+//      Memory.Format.any)
+
     val kind = if (phase == InferencePhase) {
       PropKind.ForwardScoring
     } else {
@@ -98,7 +109,7 @@ class AvgPooling(
 
     val description = MklDnnMemory.PoolingForwardDescInit(
       kind, algKind,
-      _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
+      _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingBR, paddingTL,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     fwdPD = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, 0L)
     _outputFormats = Array(MemoryData.primitiveOutput(fwdPD))

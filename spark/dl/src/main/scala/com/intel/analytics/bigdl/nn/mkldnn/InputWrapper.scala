@@ -15,15 +15,29 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 
 private[bigdl] class InputWrapper extends MklDnnLayer {
 
-  private var inputLayer : Input = null
+  private var inputLayer : MklDnnLayer = null
 
+  private def createInputLayer(shape: Array[Int], layout: Int): MklDnnLayer = {
+    if (layout == Memory.Format.nhwc) {
+      val inLayout = layout
+      val outLayout = Memory.Format.nchw
+
+      new ReorderMemory(HeapData(shape, inLayout), NativeData(shape, outLayout),
+        HeapData(shape, inLayout), NativeData(shape, outLayout))
+    } else {
+      new ReorderMemory(HeapData(shape, layout), NativeData(shape, layout),
+        HeapData(shape, layout), NativeData(shape, layout))
+    }
+  }
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     require(inputs.length == 1, "Only accept one tensor as input")
-    inputLayer = Input(inputs(0).shape, inputs(0).layout)
+    // Input(inputs(0).shape, inputs(0).layout)
+    inputLayer = createInputLayer(inputs(0).shape, inputs(0).layout)
     inputLayer.setRuntime(this.runtime)
     inputLayer.initFwdPrimitives(inputs, phase)
     _inputFormats = inputLayer.inputFormats()

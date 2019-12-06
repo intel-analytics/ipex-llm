@@ -93,24 +93,11 @@ class IRconvertSpec extends BigDLSpecHelper {
 
   "Convert Blas with NCHW to Dnn" should "be correct" in {
     System.setProperty("bigdl.engineType", "mkldnn")
-    val input = Tensor[Float](2, 1, 28, 28).rand()
+    val input = Tensor[Float](2, 28, 28, 1).rand()
     val gradOutput = Tensor[Float](2, 10).rand()
 
-    val blas = modelBlas().asInstanceOf[StaticGraph[Float]]
-    val allNodes = blas.getSortedForwardExecutions()
-    require(BlasToIR[Float].convertingCheck(allNodes))
-    val irNodes = BlasToIR[Float].convert(allNodes).map(_._2).toArray
-    require(IRToDnn[Float].convertingCheck(irNodes))
-    val dnnNodes = IRToDnn[Float].convert(irNodes).map(_._2).toArray
-
-    val inputsNodes = dnnNodes.filter(_.element.getName() == "input")(0)
-    val outputsNodes = dnnNodes.filter(_.element.getName() == "output")(0)
-
-    val inputs = Input(Array(2, 1, 28, 28), Memory.Format.nchw).inputs()
-    inputsNodes.from(inputs)
-    val outputs = Output(Memory.Format.nc).inputs(outputsNodes)
-    val dnn = DnnGraph(Array(inputs), Array(outputs))
-    dnn.compile(TrainingPhase)
+    val blas = modelBlas(format = DataFormat("NHWC")).asInstanceOf[StaticGraph[Float]]
+    val dnn = blas.cloneModule().toIRgraph()
 
     val outBlas = blas.forward(input)
     val gradInputBlas = blas.backward(input, gradOutput)

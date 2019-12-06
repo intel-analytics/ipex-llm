@@ -15,7 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import breeze.numerics.ceil
 import com.intel.analytics.bigdl.mkl.{AlgKind, DataType, Memory}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
@@ -56,6 +58,56 @@ class MaxPoolingSpec extends BigDLSpecHelper {
 
       layer.forward(input)
       layer.backward(input, gradOutput)
+    }
+
+    val output1 = seq.forward(input)
+    val output2 = layer.forward(input).toTensor[Float]
+
+    output1 should be(output2)
+
+    val grad2 = layer.backward(input, output2).toTensor[Float]
+    val grad1 = seq.backward(input, output2)
+    grad1 should be(grad2)
+  }
+
+  "Max Pooling with NHWC format" should "be correct" in {
+    val batchSize = 2
+    val input = Tensor[Float](batchSize, 28, 28, 480).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 14, 14, 480).apply1(e => Random.nextFloat())
+
+    val pad = -1
+    RNG.setSeed(100)
+    val pool = MaxPooling(3, 3, 2, 2, padH = pad, padW = pad)
+    RNG.setSeed(100)
+    val layer = SpatialMaxPooling[Float](3, 3, 2, 2, padH = pad, padW = pad,
+      format = DataFormat.NHWC).ceil()
+
+    val seq = Sequential()
+    seq.add(ReorderMemory.create(
+      inputFormat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nhwc),
+      outputFormat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw),
+      gradInputFormat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nhwc),
+      gradOutputFomat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw)))
+
+    seq.add(pool)
+    seq.add(ReorderMemory.create(
+      inputFormat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw),
+      outputFormat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nhwc),
+      gradInputFormat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nhwc),
+      gradOutputFomat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw)))
+
+    seq.compile(Phase.InferencePhase, Array(HeapData(Array(batchSize, 480, 28, 28),
+      Memory.Format.nhwc)))
+
+    for (i <- 0 to 3) {
+      input.rand()
+      gradOutput.rand()
+
+      seq.forward(input)
+      // seq.backward(input, gradOutput)
+
+      layer.forward(input)
+      // layer.backward(input, gradOutput)
     }
 
     val output1 = seq.forward(input)
