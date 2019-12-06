@@ -186,6 +186,27 @@ object Predictor {
     }
   }
 
+
+    def predictMiniBath[T: ClassTag](dataSet: RDD[MiniBatch[T]],
+                                     model: Module[T])
+                            (implicit ev: TensorNumeric[T]): RDD[Activity] = {
+      val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, model)
+      dataSet.mapPartitions { partition =>
+        val localModel = modelBroad.value()
+        localModel.evaluate()
+        val miniBatch = partition ++ Array(null)
+        miniBatch.flatMap { batch =>
+          if (batch != null) {
+            val output = localModel.forward(batch.getInput)
+            splitBatch(output, false, batch.size())
+          } else {
+            localModel.release()
+            Seq.empty
+          }
+        }
+      }
+  }
+
   def predictClass[T: ClassTag](dataSet: RDD[Sample[T]], batchSize: Int = -1, model: Module[T],
              batchPerPartition: Int, featurePaddingParam: Option[PaddingParam[T]])(
     implicit ev: TensorNumeric[T]): RDD[Int] = {
@@ -236,6 +257,10 @@ trait Predictable[T]  {
   def predict(
                x: RDD[Sample[T]])(implicit ev: TensorNumeric[T]): RDD[Activity] = {
     predict(x, batchPerThread = 4)
+  }
+
+  def predictMiniBatch(x: RDD[MiniBatch[T]])(implicit ev: TensorNumeric[T]): RDD[Activity] = {
+    Predictor.predictMiniBath(x, model = module)
   }
 
   /**
