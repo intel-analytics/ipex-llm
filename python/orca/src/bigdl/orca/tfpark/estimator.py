@@ -355,10 +355,7 @@ class TFEstimator(object):
                     inputs = nest.flatten(result._original_tensors[0])
                     outputs = nest.flatten(spec.predictions)
                     tfnet = TFNet.from_session(sess, inputs=inputs, outputs=outputs)
-
-                    rdd = result.get_prediction_data()
-
-                    results = tfnet.predict(rdd, result.batch_per_thread)
+                    predictions = tfnet.predict(result)
 
                     # If predictions is a dict, add back the keys and results is a dict as well.
                     if isinstance(spec.predictions, dict):
@@ -371,8 +368,8 @@ class TFEstimator(object):
                             return res_dict
 
                         pred_keys = sorted(spec.predictions.keys())
-                        results = results.map(lambda res: zip_key(res, pred_keys))
-                    return results
+                        predictions = predictions.map(lambda res: zip_key(res, pred_keys))
+                    return predictions
 
         return list(self.estimator.predict(input_fn, checkpoint_path=checkpoint_path))
 
