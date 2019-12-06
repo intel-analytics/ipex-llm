@@ -219,10 +219,10 @@ object NetUtils {
   }
 
   def activity2VectorBuilder(data: Activity):
-  mutable.Builder[Tensor[Float], Vector[Tensor[Float]]] = {
-    val vec = Vector.newBuilder[Tensor[Float]]
+  mutable.Builder[Tensor[_], Vector[Tensor[_]]] = {
+    val vec = Vector.newBuilder[Tensor[_]]
     if (data.isTensor) {
-      vec += data.toTensor[Float]
+      vec += data.asInstanceOf[Tensor[_]]
     } else {
       var i = 0
       while (i < data.toTable.length()) {
