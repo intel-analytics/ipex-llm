@@ -428,20 +428,6 @@ class TFNet(private val graphDef: TFGraphHolder,
     output.dataType()
   }
 
-  private def getShape(names: Seq[String]) = {
-    val shapes = names.map { name =>
-      val Array(op, idx) = name.split(":")
-      val shape = graph.operation(op).output(idx.toInt).shape()
-      Shape((0 until shape.numDimensions()).map(shape.size(_).toInt).toArray)
-    }
-
-    if (shapes.length == 1) {
-      shapes.head
-    } else {
-      MultiShape(shapes.toList)
-    }
-  }
-
   private def tf2bigdl(t: TTensor[_], output: Tensor[Float]) = {
     val shape = t.shape().map(_.toInt)
     output.resize(shape)
@@ -584,57 +570,6 @@ object TFNet {
 
       (intraSeq ++ interSeq ++ perSessSeq).map(_.toByte).toArray
     }
-  }
-
-
-  private def floatToInt(array: Array[Float]): Array[Int] = {
-    val result = new Array[Int](array.length)
-    var i = 0
-    while (i < array.length) {
-      result(i) = array(i).toInt
-      i = i + 1
-    }
-    result
-  }
-
-  private def floatToLong(array: Array[Float]): Array[Long] = {
-    val result = new Array[Long](array.length)
-    var i = 0
-    while (i < array.length) {
-      result(i) = array(i).toLong
-      i = i + 1
-    }
-    result
-  }
-
-  private def floatToDouble(array: Array[Float]): Array[Double] = {
-    val result = new Array[Double](array.length)
-    var i = 0
-    while (i < array.length) {
-      result(i) = array(i).toDouble
-      i = i + 1
-    }
-    result
-  }
-
-  private def floatToUint8(array: Array[Float]): Array[Byte] = {
-    val result = new Array[Byte](array.length)
-    var i = 0
-    while (i < array.length) {
-      result(i) = array(i).toByte
-      i = i + 1
-    }
-    result
-  }
-
-  private def floatToBool(array: Array[Float]): Array[Byte] = {
-    val result = new Array[Byte](array.length)
-    var i = 0
-    while (i < array.length) {
-      result(i) = if (array(i) == 0.0) 0.toByte else 1.toByte
-      i = i + 1
-    }
-    result
   }
 
   /**
