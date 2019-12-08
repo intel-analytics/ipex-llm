@@ -1030,6 +1030,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
           require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
           setLayerWeightAndBias(params,
             copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
+        case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
       }
     }
   }
@@ -1091,6 +1092,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         } else {
           if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
         }
+      case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
     }
   }
 

@@ -259,6 +259,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     parameterTable.foreach {
       case (name: String, params: Table) =>
         copyParameter(name, params)
+      case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
     }
     model
   }

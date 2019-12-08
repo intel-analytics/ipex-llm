@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.Add
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import spire.syntax.module
 
 @com.intel.analytics.bigdl.tags.Serial
 class AddSpec extends TorchSpec {

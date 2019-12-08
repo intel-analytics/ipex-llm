@@ -619,6 +619,18 @@
             </build>
         </profile>
         <profile>
+            <id>scala_2.12</id>
+            <properties>
+                <spark-version.project>2.0</spark-version.project>
+                <spark.version>2.4.0</spark.version>
+                <scala.major.version>2.12</scala.major.version>
+                <scala.version>2.12.9</scala.version>
+                <breeze.version>1.0</breeze.version>
+                <scalatest.version>3.0.8</scalatest.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+            </properties>
+        </profile>
+        <profile>
             <id>scala_2.11</id>
             <properties>
                 <scala.major.version>2.11</scala.major.version>

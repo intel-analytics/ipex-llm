@@ -683,6 +683,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
         assert(abs(v1 - v2) <= 1e-8)
         v1
       })
+      case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
     }
 
     luaOutput.map(output, (v1, v2) => {

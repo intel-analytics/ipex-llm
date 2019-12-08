@@ -99,6 +99,7 @@ class PredictionService[T: ClassTag] private[optim](
               clonedMap += k.clone() -> v.clone()
             case (k, v: Tensor[_]) =>
               clonedMap += k -> v.clone()
+            case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
           }
           new Table(clonedMap)
       }
@@ -190,32 +191,50 @@ object PredictionService {
         val tensorState: Array[(Tensor[_], Tensor[_])] = firstKey match {
           case _: Tensor[_] =>
             keyIsPrimitive = false
-            table.getState().map { case (k: Tensor[_], v: Tensor[_]) =>
-              k -> v }.toArray
+            table.getState().map {
+              case (k: Tensor[_], v: Tensor[_]) => k -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: Int =>
-            table.getState().map { case (k: Int, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: Int, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: Long =>
-            table.getState().map { case (k: Long, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: Long, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: Char =>
-            table.getState().map { case (k: Char, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: Char, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: Short =>
-            table.getState().map { case (k: Short, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: Short, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: Float =>
-            table.getState().map { case (k: Float, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: Float, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: Double =>
-            table.getState().map { case (k: Double, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: Double, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: Boolean =>
-            table.getState().map { case (k: Boolean, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: Boolean, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case _: String =>
-            table.getState().map { case (k: String, v: Tensor[_]) =>
-              Tensor.scalar(k) -> v }.toArray
+            table.getState().map {
+              case (k: String, v: Tensor[_]) => Tensor.scalar(k) -> v
+              case _ => throw new Error(Thread.currentThread().getStackTrace.mkString)
+            }.toArray
           case key =>
             throw new UnsupportedOperationException(s"Unsupported Table key: $key!")
         }
