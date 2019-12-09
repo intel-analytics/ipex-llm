@@ -83,11 +83,12 @@ class MaxPooling(
       PropKind.ForwardTraining
     }
 
-    val outputMD = MklDnnMemory.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
-      Memory.Format.any)
+    val outputMD = MklDnnMemory.MemoryDescInit(4, Array(n, c, oh, ow),
+      inputs(0).dataType, Memory.Format.any)
+    val inputMD = _inputFormats(0).getMemoryDescription()
+
     val description = MklDnnMemory.PoolingForwardDescInit(
-      kind, AlgKind.PoolingMax,
-      _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
+      kind, AlgKind.PoolingMax, inputMD, outputMD, strides, kernel, paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     fwdPD = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, 0L)
 
@@ -142,6 +143,11 @@ class MaxPooling(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, 1, fwdMemPrims,
       buffer)
+
+    if (output.isTensor && _outputFormats(0).layout == Memory.Format.nhwc) {
+      val shape = _outputFormats(0).shape
+      output.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+    }
     output
   }
 

@@ -19,7 +19,7 @@ import breeze.numerics.ceil
 import com.intel.analytics.bigdl.mkl.{AlgKind, DataType, Memory}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling}
+import com.intel.analytics.bigdl.nn.{Graph, SpatialAveragePooling, SpatialMaxPooling, StaticGraph}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -71,6 +71,7 @@ class MaxPoolingSpec extends BigDLSpecHelper {
   }
 
   "Max Pooling with NHWC format" should "be correct" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
     val batchSize = 2
     val input = Tensor[Float](batchSize, 28, 28, 480).apply1(e => Random.nextFloat())
     val gradOutput = Tensor[Float](batchSize, 14, 14, 480).apply1(e => Random.nextFloat())
@@ -81,43 +82,22 @@ class MaxPoolingSpec extends BigDLSpecHelper {
     RNG.setSeed(100)
     val layer = SpatialMaxPooling[Float](3, 3, 2, 2, padH = pad, padW = pad,
       format = DataFormat.NHWC).ceil()
+    val layer2 = SpatialMaxPooling[Float](3, 3, 2, 2, padH = pad, padW = pad).ceil()
 
-    val seq = Sequential()
-    seq.add(ReorderMemory.create(
-      inputFormat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nhwc),
-      outputFormat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw),
-      gradInputFormat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nhwc),
-      gradOutputFomat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw)))
+    import com.intel.analytics.bigdl.nn
+    val static = nn.Sequential[Float]().add(layer2)
+      .toGraph().asInstanceOf[StaticGraph[Float]]
+    static.setInputFormats(Seq(Memory.Format.nhwc))
+    static.setOutputFormats(Seq(Memory.Format.nhwc))
 
-    seq.add(pool)
-    seq.add(ReorderMemory.create(
-      inputFormat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nchw),
-      outputFormat = HeapData(Array(batchSize, 480, 14, 14), Memory.Format.nhwc),
-      gradInputFormat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nhwc),
-      gradOutputFomat = HeapData(Array(batchSize, 480, 28, 28), Memory.Format.nchw)))
+    val dnn = static.toIRgraph()
+    dnn.evaluate()
+    layer.evaluate()
 
-    seq.compile(Phase.InferencePhase, Array(HeapData(Array(batchSize, 480, 28, 28),
-      Memory.Format.nhwc)))
-
-    for (i <- 0 to 3) {
-      input.rand()
-      gradOutput.rand()
-
-      seq.forward(input)
-      // seq.backward(input, gradOutput)
-
-      layer.forward(input)
-      // layer.backward(input, gradOutput)
-    }
-
-    val output1 = seq.forward(input)
+    val output1 = dnn.forward(input)
     val output2 = layer.forward(input).toTensor[Float]
 
     output1 should be(output2)
-
-    val grad2 = layer.backward(input, output2).toTensor[Float]
-    val grad1 = seq.backward(input, output2)
-    grad1 should be(grad2)
   }
 
   "Convert max pooling with ceilMode to dnn layer" should "be correct" in {

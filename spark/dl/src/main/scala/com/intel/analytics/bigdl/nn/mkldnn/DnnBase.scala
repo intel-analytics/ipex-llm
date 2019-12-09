@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.DataType
+import com.intel.analytics.bigdl.mkl.{DataType, Memory}
 import com.intel.analytics.bigdl.nn.DynamicContainer
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
@@ -206,6 +206,11 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
       updateOutputMemoryPrimitives,
       updateOutputTensors
     )
+
+    if (output.isTensor && _outputFormats(0).layout == Memory.Format.nhwc) {
+      val shape = _outputFormats(0).shape
+      output.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+    }
     output
   }
 

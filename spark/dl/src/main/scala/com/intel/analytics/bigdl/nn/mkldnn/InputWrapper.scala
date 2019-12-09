@@ -36,8 +36,8 @@ private[bigdl] class InputWrapper extends MklDnnLayer {
   }
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     require(inputs.length == 1, "Only accept one tensor as input")
-    // Input(inputs(0).shape, inputs(0).layout)
-    inputLayer = createInputLayer(inputs(0).shape, inputs(0).layout)
+    // inputLayer = createInputLayer(inputs(0).shape, inputs(0).layout)
+    inputLayer = Input(inputs(0).shape, inputs(0).layout)
     inputLayer.setRuntime(this.runtime)
     inputLayer.initFwdPrimitives(inputs, phase)
     _inputFormats = inputLayer.inputFormats()
