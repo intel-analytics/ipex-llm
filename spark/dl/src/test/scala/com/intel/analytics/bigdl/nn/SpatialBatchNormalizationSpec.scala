@@ -224,13 +224,20 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
     val bn1 = SpatialBatchNormalization[Float](16, dataFormat = DataFormat.NCHW)
     val bn2 = SpatialBatchNormalization[Float](16, dataFormat = DataFormat.NHWC)
 
-    val input1 = Tensor[Float](4, 16, 3, 3)
-    val input2 = Tensor[Float](4, 3, 3, 16)
+    bn2.parameters()._1.zip(bn1.parameters()._1).foreach {
+      case (bn2Para, bn1Para) => bn2Para.copy(bn1Para)
+    }
+
+    val input1 = Tensor[Float](4, 16, 3, 3).rand(-1, 1)
     bn1.forward(input1)
+
+    val input2 = input1.transpose(2, 4).contiguous()
     bn2.forward(input2)
 
     bn1.getExtraParameter().zip(bn2.getExtraParameter()).foreach {
-      case (p1, p2) => p1.size() should be (p2.size())
+      case (p1, p2) =>
+        p1.size() should be (p2.size())
+        p1 should be (p2)
     }
   }
 }
