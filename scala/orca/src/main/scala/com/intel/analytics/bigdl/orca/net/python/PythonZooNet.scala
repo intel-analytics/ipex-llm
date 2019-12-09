@@ -105,16 +105,28 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
   }
 
   def createTFNetFromSavedModel(path: String,
+                                tag: String,
                                 inputNames: JList[String],
                                 outputNames: JList[String],
-                                tag: String, config: Array[Byte]): Module[Float] = {
+                                config: Array[Byte]): Module[Float] = {
     if (config == null) {
       TFNet.fromSavedModel(path, tag, inputNames.asScala.toArray, outputNames.asScala.toArray)
     } else {
-      TFNetForInference.fromSavedModel(path, tag,
-        inputNames.asScala.toArray, outputNames.asScala.toArray, config)
+      TFNetForInference.fromSavedModel(path, Option(tag), None,
+        Option(inputNames.asScala.toArray), Option(outputNames.asScala.toArray), config)
     }
+  }
 
+  def createTFNetFromSavedModel(path: String,
+                                tag: String,
+                                signature: String,
+                                config: Array[Byte]): Module[Float] = {
+    if (config == null) {
+      TFNet.fromSavedModel(path, tag, signature)
+    } else {
+      TFNetForInference.fromSavedModel(path, Option(tag), Option(signature),
+        None, None, config)
+    }
   }
 
   def createTFNet(path: String, config: Array[Byte]): TFNet = {

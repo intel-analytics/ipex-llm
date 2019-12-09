@@ -172,6 +172,8 @@ object TFNetForInference {
   private val INIT_OP_SIGNATURE_KEY = "__saved_model_init_op"
   private val MAIN_OP_KEY = "saved_model_main_op"
   private val LEGACY_INIT_OP_KEY = "legacy_init_op"
+  private val DEFAULT_TAG = "serve"
+  private val DEFAULT_SIGNATURE = "serving_default"
 
 
   val logger = LoggerFactory.getLogger(getClass)
@@ -212,15 +214,34 @@ object TFNetForInference {
   along with the assign operation are added to the graph.
 
    */
-  def fromSavedModel(modelPath: String, tag: String,
-                     inputs: Array[String],
-                     outputs: Array[String],
+  def fromSavedModel(modelPath: String, tag: Option[String],
+                     signature: Option[String],
+                     inputs: Option[Array[String]],
+                     outputs: Option[Array[String]],
                      sessionConfig: Array[Byte]): TFNetForInference = {
 
-    val savedModelBundle = SavedModelBundle.load(modelPath, tag)
+    if (tag.isEmpty) {
+      logger.warn(s"Loading TensorFlow SavedModel: " +
+        s"SavedModel tag is not defined, using <$DEFAULT_TAG>")
+    }
+    val savedModelBundle = SavedModelBundle.load(modelPath, tag.getOrElse(DEFAULT_TAG))
 
     val metaGraphDef = MetaGraphDef.parseFrom(savedModelBundle.metaGraphDef())
     val initOp = getInitOp(metaGraphDef)
+
+    val (inputNames, outputNames) = if (!(inputs.isDefined && outputs.isDefined)) {
+      if (signature.isEmpty) {
+        logger.warn("Loading TensorFlow SavedModel: SavedModel signature is not defined," +
+          s"using <$DEFAULT_SIGNATURE>")
+      }
+      getInputOutputNames(metaGraphDef, signature.getOrElse(DEFAULT_SIGNATURE))
+    } else {
+      if (inputs.isEmpty || outputs.isEmpty) {
+        throw new IllegalArgumentException("inputs and outputs tensor names must be defined" +
+          " if signature is not defined")
+      }
+      (inputs.get, outputs.get)
+    }
 
     val graph = savedModelBundle.graph()
     val ops = Ops.create(graph).withSubScope("analytics-zoo")
@@ -316,7 +337,7 @@ object TFNetForInference {
       }
     }.toArray
 
-    val inputTypes = inputs.map { name =>
+    val inputTypes = inputNames.map { name =>
       val opAndPort = name.split(":")
       val op = opAndPort.head
       val port = opAndPort(1)
@@ -333,14 +354,26 @@ object TFNetForInference {
     savedModelBundle.close()
 
     new TFNetForInference(graphRunner = graphRunner,
-      inputs = inputs,
+      inputs = inputNames,
       inputTypes = inputTypes,
-      outputs = outputs,
+      outputs = outputNames,
       variables = readVariableNames.toArray,
       variableTypes = dataTypes.map(_.getNumber).toArray,
       variableAssignPlaceholders = placeholderNames.toArray,
       assignVariableOps = assign.toArray,
       initWeights = weights, initOp)
+  }
+
+  def getInputOutputNames(metaGraphDef: MetaGraphDef,
+                          signature: String): (Array[String], Array[String]) = {
+    val signatureDef = metaGraphDef.getSignatureDefOrThrow(signature)
+    val inputMap = signatureDef.getInputsMap
+    val sortedInputKeys = inputMap.keySet().asScala.toArray.sorted
+    val inputNames = sortedInputKeys.map(inputMap.get(_).getName)
+    val outputMap = signatureDef.getOutputsMap
+    val sortedOutputKeys = outputMap.keySet().asScala.toArray.sorted
+    val outputNames = sortedOutputKeys.map(outputMap.get(_).getName)
+    (inputNames, outputNames)
   }
 
 
