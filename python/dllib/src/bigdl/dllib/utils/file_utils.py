@@ -16,6 +16,15 @@
 from bigdl.util.common import Sample as BSample, JTensor as BJTensor,\
     JavaCreator, _get_gateway, _java2py, _py2java
 import numpy as np
+import os
+
+
+def convert_to_safe_path(input_path, follow_symlinks=True):
+    # resolves symbolic links
+    if follow_symlinks:
+        return os.path.realpath(input_path)
+    # covert to abs path
+    return os.path.abspath(input_path)
 
 
 def to_list_of_numpy(elements):
