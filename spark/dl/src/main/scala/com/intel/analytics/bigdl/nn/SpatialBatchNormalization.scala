@@ -73,7 +73,11 @@ class SpatialBatchNormalization[T: ClassTag](
 
     _input.set(input)
     makeBatch(_input)
-    val nInput = _input.size(channelDim)
+    val nInput = if (dataFormat == DataFormat.NCHW) {
+      _input.size(2)
+    } else {
+      _input.size(4)
+    }
 
     if (runningMean.nElement == 0 || runningMean.nElement < nInput) {
       initializeBuffer(nInput)

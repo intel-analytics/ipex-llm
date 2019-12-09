@@ -219,6 +219,20 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
     bnNCHW.gradWeight.almostEqual(bnNHWC.gradWeight, 1e-5)
     bnNCHW.gradBias.almostEqual(bnNHWC.gradBias, 1e-5)
   }
+
+  "bn with NHWC" should "return correct extra parameters" in {
+    val bn1 = SpatialBatchNormalization[Float](16, dataFormat = DataFormat.NCHW)
+    val bn2 = SpatialBatchNormalization[Float](16, dataFormat = DataFormat.NHWC)
+
+    val input1 = Tensor[Float](4, 16, 3, 3)
+    val input2 = Tensor[Float](4, 3, 3, 16)
+    bn1.forward(input1)
+    bn2.forward(input2)
+
+    bn1.getExtraParameter().zip(bn2.getExtraParameter()).foreach {
+      case (p1, p2) => p1.size() should be (p2.size())
+    }
+  }
 }
 
 class SpatialBatchNormalizationSerialTest extends ModuleSerializationTest {
