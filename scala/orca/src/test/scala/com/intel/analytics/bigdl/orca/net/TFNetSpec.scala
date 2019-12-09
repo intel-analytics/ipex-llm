@@ -136,8 +136,8 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resource = getClass().getClassLoader().getResource("saved-model-resource")
     val tfnet = TFNet.fromSavedModel(resource.getPath,
       inputs = Array("flatten_input:0"), outputs = Array("dense_2/Softmax:0"))
-
-    tfnet.forward(Tensor.ones[Float](4, 28, 28, 1))
+    val inputData = Tensor.ones[Float](4, 28, 28, 1)
+    tfnet.forward(inputData)
   }
 
   "TFNet" should "work with saved_model with non-resource variable"  in {
@@ -146,6 +146,13 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       inputs = Array("Placeholder:0"), outputs = Array("LeNet/fc4/BiasAdd:0"))
 
     tfnet.forward(Tensor.ones[Float](4, 28, 28, 1))
+  }
+
+  "TFNet" should "work with saved_model with signature"  in {
+    val resource = getClass().getClassLoader().getResource("saved-model-signature")
+    val tfnet = TFNet.fromSavedModel(resource.getPath)
+    val output = tfnet.forward(Tensor.ones[Float](4, 4)).toTensor[Float].clone()
+    output.size() should be (Array(4, 10))
   }
 
 
