@@ -975,40 +975,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this
   }
 
-  def and(y: Tensor[T]): Tensor[T] = {
-    require(y.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
-    require(dim <= this.dim(), "Index dimension is out of bounds")
-    if (this.nElement() == y.nElement()) {
-      if (MKL.isMKLLoaded && this.isContiguous() && y.isContiguous()) {
-        ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
-          y.storage().array(), y.storageOffset() - 1,
-          this.storage().array(), this.storageOffset() - 1)
-      } else {
-        val func = new TensorFunc4[T] {
-          override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-            data1(offset1) = ev.and(data1(offset1), data2(offset2))
-          }
-        }
-        DenseTensorApply.apply2[T](this, y, func)
-      }
-    } else if (DenseTensor.canFastBroadcast(this, y)) {
-      // recursive add
-      var i = 0
-      while (i < this.size(1)) {
-        this.select(1, i + 1).and(y)
-        i += 1
-      }
-    } else {
-      this.and(expandTensor(y.asInstanceOf[DenseTensor[T]]))
-    }
-    this
-  }
-  def not(): Tensor[T] = {
-    this
-  }
-  def notZero(): Tensor[T] = {
-    this
-  }
+
 
   private[tensor] def expandTensor(x: DenseTensor[T]): Tensor[T] = {
     val targetSize = DenseTensor.expandSize(this, x)

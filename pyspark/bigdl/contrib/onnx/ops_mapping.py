@@ -16,14 +16,14 @@
 
 
 """Operator attributes conversion"""
-from .ops_converter import conv, batch_norm, relu, max_pool, _sum, average_pool
+from .ops_converter import conv, batch_norm, relu, max_pool, add, _sum, average_pool
 from .ops_converter import reshape, gemm, softmax, constant, shape, gather
 from .ops_converter import unsqueeze, concat
 
 
 # convert_map defines maps of operator names to converter functor(callable)
 # defined in the op_translations module.
-_convert_map = {
+_convert_map_convert_map = {
     # Generator Functions
     'Constant'          : constant,
     # 'RandomUniform'     : random_uniform,
@@ -32,7 +32,7 @@ _convert_map = {
     # 'RandomNormalLike'  : random_normal,
     # 'Multinomial'       : sample_multinomial,
     # # Arithmetic Operators
-    # 'Add'               : add,
+    'Add'               : add,
     # 'Sub'               : subtract,
     # 'Mul'               : multiply,
     # 'Div'               : divide,

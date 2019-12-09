@@ -287,13 +287,6 @@ trait TensorMath[T] {
   def add(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
-    * x.add(value) : perform add operation to all elements of x in place.
-    * @param value
-    * @return
-    */
-  def and(y: Tensor[T]): Tensor[T]
-
-  /**
    * Performs the dot product. The number of elements must match: both Tensors are seen as a 1D
    * vector.
    *

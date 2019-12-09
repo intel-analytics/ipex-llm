@@ -254,3 +254,10 @@ def unsqueeze(inputs, prev_modules, attrs, outputs):
 	out_tensor_shape = tuple(out_tensor_shape)
 	module = Unsqueeze(axes[0], len(data_tensor_shape))(prev_modules)
 	return module, [out_tensor_shape]
+
+def add(inputs, prev_modules, attrs, outputs):
+    _, first_tensor_shape = inputs[0]
+    second_tensor_val, second_tensor_shape = inputs[1]
+    out_tensor_shape = first_tensor_shape
+    module = CAddTable()(prev_modules)
+    return module, [first_tensor_shape]
