@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -156,12 +155,7 @@ class Sequential[T: ClassTag]
     var startnodes = startNodes
     var curNodes: Array[ModuleNode[T]] = null
     for (i <- 0 to modules.size - 1) {
-      curNodes = if (modules(i).isKerasStyle()) {
-        modules(i).asInstanceOf[KerasLayer[Activity, Activity, T]].labor.getEndNodes(startnodes)
-      } else {
-        modules(i).getEndNodes(startnodes)
-      }
-
+      curNodes = modules(i).getEndNodes(startnodes)
       startnodes = curNodes
     }
     curNodes

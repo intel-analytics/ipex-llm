@@ -168,30 +168,17 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   inputShapeValue = batchInputShape
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-//    TODO: Deal with nested KerasLayer
-    if (this.isInstanceOf[KSequential[T]]) {
-      var startnodes = startNodes
-      var curNodes: Array[ModuleNode[T]] = null
-      for (i <- 0 to labor.asInstanceOf[TContainer[Activity, Activity, T]].modules.size - 1) {
-        curNodes = if (labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
-          .isKerasStyle()) {
-          labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
-            .asInstanceOf[KerasLayer[Activity, Activity, T]].labor.getEndNodes(startnodes)
-        } else {
-          labor.asInstanceOf[TContainer[Activity, Activity, T]].modules(i)
-            .getEndNodes(startnodes)
-        }
-
-        startnodes = curNodes
-      }
-      curNodes
+    // Nested Keras Sequential
+    if (labor.isInstanceOf[KSequential[T]]) {
+      labor.asInstanceOf[KSequential[T]].labor.asInstanceOf[TSequential[T]].getEndNodes(startNodes)
     } else {
-      val endNodes = if (modules.length == 0) {
+      // Customized Keras layer
+      if (labor.isKerasStyle()) {
         Array(this.inputs(startNodes))
+      // Common Keras layer
       } else {
-        Array(labor.inputs(startNodes))
+        labor.getEndNodes(startNodes)
       }
-      endNodes
     }
   }
 
@@ -278,12 +265,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     validateInput(nodes.map(_.element))
 
     // If converting from Sequential to Graph, no need to build again.
-    /*
-    if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
-    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
-      this.build(inputShape)
+    if (!this.isBuilt()) {
+      if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
+        val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+        this.build(inputShape)
+      }
     }
-    */
 
     processInputs(nodes)
   }
@@ -297,12 +284,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     validateInput(nodes.map(_.element))
 
     // If converting from Sequential to Graph, no need to build again.
-    /*
-    if (!nodes.isEmpty) {
-    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
-      this.build(inputShape)
+    if (!this.isBuilt()) {
+      if (!nodes.isEmpty) {
+        val inputShape = Shape(nodes.map {_.element.getOutputShape()}.toList)
+        this.build(inputShape)
+      }
     }
-    */
 
     processInputs(nodes)
   }
