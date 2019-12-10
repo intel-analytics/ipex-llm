@@ -217,6 +217,12 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
    --driver-memory 5g \
    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/SimpleTrainingExample.py
 
+echo "start example test for pytorch mnist training"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[1] \
+   --driver-memory 5g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/Lenet_mnist.py
+
 echo "#6 start example test for tensorflow"
 #timer
 start=$(date "+%s")

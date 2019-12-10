@@ -72,7 +72,7 @@ if __name__ == '__main__':
     model = TorchNet.from_pytorch(torch_model, [1, 1, 28, 28])
     criterion = TorchCriterion.from_pytorch(lossFunc, [1, 10], torch.LongTensor([5]))
     classifier = NNClassifier(model, criterion, SeqToTensor([1, 28, 28])) \
-        .setBatchSize(64) \
+        .setBatchSize(256) \
         .setOptimMethod(Adam()) \
         .setLearningRate(0.001)\
         .setMaxEpoch(2)
