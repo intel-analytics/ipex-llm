@@ -269,10 +269,11 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    validateInput(nodes.map(_.element))
-
     // If converting from Sequential to Graph, no need to build again.
+    // Also, no need to validate the input
     if (!this.isBuilt()) {
+      validateInput(nodes.map(_.element))
+
       if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
         val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
         this.build(inputShape)
@@ -288,10 +289,11 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    validateInput(nodes.map(_.element))
-
     // If converting from Sequential to Graph, no need to build again.
+    // Also, no need to validate the input
     if (!this.isBuilt()) {
+      validateInput(nodes.map(_.element))
+
       if (!nodes.isEmpty) {
         val inputShape = Shape(nodes.map {_.element.getOutputShape()}.toList)
         this.build(inputShape)

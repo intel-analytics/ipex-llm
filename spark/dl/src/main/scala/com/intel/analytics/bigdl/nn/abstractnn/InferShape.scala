@@ -105,7 +105,7 @@ trait InferShape {
     if (this.isKerasStyle()) {
       require(modules != null && !modules.isEmpty, "Empty input is not allowed")
     }
-    // excludeInvalidLayers(modules)
+    excludeInvalidLayers(modules)
   }
 }
 
