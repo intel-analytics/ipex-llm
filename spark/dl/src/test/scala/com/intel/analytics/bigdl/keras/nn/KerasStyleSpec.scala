@@ -289,7 +289,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     // TODO cannot with the last Dense added
 
     // For such cases, toSingleGraph() is unnecessary
-    val graph = seq.labor.toGraph().asInstanceOf[StaticGraph[Float]]
+    val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
     // graph.evaluate()

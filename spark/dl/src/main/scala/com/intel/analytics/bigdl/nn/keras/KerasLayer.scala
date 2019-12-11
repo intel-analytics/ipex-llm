@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Identity, Container => TContainer, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Graph, Input => TInput, StaticGraph, Container => TContainer, Sequential => TSequential}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -180,6 +180,13 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
         labor.getEndNodes(startNodes)
       }
     }
+  }
+
+  // Convert Keras Container to StaticGraph
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
+    val endNodes = this.getEndNodes(starts)
+    new StaticGraph(starts, endNodes, enableExcludeChecking = false)
   }
 
   def labor: AbstractModule[A, B, T] = {
