@@ -222,6 +222,18 @@ class ToTuple(Preprocessing):
         super(ToTuple, self).__init__(bigdl_type)
 
 
+# todo support padding param
+class SampleToMiniBatch(Preprocessing):
+    """
+     a Transformer that converts Feature to (Feature, None).
+    """
+
+    def __init__(self,
+                 batch_size,
+                 bigdl_type="float"):
+        super(SampleToMiniBatch, self).__init__(bigdl_type, batch_size)
+
+
 class FeatureSet(DataSet):
     """
     A set of data which is used in the model optimization process. The FeatureSet can be accessed in
