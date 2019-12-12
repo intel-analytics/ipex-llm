@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.estimator.python
 import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
@@ -87,6 +87,23 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     estimator.train(trainMiniBatch, criterion,
       Option(endTrigger), Option(checkPointTrigger),
       validationMiniBatch, Option(validationMethod).map(_.asScala.toArray).orNull)
+  }
+
+  def createSampleToMiniBatch(batchSize: Int): SampleToMiniBatch[T] = {
+    SampleToMiniBatch(batchSize)
+  }
+
+  def estimatorTrainMiniBatch(estimator: Estimator[T],
+                     trainSet: FeatureSet[MiniBatch[T]],
+                     criterion: Criterion[T],
+                     endTrigger: Trigger = null,
+                     checkPointTrigger: Trigger = null,
+                     validationSet: FeatureSet[MiniBatch[T]] = null,
+                     validationMethod: JList[ValidationMethod[T]] = null)
+  : estimator.type = {
+    estimator.train(trainSet, criterion,
+      Option(endTrigger), Option(checkPointTrigger),
+      validationSet, Option(validationMethod).map(_.asScala.toArray).orNull)
   }
 
   def estimatorTrainImageFeature(estimator: Estimator[T],
