@@ -355,7 +355,7 @@ class TFEstimator(object):
                     inputs = nest.flatten(result._original_tensors[0])
                     outputs = nest.flatten(spec.predictions)
                     tfnet = TFNet.from_session(sess, inputs=inputs, outputs=outputs)
-                    predictions = tfnet.predict(result)
+                    predictions = tfnet.predict(result.get_prediction_data(), mini_batch=True)
 
                     # If predictions is a dict, add back the keys and results is a dict as well.
                     if isinstance(spec.predictions, dict):
