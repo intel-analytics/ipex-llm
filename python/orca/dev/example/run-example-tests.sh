@@ -202,27 +202,6 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 now=$(date "+%s")
 time5=$((now-start))
 
-echo "start example test for inceptionv1 training"
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-   --master local[4] \
-   --driver-memory 10g \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/inception/inception.py \
-   --maxIteration 20 \
-   -b 8 \
-   -f hdfs://172.168.2.181:9000/imagenet-small
-
-echo "start example test for pytorch SimpleTrainingExample"
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-   --master local[1] \
-   --driver-memory 5g \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/SimpleTrainingExample.py
-
-echo "start example test for pytorch mnist training"
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-   --master local[1] \
-   --driver-memory 5g \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/Lenet_mnist.py
-
 echo "#6 start example test for tensorflow"
 #timer
 start=$(date "+%s")
@@ -368,7 +347,6 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     
 now=$(date "+%s")
 time6=$((now-start))
-echo "#6 tensorflow time used:$time6 seconds"
 
 echo "#7 start example test for anomalydetection"
 if [ -f analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv ]
@@ -393,7 +371,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --input_dir analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv
 now=$(date "+%s")
 time7=$((now-start))
-echo "#7 anomalydetection time used:$time7 seconds"
 
 echo "#8 start example test for qaranker"
 #timer
@@ -429,11 +406,44 @@ ${SPARK_HOME}/bin/spark-submit \
 
 now=$(date "+%s")
 time8=$((now-start))
-echo "#1 textclassification time used:$time1 seconds"
-echo "#2 customized loss and layer time used:$time2 seconds"
-echo "#3 image-classification time used:$time3 seconds"
-echo "#4 object-detection loss and layer time used:$time4 seconds"
-echo "#5 nnframes time used:$time5 seconds"
-echo "#6 tensorflow time used:$time6 seconds"
-echo "#7 anomalydetection time used:$time7 seconds"
-echo "#8 qaranker time used:$time8 seconds"
+
+echo "#9 start example test for inceptionv1 training"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[4] \
+   --driver-memory 10g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/inception/inception.py \
+   --maxIteration 20 \
+   -b 8 \
+   -f hdfs://172.168.2.181:9000/imagenet-small
+now=$(date "+%s")
+time9=$((now-start))
+
+echo "#10 start example test for pytorch"
+#timer
+start=$(date "+%s")
+echo "start example test for pytorch SimpleTrainingExample"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[1] \
+   --driver-memory 5g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/SimpleTrainingExample.py
+
+echo "start example test for pytorch mnist training"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[1] \
+   --driver-memory 5g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/Lenet_mnist.py
+now=$(date "+%s")
+time10=$((now-start))
+
+echo "#1 textclassification time used: $time1 seconds"
+echo "#2 customized loss and layer time used: $time2 seconds"
+echo "#3 image-classification time used: $time3 seconds"
+echo "#4 object-detection loss and layer time used: $time4 seconds"
+echo "#5 nnframes time used: $time5 seconds"
+echo "#6 tensorflow time used: $time6 seconds"
+echo "#7 anomalydetection time used: $time7 seconds"
+echo "#8 qaranker time used: $time8 seconds"
+echo "#9 inceptionV1 training time used: $time9 seconds"
+echo "#10 pytorch time used: $time10 seconds"
