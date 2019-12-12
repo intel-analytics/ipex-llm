@@ -55,35 +55,23 @@ class RayServiceFuncGenerator(object):
     """
     This should be a pickable class.
     """
-
-    def _get_MKL_config(self, cores):
-        return {"intra_op_parallelism_threads": str(cores),
-                "inter_op_parallelism_threads": str(cores),
-                "OMP_NUM_THREADS": str(cores),
-                "KMP_BLOCKTIME": "0",
-                "KMP_AFFINITY": "granularity = fine, verbose, compact, 1, 0",
-                "KMP_SETTINGS": "0"}
-
-    def _prepare_env(self, cores=None):
+    def _prepare_env(self):
         modified_env = os.environ.copy()
-        if self.env:
-            modified_env.update(self.env)
         cwd = os.getcwd()
         modified_env["PATH"] = "{}/{}:{}".format(cwd, "/".join(self.python_loc.split("/")[:-1]),
                                                  os.environ["PATH"])
         modified_env.pop("MALLOC_ARENA_MAX", None)
         modified_env.pop("RAY_BACKEND_LOG_LEVEL", None)
-        # unset all MKL setting
+        # Unset all MKL setting as Analytics Zoo would give default values when init env.
+        # Running different programs may need different configurations.
         modified_env.pop("intra_op_parallelism_threads", None)
         modified_env.pop("inter_op_parallelism_threads", None)
         modified_env.pop("OMP_NUM_THREADS", None)
         modified_env.pop("KMP_BLOCKTIME", None)
         modified_env.pop("KMP_AFFINITY", None)
         modified_env.pop("KMP_SETTINGS", None)
-        if cores:
-            cores = int(cores)
-            print("MKL cores is {}".format(cores))
-            modified_env.update(self._get_MKL_config(cores))
+        if self.env:  # Add in env argument if any MKL setting is needed.
+            modified_env.update(self.env)
         if self.verbose:
             print("Executing with these environment setting:")
             for pair in modified_env.items():
@@ -91,7 +79,7 @@ class RayServiceFuncGenerator(object):
             print("The $PATH is: {}".format(modified_env["PATH"]))
         return modified_env
 
-    def __init__(self, python_loc, redis_port, ray_node_cpu_cores, mkl_cores,
+    def __init__(self, python_loc, redis_port, ray_node_cpu_cores,
                  password, object_store_memory, waitting_time_sec=6, verbose=False, env=None,
                  extra_params=None):
         """object_store_memory: integer in bytes"""
@@ -100,7 +88,6 @@ class RayServiceFuncGenerator(object):
         self.redis_port = redis_port
         self.password = password
         self.ray_node_cpu_cores = ray_node_cpu_cores
-        self.mkl_cores = mkl_cores
         self.ray_exec = self._get_ray_exec()
         self.object_store_memory = object_store_memory
         self.waiting_time_sec = waitting_time_sec
@@ -150,7 +137,7 @@ class RayServiceFuncGenerator(object):
                                                        extra_params=extra_params)
 
     def _start_ray_node(self, command, tag, wait_before=5, wait_after=5):
-        modified_env = self._prepare_env(self.mkl_cores)
+        modified_env = self._prepare_env()
         print("Starting {} by running: {}".format(tag, command))
         print("Wait for {} sec before launching {}".format(wait_before, tag))
         time.sleep(wait_before)
@@ -239,7 +226,6 @@ class RayContext(object):
             python_loc=self.python_loc,
             redis_port=self.redis_port,
             ray_node_cpu_cores=self.ray_node_cpu_cores,
-            mkl_cores=self._get_mkl_cores(),
             password=password,
             object_store_memory=self._enrich_object_sotre_memory(sc, object_store_memory),
             verbose=verbose,
@@ -301,12 +287,6 @@ class RayContext(object):
                       numSlices=self.num_ray_nodes).barrier().mapPartitions(
             self.ray_service.gen_stop()).collect()
         self.stopped = True
-
-    def _get_mkl_cores(self):
-        if self.is_local:
-            return 1
-        else:
-            return int(self.sc._conf.get("spark.executor.cores"))
 
     def _get_ray_node_cpu_cores(self):
         if self.is_local:
