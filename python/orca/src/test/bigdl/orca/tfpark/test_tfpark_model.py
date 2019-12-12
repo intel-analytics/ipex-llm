@@ -15,8 +15,6 @@
 #
 import pytest
 
-from zoo.feature.common import ChainedPreprocessing, FeatureSet
-from zoo.feature.image import *
 from zoo.pipeline.api.net import TFOptimizer
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import tensorflow as tf
@@ -114,9 +112,7 @@ class TestTFParkModel(ZooTestCase):
         rdd = rdd.map(lambda x: [x])
 
         dataset = TFDataset.from_rdd(rdd,
-                                     names=["features"],
-                                     shapes=[[10]],
-                                     types=[tf.float32],
+                                     features=(tf.float32, [10]),
                                      batch_per_thread=1
                                      )
         return dataset
