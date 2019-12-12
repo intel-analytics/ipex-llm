@@ -427,9 +427,6 @@ class SpatialConvolution(
       realDst.setScales(scaleOut)
     }
 
-    if (format == DataFormat.NHWC) realDst.setLayerFormat(Memory.Format.nhwc)
-    else realDst.setLayerFormat(Memory.Format.nchw)
-
     _inputFormats = if (_sumInput) Array(realSrc, realSrc) else Array(realSrc)
     _outputFormats = Array(realDst)
     (_inputFormats, _outputFormats)
@@ -512,9 +509,6 @@ class SpatialConvolution(
     updateGradInputMemoryPrimitives = srcs ++ dsts
     updateGradInputPrimitives = Array(primitive)
     gradInput = initTensor(realDiffSrc)
-
-    if (format == DataFormat.NHWC) realDiffSrc.setLayerFormat(Memory.Format.nhwc)
-    else realDiffSrc.setLayerFormat(Memory.Format.nchw)
 
     _gradInputFormats = Array(realDiffSrc)
     _gradOutputFormats = Array(realDiffDst)

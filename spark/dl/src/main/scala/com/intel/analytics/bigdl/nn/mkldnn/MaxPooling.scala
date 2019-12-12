@@ -107,9 +107,7 @@ class MaxPooling(
       fwdMemPrims.drop(1), fwdMemPrims.length - 1))
     // if it's training, should have output and workspace primitive memory
     // otherwise, only need the output memory
-      _outputFormats(0).layerFormat = if (inputs(0).layerFormat == -1) {
-        if (inputs(0).layout == Memory.Format.nhwc) Memory.Format.nhwc else Memory.Format.nchw
-      } else inputs(0).layerFormat
+
     (_inputFormats, _outputFormats)
   }
 

@@ -429,12 +429,28 @@ class DnnGraph(
     fusion()
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
+    var modelFormat : Int = -1
     for (i <- 0 until forwardExecution.length) {
       if (!skipPrimitiveId(i)) {
         val m = forwardExecution(i)
         lastOutputFormats = findInputFormats(m, inputs)
         val realInputAndOutputFormats =
           m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
+        // init model format
+        if (i == 0) {
+          val t = realInputAndOutputFormats._2
+          for (j <- 1 to t.length) {
+            if (modelFormat == -1 && t(j - 1).shape.length == 4) {
+              modelFormat = t(j - 1).layerFormat
+            } else if (modelFormat != -1 && t(j -1).shape.length == 4) {
+              require(modelFormat == t(j -1).layout)
+            }
+          }
+        } else {
+          // set layer formats for output
+          realInputAndOutputFormats._2.foreach(_.setLayerFormat(modelFormat))
+        }
+
         lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
           case (o, i) =>
             Utils.copyMaskAndScales(o, i)

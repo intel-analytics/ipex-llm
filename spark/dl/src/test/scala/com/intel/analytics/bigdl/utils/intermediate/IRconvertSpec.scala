@@ -130,7 +130,7 @@ class IRconvertSpec extends BigDLSpecHelper {
     System.clearProperty("bigdl.engineType")
   }
 
-  "Convert keras" should "be correct"in {
+  "Running keras with mkldnn" should "be correct"in {
     System.setProperty("bigdl.engineType", "mkldnn")
     val model = keras(classNum = 10)
 

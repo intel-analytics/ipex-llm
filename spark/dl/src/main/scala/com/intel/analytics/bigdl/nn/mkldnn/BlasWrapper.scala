@@ -55,7 +55,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
 
   private def getLayerFormats(in: MemoryData): Int = {
-    if (in.layerFormat == -1) {
+    if (in.layerFormat == -1 || in.shape.length != 4) {
       getFormats(in.shape.length)
     } else in.layerFormat
   }

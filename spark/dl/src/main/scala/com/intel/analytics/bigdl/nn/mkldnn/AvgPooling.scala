@@ -106,11 +106,6 @@ class AvgPooling(
     updateOutputPrimitives = Array(MklDnnMemory.PrimitiveCreate2(fwdPD,
       _inputFormats.map(_.getPrimitive(runtime)), Array(0), 1,
       _outputFormats.map(_.getPrimitive(runtime)), 2))
-
-    _outputFormats(0).layerFormat = if (inputs(0).layerFormat == -1) {
-      if (inputs(0).layout == Memory.Format.nhwc) Memory.Format.nhwc else Memory.Format.nchw
-    } else inputs(0).layerFormat
-
     (_inputFormats, _outputFormats)
   }
 
