@@ -20,11 +20,12 @@ import numpy as np
 
 from bigdl.contrib.onnx.onnx_loader import load_model_proto
 from bigdl.nn.layer import CAddTable, JoinTable, ReLU
-from bigdl.nn.layer import SoftMax, SpatialAveragePooling, SpatialBatchNormalization
+from bigdl.nn.layer import SoftMax, SpatialAveragePooling, BatchNormalization
 from bigdl.nn.layer import SpatialConvolution, SpatialMaxPooling
 from bigdl.nn.layer import Unsqueeze
 from bigdl.nn.onnx.layer import Gemm, Reshape, Shape
-
+from bigdl.contrib.onnx import load
+import onnxruntime as rt
 
 class TestAveragePool(object):
 
@@ -86,52 +87,25 @@ class TestAveragePool(object):
 class TestBatchNormalization(object):
 
     def test_batch_normalization(self):
-        input_shape = [1, 3, 224, 224]
-        output_shape = [1, 3, 224, 224]
+        input_shape = [2, 3, 4, 5]
+        output_shape = [2, 3, 4, 5]
         # Create inputs (ValueInfoProto)
         X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, input_shape)
-        scale = onnx.helper.make_tensor_value_info('scale', onnx.TensorProto.FLOAT, input_shape[:2])
-        bias = onnx.helper.make_tensor_value_info('bias', onnx.TensorProto.FLOAT, input_shape[:2])
-        mean = onnx.helper.make_tensor_value_info('mean', onnx.TensorProto.FLOAT, input_shape[:2])
-        var = onnx.helper.make_tensor_value_info('var', onnx.TensorProto.FLOAT, input_shape[:2])
+        scale = onnx.helper.make_tensor_value_info('scale', onnx.TensorProto.FLOAT, input_shape[1:2])
+        bias = onnx.helper.make_tensor_value_info('bias', onnx.TensorProto.FLOAT, input_shape[1:2])
+        mean = onnx.helper.make_tensor_value_info('mean', onnx.TensorProto.FLOAT, input_shape[1:2])
+        var = onnx.helper.make_tensor_value_info('var', onnx.TensorProto.FLOAT, input_shape[1:2])
         # Create one output (ValueInfoProto)
         Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, output_shape)
 
-        scale_vals = np.random.random(input_shape[1]) * 10
-        bias_vals = np.random.random(input_shape[1]) * 10
-        mean_vals = np.random.random(input_shape[1]) * 10
-        var_vals = np.random.random(input_shape[1]) * 10
-        input_x = np.random.random(input_shape) * 10
+        input_x = np.random.randn(2, 3, 4, 5).astype(np.float32)
+        scale_vals = np.random.randn(3).astype(np.float32)
+        bias_vals = np.random.randn(3).astype(np.float32)
+        mean_vals = np.random.randn(3).astype(np.float32)
+        var_vals = np.random.rand(3).astype(np.float32)
+
         epsilon = float(1e-05)
         momentum = float(0.9)
-
-        init_scale = onnx.helper.make_tensor(
-            name='scale',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=scale_vals.tolist(),
-        )
-
-        init_bias = onnx.helper.make_tensor(
-            name='bias',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=bias_vals.tolist(),
-        )
-
-        init_mean = onnx.helper.make_tensor(
-            name='mean',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=mean_vals.tolist(),
-        )
-
-        init_var = onnx.helper.make_tensor(
-            name='var',
-            data_type=onnx.TensorProto.FLOAT,
-            dims=input_shape[:2],
-            vals=var_vals.tolist(),
-        )
 
         # Create a node (NodeProto)
         batch_norm_node = onnx.helper.make_node(
@@ -146,32 +120,35 @@ class TestBatchNormalization(object):
         onnx_graph = onnx.helper.make_graph(
             nodes=[batch_norm_node],
             name='test-batch_norm',
-            inputs=[X],
+            inputs=[X, scale, bias, mean, var],
             outputs=[Y],
-            initializer=[init_scale, init_bias, init_mean, init_var]
         )
 
         # Create the model (ModelProto)
         onnx_model = onnx.helper.make_model(onnx_graph, producer_name='ONNX')
         onnx.checker.check_model(onnx_model)
+        onnx.save(onnx_model, '/home/menooker/Downloads/model_spec/model.onnx')
 
-        loaded_model = load_model_proto(onnx_model)
-        bigdl_model = SpatialBatchNormalization(
-            n_output=input_shape[1],
-            eps=epsilon,
-            momentum=momentum,
-            init_weight=scale_vals,
-            init_bias=bias_vals,
-            init_grad_weight=None,
-            init_grad_bias=None,
-        )
-        bigdl_model.set_running_mean(mean_vals)
-        bigdl_model.set_running_std(var_vals)
+        model_path = "/home/menooker/Downloads/model_spec/model.onnx"
+        model = load(model_path)
 
-        loaded_out = loaded_model.forward(input_x)
-        expected_out = bigdl_model.forward(input_x)
+        #restnet_tensor = np.random.random([1, 3, 224, 224]).astype(np.float32)	###### to be changed
+        model_out = model.forward([input_x,scale_vals,bias_vals,mean_vals,var_vals])
 
-        assert(np.array_equal(loaded_out, expected_out))
+        sess = rt.InferenceSession("/home/menooker/Downloads/model_spec/model.onnx")
+        input_name1 = sess.get_inputs()[0].name
+        input_name2 = sess.get_inputs()[1].name
+        input_name3 = sess.get_inputs()[2].name
+        input_name4 = sess.get_inputs()[3].name
+        input_name5 = sess.get_inputs()[4].name
+
+        pred_onx = sess.run(None, {input_name1: input_x, input_name2: scale_vals, input_name3: bias_vals, input_name4: mean_vals, input_name5: var_vals})[0]
+        print(pred_onx)
+        print(model_out)
+        print(pred_onx.shape)
+        print(model_out.shape)
+        assert(np.array_equal(pred_onx, model_out))
+
 
 
 class TestConcat(object):

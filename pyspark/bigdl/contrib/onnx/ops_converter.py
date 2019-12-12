@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nn.layer import SpatialAveragePooling, SpatialBatchNormalization
+from bigdl.nn.layer import SpatialAveragePooling, BatchNormalization
 from bigdl.nn.layer import SpatialConvolution, SpatialMaxPooling, JoinTable
 from bigdl.nn.layer import ReLU, SoftMax, CAddTable, Unsqueeze
 from bigdl.nn.onnx.layer import Constant, Gather, Gemm, Shape, Reshape
@@ -65,8 +65,9 @@ def batch_norm(inputs, prev_modules, attrs, outputs):
 	# create module node
 	n_output = int(data_tensor_shape[1])
 
-	temp_module = SpatialBatchNormalization(n_output=n_output, eps=epsilon,
-		momentum=momentum, init_weight=scale_tensor_val, init_bias=bias_tensor_val)
+	temp_module = BatchNormalization(n_output=n_output, eps=epsilon,
+		momentum=momentum, init_weight=scale_tensor_val, init_bias=bias_tensor_val,
+        initGradWeight=mean_tensor_val, initGradBias=var_tensor_val)
 	if mean_tensor_val is not None:
 		temp_module.set_running_mean(mean_tensor_val)
 	if var_tensor_val is not None:
