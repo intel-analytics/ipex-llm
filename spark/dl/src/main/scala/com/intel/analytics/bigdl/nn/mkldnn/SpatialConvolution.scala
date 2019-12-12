@@ -427,6 +427,9 @@ class SpatialConvolution(
       realDst.setScales(scaleOut)
     }
 
+    if (format == DataFormat.NHWC) realDst.setLayerFormat(Memory.Format.nhwc)
+    else realDst.setLayerFormat(Memory.Format.nchw)
+
     _inputFormats = if (_sumInput) Array(realSrc, realSrc) else Array(realSrc)
     _outputFormats = Array(realDst)
     (_inputFormats, _outputFormats)
@@ -462,6 +465,10 @@ class SpatialConvolution(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
 
+    if (output.isTensor && _outputFormats(0).layout == Memory.Format.nhwc) {
+      val shape = _outputFormats(0).shape
+      output.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+    }
     output
   }
 
@@ -510,6 +517,9 @@ class SpatialConvolution(
     updateGradInputPrimitives = Array(primitive)
     gradInput = initTensor(realDiffSrc)
 
+    if (format == DataFormat.NHWC) realDiffSrc.setLayerFormat(Memory.Format.nhwc)
+    else realDiffSrc.setLayerFormat(Memory.Format.nchw)
+
     _gradInputFormats = Array(realDiffSrc)
     _gradOutputFormats = Array(realDiffDst)
     (_gradOutputFormats, _gradInputFormats)
@@ -533,6 +543,11 @@ class SpatialConvolution(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
+
+    if (gradInput.isTensor && _gradInputFormats(0).layout == Memory.Format.nhwc) {
+      val shape = _gradInputFormats(0).shape
+      gradInput.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+    }
 
     gradInput
   }

@@ -91,16 +91,16 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
         throw new UnsupportedOperationException(s"can not find ${node.element.getOp()} ")
       }
       // special treat for reshape -> linear and view -> linear
-      if (op.isInstanceOf[IRGeneralModule[Float]]) {
-        val m = op.asInstanceOf[IRGeneralModule[Float]].model
-        if (m.isInstanceOf[Reshape[Float]] && node.nextNodes.length == 1 &&
-          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
-        } else if (m.isInstanceOf[View[Float]] && node.nextNodes.length == 1 &&
-          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
-        }
-      }
+//      if (op.isInstanceOf[IRGeneralModule[Float]]) {
+//        val m = op.asInstanceOf[IRGeneralModule[Float]].model
+//        if (m.isInstanceOf[Reshape[Float]] && node.nextNodes.length == 1 &&
+//          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
+//          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
+//        } else if (m.isInstanceOf[View[Float]] && node.nextNodes.length == 1 &&
+//          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
+//          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
+//        }
+//      }
       nodeMap.put(node, dnn)
     })
     cloneNode(allNodes, nodeMap)
@@ -116,7 +116,31 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
   private def fromSpatialConvolution(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialConvolution[Float]]
     // require(t.format == DataFormat.NCHW, "Dnn SpatialConvolution only supports NCHW")
-    ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
+    if (t.format == DataFormat.NCHW) {
+      ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
+    } else {
+      // special process for NHWC
+      require(t.nGroup == 1, "Only support nGroup is 1 for NHWC")
+      val layer = ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
+      val params = layer.getParameters()
+      val params2 = node.getParameters()
+      val p = layer.parameters()
+      val weightSize = layer.parameters()._1(0).size() // for nchw
+      val newSize = Array(weightSize(2), weightSize(3), weightSize(1), weightSize(0))// for nhwc
+      val tmp = Tensor[Float]().resizeAs(p._1(0)).copy(p._1(0)).resize(newSize)
+      if (params._1 != null) {
+        p._1(0).copy(tmp.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous())
+        // params._1.copy(params2._1.resize(newSize).transpose(1, 4).transpose(2, 3))
+        // node.setWeights(params._1) // todo: need bug fix
+      }
+      if (params._2 != null) {
+        val t = Tensor[Float]().resizeAs(p._2(0)).copy(p._2(0)).resize(newSize)
+        p._2(0).copy(t.transpose(1, 4).transpose(2, 3).contiguous())
+        // params._2.copy(params2._2.resize(newSize).transpose(1, 4).transpose(2, 3))
+        // node.setGradWeights(params._2)
+      }
+      layer
+    }
   }
 
   private def fromSpatialShareConvolution(node: IRElement[Float]) : Module[Float] = {

@@ -15,7 +15,6 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import breeze.numerics.ceil
 import com.intel.analytics.bigdl.mkl.{AlgKind, DataType, Memory}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -91,13 +90,17 @@ class MaxPoolingSpec extends BigDLSpecHelper {
     static.setOutputFormats(Seq(Memory.Format.nhwc))
 
     val dnn = static.toIRgraph()
-    dnn.evaluate()
-    layer.evaluate()
 
     val output1 = dnn.forward(input)
     val output2 = layer.forward(input).toTensor[Float]
 
     output1 should be(output2)
+
+    val grad2 = layer.backward(input, output2).toTensor[Float]
+    val grad1 = dnn.backward(input, output2)
+    grad1 should be(grad2)
+
+    System.clearProperty("bigdl.engineType")
   }
 
   "Convert max pooling with ceilMode to dnn layer" should "be correct" in {

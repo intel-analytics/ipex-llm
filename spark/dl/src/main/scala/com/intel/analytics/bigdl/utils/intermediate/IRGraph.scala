@@ -152,6 +152,7 @@ private[bigdl] class IRGraph[T: ClassTag](
           && inputFormats(0) != Memory.Format.tnc) {
           Array(size(0), 1, size(1), size(2))
         } else if (inputFormats(0) == Memory.Format.nhwc) {
+          // always use NCHW to create heap data
           Array(size(0), size(3), size(1), size(2))
         } else size
         inputMemory(0) = HeapData(sizeNew, inputFormats(0))

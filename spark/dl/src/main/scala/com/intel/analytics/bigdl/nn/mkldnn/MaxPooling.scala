@@ -83,12 +83,11 @@ class MaxPooling(
       PropKind.ForwardTraining
     }
 
-    val outputMD = MklDnnMemory.MemoryDescInit(4, Array(n, c, oh, ow),
-      inputs(0).dataType, Memory.Format.any)
-    val inputMD = _inputFormats(0).getMemoryDescription()
-
+    val outputMD = MklDnnMemory.MemoryDescInit(4, Array(n, c, oh, ow), inputs(0).dataType,
+      Memory.Format.any)
     val description = MklDnnMemory.PoolingForwardDescInit(
-      kind, AlgKind.PoolingMax, inputMD, outputMD, strides, kernel, paddingTL, paddingBR,
+      kind, AlgKind.PoolingMax,
+      _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
     fwdPD = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, 0L)
 
@@ -108,7 +107,9 @@ class MaxPooling(
       fwdMemPrims.drop(1), fwdMemPrims.length - 1))
     // if it's training, should have output and workspace primitive memory
     // otherwise, only need the output memory
-
+      _outputFormats(0).layerFormat = if (inputs(0).layerFormat == -1) {
+        if (inputs(0).layout == Memory.Format.nhwc) Memory.Format.nhwc else Memory.Format.nchw
+      } else inputs(0).layerFormat
     (_inputFormats, _outputFormats)
   }
 
@@ -157,6 +158,11 @@ class MaxPooling(
       gradInput.asInstanceOf[Tensor[Float]])
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives, 1,
       bwdMemPrims, buffer)
+
+    if (gradInput.isTensor && _gradInputFormats(0).layout == Memory.Format.nhwc) {
+      val shape = _gradInputFormats(0).shape
+      gradInput.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+    }
     gradInput
   }
 }

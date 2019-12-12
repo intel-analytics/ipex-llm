@@ -16,8 +16,10 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
+import breeze.linalg.reshape
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.nn.{Graph, _}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, Equivalent, Input, Output}
@@ -54,7 +56,8 @@ class IRconvertSpec extends BigDLSpecHelper {
   }
 
   def modelBlas(format: DataFormat = DataFormat("NCHW")) : Module[Float] = {
-    val conv1 = nn.SpatialConvolution(1, 20, 5, 5, format = format).setName("input").inputs()
+    val input = nn.Input()
+    val conv1 = nn.SpatialConvolution(1, 20, 5, 5, format = format).setName("input").inputs(input)
     val pool1 = nn.SpatialMaxPooling(2, 2, 2, 2, format = format).setName("pool").inputs(conv1)
     val conv2 = nn.SpatialConvolution(20, 50, 5, 5, format = format).inputs(pool1)
     val pool2 = nn.SpatialMaxPooling(2, 2, 2, 2, format = format).inputs(conv2)
@@ -63,7 +66,7 @@ class IRconvertSpec extends BigDLSpecHelper {
     val relu = nn.ReLU().setName("relu1").inputs(fc)
     val fc2 = nn.Linear(500, 10).setName("output").inputs(relu)
     val output = fc2
-    Graph(conv1, output)
+    Graph(input, fc2)
   }
 
   def modelWithScale(format: DataFormat = DataFormat("NCHW")) : Module[Float] = {
@@ -91,13 +94,202 @@ class IRconvertSpec extends BigDLSpecHelper {
     Graph(conv1, output)
   }
 
-  "Convert Blas with NCHW to Dnn" should "be correct" in {
+  "Convert Blas with NHWC" should "be correct" in {
     System.setProperty("bigdl.engineType", "mkldnn")
     val input = Tensor[Float](2, 28, 28, 1).rand()
     val gradOutput = Tensor[Float](2, 10).rand()
 
     val blas = modelBlas(format = DataFormat("NHWC")).asInstanceOf[StaticGraph[Float]]
+    blas.setInputFormats(Seq(Memory.Format.nhwc))
+    // blas.setOutputFormats(Seq(Memory.Format.nhwc))
+    blas.setOutputFormats(Seq(Memory.Format.nc))
+
     val dnn = blas.cloneModule().toIRgraph()
+
+    blas.evaluate()
+    dnn.evaluate()
+
+    val outBlas = blas.forward(input)
+    val outDnn = dnn.forward(input)
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+
+//    val gradInputBlas = blas.backward(input, gradOutput)
+//    val gradInputDnn = dnn.backward(input, gradOutput).toTensor[Float]
+//    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
+//
+//    val p1 = dnn.getParameters()
+//    val p2 = blas.getParameters()
+//    Equivalent.nearequals(p1._1, p1._1, 1e-4) should be (true)
+//    Equivalent.nearequals(p1._2, p1._2, 1e-4) should be (true)
+    System.clearProperty("bigdl.engineType")
+  }
+
+  def keras(classNum: Int): nn.keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val model = Sequential()
+    // model.add(Reshape(Array(2, 28, 28), inputShape = Shape(28, 28, 2)))
+    model.add(Convolution2D(6, 5, 5, activation = "tanh", dimOrdering = "tf",
+      inputShape = Shape(28, 28, 3)).setName("conv1_5x5"))
+    model.add(BatchNormalization(dimOrdering = "tf")).setName("bnbn")
+    model.add(MaxPooling2D(dimOrdering = "tf"))
+    model.add(Convolution2D(12, 5, 5, activation = "tanh", dimOrdering = "tf")
+      .setName("conv2_5x5"))
+    model.add(BatchNormalization(dimOrdering = "tf")).setName("bnbn22")
+    model.add(MaxPooling2D(dimOrdering = "tf"))
+    model.add(Flatten())
+    model.add(Dense(100, activation = "tanh").setName("fc1"))
+    model.add(Dense(classNum, activation = "softmax").setName("fc2"))
+  }
+
+  "Convert keras" should "be correct"in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    val model = keras(classNum = 10)
+
+    val blas = model.toGraph().asInstanceOf[StaticGraph[Float]]
+    blas.setInputFormats(Seq(Memory.Format.nhwc))
+    blas.setOutputFormats(Seq(Memory.Format.nc))
+
+    val dnn = blas.cloneModule().asInstanceOf[StaticGraph[Float]].toIRgraph()
+
+    val input = Tensor[Float](2, 28, 28, 3).rand()
+
+    val out1 = blas.forward(input)
+    val out2 = dnn.forward(input)
+
+    Equivalent.nearequals(out1.toTensor[Float], out2.toTensor[Float], 1e-5) should be (true)
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "Convert blas linear to mkldnn with NHWC" should "be correct" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    RandomGenerator.RNG.setSeed(10)
+    val linear = nn.Linear(4, 3) // weight size (500, 800)
+    val linear2 = nn.Linear(4, 3)
+
+    linear2.weight.copy(linear.weight)
+    linear2.bias.fill(0.0f)
+    linear.bias.fill(0.0f)
+
+    val mm = nn.Sequential()
+    mm.add(nn.Reshape(Array(4)).setName("linear"))
+    mm.add(linear)
+
+    val blas = mm.toGraph().asInstanceOf[StaticGraph[Float]]
+    blas.setInputFormats(Seq(Memory.Format.nhwc))
+    blas.setOutputFormats(Seq(Memory.Format.nc))
+
+    val blas2 = nn.Sequential().add(linear2).toGraph().
+      asInstanceOf[StaticGraph[Float]]
+    blas2.setInputFormats(Seq(Memory.Format.nhwc))
+    blas2.setOutputFormats(Seq(Memory.Format.nc))
+    val dnn = blas2.toIRgraph()
+
+    val input = Tensor[Float](1, 2, 2, 1).rand() // nhwc
+    val inputDnn = input.clone() // .resize(2, 50 * 4* 4)
+    val outBlas = blas.forward(input)
+    val outDnn = dnn.forward(inputDnn)
+
+    println(linear.weight)
+    println(linear2.weight)
+    println(input)
+    println(linear.weight.resize(3, 1, 2, 2))
+    println(outBlas)
+    println(outDnn)
+
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "Convert Blas from NCHW to NHWC" should "be correct" in {
+    val gradOutput = Tensor[Float](2, 10).rand()
+
+    val nOut = 20
+    val nIn = 1
+    val kH = 5
+    val kW = 5
+
+    val input = Tensor[Float](2, 1, 28, 28).rand()
+    val inputNHWC = input.transpose(2, 3).transpose(3, 4).contiguous().clone()
+
+    RandomGenerator.RNG.setSeed(1000)
+    val blasNHWC = nn.SpatialConvolution(1, 20, 5, 5, format = DataFormat("NHWC"))
+    RandomGenerator.RNG.setSeed(1000)
+    val blas = nn.SpatialConvolution(1, 20, 5, 5)
+
+
+//    val kernel11 = Tensor(Array(nOut, nIn, kH, kW)).randn()
+//    val kernelNHWC11 = Tensor(Array(1, nOut, nIn, kH, kW)).copy(kernel11)
+//      .transpose(2, 5).transpose(3, 4).transpose(2, 3).contiguous() // 1, kH, kW, nIn, nOut
+
+//    blas.weight.copy(kernel11)
+//    blasNHWC.weight.copy(kernelNHWC11)
+
+    val kernelNHWC = Tensor(Array(kH, kW, nIn, nOut)).randn()
+    val kernel = Tensor(Array(1, kH, kW, nIn, nOut)).copy(kernelNHWC)
+      .transpose(2, 5).transpose(3, 4).transpose(4, 5).contiguous() // nOut, nIn, kH, kW
+
+    blas.weight.copy(kernel)
+    blasNHWC.weight.copy(kernelNHWC)
+
+    val outBlas = blasNHWC.forward(inputNHWC).transpose(3, 4).transpose(2, 3).contiguous()
+    val outDnn = blas.forward(input)
+
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+  }
+
+  "Convert Blas from NHWC to NCHW" should "be correct" in {
+    val gradOutput = Tensor[Float](2, 10).rand()
+
+    val nOut = 20
+    val nIn = 1
+    val kH = 5
+    val kW = 5
+
+    val input = Tensor[Float](2, 28, 28, 1).rand()
+    val inputNCHW = input.transpose(3, 4).transpose(2, 3).contiguous().clone()
+
+    RandomGenerator.RNG.setSeed(1000)
+    val blas = nn.SpatialConvolution(1, 20, 5, 5, format = DataFormat("NHWC"))
+    RandomGenerator.RNG.setSeed(1000)
+    val blasNCHW = nn.SpatialConvolution(1, 20, 5, 5)
+
+    val kernel = Tensor(Array(kH, kW, nIn, nOut)).randn()
+    val kernelNCHW = Tensor(Array(1, kH, kW, nIn, nOut)) // to nOut, nIn, kH, kW
+      .copy(kernel).transpose(2, 5).transpose(3, 4).transpose(4, 5).contiguous()
+      // .copy(kernel).transpose(1, 4).transpose(2, 3).transpose(4, 5).contiguous()
+
+    blas.weight.copy(kernel)
+    blasNCHW.weight.copy(kernelNCHW)
+
+    val outBlas = blasNCHW.forward(inputNCHW).transpose(2, 3).transpose(3, 4).contiguous().clone()
+    val outDnn = blas.forward(input)
+
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+  }
+
+  "Convert Blas with NCHW to Dnn" should "be correct" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    val input = Tensor[Float](2, 1, 28, 28).rand()
+    val gradOutput = Tensor[Float](2, 10).rand()
+
+    val blas = modelBlas().asInstanceOf[StaticGraph[Float]]
+    val allNodes = blas.getSortedForwardExecutions()
+    require(BlasToIR[Float].convertingCheck(allNodes))
+    val irNodes = BlasToIR[Float].convert(allNodes).map(_._2).toArray
+    require(IRToDnn[Float].convertingCheck(irNodes))
+    val dnnNodes = IRToDnn[Float].convert(irNodes).map(_._2).toArray
+
+    val inputsNodes = dnnNodes.filter(_.element.getName() == "input")(0)
+    val outputsNodes = dnnNodes.filter(_.element.getName() == "output")(0)
+
+    val inputs = Input(Array(2, 1, 28, 28), Memory.Format.nchw).inputs()
+    inputsNodes.from(inputs)
+    val outputs = Output(Memory.Format.nc).inputs(outputsNodes)
+    val dnn = DnnGraph(Array(inputs), Array(outputs))
+    dnn.compile(TrainingPhase)
 
     val outBlas = blas.forward(input)
     val gradInputBlas = blas.backward(input, gradOutput)

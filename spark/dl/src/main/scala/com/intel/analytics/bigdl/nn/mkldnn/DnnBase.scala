@@ -248,6 +248,11 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length,
       updateGradInputMemoryPrimitives, updateGradInputTensors)
+
+    if (gradInput.isTensor && _gradInputFormats(0).layout == Memory.Format.nhwc) {
+      val shape = _gradInputFormats(0).shape
+      gradInput.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+    }
     gradInput
   }
 

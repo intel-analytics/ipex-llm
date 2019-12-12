@@ -20,13 +20,15 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Graph, Input => TInput, StaticGraph, Container => TContainer, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{StaticGraph, Container => TContainer}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
+
+import com.intel.analytics.bigdl.nn.{Graph, Input => TInput, StaticGraph, Container => TContainer, Sequential => TSequential}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -167,17 +169,27 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   inputShapeValue = batchInputShape
 
-  // debug
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    // Customized Keras layer
-    if (labor.isKerasStyle() && labor.getName().equals(this.getName())) {
-      Array(this.toGraphInputs(startNodes))
+    // Nested Keras Sequential
+    if (labor.isInstanceOf[KSequential[T]]) {
+      labor.asInstanceOf[KSequential[T]].labor.asInstanceOf[TSequential[T]].getEndNodes(startNodes)
     } else {
-    // Common Keras layer or BLAS layer
-      labor.getEndNodes(startNodes)
+      // Customized Keras layer
+      if (labor.isKerasStyle()) {
+        Array(this.inputs(startNodes))
+        // Common Keras layer
+      } else {
+        labor.getEndNodes(startNodes)
+      }
     }
   }
-  // debug
+
+  // Convert Keras Container to StaticGraph
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
+    val endNodes = this.getEndNodes(starts)
+    new StaticGraph(starts, endNodes, enableExcludeChecking = false)
+  }
 
   def labor: AbstractModule[A, B, T] = {
     if (this.modules.isEmpty) {
@@ -194,6 +206,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     modules.append(value)
   }
  // scalastyle:on
+
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (this.modules.length > 1) {
@@ -259,12 +272,20 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    validateInput(nodes.map(_.element))
+    // If converting from Sequential to Graph, no need to build again.
     if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
+    // Also, no need to validate the input
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
-      this.build(inputShape)
-    }
+      if (!this.isBuilt()) {
+        this.build(inputShape)
+        validateInput(nodes.map(_.element))
 
+        if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
+        val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+          this.build(inputShape)
+        }
+      }
+    }
     processInputs(nodes)
   }
 
@@ -274,10 +295,19 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    validateInput(nodes.map(_.element))
+    // If converting from Sequential to Graph, no need to build again.
     if (!nodes.isEmpty) {
-    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
-      this.build(inputShape)
+      // Also, no need to validate the input
+      val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+      if (!this.isBuilt()) {
+        this.build(inputShape)
+        validateInput(nodes.map(_.element))
+
+        if (!nodes.isEmpty) {
+          val inputShape = Shape(nodes.map {_.element.getOutputShape()}.toList)
+          this.build(inputShape)
+        }
+      }
     }
     processInputs(nodes)
   }

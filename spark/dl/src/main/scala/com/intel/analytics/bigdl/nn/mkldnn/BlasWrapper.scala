@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl.mkl.{MKL, Memory}
 import com.intel.analytics.bigdl.nn.{DetectionOutputSSD, PriorBox}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -54,6 +54,12 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     }
   }
 
+  private def getLayerFormats(in: MemoryData): Int = {
+    if (in.layerFormat == -1) {
+      getFormats(in.shape.length)
+    } else in.layerFormat
+  }
+
   private[mkldnn] var needOutputFormats: Boolean = true
   @transient private lazy val logger = Logger.getLogger(getClass)
 
@@ -70,7 +76,10 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       if (in.layout == Memory.Format.tnc) {
         val size = in.shape
         HeapData(Array(size(1), size(0), size(2)), Memory.Format.ntc)
-      } else HeapData(in.shape, getFormats(in.shape.length))
+      } else {
+        // HeapData(in.shape, getFormats(in.shape.length))
+        HeapData(in.shape, getLayerFormats(in))
+      }
     })
   }
 
@@ -85,7 +94,12 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     }
     outputShape.map(in => {
       val size = in.toSingle().toArray
-      HeapData(size, getFormats(size.length))
+      val f = if (inputs(0).layerFormat == -1 || size.length != 4) {
+        getFormats(size.length)
+      } else inputs(0).layerFormat
+      val heap = HeapData(size, f)
+      heap.setLayerFormat(f)
+      heap
     }).toArray
   }
 
