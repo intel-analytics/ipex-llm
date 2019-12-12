@@ -144,11 +144,6 @@ class MaxPooling(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, 1, fwdMemPrims,
       buffer)
-
-    if (output.isTensor && _outputFormats(0).layout == Memory.Format.nhwc) {
-      val shape = _outputFormats(0).shape
-      output.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
-    }
     output
   }
 
@@ -158,11 +153,6 @@ class MaxPooling(
       gradInput.asInstanceOf[Tensor[Float]])
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives, 1,
       bwdMemPrims, buffer)
-
-    if (gradInput.isTensor && _gradInputFormats(0).layout == Memory.Format.nhwc) {
-      val shape = _gradInputFormats(0).shape
-      gradInput.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
-    }
     gradInput
   }
 }

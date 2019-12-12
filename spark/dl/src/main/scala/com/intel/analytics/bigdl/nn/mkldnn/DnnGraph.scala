@@ -18,11 +18,12 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import java.util
 
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
-import com.intel.analytics.bigdl.nn.{Graph, mkldnn, MklInt8Convertible}
+import com.intel.analytics.bigdl.nn.{Graph, MklInt8Convertible, mkldnn}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Node, T}
 
@@ -80,7 +81,13 @@ class DnnGraph(
         findDnnInput(node, input)
       }
       inputCache(i) = nodeInput
-      node.element.forward(nodeInput)
+      val output = node.element.forward(nodeInput)
+      // check formats
+      if (output.isTensor &&
+        node.element.asInstanceOf[MklDnnLayer].outputFormats()(0).layout == Memory.Format.nhwc) {
+        val shape = node.element.asInstanceOf[MklDnnLayer].outputFormats()(0).shape
+        output.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+      }
       i += 1
     }
     output = getRealOutput(input, dummyOutput.element.output)
@@ -104,7 +111,13 @@ class DnnGraph(
       // use input from forward
       val curInput = inputCache(backId2ForwardId(i))
       if (!isStopGradient(curNode.element)) {
-        curNode.element.updateGradInput(curInput, curGradOutput)
+        val gradInput = curNode.element.updateGradInput(curInput, curGradOutput)
+        if (gradInput.isTensor &&
+          curNode.element.asInstanceOf[MklDnnLayer]
+            .gradInputFormats()(0).layout == Memory.Format.nhwc) {
+          val shape = curNode.element.asInstanceOf[MklDnnLayer].gradInputFormats()(0).shape
+          gradInput.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
+        }
       }
       i += 1
     }

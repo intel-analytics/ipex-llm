@@ -85,8 +85,8 @@ case class IRSpatialBatchNormalization[T: ClassTag](
 
 case class IRIdentity[T: ClassTag]() extends IROperator[T]
 
-case class IRDropout[T: ClassTag](initP: Double = 0.5, inplace: Boolean = false,
-                                  scale: Boolean = true) extends IROperator[T]
+//case class IRDropout[T: ClassTag](initP: Double = 0.5, inplace: Boolean = false,
+//                                  scale: Boolean = true) extends IROperator[T]
 
 case class IRReLU[T: ClassTag](ip: Boolean = false) extends IROperator[T]
 

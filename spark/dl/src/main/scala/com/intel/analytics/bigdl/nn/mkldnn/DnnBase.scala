@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{DataType, Memory}
+import com.intel.analytics.bigdl.mkl.DataType
 import com.intel.analytics.bigdl.nn.DynamicContainer
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
@@ -206,11 +206,6 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
       updateOutputMemoryPrimitives,
       updateOutputTensors
     )
-
-    if (output.isTensor && _outputFormats(0).layout == Memory.Format.nhwc) {
-      val shape = _outputFormats(0).shape
-      output.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
-    }
     output
   }
 
@@ -248,21 +243,16 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length,
       updateGradInputMemoryPrimitives, updateGradInputTensors)
-
-    if (gradInput.isTensor && _gradInputFormats(0).layout == Memory.Format.nhwc) {
-      val shape = _gradInputFormats(0).shape
-      gradInput.toTensor[Float].resize(Array(shape(0), shape(2), shape(3), shape(1)))
-    }
     gradInput
   }
 
 
-  override private[mkldnn] def inputFormats() = {
+  override private[bigdl] def inputFormats() = {
     require(_inputFormats != null, "You should call initFwdPrimitives first")
     _inputFormats
   }
 
-  override private[mkldnn] def gradInputFormats() = {
+  override private[bigdl] def gradInputFormats() = {
     require(_gradInputFormats != null, "You should call initBwdPrimitives first")
     _gradInputFormats
   }
@@ -272,7 +262,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     _outputFormats
   }
 
-  override private[mkldnn] def gradOutputFormats() = {
+  override private[bigdl] def gradOutputFormats() = {
     require(_gradOutputFormats != null, "You should call initBwdPrimitives first")
     _gradOutputFormats
   }
