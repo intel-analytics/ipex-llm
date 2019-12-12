@@ -103,13 +103,18 @@ class StaticGraph[T: ClassTag](
     this
   }
 
+  // Merge a nested StaticGraph into a single StaticGraph
   // TODO: should support more general cases
   def toSingleGraph(): Graph[T] = {
+    require(toSingleGraphCheck(this),
+      "This graph cannot be merged into a single StaticGraph")
     var i = 0
     var resultOutputNode = outputs(0)
     while (i < forwardExecution.length - 1) {
       if (forwardExecution(i).element.isInstanceOf[StaticGraph[T]]) {
         val graph = forwardExecution(i).element.asInstanceOf[StaticGraph[T]]
+        require(toSingleGraphCheck(graph),
+          "This graph cannot be merged into a single StaticGraph")
         val inputNode = graph.inputs(0).nextNodes(0)
         inputNode.removePrevEdges()
         val preNode = forwardExecution(i).prevNodes(0)
@@ -125,6 +130,13 @@ class StaticGraph[T: ClassTag](
       i += 1
     }
     Graph(inputs(0), resultOutputNode)
+  }
+
+  def toSingleGraphCheck(graph: StaticGraph[T]): Boolean = {
+    if (graph.asInstanceOf[StaticGraph[T]].outputs.length == 1
+      && graph.asInstanceOf[StaticGraph[T]].inputs.length == 1) {
+      true
+    } else false
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {

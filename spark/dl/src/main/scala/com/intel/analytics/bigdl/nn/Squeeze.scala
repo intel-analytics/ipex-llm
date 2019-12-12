@@ -50,13 +50,13 @@ class Squeeze[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val _inputSize = inputShape.toSingle().toArray
-    var test = new ArrayBuffer[Int]()
+    var resultSize = new ArrayBuffer[Int]()
     for (i <- 1 to _inputSize.length) {
       if (!dims.contains(i)) {
-        test.append(_inputSize(i - 1))
+        resultSize.append(_inputSize(i - 1))
       }
     }
-    Shape(test.toArray)
+    Shape(resultSize.toArray)
   }
 
   override def updateOutput(input: Tensor[_]): Tensor[_] = {
