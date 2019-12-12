@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
-import com.intel.analytics.bigdl.nn.keras.{Input => KInput, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, Input => KInput, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Input => TInput}
 import com.intel.analytics.bigdl.utils.Shape
 
@@ -92,7 +92,8 @@ trait InferShape {
     val invalidNodes = if (this.isKerasStyle()) {
       modules.filter{!_.isKerasStyle()}
     } else {
-      modules.filter{_.isKerasStyle()}
+      // TODO:
+      modules.filter{_.isKerasStyle()}.filter{!_.isBuilt()}
     }
     if (invalidNodes.length > 0) {
       throw new InvalidLayer(s"""Do not mix ${this}(isKerasStyle=${isKerasStyle()}) with Layer
@@ -105,7 +106,16 @@ trait InferShape {
     if (this.isKerasStyle()) {
       require(modules != null && !modules.isEmpty, "Empty input is not allowed")
     }
-    excludeInvalidLayers(modules)
+
+    // TODO:
+    // debug Cannot know if doing toGraph or not
+//    if (!(modules.length == 1
+//      && modules(0).isKerasStyle()
+//      && modules(0).asInstanceOf[KerasLayer[Activity, Activity, T]].getName()
+//      .equals(modules(0).getName()))) {
+      excludeInvalidLayers(modules)
+//    }
+    // debug
   }
 }
 

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.{Criterion, DataSet}
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Container, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Input => TInput, Container, Graph, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -187,6 +187,24 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
     checkWithCurrentInputShape(calcInputShape)
     getOutputShape()
   }
+
+  // debug
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val graph = labor.asInstanceOf[StaticGraph[T]]
+    val fwdExecutions = graph.getForwardExecutions()
+    for (i <- 0 until fwdExecutions.length) {
+      val worker = fwdExecutions(i).element.asInstanceOf[KerasLayer[Activity, Activity, T]].labor
+
+      fwdExecutions(i).element = worker
+      if ((!worker.isKerasStyle() && worker.isInstanceOf[Container[Activity, Activity, T]]) ||
+        (worker.isKerasStyle() && worker.isInstanceOf[KerasModel[T]])) {
+        fwdExecutions(i).element = worker.toGraph()
+      }
+    }
+    graph.toSingleGraph()
+  }
+
+  // debug
 }
 
 object Model extends KerasLayerSerializable{
@@ -320,6 +338,20 @@ class Sequential[T: ClassTag]()
     checkWithCurrentInputShape(calcInputShape)
     getOutputShape()
   }
+
+  // debug
+  // Convert Keras Sequential to BLAS StaticGraph
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
+    val endNodes = this.getEndNodes(starts)
+    // Disable excludeInvalidLayers to allow customized Keras layers
+    new StaticGraph(starts, endNodes, enableExcludeChecking = false)
+  }
+
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    labor.asInstanceOf[TSequential[T]].getEndNodes(startNodes)
+  }
+  // debug
 }
 
 object Sequential extends KerasLayerSerializable{

@@ -167,27 +167,17 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   inputShapeValue = batchInputShape
 
+  // debug
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    // Nested Keras Sequential
-    if (labor.isInstanceOf[KSequential[T]]) {
-      labor.asInstanceOf[KSequential[T]].labor.asInstanceOf[TSequential[T]].getEndNodes(startNodes)
+    // Customized Keras layer
+    if (labor.isKerasStyle() && labor.getName().equals(this.getName())) {
+      Array(this.inputs(startNodes))
     } else {
-      // Customized Keras layer
-      if (labor.isKerasStyle()) {
-        Array(this.inputs(startNodes))
-      // Common Keras layer
-      } else {
-        labor.getEndNodes(startNodes)
-      }
+    // Common Keras layer or BLAS layer
+      labor.getEndNodes(startNodes)
     }
   }
-
-  // Convert Keras Container to StaticGraph
-  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
-    val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
-    val endNodes = this.getEndNodes(starts)
-    new StaticGraph(starts, endNodes, enableExcludeChecking = false)
-  }
+  // debug
 
   def labor: AbstractModule[A, B, T] = {
     if (this.modules.isEmpty) {
@@ -299,7 +289,6 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
         this.build(inputShape)
       }
     }
-
     processInputs(nodes)
   }
 

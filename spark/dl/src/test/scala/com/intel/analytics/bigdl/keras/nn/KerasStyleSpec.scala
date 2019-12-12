@@ -284,9 +284,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(Dense(128))
     seq.add(KDropout(0.2))
     seq.add(Activation("relu"))
-
     seq.add(Dense(10, activation = "softmax"))
-    // TODO cannot with the last Dense added
 
     // For such cases, toSingleGraph() is unnecessary
     val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
@@ -295,6 +293,23 @@ class KerasStyleSpec extends BigDLSpecHelper {
     // graph.evaluate()
     val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
     val tensor = Tensor[Float](Array(3, 20, 100)).rand()
+    // ir.evaluate()
+    val output = ir.forward(tensor)
+  }
+
+  "KGraph to IRGraph" should "work" in {
+    import com.intel.analytics.bigdl.mkl.Memory
+    val input = Input[Float](inputShape = Shape(10))
+    val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
+    val d2 = Dense[Float](5).setName("dense2").inputs(d)
+    val model = Model[Float](input, d2)
+
+    val graph = model.toGraph().asInstanceOf[StaticGraph[Float]]
+    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    // graph.evaluate()
+    val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
+    val tensor = Tensor[Float](Array(3, 10)).rand()
     // ir.evaluate()
     val output = ir.forward(tensor)
   }
