@@ -123,7 +123,7 @@ Hdfs Test Suite
 
 
 Quantization Test Suite
-   ${hadoop}=                       Catenate                 SEPARATOR=/             /opt/work/hadoop-2.6.5/bin        hadoop
+   ${hadoop}=                       Catenate                 SEPARATOR=/             /opt/work/hadoop-2.7.2/bin        hadoop
    Run                              ${hadoop} fs -get ${mnist_data_source} /tmp/
    Log To Console                   got mnist data!!
    Run                              ${hadoop} fs -get ${cifar_data_source} /tmp/
