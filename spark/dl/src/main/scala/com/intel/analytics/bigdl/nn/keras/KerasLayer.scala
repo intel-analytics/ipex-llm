@@ -171,7 +171,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
     // Customized Keras layer
     if (labor.isKerasStyle() && labor.getName().equals(this.getName())) {
-      Array(this.inputs(startNodes))
+      Array(this.toGraphInputs(startNodes))
     } else {
     // Common Keras layer or BLAS layer
       labor.getEndNodes(startNodes)
@@ -259,15 +259,10 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    // If converting from Sequential to Graph, no need to build again.
-    // Also, no need to validate the input
-    if (!this.isBuilt()) {
-      validateInput(nodes.map(_.element))
-
-      if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
-        val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
-        this.build(inputShape)
-      }
+    validateInput(nodes.map(_.element))
+    if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
+    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+      this.build(inputShape)
     }
 
     processInputs(nodes)
@@ -279,15 +274,10 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    // If converting from Sequential to Graph, no need to build again.
-    // Also, no need to validate the input
-    if (!this.isBuilt()) {
-      validateInput(nodes.map(_.element))
-
-      if (!nodes.isEmpty) {
-        val inputShape = Shape(nodes.map {_.element.getOutputShape()}.toList)
-        this.build(inputShape)
-      }
+    validateInput(nodes.map(_.element))
+    if (!nodes.isEmpty) {
+    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+      this.build(inputShape)
     }
     processInputs(nodes)
   }

@@ -808,6 +808,16 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     processInputs(nodes)
   }
 
+  // debug
+  def toGraphInputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
+    processInputs(nodes)
+  }
+
+  def toGraphInputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
+    processInputs(nodes)
+  }
+  // debug
+
   /**
    * Build graph: some other modules point to current module
    * @param first distinguish from another inputs when input parameter list is empty
@@ -1103,7 +1113,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return current end nodes
    */
   private[bigdl] def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    val endNodes = Array(this.inputs(startNodes: _*))
+    // debug
+    // val endNodes = Array(this.inputs(startNodes: _*))
+    val endNodes = Array(this.toGraphInputs(startNodes: _*))
+    // debug
     endNodes
   }
 
