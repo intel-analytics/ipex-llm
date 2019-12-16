@@ -25,7 +25,6 @@ import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRGraph}
 import com.intel.analytics.bigdl.utils.{Node, Util}
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -105,7 +104,6 @@ class StaticGraph[T: ClassTag](
   }
 
   // Merge a nested StaticGraph into a single StaticGraph
-  // TODO: should support more general cases
   def toSingleGraph(): Graph[T] = {
     val graph = this.cloneModule()
     val fwdExecution = graph.getSortedForwardExecutions()
@@ -115,6 +113,7 @@ class StaticGraph[T: ClassTag](
       if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
         val g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
         require(toSingleGraphCheck(g), "This graph cannot be merged into a single StaticGraph")
+        fwdExecution(i).element = g.toSingleGraph()
 
         if (fwdExecution(i).prevNodes.length == 1) {
           val inputNode = g.inputs(0).nextNodes(0)
