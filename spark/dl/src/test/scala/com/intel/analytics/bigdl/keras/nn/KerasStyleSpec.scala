@@ -275,6 +275,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "KSequential to IRGraph" should "work" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
     import com.intel.analytics.bigdl.mkl.Memory
 
     val seq = KSequential[Float]()
@@ -282,7 +283,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(Convolution1D(10, 5, activation = "relu"))
     seq.add(GlobalMaxPooling1D())
     seq.add(Dense(128))
-    seq.add(KDropout(0.2))
+    // seq.add(KDropout(0.2))
     seq.add(Activation("relu"))
     seq.add(Dense(10, activation = "softmax"))
 
@@ -291,13 +292,24 @@ class KerasStyleSpec extends BigDLSpecHelper {
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
     // graph.evaluate()
-    val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
+    val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
+
     val tensor = Tensor[Float](Array(3, 20, 100)).rand()
-    // ir.evaluate()
+    val outputBlas = graph.forward(tensor)
     val output = ir.forward(tensor)
+
+    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+    val gradInputBlas = graph.backward(tensor, gradOutput)
+    val gradInput = graph.backward(tensor, gradOutput)
+
+    outputBlas should be(output)
+    gradInputBlas should be(gradInput)
+
+    System.clearProperty("bigdl.engineType")
   }
 
   "KGraph to IRGraph" should "work" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
     import com.intel.analytics.bigdl.mkl.Memory
     val input = Input[Float](inputShape = Shape(10))
     val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
@@ -308,9 +320,19 @@ class KerasStyleSpec extends BigDLSpecHelper {
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
     // graph.evaluate()
-    val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
+    val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
     val tensor = Tensor[Float](Array(3, 10)).rand()
-    // ir.evaluate()
+
+    val outputBlas = graph.forward(tensor)
     val output = ir.forward(tensor)
+
+    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+    val gradInputBlas = graph.backward(tensor, gradOutput)
+    val gradInput = graph.backward(tensor, gradOutput)
+
+    outputBlas should be(output)
+    gradInputBlas should be(gradInput)
+
+    System.clearProperty("bigdl.engineType")
   }
 }

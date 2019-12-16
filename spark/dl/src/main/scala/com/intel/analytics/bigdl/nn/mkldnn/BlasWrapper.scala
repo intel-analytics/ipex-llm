@@ -86,7 +86,10 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   private def inferOutputFormats(inputs: Array[MemoryData]): Array[MemoryData] = {
     val inputShape = inputs.map(in => Shape(in.shape))
     val outputShape = if (inputShape.length == 1) {
-      List(module.computeOutputShape(inputShape(0)))
+      if (_inputFormats(0).layout == Memory.Format.nhwc) {
+        val s = inputShape(0).toSingle()
+        List(module.computeOutputShape(Shape(Array(s(0), s(2), s(3), s(1)))))
+      } else List(module.computeOutputShape(inputShape(0)))
     } else {
       // multi shape
       val out = module.computeOutputShape(MultiShape(inputShape.toList))
@@ -97,7 +100,10 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       val f = if (inputs(0).layerFormat == -1 || size.length != 4) {
         getFormats(size.length)
       } else inputs(0).layerFormat
-      val heap = HeapData(size, f)
+      val outSize = if (f == Memory.Format.nhwc) {
+        Array(size(0), size(3), size(1), size(2))
+      } else size
+      val heap = HeapData(outSize, f)
       heap.setLayerFormat(f)
       heap
     }).toArray

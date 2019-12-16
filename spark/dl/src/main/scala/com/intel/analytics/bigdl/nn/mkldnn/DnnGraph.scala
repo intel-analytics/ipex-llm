@@ -75,6 +75,10 @@ class DnnGraph(
     var i = 0
     while(i < forwardExecution.length) {
       val node = forwardExecution(i)
+      if (i == 7) {
+        val tmp = 0
+      }
+      println(s"iiii ${node.element}")
       val nodeInput = if (skipPrimitiveId(i)) {
         findInput(node, input)
       } else {
@@ -433,9 +437,11 @@ class DnnGraph(
     for (i <- 0 until forwardExecution.length) {
       if (!skipPrimitiveId(i)) {
         val m = forwardExecution(i)
+        println(s"11111111 ${m}")
         lastOutputFormats = findInputFormats(m, inputs)
         val realInputAndOutputFormats =
           m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
+        println(s"222222 ${realInputAndOutputFormats._2(0).layout} ${realInputAndOutputFormats._2(0).shape.foreach(println(_))}")
         // init model format
         if (i == 0) {
           val t = realInputAndOutputFormats._2
@@ -448,6 +454,7 @@ class DnnGraph(
           }
         } else {
           // set layer formats for output
+          modelFormat = Memory.Format.nhwc
           realInputAndOutputFormats._2.foreach(_.setLayerFormat(modelFormat))
         }
 

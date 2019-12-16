@@ -35,6 +35,12 @@ sealed trait MemoryData extends Serializable {
     layerFormat = f
   }
 
+  def getFormatShape(): Array[Int] = {
+    if (layout == Memory.Format.nhwc) {
+      Array(shape(0), shape(2), shape(3), shape(1))
+    } else shape
+  }
+
   def cloneFormat(): MemoryData
 
   private val UNDEFINED: Long = -1
