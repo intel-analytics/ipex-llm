@@ -1336,6 +1336,32 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       val model = Graph(Array(n1, n2), Array(n3, n4))
     }
   }
+
+  "toSingleGraph" should "work" in {
+    val input = Input()
+
+    val linear1 = Linear[Float](2, 3).inputs(input)
+
+    val inputg1 = Input()
+    val l1 = Linear[Float](3, 5).inputs(inputg1)
+    val g1 = Graph(inputg1, l1).inputs(linear1)
+
+    val inputg2 = Input()
+    val l2 = Linear[Float](5, 3).inputs(inputg2)
+    val g2 = Graph(inputg2, l2).inputs(g1)
+
+    val linear3 = Linear(3, 6).inputs(g2)
+    val linear4 = Linear(3, 5).inputs(g2)
+
+    val graph = Graph(input, Array(linear3, linear4)).asInstanceOf[StaticGraph[Float]]
+    val toSingle = graph.toSingleGraph()
+
+    val tensor = Tensor[Float](Array(3, 2)).rand()
+    val graphResult = graph.forward(tensor)
+    val toSingleResult = toSingle.forward(tensor)
+
+    graphResult should equal(toSingleResult)
+  }
 }
 
 object ModelUntils {

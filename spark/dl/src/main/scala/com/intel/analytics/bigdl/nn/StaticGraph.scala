@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRGraph}
 import com.intel.analytics.bigdl.utils.{Node, Util}
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -106,33 +107,49 @@ class StaticGraph[T: ClassTag](
   // Merge a nested StaticGraph into a single StaticGraph
   // TODO: should support more general cases
   def toSingleGraph(): Graph[T] = {
-    require(toSingleGraphCheck(this),
-      "This graph cannot be merged into a single StaticGraph")
+    val graph = this.cloneModule()
+    val fwdExecution = graph.getSortedForwardExecutions()
+
     var i = 0
-    var resultOutputNode = outputs(0)
-    while (i < forwardExecution.length - 1) {
-      if (forwardExecution(i).element.isInstanceOf[StaticGraph[T]]) {
-        val graph = forwardExecution(i).element.asInstanceOf[StaticGraph[T]]
-        require(toSingleGraphCheck(graph),
-          "This graph cannot be merged into a single StaticGraph")
-        val inputNode = graph.inputs(0).nextNodes(0)
-        inputNode.removePrevEdges()
-        val preNode = forwardExecution(i).prevNodes(0)
-        preNode.removeNextEdges()
-        preNode.add(inputNode)
-        val outputNode = graph.outputs(0)
+    while (i < fwdExecution.length - 1) {
+      if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
+        val g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
+        require(toSingleGraphCheck(g), "This graph cannot be merged into a single StaticGraph")
+
+        if (fwdExecution(i).prevNodes.length == 1) {
+          val inputNode = g.inputs(0).nextNodes(0)
+          g.inputs(0).delete(inputNode)
+          val preNode = fwdExecution(i).prevNodes(0)
+          preNode.delete(fwdExecution(i))
+          preNode.add(inputNode)
+        } else {
+          g.inputs(0).element = Identity()
+          val inputNode = g.inputs(0)
+          while (fwdExecution(i).prevNodes.length != 0) {
+            val preNode = fwdExecution(i).prevNodes(0)
+            preNode.delete(fwdExecution(i))
+            preNode.add(inputNode)
+          }
+        }
+
+        val outputNode = g.outputs(0)
         outputNode.removeNextEdges()
-        val nextNode = forwardExecution(i).nextNodes(0)
-        nextNode.removePrevEdges()
-        outputNode.add(nextNode)
-        resultOutputNode = nextNode
+        while (fwdExecution(i).nextNodes.length != 0) {
+          val nextNode = fwdExecution(i).nextNodes(0)
+          fwdExecution(i).delete(nextNode)
+          outputNode.add(nextNode)
+        }
       }
       i += 1
     }
-    Graph(inputs(0), resultOutputNode)
+
+    val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
+    val resultOutputNodes = dmOutput.prevNodes
+    resultOutputNodes.foreach(_.delete(dmOutput))
+    Graph(graph.inputs(0), resultOutputNodes.toArray)
   }
 
-  def toSingleGraphCheck(graph: StaticGraph[T]): Boolean = {
+  private def toSingleGraphCheck(graph: StaticGraph[T]): Boolean = {
     if (graph.asInstanceOf[StaticGraph[T]].outputs.length == 1
       && graph.asInstanceOf[StaticGraph[T]].inputs.length == 1) {
       true
