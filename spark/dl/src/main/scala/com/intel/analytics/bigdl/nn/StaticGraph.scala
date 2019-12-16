@@ -107,13 +107,15 @@ class StaticGraph[T: ClassTag](
   def toSingleGraph(): Graph[T] = {
     val graph = this.cloneModule()
     val fwdExecution = graph.getSortedForwardExecutions()
+    val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
 
     var i = 0
-    while (i < fwdExecution.length - 1) {
+    while (i < fwdExecution.length) {
       if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
-        val g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
+        var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
         require(toSingleGraphCheck(g), "This graph cannot be merged into a single StaticGraph")
-        fwdExecution(i).element = g.toSingleGraph()
+        g = g.toSingleGraph().asInstanceOf[StaticGraph[T]]
+        fwdExecution(i).element = g
 
         if (fwdExecution(i).prevNodes.length == 1) {
           val inputNode = g.inputs(0).nextNodes(0)
@@ -142,7 +144,6 @@ class StaticGraph[T: ClassTag](
       i += 1
     }
 
-    val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
     val resultOutputNodes = dmOutput.prevNodes
     resultOutputNodes.foreach(_.delete(dmOutput))
     Graph(graph.inputs(0), resultOutputNodes.toArray)

@@ -1344,7 +1344,12 @@ class StaticGraphSpec extends FlatSpec with Matchers {
 
     val inputg1 = Input()
     val l1 = Linear[Float](3, 5).inputs(inputg1)
-    val g1 = Graph(inputg1, l1).inputs(linear1)
+
+    val inputg1in = Input()
+    val l1in = Linear[Float](5, 5).inputs(inputg1in)
+    val g1in = Graph(inputg1in, l1in).inputs(l1)
+
+    val g1 = Graph(inputg1, g1in).inputs(linear1)
 
     val inputg2 = Input()
     val l2 = Linear[Float](5, 3).inputs(inputg2)
