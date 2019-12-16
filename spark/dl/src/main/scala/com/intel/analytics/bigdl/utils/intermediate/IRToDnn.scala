@@ -151,7 +151,6 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def fromSpatialMaxPooling(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialMaxPooling[Float]]
-    // require(t.format == DataFormat.NCHW, "Dnn SpatialMaxPooling only supports NCHW")
     val layer = ReflectionUtils.reflectFromIR(
       node, Class.forName(prefix + "MaxPooling")).asInstanceOf[MaxPooling]
     if (t.ceilMode) layer.ceil() else layer.floor()
@@ -160,7 +159,6 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def fromSpatialAveragePooling(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialAveragePooling[Float]]
-    // require(t.format == DataFormat.NCHW, "Dnn SpatialAveragePooling only supports NCHW")
     val layer = ReflectionUtils.reflectFromIR(
       node, Class.forName(prefix + "AvgPooling")).asInstanceOf[AvgPooling]
     if (t.ceilMode) layer.ceil() else layer.floor()
@@ -169,7 +167,6 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def fromSpatialCrossMapLRN(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialCrossMapLRN[Float]]
-    // require(t.format == DataFormat.NCHW, "Dnn LRN only supports NCHW")
     ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "LRN"))
   }
 
@@ -182,7 +179,6 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def fromSpatialBatchNormalization(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRSpatialBatchNormalization[Float]]
-    // require(t.dataFormat == DataFormat.NCHW, "Dnn SpatialBatchNormalization only supports NCHW")
     val nOutput = t.nOutput
     val eps = t.eps
     val momentum = 1 - t.momentum // meaning not same with mkldnn
@@ -552,16 +548,6 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
   private def checkRequirement(layer: IRElement[Float]) : Boolean = {
     try {
       layer.getOp() match {
-//        case conv: IRSpatialConvolution[Float] =>
-//          require(conv.format == DataFormat.NCHW)
-//        case maxPool: IRSpatialMaxPooling[Float] =>
-//          require(maxPool.format == DataFormat.NCHW)
-//        case avgPool: IRSpatialAveragePooling[Float] =>
-//          require(avgPool.format == DataFormat.NCHW)
-//        case sbn: IRSpatialBatchNormalization[Float] =>
-//          require(sbn.dataFormat == DataFormat.NCHW)
-//        case lrn: IRSpatialCrossMapLRN[Float] =>
-//          require(lrn.format == DataFormat.NCHW)
         case join: IRJoinTable[Float] =>
           require(join.nInputDims <= 0)
         case _ => null

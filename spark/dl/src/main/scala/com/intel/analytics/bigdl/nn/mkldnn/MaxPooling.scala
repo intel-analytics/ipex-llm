@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.{Utils => NNUtils}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -27,7 +27,8 @@ class MaxPooling(
   dW: Int = 1,
   dH: Int = 1,
   padW: Int = 0,
-  padH: Int = 0
+  padH: Int = 0,
+  val format: DataFormat = DataFormat.NCHW
 ) extends MklDnnLayer {
   @transient private var workSpaceFormat: MemoryData = _
   @transient private var workSpace: Tensor[Float] = _
@@ -162,6 +163,7 @@ object MaxPooling {
     dW: Int = 1,
     dH: Int = 1,
     padW: Int = 0,
-    padH: Int = 0
-  ): MaxPooling = new MaxPooling(kW, kH, dW, dH, padW, padH)
+    padH: Int = 0,
+    format: DataFormat = DataFormat.NCHW
+  ): MaxPooling = new MaxPooling(kW, kH, dW, dH, padW, padH, format)
 }

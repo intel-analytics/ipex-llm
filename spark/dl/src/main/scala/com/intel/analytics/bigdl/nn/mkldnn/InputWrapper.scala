@@ -15,8 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 
 private[bigdl] class InputWrapper extends MklDnnLayer {
 
@@ -29,11 +28,6 @@ private[bigdl] class InputWrapper extends MklDnnLayer {
     inputLayer.initFwdPrimitives(inputs, phase)
     _inputFormats = inputLayer.inputFormats()
     _outputFormats = inputLayer.outputFormats()
-
-    if (inputs(0).layout == Memory.Format.nhwc) {
-      _outputFormats(0).setLayerFormat(Memory.Format.nhwc)
-    } else _outputFormats(0).setLayerFormat(Memory.Format.nchw)
-
     (_inputFormats, _outputFormats)
   }
 

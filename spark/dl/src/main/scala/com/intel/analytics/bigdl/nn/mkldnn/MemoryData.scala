@@ -22,7 +22,7 @@ sealed trait MemoryData extends Serializable {
   def shape: Array[Int]
   def layout: Int
   def dataType: Int
-  var layerFormat : Int = -1
+  var heapFormat : Int = -1
 
   private var _mask: Int = -1
   private var _scales: Array[Float] = Array.emptyFloatArray
@@ -31,11 +31,12 @@ sealed trait MemoryData extends Serializable {
   def setMask(s: Int): Unit = _mask = s
   def scales: Array[Float] = _scales
   def setScales(f: Array[Float]): Unit = _scales = f
-  def setLayerFormat(f: Int) : Unit = {
-    layerFormat = f
-  }
 
-  def getFormatShape(): Array[Int] = {
+  def setHeapFormat(f: Int): this.type = {
+    heapFormat = f
+    this
+  }
+  def getHeapShape(): Array[Int] = {
     if (layout == Memory.Format.nhwc) {
       Array(shape(0), shape(2), shape(3), shape(1))
     } else shape

@@ -291,18 +291,16 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
-    // graph.evaluate()
     val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
 
     val tensor = Tensor[Float](Array(3, 20, 100)).rand()
     val outputBlas = graph.forward(tensor)
     val output = ir.forward(tensor)
+    outputBlas should be(output)
 
     val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
     val gradInputBlas = graph.backward(tensor, gradOutput)
     val gradInput = graph.backward(tensor, gradOutput)
-
-    outputBlas should be(output)
     gradInputBlas should be(gradInput)
 
     System.clearProperty("bigdl.engineType")

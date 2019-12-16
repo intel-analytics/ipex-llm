@@ -165,7 +165,7 @@ private[bigdl] class IRGraph[T: ClassTag](
             "Only support input with tensor type, table not supported")
           val t1 = t._1.asInstanceOf[Int] // starts from 1
           val t2 = t._2.asInstanceOf[Tensor[T]]
-          if (inputFormats(t1 -1 ) == Memory.Format.nhwc) {
+          if (inputFormats(t1 - 1 ) == Memory.Format.nhwc) {
             val sizeNew = Array(t2.size(1), t2.size(4), t2.size(2), t2.size(3))
             inputMemory(t1 - 1) = HeapData(sizeNew, inputFormats(t1 - 1))
           } else {
