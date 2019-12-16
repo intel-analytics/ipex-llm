@@ -35,7 +35,6 @@ abstract class GlobalPooling1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"GlobalPooling1D requires 3D input, but got input dim ${input.length}")
-    // Shape(input(0), input(2))
-    Shape(input(0), input(1))
+    Shape(input(0), input(2))
   }
 }
