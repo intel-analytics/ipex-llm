@@ -210,7 +210,7 @@ class StaticGraph[T: ClassTag](
   }
 
   // Merge a nested StaticGraph into a non-nested one
-  def toSingleGraph(): Graph[T] = {
+  def toSingleGraph(): StaticGraph[T] = {
     val graph = this.cloneModule()
     val fwdExecution = graph.getSortedForwardExecutions()
     val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
@@ -255,6 +255,7 @@ class StaticGraph[T: ClassTag](
 
     val resultOutputNodes = dmOutput.prevNodes
     resultOutputNodes.foreach(_.delete(dmOutput))
-    Graph(graph.inputs(0), resultOutputNodes.toArray)
+    new StaticGraph[T](Array(graph.inputs(0)), resultOutputNodes,
+      enableExcludeChecking = this.enableExcludeChecking)
   }
 }
