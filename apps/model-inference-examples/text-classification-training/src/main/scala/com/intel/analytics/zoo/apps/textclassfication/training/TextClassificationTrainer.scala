@@ -2,7 +2,6 @@ package com.intel.analytics.zoo.apps.textclassfication.training
 
 import java.io.File
 
-import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
 import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.optim.{Adagrad, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -33,10 +32,6 @@ case class TextClassificationTrainerParams(trainDataDir: String = "./20news-1882
 object TextClassificationTrainer extends TextProcessing {
 
   val log: Logger = LoggerFactory.getLogger(this.getClass)
-  val root: LogbackLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).asInstanceOf[LogbackLogger]
-  root.setLevel(Level.INFO)
-  val sparkContextLoger = LoggerFactory.getLogger("org.apache.spark").asInstanceOf[LogbackLogger]
-  sparkContextLoger.setLevel(Level.WARN)
 
   def loadTrainData(dirFile: File): (List[(String, Float)], Int) = {
     val categoryPathList = dirFile.listFiles().filter(_.isDirectory).toList.sorted
