@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn.abstractnn.InvalidLayer
-import com.intel.analytics.bigdl.nn.keras.{Activation, Convolution1D, Dense, Dropout => KDropout, GlobalMaxPooling1D,
-  Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{Activation, Convolution1D, Dense, GlobalMaxPooling1D, Input, InputLayer, KerasIdentityWrapper, Model, Dropout => KDropout, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.mkldnn.Equivalent
 import com.intel.analytics.bigdl.nn.{Input => TInput, Sequential => TSequential, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Shape, T, TestUtils}
+import com.intel.analytics.bigdl.utils._
 
 
 class KerasStyleSpec extends BigDLSpecHelper {
@@ -276,6 +276,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
   "KSequential to IRGraph" should "work" in {
     System.setProperty("bigdl.engineType", "mkldnn")
+
+    RandomGenerator.RNG.setSeed(10)
     import com.intel.analytics.bigdl.mkl.Memory
 
     val seq = KSequential[Float]()
@@ -300,8 +302,10 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
     val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
     val gradInputBlas = graph.backward(tensor, gradOutput)
-    val gradInput = graph.backward(tensor, gradOutput)
-    gradInputBlas should be(gradInput)
+    val gradInput = ir.backward(tensor, gradOutput)
+
+    Equivalent.nearequals(gradInput.toTensor[Float],
+      gradInputBlas.toTensor[Float], 1e-5) should be(true)
 
     System.clearProperty("bigdl.engineType")
   }
@@ -326,7 +330,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
     val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
     val gradInputBlas = graph.backward(tensor, gradOutput)
-    val gradInput = graph.backward(tensor, gradOutput)
+    val gradInput = ir.backward(tensor, gradOutput)
 
     outputBlas should be(output)
     gradInputBlas should be(gradInput)

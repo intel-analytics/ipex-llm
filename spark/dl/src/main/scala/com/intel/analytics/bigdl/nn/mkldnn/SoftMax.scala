@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, PropKind, Query, Stream => DnnStream}
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, PropKind, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -27,13 +27,11 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.collection.mutable.ArrayBuffer
 
 class SoftMax(val axis: Int = -1) extends MklDnnLayer {
+  private val nnSoftMax = nn.SoftMax[Float]()
+
   @transient private var updateOutputTensors: Array[Tensor[Float]] = _
   @transient private var updateOutputMemoryPrimitives: Array[Long] = _
-  @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
-  @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
   @transient private var modelPhase: Phase = null
-
-  private var defaultAxis = 0
 
   private def initPhase(phase: Phase): Unit = {
     if (phase != null) return modelPhase = phase
@@ -55,118 +53,96 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     initPhase(phase)
-    defaultAxis = inputs(0).shape.length match {
-      case 1 => 0
-      case 2 => 1
-      case 3 => 0
-      case 4 => 1
-      case _ => throw new UnsupportedOperationException("1D, 2D, 3D or 4D tensor expected")
+    modelPhase match {
+      case TrainingPhase =>
+        _inputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
+        _outputFormats = inputs.map(x => HeapData(x.shape, format(x.shape)))
+
+        (_inputFormats, _outputFormats)
+      case InferencePhase =>
+        val defaultAxis = inputs(0).shape.length match {
+          case 1 => 0
+          case 2 => 1
+          case 3 => 0
+          case 4 => 1
+          case _ => throw new UnsupportedOperationException("1D, 2D, 3D or 4D tensor expected")
+        }
+
+        _inputFormats = Array(NativeData(inputs(0).shape, inputs(0).layout, DataType.F32))
+
+        val localInputFormat = if (inputs(0).shape.length == 3 &&
+          inputs(0).layout == Memory.Format.ntc) {
+          // note: here, the format and the true memory layout is not consistent.
+          // for ntc input, we should reshape the `shape` and make the format to tnc
+          val shape = Array(inputs(0).shape(1), inputs(0).shape(0), inputs(0).shape(2))
+          NativeData(shape, Memory.Format.tnc)
+        } else {
+          _inputFormats(0)
+        }
+
+        val desc = MklDnnMemory.SoftMaxForwardDescInit(PropKind.ForwardInference,
+          localInputFormat.getMemoryDescription(), if (axis == -1) defaultAxis else axis)
+        val forwardPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, 0L)
+
+        _outputFormats = if (inputs(0).shape.length ==3 &&
+          inputs(0).layout == Memory.Format.ntc) {
+          // because set the input format as tnc first, we should set the output to ntc.
+          Array(NativeData(inputs(0).shape, Memory.Format.ntc))
+        } else {
+          Array(MemoryData.primitiveOutput(forwardPrimDesc))
+        }
+
+        val srcs = Array(inputs(0).getPrimitive(runtime))
+        val indexes = Array(0)
+        val dsts = Array(_outputFormats(0).getPrimitive(runtime))
+
+        val primitive = MklDnnMemory.PrimitiveCreate2(forwardPrimDesc, srcs, indexes,
+          srcs.length, dsts, dsts.length)
+
+        updateOutputPrimitives = Array(primitive)
+        updateOutputMemoryPrimitives = srcs ++ dsts
+
+        output = initTensor(_outputFormats(0))
+
+        (_inputFormats, _outputFormats)
+      case _ => throw new UnsupportedOperationException
     }
-
-    _inputFormats = Array(NativeData(inputs(0).shape, inputs(0).layout, DataType.F32))
-
-    val localInputFormat = if (inputs(0).shape.length == 3 &&
-      inputs(0).layout == Memory.Format.ntc) {
-      // note: here, the format and the true memory layout is not consistent.
-      // for ntc input, we should reshape the `shape` and make the format to tnc
-      val shape = Array(inputs(0).shape(1), inputs(0).shape(0), inputs(0).shape(2))
-      NativeData(shape, Memory.Format.tnc)
-    } else {
-      _inputFormats(0)
-    }
-
-    val desc = MklDnnMemory.SoftMaxForwardDescInit(PropKind.Forward,
-      localInputFormat.getMemoryDescription(), if (axis == -1) defaultAxis else axis)
-    val forwardPrimDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, 0L)
-
-    _outputFormats = if (inputs(0).shape.length ==3 &&
-      inputs(0).layout == Memory.Format.ntc) {
-      // because set the input format as tnc first, we should set the output to ntc.
-      Array(NativeData(inputs(0).shape, Memory.Format.ntc))
-    } else {
-      Array(MemoryData.primitiveOutput(forwardPrimDesc))
-    }
-
-    val srcs = Array(inputs(0).getPrimitive(runtime))
-    val indexes = Array(0)
-    val dsts = Array(_outputFormats(0).getPrimitive(runtime))
-
-    val primitive = MklDnnMemory.PrimitiveCreate2(forwardPrimDesc, srcs, indexes,
-      srcs.length, dsts, dsts.length)
-
-    updateOutputPrimitives = Array(primitive)
-    updateOutputMemoryPrimitives = srcs ++ dsts
-
-    output = initTensor(_outputFormats(0))
-
-    (_inputFormats, _outputFormats)
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    val desc = MklDnnMemory.SoftMaxBackwardDescInit(PropKind.Backward,
-      grad(0).getMemoryDescription(), outputFormats()(0).getMemoryDescription(),
-      if (axis == -1) defaultAxis else axis)
-    val primDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, 0L)
-
-    _gradOutputFormats = grad
-    _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
-
-    val srcs = Array(grad(0).getPrimitive(runtime), outputFormats()(0).getPrimitive(runtime))
-    val indexes = Array(0)
-    val dsts = Array(_gradInputFormats(0).getPrimitive(runtime))
-
-    val primitive = MklDnnMemory.PrimitiveCreate2(primDesc, srcs, indexes,
-      srcs.length, dsts, dsts.length)
-
-    updateGradInputPrimitives = Array(primitive)
-    updateGradInputMemoryPrimitives = srcs ++ dsts
-
-    gradInput = initTensor(_gradInputFormats(0))
-
+    _gradInputFormats = grad.clone()
+    _gradOutputFormats = grad.clone()
     (_gradInputFormats, _gradOutputFormats)
   }
 
   override def updateOutput(input: Activity): Activity = {
-    if (updateOutputTensors == null) {
-      val buffer = new ArrayBuffer[Tensor[Float]]()
-      buffer.append(input.asInstanceOf[Tensor[Float]])
-      buffer.append(output.asInstanceOf[Tensor[Float]])
-      updateOutputTensors = buffer.toArray
+      if (this.isTraining()) {
+        nnSoftMax.forward(input)
+        output = nnSoftMax.output
+      } else {
+        if (updateOutputTensors == null) {
+          val buffer = new ArrayBuffer[Tensor[Float]]()
+          buffer.append(input.asInstanceOf[Tensor[Float]])
+          buffer.append(output.asInstanceOf[Tensor[Float]])
+          updateOutputTensors = buffer.toArray
+        }
+
+        input.toTensor[Float].getTensorType match {
+          case DenseType => updateOutputTensors(0) = input.toTensor
+          case _ =>
+        }
+
+        MklDnnOps.streamSubmit(runtime.stream, 1,
+          updateOutputPrimitives,
+          updateOutputPrimitives.length,
+          updateOutputMemoryPrimitives, updateOutputTensors)
     }
 
-    input.toTensor[Float].getTensorType match {
-      case DenseType => updateOutputTensors(0) = input.toTensor
-      case _ =>
-    }
-
-    MklDnnOps.streamSubmit(runtime.stream, 1,
-      updateOutputPrimitives,
-      updateOutputPrimitives.length,
-      updateOutputMemoryPrimitives, updateOutputTensors)
     output
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    if (updateGradInputTensors == null) {
-      val buffer = new ArrayBuffer[Tensor[Float]]()
-      buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
-      buffer.append(output.asInstanceOf[Tensor[Float]])
-      buffer.append(gradInput.asInstanceOf[Tensor[Float]])
-
-      updateGradInputTensors = buffer.toArray
-    }
-
-    gradOutput.toTensor[Float].getTensorType match {
-      case DenseType => updateGradInputTensors(0) = gradOutput.toTensor
-      case _ =>
-    }
-
-    MklDnnOps.streamSubmit(runtime.stream, 1,
-      updateGradInputPrimitives,
-      updateGradInputPrimitives.length,
-      updateGradInputMemoryPrimitives, updateGradInputTensors
-    )
-
+    gradInput = nnSoftMax.backward(input, gradOutput)
     gradInput
   }
 
