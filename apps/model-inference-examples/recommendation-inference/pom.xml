@@ -11,7 +11,7 @@
     <description>simple example of ncf recommender inference</description>
     <properties>
         <spark.version>2.4.3</spark.version>
-        <bigdl.version>0.9.1</bigdl.version>
+        <bigdl.version>0.10.0</bigdl.version>
         <zoo.version>0.7.0-SNAPSHOT</zoo.version>
     </properties>
 
@@ -22,13 +22,11 @@
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
-
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>2.11.11</version>
         </dependency>
-
         <dependency>
             <groupId>com.intel.analytics.zoo</groupId>
             <artifactId>analytics-zoo-bigdl_${bigdl.version}-spark_${spark.version}</artifactId>
@@ -56,18 +54,27 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.0.0</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>with-dependencies</id>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -102,11 +109,7 @@
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
-
         </plugins>
-
-
     </build>
 </project>
