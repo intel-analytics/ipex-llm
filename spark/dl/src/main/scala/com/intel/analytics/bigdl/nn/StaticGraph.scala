@@ -219,8 +219,10 @@ class StaticGraph[T: ClassTag](
     while (i < fwdExecution.length) {
       if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
         var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
-        require(toSingleGraphCheck(g),
-          "This graph cannot be converted into a non-nested StaticGraph")
+        require(g.outputs.length == 1 && g.inputs.length == 1,
+          s"In order to avoid possible ambiguities in node connection. " +
+            s"This StaticGraph cannot be merged into a non-nested one. " +
+            s"Its inner graph ${g.getName()} has more than one input or output. ")
         g = g.toSingleGraph().asInstanceOf[StaticGraph[T]]
         fwdExecution(i).element = g
 
@@ -254,12 +256,5 @@ class StaticGraph[T: ClassTag](
     val resultOutputNodes = dmOutput.prevNodes
     resultOutputNodes.foreach(_.delete(dmOutput))
     Graph(graph.inputs(0), resultOutputNodes.toArray)
-  }
-
-  private def toSingleGraphCheck(graph: StaticGraph[T]): Boolean = {
-    if (graph.asInstanceOf[StaticGraph[T]].outputs.length == 1
-      && graph.asInstanceOf[StaticGraph[T]].inputs.length == 1) {
-      true
-    } else false
   }
 }
