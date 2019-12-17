@@ -21,22 +21,24 @@ object TextClassificationStreaming {
     var embeddingFilePath = "./glove.6B.300d.txt"
     var modelPath = "./text-classification.bigdl"
     var parallelism = 2
+    var inputFile: String = "./"
 
     try {
       val params = ParameterTool.fromArgs(args)
       hostname = if (params.has("hostname")) params.get("hostname") else "localhost"
-      port = params.getInt("port")
+      port = if (params.has("port")) params.getInt("port") else 9000
       supportedConcurrentNum = if(params.has("supportedConcurrentNum")) params.getInt("supportedConcurrentNum") else 1
       stopWordsCount = if(params.has("stopWordsCount")) params.getInt("stopWordsCount") else 10
       sequenceLength = if(params.has("sequenceLength")) params.getInt("sequenceLength") else 200
       embeddingFilePath = if(params.has("embeddingFilePath")) params.get("embeddingFilePath") else "./glove.6B.300d.txt"
       modelPath = if(params.has("modelPath")) params.get("modelPath") else "./text-classification.bigdl"
       parallelism = if(params.has("parallelism")) params.getInt("parallelism") else 2
+      inputFile = if(params.has("inputFile")) params.get("inputFile") else "./"
     } catch {
       case e: Exception => {
         System.err.println("Please run 'TextClassificationStreaming --hostname <hostname> --port <port> " +
           "--supportedConcurrentNum <supportedConcurrentNum> --stopWordsCount <stopWordsCount> --sequenceLength <sequenceLength>" +
-          "--embeddingFilePath <embeddingFilePath> --modelPath <modelPath> --parallelism <parallelism>'.")
+          "--embeddingFilePath <embeddingFilePath> --modelPath <modelPath> --parallelism <parallelism>' --inputFile <inputFile>.")
         System.err.println("To start a simple text server, run 'netcat -l <port>' and type the input text into the command line")
         return
       }
@@ -55,7 +57,11 @@ object TextClassificationStreaming {
     inputs.add(input)
     println("################" + model.doPredict(inputs))
 
-    val textStream: DataStream[String] = env.socketTextStream(hostname, port, '\n')//.timeWindow(Time.seconds(5))
+
+    val textStream: DataStream[String] = env.readTextFile(inputFile)//.timeWindow(Time.seconds(5))
+    if(inputFile.eq("./")) {
+      val textStream: DataStream[String] = env.socketTextStream(hostname, port, '\n') //.timeWindow(Time.seconds(5))
+    }
 
     textStream.map(text => {
       val inputTensor: JTensor = model.preprocess(text)
