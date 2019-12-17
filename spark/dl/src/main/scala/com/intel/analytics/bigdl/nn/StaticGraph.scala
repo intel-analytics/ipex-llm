@@ -113,7 +113,8 @@ class StaticGraph[T: ClassTag](
     while (i < fwdExecution.length) {
       if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
         var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
-        require(toSingleGraphCheck(g), "This graph cannot be merged into a single StaticGraph")
+        require(toSingleGraphCheck(g),
+          "This graph cannot be converted into a non-nested StaticGraph")
         g = g.toSingleGraph().asInstanceOf[StaticGraph[T]]
         fwdExecution(i).element = g
 

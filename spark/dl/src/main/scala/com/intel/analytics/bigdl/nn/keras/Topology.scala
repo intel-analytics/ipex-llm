@@ -189,9 +189,9 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
   }
 
   // debug
-  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+  def toGraph(): Graph[T] = {
     val graph = labor.asInstanceOf[StaticGraph[T]]
-    val fwdExecutions = graph.getForwardExecutions()
+    val fwdExecutions = graph.getSortedForwardExecutions()
     for (i <- 0 until fwdExecutions.length) {
       val worker = fwdExecutions(i).element.asInstanceOf[KerasLayer[Activity, Activity, T]].labor
 
@@ -203,7 +203,6 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
     }
     graph.toSingleGraph()
   }
-
   // debug
 }
 
