@@ -203,6 +203,10 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
     }
     graph.toSingleGraph()
   }
+
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    this.toGraph().getEndNodes(startNodes)
+  }
   // debug
 }
 
@@ -344,7 +348,7 @@ class Sequential[T: ClassTag]()
     val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
     val endNodes = this.getEndNodes(starts)
     // Disable excludeInvalidLayers to allow customized Keras layers
-    new StaticGraph(starts, endNodes, enableExcludeChecking = false)
+    new StaticGraph(starts, endNodes, enableExcludeChecking = false).toSingleGraph()
   }
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
