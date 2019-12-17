@@ -46,19 +46,28 @@ ${SPARK_HOME}/bin/spark-submit \
 now=$(date "+%s")
 time1=$((now-start))
 
-echo "#2 start example test for customized loss and layer (Funtional API)"
+echo "#2 start example test for autograd"
 #timer
 start=$(date "+%s")
+echo "#2.1 start example test for custom layer"
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
-    --driver-memory 20g \
-    --executor-memory 20g \
+    --driver-memory 2g \
+    --executor-memory 2g \
     --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/autograd/custom.py \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
     ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/autograd/custom.py \
     --nb_epoch 2
+
+echo "#2.2 start example test for customloss"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/autograd/customloss.py
+
 now=$(date "+%s")
 time2=$((now-start))
 
@@ -437,8 +446,117 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 now=$(date "+%s")
 time10=$((now-start))
 
+echo "#11 start example test for openvino"
+#timer
+start=$(date "+%s")
+if [ -f analytics-zoo-models/faster_rcnn_resnet101_coco_2018_01_28.tar.gz ]
+then
+   echo "analytics-zoo-models/faster_rcnn_resnet101_coco already exists."
+else
+   wget $FTP_URI/analytics-zoo-models/openvino/faster_rcnn_resnet101_coco_2018_01_28.tar.gz \
+    -P analytics-zoo-models
+   tar zxf analytics-zoo-models/faster_rcnn_resnet101_coco_2018_01_28.tar.gz -C analytics-zoo-models/
+fi
+if [ -d analytics-zoo-data/data/object-detection-coco ]
+then
+    echo "analytics-zoo-data/data/object-detection-coco already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+    unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
+fi
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 10g \
+    --executor-memory 10g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/openvino/predict.py \
+    --image analytics-zoo-data/data/object-detection-coco \
+    --model analytics-zoo-models/faster_rcnn_resnet101_coco_2018_01_28
+now=$(date "+%s")
+time11=$((now-start))
+
+echo "#12 start example for vnni/openvino"
+#timer
+start=$(date "+%s")
+if [ -d analytics-zoo-models/vnni ]
+then
+   echo "analytics-zoo-models/resnet_v1_50.xml already exists."
+else
+   wget $FTP_URI/analytics-zoo-models/openvino/vnni/resnet_v1_50.zip \
+    -P analytics-zoo-models
+    unzip -q analytics-zoo-models/resnet_v1_50.zip -d analytics-zoo-models/vnni
+fi
+if [ -d analytics-zoo-data/data/object-detection-coco ]
+then
+    echo "analytics-zoo-data/data/object-detection-coco already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+    unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
+fi
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/vnni/openvino/predict.py \
+    --model analytics-zoo-models/vnni/resnet_v1_50.xml \
+    --image analytics-zoo-data/data/object-detection-coco
+now=$(date "+%s")
+time12=$((now-start))
+
+echo "#13 start example test for streaming Object Detection"
+#timer
+start=$(date "+%s")
+if [ -d analytics-zoo-data/data/object-detection-coco ]
+then
+    echo "analytics-zoo-data/data/object-detection-coco already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+    unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data/
+fi
+
+if [ -f analytics-zoo-models/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model ]
+then
+    echo "analytics-zoo-models/object-detection/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model already exists"
+else
+    wget $FTP_URI/analytics-zoo-models/object-detection/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model \
+     -P analytics-zoo-models
+fi
+
+mkdir output
+mkdir stream
+while true
+do
+   temp1=$(find analytics-zoo-data/data/object-detection-coco -type f|wc -l)
+   temp2=$(find ./output -type f|wc -l)
+   temp3=$(($temp1+$temp1))
+   if [ $temp3 -eq $temp2 ];then
+       kill -9 $(ps -ef | grep StreamingObjectDetection | grep -v grep |awk '{print $2}')
+       rm -r output
+       rm -r stream
+   break
+   fi
+done  &
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/streaming/objectdetection/streaming_object_detection.py \
+    --streaming_path ./stream \
+    --model analytics-zoo-models/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model \
+    --output_path ./output  &
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/streaming/objectdetection/image_path_writer.py \
+    --streaming_path ./stream \
+    --img_path analytics-zoo-data/data/object-detection-coco
+
+now=$(date "+%s")
+time13=$((now-start))
+
+
 echo "#1 textclassification time used: $time1 seconds"
-echo "#2 customized loss and layer time used: $time2 seconds"
+echo "#2 autograd time used: $time2 seconds"
 echo "#3 image-classification time used: $time3 seconds"
 echo "#4 object-detection loss and layer time used: $time4 seconds"
 echo "#5 nnframes time used: $time5 seconds"
@@ -447,3 +565,6 @@ echo "#7 anomalydetection time used: $time7 seconds"
 echo "#8 qaranker time used: $time8 seconds"
 echo "#9 inceptionV1 training time used: $time9 seconds"
 echo "#10 pytorch time used: $time10 seconds"
+echo "#11 openvino time used: $time11 seconds"
+echo "#12 vnni/openvino time used: $time12 seconds"
+echo "#13 streaming Object Detection time used: $time13 seconds"
