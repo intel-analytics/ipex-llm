@@ -252,6 +252,8 @@ class SoftMaxSpec extends FlatSpec with Matchers {
   }
 
   "SoftMax with 2dims input" should "be ok" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+
     val input = Tensor[Float](T(
       T(-0.33185136,	-0.36650753,	-0.18259251,	-0.28977787,	0.12433326,	-0.2162494,	0.10134846,	-0.3177442,	-0.1484699,	0.13634288),
       T(-0.5104831,	-0.5519625,	-0.11421487,	-0.2595594,	0.16804607,	-0.23292251,	0.07044585,	-0.44675964,	0.12295306,	0.18260688),
@@ -268,5 +270,26 @@ class SoftMaxSpec extends FlatSpec with Matchers {
     T(-0.012584607,	0.024181157,	0.020681644,	-0.015309532,	0.013951356,	-0.0050649773,	0.018423514,	0.013663444,	-0.014368655,	-0.043573305),
     T(0.0013979464,	-0.024840426,	-0.015835835,	1.402814E-4,	0.034327768,	0.020268412,	0.06276163,	0.0047896877,	-0.036685247,	-0.046324227)))
 
+
+    val (batchSize, channel) = (3, 10)
+    val sm = SoftMax()
+    sm.setRuntime(new MklDnnRuntime)
+    sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel),
+      Memory.Format.nc)), TrainingPhase)
+    sm.initBwdPrimitives(Array(HeapData(Array(batchSize, channel),
+      Memory.Format.nc)), TrainingPhase)
+
+    val nnSm = nn.SoftMax()
+
+    sm.forward(input)
+    nnSm.forward(input)
+
+    sm.backward(input, gradOutput)
+    nnSm.backward(input, gradOutput)
+
+    Equivalent.nearequals(Tools.dense(sm.output).toTensor, nnSm.output.toTensor,
+      epsilon = 1e-4) should be(true)
+    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
+      epsilon = 1e-4) should be(true)
   }
 }
