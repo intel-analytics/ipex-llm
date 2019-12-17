@@ -208,4 +208,58 @@ class StaticGraph[T: ClassTag](
     val model = IRGraph(inputsIR, outputsIR, variables, true, inFormats, outFormats)
     model.build()
   }
+
+  // Merge a nested StaticGraph into a non-nested one
+  def toSingleGraph(): Graph[T] = {
+    val graph = this.cloneModule()
+    val fwdExecution = graph.getSortedForwardExecutions()
+    val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
+
+    var i = 0
+    while (i < fwdExecution.length) {
+      if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
+        var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
+        require(toSingleGraphCheck(g),
+          "This graph cannot be converted into a non-nested StaticGraph")
+        g = g.toSingleGraph().asInstanceOf[StaticGraph[T]]
+        fwdExecution(i).element = g
+
+        if (fwdExecution(i).prevNodes.length == 1) {
+          val inputNode = g.inputs(0).nextNodes(0)
+          g.inputs(0).delete(inputNode)
+          val preNode = fwdExecution(i).prevNodes(0)
+          preNode.delete(fwdExecution(i))
+          preNode.add(inputNode)
+        } else {
+          g.inputs(0).element = Identity()
+          val inputNode = g.inputs(0)
+          while (fwdExecution(i).prevNodes.length != 0) {
+            val preNode = fwdExecution(i).prevNodes(0)
+            preNode.delete(fwdExecution(i))
+            preNode.add(inputNode)
+          }
+        }
+
+        val outputNode = g.outputs(0)
+        outputNode.removeNextEdges()
+        while (fwdExecution(i).nextNodes.length != 0) {
+          val nextNode = fwdExecution(i).nextNodes(0)
+          fwdExecution(i).delete(nextNode)
+          outputNode.add(nextNode)
+        }
+      }
+      i += 1
+    }
+
+    val resultOutputNodes = dmOutput.prevNodes
+    resultOutputNodes.foreach(_.delete(dmOutput))
+    Graph(graph.inputs(0), resultOutputNodes.toArray)
+  }
+
+  private def toSingleGraphCheck(graph: StaticGraph[T]): Boolean = {
+    if (graph.asInstanceOf[StaticGraph[T]].outputs.length == 1
+      && graph.asInstanceOf[StaticGraph[T]].inputs.length == 1) {
+      true
+    } else false
+  }
 }
