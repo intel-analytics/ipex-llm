@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.torch
+package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
