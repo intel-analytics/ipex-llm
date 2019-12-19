@@ -677,20 +677,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
       val name = s"model predict for batch ${batchSize}"
       InferenceSupportive.logger.info(s"$name time elapsed [${latency/1e9} s, ${latency/1e6} ms].")
 
-      if (inferenceSummary != null) {
-        // we do not check all values here
-        // we only check the first value of each output
-        // e.g for a 1000-class classification
-        // we only check the number of zeros of first class output cell
-
-        // TODO: this is just for image classification task
-        // for more task, e.g. object detection, check output dim first
-
-        val throughput = batchSize / (latency / 1e9)
-        inferenceSummary.addScalar("Throughput", throughput.toFloat, batchCnt)
-
-        batchCnt += 1
-      }
       result
     } finally {
       model match {
