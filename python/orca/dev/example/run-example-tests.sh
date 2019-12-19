@@ -586,7 +586,6 @@ done
 now=$(date "+%s")
 time14=$((now-start))
 
-
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
 echo "#3 image-classification time used: $time3 seconds"
