@@ -39,7 +39,7 @@ dataset = TFDataset.from_rdd(train_rdd,
                              batch_size=BATCH_SIZE)
 ```
 
-More on TFDataset API [API Guide](../APIGuide/PipelineAPI/net.md#tfnet)
+More on TFDataset API [API Guide](../APIGuide/TFPark/tf-dataset.md)
 
 ## KerasModel
 

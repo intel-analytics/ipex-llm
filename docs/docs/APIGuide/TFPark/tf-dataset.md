@@ -15,7 +15,7 @@ __Ubuntu 16.04 or later__ and __macOS 10.12.6 or later__.
 
 ### Methods
 
-#### from_rdd
+#### **from_rdd**
 
 Create a TFDataset from a rdd.
 
@@ -73,7 +73,7 @@ from_rdd(rdd, features, labels=None, batch_size=-1, batch_per_thread=-1, hard_co
 * **val_rdd**: validation data with the same structure of rdd
 
 
-#### from_ndarrays
+#### **from_ndarrays**
 
 Create a TFDataset from a nested structure of numpy ndarrays. Each element
 in the resulting TFDataset has the same structure of the argument tensors and
@@ -100,7 +100,7 @@ from_ndarrays(tensors, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=
 * **val_tensors**: the numpy ndarrays used for validation during training
 
 
-#### from_image_set
+#### **from_image_set**
 
 Create a TFDataset from a ImagetSet. Each ImageFeature in the ImageSet should
 already has the "sample" field, i.e. the result of ImageSetToSample transformer
@@ -127,7 +127,7 @@ from_image_set(image_set, image, label=None, batch_size=-1, batch_per_thread=-1,
 * **validation_image_set**: the ImageSet used for validation during training
 
 
-#### from_text_set
+#### **from_text_set**
 
 Create a TFDataset from a TextSet. The TextSet must be transformed to Sample, i.e.
 the result of TextFeatureToSample transformer.
@@ -155,7 +155,7 @@ from_text_set(text_set, text, label=None, batch_size=-1, batch_per_thread=-1, ha
         it is None.
 * **validation_image_set**: The TextSet used for validation during training
 
-#### from_feature_set
+#### **from_feature_set**
 
 Create a TFDataset from a FeatureSet. Currently, the element in this Feature set must be a
 ImageFeature that has a sample field, i.e. the result of ImageSetToSample transformer
@@ -182,3 +182,51 @@ from_feature_set(dataset, features, labels=None, batch_size=-1, batch_per_thread
         batch_size/total_core_num (training) or batch_per_thread for inference; if False,
         it is None.
 * **validation_dataset**: The FeatureSet used for validation during training
+
+#### **from_string_rdd**
+
+Create a TFDataset from a RDD of strings. Each element is the RDD should be a single string.
+The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
+is tf.string, and the shape is (None,). The returning don't have label_tensors. If the
+dataset is used for training, the label should be encoded in the string.
+
+**Python**
+```python
+from_string_rdd(string_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_string_rdd=None)
+```
+
+**Arguments**
+
+* **string_rdd**: the RDD of strings
+* **batch_size**: the batch size, used for training, should be a multiple of
+        total core num
+* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
+* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
+        if True, the static size of the first dimension of the resulting tensors is
+        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
+        it is None.
+* **validation_string_rdd**: the RDD of strings to be used in validation
+
+#### **from_bytes_rdd**
+
+Create a TFDataset from a RDD of bytes. Each element is the RDD should be a bytes object.
+The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
+is tf.string, and the shape is (None,). The returning don't have label_tensors. If the
+dataset is used for training, the label should be encoded in the bytes.
+
+**Python**
+```python
+from_bytes_rdd(bytes_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_bytes_rdd=None)
+```
+
+**Arguments**
+
+* **bytes_rdd**: the RDD of bytes
+* **batch_size**: the batch size, used for training, should be a multiple of
+        total core num
+* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
+* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
+        if True, the static size of the first dimension of the resulting tensors is
+        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
+        it is None.
+* **validation_string_rdd**: the RDD of bytes to be used in validation
