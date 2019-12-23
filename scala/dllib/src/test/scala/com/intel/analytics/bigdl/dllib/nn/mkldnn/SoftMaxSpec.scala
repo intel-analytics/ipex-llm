@@ -44,8 +44,9 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
       Tools.dense(output) should be (nnOutput)
 
-      sm.backward(input, nnOutput)
-      nnSm.backward(input, nnOutput)
+      val gradOutput = Tensor[Float]().resizeAs(nnOutput).rand(-10, 10)
+      sm.backward(input, gradOutput)
+      nnSm.backward(input, gradOutput)
 
       Tools.dense(sm.gradInput) should be (nnSm.gradInput)
     }
@@ -75,8 +76,9 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
       Tools.dense(output) shouldEqual nnOutput
 
-      sm.backward(input, nnOutput)
-      nnSm.backward(input, nnOutput)
+      val gradOutput = Tensor[Float]().resizeAs(nnOutput).rand(-10, 10)
+      sm.backward(input, gradOutput)
+      nnSm.backward(input, gradOutput)
 
       Tools.dense(sm.gradInput) should be (nnSm.gradInput)
     }
@@ -110,11 +112,12 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
       Tools.dense(output) should be (nnOutput)
 
-      sm.backward(input, nnOutput)
-      nnSm.backward(input, nnOutput)
+      val gradOutput = Tensor[Float]().resizeAs(nnOutput).rand(-10, 10)
+      sm.backward(input, gradOutput)
+      nnSm.backward(input, gradOutput)
 
       Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
-        epsilon = 10-5)
+        epsilon = 1e-5) should be (true)
     }
   }
 
@@ -143,11 +146,13 @@ class SoftMaxSpec extends FlatSpec with Matchers {
       val nnOutput = nnSm.forward(input)
 
       Tools.dense(output) should be (nnOutput)
-      sm.backward(input, nnOutput)
-      nnSm.backward(input, nnOutput)
+
+      val gradOutput = Tensor[Float]().resizeAs(nnOutput).rand(-10, 10)
+      sm.backward(input, gradOutput)
+      nnSm.backward(input, gradOutput)
 
       Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
-        epsilon = 10-5)
+        epsilon = 1e-5) should be (true)
     }
   }
 
@@ -172,9 +177,9 @@ class SoftMaxSpec extends FlatSpec with Matchers {
     nnSm.backward(input, gradOutput)
 
     Equivalent.nearequals(Tools.dense(sm.output).toTensor, nnSm.output.toTensor,
-      epsilon = 10-4)
+      epsilon = 1e-5) should be (true)
     Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
-      epsilon = 10-4)
+      epsilon = 1e-5) should be (true)
   }
 
   "SoftMax multi times forward" should "work correctly" in {
