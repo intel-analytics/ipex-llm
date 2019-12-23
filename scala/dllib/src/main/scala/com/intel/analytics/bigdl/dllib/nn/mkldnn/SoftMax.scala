@@ -108,10 +108,10 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
       if (axis == -1) defaultAxis else axis)
     val primDesc = MklDnnMemory.PrimitiveDescCreate(desc, runtime.engine, 0L)
 
-    _gradOutputFormats = grad
+    _gradOutputFormats = grad.clone()
     _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
 
-    val srcs = Array(grad(0).getPrimitive(runtime), outputFormats()(0).getPrimitive(runtime))
+    val srcs = Array(outputFormats()(0).getPrimitive(runtime), grad(0).getPrimitive(runtime))
     val indexes = Array(0)
     val dsts = Array(_gradInputFormats(0).getPrimitive(runtime))
 
@@ -149,15 +149,15 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     if (updateGradInputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
-      buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
       buffer.append(output.asInstanceOf[Tensor[Float]])
+      buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
       buffer.append(gradInput.asInstanceOf[Tensor[Float]])
 
       updateGradInputTensors = buffer.toArray
     }
 
     gradOutput.toTensor[Float].getTensorType match {
-      case DenseType => updateGradInputTensors(0) = gradOutput.toTensor
+      case DenseType => updateGradInputTensors(1) = gradOutput.toTensor
       case _ =>
     }
 
