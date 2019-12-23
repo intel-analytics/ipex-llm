@@ -18,13 +18,12 @@ import tempfile
 import os
 import tensorflow as tf
 import numpy as np
-from tensorflow.python.util import function_utils
 
+from zoo.pipeline.api.net.tf_optimizer import TFModel
 from zoo.tfpark import TFOptimizer
 from zoo.tfpark.gan.common import GanOptimMethod
 
 # todo make it inherit Estimator
-from zoo.util import nest
 
 
 class GANEstimator(object):
@@ -129,16 +128,24 @@ class GANEstimator(object):
             g_param_size = sum([np.product(g.shape) for g in g_grads])
             with tf.Session() as sess:
                 sess.run(tf.global_variables_initializer())
-                optimizer = TFOptimizer(loss, GanOptimMethod(self._discriminator_optim_method,
-                                                             self._generator_optim_method,
-                                                             g_param_size.value,
-                                                             self._discriminator_steps,
-                                                             self._generator_steps),
+                tf_model = TFModel.create_for_unfreeze(loss, sess,
+                                                       inputs=dataset._original_tensors,
+                                                       grads=grads,
+                                                       variables=variables,
+                                                       graph=g,
+                                                       tensors_with_value=None,
+                                                       session_config=None,
+                                                       metrics=None,
+                                                       updates=[increase_counter],
+                                                       model_dir=self.checkpoint_path)
+
+                optimizer = TFOptimizer(tf_model, GanOptimMethod(self._discriminator_optim_method,
+                                                                 self._generator_optim_method,
+                                                                 g_param_size.value,
+                                                                 self._discriminator_steps,
+                                                                 self._generator_steps),
                                         sess=sess,
-                                        dataset=dataset, inputs=dataset._original_tensors,
-                                        grads=grads, variables=variables, graph=g,
-                                        updates=[increase_counter],
-                                        model_dir=self.checkpoint_path)
+                                        dataset=dataset, model_dir=self.checkpoint_path)
                 optimizer.optimize(end_trigger)
                 steps = sess.run(counter)
                 saver = tf.train.Saver()
