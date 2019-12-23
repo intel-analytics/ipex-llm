@@ -838,7 +838,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
     val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
     val endNodes = this.getEndNodes(starts)
-    Graph(starts, endNodes)
+    val graph = Graph(starts, endNodes)
+    if (graph.isInstanceOf[StaticGraph[T]]) {
+      graph.asInstanceOf[StaticGraph[T]].toSingleGraph()
+    } else {
+      graph
+    }
   }
 
   /**

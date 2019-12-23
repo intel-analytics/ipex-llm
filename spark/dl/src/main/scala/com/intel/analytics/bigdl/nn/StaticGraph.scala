@@ -105,52 +105,71 @@ class StaticGraph[T: ClassTag](
 
   // Merge a nested StaticGraph into a single StaticGraph
   def toSingleGraph(): StaticGraph[T] = {
-    val graph = this.cloneModule()
-    val fwdExecution = graph.getSortedForwardExecutions()
-    val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
+    if (this.isNestedGraph()) {
+      val graph = this.cloneModule()
+      val fwdExecution = graph.getSortedForwardExecutions()
+      val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
 
-    var i = 0
-    while (i < fwdExecution.length) {
-      if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
-        var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
-        require(g.outputs.length == 1 && g.inputs.length == 1,
-          s"In order to avoid possible ambiguities in node connection. " +
-            s"This StaticGraph cannot be merged into a non-nested one. " +
-            s"Its inner graph ${g.getName()} has more than one input or output. ")
-        g = g.toSingleGraph().asInstanceOf[StaticGraph[T]]
-        fwdExecution(i).element = g
+      var i = 0
+      while (i < fwdExecution.length) {
+        if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
+          var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
+          require(g.outputs.length == 1 && g.inputs.length == 1,
+            s"In order to avoid possible ambiguities in node connection. " +
+              s"This StaticGraph cannot be merged into a non-nested one. " +
+              s"Its inner graph ${g.getName()} has more than one input or output. ")
+          g = g.toSingleGraph().asInstanceOf[StaticGraph[T]]
+          fwdExecution(i).element = g
 
-        if (fwdExecution(i).prevNodes.length == 1) {
-          val inputNode = g.inputs(0).nextNodes(0)
-          g.inputs(0).delete(inputNode)
-          val preNode = fwdExecution(i).prevNodes(0)
-          preNode.delete(fwdExecution(i))
-          preNode.add(inputNode)
-        } else {
-          g.inputs(0).element = Identity()
-          val inputNode = g.inputs(0)
-          while (fwdExecution(i).prevNodes.length != 0) {
+          if (fwdExecution(i).prevNodes.length == 1) {
+            val inputNode = g.inputs(0).nextNodes(0)
+            g.inputs(0).delete(inputNode)
             val preNode = fwdExecution(i).prevNodes(0)
             preNode.delete(fwdExecution(i))
             preNode.add(inputNode)
+          } else {
+            g.inputs(0).element = Identity()
+            val inputNode = g.inputs(0)
+            while (fwdExecution(i).prevNodes.length != 0) {
+              val preNode = fwdExecution(i).prevNodes(0)
+              preNode.delete(fwdExecution(i))
+              preNode.add(inputNode)
+            }
+          }
+
+          val outputNode = g.outputs(0)
+          outputNode.removeNextEdges()
+          while (fwdExecution(i).nextNodes.length != 0) {
+            val nextNode = fwdExecution(i).nextNodes(0)
+            fwdExecution(i).delete(nextNode)
+            outputNode.add(nextNode)
           }
         }
-
-        val outputNode = g.outputs(0)
-        outputNode.removeNextEdges()
-        while (fwdExecution(i).nextNodes.length != 0) {
-          val nextNode = fwdExecution(i).nextNodes(0)
-          fwdExecution(i).delete(nextNode)
-          outputNode.add(nextNode)
-        }
+        i += 1
       }
-      i += 1
+
+      val resultOutputNodes = dmOutput.prevNodes
+      resultOutputNodes.foreach(_.delete(dmOutput))
+      new StaticGraph[T](Array(graph.inputs(0)), resultOutputNodes,
+        enableExcludeChecking = this.enableExcludeChecking)
+    } else {
+      this
+    }
+  }
+
+  def isNestedGraph(): Boolean = {
+    var count = 0
+    for (i <- 0 until forwardExecution.length) {
+      if (forwardExecution(i).element.isInstanceOf[StaticGraph[T]]) {
+        count += 1
+      }
     }
 
-    val resultOutputNodes = dmOutput.prevNodes
-    resultOutputNodes.foreach(_.delete(dmOutput))
-    new StaticGraph[T](Array(graph.inputs(0)), resultOutputNodes,
-      enableExcludeChecking = this.enableExcludeChecking)
+    if (count > 0) {
+      true
+    } else {
+      false
+    }
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
