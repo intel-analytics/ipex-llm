@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{SparseTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
@@ -24,7 +24,12 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
-class SparseLinearSpec extends FlatSpec with Matchers {
+class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  before {
+    RandomGenerator.RNG.setSeed(100)
+  }
+
   "Sparse Linear" should "return the same result with Linear" in {
     val weight = Tensor.range(1, 8, 1).resize(2, 4)
     val bias = Tensor(2)
