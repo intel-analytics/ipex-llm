@@ -52,7 +52,7 @@ class TestTFParkTFOptimizer(ZooTestCase):
             loss = tf.reduce_mean(tf.losses.
                                   sparse_softmax_cross_entropy(logits=embedding,
                                                                labels=label_tensor))
-            optimizer = TFOptimizer(loss, Adam(1e-3))
+            optimizer = TFOptimizer.from_loss(loss, Adam(1e-3))
             optimizer.optimize(end_trigger=MaxEpoch(1))
             optimizer.sess.close()
 
