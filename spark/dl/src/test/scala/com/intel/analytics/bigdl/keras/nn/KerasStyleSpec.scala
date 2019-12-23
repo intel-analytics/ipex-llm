@@ -293,6 +293,9 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    // set gradWeight
+    graph.getParameters()._2.rand()
+
     val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
 
     val tensor = Tensor[Float](Array(3, 20, 100)).rand()
@@ -312,6 +315,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
   "KGraph to IRGraph" should "work" in {
     System.setProperty("bigdl.engineType", "mkldnn")
+    RandomGenerator.RNG.setSeed(10)
+
     import com.intel.analytics.bigdl.mkl.Memory
     val input = Input[Float](inputShape = Shape(10))
     val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
@@ -321,6 +326,10 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val graph = model.toGraph().asInstanceOf[StaticGraph[Float]]
     graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+
+    // set gradWeight
+    graph.getParameters()._2.rand()
+
     // graph.evaluate()
     val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
     val tensor = Tensor[Float](Array(3, 10)).rand()

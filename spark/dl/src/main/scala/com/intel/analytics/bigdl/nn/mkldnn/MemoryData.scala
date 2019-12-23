@@ -37,7 +37,7 @@ sealed trait MemoryData extends Serializable {
     this
   }
   def getHeapShape(): Array[Int] = {
-    if (layout == Memory.Format.nhwc) {
+    if (layout == Memory.Format.nhwc) { // native shape is nchw
       Array(shape(0), shape(2), shape(3), shape(1))
     } else shape
   }

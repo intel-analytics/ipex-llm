@@ -77,7 +77,6 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
         val size = in.shape
         HeapData(Array(size(1), size(0), size(2)), Memory.Format.ntc)
       } else {
-        // HeapData(in.shape, getFormats(in.shape.length))
         HeapData(in.shape, getHeapFormats(in))
       }
       heap.setHeapFormat(in.heapFormat)
