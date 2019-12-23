@@ -15,12 +15,11 @@
  */
 package com.intel.analytics.zoo.pipeline.api.net.python
 
-import java.nio.{ByteOrder, FloatBuffer}
+import java.nio.FloatBuffer
 import java.util.concurrent.{CopyOnWriteArrayList, TimeUnit}
 import java.util.{ArrayList, List => JList}
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.{Sample => JSample}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.optim._
@@ -137,11 +136,7 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     TFTrainingHelper(modelPath, config)
   }
 
-  def createTFTrainingHelper2(modelPath: String, config: Array[Byte] = null): Module[Float] = {
-    TFTrainingHelper2(modelPath, config)
-  }
-
-  def saveCheckpoint(model: TFTrainingHelper2): Unit = {
+  def saveCheckpoint(model: TFTrainingHelper): Unit = {
     model.saveCheckpoint()
   }
 
@@ -167,14 +162,6 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     new StatelessMetric(name, idx)
   }
 
-  def createTFOptimizer(modelPath: String,
-                        optimMethod: OptimMethod[Float],
-                        x: JavaRDD[Sample],
-                        batchSize: Int = 32): TFOptimizer = {
-    new TFOptimizer(modelPath, optimMethod,
-      toJSample(x).asInstanceOf[RDD[JSample[Float]]], batchSize)
-  }
-
   def createGanOptimMethod(dOptim: OptimMethod[T],
                            gOptim: OptimMethod[T],
                            dStep: Int, gStep: Int, gParamSize: Int): OptimMethod[T] = {
@@ -185,7 +172,7 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
 
   def createMiniBatchRDDFromStringRDD(stringRDD: JavaRDD[Array[Byte]],
                                      batchSize: Int): RDDWrapper[StringMiniBatch[T]] = {
-    import com.intel.analytics.zoo.pipeline.api.net.TFTensorNumeric.NumericByteArray
+    import TFTensorNumeric.NumericByteArray
 
     val rdd = stringRDD.rdd.mapPartitions { stringIter =>
       stringIter.grouped(batchSize).map { data =>
