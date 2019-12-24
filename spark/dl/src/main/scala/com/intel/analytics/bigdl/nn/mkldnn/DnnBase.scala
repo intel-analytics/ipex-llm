@@ -247,12 +247,12 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
 
-  override private[mkldnn] def inputFormats() = {
+  override private[bigdl] def inputFormats() = {
     require(_inputFormats != null, "You should call initFwdPrimitives first")
     _inputFormats
   }
 
-  override private[mkldnn] def gradInputFormats() = {
+  override private[bigdl] def gradInputFormats() = {
     require(_gradInputFormats != null, "You should call initBwdPrimitives first")
     _gradInputFormats
   }
@@ -262,7 +262,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     _outputFormats
   }
 
-  override private[mkldnn] def gradOutputFormats() = {
+  override private[bigdl] def gradOutputFormats() = {
     require(_gradOutputFormats != null, "You should call initBwdPrimitives first")
     _gradOutputFormats
   }

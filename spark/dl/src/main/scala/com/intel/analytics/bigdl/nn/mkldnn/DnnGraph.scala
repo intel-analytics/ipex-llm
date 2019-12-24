@@ -18,9 +18,10 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import java.util
 
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.nn.{Graph, mkldnn, MklInt8Convertible}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -80,7 +81,12 @@ class DnnGraph(
         findDnnInput(node, input)
       }
       inputCache(i) = nodeInput
-      node.element.forward(nodeInput)
+      val output = node.element.forward(nodeInput)
+      // resize to heap size
+      if (!skipPrimitiveId(i) && output.isTensor) {
+        output.toTensor[Float].resize(
+          node.element.asInstanceOf[MklDnnLayer].outputFormats()(0).getHeapShape())
+      }
       i += 1
     }
     output = getRealOutput(input, dummyOutput.element.output)
@@ -104,7 +110,12 @@ class DnnGraph(
       // use input from forward
       val curInput = inputCache(backId2ForwardId(i))
       if (!isStopGradient(curNode.element)) {
-        curNode.element.updateGradInput(curInput, curGradOutput)
+        val gradInput = curNode.element.updateGradInput(curInput, curGradOutput)
+        // resize to heap size
+        if (!skipPrimitiveId(i) && gradInput.isTensor) {
+          gradInput.toTensor[Float].resize(
+            curNode.element.asInstanceOf[MklDnnLayer].gradInputFormats()(0).getHeapShape())
+        }
       }
       i += 1
     }
@@ -409,6 +420,40 @@ class DnnGraph(
     }
   }
 
+  private def getHeapFormat(inputs: Array[MemoryData]): Int = {
+    var heapFormat: Int = -1
+    inputs.foreach(m => {
+      if (m.shape.length == 4) {
+        return inputs(0).layout
+      }
+    })
+
+    @inline
+    def transferFormat(format: DataFormat): Int = {
+      if (format == DataFormat.NHWC) Memory.Format.nhwc else Memory.Format.nchw
+    }
+
+    for (i <- 0 until forwardExecution.length) {
+      val m = forwardExecution(i).element
+      val format = m match {
+        case conv: mkldnn.SpatialConvolution => transferFormat(conv.format)
+        case maxPool: mkldnn.MaxPooling => transferFormat(maxPool.format)
+        case avgPool: mkldnn.AvgPooling => transferFormat(avgPool.format)
+        case sbn: mkldnn.SpatialBatchNormalization => transferFormat(sbn.format)
+        case lrn: mkldnn.LRN => transferFormat(lrn.format)
+        case _ => -1
+      }
+
+      if (heapFormat == -1) {
+        heapFormat = format
+      } else if (format != -1) {
+        require(heapFormat == format,
+          s"layer ${m} should use format ${heapFormat}, but get ${format}")
+      }
+    }
+    if (heapFormat == -1) Memory.Format.nchw else heapFormat
+  }
+
   // init forward primitives
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
     : (Array[MemoryData], Array[MemoryData]) = {
@@ -416,12 +461,14 @@ class DnnGraph(
     fusion()
     var lastOutputFormats = inputs
     var firstRealInputFormats: Array[MemoryData] = null
+    val heapFormat : Int = getHeapFormat(inputs)
     for (i <- 0 until forwardExecution.length) {
       if (!skipPrimitiveId(i)) {
         val m = forwardExecution(i)
         lastOutputFormats = findInputFormats(m, inputs)
         val realInputAndOutputFormats =
           m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
+        realInputAndOutputFormats._2.foreach(_.setHeapFormat(heapFormat))
         lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
           case (o, i) =>
             Utils.copyMaskAndScales(o, i)
