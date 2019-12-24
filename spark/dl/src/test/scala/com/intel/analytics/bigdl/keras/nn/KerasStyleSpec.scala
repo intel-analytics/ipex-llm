@@ -333,4 +333,25 @@ class KerasStyleSpec extends BigDLSpecHelper {
     // ir.evaluate()
     val output = ir.forward(tensor)
   }
+
+  "KGraph with KGraph module to IRGraph" should "work" in {
+    import com.intel.analytics.bigdl.mkl.Memory
+    val input1 = Input[Float](inputShape = Shape(10))
+
+    val input2 = Input[Float](inputShape = Shape(10))
+    val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input2)
+    val d2 = Dense[Float](5).setName("dense2").inputs(d)
+    val kgraph1 = Model[Float](input2, d2).inputs(input1)
+
+    val kgraph2 = Model[Float](input1, kgraph1)
+
+    val graph = kgraph2.toGraph().asInstanceOf[StaticGraph[Float]]
+    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    // graph.evaluate()
+    val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
+    val tensor = Tensor[Float](Array(3, 10)).rand()
+    // ir.evaluate()
+    val output = ir.forward(tensor)
+  }
 }

@@ -195,13 +195,14 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
     for (i <- 0 until fwdExecutions.length) {
       val layer = fwdExecutions(i).element.asInstanceOf[KerasLayer[Activity, Activity, T]]
 
-      if (!layer.labor.isKerasStyle()
-        && layer.labor.isInstanceOf[Container[Activity, Activity, T]]) {
-        fwdExecutions(i).element = layer.labor.toGraph()
-      }
-
-      if (layer.labor.isKerasStyle() && layer.labor.isInstanceOf[KerasModel[T]]) {
+      if (layer.isInstanceOf[KerasModel[T]]) {
         fwdExecutions(i).element = layer.toGraph()
+      } else if ((!layer.labor.isKerasStyle()
+        && layer.labor.isInstanceOf[Container[Activity, Activity, T]]) ||
+        (layer.isKerasStyle() && layer.labor.isInstanceOf[KerasModel[T]])) {
+        fwdExecutions(i).element = layer.labor.toGraph()
+      } else {
+        fwdExecutions(i).element = layer.labor
       }
     }
 
