@@ -193,14 +193,18 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
     val graph = labor.asInstanceOf[StaticGraph[T]]
     val fwdExecutions = graph.getSortedForwardExecutions()
     for (i <- 0 until fwdExecutions.length) {
-      val worker = fwdExecutions(i).element.asInstanceOf[KerasLayer[Activity, Activity, T]].labor
+      val layer = fwdExecutions(i).element.asInstanceOf[KerasLayer[Activity, Activity, T]]
 
-      fwdExecutions(i).element = worker
-      if ((!worker.isKerasStyle() && worker.isInstanceOf[Container[Activity, Activity, T]]) ||
-        (worker.isKerasStyle() && worker.isInstanceOf[KerasModel[T]])) {
-        fwdExecutions(i).element = worker.toGraph()
+      if (!layer.labor.isKerasStyle()
+        && layer.labor.isInstanceOf[Container[Activity, Activity, T]]) {
+        fwdExecutions(i).element = layer.labor.toGraph()
+      }
+
+      if (layer.labor.isKerasStyle() && layer.labor.isInstanceOf[KerasModel[T]]) {
+        fwdExecutions(i).element = layer.toGraph()
       }
     }
+
     graph.toSingleGraph()
   }
 
