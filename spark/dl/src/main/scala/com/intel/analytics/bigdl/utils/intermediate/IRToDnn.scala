@@ -91,16 +91,16 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
         throw new UnsupportedOperationException(s"can not find ${node.element.getOp()} ")
       }
       // special treat for reshape -> linear and view -> linear
-//      if (op.isInstanceOf[IRGeneralModule[Float]]) {
-//        val m = op.asInstanceOf[IRGeneralModule[Float]].model
-//        if (m.isInstanceOf[Reshape[Float]] && node.nextNodes.length == 1 &&
-//          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-//          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
-//        } else if (m.isInstanceOf[View[Float]] && node.nextNodes.length == 1 &&
-//          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
-//          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
-//        }
-//      }
+      if (op.isInstanceOf[IRGeneralModule[Float]]) {
+        val m = op.asInstanceOf[IRGeneralModule[Float]].model
+        if (m.isInstanceOf[Reshape[Float]] && node.nextNodes.length == 1 &&
+          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
+          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
+        } else if (m.isInstanceOf[View[Float]] && node.nextNodes.length == 1 &&
+          node.nextNodes(0).element.getOp().isInstanceOf[IRLinear[Float]]) {
+          dnn = new Node(mkldnn.Identity[Float]().asInstanceOf[Module[Float]])
+        }
+      }
       nodeMap.put(node, dnn)
     })
     cloneNode(allNodes, nodeMap)
