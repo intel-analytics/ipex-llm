@@ -81,9 +81,8 @@ To make it easy to build and productionize the deep learning applications for Bi
    #TFDataset represents a distributed set of elements,
    #in which each element contains one or more TensorFlow Tensor objects. 
    dataset = TFDataset.from_rdd(train_rdd,
-                                names=["features", "labels"],
-                                shapes=[[28, 28, 1], [1]],
-                                types=[tf.float32, tf.int32],
+                                features=(tf.float32, [28, 28, 1]),
+                                labels=(tf.int32, [1]),
                                 batch_size=BATCH_SIZE)
 ```
 2.Deep learning model development using TensorFlow
