@@ -42,9 +42,8 @@ def main(data_num):
                                 np.array(rec_tuple[1])])
 
     dataset = TFDataset.from_rdd(rdd,
-                                 names=["features", "labels"],
-                                 shapes=[[28, 28, 1], [1]],
-                                 types=[tf.float32, tf.int32],
+                                 features=(tf.float32, [28, 28, 1]),
+                                 labels=(tf.int32, []),
                                  batch_per_thread=20
                                  )
 

@@ -45,12 +45,10 @@ def main(max_epoch, data_num):
     training_rdd = get_data_rdd("train")
     testing_rdd = get_data_rdd("test")
     dataset = TFDataset.from_rdd(training_rdd,
-                                 names=["features", "labels"],
-                                 shapes=[[28, 28, 1], []],
-                                 types=[tf.float32, tf.int32],
+                                 features=(tf.float32, [28, 28, 1]),
+                                 labels=(tf.int32, []),
                                  batch_size=280,
-                                 val_rdd=testing_rdd
-                                 )
+                                 val_rdd=testing_rdd)
 
     # construct the model from TFDataset
     images, labels = dataset.tensors

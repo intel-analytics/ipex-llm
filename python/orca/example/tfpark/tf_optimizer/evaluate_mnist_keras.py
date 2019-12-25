@@ -52,11 +52,8 @@ def main(data_num):
             .map(lambda rec_tuple: [normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD)])
 
         dataset = TFDataset.from_rdd(rdd,
-                                     names=["features"],
-                                     shapes=[[28, 28, 1]],
-                                     types=[tf.float32],
-                                     batch_per_thread=20
-                                     )
+                                     features=(tf.float32, [28, 28, 1]),
+                                     batch_per_thread=20)
         predictor = TFPredictor.from_keras(model, dataset)
 
         accuracy = predictor.predict().zip(labels_rdd).map(lambda x: np.argmax(x[0]) == x[1]).mean()
