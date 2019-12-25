@@ -1,4 +1,4 @@
-## TFDataset
+# TFDataset
 
 TFDatset represents a distributed collection of elements to be feed into TensorFlow graph.
 TFDatasets can be created using a RDD and each of its records is a list of numpy.ndarray representing
@@ -13,9 +13,9 @@ __Ubuntu 16.04 or later__ and __macOS 10.12.6 or later__.
 - To run on other systems, you need to manually compile the TensorFlow source code. Instructions can
   be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
 
-### Methods
+## Methods
 
-#### **from_rdd**
+### **from_rdd**
 
 Create a TFDataset from a rdd.
 
@@ -73,7 +73,7 @@ from_rdd(rdd, features, labels=None, batch_size=-1, batch_per_thread=-1, hard_co
 * **val_rdd**: validation data with the same structure of rdd
 
 
-#### **from_ndarrays**
+### **from_ndarrays**
 
 Create a TFDataset from a nested structure of numpy ndarrays. Each element
 in the resulting TFDataset has the same structure of the argument tensors and
@@ -100,7 +100,7 @@ from_ndarrays(tensors, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=
 * **val_tensors**: the numpy ndarrays used for validation during training
 
 
-#### **from_image_set**
+### **from_image_set**
 
 Create a TFDataset from a ImagetSet. Each ImageFeature in the ImageSet should
 already has the "sample" field, i.e. the result of ImageSetToSample transformer
@@ -127,7 +127,7 @@ from_image_set(image_set, image, label=None, batch_size=-1, batch_per_thread=-1,
 * **validation_image_set**: the ImageSet used for validation during training
 
 
-#### **from_text_set**
+### **from_text_set**
 
 Create a TFDataset from a TextSet. The TextSet must be transformed to Sample, i.e.
 the result of TextFeatureToSample transformer.
@@ -155,7 +155,7 @@ from_text_set(text_set, text, label=None, batch_size=-1, batch_per_thread=-1, ha
         it is None.
 * **validation_image_set**: The TextSet used for validation during training
 
-#### **from_feature_set**
+### **from_feature_set**
 
 Create a TFDataset from a FeatureSet. Currently, the element in this Feature set must be a
 ImageFeature that has a sample field, i.e. the result of ImageSetToSample transformer
@@ -183,7 +183,7 @@ from_feature_set(dataset, features, labels=None, batch_size=-1, batch_per_thread
         it is None.
 * **validation_dataset**: The FeatureSet used for validation during training
 
-#### **from_string_rdd**
+### **from_string_rdd**
 
 Create a TFDataset from a RDD of strings. Each element is the RDD should be a single string.
 The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
@@ -207,7 +207,7 @@ from_string_rdd(string_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_
         it is None.
 * **validation_string_rdd**: the RDD of strings to be used in validation
 
-#### **from_bytes_rdd**
+### **from_bytes_rdd**
 
 Create a TFDataset from a RDD of bytes. Each element is the RDD should be a bytes object.
 The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
