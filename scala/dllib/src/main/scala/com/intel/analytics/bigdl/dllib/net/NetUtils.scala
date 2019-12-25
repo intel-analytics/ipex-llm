@@ -208,31 +208,6 @@ object NetUtils {
       true
   }
 
-  @inline
-  def timeIt[T](name: String, logger: Logger)(f: => T): T = {
-    val begin = System.nanoTime()
-    val result = f
-    val end = System.nanoTime()
-    val cost = end - begin
-    logger.debug(s"$name time [${cost / 1.0e9} s].")
-    result
-  }
-
-  def activity2VectorBuilder(data: Activity):
-  mutable.Builder[Tensor[_], Vector[Tensor[_]]] = {
-    val vec = Vector.newBuilder[Tensor[_]]
-    if (data.isTensor) {
-      vec += data.asInstanceOf[Tensor[_]]
-    } else {
-      var i = 0
-      while (i < data.toTable.length()) {
-        vec += data.toTable(i + 1)
-        i += 1
-      }
-    }
-    vec
-  }
-
   def generateZeroGrad(input: Activity, grad: Activity): Unit = {
     if (grad.isTable) {
       var i = 0
@@ -246,35 +221,6 @@ object NetUtils {
         .resizeAs(input.toTensor[Float])
     }
   }
-
-  def tfenum2datatype(enum: Int): DataType = {
-    enum match {
-      case 1 => DataType.FLOAT
-      case 2 => DataType.DOUBLE
-      case 3 => DataType.INT32
-      case 4 => DataType.UINT8
-      case 7 => DataType.STRING
-      case 9 => DataType.INT64
-      case 10 => DataType.BOOL
-      case _ => throw new IllegalArgumentException(s"unsupported tensorflow datatype $enum")
-
-    }
-  }
-
-  def tfdatatype2enum(dataType: DataType): Int = {
-    dataType match {
-      case DataType.FLOAT => 1
-      case DataType.DOUBLE => 2
-      case DataType.INT32 => 3
-      case DataType.UINT8 => 4
-      case DataType.STRING => 7
-      case DataType.INT64 => 9
-      case DataType.BOOL => 10
-      case _ => throw new IllegalArgumentException(s"unsupported tensorflow datatype $dataType")
-
-    }
-  }
-
 }
 
 private[zoo] case class Meta(inputNames: Array[String],
