@@ -62,21 +62,43 @@ For `WebServiceDriver.java`, running it will start the web service application. 
 
 ### Run flink examples in model-inference-flink
 #### Run on Flink Cluster
+
 1. you may start a flink cluster if there is no runing one:
     
-    > ./path/to/your/flink-1.7.2/bin/start-cluster.sh
+    `./path/to/your/flink-1.7.2/bin/start-cluster.sh`
 
 2. start a socket to pass words:
 
-    > nc -l 9000
+    `nc -l 9000`
 
 3. build your flink job package and start the flink job for text classification model inference:
 
-    > mvn clean package
-    >
-    > ./path/to/your/flink-1.7.2/bin/flink run ./path/to/your/analytics-zoo/apps/model-inference-examples/model-inference-flink/target/model-inference-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar --port 9000 --embeddingFilePath ./path/to/your/data/glove/glove.6B.100d.txt --modelPath ./path/to/your/models/text-classification.bigdl --parallelism 2
-
+    ``` 
+    mvn clean package
+        
+    ./path/to/your/flink-1.7.2/bin/flink run ./path/to/your/analytics-zoo/apps/model-inference-examples/model-inference-flink/target/model-inference-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar --port 9000 --embeddingFilePath ./path/to/your/data/glove/glove.6B.100d.txt --modelPath ./path/to/your/models/text-classification.bigdl --parallelism 2
+    ```
 4. tests with echo word in nc -l 9000 console and check the output with:
 
-    > tail -f ./path/to/your/flink-1.7.2/log/flink-*-taskexecutor-*.out
+    `tail -f ./path/to/your/flink-1.7.2/log/flink-*-taskexecutor-*.out`
 
+Or can use another method which don't need to use nc commend.
+
+1. you may start a flink cluster if there is no runing one:
+  
+    `./path/to/your/flink-1.7.2/bin/start-cluster.sh`
+
+2. build your flink job package and start the flink job for text classification model inference:
+
+     ```
+     mvn clean package  
+     ./path/to/your/flink-1.7.2/bin/flink run \
+     ./path/to/your/analytics-zoo/apps/model-inference-examples/model-inference-flink/target/model-inference-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+     --embeddingFilePath ./path/to/your/data/glove/glove.6B.100d.txt \
+     --modelPath ./path/to/your/models/text-classification.bigdl --parallelism 2 \
+     --inputFile ./path/to/your/input-file
+     ```
+
+3. check the output with:
+
+    `tail -f ./path/to/your/flink-1.7.2/log/flink-*-taskexecutor-*.out`
