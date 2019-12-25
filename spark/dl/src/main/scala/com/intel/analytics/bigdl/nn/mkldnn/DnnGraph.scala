@@ -83,7 +83,8 @@ class DnnGraph(
       inputCache(i) = nodeInput
       val output = node.element.forward(nodeInput)
       // resize to heap size
-      if (!skipPrimitiveId(i) && output.isTensor) {
+      if (!skipPrimitiveId(i) && output.isTensor &&
+        !node.element.isInstanceOf[BlasWrapper]) {
         output.toTensor[Float].resize(
           node.element.asInstanceOf[MklDnnLayer].outputFormats()(0).getHeapShape())
       }
@@ -112,7 +113,8 @@ class DnnGraph(
       if (!isStopGradient(curNode.element)) {
         val gradInput = curNode.element.updateGradInput(curInput, curGradOutput)
         // resize to heap size
-        if (!skipPrimitiveId(i) && gradInput.isTensor) {
+        if (!skipPrimitiveId(i) && gradInput.isTensor &&
+          !curNode.element.isInstanceOf[BlasWrapper]) {
           gradInput.toTensor[Float].resize(
             curNode.element.asInstanceOf[MklDnnLayer].gradInputFormats()(0).getHeapShape())
         }
@@ -466,10 +468,10 @@ class DnnGraph(
       if (!skipPrimitiveId(i)) {
         val m = forwardExecution(i)
         lastOutputFormats = findInputFormats(m, inputs)
-        val realInputAndOutputFormats =
+        val (realInputFormats, realOutputFormats) =
           m.element.asInstanceOf[MklDnnModule].initFwdPrimitives(lastOutputFormats, phase)
-        realInputAndOutputFormats._2.foreach(_.setHeapFormat(heapFormat))
-        lastOutputFormats.zip(realInputAndOutputFormats._1).foreach {
+        if (realOutputFormats != null) realOutputFormats.foreach(_.setHeapFormat(heapFormat))
+        lastOutputFormats.zip(realInputFormats).foreach {
           case (o, i) =>
             Utils.copyMaskAndScales(o, i)
             reorderManager.register(o, i)
@@ -477,9 +479,9 @@ class DnnGraph(
 
         // copy the scales from the input formats to output formats, for some layers,
         // it will not copy the mask and scales automatically or generate the scales themselves
-        Utils.copyMaskAndScales(realInputAndOutputFormats._1, realInputAndOutputFormats._2)
+        Utils.copyMaskAndScales(realInputFormats, realOutputFormats)
 
-        if (i == 0) firstRealInputFormats = realInputAndOutputFormats._1
+        if (i == 0) firstRealInputFormats = realInputFormats
       }
     }
     _inputFormats = firstRealInputFormats

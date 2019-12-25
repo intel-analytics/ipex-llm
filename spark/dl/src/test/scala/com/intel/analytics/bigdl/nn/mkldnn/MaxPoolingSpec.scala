@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Graph, SpatialAveragePooling, SpatialMaxPooling, StaticGraph}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine, MklDnn}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
@@ -70,7 +70,7 @@ class MaxPoolingSpec extends BigDLSpecHelper {
   }
 
   "Max Pooling with NHWC format" should "be correct" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
+    Engine.setEngineType(MklDnn)
     val batchSize = 2
     val input = Tensor[Float](batchSize, 28, 28, 480).apply1(e => Random.nextFloat())
     val gradOutput = Tensor[Float](batchSize, 14, 14, 480).apply1(e => Random.nextFloat())
@@ -99,8 +99,6 @@ class MaxPoolingSpec extends BigDLSpecHelper {
     val grad2 = layer.backward(input, output2).toTensor[Float]
     val grad1 = dnn.backward(input, output2)
     grad1 should be(grad2)
-
-    System.clearProperty("bigdl.engineType")
   }
 
   "Convert max pooling with ceilMode to dnn layer" should "be correct" in {

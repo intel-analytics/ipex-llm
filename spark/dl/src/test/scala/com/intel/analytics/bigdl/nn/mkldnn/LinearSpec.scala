@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
@@ -31,7 +31,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class LinearSpec extends FlatSpec with Matchers {
 
   "Convert blas linear to mkldnn with NHWC" should "be correct" in {
-    System.setProperty("bigdl.engineType", "mkldnn")
+    Engine.setEngineType(MklDnn)
     RandomGenerator.RNG.setSeed(100)
     val linear = nn.Linear(12, 3)
     val linear2 = nn.Linear(12, 3)
@@ -59,8 +59,6 @@ class LinearSpec extends FlatSpec with Matchers {
     val gradInputBlas = blas.backward(input, gradOutput)
     val gradInputDnn = dnn.backward(input, gradOutput)
     Equivalent.nearequals(gradInputBlas.toTensor, gradInputDnn.toTensor, 1e-5) should be (true)
-
-    System.clearProperty("bigdl.engineType")
   }
 
   "linear updateOutput" should "work correctly" in {
