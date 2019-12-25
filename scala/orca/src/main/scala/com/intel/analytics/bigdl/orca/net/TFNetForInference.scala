@@ -21,7 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.pipeline.api.Predictable
+import com.intel.analytics.zoo.tfpark.{GraphRunner, TFUtils}
 import org.slf4j.LoggerFactory
 import org.tensorflow.framework.{GraphDef, MetaGraphDef}
 import org.tensorflow.op.Ops
@@ -123,7 +125,7 @@ private[zoo] class TFNetForInference(graphRunner: GraphRunner,
   @transient
   private lazy val variableInited = {
     setVariableIntoTF(weights, variableAssignPlaceholders,
-      variableTypes.map(NetUtils.tfenum2datatype), assignVariableOps)
+      variableTypes.map(TFUtils.tfenum2datatype), assignVariableOps)
     true
   }
 
@@ -136,14 +138,14 @@ private[zoo] class TFNetForInference(graphRunner: GraphRunner,
   }
 
   override def updateOutput(input: Activity): Activity = {
-    NetUtils.timeIt("updateOutput", TFNetForInference.logger) {
+    Utils.timeIt("updateOutput") {
 
       assert(variableInited)
       assert(tableInited)
 
-      val feeds = NetUtils.activity2VectorBuilder(input)
+      val feeds = Utils.activity2VectorBuilder(input)
 
-      val types = inputTypes.toVector.map(NetUtils.tfenum2datatype)
+      val types = inputTypes.toVector.map(TFUtils.tfenum2datatype)
 
       graphRunner.run(
         input = feeds.result(),
@@ -320,7 +322,7 @@ object TFNetForInference {
       try {
         val value = runner.run()
         val bigdlTensor = Tensor[Float]()
-        GraphRunner.tf2bigdl(value.get(0), bigdlTensor)
+        TFUtils.tf2bigdl(value.get(0), bigdlTensor)
         value.get(0).close()
         bigdlTensor
       } catch {
@@ -345,7 +347,7 @@ object TFNetForInference {
       if (opRef == null) {
         throw new IllegalArgumentException(s"Cannot find input op <$name>")
       }
-      NetUtils.tfdatatype2enum(opRef.output(port.toInt).dataType())
+      TFUtils.tfdatatype2enum(opRef.output(port.toInt).dataType())
     }
 
 

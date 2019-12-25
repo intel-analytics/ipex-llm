@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.core.TFNetNative
 import com.intel.analytics.zoo.pipeline.api.Predictable
 import com.intel.analytics.zoo.pipeline.api.net.TFNet.TFGraphHolder
+import com.intel.analytics.zoo.tfpark.{TFResourceManager, TFUtils}
 import org.tensorflow.framework.GraphDef
-import org.tensorflow.types.UInt8
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
@@ -171,84 +172,82 @@ class TFNet(private val graphDef: TFGraphHolder,
 
   override def updateOutput(input: Activity): Activity = {
     try {
-      val start = System.nanoTime()
-      val runner = sess.runner()
 
-      require(activityLength(input) == inputTypes.length,
-        s"require ${inputTypes.length} inputs, but ${activityLength(input)} given. " +
-          s"The inputs are ${inputNames.toSeq}")
+      Utils.timeIt("TFNet.updateOutput") {
+        val runner = sess.runner()
 
-      tensorManager.tensor2TFTensors(activity2Seq(input), inputTypes, inputTFTensors)
+        require(activityLength(input) == inputTypes.length,
+          s"require ${inputTypes.length} inputs, but ${activityLength(input)} given. " +
+            s"The inputs are ${inputNames.toSeq}")
 
-      // feed inputs
-      inputNames.zipWithIndex.foreach { case (name, idx) =>
-        runner.feed(name, inputTFTensors(idx))
-      }
+        tensorManager.tensor2TFTensors(activity2Seq(input), inputTypes, inputTFTensors)
 
-      // feed new weights if possible
-      graphMeta.variables.map { variableNames =>
-        if (!this.isTraining()) {
-          var i = 0
-          while (i < variableNames.length) {
-            if (weightTFTensors(i) == null) {
+        // feed inputs
+        inputNames.zipWithIndex.foreach { case (name, idx) =>
+          runner.feed(name, inputTFTensors(idx))
+        }
+
+        // feed new weights if possible
+        graphMeta.variables.map { variableNames =>
+          if (!this.isTraining()) {
+            var i = 0
+            while (i < variableNames.length) {
+              if (weightTFTensors(i) == null) {
+                val tensor = tensorManager.bigdl2Tf(weights(i), DataType.FLOAT)
+                weightTFTensors(i) = tensor
+              }
+              i += 1
+            }
+          } else {
+            var i = 0
+            while (i < variableNames.length) {
+              if (weightTFTensors(i) != null) {
+                weightTFTensors(i).close()
+              }
               val tensor = tensorManager.bigdl2Tf(weights(i), DataType.FLOAT)
               weightTFTensors(i) = tensor
+              i += 1
             }
-            i += 1
           }
-        } else {
-          var i = 0
-          while (i < variableNames.length) {
-            if (weightTFTensors(i) != null) {
-              weightTFTensors(i).close()
-            }
-            val tensor = tensorManager.bigdl2Tf(weights(i), DataType.FLOAT)
-            weightTFTensors(i) = tensor
-            i += 1
+          variableNames.zip(weightTFTensors).map { case (name, tensor) =>
+            runner.feed(name, tensor)
+            tensor
           }
         }
-        variableNames.zip(weightTFTensors).map { case (name, tensor) =>
-          runner.feed(name, tensor)
-          tensor
+
+        // fetch outputs
+        floatOutputNames.foreach(runner.fetch)
+
+        // fetch temp tensors used by backward if possible
+        if (this.isTraining()) {
+          graphMeta.tempTensors.map(_.map(runner.fetch))
         }
-      }
 
-      // fetch outputs
-      floatOutputNames.foreach(runner.fetch)
+        val outputs = runner.run()
 
-      // fetch temp tensors used by backward if possible
-      if (this.isTraining()) {
-        graphMeta.tempTensors.map(_.map(runner.fetch))
-      }
-
-      val outputs = runner.run()
-
-      outputs.asScala.zipWithIndex.foreach { case (t, idx) =>
-        if (idx < outputNames.length) {
-          // model outputs
-          tf2bigdl(t.asInstanceOf[TTensor[Float]], getOutput(idx + 1))
+        outputs.asScala.zipWithIndex.foreach { case (t, idx) =>
+          if (idx < outputNames.length) {
+            // model outputs
+            TFUtils.tf2bigdl(t.asInstanceOf[TTensor[Float]], getOutput(idx + 1))
+          } else {
+            // temp tensors used by backward if any
+            tempTFTensors(idx - outputNames.length) = t
+          }
+        }
+        if (!this.isTraining()) {
+          // clean up all tensorflow tensors
+          tensorManager.destructTFTensors()
+          // outputs is returned by tensorflow and cannot be freed using tensorManager
+          emptyTFTensorArray(outputs.asScala.slice(0, outputNames.length))
         } else {
-          // temp tensors used by backward if any
-          tempTFTensors(idx - outputNames.length) = t
+          // clean up variable tensorflow tensors
+          emptyTFTensorArray(weightTFTensors)
+          // clean up model output tensorflow tensors
+          emptyTFTensorArray(outputs.asScala.slice(0, outputNames.length))
+
+          // tempTensors will be cleaned up after backward
         }
       }
-      if (!this.isTraining()) {
-        // clean up all tensorflow tensors
-        tensorManager.destructTFTensors()
-        // outputs is returned by tensorflow and cannot be freed using tensorManager
-        emptyTFTensorArray(outputs.asScala.slice(0, outputNames.length))
-      } else {
-        // clean up variable tensorflow tensors
-        emptyTFTensorArray(weightTFTensors)
-        // clean up model output tensorflow tensors
-        emptyTFTensorArray(outputs.asScala.slice(0, outputNames.length))
-
-        // tempTensors will be cleaned up after backward
-      }
-
-      val end = System.nanoTime()
-      TFNet.logger.debug(s"TFNet forward time ${(end - start) / 1e9} ")
-
     } catch {
       case ex: Throwable =>
         tensorManager.destructTFTensors()
@@ -323,7 +322,7 @@ class TFNet(private val graphDef: TFGraphHolder,
           .zipWithIndex.foreach(x => gradWeightTFTensors(x._2) = x._1)
 
         i.zipWithIndex.foreach { case (t, idx) =>
-          tf2bigdl(t.asInstanceOf[TTensor[Float]], getGradInput(idx + 1))
+          TFUtils.tf2bigdl(t.asInstanceOf[TTensor[Float]], getGradInput(idx + 1))
         }
 
         // clean up two feeds
@@ -351,7 +350,7 @@ class TFNet(private val graphDef: TFGraphHolder,
       this.gradWeights.zipWithIndex.map { case (gradWeight, idx) =>
         val gradWeightBuffer = this.gradWeightsBuffer(idx)
         val tfTensor = gradWeightTFTensors(idx)
-        tf2bigdl(tfTensor, gradWeightBuffer)
+        TFUtils.tf2bigdl(tfTensor, gradWeightBuffer)
         if (gradWeight.isEmpty) {
           gradWeight.resizeAs(weights(idx))
         }
@@ -371,7 +370,7 @@ class TFNet(private val graphDef: TFGraphHolder,
     variables.foreach(runner.fetch)
     runner.run().asScala.zipWithIndex.map { case (fetch, idx) =>
       val t = weights(idx)
-      tf2bigdl(fetch.asInstanceOf[TTensor[Float]], t)
+      TFUtils.tf2bigdl(fetch.asInstanceOf[TTensor[Float]], t)
       t
     }
     weights
@@ -428,16 +427,6 @@ class TFNet(private val graphDef: TFGraphHolder,
     output.dataType()
   }
 
-  private def tf2bigdl(t: TTensor[_], output: Tensor[Float]) = {
-    val shape = t.shape().map(_.toInt)
-    output.resize(shape)
-    val buffer = FloatBuffer.wrap(
-      output.storage().array(),
-      output.storageOffset() - 1,
-      shape.product)
-    t.writeTo(buffer)
-  }
-
   private def activityLength(a: Activity): Int = {
     if (a.isTensor) 1 else a.toTable.length()
   }
@@ -463,8 +452,6 @@ object TFNet {
 
   @transient
   private lazy val inDriver = NetUtils.isDriver
-
-  val logger = LoggerFactory.getLogger(getClass)
 
   private val graphRegistry = new RegistryMap[ClosableGraph]()
 
