@@ -32,7 +32,6 @@ import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text.TextSet
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
-import com.intel.analytics.zoo.pipeline.api.net.RDDWrapper
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
