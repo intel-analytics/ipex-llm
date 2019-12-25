@@ -128,7 +128,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     val frequencies = dataRdd.flatMap{case (text: String, label: Float) =>
       SimpleTokenizer.toTokens(text)
     }.map(word => (word, 1)).reduceByKey(_ + _)
-      .sortBy(- _._2).collect().slice(10, param.maxWordsNum)
+      .sortBy(- _._2).persist().collect().slice(10, param.maxWordsNum)
 
     val indexes = Range(1, frequencies.length)
     val word2Meta = frequencies.zip(indexes).map{item =>
@@ -198,7 +198,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     val trainingSplit = param.trainingSplit
 
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
-    val dataRdd = sc.parallelize(loadRawData(), param.partitionNum)
+    val dataRdd = sc.parallelize(loadRawData(), param.partitionNum).persist()
     val (word2Meta, word2Vec) = analyzeTexts(dataRdd)
     val word2MetaBC = sc.broadcast(word2Meta)
     val word2VecBC = sc.broadcast(word2Vec)
@@ -211,7 +211,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
       Sample(
         featureTensor = Tensor(input.flatten, Array(sequenceLen, embeddingDim)),
         label = label)
-    }
+    }.persist()
 
     val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
       Array(trainingSplit, 1 - trainingSplit))
