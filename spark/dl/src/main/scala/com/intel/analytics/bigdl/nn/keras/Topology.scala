@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.{Criterion, DataSet}
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Input => TInput, Container, Graph, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Container, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -187,32 +187,6 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
     checkWithCurrentInputShape(calcInputShape)
     getOutputShape()
   }
-
-  // debug
-  def toGraph(): Graph[T] = {
-    val graph = labor.asInstanceOf[StaticGraph[T]]
-    val fwdExecutions = graph.getSortedForwardExecutions()
-    for (i <- 0 until fwdExecutions.length) {
-      val layer = fwdExecutions(i).element.asInstanceOf[KerasLayer[Activity, Activity, T]]
-
-      if (layer.isInstanceOf[KerasModel[T]]) {
-        fwdExecutions(i).element = layer.toGraph()
-      } else if ((!layer.labor.isKerasStyle()
-        && layer.labor.isInstanceOf[Container[Activity, Activity, T]]) ||
-        (layer.isKerasStyle() && layer.labor.isInstanceOf[KerasModel[T]])) {
-        fwdExecutions(i).element = layer.labor.toGraph()
-      } else {
-        fwdExecutions(i).element = layer.labor
-      }
-    }
-
-    graph.toSingleGraph()
-  }
-
-  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    this.toGraph().getEndNodes(startNodes)
-  }
-  // debug
 }
 
 object Model extends KerasLayerSerializable{
@@ -346,20 +320,6 @@ class Sequential[T: ClassTag]()
     checkWithCurrentInputShape(calcInputShape)
     getOutputShape()
   }
-
-  // debug
-  // Convert Keras Sequential to BLAS StaticGraph
-  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
-    val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
-    val endNodes = this.getEndNodes(starts)
-    // Disable excludeInvalidLayers to allow customized Keras layers
-    new StaticGraph(starts, endNodes, enableExcludeChecking = false).toSingleGraph()
-  }
-
-  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    labor.asInstanceOf[TSequential[T]].getEndNodes(startNodes)
-  }
-  // debug
 }
 
 object Sequential extends KerasLayerSerializable{

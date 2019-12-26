@@ -103,8 +103,8 @@ class StaticGraph[T: ClassTag](
     this
   }
 
-  // Merge a nested StaticGraph into a single StaticGraph
-  def toSingleGraph(): StaticGraph[T] = {
+  // Merge a nested StaticGraph into a non-nested one
+  private[bigdl] def toSingleGraph(): StaticGraph[T] = {
     if (this.isNestedGraph()) {
       val graph = this.cloneModule()
       val fwdExecution = graph.getSortedForwardExecutions()
@@ -113,23 +113,13 @@ class StaticGraph[T: ClassTag](
       var i = 0
       while (i < fwdExecution.length) {
         if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
-          var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]]
-          require(g.outputs.length == 1 && g.inputs.length == 1,
-            s"In order to avoid possible ambiguities in node connection. " +
-              s"This StaticGraph cannot be merged into a non-nested one. " +
-              s"Its inner graph ${g.getName()} has more than one input or output. ")
-          g = g.toSingleGraph().asInstanceOf[StaticGraph[T]]
+          var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]].toSingleGraph()
           fwdExecution(i).element = g
 
-          if (fwdExecution(i).prevNodes.length == 1) {
-            val inputNode = g.inputs(0).nextNodes(0)
-            g.inputs(0).delete(inputNode)
-            val preNode = fwdExecution(i).prevNodes(0)
-            preNode.delete(fwdExecution(i))
-            preNode.add(inputNode)
-          } else {
-            g.inputs(0).element = Identity()
-            val inputNode = g.inputs(0)
+          for (inputIndex <- 0 until fwdExecution(i).prevNodes.length) {
+            val inputNode = g.inputs(inputIndex)
+            inputNode.element = Identity()
+
             while (fwdExecution(i).prevNodes.length != 0) {
               val preNode = fwdExecution(i).prevNodes(0)
               preNode.delete(fwdExecution(i))
@@ -137,12 +127,14 @@ class StaticGraph[T: ClassTag](
             }
           }
 
-          val outputNode = g.outputs(0)
-          outputNode.removeNextEdges()
-          while (fwdExecution(i).nextNodes.length != 0) {
-            val nextNode = fwdExecution(i).nextNodes(0)
-            fwdExecution(i).delete(nextNode)
-            outputNode.add(nextNode)
+          for (outputIndex <- 0 until g.outputs.length) {
+            val outputNode = g.outputs(outputIndex)
+            outputNode.removeNextEdges()
+            while (fwdExecution(i).nextNodes.length != 0) {
+              val nextNode = fwdExecution(i).nextNodes(0)
+              fwdExecution(i).delete(nextNode)
+              outputNode.add(nextNode)
+            }
           }
         }
         i += 1
@@ -157,19 +149,14 @@ class StaticGraph[T: ClassTag](
     }
   }
 
-  def isNestedGraph(): Boolean = {
-    var count = 0
+  private def isNestedGraph(): Boolean = {
     for (i <- 0 until forwardExecution.length) {
       if (forwardExecution(i).element.isInstanceOf[StaticGraph[T]]) {
-        count += 1
+        return true
       }
     }
 
-    if (count > 0) {
-      true
-    } else {
-      false
-    }
+    false
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {

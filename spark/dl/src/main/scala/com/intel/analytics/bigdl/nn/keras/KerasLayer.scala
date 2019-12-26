@@ -19,8 +19,8 @@ package com.intel.analytics.bigdl.nn.keras
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Graph, Input => TInput, StaticGraph, Container => TContainer, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential, Model => KModel}
+import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, Container => TContainer, Input => TInput, Sequential => TSequential}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -169,15 +169,42 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   // debug
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    // Customized Keras layer
-    if (labor.isKerasStyle() && labor.getName().equals(this.getName())) {
+    if (this.isInstanceOf[KModel[T]]) {
+      this.toGraph().getEndNodes(startNodes)
+    } else if (labor.isKerasStyle() && labor.getName().equals(this.getName())) {
       Array(this.toGraphInputs(startNodes))
     } else {
-    // Common Keras layer or BLAS layer
       labor.getEndNodes(startNodes)
     }
   }
   // debug
+
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    if (this.isInstanceOf[KModel[T]]) {
+      val graph = labor.asInstanceOf[StaticGraph[T]]
+      val fwdExecutions = graph.getSortedForwardExecutions()
+      for (i <- 0 until fwdExecutions.length) {
+        val layer = fwdExecutions(i).element.asInstanceOf[KerasLayer[Activity, Activity, T]]
+        if (layer.isInstanceOf[KerasModel[T]]) {
+          fwdExecutions(i).element = layer.toGraph()
+        } else if ((!layer.labor.isKerasStyle()
+          && layer.labor.isInstanceOf[TContainer[Activity, Activity, T]]) ||
+          (layer.isKerasStyle() && layer.labor.isInstanceOf[KerasModel[T]])) {
+          fwdExecutions(i).element = layer.labor.toGraph()
+        } else {
+          fwdExecutions(i).element = layer.labor
+        }
+      }
+      graph.toSingleGraph()
+    } else if (this.isInstanceOf[KSequential[T]]) {
+      val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
+      val endNodes = this.getEndNodes(starts)
+      // Disable excludeInvalidLayers to allow customized Keras layers
+      new StaticGraph(starts, endNodes, enableExcludeChecking = false).toSingleGraph()
+    } else {
+      this.labor.toGraph()
+    }
+  }
 
   def labor: AbstractModule[A, B, T] = {
     if (this.modules.isEmpty) {
