@@ -169,7 +169,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   // debug
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    if (this.isInstanceOf[KModel[T]]) {
+    if (this.isKerasGraph()) {
       this.toGraph().getEndNodes(startNodes)
     } else if (labor.isKerasStyle() && labor.getName().equals(this.getName())) {
       Array(this.toGraphInputs(startNodes))
