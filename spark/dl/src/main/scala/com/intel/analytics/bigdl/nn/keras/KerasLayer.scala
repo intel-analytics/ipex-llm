@@ -197,7 +197,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
         }
       }
       graph.toSingleGraph()
-    } else if (this.isKerasGraph()) {
+    } else if (this.isKerasSequential()) {
       val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
       val endNodes = this.getEndNodes(starts)
       // Disable excludeInvalidLayers to allow customized Keras layers
