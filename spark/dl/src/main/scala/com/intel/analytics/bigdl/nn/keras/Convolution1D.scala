@@ -68,18 +68,22 @@ class Convolution1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"Convolution1D requires 3D input, but got input dim ${input.length}")
-    val outputLength = KerasUtils.computeConvOutputLength(input(1), filterLength,
+    val outputLength = KerasUtils.computeConvOutputLength(input(2), filterLength,
       borderMode, subsampleLength)
-    Shape(input(0), outputLength, nbFilter)
+    Shape(input(0), nbFilter, outputLength)
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val model = TSequential[T]()
-    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    // TODO Have to change from NHWC to NCHW
+    // model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), input(2), 1), Some(true)))
     val layer = SpatialConvolution(
-      nInputPlane = input(2),
+      // nInputPlane = input(2),
+      nInputPlane = input(1),
+      //
       nOutputPlane = nbFilter,
       kernelW = 1,
       kernelH = filterLength,
@@ -90,10 +94,14 @@ class Convolution1D[T: ClassTag](
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
-      format = DataFormat.NHWC)
+      // format = DataFormat.NHWC)
+      format = DataFormat.NCHW)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     model.add(layer)
-    model.add(Squeeze(3))
+// //    model.add(Squeeze(3))
+    model.add(Squeeze(4))
+    // TODO need squeeze computeOutput
+
     if (activation != null) {
       model.add(activation.doBuild(inputShape))
     }

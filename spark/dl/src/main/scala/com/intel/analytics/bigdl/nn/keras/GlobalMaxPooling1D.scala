@@ -42,14 +42,19 @@ class GlobalMaxPooling1D[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
-    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    // TODO Have to change from NHWC to NCHW
+    // model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), input(2), 1), Some(true)))
     val layer = SpatialMaxPooling(
       kW = 1,
-      kH = input(1),
-      format = DataFormat.NHWC)
+      // kH = input(1),
+      kH = input(2),
+      format = DataFormat.NCHW)
     model.add(layer)
+//    model.add(Squeeze(3))
+//    model.add(Squeeze(2))
+    model.add(Squeeze(4))
     model.add(Squeeze(3))
-    model.add(Squeeze(2))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
