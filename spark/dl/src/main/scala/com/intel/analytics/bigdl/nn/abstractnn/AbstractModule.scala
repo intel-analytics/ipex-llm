@@ -72,6 +72,29 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   var gradInput: A = Activity.allocate[A, T]()
 
+  protected var inputsFormats: Seq[Int] = null
+  protected var outputsFormats: Seq[Int] = null
+
+  /**
+   * set input formats for graph
+   * @param formats
+   * @return
+   */
+  def setInputFormats(formats: Seq[Int]): this.type = {
+    inputsFormats = formats
+    this
+  }
+
+  /**
+   * set output formats for graph
+   * @param formats
+   * @return
+   */
+  def setOutputFormats(formats: Seq[Int]): this.type = {
+    outputsFormats = formats
+    this
+  }
+
   /**
    * Get the scale of gradientWeight
    */
@@ -828,13 +851,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
     val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
     val endNodes = this.getEndNodes(starts)
-    val graph = Graph(starts, endNodes)
+    var graph = Graph(starts, endNodes)
     if (graph.isInstanceOf[StaticGraph[T]]) {
-      // Merge nested graphs inside to make the whole graph non-nested
-      graph.asInstanceOf[StaticGraph[T]].toSingleGraph()
-    } else {
-      graph
+      graph = graph.asInstanceOf[StaticGraph[T]].toSingleGraph()
     }
+    if (inputsFormats != null) {
+      graph.setInputFormats(inputsFormats)
+    }
+    if (outputsFormats != null) {
+      graph.setOutputFormats(outputsFormats)
+    }
+    graph
   }
 
   /**
@@ -1109,7 +1136,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return current end nodes
    */
   private[bigdl] def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    val endNodes = Array(this.inputs(startNodes: _*))
+    val endNodes = Array(this.processInputs(startNodes))
     endNodes
   }
 

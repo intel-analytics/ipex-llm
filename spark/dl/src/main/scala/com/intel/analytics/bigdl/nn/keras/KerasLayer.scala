@@ -171,7 +171,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     if (this.isKerasGraph()) {
       this.toGraph().getEndNodes(startNodes)
     } else if (labor.isKerasStyle() && labor.getName().equals(this.getName())) {
-      Array(this.toGraphInputs(startNodes))
+      Array(this.processInputs(startNodes))
     } else {
       labor.getEndNodes(startNodes)
     }
@@ -194,12 +194,28 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
           fwdExecutions(i).element = layer.labor
         }
       }
-      graph.toSingleGraph()
+      val result = graph.toSingleGraph()
+      if (inputsFormats != null) {
+        result.setInputFormats(inputsFormats)
+      }
+
+      if (inputsFormats != null) {
+        result.setOutputFormats(outputsFormats)
+      }
+      result
     } else if (this.isKerasSequential()) {
       val starts = if (startNodes.isEmpty) Array(TInput[T]()) else startNodes.toArray
       val endNodes = this.getEndNodes(starts)
       // Disable excludeInvalidLayers to allow customized Keras layers
-      new StaticGraph(starts, endNodes, enableExcludeChecking = false).toSingleGraph()
+      val result = new StaticGraph(starts, endNodes, enableExcludeChecking = false).toSingleGraph()
+      if (inputsFormats != null) {
+        result.setInputFormats(inputsFormats)
+      }
+
+      if (outputsFormats != null) {
+        result.setOutputFormats(outputsFormats)
+      }
+      result
     } else {
       this.labor.toGraph()
     }

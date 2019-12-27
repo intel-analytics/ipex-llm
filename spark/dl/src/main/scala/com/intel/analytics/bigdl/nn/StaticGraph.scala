@@ -151,29 +151,6 @@ class StaticGraph[T: ClassTag](
     gradInput
   }
 
-  private var inputsFormats: Seq[Int] = null
-  private var outputsFormats: Seq[Int] = null
-
-  /**
-   * set input formats for graph
-   * @param formats
-   * @return
-   */
-  def setInputFormats(formats: Seq[Int]): this.type = {
-    inputsFormats = formats
-    this
-  }
-
-  /**
-   * set output formats for graph
-   * @param formats
-   * @return
-   */
-  def setOutputFormats(formats: Seq[Int]): this.type = {
-    outputsFormats = formats
-    this
-  }
-
   /**
    * convert static graph to ir graph and build according to engine type
    * @return return ir graph if converted successfully, otherwise null
