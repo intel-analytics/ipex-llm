@@ -52,7 +52,7 @@ class Squeeze[T: ClassTag](
     val _inputSize = inputShape.toSingle().toArray
     var resultSize = new ArrayBuffer[Int]()
     for (i <- 1 to _inputSize.length) {
-      if (!dims.contains(i)) {
+      if (!dims.contains(i) || (dims.contains(i) && _inputSize(i - 1) != 1)) {
         resultSize.append(_inputSize(i - 1))
       }
     }
