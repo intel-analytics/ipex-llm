@@ -853,6 +853,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val endNodes = this.getEndNodes(starts)
     var graph = Graph(starts, endNodes)
     if (graph.isInstanceOf[StaticGraph[T]]) {
+      // Merge nested graphs inside to make the whole graph non-nested
       graph = graph.asInstanceOf[StaticGraph[T]].toSingleGraph()
     }
     if (inputsFormats != null) {
