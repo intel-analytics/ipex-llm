@@ -1336,6 +1336,39 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       val model = Graph(Array(n1, n2), Array(n3, n4))
     }
   }
+
+  "Graph toSingleGraph" should "work correctly" in {
+    val input = Input()
+
+    val linear1 = Linear[Float](2, 3).inputs(input)
+
+    val inputg1 = Input()
+    val l1 = Linear[Float](3, 5).inputs(inputg1)
+    val inputg1nested = Input()
+    val l1nested = Linear[Float](5, 5).inputs(inputg1nested)
+    val g1nested = Graph(inputg1nested, l1nested).inputs(l1)
+    val g1 = Graph(inputg1, g1nested).inputs(linear1)
+
+    val inputg2 = Input()
+    val l2 = Linear[Float](5, 3).inputs(inputg2)
+    val g2 = Graph(inputg2, l2).inputs(g1)
+
+    val linear3 = Linear(3, 6).inputs(g2)
+    val linear4 = Linear(3, 5).inputs(g2)
+
+    val graph = Graph(input, Array(linear3, linear4)).asInstanceOf[StaticGraph[Float]]
+    val toSingle = graph.toSingleGraph()
+
+    val tensor = Tensor[Float](Array(3, 2)).rand()
+    val graphOutput = graph.forward(tensor)
+    val toSingleOutput = toSingle.forward(tensor)
+    graphOutput should equal(toSingleOutput)
+
+    val fwdExecution = toSingle.asInstanceOf[StaticGraph[Float]].getForwardExecutions()
+    for (i <- 0 until fwdExecution.length) {
+      assert(!fwdExecution(i).element.isInstanceOf[StaticGraph[Float]])
+    }
+  }
 }
 
 object ModelUntils {
