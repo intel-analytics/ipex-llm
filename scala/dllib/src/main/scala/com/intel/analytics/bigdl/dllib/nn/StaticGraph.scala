@@ -208,4 +208,60 @@ class StaticGraph[T: ClassTag](
     val model = IRGraph(inputsIR, outputsIR, variables, true, inFormats, outFormats)
     model.build()
   }
+
+  // Merge a nested StaticGraph into a non-nested one
+  private[bigdl] def toSingleGraph(): StaticGraph[T] = {
+    if (this.isNestedGraph()) {
+      val graph = this.cloneModule()
+      val fwdExecution = graph.getSortedForwardExecutions()
+      val dmOutput = fwdExecution(fwdExecution.length - 1).nextNodes(0)
+
+      var i = 0
+      while (i < fwdExecution.length) {
+        if (fwdExecution(i).element.isInstanceOf[StaticGraph[T]]) {
+          var g = fwdExecution(i).element.asInstanceOf[StaticGraph[T]].toSingleGraph()
+          fwdExecution(i).element = g
+
+          for (inputIndex <- 0 until fwdExecution(i).prevNodes.length) {
+            val inputNode = g.inputs(inputIndex)
+            inputNode.element = Identity()
+
+            while (fwdExecution(i).prevNodes.length != 0) {
+              val preNode = fwdExecution(i).prevNodes(0)
+              preNode.delete(fwdExecution(i))
+              preNode.add(inputNode)
+            }
+          }
+
+          for (outputIndex <- 0 until g.outputs.length) {
+            val outputNode = g.outputs(outputIndex)
+            outputNode.removeNextEdges()
+            while (fwdExecution(i).nextNodes.length != 0) {
+              val nextNode = fwdExecution(i).nextNodes(0)
+              fwdExecution(i).delete(nextNode)
+              outputNode.add(nextNode)
+            }
+          }
+        }
+        i += 1
+      }
+
+      val resultOutputNodes = dmOutput.prevNodes
+      resultOutputNodes.foreach(_.delete(dmOutput))
+      new StaticGraph[T](Array(graph.inputs(0)), resultOutputNodes,
+        enableExcludeChecking = this.enableExcludeChecking)
+    } else {
+      this
+    }
+  }
+
+  private def isNestedGraph(): Boolean = {
+    for (i <- 0 until forwardExecution.length) {
+      if (forwardExecution(i).element.isInstanceOf[StaticGraph[T]]) {
+        return true
+      }
+    }
+
+    false
+  }
 }
