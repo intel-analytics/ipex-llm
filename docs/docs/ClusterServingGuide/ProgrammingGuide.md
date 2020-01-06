@@ -263,4 +263,4 @@ Analytics Zoo Cluster Serving provides 2 attributes in Tensorboard so far, `Serv
 
 See example of visualization:
 
-![Example Chart](https://github.com/Litchilitchy/analytics-zoo/blob/cluster-serving-doc/docs/docs/ClusterServingGuide/example-chart.png)
+![Example Chart](example-chart.png)
