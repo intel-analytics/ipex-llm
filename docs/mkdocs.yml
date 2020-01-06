@@ -16,6 +16,8 @@ pages:
   - Download: release-download.md 
   - Documentation: release-docs.md
 - User Guide:
+  - Docker:
+    - Build & Use Docker Image: DockerUserGuide/index.md
   - Python:
     - Install: PythonUserGuide/install.md
     - Run: PythonUserGuide/run.md
@@ -39,6 +41,7 @@ pages:
     - BERT Classifier: ProgrammingGuide/bert-classifier.md
   - PyTorch: ProgrammingGuide/pytorch.md
   - RayOnSpark: ProgrammingGuide/rayonspark.md
+  - Cluster Serving: ClusterServingGuide/ProgrammingGuide.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
@@ -71,6 +74,7 @@ pages:
     - TFDataset: APIGuide/TFPark/tf-dataset.md
     - Text Models: APIGuide/TFPark/text-models.md
     - BERT Classifier: APIGuide/TFPark/bert-classifier.md
+  - Cluster Serving: ClusterServingGuide/APIGuide.md
   - Feature Engineering:
     - FeatureSet: APIGuide/FeatureEngineering/featureset.md
     - Relation: APIGuide/FeatureEngineering/relation.md
