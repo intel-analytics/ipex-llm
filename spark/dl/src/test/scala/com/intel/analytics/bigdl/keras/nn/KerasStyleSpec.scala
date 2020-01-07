@@ -274,7 +274,6 @@ class KerasStyleSpec extends BigDLSpecHelper {
     TestUtils.compareOutputShape(seq, Shape(2, 3)) should be (true)
   }
 
-  /*
   "KSequential to IRGraph" should "work" in {
     System.setProperty("bigdl.engineType", "mkldnn")
 
@@ -398,5 +397,4 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
     System.clearProperty("bigdl.engineType")
   }
-  */
 }
