@@ -191,12 +191,6 @@ class StaticGraph[T: ClassTag](
 
     val allNodes = forwardExecution
     if (!BlasToIR[T].convertingCheck(allNodes)) return null
-    inFormats.foreach(in =>
-      if (in == Memory.Format.nhwc) {
-        logger.warn("Not support NHWC in IRGraph")
-        return null
-      }
-    )
 
     val nodeMap = BlasToIR[T].convert(allNodes)
     val inputNodes = inputs.toArray.map(n => nodeMap.get(n).get)
