@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.{Utils => NNUtils}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -28,7 +28,8 @@ class AvgPooling(
   dH: Int = 1,
   padW: Int = 0,
   padH: Int = 0,
-  globalPooling: Boolean = false
+  globalPooling: Boolean = false,
+  val format: DataFormat = DataFormat.NCHW
 ) extends MklDnnLayer {
   @transient private var paddingTL: Array[Int] = _
   @transient private var paddingBR: Array[Int] = _
@@ -137,6 +138,7 @@ object AvgPooling {
     dH: Int = 1,
     padW: Int = 0,
     padH: Int = 0,
-    globalPooling: Boolean = false
-  ): AvgPooling = new AvgPooling(kW, kH, dW, dH, padW, padH, globalPooling)
+    globalPooling: Boolean = false,
+    format: DataFormat = DataFormat.NCHW
+  ): AvgPooling = new AvgPooling(kW, kH, dW, dH, padW, padH, globalPooling, format = format)
 }

@@ -18,15 +18,49 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.StaticGraph
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class LinearSpec extends FlatSpec with Matchers {
+
+  "Convert blas linear to mkldnn with NHWC" should "be correct" in {
+    Engine.setEngineType(MklDnn)
+    RandomGenerator.RNG.setSeed(100)
+    val linear = nn.Linear(12, 3)
+    val linear2 = nn.Linear(12, 3)
+
+    linear2.weight.copy(linear.weight)
+    linear2.bias.copy(linear.bias)
+
+    val blas = nn.Sequential()
+    blas.add(nn.Reshape(Array(12)).setName("linear"))
+    blas.add(linear)
+
+    val blas2 = nn.Sequential().add(linear2).toGraph().
+      asInstanceOf[StaticGraph[Float]]
+    blas2.setInputFormats(Seq(Memory.Format.nhwc))
+    blas2.setOutputFormats(Seq(Memory.Format.nc))
+    val dnn = blas2.toIRgraph()
+
+    val input = Tensor[Float](4, 2, 2, 3).rand() // nhwc
+
+    val outBlas = blas.forward(input).toTensor[Float]
+    val outDnn = dnn.forward(input).toTensor[Float]
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-5) should be (true)
+
+    val gradOutput = Tensor[Float]().resizeAs(outBlas).copy(outBlas)
+    val gradInputBlas = blas.backward(input, gradOutput)
+    val gradInputDnn = dnn.backward(input, gradOutput)
+    Equivalent.nearequals(gradInputBlas.toTensor, gradInputDnn.toTensor, 1e-5) should be (true)
+  }
+
   "linear updateOutput" should "work correctly" in {
     val inputSize = 2
     val outputSize = 2
