@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.utils.intermediate
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, Equivalent, Input, Output}
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -43,7 +44,7 @@ class IRconvertSpec extends BigDLSpecHelper {
     val pool1 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
     val conv2 = Node(IRElement[Float]("", IRSpatialConvolution[Float](20, 50, 5, 5)))
     val pool2 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
-    val reshape = Node(IRElement("", IRGeneralModule[Float](Reshape[Float](Array(50*4*4)))))
+    val reshape = Node(IRElement("", IRGeneralModule[Float](nn.Reshape[Float](Array(50*4*4)))))
     val linear = Node(IRElement("", IRLinear[Float](50 * 4 * 4, 500)))
     val relu = Node(IRElement("", IRReLU[Float]()))
     val fc2 = Node(IRElement("output", IRLinear[Float](500, 10)))
@@ -90,6 +91,144 @@ class IRconvertSpec extends BigDLSpecHelper {
     val output = fc2
     Graph(conv1, output)
   }
+
+  def keras(classNum: Int, shape: Shape = Shape(28, 28, 3)): nn.keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val model = Sequential()
+    model.add(Convolution2D(6, 5, 5, activation = "tanh",
+      dimOrdering = "tf", inputShape = shape).setName("conv1_5x5"))
+    model.add(BatchNormalization(dimOrdering = "tf")).setName("bnbn")
+    model.add(MaxPooling2D(dimOrdering = "tf"))
+    model.add(Convolution2D(12, 5, 5, activation = "tanh", dimOrdering = "tf")
+      .setName("conv2_5x5"))
+    model.add(BatchNormalization(dimOrdering = "tf")).setName("bnbn22")
+    model.add(MaxPooling2D(dimOrdering = "tf"))
+    model.add(Flatten())
+    model.add(Dense(100, activation = "tanh").setName("fc1"))
+    model.add(Dense(classNum, activation = "softmax").setName("fc2"))
+    model
+  }
+
+  "Convert Blas with NHWC" should "be correct" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    val input = Tensor[Float](2, 28, 28, 1).rand()
+    val gradOutput = Tensor[Float](2, 10).rand()
+
+    val blas = modelBlas(format = DataFormat("NHWC")).asInstanceOf[StaticGraph[Float]]
+    blas.setInputFormats(Seq(Memory.Format.nhwc))
+    blas.setOutputFormats(Seq(Memory.Format.nc))
+    val dnn = blas.cloneModule().toIRgraph()
+
+    val outBlas = blas.forward(input)
+    val outDnn = dnn.forward(input)
+    Equivalent.nearequals(outDnn.toTensor, outBlas.toTensor, 1e-4) should be (true)
+
+    val gradInputBlas = blas.backward(input, gradOutput)
+    val gradInputDnn = dnn.backward(input, gradOutput).toTensor[Float]
+    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
+    System.clearProperty("bigdl.engineType")
+  }
+
+  // todo: use those unit tests after supporting keras conversion
+
+//  "Running keras with mkldnn" should "be correct"in {
+//    System.setProperty("bigdl.engineType", "mkldnn")
+//    val model = keras(classNum = 10)
+//
+//    val blas = model.toGraph().asInstanceOf[StaticGraph[Float]]
+//    blas.setInputFormats(Seq(Memory.Format.nhwc))
+//    blas.setOutputFormats(Seq(Memory.Format.nc))
+//
+//    val dnn = blas.cloneModule().asInstanceOf[StaticGraph[Float]].toIRgraph()
+//
+//    val input = Tensor[Float](2, 28, 28, 3).rand()
+//
+//    val out1 = blas.forward(input)
+//    val out2 = dnn.forward(input)
+//    Equivalent.nearequals(out1.toTensor[Float], out2.toTensor[Float], 1e-5) should be (true)
+//
+//    val gradOutput = Tensor[Float]().resizeAs(out1.toTensor[Float])
+//
+//    val gradInputBlas = blas.backward(input, gradOutput)
+//    val gradInputDnn = dnn.backward(input, gradOutput)
+//    Equivalent.nearequals(gradInputDnn.toTensor, gradInputBlas.toTensor, 1e-4) should be (true)
+//    System.clearProperty("bigdl.engineType")
+//  }
+//
+//  "KSequential to IRGraph" should "work" in {
+//    System.setProperty("bigdl.engineType", "mkldnn")
+//
+//    RandomGenerator.RNG.setSeed(10)
+//    import com.intel.analytics.bigdl.mkl.Memory
+//
+//    val seq = nn.keras.Sequential[Float]()
+//    seq.add(InputLayer(inputShape = Shape(20, 100)))
+//    seq.add(Convolution1D(10, 5, activation = "relu"))
+//    seq.add(GlobalMaxPooling1D())
+//    seq.add(Dense(128))
+//    // seq.add(KDropout(0.2))
+//    seq.add(Activation("relu"))
+//    seq.add(Dense(10, activation = "softmax"))
+//
+//    // For such cases, toSingleGraph() is unnecessary
+//    val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
+//    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
+//    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+//    // set gradWeight
+//    graph.getParameters()._2.rand()
+//
+//    val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
+//
+//    val tensor = Tensor[Float](Array(3, 20, 100)).rand()
+//    val outputBlas = graph.forward(tensor)
+//    val output = ir.forward(tensor)
+//    outputBlas should be(output)
+//
+//    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+//    val gradInputBlas = graph.backward(tensor, gradOutput)
+//    val gradInput = ir.backward(tensor, gradOutput)
+//
+//    Equivalent.nearequals(gradInput.toTensor[Float],
+//      gradInputBlas.toTensor[Float], 1e-5) should be(true)
+//
+//    System.clearProperty("bigdl.engineType")
+//  }
+//
+//  "KGraph to IRGraph" should "work" in {
+//    System.setProperty("bigdl.engineType", "mkldnn")
+//    RandomGenerator.RNG.setSeed(10)
+//
+//    import com.intel.analytics.bigdl.mkl.Memory
+//    val input = nn.keras.Input[Float](inputShape = Shape(10))
+//    val d = nn.keras.Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
+//    val d2 = nn.keras.Dense[Float](5).setName("dense2").inputs(d)
+//    val model = nn.keras.Model[Float](input, d2)
+//
+//    val graph = model.toGraph().asInstanceOf[StaticGraph[Float]]
+//    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
+//    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+//
+//    // set gradWeight
+//    graph.getParameters()._2.rand()
+//
+//    // graph.evaluate()
+//    val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
+//    val tensor = Tensor[Float](Array(3, 10)).rand()
+//
+//    val outputBlas = graph.forward(tensor)
+//    val output = ir.forward(tensor)
+//
+//    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+//    val gradInputBlas = graph.backward(tensor, gradOutput)
+//    val gradInput = ir.backward(tensor, gradOutput)
+//
+//    outputBlas should be(output)
+//    gradInputBlas should be(gradInput)
+//
+//    System.clearProperty("bigdl.engineType")
+//  }
 
   "Convert Blas with NCHW to Dnn" should "be correct" in {
     System.setProperty("bigdl.engineType", "mkldnn")
@@ -246,7 +385,7 @@ class IRconvertSpec extends BigDLSpecHelper {
 
   "convert blas gap to dnn" should "work correctly" in {
     System.setProperty("bigdl.engineType", "mkldnn")
-    val graph = Sequential()
+    val graph = nn.Sequential()
       .add(SpatialAveragePooling[Float](2, 2, globalPooling = true))
       .toGraph()
 
