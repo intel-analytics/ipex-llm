@@ -2,7 +2,7 @@
    <p align="center"> <img src="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/img/logo.jpg" height=240px; weight=320px;"><br></p>
 </div>
       
-_A unified Data Analytics and AI platform for **distributed TensorFlow, Keras, PyTorch Apache Spark/Flink and Ray**_
+_A unified Data Analytics and AI platform for **distributed TensorFlow, Keras, PyTorch, Apache Spark/Flink and Ray**_
 
 ---
 
