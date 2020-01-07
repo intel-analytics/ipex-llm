@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -24,7 +24,8 @@ class LRN(
   size: Int = 5,
   alpha: Double = 1.0,
   beta: Double = 0.75,
-  k: Double = 1.0
+  k: Double = 1.0,
+  val format: DataFormat = DataFormat.NCHW
 ) extends MklDnnLayer {
   private val UNDEFINED = 0
 
@@ -108,6 +109,7 @@ class LRN(
 }
 
 object LRN {
-  def apply(size: Int = 5, alpha: Double = 1.0, beta: Double = 0.75, k: Double = 1.0): LRN =
-    new LRN(size, alpha, beta, k)
+  def apply(size: Int = 5, alpha: Double = 1.0, beta: Double = 0.75, k: Double = 1.0,
+            format: DataFormat = DataFormat.NCHW): LRN =
+    new LRN(size, alpha, beta, k, format)
 }

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat, Initializable}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{MklInt8Convertible, Ones, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.tensor._
@@ -31,7 +31,8 @@ class SpatialBatchNormalization(
   private val initWeight: Tensor[Float] = null,
   private val initBias: Tensor[Float] = null,
   private val initGradWeight: Tensor[Float] = null,
-  private val initGradBias: Tensor[Float] = null
+  private val initGradBias: Tensor[Float] = null,
+  val format: DataFormat = DataFormat.NCHW
 ) extends MklDnnLayer with Initializable with MklInt8Convertible {
 
   @transient private var forwardDesc: Long = 0L
@@ -455,8 +456,9 @@ object SpatialBatchNormalization {
     initWeight: Tensor[Float] = null,
     initBias: Tensor[Float] = null,
     initGradWeight: Tensor[Float] = null,
-    initGradBias: Tensor[Float] = null): SpatialBatchNormalization = {
+    initGradBias: Tensor[Float] = null,
+    format: DataFormat = DataFormat.NCHW): SpatialBatchNormalization = {
     new SpatialBatchNormalization(nOutput, eps, momentum, initWeight, initBias, initGradWeight,
-      initGradBias)
+      initGradBias, format = format)
   }
 }

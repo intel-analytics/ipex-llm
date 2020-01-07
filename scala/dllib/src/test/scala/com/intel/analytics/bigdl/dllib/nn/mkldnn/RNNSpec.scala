@@ -15,17 +15,19 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.example.languagemodel.PTBModel
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.mkl.{AlgKind, Direction, Memory}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.{Recurrent, StaticGraph}
-import com.intel.analytics.bigdl.nn.StaticGraph
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils._
+
+import scala.util.Random
 
 class RNNSpec extends FlatSpec with Matchers{
   "LSTM UnidirectionalInference updateOutput" should "work correctly" in {
@@ -2411,6 +2413,37 @@ class RNNSpec extends FlatSpec with Matchers{
     val blas_gradInput = blasGRU.backward(inputNTC, gradOutput).toTensor
 
     Equivalent.nearequals(mkldnn_gradInput, blas_gradInput) should be(true)
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "PTB model" should "work correctly" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    Random.setSeed(10)
+
+    val inputSize: Int = 1000
+    val hiddenSize: Int = 128
+    val outputSize: Int = 1000
+    val numLayers: Int = 2
+    val keepProb: Float = 1.0f
+
+    Engine.setEngineType(MklBlas)
+    val model = PTBModel.lstm(inputSize, hiddenSize, outputSize, numLayers, keepProb)
+    Engine.setEngineType(MklDnn)
+    val modelDnn = model.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
+
+    val input = Tensor[Float](4, 35).apply1(n => Random.nextInt(999))
+
+    val output = model.forward(input).toTensor[Float]
+    val outDnn = modelDnn.forward(input).toTensor[Float]
+
+    val gradOutput = Tensor[Float]().resizeAs(output).copy(output)
+
+    val gradInput = model.backward(input, gradOutput).toTensor[Float]
+    val gradInputDnn = modelDnn.backward(input, gradOutput).toTensor[Float]
+
+    Equivalent.nearequals(output, outDnn) should be(true)
+    Equivalent.nearequals(gradInput, gradInputDnn) should be(true)
 
     System.clearProperty("bigdl.engineType")
   }

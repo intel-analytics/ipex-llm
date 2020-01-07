@@ -41,6 +41,8 @@ class Linear(
   private[mkldnn] val gradBias: TensorMMap = new TensorMMap(Array(outputSize))
 
   @transient private var forwardPrimDesc: Long = 0L
+  @transient private var weightShape: Array[Int] = null
+  @transient private var weightLayout: Int = -1
 
   @transient private var updateOutputMemoryPrimitives: Array[Long] = _
   @transient private var updateOutputTensors: Array[Tensor[Float]] = _
@@ -71,13 +73,20 @@ class Linear(
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    val (weightShape, weightLayout) = inputs(0).shape.length match {
+    val weightParams = inputs(0).shape.length match {
       case 4 =>
-        (Array(weight.size(1)) ++ inputs(0).shape.slice(1, 4),
-          Memory.Format.oihw)
+        if (inputs(0).heapFormat == Memory.Format.nhwc) {
+          (Array(weight.size(1)) ++ inputs(0).shape.slice(1, 4),
+            Memory.Format.nhwc) // ohwi
+        } else {
+          (Array(weight.size(1)) ++ inputs(0).shape.slice(1, 4),
+            Memory.Format.nchw) // oihw
+        }
       case 2 => (weight.size(), Memory.Format.nc)
       case 1 => (weight.size(), Memory.Format.x)
     }
+    weightShape = weightParams._1
+    weightLayout = weightParams._2
 
     val inputShape = inputs(0).shape
     require(inputs(0).shape.length > 1, s"mkldnn linear unspported input dimension")
@@ -154,11 +163,6 @@ class Linear(
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    val weightShape = inputFormats()(0).shape.length match {
-      case 4 => Array(weight.size(1)) ++ inputFormats()(0).shape.slice(1, 4)
-      case _ => weight.size()
-    }
-
     val inputShape = inputFormats()(0).shape
 
     val outputShape = Array(inputFormats()(0).shape(0), outputSize)
@@ -197,14 +201,6 @@ class Linear(
 
   override private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData],
     phase: Phase): Array[MemoryData] = {
-    val (weightShape, weightLayout) = inputFormats()(0).shape.length match {
-      case 4 =>
-        (Array(weight.size(1)) ++ inputFormats()(0).shape.slice(1, 4),
-          Memory.Format.oihw)
-      case 2 => (weight.size(), Memory.Format.nc)
-      case 1 => (weight.size(), Memory.Format.x)
-    }
-
     val inputShape = inputFormats()(0).shape
 
     val outputShape = Array(inputFormats()(0).shape(0), outputSize)
