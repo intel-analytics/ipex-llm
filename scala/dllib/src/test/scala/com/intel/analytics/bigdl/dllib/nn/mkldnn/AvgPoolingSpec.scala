@@ -15,11 +15,13 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import breeze.numerics.ceil
 import com.intel.analytics.bigdl.mkl.{DataType, Memory}
-import com.intel.analytics.bigdl.nn.SpatialAveragePooling
+import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling, StaticGraph}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine, MklDnn}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
@@ -63,6 +65,47 @@ class AvgPoolingSpec extends BigDLSpecHelper {
 
     val grad2 = layer.backward(input, output2).toTensor[Float]
     val grad1 = seq.backward(input, output2)
+    grad1 should be(grad2)
+  }
+
+  "Avg Pooling with NHWC" should "be correct" in {
+    Engine.setEngineType(MklDnn)
+    RNG.setSeed(100)
+    val batchSize = 2
+    val input = Tensor[Float](batchSize, 28, 28, 480).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 14, 14, 480).apply1(e => Random.nextFloat())
+
+    val pad = -1
+    RNG.setSeed(100)
+    val layer = SpatialAveragePooling[Float](3, 3, 2, 2,
+      padH = pad, padW = pad, format = DataFormat.NHWC).ceil()
+    RNG.setSeed(100)
+    val layer2 = SpatialAveragePooling[Float](3, 3, 2, 2,
+      padH = pad, padW = pad).ceil()
+
+    import com.intel.analytics.bigdl.nn
+    val static = nn.Sequential[Float]().add(layer2)
+      .toGraph().asInstanceOf[StaticGraph[Float]]
+    static.setInputFormats(Seq(Memory.Format.nhwc))
+    static.setOutputFormats(Seq(Memory.Format.nhwc))
+    val dnn = static.toIRgraph()
+
+    for (i <- 0 to 3) {
+      input.rand()
+      gradOutput.rand()
+
+      dnn.forward(input)
+      dnn.backward(input, gradOutput)
+
+      layer.forward(input)
+      layer.backward(input, gradOutput)
+    }
+    val output1 = dnn.forward(input)
+    val output2 = layer.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val grad2 = layer.backward(input, output2).toTensor[Float]
+    val grad1 = dnn.backward(input, output2)
     grad1 should be(grad2)
   }
 
