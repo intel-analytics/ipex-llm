@@ -5,29 +5,29 @@ Analytics Zoo Cluster Serving is a lightweight distributed, real-time serving s
 
 This page contains the guide for you to run Analytics Zoo Cluster Serving, including following:
 
-* [Quick Start]()
+* [Quick Start](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#quick-start)
 
-* [Deploy Your Own Cluster Serving]()
+* [Deploy Your Own Cluster Serving](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#deploy-your-own-cluster-serving)
 
-   1. [Installation]()
+   1. [Installation](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#1-installation)
 
-   2. [Configuration]() 
+   2. [Configuration](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#2-configuration) 
    
-   3. [Launching Service]()
+   3. [Launching Service](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#3-launching-service)
    
-   4. [Model inference]()
+   4. [Model inference](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#4-model-inference)
 
-* [Additional Operations]()
+* [Optional Operations](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#optional-operations)
 
-     - [Update Model]()
+     - [Update Model or Config](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#update-model-or-change-config)
 
-     - [Logs and Visualization]()
+     - [Logs and Visualization](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#logs-and-visualization)
 
           
 
 ## Quick Start
 
-This section provides a quick start example for you to run Analytics Zoo Cluster Serving. To simplify the examples, we use docker to run Cluster Serving in these examples. If you do not have docker installed, [install docker]() first.
+This section provides a quick start example for you to run Analytics Zoo Cluster Serving. To simplify the examples, we use docker to run Cluster Serving in these examples. If you do not have docker installed, [install docker](https://docs.docker.com/install/) first.
 
 Use one command to run Cluster Serving container.
 ```
@@ -54,9 +54,9 @@ image: dog1.jpeg, classification-result: class: 207's prob: 0.9226527
 ```
 Wow! You made it!
 
-Note that the Cluster Serving quick start example will run on your local node only. Check the [Build Your Own Cluster Serving]() section for how to configure and run Cluster Serving in a distributed fashion.
+Note that the Cluster Serving quick start example will run on your local node only. Check the [Deploy Your Own Cluster Serving](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#deploy-your-own-cluster-serving) section for how to configure and run Cluster Serving in a distributed fashion.
 
-For more details, you could also see the log and performance by go to `localhost:6006` in your browser and refer to [Log and Visualization](), or view the source code of `quick_start.py` [here](), or refer to [API Guide]().
+For more details, you could also see the log and performance by go to `localhost:6006` in your browser and refer to [Log and Visualization](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#logs-and-visualization), or view the source code of `quick_start.py` [here](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/serving/quick_start.py), or refer to [API Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/APIGuide.md).
 
 ## Deploy your Own Cluster Serving
 ### 1. Installation
@@ -71,19 +71,19 @@ docker run zoo-cluster-serving
 ```
 Go inside the container and finish following operations.
 #### Manual installation
-For Not Docker user, first, install [Redis]() and [TensorBoard]() (for visualizing the serving status) and add `$REDIS_HOME` variable to your environment if you want Cluster Serving to help you start and stop it.
+For Not Docker user, first, install [Redis](https://redis.io/download) and [TensorBoard](https://pypi.org/project/tensorboard/) (for visualizing the serving status) and add `$REDIS_HOME` variable to your environment if you want Cluster Serving to help you start and stop it.
 
 Install Analytics Zoo by download release or pip.
 
 ##### Download Release
-Download Analytics Zoo from [release page]() on the local node, go to `analytics-zoo/scripts/cluster-serving`, run `cluster-serving-init`.
+Download Analytics Zoo from [release page](https://analytics-zoo.github.io/master/#release-download/) on the local node, go to `analytics-zoo/scripts/cluster-serving`, run `cluster-serving-init`.
 
 ##### Pip
 `pip install analytics-zoo`. And go to any directory, run `cluster-serving-init`.
 
 ### 2. Configuration
 #### 2.1 How to Config
-After [installation](), you will see a config file `config.yaml` your current working directory. Your Cluster Serving configuration can all be set by modifying it. See an example of `config.yaml` below
+After [installation](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#1-installation), you will see a config file `config.yaml` your current working directory. Your Cluster Serving configuration can all be set by modifying it. See an example of `config.yaml` below
 ```
 ## Analytics Zoo Cluster Serving Config Example
 
@@ -188,7 +188,7 @@ You can use following command to start Cluster Serving.
 ```
 cluster-serving-start
 ```
-This command will start Redis and Tensorboard if they are not running. Note that you need to provide `REDIS_HOME` environment variable as mentioned in [Installation](), if you need this feature.
+This command will start Redis and Tensorboard if they are not running. Note that you need to provide `REDIS_HOME` environment variable as mentioned in [Installation](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#1-installation), if you need this feature.
 
 #### Stop
 You can use following command to stop Cluster Serving, data in Redis and Tensorboard service will persist.
@@ -208,7 +208,7 @@ cluster-serving-shutdown
 
 If you are using docker, you could also run `docker rm` to stop them.
 ### 4. Model Inference
-We support Python API for conducting inference with Data Pipeline in Cluster Serving. We provide basic usage here, for more details, please see [API Guide]().
+We support Python API for conducting inference with Data Pipeline in Cluster Serving. We provide basic usage here, for more details, please see [API Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/APIGuide.md).
 #### Input and Output API
 To input data to queue, you need a `InputQueue` instance, and using `enqueue` method by giving an image path or image ndarray. See following example.
 ```
@@ -228,7 +228,7 @@ img1_result = output_api.query('img1')
 all_result = output_api.dequeue() # the output queue is empty after this code
 ```
 #### Output Format
-Consider the code above, in [Input and Output API] Section.
+Consider the code above, in [Input and Output API](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#input-and-output-api) Section.
 ```
 img1_result = output_api.query('img1')
 ```
@@ -243,7 +243,7 @@ result_class_prob_map = json.loads(img1_result)
 ```
 
 ## Optional Operations
-### Update Model or Change Config
+### Update Model or Config
 To update your model, you could replace your model file in your model directory, and restart Cluster Serving by `cluster-serving-restart`. Note that you could also change your config in `config.yaml` and restart serving.
 
 ### Logs and Visualization
