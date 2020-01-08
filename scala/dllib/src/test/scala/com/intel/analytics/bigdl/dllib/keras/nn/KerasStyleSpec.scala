@@ -18,11 +18,12 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn.abstractnn.InvalidLayer
-import com.intel.analytics.bigdl.nn.keras.{Activation, Dense, Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{Activation, Convolution1D, Dense, GlobalMaxPooling1D, Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.mkldnn.Equivalent
 import com.intel.analytics.bigdl.nn.{Input => TInput, Sequential => TSequential, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Shape, T, TestUtils}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, RandomGenerator, Shape, T, TestUtils}
 
 
 class KerasStyleSpec extends BigDLSpecHelper {
@@ -271,5 +272,129 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val output = seq.forward(inputData)
     seq.forward(output)
     TestUtils.compareOutputShape(seq, Shape(2, 3)) should be (true)
+  }
+
+  "KSequential to IRGraph" should "work" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+
+    RandomGenerator.RNG.setSeed(10)
+    import com.intel.analytics.bigdl.mkl.Memory
+
+    val seq = KSequential[Float]()
+    seq.add(InputLayer(inputShape = Shape(20, 100)))
+    seq.add(Convolution1D(10, 5, activation = "relu"))
+    seq.add(GlobalMaxPooling1D())
+    seq.add(Dense(128))
+    // seq.add(KDropout(0.2))
+    seq.add(Activation("relu"))
+    seq.add(Dense(10, activation = "softmax"))
+
+    val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
+    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
+
+    val tensor = Tensor[Float](Array(3, 20, 100)).rand()
+    val outputBlas = graph.forward(tensor)
+    val output = ir.forward(tensor)
+    outputBlas should be(output)
+
+    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+    val gradInputBlas = graph.backward(tensor, gradOutput)
+    val gradInput = ir.backward(tensor, gradOutput)
+
+    Equivalent.nearequals(gradInput.toTensor[Float],
+      gradInputBlas.toTensor[Float], 1e-5) should be(true)
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "KGraph to IRGraph" should "work" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    import com.intel.analytics.bigdl.mkl.Memory
+    val input = Input[Float](inputShape = Shape(10))
+    val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
+    val d2 = Dense[Float](5).setName("dense2").inputs(d)
+    val model = Model[Float](input, d2)
+
+    val graph = model.toGraph().asInstanceOf[StaticGraph[Float]]
+    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
+
+    val tensor = Tensor[Float](Array(3, 10)).rand()
+    val outputBlas = graph.forward(tensor)
+    val output = ir.forward(tensor)
+
+    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+    val gradInputBlas = graph.backward(tensor, gradOutput)
+    val gradInput = ir.backward(tensor, gradOutput)
+
+    outputBlas should be(output)
+    gradInputBlas should be(gradInput)
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "KSequential with KGraph module to IRGraph" should "work" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    import com.intel.analytics.bigdl.mkl.Memory
+    val input = Input[Float](inputShape = Shape(10))
+    val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
+    val d2 = Dense[Float](5).setName("dense2").inputs(d)
+    val kgraph = Model[Float](input, d2)
+
+    val seq = KSequential[Float]()
+    seq.add(kgraph)
+
+    val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
+    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
+
+    val tensor = Tensor[Float](Array(3, 10)).rand()
+
+    val outputBlas = graph.forward(tensor)
+    val output = ir.forward(tensor)
+
+    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+    val gradInputBlas = graph.backward(tensor, gradOutput)
+    val gradInput = ir.backward(tensor, gradOutput)
+
+    outputBlas should be(output)
+    gradInputBlas should be(gradInput)
+
+    System.clearProperty("bigdl.engineType")
+  }
+
+  "KGraph with KGraph module to IRGraph" should "work" in {
+    System.setProperty("bigdl.engineType", "mkldnn")
+    import com.intel.analytics.bigdl.mkl.Memory
+    val input1 = Input[Float](inputShape = Shape(10))
+
+    val input2 = Input[Float](inputShape = Shape(10))
+    val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input2)
+    val d2 = Dense[Float](5).setName("dense2").inputs(d)
+    val kgraph1 = Model[Float](input2, d2).inputs(input1)
+
+    val kgraph2 = Model[Float](input1, kgraph1)
+
+    val graph = kgraph2.toGraph().asInstanceOf[StaticGraph[Float]]
+    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+    val ir = graph.asInstanceOf[StaticGraph[Float]].toIRgraph()
+
+    val tensor = Tensor[Float](Array(3, 10)).rand()
+    val outputBlas = graph.forward(tensor)
+    val output = ir.forward(tensor)
+
+    val gradOutput = Tensor[Float]().resizeAs(outputBlas.toTensor[Float]).rand()
+    val gradInputBlas = graph.backward(tensor, gradOutput)
+    val gradInput = ir.backward(tensor, gradOutput)
+
+    outputBlas should be(output)
+    gradInputBlas should be(gradInput)
+
+    System.clearProperty("bigdl.engineType")
   }
 }
