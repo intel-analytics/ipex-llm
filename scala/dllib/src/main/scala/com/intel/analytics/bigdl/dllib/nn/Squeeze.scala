@@ -18,6 +18,8 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.utils.Shape
+import scala.collection.mutable.ArrayBuffer
 
 import scala.reflect.ClassTag
 
@@ -44,6 +46,17 @@ class Squeeze[T: ClassTag](
     newDims
   } else {
     dims
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val _inputSize = inputShape.toSingle().toArray
+    var resultSize = new ArrayBuffer[Int]()
+    for (i <- 1 to _inputSize.length) {
+      if (!dims.contains(i) || (dims.contains(i) && _inputSize(i - 1) != 1)) {
+        resultSize.append(_inputSize(i - 1))
+      }
+    }
+    Shape(resultSize.toArray)
   }
 
   override def updateOutput(input: Tensor[_]): Tensor[_] = {
