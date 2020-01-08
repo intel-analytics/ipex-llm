@@ -23,7 +23,6 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 import com.sun.xml.internal.bind.v2.TODO
 
 import scala.collection.JavaConverters._
@@ -735,7 +734,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
       case null =>
       case _ => this.originalModel.release(); this.originalModel = null
     }
-    List.range(0, this.modelQueue.size()).map(_ => {
+    List.range(0, this.modelQueue.size()).foreach(_ => {
       val model = this.modelQueue.take
       this.modelQueue.remove(model)
       model.release()
