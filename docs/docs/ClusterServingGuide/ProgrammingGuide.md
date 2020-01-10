@@ -119,6 +119,8 @@ Install Analytics Zoo by Download Release or Pip.
 ##### Download Release
 Download Analytics Zoo from [release page](https://analytics-zoo.github.io/master/#release-download/) on the local node. 
 
+Run `source analytics-zoo/bin/analytics-zoo-env.sh` to set environment.
+
 Go to `analytics-zoo/scripts/cluster-serving`, run `cluster-serving-init`.
 
 ##### Pip
