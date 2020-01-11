@@ -1,7 +1,5 @@
-<div align="center">
-   <p align="center"> <img src="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/img/logo.jpg" height=240px; weight=320px;"><br></p>
-</div>
-      
+![logo](Image/logo.jpg) 
+
 _A unified Data Analytics and AI platform for **distributed TensorFlow, Keras, PyTorch, Apache Spark/Flink and Ray**_
 
 ---
@@ -10,20 +8,18 @@ _A unified Data Analytics and AI platform for **distributed TensorFlow, Keras, P
 
 Analytics Zoo provides a unified data analytics and AI platform that seamlessly unites TensorFlow, Keras, PyTorch, Spark, Flink and Ray programs into an integrated pipeline, which can transparently scale from a laptop to large clusters to process production big data.
 
-<div align="center">
-   <p align="center"> <img src="https://github.com/intel-analytics/analytics-zoo/tree/master/docs/docs/Image/blockdiagram.jpg" height=240px; weight=718px;"><br></p>
-</div>
+![blockdiagram](Image/blockdiagram.jpg) 
 
 
 - **Integrated Analytics and AI Pipelines** for easily prototyping and deploying end-to-end AI applications. 
-  - Write [TensorFlow](https://analytics-zoo.github.io/master/#ProgrammingGuide/tensorflow/#tfpark-api) or [PyTorch](https://analytics-zoo.github.io/master/#ProgrammingGuide/pytorch/) inline with Spark code for distributed training and inference.
-  - Native deep learning (TensorFlow/Keras/PyTorch/BigDL) support in [Spark ML](https://analytics-zoo.github.io/master/#ProgrammingGuide/nnframes) Pipelines.
-  - Directly run Ray programs on big data cluster through [RayOnSpark](https://analytics-zoo.github.io/master/#ProgrammingGuide/rayonspark/). 
-  - Plain Java/Python APIs for (TensorFlow/PyTorch/BigDL/OpenVINO) [Model Inference](https://analytics-zoo.github.io/master/#ProgrammingGuide/inference). 
+    - Write [TensorFlow](https://analytics-zoo.github.io/master/#ProgrammingGuide/tensorflow/#tfpark-api) or [PyTorch](https://analytics-zoo.github.io/master/#ProgrammingGuide/pytorch/) inline with Spark code for distributed training and inference.
+    - Native deep learning (TensorFlow/Keras/PyTorch/BigDL) support in [Spark ML](https://analytics-zoo.github.io/master/#ProgrammingGuide/nnframes) Pipelines.
+    - Directly run Ray programs on big data cluster through [RayOnSpark](https://analytics-zoo.github.io/master/#ProgrammingGuide/rayonspark/). 
+    - Plain Java/Python APIs for (TensorFlow/PyTorch/BigDL/OpenVINO) [Model Inference](https://analytics-zoo.github.io/master/#ProgrammingGuide/inference). 
 
 - High-Level **ML Workflow** that automates the process of building large-scale machine learning applications.
-  - Automatically distributed [Cluster Serving](https://analytics-zoo.github.io/master/#ClusterServingGuide/ProgrammingGuide) (for TensorFlow/PyTorch/Caffe/BigDL/OpenVINO models) with a simple pub/sub API. 
-  - Scalable [AutoML](https://github.com/intel-analytics/analytics-zoo/blob/automl/pyzoo/zoo/automl/README.md) for time series prediction (that automatically generates features, selects models and tunes hyperparameters).
+    - Automatically distributed [Cluster Serving](https://analytics-zoo.github.io/master/#ClusterServingGuide/ProgrammingGuide) (for TensorFlow/PyTorch/Caffe/BigDL/OpenVINO models) with a simple pub/sub API. 
+    - Scalable [AutoML](https://github.com/intel-analytics/analytics-zoo/blob/automl/pyzoo/zoo/automl/README.md) for time series prediction (that automatically generates features, selects models and tunes hyperparameters).
 
 - **Built-in Algorithms and Models** for [Recommendation](https://analytics-zoo.github.io/master/#APIGuide/Models/recommendation/), [Time Series](https://analytics-zoo.github.io/master/#APIGuide/Models/anomaly-detection/), [Computer Vision](https://analytics-zoo.github.io/master/#APIGuide/Models/object-detection/) and [NLP](https://analytics-zoo.github.io/master/#APIGuide/Models/seq2seq/) applications.
 
@@ -32,10 +28,11 @@ Analytics Zoo provides a unified data analytics and AI platform that seamlessly 
 # <font size="6">Why use Analytics Zoo? </font>
 
 You may want to develop your AI solutions using Analytics Zoo if:
-- You want to easily prototype the entire end-to-end pipeline that applies AI models (e.g., TensorFlow, Keras, PyTorch, BigDL, OpenVINO, etc.) to production big data.
-- You want to transparently scale your AI applications from a laptop to large clusters with "zero" code changes.
-- You want to deploy your AI pipelines to existing YARN or K8S clusters *WITHOUT* any modifications to the clusters.
-- You want to automate the process of applying machine learning (such as feature engineering, hyperparameter tuning, model selection and distributed inference). 
+
+* You want to easily prototype the entire end-to-end pipeline that applies AI models (e.g., TensorFlow, Keras, PyTorch, BigDL, OpenVINO, etc.) to production big data.
+* You want to transparently scale your AI applications from a laptop to large clusters with "zero" code changes.
+* You want to deploy your AI pipelines to existing YARN or K8S clusters *WITHOUT* any modifications to the clusters.
+* You want to automate the process of applying machine learning (such as feature engineering, hyperparameter tuning, model selection and distributed inference). 
 
 
 ---
