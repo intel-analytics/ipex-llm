@@ -1,3 +1,7 @@
+**Tutorial:**
+
+* Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, [AI conference](https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069), Sep 2019, San Jose([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf))
+
 **Talks:**
 
 * Building AI to play the FIFA video game using distributed TensorFlow, [TensorFlow World](https://conferences.oreilly.com/tensorflow/tf-ca/public/schedule/detail/78309), Oct 2019, Santa Clara ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Building%20AI%20to%20play%20the%20FIFA%20video%20game%20using%20distributed%20TensorFlow.pdf))
