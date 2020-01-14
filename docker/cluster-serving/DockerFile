@@ -72,6 +72,10 @@ RUN chmod a+x ${ANALYTICS_ZOO_HOME}/bin/cluster-serving/*
 ENV PYTHONPATH 		${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip
 ENV REDIS_HOME 		/opt/work/redis-5.0.5
 
+RUN cd cluster-serving && \
+    cluster-serving-init && \
+    cd ..
+
 CMD ["bash"]
 
 
