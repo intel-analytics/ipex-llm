@@ -3,10 +3,11 @@
 ### Analytics-Zoo in Docker
 
 **By default, the Analytics-Zoo image has installed below packages:**
+
 - git
 - maven
 - Oracle jdk 1.8.0_152 (in /opt/jdk1.8.0_152)
-- python 2.7.6
+- python 3.6.9
 - pip
 - numpy
 - scipy
@@ -24,6 +25,7 @@
 - Analytics-Zoo source code (in /opt/work/analytics-zoo)
 
 **The work dir for Analytics-Zoo is /opt/work.**
+
 - download-analytics-zoo.sh is used for downloading Analytics-Zoo distributions.
 - start-notebook.sh is used for starting the jupyter notebook. You can specify the environment settings and spark settings to start a specified jupyter notebook.
 - analytics-Zoo-${ANALYTICS_ZOO_VERSION} is the Analytics-Zoo home of Analytics-Zoo distribution.
