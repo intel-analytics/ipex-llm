@@ -6,7 +6,7 @@ This page lists solutions to some common questions.
     
     ``` export PYTHONPATH=${ANALYTICS_ZOO_PY_ZIP}:$PYTHONPATH```
 
-2. Python in worker has a different version 2.7 than that in driver 3.5
+2. Python in worker has a different version than that in driver
     - ```export PYSPARK_PYTHON=/usr/local/bin/python3.5```  This path should be valid on every worker node.
     - ```export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.5```  This path should be valid on every driver node.
   

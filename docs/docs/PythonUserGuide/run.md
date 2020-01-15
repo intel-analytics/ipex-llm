@@ -1,6 +1,6 @@
-You need to first [install](install.md) analytics-zoo, either [from pip](install/#install-from-pip) or [without pip](install/#install-without-pip).
+You need to first [install](install.md) analytics-zoo, either [from pip](install/#install-from-pip-for-local-usage) or [without pip](install/#install-without-pip).
 
-**NOTE**: Only __Python 2.7__, __Python 3.5__ and __Python 3.6__ are supported for now.
+**NOTE**: Only __Python 3.5__ and __Python 3.6__ are supported for now. We have removed our support and test for Python 2.7 due to its end of life.
 
 ---
 
@@ -50,7 +50,7 @@ export BIGDL_PACKAGES=...
 ```
 
 ---
-## **Run on yarn after pip install**
+## **Run on Yarn after pip install**
 
 You should use `init_spark_on_yarn` rather than `init_nncontext()` here to create a SparkContext on Yarn.
 

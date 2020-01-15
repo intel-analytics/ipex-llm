@@ -7,7 +7,7 @@ This example is migrated from [PROGRESSIVE GROWING OF GANS](https://pytorch.org/
 * JDK 1.8
 * Pytorch & TorchVision 1.1.0
 * Apache Spark 2.4.3(pyspark)
-* Analytics-Zoo 0.6.0-SNAPSHOT.dev6 and above
+* Analytics-Zoo 0.6.0.dev6 and above
 * Jupyter Notebook, matplotlib
 
 ## Prepare environments

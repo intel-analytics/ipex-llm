@@ -6,7 +6,7 @@ This example is migrated from [Sharded_parameter_server](https://github.com/ray-
 * Python 3.6
 * JDK 1.8
 * Apache Spark 2.4.3(pyspark)
-* Analytics-Zoo 0.6.0-SNAPSHOT.dev6 and above
+* Analytics-Zoo 0.6.0.dev6 and above
 * Jupyter Notebook 
 
 ## Prepare environments

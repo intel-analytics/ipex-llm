@@ -32,8 +32,7 @@ For example, under the situation that `pyspark==2.4.3` is a dependency, you need
 
 After running the above command, you will find a `whl` file under the folder `analytics-zoo/pyzoo/dist/`. You can then directly pip install it to your local Python environment:
 ```bash
-pip install analytics-zoo/pyzoo/dist/analytics_zoo-VERSION-py2.py3-none-PLATFORM_x86_64.whl     # for Python 2.7
-pip3 install analytics-zoo/pyzoo/dist/analytics_zoo-VERSION-py2.py3-none-PLATFORM_x86_64.whl    # for Python 3.5 and Python 3.6
+pip install analytics-zoo/pyzoo/dist/analytics_zoo-VERSION-py2.py3-none-PLATFORM_x86_64.whl
 ```
 
 See [here](../PythonUserGuide/install/#install-from-pip-for-local-usage) for more remarks related to pip install.

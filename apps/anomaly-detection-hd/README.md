@@ -5,8 +5,8 @@ Since outliers are rare and different, that the auto-encoder will not learn to m
 (Retrieved from https://edouardfouche.com/Neural-based-Outlier-Discovery/)
 
 ## Environment
-* Python 2.7
-* Apache Spark 2.2.0 (This version needs to be same with the version you use to build Analytics Zoo)
+* Python 3.5/3.6
+* Apache Spark 2.x (This version needs to be same with the version you use to build Analytics Zoo)
 
 ## Run with Jupyter
 * Download Analytics Zoo and build it.
