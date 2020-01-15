@@ -7,7 +7,7 @@ except users are required to return a `TFEstimator` object. Users do not need to
 
 __Remarks__:
 
-- You need to install __tensorflow==1.10__ on your driver node.
+- You need to install __tensorflow==1.15.0__ on your driver node.
 - Your operating system (OS) is required to be one of the following 64-bit systems:
 __Ubuntu 16.04 or later__ and __macOS 10.12.6 or later__.
 - To run on other systems, you need to manually compile the TensorFlow source code. Instructions can
