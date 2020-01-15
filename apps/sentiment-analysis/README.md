@@ -10,8 +10,8 @@ In this example, you will learn how to use Analytics Zoo to develop deep learnin
 * How to train deep learning models
 
 ## Environment
-* Python 2.7/3.5/3.6
-* Apache Spark 1.6.0/2.1.0 (This version needs to be same with the version you use to build Analytics Zoo)
+* Python 3.5/3.6
+* Apache Spark 2.x (This version needs to be same with the version you use to build Analytics Zoo)
 * Numpy >= 1.16.0
 
 ## Install or download Analytics Zoo
