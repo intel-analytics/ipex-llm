@@ -2,7 +2,7 @@
 
 This directory contains three notebooks to show you how to use
 [Variational Autoencoders](https://arxiv.org/pdf/1606.05908.pdf)
-in Analytics Zoo. These notebooks are developed on Apache Spark 2.1
+in Analytics Zoo. These notebooks are developed on Apache Spark 2.x (This version needs to be same with the version you use to build Analytics Zoo).
 
 1. [Using Variational Autoencoder to Generate Digital Numbers](./using_variational_autoencoder_to_generate_digital_numbers.ipynb)
    This notebook used the [MNIST](http://yann.lecun.com/exdb/mnist/)
