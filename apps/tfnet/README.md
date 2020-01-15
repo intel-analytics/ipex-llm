@@ -3,8 +3,8 @@
 This example demonstrates how to do image classification inference using a pre-trained tensorflow checkpoint.
 
 ## Environment
-* Tensorflow 1.8.0
-* Apache Spark 1.6.0/2.1.0 (This version needs to be same with the version you use to build Analytics Zoo)
+* TensorFlow 1.10.0
+* Apache Spark 2.x (This version needs to be same with the version you use to build Analytics Zoo)
 
 ## Install or download Analytics Zoo
 Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
