@@ -100,13 +100,17 @@ Cluster Serving will then read the requests from the Redis stream, run the distr
 It is recommended to install Cluster Serving by pulling the pre-built Docker image to your local node, which have packaged all the required dependencies. Alternatively, you may also manually install Cluster Serving (through either pip or direct downloading) as well as Redis and TensorBoard (for visualizing the serving status) on the local node.
 #### Docker
 ```
-docker pull zoo-cluster-serving
+docker pull intelanalytics/zoo-cluster-serving
 ```
 then, (or directly run `docker run`, it will pull the image if it does not exist)
 ```
-docker run zoo-cluster-serving
+docker run --name cluster-serving -itd intelanalytics/zoo-cluster-serving bash
 ```
-Go inside the container and continue to [Configuration](#2-Configuration).
+Log into the container
+```
+docker exec -it cluster-serving bash
+```
+`cd ./cluster-serving`, you can see all the environments are prepared.
 #### Manual installation
 Non-Docker users need to install [Spark 2.4.3](https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz), [Redis](https://redis.io/topics/quickstart) and [TensorBoard](https://www.tensorflow.org/tensorboard/get_started).
 
