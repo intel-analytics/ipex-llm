@@ -543,6 +543,63 @@ now=$(date "+%s")
 time13=$((now-start))
 echo "#13 sentiment-analysis time used:$time13 seconds"
 
+echo "#14 start app test for anomaly-detection-hd"
+#timer
+start=$(date "+%s")
+chmod +x $ANALYTICS_ZOO_HOME/bin/data/HiCS/get_HiCS.sh
+$ANALYTICS_ZOO_HOME/bin/data/HiCS/get_HiCS.sh
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo
+sed -i '/get_ipython()/d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
+sed -i '127,273d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
+python ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "anomaly-detection-hd failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time14=$((now-start))
+echo "#14 anomaly-detection-hd time used:$time14 seconds"
+
+echo "#15 start app test for pytorch face-generation"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation
+sed -i '/get_ipython()/d' ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation.py
+sed -i '/plt./d' ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation.py
+python ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation.py
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "pytorch face-generation failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time15=$((now-start))
+echo "#15 pytorch face-generation time used:$time15 seconds"
+
+echo "#16 start app test for ray paramater-server"
+#timer
+start=$(date "+%s")
+
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/ray/parameter_server/sharded_parameter_server
+python ${ANALYTICS_ZOO_HOME}/apps/ray/parameter_server/sharded_parameter_server.py
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "ray paramater-server failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time16=$((now-start))
+
+echo "#16 ray paramater-server time used:$time16 seconds"
+
 fi
 
 # This should be done at the very end after all tests finish.

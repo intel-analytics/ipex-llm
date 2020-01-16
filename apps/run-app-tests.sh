@@ -543,6 +543,44 @@ ${SPARK_HOME}/bin/spark-submit \
 now=$(date "+%s")
 time13=$((now-start))
 echo "#13 image-augmentation-3d time used:$time13 seconds"
+
+echo "#14 start app test for anomaly-detection-hd"
+#timer
+start=$(date "+%s")
+chmod +x $ANALYTICS_ZOO_HOME/bin/data/HiCS/get_HiCS.sh
+$ANALYTICS_ZOO_HOME/bin/data/HiCS/get_HiCS.sh
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo
+sed -i '/get_ipython()/d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
+sed -i '127,273d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+        --driver-cores 2  \
+        --driver-memory 12g  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --executor-memory 12g \
+        ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
+now=$(date "+%s")
+time14=$((now-start))
+echo "#14 anomaly-detection-hd time used:$time14 seconds"
+
+echo "#15 start app test for pytorch face-generation"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation
+sed -i '/get_ipython()/d' ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation.py
+sed -i '/plt./d' ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation.py
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+        --master ${MASTER} \
+        --driver-cores 2  \
+        --driver-memory 12g  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --executor-memory 12g \
+        ${ANALYTICS_ZOO_HOME}/apps/pytorch/face_generation.py
+now=$(date "+%s")
+time15=$((now-start))
+echo "#15 pytorch face-generation time used:$time15 seconds"
+
 fi
 
 echo "#1 anomaly-detection-nyc-taxi time used:$time1 seconds"
@@ -558,3 +596,5 @@ echo "#10 dogs-vs-cats time used:$time10 seconds"
 echo "#11 sentiment-analysis time used:$time11 seconds"
 echo "#12 image_classification_inference time used:$time12 seconds"
 echo "#13 image-augmentation-3d time used:$time13 seconds"
+echo "#14 anomaly-detection-hd time used:$time14 seconds"
+echo "#15 pytorch face-generation time used:$time15 seconds"
