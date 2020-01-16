@@ -97,7 +97,7 @@ Cluster Serving will then read the requests from the Redis stream, run the distr
 
 ## Deploy your Own Cluster Serving
 ### 1. Installation
-It is recommended to install Cluster Serving by pulling the pre-built Docker image to your local node, which have packaged all the required dependencies. Alternatively, you may also manually install Cluster Serving (through either pip or direct downloading) as well as Redis and TensorBoard (for visualizing the serving status) on the local node.
+It is recommended to install Cluster Serving by pulling the pre-built Docker image to your local node, which have packaged all the required dependencies. Alternatively, you may also manually install Cluster Serving (through either pip or direct downloading) as well as Spark, Redis and TensorBoard (for visualizing the serving status) on the local node.
 #### Docker
 ```
 docker pull intelanalytics/zoo-cluster-serving
@@ -114,7 +114,7 @@ docker exec -it cluster-serving bash
 #### Manual installation
 Non-Docker users need to install [Spark 2.4.3](https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz), [Redis](https://redis.io/topics/quickstart) and [TensorBoard](https://www.tensorflow.org/tensorboard/get_started).
 
-After preparing dependencies above, make sure the environment variable `SPARK_HOME` (/path/to/spark-SPARK_VERSION-bin-hadoop-HADOOP_VERSION), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
+After preparing dependencies above, make sure the environment variable `$SPARK_HOME` (/path/to/spark-SPARK_VERSION-bin-hadoop-HADOOP_VERSION), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
 Cluster Sering use TensorBoard to visualize the serving status. Use `pip install tensorboard` to install TensorBoard.
 
