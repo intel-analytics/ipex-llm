@@ -215,7 +215,7 @@ then
 else
    echo "Downloading places365 deploy model"
 
-   wget https://raw.githubusercontent.com/CSAILVision/places365/master/deploy_googlenet_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
+   wget https://analytics-zoo-data.s3.amazonaws.com/deploy_googlenet_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
 
    echo "Finished downloading model"
 fi
