@@ -104,13 +104,19 @@ docker pull intelanalytics/zoo-cluster-serving
 ```
 then, (or directly run `docker run`, it will pull the image if it does not exist)
 ```
-docker run --name cluster-serving -itd intelanalytics/zoo-cluster-serving bash
+docker run --name cluster-serving --net=host -itd intelanalytics/zoo-cluster-serving bash
 ```
 Log into the container
 ```
 docker exec -it cluster-serving bash
 ```
 `cd ./cluster-serving`, you can see all the environments are prepared.
+##### Yarn user
+For Yarn user using docker, you have to set additional config, thus you need to call following when starting the container
+```
+docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/work/HADOOP_CONF_DIR -e HADOOP_CONF_DIR=/opt/work/HADOOP_CONF_DIR -itd intelanalytics/zoo-cluster-serving bash
+```
+
 #### Manual installation
 Non-Docker users need to install [Spark 2.4.3](https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz), [Redis](https://redis.io/topics/quickstart) and [TensorBoard](https://www.tensorflow.org/tensorboard/get_started).
 
