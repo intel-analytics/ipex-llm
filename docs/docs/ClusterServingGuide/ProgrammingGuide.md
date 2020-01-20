@@ -135,9 +135,11 @@ Run `source analytics-zoo/bin/analytics-zoo-env.sh` to set environment.
 
 Go to `analytics-zoo/scripts/cluster-serving`, run `cluster-serving-init`.
 
+Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
 ##### Pip
 `pip install analytics-zoo`. And go to any directory, run `cluster-serving-init`.
 
+Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
 ### 2. Configuration
 #### How to Config
 After [Installation](#1-Installation), you will see a config file `config.yaml` in your current working directory. This file contains all the configurations that you can customize for your Cluster Serving. See an example of `config.yaml` below.
