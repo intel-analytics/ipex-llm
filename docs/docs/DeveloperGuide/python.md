@@ -27,7 +27,7 @@ bash analytics-zoo/pyzoo/dev/build.sh linux default
 - The first argument is the __platform__ to build for. Either 'linux' or 'mac'.
 - The second argument is the analytics-zoo __version__ to build for. 'default' means the default version for the current branch. You can also specify a different version if you wish, e.g., '0.6.0.dev1'.
 - You can also add other profiles to build the package, especially Spark and BigDL versions.
-For example, under the situation that `pyspark==2.4.3` is a dependency, you need to add profiles `-Dspark.version=2.4.3 -Dbigdl.artifactId=bigdl-SPARK_2.4 -P spark_2.x` to build Analytics Zoo for Spark 2.4.3.
+For example, under the situation that `pyspark==2.4.3` is a dependency, you need to add profiles `-Dspark.version=2.4.3 -Dbigdl.artifactId=bigdl-SPARK_2.4 -P spark_2.4+` to build Analytics Zoo for Spark 2.4.3.
 
 
 After running the above command, you will find a `whl` file under the folder `analytics-zoo/pyzoo/dist/`. You can then directly pip install it to your local Python environment:
