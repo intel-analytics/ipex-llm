@@ -41,7 +41,7 @@ This section provides a quick start example for you to run Analytics Zoo Cluster
 
 Use one command to run Cluster Serving container.
 ```
-docker run -itd --name cluster-serving --net=host analytics-zoo/cluster-serving:0.7.0-spark_2.4.3
+docker run -itd --name cluster-serving --net=host intelanalytics/zoo-cluster-serving:0.7.0
 ```
 Log into the container using `docker exec -it cluster-serving bash`. 
 
@@ -104,7 +104,7 @@ docker pull intelanalytics/zoo-cluster-serving
 ```
 then, (or directly run `docker run`, it will pull the image if it does not exist)
 ```
-docker run --name cluster-serving --net=host -itd intelanalytics/zoo-cluster-serving bash
+docker run --name cluster-serving --net=host -itd intelanalytics/zoo-cluster-serving:0.7.0 bash
 ```
 Log into the container
 ```
@@ -114,7 +114,7 @@ docker exec -it cluster-serving bash
 ##### Yarn user
 For Yarn user using docker, you have to set additional config, thus you need to call following when starting the container
 ```
-docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/work/HADOOP_CONF_DIR -e HADOOP_CONF_DIR=/opt/work/HADOOP_CONF_DIR -itd intelanalytics/zoo-cluster-serving bash
+docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/work/HADOOP_CONF_DIR -e HADOOP_CONF_DIR=/opt/work/HADOOP_CONF_DIR -itd intelanalytics/zoo-cluster-serving:0.7.0 bash
 ```
 
 #### Manual installation
