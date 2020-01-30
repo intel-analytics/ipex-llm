@@ -17,6 +17,11 @@ from bigdl.util.common import Sample as BSample, JTensor as BJTensor,\
     JavaCreator, _get_gateway, _java2py, _py2java
 import numpy as np
 import os
+import tempfile
+import uuid
+import shutil
+
+from urllib.parse import urlparse
 
 
 def convert_to_safe_path(input_path, follow_symlinks=True):
@@ -47,6 +52,60 @@ def to_list_of_numpy(elements):
     return results
 
 
+def is_local_path(path):
+    parse_result = urlparse(path)
+    return len(parse_result.scheme.lower()) == 0 or parse_result.scheme.lower() == "file"
+
+
+def append_suffix(prefix, path):
+    # append suffix
+    splits = path.split(".")
+    if len(splits) > 0:
+        file_name = prefix + "." + splits[-1]
+    else:
+        file_name = prefix
+
+    return file_name
+
+
+def save_file(save_func, path):
+
+    if is_local_path(path):
+        save_func(path)
+    else:
+        file_name = str(uuid.uuid1())
+        file_name = append_suffix(file_name, path)
+        temp_path = os.path.join(tempfile.gettempdir(), file_name)
+
+        try:
+            save_func(temp_path)
+            put_local_file_to_remote(temp_path, path)
+        finally:
+            os.remove(temp_path)
+
+
+def load_from_file(load_func, path):
+    if is_local_path(path):
+        return load_func(path)
+    else:
+        file_name = str(uuid.uuid1())
+        file_name = append_suffix(file_name, path)
+        temp_path = os.path.join(tempfile.gettempdir(), file_name)
+        get_remote_file_to_local(path, temp_path)
+        try:
+            return load_func(temp_path)
+        finally:
+            os.remove(temp_path)
+
+
+def get_remote_file_to_local(remote_path, local_path, over_write=False):
+    callZooFunc("float", "getRemoteFileToLocal", remote_path, local_path, over_write)
+
+
+def put_local_file_to_remote(local_path, remote_path, over_write=False):
+    callZooFunc("float", "putLocalFileToRemote", local_path, remote_path, over_write)
+
+
 def set_core_number(num):
     callZooFunc("float", "setCoreNumber", num)
 
@@ -65,7 +124,8 @@ def callZooFunc(bigdl_type, name, *args):
             result = _java2py(gateway, java_result)
         except Exception as e:
             error = e
-            if "does not exist" not in str(e):
+            if not ("does not exist" in str(e)
+                    and "Method {}".format(name) in str(e)):
                 raise e
         else:
             return result
