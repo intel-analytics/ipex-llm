@@ -23,6 +23,8 @@ from zoo.pipeline.api.keras.utils import to_bigdl_metric
 from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFPredictor, TFNet
 import tensorflow.keras.backend as K
 import numpy as np
+from zoo.common import save_file
+from zoo.common import load_from_file
 
 from zoo.pipeline.api.net.tf_dataset import TFNdarrayDataset
 
@@ -48,10 +50,16 @@ class KerasModel(object):
         self.model.set_weights(weights)
 
     def save_weights(self, filepath, overwrite=True, save_format=None):
-        self.model.save_weights(filepath, overwrite, save_format)
+
+        def save_func(file_path):
+            self.model.save_weights(file_path, overwrite, save_format)
+        save_file(save_func, filepath)
 
     def load_weights(self, filepath, by_name=False):
-        self.model.load_weights(filepath, by_name)
+
+        def load_func(file_path):
+            self.model.load_weights(file_path, by_name)
+        load_from_file(load_func, filepath)
 
     def save_model(self, path):
         """
@@ -59,7 +67,9 @@ class KerasModel(object):
 
         :param path: String. The path to save the model.
         """
-        self.model.save(path)
+        def save_func(file_path):
+            self.model.save(file_path)
+        save_file(save_func, path)
 
     @staticmethod
     def load_model(path):
@@ -69,7 +79,10 @@ class KerasModel(object):
         :param path: String. The path to the pre-defined model.
         :return: KerasModel.
         """
-        return KerasModel(models.load_model(path))
+        def load_func(file_path):
+            return models.load_model(file_path)
+        keras_model = load_from_file(load_func, path)
+        return KerasModel(keras_model)
 
     def set_train_summary(self, summary):
         """
