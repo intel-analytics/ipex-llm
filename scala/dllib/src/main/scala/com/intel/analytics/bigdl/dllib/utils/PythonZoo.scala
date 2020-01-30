@@ -226,4 +226,13 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
   }
 
 
+  def putLocalFileToRemote(localPath: String, remotePath: String,
+                           isOverwrite: Boolean = false): Unit = {
+    Utils.putLocalFileToRemote(localPath, remotePath, isOverwrite)
+  }
+
+  def getRemoteFileToLocal(remotePath: String, localPath: String,
+                           isOverwrite: Boolean = false): Unit = {
+    Utils.getRemoteFileToLocal(remotePath, localPath, isOverwrite)
+  }
 }

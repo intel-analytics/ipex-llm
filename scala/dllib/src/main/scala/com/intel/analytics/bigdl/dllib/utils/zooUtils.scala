@@ -214,6 +214,20 @@ private[zoo] object Utils {
     getFileSystem(path).open(new Path(path))
   }
 
+  def putLocalFileToRemote(localPath: String, remotePath: String,
+                           isOverwrite: Boolean = false): Unit = {
+
+    val inputStream = getFileSystem(localPath).open(new Path(localPath))
+    saveStream(inputStream, fileName = remotePath, isOverwrite = isOverwrite)
+  }
+
+  def getRemoteFileToLocal(remotePath: String, localPath: String,
+                           isOverwrite: Boolean = false): Unit = {
+
+    val inputStream = getFileSystem(remotePath).open(new Path(remotePath))
+    saveStream(inputStream, fileName = localPath, isOverwrite = isOverwrite)
+  }
+
   /**
    * Save bytes into given path (local or remote file system).
    * WARNING: Don't use it to read large files. It may cause performance issue
@@ -223,12 +237,19 @@ private[zoo] object Utils {
    * @param isOverwrite Overwrite exiting file or not
    */
   def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false): Unit = {
+    val stream = new ByteArrayInputStream(bytes)
+    saveStream(stream, fileName, isOverwrite)
+  }
+
+
+  private def saveStream(stream: InputStream, fileName: String,
+                              isOverwrite: Boolean = false): Unit = {
     var fs: FileSystem = null
     var out: FSDataOutputStream = null
     try {
       fs = getFileSystem(fileName)
       out = fs.create(new Path(fileName), isOverwrite)
-      IOUtils.copyBytes(new ByteArrayInputStream(bytes), out, 1024, true)
+      IOUtils.copyBytes(stream, out, 1024, true)
     } finally {
       if (null != out) out.close()
       if (null != fs) fs.close()
