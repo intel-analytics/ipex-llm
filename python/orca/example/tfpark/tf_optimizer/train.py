@@ -29,6 +29,12 @@ from nets import lenet
 slim = tf.contrib.slim
 
 
+def accuracy(logits, labels):
+    predictions = tf.argmax(logits, axis=1, output_type=labels.dtype)
+    is_correct = tf.cast(tf.equal(predictions, labels), dtype=tf.float32)
+    return tf.reduce_mean(is_correct)
+
+
 def main(max_epoch, data_num):
     sc = init_nncontext()
 
@@ -58,11 +64,12 @@ def main(max_epoch, data_num):
 
     loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
 
+    acc = accuracy(logits, labels)
+
     # create a optimizer
     optimizer = TFOptimizer.from_loss(loss, Adam(1e-3),
-                                      val_outputs=[logits],
-                                      val_labels=[labels],
-                                      val_method=Top1Accuracy(), model_dir="/tmp/lenet/")
+                                      metrics={"acc": acc},
+                                      model_dir="/tmp/lenet/")
     # kick off training
     optimizer.optimize(end_trigger=MaxEpoch(max_epoch))
 
