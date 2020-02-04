@@ -17,7 +17,7 @@
 package com.intel.analytics.zoo.tfpark
 
 import java.io.{File, FileInputStream, InputStream}
-import java.nio.FloatBuffer
+import java.nio._
 
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
@@ -60,15 +60,82 @@ object TFUtils {
     }
   }
 
-  private[zoo] def tf2bigdl(t: TTensor[_], output: Tensor[Float]) = {
+  private[zoo] def tf2bigdl(t: TTensor[_], output: Tensor[_]) = {
     val shape = t.shape().map(_.toInt)
     output.resize(shape)
-    val buffer = FloatBuffer.wrap(
-      output.storage().array(),
-      output.storageOffset() - 1,
-      shape.product)
-    t.writeTo(buffer)
+    val dataType = t.dataType()
+
+    val numericDataTypes = Set(DataType.FLOAT,
+      DataType.UINT8, DataType.INT32, DataType.INT64)
+
+    if (dataType == DataType.STRING) {
+      val outputTensor = output.asInstanceOf[Tensor[Array[Byte]]]
+      require(shape.product == 1, "only scala string are supported in TensorFlow Java")
+      val bytes = t.bytesValue()
+      val storage = outputTensor.storage().array()
+      storage(outputTensor.storageOffset() - 1) = bytes
+    } else if (numericDataTypes(dataType)) {
+      dataType match {
+        case DataType.FLOAT =>
+          val outputTensor = output.asInstanceOf[Tensor[Float]]
+          val buffer = FloatBuffer.wrap(
+            outputTensor.storage().array(),
+            outputTensor.storageOffset() - 1,
+            shape.product)
+          t.writeTo(buffer)
+        case DataType.UINT8 =>
+          val outputTensor = output.asInstanceOf[Tensor[Float]]
+          val arr = new Array[Byte](shape.product)
+          val buffer = ByteBuffer.wrap(arr)
+          t.writeTo(buffer)
+          byte2float(arr, outputTensor.storage().array(), outputTensor.storageOffset() - 1)
+        case DataType.INT32 =>
+          val outputTensor = output.asInstanceOf[Tensor[Float]]
+          val arr = new Array[Int](shape.product)
+          val buffer = IntBuffer.wrap(arr)
+          t.writeTo(buffer)
+          int2float(arr, outputTensor.storage().array(), outputTensor.storageOffset() - 1)
+        case DataType.INT64 =>
+          val outputTensor = output.asInstanceOf[Tensor[Float]]
+          val arr = new Array[Long](shape.product)
+          val buffer = LongBuffer.wrap(arr)
+          t.writeTo(buffer)
+          long2float(arr, outputTensor.storage().array(), outputTensor.storageOffset() - 1)
+      }
+
+    } else {
+      throw new Exception(s"data type ${dataType} are not supported")
+    }
   }
+
+  private[zoo] def byte2float(src: Array[Byte], dest: Array[Float], offset: Int): Unit = {
+    val length = src.length
+    var i = 0
+    while (i < length) {
+      dest(offset + i) = src(i).toFloat
+      i += 1
+    }
+  }
+
+  private[zoo] def int2float(src: Array[Int], dest: Array[Float], offset: Int): Unit = {
+    val length = src.length
+    var i = 0
+    while (i < length) {
+      dest(offset + i) = src(i).toFloat
+      i += 1
+    }
+  }
+
+  private[zoo] def long2float(src: Array[Long], dest: Array[Float], offset: Int): Unit = {
+    val length = src.length
+    var i = 0
+    while (i < length) {
+      dest(offset + i) = src(i).toFloat
+      i += 1
+    }
+  }
+
+
 
   def tfenum2datatype(enum: Int): DataType = {
     enum match {

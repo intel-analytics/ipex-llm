@@ -78,12 +78,31 @@ class GraphRunner(
     pathTensor.close()
   }
 
+  def runTargets(targets: Vector[String]): Unit = {
+    run(Vector.empty, Vector.empty, Vector.empty,
+      Vector.empty, Vector.empty, Vector.empty, targets)
+  }
+
+  def runTargets(targets: Vector[String],
+                 inputs: Vector[Tensor[_]],
+                 inputTypes: Vector[DataType],
+                 inputNames: Vector[String]): Unit = {
+    run(inputs, inputNames, inputTypes, Vector.empty, Vector.empty, Vector.empty, targets)
+  }
+
+  def runOutputs(outputs: Vector[Tensor[_]],
+                 outputNames: Vector[String], outputTypes: Vector[DataType]): Unit = {
+    run(Vector.empty, Vector.empty, Vector.empty,
+      outputs, outputNames, outputTypes, Vector.empty)
+  }
+
   def run(input: Vector[Tensor[_]],
-          inputTypes: Vector[DataType],
-          output: Vector[Tensor[Float]],
           inputNames: Vector[String],
+          inputTypes: Vector[DataType],
+          output: Vector[Tensor[_]],
           outputNames: Vector[String],
-          targets: Vector[String]): Vector[Tensor[Float]] = {
+          outputTypes: Vector[DataType],
+          targets: Vector[String]): Unit = {
     Utils.timeIt("Graph Runner Run") {
       try {
         val runner = sess.runner()
@@ -109,7 +128,7 @@ class GraphRunner(
         }
 
         outputs.asScala.zipWithIndex.foreach { case (t, idx) =>
-          TFUtils.tf2bigdl(t.asInstanceOf[TTensor[Float]], output(idx))
+          TFUtils.tf2bigdl(t, output(idx))
         }
 
         // outputs is returned by tensorflow and cannot be freed using tensorManager
@@ -119,7 +138,6 @@ class GraphRunner(
         tensorManager.destructTFTensors()
       }
     }
-    output
   }
 
   private def emptyTFTensorArray(arr: mutable.Buffer[TTensor[_]]): Unit = {

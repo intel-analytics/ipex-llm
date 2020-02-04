@@ -126,12 +126,9 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
 
   private def getVariableFromTF(weights: Array[Tensor[Float]],
                                      variableNames: Array[String]) = {
-    graphRunner.run(
-      input = Vector.empty,
-      inputTypes = Vector.empty,
-      output = weights.toVector,
-      inputNames = Vector.empty,
-      outputNames = variableNames.toVector,
+    val outputTypes = Vector.fill(variableNames.length)(DataType.FLOAT)
+    graphRunner.run(input = Vector.empty, inputNames = Vector.empty, inputTypes = Vector.empty,
+      output = weights.toVector, outputNames = variableNames.toVector, outputTypes = outputTypes,
       targets = Vector.empty)
   }
 
@@ -139,14 +136,9 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
                                          inputNames: Array[String],
                                          variableTypes: Array[DataType],
                                          assignOp: String) = {
-    graphRunner.run(
-      input = weights.toVector,
-      inputTypes = variableTypes.toVector,
-      output = Vector.empty,
-      inputNames = inputNames.toVector,
-      outputNames = Vector.empty,
-      targets = Vector(assignOp)
-    )
+    graphRunner.run(input = weights.toVector, inputNames = inputNames.toVector,
+      inputTypes = variableTypes.toVector, output = Vector.empty,
+      outputNames = Vector.empty, outputTypes = Vector.empty, targets = Vector(assignOp))
   }
 
   def saveCheckpoint(): Unit = {
@@ -224,12 +216,9 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
         (outputs.toVector, graphOutputs.slice(0, outputs.length))
       }
 
-      graphRunner.run(
-        input = feeds.result(),
-        inputTypes = types,
-        output = outputTensors,
-        inputNames = inputs.toVector,
-        outputNames = outputNames,
+      val outputTypes = Vector.fill(outputNames.length)(DataType.FLOAT)
+      graphRunner.run(input = feeds.result(), inputNames = inputs.toVector, inputTypes = types,
+        output = outputTensors, outputNames = outputNames, outputTypes = outputTypes,
         targets = Vector(updateOp))
 
 
