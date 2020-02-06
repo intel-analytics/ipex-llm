@@ -14,19 +14,20 @@
 # limitations under the License.
 #
 
-from bigdl.optim.optimizer import MaxEpoch
-from tensorflow.python.keras.engine import training_utils
+import numpy as np
+import tensorflow.keras.backend as K
 from tensorflow.python.keras import models
+from tensorflow.python.keras.engine import training_utils
 
+from bigdl.optim.optimizer import MaxEpoch
+from zoo.common import load_from_file
+from zoo.common import save_file
 from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.pipeline.api.keras.utils import to_bigdl_metric
-from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFPredictor, TFNet
-import tensorflow.keras.backend as K
-import numpy as np
-from zoo.common import save_file
-from zoo.common import load_from_file
-
-from zoo.pipeline.api.net.tf_dataset import TFNdarrayDataset
+from zoo.tfpark.tf_dataset import TFNdarrayDataset, TFDataset
+from zoo.tfpark.tf_optimizer import TFOptimizer
+from zoo.tfpark.tf_predictor import TFPredictor
+from zoo.tfpark.tfnet import TFNet
 
 
 class KerasModel(object):
@@ -335,11 +336,11 @@ def _standarize_feature_label_dataset(dataset, model):
 
     def _process_labels(ys):
         if isinstance(ys, dict):
-            return {k: np.expand_dims(y, axis=1) if y.ndim == 0 else y for k, y in ys.items()}
+            return {k: np.expand_dims(y, axis=-1) if y.ndim == 0 else y for k, y in ys.items()}
         elif isinstance(ys, list):
-            return [np.expand_dims(y, axis=1) if y.ndim == 0 else y for y in ys]
+            return [np.expand_dims(y, axis=-1) if y.ndim == 0 else y for y in ys]
         else:
-            return np.expand_dims(ys, axis=1) if ys.ndim == 0 else ys
+            return np.expand_dims(ys, axis=-1) if ys.ndim == 0 else ys
 
     def _training_reorder(x, input_names, output_names):
         assert isinstance(x, tuple)

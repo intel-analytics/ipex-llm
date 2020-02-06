@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 import inspect
-import tempfile
 import os
-import tensorflow as tf
-import numpy as np
+import tempfile
 
-from zoo.pipeline.api.net.tf_optimizer import TFModel
+import numpy as np
+import tensorflow as tf
+
 from zoo.tfpark import TFOptimizer
 from zoo.tfpark.gan.common import GanOptimMethod
+from zoo.tfpark.tf_optimizer import TFModel
+
 
 # todo make it inherit Estimator
 

@@ -17,13 +17,13 @@ from tensorflow.python.util import function_utils
 import tensorflow as tf
 
 from bigdl.optim.optimizer import MaxIteration, Loss, TreeNNAccuracy
-from zoo.common import Sample
 from zoo.pipeline.api.keras import metrics
-from zoo.pipeline.api.net import TFDataset, TFOptimizer, TFNet
 from zoo.pipeline.api.net.utils import to_bigdl_optim_method
+from zoo.tfpark.tf_optimizer import TFOptimizer
+from zoo.tfpark.tf_dataset import TFDataset
+from zoo.tfpark.tfnet import TFNet
 
 from zoo.util import nest
-import numpy as np
 import six
 import os
 
