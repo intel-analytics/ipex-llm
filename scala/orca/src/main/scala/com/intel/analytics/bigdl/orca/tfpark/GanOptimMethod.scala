@@ -61,7 +61,7 @@ class GanOptimMethod[@specialized(Float, Double) T: ClassTag](
 
   override def getLearningRate(): Double = dOptim.getLearningRate()
 
-  override def loadFromTable(config: Table): GanOptimMethod.this.type = {
+  override def loadFromTable(config: Table): this.type = {
     this
   }
 

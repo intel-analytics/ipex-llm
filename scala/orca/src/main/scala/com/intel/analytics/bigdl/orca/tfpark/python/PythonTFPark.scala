@@ -20,8 +20,10 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.common.{PythonZoo, RDDWrapper}
+import com.intel.analytics.zoo.feature.FeatureSet
 import com.intel.analytics.zoo.tfpark._
 import org.apache.spark.api.java.JavaRDD
+
 import scala.reflect.ClassTag
 
 
@@ -85,6 +87,14 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
       }
     }
     RDDWrapper[TFMiniBatch](rdd)
+  }
+
+  def createMiniBatchFeatureSetFromStringRDD(stringRDD: JavaRDD[Array[Byte]],
+                                             batchSize: Int, seqOrder: Boolean,
+                                             shuffle: Boolean): FeatureSet[TFMiniBatch] = {
+    FeatureSet.rdd(stringRDD,
+      sequentialOrder = seqOrder,
+      shuffle = shuffle).transform(new StringToMiniBatch(batchSize))
   }
 
 }

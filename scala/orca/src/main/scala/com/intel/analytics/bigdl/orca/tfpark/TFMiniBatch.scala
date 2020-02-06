@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.zoo.tfpark
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.utils.T
@@ -60,4 +60,40 @@ class TFMiniBatch(data: Array[Tensor[_]]) extends MiniBatch[Float] {
 
 object TFMiniBatch {
   def apply(data: Array[Tensor[_]]): TFMiniBatch = new TFMiniBatch(data)
+}
+
+class StringToMiniBatch(batchSize: Int, partitionNum: Option[Int] = None)
+  extends Transformer[Array[Byte], TFMiniBatch] {
+  import TFTensorNumeric.NumericByteArray
+
+  private val batchPerPartition = Utils.getBatchSize(batchSize, partitionNum)
+
+  override def apply(prev: Iterator[Array[Byte]]): Iterator[TFMiniBatch] = {
+    new Iterator[TFMiniBatch] {
+
+      override def hasNext: Boolean = prev.hasNext
+
+      override def next(): TFMiniBatch = {
+        val sampleData = new Array[Array[Byte]](batchPerPartition)
+        if (prev.hasNext) {
+          var i = 0
+          while (i < batchPerPartition && prev.hasNext) {
+            val sample = prev.next()
+            sampleData(i) = sample
+            i += 1
+          }
+
+          if (i < batchPerPartition) {
+            val tensor = Tensor[Array[Byte]](sampleData.slice(0, i), shape = Array[Int](i))
+            TFMiniBatch(Array(tensor))
+          } else {
+            val tensor = Tensor[Array[Byte]](sampleData, shape = Array[Int](batchPerPartition))
+            TFMiniBatch(Array(tensor))
+          }
+        } else {
+          null
+        }
+      }
+    }
+  }
 }
