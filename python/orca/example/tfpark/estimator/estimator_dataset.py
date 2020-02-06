@@ -19,7 +19,7 @@ import numpy as np
 
 from zoo import init_nncontext
 from zoo.tfpark import TFDataset
-from zoo.tfpark.estimator import TFEstimator, TFEstimatorSpec
+from zoo.tfpark import TFEstimator, TFEstimatorSpec
 
 
 def get_data_rdd(dataset, sc):
