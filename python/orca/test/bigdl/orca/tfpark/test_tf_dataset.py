@@ -275,7 +275,7 @@ class TestTFDataset(ZooTestCase):
         train_path = os.path.join(resource_path, "tfrecord/mnist_train.tfrecord")
         test_path = os.path.join(resource_path, "tfrecord/mnist_test.tfrecord")
         dataset = TFDataset.from_tfrecord_file(self.sc, train_path,
-                                               batch_size=8,
+                                               batch_size=16,
                                                validation_file_path=test_path)
         dataset = dataset.map(lambda x: parse_fn(x[0]))
         flat = tf.layers.flatten(dataset.feature_tensors)
