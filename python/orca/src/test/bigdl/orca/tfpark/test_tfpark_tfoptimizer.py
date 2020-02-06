@@ -17,12 +17,11 @@ import pytest
 
 from bigdl.optim.optimizer import Adam, SGD, MaxEpoch
 from zoo.pipeline.api.keras.metrics import Accuracy
-from zoo.pipeline.api.net import TFOptimizer
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
 
-from zoo.tfpark import TFDataset
+from zoo.tfpark import TFDataset, TFOptimizer
 
 
 class TestTFParkTFOptimizer(ZooTestCase):

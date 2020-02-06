@@ -15,15 +15,13 @@
 #
 import pytest
 
-from zoo.feature.common import ChainedPreprocessing, FeatureSet
 from zoo.feature.image import *
-from zoo.pipeline.api.net import TFOptimizer
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
 import os
 
-from zoo.tfpark import KerasModel, TFDataset
+from zoo.tfpark import KerasModel
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 

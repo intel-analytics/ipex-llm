@@ -17,12 +17,10 @@ import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import tensorflow as tf
-import numpy as np
 
 from zoo.feature.common import ChainedPreprocessing, FeatureSet
 from zoo.feature.image import *
-from zoo.tfpark import TFDataset
-from zoo.tfpark.estimator import TFEstimatorSpec, TFEstimator
+from zoo.tfpark import TFDataset, TFEstimatorSpec, TFEstimator
 
 
 class TestTFParkEstimator(ZooTestCase):
