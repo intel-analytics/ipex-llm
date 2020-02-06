@@ -662,7 +662,7 @@ class TFFeatureDataset(TFDataset):
 class TFBytesDataset(TFDataset):
 
     def get_num_partitions(self):
-        self.train_rdd.getNumPartitions()
+        return self.train_rdd.getNumPartitions()
 
     def __init__(self, string_rdd, batch_size,
                  batch_per_thread, hard_code_batch_size=False,
@@ -686,27 +686,25 @@ class TFBytesDataset(TFDataset):
         return rdd
 
     def get_evaluation_data(self):
-        raise NotImplementedError()
-
-    def get_training_data(self):
         jvalue = callZooFunc("float", "createMiniBatchRDDFromStringRDD",
                              self.train_rdd,
-                             self.batch_size)
+                             self.batch_per_thread)
         rdd = jvalue.value().toJavaRDD()
-        fs = FeatureSet.rdd(rdd,
-                            sequential_order=self.sequential_order,
-                            shuffle=self.shuffle)
+        return rdd
+
+    def get_training_data(self):
+        jvalue = callZooFunc("float", "createMiniBatchFeatureSetFromStringRDD",
+                             self.train_rdd,
+                             self.batch_size, self.sequential_order, self.shuffle)
+        fs = FeatureSet(jvalue)
         return fs
 
     def get_validation_data(self):
         if self.validation_rdd is not None:
-            jvalue = callZooFunc("float", "createMiniBatchRDDFromStringRDD",
+            jvalue = callZooFunc("float", "createMiniBatchFeatureSetFromStringRDD",
                                  self.validation_rdd,
-                                 self.batch_size)
-            rdd = jvalue.value().toJavaRDD()
-            fs = FeatureSet.rdd(rdd,
-                                sequential_order=self.sequential_order,
-                                shuffle=self.shuffle)
+                                 self.batch_size, self.sequential_order, self.shuffle)
+            fs = FeatureSet(jvalue)
             return fs
         return None
 

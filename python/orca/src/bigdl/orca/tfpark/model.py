@@ -25,6 +25,7 @@ from zoo.common import save_file
 from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.pipeline.api.keras.utils import to_bigdl_metric
 from zoo.tfpark.tf_dataset import TFNdarrayDataset, TFDataset
+
 from zoo.tfpark.tf_optimizer import TFOptimizer
 from zoo.tfpark.tf_predictor import TFPredictor
 from zoo.tfpark.tfnet import TFNet
