@@ -21,7 +21,7 @@ It acts as an interface connecting RDD data to TensorFlow models.
 
 ```python
 from zoo import init_nncontext
-from zoo.pipeline.api.net import TFDataset
+from zoo.tfpark import TFDataset
 from tensorflow as tf
 
 sc = init_nncontext()
@@ -168,7 +168,7 @@ model prediction for the corresponding input elements.
 
 ```python
 from zoo import init_nncontext
-from zoo.pipeline.api.net import TFDataset
+from zoo.tfpark import TFDataset
 from tensorflow as tf
 
 sc = init_nncontext()
@@ -262,7 +262,7 @@ model.save_weights("/tmp/keras.h5")
 
 ```python
 from zoo import init_nncontext
-from zoo.pipeline.api.net import TFDataset
+from zoo.tfpark import TFDataset
 from tensorflow as tf
 
 sc = init_nncontext()
