@@ -18,6 +18,7 @@ import pytest
 
 import os
 import random
+import numpy as np
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.tfpark.text.estimator import *
 

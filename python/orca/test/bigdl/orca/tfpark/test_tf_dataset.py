@@ -19,7 +19,7 @@ from zoo.feature.common import ChainedPreprocessing, FeatureSet
 from zoo.feature.image import *
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.pipeline.api.keras.optimizers import Adam
-from zoo.pipeline.api.net import TFNet, TFOptimizer
+from zoo.tfpark import TFNet, TFOptimizer
 import tensorflow as tf
 import numpy as np
 import os
