@@ -22,7 +22,7 @@ if sys.version >= '3':
     unicode = str
 
 
-def _find_placeholders(grads):
+def find_tensors(sources, predicate):
     '''
     find all the tensors that are used for computing grads and has been
     computed during forward
@@ -31,27 +31,45 @@ def _find_placeholders(grads):
     :return:
     '''
     from collections import deque
+    import tensorflow as tf
     queue = deque([])
-    for grad in grads:
-        queue.append(grad)
+    for source in sources:
+        queue.append(source)
 
-    placeholders = set()
+    results = set()
     visited = set()
     while len(queue) > 0:
-        tensor = queue.popleft()
+        node = queue.popleft()
         # this is necessary, because input may not be differentiable
-        if tensor is None:
+        if node is None:
             continue
         else:
-            visited.add(tensor.name)
-            if tensor.op.type.startswith("Placeholder"):
-                placeholders.add(tensor)
-                continue
-            for input_tensor in tensor.op.inputs:
+            visited.add(node.name)
+            if predicate(node):
+                results.add(node)
+            if isinstance(node, tf.Tensor):
+                inputs = list(node.op.inputs) + list(node.op.control_inputs)
+            elif isinstance(node, tf.Operation):
+                inputs = list(node.inputs) + list(node.control_inputs)
+            else:
+                raise ValueError("Unrecognized Node: {}".format(node))
+            for input_tensor in inputs:
                 # this is necessary because there may be a cycle in the graph such as tf.while_loop
                 if input_tensor.name not in visited:
                     queue.append(input_tensor)
-    return list(placeholders)
+    return list(results)
+
+
+def find_placeholders(grads):
+    import tensorflow as tf
+
+    def predicate(t):
+        if not isinstance(t, tf.Operation):
+            return t.op.type.startswith("Placeholder")
+        else:
+            return False
+
+    return find_tensors(grads, predicate)
 
 
 def _check_the_same(all_required_inputs, inputs_in_datasets):
