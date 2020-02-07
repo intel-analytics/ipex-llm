@@ -19,7 +19,7 @@ import sys
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
-from zoo.pipeline.api.net.utils import _find_placeholders, _check_the_same
+from zoo.pipeline.api.net.utils import find_placeholders, _check_the_same
 from zoo.tfpark.tfnet import TFNet
 
 if sys.version >= '3':
@@ -52,7 +52,7 @@ class TFPredictor:
 
     @staticmethod
     def _get_datasets_and_inputs(outputs):
-        all_required_inputs = _find_placeholders(outputs)
+        all_required_inputs = find_placeholders(outputs)
         dataset = tf.get_collection(all_required_inputs[0].name)[0]
         inputs = dataset.tensors
         _check_the_same(all_required_inputs, inputs)

@@ -24,9 +24,10 @@ from bigdl.nn.criterion import Criterion
 from bigdl.nn.layer import Layer
 from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
 from bigdl.util.common import to_list, JavaValue
+
 from zoo.common.utils import callZooFunc
 from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss
-from zoo.pipeline.api.net.utils import _find_placeholders, to_bigdl_optim_method
+from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method
 from zoo.pipeline.estimator import Estimator
 from zoo.tfpark.tf_dataset import MapDataset
 from zoo.util import nest
@@ -110,7 +111,7 @@ class TFModel(object):
     def _expand_inputs(inputs, tensors_with_value, loss):
         additional_inputs = []
         additional_values = []
-        all_required_inputs = _find_placeholders([loss])
+        all_required_inputs = find_placeholders([loss])
         all_required_inputs_names = [v.name for v in all_required_inputs]
         if tensors_with_value:
             for t, v in tensors_with_value.items():
@@ -174,7 +175,7 @@ class TFModel(object):
         return outputs, val_methods
 
     @staticmethod
-    def _process_variables_for_unfreeze(graph, variables, updates):
+    def _process_variables(graph, variables, updates):
 
         all_trainable_variables = variables
 
@@ -221,19 +222,18 @@ class TFModel(object):
             extra_variable_assign, update_op
 
     @staticmethod
-    def _save_to_dir_for_unfreeze(folder, sess, graph,
-                                  metric_tensors,
-                                  batch_size_tensor,
-                                  loss_tensor, inputs,
-                                  trainable_variables,
-                                  trainable_variable_placeholders,
-                                  trainable_assign,
-                                  extra_variables,
-                                  extra_variable_assign_placeholders,
-                                  extra_variable_assign,
-                                  grads, update_op,
-                                  additional_values):
-
+    def _save_to_dir(folder, sess, graph,
+                     metric_tensors,
+                     batch_size_tensor,
+                     loss_tensor, inputs,
+                     trainable_variables,
+                     trainable_variable_placeholders,
+                     trainable_assign,
+                     extra_variables,
+                     extra_variable_assign_placeholders,
+                     extra_variable_assign,
+                     grads, update_op, train_op,
+                     additional_values):
         saver = tf.train.Saver()
         if not os.path.isdir(folder):
             os.makedirs(folder)
@@ -261,8 +261,12 @@ class TFModel(object):
             "restore_path_placeholder": saver.saver_def.filename_tensor_name,
             "save_op": _to_operation_name(saver.saver_def.save_tensor_name),
             "save_path_placeholder": saver.saver_def.filename_tensor_name,
-            "default_tensor_value": [_to_floats(v) for v in additional_values]
+            "default_tensor_value": [_to_floats(v) for v in additional_values],
+            "init_op": tf.tables_initializer().name
         }
+
+        if train_op is not None:
+            meta["train_op"] = train_op.name
 
         with open(os.path.join(folder, "training_meta.json"), "w") as f:
             f.write(json.dumps(meta))
@@ -273,9 +277,8 @@ class TFModel(object):
         return meta, saver
 
     @staticmethod
-    def export_for_training(model_dir, loss_tensor, sess, inputs, grads, variables, graph,
-                            tensors_with_value, metrics, updates):
-
+    def export(model_dir, loss_tensor, sess, inputs, grads, variables, graph,
+               tensors_with_value, metrics, updates, train_op=None):
         inputs, additional_values = TFModel._expand_inputs(inputs, tensors_with_value, loss_tensor)
         metric_tensors, val_methods = TFModel._process_metrics(graph, metrics)
         grads = TFModel._process_grads(graph, grads)
@@ -286,26 +289,27 @@ class TFModel(object):
         trainable_variables, trainable_variable_placeholders, trainable_assign, \
             extra_variables, extra_variable_assign_placeholders, \
             extra_variable_assign, update_op = \
-            TFModel._process_variables_for_unfreeze(graph, variables, updates)
+            TFModel._process_variables(graph, variables, updates)
 
         meta, saver = \
-            TFModel._save_to_dir_for_unfreeze(model_dir, sess, graph,
-                                              metric_tensors,
-                                              batch_size_tensor,
-                                              loss_tensor, inputs,
-                                              trainable_variables,
-                                              trainable_variable_placeholders,
-                                              trainable_assign,
-                                              extra_variables,
-                                              extra_variable_assign_placeholders,
-                                              extra_variable_assign,
-                                              grads, update_op,
-                                              additional_values)
+            TFModel._save_to_dir(model_dir, sess, graph,
+                                 metric_tensors,
+                                 batch_size_tensor,
+                                 loss_tensor, inputs,
+                                 trainable_variables,
+                                 trainable_variable_placeholders,
+                                 trainable_assign,
+                                 extra_variables,
+                                 extra_variable_assign_placeholders,
+                                 extra_variable_assign,
+                                 grads, update_op, train_op,
+                                 additional_values)
         return meta, saver, val_methods
 
     @staticmethod
-    def create_for_unfreeze(loss_tensor, sess, inputs, grads, variables, graph,
-                            tensors_with_value, session_config, metrics, updates, model_dir):
+    def create(loss_tensor, sess, inputs, grads, variables, graph,
+               tensors_with_value, session_config, metrics, updates,
+               model_dir, train_op=None):
 
         if model_dir is None:
             model_dir = tempfile.mkdtemp()
@@ -313,9 +317,9 @@ class TFModel(object):
             if not os.path.isdir(model_dir):
                 os.makedirs(model_dir)
 
-        meta, saver, val_methods = TFModel.export_for_training(model_dir, loss_tensor, sess,
-                                                               inputs, grads, variables, graph,
-                                                               tensors_with_value, metrics, updates)
+        meta, saver, val_methods = TFModel.export(model_dir, loss_tensor, sess,
+                                                  inputs, grads, variables, graph,
+                                                  tensors_with_value, metrics, updates, train_op)
 
         training_helper_layer = TFTrainingHelper(model_dir,
                                                  session_config, saver, meta, sess)
@@ -385,22 +389,19 @@ class TFOptimizer:
             self.estimator.set_constant_gradient_clipping(min_value, max_value)
 
     @staticmethod
-    def _get_arguments_from_loss(loss, optim_method, session, val_outputs, val_labels, val_method):
-
+    def _get_or_create_session(session):
         if session is None:
             sess = tf.Session()
             sess.run(tf.global_variables_initializer())
         else:
             sess = session
+        return sess
 
-        grads, variables = TFOptimizer._get_vars_grads(loss)
-        all_required_inputs = _find_placeholders([loss])
+    @staticmethod
+    def _get_dataset_from_loss(loss):
+        all_required_inputs = find_placeholders([loss])
         dataset = tf.get_collection(all_required_inputs[0].name)[0]
-
-        inputs = nest.flatten(dataset._original_tensors)
-
-        return [loss, optim_method, sess, dataset, inputs,
-                grads, variables, loss.graph, val_outputs, val_labels, val_method]
+        return dataset
 
     @staticmethod
     def _get_vars_grads(loss):
@@ -414,6 +415,21 @@ class TFOptimizer:
                 variables.append(var)
                 grads.append(grad)
         return grads, variables
+
+    @classmethod
+    def _from_grads(cls, loss, sess, inputs, grads, variables, dataset, optim_method=None,
+                    val_split=0.0, clip_norm=None, clip_value=None,
+                    metrics=None, tensor_with_value=None, session_config=None,
+                    model_dir=None, updates=None, train_op=None):
+        graph = loss.graph
+        if metrics is None:
+            metrics = {}
+
+        tf_model = TFModel.create(loss, sess, inputs, grads, variables, graph,
+                                  tensor_with_value, session_config, metrics,
+                                  updates, model_dir, train_op=train_op)
+        return cls(tf_model, optim_method, sess=sess, dataset=dataset, val_split=val_split,
+                   clip_norm=clip_norm, clip_value=clip_value)
 
     @classmethod
     def from_loss(cls, loss, optim_method, session=None, val_outputs=None,
@@ -445,12 +461,11 @@ class TFOptimizer:
         is the value to feed to the tensor in validation phase.
         :return: a TFOptimizer
         """
-        args = TFOptimizer._get_arguments_from_loss(loss, optim_method,
-                                                    session, val_outputs,
-                                                    val_labels, val_method)
+        sess = TFOptimizer._get_or_create_session(session)
+        grads, variables = TFOptimizer._get_vars_grads(loss)
+        dataset = TFOptimizer._get_dataset_from_loss(loss)
+        inputs = nest.flatten(dataset._original_tensors)
 
-        loss, optim_method, sess, dataset, inputs = args[:5]
-        grads, variables, graph, val_outputs, val_labels, val_method = args[5:]
         if clip_value is not None:
             if isinstance(clip_value, float) or isinstance(clip_value, int):
                 if clip_value <= 0:
@@ -471,12 +486,10 @@ class TFOptimizer:
             for i, method in enumerate(val_methods):
                 metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
 
-        tf_model = TFModel.create_for_unfreeze(loss, sess, inputs, grads, variables, graph,
-                                               tensor_with_value, session_config, metrics,
-                                               updates, model_dir)
-
-        return cls(tf_model, optim_method, sess=sess, dataset=dataset, val_split=val_split,
-                   clip_norm=clip_norm, clip_value=clip_value)
+        return TFOptimizer._from_grads(loss, sess, inputs, grads, variables, dataset, optim_method,
+                                       val_split, clip_norm, clip_value,
+                                       metrics, tensor_with_value, session_config,
+                                       model_dir, updates)
 
     @staticmethod
     def export_training_model(export_dir, loss, sess, inputs,
@@ -484,8 +497,8 @@ class TFOptimizer:
 
         grads, variables = TFOptimizer._get_vars_grads(loss)
 
-        TFModel.export_for_training(export_dir, loss, sess, inputs, grads, variables, loss.graph,
-                                    tensor_with_value, metrics, updates)
+        TFModel.export(export_dir, loss, sess, inputs, grads, variables, loss.graph,
+                       tensor_with_value, metrics, updates)
         logging.info("Exported TensorFlow model in {} for training".format(export_dir))
 
     @classmethod
@@ -578,9 +591,9 @@ class TFOptimizer:
             for i, method in enumerate(val_methods):
                 metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
 
-        tf_model = TFModel.create_for_unfreeze(loss, sess, inputs, grads, variables, loss.graph,
-                                               tensor_with_value, session_config, metrics,
-                                               updates, model_dir)
+        tf_model = TFModel.create(loss, sess, inputs, grads, variables, loss.graph,
+                                  tensor_with_value, session_config, metrics,
+                                  updates, model_dir)
 
         return cls(tf_model, optim_method, sess=sess, dataset=dataset, val_split=val_split,
                    clip_norm=clip_norm, clip_value=clip_value)
@@ -613,7 +626,7 @@ class TFOptimizer:
         if checkpoint_trigger is None:
             checkpoint_trigger = EveryEpoch()
 
-        if self.tf_model.val_methods is not None and self.val_rdd is not None:
+        if self.tf_model.val_methods and self.val_rdd is not None:
             self.estimator.train_minibatch(train_set=self.training_rdd,
                                            criterion=self.tf_model.criterion,
                                            end_trigger=end_trigger,

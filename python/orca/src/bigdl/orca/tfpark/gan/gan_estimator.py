@@ -130,16 +130,16 @@ class GANEstimator(object):
             g_param_size = sum([np.product(g.shape) for g in g_grads])
             with tf.Session() as sess:
                 sess.run(tf.global_variables_initializer())
-                tf_model = TFModel.create_for_unfreeze(loss, sess,
-                                                       inputs=dataset._original_tensors,
-                                                       grads=grads,
-                                                       variables=variables,
-                                                       graph=g,
-                                                       tensors_with_value=None,
-                                                       session_config=None,
-                                                       metrics=None,
-                                                       updates=[increase_counter],
-                                                       model_dir=self.checkpoint_path)
+                tf_model = TFModel.create(loss, sess,
+                                          inputs=dataset._original_tensors,
+                                          grads=grads,
+                                          variables=variables,
+                                          graph=g,
+                                          tensors_with_value=None,
+                                          session_config=None,
+                                          metrics=None,
+                                          updates=[increase_counter],
+                                          model_dir=self.checkpoint_path)
 
                 optimizer = TFOptimizer(tf_model, GanOptimMethod(self._discriminator_optim_method,
                                                                  self._generator_optim_method,
