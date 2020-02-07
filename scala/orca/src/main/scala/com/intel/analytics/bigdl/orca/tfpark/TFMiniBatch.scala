@@ -15,10 +15,12 @@
  */
 package com.intel.analytics.zoo.tfpark
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.utils.T
+
+import scala.collection.Iterator
 
 
 class TFMiniBatch(data: Array[Tensor[_]]) extends MiniBatch[Float] {

@@ -29,7 +29,7 @@ import scala.reflect.io.Path
 
 // variables and gradVariables need to be sorted by name if you want to use multiple
 // optimization methods for a TensorFlow model according to variable names.
-private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
+private[zoo] class TFTrainingHelper protected (graphRunner: GraphRunner,
                                     checkpointPath: String,
                                     inputs: Array[String],
                                     inputTypes: Array[Int],
@@ -44,6 +44,7 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
                                     assignExtraVariableOP: String,
                                     gradVariables: Array[String],
                                     updateOp: String,
+                                    initOp: Option[String],
                                     defaultTensorValue: Array[Array[Float]])
   extends AbstractModule[Activity, Activity, Float] {
 
@@ -55,9 +56,9 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
     extraParameters
   }
 
-  private val extraParameters: Array[Tensor[Float]] = initVariables(extraVariables)
+  protected val extraParameters: Array[Tensor[Float]] = initVariables(extraVariables)
 
-  private val weights = initVariables(variables)
+  protected val weights = initVariables(variables)
 
   private val weightsMap = {
     val map = collection.mutable.Map[String, Tensor[Float]]()
@@ -124,7 +125,7 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
   }
 
 
-  private def getVariableFromTF(weights: Array[Tensor[Float]],
+  protected def getVariableFromTF(weights: Array[Tensor[Float]],
                                      variableNames: Array[String]) = {
     val outputTypes = Vector.fill(variableNames.length)(DataType.FLOAT)
     graphRunner.run(input = Vector.empty, inputNames = Vector.empty, inputTypes = Vector.empty,
@@ -132,7 +133,7 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
       targets = Vector.empty)
   }
 
-  private def setVariableIntoTF(weights: Array[Tensor[Float]],
+  protected def setVariableIntoTF(weights: Array[Tensor[Float]],
                                          inputNames: Array[String],
                                          variableTypes: Array[DataType],
                                          assignOp: String) = {
@@ -150,7 +151,22 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
   }
 
   @transient
-  private var extraParameterRestored: Boolean = false
+  protected var extraParameterRestored: Boolean = false
+
+  @transient
+  protected var weightsRestored: Boolean = false
+
+  @transient
+  private lazy val tableInited = {
+    if (initOp.isDefined) {
+      runInitOp()
+    }
+    true
+  }
+
+  private def runInitOp(): Unit = {
+    graphRunner.runTargets(targets = Vector(initOp.get))
+  }
 
   def restoreFromCheckpoint(): Unit = {
     graphRunner.restoreFromFile(checkpointPath)
@@ -161,6 +177,8 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
     if (extraParameters.length > 0) {
       getVariableFromTF(extraParameters, variableNames = extraVariables)
     }
+
+    weightsRestored = true
 
     extraParameterRestored = true
 
@@ -177,20 +195,42 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
     }
   }
 
+  protected def beforeRunGradient() = {
+    if (this.isTraining() || !weightsRestored) {
+      Utils.timeIt("setTrainingVariableIntoTF") {
+        setVariableIntoTF(weights, variableAssignPlaceholders,
+          variableTypes.map(TFUtils.tfenum2datatype), assignVariableOp)
+      }
+      weightsRestored = true
+    }
+
+    if (!extraParameterRestored) {
+      setVariableIntoTF(extraParameters, extraVariableAssignPlaceholders,
+        extraVariableTypes.map(TFUtils.tfenum2datatype), assignExtraVariableOP)
+      extraParameterRestored = true
+    }
+  }
+
+  protected def afterRunGradient() = {
+    if (extraParameters.length > 0) {
+      Utils.timeIt("getExtraVariableFromTF") {
+        getVariableFromTF(extraParameters, variableNames = extraVariables)
+      }
+    }
+
+    if (isTraining()) {
+      gradWeights.zipWithIndex.foreach { case (grad, idx) =>
+        grad.resizeAs(weights(idx)).add(gradWeightsBuffer(idx))
+      }
+    }
+  }
+
   override def updateOutput(input: Activity): Activity = {
     Utils.timeIt("updateOutput") {
-      if (this.isTraining()) {
-        Utils.timeIt("setTrainingVariableIntoTF") {
-          setVariableIntoTF(weights, variableAssignPlaceholders,
-            variableTypes.map(TFUtils.tfenum2datatype), assignVariableOp)
-        }
-      }
 
-      if (!extraParameterRestored) {
-        setVariableIntoTF(extraParameters, extraVariableAssignPlaceholders,
-          extraVariableTypes.map(TFUtils.tfenum2datatype), assignExtraVariableOP)
-        extraParameterRestored = true
-      }
+      assert(tableInited)
+
+      this.beforeRunGradient()
 
       val feeds = Utils.activity2VectorBuilder(input)
 
@@ -221,18 +261,7 @@ private[zoo] class TFTrainingHelper private (graphRunner: GraphRunner,
         output = outputTensors, outputNames = outputNames, outputTypes = outputTypes,
         targets = Vector(updateOp))
 
-
-      if (extraParameters.length > 0) {
-        Utils.timeIt("getExtraVariableFromTF") {
-          getVariableFromTF(extraParameters, variableNames = extraVariables)
-        }
-      }
-
-      if (isTraining()) {
-        gradWeights.zipWithIndex.foreach { case (grad, idx) =>
-          grad.resizeAs(weights(idx)).add(gradWeightsBuffer(idx))
-        }
-      }
+      this.afterRunGradient()
     }
 
     output
@@ -262,7 +291,10 @@ object TFTrainingHelper {
       trainMeta.savePathPlaceholder,
       config)
 
-    val helper = new TFTrainingHelper(graphRunner,
+
+
+    val helper = new TFTrainingHelper(
+      graphRunner,
       checkpointPath,
       trainMeta.inputs,
       trainMeta.inputTypes,
@@ -277,6 +309,7 @@ object TFTrainingHelper {
       trainMeta.assignExtraVariableOp,
       trainMeta.gradVariables,
       trainMeta.updateOp,
+      trainMeta.initOp,
       trainMeta.defaultTensorValue
     )
     helper.restoreFromCheckpoint()
@@ -294,7 +327,8 @@ object TFTrainingHelper {
     val graphDef = TFUtils.parseGraph(graphDefPath.toString())
     val config = Option(sessionConfig).getOrElse(TFUtils.defaultSessionConfig.toByteArray())
 
-    val helper = TFTrainingHelper(graphDef, checkpointPath.toString(), trainingMeta, config)
+    val helper = TFTrainingHelper(graphDef, checkpointPath.toString(),
+      trainingMeta, config)
     helper
   }
 }

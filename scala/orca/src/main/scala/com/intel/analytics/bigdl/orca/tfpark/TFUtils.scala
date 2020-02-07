@@ -321,6 +321,8 @@ case class TrainMeta(inputs: Array[String],
                      saveOp: String,
                      savePathPlaceholder: String,
                      updateOp: String,
+                     trainOp: Option[String],
+                     initOp: Option[String],
                      defaultTensorValue: Array[Array[Float]],
                      metricsNames: Array[String])
 
