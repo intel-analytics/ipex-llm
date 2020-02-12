@@ -116,14 +116,11 @@ class BERTBaseEstimator(TFEstimator):
     - One can utilize `_bert_model` to create model_fn and `bert_input_fn` to create input_fn.
     """
     def __init__(self, model_fn, bert_config_file, init_checkpoint=None,
-                 use_one_hot_embeddings=False, optimizer=None, model_dir=None, **kwargs):
+                 use_one_hot_embeddings=False, model_dir=None, **kwargs):
         params = {"bert_config_file": bert_config_file,
                   "init_checkpoint": init_checkpoint,
                   "use_one_hot_embeddings": use_one_hot_embeddings}
         for k, v in kwargs.items():
             params[k] = v
-        super(BERTBaseEstimator, self).__init__(
-            model_fn=model_fn,
-            optimizer=optimizer,
-            model_dir=model_dir,
-            params=params)
+        estimator = tf.estimator.Estimator(model_fn, model_dir=model_dir, params=params)
+        super(BERTBaseEstimator, self).__init__(estimator)

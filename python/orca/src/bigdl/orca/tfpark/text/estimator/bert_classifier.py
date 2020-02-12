@@ -13,42 +13,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from zoo.tfpark import ZooOptimizer
 from zoo.tfpark.text.estimator import *
 
 
-def _bert_classifier_model_fn(features, labels, mode, params):
-    """
-    Model function for BERTClassifier.
+def make_bert_classifier_model_fn(optimizer):
+    def _bert_classifier_model_fn(features, labels, mode, params):
+        """
+        Model function for BERTClassifier.
 
-    :param features: Dict of feature tensors. Must include the key "input_ids".
-    :param labels: Label tensor for training.
-    :param mode: 'train', 'eval' or 'infer'.
-    :param params: Must include the key "num_classes".
-    :return: TFEstimatorSpec.
-    """
-    output_layer = bert_model(features, labels, mode, params).get_pooled_output()
-    hidden_size = output_layer.shape[-1].value
-    output_weights = tf.get_variable(
-        "output_weights", [params["num_classes"], hidden_size],
-        initializer=tf.truncated_normal_initializer(stddev=0.02))
-    output_bias = tf.get_variable(
-        "output_bias", [params["num_classes"]], initializer=tf.zeros_initializer())
-    with tf.variable_scope("loss"):
-        if mode == tf.estimator.ModeKeys.TRAIN:
-            output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
+        :param features: Dict of feature tensors. Must include the key "input_ids".
+        :param labels: Label tensor for training.
+        :param mode: 'train', 'eval' or 'infer'.
+        :param params: Must include the key "num_classes".
+        :return: tf.estimator.EstimatorSpec.
+        """
+        output_layer = bert_model(features, labels, mode, params).get_pooled_output()
+        hidden_size = output_layer.shape[-1].value
+        output_weights = tf.get_variable(
+            "output_weights", [params["num_classes"], hidden_size],
+            initializer=tf.truncated_normal_initializer(stddev=0.02))
+        output_bias = tf.get_variable(
+            "output_bias", [params["num_classes"]], initializer=tf.zeros_initializer())
+        with tf.variable_scope("loss"):
+            if mode == tf.estimator.ModeKeys.TRAIN:
+                output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
 
-        logits = tf.matmul(output_layer, output_weights, transpose_b=True)
-        logits = tf.nn.bias_add(logits, output_bias)
-        probabilities = tf.nn.softmax(logits, axis=-1)
-        if mode == tf.estimator.ModeKeys.PREDICT or mode == tf.estimator.ModeKeys.EVAL:
-            return TFEstimatorSpec(mode=mode, predictions=probabilities)
-        else:
-            log_probs = tf.nn.log_softmax(logits, axis=-1)
-            one_hot_labels = tf.one_hot(labels, depth=params["num_classes"], dtype=tf.float32)
-            per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-            loss = tf.reduce_mean(per_example_loss)
-            return TFEstimatorSpec(mode=mode, loss=loss)
+            logits = tf.matmul(output_layer, output_weights, transpose_b=True)
+            logits = tf.nn.bias_add(logits, output_bias)
+            probabilities = tf.nn.softmax(logits, axis=-1)
+            if mode == tf.estimator.ModeKeys.PREDICT or mode == tf.estimator.ModeKeys.EVAL:
+                return tf.estimator.EstimatorSpec(mode=mode, predictions=probabilities)
+            else:
+                log_probs = tf.nn.log_softmax(logits, axis=-1)
+                one_hot_labels = tf.one_hot(labels, depth=params["num_classes"], dtype=tf.float32)
+                per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+                loss = tf.reduce_mean(per_example_loss)
+                train_op = ZooOptimizer(optimizer).minimize(loss)
+                return tf.estimator.EstimatorSpec(mode=mode, train_op=train_op, loss=loss)
+    return _bert_classifier_model_fn
 
 
 class BERTClassifier(BERTBaseEstimator):
@@ -62,8 +65,8 @@ class BERTClassifier(BERTBaseEstimator):
                             Default is None.
     :param use_one_hot_embeddings: Boolean. Whether to use one-hot for word embeddings.
                                    Default is False.
-    :param optimizer: The optimizer used to train the estimator. It can either be an instance of
-                      tf.train.Optimizer or the corresponding string representation.
+    :param optimizer: The optimizer used to train the estimator. It should be an instance of
+                      tf.train.Optimizer.
                       Default is None if no training is involved.
     :param model_dir: The output directory for model checkpoints to be written if any.
                       Default is None.
@@ -71,10 +74,9 @@ class BERTClassifier(BERTBaseEstimator):
     def __init__(self, num_classes, bert_config_file, init_checkpoint=None,
                  use_one_hot_embeddings=False, optimizer=None, model_dir=None):
         super(BERTClassifier, self).__init__(
-            model_fn=_bert_classifier_model_fn,
+            model_fn=make_bert_classifier_model_fn(optimizer),
             bert_config_file=bert_config_file,
             init_checkpoint=init_checkpoint,
             use_one_hot_embeddings=use_one_hot_embeddings,
-            optimizer=optimizer,
             model_dir=model_dir,
             num_classes=num_classes)

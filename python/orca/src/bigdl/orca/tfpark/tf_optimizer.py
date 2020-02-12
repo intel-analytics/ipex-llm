@@ -25,9 +25,10 @@ from bigdl.nn.layer import Layer
 from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
 from bigdl.util.common import to_list, JavaValue
 
+from zoo.tfpark.zoo_optimizer import FakeOptimMethod
 from zoo.common.utils import callZooFunc
 from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss
-from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method
+from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method, find_tensors
 from zoo.pipeline.estimator import Estimator
 from zoo.tfpark.tf_dataset import MapDataset
 from zoo.util import nest
@@ -415,6 +416,38 @@ class TFOptimizer:
                 variables.append(var)
                 grads.append(grad)
         return grads, variables
+
+    @staticmethod
+    def _get_vars_grads_from_train_op(train_op):
+        def predicate(t):
+            return t.name.split("/")[-1].startswith("zoo_identity_op_for_grad")
+
+        grads = find_tensors([train_op], predicate)
+        grad_ops = [grad.op for grad in grads]
+        variables = []
+        for grad in grad_ops:
+            var = list(grad.control_inputs)[0]
+            if var.name == "VarHandleOp":
+                variables.append(var)
+            else:
+                variables.append(list(var.outputs)[0])
+        # variables = [grad.op.control_inputs[0].outputs[0] for grad in grads]
+        return grads, variables
+
+    @classmethod
+    def from_train_op(cls, train_op, loss, metrics=None, updates=None, sess=None, dataset=None,
+                      tensor_with_value=None, session_config=None, model_dir=None):
+        sess = TFOptimizer._get_or_create_session(sess)
+        grads, variables = TFOptimizer._get_vars_grads_from_train_op(train_op)
+        if dataset is None:
+            dataset = TFOptimizer._get_dataset_from_loss(loss)
+        inputs = nest.flatten(dataset._original_tensors)
+        return TFOptimizer._from_grads(loss=loss, sess=sess, inputs=inputs, grads=grads,
+                                       variables=variables, dataset=dataset, metrics=metrics,
+                                       tensor_with_value=tensor_with_value,
+                                       optim_method=FakeOptimMethod(),
+                                       session_config=session_config, updates=updates,
+                                       model_dir=model_dir, train_op=train_op)
 
     @classmethod
     def _from_grads(cls, loss, sess, inputs, grads, variables, dataset, optim_method=None,

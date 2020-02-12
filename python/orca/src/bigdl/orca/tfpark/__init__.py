@@ -15,8 +15,9 @@
 #
 
 from .model import KerasModel
-from .estimator import TFEstimator, TFEstimatorSpec
+from .estimator import TFEstimator
 from .tf_optimizer import TFOptimizer
 from .tf_dataset import TFDataset
+from .zoo_optimizer import ZooOptimizer
 from .tf_predictor import TFPredictor
 from .tfnet import TFNet
