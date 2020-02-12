@@ -220,7 +220,7 @@ object Estimator {
   /**
    * Create an estimator
    * @param model model
-   * @param optimMethods optimMethod to optimize model
+   * @param optimMethod optimMethod to optimize model
    * @param modelDir model checkpoint directory, and related summary directory.
    * @tparam T tensor numeric type
    * @return a new estimator
@@ -239,7 +239,7 @@ object Estimator {
   /**
    * Create an estimator
    * @param model model
-   * @param optimMethods optimMethod to optimize model
+   * @param optimMethod optimMethod to optimize model
    * @tparam T tensor numeric type
    * @return a new estimator
    */
