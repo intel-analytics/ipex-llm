@@ -16,16 +16,22 @@
 
 package com.intel.analytics.zoo.feature.python
 
+import java.util
+
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.{Transformer, Sample => JSample}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer, Sample => JSample}
 import com.intel.analytics.bigdl.python.api.Sample
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image._
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.feature.FeatureSet
 import com.intel.analytics.zoo.feature.pmem.MemoryType
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import org.apache.spark.api.java.JavaRDD
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 object PythonFeatureSet {
@@ -72,6 +78,33 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
 
   def featureSetToDataSet(featureSet: FeatureSet[Any]): DataSet[Any] = {
     featureSet.toDataSet()
+  }
+
+  def createFeatureSetFromTfDataset(
+        dataset: Array[Byte],
+        totalSize: Int): FeatureSet[MiniBatch[Float]] = {
+    val nodeNumber = EngineRef.getNodeNumber()
+    // set a random seed to make sure shuffle is the same in each executor
+    val imports =
+      s"""
+        |import tensorflow as tf
+        |from zoo.util.nest import flatten
+        |sess = tf.Session()
+        |""".stripMargin
+    def getIterator(iterName: String, loaderName: String): String = {
+      s"""
+         |${iterName} = ${loaderName}.make_one_shot_iterator()
+         |""".stripMargin
+    }
+    def getNext(iterName: String): String = {
+      s"""
+        |data = sess.run(${iterName}.get_next())
+        |data = flatten(data)
+        |""".stripMargin
+    }
+    FeatureSet.python[MiniBatch[Float]](dataset,
+      getIterator, getNext,
+      "data", "", totalSize, imports)
   }
 
 }
