@@ -18,6 +18,7 @@ from bigdl.util.common import *
 from zoo.common.utils import callZooFunc
 from bigdl.dataset.dataset import DataSet
 import sys
+from pyspark.serializers import CloudPickleSerializer
 
 if sys.version >= '3':
     long = int
@@ -346,6 +347,18 @@ class FeatureSet(DataSet):
         """
         jvalue = callZooFunc(bigdl_type, "createFeatureSetFromRDD", rdd,
                              memory_type, sequential_order, shuffle)
+        return cls(jvalue=jvalue)
+
+    @classmethod
+    def tf_dataset(cls, func, total_size, bigdl_type="float"):
+        """
+        :param func: a function return a tensorflow dataset
+        :param total_size: total size of this dataset
+        :param bigdl_type: numeric type
+        :return: A feature set
+        """
+        func = CloudPickleSerializer.dumps(CloudPickleSerializer, func)
+        jvalue = callZooFunc(bigdl_type, "createFeatureSetFromTfDataset", func, total_size)
         return cls(jvalue=jvalue)
 
     def transform(self, transformer):
