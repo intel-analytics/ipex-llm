@@ -21,8 +21,7 @@ from zoo import init_nncontext
 from zoo.feature.common import *
 from zoo.feature.image.imagePreprocessing import *
 from zoo.feature.image.imageset import *
-from zoo.tfpark import TFDataset
-from zoo.tfpark import TFEstimator, TFEstimatorSpec
+from zoo.tfpark import TFDataset, TFEstimator, ZooOptimizer
 
 
 def main(option):
@@ -67,16 +66,18 @@ def main(option):
         if mode == tf.estimator.ModeKeys.TRAIN:
             loss = tf.reduce_mean(
                 tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
-            return TFEstimatorSpec(mode, predictions=logits, loss=loss)
+            train_op = ZooOptimizer(tf.train.AdamOptimizer()).minimize(loss)
+            return tf.estimator.EstimatorSpec(mode, train_op=train_op,
+                                              predictions=logits, loss=loss)
         else:
             raise NotImplementedError
 
-    estimator = TFEstimator(model_fn,
-                            tf.train.AdamOptimizer(),
-                            params={"image_path": option.image_path,
-                                    "num_classes": option.num_classes})
+    estimator = TFEstimator.from_model_fn(model_fn,
+                                          params={"image_path": option.image_path,
+                                                  "num_classes": option.num_classes})
 
     estimator.train(input_fn, steps=100)
+
 
 if __name__ == '__main__':
     parser = OptionParser()
