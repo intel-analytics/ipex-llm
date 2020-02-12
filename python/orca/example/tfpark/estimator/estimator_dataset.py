@@ -16,10 +16,8 @@
 
 import tensorflow as tf
 import numpy as np
-
 from zoo import init_nncontext
-from zoo.tfpark import TFDataset
-from zoo.tfpark import TFEstimator, TFEstimatorSpec
+from zoo.tfpark import TFDataset, TFEstimator, ZooOptimizer
 
 
 def get_data_rdd(dataset, sc):
@@ -45,9 +43,12 @@ def main():
         if mode == tf.estimator.ModeKeys.EVAL or mode == tf.estimator.ModeKeys.TRAIN:
             loss = tf.reduce_mean(
                 tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
-            return TFEstimatorSpec(mode, predictions=logits, loss=loss)
+
+            optimizer = ZooOptimizer(tf.train.AdamOptimizer())
+            train_op = optimizer.minimize(loss)
+            return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
         else:
-            return TFEstimatorSpec(mode, predictions=logits)
+            return tf.estimator.EstimatorSpec(mode, predictions=logits)
 
     def input_fn(mode):
         if mode == tf.estimator.ModeKeys.TRAIN:
@@ -69,7 +70,7 @@ def main():
                                          batch_per_thread=80)
 
         return dataset
-    estimator = TFEstimator(model_fn, tf.train.AdamOptimizer(), model_dir="/tmp/estimator")
+    estimator = TFEstimator.from_model_fn(model_fn, model_dir="/tmp/estimator")
 
     estimator.train(input_fn, steps=60000//320)
 
@@ -79,6 +80,7 @@ def main():
     predictions = estimator.predict(input_fn)
 
     print(predictions.first())
+
 
 if __name__ == '__main__':
     main()
