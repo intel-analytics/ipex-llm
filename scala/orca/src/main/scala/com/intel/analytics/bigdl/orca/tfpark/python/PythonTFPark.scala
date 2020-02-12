@@ -75,6 +75,9 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
   }
 
 
+  def createFakeOptimMethod(): OptimMethod[T] = {
+    new FakeOptimMethod[T]()
+  }
 
   def createMiniBatchRDDFromStringRDD(stringRDD: JavaRDD[Array[Byte]],
                                       batchSize: Int): RDDWrapper[TFMiniBatch] = {

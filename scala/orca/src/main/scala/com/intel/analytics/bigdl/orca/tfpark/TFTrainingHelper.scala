@@ -291,27 +291,46 @@ object TFTrainingHelper {
       trainMeta.savePathPlaceholder,
       config)
 
-
-
-    val helper = new TFTrainingHelper(
-      graphRunner,
-      checkpointPath,
-      trainMeta.inputs,
-      trainMeta.inputTypes,
-      trainMeta.metricTensors ++ Array(trainMeta.batchSizeTensor, trainMeta.lossTensor),
-      trainMeta.variables,
-      trainMeta.variableTypes,
-      trainMeta.variableAssignPlaceholders,
-      trainMeta.assignVariableOp,
-      trainMeta.extraVariables,
-      trainMeta.extraVariableTypes,
-      trainMeta.extraVariableAssignPlaceholders,
-      trainMeta.assignExtraVariableOp,
-      trainMeta.gradVariables,
-      trainMeta.updateOp,
-      trainMeta.initOp,
-      trainMeta.defaultTensorValue
-    )
+    val helper = if (trainMeta.trainOp.isEmpty) {
+      new TFTrainingHelper(graphRunner,
+        checkpointPath,
+        trainMeta.inputs,
+        trainMeta.inputTypes,
+        trainMeta.metricTensors ++ Array(trainMeta.batchSizeTensor, trainMeta.lossTensor),
+        trainMeta.variables,
+        trainMeta.variableTypes,
+        trainMeta.variableAssignPlaceholders,
+        trainMeta.assignVariableOp,
+        trainMeta.extraVariables,
+        trainMeta.extraVariableTypes,
+        trainMeta.extraVariableAssignPlaceholders,
+        trainMeta.assignExtraVariableOp,
+        trainMeta.gradVariables,
+        trainMeta.updateOp,
+        trainMeta.initOp,
+        trainMeta.defaultTensorValue
+      )
+    } else {
+      new TFTrainingHelperV2(graphRunner,
+        checkpointPath,
+        trainMeta.inputs,
+        trainMeta.inputTypes,
+        trainMeta.metricTensors ++ Array(trainMeta.batchSizeTensor, trainMeta.lossTensor),
+        trainMeta.variables,
+        trainMeta.variableTypes,
+        trainMeta.variableAssignPlaceholders,
+        trainMeta.assignVariableOp,
+        trainMeta.extraVariables,
+        trainMeta.extraVariableTypes,
+        trainMeta.extraVariableAssignPlaceholders,
+        trainMeta.assignExtraVariableOp,
+        trainMeta.gradVariables,
+        trainMeta.updateOp,
+        trainMeta.trainOp.get,
+        trainMeta.initOp,
+        trainMeta.defaultTensorValue
+      )
+    }
     helper.restoreFromCheckpoint()
     helper
   }
