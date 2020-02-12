@@ -20,7 +20,7 @@ import tensorflow as tf
 
 from zoo.feature.common import ChainedPreprocessing, FeatureSet
 from zoo.feature.image import *
-from zoo.tfpark import TFDataset, TFEstimatorSpec, TFEstimator
+from zoo.tfpark import TFDataset, TFEstimator, ZooOptimizer
 
 
 class TestTFParkEstimator(ZooTestCase):
@@ -39,9 +39,11 @@ class TestTFParkEstimator(ZooTestCase):
             if mode == tf.estimator.ModeKeys.EVAL or mode == tf.estimator.ModeKeys.TRAIN:
                 loss = tf.reduce_mean(
                     tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
-                return TFEstimatorSpec(mode, predictions=logits, loss=loss)
+                train_op = ZooOptimizer(tf.train.AdamOptimizer()).minimize(loss)
+                return tf.estimator.EstimatorSpec(mode, train_op=train_op,
+                                                  predictions=logits, loss=loss)
             else:
-                return TFEstimatorSpec(mode, predictions=logits)
+                return tf.estimator.EstimatorSpec(mode, predictions=logits)
         return model_fn
 
     def create_input_fn(self):
@@ -87,7 +89,7 @@ class TestTFParkEstimator(ZooTestCase):
             else:
                 return TFDataset.from_ndarrays(x, batch_per_thread=1)
 
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator = TFEstimator.from_model_fn(model_fn)
         estimator.train(input_fn, 10)
         estimator.evaluate(input_fn, ["acc"])
         estimator.predict(input_fn)
@@ -95,20 +97,20 @@ class TestTFParkEstimator(ZooTestCase):
     def test_training(self):
         model_fn = self.create_model_fn()
         input_fn = self.create_input_fn()
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator = TFEstimator.from_model_fn(model_fn)
         estimator.train(input_fn, steps=60000 // 320)
 
     def test_evaluating(self):
         model_fn = self.create_model_fn()
         input_fn = self.create_input_fn()
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator = TFEstimator.from_model_fn(model_fn)
         eval_results = estimator.evaluate(input_fn, ["acc"])
         assert len(eval_results) > 0
 
     def test_predict(self):
         model_fn = self.create_model_fn()
         input_fn = self.create_input_fn()
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator = TFEstimator.from_model_fn(model_fn)
         results = estimator.predict(input_fn).collect()
 
     def test_estimator_without_batch(self):
@@ -128,9 +130,11 @@ class TestTFParkEstimator(ZooTestCase):
                 labels = tf.expand_dims(labels, axis=0)
                 loss = tf.reduce_mean(
                     tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
-                return TFEstimatorSpec(mode, predictions=logits, loss=loss)
+                train_op = ZooOptimizer(tf.train.AdamOptimizer()).minimize(loss)
+                return tf.estimator.EstimatorSpec(mode, train_op=train_op,
+                                                  predictions=logits, loss=loss)
             else:
-                return TFEstimatorSpec(mode, predictions=logits)
+                return tf.estimator.EstimatorSpec(mode, predictions=logits)
 
         def input_fn(mode):
             np.random.seed(20)
@@ -150,7 +154,7 @@ class TestTFParkEstimator(ZooTestCase):
                                              features=(tf.float32, [10]))
             return dataset
 
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator = TFEstimator.from_model_fn(model_fn)
 
         self.intercept(lambda: estimator.train(input_fn, steps=1),
                        "The batch_size of TFDataset must be specified when used for training.")
@@ -198,7 +202,7 @@ class TestTFParkEstimator(ZooTestCase):
         model_fn = self.create_model_fn()
         input_fn = self.create_imageset_input_fn()
 
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator = TFEstimator.from_model_fn(model_fn)
         estimator.train(input_fn, steps=1)
         estimator.evaluate(input_fn, ["acc"])
         results = estimator.predict(input_fn).get_predict().collect()
@@ -238,19 +242,8 @@ class TestTFParkEstimator(ZooTestCase):
         model_fn = self.create_model_fn()
         input_fn = self.create_train_feature_set_input_fn()
 
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
+        estimator = TFEstimator.from_model_fn(model_fn)
         estimator.train(input_fn, steps=1)
-
-    def test_gradient_clipping(self):
-
-        model_fn = self.create_model_fn()
-        input_fn = self.create_train_feature_set_input_fn()
-
-        estimator = TFEstimator(model_fn, tf.train.AdamOptimizer())
-        estimator.set_constant_gradient_clipping(-1e-8, 1e8)
-        estimator.train(input_fn, steps=1)
-
-        # todo add weights verification
 
 
 if __name__ == "__main__":
