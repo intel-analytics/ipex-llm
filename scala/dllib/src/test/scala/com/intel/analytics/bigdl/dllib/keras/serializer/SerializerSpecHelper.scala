@@ -45,6 +45,7 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
     "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
     "com.intel.analytics.zoo.pipeline.api.keras.layers.InternalGetShape",
     "com.intel.analytics.zoo.tfpark.TFTrainingHelper",
+    "com.intel.analytics.zoo.tfpark.TFTrainingHelperV2",
     "com.intel.analytics.zoo.pipeline.api.net.TFNetForInference",
     "com.intel.analytics.zoo.tfpark.TFSubGraph")
 
