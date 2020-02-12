@@ -1,8 +1,8 @@
 # TFEstimator
 
 TFEstimator wraps a model defined by `model_fn`. The `model_fn` is almost identical to TensorFlow's `model_fn`
-except users are required to return a `TFEstimator` object. Users do not need to construct backward graph
-(calling `optimizer.minimize(...)`) but set a `loss` tensor in `TFEstimator`.
+except users are required to use ZooOptimizer, which takes a `tf.train.Optimzer` as input, to derive a train_op.
+
 
 
 __Remarks__:
@@ -14,10 +14,10 @@ __Ubuntu 16.04 or later__ and __macOS 10.12.6 or later__.
   be found [here](https://github.com/tensorflow/tensorflow/tree/v1.10.0/tensorflow/java).
 
 
-**Create a TFEstimator**:
+**Create a TFEstimator from a model_fn**:
 ```python
 import tensorflow as tf
-from zoo.tfpark.estimator import TFEstimator, TFEstimatorSpec
+from zoo.tfpark import TFEstimator, ZooOptimizer
 def model_fn(features, labels, mode):
 
     hidden = tf.layers.dense(features, 32, activation=tf.nn.relu)
@@ -27,19 +27,38 @@ def model_fn(features, labels, mode):
     if mode == tf.estimator.ModeKeys.EVAL or mode == tf.estimator.ModeKeys.TRAIN:
         loss = tf.reduce_mean(
             tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
-        return TFEstimatorSpec(mode, predictions=logits, loss=loss)
+        train_op = ZooOptimizer(tf.train.AdamOptimizer()).minimize(loss)
+        return tf.estimator.EstimatorSpec(mode, train_op=train_op, predictions=logits, loss=loss)
     else:
-        return TFEstimatorSpec(mode, predictions=logits)
+        return tf.estimator.EstimatorSpec(mode, predictions=logits)
 
-estimator = TFEstimator(model_fn, tf.train.AdamOptimizer(), model_dir="/tmp/estimator")
+estimator = TFEstimator.from_model_fn(model_fn, model_dir="/tmp/estimator")
+```
+
+**Create a TFEstimator from a pre-made estimator**:
+```python
+import tensorflow as tf
+linear = tf.estimator.LinearClassifier(feature_columns=feature_columns,
+                                           optimizer=ZooOptimizer(tf.train.FtrlOptimizer(0.2)))
+estimator = TFEstimator(linear)
 ```
 
 ## Methods
 
 ### \_\_init\_\_
 
+Create a TFEstimator from a tf.estimator.Estimator
+
 ```python
-TFEstimator(model_fn, optimizer=None, model_dir=None, config=None, params=None, warm_start_from=None)
+TFEstimator(estimator)
+```
+
+### from_model_fn
+
+Create a TFEstimator from a model_fn
+
+```python
+TFEstimator.from_model_fn(model_fn, model_dir=None, config=None, params=None, warm_start_from=None)
 ```
 
 #### Arguments
@@ -69,9 +88,9 @@ TFEstimator(model_fn, optimizer=None, model_dir=None, config=None, params=None, 
                     configuration such as `num_ps_replicas`, or `model_dir`.
 
             * Returns:
-                `zoo.tfpark.estimator.TFEstimatorSpec`
-* **optimizer**: the tf.train.Optimizer to be used in training,
-                         e.g. tf.train.AdamOptimizer()
+                `tf.estimator.EstimatorSpec`
+            For the train_op in tf.estimator.EstimatorSpec, it derive from and only from
+                        `zoo.tfpark.ZooOptimizer`
 * **model_dir**: Directory to save model parameters, graph and etc. This can
             also be used to load checkpoints from the directory into an estimator to
             continue training a previously saved model. If `PathLike` object, the
