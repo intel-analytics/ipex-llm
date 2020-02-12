@@ -207,6 +207,8 @@ class SparkRunner():
             else:
                 spark_conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
 
+            spark_conf["spark.executorEnv.PYTHONHOME"] = self.PYTHON_ENV
+
             for item in spark_conf.items():
                 conf[str(item[0])] = str(item[1])
             sc = self._create_sc(submit_args, conf)
