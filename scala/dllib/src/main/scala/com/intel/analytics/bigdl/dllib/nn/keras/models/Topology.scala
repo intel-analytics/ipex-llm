@@ -48,11 +48,12 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils._
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, TorchNet}
 import com.intel.analytics.zoo.pipeline.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
+import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
 import scala.collection.JavaConverters._
@@ -1037,6 +1038,12 @@ private[zoo] object InternalOptimizerUtil {
       uuid)
   }
 
+
+  def getLocalPartitionRangeFromParameters[T: ClassTag](
+       parameters: AllReduceParameter[T]): (Int, Int) = {
+    KerasUtils.invokeMethod(parameters, "localPartitionRange").asInstanceOf[(Int, Int)]
+  }
+
 }
 
 private[zoo] class InternalLocalOptimizer[T: ClassTag] (
@@ -1072,6 +1079,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
   protected var modelBroadcast: ModelBroadcast[T] = null
   protected var parameterSplits: Map[String, (Int, Int)] = null
   protected var allReduceParameter: AllReduceParameter[T] = null
+
 
   def train(): Module[T] = {
     val distDataset = dataset.toDistributed()
@@ -1252,7 +1260,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
       }
     }
 
-    InternalOptimizerUtil.getModel(
+    InternalDistriOptimizer.getModel(
       cachedModels, allReduceParameter, trainingModel)
 
     trainingModel
@@ -1536,5 +1544,52 @@ object InternalDistriOptimizer {
       iter
     }.count()
     models.unpersist()
+  }
+
+  def getModel[T: ClassTag](models: RDD[Cache[T]],
+                            parameters: AllReduceParameter[T],
+                            trainingModel: Module[T])(implicit ev: TensorNumeric[T])
+  : Module[T] = {
+
+    if (!trainingModel.isInstanceOf[TFTrainingHelperV2]) {
+      InternalOptimizerUtil.getModel(models, parameters, trainingModel)
+    } else {
+      val partitionNum = models.partitions.length
+      val extraState = models.map(_.localModels.head.getExtraParameter()).first()
+      trainingModel.setExtraParameter(extraState)
+
+      // make sure gradient is as the same length as weight
+      val parameterArray = trainingModel.parameters()
+      (0 until parameterArray._2.length).foreach(i =>
+        parameterArray._2(i).resizeAs(parameterArray._1(i))
+      )
+
+      val (parameter, gradientParameter) =
+        InternalOptimizerUtil.getParametersFromModel(trainingModel)
+
+
+      val (weights, gradients) = models.mapPartitions(iter => {
+        val cached = iter.next()
+        cached.localModels.head.asInstanceOf[TFTrainingHelperV2].moveWeightsOutOfTF()
+        val curPartitionId = TaskContext.getPartitionId()
+        val (offset, size) = InternalOptimizerUtil.getLocalPartitionRangeFromParameters(parameters)
+        val weightTensor = Tensor[T](size)
+        weightTensor.copy(cached.modelWeights.head.narrow(1, offset, size))
+        Iterator.single((Map(curPartitionId -> weightTensor),
+          Map(curPartitionId -> parameters.gradientPartition)))
+      }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
+
+      val taskSize = parameters.size / partitionNum
+      require(taskSize != 0, "parameter length should not less than partition number")
+      val extraSize = parameters.size % partitionNum
+
+      (0 until partitionNum).map(pid => {
+        val start = parameters.paramOffset + pid * taskSize + math.min(pid, extraSize)
+        val length = taskSize + (if (pid < extraSize) 1 else 0)
+        parameter.narrow(1, start, length).copy(weights(pid))
+        gradientParameter.narrow(1, start, length).copy(gradients(pid))
+      })
+    }
+    trainingModel
   }
 }
