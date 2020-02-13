@@ -60,6 +60,35 @@ object TFUtils {
     }
   }
 
+  private def decodeUVarInt64(bytes: Array[Byte], offset: Int): (Long, Int) = {
+    var shift = 0
+    var p = offset
+    var result: Long = 0
+    while (shift  <= 63 && p < bytes.length) {
+      val b = bytes(p)
+      p += 1
+      if ((b & 128) != 0) {
+        result |= ((b & 127) << shift)
+      } else {
+        result |= (b << shift)
+        return (result, p)
+      }
+
+      shift += 7
+    }
+    (result, p)
+  }
+
+  private def getOffsets(buffer: ByteBuffer, numElem: Int): Array[Int] = {
+    val offsetsBuffer = ByteBuffer.wrap(buffer.array()
+      .slice(buffer.arrayOffset(), numElem * 8))
+      .order(ByteOrder.nativeOrder())
+      .asLongBuffer()
+    val offsets = new Array[Long](numElem)
+    offsetsBuffer.get(offsets)
+    offsets.map(_.toInt)
+  }
+
   private[zoo] def tf2bigdl(t: TTensor[_], output: Tensor[_]) = {
     val shape = t.shape().map(_.toInt)
     output.resize(shape)
@@ -70,10 +99,21 @@ object TFUtils {
 
     if (dataType == DataType.STRING) {
       val outputTensor = output.asInstanceOf[Tensor[Array[Byte]]]
-      require(shape.product == 1, "only scala string are supported in TensorFlow Java")
-      val bytes = t.bytesValue()
+      require(t.numDimensions() <= 1, "only scalar or Vector string are supported")
+      val elements = t.numElements()
+      val buffer = ByteBuffer.allocate(t.numBytes())
+      t.writeTo(buffer)
+      val offsets = getOffsets(buffer, elements)
       val storage = outputTensor.storage().array()
-      storage(outputTensor.storageOffset() - 1) = bytes
+      val strDataOffset = elements * 8
+      var i = 0
+      while (i < elements) {
+        val offset = buffer.arrayOffset() + offsets(i) + strDataOffset
+        val (strLen, strStart) = decodeUVarInt64(buffer.array(), offset)
+        storage(outputTensor.storageOffset() - 1 + i) = buffer.array()
+          .slice(strStart, strStart + strLen.toInt)
+        i += 1
+      }
     } else if (numericDataTypes(dataType)) {
       dataType match {
         case DataType.FLOAT =>

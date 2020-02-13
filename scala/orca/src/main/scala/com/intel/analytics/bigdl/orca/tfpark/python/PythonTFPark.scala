@@ -25,6 +25,14 @@ import com.intel.analytics.zoo.tfpark._
 import org.apache.spark.api.java.JavaRDD
 
 import scala.reflect.ClassTag
+import scala.collection.JavaConverters._
+import java.util.{List => JList}
+
+import com.intel.analytics.bigdl.dataset.MiniBatch
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import org.apache.spark.SparkContext
+import org.apache.spark.storage.StorageLevel
+import org.tensorflow.DataType
 
 
 object PythonTFPark {
@@ -89,7 +97,53 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
         new TFMiniBatch(Array(tensor))
       }
     }
-    RDDWrapper[TFMiniBatch](rdd)
+      RDDWrapper[TFMiniBatch](rdd)
+  }
+
+  def createMiniBatchRDDFromTFDataset(graph: Array[Byte],
+                                      initIteratorOp: String,
+                                      outputNames: JList[String],
+                                      outputTypes: JList[Int],
+                                      shardIndex: String): RDDWrapper[TFMiniBatch] = {
+    val types = outputTypes.asScala.map(TFUtils.tfenum2datatype).toVector
+    val names = outputNames.asScala.toVector
+    val sc = SparkContext.getOrCreate()
+    val nodeNumber = EngineRef.getNodeNumber()
+    val coreNumber = EngineRef.getCoreNumber()
+    val totoalCoreNumber = nodeNumber * coreNumber
+
+    val broadcastedGraph = sc.broadcast(graph)
+    val originRdd = sc.parallelize(
+      Array.tabulate(totoalCoreNumber * 20)(_ => 0), totoalCoreNumber * 10)
+      .mapPartitions(_ => (0 until 10).toIterator)
+      .coalesce(totoalCoreNumber)
+    val resultRDD = originRdd.mapPartitionsWithIndex { case (idx, iter) =>
+      val graphDef = broadcastedGraph.value
+      val runner = GraphRunner(graphDef,
+        null, null, null, null, SessionConfig(intraOpParallelismThreads = coreNumber).toByteArray())
+      TFDataFeatureSet.makeIterators(
+        runner,
+        false,
+        initIteratorOp,
+        idx,
+        shardIndex,
+        types,
+        names
+      )
+    }
+    RDDWrapper(resultRDD)
+  }
+
+  def createTFDataFeatureSet(graph: Array[Byte],
+                             initIteratorOp: String,
+                             outputNames: JList[String],
+                             outputTypes: JList[Int],
+                             shardIndex: String): TFDataFeatureSet = {
+
+
+    TFDataFeatureSet(graph,
+      initIteratorOp,
+      outputNames.asScala.toArray, outputTypes.asScala.toArray, shardIndex)
   }
 
   def createMiniBatchFeatureSetFromStringRDD(stringRDD: JavaRDD[Array[Byte]],
