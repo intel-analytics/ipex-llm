@@ -230,3 +230,37 @@ from_bytes_rdd(bytes_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_si
         batch_size/total_core_num (training) or batch_per_thread for inference; if False,
         it is None.
 * **validation_string_rdd**: the RDD of bytes to be used in validation
+
+### **from_tf_data_dataset**
+
+Create a TFDataset from a tf.data.Dataset.
+
+The recommended way to create the dataset is to reading files in a shared file
+system (e.g. HDFS) that is accessible from every executor of this Spark Application.
+
+If the dataset is created by reading files in the local file system, then the
+files must exist in every executor in the exact same path. The path should be
+absolute path and relative path is not supported.
+
+A few kinds of dataset is not supported for now:
+1. dataset created from tf.data.Dataset.from_generators
+2. dataset with Dataset.batch operation.
+3. dataset with Dataset.repeat operation
+4. dataset contains tf.py_func, tf.py_function or tf.numpy_function
+
+**Python**
+```python
+from_tf_data_dataset(dataset, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_dataset=None)
+```
+
+**Arguments**
+
+* **dataset**: the tf.data.Dataset
+* **batch_size**: the batch size, used for training, should be a multiple of
+        total core num
+* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
+* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
+        if True, the static size of the first dimension of the resulting tensors is
+        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
+        it is None.
+* **validation_dataset**: the dataset used for validation
