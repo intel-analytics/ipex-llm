@@ -286,6 +286,25 @@ class TestTFDataset(ZooTestCase):
         opt = TFOptimizer.from_loss(loss, Adam())
         opt.optimize()
 
+    def test_tfdataset_with_tf_data_dataset(self):
+        dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 1),
+                                                      np.random.randint(0, 10, size=(100,))))
+        dataset = dataset.map(lambda feature, label: (tf.to_float(feature), label))
+        dataset = TFDataset.from_tf_data_dataset(dataset, batch_size=16)
+        seq = tf.keras.Sequential(
+            [tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
+             tf.keras.layers.Dense(10, activation="softmax")])
+
+        seq.compile(optimizer=tf.keras.optimizers.RMSprop(),
+                    loss='sparse_categorical_crossentropy',
+                    metrics=['accuracy'])
+        model = KerasModel(seq)
+        model.fit(dataset)
+        dataset = tf.data.Dataset.from_tensor_slices(np.random.randn(100, 28, 28, 1))
+        dataset = dataset.map(lambda data: tf.to_float(data))
+        dataset = TFDataset.from_tf_data_dataset(dataset, batch_per_thread=16)
+        model.predict(dataset).collect()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
