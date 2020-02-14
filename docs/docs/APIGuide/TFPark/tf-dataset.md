@@ -264,3 +264,26 @@ from_tf_data_dataset(dataset, batch_size=-1, batch_per_thread=-1, hard_code_batc
         batch_size/total_core_num (training) or batch_per_thread for inference; if False,
         it is None.
 * **validation_dataset**: the dataset used for validation
+
+### **from_dataframe**
+
+Create a TFDataset from a pyspark.sql.DataFrame.
+
+**Python**
+```python
+from_dataframe(df, feature_cols, labels_cols=None, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_df=None)
+```
+
+**Arguments**
+
+* **df**: the DataFrame for the dataset
+* **feature_cols**: a list of string, indicating which columns are used as features
+* **label_cols**: a list of string, indicating which columns are used as labels
+* **batch_size**: the batch size, used for training, should be a multiple of
+        total core num
+* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
+* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
+        if True, the static size of the first dimension of the resulting tensors is
+        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
+        it is None.
+* **validation_df**: the DataFrame used for validation
