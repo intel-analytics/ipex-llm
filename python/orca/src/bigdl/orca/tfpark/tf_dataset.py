@@ -17,7 +17,7 @@
 import numpy as np
 import sys
 
-
+from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
 from tensorflow._api.v1 import gfile
 from bigdl.dataset.dataset import DataSet
 from bigdl.transform.vision.image import FeatureTransformer
@@ -618,6 +618,31 @@ class TFDataset(object):
                              hard_code_batch_size, validation_dataset,
                              sequential_order, shuffle, remove_checking)
 
+    @staticmethod
+    def from_dataframe(df, feature_cols, labels_cols=None, batch_size=-1,
+                       batch_per_thread=-1, hard_code_batch_size=False,
+                       validation_df=None,
+                       sequential_order=False, shuffle=True):
+        """
+        Create a TFDataset from a pyspark.sql.DataFrame.
+
+        :param df: the DataFrame for the dataset
+        :param feature_cols: a list of string, indicating which columns are used as features
+        :param labels_cols: a list of string, indicating which columns are used as labels
+        :param batch_size: the batch size, used for training, should be a multiple of
+        total core num
+        :param batch_per_thread: the batch size for each thread, used for inference or evaluation
+        :param hard_code_batch_size: whether to hard code the batch_size into tensorflow graph,
+        if True, the static size of the first dimension of the resulting tensors is
+        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
+        it is None.
+        :param validation_df: the DataFrame used for validation
+        :return: a TFDataset
+        """
+        return DataFrameDataset(df, feature_cols, labels_cols, batch_size,
+                                batch_per_thread, hard_code_batch_size, validation_df,
+                                sequential_order, shuffle)
+
 
 class MapDataset(TFDataset):
 
@@ -1098,3 +1123,103 @@ class TFNdarrayDataset(TFDataset):
         return TFNdarrayDataset(rdd, tensor_structure, batch_size,
                                 batch_per_thread, hard_code_batch_size,
                                 val_rdd, sequential_order=sequential_order, shuffle=shuffle)
+
+
+class DataFrameDataset(TFNdarrayDataset):
+
+    @staticmethod
+    def df_datatype_to_tf(dtype):
+        import pyspark.sql.types as df_types
+        if isinstance(dtype, df_types.FloatType):
+            return (tf.float32, ())
+        if isinstance(dtype, df_types.IntegerType):
+            return (tf.int32, ())
+        if isinstance(dtype, df_types.LongType):
+            return (tf.int64, ())
+        if isinstance(dtype, df_types.DoubleType):
+            return (tf.float64, ())
+        if isinstance(dtype, df_types.ArrayType):
+            return (tf.float32, (None,))
+        if isinstance(dtype, VectorUDT):
+            return (tf.float32, (None,))
+        return None
+
+    @staticmethod
+    def is_scalar_type(dtype):
+        import pyspark.sql.types as df_types
+        if isinstance(dtype, df_types.FloatType):
+            return True
+        if isinstance(dtype, df_types.IntegerType):
+            return True
+        if isinstance(dtype, df_types.LongType):
+            return True
+        if isinstance(dtype, df_types.DoubleType):
+            return True
+        return False
+
+    def __init__(self, df, feature_cols, labels_cols=None, batch_size=-1,
+                 batch_per_thread=-1, hard_code_batch_size=False,
+                 validation_df=None,
+                 sequential_order=False, shuffle=True):
+        assert isinstance(feature_cols, list), "feature_cols should be a list"
+        assert isinstance(labels_cols, list), "label_cols should be a list"
+        import pyspark
+        assert isinstance(df, pyspark.sql.DataFrame)
+
+        if labels_cols is None:
+            labels_cols = []
+
+        selected_df = df.select(*(feature_cols + labels_cols))
+        schema = selected_df.schema
+        feature_meta = []
+        for feature_col in feature_cols:
+            field = schema[feature_col]
+            name = field.name
+            data_type = field.dataType
+            tf_type, tf_shape = DataFrameDataset.df_datatype_to_tf(data_type)
+            feature_meta.append(TensorMeta(tf_type, name=name, shape=tf_shape))
+
+        if labels_cols:
+            label_meta = []
+            for label_col in labels_cols:
+                field = schema[label_col]
+                name = field.name
+                data_type = field.dataType
+                if DataFrameDataset.df_datatype_to_tf(data_type) is None:
+                    raise ValueError(
+                        "data type {} of col {} is not supported for now".format(data_type, name))
+                tf_type, tf_shape = DataFrameDataset.df_datatype_to_tf(data_type)
+                label_meta.append(TensorMeta(tf_type, name=name, shape=tf_shape))
+
+            tensor_structure = (feature_meta, label_meta)
+        else:
+            tensor_structure = (feature_meta,)
+
+        def convert(row):
+
+            def convert_for_cols(row, cols):
+                result = []
+                for name in cols:
+                    feature_type = schema[name].dataType
+                    if DataFrameDataset.is_scalar_type(feature_type):
+                        result.append(np.array(row[name]))
+                    elif isinstance(row[name], DenseVector):
+                        result.append(row[name].values)
+                    else:
+                        assert isinstance(row[name], SparseVector),\
+                            "unsupported field {}, data {}".format(schema[name], row[name])
+                        result.append(row[name].toArray())
+                return result
+            features = convert_for_cols(row, feature_cols)
+            if labels_cols:
+                labels = convert_for_cols(row, labels_cols)
+                return (features, labels)
+            else:
+                return (features,)
+
+        rdd = selected_df.rdd.map(lambda row: convert(row))
+        val_rdd = validation_df.rdd.map(lambda row: convert(row)) if validation_df else None
+
+        super(DataFrameDataset, self).__init__(rdd, tensor_structure, batch_size,
+                                               batch_per_thread, hard_code_batch_size,
+                                               val_rdd, sequential_order, shuffle)
