@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import pytest
-
+from pyspark.ml.linalg import DenseVector
 from zoo.feature.common import ChainedPreprocessing, FeatureSet
 from zoo.feature.image import *
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
@@ -304,6 +304,28 @@ class TestTFDataset(ZooTestCase):
         dataset = dataset.map(lambda data: tf.to_float(data))
         dataset = TFDataset.from_tf_data_dataset(dataset, batch_per_thread=16)
         model.predict(dataset).collect()
+
+    def test_tfdataset_with_dataframe(self):
+        rdd = self.sc.range(0, 1000)
+        df = rdd.map(lambda x: (DenseVector(np.random.rand(20).astype(np.float)),
+                                x % 10)).toDF(["feature", "label"])
+
+        train_df, val_df = df.randomSplit([0.7, 0.3])
+        dataset = TFDataset.from_dataframe(train_df,
+                                           feature_cols=["feature"],
+                                           labels_cols=["label"],
+                                           batch_size=32,
+                                           validation_df=val_df)
+
+        seq = tf.keras.Sequential(
+            [tf.keras.layers.Flatten(input_shape=(20,)),
+             tf.keras.layers.Dense(10, activation="softmax")])
+
+        seq.compile(optimizer=tf.keras.optimizers.RMSprop(),
+                    loss='sparse_categorical_crossentropy',
+                    metrics=['accuracy'])
+        model = KerasModel(seq)
+        model.fit(dataset)
 
 
 if __name__ == "__main__":
