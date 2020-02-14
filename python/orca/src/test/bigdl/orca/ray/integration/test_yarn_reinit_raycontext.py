@@ -47,13 +47,13 @@ sc = init_spark_on_yarn(
 ray_ctx = RayContext(sc=sc, object_store_memory="2g")
 ray_ctx.init()
 actors = [TestRay.remote() for i in range(0, node_num)]
-print([ray.get(actor.hostname.remote()) for actor in actors])
+print(ray.get([actor.hostname.remote() for actor in actors]))
 ray_ctx.stop()
 # repeat
 ray_ctx = RayContext(sc=sc, object_store_memory="1g")
 ray_ctx.init()
 actors = [TestRay.remote() for i in range(0, node_num)]
-print([ray.get(actor.hostname.remote()) for actor in actors])
+print(ray.get([actor.hostname.remote() for actor in actors]))
 ray_ctx.stop()
 
 sc.stop()
