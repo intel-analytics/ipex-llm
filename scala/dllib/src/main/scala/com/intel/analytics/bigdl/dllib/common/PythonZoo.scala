@@ -17,7 +17,7 @@ package com.intel.analytics.zoo.common
 
 import java.util
 
-import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDLKeras, Sample}
+import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
 import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.pipeline.api.Predictable
@@ -27,11 +27,12 @@ import java.util.{List => JList}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.{MiniBatch, SampleToMiniBatch}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.optim.LocalPredictor
+import com.intel.analytics.bigdl.optim.{LocalPredictor, ValidationMethod}
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.feature.text.TextSet
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.zoo.pipeline.api.net.TFNet
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -218,6 +219,19 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                          batchPerThread: Int,
                          zeroBasedLabel: Boolean = true): JavaRDD[Int] = {
     module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
+  }
+
+  def TFNetEvaluate(model: TFNet,
+                    valRDD: JavaRDD[MiniBatch[Float]],
+                    valMethods: JList[ValidationMethod[Float]])
+  : JList[EvaluatedResult] = {
+    val resultArray = model.testMiniBatch(valRDD.rdd,
+      valMethods.asScala.toArray)
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
   }
 
 
