@@ -627,8 +627,16 @@ class TFDataset(object):
         Create a TFDataset from a pyspark.sql.DataFrame.
 
         :param df: the DataFrame for the dataset
-        :param feature_cols: a list of string, indicating which columns are used as features
-        :param labels_cols: a list of string, indicating which columns are used as labels
+        :param feature_cols: a list of string, indicating which columns are used as features.
+                            Currently supported types are FloatType, DoubleType, IntegerType,
+                            LongType, ArrayType (value should be numbers), DenseVector
+                            and SparseVector. For ArrayType, DenseVector and SparseVector,
+                            the sizes are assume to the same.
+        :param labels_cols: a list of string, indicating which columns are used as labels.
+                            Currently supported types are FloatType, DoubleType, IntegerType,
+                            LongType, ArrayType (value should be numbers), DenseVector
+                            and SparseVector. For ArrayType, DenseVector and SparseVector,
+                            the sizes are assume to the same.
         :param batch_size: the batch size, used for training, should be a multiple of
         total core num
         :param batch_per_thread: the batch size for each thread, used for inference or evaluation
@@ -1030,8 +1038,7 @@ class TFNdarrayDataset(TFDataset):
         self.shuffle = shuffle
 
     def get_prediction_data(self):
-        rdd = self.rdd.map(lambda t: Sample.from_ndarray(
-            nest.flatten(t[0] if isinstance(t, tuple) else t), np.array([0.0])))
+        rdd = self.rdd.map(lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
         rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
         return rdd_wrapper.value().toJavaRDD()
 
@@ -1162,7 +1169,8 @@ class DataFrameDataset(TFNdarrayDataset):
                  validation_df=None,
                  sequential_order=False, shuffle=True):
         assert isinstance(feature_cols, list), "feature_cols should be a list"
-        assert isinstance(labels_cols, list), "label_cols should be a list"
+        if labels_cols is not None:
+            assert isinstance(labels_cols, list), "label_cols should be a list"
         import pyspark
         assert isinstance(df, pyspark.sql.DataFrame)
 
@@ -1176,6 +1184,9 @@ class DataFrameDataset(TFNdarrayDataset):
             field = schema[feature_col]
             name = field.name
             data_type = field.dataType
+            if DataFrameDataset.df_datatype_to_tf(data_type) is None:
+                raise ValueError(
+                    "data type {} of col {} is not supported for now".format(data_type, name))
             tf_type, tf_shape = DataFrameDataset.df_datatype_to_tf(data_type)
             feature_meta.append(TensorMeta(tf_type, name=name, shape=tf_shape))
 
@@ -1209,6 +1220,8 @@ class DataFrameDataset(TFNdarrayDataset):
                         assert isinstance(row[name], SparseVector),\
                             "unsupported field {}, data {}".format(schema[name], row[name])
                         result.append(row[name].toArray())
+                if len(result) == 1:
+                    return result[0]
                 return result
             features = convert_for_cols(row, feature_cols)
             if labels_cols:

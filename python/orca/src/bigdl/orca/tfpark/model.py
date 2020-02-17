@@ -378,8 +378,9 @@ def _standarize_feature_dataset(dataset, model):
             return [x[name] for name in names]
         elif isinstance(x, list):
             return x
-        else:
-            return [x]
+        elif isinstance(x, tuple):
+            return list(x)
+        return [x]
 
     rdd = dataset.rdd.map(lambda sample: _reorder(sample, input_names))
     feature_schema = _reorder(dataset.tensor_structure[0], input_names)
