@@ -300,6 +300,12 @@ class TestTFDataset(ZooTestCase):
                     metrics=['accuracy'])
         model = KerasModel(seq)
         model.fit(dataset)
+        dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 1),
+                                                      np.random.randint(0, 10, size=(100,))))
+        dataset = dataset.map(lambda feature, label: (tf.to_float(feature),
+                                                      label))
+        dataset = TFDataset.from_tf_data_dataset(dataset, batch_per_thread=16)
+        model.evaluate(dataset)
         dataset = tf.data.Dataset.from_tensor_slices(np.random.randn(100, 28, 28, 1))
         dataset = dataset.map(lambda data: tf.to_float(data))
         dataset = TFDataset.from_tf_data_dataset(dataset, batch_per_thread=16)
