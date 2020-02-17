@@ -18,7 +18,10 @@ import six
 
 def flatten(seq):
     if isinstance(seq, list):
-        return seq
+        results = []
+        for item in seq:
+            results.extend(flatten(item))
+        return results
 
     if isinstance(seq, tuple):
         seq = list(seq)
@@ -29,7 +32,10 @@ def flatten(seq):
 
     if isinstance(seq, dict):
         sorted_keys = sorted(seq.keys())
-        return [seq[v] for v in sorted_keys]
+        result = []
+        for key in sorted_keys:
+            result.extend(flatten(seq[key]))
+        return result
 
     return [seq]
 
