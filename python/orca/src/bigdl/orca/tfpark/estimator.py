@@ -220,14 +220,13 @@ class TFEstimator(object):
                     outputs = nest.flatten(spec.predictions)
                     tfnet = TFNet.from_session(sess, inputs=inputs, outputs=outputs)
 
-                    data = result.get_evaluation_data()
                     if result.batch_per_thread < 0:
                         batch_size = result.batch_size
                     else:
                         batch_size = result.batch_per_thread * result.get_num_partitions()
 
                     eval_methods = [self._to_bigdl_metric(m) for m in eval_methods]
-                    results = tfnet.evaluate(data, batch_size, eval_methods)
+                    results = tfnet.evaluate(result, batch_size, eval_methods)
                     final_result = dict([(r.method, r.result) for r in results])
                     return final_result
 

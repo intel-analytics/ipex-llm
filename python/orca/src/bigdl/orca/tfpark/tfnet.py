@@ -27,7 +27,7 @@ from zoo.common import JTensor, Sample
 from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.common.utils import callZooFunc
 from zoo.feature.image import ImageSet
-from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset, MapDataset
+from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset, MapDataset, TFDataDataset
 
 if sys.version >= '3':
     long = int
@@ -162,6 +162,40 @@ class TFNet(Layer):
                 start_idx += batch_per_thread
 
             return np.concatenate(results, axis=0)
+
+    def evaluate(self, dataset, batch_size, val_methods):
+
+        if isinstance(dataset, ImageSet):
+            return callZooFunc(self.bigdl_type,
+                               "modelEvaluateImageFrame",
+                               self.value,
+                               dataset.to_image_frame(),
+                               batch_size, val_methods)
+
+        if isinstance(dataset, TFImageDataset):
+            return callZooFunc(self.bigdl_type,
+                               "modelEvaluateImageFrame",
+                               self.value,
+                               dataset.get_evaluation_data(),
+                               batch_size, val_methods)
+        if isinstance(dataset, TFDataDataset):
+            return callZooFunc(self.bigdl_type,
+                               "TFNetEvaluate",
+                               self.value,
+                               dataset.get_evaluation_data(),
+                               val_methods)
+        if isinstance(dataset, TFDataset):
+            return callZooFunc(self.bigdl_type,
+                               "modelEvaluate",
+                               self.value,
+                               dataset.get_evaluation_data(),
+                               batch_size,
+                               val_methods)
+        else:
+            return callZooFunc(self.bigdl_type,
+                               "modelEvaluate",
+                               self.value,
+                               dataset, batch_size, val_methods)
 
     @staticmethod
     def from_export_folder(folder, tf_session_config=None):

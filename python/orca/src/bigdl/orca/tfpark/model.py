@@ -235,9 +235,6 @@ class KerasModel(object):
         tfnet = TFNet.from_session(K.get_session(),
                                    inputs=self.model.inputs,
                                    outputs=self.model.outputs)
-
-        data = dataset.get_evaluation_data()
-
         if dataset.batch_per_thread < 0:
             batch_size = dataset.batch_size
         else:
@@ -246,7 +243,7 @@ class KerasModel(object):
         eval_methods = [to_bigdl_metric(m, self.model.loss)
                         for m in self.metrics_names]
 
-        results = tfnet.evaluate(data, batch_size, eval_methods)
+        results = tfnet.evaluate(dataset, batch_size, eval_methods)
         final_result = [r.result for r in results]
 
         return final_result

@@ -829,9 +829,11 @@ class TFDataDataset(TFDataset):
         return rdd
 
     def get_evaluation_data(self):
-        jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
+
+        feature_length = len(nest.flatten(self.tensor_structure[0]))
+        jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDatasetEval",
                              self.graph_def, self._train_init_op_name, self._train_output_names,
-                             self.output_types, self.shard_index.name)
+                             self.output_types, self.shard_index.name, feature_length)
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
