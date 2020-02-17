@@ -23,20 +23,28 @@ import com.intel.analytics.bigdl.utils.T
 import scala.collection.Iterator
 
 
-class TFMiniBatch(data: Array[Tensor[_]]) extends MiniBatch[Float] {
-  override def size(): Int = data(0).size(1)
+class TFMiniBatch(val input: Array[Tensor[_]],
+                  val target: Option[Array[Tensor[_]]] = None) extends MiniBatch[Float] {
 
-  override def slice(offset: Int, length: Int): MiniBatch[Float] = {
+  private def sliceData(data: Array[Tensor[_]], offset: Int, length: Int): Array[Tensor[_]] = {
     val newData = new Array[Tensor[_]](data.length)
     var i = 0
     while (i < data.length) {
       newData(i) = data(i).narrow(1, offset, length)
       i += 1
     }
-    new TFMiniBatch(newData)
+    newData
   }
 
-  override def getInput(): Activity = {
+  override def size(): Int = input(0).size(1)
+
+  override def slice(offset: Int, length: Int): MiniBatch[Float] = {
+    val newInput = sliceData(input, offset, length)
+    val newTarget = target.map(sliceData(_, offset, length))
+    new TFMiniBatch(newInput, newTarget)
+  }
+
+  private def toActivity(data: Array[Tensor[_]]): Activity = {
     if (data.length == 1) {
       data(0)
     } else {
@@ -50,8 +58,12 @@ class TFMiniBatch(data: Array[Tensor[_]]) extends MiniBatch[Float] {
     }
   }
 
+  override def getInput(): Activity = {
+    toActivity(input)
+  }
+
   override def getTarget(): Activity = {
-    null // fake target, should new be used
+    target.map(toActivity).orNull
   }
 
   override def set(samples: Seq[Sample[Float]])
@@ -62,6 +74,9 @@ class TFMiniBatch(data: Array[Tensor[_]]) extends MiniBatch[Float] {
 
 object TFMiniBatch {
   def apply(data: Array[Tensor[_]]): TFMiniBatch = new TFMiniBatch(data)
+
+  def apply(data: Array[Tensor[_]], target: Array[Tensor[_]]): TFMiniBatch =
+    new TFMiniBatch(data, Option(target))
 }
 
 class StringToMiniBatch(batchSize: Int, partitionNum: Option[Int] = None)

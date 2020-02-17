@@ -134,6 +134,19 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     RDDWrapper(resultRDD)
   }
 
+  def createMiniBatchRDDFromTFDatasetEval(graph: Array[Byte],
+                                          initIteratorOp: String,
+                                          outputNames: JList[String],
+                                          outputTypes: JList[Int],
+                                          shardIndex: String,
+                                          featureLength: Int): RDDWrapper[TFMiniBatch] = {
+    val rdd = createMiniBatchRDDFromTFDataset(graph, initIteratorOp, outputNames,
+      outputTypes, shardIndex).value
+    val resultRDD = rdd.map(batch => TFMiniBatch(batch.input.slice(0, featureLength),
+      batch.input.slice(featureLength, batch.input.length)))
+    RDDWrapper(resultRDD)
+  }
+
   def createTFDataFeatureSet(graph: Array[Byte],
                              initIteratorOp: String,
                              outputNames: JList[String],
