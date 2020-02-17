@@ -326,6 +326,15 @@ class TestTFDataset(ZooTestCase):
                     metrics=['accuracy'])
         model = KerasModel(seq)
         model.fit(dataset)
+        dataset = TFDataset.from_dataframe(val_df,
+                                           feature_cols=["feature"],
+                                           batch_per_thread=32)
+        model.predict(dataset).collect()
+        dataset = TFDataset.from_dataframe(val_df,
+                                           feature_cols=["feature"],
+                                           labels_cols=["label"],
+                                           batch_per_thread=32)
+        model.evaluate(dataset)
 
 
 if __name__ == "__main__":
