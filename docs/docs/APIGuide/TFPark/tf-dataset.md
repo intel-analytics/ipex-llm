@@ -277,8 +277,16 @@ from_dataframe(df, feature_cols, labels_cols=None, batch_size=-1, batch_per_thre
 **Arguments**
 
 * **df**: the DataFrame for the dataset
-* **feature_cols**: a list of string, indicating which columns are used as features
-* **label_cols**: a list of string, indicating which columns are used as labels
+* **feature_cols**: a list of string, indicating which columns are used as features.
+                    Currently supported types are FloatType, DoubleType, IntegerType,
+                    LongType, ArrayType (value should be numbers), DenseVector
+                    and SparseVector. For ArrayType, DenseVector and SparseVector,
+                    the element of the same column are assume to have the same size. 
+* **label_cols**: a list of string, indicating which columns are used as labels.
+                    Currently supported types are FloatType, DoubleType, IntegerType,
+                    LongType, ArrayType (value should be numbers), DenseVector
+                    and SparseVector. For ArrayType, DenseVector and SparseVector,
+                    the element of the same column are assume to have the same size.
 * **batch_size**: the batch size, used for training, should be a multiple of
         total core num
 * **batch_per_thread**: the batch size for each thread, used for inference or evaluation
