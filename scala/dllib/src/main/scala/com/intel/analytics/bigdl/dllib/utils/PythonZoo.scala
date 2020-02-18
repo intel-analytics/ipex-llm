@@ -221,7 +221,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
   }
 
-  def TFNetEvaluate(model: TFNet,
+  def tfnetEvaluate(model: TFNet,
                     valRDD: JavaRDD[MiniBatch[Float]],
                     valMethods: JList[ValidationMethod[Float]])
   : JList[EvaluatedResult] = {
@@ -233,7 +233,6 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     }
     testResultArray.toList.asJava
   }
-
 
   def setCoreNumber(num: Int): Unit = {
     EngineRef.setCoreNumber(num)
