@@ -319,26 +319,16 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 
 echo "start example test for TFPark gan 7"
 
-sed "s/MaxIteration(5000)/MaxIteration(50)/g" \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train.py \
-    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train_tmp.py
-
-sed "s/model-5000/model-50/g" \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_eval.py \
-    | grep -v "plt" \
-    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_eval_tmp.py
-
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-    --master ${MASTER} \
-    --driver-memory 20g \
-    --executor-memory 20g \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train_tmp.py
-
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-    --master ${MASTER} \
-    --driver-memory 20g \
-    --executor-memory 20g \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_eval_tmp.py
+# diable it for now, jenkins lacking tensorflow_datasets
+#sed "s/MaxIteration(1000)/MaxIteration(5)/g;s/range(20)/range(2)/g" \
+#    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train_and_evaluate.py \
+#    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train_tmp.py
+#
+#${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+#    --master ${MASTER} \
+#    --driver-memory 20g \
+#    --executor-memory 20g \
+#    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train_tmp.py
     
 now=$(date "+%s")
 time6=$((now-start))
