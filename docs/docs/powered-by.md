@@ -27,6 +27,8 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __Midea__
 <br>[Industrial Inspection Platform in Midea and KUKA: Using Distributed TensorFlow on Analytics Zoo](https://software.intel.com/en-us/articles/industrial-inspection-platform-in-midea-and-kuka-using-distributed-tensorflow-on-analytics) 
 <br>[Ability to add "eyes" and "brains" to smart manufacturing](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/midea-case-study.html) (in Chinese)
+* __NeuSoft/BMW__
+<br>[Neusoft RealSight APM partners with Intel to create an application performance management platform with active defense capabilities](https://platform.neusoft.com/2020/01/17/xw-intel.html) (in Chinese)
 * __Office Depot__
 <br>[Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://software.intel.com/en-us/articles/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on)
 <br>[Office Depot product recommender using Analytics Zoo on AWS](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079)
