@@ -1555,6 +1555,10 @@ object InternalDistriOptimizer {
       InternalOptimizerUtil.getModel(models, parameters, trainingModel)
     } else {
       val partitionNum = models.partitions.length
+      models.mapPartitions(iter => {
+        iter.next().localModels.head.asInstanceOf[TFTrainingHelperV2].moveWeightsOutOfTF()
+        Iterator.single(1)
+      }).reduce(_ + _)
       val extraState = models.map(_.localModels.head.getExtraParameter()).first()
       trainingModel.setExtraParameter(extraState)
 
@@ -1570,7 +1574,6 @@ object InternalDistriOptimizer {
 
       val (weights, gradients) = models.mapPartitions(iter => {
         val cached = iter.next()
-        cached.localModels.head.asInstanceOf[TFTrainingHelperV2].moveWeightsOutOfTF()
         val curPartitionId = TaskContext.getPartitionId()
         val (offset, size) = InternalOptimizerUtil.getLocalPartitionRangeFromParameters(parameters)
         val weightTensor = Tensor[T](size)
