@@ -84,6 +84,11 @@ class TFTrainingHelperV2(graphRunner: GraphRunner,
       shouldUpdateParameter = false
     }
     getVariableFromTF(weights, variableNames = variables)
+    if (extraParameters.length > 0) {
+      Utils.timeIt("getExtraVariableFromTF") {
+        getVariableFromTF(extraParameters, variableNames = extraVariables)
+      }
+    }
   }
 
 }
