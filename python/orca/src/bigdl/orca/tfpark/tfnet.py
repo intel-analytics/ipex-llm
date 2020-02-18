@@ -180,7 +180,7 @@ class TFNet(Layer):
                                batch_size, val_methods)
         if isinstance(dataset, TFDataDataset):
             return callZooFunc(self.bigdl_type,
-                               "TFNetEvaluate",
+                               "tfnetEvaluate",
                                self.value,
                                dataset.get_evaluation_data(),
                                val_methods)
