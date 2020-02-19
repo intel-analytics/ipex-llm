@@ -277,12 +277,11 @@ class TestTFDataset(ZooTestCase):
         dataset = TFDataset.from_tfrecord_file(self.sc, train_path,
                                                batch_size=16,
                                                validation_file_path=test_path)
-        dataset = dataset.map(lambda x: parse_fn(x[0]))
-        flat = tf.layers.flatten(dataset.feature_tensors)
+        raw_bytes = dataset.tensors[0]
+        images, labels = parse_fn(raw_bytes)
+        flat = tf.layers.flatten(images)
         logits = tf.layers.dense(flat, 10)
-        labels = dataset.label_tensors
         loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
-
         opt = TFOptimizer.from_loss(loss, Adam())
         opt.optimize()
 
