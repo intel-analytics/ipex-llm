@@ -21,7 +21,6 @@ import numpy as np
 import sys
 
 from bigdl.dataset import mnist
-from bigdl.dataset.transformer import *
 
 sys.path.append("/tmp/models/slim")  # add the slim library
 from nets import lenet
@@ -35,17 +34,9 @@ def main(data_num):
 
     # get data, pre-process and create TFDataset
     (images_data, labels_data) = mnist.read_data_sets("/tmp/mnist", "test")
-    image_rdd = sc.parallelize(images_data[:data_num])
-    labels_rdd = sc.parallelize(labels_data[:data_num])
-    rdd = image_rdd.zip(labels_rdd) \
-        .map(lambda rec_tuple: [normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD),
-                                np.array(rec_tuple[1])])
-
-    dataset = TFDataset.from_rdd(rdd,
-                                 features=(tf.float32, [28, 28, 1]),
-                                 labels=(tf.int32, []),
-                                 batch_per_thread=20
-                                 )
+    images_data = (images_data[:data_num] - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
+    labels_data = labels_data[:data_num].astype(np.int32)
+    dataset = TFDataset.from_ndarrays((images_data, labels_data), batch_per_thread=20)
 
     # construct the model from TFDataset
     images, labels = dataset.tensors

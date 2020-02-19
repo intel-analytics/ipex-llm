@@ -59,6 +59,7 @@ bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] k
 Using TFDataset as data input
 ```bash
 export MASTER=local[4]
+export SPARK_DRIVER_MEMORY=2g
 python estimator/estimator_dataset.py
 ```
 
@@ -79,6 +80,7 @@ IMAGE_PATH=... # file://... for local files and hdfs:// for hdfs files
 NUM_CLASSES=..
 
 export MASTER=local[4]
+export SPARK_DRIVER_MEMORY=10g
 python estimator/estimator_inception.py --image-path $IMAGE_PATH --num-classes $NUM_CLASSES
 ```
 
@@ -89,7 +91,7 @@ Using TFDataset as data input
 export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
 export SPARK_HOME=... # the root directory of Spark
 
-bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] estimator/estimator_dataset.py
+bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] --driver-memory 2g estimator/estimator_dataset.py
 ```
 
 Using FeatureSet as data input
@@ -113,12 +115,14 @@ IMAGE_PATH=... # file://... for local files and hdfs:// for hdfs files
 NUM_CLASSES=..
 
 
-bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] estimator/estimator_inception.py --image-path $IMAGE_PATH --num-classes $NUM_CLASSES
+bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] --driver-memory 10g estimator/estimator_inception.py --image-path $IMAGE_PATH --num-classes $NUM_CLASSES
 ```
 
 ## Run the Training Example using TFOptimizer after pip install
 
 ```bash
+export SPARK_MASTER=local[4]
+export SPARK_DRIVER_MEMORY=2g
 python tf_optimzer/train_lenet.py
 ```
 
@@ -128,12 +132,14 @@ python tf_optimzer/train_lenet.py
 export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
 export SPARK_HOME=... # the root directory of Spark
 
-bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] tf_optimizer/train_lenet.py
+bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] --driver-memory 2g tf_optimizer/train_lenet.py
 ```
 
 ## Run the Evaluation Example using TFPredictor after pip install
 
 ```bash
+export SPARK_MASTER=local[4]
+export SPARK_DRIVER_MEMEORY=2g
 python tf_optimizer/evaluate_lenet.py
 ```
 
@@ -143,7 +149,7 @@ python tf_optimizer/evaluate_lenet.py
 export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
 export SPARK_HOME=... # the root directory of Spark
 
-bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] tf_optimizer/evaluate_lenet.py
+bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] --driver-memory 2g tf_optimizer/evaluate_lenet.py
 ```
 
 ## Run the GAN example after pip install
