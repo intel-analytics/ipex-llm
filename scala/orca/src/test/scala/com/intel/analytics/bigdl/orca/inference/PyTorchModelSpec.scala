@@ -26,6 +26,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, FunSuite, Matchers}
 import scala.language.postfixOps
 import sys.process._
 
+/*
 
 class PyTorchModelSpec extends FunSuite with Matchers with BeforeAndAfterAll
   with InferenceSupportive {
@@ -42,7 +43,7 @@ class PyTorchModelSpec extends FunSuite with Matchers with BeforeAndAfterAll
   override def beforeAll()  {
     tmpDir = Utils.createTmpDir("ZooVino").toFile()
     val dir = new File(s"${tmpDir.getAbsolutePath}/PyTorchModelSpec").getCanonicalPath
-    s"wget -P $dir $modelURL" !;
+    s"wget -nv -P $dir $modelURL" !;
 
     s"ls -alh $dir" !;
 
@@ -90,3 +91,4 @@ class PyTorchModelSpec extends FunSuite with Matchers with BeforeAndAfterAll
   }
 
 }
+*/
