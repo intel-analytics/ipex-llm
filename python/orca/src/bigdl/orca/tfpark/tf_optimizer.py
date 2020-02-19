@@ -30,7 +30,6 @@ from zoo.common.utils import callZooFunc
 from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss
 from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method, find_tensors
 from zoo.pipeline.estimator import Estimator
-from zoo.tfpark.tf_dataset import MapDataset
 from zoo.util import nest
 
 import tensorflow as tf
@@ -547,10 +546,6 @@ class TFOptimizer:
         :return:
         """
         import tensorflow.keras.backend as K
-
-        if isinstance(dataset, MapDataset):
-            raise ValueError("MapDataset is not supported for Keras Model for now, " +
-                             "please warp the map_fn in a Keras layer in your keras model")
 
         model_inputs = keras_model.inputs
         if hasattr(keras_model, "targets"):

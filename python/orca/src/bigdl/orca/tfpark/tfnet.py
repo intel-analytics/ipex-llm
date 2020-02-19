@@ -27,7 +27,7 @@ from zoo.common import JTensor, Sample
 from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.common.utils import callZooFunc
 from zoo.feature.image import ImageSet
-from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset, MapDataset, TFDataDataset
+from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset, TFDataDataset
 
 if sys.version >= '3':
     long = int
@@ -125,9 +125,6 @@ class TFNet(Layer):
                                   x.get_prediction_data(),
                                   x.batch_per_thread)
             return ImageSet(results)
-
-        if isinstance(x, MapDataset):
-            raise ValueError("MapDataset is not supported in TFNet")
 
         if isinstance(x, TFDataset):
             results = callZooFunc(self.bigdl_type, "zooPredict",
