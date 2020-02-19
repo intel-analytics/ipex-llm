@@ -19,14 +19,14 @@ if [ -f analytics-zoo-data/data/glove.6B.zip ]
 then
     echo "analytics-zoo-data/data/glove.6B.zip already exists" 
 else
-    wget $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip -P analytics-zoo-data/data 
+    wget -nv $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip -P analytics-zoo-data/data
     unzip -q analytics-zoo-data/data/glove.6B.zip -d analytics-zoo-data/data/glove.6B
 fi 
 if [ -f analytics-zoo-data/data/20news-18828.tar.gz ]
 then 
     echo "analytics-zoo-data/data/20news-18828.tar.gz already exists" 
 else
-    wget $FTP_URI/analytics-zoo-data/data/news20/20news-18828.tar.gz -P analytics-zoo-data/data 
+    wget -nv $FTP_URI/analytics-zoo-data/data/news20/20news-18828.tar.gz -P analytics-zoo-data/data
     tar zxf analytics-zoo-data/data/20news-18828.tar.gz -C analytics-zoo-data/data/
 fi
 
@@ -85,7 +85,7 @@ if [ -f analytics-zoo-models/image-classification/analytics-zoo_squeezenet_image
 then
     echo "analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model already exists"
 else
-    wget $FTP_URI/analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model\
+    wget -nv $FTP_URI/analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model\
     -P analytics-zoo-models
 fi
 
@@ -112,7 +112,7 @@ if [ -f analytics-zoo-models/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.mo
 then
     echo "analytics-zoo-models/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model already exists"
 else
-    wget $FTP_URI/analytics-zoo-models/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model \
+    wget -nv $FTP_URI/analytics-zoo-models/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model \
     -P analytics-zoo-models
 fi
 
@@ -136,7 +136,7 @@ if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]
 then
    echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
 else
-   wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
     -P analytics-zoo-models
 fi
  if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]
@@ -144,9 +144,9 @@ then
    echo "analytics-zoo-data/data/dogs-vs-cats/train.zip already exists."
 else
    # echo "Downloading dogs and cats images"
-   wget  $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip\
+   wget -nv  $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip\
     -P analytics-zoo-data/data/dogs-vs-cats
-   unzip analytics-zoo-data/data/dogs-vs-cats/train.zip -d analytics-zoo-data/data/dogs-vs-cats
+   unzip -q analytics-zoo-data/data/dogs-vs-cats/train.zip -d analytics-zoo-data/data/dogs-vs-cats
    mkdir -p analytics-zoo-data/data/dogs-vs-cats/samples
    cp analytics-zoo-data/data/dogs-vs-cats/train/cat.71* analytics-zoo-data/data/dogs-vs-cats/samples
    cp analytics-zoo-data/data/dogs-vs-cats/train/dog.71* analytics-zoo-data/data/dogs-vs-cats/samples
@@ -219,7 +219,7 @@ if [ -f analytics-zoo-models/ssd_mobilenet_v1_coco_2017_11_17.tar.gz ]
 then
    echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
 else
-   wget $FTP_URI/analytics-zoo-models/tensorflow/ssd_mobilenet_v1_coco_2017_11_17.tar.gz \
+   wget -nv $FTP_URI/analytics-zoo-models/tensorflow/ssd_mobilenet_v1_coco_2017_11_17.tar.gz \
     -P analytics-zoo-models
    tar zxf analytics-zoo-models/ssd_mobilenet_v1_coco_2017_11_17.tar.gz -C analytics-zoo-models/
 fi
@@ -252,7 +252,7 @@ then
 else
     echo "Downloading research/slim"
    
-   wget $FTP_URI/analytics-zoo-tensorflow-models/models/research/slim.tar.gz -P analytics-zoo-tensorflow-models
+   wget -nv $FTP_URI/analytics-zoo-tensorflow-models/models/research/slim.tar.gz -P analytics-zoo-tensorflow-models
    tar -zxvf analytics-zoo-tensorflow-models/slim.tar.gz -C analytics-zoo-tensorflow-models
    
    echo "Finished downloading research/slim"
@@ -338,7 +338,7 @@ if [ -f analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv ]
 then
     echo "analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv \
+    wget -nv $FTP_URI/analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv \
     -P analytics-zoo-data/data/NAB/nyc_taxi/
 fi
 #timer
@@ -365,15 +365,16 @@ if [ -f analytics-zoo-data/data/glove.6B.zip ]
 then
     echo "analytics-zoo-data/data/glove.6B.zip already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip -P analytics-zoo-data/data
+    wget -nv $FTP_URI/analytics-zoo-data/data/glove/glove.6B.zip -P analytics-zoo-data/data
     unzip -q analytics-zoo-data/data/glove.6B.zip -d analytics-zoo-data/data/glove.6B
 fi
 if [ -f analytics-zoo-data/data/WikiQAProcessed.zip ]
 then
     echo "analytics-zoo-data/data/WikiQAProcessed.zip already exists"
 else
-    wget https://s3.amazonaws.com/analytics-zoo-data/WikiQAProcessed.zip -P analytics-zoo-data/data
-    unzip analytics-zoo-data/data/WikiQAProcessed.zip -d analytics-zoo-data/data/
+    echo "downloading WikiQAProcessed.zip"
+    wget -nv $FTP_URI/analytics-zoo-data/WikiQAProcessed.zip -P analytics-zoo-data/data
+    unzip -q analytics-zoo-data/data/WikiQAProcessed.zip -d analytics-zoo-data/data/
 fi
 
 ${SPARK_HOME}/bin/spark-submit \
@@ -429,7 +430,7 @@ if [ -f analytics-zoo-models/faster_rcnn_resnet101_coco_2018_01_28.tar.gz ]
 then
    echo "analytics-zoo-models/faster_rcnn_resnet101_coco already exists."
 else
-   wget $FTP_URI/analytics-zoo-models/openvino/faster_rcnn_resnet101_coco_2018_01_28.tar.gz \
+   wget -nv $FTP_URI/analytics-zoo-models/openvino/faster_rcnn_resnet101_coco_2018_01_28.tar.gz \
     -P analytics-zoo-models
    tar zxf analytics-zoo-models/faster_rcnn_resnet101_coco_2018_01_28.tar.gz -C analytics-zoo-models/
 fi
@@ -437,7 +438,7 @@ if [ -d analytics-zoo-data/data/object-detection-coco ]
 then
     echo "analytics-zoo-data/data/object-detection-coco already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+    wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
     unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
 fi
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
@@ -457,7 +458,7 @@ if [ -d analytics-zoo-models/vnni ]
 then
    echo "analytics-zoo-models/resnet_v1_50.xml already exists."
 else
-   wget $FTP_URI/analytics-zoo-models/openvino/vnni/resnet_v1_50.zip \
+   wget -nv $FTP_URI/analytics-zoo-models/openvino/vnni/resnet_v1_50.zip \
     -P analytics-zoo-models
     unzip -q analytics-zoo-models/resnet_v1_50.zip -d analytics-zoo-models/vnni
 fi
@@ -465,7 +466,7 @@ if [ -d analytics-zoo-data/data/object-detection-coco ]
 then
     echo "analytics-zoo-data/data/object-detection-coco already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+    wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
     unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
 fi
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
@@ -485,7 +486,7 @@ if [ -d analytics-zoo-data/data/object-detection-coco ]
 then
     echo "analytics-zoo-data/data/object-detection-coco already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+    wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
     unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data/
 fi
 
@@ -493,7 +494,7 @@ if [ -f analytics-zoo-models/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model ]
 then
     echo "analytics-zoo-models/object-detection/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model already exists"
 else
-    wget $FTP_URI/analytics-zoo-models/object-detection/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model \
+    wget -nv $FTP_URI/analytics-zoo-models/object-detection/analytics-zoo_ssd-vgg16-300x300_COCO_0.1.0.model \
      -P analytics-zoo-models
 fi
 
@@ -535,7 +536,7 @@ if [ -d analytics-zoo-data/data/streaming/text-model ]
 then
     echo "analytics-zoo-data/data/streaming/text-model already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/data/streaming/text-model.zip -P analytics-zoo-data/data/streaming/
+    wget -nv $FTP_URI/analytics-zoo-data/data/streaming/text-model.zip -P analytics-zoo-data/data/streaming/
     unzip -q analytics-zoo-data/data/streaming/text-model.zip -d analytics-zoo-data/data/streaming/
 fi
 #timer
