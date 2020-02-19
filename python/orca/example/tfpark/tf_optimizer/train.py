@@ -39,22 +39,16 @@ def main(max_epoch, data_num):
     sc = init_nncontext()
 
     # get data, pre-process and create TFDataset
-    def get_data_rdd(dataset):
-        (images_data, labels_data) = mnist.read_data_sets("/tmp/mnist", dataset)
-        image_rdd = sc.parallelize(images_data[:data_num])
-        labels_rdd = sc.parallelize(labels_data[:data_num])
-        rdd = image_rdd.zip(labels_rdd) \
-            .map(lambda rec_tuple: [normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD),
-                                    np.array(rec_tuple[1])])
-        return rdd
+    (train_images_data, train_labels_data) = mnist.read_data_sets("/tmp/mnist", "train")
+    (test_images_data, test_labels_data) = mnist.read_data_sets("/tmp/mnist", "train")
 
-    training_rdd = get_data_rdd("train")
-    testing_rdd = get_data_rdd("test")
-    dataset = TFDataset.from_rdd(training_rdd,
-                                 features=(tf.float32, [28, 28, 1]),
-                                 labels=(tf.int32, []),
-                                 batch_size=280,
-                                 val_rdd=testing_rdd)
+    train_images_data = (train_images_data[:data_num] - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
+    train_labels_data = train_labels_data[:data_num].astype(np.int)
+    test_images_data = (test_images_data[:data_num] - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
+    test_labels_data = (test_labels_data[:data_num]).astype(np.int)
+    dataset = TFDataset.from_ndarrays((train_images_data, train_labels_data),
+                                      batch_size=360,
+                                      val_tensors=(test_images_data, test_labels_data))
 
     # construct the model from TFDataset
     images, labels = dataset.tensors
@@ -75,6 +69,7 @@ def main(max_epoch, data_num):
 
     saver = tf.train.Saver()
     saver.save(optimizer.sess, "/tmp/lenet/model")
+
 
 if __name__ == '__main__':
 

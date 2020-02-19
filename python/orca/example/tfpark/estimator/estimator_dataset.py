@@ -20,15 +20,11 @@ from zoo import init_nncontext
 from zoo.tfpark import TFDataset, TFEstimator, ZooOptimizer
 
 
-def get_data_rdd(dataset, sc):
+def get_data(dataset):
     from bigdl.dataset import mnist
     (images_data, labels_data) = mnist.read_data_sets("/tmp/mnist", dataset)
-    image_rdd = sc.parallelize(images_data)
-    labels_rdd = sc.parallelize(labels_data)
-    rdd = image_rdd.zip(labels_rdd) \
-        .map(lambda rec_tuple: ((rec_tuple[0] - mnist.TRAIN_MEAN) / mnist.TRAIN_STD,
-                                np.array(rec_tuple[1])))
-    return rdd
+    images_data = (images_data - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
+    return (images_data, labels_data.astype(np.int32))
 
 
 def main():
@@ -52,22 +48,14 @@ def main():
 
     def input_fn(mode):
         if mode == tf.estimator.ModeKeys.TRAIN:
-            training_rdd = get_data_rdd("train", sc)
-            dataset = TFDataset.from_rdd(training_rdd,
-                                         features=(tf.float32, [28, 28, 1]),
-                                         labels=(tf.int32, []),
-                                         batch_size=320)
+            training_data = get_data("train")
+            dataset = TFDataset.from_ndarrays(training_data, batch_size=320)
         elif mode == tf.estimator.ModeKeys.EVAL:
-            testing_rdd = get_data_rdd("test", sc)
-            dataset = TFDataset.from_rdd(testing_rdd,
-                                         features=(tf.float32, [28, 28, 1]),
-                                         labels=(tf.int32, []),
-                                         batch_size=320)
+            testing_data = get_data("test")
+            dataset = TFDataset.from_ndarrays(testing_data, batch_per_thread=80)
         else:
-            testing_rdd = get_data_rdd("test", sc).map(lambda x: x[0])
-            dataset = TFDataset.from_rdd(testing_rdd,
-                                         features=(tf.float32, [28, 28, 1]),
-                                         batch_per_thread=80)
+            images, _ = get_data("test")
+            dataset = TFDataset.from_ndarrays(images, batch_per_thread=80)
 
         return dataset
     estimator = TFEstimator.from_model_fn(model_fn, model_dir="/tmp/estimator")
