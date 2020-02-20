@@ -95,7 +95,7 @@ object TFUtils {
     val dataType = t.dataType()
 
     val numericDataTypes = Set(DataType.FLOAT,
-      DataType.UINT8, DataType.INT32, DataType.INT64)
+      DataType.UINT8, DataType.INT32, DataType.INT64, DataType.DOUBLE)
 
     if (dataType == DataType.STRING) {
       val outputTensor = output.asInstanceOf[Tensor[Array[Byte]]]
@@ -141,6 +141,12 @@ object TFUtils {
           val buffer = LongBuffer.wrap(arr)
           t.writeTo(buffer)
           long2float(arr, outputTensor.storage().array(), outputTensor.storageOffset() - 1)
+        case DataType.DOUBLE =>
+          val outputTensor = output.asInstanceOf[Tensor[Float]]
+          val arr = new Array[Double](shape.product)
+          val buffer = DoubleBuffer.wrap(arr)
+          t.writeTo(buffer)
+          double2float(arr, outputTensor.storage().array(), outputTensor.storageOffset() - 1)
       }
 
     } else {
@@ -175,7 +181,14 @@ object TFUtils {
     }
   }
 
-
+  private[zoo] def double2float(src: Array[Double], dest: Array[Float], offset: Int): Unit = {
+    val length = src.length
+    var i = 0
+    while (i < length) {
+      dest(offset + i) = src(i).toFloat
+      i += 1
+    }
+  }
 
   def tfenum2datatype(enum: Int): DataType = {
     enum match {
