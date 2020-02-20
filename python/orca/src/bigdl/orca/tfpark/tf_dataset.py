@@ -670,7 +670,7 @@ class TFDataDataset(TFDataset):
                 assert not rule(dataset, is_training), message
             else:
                 for dt in dataset._inputs():
-                    TFDataDataset._assert_not_batched(dt)
+                    TFDataDataset.check_rules(dt, rules, is_training)
 
     def __init__(self, tf_data_dataset, batch_size,
                  batch_per_thread, hard_code_batch_size=False,

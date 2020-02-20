@@ -198,6 +198,7 @@ class TFEstimator(object):
         """
         if not all(isinstance(metric, six.string_types) for metric in eval_methods):
             raise ValueError("All metrics should be string types")
+        from tensorflow_estimator.python.estimator.canned import prediction_keys
         with tf.Graph().as_default() as g:
             result = self.estimator._call_input_fn(input_fn, tf.estimator.ModeKeys.EVAL)
             if isinstance(result, TFDataset):
@@ -217,7 +218,18 @@ class TFEstimator(object):
                     else:
                         sess.run(tf.global_variables_initializer())
                     inputs = nest.flatten(result._original_tensors[0])
-                    outputs = nest.flatten(spec.predictions)
+                    if isinstance(spec.predictions, dict):
+                        if "mae" in eval_methods:
+                            outputs = [
+                                spec.predictions[prediction_keys.PredictionKeys.PREDICTIONS]]
+                        else:
+                            outputs = [
+                                spec.predictions[prediction_keys.PredictionKeys.LOGITS]]
+                    else:
+                        outputs = nest.flatten(spec.predictions)
+                        if len(outputs) > 1:
+                            raise Exception("Evaluate on more than one output is not " +
+                                            "supported now")
                     tfnet = TFNet.from_session(sess, inputs=inputs, outputs=outputs)
 
                     if result.batch_per_thread < 0:
@@ -232,7 +244,7 @@ class TFEstimator(object):
 
         return self.estimator.evaluate(input_fn, steps, checkpoint_path=checkpoint_path)
 
-    def predict(self, input_fn, checkpoint_path=None):
+    def predict(self, input_fn, predict_keys=None, checkpoint_path=None):
         """Outputs predictions for given features.
 
         :param input_fn: A function that constructs the features.
@@ -273,7 +285,10 @@ class TFEstimator(object):
                     else:
                         sess.run(tf.global_variables_initializer())
                     inputs = nest.flatten(result._original_tensors[0])
-                    outputs = nest.flatten(spec.predictions)
+                    if isinstance(spec.predictions, dict) and predict_keys is not None:
+                        outputs = [spec.predictions[key] for key in predict_keys]
+                    else:
+                        outputs = nest.flatten(spec.predictions)
                     tfnet = TFNet.from_session(sess, inputs=inputs, outputs=outputs)
                     predictions = tfnet.predict(result.get_prediction_data(), mini_batch=True)
 
@@ -281,13 +296,19 @@ class TFEstimator(object):
                     if isinstance(spec.predictions, dict):
                         # Given a list of outputs; return a dict of outputs.
                         def zip_key(outs, keys):
-                            assert len(outs) == len(keys)
+                            if isinstance(outs, list):
+                                error_msg = "output length is " \
+                                    + "{} but keys length is {}".format(len(outs), len(keys))
+                                assert len(outs) == len(keys), error_msg
+                            else:
+                                outs = [outs]
                             res_dict = {}
                             for out, key in zip(outs, keys):
                                 res_dict[key] = out
                             return res_dict
 
-                        pred_keys = sorted(spec.predictions.keys())
+                        pred_keys = sorted(spec.predictions.keys()) if not predict_keys \
+                            else predict_keys
                         predictions = predictions.map(lambda res: zip_key(res, pred_keys))
                     return predictions
 
@@ -305,8 +326,6 @@ class TFEstimator(object):
             return MAE()
         elif metric == "auc":
             return metrics.AUC()
-        elif metric == "loss":
-            return Loss()
         elif metric == "treennaccuracy":
             return TreeNNAccuracy()
         else:

@@ -213,7 +213,7 @@ class TFNet(Layer):
 
     @staticmethod
     def from_saved_model(model_path, tag=None, signature=None,
-                         inputs=None, outputs=None, tf_session_config=None):
+                         inputs=None, outputs=None, tf_session_config=None, init_op=None):
         """
         Create a TFNet from an TensorFlow saved model
         :param model_path: the path to the SavedModel path
@@ -248,7 +248,7 @@ class TFNet(Layer):
         else:
 
             jvalue = callZooFunc("float", "createTFNetFromSavedModel",
-                                 model_path, tag, inputs, outputs, config_bytes)
+                                 model_path, tag, inputs, outputs, config_bytes, init_op)
         return TFNet(path=None, jvalue=jvalue)
 
     @staticmethod
@@ -279,9 +279,21 @@ class TFNet(Layer):
         from zoo.util.tf import export_tf
         temp = tempfile.mkdtemp()
         try:
-            export_tf(sess, temp, inputs, outputs,
-                      generate_backward, allow_non_differentiable_input)
-            net = TFNet.from_export_folder(temp, tf_session_config)
+            if generate_backward:
+                export_tf(sess, temp, inputs, outputs,
+                          generate_backward, allow_non_differentiable_input)
+                net = TFNet.from_export_folder(temp, tf_session_config)
+            else:
+                import tensorflow as tf
+                init_op = tf.tables_initializer().name
+                input_dict = dict([(t.name, t) for t in inputs])
+                # work around feed and fetch the same tensor
+                outputs = [tf.identity(out) for out in outputs]
+                output_dict = dict([(t.name, t) for t in outputs])
+                tf.saved_model.simple_save(sess, temp, inputs=input_dict, outputs=output_dict)
+                net = TFNet.from_saved_model(temp, inputs=[t.name for t in inputs],
+                                             outputs=[t.name for t in outputs],
+                                             tf_session_config=tf_session_config, init_op=init_op)
         finally:
             import shutil
             shutil.rmtree(temp)
