@@ -447,30 +447,6 @@ class TFNet(private val graphDef: TFGraphHolder,
     val parts = name.split(":")
     parts(0) + "_grad:" + parts(1)
   }
-
-  def testMiniBatch(dataset: RDD[MiniBatch[Float]],
-                                   vMethods: Array[ValidationMethod[Float]]
-                                  ): Array[(ValidationResult, ValidationMethod[Float])] = {
-
-    val rdd = dataset
-    val modelBroad = ModelBroadcast[Float]().broadcast(rdd.sparkContext,
-      this)
-    val otherBroad = rdd.sparkContext.broadcast(vMethods)
-
-
-    rdd.mapPartitions(miniBatch => {
-      val localModel = modelBroad.value()
-      val localMethod = otherBroad.value.map(_.clone())
-      miniBatch.map(batch => {
-        val output = localModel.forward(batch.getInput())
-        localMethod.map(validation => {
-          validation(output, batch.getTarget())
-        })
-      })
-    }).reduce((left, right) => {
-      left.zip(right).map { case (l, r) => l + r }
-    }).zip(vMethods)
-  }
 }
 
 object TFNet {
@@ -488,6 +464,31 @@ object TFNet {
     override def finalize(): Unit = {
       graph.close()
     }
+  }
+
+  def testMiniBatch(model: AbstractModule[Activity, Activity, Float],
+                    dataset: RDD[MiniBatch[Float]],
+                    vMethods: Array[ValidationMethod[Float]]
+                   ): Array[(ValidationResult, ValidationMethod[Float])] = {
+
+    val rdd = dataset
+    val modelBroad = ModelBroadcast[Float]().broadcast(rdd.sparkContext,
+      model)
+    val otherBroad = rdd.sparkContext.broadcast(vMethods)
+
+
+    rdd.mapPartitions(miniBatch => {
+      val localModel = modelBroad.value()
+      val localMethod = otherBroad.value.map(_.clone())
+      miniBatch.map(batch => {
+        val output = localModel.forward(batch.getInput())
+        localMethod.map(validation => {
+          validation(output, batch.getTarget())
+        })
+      })
+    }).reduce((left, right) => {
+      left.zip(right).map { case (l, r) => l + r }
+    }).zip(vMethods)
   }
 
   class TFGraphHolder(@transient var tfGraph: ClosableGraph, private var id: String)

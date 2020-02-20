@@ -100,13 +100,12 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                                 tag: String,
                                 inputNames: JList[String],
                                 outputNames: JList[String],
-                                config: Array[Byte]): Module[Float] = {
-    if (config == null) {
-      TFNet.fromSavedModel(path, tag, inputNames.asScala.toArray, outputNames.asScala.toArray)
-    } else {
-      TFNetForInference.fromSavedModel(path, Option(tag), None,
-        Option(inputNames.asScala.toArray), Option(outputNames.asScala.toArray), config)
-    }
+                                config: Array[Byte],
+                                initOp: String): Module[Float] = {
+    val sessionConfig = Option(config).getOrElse(TFNet.defaultSessionConfig.toByteArray())
+    TFNetForInference.fromSavedModel(path, Option(tag), None,
+      Option(inputNames.asScala.toArray), Option(outputNames.asScala.toArray),
+      sessionConfig, Option(initOp))
   }
 
   def createTFNetFromSavedModel(path: String,
