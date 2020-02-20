@@ -221,11 +221,11 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
   }
 
-  def tfnetEvaluate(model: TFNet,
+  def tfnetEvaluate(model: AbstractModule[Activity, Activity, Float],
                     valRDD: JavaRDD[MiniBatch[Float]],
                     valMethods: JList[ValidationMethod[Float]])
   : JList[EvaluatedResult] = {
-    val resultArray = model.testMiniBatch(valRDD.rdd,
+    val resultArray = TFNet.testMiniBatch(model, valRDD.rdd,
       valMethods.asScala.toArray)
     val testResultArray = resultArray.map { result =>
       EvaluatedResult(result._1.result()._1, result._1.result()._2,
