@@ -54,6 +54,7 @@ class GraphRunner(
 
   @transient
   private[zoo] lazy val sess = {
+    assert(TFNetNative.isLoaded)
     val graph = new Graph()
     graph.importGraphDef(graphDef)
     val sess = new Session(graph, config)
