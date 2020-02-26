@@ -33,31 +33,20 @@
 - spark-${SPARK_VERSION} is the Spark home.
 - analytics-zoo is cloned from https://github.com/intel-analytics/analytics-zoo, contains apps, examples using analytics-zoo.
 
-### How to build it
+### Pull Analytics-Zoo docker image from Docker Hub
 
-**By default, you can build a Analytics-Zoo:default image with latest nightly-build Analytics-Zoo distributions:**
+You can first check out the our docker hub pages for available tags at [here](https://hub.docker.com/r/intelanalytics/analytics-zoo/tags?page=1&ordering=last_updated).
+And pull the version you chose.
+
+For example:
 
 ```bash
-sudo docker build --rm -t intelanalytics/analytics-zoo:default .
+sudo docker pull intelanalytics/analytics-zoo:0.7.0-bigdl_0.10.0-spark_2.4.3
 ```
 
-**If you need http and https proxy to build the image:**
+If you need nightly build version of Analytics-Zoo, you can use the lastest tag:
 ```bash
-sudo docker build \
-    --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
-    --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
-    --rm -t intelanalytics/analytics-zoo:default .
-```
-
-**You can also specify the ANALYTICS_ZOO_VERSION and SPARK_VERSION to build a specific Analytics-Zoo image:**
-```bash
-sudo docker build \
-    --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
-    --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
-    --build-arg ANALYTICS_ZOO_VERSION=0.3.0 \
-    --build-arg BIGDL_VERSION=0.6.0 \
-    --build-arg SPARK_VERSION=2.3.1 \
-    --rm -t intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1 .
+sudo docker pull intelanalytics/analytics-zoo:latest
 ```
 
 ### How to use the image
@@ -128,15 +117,11 @@ sudo docker run -it --rm --net=host \
 /opt/work/start-notebook.sh
 ```
 
-### Notice
-**If you need nightly build version of Analytics-Zoo, please pull the image form Dockerhub with:**
-```bash
-sudo docker pull intelanalytics/analytics-zoo:latest
-```
+**Something to Note:**
 
-**Please follow the readme in each app folder to test the jupyter notebooks !!!**
+**1. Please follow the readme in each app folder to test the jupyter notebooks !!!**
 
-**With 0.3+ version of Anaytics-Zoo Docker image, you can specify the runtime conf of spark**
+**2. With 0.3+ version of Anaytics-Zoo Docker image, you can specify the runtime conf of spark**
 ```bash
 sudo docker run -itd --net=host \
     -e NotebookPort=12345 \
@@ -149,6 +134,35 @@ sudo docker run -itd --net=host \
     -e RUNTIME_EXECUTOR_MEMORY=20g \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     intelanalytics/analytics-zoo:latest
+```
+
+### How to build the image from sources.
+
+Normally you do **not** need to do this unless you want to build your custom Analytics Zoo image.  
+
+**By default, you can build a Analytics-Zoo:default image with latest nightly-build Analytics-Zoo distributions:**
+
+```bash
+sudo docker build --rm -t intelanalytics/analytics-zoo:default .
+```
+
+**If you need http and https proxy to build the image:**
+```bash
+sudo docker build \
+    --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
+    --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
+    --rm -t intelanalytics/analytics-zoo:default .
+```
+
+**You can also specify the ANALYTICS_ZOO_VERSION and SPARK_VERSION to build a specific Analytics-Zoo image:**
+```bash
+sudo docker build \
+    --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
+    --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
+    --build-arg ANALYTICS_ZOO_VERSION=0.3.0 \
+    --build-arg BIGDL_VERSION=0.6.0 \
+    --build-arg SPARK_VERSION=2.3.1 \
+    --rm -t intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1 .
 ```
 
 
