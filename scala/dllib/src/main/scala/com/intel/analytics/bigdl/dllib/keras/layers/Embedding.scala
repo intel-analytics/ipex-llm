@@ -96,8 +96,8 @@ class Embedding[T: ClassTag](
     else {
       layer.setInitMethod(weightInitMethod = init, biasInitMethod = init)
     }
-    if (! trainable) layer.freeze()
     model.add(layer)
+    if (! trainable) model.freeze()
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 
