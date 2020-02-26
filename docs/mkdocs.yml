@@ -35,10 +35,11 @@ pages:
     - Autograd: ProgrammingGuide/autograd.md
     - Transfer Learning: ProgrammingGuide/transferlearning.md
     - Model Serving: ProgrammingGuide/inference.md
-  - TFPark API:
-    - TFPark: ProgrammingGuide/tensorflow.md
-    - Text Models: ProgrammingGuide/text-models.md
-    - BERT Classifier: ProgrammingGuide/bert-classifier.md
+  - TFPark:
+    - TFPark Overview: ProgrammingGuide/TFPark/tensorflow.md
+    - How To Import Data: ProgrammingGuide/TFPark/how-to-import-data.md
+    - Text Models: ProgrammingGuide/TFPark/text-models.md
+    - BERT Classifier: ProgrammingGuide/TFPark/bert-classifier.md
   - PyTorch: ProgrammingGuide/pytorch.md
   - RayOnSpark: ProgrammingGuide/rayonspark.md
   - Cluster Serving: ClusterServingGuide/ProgrammingGuide.md
@@ -72,6 +73,7 @@ pages:
     - TFOptimizer: APIGuide/TFPark/tf-optimizer.md
     - TFPredictor: APIGuide/TFPark/tf-pred.md
     - TFDataset: APIGuide/TFPark/tf-dataset.md
+    - GANEstimator: APIGuide/TFPark/gan-estimator.md
     - Text Models: APIGuide/TFPark/text-models.md
     - BERT Classifier: APIGuide/TFPark/bert-classifier.md
   - Cluster Serving: ClusterServingGuide/APIGuide.md

@@ -39,7 +39,7 @@ dataset = TFDataset.from_rdd(train_rdd,
                              batch_size=BATCH_SIZE)
 ```
 
-More on TFDataset API [API Guide](../APIGuide/TFPark/tf-dataset.md)
+More on TFDataset API [API Guide](../../APIGuide/TFPark/tf-dataset.md)
 
 ## KerasModel
 
@@ -84,7 +84,7 @@ evaluation_results = model.evaluate(eval_dataset)
 predictions = model.predict(pred_dataset)
 ```
 
-More on KerasModel API [API Guide](../APIGuide/TFPark/model.md)
+More on KerasModel API [API Guide](../../APIGuide/TFPark/model.md)
 
 ## TFEstimator
 
@@ -154,7 +154,7 @@ evaluation_result = estimator.evaluate(input_fn, ["acc"])
 predictions = estimator.predict(input_fn)
 ```
 
-More on TFEstimator API [API Guide](../APIGuide/TFPark/estimator.md)
+More on TFEstimator API [API Guide](../../APIGuide/TFPark/estimator.md)
 
 # Low level API
 
@@ -344,5 +344,5 @@ to construct more complex models for training or inference using the standard An
 You can think of `TFDatasets`, `TFOptimizer`, `TFPredictor` as a set API for training/testing TensorFlow models
 on Spark/BigDL, while `TFNet` as an Analytics-Zoo/BigDL layer initialized using TensorFlow graph.
 
-For more information on TFNet, please refer to the [API Guide](../APIGuide/PipelineAPI/net.md##TFNet)
+For more information on TFNet, please refer to the [API Guide](../../APIGuide/PipelineAPI/net.md##TFNet)
 

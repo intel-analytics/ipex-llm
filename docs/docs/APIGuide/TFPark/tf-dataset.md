@@ -73,6 +73,54 @@ from_rdd(rdd, features, labels=None, batch_size=-1, batch_per_thread=-1, hard_co
 * **val_rdd**: validation data with the same structure of rdd
 
 
+### **from_string_rdd**
+
+Create a TFDataset from a RDD of strings. Each element in the RDD should be a single string.
+The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
+is tf.string, and the shape is (None,). The returning don't have label_tensors. If the
+dataset is used for training, the label should be encoded in the string.
+
+**Python**
+```python
+from_string_rdd(string_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_string_rdd=None)
+```
+
+**Arguments**
+
+* **string_rdd**: the RDD of strings
+* **batch_size**: the batch size, used for training, should be a multiple of
+        total core num
+* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
+* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
+        if True, the static size of the first dimension of the resulting tensors is
+        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
+        it is None.
+* **validation_string_rdd**: the RDD of strings to be used in validation
+
+### **from_bytes_rdd**
+
+Create a TFDataset from a RDD of bytes. Each element is the RDD should be a bytes object.
+The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
+is tf.string, and the shape is (None,). The returning don't have label_tensors. If the
+dataset is used for training, the label should be encoded in the bytes.
+
+**Python**
+```python
+from_bytes_rdd(bytes_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_bytes_rdd=None)
+```
+
+**Arguments**
+
+* **bytes_rdd**: the RDD of bytes
+* **batch_size**: the batch size, used for training, should be a multiple of
+        total core num
+* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
+* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
+        if True, the static size of the first dimension of the resulting tensors is
+        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
+        it is None.
+* **validation_string_rdd**: the RDD of bytes to be used in validation
+
 ### **from_ndarrays**
 
 Create a TFDataset from a nested structure of numpy ndarrays. Each element
@@ -182,54 +230,6 @@ from_feature_set(dataset, features, labels=None, batch_size=-1, batch_per_thread
         batch_size/total_core_num (training) or batch_per_thread for inference; if False,
         it is None.
 * **validation_dataset**: The FeatureSet used for validation during training
-
-### **from_string_rdd**
-
-Create a TFDataset from a RDD of strings. Each element is the RDD should be a single string.
-The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
-is tf.string, and the shape is (None,). The returning don't have label_tensors. If the
-dataset is used for training, the label should be encoded in the string.
-
-**Python**
-```python
-from_string_rdd(string_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_string_rdd=None)
-```
-
-**Arguments**
-
-* **string_rdd**: the RDD of strings
-* **batch_size**: the batch size, used for training, should be a multiple of
-        total core num
-* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
-* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
-        if True, the static size of the first dimension of the resulting tensors is
-        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
-        it is None.
-* **validation_string_rdd**: the RDD of strings to be used in validation
-
-### **from_bytes_rdd**
-
-Create a TFDataset from a RDD of bytes. Each element is the RDD should be a bytes object.
-The returning TFDataset's feature_tensors has only one Tensor. the type of the Tensor
-is tf.string, and the shape is (None,). The returning don't have label_tensors. If the
-dataset is used for training, the label should be encoded in the bytes.
-
-**Python**
-```python
-from_bytes_rdd(bytes_rdd, batch_size=-1, batch_per_thread=-1, hard_code_batch_size=False, validation_bytes_rdd=None)
-```
-
-**Arguments**
-
-* **bytes_rdd**: the RDD of bytes
-* **batch_size**: the batch size, used for training, should be a multiple of
-        total core num
-* **batch_per_thread**: the batch size for each thread, used for inference or evaluation
-* **hard_code_batch_size**: whether to hard code the batch_size into tensorflow graph,
-        if True, the static size of the first dimension of the resulting tensors is
-        batch_size/total_core_num (training) or batch_per_thread for inference; if False,
-        it is None.
-* **validation_string_rdd**: the RDD of bytes to be used in validation
 
 ### **from_tf_data_dataset**
 
