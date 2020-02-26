@@ -52,7 +52,20 @@ trait Net {
 
   def isFrozen[T: ClassTag](): Boolean = {
     val labor = this.asInstanceOf[KerasLayer[Activity, Activity, T]].labor
-    (labor.getScaleW() == 0) && (labor.getScaleB() == 0)
+    labor match {
+      // labor is a Sequential or Graph
+      // In this case, scaleW and scaleB are not changed even we freeze them,
+      // and thus we need to get the scales of its modules.
+      // Since each labor is treated as a whole, the frozen status of every module
+      // should be the same. We take the scales of the first module to identify frozen or not.
+      case model: Container[Activity, Activity, T] =>
+        val modules = model.modules
+        modules.map(layer =>
+          (layer.getScaleW() == 0) && (layer.getScaleB() == 0)).head
+      // labor is a single BigDL layer
+      case layer: AbstractModule[Activity, Activity, T] =>
+        (layer.getScaleW() == 0) && (layer.getScaleB() == 0)
+    }
   }
 
   /**
