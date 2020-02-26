@@ -103,6 +103,22 @@ class TopologySpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.summary()
   }
 
+  "model.summary() for non-trainable Embedding" should "work properly" in {
+    val model = Sequential[Float]()
+    val embedding = Embedding[Float](20000, 128, inputLength = 100, trainable = false)
+    model.add(embedding)
+    model.add(Dropout[Float](0.25))
+    val conv = Convolution1D[Float](nbFilter = 64, filterLength = 5, borderMode = "valid",
+      activation = "relu", subsampleLength = 1).setName("conv1")
+    model.add(conv)
+    model.summary()
+    embedding.asInstanceOf[Net].isFrozen() should be (true)
+    conv.asInstanceOf[Net].isFrozen() should be (false)
+    model.freeze("conv1")
+    model.summary()
+    conv.asInstanceOf[Net].isFrozen() should be (true)
+  }
+
   "model.summary() for nested Sequential" should "work properly" in {
     val model = Sequential[Float]()
     model.add(Convolution2D[Float](32, 3, 3, borderMode = "valid",
