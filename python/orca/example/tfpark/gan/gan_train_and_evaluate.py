@@ -17,7 +17,7 @@ from bigdl.optim.optimizer import MaxIteration
 from zoo.tfpark.gan.gan_estimator import GANEstimator
 
 from zoo import init_nncontext
-from zoo.tfpark import TFDataset, ZooOptimizer
+from zoo.tfpark import TFDataset
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -74,8 +74,8 @@ if __name__ == "__main__":
         discriminator_fn=conditional_discriminator,
         generator_loss_fn=wasserstein_generator_loss,
         discriminator_loss_fn=wasserstein_discriminator_loss,
-        generator_optimizer=ZooOptimizer(tf.train.AdamOptimizer(1e-5, 0.5)),
-        discriminator_optimizer=ZooOptimizer(tf.train.AdamOptimizer(1e-4, 0.5)),
+        generator_optimizer=tf.train.AdamOptimizer(1e-5, 0.5),
+        discriminator_optimizer=tf.train.AdamOptimizer(1e-4, 0.5),
         model_dir=MODEL_DIR,
         session_config=tf.ConfigProto()
     )
