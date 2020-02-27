@@ -152,6 +152,11 @@
             <artifactId>gson</artifactId>
             <version>2.8.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>proto</artifactId>
+            <version>1.15.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -200,10 +205,6 @@
                             <pattern>com.google.protobuf</pattern>
                             <shadedPattern>com.intel.analytics.bigdl.shaded.protobuf</shadedPattern>
                         </relocation>
-                        <relocation>
-                            <pattern>org.tensorflow.framework</pattern>
-                            <shadedPattern>com.intel.analytics.bigdl.shaded.tensorflow.framework</shadedPattern>
-                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -217,7 +218,6 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.google.protobuf</include>
-                                    <include>org.tensorflow.framework</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
