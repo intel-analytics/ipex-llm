@@ -87,7 +87,7 @@ class TestRay():
 
 
 actors = [TestRay.remote() for i in range(0, slave_num)]
-print([ray.get(actor.hostname.remote()) for actor in actors])
-print([ray.get(actor.ip.remote()) for actor in actors])
+print(ray.get([actor.hostname.remote() for actor in actors]))
+print(ray.get([actor.ip.remote() for actor in actors]))
 ray_ctx.stop()
 ```
