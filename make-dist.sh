@@ -53,7 +53,25 @@ if [ $MVN_INSTALL -eq 0 ]; then
   exit 1
 fi
 
-mvn clean package -DskipTests $*
+
+backend_exclude=dnnl
+for arg in "$@" 
+do 
+	echo $arg
+  	case $arg in 
+		-d|--dnnl)
+		echo "hello"
+		backend_exclude=mkldnn
+       	shift # Remove --initialize from processing
+       	;;
+    esac
+done
+# git checkout dnnl-update 
+###############################################
+
+
+
+mvn clean package -DskipTests $* "-Dbigdl.backend.exclude=${backend_exclude}"
 
 BASEDIR=$(dirname "$0")
 DIST_DIR=$BASEDIR/dist

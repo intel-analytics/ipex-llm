@@ -82,6 +82,7 @@
     </licenses>
 
     <properties>
+        <bigdl.backend.exclude>mkldnn</bigdl.backend.exclude>
         <failIfNoTests>false</failIfNoTests>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
 
@@ -583,6 +584,7 @@
                                 <goals>
                                     <goal>doc-jar</goal>
                                 </goals>
+
                                 <configuration>
                                     <args>
                                         <!-- Do not change the arg orders. It is a weird way to pass in
@@ -591,7 +593,9 @@
                                         <arg>caffe:org.tensorflow:netty:org.apache.spark.sparkExtension:org.apache.spark.rdd:org.apache.spark.storage:org.apache.spark.bigdl</arg>
                                     </args>
                                 </configuration>
+
                             </execution>
+
                         </executions>
                         <configuration>
                             <scalaVersion>${scala.version}</scalaVersion>
@@ -613,9 +617,16 @@
                                     <version>${scala.macros.version}</version>
                                 </compilerPlugin>
                             </compilerPlugins>
+                            <excludes>
+                                <exclude>**/bigdl/nn/${bigdl.backend.exclude}/**</exclude>
+                            </excludes>
+
                         </configuration>
+
                     </plugin>
+
                 </plugins>
+
             </build>
         </profile>
         <profile>
