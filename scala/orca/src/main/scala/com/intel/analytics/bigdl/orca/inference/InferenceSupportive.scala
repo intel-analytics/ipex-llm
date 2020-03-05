@@ -263,4 +263,8 @@ trait InferenceSupportive {
 
 object InferenceSupportive {
   val logger = LoggerFactory.getLogger(getClass)
+  val modelType = List(
+      "frozenModel",
+      "savedModel"
+    )
 }

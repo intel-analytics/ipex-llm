@@ -58,6 +58,7 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
     model.doLoadOpenVINO(modelPath, weightPath, batchSize)
   }
 
+  @deprecated("this method will be deprecated", "0.8.0")
   def inferenceModelOpenVINOLoadTF(
       model: InferenceModel,
       modelPath: String,
@@ -65,6 +66,7 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
     model.doLoadTF(modelPath, modelType)
   }
 
+  @deprecated("this method will be deprecated", "0.8.0")
   def inferenceModelOpenVINOLoadTF(
       model: InferenceModel,
       modelPath: String,
@@ -73,6 +75,7 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
     model.doLoadTF(modelPath, pipelineConfigFilePath, extensionsConfigFilePath)
   }
 
+  @deprecated("this method will be deprecated", "0.8.0")
   def inferenceModelOpenVINOLoadTF(model: InferenceModel,
                                    modelPath: String,
                                    objectDetectionModelType: String,
@@ -82,6 +85,7 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
       pipelineConfigFilePath, extensionsConfigFilePath)
   }
 
+  @deprecated("this method will be deprecated", "0.8.0")
   def inferenceModelOpenVINOLoadTF(model: InferenceModel,
                                    modelPath: String,
                                    imageClassificationModelType: String,
@@ -99,6 +103,7 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
       ifReverseInputChannels, meanValues.asScala.toArray.map(_.toFloat), scale.toFloat)
   }
 
+  @deprecated("this method will be deprecated", "0.8.0")
   def inferenceModelOpenVINOLoadTFAsCalibratedOpenVINO(model: InferenceModel,
                                                        modelPath: String,
                                                        modelType: String,
@@ -123,10 +128,11 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
   def inferenceModelTensorFlowLoadTF(
       model: InferenceModel,
       modelPath: String,
+      modelType: String,
       intraOpParallelismThreads: Int,
       interOpParallelismThreads: Int,
       usePerSessionThreads: Boolean): Unit = {
-    model.doLoadTF(modelPath, intraOpParallelismThreads,
+    model.doLoadTensorflow(modelPath, modelType, intraOpParallelismThreads,
       interOpParallelismThreads, usePerSessionThreads)
   }
 

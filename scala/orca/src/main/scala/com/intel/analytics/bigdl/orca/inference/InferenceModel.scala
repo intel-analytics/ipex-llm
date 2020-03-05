@@ -76,6 +76,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *
    * @param modelPath  the file path of the model
    * @param weightPath the file path of the weights
+   * @param blas       whether MKLBLAS or MKLDNN
    */
   def doLoad(modelPath: String,
              weightPath: String = null,
@@ -90,6 +91,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *
    * @param modelPath  the path of the prototxt file
    * @param weightPath the path of the caffemodel file
+   * @param blas       whether MKLBLAS or MKLDNN
    */
   def doLoadCaffe(modelPath: String,
                   weightPath: String,
@@ -100,64 +102,75 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
-   * loads a TF frozen model as TFNet
+   * loads a tensorflow model as TFNet
    *
-   * @param modelPath the path of the tensorflow frozen model file
+   * @param modelPath the path of the tensorflow frozen model
+   * @param modelType the type of the tensorflow model file: "frozenModel"
    */
-  def doLoadTF(modelPath: String): Unit = {
-    doLoadTensorflowModel(modelPath, 1, 1, true)
+  def doLoadTensorflow(modelPath: String, modelType: String): Unit = {
+    doLoadTensorflowModel(modelPath, modelType, 1, 1, true)
   }
 
   /**
-   * loads a TF frozen model as TFNet
+   * loads a tensorflow model as TFNet
    *
    * @param modelPath                 the path of the tensorflow frozen model
+   * @param modelType                 the type of the tensorflow model file: "frozenModel"
    * @param intraOpParallelismThreads the num of intraOpParallelismThreads
    * @param interOpParallelismThreads the num of interOpParallelismThreads
    * @param usePerSessionThreads      whether to perSessionThreads
    */
-  def doLoadTF(modelPath: String,
-               intraOpParallelismThreads: Int,
-               interOpParallelismThreads: Int,
-               usePerSessionThreads: Boolean): Unit = {
+  def doLoadTensorflow(modelPath: String,
+                       modelType: String,
+                       intraOpParallelismThreads: Int,
+                       interOpParallelismThreads: Int,
+                       usePerSessionThreads: Boolean): Unit = {
     doLoadTensorflowModel(
       modelPath,
+      modelType,
       intraOpParallelismThreads,
       interOpParallelismThreads,
       usePerSessionThreads)
   }
 
   /**
-   * loads a TF saved model as TFNet
+   * loads a tensorflow model as TFNet
    *
-   * @param modelPath  the path of the tensorflow saved model dir
-   * @param inputs     the inputs of the model
-   * @param outputs    the outputs of the model
+   * @param modelPath the path of the tensorflow frozen model file or saved model dir
+   * @param modelType the type of the tensorflow model file: "frozenModel" or "savedModel"
+   * @param inputs    the inputs of the model
+   * @param outputs   the outputs of the model
    */
-  def doLoadTF(modelPath: String,
-               inputs: Array[String],
-               outputs: Array[String]): Unit = {
-    doLoadTensorflowSavedModel(modelPath, inputs, outputs, 1, 1, true)
+  def doLoadTensorflow(modelPath: String,
+                       modelType: String,
+                       inputs: Array[String],
+                       outputs: Array[String]): Unit = {
+    doLoadTensorflowModel(modelPath, modelType, inputs, outputs, 1, 1, true)
   }
 
   /**
-   * loads a TF saved model as TFNet
+   * loads a tensorflow model as TFNet
    *
-   * @param modelPath                  the path of the tensorflow saved model dir
-   * @param inputs                     the inputs of the model
-   * @param outputs                    the outputs of the model
-   * @param intraOpParallelismThreads  the num of intraOpParallelismThreads
-   * @param interOpParallelismThreads  the num of interOpParallelismThreads
-   * @param usePerSessionThreads       whether to perSessionThreads
+   * @param modelPath                 the path of the tensorflow:
+   *                                  frozen model file or saved model dir
+   * @param modelType                 the type of the tensorflow model file:
+   *                                  "frozenModel" or "savedModel"
+   * @param inputs                    the inputs of the model
+   * @param outputs                   the outputs of the model
+   * @param intraOpParallelismThreads the num of intraOpParallelismThreads
+   * @param interOpParallelismThreads the num of interOpParallelismThreads
+   * @param usePerSessionThreads      whether to perSessionThreads
    */
-  def doLoadTF(modelPath: String,
-               inputs: Array[String],
-               outputs: Array[String],
-               intraOpParallelismThreads: Int,
-               interOpParallelismThreads: Int,
-               usePerSessionThreads: Boolean): Unit = {
-    doLoadTensorflowSavedModel(
+  def doLoadTensorflow(modelPath: String,
+                       modelType: String,
+                       inputs: Array[String],
+                       outputs: Array[String],
+                       intraOpParallelismThreads: Int,
+                       interOpParallelismThreads: Int,
+                       usePerSessionThreads: Boolean): Unit = {
+    doLoadTensorflowModel(
       modelPath,
+      modelType,
       inputs,
       outputs,
       intraOpParallelismThreads,
@@ -166,36 +179,42 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
-   * loads a TF saved model as TFNet
+   * loads a tensorflow model as TFNet
    *
-   * @param savedModelBytes the bytes of the tensorflow saved model tar
-   * @param inputs          the inputs of the model
-   * @param outputs         the outputs of the model
+   * @param modelBytes the bytes of the tensorflow model tar
+   * @param modelType  the type of the tensorflow model file: "frozenModel" or "savedModel"
+   * @param inputs     the inputs of the model
+   * @param outputs    the outputs of the model
    */
-  def doLoadTF(savedModelBytes: Array[Byte],
-               inputs: Array[String],
-               outputs: Array[String]): Unit = {
-    doLoadTensorflowSavedModel(savedModelBytes, inputs, outputs, 1, 1, true)
+  def doLoadTensorflow(modelBytes: Array[Byte],
+                       modelType: String,
+                       inputs: Array[String],
+                       outputs: Array[String]): Unit = {
+    doLoadTensorflowModel(modelBytes, modelType, inputs, outputs, 1, 1, true)
   }
 
   /**
-   * loads a TF saved model as TFNet
+   * loads a tensorflow model as TFNet
    *
-   * @param savedModelBytes           the bytes of the tensorflow saved model tar
+   * @param modelBytes                the bytes of the tensorflow model tar
+   * @param modelType                 the type of the tensorflow model file:
+   *                                  "frozenModel" or "savedModel"
    * @param inputs                    the inputs of the model
    * @param outputs                   the outputs of the model
    * @param intraOpParallelismThreads the num of intraOpParallelismThreads
    * @param interOpParallelismThreads the num of interOpParallelismThreads
    * @param usePerSessionThreads      whether to perSessionThreads
    */
-  def doLoadTF(savedModelBytes: Array[Byte],
-               inputs: Array[String],
-               outputs: Array[String],
-               intraOpParallelismThreads: Int,
-               interOpParallelismThreads: Int,
-               usePerSessionThreads: Boolean): Unit = {
-    doLoadTensorflowSavedModel(
-      savedModelBytes,
+  def doLoadTensorflow(modelBytes: Array[Byte],
+                       modelType: String,
+                       inputs: Array[String],
+                       outputs: Array[String],
+                       intraOpParallelismThreads: Int,
+                       interOpParallelismThreads: Int,
+                       usePerSessionThreads: Boolean): Unit = {
+    doLoadTensorflowModel(
+      modelBytes,
+      modelType,
       inputs,
       outputs,
       intraOpParallelismThreads,
@@ -230,6 +249,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
    *                  rfcn_resnet101_coco, ssd_inception_v2_coco
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTF(modelPath: String, objectDetectionModelType: String): Unit = {
     doLoadTensorflowModelAsOpenVINO(
       modelPath,
@@ -245,6 +265,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param pipelineConfigPath   the path of the pipeline configure file
    * @param extensionsConfigPath the path of the extensions configure file
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTF(modelPath: String,
                pipelineConfigPath: String,
                extensionsConfigPath: String): Unit = {
@@ -267,6 +288,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param pipelineConfigPath   the path of the pipeline configure file
    * @param extensionsConfigPath the path of the extensions configure file
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTF(modelPath: String,
                objectDetectionModelType: String,
                pipelineConfigPath: String,
@@ -292,6 +314,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                               will be divided by this value.
    * @param scale                  the scale value, to be used for the input image per channel.
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTF(modelPath: String,
                imageClassificationModelType: String,
                checkpointPath: String,
@@ -317,6 +340,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                               will be divided by this value.
    * @param scale                  the scale value, to be used for the input image per channel.
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTF(modelBytes: Array[Byte],
                imageClassificationModelType: String,
                checkpointBytes: Array[Byte],
@@ -341,6 +365,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param scale                  the scale value, to be used for the input image per channel.
    * @param input                  the name of the input operation of the given model
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTF(savedModelDir: String,
                inputShape: Array[Int],
                ifReverseInputChannels: Boolean,
@@ -363,6 +388,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param scale                  the scale value, to be used for the input image per channel.
    * @param input                  the name of the input operation of the given model
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTF(savedModelBytes: Array[Byte],
                inputShape: Array[Int],
                ifReverseInputChannels: Boolean,
@@ -397,6 +423,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                               libopencv_core.so.4.0
    *                               and libopencv_imgproc.so.4.0 can be found
    */
+  @deprecated("this method will be deprecated", "0.8.0")
   def doLoadTFAsCalibratedOpenVINO(modelPath: String,
                                    modelType: String,
                                    checkpointPath: String,
@@ -453,13 +480,110 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   private def doLoadTensorflowModel(modelPath: String,
+                                    modelType: String,
                                     intraOpParallelismThreads: Int,
                                     interOpParallelismThreads: Int,
                                     usePerSessionThreads: Boolean): Unit = {
+    modelType match {
+      case null | "" =>
+        require(modelType != null && modelType != "",
+          "modelType should be specified as frozenModel")
+      case "frozenModel" =>
+        InferenceSupportive.logger.info(s"$modelType is supported.")
+        doLoadTensorflowFrozenModel(modelPath,
+          intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+      case _ =>
+        InferenceSupportive.logger.warn(s"$modelType not supported, " +
+          s"supported tensorflow model file should be frozenModel")
+    }
+  }
+
+  private def doLoadTensorflowModel(modelPath: String,
+                                    modelType: String,
+                                    inputs: Array[String],
+                                    outputs: Array[String],
+                                    intraOpParallelismThreads: Int,
+                                    interOpParallelismThreads: Int,
+                                    usePerSessionThreads: Boolean): Unit = {
+    modelType match {
+      case null | "" =>
+        require(modelType != null && modelType != "",
+          "modelType should be specified")
+      case "frozenModel" =>
+        InferenceSupportive.logger.info(s"$modelType is supported.")
+        doLoadTensorflowFrozenModel(modelPath, inputs, outputs,
+          intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+      case "savedModel" =>
+        InferenceSupportive.logger.info(s"$modelType is supported.")
+        doLoadTensorflowSavedModel(modelPath, inputs, outputs,
+          intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+      case _ =>
+        InferenceSupportive.logger.warn(s"$modelType not supported, " +
+          s"supported tf model types are listed: " +
+          s"${InferenceSupportive.modelType}")
+    }
+  }
+
+  private def doLoadTensorflowModel(modelBytes: Array[Byte],
+                                    modelType: String,
+                                    inputs: Array[String],
+                                    outputs: Array[String],
+                                    intraOpParallelismThreads: Int,
+                                    interOpParallelismThreads: Int,
+                                    usePerSessionThreads: Boolean): Unit = {
+    modelType match {
+      case null | "" =>
+        require(modelType != null && modelType != "",
+          "modelType should be specified")
+      case "frozenModel" =>
+        InferenceSupportive.logger.info(s"$modelType is supported.")
+        doLoadTensorflowFrozenModel(modelBytes, inputs, outputs,
+          intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+      case "savedModel" =>
+        InferenceSupportive.logger.info(s"$modelType is supported.")
+        doLoadTensorflowSavedModel(modelBytes, inputs, outputs,
+          intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+      case _ =>
+        InferenceSupportive.logger.warn(s"$modelType not supported, " +
+          s"supported tf model types are listed: " +
+          s"${InferenceSupportive.modelType}")
+    }
+  }
+
+  private def doLoadTensorflowFrozenModel(modelPath: String,
+                                          intraOpParallelismThreads: Int,
+                                          interOpParallelismThreads: Int,
+                                          usePerSessionThreads: Boolean): Unit = {
     clearModelQueue()
     this.originalModel =
       InferenceModelFactory.loadFloatModelForTF(modelPath,
         intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+    offerModelQueue()
+  }
+
+  private def doLoadTensorflowFrozenModel(modelPath: String,
+                                          inputs: Array[String],
+                                          outputs: Array[String],
+                                          intraOpParallelismThreads: Int,
+                                          interOpParallelismThreads: Int,
+                                          usePerSessionThreads: Boolean): Unit = {
+    clearModelQueue()
+    this.originalModel =
+      InferenceModelFactory.loadFloatModelForTFFrozenModel(modelPath,
+        inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
+    offerModelQueue()
+  }
+
+  private def doLoadTensorflowFrozenModel(frozenModelBytes: Array[Byte],
+                                          inputs: Array[String],
+                                          outputs: Array[String],
+                                          intraOpParallelismThreads: Int,
+                                          interOpParallelismThreads: Int,
+                                          usePerSessionThreads: Boolean): Unit = {
+    clearModelQueue()
+    this.originalModel =
+      InferenceModelFactory.loadFloatModelForTFFrozenModelBytes(frozenModelBytes,
+        inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads)
     offerModelQueue()
   }
 
@@ -752,6 +876,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
         models.map(this.modelQueue.offer(_))
     }
   }
+
   def setInferenceSummary(value: InferenceSummary): this.type = {
     this.inferenceSummary = value
     this

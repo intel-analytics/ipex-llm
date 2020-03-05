@@ -71,6 +71,53 @@ object ModelLoader extends InferenceSupportive {
     }
   }
 
+  def loadFloatModelForTFFrozenModel(modelPath: String,
+                            inputs: Array[String],
+                            outputs: Array[String],
+                            config: TFNet.SessionConfig = TFNet.defaultSessionConfig)
+    : AbstractModule[Activity, Activity, Float] = {
+      timing("load model") {
+        logger.info(s"load model from $modelPath")
+        val model = TFNet(modelPath, inputs, outputs, config)
+        logger.info(s"loaded model as $model")
+        model
+      }
+    }
+
+  def loadFloatModelForTFFrozenModelBytes(frozenModelBytes: Array[Byte],
+                                           inputs: Array[String],
+                                           outputs: Array[String],
+                                           config: TFNet.SessionConfig = TFNet.defaultSessionConfig)
+    : AbstractModule[Activity, Activity, Float] = {
+      timing("load model") {
+        logger.info(s"load model from $frozenModelBytes")
+        val tmpDir = Utils.createTmpDir("ZOOTFNet").toFile()
+        val outputPath: String = tmpDir.getCanonicalPath
+
+        val tarFilePath = (frozenModelBytes == null) match {
+          case true => null
+          case false => val tarFileName = "frozen-model.tar"
+            val tarFile = new File(s"$tmpDir/$tarFileName")
+            val tarFileInputStream = new ByteArrayInputStream(frozenModelBytes)
+            val tarFileSrc = Channels.newChannel(tarFileInputStream)
+            val tarFileDest = new FileOutputStream(tarFile).getChannel
+            tarFileDest.transferFrom(tarFileSrc, 0, Long.MaxValue)
+            tarFileDest.close()
+            tarFileSrc.close()
+            tarFile.getAbsolutePath
+        }
+        s"mkdir -p $tmpDir/frozen-model" !;
+        s"tar xf $tarFilePath -C $tmpDir/frozen-model" !;
+        s"ls $tmpDir/frozen-model" !;
+        val frozenModelDir = new File(s"$tmpDir/frozen-model").listFiles()(0).getAbsolutePath
+
+        val model = TFNet(frozenModelDir, inputs, outputs, config)
+        logger.info(s"loaded model as $model")
+        s"rm -rf $tmpDir" !;
+        model
+      }
+    }
+
   def loadFloatModelForTFSavedModel(modelPath: String,
                                     inputs: Array[String],
                                     outputs: Array[String],
