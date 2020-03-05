@@ -108,17 +108,17 @@ class SparkRunner():
                             "Please set it manually by python_location")
         return out.strip()
 
-    def _get_bigdl_jar_name_on_driver(self):
+    def _get_bigdl_classpath_jar_name_on_driver(self):
         from bigdl.util.engine import get_bigdl_classpath
         bigdl_classpath = get_bigdl_classpath()
         assert bigdl_classpath, "Cannot find bigdl classpath"
-        return bigdl_classpath.split("/")[-1]
+        return bigdl_classpath, bigdl_classpath.split("/")[-1]
 
-    def _get_zoo_jar_name_on_driver(self):
+    def _get_zoo_classpath_jar_name_on_driver(self):
         from zoo.util.engine import get_analytics_zoo_classpath
         zoo_classpath = get_analytics_zoo_classpath()
         assert zoo_classpath, "Cannot find Analytics-Zoo classpath"
-        return zoo_classpath.split("/")[-1]
+        return zoo_classpath, zoo_classpath.split("/")[-1]
 
     def _assemble_zoo_classpath_for_executor(self):
         conda_env_path = "/".join(self._detect_python_location().split("/")[:-2])
@@ -128,9 +128,9 @@ class SparkRunner():
         python_interpreter_name = python_interpreters[0].split("/")[-1]
         prefix = "{}/lib/{}/site-packages/".format(self.PYTHON_ENV, python_interpreter_name)
         return ["{}/zoo/share/lib/{}".format(prefix,
-                                             self._get_zoo_jar_name_on_driver()),
+                                             self._get_zoo_classpath_jar_name_on_driver()[1]),
                 "{}/bigdl/share/lib/{}".format(prefix,
-                                               self._get_bigdl_jar_name_on_driver())
+                                               self._get_bigdl_classpath_jar_name_on_driver()[1])
                 ]
 
     def init_spark_on_local(self, cores, conf=None, python_location=None):
@@ -172,7 +172,9 @@ class SparkRunner():
                 command = command + " --py-files {} ".format(extra_python_lib)
             if jars:
                 command = command + " --jars {}".format(jars)
-            return command
+            return command + " --driver-class-path {}:{}".\
+                format(self._get_zoo_classpath_jar_name_on_driver()[0],
+                       self. _get_bigdl_classpath_jar_name_on_driver()[0])
 
         def _submit_opt():
             conf = {
