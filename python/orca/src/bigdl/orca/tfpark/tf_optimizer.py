@@ -225,7 +225,7 @@ class TFModel(object):
     def _save_to_dir(folder, sess, graph,
                      metric_tensors,
                      batch_size_tensor,
-                     loss_tensor, inputs,
+                     loss_tensor, inputs, labels, predictions,
                      trainable_variables,
                      trainable_variable_placeholders,
                      trainable_assign,
@@ -242,6 +242,9 @@ class TFModel(object):
         meta = {
             "inputs": [i.name for i in inputs],
             "input_types": [i.dtype.as_datatype_enum for i in inputs],
+            "labels": [l.name for l in labels],
+            "label_types": [i.dtype.as_datatype_enum for i in labels],
+            "predictions": [t.name for t in predictions] if predictions else [],
             "metric_tensors": [t.name for t in metric_tensors],
             "batch_size_tensor": batch_size_tensor.name,
             "loss_tensor": loss_tensor.name,
@@ -277,7 +280,7 @@ class TFModel(object):
         return meta, saver
 
     @staticmethod
-    def export(model_dir, loss_tensor, sess, inputs, grads, variables, graph,
+    def export(model_dir, loss_tensor, sess, inputs, labels, predictions, grads, variables, graph,
                tensors_with_value, metrics, updates, train_op=None):
         inputs, additional_values = TFModel._expand_inputs(inputs, tensors_with_value, loss_tensor)
         metric_tensors, val_methods = TFModel._process_metrics(graph, metrics)
@@ -295,7 +298,7 @@ class TFModel(object):
             TFModel._save_to_dir(model_dir, sess, graph,
                                  metric_tensors,
                                  batch_size_tensor,
-                                 loss_tensor, inputs,
+                                 loss_tensor, inputs, labels, predictions,
                                  trainable_variables,
                                  trainable_variable_placeholders,
                                  trainable_assign,
@@ -307,7 +310,7 @@ class TFModel(object):
         return meta, saver, val_methods
 
     @staticmethod
-    def create(loss_tensor, sess, inputs, grads, variables, graph,
+    def create(loss_tensor, sess, inputs, labels, predictions, grads, variables, graph,
                tensors_with_value, session_config, metrics, updates,
                model_dir, train_op=None):
 
@@ -318,8 +321,9 @@ class TFModel(object):
                 os.makedirs(model_dir)
 
         meta, saver, val_methods = TFModel.export(model_dir, loss_tensor, sess,
-                                                  inputs, grads, variables, graph,
-                                                  tensors_with_value, metrics, updates, train_op)
+                                                  inputs, labels, predictions, grads, variables,
+                                                  graph, tensors_with_value, metrics, updates,
+                                                  train_op)
 
         training_helper_layer = TFTrainingHelper(model_dir,
                                                  session_config, saver, meta, sess)
@@ -440,8 +444,16 @@ class TFOptimizer:
         grads, variables = TFOptimizer._get_vars_grads_from_train_op(train_op)
         if dataset is None:
             dataset = TFOptimizer._get_dataset_from_loss(loss)
-        inputs = nest.flatten(dataset._original_tensors)
-        return TFOptimizer._from_grads(loss=loss, sess=sess, inputs=inputs, grads=grads,
+        inputs = dataset._original_tensors
+        if isinstance(inputs, tuple) and len(inputs) == 2:
+            inputs, labels = inputs
+        else:
+            labels = []
+
+        inputs = nest.flatten(inputs)
+        labels = nest.flatten(labels)
+        return TFOptimizer._from_grads(loss=loss, sess=sess, inputs=inputs, labels=labels,
+                                       grads=grads,
                                        variables=variables, dataset=dataset, metrics=metrics,
                                        tensor_with_value=tensor_with_value,
                                        optim_method=FakeOptimMethod(),
@@ -449,7 +461,7 @@ class TFOptimizer:
                                        model_dir=model_dir, train_op=train_op)
 
     @classmethod
-    def _from_grads(cls, loss, sess, inputs, grads, variables, dataset, optim_method=None,
+    def _from_grads(cls, loss, sess, inputs, labels, grads, variables, dataset, optim_method=None,
                     val_split=0.0, clip_norm=None, clip_value=None,
                     metrics=None, tensor_with_value=None, session_config=None,
                     model_dir=None, updates=None, train_op=None):
@@ -457,7 +469,7 @@ class TFOptimizer:
         if metrics is None:
             metrics = {}
 
-        tf_model = TFModel.create(loss, sess, inputs, grads, variables, graph,
+        tf_model = TFModel.create(loss, sess, inputs, labels, [], grads, variables, graph,
                                   tensor_with_value, session_config, metrics,
                                   updates, model_dir, train_op=train_op)
         return cls(tf_model, optim_method, sess=sess, dataset=dataset, val_split=val_split,
@@ -496,7 +508,14 @@ class TFOptimizer:
         sess = TFOptimizer._get_or_create_session(session)
         grads, variables = TFOptimizer._get_vars_grads(loss)
         dataset = TFOptimizer._get_dataset_from_loss(loss)
-        inputs = nest.flatten(dataset._original_tensors)
+        inputs = dataset._original_tensors
+        if isinstance(inputs, tuple) and len(inputs) == 2:
+            inputs, labels = inputs
+        else:
+            labels = []
+
+        inputs = nest.flatten(inputs)
+        labels = nest.flatten(labels)
 
         if clip_value is not None:
             if isinstance(clip_value, float) or isinstance(clip_value, int):
@@ -518,19 +537,19 @@ class TFOptimizer:
             for i, method in enumerate(val_methods):
                 metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
 
-        return TFOptimizer._from_grads(loss, sess, inputs, grads, variables, dataset, optim_method,
-                                       val_split, clip_norm, clip_value,
+        return TFOptimizer._from_grads(loss, sess, inputs, labels, grads, variables, dataset,
+                                       optim_method, val_split, clip_norm, clip_value,
                                        metrics, tensor_with_value, session_config,
                                        model_dir, updates)
 
     @staticmethod
-    def export_training_model(export_dir, loss, sess, inputs,
+    def export_training_model(export_dir, loss, sess, inputs, labels=None, predictions=None,
                               metrics=None, tensor_with_value=None, updates=None):
 
         grads, variables = TFOptimizer._get_vars_grads(loss)
 
-        TFModel.export(export_dir, loss, sess, inputs, grads, variables, loss.graph,
-                       tensor_with_value, metrics, updates)
+        TFModel.export(export_dir, loss, sess, inputs, labels, predictions, grads, variables,
+                       loss.graph, tensor_with_value, metrics, updates)
         logging.info("Exported TensorFlow model in {} for training".format(export_dir))
 
     @classmethod
@@ -552,8 +571,6 @@ class TFOptimizer:
             model_targets = keras_model.targets
         else:
             model_targets = keras_model._targets
-
-        inputs = model_inputs + model_targets
 
         loss = keras_model.total_loss
         variables = keras_model._collected_trainable_weights
@@ -619,7 +636,8 @@ class TFOptimizer:
             for i, method in enumerate(val_methods):
                 metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
 
-        tf_model = TFModel.create(loss, sess, inputs, grads, variables, loss.graph,
+        tf_model = TFModel.create(loss, sess, model_inputs, model_targets, keras_model.outputs,
+                                  grads, variables, loss.graph,
                                   tensor_with_value, session_config, metrics,
                                   updates, model_dir)
 
