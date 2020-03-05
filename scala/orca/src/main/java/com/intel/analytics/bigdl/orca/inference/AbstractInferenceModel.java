@@ -51,28 +51,28 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadCaffe(modelPath, weightPath, true);
   }
 
-  public void loadTF(String modelPath) {
-    doLoadTF(modelPath);
+  public void loadTensorflow(String modelPath, String modelType) {
+    doLoadTensorflow(modelPath, modelType);
   }
 
-  public void loadTF(String modelPath, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
-    doLoadTF(modelPath, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
+  public void loadTensorflow(String modelPath, String modelType, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
+    doLoadTensorflow(modelPath, modelType, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
   }
 
-  public void loadTF(String modelPath, String[] inputs, String[] outputs) {
-    doLoadTF(modelPath, inputs, outputs);
+  public void loadTensorflow(String modelPath, String modelType, String[] inputs, String[] outputs) {
+    doLoadTensorflow(modelPath, modelType, inputs, outputs);
   }
 
-  public void loadTF(String modelPath, String[] inputs, String[] outputs, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
-    doLoadTF(modelPath, inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
+  public void loadTensorflow(String modelPath, String modelType, String[] inputs, String[] outputs, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
+    doLoadTensorflow(modelPath, modelType, inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
   }
 
-  public void loadTF(byte[] savedModelBytes, String[] inputs, String[] outputs) {
-    doLoadTF(savedModelBytes, inputs, outputs);
+  public void loadTensorflow(byte[] savedModelBytes, String modelType, String[] inputs, String[] outputs) {
+    doLoadTensorflow(savedModelBytes, modelType, inputs, outputs);
   }
 
-  public void loadTF(byte[] savedModelBytes, String[] inputs, String[] outputs, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
-    doLoadTF(savedModelBytes, inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
+  public void loadTensorflow(byte[] savedModelBytes, String modelType, String[] inputs, String[] outputs, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
+    doLoadTensorflow(savedModelBytes, modelType, inputs, outputs, intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
   }
 
   public void loadPyTorch(String modelPath) {
@@ -83,34 +83,42 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadPyTorch(modelBytes);
   }
 
+  @Deprecated
   public void loadTF(String modelPath, String objectDetectionModelType) {
     doLoadTF(modelPath, objectDetectionModelType);
   }
 
+  @Deprecated
   public void loadTF(String modelPath, String pipelineConfigFilePath, String extensionsConfigFilePath) {
     doLoadTF(modelPath, pipelineConfigFilePath, extensionsConfigFilePath);
   }
 
+  @Deprecated
   public void loadTF(String modelPath, String objectDetectionModelType, String pipelineConfigFilePath, String extensionsConfigFilePath) {
     doLoadTF(modelPath, objectDetectionModelType, pipelineConfigFilePath, extensionsConfigFilePath);
   }
 
+  @Deprecated
   public void loadTF(String modelPath, String imageClassificationModelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale) {
     doLoadTF(modelPath, imageClassificationModelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale);
   }
 
+  @Deprecated
   public void loadTF(byte[] modelBytes, String imageClassificationModelType, byte[] checkpointBytes, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale) {
     doLoadTF(modelBytes, imageClassificationModelType, checkpointBytes, inputShape, ifReverseInputChannels, meanValues, scale);
   }
 
+  @Deprecated
   public void loadTF(String savedModelDir, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String input) {
     doLoadTF(savedModelDir, inputShape, ifReverseInputChannels, meanValues, scale, input);
   }
 
+  @Deprecated
   public void loadTF(byte[] savedModelBytes, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String input) {
     doLoadTF(savedModelBytes, inputShape, ifReverseInputChannels, meanValues, scale, input);
   }
 
+  @Deprecated
   public void loadTFAsCalibratedOpenVINO(String modelPath, String modelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale,
                                           String networkType, String validationFilePath, int subset, String opencvLibPath) {
     doLoadTFAsCalibratedOpenVINO(modelPath, modelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale, networkType, validationFilePath, subset, opencvLibPath);
