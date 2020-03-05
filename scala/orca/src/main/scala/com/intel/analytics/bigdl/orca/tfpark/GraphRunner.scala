@@ -47,6 +47,11 @@ class GraphRunner(
             private val savePathPlaceholder: String,
             private val config: Array[Byte]) extends java.io.Serializable {
 
+  def makeCopy(): GraphRunner = {
+    new GraphRunner(graphDef, restoreOp, restorePathPlaceholder,
+      saveOp, savePathPlaceholder, config)
+  }
+
   @transient
   private lazy val tensorManager = new TFResourceManager()
 

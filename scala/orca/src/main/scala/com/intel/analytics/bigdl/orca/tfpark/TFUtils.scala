@@ -357,6 +357,9 @@ class MergeFeatureLabelFeatureTransformer() extends Preprocessing[Any, Any] {
 
 case class TrainMeta(inputs: Array[String],
                      inputTypes: Array[Int],
+                     labels: Array[String],
+                     labelTypes: Array[Int],
+                     predictionOutputs: Array[String],
                      metricTensors: Array[String],
                      batchSizeTensor: String,
                      lossTensor: String,

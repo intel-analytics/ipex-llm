@@ -23,7 +23,10 @@ class TFTrainingHelperV2(graphRunner: GraphRunner,
                          checkpointPath: String,
                          inputs: Array[String],
                          inputTypes: Array[Int],
+                         labels: Array[String],
+                         labelTypes: Array[Int],
                          outputs: Array[String],
+                         metrics: Array[String],
                          variables: Array[String],
                          variableTypes: Array[Int],
                          variableAssignPlaceholders: Array[String],
@@ -37,10 +40,11 @@ class TFTrainingHelperV2(graphRunner: GraphRunner,
                          private val trainOp: String,
                          initOp: Option[String],
                          defaultTensorValue: Array[Array[Float]])
-  extends TFTrainingHelper(graphRunner, checkpointPath, inputs, inputTypes, outputs,
-    variables, variableTypes, variableAssignPlaceholders, assignVariableOp, extraVariables,
-    extraVariableTypes, extraVariableAssignPlaceholders, assignExtraVariableOP, gradVariables,
-    updateOp, initOp, defaultTensorValue) {
+  extends TFTrainingHelper(graphRunner, checkpointPath, inputs, inputTypes, labels,
+    labelTypes, outputs,
+    metrics, variables, variableTypes, variableAssignPlaceholders, assignVariableOp,
+    extraVariables, extraVariableTypes, extraVariableAssignPlaceholders, assignExtraVariableOP,
+    gradVariables, updateOp, initOp, defaultTensorValue) {
 
   @transient
   private var shouldUpdateParameter = false
