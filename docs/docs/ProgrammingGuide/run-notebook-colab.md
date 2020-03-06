@@ -1,6 +1,4 @@
-# Analytics Zoo on Colab
-
-With [colaboratory](https://colab.research.google.com/), we can easily set up and run code in the cloud. How can we install Analytics Zoo and run notebooks on colaboratory? 
+With [Google Colaboratory](https://colab.research.google.com/), we can easily set up and run code in the cloud. This page illustrates the steps to install Analytics Zoo and run notebooks on colaboratory.
 
 First, create or load a notebook file in colaboratory. Then, prepare the environment. Only you need to prepare is installing JDK and Analytics Zoo. As installing analytics-zoo from pip will automatically install pyspark, you are recommended to not install pyspark anymore.  
 
@@ -36,7 +34,7 @@ from zoo.common.nncontext import*
 sc = init_nncontext()
 ```
 
-Output on Colaboratoy:
+Output on Colaboratory:
 
 ```
 Prepending /usr/local/lib/python3.6/dist-packages/bigdl/share/conf/spark-bigdl.conf to sys.path

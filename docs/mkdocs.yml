@@ -57,6 +57,7 @@ pages:
   - Visualization: ProgrammingGuide/visualization.md
   - Reference Use Cases: ProgrammingGuide/usercases-overview.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
+  - Ron on Google Colab: ProgrammingGuide/run-notebook-colab.md
 - White Paper:
   - BigDL: wp-bigdl.md
 - API Guide:
