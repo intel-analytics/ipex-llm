@@ -16,7 +16,7 @@ Analytics Zoo provides a unified data analytics and AI platform that seamlessly 
 
 
 - **Integrated Analytics and AI Pipelines** for easily prototyping and deploying end-to-end AI applications. 
-  - Write [TensorFlow](https://analytics-zoo.github.io/master/#ProgrammingGuide/tensorflow/#tfpark-api) or [PyTorch](https://analytics-zoo.github.io/master/#ProgrammingGuide/pytorch/) inline with Spark code for distributed training and inference.
+  - Write [TensorFlow](https://analytics-zoo.github.io/master/#ProgrammingGuide/TFPark/tensorflow/) or [PyTorch](https://analytics-zoo.github.io/master/#ProgrammingGuide/pytorch/) inline with Spark code for distributed training and inference.
   - Native deep learning (TensorFlow/Keras/PyTorch/BigDL) support in [Spark ML](https://analytics-zoo.github.io/master/#ProgrammingGuide/nnframes) Pipelines.
   - Directly run Ray programs on big data cluster through [RayOnSpark](https://analytics-zoo.github.io/master/#ProgrammingGuide/rayonspark/). 
   - Plain Java/Python APIs for (TensorFlow/PyTorch/BigDL/OpenVINO) [Model Inference](https://analytics-zoo.github.io/master/#ProgrammingGuide/inference). 
