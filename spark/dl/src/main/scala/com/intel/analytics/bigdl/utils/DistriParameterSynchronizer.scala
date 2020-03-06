@@ -20,7 +20,8 @@ import java.util
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.mkl.hardware.{Affinity, CpuInfo}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{AffinityWrapper => Affinity}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{CpuInfoWrapper => CpuInfo}
 import com.intel.analytics.bigdl.parameters.{CompressedTensor, FP16CompressedTensor, SerializerInstance}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric

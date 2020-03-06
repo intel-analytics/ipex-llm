@@ -196,7 +196,7 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
   }
 
   "Calculating scales" should "work correct for DNN Linear Module" in {
-    import com.intel.analytics.bigdl.mkl.Memory
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 
     val sampleMax = 999
     val inputSize = 2
@@ -324,7 +324,7 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
   }
 
   "Calculating scales" should "work correct for DNN Spatial Convolution Module" in {
-    import com.intel.analytics.bigdl.mkl.Memory
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
     val inputSize = 8
     val outputSize = 8
     var dimMaskIdx = 0
@@ -688,7 +688,7 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
   }
 
   "Calculating scales" should "work correct for DNN Graph Module" in {
-    import com.intel.analytics.bigdl.mkl.Memory
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
     System.setProperty("bigdl.mkldnn.fusion", "false")
 
     def dnnGraph(batchSize: Int, classNum: Int): mkldnn.DnnGraph = {

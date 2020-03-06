@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.mkl.{AlgKind, Direction}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{AlgKindWrapper => AlgKind}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{DirectionWrapper => Direction}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.nn.mkldnn._

@@ -15,7 +15,6 @@
  */
 package com.intel.analytics.bigdl.tensor
 
-import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.mkldnn.MemoryOwner
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 import org.apache.commons.lang3.SerializationUtils

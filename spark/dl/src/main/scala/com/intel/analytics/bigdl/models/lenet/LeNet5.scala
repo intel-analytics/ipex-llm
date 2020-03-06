@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.models.lenet
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.mkldnn.DnnGraph

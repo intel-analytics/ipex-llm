@@ -18,8 +18,8 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
-import com.intel.analytics.bigdl.mkl.hardware.Affinity
-import com.intel.analytics.bigdl.mkl.{MKL, MklDnn => BackendMklDnn}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{AffinityWrapper => Affinity}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{CoreWrapper => MKL}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
@@ -87,7 +87,7 @@ class ThreadPool(private var poolSize: Int) {
    * @return
    */
   def setMKLThread(size: Int): this.type = this.synchronized {
-    require(MKL.isMKLLoaded)
+    require(MKL.isLoaded)
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
@@ -103,14 +103,14 @@ class ThreadPool(private var poolSize: Int) {
 
     this.invokeAndWait2((0 until 1).map(_ => () => {
       if (System.getProperty("bigdl.flushDenormalState", "true").toBoolean) {
-        BackendMklDnn.setFlushDenormalState()
+        MKL.setFlushDenormalState()
       }
 
-      require(MKL.isMKLLoaded)
-      require(BackendMklDnn.isLoaded)
+      require(MKL.isLoaded)
+      require(MKL.isLoaded)
 
       MKL.setNumThreads(size)
-      BackendMklDnn.setNumThreads(size)
+      MKL.setNumThreads(size)
       if (!System.getProperty("bigdl.disableOmpAffinity", "false").toBoolean) {
         Affinity.setOmpAffinity()
       }

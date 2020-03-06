@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.utils.intermediate
 
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.nn.{Graph, SpatialMaxPooling, keras}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.mkldnn._
