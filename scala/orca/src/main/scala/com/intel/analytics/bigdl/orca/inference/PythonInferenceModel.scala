@@ -125,7 +125,7 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
       networkType, validationFilePath, subset, opencvLibPath)
   }
 
-  def inferenceModelTensorFlowLoadTF(
+  def inferenceModelLoadTensorFlow(
       model: InferenceModel,
       modelPath: String,
       modelType: String,
