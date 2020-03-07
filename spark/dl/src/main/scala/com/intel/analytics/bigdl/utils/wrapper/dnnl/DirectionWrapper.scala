@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.utils.wrapper.mkldnn
 
-import com.intel.analytics.bigdl.mkl.Direction
+import com.intel.analytics.bigdl.dnnl.Direction
 
 object DirectionWrapper {
   val UnidirectionalLeft2Right = Direction.UnidirectionalLeft2Right

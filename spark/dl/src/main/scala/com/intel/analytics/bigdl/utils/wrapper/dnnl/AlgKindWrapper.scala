@@ -16,10 +16,11 @@
 
 package com.intel.analytics.bigdl.utils.wrapper.mkldnn
 
-import com.intel.analytics.bigdl.mkl.Direction
+import com.intel.analytics.bigdl.dnnl.AlgKind
 
-object DirectionWrapper {
-  val UnidirectionalLeft2Right = Direction.UnidirectionalLeft2Right
-  val BidirectionalConcat = Direction.BidirectionalConcat
-  val BidirectionalSum = Direction.BidirectionalSum
+object AlgKindWrapper {
+  val EltwiseTanh = AlgKind.EltwiseTanh
+  val VanillaLstm = AlgKind.VanillaLstm
+  val VanillaGru = AlgKind.VanillaGru
 }
+
