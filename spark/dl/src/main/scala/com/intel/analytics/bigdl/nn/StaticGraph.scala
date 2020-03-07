@@ -158,12 +158,12 @@ class StaticGraph[T: ClassTag](
   def toIRgraph() : IRGraph[T] = {
     val inFormats = if (inputsFormats == null) {
       logger.warn("Input formats NCHW by default, Please set explicitly if needed")
-      Seq(Memory.Format.nchw)
+      Seq(Memory.FormatTag.nchw)
     } else inputsFormats
 
     val outFormats = if (outputsFormats == null) {
       logger.warn("Output formats NC by default, Please set explicitly if needed")
-      Seq(Memory.Format.nc)
+      Seq(Memory.FormatTag.nc)
     } else outputsFormats
 
     val allNodes = forwardExecution

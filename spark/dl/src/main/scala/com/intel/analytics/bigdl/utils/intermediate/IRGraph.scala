@@ -43,8 +43,8 @@ private[bigdl] class IRGraph[T: ClassTag](
     val outputs : Seq[Node[IRElement[T]]],
     val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
     val generateBackward: Boolean = true,
-    val inputFormats: Seq[Int] = Seq(Memory.Format.nchw),
-    val outputFormats: Seq[Int] = Seq(Memory.Format.nc))
+    val inputFormats: Seq[Int] = Seq(Memory.FormatTag.nchw),
+    val outputFormats: Seq[Int] = Seq(Memory.FormatTag.nc))
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] with Serializable {
 
   @transient private var initPrim: Boolean = false
@@ -148,10 +148,10 @@ private[bigdl] class IRGraph[T: ClassTag](
       if (input.isInstanceOf[Tensor[T]]) {
         // todo: handle for 3 dimensions, expand 3 dims to 4 dims
         val size = input.toTensor[T].size()
-        val sizeNew = if (size.length == 3 && inputFormats(0) != Memory.Format.ntc
-          && inputFormats(0) != Memory.Format.tnc) {
+        val sizeNew = if (size.length == 3 && inputFormats(0) != Memory.FormatTag.ntc
+          && inputFormats(0) != Memory.FormatTag.tnc) {
           Array(size(0), 1, size(1), size(2))
-        } else if (inputFormats(0) == Memory.Format.nhwc) {
+        } else if (inputFormats(0) == Memory.FormatTag.nhwc) {
           // always use NCHW to create heap data
           Array(size(0), size(3), size(1), size(2))
         } else size
@@ -165,7 +165,7 @@ private[bigdl] class IRGraph[T: ClassTag](
             "Only support input with tensor type, table not supported")
           val t1 = t._1.asInstanceOf[Int] // starts from 1
           val t2 = t._2.asInstanceOf[Tensor[T]]
-          if (inputFormats(t1 - 1 ) == Memory.Format.nhwc) {
+          if (inputFormats(t1 - 1 ) == Memory.FormatTag.nhwc) {
             val sizeNew = Array(t2.size(1), t2.size(4), t2.size(2), t2.size(3))
             inputMemory(t1 - 1) = HeapData(sizeNew, inputFormats(t1 - 1))
           } else {
@@ -208,8 +208,8 @@ object IRGraph {
     outputs: Seq[Node[IRElement[T]]],
     variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
     generateBackward: Boolean = true,
-    inputFormats: Int = Memory.Format.nchw,
-    outputFormats: Int = Memory.Format.nc
+    inputFormats: Int = Memory.FormatTag.nchw,
+    outputFormats: Int = Memory.FormatTag.nc
   )( implicit ev: TensorNumeric[T]): IRGraph[T] = {
     new IRGraph[T](inputs, outputs, variables, generateBackward,
       Seq(inputFormats), Seq(outputFormats))

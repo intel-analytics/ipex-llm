@@ -116,9 +116,9 @@ object DistriOptimizerSpecModel {
 
   def dnn: Module[Float] = {
     new nn.mkldnn.Sequential()
-      .add(nn.mkldnn.Input(Array(8, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Input(Array(8, 4), Memory.FormatTag.nc))
       .add(nn.mkldnn.Linear(4, 2))
-      .add(nn.mkldnn.ReorderMemory(HeapData(Array(8, 2), Memory.Format.nc)))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(8, 2), Memory.FormatTag.nc)))
   }
 }
 

@@ -117,8 +117,8 @@ class IRconvertSpec extends BigDLSpecHelper {
     val gradOutput = Tensor[Float](2, 10).rand()
 
     val blas = modelBlas(format = DataFormat("NHWC")).asInstanceOf[StaticGraph[Float]]
-    blas.setInputFormats(Seq(Memory.Format.nhwc))
-    blas.setOutputFormats(Seq(Memory.Format.nc))
+    blas.setInputFormats(Seq(Memory.FormatTag.nhwc))
+    blas.setOutputFormats(Seq(Memory.FormatTag.nc))
     val dnn = blas.cloneModule().toIRgraph()
 
     val outBlas = blas.forward(input)
@@ -138,8 +138,8 @@ class IRconvertSpec extends BigDLSpecHelper {
 //    val model = keras(classNum = 10)
 //
 //    val blas = model.toGraph().asInstanceOf[StaticGraph[Float]]
-//    blas.setInputFormats(Seq(Memory.Format.nhwc))
-//    blas.setOutputFormats(Seq(Memory.Format.nc))
+//    blas.setInputFormats(Seq(Memory.FormatTag.nhwc))
+//    blas.setOutputFormats(Seq(Memory.FormatTag.nc))
 //
 //    val dnn = blas.cloneModule().asInstanceOf[StaticGraph[Float]].toIRgraph()
 //
@@ -174,8 +174,8 @@ class IRconvertSpec extends BigDLSpecHelper {
 //
 //    // For such cases, toSingleGraph() is unnecessary
 //    val graph = seq.toGraph().asInstanceOf[StaticGraph[Float]]
-//    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.ntc))
-//    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+//    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.FormatTag.ntc))
+//    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.FormatTag.nc))
 //    // set gradWeight
 //    graph.getParameters()._2.rand()
 //
@@ -207,8 +207,8 @@ class IRconvertSpec extends BigDLSpecHelper {
 //    val model = nn.keras.Model[Float](input, d2)
 //
 //    val graph = model.toGraph().asInstanceOf[StaticGraph[Float]]
-//    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
-//    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
+//    graph.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.FormatTag.nc))
+//    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.FormatTag.nc))
 //
 //    // set gradWeight
 //    graph.getParameters()._2.rand()
@@ -245,9 +245,9 @@ class IRconvertSpec extends BigDLSpecHelper {
     val inputsNodes = dnnNodes.filter(_.element.getName() == "input")(0)
     val outputsNodes = dnnNodes.filter(_.element.getName() == "output")(0)
 
-    val inputs = Input(Array(2, 1, 28, 28), Memory.Format.nchw).inputs()
+    val inputs = Input(Array(2, 1, 28, 28), Memory.FormatTag.nchw).inputs()
     inputsNodes.from(inputs)
-    val outputs = Output(Memory.Format.nc).inputs(outputsNodes)
+    val outputs = Output(Memory.FormatTag.nc).inputs(outputsNodes)
     val dnn = DnnGraph(Array(inputs), Array(outputs))
     dnn.compile(TrainingPhase)
 
@@ -283,9 +283,9 @@ class IRconvertSpec extends BigDLSpecHelper {
     val inputsNodes = dnnNodes.filter(_.element.getName() == "input")(0)
     val outputsNodes = dnnNodes.filter(_.element.getName() == "output")(0)
 
-    val inputs = Input(Array(2, 1, 28, 28), Memory.Format.nchw).inputs()
+    val inputs = Input(Array(2, 1, 28, 28), Memory.FormatTag.nchw).inputs()
     inputsNodes.from(inputs)
-    val outputs = Output(Memory.Format.nchw).inputs(outputsNodes)
+    val outputs = Output(Memory.FormatTag.nchw).inputs(outputsNodes)
     val dnn = DnnGraph(Array(inputs), Array(outputs))
     dnn.compile(TrainingPhase)
 
@@ -322,9 +322,9 @@ class IRconvertSpec extends BigDLSpecHelper {
     val inputsNodes = dnnNodes.filter(_.element.getName() == "input")(0)
     val outputsNodes = dnnNodes.filter(_.element.getName() == "output")(0)
 
-    val inputs = Input(Array(2, 1, 28, 28), Memory.Format.nchw).inputs()
+    val inputs = Input(Array(2, 1, 28, 28), Memory.FormatTag.nchw).inputs()
     inputsNodes.from(inputs)
-    val outputs = Output(Memory.Format.nc).inputs(outputsNodes)
+    val outputs = Output(Memory.FormatTag.nc).inputs(outputsNodes)
     val dnn = DnnGraph(Array(inputs), Array(outputs))
     dnn.compile(TrainingPhase)
 
@@ -389,7 +389,7 @@ class IRconvertSpec extends BigDLSpecHelper {
       .add(SpatialAveragePooling[Float](2, 2, globalPooling = true))
       .toGraph()
 
-    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nchw))
+    graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.FormatTag.nchw))
     val dnn = ConversionUtils.convert(graph.cloneModule())
 
     graph.evaluate()

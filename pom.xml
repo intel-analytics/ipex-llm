@@ -464,6 +464,9 @@
                             <version>${scala.macros.version}</version>
                         </compilerPlugin>
                     </compilerPlugins>
+                    <excludes>
+                      <exclude>**/${bigdl.backend.exclude}/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -584,7 +587,6 @@
                                 <goals>
                                     <goal>doc-jar</goal>
                                 </goals>
-
                                 <configuration>
                                     <args>
                                         <!-- Do not change the arg orders. It is a weird way to pass in
@@ -593,7 +595,6 @@
                                         <arg>caffe:org.tensorflow:netty:org.apache.spark.sparkExtension:org.apache.spark.rdd:org.apache.spark.storage:org.apache.spark.bigdl</arg>
                                     </args>
                                 </configuration>
-
                             </execution>
 
                         </executions>
@@ -618,9 +619,8 @@
                                 </compilerPlugin>
                             </compilerPlugins>
                             <excludes>
-                                <exclude>**/bigdl/nn/${bigdl.backend.exclude}/**</exclude>
+                                <exclude>**/${bigdl.backend.exclude}/**</exclude>
                             </excludes>
-
                         </configuration>
 
                     </plugin>

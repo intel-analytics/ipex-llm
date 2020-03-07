@@ -59,8 +59,8 @@ object PTBModel {
     val output = TimeDistributed[Float](linear).inputs(lstm)
 
     val model = Graph(input, output)
-    model.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
-    model.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.ntc))
+    model.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.FormatTag.nc))
+    model.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.FormatTag.ntc))
     if (Engine.getEngineType() == MklDnn) model.asInstanceOf[StaticGraph[Float]].toIRgraph()
     else model
   }

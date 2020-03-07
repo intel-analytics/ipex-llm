@@ -122,9 +122,9 @@ object LocalOptimizerSpecModel {
 
   def dnnModel: Module[Float] = {
     new nn.mkldnn.Sequential()
-      .add(nn.mkldnn.Input(Array(4, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Input(Array(4, 4), Memory.FormatTag.nc))
       .add(nn.mkldnn.Linear(4, 2))
-      .add(nn.mkldnn.ReorderMemory(HeapData(Array(4, 2), Memory.Format.nc)))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(4, 2), Memory.FormatTag.nc)))
   }
 }
 
