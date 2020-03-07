@@ -82,7 +82,7 @@
     </licenses>
 
     <properties>
-        <bigdl.backend.exclude>mkldnn</bigdl.backend.exclude>
+        <bigdl.backend.exclude>dnnl</bigdl.backend.exclude>
         <failIfNoTests>false</failIfNoTests>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
 
