@@ -112,6 +112,10 @@ class IRconvertSpec extends BigDLSpecHelper {
   }
 
   "Convert Blas with NHWC" should "be correct" in {
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.NativeVersion
+    if (NativeVersion.isDNNL) {
+      cancel("DNNL integration not supports NHWC")
+    }
     System.setProperty("bigdl.engineType", "mkldnn")
     val input = Tensor[Float](2, 28, 28, 1).rand()
     val gradOutput = Tensor[Float](2, 10).rand()

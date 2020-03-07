@@ -158,6 +158,10 @@ class IRGraphSpec extends BigDLSpecHelper {
   }
 
   "PTB LSTM model running with mkldnn" should "work correctly" in {
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.NativeVersion
+    if (NativeVersion.isDNNL) {
+      cancel("DNNL integration not supports LSTM now")
+    }
     Engine.init(1, 1, true)
     RandomGenerator.RNG.setSeed(1000)
 

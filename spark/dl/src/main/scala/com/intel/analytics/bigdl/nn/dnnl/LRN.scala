@@ -30,6 +30,7 @@ class LRN(
 ) extends MklDnnLayer {
   private val UNDEFINED = 0
 
+  @transient private var workSpace : Tensor[Float] = _
   @transient private var workSpaceFormat: MemoryData = _
   @transient private var fwdPrimDesc: Long = UNDEFINED
   @transient private var fwdMemPrims: Array[Long] = _
@@ -37,7 +38,7 @@ class LRN(
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     // the lrn only support f32
-    _inputFormats = Array(NativeData(inputs(0).shape, inputs(0).layout, DataType.F32))
+    _inputFormats = Array(NativeData(inputs(0).shape, Memory.FormatTag.undef, DataType.F32))
 
     val kind = if (phase == InferencePhase) {
       PropKind.ForwardScoring
@@ -58,14 +59,24 @@ class LRN(
       Array(_inputFormats(0), _outputFormats(0)).map(_.getMemoryObject(runtime))
     } else {
       // we only create the workspace when the phase is training
+      // based on the doc if dnn returns a valid workspace descriptor, we need workspace
       workSpaceFormat = MemoryData.operationWant(fwdPrimDesc, Query.WorkspaceMd, 0)
-      Array(_inputFormats(0), _outputFormats(0)).map(_.getMemoryObject(runtime))
+      if (workSpaceFormat != null) {
+        workSpace = initTensor(workSpaceFormat).asInstanceOf[Tensor[Float]]
+        Array(_inputFormats(0), _outputFormats(0), workSpaceFormat).map(_.getMemoryObject(runtime))
+      } else {
+        Array(_inputFormats(0), _outputFormats(0)).map(_.getMemoryObject(runtime))
+      }
     }
 
     fwdExecArgs = mutable.Map (
       ArgType.DNNL_ARG_SRC -> inputFormats().head.getMemoryObject(runtime),
-      ArgType.DNNL_ARG_DST -> _outputFormats.head.getMemoryObject(runtime)
-    )
+      ArgType.DNNL_ARG_DST -> _outputFormats.head.getMemoryObject(runtime))
+
+    if (workSpaceFormat != null) {
+      fwdExecArgs.put(ArgType.DNNL_ARG_WORKSPACE, workSpaceFormat.getMemoryObject(runtime))
+    }
+
     updateOutputPrimitives = Array(DnnlMemory.PrimitiveCreate(fwdPrimDesc))
 
     (_inputFormats, _outputFormats)
@@ -87,6 +98,10 @@ class LRN(
       ArgType.DNNL_ARG_DIFF_DST -> gradOutputFormats().head.getMemoryObject(runtime),
       ArgType.DNNL_ARG_DIFF_SRC -> gradInputFormats().head.getMemoryObject(runtime)
     )
+    if (workSpaceFormat != null) {
+      bwdExecArgs.put(ArgType.DNNL_ARG_WORKSPACE, workSpaceFormat.getMemoryObject(runtime))
+    }
+
     (_gradOutputFormats, _gradInputFormats)
   }
 
@@ -96,6 +111,10 @@ class LRN(
         ArgType.DNNL_ARG_SRC -> input.asInstanceOf[Tensor[Float]],
         ArgType.DNNL_ARG_DST -> output.asInstanceOf[Tensor[Float]]
       )
+
+      if (workSpaceFormat != null) {
+        updateOutputTensors.put(ArgType.DNNL_ARG_WORKSPACE, workSpace)
+      }
     }
     updateWithNewTensor(updateOutputTensors, ArgType.DNNL_ARG_SRC, input)
     MklDnnOps.streamSubmit(updateOutputPrimitives, runtime.stream,
@@ -109,6 +128,11 @@ class LRN(
       ArgType.DNNL_ARG_DIFF_DST -> gradOutput.asInstanceOf[Tensor[Float]],
       ArgType.DNNL_ARG_DIFF_SRC -> gradInput.asInstanceOf[Tensor[Float]]
     )
+
+    if (workSpaceFormat != null) {
+      updateGradInputTensors.put(ArgType.DNNL_ARG_WORKSPACE, workSpace)
+    }
+
     MklDnnOps.streamSubmit(updateGradInputPrimitives, runtime.stream,
       bwdExecArgs, updateGradInputTensors)
     gradInput

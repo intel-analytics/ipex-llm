@@ -285,17 +285,20 @@ private[mkldnn] object MemoryData {
   }
 
   def operationWant(pd: Long, queryType: Int, index: Int = 0): NativeData = {
-      val memoryDescriptor = DNNL.PrimitiveDescQueryMd(pd, queryType, index)
-      if (memoryDescriptor == 0L) {
-        return null
-      }
-      val shape = Memory.GetShape(memoryDescriptor).map(_.toInt)
-      val paddingShape = Memory.GetPaddingShape(memoryDescriptor)
-      val layout = Memory.GetLayout(memoryDescriptor)
-      val dataType = Memory.GetDataType(memoryDescriptor)
-      val memory = NativeData(shape, layout, dataType)
-      memory.setMemoryDescriptor(memoryDescriptor)
-      memory
+    val memoryDescriptor = DNNL.PrimitiveDescQueryMd(pd, queryType, index)
+    if (memoryDescriptor == 0L) {
+      return null
+    }
+    var shape = Memory.GetShape(memoryDescriptor).map(_.toInt)
+    // the shape maybe empty, which means a zero md in native
+    if (shape.length == 0) {
+      return null
+    }
+    val layout = Memory.GetLayout(memoryDescriptor)
+    val dataType = Memory.GetDataType(memoryDescriptor)
+    val memory = NativeData(shape, layout, dataType)
+    memory.setMemoryDescriptor(memoryDescriptor)
+    memory
   }
 
   def cloneFormatWithDesc(data: MemoryData)(implicit owner: MemoryOwner): MemoryData = {

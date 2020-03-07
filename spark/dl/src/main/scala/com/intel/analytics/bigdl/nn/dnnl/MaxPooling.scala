@@ -121,30 +121,27 @@ class MaxPooling(
 
     fwdPD = DNNL.PrimitiveDescCreate(poolingForwardDescriptor, runtime.engine, 0L)
 
-    _outputFormats = Array(MemoryData.primitiveOutput(fwdPD))
-
     val realDst = MemoryData.primitiveOutput(fwdPD)
     _outputFormats = Array(realDst)
 
     fwdExecArgs = mutable.Map(
       ArgType.DNNL_ARG_SRC -> _inputFormats(0).getMemoryObject(runtime),
-//      ArgType.DNNL_ARG_DST -> _outputFormats(0).getMemoryObject(runtime)
       ArgType.DNNL_ARG_DST -> realDst.getMemoryObject(runtime)
     )
 
     if (phase == TrainingPhase) {
       workSpaceFormat = MemoryData.operationWant(fwdPD, Query.WorkspaceMd)
       workSpaceFormat.getMemoryObject(runtime)
-      workSpace = initTensor(workSpaceFormat).asInstanceOf[Tensor[Float]]
-      fwdExecArgs.put(ArgType.DNNL_ARG_WORKSPACE, workSpaceFormat.getMemoryObject(runtime))
+      if (workSpaceFormat != null) {
+        workSpace = initTensor(workSpaceFormat).asInstanceOf[Tensor[Float]]
+        fwdExecArgs.put(ArgType.DNNL_ARG_WORKSPACE, workSpaceFormat.getMemoryObject(runtime))
+      }
     }
 
     updateOutputPrimitives = Array(DnnlMemory.PrimitiveCreate(fwdPD))
     // if it's training, should have output and workspace primitive memory
     // otherwise, only need the output memory
-
-//    output = initTensor(_outputFormats(0))
-    output = initTensor(realDst)
+    output = initTensor(_outputFormats(0))
 
     (_inputFormats, _outputFormats)
   }
@@ -191,9 +188,12 @@ class MaxPooling(
     gradInput = initTensor(_gradInputFormats(0))
     bwdExecArgs = mutable.Map(
       ArgType.DNNL_ARG_DIFF_DST -> _gradOutputFormats(0).getMemoryObject(runtime),
-      ArgType.DNNL_ARG_WORKSPACE -> workSpaceFormat.getMemoryObject(runtime),
       ArgType.DNNL_ARG_DIFF_SRC -> _gradInputFormats(0).getMemoryObject(runtime)
     )
+
+    if (workSpaceFormat != null) {
+      bwdExecArgs.put(ArgType.DNNL_ARG_WORKSPACE, workSpaceFormat.getMemoryObject(runtime))
+    }
 
     updateGradInputPrimitives = Array(DnnlMemory.PrimitiveCreate(backwardPd))
 
@@ -205,7 +205,7 @@ class MaxPooling(
       updateOutputTensors = mutable.Map(
         ArgType.DNNL_ARG_DST -> output.asInstanceOf[Tensor[Float]]
       )
-      if (isTraining()) { // only for training.
+      if (isTraining() && workSpace != null) { // only for training.
         updateOutputTensors.put(ArgType.DNNL_ARG_WORKSPACE, workSpace)
       }
     }
@@ -218,10 +218,14 @@ class MaxPooling(
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     if (updateGradInputTensors == null) {
       updateGradInputTensors = mutable.Map(
-        ArgType.DNNL_ARG_WORKSPACE -> workSpace,
         ArgType.DNNL_ARG_DIFF_SRC -> gradInput.asInstanceOf[Tensor[Float]]
       )
+
+      if (workSpace != null) {
+        updateGradInputTensors.put(ArgType.DNNL_ARG_WORKSPACE, workSpace)
+      }
     }
+
     updateGradInputTensors.put(ArgType.DNNL_ARG_DIFF_DST, gradOutput.asInstanceOf[Tensor[Float]])
     MklDnnOps.streamSubmit(updateGradInputPrimitives,
       runtime.stream,

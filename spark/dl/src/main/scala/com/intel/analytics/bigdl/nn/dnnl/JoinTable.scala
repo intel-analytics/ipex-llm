@@ -35,7 +35,6 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     _inputFormats = nativeData(inputs)
 
     val totalShape = inputs(0).shape.clone()
-    val layout = inputs(0).layout
     var i = 1
     while(i < inputs.length) {
       val curShape = inputs(i).shape
@@ -51,9 +50,7 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
         j += 1
       }
 
-      if (layout != inputs(i).layout || inputs(0).dataType != inputs(i).dataType) {
-        _inputFormats(i) = NativeData(inputs(i).shape, layout, inputs(0).dataType)
-      }
+      _inputFormats(i) = MemoryData.cloneFormatWithDesc(inputs(i))
       i += 1
     }
 
@@ -91,7 +88,7 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     _gradOutputFormats = singleNativeData(grads)
     _gradOutputFormatsForWeight = _gradOutputFormats
     _gradInputFormats = _inputFormats.map(f => {
-      NativeData(f.shape, f.layout)
+      MemoryData.cloneFormatWithDesc(f)
     })
     val prims = new ArrayBuffer[Long]()
     val srcMds = new ArrayBuffer[Long]()
