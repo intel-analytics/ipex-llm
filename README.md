@@ -44,7 +44,7 @@ You may want to write your deep learning programs using BigDL if:
 If you've found BigDL useful for your project, you can cite the [paper](https://arxiv.org/abs/1804.05839) as follows:
 ```
 @inproceedings{SOCC2019_BIGDL,
-  title={Bigdl: A Distributed Deep Learning Framework for Big Data},
+  title={BigDL: A Distributed Deep Learning Framework for Big Data},
   author={Dai, Jason (Jinquan) and Wang, Yiheng and Qiu, Xin and Ding, Ding and Zhang, Yao and Wang, Yanzhang and Jia, Xianyan and Zhang, Li (Cherry) and Wan, Yan and Li, Zhichao and Wang, Jiao and Huang, Shengsheng and Wu, Zhongyuan and Wang, Yang and Yang, Yuhao and She, Bowen and Shi, Dongjie and Lu, Qi and Huang, Kai and Song, Guoqiong},
   booktitle={Proceedings of the ACM Symposium on Cloud Computing},
   publisher={Association for Computing Machinery},
