@@ -28,10 +28,6 @@ object CoreWrapper {
     MKL.setNumThreads(n)
   }
 
-  def getMklNumThreads(): Int = {
-    MKL.getMklNumThreads
-  }
-
   def setFlushDenormalState(): Unit = {
 
   }

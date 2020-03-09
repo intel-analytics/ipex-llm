@@ -27,10 +27,6 @@ object CoreWrapper {
     DNNL.setNumThreads(n)
   }
 
-  def getMklNumThreads(): Int = {
-    0
-  }
-
   def setFlushDenormalState(): Unit = {
     DNNL.setFlushDenormalState()
   }

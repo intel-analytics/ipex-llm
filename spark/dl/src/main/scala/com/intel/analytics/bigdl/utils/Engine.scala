@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
 import org.apache.spark._
-import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{CoreWrapper => MKL}
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{CpuInfoWrapper => CpuInfo}
 import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{AffinityWrapper => Affinity}
 import org.apache.spark.utils.SparkUtils
