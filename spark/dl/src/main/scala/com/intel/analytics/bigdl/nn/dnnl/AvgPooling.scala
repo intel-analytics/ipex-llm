@@ -34,8 +34,6 @@ class AvgPooling(
   globalPooling: Boolean = false
 ) extends MklDnnLayer {
 
-  @transient private var workSpaceFormat: MemoryData = _
-  @transient private var workSpace: Tensor[Float] = _
   @transient private var paddingTL: Array[Int] = _
   @transient private var paddingBR: Array[Int] = _
   @transient private var fwdPD: Long = _
@@ -117,14 +115,6 @@ class AvgPooling(
       ArgType.DNNL_ARG_DST -> _outputFormats(0).getMemoryObject(runtime)
     )
 
-    if (phase == TrainingPhase) {
-      workSpaceFormat = MemoryData.operationWant(fwdPD, Query.WorkspaceMd)
-      if (workSpaceFormat != null) {
-        workSpace = initTensor(workSpaceFormat).asInstanceOf[Tensor[Float]]
-        fwdExecArgs.put(ArgType.DNNL_ARG_WORKSPACE, workSpaceFormat.getMemoryObject(runtime))
-      }
-    }
-
     output = initTensor(_outputFormats(0))
 
     updateOutputPrimitives = Array(DnnlMemory.PrimitiveCreate(fwdPD))
@@ -158,10 +148,6 @@ class AvgPooling(
       ArgType.DNNL_ARG_DIFF_SRC -> _gradInputFormats(0).getMemoryObject(runtime)
     )
 
-    if (workSpaceFormat != null) {
-      bwdExecArgs.put(ArgType.DNNL_ARG_WORKSPACE, workSpaceFormat.getMemoryObject(runtime))
-    }
-
     updateGradInputPrimitives = Array(DnnlMemory.PrimitiveCreate(pd))
 
     (_gradOutputFormats, _gradInputFormats)
@@ -172,10 +158,6 @@ class AvgPooling(
       ArgType.DNNL_ARG_SRC -> input.asInstanceOf[Tensor[Float]],
       ArgType.DNNL_ARG_DST -> output.asInstanceOf[Tensor[Float]]
     )
-
-    if (workSpace != null) {
-      updateOutputTensors.put(ArgType.DNNL_ARG_WORKSPACE, workSpace)
-    }
 
     MklDnnOps.streamSubmit(updateOutputPrimitives, runtime.stream,
       fwdExecArgs, updateOutputTensors)
@@ -189,10 +171,6 @@ class AvgPooling(
       ArgType.DNNL_ARG_DIFF_DST -> gradOutput.asInstanceOf[Tensor[Float]],
       ArgType.DNNL_ARG_DIFF_SRC -> gradInput.asInstanceOf[Tensor[Float]]
     )
-
-    if (workSpace != null) {
-      updateGradInputTensors.put(ArgType.DNNL_ARG_WORKSPACE, workSpace)
-    }
 
     MklDnnOps.streamSubmit(updateGradInputPrimitives,
       runtime.stream,

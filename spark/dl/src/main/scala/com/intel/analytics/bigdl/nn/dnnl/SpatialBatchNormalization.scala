@@ -195,7 +195,11 @@ class SpatialBatchNormalization(
     // so we do not need create weightAndBias native space again.
     if (output == null || output.isInstanceOf[DnnTensor[_]] &&
       output.toTensor[Float].size().deep != outputFormats()(0).shape.deep) {
+      if (output != null) { output.asInstanceOf[DnnTensor[Float]].release() }
       output = initTensor(outputFormats()(0))
+      if (updateOutputTensors != null) {
+        updateOutputTensors.put(ArgType.DNNL_ARG_DST, output.asInstanceOf[Tensor[Float]])
+      }
     }
 
     // init once
