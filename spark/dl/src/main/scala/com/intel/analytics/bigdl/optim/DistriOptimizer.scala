@@ -60,7 +60,19 @@ object DistriOptimizer extends AbstractOptimizer {
    * @param parameterSynchronizer cached parameter synchronizer
    * @tparam T Tensor element type
    */
-  case class Cache[T](
+
+  abstract class Cache[T] {
+    def localModels: Array[Module[T]]
+    def modelWeights: Array[Tensor[T]]
+    def modelGradients: Array[Tensor[T]]
+    def localCriterions: Array[Criterion[T]]
+    def localMethods: Array[Option[Array[ValidationMethod[T]]]]
+    def optimMethods: Map[String, OptimMethod[T]]
+    def moduleTimeList: Array[Long]
+    def parameterSynchronizer: DistriParameterSynchronizer[T]
+  }
+
+  case class CacheV1[T](
     localModels: Array[Module[T]],
     modelWeights: Array[Tensor[T]],
     modelGradients: Array[Tensor[T]],
@@ -70,7 +82,7 @@ object DistriOptimizer extends AbstractOptimizer {
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
     var optimMethods: Map[String, OptimMethod[T]],
     parameterSynchronizer: DistriParameterSynchronizer[T] = null
-  )
+  ) extends Cache[T]
 
   /**
    * Train the model.
@@ -101,7 +113,7 @@ object DistriOptimizer extends AbstractOptimizer {
     state: Table,
     endWhen: Trigger,
     metrics: Metrics,
-    models: RDD[Cache[T]],
+    models: RDD[CacheV1[T]],
     optimMethods: Map[String, OptimMethod[T]],
     parameters: AllReduceParameter[T],
     parameterSplits: Map[String, (Int, Int)],
@@ -350,7 +362,8 @@ object DistriOptimizer extends AbstractOptimizer {
         driverState("isGradientUpdated") = false
         // parameterProcesser like L2NormClippingProcessor may aggregate gradient,
         // and change the value of isGradientUpdated in driverState.
-        parameterProcessers.foreach(_.collectGlobalData(models, parameters, metrics, driverState))
+        parameterProcessers.foreach(_.collectGlobalData(models.asInstanceOf[RDD[Cache[T]]],
+          parameters, metrics, driverState))
 
         val isGradientUpdated = driverState[Boolean]("isGradientUpdated")
         val stateBroadcast = sc.broadcast(driverState)
@@ -478,7 +491,7 @@ object DistriOptimizer extends AbstractOptimizer {
           validationDataSet,
           validationMethods,
           coresPerNode,
-          models,
+          models.asInstanceOf[RDD[Cache[T]]],
           driverState,
           validationSummary,
           _header,
@@ -488,7 +501,7 @@ object DistriOptimizer extends AbstractOptimizer {
         trainSummary.foreach { summary =>
           saveSummary(
             summary,
-            models,
+            models.asInstanceOf[RDD[Cache[T]]],
             driverState,
             parameters,
             trainingModel
@@ -500,7 +513,7 @@ object DistriOptimizer extends AbstractOptimizer {
           cachePath,
           isOverWrite,
           wallClockTime,
-          models,
+          models.asInstanceOf[RDD[Cache[T]]],
           driverState,
           parameters,
           optimMethods,
@@ -548,8 +561,7 @@ object DistriOptimizer extends AbstractOptimizer {
     validationMethods: Option[Array[ValidationMethod[T]]],
     optimMethod: Map[String, OptimMethod[T]],
     parameterProcessors: ArrayBuffer[ParameterProcessor]
-  )(implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer
-  .Cache[T]], ModelBroadcast[T]) = {
+  )(implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer.CacheV1[T]], ModelBroadcast[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
     val convertedModel = ConversionUtils.convert(model)
@@ -621,7 +633,7 @@ object DistriOptimizer extends AbstractOptimizer {
       allReduceParameter.init(weights.narrow(1, allReduceParameter.paramOffset,
         allReduceParameter.size))
 
-      Iterator.single(Cache(
+      Iterator.single(CacheV1(
         cached.map(_._1), // models
         cached.map(_._2), // weights
         cached.map(_._3), // gradients
@@ -714,7 +726,7 @@ class DistriOptimizer[T: ClassTag](
     _model, _dataset, _criterion) {
   val metrics = new Metrics
 
-  private var models: RDD[DistriOptimizer.Cache[T]] = null
+  private var models: RDD[DistriOptimizer.CacheV1[T]] = null
   // this variable is used to check the models cloned when broadcast, if there're native resources,
   // it will be deleted at the end of Optimizer.
   private var modelBroadcast: ModelBroadcast[T] = null
@@ -726,7 +738,7 @@ class DistriOptimizer[T: ClassTag](
    * If the optimize fails, you may call it before next optimize.
    */
   def clearState(): Unit = {
-    DistriOptimizer.clearState(models)
+    DistriOptimizer.clearState(models.asInstanceOf[RDD[DistriOptimizer.Cache[T]]])
   }
 
 
@@ -753,10 +765,8 @@ class DistriOptimizer[T: ClassTag](
 
   // replace optim methods with previous
   private def resetOptimMethods[T: ClassTag](
-    models: RDD[DistriOptimizer.Cache[T]],
-    previousOptimMethods: RDD[Map[String,
-      OptimMethod[T]]]):
-  RDD[DistriOptimizer.Cache[T]] = {
+    models: RDD[DistriOptimizer.CacheV1[T]],
+    previousOptimMethods: RDD[Map[String, OptimMethod[T]]]): RDD[DistriOptimizer.CacheV1[T]] = {
     models.zipPartitions(previousOptimMethods) { (m1, m2) => {
       val cache = m1.next()
       cache.optimMethods = m2.next()
@@ -962,7 +972,8 @@ class DistriOptimizer[T: ClassTag](
       }
     }
 
-    DistriOptimizer.getModel(models, allReduceParameter, trainingModel)
+    DistriOptimizer.getModel(models.asInstanceOf[RDD[DistriOptimizer.Cache[T]]],
+      allReduceParameter, trainingModel)
 
     // Reset some internal states, so this or other optimizers can run optimize again
     clearState()
