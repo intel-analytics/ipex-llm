@@ -78,11 +78,27 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param weightPath the file path of the weights
    * @param blas       whether MKLBLAS or MKLDNN
    */
+  def doLoadBigDL(modelPath: String,
+             weightPath: String = null,
+             blas: Boolean = true): Unit = {
+    clearModelQueue()
+    this.originalModel = InferenceModelFactory.loadFloatModelForBigDL(modelPath, weightPath, blas)
+    offerModelQueue()
+  }
+
+  /**
+   * loads a bigdl, analytics-zoo model
+   *
+   * @param modelPath  the file path of the model
+   * @param weightPath the file path of the weights
+   * @param blas       whether MKLBLAS or MKLDNN
+   */
+  @deprecated("this method is deprecated, use doLoadBigDL() instead")
   def doLoad(modelPath: String,
              weightPath: String = null,
              blas: Boolean = true): Unit = {
     clearModelQueue()
-    this.originalModel = InferenceModelFactory.loadFloatModel(modelPath, weightPath, blas)
+    this.originalModel = InferenceModelFactory.loadFloatModelForBigDL(modelPath, weightPath, blas)
     offerModelQueue()
   }
 
@@ -249,7 +265,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                  e.g. faster_rcnn_resnet101_coco, mask_rcnn_inception_v2_coco,
    *                  rfcn_resnet101_coco, ssd_inception_v2_coco
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTF(modelPath: String, objectDetectionModelType: String): Unit = {
     doLoadTensorflowModelAsOpenVINO(
       modelPath,
@@ -265,7 +281,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param pipelineConfigPath   the path of the pipeline configure file
    * @param extensionsConfigPath the path of the extensions configure file
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTF(modelPath: String,
                pipelineConfigPath: String,
                extensionsConfigPath: String): Unit = {
@@ -288,7 +304,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param pipelineConfigPath   the path of the pipeline configure file
    * @param extensionsConfigPath the path of the extensions configure file
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTF(modelPath: String,
                objectDetectionModelType: String,
                pipelineConfigPath: String,
@@ -314,7 +330,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                               will be divided by this value.
    * @param scale                  the scale value, to be used for the input image per channel.
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTF(modelPath: String,
                imageClassificationModelType: String,
                checkpointPath: String,
@@ -340,7 +356,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                               will be divided by this value.
    * @param scale                  the scale value, to be used for the input image per channel.
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTF(modelBytes: Array[Byte],
                imageClassificationModelType: String,
                checkpointBytes: Array[Byte],
@@ -365,7 +381,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param scale                  the scale value, to be used for the input image per channel.
    * @param input                  the name of the input operation of the given model
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTF(savedModelDir: String,
                inputShape: Array[Int],
                ifReverseInputChannels: Boolean,
@@ -388,7 +404,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    * @param scale                  the scale value, to be used for the input image per channel.
    * @param input                  the name of the input operation of the given model
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTF(savedModelBytes: Array[Byte],
                inputShape: Array[Int],
                ifReverseInputChannels: Boolean,
@@ -423,7 +439,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    *                               libopencv_core.so.4.0
    *                               and libopencv_imgproc.so.4.0 can be found
    */
-  @deprecated("this method will be deprecated", "0.8.0")
+  @deprecated("this method is deprecated", "0.8.0")
   def doLoadTFAsCalibratedOpenVINO(modelPath: String,
                                    modelType: String,
                                    checkpointPath: String,
@@ -739,7 +755,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    */
   def doReload(modelPath: String, weightPath: String): Unit = {
     clearModelQueue()
-    doLoad(modelPath, weightPath)
+    doLoadBigDL(modelPath, weightPath)
   }
 
   @deprecated
