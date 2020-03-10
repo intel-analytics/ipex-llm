@@ -16,20 +16,19 @@
 
 
 package com.intel.analytics.bigdl.utils.wrapper.mkldnn
-import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.MklDnn
 
 object CoreWrapper {
 
   def isLoaded(): Boolean = {
-    MKL.isMKLLoaded()
+    MklDnn.isLoaded
   }
 
   def setNumThreads(n: Int): Unit = {
-    MKL.setNumThreads(n)
+    MklDnn.setNumThreads(n)
   }
 
   def setFlushDenormalState(): Unit = {
-
+    MklDnn.setFlushDenormalState()
   }
-
 }
