@@ -21,9 +21,9 @@ OpenVINO Python requirements:
     protobuf==3.6.1
 
 ## Model and Data Preparation
-1. Prepare a pre-trained TensorFlow object detection model. You can download from [tensorflow detection model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md).
+1. Prepare a pre-trained TensorFlow object detection model. You can download from [tensorflow detection model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md), and convert it into OpenVINO model with [OpenVINO toolkit](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html).
    
-In this example, we use `frozen_inference_graph.pb` of the `faster_rcnn_resnet101_coco` model downloaded from [here](http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2018_01_28.tar.gz).
+In this example, we use `faster_rcnn_resnet101_coco.xml` and `faster_rcnn_resnet101_coco.bin` from [OpenVINO Open Model Zoo](https://github.com/opencv/open_model_zoo). Please put these two files in the same directory.
 
 
 2. Prepare the image dataset for inference. Put the images to do prediction in the same folder.
@@ -33,7 +33,7 @@ In this example, we use `frozen_inference_graph.pb` of the `faster_rcnn_resnet10
 ```bash
 export SPARK_DRIVER_MEMORY=10g
 image_path=directory path that contain images
-model_path=dir contains frozen_inference_graph.pb and pipeline.config
+model_path=path of faster_rcnn_resnet101_coco.xml
 
 python predict.py --image ${image_path} --model ${model_path}
 ```
@@ -47,7 +47,7 @@ export SPARK_HOME=the root directory of Spark
 export ANALYTICS_ZOO_HOME=the directory where you extract the downloaded Analytics Zoo zip package
 MASTER=local[*]
 image_path=directory path that contain images
-model_path=dir contains frozen_inference_graph.pb and pipeline.config
+model_path=path of faster_rcnn_resnet101_coco.xml
 
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --master $MASTER \
@@ -64,7 +64,6 @@ See [here](#options) for more configurable options for this example.
 ## Options
 * `--image` The path where the images are stored. It can be either a folder or an image path. Local file system, HDFS and Amazon S3 are supported.
 * `--model` The path to the TensorFlow object detection model.
-* `--model_type` The type of the TensorFlow model. In this example, we use "faster_rcnn_resnet101_coco". If you download other models, you need to change to the corresponding model_type.
 
 ## Results
 We print the detection result of the first image to the console.
