@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.ControlDependency
@@ -158,12 +158,12 @@ class StaticGraph[T: ClassTag](
   def toIRgraph() : IRGraph[T] = {
     val inFormats = if (inputsFormats == null) {
       logger.warn("Input formats NCHW by default, Please set explicitly if needed")
-      Seq(Memory.Format.nchw)
+      Seq(Memory.FormatTag.nchw)
     } else inputsFormats
 
     val outFormats = if (outputsFormats == null) {
       logger.warn("Output formats NC by default, Please set explicitly if needed")
-      Seq(Memory.Format.nc)
+      Seq(Memory.FormatTag.nc)
     } else outputsFormats
 
     val allNodes = forwardExecution

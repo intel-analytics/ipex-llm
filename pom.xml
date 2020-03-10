@@ -82,6 +82,7 @@
     </licenses>
 
     <properties>
+        <bigdl.backend.exclude>dnnl</bigdl.backend.exclude>
         <failIfNoTests>false</failIfNoTests>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
 
@@ -463,6 +464,9 @@
                             <version>${scala.macros.version}</version>
                         </compilerPlugin>
                     </compilerPlugins>
+                    <excludes>
+                      <exclude>**/${bigdl.backend.exclude}/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -592,6 +596,7 @@
                                     </args>
                                 </configuration>
                             </execution>
+
                         </executions>
                         <configuration>
                             <scalaVersion>${scala.version}</scalaVersion>
@@ -613,9 +618,15 @@
                                     <version>${scala.macros.version}</version>
                                 </compilerPlugin>
                             </compilerPlugins>
+                            <excludes>
+                                <exclude>**/${bigdl.backend.exclude}/**</exclude>
+                            </excludes>
                         </configuration>
+
                     </plugin>
+
                 </plugins>
+
             </build>
         </profile>
         <profile>

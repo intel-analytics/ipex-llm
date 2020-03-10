@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.intermediate
 
 import breeze.numerics._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.models.inception.{Inception_Layer_v1, Inception_v1_NoAuxClassifier}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet
@@ -52,8 +52,8 @@ class BlasToDnnSpec extends BigDLSpecHelper {
       RandomGenerator.RNG.uniform(1.0, 1000.0).toFloat)
 
     val blas = Vgg_16.graph(classNum, false).asInstanceOf[StaticGraph[Float]]
-    blas.setInputFormats(Seq(Memory.Format.nchw))
-    blas.setOutputFormats(Seq(Memory.Format.nc))
+    blas.setInputFormats(Seq(Memory.FormatTag.nchw))
+    blas.setOutputFormats(Seq(Memory.FormatTag.nc))
     val irBlas = blas.cloneModule().toIRgraph()
 
     val outBlas = blas.forward(input).toTensor[Float]
@@ -69,15 +69,15 @@ class BlasToDnnSpec extends BigDLSpecHelper {
   "lenet5 blas to dnn" should "work properly" in {
     val batchSize = 2
     val seed = 1
-    val inputFormat = Memory.Format.nchw
+    val inputFormat = Memory.FormatTag.nchw
     val inputShape = Array(batchSize, 1, 28, 28)
 
     val input = Tensor[Float](inputShape).rand()
     val gradOutput = Tensor[Float](batchSize, 10).rand()
 
     val blas = LeNet5.graph(10).asInstanceOf[StaticGraph[Float]]
-    blas.setInputFormats(Seq(Memory.Format.nchw))
-    blas.setOutputFormats(Seq(Memory.Format.nc))
+    blas.setInputFormats(Seq(Memory.FormatTag.nchw))
+    blas.setOutputFormats(Seq(Memory.FormatTag.nc))
     val irBlas = blas.cloneModule().toIRgraph()
 
     val outBlas = blas.forward(input).toTensor[Float]
@@ -101,8 +101,8 @@ class BlasToDnnSpec extends BigDLSpecHelper {
       RandomGenerator.RNG.uniform(1, 10).toFloat)
 
     val blas = Inception_v1_NoAuxClassifier.graph(classNum, false).asInstanceOf[StaticGraph[Float]]
-    blas.setInputFormats(Seq(Memory.Format.nchw))
-    blas.setOutputFormats(Seq(Memory.Format.nc))
+    blas.setInputFormats(Seq(Memory.FormatTag.nchw))
+    blas.setOutputFormats(Seq(Memory.FormatTag.nc))
     val irBlas = blas.cloneModule().toIRgraph()
 
     val outBlas = blas.forward(input).toTensor[Float]

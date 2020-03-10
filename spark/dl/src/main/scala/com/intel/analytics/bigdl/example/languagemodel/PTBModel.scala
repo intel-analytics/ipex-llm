@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.example.languagemodel
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.{TimeDistributed, _}
 import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
@@ -59,8 +59,8 @@ object PTBModel {
     val output = TimeDistributed[Float](linear).inputs(lstm)
 
     val model = Graph(input, output)
-    model.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.Format.nc))
-    model.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.ntc))
+    model.asInstanceOf[StaticGraph[Float]].setInputFormats(Seq(Memory.FormatTag.nc))
+    model.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.FormatTag.ntc))
     if (Engine.getEngineType() == MklDnn) model.asInstanceOf[StaticGraph[Float]].toIRgraph()
     else model
   }

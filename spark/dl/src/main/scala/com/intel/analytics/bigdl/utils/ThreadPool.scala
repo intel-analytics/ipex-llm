@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
-import com.intel.analytics.bigdl.mkl.hardware.Affinity
-import com.intel.analytics.bigdl.mkl.{MKL, MklDnn => BackendMklDnn}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{AffinityWrapper => Affinity}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{CoreWrapper => CoreDNNL }
+import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
@@ -103,14 +104,14 @@ class ThreadPool(private var poolSize: Int) {
 
     this.invokeAndWait2((0 until 1).map(_ => () => {
       if (System.getProperty("bigdl.flushDenormalState", "true").toBoolean) {
-        BackendMklDnn.setFlushDenormalState()
+        CoreDNNL.setFlushDenormalState()
       }
 
       require(MKL.isMKLLoaded)
-      require(BackendMklDnn.isLoaded)
+      require(CoreDNNL.isLoaded)
 
       MKL.setNumThreads(size)
-      BackendMklDnn.setNumThreads(size)
+      CoreDNNL.setNumThreads(size)
       if (!System.getProperty("bigdl.disableOmpAffinity", "false").toBoolean) {
         Affinity.setOmpAffinity()
       }

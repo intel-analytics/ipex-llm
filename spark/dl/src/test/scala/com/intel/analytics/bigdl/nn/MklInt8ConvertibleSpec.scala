@@ -196,7 +196,7 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
   }
 
   "Calculating scales" should "work correct for DNN Linear Module" in {
-    import com.intel.analytics.bigdl.mkl.Memory
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 
     val sampleMax = 999
     val inputSize = 2
@@ -216,9 +216,9 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
     // Global mask, non-null input
     val linear1 = mkldnn.Linear(inputSize, outputSize)
     val seq1 = mkldnn.Sequential()
-      .add(mkldnn.Input(Array(4, inputSize), Memory.Format.nc))
+      .add(mkldnn.Input(Array(4, inputSize), Memory.FormatTag.nc))
       .add(linear1)
-      .add(mkldnn.Output(Memory.Format.nc))
+      .add(mkldnn.Output(Memory.FormatTag.nc))
 
     seq1.compile(InferencePhase)
     seq1.forward(inputTensor)
@@ -232,9 +232,9 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
     // Single dimension mask, non-null input
     val linear2 = mkldnn.Linear(inputSize, outputSize)
     val seq2 = mkldnn.Sequential()
-      .add(mkldnn.Input(Array(4, inputSize), Memory.Format.nc))
+      .add(mkldnn.Input(Array(4, inputSize), Memory.FormatTag.nc))
       .add(linear2)
-      .add(mkldnn.Output(Memory.Format.nc))
+      .add(mkldnn.Output(Memory.FormatTag.nc))
     seq2.compile(InferencePhase)
 
     inputMask = Math.pow(2, 0).toInt
@@ -324,7 +324,7 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
   }
 
   "Calculating scales" should "work correct for DNN Spatial Convolution Module" in {
-    import com.intel.analytics.bigdl.mkl.Memory
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
     val inputSize = 8
     val outputSize = 8
     var dimMaskIdx = 0
@@ -340,9 +340,9 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
     // Global mask, non-null input
     val spatialConv1 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
     val seq1 = mkldnn.Sequential()
-      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.FormatTag.nchw))
       .add(spatialConv1)
-      .add(mkldnn.Output(Memory.Format.nchw))
+      .add(mkldnn.Output(Memory.FormatTag.nchw))
 
     seq1.compile(InferencePhase)
     seq1.forward(input)
@@ -360,9 +360,9 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
     dimMaskIdx = 1
     val spatialConv2 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
     val seq2 = mkldnn.Sequential()
-      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.FormatTag.nchw))
       .add(spatialConv2)
-      .add(mkldnn.Output(Memory.Format.nchw))
+      .add(mkldnn.Output(Memory.FormatTag.nchw))
     seq2.compile(InferencePhase)
     seq2.forward(input)
 
@@ -377,9 +377,9 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
     dimMaskIdx = 2
     val spatialConv3 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
     val seq3 = mkldnn.Sequential()
-      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.FormatTag.nchw))
       .add(spatialConv3)
-      .add(mkldnn.Output(Memory.Format.nchw))
+      .add(mkldnn.Output(Memory.FormatTag.nchw))
     seq3.compile(InferencePhase)
     seq3.forward(input)
 
@@ -396,9 +396,9 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
     dimMaskIdx = 3
     val spatialConv4 = mkldnn.SpatialConvolution(inputSize, outputSize, 1, 1)
     val seq4 = mkldnn.Sequential()
-      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.Format.nchw))
+      .add(mkldnn.Input(Array(4, 8, 8, 8), Memory.FormatTag.nchw))
       .add(spatialConv4)
-      .add(mkldnn.Output(Memory.Format.nchw))
+      .add(mkldnn.Output(Memory.FormatTag.nchw))
     seq4.compile(InferencePhase)
     seq4.forward(input)
 
@@ -688,14 +688,14 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
   }
 
   "Calculating scales" should "work correct for DNN Graph Module" in {
-    import com.intel.analytics.bigdl.mkl.Memory
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
     System.setProperty("bigdl.mkldnn.fusion", "false")
 
     def dnnGraph(batchSize: Int, classNum: Int): mkldnn.DnnGraph = {
       val inputShape = Array(batchSize, 1, 28, 28)
       val outputShape = Array(batchSize, 10)
 
-      val input = mkldnn.Input(inputShape, Memory.Format.nchw).inputs()
+      val input = mkldnn.Input(inputShape, Memory.FormatTag.nchw).inputs()
       val conv1 = mkldnn.SpatialConvolution(1, 20, 5, 5).setName("conv1").inputs(input)
       val bn1 = mkldnn.SpatialBatchNormalization(20).setName("bn1").inputs(conv1)
       val pool1 = mkldnn.MaxPooling(2, 2, 2, 2).setName("pool1").inputs(bn1)
@@ -704,7 +704,7 @@ class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter 
       val ip1 = mkldnn.Linear(50 * 4 * 4, 500).setName("ip1").inputs(pool2)
       val relu1 = mkldnn.ReLU().setName("relu1").inputs(ip1)
       val ip2 = mkldnn.Linear(500, 10).setName("ip2").inputs(relu1)
-      val output = mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)).inputs(ip2)
+      val output = mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.FormatTag.nc)).inputs(ip2)
 
       val graph = DnnGraph(Array(input), Array(output))
       graph.evaluate()

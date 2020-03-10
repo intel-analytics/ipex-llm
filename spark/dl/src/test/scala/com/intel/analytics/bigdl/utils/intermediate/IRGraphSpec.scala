@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl.example.languagemodel.PTBModel
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.{Module, nn, utils}
@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils._
 
 class IRGraphSpec extends BigDLSpecHelper {
-  def modelIR(inputFormats: Int = Memory.Format.nchw,
-              outputFormats: Int = Memory.Format.nchw): IRGraph[Float] = {
+  def modelIR(inputFormats: Int = Memory.FormatTag.nchw,
+              outputFormats: Int = Memory.FormatTag.nchw): IRGraph[Float] = {
     val conv1 = Node(IRElement[Float]("", IRSpatialConvolution[Float](1, 20, 5, 5)))
     val bn1 = Node(IRElement[Float]("", IRSpatialBatchNormalization[Float](20)))
     val weightsAndBias = Tensor[Float](2 * 20).rand()
@@ -42,8 +42,8 @@ class IRGraphSpec extends BigDLSpecHelper {
     IRGraph(Array(conv1), Array(output), inputFormats = inputFormats, outputFormats = outputFormats)
   }
 
-  def modelIR2(inputFormats: Int = Memory.Format.nchw,
-               outputFormats: Int = Memory.Format.nc): IRGraph[Float] = {
+  def modelIR2(inputFormats: Int = Memory.FormatTag.nchw,
+               outputFormats: Int = Memory.FormatTag.nc): IRGraph[Float] = {
     val conv1 = Node(IRElement[Float]("", IRSpatialConvolution[Float](1, 20, 5, 5)))
     val pool1 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
     val conv2 = Node(IRElement[Float]("", IRSpatialConvolution[Float](20, 50, 5, 5)))
@@ -60,8 +60,8 @@ class IRGraphSpec extends BigDLSpecHelper {
     IRGraph(Array(conv1), Array(output), inputFormats = inputFormats, outputFormats = outputFormats)
   }
 
-  def modelIR3(inputFormats: Int = Memory.Format.nchw,
-               outputFormats: Int = Memory.Format.nc): IRGraph[Float] = {
+  def modelIR3(inputFormats: Int = Memory.FormatTag.nchw,
+               outputFormats: Int = Memory.FormatTag.nc): IRGraph[Float] = {
     val conv1 = Node(IRElement[Float]("", IRSpatialConvolution[Float](1, 20, 5, 5)))
     val pool1 = Node(IRElement[Float]("", IRSpatialMaxPooling[Float](2, 2, 2, 2)))
     val conv2 = Node(IRElement[Float]("", IRSpatialConvolution[Float](20, 50, 5, 5)))
@@ -81,8 +81,8 @@ class IRGraphSpec extends BigDLSpecHelper {
     identity -> join
 
     new IRGraph(Array(conv1, identity), Array(join),
-      inputFormats = Seq(Memory.Format.nchw, Memory.Format.nc),
-      outputFormats = Seq(Memory.Format.nc))
+      inputFormats = Seq(Memory.FormatTag.nchw, Memory.FormatTag.nc),
+      outputFormats = Seq(Memory.FormatTag.nc))
   }
 
   "Convert IRgraph to Dnn or Blas Graph" should "be correct" in {
@@ -158,6 +158,10 @@ class IRGraphSpec extends BigDLSpecHelper {
   }
 
   "PTB LSTM model running with mkldnn" should "work correctly" in {
+    import com.intel.analytics.bigdl.utils.wrapper.mkldnn.NativeVersion
+    if (NativeVersion.isDNNL) {
+      cancel("DNNL integration not supports LSTM now")
+    }
     Engine.init(1, 1, true)
     RandomGenerator.RNG.setSeed(1000)
 
@@ -208,8 +212,8 @@ class IRGraphSpec extends BigDLSpecHelper {
     Engine.setEngineType(MklDnn)
     val dnn = blas.cloneModule()
       .asInstanceOf[StaticGraph[Float]]
-      .setInputFormats(Seq(Memory.Format.ntc))
-      .setOutputFormats(Seq(Memory.Format.ntc))
+      .setInputFormats(Seq(Memory.FormatTag.ntc))
+      .setOutputFormats(Seq(Memory.FormatTag.ntc))
       .toIRgraph()
       .evaluate()
 
@@ -230,8 +234,8 @@ class IRGraphSpec extends BigDLSpecHelper {
     Engine.setEngineType(MklDnn)
     val dnn = blas.cloneModule()
       .asInstanceOf[StaticGraph[Float]]
-      .setInputFormats(Seq(Memory.Format.nc))
-      .setOutputFormats(Seq(Memory.Format.nc))
+      .setInputFormats(Seq(Memory.FormatTag.nc))
+      .setOutputFormats(Seq(Memory.FormatTag.nc))
       .toIRgraph()
       .evaluate()
 

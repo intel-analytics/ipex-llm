@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.models.lenet
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.mkldnn.DnnGraph
@@ -92,7 +93,7 @@ object LeNet5 {
     val outputShape = Array(batchSize, 10)
 
     val model = mkldnn.Sequential()
-      .add(mkldnn.Input(inputShape, Memory.Format.nchw))
+      .add(mkldnn.Input(inputShape, Memory.FormatTag.nchw))
       .add(mkldnn.SpatialConvolution(1, 20, 5, 5).setName("conv1"))
       .add(mkldnn.SpatialBatchNormalization(20).setName("bn1"))
       .add(mkldnn.MaxPooling(2, 2, 2, 2).setName("pool1"))
@@ -101,7 +102,7 @@ object LeNet5 {
       .add(mkldnn.Linear(50 * 4 * 4, 500).setName("ip1"))
       .add(mkldnn.ReLU().setName("relu1"))
       .add(mkldnn.Linear(500, 10).setName("ip2"))
-      .add(mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)))
+      .add(mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.FormatTag.nc)))
     model
   }
 
@@ -109,7 +110,7 @@ object LeNet5 {
     val inputShape = Array(batchSize, 1, 28, 28)
     val outputShape = Array(batchSize, 10)
 
-    val input = mkldnn.Input(inputShape, Memory.Format.nchw).inputs()
+    val input = mkldnn.Input(inputShape, Memory.FormatTag.nchw).inputs()
     val conv1 = mkldnn.SpatialConvolution(1, 20, 5, 5).setName("conv1").inputs(input)
     val bn1 = mkldnn.SpatialBatchNormalization(20).setName("bn1").inputs(conv1)
     val pool1 = mkldnn.MaxPooling(2, 2, 2, 2).setName("pool1").inputs(bn1)
@@ -118,7 +119,7 @@ object LeNet5 {
     val ip1 = mkldnn.Linear(50 * 4 * 4, 500).setName("ip1").inputs(pool2)
     val relu1 = mkldnn.ReLU().setName("relu1").inputs(ip1)
     val ip2 = mkldnn.Linear(500, 10).setName("ip2").inputs(relu1)
-    val output = mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)).inputs(ip2)
+    val output = mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.FormatTag.nc)).inputs(ip2)
 
     DnnGraph(Array(input), Array(output))
   }

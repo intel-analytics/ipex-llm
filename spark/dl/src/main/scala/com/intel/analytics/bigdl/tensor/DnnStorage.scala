@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.tensor
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.MemoryWrapper
 import com.intel.analytics.bigdl.nn.mkldnn.MemoryOwner
 import scala.reflect._
 
@@ -64,10 +64,10 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
     source match {
       case s: ArrayStorage[T] =>
         require(checkIsInstanceOf(ClassTag.Float), s"copy from float storage not supported")
-        Memory.CopyArray2Ptr(s.array().asInstanceOf[Array[Float]], sourceOffset,
+        MemoryWrapper.copyArray2Ptr(s.array().asInstanceOf[Array[Float]], sourceOffset,
           ptr.address, offset, length, bytes)
       case s: DnnStorage[T] =>
-        Memory.CopyPtr2Ptr(s.ptr.address, sourceOffset, ptr.address, offset, length,
+        MemoryWrapper.copyPtr2Ptr(s.ptr.address, sourceOffset, ptr.address, offset, length,
           bytes)
       case _ =>
         throw new UnsupportedOperationException("Only support copy from ArrayStorage or DnnStorage")
@@ -95,7 +95,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
    */
   def release(): Unit = synchronized {
     if (!this.isReleased() && ptr.address != 0L) {
-      Memory.AlignedFree(ptr.address)
+      MemoryWrapper.alignedFree(ptr.address)
       DnnStorage.checkAndSet(ptr.address)
       _isReleased = true
       ptr = null
@@ -106,7 +106,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
 
   private def allocate(capacity: Int): Long = {
     require(capacity > 0, s"capacity should be larger than 0")
-    val ptr = Memory.AlignedMalloc(capacity * bytes, DnnStorage.CACHE_LINE_SIZE)
+    val ptr = MemoryWrapper.alignedMalloc(capacity * bytes, DnnStorage.CACHE_LINE_SIZE)
     require(ptr != 0L, s"allocate native aligned memory failed")
     _isReleased = false
     DnnStorage.add(ptr)
@@ -119,7 +119,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
     if (!_isReleased) {
       ptr = new Pointer(allocate(this.size))
       val elements = in.readObject().asInstanceOf[Array[Float]]
-      Memory.CopyArray2Ptr(elements, 0, ptr.address, 0, size, DnnStorage.FLOAT_BYTES)
+      MemoryWrapper.copyArray2Ptr(elements, 0, ptr.address, 0, size, DnnStorage.FLOAT_BYTES)
     }
   }
 
@@ -128,7 +128,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
     out.defaultWriteObject()
     if (!_isReleased) {
       val elements = new Array[Float](this.length())
-      Memory.CopyPtr2Array(this.ptr.address, 0, elements, 0, size, DnnStorage.FLOAT_BYTES)
+      MemoryWrapper.copyPtr2Array(this.ptr.address, 0, elements, 0, size, DnnStorage.FLOAT_BYTES)
       out.writeObject(elements)
     }
   }

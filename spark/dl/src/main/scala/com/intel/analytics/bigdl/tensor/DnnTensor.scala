@@ -16,13 +16,14 @@
 package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
-import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.{MemoryOwner, Releasable}
 import com.intel.analytics.bigdl.tensor.DnnTensor.DnnTensorUnsupportOperations
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.MemoryWrapper
 import org.apache.spark.mllib.linalg
 import org.apache.spark.mllib.linalg.Matrix
+
 import scala.reflect.ClassTag
 
 class DnnTensor[T: ClassTag](
@@ -83,25 +84,25 @@ class DnnTensor[T: ClassTag](
 
   override def add(x: Tensor[T]): Tensor[T] = {
     require(x.isInstanceOf[DnnTensor[_]], "Just support two dnn tensor add")
-    Memory.SAdd(this.nElement(), this._storage.ptr.address, 0,
+    MemoryWrapper.sAdd(this.nElement(), this._storage.ptr.address, 0,
       x.asInstanceOf[DnnTensor[T]]._storage.ptr.address, 0, this._storage.ptr.address, 0)
     this
   }
 
   override def zero(): Tensor[T] = {
-    Memory.Zero(this._storage.ptr.address, this.nElement(), DnnStorage.FLOAT_BYTES)
+    MemoryWrapper.zero(this._storage.ptr.address, this.nElement(), DnnStorage.FLOAT_BYTES)
     this
   }
 
   def axpby(a: Float, b: Float, to: DnnTensor[T]): Unit = {
     val x = this._storage.ptr.address
     val y = to._storage.ptr.address
-    Memory.Axpby(this.nElement(), a, x, b, y)
+    MemoryWrapper.axpby(this.nElement(), a, x, b, y)
   }
 
   def scale(from: DnnTensor[T], scal: Float): Unit = {
     val length = this.nElement()
-    Memory.Scale(length, scal, from._storage.ptr.address, this._storage.ptr.address)
+    MemoryWrapper.scale(length, scal, from._storage.ptr.address, this._storage.ptr.address)
   }
 
   override def toTensor[D](implicit ev: TensorNumeric[D]): DnnTensor[D] = {
@@ -174,7 +175,7 @@ class DnnTensor[T: ClassTag](
       case FloatType =>
         if (size().product != this.nElement()) {
           val dense = Tensor[Float](Array(this.nElement()))
-          Memory.CopyPtr2Array(this.storageAddress(), 0, dense.storage().array(),
+          MemoryWrapper.copyPtr2Array(this.storageAddress(), 0, dense.storage().array(),
             0, nElement(), 4)
           dense.toString
         } else {
@@ -184,12 +185,12 @@ class DnnTensor[T: ClassTag](
         }
       case ByteType =>
         val array = new Array[Byte](nElement())
-        Memory.CopyPtr2ByteArray(this.asInstanceOf[DnnTensor[Byte]].storageAddress(), 0,
+        MemoryWrapper.copyPtr2ByteArray(this.asInstanceOf[DnnTensor[Byte]].storageAddress(), 0,
           array, 0, nElement(), 1)
         array.mkString("\t")
       case IntType =>
         val array = new Array[Int](nElement())
-        Memory.CopyPtr2IntArray(this.storageAddress(), 0, array, 0, nElement(), 4)
+        MemoryWrapper.copyPtr2IntArray(this.storageAddress(), 0, array, 0, nElement(), 4)
         array.mkString("\t")
       case _ => "unknown type"
     }

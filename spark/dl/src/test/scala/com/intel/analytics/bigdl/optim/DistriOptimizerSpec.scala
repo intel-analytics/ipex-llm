@@ -21,7 +21,7 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.HeapData
@@ -116,9 +116,9 @@ object DistriOptimizerSpecModel {
 
   def dnn: Module[Float] = {
     new nn.mkldnn.Sequential()
-      .add(nn.mkldnn.Input(Array(8, 4), Memory.Format.nc))
+      .add(nn.mkldnn.Input(Array(8, 4), Memory.FormatTag.nc))
       .add(nn.mkldnn.Linear(4, 2))
-      .add(nn.mkldnn.ReorderMemory(HeapData(Array(8, 2), Memory.Format.nc)))
+      .add(nn.mkldnn.ReorderMemory(HeapData(Array(8, 2), Memory.FormatTag.nc)))
   }
 }
 

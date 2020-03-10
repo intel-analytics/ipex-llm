@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.utils.intermediate
 
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{MemoryWrapper => Memory}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn._
@@ -189,8 +189,8 @@ class DnnPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     m.add(SpatialConvolution(3, 6, 5, 5))
     m.add(Tanh())
     val model = m.toGraph().asInstanceOf[StaticGraph[Float]]
-    model.setInputFormats(Seq(Memory.Format.nchw))
-    model.setOutputFormats(Seq(Memory.Format.nchw))
+    model.setInputFormats(Seq(Memory.FormatTag.nchw))
+    model.setOutputFormats(Seq(Memory.FormatTag.nchw))
 
     val detection = model.predictImage(imageFrame).toLocal()
     val feature = detection.array.head

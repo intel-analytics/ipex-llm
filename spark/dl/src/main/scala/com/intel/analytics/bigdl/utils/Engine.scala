@@ -23,7 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import org.apache.spark._
 import com.intel.analytics.bigdl.mkl.MKL
-import com.intel.analytics.bigdl.mkl.hardware.{Affinity, CpuInfo}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{CpuInfoWrapper => CpuInfo}
+import com.intel.analytics.bigdl.utils.wrapper.mkldnn.{AffinityWrapper => Affinity}
 import org.apache.spark.utils.SparkUtils
 import py4j.GatewayServer
 
@@ -567,7 +568,6 @@ object Engine {
   }
 
   private def setMklDnnEnvironments(): Unit = {
-    import com.intel.analytics.bigdl.mkl.hardware.CpuInfo
     val affinityCores = Affinity.getAffinity
     val physicalCoreNum = CpuInfo.getPhysicalProcessorCount
     val affinityCoreNum = affinityCores.length
