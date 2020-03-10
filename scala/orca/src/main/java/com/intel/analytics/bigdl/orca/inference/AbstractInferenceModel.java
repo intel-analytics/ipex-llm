@@ -35,10 +35,20 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     super(autoScalingEnabled, concurrentNum);
   }
 
+  public void loadBigDL(String modelPath) {
+    doLoadBigDL(modelPath, null, true);
+  }
+
+  public void loadBigDL(String modelPath, String weightPath) {
+    doLoadBigDL(modelPath, weightPath, true);
+  }
+
+  @Deprecated
   public void load(String modelPath) {
     doLoad(modelPath, null, true);
   }
 
+  @Deprecated
   public void load(String modelPath, String weightPath) {
     doLoad(modelPath, weightPath, true);
   }
