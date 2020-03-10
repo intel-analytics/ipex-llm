@@ -444,7 +444,7 @@ object ParallelOptimizer extends AbstractOptimizer {
 
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
       val weights = cached.head._2
-      Iterator.single(Cache(
+      Iterator.single(CacheV1(
         cached.map(_._1), // models
         cached.map(_._2), // weights
         cached.map(_._3), // gradients
@@ -585,7 +585,7 @@ class ParallelOptimizer[T: ClassTag](
     _model, _dataset, _criterion) {
   val metrics = new Metrics
 
-  private var models: RDD[DistriOptimizer.Cache[T]] = null
+  private var models: RDD[DistriOptimizer.CacheV1[T]] = null
 
   private var _priorities: mutable.Map[String, Int] = null
 
@@ -600,7 +600,7 @@ class ParallelOptimizer[T: ClassTag](
    * If the optimize fails, you may call it before next optimize.
    */
   def clearState(): Unit = {
-    ParallelOptimizer.clearState(models)
+    ParallelOptimizer.clearState(models.asInstanceOf[RDD[Cache[T]]])
   }
 
   private def endEpoch(): Unit = {
@@ -740,7 +740,7 @@ class ParallelOptimizer[T: ClassTag](
       state,
       endWhen,
       metrics,
-      models,
+      models.asInstanceOf[RDD[Cache[T]]],
       optimMethods,
       validationTrigger,
       validationDataSet,
@@ -752,7 +752,7 @@ class ParallelOptimizer[T: ClassTag](
       isOverWrite
     )
 
-    ParallelOptimizer.getModel(models, null, model)
+    ParallelOptimizer.getModel(models.asInstanceOf[RDD[Cache[T]]], null, model)
 
     // Reset some internal states, so this or other optimizers can run optimize again
     clearState()
