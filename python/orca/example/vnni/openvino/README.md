@@ -8,20 +8,20 @@ This example illustrates how to use a pre-trained OpenVINO optimized model to ma
 - Set `ZOO_NUM_MKLTHREADS` to determine cores used by OpenVINO, e.g, `export ZOO_NUM_MKLTHREADS=10`. If it is set to `all`, e.g., `export ZOO_NUM_MKLTHREADS=all`, then OpenVINO will utilize all physical cores for Prediction.
 - Set `KMP_BLOCKTIME=200`, i.e., `export KMP_BLOCKTIME=200`
 
-## PrepareOpenVINOResNet
-TensorFlow models cannot be directly loaded by OpenVINO. It should be converted to OpenVINO optimized model and int8 optimized model first. You can use [PrepareOpenVINOResNet](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/vnni/openvino) or [OpenVINO toolkit](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html) to finish this job.
+## Prepare OpenVINO Model
+TensorFlow models cannot be directly loaded by OpenVINO. It should be converted to OpenVINO optimized model and int8 optimized model first. You can use [OpenVINO toolkit](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html) to finish this job. With the help of [OpenVINO Open Model Zoo](https://github.com/opencv/open_model_zoo), you can download and optimize Tensorflow models into OpenVINO model, then further convert them into OpenVINO int8 models.
 
 __Sample Result files in MODEL_PATH__:
 ```
-resnet_v1_50.ckpt
-resnet_v1_50_inference_graph.bin
-resnet_v1_50_inference_graph-calibrated.bin
-resnet_v1_50_inference_graph-calibrated.xml
-resnet_v1_50_inference_graph.mapping
-resnet_v1_50_inference_graph.xml
+resnet_v1_50.xml
+resnet_v1_50.bin
+resnet_v1_50_i8.xml
+resnet_v1_50_i8.bin
 ```
 
-Among them, `resnet_v1_50_inference_graph.xml` and `resnet_v1_50_inference_graph.bin` are OpenVINO optimized ResNet_v1_50 model and weight, `resnet_v1_50_inference_graph-calibrated.xml` and `resnet_v1_50_inference_graph-calibrated.bin` are OpenVINO int8 optimized ResNet_v1_50 model and weight. Both of them can be loaded by OpenVINO or Zoo.
+Among them, `resnet_v1_50.xml` and `resnet_v1_50.bin` are OpenVINO optimized ResNet_v1_50 model and weight, `resnet_v1_50_i8.xml` and `resnet_v1_50_i8.bin` are OpenVINO int8 optimized ResNet_v1_50 model and weight. Both of them can be loaded by OpenVINO or Zoo.
+
+__Note that int8 optimized model promises better performance (~2X) with slightly lower accuracy.__
 
 ## Image Classification with ResNet_v1_50
 

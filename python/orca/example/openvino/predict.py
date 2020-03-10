@@ -31,9 +31,6 @@ if __name__ == "__main__":
                            "can be either a folder or an image path")
     parser.add_option("--model", type=str, dest="model_path",
                       help="Path to the TensorFlow model file")
-    parser.add_option("--model_type", type=str, dest="model_type",
-                      help="The type of the TensorFlow model",
-                      default="faster_rcnn_resnet101_coco")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -41,10 +38,11 @@ if __name__ == "__main__":
     images = ImageSet.read(options.img_path, sc,
                            resize_height=600, resize_width=600).get_image().collect()
     input_data = np.concatenate([image.reshape((1, 1) + image.shape) for image in images], axis=0)
+    model_path = options.model_path
     model = InferenceModel()
-    model.load_tf(join(options.model_path, "frozen_inference_graph.pb"),
-                  backend="openvino", model_type=options.model_type,
-                  ov_pipeline_config_path=join(options.model_path, "pipeline.config"))
+    model.load_openvino(model_path,
+                        weight_path=model_path[:model_path.rindex(".")] +
+                        ".bin")
     predictions = model.predict(input_data)
     # Print the detection result of the first image.
     print(predictions[0])
