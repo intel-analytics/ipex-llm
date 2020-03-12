@@ -1,5 +1,5 @@
-## Analytics-Zoo InferenceModel with OpenVINO accelerating on Flink Streaming
-This is the real-time image classification on Flink streaming. This example is loading pre-trained MobileNet model as Analytics Zoo Inference Model for image prediction on Flink. 
+## Image Classification Streaming with Analytics Zoo Inference Model on Flink
+This is the real-time image classification on Flink streaming. This example is loading pre-trained TensorFlow MobileNet model as Analytics Zoo TFNet for image prediction on Flink. 
 
 ### Requirements
 
