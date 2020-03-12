@@ -222,31 +222,30 @@ echo "#App[Model-inference-example] Test 5.1: model-inference-flink:Text Classif
 
 ./flink-1.7.2/bin/stop-cluster.sh
 
-if [ -f resnet_v1_50.ckpt ]
+if [ -f mobilenet_v1_1.0_224_frozen.pb ]
 then
-    echo "analytics-zoo-models/flink_model/resnet_v1_50.ckpt already exists"
+    echo "analytics-zoo-models/flink_model/mobilenet_v1_1.0_224_frozen.pb already exists"
 else
-    wget ${FTP_URI}/analytics-zoo-models/flink_model/resnet_v1_50.ckpt
+    wget ${FTP_URI}/analytics-zoo-models/flink_model/mobilenet_v1_1.0_224_frozen.pb
 fi
 
 ./flink-1.7.2/bin/start-cluster.sh
 
-echo "# Test 5.2 model-inference-flink:Resnet50 Image Classification"
+echo "# Test 5.2 model-inference-flink: Image Classification"
 #timer
 start=$(date "+%s")
 
 ./flink-1.7.2/bin/flink run \
 -m localhost:8081 -p 1 \
--c com.intel.analytics.zoo.apps.model.inference.flink.Resnet50ImageClassification.ImageClassificationStreaming  \
+-c com.intel.analytics.zoo.apps.model.inference.flink.ImageClassification.ImageClassificationStreaming  \
 ${ANALYTICS_ZOO_ROOT}/apps/model-inference-examples/model-inference-flink/target/model-inference-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar  \
---modelType resnet_v1_50 --checkpointPath resnet_v1_50.ckpt  \
---image ${ANALYTICS_ZOO_ROOT}/zoo/src/test/resources/imagenet/n04370456/ \
---classes ${ANALYTICS_ZOO_ROOT}/zoo/src/main/resources/imagenet_classname.txt  \
---inputShape "1,224,224,3" --ifReverseInputChannels true --meanValues "123.68,116.78,103.94" --scale 1
+--modelPath mobilenet_v1_1.0_224_frozen.pb   --modelType frozenModel   \
+--images ${ANALYTICS_ZOO_ROOT}/zoo/src/test/resources/imagenet/n04370456/ \
+--classes ${ANALYTICS_ZOO_ROOT}/zoo/src/main/resources/imagenet_classname.txt
 
 now=$(date "+%s")
 time8=$((now-start))
-echo "#App[Model-inference-example] Test 5.1: model-inference-flink:Resnet50 Image Classification time used:$time8 seconds"
+echo "#App[Model-inference-example] Test 5.1: model-inference-flink: Image Classification time used:$time8 seconds"
 
 ./flink-1.7.2/bin/stop-cluster.sh
 
@@ -257,4 +256,4 @@ echo "#3.2 text-classification-inference:WebServiceDriver time used:$time4 secon
 echo "#4.1 recommendation-inference:SimpleScalaDriver time used:$time5 seconds"
 echo "#4.2 recommendation-inference:SimpleDriver time used:$time6 seconds"
 echo "#5.1 model-inference-flink:Text Classification time used:$time7 seconds"
-echo "#5.2 model-inference-flink:Resnet50 Image Classification time used:$time8 seconds"
+echo "#5.2 model-inference-flink:Image Classification time used:$time8 seconds"
