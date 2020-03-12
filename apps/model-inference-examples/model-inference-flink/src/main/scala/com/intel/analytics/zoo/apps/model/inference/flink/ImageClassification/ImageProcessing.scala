@@ -1,4 +1,4 @@
-package com.intel.analytics.zoo.apps.model.inference.flink.Resnet50ImageClassification
+package com.intel.analytics.zoo.apps.model.inference.flink.ImageClassification
 
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
@@ -10,10 +10,12 @@ import org.slf4j.LoggerFactory
 trait ImageProcessing {
   val logger = LoggerFactory.getLogger(getClass)
 
+  // convert Array[byte] to OpenCVMat.
   def byteArrayToMat(bytes: Array[Byte], imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): OpenCVMat = {
     OpenCVMethod.fromImageBytes(bytes, imageCodec)
   }
 
+  // do a center crop by resizing a square. normalized and isclip are optional.
   def centerCrop(mat: OpenCVMat, cropWidth: Int, cropHeight: Int, normalized: Boolean = false, isClip: Boolean = false): OpenCVMat = {
     val height = mat.height().toFloat
     val width = mat.width().toFloat
@@ -38,14 +40,19 @@ trait ImageProcessing {
     cropedMat
   }
 
-
-  def matToNCHWAndArray(mat: OpenCVMat) = {
+  // convert OpenCVMat to Array
+  def matToArray(mat: OpenCVMat) = {
     val (height, width, channel) = (mat.height(), mat.width(), mat.channels())
     val data = new Array[Float](height * width * channel)
     OpenCVMat.toFloatPixels(mat, data)
-    val resArray = new Array[Float](height * width * channel)
-    for (h <- 0 to height - 1) {
-      for (w <- 0 to width - 1) {
+    data
+  }
+
+  // convert to NCHW[N,channel,height,width] Array. OpenVINO input layout is NCHW.
+  def fromHWC2CHW(data: Array[Float]): Array[Float] = {
+    val resArray = new Array[Float](3 * 224 * 224)
+    for (h <- 0 to 223) {
+      for (w <- 0 to 223) {
         for (c <- 0 to 2) {
           resArray(c * 224 * 224 + h * 224 + w) = data(h * 224 * 3 + w * 3 + c)
         }
@@ -54,6 +61,20 @@ trait ImageProcessing {
     resArray
   }
 
+  // convert to NHWC[N,height,width,channel] Array. TFNet input layout is NHWC.
+  def fromCHW2HWC(data: Array[Float]): Array[Float] = {
+    val resArray = new Array[Float](3 * 224 * 224)
+    for (c <- 0 to 2) {
+      for (h <- 0 to 223) {
+        for (w <- 0 to 223) {
+          resArray(h * 224 * 3 + w * 3 + c) = data(c * 224 * 224 + h * 224 + w)
+        }
+      }
+    }
+    resArray
+  }
+
+  // Normalize with channel and scale
   def channelScaledNormalize(array: Array[Float], meanR: Int, meanG: Int, meanB: Int, scale: Double) = {
     val frameLength = array.length / 3
     val channels = 3
@@ -63,9 +84,7 @@ trait ImageProcessing {
       var i = 0
       while (i < frameLength) {
         val data_index = c * frameLength + i
-        //println(content(data_index), ((content(data_index) - mean(c)) * scale).toFloat)
         array(data_index) = ((array(data_index) - mean(c)) * scale).toFloat
-        //println(content(data_index))
         i += 1
       }
       c += 1
