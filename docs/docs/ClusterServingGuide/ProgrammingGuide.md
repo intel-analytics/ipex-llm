@@ -9,25 +9,25 @@ Note: currently only **image classification** models are supported.
 
 This page contains the guide for you to run Analytics Zoo Cluster Serving, including following:
 
-* [Quick Start](#Quick-Start)
+* [Quick Start](#quick-start)
 
-* [Workflow Overview](#Workflow-Overview) 
+* [Workflow Overview](#workflow-overview) 
 
-* [Deploy Your Own Cluster Serving](#Deploy-Your-Own-Cluster-Serving)
+* [Deploy Your Own Cluster Serving](#deploy-your-own-cluster-serving)
 
-   1. [Installation](#1-Installation)
+   1. [Installation](#1-installation)
 
-   2. [Configuration](#2-Configuration) 
+   2. [Configuration](#2-configuration) 
    
-   3. [Launching Service](#3-Launching-Service)
+   3. [Launching Service](#3-launching-service)
    
-   4. [Model inference](#4-Model-inference)
+   4. [Model inference](#4-model-inference)
 
-* [Optional Operations](#Optional-Operations)
+* [Optional Operations](#optional-operations)
 
-     - [Update Model or Configurations](#Update-Model-or-Configurations)
+     - [Update Model or Configurations](#update-model-or-configurations)
 
-     - [Logs and Visualization](#Logs-and-Visualization)
+     - [Logs and Visualization](#logs-and-visualization)
 
 
 ## Quick Start
@@ -66,9 +66,9 @@ image: dog1.jpeg, classification-result: class: 207's prob: 0.9226527
 ```
 Wow! You made it!
 
-Note that the Cluster Serving quick start example will run on your local node only. Check the [Deploy Your Own Cluster Serving](#Deploy-Your-Own-Cluster-Serving) section for how to configure and run Cluster Serving in a distributed fashion.
+Note that the Cluster Serving quick start example will run on your local node only. Check the [Deploy Your Own Cluster Serving](#deploy-your-own-cluster-serving) section for how to configure and run Cluster Serving in a distributed fashion.
 
-For more details, you could also see the log and performance by go to `localhost:6006` in your browser and refer to [Logs and Visualization](#Logs-and-Visualization), or view the source code of `quick_start.py` [here](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/serving/quick_start.py), or refer to [API Guide](APIGuide.md).
+For more details, you could also see the log and performance by go to `localhost:6006` in your browser and refer to [Logs and Visualization](#logs-and-visualization), or view the source code of `quick_start.py` [here](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/serving/quick_start.py), or refer to [API Guide](APIGuide.md).
 
 
 ## Workflow Overview
@@ -142,7 +142,7 @@ Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to
 Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
 ### 2. Configuration
 #### How to Config
-After [Installation](#1-Installation), you will see a config file `config.yaml` in your current working directory. This file contains all the configurations that you can customize for your Cluster Serving. See an example of `config.yaml` below.
+After [Installation](#1-installation), you will see a config file `config.yaml` in your current working directory. This file contains all the configurations that you can customize for your Cluster Serving. See an example of `config.yaml` below.
 ```
 ## Analytics Zoo Cluster Serving Config Example
 
@@ -247,7 +247,7 @@ You can use following command to start Cluster Serving.
 ```
 cluster-serving-start
 ```
-This command will start Redis and TensorBoard if they are not running. Note that you need to provide `REDIS_HOME` environment variable as mentioned in [Installation](#1-Installation).
+This command will start Redis and TensorBoard if they are not running. Note that you need to provide `REDIS_HOME` environment variable as mentioned in [Installation](#1-installation).
 
 #### Stop
 You can use following command to stop Cluster Serving. Data in Redis and TensorBoard service will persist.
@@ -289,7 +289,7 @@ img1_result = output_api.query('img1')
 all_result = output_api.dequeue() # the output queue is empty after this code
 ```
 #### Output Format
-Consider the code above, in [Input and Output API](#Input-and-Output-API) Section.
+Consider the code above, in [Input and Output API](#input-and-output-api) Section.
 ```
 img1_result = output_api.query('img1')
 ```
