@@ -73,9 +73,6 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
 
     s"ls -alh $dir" !;
 
-    resnet_v1_50_path = s"$dir/resnet_v1_50_inference_graph"
-    resnet_v1_50_int8_path = s"$dir/resnet_v1_50_inference_graph-calibrated"
-
     valDir = s"$dir/val_bmp_32/"
 
     image_input_65_filePath = s"$dir/ic_input_65"
