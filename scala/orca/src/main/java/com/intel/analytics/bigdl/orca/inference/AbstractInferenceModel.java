@@ -128,11 +128,6 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadTF(savedModelBytes, inputShape, ifReverseInputChannels, meanValues, scale, input);
   }
 
-  @Deprecated
-  public void loadTFAsCalibratedOpenVINO(String modelPath, String modelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale,
-                                          String networkType, String validationFilePath, int subset, String opencvLibPath) {
-    doLoadTFAsCalibratedOpenVINO(modelPath, modelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale, networkType, validationFilePath, subset, opencvLibPath);
-  }
 
   public void loadOpenVINO(String modelFilePath, String weightFilePath, int batchSize) {
     doLoadOpenVINO(modelFilePath, weightFilePath, batchSize);
@@ -190,9 +185,5 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
 
   public static void optimizeTF(String modelPath, String imageClassificationModelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String outputDir) {
     InferenceModel.doOptimizeTF(modelPath, imageClassificationModelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale, outputDir);
-  }
-
-  public static void calibrateTF(String modelPath, String networkType, String validationFilePath, int subset, String opencvLibPath, String outputDir) {
-    InferenceModel.doCalibrateTF(modelPath, networkType, validationFilePath, subset, opencvLibPath, outputDir);
   }
 }
