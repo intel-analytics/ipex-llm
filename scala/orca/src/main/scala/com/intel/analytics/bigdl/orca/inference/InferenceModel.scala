@@ -416,48 +416,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   /**
-   * load TF model as Calibrated OpenVINO IR
-   *
-   * @param modelPath              the path of the tensorflow model
-   * @param modelType              the type of the tensorflow model
-   * @param checkpointPath         the path of the tensorflow checkpoint file
-   * @param inputShape             input shape that should be fed to an input node(s) of the model
-   * @param ifReverseInputChannels the boolean value of if need reverse input channels.
-   *                               switch the input channels order from RGB to BGR (or vice versa).
-   * @param meanValues             all input values coming from original network inputs
-   *                               will be divided by this value.
-   * @param scale                  the scale value, to be used for the input image per channel.
-   * @param networkType            Type of an inferred network,
-   *                               "C" to calibrate Classification,
-   *                               "OD" to calibrate Object Detection,
-   *                               "RawC" to collect only statistics for Classification,
-   *                               "RawOD" to collect only statistics for Object Detection
-   * @param validationFilePath     Path to a file with validation images
-   * @param subset                 Number of pictures from the whole validation set
-   *                               to create the calibration dataset.
-   * @param opencvLibPath          the lib path whwere libopencv_imgcodecs.so.4.0,
-   *                               libopencv_core.so.4.0
-   *                               and libopencv_imgproc.so.4.0 can be found
-   */
-  @deprecated("this method is deprecated", "0.8.0")
-  def doLoadTFAsCalibratedOpenVINO(modelPath: String,
-                                   modelType: String,
-                                   checkpointPath: String,
-                                   inputShape: Array[Int],
-                                   ifReverseInputChannels: Boolean,
-                                   meanValues: Array[Float],
-                                   scale: Float,
-                                   networkType: String,
-                                   validationFilePath: String,
-                                   subset: Int,
-                                   opencvLibPath: String): Unit = {
-    doLoadTensorflowModelAsCalibratedOpenVINO(
-      modelPath, modelType, checkpointPath,
-      inputShape, ifReverseInputChannels, meanValues, scale,
-      networkType, validationFilePath, subset, opencvLibPath)
-  }
-
-  /**
    * loads a openvino IR
    *
    * @param modelPath  the path of openvino ir xml file
@@ -723,30 +681,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     offerModelQueue()
   }
 
-  private def doLoadTensorflowModelAsCalibratedOpenVINO(modelPath: String,
-                                                        modelType: String,
-                                                        checkpointPath: String,
-                                                        inputShape: Array[Int],
-                                                        ifReverseInputChannels: Boolean,
-                                                        meanValues: Array[Float],
-                                                        scale: Float,
-                                                        networkType: String,
-                                                        validationFilePath: String,
-                                                        subset: Int,
-                                                        opencvLibPath: String): Unit = {
-    if (concurrentNum > 1) {
-      InferenceSupportive.logger.warn(s"concurrentNum is $concurrentNum > 1, " +
-        s"openvino model does not support shared weights model copies")
-    }
-    clearModelQueue()
-    this.originalModel = InferenceModelFactory.loadCalibratedOpenVINOModelForTF(
-      modelPath, modelType, checkpointPath,
-      inputShape, ifReverseInputChannels, meanValues, scale,
-      networkType, validationFilePath, subset, opencvLibPath)
-    offerModelQueue()
-  }
-
-
   /**
    * reloads the bigdl, analytics-zoo model
    *
@@ -952,32 +886,4 @@ object InferenceModel {
       modelPath, imageClassificationModelType, checkpointPath, inputShape,
       ifReverseInputChannels, meanValues, scale, outputDir)
   }
-
-  /**
-   * calibrate tensorflow model
-   *
-   * @param modelPath            Path to an .xml file with a trained model
-   * @param networkType          Type of an inferred network,
-   *                             "C" to calibrate Classification,
-   *                             "OD" to calibrate Object Detection,
-   *                             "RawC" to collect only statistics for Classification,
-   *                             "RawOD" to collect only statistics for Object Detection
-   * @param validationFilePath   Path to a directory with validation images
-   * @param subset               Number of pictures from the whole validation set
-   *                             to create the calibration dataset.
-   * @param opencvLibPath        the lib path whwere libopencv_imgcodecs.so.4.0,
-   *                             libopencv_core.so.4.0
-   *                             and libopencv_imgproc.so.4.0 can be found
-   * @param outputDir            the output directory
-   */
-  def doCalibrateTF(modelPath: String,
-                    networkType: String,
-                    validationFilePath: String,
-                    subset: Int,
-                    opencvLibPath: String,
-                    outputDir: String): Unit = {
-    OpenVinoInferenceSupportive.calibrateTensorflowModel(
-      modelPath, networkType, validationFilePath, subset, opencvLibPath, outputDir)
-  }
-
 }

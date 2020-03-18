@@ -227,28 +227,17 @@ val predictOutput = model.doPredict(predictInput)
 predict_output = model.predict(predict_input)
 ```
 
-### **loadTFAsCalibratedOpenVINO**
-
-Do prediction with int8 optimized model. Powered by [VNNI](https://en.wikichip.org/wiki/x86/avx512vnni) and [Intel Deep Learning Boost](https://www.intel.ai/intel-deep-learning-boost/). Currently, this API is only for OpenVINO. For Analytics Zoo model, int8 optimized model can directly make prediction with `predict` method.
-
-To load an OpenVINO int8 optimized model from TensorFlow, we build `loadTFAsCalibratedOpenVINO` methods with 4 more parameters than `loadOpenVINOModelForTF`.
-
-* `networkType`: String. Type of an inferred network, "C" to calibrate Classification, "OD" to calibrate Object Detection, "RawC" to collect only statistics for Classification, "RawOD" to collect only statistics for Object Detection.
-* `validationFilePath`: String. Path to a file with validation images path and target labels.
-* `subset`: Int. Number of pictures from the whole validation set to create the calibration dataset.
-* `opencvLibPath`: String. lib path where libopencv_imgcodecs.so.4.0, libopencv_core.so.4.0 and libopencv_imgproc.so.4.0 can be found.
-
 ## **Supportive classes**
 
 **InferenceModel**
 
 `doOptimizeTF` method in Scala is designed for coverting TensorFlow model into OpenVINO model.
 
-`doCalibrateTF` method in Scala is designed for optimizing OpenVINO model into OpenVINO int8 optimized model.
-
 Pipline of these API:
 
-TensorFlow model -`doOptimizeTF`-> OpenVINO model -`doCalibrateTF`-> OpenVINO int8 optimized model
+TensorFlow model -`doOptimizeTF`-> OpenVINO model -`Calibration`-> OpenVINO int8 optimized model
+
+From 0.8 version, analytics-zoo no longer provides `Calibration` tools. Pls refer to [OpenVINO Calibration tool](https://docs.openvinotoolkit.org/2019_R1/_inference_engine_samples_calibration_tool_README.html).
 
 **InferenceSupportive**
 
