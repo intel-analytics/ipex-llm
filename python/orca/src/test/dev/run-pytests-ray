@@ -40,7 +40,7 @@ then
     exit $exit_status_3
 fi
 
-echo "Running automl tests"
+echo "Running zouwu tests"
 python -m pytest -v ../test/zoo/zouwu
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];
