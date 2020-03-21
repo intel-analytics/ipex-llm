@@ -43,6 +43,9 @@ pages:
   - PyTorch: ProgrammingGuide/pytorch.md
   - RayOnSpark: ProgrammingGuide/rayonspark.md
   - Cluster Serving: ClusterServingGuide/ProgrammingGuide.md
+  - AutoML:
+    - Overview: ProgrammingGuide/AutoML/overview.md
+    - Time Series Forecasting: ProgrammingGuide/AutoML/forecasting.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
@@ -78,6 +81,10 @@ pages:
     - Text Models: APIGuide/TFPark/text-models.md
     - BERT Classifier: APIGuide/TFPark/bert-classifier.md
   - Cluster Serving: ClusterServingGuide/APIGuide.md
+  - AutoML:
+    - TimeSequencePredictor: APIGuide/AutoML/time-sequence-predictor.md
+    - Recipe: APIGuide/AutoML/recipe.md
+    - TimeSequencePipeline: APIGuide/AutoML/time-sequence-pipeline.md
   - Feature Engineering:
     - FeatureSet: APIGuide/FeatureEngineering/featureset.md
     - Relation: APIGuide/FeatureEngineering/relation.md
