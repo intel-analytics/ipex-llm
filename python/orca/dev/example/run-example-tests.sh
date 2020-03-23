@@ -202,12 +202,6 @@ ${SPARK_HOME}/bin/spark-submit \
    analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model analytics-zoo-data/data/dogs-vs-cats/samples
 
 
-echo "start example test for nnframes tensorflow SimpleTraining"
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-   --master local[1] \
-   --driver-memory 5g \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/tensorflow/SimpleTraining.py
-
 now=$(date "+%s")
 time5=$((now-start))
 
