@@ -28,6 +28,7 @@ from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.common.utils import callZooFunc
 from zoo.feature.image import ImageSet
 from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset, TFDataDataset
+import logging
 
 if sys.version >= '3':
     long = int
@@ -264,10 +265,6 @@ class TFNet(Layer):
         of the TensorFlow graph
         :param outputs: a list of TensorFlow Tensor represents the output endpoints
         of the TensorFlow graph
-        :param generate_backward: whether to generated a the backward graph, set true
-        if you want to train this TFNet
-        :param allow_non_differentiable_input: if set to yes, when input are not differentiable,
-        the gradient will be set to zero. if set to false, an error will be thrown.
         :param tf_session_config: an optional tf.ConfigProto object to
                        set the session config in java side.
                        This config does not necessarily be the same with your current session.
@@ -280,6 +277,10 @@ class TFNet(Layer):
         temp = tempfile.mkdtemp()
         try:
             if generate_backward:
+                logging.warning("generate_backward option is deprecated, and will be removed in"
+                                + "in future releases, please use TFPark "
+                                + "(https://analytics-zoo.github.io/master/"
+                                + "#ProgrammingGuide/TFPark/tensorflow/) for TensorFlow training")
                 export_tf(sess, temp, inputs, outputs,
                           generate_backward, allow_non_differentiable_input)
                 net = TFNet.from_export_folder(temp, tf_session_config)
