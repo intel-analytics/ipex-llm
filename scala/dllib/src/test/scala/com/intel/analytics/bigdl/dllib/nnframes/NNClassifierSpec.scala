@@ -68,7 +68,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifier" should "has correct default params" in {
     val model = Linear[Float](10, 1)
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val estimator = NNClassifier(model, criterion, Array(10))
     assert(estimator.getFeaturesCol == "features")
     assert(estimator.getLabelCol == "label")
@@ -80,7 +80,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifier" should "apply with differnt params" in {
     val model = Linear[Float](6, 2)
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
@@ -93,7 +93,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifier" should "get reasonable accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val classifier = NNClassifier(model, criterion, Array(6))
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.1)
@@ -127,7 +127,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifier" should "apply with size support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val classifier = NNClassifier(model, criterion, Array(6))
       .setLearningRate(0.1)
       .setBatchSize(2)
@@ -147,7 +147,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifier" should "support scalar FEATURE" in {
     val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val classifier = NNClassifier(model, criterion, Array(1))
       .setLearningRate(0.1)
       .setBatchSize(2)
@@ -167,7 +167,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifier" should "fit with adam and LBFGS" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     Seq(new LBFGS[Float], new Adam[Float]).foreach { optimMethod =>
       val classifier = NNClassifier(model, criterion, Array(6))
         .setBatchSize(nRecords)
@@ -187,7 +187,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
     val logdir = createTmpDir()
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val classifier = NNClassifier(model, criterion, Array(6))
       .setBatchSize(nRecords)
       .setEndWhen(Trigger.maxIteration(5))
@@ -239,7 +239,7 @@ class NNClassifierSpec extends ZooSpecHelper {
       val scaler = new MinMaxScaler().setInputCol("features").setOutputCol("scaled")
         .setMax(1).setMin(-1)
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-      val criterion = ClassNLLCriterion[Float]()
+      val criterion = ZooClassNLLCriterion[Float]()
       val estimator = NNClassifier(model, criterion)
         .setBatchSize(nRecords)
         .setOptimMethod(new LBFGS[Float]())
@@ -262,7 +262,7 @@ class NNClassifierSpec extends ZooSpecHelper {
     val transformer = RowToImageFeature() -> ImageResize(256, 256) -> ImageCenterCrop(224, 224) ->
       ImageChannelNormalize(123, 117, 104, 1, 1, 1) -> ImageMatToTensor() -> ImageFeatureToTensor()
 
-    val estimator = NNClassifier(Inception_v1(1000), ClassNLLCriterion[Float](), transformer)
+    val estimator = NNClassifier(Inception_v1(1000), ZooClassNLLCriterion[Float](), transformer)
       .setBatchSize(1)
       .setEndWhen(Trigger.maxIteration(1))
       .setFeaturesCol("image")
@@ -271,7 +271,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClasifierModel" should "has default batchperthread as 4" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     Seq(new LBFGS[Float], new Adam[Float]).foreach { optimMethod =>
       val classifier = NNClassifier(model, criterion, Array(6))
         .setBatchSize(nRecords)
@@ -322,7 +322,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifier" should "supports deep copy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val data = sc.parallelize(
       smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -370,7 +370,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifierModel" should "supports deep copy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val data = sc.parallelize(
       smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("abc", "la")
@@ -394,7 +394,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
   "NNClassifierModel" should "supports set Preprocessing" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
+    val criterion = ZooClassNLLCriterion[Float]()
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
     val classifier = NNClassifier(model, criterion)
