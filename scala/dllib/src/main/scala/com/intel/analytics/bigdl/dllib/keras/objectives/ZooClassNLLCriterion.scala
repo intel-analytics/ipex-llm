@@ -25,7 +25,7 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
-class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
+class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 (weights: Tensor[T] = null, sizeAverage: Boolean = true, logProbAsInput: Boolean = true,
  paddingValue: Int = -1)(implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
@@ -185,13 +185,13 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   }
 }
 
-object ClassNLLCriterion {
+object ZooClassNLLCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     weights: Tensor[T] = null,
     sizeAverage: Boolean = true,
     logProbAsInput: Boolean = true,
     paddingValue: Int = -1
-  )(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
-    new ClassNLLCriterion[T](weights, sizeAverage, logProbAsInput, paddingValue)
+  )(implicit ev: TensorNumeric[T]) : ZooClassNLLCriterion[T] = {
+    new ZooClassNLLCriterion[T](weights, sizeAverage, logProbAsInput, paddingValue)
   }
 }

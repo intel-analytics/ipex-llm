@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.objectives
 import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.ZooClassNLLCriterion
 
 import scala.reflect.ClassTag
 
@@ -53,7 +53,7 @@ class SparseCategoricalCrossEntropy[T: ClassTag](
   extends TensorLossFunction[T] {
 
   override val loss: TensorCriterion[T] =
-    ClassNLLCriterion[T](weights, sizeAverage, logProbAsInput, paddingValue)
+    ZooClassNLLCriterion[T](weights, sizeAverage, logProbAsInput, paddingValue)
 
   private val targetBuffer: Tensor[T] = Tensor[T]()
 
