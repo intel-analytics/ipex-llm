@@ -160,7 +160,7 @@ merged = ZLayer.merge([flatten, dense1, gru], mode="concat")
 zy = ZLayer.Dense(2)(merged)
 
 zmodel = ZModel([x1, x2, x3], zy)
-criterion = ClassNLLCriterion()
+criterion = ZooClassNLLCriterion()
 classifier = NNClassifier(zmodel, criterion, [[1], [2], [2, 2]]) \
     .setOptimMethod(Adam()) \
     .setLearningRate(0.1)\
@@ -299,7 +299,7 @@ from pyspark.sql.types import *
 
 #Logistic Regression with BigDL layers and Analytics zoo NNClassifier
 model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
-criterion = ClassNLLCriterion()
+criterion = ZooClassNLLCriterion()
 estimator = NNClassifier(model, criterion, [2]).setBatchSize(4).setMaxEpoch(10)
 data = sc.parallelize([
     ((0.0, 1.0), [1.0]),

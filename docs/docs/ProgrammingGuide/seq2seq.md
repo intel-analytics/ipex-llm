@@ -49,13 +49,13 @@ After building the model, we can use BigDL Optimizer to train it (with validatio
 **Scala**
 ```scala
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.nn.{TimeDistributedMaskCriterion, ClassNLLCriterion}
+import com.intel.analytics.bigdl.nn.{TimeDistributedMaskCriterion, ZooClassNLLCriterion}
 
 val optimizer = Optimizer(
 model,
 trainSet,
 TimeDistributedMaskCriterion(
-  ClassNLLCriterion(paddingValue = padId),
+  ZooClassNLLCriterion(paddingValue = padId),
   paddingValue = padId
 ),
 batchSize = 128)
@@ -71,7 +71,7 @@ Also we can use `Seq2seq.fit` api to train the model.
 model.compile(
 optimizer = optimMethod,
 loss = TimeDistributedMaskCriterion(
-  ClassNLLCriterion(paddingValue = padId),
+  ZooClassNLLCriterion(paddingValue = padId),
   paddingValue = padId
 ))
 
@@ -87,7 +87,7 @@ from bigdl.optim.optimizer import *
 optimizer = Optimizer(
     model=seq2seq,
     training_rdd=train_rdd,
-    criterion=TimeDistributedMaskCriterion(ClassNLLCriterion()),
+    criterion=TimeDistributedMaskCriterion(ZooClassNLLCriterion()),
     end_trigger=MaxEpoch(20),
     batch_size=128,
     optim_method=Adagrad(learningrate=0.01, learningrate_decay=0.001))
