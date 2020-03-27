@@ -31,7 +31,7 @@ import scala.language.postfixOps
 import sys.process._
 
 
-/*
+
 @OpenVinoTest
 class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
   with InferenceSupportive {
@@ -45,7 +45,8 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
   val logger = LoggerFactory.getLogger(getClass)
   var tmpDir: File = _
 
-  val fasterrcnnModelUrl = "https://analytics-zoo-models.s3-ap-southeast-1.amazonaws.com/openvino/2018_R5/faster_rcnn_resnet101_coco"
+  val fasterrcnnModelUrl = "https://analytics-zoo-models.s3-ap-southeast-1.amazonaws.com" +
+      "/openvino/2018_R5/faster_rcnn_resnet101_coco"
   var fasterrcnnModel: OpenVINOModel = _
   val fasterrcnnInferenceModel: InferenceModel = new InferenceModel(3)
   val fasterrcnnInputShape = Array(1, 3, 600, 600)
@@ -154,5 +155,3 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     }
   }
 }
-*/
-
