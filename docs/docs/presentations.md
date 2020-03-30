@@ -1,14 +1,14 @@
 **Tutorial:**
 
-* Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, [AI conference](https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069), Sep 2019, San Jose([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf))
+* Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, [AI conference](https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069), Sep 2019, San Jose ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf))
 
 **Talks:**
 
-* Architecture and practice of big data analysis and deep learning model inference using Analytics Zoo on Flink(FFA2019), [Flink Forward Asia 2019](https://developer.aliyun.com/special/ffa2019-conference?spm=a2c6h.13239638.0.0.21f27955PCNMUB#), Nov 2019, Beijing ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architecture%20and%20practice%20of%20big%20data%20analysis%20and%20deep%20learning%20model%20inference%20using%20Analytics%20Zoo%20on%20Flink(FFA2019)%20.pdf))
+* Architecture and practice of big data analysis and deep learning model inference using Analytics Zoo on Flink, [Flink Forward Asia 2019](https://developer.aliyun.com/special/ffa2019-conference?spm=a2c6h.13239638.0.0.21f27955PCNMUB#), Nov 2019, Beijing ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architecture%20and%20practice%20of%20big%20data%20analysis%20and%20deep%20learning%20model%20inference%20using%20Analytics%20Zoo%20on%20Flink(FFA2019)%20.pdf))
 
-* Data analysis + AI platform technology and case studies, [InfoQ AICon BJ 2019](https://qcon.infoq.cn/2019/beijing/), Nov 2019, Beijing ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/AICON%20AZ%20Cluster%20Serving%20Beijing%20Qiyuan_v5.pdf))
+* Data analysis + AI platform technology and case studies, [AICon BJ 2019](https://aicon.infoq.cn/2019/beijing/), Nov 2019, Beijing ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/AICON%20AZ%20Cluster%20Serving%20Beijing%20Qiyuan_v5.pdf))
 
-* Architectural practices for building a unified big data AI application with Analytics-Zoo, [InfoQ QCon SH 2019](https://qcon.infoq.cn/2019/shanghai/presentation/1921), Oct 2019, Shanghai ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architectural%20practices%20for%20building%20a%20unified%20big%20data%20AI%20application%20with%20Analytics-Zoo.pdf))
+* Architectural practices for building a unified big data AI application with Analytics-Zoo, [QCon SH 2019](https://qcon.infoq.cn/2019/shanghai/presentation/1921), Oct 2019, Shanghai ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architectural%20practices%20for%20building%20a%20unified%20big%20data%20AI%20application%20with%20Analytics-Zoo.pdf))
 
 * Building AI to play the FIFA video game using distributed TensorFlow, [TensorFlow World](https://conferences.oreilly.com/tensorflow/tf-ca/public/schedule/detail/78309), Oct 2019, Santa Clara ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Building%20AI%20to%20play%20the%20FIFA%20video%20game%20using%20distributed%20TensorFlow.pdf))
 
