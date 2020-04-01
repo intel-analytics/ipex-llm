@@ -33,6 +33,8 @@ private[zoo] class TFTrainingHelper protected (val graphRunner: GraphRunner,
                                     val checkpointPath: String,
                                     val inputs: Array[String],
                                     val inputTypes: Array[Int],
+                                    val additionalInputs: Array[String],
+                                    val additionalInputTypes: Array[Int],
                                     val labels: Array[String],
                                     val labelTypes: Array[Int],
                                     val predictionOutputs: Array[String],
@@ -259,8 +261,9 @@ private[zoo] class TFTrainingHelper protected (val graphRunner: GraphRunner,
         (outputNames.toVector, graphOutputs.slice(0, outputNames.length))
       }
 
-      val inputTensorNames = inputs ++ labels
-      val inputTensorTypes = (inputTypes ++ labelTypes).toVector.map(TFUtils.tfenum2datatype)
+      val inputTensorNames = inputs ++ labels ++ additionalInputs
+      val inputTensorTypes = (inputTypes ++ labelTypes ++ additionalInputTypes)
+        .toVector.map(TFUtils.tfenum2datatype)
 
       val outputTypes = Vector.fill(names.length)(DataType.FLOAT)
       graphRunner.run(input = feeds.result(), inputNames = inputTensorNames.toVector,
@@ -303,6 +306,8 @@ object TFTrainingHelper {
         checkpointPath,
         trainMeta.inputs,
         trainMeta.inputTypes,
+        trainMeta.additionalInputs,
+        trainMeta.additionalInputTypes,
         trainMeta.labels,
         trainMeta.labelTypes,
         trainMeta.predictionOutputs,
@@ -325,6 +330,8 @@ object TFTrainingHelper {
         checkpointPath,
         trainMeta.inputs,
         trainMeta.inputTypes,
+        trainMeta.additionalInputs,
+        trainMeta.additionalInputTypes,
         trainMeta.labels,
         trainMeta.labelTypes,
         trainMeta.predictionOutputs,
