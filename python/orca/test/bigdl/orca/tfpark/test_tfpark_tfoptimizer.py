@@ -82,6 +82,31 @@ class TestTFParkTFOptimizer(ZooTestCase):
                 assert np.allclose(initial_weights[i], updated_weights[i])
             optimizer.sess.close()
 
+    def test_control_inputs(self):
+
+        features = np.random.randn(20, 10)
+        labels = np.random.randint(0, 10, size=[20])
+        with tf.Graph().as_default():
+            dataset = TFDataset.from_ndarrays((features, labels),
+                                              batch_size=4,
+                                              val_tensors=(features, labels))
+            is_training = tf.placeholder(dtype=tf.bool, shape=())
+            feature_tensor, label_tensor = dataset.tensors
+            features = tf.layers.dense(feature_tensor, 8)
+            features = tf.layers.dropout(features, training=is_training)
+            output = tf.layers.dense(features, 10)
+            loss = tf.reduce_mean(tf.losses.
+                                  sparse_softmax_cross_entropy(logits=output,
+                                                               labels=label_tensor))
+            optimizer = TFOptimizer.from_loss(loss, Adam(),
+                                              val_outputs=[output],
+                                              val_labels=[label_tensor],
+                                              val_method=Accuracy(),
+                                              tensor_with_value={is_training: (True, False)},
+                                              metrics={"loss": loss})
+            optimizer.optimize(end_trigger=MaxEpoch(1))
+            optimizer.sess.close()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
