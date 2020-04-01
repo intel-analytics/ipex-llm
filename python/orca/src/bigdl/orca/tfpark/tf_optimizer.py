@@ -122,9 +122,7 @@ class TFModel(object):
         if not isinstance(inputs, list):
             inputs = nest.flatten(inputs)
 
-        inputs = inputs + additional_inputs
-
-        return inputs, additional_values
+        return inputs, additional_inputs, additional_values
 
     @staticmethod
     def _process_session_config(session_config):
@@ -233,6 +231,7 @@ class TFModel(object):
                      extra_variable_assign_placeholders,
                      extra_variable_assign,
                      grads, update_op, train_op,
+                     additional_inputs,
                      additional_values):
         saver = tf.train.Saver()
         if not os.path.isdir(folder):
@@ -242,6 +241,8 @@ class TFModel(object):
         meta = {
             "inputs": [i.name for i in inputs],
             "input_types": [i.dtype.as_datatype_enum for i in inputs],
+            "additional_inputs": [i.name for i in additional_inputs],
+            "additional_input_types": [i.dtype.as_datatype_enum for i in additional_inputs],
             "labels": [l.name for l in labels],
             "label_types": [i.dtype.as_datatype_enum for i in labels],
             "predictions": [t.name for t in predictions] if predictions else [],
@@ -282,7 +283,8 @@ class TFModel(object):
     @staticmethod
     def export(model_dir, loss_tensor, sess, inputs, labels, predictions, grads, variables, graph,
                tensors_with_value, metrics, updates, train_op=None):
-        inputs, additional_values = TFModel._expand_inputs(inputs, tensors_with_value, loss_tensor)
+        inputs, additional_inputs, additional_values = \
+            TFModel._expand_inputs(inputs, tensors_with_value, loss_tensor)
         metric_tensors, val_methods = TFModel._process_metrics(graph, metrics)
         grads = TFModel._process_grads(graph, grads)
 
@@ -306,6 +308,7 @@ class TFModel(object):
                                  extra_variable_assign_placeholders,
                                  extra_variable_assign,
                                  grads, update_op, train_op,
+                                 additional_inputs,
                                  additional_values)
         return meta, saver, val_methods
 
