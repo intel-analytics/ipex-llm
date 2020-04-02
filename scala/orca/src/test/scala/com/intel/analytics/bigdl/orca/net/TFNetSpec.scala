@@ -16,8 +16,6 @@
 package com.intel.analytics.zoo.pipeline.api.net
 
 
-import java.nio.{ByteBuffer, ByteOrder}
-
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{LayerException, T}
 import com.intel.analytics.zoo.tfpark.TFUtils
@@ -156,6 +154,23 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "TFNet" should "work with saved_model with signature"  in {
     val resource = getClass().getClassLoader().getResource("saved-model-signature")
     val tfnet = TFNet.fromSavedModel(resource.getPath)
+    val output = tfnet.forward(Tensor.ones[Float](4, 4)).toTensor[Float].clone()
+    output.size() should be (Array(4, 10))
+  }
+
+  "TFNet" should "work with saved_model with signature and inputs"  in {
+    val resource = getClass().getClassLoader().getResource("saved-model-signature")
+    val tfnet = TFNet.fromSavedModel(resource.getPath,
+      inputs = Array("Placeholder:0"), outputs = null)
+    val output = tfnet.forward(Tensor.ones[Float](4, 4)).toTensor[Float].clone()
+    output.size() should be (Array(4, 10))
+  }
+
+  "TFNet" should "work with saved_model with signature and outputs"  in {
+    val resource = getClass().getClassLoader().getResource("saved-model-signature")
+    val tfnet = TFNet.fromSavedModel(resource.getPath,
+      inputs = null,
+      outputs = Array("dense/BiasAdd:0"))
     val output = tfnet.forward(Tensor.ones[Float](4, 4)).toTensor[Float].clone()
     output.size() should be (Array(4, 10))
   }
