@@ -232,17 +232,28 @@ object TFNetForInference {
     val metaGraphDef = MetaGraphDef.parseFrom(savedModelBundle.metaGraphDef())
     val initOp = if (tableInitOp.isDefined) tableInitOp else getInitOp(metaGraphDef)
 
-    val (inputNames, outputNames) = if (!(inputs.isDefined && outputs.isDefined)) {
+    val (inputNames, outputNames) = if (inputs.isEmpty || outputs.isEmpty) {
+
+      if (inputs.isEmpty) {
+        logger.warn("Loading TensorFlow SavedModel: inputs is not defined, finding inputs " +
+          "in signature")
+      }
+
+      if (inputs.isEmpty) {
+        logger.warn("Loading TensorFlow SavedModel: inputs is not defined, finding outputs " +
+          "in signature")
+      }
+
       if (signature.isEmpty) {
         logger.warn("Loading TensorFlow SavedModel: SavedModel signature is not defined," +
-          s"using <$DEFAULT_SIGNATURE>")
+          s"using default signature <$DEFAULT_SIGNATURE>")
       }
-      getInputOutputNames(metaGraphDef, signature.getOrElse(DEFAULT_SIGNATURE))
+
+      val (inputNameCandidate, outputNameCandidate) = getInputOutputNames(metaGraphDef,
+        signature.getOrElse(DEFAULT_SIGNATURE))
+
+      (inputs.getOrElse(inputNameCandidate), outputs.getOrElse(outputNameCandidate))
     } else {
-      if (inputs.isEmpty || outputs.isEmpty) {
-        throw new IllegalArgumentException("inputs and outputs tensor names must be defined" +
-          " if signature is not defined")
-      }
       (inputs.get, outputs.get)
     }
 
@@ -339,7 +350,6 @@ object TFNetForInference {
           Tensor[Float](sizes = shapeArr)
       }
     }.toArray
-
 
 
     val inputTypes = inputNames.map(name2type(graph))
