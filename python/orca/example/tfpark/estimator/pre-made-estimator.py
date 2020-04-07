@@ -92,3 +92,5 @@ if __name__ == "__main__":
     predictions = zoo_est.predict(pred_input_fn,
                                   predict_keys=[prediction_keys.PredictionKeys.CLASS_IDS])
     print(predictions.collect())
+    print("finished...")
+    sc.stop()

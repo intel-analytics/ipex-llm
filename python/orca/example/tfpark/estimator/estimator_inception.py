@@ -77,7 +77,8 @@ def main(option):
                                                   "num_classes": option.num_classes})
 
     estimator.train(input_fn, steps=100)
-
+    print("finished...")
+    sc.stop()
 
 if __name__ == '__main__':
     parser = OptionParser()

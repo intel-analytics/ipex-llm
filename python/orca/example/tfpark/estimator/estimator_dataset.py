@@ -68,6 +68,8 @@ def main():
     predictions = estimator.predict(input_fn)
 
     print(predictions.first())
+    print("finished...")
+    sc.stop()
 
 
 if __name__ == '__main__':
