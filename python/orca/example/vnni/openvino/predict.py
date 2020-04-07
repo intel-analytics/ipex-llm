@@ -60,7 +60,8 @@ def predict(model_path, img_path):
             max_index = np.argmax(r)
             output["Top-1"] = str(max_index)
             print("* Predict result " + str(output))
-
+    print("finished...")
+    sc.stop()
 
 if __name__ == "__main__":
     parser = OptionParser()
