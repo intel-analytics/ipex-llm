@@ -46,3 +46,5 @@ if __name__ == "__main__":
     predictions = model.predict(input_data)
     # Print the detection result of the first image.
     print(predictions[0])
+    print("finished...")
+    sc.stop()

@@ -52,3 +52,5 @@ if __name__ == "__main__":
     sc = init_nncontext("Image Classification Example")
 
     predict(options.model_path, options.img_path, options.topN, options.partition_num)
+    print("finished...")
+    sc.stop()
