@@ -26,7 +26,7 @@ def mean_absolute_error(y_true, y_pred):
 
 
 if __name__ == "__main__":
-    sc = init_nncontext(init_spark_conf().setMaster("local[4]"))
+    sc = init_nncontext("customloss example")
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
     Y_ = ((2 * X_).sum(1) + 0.4).reshape([data_len, 1])
@@ -44,3 +44,5 @@ if __name__ == "__main__":
     w = model.get_weights()
     print(w)
     pred = model.predict_local(X_)
+    print("finished...")
+    sc.stop()

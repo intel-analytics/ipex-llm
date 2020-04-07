@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args(sys.argv)
 
-    sc = init_nncontext(init_spark_conf().setMaster("local[4]"))
+    sc = init_nncontext("custom example")
 
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
@@ -63,3 +63,5 @@ if __name__ == "__main__":
     w = model.get_weights()
     print(w)
     pred = model.predict_local(X_)
+    print("finished...")
+    sc.stop()
