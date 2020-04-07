@@ -557,6 +557,25 @@ done
 now=$(date "+%s")
 time14=$((now-start))
 
+echo "#15 start example test for attention"
+#timer
+start=$(date "+%s")
+sed "s/max_features = 20000/max_features = 100/g;s/max_len = 200/max_len = 10/g;s/hidden_size=128/hidden_size=8/g" \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/attention/transformer.py \
+    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/attention/tmp.py
+
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --conf spark.executor.extraJavaOptions="-Xss512m" \
+    --conf spark.driver.extraJavaOptions="-Xss512m" \
+    --master ${MASTER} \
+    --driver-memory 20g \
+    --executor-memory 100g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/attention/tmp.py
+
+now=$(date "+%s")
+time15=$((now-start))
+echo "#15 attention time used:$time15 seconds"
+
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
 echo "#3 image-classification time used: $time3 seconds"
@@ -571,3 +590,4 @@ echo "#11 openvino time used: $time11 seconds"
 echo "#12 vnni/openvino time used: $time12 seconds"
 echo "#13 streaming Object Detection time used: $time13 seconds"
 echo "#14 streaming text classification time used: $time14 seconds"
+echo "#15 attention time used:$time15 seconds"

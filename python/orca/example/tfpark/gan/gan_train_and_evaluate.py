@@ -83,3 +83,6 @@ if __name__ == "__main__":
     for i in range(20):
         opt.train(input_fn, MaxIteration(1000))
         eval()
+
+    print("finished...")
+    sc.stop()
