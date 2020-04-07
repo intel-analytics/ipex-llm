@@ -28,7 +28,7 @@ bash ${ANALYTICS_ZOO_HOME}/bin/spark-shell-with-zoo.sh \
 --master $master \
 --conf spark.executor.cores=1 \
 --total-executor-cores 4 \
---class com.intel.analytics.zoo.examples.tfpark.tfnet.Predict \
+--class com.intel.analytics.zoo.examples.tensorflow.tfnet.Predict \
 --image $imagePath --model $modelPath --partition 4
 ```
 
