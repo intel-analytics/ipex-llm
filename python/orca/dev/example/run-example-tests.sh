@@ -157,49 +157,42 @@ else
    cp analytics-zoo-data/data/dogs-vs-cats/train/dog.71* analytics-zoo-data/data/dogs-vs-cats/demo/dogs
    # echo "Finished downloading images"
 fi
-# total batch size: 32 should be divided by total core number: 28
-sed "s/setBatchSize(32)/setBatchSize(56)/g" \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/finetune/image_finetuning_example.py \
-    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/finetune/tmp.py
-sed "s/setBatchSize(32)/setBatchSize(56)/g" \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
-    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageTransferLearning/tmp.py
-sed "s/setBatchSize(4)/setBatchSize(56)/g" \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageInference/ImageInferenceExample.py \
-    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageInference/tmp.py
     
 echo "start example test for nnframes finetune"
 ${SPARK_HOME}/bin/spark-submit \
    --master local[2] \
    --driver-memory 10g \
-   --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/finetune/tmp.py \
+   --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/finetune/image_finetuning_example.py \
    --jars ${ANALYTICS_ZOO_JAR} \
    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/finetune/image_finetuning_example.py \
-   analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model analytics-zoo-data/data/dogs-vs-cats/samples
+   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+   -f analytics-zoo-data/data/dogs-vs-cats/samples
    
 echo "start example test for nnframes imageInference"
 ${SPARK_HOME}/bin/spark-submit \
    --master local[1] \
    --driver-memory 3g \
-   --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageInference/tmp.py \
+   --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageInference/ImageInferenceExample.py \
    --jars ${ANALYTICS_ZOO_JAR} \
    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageInference/tmp.py \
-   analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model hdfs://172.168.2.181:9000/kaggle/train_100
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageInference/ImageInferenceExample.py \
+   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+   -f hdfs://172.168.2.181:9000/kaggle/train_100
 
 echo "start example test for nnframes imageTransferLearning"
 ${SPARK_HOME}/bin/spark-submit \
    --master local[1] \
    --driver-memory 5g \
-   --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageTransferLearning/tmp.py \
+   --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
    --jars ${ANALYTICS_ZOO_JAR} \
    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageTransferLearning/tmp.py\
-   analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model analytics-zoo-data/data/dogs-vs-cats/samples
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py\
+   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+   -f analytics-zoo-data/data/dogs-vs-cats/samples
 
 
 now=$(date "+%s")
