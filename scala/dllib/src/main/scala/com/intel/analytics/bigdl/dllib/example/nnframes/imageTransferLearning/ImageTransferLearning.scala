@@ -77,6 +77,8 @@ object ImageTransferLearning {
       val evaluation = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
         .setMetricName("weightedPrecision").evaluate(predictions)
       println("evaluation result on validationDF: " + evaluation)
+      println("finished...")
+      sc.stop()
     }
   }
 }

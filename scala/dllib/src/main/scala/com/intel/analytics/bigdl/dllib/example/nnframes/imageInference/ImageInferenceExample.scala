@@ -54,6 +54,8 @@ object ImageInferenceExample {
 
       val resultDF = dlmodel.transform(imageDF)
       resultDF.select("imageName", "prediction").orderBy("imageName").show(10, false)
+      println("finished...")
+      sc.stop()
     }
   }
 }
