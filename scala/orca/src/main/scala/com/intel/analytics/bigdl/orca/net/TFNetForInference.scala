@@ -239,8 +239,8 @@ object TFNetForInference {
           "in signature")
       }
 
-      if (inputs.isEmpty) {
-        logger.warn("Loading TensorFlow SavedModel: inputs is not defined, finding outputs " +
+      if (outputs.isEmpty) {
+        logger.warn("Loading TensorFlow SavedModel: outputs is not defined, finding outputs " +
           "in signature")
       }
 
