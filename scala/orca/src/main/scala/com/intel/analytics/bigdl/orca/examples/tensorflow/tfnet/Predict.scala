@@ -73,6 +73,8 @@ object Predict {
       // print the first result
       val result = output.toDistributed().rdd.first().predict()
       println(result)
+      println("finished...")
+      sc.stop()
     }
   }
 }
