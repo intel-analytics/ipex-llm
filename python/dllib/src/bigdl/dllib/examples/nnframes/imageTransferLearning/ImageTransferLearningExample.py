@@ -28,18 +28,36 @@ from zoo.common.nncontext import *
 from zoo.feature.image import *
 from zoo.pipeline.nnframes import *
 
+from optparse import OptionParser
+
 if __name__ == "__main__":
 
-    if len(sys.argv) != 3:
-        print(sys.argv)
-        print("Need parameters: <modelPath> <imagePath>")
-        exit(-1)
+    parser = OptionParser()
+    parser.add_option("-m", dest="model_path",
+                      help="Required. pretrained model path.")
+    parser.add_option("-f", dest="image_path",
+                      help="training data path.")
+    parser.add_option("--b", "--batch_size", type=int, dest="batch_size", default="56",
+                      help="The number of samples per gradient update. Default is 56.")
+    parser.add_option("--nb_epoch", type=int, dest="nb_epoch", default="20",
+                      help="The number of iterations to train the model. Default is 20.")
+    parser.add_option("--r", "--learning_rate", type=float, dest="learning_rate", default="0.002",
+                      help="The learning rate for the model. Default is 0.002.")
+
+    (options, args) = parser.parse_args(sys.argv)
+
+    if not options.model_path:
+        parser.print_help()
+        parser.error('model_path is required')
+
+    if not options.image_path:
+        parser.print_help()
+        parser.error('image_path is required')
 
     sc = init_nncontext("ImageTransferLearningExample ")
 
-    model_path = sys.argv[1]
-    image_path = sys.argv[2]
-    imageDF = NNImageReader.readImages(image_path, sc, resizeH=300, resizeW=300, image_codec=1)
+    imageDF = NNImageReader.readImages(options.image_path, sc, resizeH=300, resizeW=300,
+                                       image_codec=1)
 
     getName = udf(lambda row: os.path.basename(row[0]), StringType())
     getLabel = udf(lambda name: 1.0 if name.startswith('cat') else 2.0, DoubleType())
@@ -52,16 +70,16 @@ if __name__ == "__main__":
         [RowToImageFeature(), ImageResize(256, 256), ImageCenterCrop(224, 224),
          ImageChannelNormalize(123.0, 117.0, 104.0), ImageMatToTensor(), ImageFeatureToTensor()])
 
-    preTrainedNNModel = NNModel(Model.loadModel(model_path), transformer) \
+    preTrainedNNModel = NNModel(Model.loadModel(options.model_path), transformer) \
         .setFeaturesCol("image") \
         .setPredictionCol("embedding")
 
     lrModel = Sequential().add(Linear(1000, 2)).add(LogSoftMax())
     classifier = NNClassifier(lrModel, ClassNLLCriterion(), SeqToTensor([1000])) \
-        .setLearningRate(0.002) \
+        .setLearningRate(options.learning_rate) \
         .setOptimMethod(Adam()) \
-        .setBatchSize(32) \
-        .setMaxEpoch(20) \
+        .setBatchSize(options.batch_size) \
+        .setMaxEpoch(options.nb_epoch) \
         .setFeaturesCol("embedding") \
         .setCachingSample(False) \
 
@@ -76,3 +94,6 @@ if __name__ == "__main__":
     accuracy = evaluator.evaluate(predictionDF)
     # expected error should be less than 10%
     print("Test Error = %g " % (1.0 - accuracy))
+
+    print("finished...")
+    sc.stop()

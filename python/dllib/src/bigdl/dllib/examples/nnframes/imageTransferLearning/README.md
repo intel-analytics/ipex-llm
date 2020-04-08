@@ -41,7 +41,9 @@ Path to the images.
 You can easily use the following commands to run this example:
     ```bash
     export SPARK_DRIVER_MEMORY=5g
-    python ImageTransferLearningExample.py /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/dogs_cats/samples
+    python ImageTransferLearningExample.py \
+    -m /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model \
+    -f /tmp/zoo/dogs_cats/samples
     ```
     See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
 
@@ -55,7 +57,8 @@ Run the following command for Spark local mode (`MASTER=local[*]`) or cluster mo
     --master local[1] \
     --driver-memory 5g \
     ImageTransferLearningExample.py \
-    /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/dogs_cats/samples
+    -m /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model \
+    -f /tmp/zoo/dogs_cats/samples
     ```
     See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
 

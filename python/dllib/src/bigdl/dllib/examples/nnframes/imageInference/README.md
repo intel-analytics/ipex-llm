@@ -27,7 +27,9 @@ ImageInferenceExample.py takes 2 parameters: Path to the pre-trained models and 
 You can easily use the following commands to run this example:
     ```bash
     export SPARK_DRIVER_MEMORY=3g
-    python ImageInferenceExample.py /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/infer_images
+    python ImageInferenceExample.py \
+    -m /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model \
+    -f /tmp/zoo/infer_images
     ```
     See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
 
@@ -41,7 +43,8 @@ Run the following command for Spark local mode (`MASTER=local[*]`) or cluster mo
     --master local[1] \
     --driver-memory 3g \
     ImageInferenceExample.py \
-    /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model /tmp/zoo/infer_images
+    -m /tmp/zoo/bigdl_inception-v1_imagenet_0.4.0.model \
+    -f /tmp/zoo/infer_images
     ```
     See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install.
 
