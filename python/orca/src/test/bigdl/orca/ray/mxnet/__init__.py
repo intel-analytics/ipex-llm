@@ -13,21 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from unittest import TestCase
-
-import pytest
-
-import zoo.ray.util.utils as rutils
-
-
-class TestUtil(TestCase):
-
-    def test_resource_to_bytes(self):
-        assert 10 == rutils.resourceToBytes("10b")
-        assert 10000 == rutils.resourceToBytes("10k")
-        assert 10000000 == rutils.resourceToBytes("10m")
-        assert 10000000000 == rutils.resourceToBytes("10g")
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
