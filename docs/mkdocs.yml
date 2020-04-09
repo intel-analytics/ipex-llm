@@ -138,6 +138,18 @@ pages:
 #    - Train, evaluate or predict a model: Keras2StyleAPIGuide/Optimization/training.md
 #    - Optimizers: Keras2StyleAPIGuide/Optimization/optimizer.md
 #    - Losses: Keras2StyleAPIGuide/Optimization/loss.md
+- Zouwu Solution:
+  - Overview: Zouwu/overview.md
+  - Reference Use Cases:
+    - Network Traffic: Zouwu/UseCase/network-traffic.md
+  - Tutorial: Zouwu/walkthrough.md 
+  - API:
+    - Built-in Models: 
+       - LSTMForecaster: Zouwu/API/LSTMForecaster.md
+       - MTNetForecaster: Zouwu/API/MTNetForecaster.md
+    - AutoTS: 
+       - AutoTSTrainer: Zouwu/API/AutoTSTrainer.md 
+       - TSPipeline: Zouwu/API/TSPipeline.md
 - Powered by: powered-by.md
 - Presentations: presentations.md
 - FAQ and Known Issues: known-issues.md
