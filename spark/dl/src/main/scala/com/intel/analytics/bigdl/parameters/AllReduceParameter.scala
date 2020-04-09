@@ -207,8 +207,8 @@ class AllReduceParameter[T: ClassTag](
               val blockId = getWeightBlockId(pid)
               val localBuffer = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).getOrElse {
                 throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
-                  s"manager. This is usually caused by executor crashed. Please check your" +
-                  s"executors' log to see the error(usually a OutOfMemory error)")
+                  s"manager. This is usually because executor crashed. Please check your" +
+                  s"executors' log see the error (usually an OutOfMemory error)")
               }
               val start = pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
