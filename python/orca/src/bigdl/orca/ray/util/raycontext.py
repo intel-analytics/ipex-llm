@@ -93,7 +93,12 @@ class RayServiceFuncGenerator(object):
         self.waiting_time_sec = waitting_time_sec
         self.extra_params = extra_params
         self.verbose = verbose
-        self.labels = """--resources='{"trainer": %s, "ps": %s }' """ % (1, 1)
+        # _mxnet_worker and _mxnet_server are resource tags for distributed MXNet training only
+        # in order to diff worker from server.
+        # Leave some reserved custom resources free to avoid unknown crash due to resources.
+        self.labels = \
+            """--resources='{"_mxnet_worker": %s, "_mxnet_server": %s, "_reserved": %s}' """ \
+            % (1, 1, 2)
 
     def gen_stop(self):
         def _stop(iter):
@@ -116,8 +121,9 @@ class RayServiceFuncGenerator(object):
     def _gen_master_command(self):
         command = "{} start --head " \
                   "--include-webui --redis-port {} " \
-                  "--redis-password {} --num-cpus {} ". \
-            format(self.ray_exec, self.redis_port, self.password, self.ray_node_cpu_cores)
+                  "--redis-password {} --num-cpus {} {}". \
+            format(self.ray_exec, self.redis_port, self.password,
+                   self.ray_node_cpu_cores, self.labels)
         return RayServiceFuncGenerator._enrich_command(command=command,
                                                        object_store_memory=self.object_store_memory,
                                                        extra_params=self.extra_params)
@@ -290,7 +296,6 @@ class RayContext(object):
 
     def _get_ray_node_cpu_cores(self):
         if self.is_local:
-
             assert self._get_spark_local_cores() % self.local_ray_node_num == 0, \
                 "Spark cores number: {} should be divided by local_ray_node_num {} ".format(
                     self._get_spark_local_cores(), self.local_ray_node_num)

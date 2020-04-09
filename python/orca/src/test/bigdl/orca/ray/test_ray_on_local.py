@@ -24,24 +24,20 @@ import time
 from zoo import init_spark_on_local
 from zoo.ray.util.raycontext import RayContext
 
-np.random.seed(1337)  # for reproducibility
 
-
-@ray.remote
-class TestRay():
-    def hostname(self):
-        import socket
-        return socket.gethostname()
-
-
-class TestUtil(TestCase):
+class TestRayLocal(TestCase):
 
     def test_local(self):
-        node_num = 4
-        sc = init_spark_on_local(cores=node_num)
+        @ray.remote
+        class TestRay:
+            def hostname(self):
+                import socket
+                return socket.gethostname()
+
+        sc = init_spark_on_local(cores=4)
         ray_ctx = RayContext(sc=sc, object_store_memory="1g")
         ray_ctx.init()
-        actors = [TestRay.remote() for i in range(0, node_num)]
+        actors = [TestRay.remote() for i in range(0, 4)]
         print(ray.get([actor.hostname.remote() for actor in actors]))
         ray_ctx.stop()
         sc.stop()
