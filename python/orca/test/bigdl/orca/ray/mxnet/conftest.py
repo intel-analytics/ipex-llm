@@ -13,21 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from unittest import TestCase
-
 import pytest
 
-import zoo.ray.util.utils as rutils
+sc = None
+ray_ctx = None
 
 
-class TestUtil(TestCase):
-
-    def test_resource_to_bytes(self):
-        assert 10 == rutils.resourceToBytes("10b")
-        assert 10000 == rutils.resourceToBytes("10k")
-        assert 10000000 == rutils.resourceToBytes("10m")
-        assert 10000000000 == rutils.resourceToBytes("10g")
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
+@pytest.fixture(autouse=True, scope='package')
+def rayonspark_fixture():
+    from zoo import init_spark_on_local
+    from zoo.ray.util.raycontext import RayContext
+    sc = init_spark_on_local(cores=8, spark_log_level="INFO")
+    ray_ctx = RayContext(sc=sc, object_store_memory="1g")
+    ray_ctx.init()
+    yield
+    ray_ctx.stop()
+    sc.stop()
