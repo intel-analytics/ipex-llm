@@ -1,4 +1,3 @@
-# Analytics Zoo Docker User Guide 
 
 In order to simply the Analytics Zoo installation and configuration, Analytics Zoo docker images have been built and provided on [Docker Hub](https://hub.docker.com/r/intelanalytics/analytics-zoo). These docker images have been pre-built with all the dependencies and readily configured to run a bunch of Analytics Zoo examples out-of-box on Linux (such as Ubuntu, CentOS), MacOS or Windows. The pre-installed packages are listed at the end of this page. This document provides step-by-step instructions for users to easily start using the Analytics Zoo docker:
 
@@ -61,12 +60,12 @@ root@[hostname]:/opt/work#
 ```
 
 Note: The /opt/work directory contains: 
-* download-analytics-zoo.sh is used for downloading Analytics-Zoo distributions.
-* start-notebook.sh is used for starting the jupyter notebook. You can specify the environment settings and spark settings to start a - specified jupyter notebook.
-* analytics-Zoo-${ANALYTICS_ZOO_VERSION} is the Analytics-Zoo home of Analytics-Zoo distribution.
-* analytics-zoo-SPARK_x.x-x.x.x-dist.zip is the zip file of Analytics-Zoo distribution.
-* spark-${SPARK_VERSION} is the Spark home.
-* analytics-zoo is cloned from https://github.com/intel-analytics/analytics-zoo, contains apps, examples using analytics-zoo.
+- download-analytics-zoo.sh is used for downloading Analytics-Zoo distributions.
+- start-notebook.sh is used for starting the jupyter notebook. You can specify the environment settings and spark settings to start a - specified jupyter notebook.
+- analytics-Zoo-${ANALYTICS_ZOO_VERSION} is the Analytics-Zoo home of Analytics-Zoo distribution.
+- analytics-zoo-SPARK_x.x-x.x.x-dist.zip is the zip file of Analytics-Zoo distribution.
+- spark-${SPARK_VERSION} is the Spark home.
+- analytics-zoo is cloned from https://github.com/intel-analytics/analytics-zoo, contains apps, examples using analytics-zoo.
 
 ## Run Analytics Zoo Jupyter Notebook example in a container
 
@@ -107,19 +106,19 @@ As a result, you will see the Jupyter Notebook like this:
 After connecting to the Jupyter Notebook in the browser, users can run multiple Analytics Zoo Jupyter Notebook examples. The example shown below is the “dogs-vs-cats”. 
 
 #### Run Analytics Zoo example with Jupyter Notebook
-1. Click into the "dogs-vs-cats" folder: 
+- 1. Click into the "dogs-vs-cats" folder: 
 
 ![notebook2](notebook2.jpg)
 
-2. Open the notebook file: 
+- 2. Open the notebook file: 
 
 ![notebook3](notebook3.jpg)
 
-3. Start to run the "dogs-vs-cats" notebook:
+- 3. Start to run the "dogs-vs-cats" notebook:
 
 ![notebook4](notebook4.jpg)
 
-4. Run through the example and check the prediction:
+- 4. Run through the example and check the prediction:
 
 ![notebook5](notebook5.jpg)
 
@@ -191,24 +190,22 @@ sudo docker build \
 ## Pre-installed Packages
 
 The Analytics-Zoo Docker images have been pre-built with below packages:
-* git
-* maven
-* Oracle jdk 1.8.0_152 (in /opt/jdk1.8.0_152)
-* python 3.6.9
-* pip
-* numpy
-* scipy
-* pandas
-* scikit-learn
-* matplotlib
-* seaborn
-* jupyter
-* wordcloud
-* moviepy
-* requests
-* tensorflow
-* spark-${SPARK_VERSION} (in /opt/work/spark-${SPARK_VERSION})
-* Analytics-Zoo distribution (in /opt/work/analytics-zoo-${ANALYTICS_ZOO_VERSION})
-* Analytics-Zoo source code (in /opt/work/analytics-zoo)
-
-
+- git
+- maven
+- Oracle jdk 1.8.0_152 (in /opt/jdk1.8.0_152)
+- python 3.6.9
+- pip
+- numpy
+- scipy
+- pandas
+- scikit-learn
+- matplotlib
+- seaborn
+- jupyter
+- wordcloud
+- moviepy
+- requests
+- tensorflow
+- spark-${SPARK_VERSION} (in /opt/work/spark-${SPARK_VERSION})
+- Analytics-Zoo distribution (in /opt/work/analytics-zoo-${ANALYTICS_ZOO_VERSION})
+- Analytics-Zoo source code (in /opt/work/analytics-zoo)

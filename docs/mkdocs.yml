@@ -16,8 +16,7 @@ pages:
   - Download: release-download.md 
   - Documentation: release-docs.md
 - User Guide:
-  - Docker:
-    - Build & Use Docker Image: DockerUserGuide/index.md
+  - Docker User Guide: DockerUserGuide/index.md
   - Python:
     - Install: PythonUserGuide/install.md
     - Run: PythonUserGuide/run.md
