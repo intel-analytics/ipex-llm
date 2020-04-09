@@ -60,9 +60,9 @@ Run python program `python quick_start.py` to push data into queue and get infer
 
 Then you can see the inference output in console. 
 ```
-image: fish1.jpeg, classification-result: class: 1's prob: 0.9974158
-image: cat1.jpeg, classification-result: class: 287's prob: 0.52377725
-image: dog1.jpeg, classification-result: class: 207's prob: 0.9226527
+image: fish1.jpeg, classification-result:class: 5's prob: 0.18204997
+image: dog1.jpeg, classification-result:class: 267's prob: 0.27166227
+image: cat1.jpeg, classification-result:class: 292's prob: 0.32633427
 ```
 Wow! You made it!
 
