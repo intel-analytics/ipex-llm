@@ -315,6 +315,20 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --driver-memory 20g \
     --executor-memory 20g \
     ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train_tmp.py
+
+
+echo "start example test for TFPark inceptionv1 training 8"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[4] \
+   --driver-memory 10g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/inception/inception.py \
+   --maxIteration 20 \
+   -b 8 \
+   -f hdfs://172.168.2.181:9000/imagenet-mini
+now=$(date "+%s")
+time9=$((now-start))
     
 now=$(date "+%s")
 time6=$((now-start))
