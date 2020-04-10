@@ -13,7 +13,7 @@ in a pythonic way on yarn without `spark-submit` or installing analytics-zoo or 
 ---
 ### **Steps to run RayOnSpark**
 
-**NOTE:** We have been tested on Ray 0.6.6. You may refer to [this issue](https://github.com/ray-project/ray/issues/5223) if you encounter errors when using latest versions of ray.
+**NOTE:** We have been tested on Ray 0.7.2 and you are highly recommended to use this Ray version.
 
 1) Install [Conda](https://docs.conda.io/projects/conda/en/latest/commands/install.html) in your environment.
 
@@ -28,7 +28,7 @@ source activate zoo
 pip install analytics-zoo[ray]
 ```
 
-Note that the essential dependencies (including `ray>=0.6.6`, `psutil`, `aiohttp`, `setproctitle`) will be installed by specifying the extras key `[ray]` when you pip install analytics-zoo.
+Note that the essential dependencies (including `ray==0.7.2`, `psutil`, `aiohttp`, `setproctitle`) will be installed by specifying the extras key `[ray]` when you pip install analytics-zoo.
 
 4) Download JDK8 and set the environment variable: JAVA_HOME (recommended).
 
