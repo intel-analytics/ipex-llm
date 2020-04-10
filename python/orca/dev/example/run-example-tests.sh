@@ -318,8 +318,6 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 
 
 echo "start example test for TFPark inceptionv1 training 8"
-#timer
-start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
    --master local[4] \
    --driver-memory 10g \
@@ -327,9 +325,24 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
    --maxIteration 20 \
    -b 8 \
    -f hdfs://172.168.2.181:9000/imagenet-mini
-now=$(date "+%s")
-time9=$((now-start))
-    
+
+if [ -f analytics-zoo-models/resnet_50_saved_model.zip ]
+then
+   echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+   wget -nv $FTP_URI/analytics-zoo-models/tensorflow/reset_50_saved_model.zip \
+    -P analytics-zoo-models
+   unzip analytics-zoo-models/reset_50_saved_model.zip -d analytics-zoo-models/reset_50_saved_model
+fi
+
+echo "start example test for TFPark freeze saved model 9"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+   --master local[4] \
+   --driver-memory 10g \
+   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/freeze_saved_model/freeze.py \
+        --saved_model_path analytics-zoo-models/reset_50_saved_model \
+        --output_path analytics-zoo-models/reset_50_tfnet
+
 now=$(date "+%s")
 time6=$((now-start))
 
