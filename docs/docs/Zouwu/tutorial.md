@@ -1,3 +1,25 @@
+## Install
+
+Zouw needs below requirements to run. 
+
+* Python 3.6 or 3.7
+* PySpark 2.4.3
+* Ray 0.7.0
+* Tensorflow 1.15.0
+* aiohttp
+* setproctitle
+* scikit-learn >=0.20.0
+* psutil
+* requests
+* featuretools
+* pandas
+* Note that Keras is not needed to use Zouwu. But if you have Keras installed, make sure it is Keras 1.2.2. Other verisons might cause unexpected problems.
+
+You can install above python dependencies manually, or install using below command. 
+```python
+pip install analytics-zoo[automl]
+```
+
 ## Using built-in forecast models
 
 The built-in forecast models are all derived from [tfpark.KerasModels](https://analytics-zoo.github.io/master/#APIGuide/TFPark/model/). 
