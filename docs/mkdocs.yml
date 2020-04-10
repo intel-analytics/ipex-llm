@@ -12,6 +12,7 @@ extra:
 
 pages:
 - Overview: index.md 
+- Getting Started: gettingstarted.md
 - Releases: 
   - Download: release-download.md 
   - Documentation: release-docs.md
