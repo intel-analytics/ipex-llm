@@ -138,7 +138,7 @@ pages:
 #    - Train, evaluate or predict a model: Keras2StyleAPIGuide/Optimization/training.md
 #    - Optimizers: Keras2StyleAPIGuide/Optimization/optimizer.md
 #    - Losses: Keras2StyleAPIGuide/Optimization/loss.md
-- Zouwu:
+- Project Zouwu:
   - Overview: Zouwu/overview.md
   - Reference Use Cases:
     - Network Traffic: Zouwu/UseCase/network-traffic.md
