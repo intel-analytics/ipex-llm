@@ -293,7 +293,7 @@ class RayContext(object):
                     self._get_spark_local_cores(), self.local_ray_node_num)
             return int(self._get_spark_local_cores() / self.local_ray_node_num)
         else:
-            return self.sc._conf.get("spark.executor.cores")
+            return int(self.sc._conf.get("spark.executor.cores"))
 
     def _get_ray_driver_memory(self):
         """
