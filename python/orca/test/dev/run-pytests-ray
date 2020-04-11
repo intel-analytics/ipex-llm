@@ -57,3 +57,11 @@ if [ $exit_status_4 -ne 0 ];
 then
     exit $exit_status_4
 fi
+
+echo "Running xshard tests"
+python -m pytest -v ../test/zoo/xshard
+exit_status_5=$?
+if [ $exit_status_5 -ne 0 ];
+then
+    exit $exit_status_5
+fi
