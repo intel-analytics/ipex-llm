@@ -66,10 +66,6 @@ def get_metrics(config):
 
 class TestMXNetGluon(TestCase):
     def test_gluon(self):
-        resources = ray.available_resources()
-        # One ray master and one raylet; each will have one _mxnet_worker and one _mxnet_server
-        assert resources["_mxnet_worker"] == 2
-        assert resources["_mxnet_server"] == 2
         config = {
             "num_workers": 2,
             "num_servers": 2,

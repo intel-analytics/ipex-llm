@@ -24,7 +24,9 @@ def to_list(input):
         return [input]
 
 
-def resourceToBytes(resource_str):
+def resource_to_bytes(resource_str):
+    if not resource_str:
+        return resource_str
     matched = re.compile("([0-9]+)([a-z]+)?").match(resource_str.lower())
     fraction_matched = re.compile("([0-9]+\\.[0-9]+)([a-z]+)?").match(resource_str.lower())
     if fraction_matched:
