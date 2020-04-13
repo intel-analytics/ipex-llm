@@ -62,6 +62,7 @@ pages:
   - Reference Use Cases: ProgrammingGuide/usercases-overview.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
   - Run on Google Colab: ProgrammingGuide/run-notebook-colab.md
+  - Run on Databricks: ProgrammingGuide/AnalyticsZoo-on-Databricks.md
 - White Paper:
   - BigDL: wp-bigdl.md
 - API Guide:

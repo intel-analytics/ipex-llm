@@ -1,20 +1,18 @@
-# Analytics Zoo on Databricks
+Databricks is a fast Apache Spark-based big data analysis platform. Analytics Zoo program can run easily on Databricks spark cluster for distributed training or inference. This guide will introduce how to prepare Analytics Zoo environment as well as starting an Analytics Zoo notebook on Databricks.
 
 - [Prerequisites](#Prerequisites)
 - [Installing Analytics Zoo libraries](#Installing-Analytics-Zoo-libraries)
 - [Setting Spark configuration](#Setting-Spark-configuration)
 - [Running Analytics Zoo notebook on Databricks](#Running-Analytics-Zoo-notebook-on-Databricks)
 
-Databricks is a fast Apache Spark-based big data analysis platform. Analytics Zoo program can run easily on Databricks spark cluster for distributed training or inference. This guide will introduce how to prepare Analytics Zoo environment as well as starting an Analytics Zoo notebook on Databricks. 
-
-## Prerequisites
+### **Prerequisites**
 
 Before you start this guide, make sure a Databricks workspace is ready and a cluster is created using the Databricks UI.
 
 1. Create either [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html)  workspace or [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace.
 2. Create Databricks [clusters](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 5.5 LTS (includes Apache Spark 2.4.3, Scala 2.11).
 
-## Installing Analytics Zoo libraries  
+### **Installing Analytics Zoo libraries**  
 
 1. Install libraries. Right-click the Workspace folder. Select **Create > Library**.
 
@@ -32,7 +30,7 @@ Before you start this guide, make sure a Databricks workspace is ready and a clu
 
 <img src="../Image/PlatformGuide/install-on-allclusters.PNG" width="380">
 
-## Setting Spark configuration 
+### **Setting Spark configuration**
 
 On the cluster configuration page, click the **Advanced Options** toggle. Click the **Spark** tab. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.  
 
@@ -54,7 +52,7 @@ spark.cores.max 4
 spark.driver.cores 1
 ```
 
-## Running Analytics Zoo notebook on Databricks
+### **Running Analytics Zoo notebook on Databricks**
 
 Open a new notebook. First call `init_nncontext()` at the beginning of your code. This will create a SparkContext with optimized performance configuration and initialize the BigDL engine. 
 
