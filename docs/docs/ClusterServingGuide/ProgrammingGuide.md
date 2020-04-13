@@ -149,16 +149,22 @@ After [Installation](#1-installation), you will see a config file `config.yaml` 
 model:
   # model path must be set
   path: /opt/work/model
+  # the inputs of the tensorflow model, separated by ","
+  inputs:
+  # the outputs of the tensorflow model, separated by ","
+  outputs:
 data:
   # default, localhost:6379
   src:
   # default, 3,224,224
   image_shape:
+  # default, topN(1)
+  filter:
 params:
   # default, 4
   batch_size:
-  # default, 1
-  top_n:
+  # default: OFF
+  performance_mode:
 spark:
   # default, local[*], change this to spark://, yarn, k8s:// etc if you want to run on cluster
   master: local[*]
@@ -181,11 +187,25 @@ You need to put your model file into a directory and the directory could have la
 
 **Tensorflow**
 
+***Tensorflow checkpoint***
+Please refer to [freeze checkpoint example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tensorflow/freeze_checkpoint)
+
+***Tensorflow frozen model***
 ```
 |-- model
    |-- frozen_graph.pb
    |-- graph_meta.json
 ```
+
+***Tensorflow saved model***
+```
+|-- model
+   |-- saved_model.pb
+   |-- variables
+       |-- variables.data-00000-of-00001
+       |-- variables.index
+```
+Note: you can specify model inputs and outputs in the config.yaml file. If the inputs or outputs are not provided,  the signature "serving_default" will be used to find input and output tensors.
 
 **Caffe**
 
@@ -220,15 +240,16 @@ You need to put your model file into a directory and the directory could have la
 Put the model in any of your local directory, and set `model:/path/to/dir`.
 
 #### Other Configuration
-The field `input` contains your input data configuration.
+The field `data` contains your input data configuration.
 
 * src: the queue you subscribe for your input data, e.g. a default config of Redis on local machine is `localhost:6379`. Note that please use the host address in your network instead of localhost or 127.0.0.1 when you run serving in cluster, and make sure other nodes in cluster could also recognize this address.
 * image_shape: the shape of your input data, e.g. a default config for pretrained imagenet is `3,224,224`. You should use the same shape of data which trained your model. In TensorFlow the format is usually HWC and in other models the format is usually CHW.
+* filter: the top N classes in the prediction result. **note:** if the top-N number is larger than model output size of the the final layer, it would just return all the outputs.
 
 The field `params` contains your inference parameter configuration.
 
 * batch_size: the batch size you use for model inference. We recommend this value to be not smaller than 4 and not larger than 512. In general, using larger batch size means higher throughput, but also increase the latency between batches accordingly.
-* top_n: the top N classes in the prediction result. **note:** if the top-N number is larger than model output size of the the final layer, it would just return all the outputs.
+* performance_mode: The performance mode will utilize your CPU resource to achieve better inference performance on a single node. **Note:** numactl and net-tools should be installed in your system, and spark master should be `local[*]` in the config.yaml file.
 
 The field `spark` contains your spark configuration.
 
