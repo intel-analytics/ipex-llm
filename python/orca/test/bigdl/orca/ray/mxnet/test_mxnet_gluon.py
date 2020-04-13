@@ -22,7 +22,7 @@ import ray
 import mxnet as mx
 from mxnet import gluon
 from mxnet.gluon import nn
-from zoo.ray.mxnet import MXNetTrainer
+from zoo.ray.mxnet import MXNetTrainer, create_trainer_config
 
 np.random.seed(1337)  # for reproducibility
 
@@ -66,16 +66,10 @@ def get_metrics(config):
 
 class TestMXNetGluon(TestCase):
     def test_gluon(self):
-        config = {
-            "num_workers": 2,
-            "num_servers": 2,
-            "batch_size": 32,
-            "optimizer": "sgd",
-            "optimizer_params": {'learning_rate': 0.01},
-            "log_interval": 2,
-            "seed": 42
-        }
-        trainer = MXNetTrainer(config, get_data_iters, get_model, get_loss, get_metrics)
+        config = create_trainer_config(batch_size=32, log_interval=2, optimizer="adam",
+                                       optimizer_params={'learning_rate': 0.02})
+        trainer = MXNetTrainer(config, get_data_iters, get_model, get_loss, get_metrics,
+                               num_workers=2)
         trainer.train(nb_epoch=2)
 
 
