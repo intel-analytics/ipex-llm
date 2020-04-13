@@ -23,10 +23,10 @@ import zoo.ray.util.utils as rutils
 class TestUtil(TestCase):
 
     def test_resource_to_bytes(self):
-        assert 10 == rutils.resourceToBytes("10b")
-        assert 10000 == rutils.resourceToBytes("10k")
-        assert 10000000 == rutils.resourceToBytes("10m")
-        assert 10000000000 == rutils.resourceToBytes("10g")
+        assert 10 == rutils.resource_to_bytes("10b")
+        assert 10000 == rutils.resource_to_bytes("10k")
+        assert 10000000 == rutils.resource_to_bytes("10m")
+        assert 10000000000 == rutils.resource_to_bytes("10g")
 
 
 if __name__ == "__main__":
