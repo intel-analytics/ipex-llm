@@ -15,7 +15,7 @@ set -e
 
 echo "Start ray example tests"
 #start execute
-echo "#1 Start pong example"
+echo "#1 Start rl_pong example"
 start=$(date "+%s")
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/rl_pong/rl_pong.py --iterations 10
 now=$(date "+%s")
@@ -39,8 +39,15 @@ python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/rllib/multiagent_two_trainer
 now=$(date "+%s")
 time4=$((now-start))
 
+echo "#5 Start mxnet lenet example"
+start=$(date "+%s")
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/mxnet/lenet_mnist.py -e 1 -b 256
+now=$(date "+%s")
+time5=$((now-start))
+
 echo "Ray example tests finished"
 echo "#1 rl_pong time used:$time1 seconds"
-echo "#2 sync_parameter_server time used:$time2 seconds"
-echo "#3 async_parameter_server time used:$time3 seconds"
-echo "#4 multiagent_two_trainers time used:$time3 seconds"
+echo "#2 async_parameter_server time used:$time2 seconds"
+echo "#3 sync_parameter_server time used:$time3 seconds"
+echo "#4 multiagent_two_trainers time used:$time4 seconds"
+echo "#5 mxnet_lenet time used:$time5 seconds"
