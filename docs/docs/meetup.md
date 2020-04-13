@@ -1,6 +1,6 @@
 **Webinar:**
 
-* AI Monitoring of Network Health using Analytics Zoo in SK Telecom, March 26 2020, ([Video](https://webinar.intel.com/AI_Monitoring_WebinarREG?cid=em&source=elo&campid=dcg_EMEA_dcgnt_EN_2020_SKT%20AI%20Monitoring%20Webinar_C-MKA-16515_T-MKA-17410&content=dcg_EMEA_dcgnt_EMPW_EN_2020_SKT%20AI%20Monitoring%20WebinarOD_B_C-MKA-16515_T-MKA-17410&elq_cid=5656555&em_id=55798&elqrid=15231a3f77a74330ad6d259e4c4a719d&elqcampid=36699&erpm_id=8713909&trackSrc=MKA-17410_OD&elqTrackId=ed8961eb4a0e4506a15ba38a6b4150ab&elq=15231a3f77a74330ad6d259e4c4a719d&elqaid=55798&elqat=1&elqCampaignId=36699), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0326%20Webinar%20SKT_AI%20Network%20Analytics_FINAL.pdf))
+* AI Monitoring of Network Health using Analytics Zoo in SK Telecom, March 26 2020 ([Video](https://webinar.intel.com/AI_Monitoring_WebinarREG?cid=em&source=elo&campid=dcg_EMEA_dcgnt_EN_2020_SKT%20AI%20Monitoring%20Webinar_C-MKA-16515_T-MKA-17410&content=dcg_EMEA_dcgnt_EMPW_EN_2020_SKT%20AI%20Monitoring%20WebinarOD_B_C-MKA-16515_T-MKA-17410&elq_cid=5656555&em_id=55798&elqrid=15231a3f77a74330ad6d259e4c4a719d&elqcampid=36699&erpm_id=8713909&trackSrc=MKA-17410_OD&elqTrackId=ed8961eb4a0e4506a15ba38a6b4150ab&elq=15231a3f77a74330ad6d259e4c4a719d&elqaid=55798&elqat=1&elqCampaignId=36699), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0326%20Webinar%20SKT_AI%20Network%20Analytics_FINAL.pdf))
 
 **Meetup:**
 
