@@ -15,11 +15,8 @@
 #
 from unittest import TestCase
 
-import numpy as np
-import psutil
 import pytest
 import ray
-import time
 
 from zoo import init_spark_on_local
 from zoo.ray.util.raycontext import RayContext
@@ -41,10 +38,6 @@ class TestRayLocal(TestCase):
         print(ray.get([actor.hostname.remote() for actor in actors]))
         ray_ctx.stop()
         sc.stop()
-        time.sleep(1)
-        for process_info in ray_ctx.ray_processesMonitor.process_infos:
-            for pid in process_info.pids:
-                assert not psutil.pid_exists(pid)
 
 
 if __name__ == "__main__":
