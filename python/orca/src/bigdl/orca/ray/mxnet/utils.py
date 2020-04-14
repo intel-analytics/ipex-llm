@@ -25,7 +25,7 @@ def find_free_port():
         return s.getsockname()[1]
 
 
-def create_trainer_config(batch_size, optimizer="sgd", optimizer_params=None,
+def create_trainer_config(batch_size=32, optimizer="sgd", optimizer_params=None,
                           log_interval=10, seed=None, extra_config=None):
     if not optimizer_params:
         optimizer_params = {'learning_rate': 0.01}
