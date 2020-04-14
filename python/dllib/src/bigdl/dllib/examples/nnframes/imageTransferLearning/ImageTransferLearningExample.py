@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_option("--b", "--batch_size", type=int, dest="batch_size", default="56",
                       help="The number of samples per gradient update. Default is 56.")
     parser.add_option("--nb_epoch", type=int, dest="nb_epoch", default="20",
-                      help="The number of iterations to train the model. Default is 20.")
+                      help="The number of epochs to train the model. Default is 20.")
     parser.add_option("--r", "--learning_rate", type=float, dest="learning_rate", default="0.002",
                       help="The learning rate for the model. Default is 0.002.")
 
