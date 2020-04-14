@@ -1,6 +1,4 @@
 ---
-# **xShard: Data Parallel Pre-Processing for AI**
-
 ## **Introduction**
 
 Analytics Zoo xShard provides data-parallel pre-processing support for AI.
@@ -37,7 +35,7 @@ You can do pre-processing with your customized function on DataShards using belo
 ```
 apply(func, *args)
 ```
-* `func` is your pre-processing function. In this function, you can do the pre-processing on the Pandas DataFrame, then return the processed object. 
+* `func` is your pre-processing function. In this function, you can do the pre-processing on a Pandas DataFrame, then return the processed object. 
 * `args` are the augurments for the pre-processing function.
 
 This method would parallelly pre-process each element in the DataShards with the customized function.

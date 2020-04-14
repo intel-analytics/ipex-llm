@@ -49,7 +49,7 @@ pages:
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
-  - Xshard:  ProgrammingGuide/xshard.md
+  - xShard:  ProgrammingGuide/xshard.md
   - Built-in Models:
     - Object Detection API: ProgrammingGuide/object-detection.md
     - Image Classification API: ProgrammingGuide/image-classification.md
