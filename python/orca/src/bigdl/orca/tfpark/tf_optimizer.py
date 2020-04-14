@@ -476,7 +476,7 @@ class TFOptimizer:
                                   tensor_with_value, session_config, metrics,
                                   updates, model_dir, train_op=train_op)
         return cls(tf_model, optim_method, sess=sess, dataset=dataset, val_split=val_split,
-                   clip_norm=clip_norm, clip_value=clip_value)
+                   clip_norm=clip_norm, clip_value=clip_value, model_dir=model_dir)
 
     @classmethod
     def from_loss(cls, loss, optim_method, session=None, val_outputs=None,
