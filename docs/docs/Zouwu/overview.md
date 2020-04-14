@@ -1,6 +1,7 @@
 #Project Zouwu: Analytics Zoo Time Series for Telco 
 
 Project Zouwu provides a reference solution that is designed and optimized for common time series applications in the Telco industry, including:
+
 * _Use case_ - reference time series use cases in the Telco industry (such as network traffic forcasting, etc.)
 * _Model_ - built-in deep learning models for time series analysis (such as LSTM and [MTNet](https://arxiv.org/abs/1809.02105))
 * _AutoTS_ - AutoML support for building end-to-end time series analysis pipelines (including automatic feature generation, model selection and hyperparameter tuning).
