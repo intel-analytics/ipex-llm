@@ -13,22 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from unittest import TestCase
 
-import numpy as np
-import psutil
-import pytest
-import ray
 import time
 
+import numpy as np
+import ray
+
 from zoo import init_spark_on_yarn
-from zoo.ray.util.raycontext import RayContext
+from zoo.ray import RayContext
 
 np.random.seed(1337)  # for reproducibility
 
 
 @ray.remote
-class TestRay():
+class TestRay:
     def hostname(self):
         import socket
         return socket.gethostname()
