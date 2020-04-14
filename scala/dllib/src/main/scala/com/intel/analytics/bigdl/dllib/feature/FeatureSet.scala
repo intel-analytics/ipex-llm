@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.{AbstractDataSet, DistributedDataSet, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.zoo.common.PythonInterpreter
 import com.intel.analytics.zoo.core.TFNetNative
 import com.intel.analytics.zoo.feature.common.{ArrayLike, ArrayLikeWrapper}
 import com.intel.analytics.zoo.feature.pmem._
@@ -366,7 +367,6 @@ object PythonLoaderFeatureSet{
       interp.exec(load)
       Iterator.single(interp)
     }.count()
-
   }
 
   private var jepRDD: RDD[SharedInterpreter] = null
@@ -389,7 +389,7 @@ object PythonLoaderFeatureSet{
             Iterator.single(1)
           }.count()
           jepRDD = originRdd.mapPartitions { iter =>
-            val interp = getOrCreateInterpreter()
+            val interp = PythonInterpreter.getSharedInterpreter()
             Iterator.single(interp)
           }.setName("SharedInterpRDD").cache()
           jepRDD.count()
@@ -397,27 +397,6 @@ object PythonLoaderFeatureSet{
       }
     }
     jepRDD
-  }
-
-  private var sharedInterpreter: SharedInterpreter = null
-  protected def getOrCreateInterpreter(): SharedInterpreter = {
-    if (sharedInterpreter == null) {
-      this.synchronized {
-        if (sharedInterpreter == null) {
-          val config: JepConfig = new JepConfig()
-          config.setClassEnquirer(new NamingConventionClassEnquirer())
-          SharedInterpreter.setConfig(config)
-          sharedInterpreter = new SharedInterpreter()
-          val str =
-            s"""
-               |import tensorflow as tf
-               |tf.compat.v1.set_random_seed(${1000})
-               |""".stripMargin
-          sharedInterpreter.exec(str)
-        }
-      }
-    }
-    sharedInterpreter
   }
 
   protected def toArrayTensor(
