@@ -40,7 +40,7 @@ import scala.collection.mutable.ArrayBuffer
  * @param graphDef serialized representation of a graph
  */
 class GraphRunner(
-            private val graphDef: Array[Byte],
+            private[zoo] val graphDef: Array[Byte],
             private val restoreOp: String,
             private val restorePathPlaceholder: String,
             private val saveOp: String,

@@ -167,4 +167,8 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
       shuffle = shuffle).transform(new StringToMiniBatch(batchSize))
   }
 
+  def loadZooCheckpoint(model: TFTrainingHelper, path: String): Unit = {
+    model.loadZooCheckpoint(path)
+  }
+
 }
