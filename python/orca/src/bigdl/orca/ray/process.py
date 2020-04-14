@@ -21,7 +21,7 @@ import atexit
 import sys
 import psutil
 
-from zoo.ray.util import gen_shutdown_per_node, is_local
+from zoo.ray.utils import gen_shutdown_per_node, is_local
 
 
 class ProcessInfo(object):

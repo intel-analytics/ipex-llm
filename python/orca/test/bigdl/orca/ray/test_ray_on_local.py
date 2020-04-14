@@ -19,7 +19,7 @@ import pytest
 import ray
 
 from zoo import init_spark_on_local
-from zoo.ray.util.raycontext import RayContext
+from zoo.ray import RayContext
 
 
 class TestRayLocal(TestCase):

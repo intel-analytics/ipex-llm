@@ -18,7 +18,7 @@
 import ray
 
 from zoo import init_spark_on_yarn
-from zoo.ray.util.raycontext import RayContext
+from zoo.ray import RayContext
 
 slave_num = 2
 
