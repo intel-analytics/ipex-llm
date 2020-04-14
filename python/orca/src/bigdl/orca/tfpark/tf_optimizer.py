@@ -27,7 +27,7 @@ from bigdl.util.common import to_list, JavaValue
 
 from zoo.tfpark.zoo_optimizer import FakeOptimMethod
 from zoo.common.utils import callZooFunc
-from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss
+from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss, OptimMethod
 from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method, find_tensors
 from zoo.pipeline.estimator import Estimator
 from zoo.util import nest
@@ -90,6 +90,9 @@ class TFTrainingHelper(Layer):
     def get_weights_to_python(self):
         self.save_checkpoint()
         self.saver.restore(self.sess, os.path.join(self.export_dir, "model"))
+
+    def load_checkpoint(self, path):
+        callZooFunc(self.bigdl_type, "loadZooCheckpoint", self.value, path)
 
 
 def _to_operation_name(name):
@@ -386,9 +389,25 @@ class TFOptimizer:
         self.val_rdd = val_rdd
         self.batch_size = batch_size
 
-        self.estimator = Estimator(self.tf_model.training_helper_layer, self.optim_method,
+        self.estimator = Estimator(self.tf_model.training_helper_layer,
+                                   self.optim_method,
                                    model_dir)
 
+        if self.clip_norm:
+            self.estimator.set_l2_norm_gradient_clipping(self.clip_norm)
+        if self.clip_constant:
+            min_value, max_value = self.clip_constant
+            self.estimator.set_constant_gradient_clipping(min_value, max_value)
+
+    def load_checkpoint(self, path, version):
+        # todo make version optional
+        model_path = os.path.join(path, "model.{}".format(version))
+        optim_method_path = os.path.join(path, "optimMethod-TFParkTraining.{}".format(version))
+        self.tf_model.training_helper_layer.load_checkpoint(model_path)
+        self.optim_method = OptimMethod.load(optim_method_path)
+        self.estimator = Estimator(self.tf_model.training_helper_layer,
+                                   self.optim_method,
+                                   self.model_dir)
         if self.clip_norm:
             self.estimator.set_l2_norm_gradient_clipping(self.clip_norm)
         if self.clip_constant:
