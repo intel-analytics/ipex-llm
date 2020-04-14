@@ -42,7 +42,7 @@ time4=$((now-start))
 echo "#5 Start mxnet lenet example"
 start=$(date "+%s")
 # Remove the downloaded data to avoid failures
-if [ -d "data" ];
+if [ -e "data" ];
 then
   rm -rf data
 fi
