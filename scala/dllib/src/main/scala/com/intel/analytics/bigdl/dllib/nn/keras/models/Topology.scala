@@ -50,6 +50,7 @@ import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, TorchNet}
 import com.intel.analytics.zoo.pipeline.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
 import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
@@ -1336,7 +1337,8 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
       this.setCheckpoint(logPath.toUri.toString(), checkPointTrigger.get)
     }
     if (checkPointTrigger.isDefined && validationMethod != null && validationSet != null) {
-      this.setValidation(checkPointTrigger.get, validationSet.toDataSet(), validationMethod)
+      val validationTrigger = SerializationUtils.clone(checkPointTrigger.get)
+      this.setValidation(validationTrigger, validationSet.toDataSet(), validationMethod)
     }
     if (numSlice != 1) {
       val state = InternalOptimizerUtil.getStateFromOptiMethod(
