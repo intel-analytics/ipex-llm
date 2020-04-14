@@ -17,7 +17,7 @@ from unittest import TestCase
 
 import pytest
 
-import zoo.ray.util.utils as rutils
+import zoo.ray.utils as rutils
 
 
 class TestUtil(TestCase):
