@@ -1,5 +1,7 @@
 import scipy.misc
 import numpy as np
+import imageio
+from PIL import Image
 
 
 def center_crop(x, crop_h, crop_w=None, resize_w=64):
@@ -9,8 +11,7 @@ def center_crop(x, crop_h, crop_w=None, resize_w=64):
     h, w = x.shape[:2]
     j = int(round((h - crop_h)/2.))
     i = int(round((w - crop_w)/2.))
-    return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w],
-                               [resize_w, resize_w]) 
+    return np.array(Image.fromarray(x[j:j+crop_h, i:i+crop_w].astype(np.uint8)).resize([resize_w, resize_w]))
 
 
 def transform(image, npx=64, is_crop=True, resize_w=64):
@@ -27,9 +28,9 @@ def inverse_transform(images):
 
 def imread(path, is_grayscale = False):
     if (is_grayscale):
-        return scipy.misc.imread(path, flatten = True).astype(np.float) # [width,height] flatten RGB image to grayscale image
+        return imageio.imread(path, flatten = True).astype(np.float) # [width,height] flatten RGB image to grayscale image
     else:
-        return scipy.misc.imread(path).astype(np.float) # [width,height,color_dim]
+        return imageio.imread(path).astype(np.float) # [width,height,color_dim]
 
 
 def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = False):
