@@ -70,7 +70,7 @@ or launching ray on Spark.
 
 ```python
 import ray
-from zoo.ray.util.raycontext import RayContext
+from zoo.ray import RayContext
 
 ray_ctx = RayContext(sc=sc, object_store_memory="5g")
 ray_ctx.init()
