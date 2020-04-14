@@ -14,18 +14,16 @@
 # limitations under the License.
 #
 
+import multiprocessing
 import os
+import random
 import re
 import signal
-import random
-import multiprocessing
 
 from pyspark import BarrierTaskContext
-
-from zoo.ray.util import is_local
-from zoo.ray.util.process import session_execute, ProcessMonitor
-from zoo.ray.util.utils import resource_to_bytes
-import ray.services as rservices
+from zoo.ray.process import session_execute, ProcessMonitor
+from zoo.ray.utils import is_local
+from zoo.ray.utils import resource_to_bytes
 
 
 class JVMGuard:
@@ -146,6 +144,7 @@ class RayServiceFuncGenerator(object):
         print("Starting {} by running: {}".format(tag, command))
         process_info = session_execute(command=command, env=modified_env, tag=tag)
         JVMGuard.register_pids(process_info.pids)
+        import ray.services as rservices
         process_info.node_ip = rservices.get_node_ip_address()
         return process_info
 

@@ -22,7 +22,7 @@ ray_ctx = None
 @pytest.fixture(autouse=True, scope='package')
 def rayonspark_fixture():
     from zoo import init_spark_on_local
-    from zoo.ray.util.raycontext import RayContext
+    from zoo.ray import RayContext
     sc = init_spark_on_local(cores=8, spark_log_level="INFO")
     ray_ctx = RayContext(sc=sc, object_store_memory="1g")
     ray_ctx.init()
