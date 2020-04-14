@@ -79,7 +79,7 @@ object TextClassificationTrainer extends TextProcessing {
         .text("the number of samples per gradient update")
         .action((x, c) => c.copy(batchSize = x))
       opt[Int]("nbEpoch")
-        .text("the number of iterations to train the model")
+        .text("the number of epochs to train the model")
         .action((x, c) => c.copy(nbEpoch = x))
       opt[String]("modelSaveDirPath")
         .required()
