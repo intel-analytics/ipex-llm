@@ -33,7 +33,7 @@ class MXNetTrainer(object):
     optimizer_params should be a dict in companion with the optimizer. It can contain learning_rate
     and other optimization configurations.
     log_interval should be an integer, specifying the interval for logging throughput and metrics
-    if any during the training process.
+    information (if any) during the training process.
     You can call create_trainer_config to create the config easily.
     You can specify "seed" in config to set random seed.
     You can specify "init" in seed to set model initializer.
