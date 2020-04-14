@@ -21,6 +21,7 @@ import subprocess
 import ray.services
 import mxnet as mx
 from mxnet import gluon
+from zoo.ray.utils import to_list
 from zoo.ray.mxnet.utils import find_free_port
 
 
@@ -100,6 +101,7 @@ class MXNetRunner(object):
                     if self.metrics:
                         self.metrics.reset()  # metrics will accumulate for one batch
                     batch_start_time = time.time()
+                    epoch_start_time = time.time()
                     for i, batch in enumerate(self.train_data):
                         data = gluon.utils.split_and_load(
                             batch.data[0].astype("float32"), ctx_list=[mx.cpu()], batch_axis=0)
@@ -121,27 +123,52 @@ class MXNetRunner(object):
                             self.metrics.update(label, outputs)
                         if not (i + 1) % self.config["log_interval"]:
                             # This would be logged on driver for each worker process.
-                            print_output = ""
-                            print_output \
-                                += 'Epoch[%d] Batch[%d]  Speed: %f samples/sec %s=%f' \
-                                   % (epoch, i,
-                                      self.config["batch_size"] / (time.time() - batch_start_time),
-                                      "loss", Ls[0].asnumpy().mean())
+                            iteration_log = \
+                                "Epoch[%d] Batch[%d]  Speed: %f samples/sec  %s=%f" \
+                                % (epoch, i,
+                                   self.config["batch_size"] / (time.time() - batch_start_time),
+                                   "loss", Ls[0].asnumpy().mean())
                             if self.metrics:
                                 names, accs = self.metrics.get()
-                                if not isinstance(names, list):
-                                    names = [names]
-                                    accs = [accs]
+                                names, accs = to_list(names), to_list(accs)
                                 for name, acc in zip(names, accs):
-                                    print_output += ' %s=%f' % (name, acc)
-                            self.logger.info(print_output)
+                                    iteration_log += "  %s=%f" % (name, acc)
+                            self.logger.info(iteration_log)
                         batch_start_time = time.time()
-                        # TODO: save checkpoints
+                    # Epoch time log
+                    self.logger.info("[Epoch %d] time cost: %f" %
+                                     (epoch, time.time() - epoch_start_time))
+                    # Epoch metrics log on train data
+                    if self.metrics:
+                        epoch_train_log = "[Epoch %d] training: " % epoch
+                        names, accs = self.metrics.get()
+                        names, accs = to_list(names), to_list(accs)
+                        for name, acc in zip(names, accs):
+                            epoch_train_log += "%s=%f  " % (name, acc)
+                        self.logger.info(epoch_train_log)
+                    # Epoch metrics log on validation data if any:
+                    if self.val_data:
+                        self.metrics.reset()
+                        self.val_data.reset()
+                        for batch in self.val_data:
+                            data = gluon.utils.split_and_load(
+                                batch.data[0].astype("float32", copy=False),
+                                ctx_list=[mx.cpu()], batch_axis=0)
+                            label = gluon.utils.split_and_load(
+                                batch.label[0].astype("float32", copy=False),
+                                ctx_list=[mx.cpu()], batch_axis=0)
+                            outputs = [self.model(X) for X in data]
+                            self.metrics.update(label, outputs)
+                        epoch_val_log = "[Epoch %d] validation: " % epoch
+                        names, accs = self.metrics.get()
+                        names, accs = to_list(names), to_list(accs)
+                        for name, acc in zip(names, accs):
+                            epoch_val_log += "%s=%f  " % (name, acc)
+                        self.logger.info(epoch_val_log)
+                    # TODO: save checkpoints
                 if self.metrics:
                     names, accs = self.metrics.get()
-                    if not isinstance(names, list):
-                        names = [names]
-                        accs = [accs]
+                    names, accs = to_list(names), to_list(accs)
                     for name, acc in zip(names, accs):
                         stats[name] = acc
             else:  # Symbolic API
