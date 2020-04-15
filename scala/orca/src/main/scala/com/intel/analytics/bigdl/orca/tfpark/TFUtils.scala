@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.zoo.feature.common.Preprocessing
 import com.intel.analytics.zoo.feature.image.ImageProcessing
+import com.intel.analytics.zoo.pipeline.api.keras.{metrics => kmetrics}
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.{Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy}
 import org.tensorflow.framework.GraphDef
 import org.tensorflow.{DataType, Tensor => TTensor}
@@ -283,6 +284,7 @@ class TFValidationMethod(val valMethod: ValidationMethod[Float],
       case _: SparseCategoricalAccuracy[Float] => false
       case _: CategoricalAccuracy[Float] => false
       case _: BinaryAccuracy[Float] => false
+      case v: kmetrics.Top5Accuracy[Float] => !v.zeroBasedLabel
       case v: Accuracy[Float] => !v.zeroBasedLabel
       case _: Top1Accuracy[Float] => true
       case _: Top5Accuracy[Float] => true
