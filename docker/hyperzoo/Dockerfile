@@ -45,11 +45,12 @@ RUN apt-get update --fix-missing && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
 #java
-RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
-    gunzip jdk-8u152-linux-x64.tar.gz && \
-    tar -xf jdk-8u152-linux-x64.tar -C /opt && \
-    rm jdk-8u152-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_152 /opt/jdk
+RUN wget --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+    http://download.oracle.com/otn-pub/java/jdk/8u241-b07/1f5b5a70bf22433b84d0e960903adac8/jdk-8u241-linux-x64.tar.gz && \
+    gunzip jdk-8u241-linux-x64.tar.gz && \
+    tar -xf jdk-8u241-linux-x64.tar -C /opt && \
+    rm jdk-8u241-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_241 /opt/jdk
 
 #spark
 RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \

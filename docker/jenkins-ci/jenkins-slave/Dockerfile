@@ -2,7 +2,6 @@ FROM ubuntu:16.04
 
 WORKDIR /opt/work
 
-ENV JAVA_7_HOME         /opt/work/jdk7
 ENV JAVA_8_HOME         /opt/work/jdk8
 ENV JAVA_HOME           ${JAVA_8_HOME}
 ENV SCALA_HOME          /opt/work/scala
@@ -31,17 +30,12 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libgtk2.0-dev
 
 #jdk8
-RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
-    gunzip jdk-8u152-linux-x64.tar.gz && \
-    tar -xf jdk-8u152-linux-x64.tar -C /opt && \
-    rm jdk-8u152-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_152 ${JAVA_8_HOME} && \
-#jdk7
-    wget https://build.funtoo.org/distfiles/oracle-java/jdk-7u80-linux-x64.tar.gz && \
-    gunzip jdk-7u80-linux-x64.tar.gz && \
-    tar -xf jdk-7u80-linux-x64.tar -C /opt && \
-    rm jdk-7u80-linux-x64.tar && \
-    ln -s /opt/jdk1.7.0_80 ${JAVA_7_HOME} && \
+RUN wget --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+    http://download.oracle.com/otn-pub/java/jdk/8u241-b07/1f5b5a70bf22433b84d0e960903adac8/jdk-8u241-linux-x64.tar.gz && \
+    gunzip jdk-8u241-linux-x64.tar.gz && \
+    tar -xf jdk-8u241-linux-x64.tar -C /opt && \
+    rm jdk-8u241-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_241 /opt/jdk && \
 #scala
     wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
     gunzip scala-2.11.8.tgz && \

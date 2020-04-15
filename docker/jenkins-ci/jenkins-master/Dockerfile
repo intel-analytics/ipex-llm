@@ -20,15 +20,18 @@ COPY init.groovy ${JENKINS_HOME}/init.groovy.d/basic-security.groovy
 COPY jenkins-support ${JENKINS_HOME}/jenkins-support
 COPY jenkins.sh ${JENKINS_HOME}/jenkins.sh
 
-RUN apt-get update && apt-get install -y git wget curl && rm -rf /var/lib/apt/lists/* && \
-# Install JDK 8
-    wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
-    gunzip jdk-8u152-linux-x64.tar.gz && \
-    tar -xf jdk-8u152-linux-x64.tar -C /opt && \
-    rm jdk-8u152-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_152 ${JAVA_HOME} && \
+RUN apt-get update && apt-get install -y git wget curl && rm -rf /var/lib/apt/lists/*
+
+#java
+RUN wget --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+    http://download.oracle.com/otn-pub/java/jdk/8u241-b07/1f5b5a70bf22433b84d0e960903adac8/jdk-8u241-linux-x64.tar.gz && \
+    gunzip jdk-8u241-linux-x64.tar.gz && \
+    tar -xf jdk-8u241-linux-x64.tar -C /opt && \
+    rm jdk-8u241-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_241 /opt/jdk
+
 # Install Jenkins Master
-    curl -fsSL ${JENKINS_URL} -o ${JENKINS_HOME}/jenkins.war && \
+RUN curl -fsSL ${JENKINS_URL} -o ${JENKINS_HOME}/jenkins.war && \
     echo "${JENKINS_SHA}  ${JENKINS_HOME}/jenkins.war" | sha256sum -c - && \
     chmod +x ${JENKINS_HOME}/jenkins.sh
 
