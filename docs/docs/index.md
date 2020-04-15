@@ -4,7 +4,7 @@ _A unified Data Analytics and AI platform for **distributed TensorFlow, Keras, P
 
 ---
 
-# <font size="6"> What is Analytics Zoo? </font>
+# <font size="6"><b>What is Analytics Zoo?</b></font>
 
 Analytics Zoo provides a unified data analytics and AI platform that seamlessly unites TensorFlow, Keras, PyTorch, Spark, Flink and Ray programs into an integrated pipeline, which can transparently scale from a laptop to large clusters to process production big data.
 
@@ -27,7 +27,7 @@ Analytics Zoo provides a unified data analytics and AI platform that seamlessly 
 
 ---
 
-# <font size="6">Why use Analytics Zoo? </font>
+# <font size="6"><b>Why use Analytics Zoo?</b></font>
 
 You may want to develop your AI solutions using Analytics Zoo if:
 
@@ -38,7 +38,7 @@ You may want to develop your AI solutions using Analytics Zoo if:
 
 ---
 
-# <font size="6">How to use Analytics Zoo? </font>
+# <font size="6"><b>How to use Analytics Zoo?</b></font>
 
 * Quick start with Analytics Zoo using the pre-built [Docker Image](DockerUserGuide/index.md).
 * Refer to the [Python](PythonUserGuide/install.md) and [Scala](ScalaUserGuide/install.md) installation guides to install Analytics Zoo.
