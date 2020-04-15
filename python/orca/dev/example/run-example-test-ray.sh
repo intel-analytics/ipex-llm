@@ -41,13 +41,7 @@ time4=$((now-start))
 
 echo "#5 Start mxnet lenet example"
 start=$(date "+%s")
-# Remove the downloaded data to avoid failures
-if [ -e "data" ];
-then
-  rm -rf data
-fi
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/mxnet/lenet_mnist.py -e 1 -b 256
-rm -rf data
 now=$(date "+%s")
 time5=$((now-start))
 
