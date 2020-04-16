@@ -16,17 +16,17 @@ Inference Model is a package in Analytics Zoo aiming to provide high-level APIs 
 
 [System requirements](https://software.intel.com/en-us/openvino-toolkit/documentation/system-requirements):
 
-    Ubuntu 16.04.3 LTS (64 bit)
-    Windows 10 (64 bit)
-    CentOS 7.4 (64 bit)
-    macOS 10.13, 10.14 (64 bit)
+    Ubuntu 16.04.3 LTS or higher (64 bit)
+    CentOS 7.6 or higher (64 bit)
+    macOS 10.14 or higher (64 bit)
 
 Python requirements:
 
-    tensorflow>=1.2.0
+    tensorflow>=1.2.0,<2.0.0
     networkx>=1.11
     numpy>=1.12.0
-    protobuf==3.6.1
+    defusedxml>=0.5.0
+    test-generator>=0.1.1
 
 **Supported models:**
 
