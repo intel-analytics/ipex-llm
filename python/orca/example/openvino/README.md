@@ -21,7 +21,7 @@ OpenVINO Python requirements:
     protobuf==3.6.1
 
 ## Model and Data Preparation
-1. Prepare a pre-trained TensorFlow object detection model. You can download from [tensorflow detection model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md), and convert it into OpenVINO model with [OpenVINO toolkit](https://docs.openvinotoolkit.org/2018_R5/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html).
+1. Prepare a pre-trained TensorFlow object detection model. You can download from [tensorflow detection model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md), and convert it into OpenVINO model with [OpenVINO toolkit](https://docs.openvinotoolkit.org/2020.1/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html).
    
 In this example, we use `faster_rcnn_resnet101_coco.xml` and `faster_rcnn_resnet101_coco.bin` from [OpenVINO Open Model Zoo](https://github.com/opencv/open_model_zoo). Please put these two files in the same directory.
 
