@@ -30,8 +30,7 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libgtk2.0-dev
 
 #jdk8
-RUN wget --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" \
-    http://download.oracle.com/otn-pub/java/jdk/8u241-b07/1f5b5a70bf22433b84d0e960903adac8/jdk-8u241-linux-x64.tar.gz && \
+RUN wget https://alm2-gerdal.s3.amazonaws.com/jdk-8u241-linux-x64.tar.gz && \
     gunzip jdk-8u241-linux-x64.tar.gz && \
     tar -xf jdk-8u241-linux-x64.tar -C /opt && \
     rm jdk-8u241-linux-x64.tar && \
