@@ -40,9 +40,9 @@ You may want to develop your AI solutions using Analytics Zoo if:
 
 # <font size="6"><b>How to use Analytics Zoo?</b></font>
 
-* Quick start with Analytics Zoo using the pre-built [Docker Image](DockerUserGuide/index.md).
-* Refer to the [Python](PythonUserGuide/install.md) and [Scala](ScalaUserGuide/install.md) installation guides to install Analytics Zoo.
-* Visit the [Document Website](https://analytics-zoo.github.io/) for more information on Analytics Zoo.
+* Check out the [Getting Started page](gettingstarted.md) for a quick overview of how to use Analytics Zoo.
+* Refer to the [Python](PythonUserGuide/install.md), [Scala](ScalaUserGuide/install.md) and [Docker](DockerUserGuide/index.md) guides to install Analytics Zoo.
+* Visit the [Document Website](https://analytics-zoo.github.io/) ([mirror](https://analytics-zoo.gitee.io/) in China) for more information on Analytics Zoo.
 * Check the [Powered By](powered-by.md) & [Presentations](presentations.md) pages for real-world applications using Analytics Zoo.
 * Join the [Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on Analytics Zoo.
 
