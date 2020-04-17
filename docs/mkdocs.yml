@@ -21,12 +21,11 @@ pages:
   - Python:
     - Install: PythonUserGuide/install.md
     - Run: PythonUserGuide/run.md
-    - Examples: PythonUserGuide/examples.md
     - FAQ: PythonUserGuide/python-faq.md
   - Scala: 
     - Install: ScalaUserGuide/install.md
     - Run: ScalaUserGuide/run.md
-    - Examples: ScalaUserGuide/examples.md
+  - Examples: examples.md
 - Developer Guide:
   - For Python Developers: DeveloperGuide/python.md
 - Programming Guide: 
