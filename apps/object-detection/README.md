@@ -4,7 +4,7 @@ In object-detection.ipynb we use SSD-MobileNet to predict instances of target cl
 In messi.ipynb we use a pretrained detect messi model to detect messi in a video. Proposed areas are labeled with boxes and class scores.
 
 ## Environment
-* Python 3.5/3.6 (Need moviepy)
+* Python 3.6/3.7 (Need moviepy)
 * Apache Spark 2.x (This version needs to be same with the version you use to build Analytics Zoo)
 
 ## Install or download Analytics Zoo
