@@ -2,7 +2,7 @@
 This is a simple example of image augmentation for 3D images using Analytics ZOO API. We use various ways to transform images to augment the dataset.
 
 ## Environment
-* Python 3.5/3.6 (numpy 1.11.1)
+* Python 3.6/3.7 (numpy 1.11.1)
 * Apache Spark 2.x (This version needs to be same with the version you use to build Analytics Zoo)
 
 ## Install or download Analytics Zoo

@@ -1,6 +1,6 @@
 For Python users, Analytics Zoo can be installed either [from pip](#install-from-pip-for-local-usage) or [without pip](#install-without-pip).
 
-**NOTE**: Only __Python 3.5__ and __Python 3.6__ are supported for now. We have removed our support and test for Python 2.7 due to its end of life.
+**NOTE**: We have tested on __Python 3.6__ and __Python 3.7__. Support for Python 2.7 has been removed due to its end of life.
 
 ---
 ## **Install from pip for local usage**

@@ -7,8 +7,8 @@ This page lists solutions to some common questions.
     ``` export PYTHONPATH=${ANALYTICS_ZOO_PY_ZIP}:$PYTHONPATH```
 
 2. Python in worker has a different version than that in driver
-    - ```export PYSPARK_PYTHON=/usr/local/bin/python3.5```  This path should be valid on every worker node.
-    - ```export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.5```  This path should be valid on every driver node.
+    - ```export PYSPARK_PYTHON=/usr/local/bin/python3.6```  This path should be valid on every worker node.
+    - ```export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.6```  This path should be valid on every driver node.
   
 3. __TypeError__: 'JavaPackage' object is not callable
     - Check if every path within the launch script is valid especially the path that ends with jar.

@@ -64,9 +64,9 @@ sc = init_nncontext()
 Output on Databricks:
 
 ```
-Prepending /databricks/python/lib/python3.5/site-packages/bigdl/share/conf/spark-bigdl.conf to sys.path
-Adding /databricks/python/lib/python3.5/site-packages/zoo/share/lib/analytics-zoo-bigdl_0.9.1-spark_2.4.3-0.6.0-jar-with-dependencies.jar to BIGDL_JARS
-Prepending /databricks/python/lib/python3.5/site-packages/zoo/share/conf/spark-analytics-zoo.conf to sys.path
+Prepending /databricks/python/lib/python3.6/site-packages/bigdl/share/conf/spark-bigdl.conf to sys.path
+Adding /databricks/python/lib/python3.6/site-packages/zoo/share/lib/analytics-zoo-bigdl_0.9.1-spark_2.4.3-0.6.0-jar-with-dependencies.jar to BIGDL_JARS
+Prepending /databricks/python/lib/python3.6/site-packages/zoo/share/conf/spark-analytics-zoo.conf to sys.path
 ```
 
 If you would like to run a completed Analytics Zoo notebook, you can import an Analytics Zoo notebook from a URL directly. 

@@ -109,7 +109,7 @@ With the summary info generated, we can then use [TensorBoard](https://pypi.pyth
 
 Prerequisites:
 
-1. Python version: 3.5 or 3.6
+1. Python version: 3.6 or 3.7
 2. Pip version >= 9.0.1
 3. TensorFlow 1.13.1
 

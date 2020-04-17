@@ -3,7 +3,7 @@ This notebook demonstrates how to build a neural network recommendation system (
 
 
 ## Environment
-* Python 3.5/3.6
+* Python 3.6/3.7
 * JDK 8
 * Apache Spark 2.x (This version needs to be same with the version you use to build Analytics Zoo)
 * Jupyter Notebook 4.1
