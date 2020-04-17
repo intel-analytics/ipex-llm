@@ -10,7 +10,7 @@ You can use the following command to install the latest release version of __ana
 pip install analytics-zoo
 ```
 
-* You are strongly recommended to use Python 3.5 or 3.6. You might need to run `pip3 install analytics-zoo` instead.
+* You are strongly recommended to use Python 3.6 or 3.7. You might need to run `pip3 install analytics-zoo` instead.
 * You might need to add `sudo` if you don't have the permission for installation.
 
 **Important:**

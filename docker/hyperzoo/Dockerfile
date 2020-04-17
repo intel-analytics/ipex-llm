@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 
 MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytics-zoo
 
-ARG ANALYTICS_ZOO_VERSION=0.8.0-SNAPSHOT
+ARG ANALYTICS_ZOO_VERSION=0.9.0-SNAPSHOT
 ARG BIGDL_VERSION=0.10.0
 ARG SPARK_VERSION=2.4.3
 
