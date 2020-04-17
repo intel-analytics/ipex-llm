@@ -42,8 +42,8 @@ You may want to develop your AI solutions using Analytics Zoo if:
 
 # <font size="6">How to use Analytics Zoo? </font>
 
-- Quick start with Analytics Zoo using the pre-built [Docker Image](https://analytics-zoo.github.io/master/#DockerUserGuide/index).
-- Refer to the [Python](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) and [Scala](https://analytics-zoo.github.io/master/#ScalaUserGuide/install/) installation guides to install Analytics Zoo.
-- Visit the [Document Website](https://analytics-zoo.github.io/) for more information on Analytics Zoo.
+- Check out the [Getting Started page](https://analytics-zoo.github.io/master/#gettingstarted/) for a quick overview of how to use Analytics Zoo.
+- Refer to the [Python](https://analytics-zoo.github.io/master/#PythonUserGuide/install/), [Scala](https://analytics-zoo.github.io/master/#ScalaUserGuide/install/) and [Docker](https://analytics-zoo.github.io/master/#DockerUserGuide/) guides to install Analytics Zoo.
+- Visit the [Document Website](https://analytics-zoo.github.io/) ([mirror](https://analytics-zoo.gitee.io/) in China) for more information on Analytics Zoo.
 - Check the [Powered By](https://analytics-zoo.github.io/master/#powered-by/) & [Presentations](https://analytics-zoo.github.io/master/#presentations/) pages for real-world applications using Analytics Zoo.
 - Join the [Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on Analytics Zoo.
