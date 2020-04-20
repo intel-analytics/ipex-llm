@@ -4,6 +4,8 @@
 
 **Meetup:**
 
+* What’s on-going in Spark + AI Community - views from a contributor & practitioner, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/269943074/), April 17 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/SparkMeetup_SparkAI?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0417%20SparkMeetup_SparkAI_Shane.pdf))
+
 * Distributed and Real time Deep Learning Model Inference with Analytics Zoo in Apache Flink, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/269684859/), April 03 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/Flink_AnalyticsZoo_Inference?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0403%20Meetup%20Distributed%20and%20Real%20time%20Deep%20Learning%20Model%20Inference%20with%20Analytics%20Zoo%20in%20Apache%20Flink.pdf))
 
 * Product recommendations leveraging deep learning using Analytics Zoo in Office Depot, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/269598427/ ), March 26 2020 ([Video](https://tianchi.aliyun.com/course/video?liveId=41144), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0326%20Meetup%20Product%20recommendations%20leveraging%20deep%20learning%20using%20Analytics%20Zoo%20in%20Office%20Depot.pdf))
