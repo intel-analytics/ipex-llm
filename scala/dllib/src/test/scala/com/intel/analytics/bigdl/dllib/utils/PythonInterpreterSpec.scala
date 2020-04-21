@@ -56,5 +56,6 @@ class PythonInterpreterSpec extends ZooSpecHelper{
         i
       }).count()
     )
+    sc.stop()
   }
 }
