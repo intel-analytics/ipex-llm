@@ -214,18 +214,31 @@ private[zoo] object Utils {
     getFileSystem(path).open(new Path(path))
   }
 
+  def appendPrefix(localPath: String): String = {
+    if (!localPath.startsWith("file://")) {
+      if (!localPath.startsWith("/")) {
+        throw new Exception("local path must be a absolute path")
+      } else {
+        "file://" + localPath
+      }
+    } else {
+      localPath
+    }
+  }
+
   def putLocalFileToRemote(localPath: String, remotePath: String,
                            isOverwrite: Boolean = false): Unit = {
 
-    val inputStream = getFileSystem(localPath).open(new Path(localPath))
+    val path = appendPrefix(localPath)
+    val inputStream = getFileSystem(path).open(new Path(path))
     saveStream(inputStream, fileName = remotePath, isOverwrite = isOverwrite)
   }
 
   def getRemoteFileToLocal(remotePath: String, localPath: String,
                            isOverwrite: Boolean = false): Unit = {
-
+    val path = appendPrefix(localPath)
     val inputStream = getFileSystem(remotePath).open(new Path(remotePath))
-    saveStream(inputStream, fileName = localPath, isOverwrite = isOverwrite)
+    saveStream(inputStream, fileName = path, isOverwrite = isOverwrite)
   }
 
   /**
