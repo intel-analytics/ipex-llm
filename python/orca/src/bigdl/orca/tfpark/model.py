@@ -33,13 +33,12 @@ from zoo.tfpark.tfnet import TFNet
 
 class KerasModel(object):
 
-    def __init__(self, model):
+    def __init__(self, model, model_dir=None):
         """
         :param model: a compiled keras model
         """
         self.model = model
-        self.train_summary = None
-        self.val_summary = None
+        self.model_dir = model_dir
 
     @property
     def metrics_names(self):
@@ -85,22 +84,6 @@ class KerasModel(object):
             return models.load_model(file_path)
         keras_model = load_from_file(load_func, path)
         return KerasModel(keras_model)
-
-    def set_train_summary(self, summary):
-        """
-        Set training summary for visualization.
-
-        :param summary: bigdl.optim.optimizer.TrainSummary
-        """
-        self.train_summary = summary
-
-    def set_val_summary(self, summary):
-        """
-        Set validation summary for visualization.
-
-        :param summary: bigdl.optim.optimizer.ValidationSummary
-        """
-        self.val_summary = summary
 
     def fit(self,
             x=None,
@@ -174,13 +157,9 @@ class KerasModel(object):
 
     def _fit_distributed(self, dataset, validation_split, epochs, **kwargs):
         self.tf_optimizer = TFOptimizer.from_keras(self.model, dataset,
-                                                   val_split=validation_split, **kwargs)
-
-        if self.train_summary is not None:
-            self.tf_optimizer.set_train_summary(self.train_summary)
-
-        if self.val_summary is not None:
-            self.tf_optimizer.set_val_summary(self.val_summary)
+                                                   val_split=validation_split,
+                                                   model_dir=self.model_dir,
+                                                   **kwargs)
 
         self.tf_optimizer.optimize(MaxEpoch(epochs))
 

@@ -391,7 +391,7 @@ class TFOptimizer:
 
         self.estimator = Estimator(self.tf_model.training_helper_layer,
                                    self.optim_method,
-                                   model_dir)
+                                   self.model_dir)
 
         if self.clip_norm:
             self.estimator.set_l2_norm_gradient_clipping(self.clip_norm)
@@ -493,7 +493,7 @@ class TFOptimizer:
 
         tf_model = TFModel.create(loss, sess, inputs, labels, [], grads, variables, graph,
                                   tensor_with_value, session_config, metrics,
-                                  updates, model_dir, train_op=train_op)
+                                  updates, model_dir=None, train_op=train_op)
         return cls(tf_model, optim_method, sess=sess, dataset=dataset, val_split=val_split,
                    clip_norm=clip_norm, clip_value=clip_value, model_dir=model_dir)
 
@@ -661,10 +661,10 @@ class TFOptimizer:
         tf_model = TFModel.create(loss, sess, model_inputs, model_targets, keras_model.outputs,
                                   grads, variables, loss.graph,
                                   tensor_with_value, session_config, metrics,
-                                  updates, model_dir)
+                                  updates, model_dir=None)
 
         return cls(tf_model, optim_method, sess=sess, dataset=dataset, val_split=val_split,
-                   clip_norm=clip_norm, clip_value=clip_value)
+                   clip_norm=clip_norm, clip_value=clip_value, model_dir=model_dir)
 
     def set_constant_gradient_clipping(self, min_value, max_value):
         """
