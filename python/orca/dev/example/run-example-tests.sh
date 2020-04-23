@@ -512,8 +512,8 @@ else
      -P analytics-zoo-models
 fi
 
-mkdir output
-mkdir stream
+mkdir -p output
+mkdir -p stream
 while true
 do
    temp1=$(find analytics-zoo-data/data/object-detection-coco -type f|wc -l)
