@@ -66,12 +66,7 @@ from zoo.tfpark import KerasModel
 from bigdl.optim.optimizer import TrainSummary, ValidationSummary
 
 model = [...new keras model]
-model = KerasModel(model)
-...
-log_dir = 'mylogdir'
-app_name = 'keras_model'
-model.set_train_summary(TrainSummary(log_dir, app_name))
-model.set_val_summary(ValidationSummary(log_dir, app_name))
+model = KerasModel(model, model_dir="mylogdir")
 ...
 model.fit(...)
 ```
@@ -80,14 +75,8 @@ model.fit(...)
 **python**
 ```python
 from zoo.tfpark.estimator import TFEstimator
-from bigdl.optim.optimizer import TrainSummary, ValidationSummary
 
-estimator = TFEstimator(...)
-...
-log_dir = 'mylogdir'
-app_name = 'estimator'
-estimator.set_train_summary(TrainSummary(log_dir, app_name))
-estimator.set_val_summary(ValidationSummary(log_dir, app_name))
+estimator = TFEstimator.from_model_fn(..., model_dir="mylogdir")
 ...
 estimator.train(...)
 ```
