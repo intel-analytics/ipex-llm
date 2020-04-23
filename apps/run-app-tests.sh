@@ -95,12 +95,12 @@ else
     wget https://s3.amazonaws.com/analytics-zoo-data/train_dog.mp4 -P ${ANALYTICS_ZOO_HOME}/apps/object-detection/
 fi
 
-FILENAME="/root/.imageio/ffmpeg/ffmpeg-linux64-v3.3.1"
+FILENAME="~/.imageio/ffmpeg/ffmpeg-linux64-v3.3.1"
 if [ -f "$FILENAME" ]
 then
     echo "$FILENAME already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/apps/object-detection/ffmpeg-linux64-v3.3.1 -P /root/.imageio/ffmpeg/
+    wget $FTP_URI/analytics-zoo-data/apps/object-detection/ffmpeg-linux64-v3.3.1 -P ~/.imageio/ffmpeg/
 fi
 
 ${SPARK_HOME}/bin/spark-submit \
