@@ -310,17 +310,7 @@ class TestTFDataset(ZooTestCase):
         dataset = TFDataset.from_tf_data_dataset(dataset, batch_per_thread=16)
         model.predict(dataset).collect()
 
-    def test_tfdataset_with_dataframe(self):
-        rdd = self.sc.range(0, 1000)
-        df = rdd.map(lambda x: (DenseVector(np.random.rand(20).astype(np.float)),
-                                x % 10)).toDF(["feature", "label"])
-
-        train_df, val_df = df.randomSplit([0.7, 0.3])
-        dataset = TFDataset.from_dataframe(train_df,
-                                           feature_cols=["feature"],
-                                           labels_cols=["label"],
-                                           batch_size=32,
-                                           validation_df=val_df)
+    def check_dataset(self, create_ds):
 
         seq = tf.keras.Sequential(
             [tf.keras.layers.Flatten(input_shape=(20,)),
@@ -330,16 +320,51 @@ class TestTFDataset(ZooTestCase):
                     loss='sparse_categorical_crossentropy',
                     metrics=['accuracy'])
         model = KerasModel(seq)
-        model.fit(dataset)
-        dataset = TFDataset.from_dataframe(val_df,
-                                           feature_cols=["feature"],
-                                           batch_per_thread=32)
-        model.predict(dataset).collect()
-        dataset = TFDataset.from_dataframe(val_df,
-                                           feature_cols=["feature"],
-                                           labels_cols=["label"],
-                                           batch_per_thread=32)
-        model.evaluate(dataset)
+
+        model.fit(create_ds("train"))
+        model.predict(create_ds("predict")).collect()
+        model.evaluate(create_ds("evaluate"))
+
+    def make_create_ds_fn(self, train_df, val_df):
+        def create_ds(mode):
+            if mode == "train":
+                dataset = TFDataset.from_dataframe(train_df,
+                                                   feature_cols=["feature"],
+                                                   labels_cols=["label"],
+                                                   batch_size=32,
+                                                   validation_df=val_df)
+            elif mode == "predict":
+                dataset = TFDataset.from_dataframe(val_df,
+                                                   feature_cols=["feature"],
+                                                   batch_per_thread=32)
+            elif mode == "evaluate":
+                dataset = TFDataset.from_dataframe(val_df,
+                                                   feature_cols=["feature"],
+                                                   labels_cols=["label"],
+                                                   batch_per_thread=32)
+            else:
+                raise ValueError("unrecognized mode: {}".format(mode))
+
+            return dataset
+        return create_ds
+
+    def test_tfdataset_with_dataframe(self):
+
+        rdd = self.sc.range(0, 1000)
+        df = rdd.map(lambda x: (DenseVector(np.random.rand(20).astype(np.float)),
+                                x % 10)).toDF(["feature", "label"])
+        train_df, val_df = df.randomSplit([0.7, 0.3])
+
+        create_ds = self.make_create_ds_fn(train_df, val_df)
+
+        self.check_dataset(create_ds)
+
+    def test_tfdataset_with_dataframe_arraytype(self):
+        rdd = self.sc.range(0, 1000)
+        df = rdd.map(lambda x: ([0.0] * 20, x % 10)).toDF(["feature", "label"])
+        train_df, val_df = df.randomSplit([0.7, 0.3])
+        create_ds = self.make_create_ds_fn(train_df, val_df)
+        self.check_dataset(create_ds)
 
 
 if __name__ == "__main__":
