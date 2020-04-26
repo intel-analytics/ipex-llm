@@ -49,6 +49,7 @@ def init_spark_on_yarn(hadoop_conf,
                        extra_executor_memory_for_ray=None,
                        extra_python_lib=None,
                        penv_archive=None,
+                       additional_archive=None,
                        hadoop_user_name="root",
                        spark_yarn_archive=None,
                        spark_log_level="WARN",
@@ -72,7 +73,10 @@ def init_spark_on_yarn(hadoop_conf,
     :param extra_python_lib:
     :param penv_archive: Ideally, program would auto-pack the conda env which is specified by
            `conda_name`, but you can also pass the path to a packed file in "tar.gz" format here.
+    :param additional_archive: comma seperated additional archives that you want to upload and
+            unpack on executor
     :param hadoop_user_name: User name for running in yarn cluster. Default value is: root
+    :param spark_yarn_archive conf value for spark.yarn.archive
     :param spark_log_level: Log level of Spark
     :param redirect_spark_log: Direct the Spark log to local file or not.
     :param jars: Comma-separated list of jars to include on the driver and executor classpaths.
@@ -94,6 +98,7 @@ def init_spark_on_yarn(hadoop_conf,
         extra_executor_memory_for_ray=extra_executor_memory_for_ray,
         extra_python_lib=extra_python_lib,
         penv_archive=penv_archive,
+        additional_archive=additional_archive,
         hadoop_user_name=hadoop_user_name,
         spark_yarn_archive=spark_yarn_archive,
         jars=jars,

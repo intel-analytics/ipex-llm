@@ -155,6 +155,7 @@ class SparkRunner():
                            extra_executor_memory_for_ray=None,
                            extra_python_lib=None,
                            penv_archive=None,
+                           additional_archive=None,
                            hadoop_user_name="root",
                            spark_yarn_archive=None,
                            spark_conf=None,
@@ -164,9 +165,13 @@ class SparkRunner():
         os.environ['PYSPARK_PYTHON'] = "{}/bin/python".format(self.PYTHON_ENV)
 
         def _yarn_opt(jars):
-            command = " --archives {}#{} --num-executors {} " \
+
+            archive = "{}#{}".format(penv_archive, self.PYTHON_ENV)
+            if additional_archive:
+                archive = archive + "," + additional_archive
+            command = " --archives {} --num-executors {} " \
                       " --executor-cores {} --executor-memory {}". \
-                format(penv_archive, self.PYTHON_ENV, num_executor, executor_cores, executor_memory)
+                format(archive, num_executor, executor_cores, executor_memory)
 
             if extra_python_lib:
                 command = command + " --py-files {} ".format(extra_python_lib)
@@ -186,7 +191,7 @@ class SparkRunner():
             if extra_executor_memory_for_ray:
                 conf["spark.executor.memoryOverhead"] = extra_executor_memory_for_ray
             if spark_yarn_archive:
-                conf.insert("spark.yarn.archive", spark_yarn_archive)
+                conf["spark.yarn.archive"] = spark_yarn_archive
             return " --master yarn --deploy-mode client" + _yarn_opt(jars) + ' pyspark-shell ', conf
 
         pack_env = False
