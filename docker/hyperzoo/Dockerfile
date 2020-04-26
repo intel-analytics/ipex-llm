@@ -45,7 +45,7 @@ RUN apt-get update --fix-missing && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
 #java
-RUN wget https://alm2-gerdal.s3.amazonaws.com/jdk-8u241-linux-x64.tar.gz && \
+RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \
     gunzip jdk-8u241-linux-x64.tar.gz && \
     tar -xf jdk-8u241-linux-x64.tar -C /opt && \
     rm jdk-8u241-linux-x64.tar && \
