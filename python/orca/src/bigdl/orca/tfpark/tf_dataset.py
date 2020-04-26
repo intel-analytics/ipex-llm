@@ -1150,10 +1150,13 @@ class DataFrameDataset(TFNdarrayDataset):
         def convert(row):
 
             def convert_for_cols(row, cols):
+                import pyspark.sql.types as df_types
                 result = []
                 for name in cols:
                     feature_type = schema[name].dataType
                     if DataFrameDataset.is_scalar_type(feature_type):
+                        result.append(np.array(row[name]))
+                    elif isinstance(feature_type, df_types.ArrayType):
                         result.append(np.array(row[name]))
                     elif isinstance(row[name], DenseVector):
                         result.append(row[name].values)
