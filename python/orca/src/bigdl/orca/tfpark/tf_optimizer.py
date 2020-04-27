@@ -564,6 +564,16 @@ class TFOptimizer:
                        loss.graph, tensor_with_value, metrics, updates)
         logging.info("Exported TensorFlow model in {} for training".format(export_dir))
 
+    @staticmethod
+    def _shape_match(model_shape, dataset_shape):
+
+        for i in range(len(dataset_shape)):
+            if dataset_shape[i].value is None:
+                return model_shape[i].value is None
+            else:
+                return dataset_shape[i].value == model_shape[i].value or \
+                    model_shape[i].value is None
+
     @classmethod
     def from_keras(cls, keras_model, dataset, optim_method=None,
                    session_config=None, model_dir=None):
@@ -582,6 +592,29 @@ class TFOptimizer:
             model_targets = keras_model.targets
         else:
             model_targets = keras_model._targets
+
+        flatten_inputs = nest.flatten(dataset.feature_tensors)
+        assert len(model_inputs) == len(flatten_inputs), \
+            ("the keras model and TFDataset should have the same number of tensors" +
+             " keras model has {} inputs " +
+             "while TFDataset has {} inputs").format(len(model_inputs),
+                                                     len(flatten_inputs))
+        for i in range(len(flatten_inputs)):
+            if not TFOptimizer._shape_match(model_inputs[i].shape, flatten_inputs[i].shape):
+                raise ValueError(("The {}th input in keras model {}"
+                                  " does not match the TFDataset"
+                                  "input {}").format(i,
+                                                     model_inputs[i],
+                                                     flatten_inputs[i]))
+
+        flatten_targets = nest.flatten(dataset.label_tensors)
+        assert len(model_targets) == len(flatten_targets), \
+            ("the keras model and TFDataset should have the same number of tensors" +
+             " keras model has {} targets " +
+             "while TFDataset has {} labels").format(len(model_targets),
+                                                     len(flatten_inputs))
+        # todo check targets shape, currently checking target shape will
+        # cause too much false alarm.
 
         loss = keras_model.total_loss
         variables = keras_model._collected_trainable_weights
