@@ -289,9 +289,8 @@ class TestTFParkModel(ZooTestCase):
         training_rdd = id_rdd.zip(label_rdd).map(lambda x: [x[0], x[1]])
 
         dataset = TFDataset.from_rdd(training_rdd,
-                                     names=["ids", "labels"],
-                                     shapes=[[], []],
-                                     types=[tf.int32, tf.int32],
+                                     features=(tf.int32, []),
+                                     labels=(tf.int32, []),
                                      batch_size=8)
         words_input = tf.keras.layers.Input(shape=(), name='words_input')
         embedding_layer = tf.keras.layers.Embedding(input_dim=10,
