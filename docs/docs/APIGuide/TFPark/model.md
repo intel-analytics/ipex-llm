@@ -45,7 +45,7 @@ KerasModel(model)
 ### fit
 
 ```python
-fit(x=None, y = None, batch_size=None, epochs=1, validation_split=0., validation_data=None, distributed=False)
+fit(x=None, y = None, batch_size=None, epochs=1, validation_data=None, distributed=False)
 ```
 
 #### Arguments
@@ -68,22 +68,13 @@ fit(x=None, y = None, batch_size=None, epochs=1, validation_split=0., validation
 * **epochs**: Integer. Number of epochs to train the model.
               An epoch is an iteration over the entire `x` and `y`
               data provided.
-            
-* **validation_split**: Float between 0 and 1.
-                        Fraction of the training data to be used as validation data.
-                        The model will set apart this fraction of the training data,
-                        will not train on it, and will evaluate
-                        the loss and any model metrics
-                        on this data at the end of each epoch.
 
 * **validation_data**: validation_data: Data on which to evaluate
                        the loss and any model metrics at the end of each epoch.
                        The model will not be trained on this data.
-                       `validation_data` will override `validation_split`.
                        `validation_data` could be:
-                       
                           - tuple `(x_val, y_val)` of Numpy arrays or tensors
-                          - `TFDataset`
+
 * **distributed**: Boolean. Whether to do prediction in distributed mode or local mode.
                    Default is True. In local mode, x must be a Numpy array.
                    

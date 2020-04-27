@@ -48,7 +48,7 @@ the tensors in `tensor_with_value` as inputs.
 
 ```python
 from_loss(loss, optim_method, session=None, val_outputs=None,
-                  val_labels=None, val_method=None, val_split=0.0,
+                  val_labels=None, val_method=None,
                   clip_norm=None, clip_value=None, metrics=None,
                   tensor_with_value=None, **kwargs)
 ```
@@ -65,8 +65,6 @@ from_loss(loss, optim_method, session=None, val_outputs=None,
 * **val_outputs**: the validation output TensorFlow tensor to be used by val_methods
 * **val_labels**: the validation label TensorFlow tensor to be used by val_methods
 * **val_method**: the BigDL val_method(s) to be used.
-* **val_split**: Float between 0 and 1. Fraction of the training data to be used as
-               validation data. 
 * **clip_norm**: float >= 0. Gradients will be clipped when their L2 norm exceeds
                this value.
 * **clip_value**: float >= 0. Gradients will be clipped when their absolute value
@@ -84,7 +82,7 @@ from_loss(loss, optim_method, session=None, val_outputs=None,
 Create a TFOptimizer from a tensorflow.keras model. The model must be compiled.
 
 ```python
-from_keras(keras_model, dataset, optim_method=None, val_spilt=0.0, **kwargs)
+from_keras(keras_model, dataset, optim_method=None, **kwargs)
 ```
 
 #### Arguments
@@ -92,8 +90,6 @@ from_keras(keras_model, dataset, optim_method=None, val_spilt=0.0, **kwargs)
 * **keras_model**: the tensorflow.keras model, which must be compiled.
 * **dataset**: a [TFDataset](./tf-dataset.md)
 * **optim_method**: the optimization method to be used, such as bigdl.optim.optimizer.Adam
-* **val_spilt**: Float between 0 and 1. Fraction of the training data to be used as
-      validation data.
 
 
 ### set_train_summary
