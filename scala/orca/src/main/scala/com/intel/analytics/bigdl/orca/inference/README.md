@@ -128,7 +128,7 @@ model.load_tensorflow(modelPath, modelType)
 
 ### **Load pre-trained TensorFlow model with OpenVINO backend**
 
-Load model into `OpenVINOModel` with OpenVINO backend, with corresponding `loadTF` methods (`loadTF` for Java, `doLoadTF` for Scala and `load_tf` Python). Note that OpenVINO cannot directly load TensorFlow models. We need to [covert TensorFlow models into OpenVINO models](https://docs.openvinotoolkit.org/2020.1/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html), then load models into OpenVINO.
+Load model into `OpenVINOModel` with OpenVINO backend, with corresponding `loadTF` methods (`loadTF` for Java, `doLoadTF` for Scala and `load_tf` Python). Note that OpenVINO cannot directly load TensorFlow models. We need to [covert TensorFlow models into OpenVINO models](https://docs.openvinotoolkit.org/2020.2/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html), then load models into OpenVINO.
 
 Herein Analytics Zoo, we merge these two steps into one, and provide `loadOpenVINOModelForTF` with the following parameters:
 
