@@ -4,7 +4,7 @@ Zouw needs below requirements to run.
 
 * Python 3.6 or 3.7
 * PySpark 2.4.3
-* Ray 0.7.2
+* Ray 0.8.4
 * Tensorflow 1.15.0
 * aiohttp
 * setproctitle
