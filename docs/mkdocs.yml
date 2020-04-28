@@ -61,6 +61,7 @@ pages:
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
   - Run on Google Colab: ProgrammingGuide/run-notebook-colab.md
   - Run on Databricks: ProgrammingGuide/AnalyticsZoo-on-Databricks.md
+  - Run on Kubernetes cluster: ProgrammingGuide/k8s.md
 - White Paper:
   - BigDL: wp-bigdl.md
 - API Guide:
