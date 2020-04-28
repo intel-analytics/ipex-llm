@@ -117,7 +117,7 @@ class RayServiceFuncGenerator(object):
 
     def _gen_master_command(self):
         command = "{} start --head " \
-                  "--include-webui --redis-port {} " \
+                  "--include-webui true --redis-port {} " \
                   "--redis-password {} --num-cpus {} {}". \
             format(self.ray_exec, self.redis_port, self.password,
                    self.ray_node_cpu_cores, self.labels)
@@ -133,7 +133,7 @@ class RayServiceFuncGenerator(object):
                             labels="",
                             object_store_memory=None,
                             extra_params=None):
-        command = "{} start --redis-address {} --redis-password  {} --num-cpus {} {}  ".format(
+        command = "{} start --address {} --redis-password  {} --num-cpus {} {}  ".format(
             ray_exec, redis_address, password, ray_node_cpu_cores, labels)
         return RayServiceFuncGenerator._enrich_command(command=command,
                                                        object_store_memory=object_store_memory,
@@ -316,14 +316,18 @@ class RayContext(object):
         self.redis_address = self.ray_processesMonitor.master.master_addr
         return self
 
-    def _start_restricted_worker(self, num_cores=0):
+    def _start_restricted_worker(self, num_cores, node_ip_address):
+
+        extra_param = {"node-ip-address": node_ip_address}
+        if self.extra_params is not None:
+            extra_param.update(self.extra_params)
         command = RayServiceFuncGenerator._get_raylet_command(
             redis_address=self.redis_address,
             ray_exec="ray ",
             password=self.redis_password,
             ray_node_cpu_cores=num_cores,
             object_store_memory=self.object_store_memory,
-            extra_params=self.extra_params)
+            extra_params=extra_param)
         print("Executing command: {}".format(command))
         process_info = session_execute(command=command, fail_fast=True)
         ProcessMonitor.register_shutdown_hook(pgid=process_info.pgid)
@@ -332,7 +336,14 @@ class RayContext(object):
         print("Start to launch ray driver on local")
         import ray
         if not self.is_local:
-            self._start_restricted_worker(num_cores=num_cores)
-        ray.shutdown()
-        ray.init(redis_address=self.redis_address,
-                 redis_password=self.ray_service.password)
+            node_ip = ray.services.get_node_ip_address(self.redis_address)
+            self._start_restricted_worker(num_cores=num_cores,
+                                          node_ip_address=node_ip)
+            ray.shutdown()
+            ray.init(address=self.redis_address,
+                     redis_password=self.ray_service.password,
+                     node_ip_address=node_ip)
+        else:
+            ray.shutdown()
+            ray.init(address=self.redis_address,
+                     redis_password=self.ray_service.password)
