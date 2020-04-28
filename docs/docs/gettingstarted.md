@@ -41,7 +41,7 @@ Analytics Zoo applications can run on remote or cloud resources, such as YARN, K
  
 ### 3.2 Run on K8s
 
-- Check the [instructions](https://analytics-zoo.github.io) for how to run Analytics Zoo applicaitons on K8s.
+- Check the [instructions](ProgrammingGuide/k8s.md) for how to run Analytics Zoo applicaitons on K8s.
 
 ### 3.3. Run on Databricks
 
