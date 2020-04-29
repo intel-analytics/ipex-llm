@@ -11,7 +11,7 @@ In this directory, there are several projects
 
 1. `text-classification-training` is the utility project(written in Scala). It includes procedures of preprocessing and training.
 2. `text-classification-inference` is the web application sample project(written in Java). It loads the model and does the prediction.
-3. `model-inference-flink` is the model inference in batch and streaming with flink.
+3. `model-inference-flink` is the model inference in batch and streaming with flink. Here includes two examples: text classification and image classification with Analytics Zoo inference model.
 
 To run this sample, please follow the steps below.
 
@@ -61,7 +61,9 @@ For `SimpleDriver.java`, simply running it can get the prediction result in the 
 For `WebServiceDriver.java`, running it will start the web service application. To see the output, you can use tools such as `Postman` to send a POST request whose body contains an article text to the server's url followed with directory "/predict", (eg: localhost:8080/predict). Then the application will respond with the prediction result.
 
 ### Run flink examples in model-inference-flink
-#### Run on Flink Cluster
+**Run text classification example**
+ 
+Run on Flink Cluster
 
 1. you may start a flink cluster if there is no runing one:
     
@@ -102,3 +104,7 @@ Or can use another method which don't need to use nc commend.
 3. check the output with:
 
     `tail -f ./path/to/your/flink-1.7.2/log/flink-*-taskexecutor-*.out`
+
+**Run image classification example**
+
+This is the example of real-time image classification streaming on Flink. Images will be predicted with pre-trained tensorflow model which is loaded as Analytics Zoo TFNet. To run this example or see more details, visit [here](model-inference-flink/src/main/scala/com/intel/analytics/zoo/apps/model/inference/flink/ImageClassification/).

@@ -17,7 +17,7 @@ Analytics Zoo hyperzoo image has been built to easily run applications on Kubern
 - Pull an Analytics Zoo k8s image:
 
 ```bash
-sudo docker pull intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3-0.17
+sudo docker pull intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3
 ```
 
 - Launch a k8s client container:
@@ -28,7 +28,7 @@ Please note the two different containers: **client container** is for user to su
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3-0.17 bash
+    intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3 bash
 ```
 
 Note. To launch the client container, `-v /etc/kubernetes:/etc/kubernetes:` and `-v /root/.kube:/root/.kube` are required to specify the path of kube config and installation.
@@ -45,7 +45,7 @@ sudo docker run -itd --net=host \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
     -e RUNTIME_K8S_SERVICE_ACCOUNT=account \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3-0.17 \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3 \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=myvolumeclaim \
     -e RUNTIME_DRIVER_HOST=x.x.x.x \
     -e RUNTIME_DRIVER_PORT=54321 \
@@ -55,14 +55,14 @@ sudo docker run -itd --net=host \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=10g \
-    intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3-0.17 bash 
+    intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3 bash 
 ```
 
 - NotebookPort value 12345 is a user specified port number.
 - NotebookToken value "your-token" is a user specified string.
 - http_proxy is to specify http proxy.
 - https_proxy is to specify https proxy.
-- RUNTIME_SPARK_MASTER is to specify k8s master, which should be  `k8s://<api_server_host>:<k8s-apiserver-port>`. 
+- RUNTIME_SPARK_MASTER is to specify spark master, which should be `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>` or `spark://<spark-master-host>:<spark-master-port>`. 
 - RUNTIME_K8S_SERVICE_ACCOUNT is service account for driver pod. Please refer to k8s [RBAC](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac).
 - RUNTIME_K8S_SPARK_IMAGE is the k8s image.
 - RUNTIME_PERSISTENT_VOLUME_CLAIM is to specify volume mount. We are supposed to use volume mount to store or receive data. Get ready with [Kubernetes Volumes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#volume-mounts).
@@ -113,8 +113,8 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/zoo \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/zoo \
-  --conf spark.kubernetes.driver.label.az=true \
-  --conf spark.kubernetes.executor.label.az=true \
+  --conf spark.kubernetes.driver.label.<your-label>=true \
+  --conf spark.kubernetes.executor.label.<your-label>=true \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -132,8 +132,8 @@ ${SPARK_HOME}/bin/spark-submit \
 
 Options:
 
-- --master: the spark mater, must be a URL with the format `k8s://<api_server_host>:<k8s-apiserver-port>`. 
-- --deploy-mode: submit application in cluster mode or client mode.
+- --master: the spark mater, must be a URL with the format `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>`. 
+- --deploy-mode: submit application in cluster mode.
 - --name: the Spark application name.
 - --conf: require to specify k8s service account, container image to use for the Spark application, driver volumes name and path, label of pods, spark driver and executor configuration, etc.
   check the argument settings in your environment and refer to the [spark configuration page](https://spark.apache.org/docs/latest/configuration.html) and [spark on k8s configuration page](https://spark.apache.org/docs/latest/running-on-kubernetes.html#configuration) for more details.
@@ -160,8 +160,8 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/zoo \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/zoo \
-  --conf spark.kubernetes.driver.label.az=true \
-  --conf spark.kubernetes.executor.label.az=true \
+  --conf spark.kubernetes.driver.label.<your-label>=true \
+  --conf spark.kubernetes.executor.label.<your-label>=true \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -180,8 +180,8 @@ ${SPARK_HOME}/bin/spark-submit \
 
 Options:
 
-- --master: the spark mater, must be a URL with the format `k8s://<api_server_host>:<k8s-apiserver-port>`. 
-- --deploy-mode: submit application in cluster mode or client mode.
+- --master: the spark mater, must be a URL with the format `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>`. 
+- --deploy-mode: submit application in cluster mode.
 - --name: the Spark application name.
 - --conf: require to specify k8s service account, container image to use for the Spark application, driver volumes name and path, label of pods, spark driver and executor configuration, etc.
   check the argument settings in your environment and refer to the [spark configuration page](https://spark.apache.org/docs/latest/configuration.html) and [spark on k8s configuration page](https://spark.apache.org/docs/latest/running-on-kubernetes.html#configuration) for more details.
