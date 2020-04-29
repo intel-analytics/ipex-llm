@@ -52,6 +52,10 @@ def to_list_of_numpy(elements):
     return results
 
 
+def get_file_list(path, recursive=False):
+    return callZooFunc("float", "listPaths", path, recursive)
+
+
 def is_local_path(path):
     parse_result = urlparse(path)
     return len(parse_result.scheme.lower()) == 0 or parse_result.scheme.lower() == "file"
