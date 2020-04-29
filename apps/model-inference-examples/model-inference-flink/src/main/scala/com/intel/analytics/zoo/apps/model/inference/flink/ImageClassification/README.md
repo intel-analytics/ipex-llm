@@ -9,9 +9,9 @@ This is the real-time image classification on Flink streaming. This example is l
 
 ### Data and Model Preparation
 
-- Prepare the prediction dataset from [imagenet](http://www.image-net.org/) and extract as you need.
+- Prepare the prediction images from [imagenet](http://www.image-net.org/) and extract as you need.
 - Prepare ImageNet classes which can be extracted directly [here](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/resources/imagenet_classname.txt).
-- Prepare MobileNet_V1 frozen model file for loading as TFNet. Download the pre-trained [MobileNet_v1_1.0_224](http://download.tensorflow.org/models/mobilenet_v1_2018_02_22/mobilenet_v1_1.0_224.tgz). Unzip it and extract the mobilenet_v1_1.0_224_frozen.pb file.
+- Prepare MobileNet_V1 frozen model file for loading as TFNet. Download the pre-trained [MobileNet_v1_1.0_224](http://download.tensorflow.org/models/mobilenet_v1_2018_02_22/mobilenet_v1_1.0_224.tgz). Unzip it and extract the `mobilenet_v1_1.0_224_frozen.pb file`.
 
 ### Configure and Start Flink
 
@@ -50,12 +50,12 @@ ${FLINK_HOME}/bin/flink run \
 - `-m` Address of the job manager to connect
 - `-p` The number of task slots. Default is 2
 - `-c` Class with the program entry point
-- `--modelPath` The pre-trained model file path
+- `--modelPath` The pre-trained model file path. It should be `./mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_frozen.pb`
 - `--modelType` The pre-trained model file format. This is frozenModel
 - `--images` Image folder path
-- `--classes` Classes/labels file path
+- `--classes` ImageNet classes/labels file path
 - `--modelInputs` Input node(s) of the model
-- `--modelOutputs` Output node(s) of the model. The information about input and output nodes of the model can be found in the downloaded tar file at ./mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_info.txt
+- `--modelOutputs` Output node(s) of the model. The information about input and output nodes of the model can be found in the downloaded tar file at `./mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_info.txt`
 - `--intraOpParallelismThreads` The num of intraOpParallelismThreads. Default is 1
 - `--interOpParallelismThreads` The num of interOpParallelismThreads. Default is 1
 - `--usePerSessionThreads` Boolean value whether to perSessionThreads. Default is true
@@ -63,7 +63,7 @@ ${FLINK_HOME}/bin/flink run \
 
 ### Results
 
-Results may look like: 
+Results will be the class/label name. It may look like: 
 
 ```
 sweatshirt
