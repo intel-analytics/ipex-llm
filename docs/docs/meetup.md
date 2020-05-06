@@ -4,6 +4,8 @@
 
 **Meetup:**
 
+* Using Analytics-Zoo to Realize AI Diagnosis and Treatment of Thoracic Diseases Based on Deep Learning, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/270288381/), April 29 2020 ([Video](https://www.slidestalk.com/AliSpark/AnalyticsZooAI_v421285?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0429%20Using%20Analytics-Zoo%20to%20Realize%20AI%20Diagnosis%20and%20Treatment%20of%20Thoracic%20Diseases%20Based%20on%20Deep%20Learning.pdf))
+
 * What’s on-going in Spark + AI Community - views from a contributor & practitioner, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/269943074/), April 17 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/SparkMeetup_SparkAI?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0417%20SparkMeetup_SparkAI_Shane.pdf))
 
 * Distributed and Real time Deep Learning Model Inference with Analytics Zoo in Apache Flink, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/269684859/), April 03 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/Flink_AnalyticsZoo_Inference?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0403%20Meetup%20Distributed%20and%20Real%20time%20Deep%20Learning%20Model%20Inference%20with%20Analytics%20Zoo%20in%20Apache%20Flink.pdf))
