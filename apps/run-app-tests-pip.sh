@@ -16,22 +16,32 @@ set -e
 RUN_PART1=0
 RUN_PART2=0
 RUN_PART3=0
+RUN_PART4=0
 if [ $1 = 1 ]; then
 	RUN_PART1=1
 	RUN_PART2=0
 	RUN_PART3=0
+	RUN_PART4=0
 elif [ $1 = 2 ]; then
 	RUN_PART1=0
 	RUN_PART2=1
 	RUN_PART3=0
+	RUN_PART4=0
 elif [ $1 = 3 ]; then
 	RUN_PART1=0
 	RUN_PART2=0
 	RUN_PART3=1
+	RUN_PART4=0
+elif [ $1 = 4 ]; then
+	RUN_PART1=0
+	RUN_PART2=0
+	RUN_PART3=0
+	RUN_PART4=1
 else
 	RUN_PART1=1
 	RUN_PART2=1
 	RUN_PART3=1
+	RUN_PART4=1
 fi
 
 
@@ -581,6 +591,10 @@ now=$(date "+%s")
 time15=$((now-start))
 echo "#15 pytorch face-generation time used:$time15 seconds"
 
+fi
+
+
+if [ $RUN_PART4 = 1 ]; then
 echo "#16 start app test for ray paramater-server"
 #timer
 start=$(date "+%s")
