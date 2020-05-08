@@ -7,7 +7,7 @@ LSTMForecaster is derived from tfpark.KerasMode, and can use all methods of Kera
 ### \_\_init\_\_
 
 ```python
-LSTMForecaster(horizon=1,
+LSTMForecaster(target_dim=1,
                feature_dim=1,
                lstm_1_units=16,
                dropout_1=0.2,
@@ -20,7 +20,7 @@ LSTMForecaster(horizon=1,
 ```
 
 #### Arguments
-* **horizon**: steps to look forward
+* **target_dim**: dimension of model output
 * **feature_dim**: dimension of input feature
 * **lstm_1_units** num of units for the 1st LSTM layer
 * **dropout_1**: p for the 1st dropout layer

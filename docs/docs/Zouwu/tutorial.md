@@ -24,9 +24,9 @@ pip install analytics-zoo[automl]
 
 The built-in forecast models are all derived from [tfpark.KerasModels](https://analytics-zoo.github.io/master/#APIGuide/TFPark/model/). 
 
- 1.To start, you need to create a forecast model first. Specify **horizon** and **feature_dim** in constructor. 
+ 1.To start, you need to create a forecast model first. Specify **target_dim** and **feature_dim** in constructor. 
 
-*  ```horizon```: no. of steps to forecast
+*  ```target_dim```: dimension of target output
 *  ```feature_dim```: dimension of input feature
 
 Refer to API doc for detailed explaination of all arguments for each forecast model.
@@ -39,14 +39,16 @@ from zoo.zouwu.model.forecast import LSTMForecaster
 from zoo.zouwu.model.forecast import MTNetForecaster
 
 #build a lstm forecast model
-lstm_forecaster = LSTMForecaster(horizon=1, 
+lstm_forecaster = LSTMForecaster(target_dim=1, 
                       feature_dim=4)
                       
 #build a mtnet forecast model
-mtnet_forecaster = MTNetForecaster(horizon=1,
+mtnet_forecaster = MTNetForecaster(target_dim=1,
                         feature_dim=4,
                         lb_long_steps=1,
-                        lb_long_stepsize=3
+                        lb_long_stepsize=3,
+                        ar_window_size=2,
+                        cnn_kernel_size=2)
 ```
  
 2.Use ```forecaster.fit/evalute/predict``` in the same way as [tfpark.KerasModel](https://analytics-zoo.github.io/master/#APIGuide/TFPark/model/)
@@ -56,15 +58,15 @@ mtnet_forecaster = MTNetForecaster(horizon=1,
 3.For univariant forecasting (i.e. to predict one series at a time), you can use either **LSTMForecaster** or **MTNetForecaster**. The input data shape for `fit/evaluation/predict` should match the arguments you used to create the forecaster. Specifically:
 
 * **X** shape should be ```(num of samples, lookback, feature_dim)```
-* **Y** shape should be ```(num of samples, horizon)```
-* Where, ```feature_dim``` is the number of features as specified in Forecaster constructors. ```horizon``` is the number of steps to look forward as specified in Forecaster constructors.```lookback``` is the number of time steps you want to look back in history. 
+* **Y** shape should be ```(num of samples, target_dim)```
+* Where, ```feature_dim``` is the number of features as specified in Forecaster constructors. ```lookback``` is the number of time steps you want to look back in history. ```target_dim``` is the number of series to forecast at the same time as specified in Forecaster constructors and should be 1 here. If you want to do multi-step forecasting and use the second dimension as no. of steps to look forward, you won't get error but the performance may be uncertain and we don't recommend using that way.
 
 
- 4.For multivariant forecasting (i.e. to predict several series at the same time), you have to use **MTNetForecaster**. The input data shape should meet below criteria. Note for multivariant forecasting, horizon must be 1. 
+ 4.For multivariant forecasting (i.e. to predict several series at the same time), you have to use **MTNetForecaster**. The input data shape should meet below criteria.  
 
 * **X** shape should be ```(num of samples, lookback, feature_dim)```
-* **Y** shape should be ```(num of samples, num_of_targets)``` 
-* Where ```lookback``` should equal ```(lb_long_steps+1) * lb_long_stepsize```, where ```lb_long_steps``` and ```lb_long_stepsize``` are as specified in ```MTNetForecaster``` constructor. ```num_targets``` is the number of series to forecast at the same time 
+* **Y** shape should be ```(num of samples, target_dim)``` 
+* Where ```lookback``` should equal ```(lb_long_steps+1) * lb_long_stepsize```, where ```lb_long_steps``` and ```lb_long_stepsize``` are as specified in ```MTNetForecaster``` constructor. ```target_dim``` should equal number of series in input.
 
 ---
 
@@ -137,7 +139,7 @@ Both AutoTSTrainer and TSPipeline accepts data frames as input. An exmaple data 
  from zoo.zouwu.autots.forecast import AutoTSTrainer
 
  trainer = AutoTSTrainer(dt_col="datetime",
-                         target_col="value"
+                         target_col="value",
                          horizon=1,
                          extra_features_col=None)
 
