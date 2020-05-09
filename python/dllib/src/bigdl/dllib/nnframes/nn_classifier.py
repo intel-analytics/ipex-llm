@@ -579,3 +579,35 @@ class NNClassifierModel(NNModel, HasThreshold):
     def load(path):
         jvalue = callZooFunc("float", "loadNNClassifierModel", path)
         return NNClassifierModel(model=None, feature_preprocessing=None, jvalue=jvalue)
+
+
+class XGBClassifierModel:
+    '''
+    XGBClassifierModel is a trained XGBoost classification model. The prediction column
+    will have the prediction results.
+    '''
+
+    def __init__(self, jvalue):
+        super(XGBClassifierModel, self).__init__()
+        assert jvalue is not None
+        self.value = jvalue
+
+    def setFeaturesCol(self, features):
+        callZooFunc("float", "setFeaturesXGBClassifierModel", self.value, features)
+
+    def setPredictionCol(self, prediction):
+        callZooFunc("float", "setPredictionXGBClassifierModel", self.value, prediction)
+
+    def transform(self, dataset):
+        df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
+        return df
+
+    @staticmethod
+    def loadModel(path, numClasses):
+        """
+        load a pretrained XGBoostClassificationModel
+        :param path: pretrained model path
+        :param numClasses: number of classes for classification
+        """
+        jvalue = callZooFunc("float", "loadXGBClassifierModel", path, numClasses)
+        return XGBClassifierModel(jvalue=jvalue)
