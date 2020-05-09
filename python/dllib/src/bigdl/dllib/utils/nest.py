@@ -40,6 +40,10 @@ def flatten(seq):
     return [seq]
 
 
+def ptensor_to_numpy(seq):
+    return [t.numpy() for t in flatten(seq)]
+
+
 def pack_sequence_as(structure, flat_sequence):
     _, packed = _packed_nest_with_indices(structure, flat_sequence, 0)
     return _sequence_like(structure, packed)
