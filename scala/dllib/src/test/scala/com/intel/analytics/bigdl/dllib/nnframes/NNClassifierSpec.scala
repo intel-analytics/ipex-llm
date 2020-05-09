@@ -37,7 +37,8 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.io.Path
@@ -405,6 +406,40 @@ class NNClassifierSpec extends ZooSpecHelper {
     val newPreprocessing = ArrayToTensor(Array(6)) -> TensorToSample()
     nnModel.setSamplePreprocessing(newPreprocessing)
     assert(df.count() == nnModel.transform(df).count())
+  }
+
+  "XGBClassifierModel" should "work with sparse features" in {
+    val path = getClass.getClassLoader.getResource("XGBClassifier").getPath
+    val filePath = path + "/test.csv"
+    val modelPath = path + "/XGBClassifer.bin"
+    val spark = SparkSession.builder().getOrCreate()
+    val df = spark.read.format("csv")
+      .option("sep", ",")
+      .option("inferSchema", true)
+      .option("header", true)
+      .load(filePath)
+    val model = XGBClassifierModel.load(modelPath, 2)
+    model.setFeaturesCol(Array("age", "gender", "jointime", "star"))
+    model.transform(df).count()
+  }
+
+  "XGBClassifierModel" should "work with dense features" in {
+    val path = getClass.getClassLoader.getResource("XGBClassifier").getPath
+    val filePath = path + "/iris.data"
+    val modelPath = path + "/XGBClassifer.bin"
+
+    val spark = SparkSession.builder().getOrCreate()
+    val schema = new StructType(Array(
+      StructField("sepal length", DoubleType, true),
+      StructField("sepal width", DoubleType, true),
+      StructField("petal length", DoubleType, true),
+      StructField("petal width", DoubleType, true),
+      StructField("class", StringType, true)))
+    val df = spark.read.schema(schema).csv(filePath)
+
+    val model = XGBClassifierModel.load(modelPath, 2)
+    model.setFeaturesCol(Array("sepal length", "sepal width", "petal length", "petal width"))
+    model.transform(df).count()
   }
 }
 
