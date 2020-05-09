@@ -226,11 +226,29 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def loadNNModel(path: String): NNModel[_] = {
     val loaded = NNModel.load(path)
-    println(loaded)
     loaded
   }
 
   def loadNNClassifierModel(path: String): NNClassifierModel[_] = {
     NNClassifierModel.load(path)
+  }
+
+  def loadXGBClassifierModel(path: String, numClasses: Int): XGBClassifierModel = {
+    XGBClassifierModel.load(path, numClasses)
+  }
+
+  def setFeaturesXGBClassifierModel(model: XGBClassifierModel,
+                                          features: JList[String]): Unit = {
+    model.setFeaturesCol(features.asScala.toArray)
+  }
+
+  def setPredictionXGBClassifierModel(model: XGBClassifierModel,
+                                            prediction: String): Unit = {
+    model.setPredictionCol(prediction)
+  }
+
+  def transformXGBClassifierModel(model: XGBClassifierModel,
+                                        dataset: DataFrame): DataFrame = {
+    model.transform(dataset)
   }
 }

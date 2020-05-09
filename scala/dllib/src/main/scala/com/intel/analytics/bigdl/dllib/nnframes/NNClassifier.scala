@@ -22,10 +22,14 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.zoo.feature.common._
 import com.intel.analytics.zoo.pipeline.nnframes.NNModel.NNModelWriter
+import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper}
 import org.apache.spark.ml.DefaultParamsWriterWrapper
 import org.apache.spark.ml.adapter.SchemaUtils
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.param.{DoubleParam, ParamMap}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
 
@@ -302,5 +306,58 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
 
   override def read: MLReader[NNClassifierModel[_]] = {
     new NNClassifierModel.NNClassifierModelReader
+  }
+}
+
+/**
+ * [[XGBClassifierModel]] is a trained XGBoost classification model.
+ * The prediction column will have the prediction results.
+ *
+ * @param model trained XGBoostClassificationModel to use in prediction.
+ */
+class XGBClassifierModel private[zoo](
+   val model: XGBoostClassificationModel) {
+  private var featuresCols: Array[String] = null
+  private var predictionCol: String = null
+
+  def setFeaturesCol(featuresColName: Array[String]): this.type = {
+    require(featuresColName.length > 1, "Please set a valid feature columns")
+    featuresCols = featuresColName
+    this
+  }
+
+  def setPredictionCol(value: String): this.type = {
+    predictionCol = value
+    this
+  }
+
+  def setInferBatchSize(value: Int): this.type = {
+    model.setInferBatchSize(value)
+    this
+  }
+
+  def transform(dataset: DataFrame): DataFrame = {
+    require(featuresCols!=None, "Please set feature columns before transform")
+    val featureVectorAssembler = new VectorAssembler()
+      .setInputCols(featuresCols)
+      .setOutputCol("featureAssembledVector")
+    val assembledDF = featureVectorAssembler.transform(dataset)
+
+    import org.apache.spark.sql.functions.{col, udf}
+    import org.apache.spark.ml.linalg.Vector
+    val asDense = udf((v: Vector) => v.toDense)
+    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
+    model.setFeaturesCol("DenseFeatures")
+    var output = model.transform(xgbInput).drop("DenseFeatures", "featureAssembledVector")
+    if(predictionCol != null) {
+      output = output.withColumnRenamed("prediction", predictionCol)
+    }
+    output
+  }
+}
+
+object XGBClassifierModel {
+  def load(path: String, numClass: Int): XGBClassifierModel = {
+    new XGBClassifierModel(XGBoostHelper.load(path, numClass))
   }
 }
