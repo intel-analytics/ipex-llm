@@ -18,13 +18,11 @@ import os
 import glob
 
 from pyspark import SparkContext
-
 from zoo.common.nncontext import init_spark_conf
-
 from zoo import init_nncontext
 
 
-class SparkRunner():
+class SparkRunner:
     def __init__(self,
                  spark_log_level="WARN",
                  redirect_spark_log=True):
