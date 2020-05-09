@@ -47,7 +47,7 @@ pages:
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
-  - xShard:  ProgrammingGuide/xshard.md
+  - Orca Data:  ProgrammingGuide/orca-data.md
   - Built-in Models:
     - Object Detection API: ProgrammingGuide/object-detection.md
     - Image Classification API: ProgrammingGuide/image-classification.md
