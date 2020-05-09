@@ -22,6 +22,7 @@ import jep.{NDArray, SharedInterpreter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 
+@PythonInterpreterTest
 class PythonInterpreterSpec extends ZooSpecHelper{
   protected def ifskipTest(): Unit = {
     // Skip unitest if environment is not ready, PYTHONHOME should be set in environment
