@@ -399,7 +399,7 @@ object PythonLoaderFeatureSet{
     jepRDD
   }
 
-  protected def toArrayTensor(
+  private[zoo] def toArrayTensor(
         data: AnyRef): Array[Tensor[Float]] = {
     data match {
       case ndArray: NDArray[_] =>
@@ -418,7 +418,7 @@ object PythonLoaderFeatureSet{
     }
   }
 
-  protected def ndArrayToTensor(ndArray: NDArray[_]): Tensor[Float] = {
+  private[zoo] def ndArrayToTensor(ndArray: NDArray[_]): Tensor[Float] = {
     val array = ndArray.asInstanceOf[NDArray[Array[_]]]
     val data = array.getData()
     data(0) match {
