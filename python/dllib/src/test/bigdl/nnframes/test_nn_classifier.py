@@ -705,6 +705,23 @@ class TestNNClassifer():
         if not raised_error:
             raise ValueError("we do not find this error, test failed")
 
+    def test_XGBClassifierModel_predict(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        path = os.path.join(resource_path, "xgbclassifier/")
+        modelPath = path + "XGBClassifer.bin"
+        filePath = path + "test.csv"
+        model = XGBClassifierModel.loadModel(modelPath, 2)
+
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession \
+            .builder \
+            .getOrCreate()
+        df = spark.read.csv(filePath, sep=",", inferSchema=True, header=True)
+        model.setFeaturesCol(["age", "gender", "jointime", "star"])
+        predict = model.transform(df)
+        predict.count()
+
 
 if __name__ == "__main__":
     pytest.main()
