@@ -23,6 +23,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.sun.xml.internal.bind.v2.TODO
 
 import scala.collection.JavaConverters._
@@ -742,7 +743,11 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
     val model: AbstractModel = retrieveModel()
     try {
       val begin = System.nanoTime()
-      val batchSize = inputActivity.toTensor[Float].size(1)
+      val batchSize = if (inputActivity.isTensor) {
+        inputActivity.toTensor[Float].size(1)
+      } else {
+        inputActivity.toTable(1).asInstanceOf[Tensor[Float]].size(1)
+      }
       val result = model.predict(inputActivity)
       val end = System.nanoTime()
 
