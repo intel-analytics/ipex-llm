@@ -14,13 +14,48 @@ Analytics Zoo hyperzoo image has been built to easily run applications on Kubern
 
 #### Launch pre-built hyperzoo k8s image
 
-- Pull an Analytics Zoo k8s image:
+1. Pull an Analytics Zoo hyperzoo image from [dockerhub](https://hub.docker.com/r/intelanalytics/hyper-zoo/tags):
 
 ```bash
-sudo docker pull intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3
+sudo docker pull intelanalytics/hyper-zoo:latest
 ```
 
-- Launch a k8s client container:
+- Speed up pulling image by adding mirrors
+
+To speed up pulling the image from dockerhub in China, add a registry's mirror. For Linux OS (CentOS, Ubuntu etc), if the docker version is higher than 1.12, config the docker daemon. Edit `/etc/docker/daemon.json` and add the registry-mirrors key and value:
+
+```bash
+{
+  "registry-mirrors": ["https://<my-docker-mirror-host>"]
+}
+```
+
+For example, add the ustc mirror in China. 
+
+```bash
+{
+  "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn"]
+}
+```
+
+Flush changes and restart docker：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+If your docker version is between 1.8 and 1.11, find the docker configuration which location depends on the operation system. Edit and add `DOCKER_OPTS="--registry-mirror=https://<my-docker-mirror-host>"`. Restart docker `sudo service docker restart`.
+
+If you would like to speed up pulling this image on MacOS or Windows, find the docker setting and config registry-mirrors section by specifying mirror host. Restart docker.
+
+Then pull the image. It will be faster.
+
+```bash
+sudo docker pull intelanalytics/hyper-zoo:latest
+```
+
+2. Launch a k8s client container:
 
 Please note the two different containers: **client container** is for user to submit zoo jobs from here, since it contains all the required env and libs except hadoop/k8s configs; executor container is not need to create manually, which is scheduled by k8s at runtime.
 
@@ -28,7 +63,7 @@ Please note the two different containers: **client container** is for user to su
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3 bash
+    intelanalytics/hyper-zoo:latest bash
 ```
 
 Note. To launch the client container, `-v /etc/kubernetes:/etc/kubernetes:` and `-v /root/.kube:/root/.kube` are required to specify the path of kube config and installation.
@@ -45,7 +80,7 @@ sudo docker run -itd --net=host \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
     -e RUNTIME_K8S_SERVICE_ACCOUNT=account \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3 \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/hyper-zoo:latest \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=myvolumeclaim \
     -e RUNTIME_DRIVER_HOST=x.x.x.x \
     -e RUNTIME_DRIVER_PORT=54321 \
@@ -55,7 +90,7 @@ sudo docker run -itd --net=host \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=10g \
-    intelanalytics/hyper-zoo:0.8.0-SNAPSHOT-2.4.3 bash 
+    intelanalytics/hyper-zoo:latest bash 
 ```
 
 - NotebookPort value 12345 is a user specified port number.

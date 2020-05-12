@@ -1,5 +1,5 @@
 
-In order to simply the Analytics Zoo installation and configuration, Analytics Zoo docker images have been built and provided on [Docker Hub](https://hub.docker.com/r/intelanalytics/analytics-zoo). These docker images have been pre-built with all the dependencies and readily configured to run a bunch of Analytics Zoo examples out-of-box on Linux (such as Ubuntu, CentOS), MacOS or Windows. The pre-installed packages are listed at the end of this page. This document provides step-by-step instructions for users to easily start using the Analytics Zoo docker:
+In order to simplify the Analytics Zoo installation and configuration, Analytics Zoo docker images have been built and provided on [Docker Hub](https://hub.docker.com/r/intelanalytics/analytics-zoo). These docker images have been pre-built with all the dependencies and readily configured to run a bunch of Analytics Zoo examples out-of-box on Linux (such as Ubuntu, CentOS), MacOS or Windows. The pre-installed packages are listed at the end of this page. This document provides step-by-step instructions for users to easily start using the Analytics Zoo docker:
 
 * [Launch an Analytics Zoo Docker container](#launch-an-analytics-zoo-docker-container)
 * [Run Analytics Zoo Jupyter Notebook example in a container](#run-analytics-zoo-jupyter-notebook-example-in-a-container)
@@ -23,9 +23,44 @@ A Linux user (CentOS or Ubuntu) can pull a Docker image and launch the Docker co
 2. Download and Install Docker following the instructions on: 
 https://docs.docker.com/get-docker/
 3. Pull an Analytics Zoo docker image (optional)
-* Note: It is optional to pull an Analytics Zoo docker image in advance, as the command “docker run” in [“Launch Analytics Zoo Docker container”](#launch-analytics-zoo-docker-container) step will check the availability of the docker image and pull the image if it is absent. To manually pull the latest docker image, use: 
+* Note: It is optional to pull an Analytics Zoo docker image in advance, as the command “docker run” in [Launch Analytics Zoo Docker container](#launch-analytics-zoo-docker-container) step will check the availability of the docker image and pull the image if it is absent. To manually pull the latest docker image, use: 
 
 ```
+sudo docker pull intelanalytics/analytics-zoo:latest
+```
+
+- Speed up pulling image by adding mirrors
+
+To speed up pulling the image from dockerhub in China, add a registry's mirror. For Linux OS (CentOS, Ubuntu etc), if the docker version is higher than 1.12, config the docker daemon. Edit `/etc/docker/daemon.json` and add the registry-mirrors key and value:
+
+```bash
+{
+  "registry-mirrors": ["https://<my-docker-mirror-host>"]
+}
+```
+
+For example, add the ustc mirror in China.
+
+```bash
+{
+  "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn"]
+}
+```
+
+Flush changes and restart docker：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+If your docker version is between 1.8 and 1.11, find the docker configuration which location depends on the operation system. Edit and add `DOCKER_OPTS="--registry-mirror=https://<my-docker-mirror-host>"`. Restart docker `sudo service docker restart`.
+
+If you would like to speed up pulling this image on MacOS or Windows, find the docker setting and config registry-mirrors section by specifying mirror host. Restart docker.
+
+Then pull the image. It will be faster.
+
+```bash
 sudo docker pull intelanalytics/analytics-zoo:latest
 ```
 
@@ -191,7 +226,7 @@ sudo docker pull intelanalytics/analytics-zoo:0.7.0-bigdl_0.10.0-spark_2.4.3
 sudo docker pull intelanalytics/analytics-zoo:latest 
 ```
 
-It is recommended to use a pre-build Docker image on the Docker Hub. However you can build or customize an Analytics Zoo Docker image if you do need to do so. For example: 
+It is recommended to use a pre-build Docker image on the Docker Hub. However you can build or customize an Analytics Zoo Docker image if you do need to do so. Visit Analytics Zoo [Dockerfile](./../../../docker/zoo/). Customize it and build the image. For example: 
 
 * Build an Analytics Zoo Docker image with latest Analytics Zoo nightly build: 
 
@@ -212,9 +247,9 @@ sudo docker build \
 
 ```
 sudo docker build \
-    --build-arg ANALYTICS_ZOO_VERSION=0.3.0 \
-    --build-arg BIGDL_VERSION=0.6.0 \
-    --build-arg SPARK_VERSION=2.3.1 \
+    --build-arg ANALYTICS_ZOO_VERSION=0.7.0 \
+    --build-arg BIGDL_VERSION=0.10.0 \
+    --build-arg SPARK_VERSION=2.4.3 \
     --rm -t intelanalytics/analytics-zoo:0.7.0-bigdl_0.10.0-spark_2.4.3 .
 ```
 
@@ -263,3 +298,5 @@ The Analytics-Zoo Docker images have been pre-built with below packages:
 - Analytics-Zoo source code (in /opt/work/analytics-zoo)
 
 ---
+
+In addition to the general Analytics Zoo docker image introduced in this page, the Analytics Zoo hyperzoo image is also pre-built, which is added K8s and cluster serving support. To learn about the hyperzoo imgae, visit [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/k8s/).
