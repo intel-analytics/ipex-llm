@@ -50,7 +50,7 @@ if __name__ == "__main__":
     data_shard.repartition(2)
 
     # apply function on each element
-    data_shards_2 = data_shard.apply(process_feature)
+    data_shards_2 = data_shard.transform_shard(process_feature)
     data2 = data_shard.collect()
 
     sc.stop()
