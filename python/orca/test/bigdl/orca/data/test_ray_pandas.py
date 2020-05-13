@@ -73,7 +73,7 @@ class TestDataShards(ZooTestCase):
         partition_data = ray.get(partitions2[0].get_data())
         assert len(partition_data) == 2, "partition 0 should have 2 objects"
 
-    def test_apply(self):
+    def test_transform_shard(self):
         file_path = os.path.join(self.resource_path, "orca/data")
         data_shard = zoo.orca.data.pandas.read_json(file_path, self.ray_ctx, orient='columns',
                                                     lines=True)
@@ -84,7 +84,7 @@ class TestDataShards(ZooTestCase):
             df[column_name] = df[column_name] * (-1)
             return df
 
-        data_shard.apply(negative, "value")
+        data_shard.transform_shard(negative, "value")
         data2 = data_shard.collect()
         assert data2[0]["value"].values[0] < 0, "value should be negative"
 
