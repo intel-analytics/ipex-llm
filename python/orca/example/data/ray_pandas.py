@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print("get %d partitions after repartition" % len(new_partitions))
 
     # apply function on each element
-    data_shards = data_shard.apply(process_feature, 6, 24)
+    data_shards = data_shard.transform_shard(process_feature, 6, 24)
     data2 = data_shards.collect()
     print("collected new data :")
     print(data2[0].head())
