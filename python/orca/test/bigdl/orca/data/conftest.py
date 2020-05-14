@@ -29,12 +29,14 @@ def orca_data_fixture():
     sc = init_spark_on_local(cores=4, spark_log_level="INFO")
     access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
     secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    ray_ctx = RayContext(sc=sc,
-                         object_store_memory="1g",
-                         env={"AWS_ACCESS_KEY_ID": access_key_id,
-                              "AWS_SECRET_ACCESS_KEY": secret_access_key}
-                         )
-    ray_ctx = RayContext(sc=sc, object_store_memory="1g")
+    if access_key_id is not None and secret_access_key is not None:
+        ray_ctx = RayContext(sc=sc,
+                             object_store_memory="1g",
+                             env={"AWS_ACCESS_KEY_ID": access_key_id,
+                                  "AWS_SECRET_ACCESS_KEY": secret_access_key}
+                             )
+    else:
+        ray_ctx = RayContext(sc=sc, object_store_memory="1g")
     ray_ctx.init()
     yield
     ray_ctx.stop()

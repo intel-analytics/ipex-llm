@@ -15,6 +15,8 @@
 #
 import os
 
+from zoo.common import get_file_list
+
 
 # split list into n chunks
 def chunk(lst, n):
@@ -41,8 +43,6 @@ def list_s3_file(file_path, file_type, env):
     access_key_id = env["AWS_ACCESS_KEY_ID"]
     secret_access_key = env["AWS_SECRET_ACCESS_KEY"]
 
-    # access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
-    # secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
     import boto3
     s3_client = boto3.Session(
         aws_access_key_id=access_key_id,
@@ -59,29 +59,20 @@ def list_s3_file(file_path, file_type, env):
     return file_paths
 
 
-def extract_one_path(file_path, file_type, context):
-    # only one file
-    if os.path.splitext(file_path)[-1] == "." + file_type:
-        file_paths = [file_path]
-    # directory
+def extract_one_path(file_path, file_type, env):
+    file_url_splits = file_path.split("://")
+    prefix = file_url_splits[0]
+    if prefix == "s3":
+        file_paths = list_s3_file(file_url_splits[1], file_type, env)
     else:
-        file_url_splits = file_path.split("://")
-        prefix = file_url_splits[0]
-        if prefix == "hdfs":
-            server_address = file_url_splits[1].split('/')[0]
-            import pyarrow as pa
-            fs = pa.hdfs.connect()
-            files = fs.ls(file_path)
-            # only get json/csv files
-            files = [file for file in files if os.path.splitext(file)[1] == "." + file_type]
-            file_paths = ["hdfs://" + server_address + file for file in files]
-        elif prefix == "s3":
-            env = context.env
-            file_paths = list_s3_file(file_url_splits[1], file_type, env)
-        else:
-            # local file system
-            # only get json/csv files
-            file_paths = [os.path.join(file_path, file)
-                          for file in os.listdir(file_path)
-                          if os.path.splitext(file)[1] == "." + file_type]
+        file_paths = get_file_list(file_path)
+    # only get json/csv files
+    file_paths = [file for file in file_paths if os.path.splitext(file)[1] == "." + file_type]
     return file_paths
+
+
+def get_class_name(obj):
+    module = obj.__class__.__module__
+    if module is None or module == str.__class__.__module__:
+        return obj.__class__.__name__
+    return module + '.' + obj.__class__.__name__

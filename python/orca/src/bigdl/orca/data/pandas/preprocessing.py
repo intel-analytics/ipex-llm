@@ -16,11 +16,11 @@
 
 import random
 import ray
+from functools import reduce
 from pyspark.context import SparkContext
 
 from bigdl.util.common import get_node_and_core_number
 
-from zoo.common import get_file_list
 from zoo.ray import RayContext
 from zoo.orca.data.shard import RayDataShards, RayPartition, SparkDataShards
 from zoo.orca.data.utils import *
@@ -64,9 +64,9 @@ def read_file_ray(context, file_path, file_type, **kwargs):
     file_paths = []
     # extract all file paths
     if isinstance(file_path, list):
-        [file_paths.extend(extract_one_path(path, file_type, context)) for path in file_path]
+        [file_paths.extend(extract_one_path(path, file_type, context.env)) for path in file_path]
     else:
-        file_paths = extract_one_path(file_path, file_type, context)
+        file_paths = extract_one_path(file_path, file_type, context.env)
 
     num_executors = context.num_ray_nodes
     num_cores = context.ray_node_cpu_cores
@@ -95,11 +95,13 @@ def read_file_spark(context, file_path, file_type, **kwargs):
     prefix = file_url_splits[0]
     node_num, core_num = get_node_and_core_number()
 
-    if prefix == "s3":
-        data_paths = list_s3_file(file_url_splits[1], file_type, os.environ)
+    file_paths = []
+    if isinstance(file_path, list):
+        [file_paths.extend(extract_one_path(path, file_type, os.environ)) for path in file_path]
     else:
-        data_paths = get_file_list(file_path)
-    rdd = context.parallelize(data_paths, node_num * core_num)
+        file_paths = extract_one_path(file_path, file_type, os.environ)
+
+    rdd = context.parallelize(file_paths, node_num * core_num)
 
     if prefix == "hdfs":
         def loadFile(iterator):
