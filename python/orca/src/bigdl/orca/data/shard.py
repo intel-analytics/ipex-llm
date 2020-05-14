@@ -114,3 +114,40 @@ class SparkDataShards(DataShards):
     def repartition(self, num_partitions):
         self.rdd = self.rdd.repartition(num_partitions)
         return self
+
+    def partition_by(self, cols, num_partitions=None):
+        import pandas as pd
+        class_name, columns = self.rdd.map(
+            lambda data: (get_class_name(data), data.columns) if isinstance(data, pd.DataFrame)
+            else (get_class_name(data), None)).first()
+        if class_name == 'pandas.core.frame.DataFrame':
+            # if partition by a column
+            if isinstance(cols, str):
+                if cols not in columns:
+                    raise Exception("The partition column is not in the DataFrame")
+                # change data to key value pairs
+                rdd = self.rdd.flatMap(
+                    lambda df: df.apply(lambda row: (row[cols], row.values.tolist()), axis=1)
+                    .values.tolist())
+
+                partition_num = self.rdd.getNumPartitions() if not num_partitions \
+                    else num_partitions
+                # partition with key
+                partitioned_rdd = rdd.partitionBy(partition_num)
+            else:
+                raise Exception("Only support partition by a column name")
+
+            def merge(iterator):
+                data = [value[1] for value in list(iterator)]
+                if data:
+                    df = pd.DataFrame(data=data, columns=columns)
+                    return [df]
+                else:
+                    # no data in this partition
+                    return []
+            # merge records to df in each partition
+            self.rdd = partitioned_rdd.mapPartitions(merge)
+            return self
+        else:
+            raise Exception("Currently only support partition by for Datashards"
+                            " of Pandas DataFrame")
