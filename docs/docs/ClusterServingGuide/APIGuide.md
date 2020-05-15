@@ -41,6 +41,32 @@ image2 = cv2.imread('path/to/image2')
 input_api.enqueue_image('my-image2', image2)
 ```
 
+#### enqueue_tensor
+[view source]()
+
+```
+enqueue_tensor(uri, data)
+```
+puts ndarray or list of ndarray `data` with identification `uri` into Pipeline. 
+
+_return_: None
+
+`uri`: a string, unique identification of your input
+
+`data`: list of ndarray or ndarray
+
+_Example_
+```
+from zoo.serving.client import InputQueue
+import numpy as np
+input_api = InputQueue()
+sample1 = np.array([1, 2])
+input_api.enqueue_tensor("sample1", sample1)
+
+sample2 = [np.array([1, 2]), np.array([[3, 4], [5, 6]])]
+input_api.enqueue_tensor("sample2", sample2)
+```
+
 ### class OutputQueue
 The class `Output` defines methods allowing you to get result from Cluster Serving [Output Pipeline]().
 #### __init__

@@ -156,8 +156,12 @@ model:
 data:
   # default, localhost:6379
   src:
+  # default, image (image & tensor are supported)
+  data_type: 
   # default, 3,224,224
   image_shape:
+  # must be provided given data_type is tensor. eg: [1,2] (tensor) [[1],[2,1,2],[3]] (table)
+  tensor_shape: 
   # default, topN(1)
   filter:
 params:
@@ -243,7 +247,9 @@ Put the model in any of your local directory, and set `model:/path/to/dir`.
 The field `data` contains your input data configuration.
 
 * src: the queue you subscribe for your input data, e.g. a default config of Redis on local machine is `localhost:6379`. Note that please use the host address in your network instead of localhost or 127.0.0.1 when you run serving in cluster, and make sure other nodes in cluster could also recognize this address.
-* image_shape: the shape of your input data, e.g. a default config for pretrained imagenet is `3,224,224`. You should use the same shape of data which trained your model. In TensorFlow the format is usually HWC and in other models the format is usually CHW.
+* data_type: the type of your input data. image and tensor are supported.
+* image_shape: the shape of your image input data, e.g. a default config for pretrained imagenet is `3,224,224`. You should use the same shape of data which trained your model. In TensorFlow the format is usually HWC and in other models the format is usually CHW.
+* tensor_shape: the shape of your tensor(ndarray) or table(list of ndarray) input data. e.g. [1,2] (tensor) [[1],[2,1,2],[3]] (table) **note:** tensor_shape must be provided given data_type is tensor
 * filter: the top N classes in the prediction result. **note:** if the top-N number is larger than model output size of the the final layer, it would just return all the outputs.
 
 The field `params` contains your inference parameter configuration.
@@ -269,6 +275,8 @@ You can use following command to start Cluster Serving.
 cluster-serving-start
 ```
 This command will start Redis and TensorBoard if they are not running. Note that you need to provide `REDIS_HOME` environment variable as mentioned in [Installation](#1-installation).
+
+**NOTE:** If your input data_type is tensor(ndarray), you should run `spark-structured-streaming-cluster-serving-start` instead.
 
 #### Stop
 You can use following command to stop Cluster Serving. Data in Redis and TensorBoard service will persist.
