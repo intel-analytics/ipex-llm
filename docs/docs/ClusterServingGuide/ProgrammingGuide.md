@@ -341,7 +341,14 @@ To update your model, you could replace your model file in your model directory,
 We use log to save Cluster Serving information and error. To see log, please refer to `cluster-serving.log`.
 
 #### Visualization
-TensorBoard is integrated into Cluster Serving. TensorBoard service is started with Cluster Serving. Once your serving starts, you can go to `localhost:6006` to see visualization of your serving.
+To visualize Cluster Serving performance, go to your flink job UI, default `localhost:8081`, and go to Cluster Serving job -> metrics. Add `numRecordsOut` to see total record number and `numRecordsOutPerSecond` to see throughput.
+
+See example of visualization:
+
+![Example Chart](serving-visualization.png)
+
+##### Spark Streaming Visualization
+TensorBoard is integrated into Spark Streaming Cluster Serving. TensorBoard service is started with Cluster Serving. Once your serving starts, you can go to `localhost:6006` to see visualization of your serving.
 
 Analytics Zoo Cluster Serving provides 2 attributes in Tensorboard so far, `Serving Throughput` and `Total Records Number`.
 
