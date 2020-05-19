@@ -22,18 +22,18 @@ from pyspark.context import SparkContext
 from bigdl.util.common import get_node_and_core_number
 
 from zoo.ray import RayContext
-from zoo.orca.data.shard import RayDataShards, RayPartition, SparkDataShards
+from zoo.orca.data.shard import RayXShards, RayPartition, SparkXShards
 from zoo.orca.data.utils import *
 
 
 def read_csv(file_path, context, **kwargs):
     """
-    Read csv files to DataShards
+    Read csv files to XShards
     :param file_path: could be a csv file, multiple csv file paths separated by comma,
      a directory containing csv files.
      Supported file systems are local file system, hdfs, and s3.
     :param context: SparkContext or RayContext
-    :return: DataShards
+    :return: XShards
     """
     if isinstance(context, RayContext):
         return read_file_ray(context, file_path, "csv", **kwargs)
@@ -45,12 +45,12 @@ def read_csv(file_path, context, **kwargs):
 
 def read_json(file_path, context, **kwargs):
     """
-    Read json files to DataShards
+    Read json files to XShards
     :param file_path: could be a json file, multiple json file paths separated by comma,
      a directory containing json files.
      Supported file systems are local file system, hdfs, and s3.
     :param context: SparkContext or RayContext
-    :return: DataShards
+    :return: XShards
     """
     if isinstance(context, RayContext):
         return read_file_ray(context, file_path, "json", **kwargs)
@@ -86,7 +86,7 @@ def read_file_ray(context, file_path, file_type, **kwargs):
 
     # create initial partition
     partitions = [RayPartition([shard]) for shard in shards]
-    data_shards = RayDataShards(partitions)
+    data_shards = RayXShards(partitions)
     return data_shards
 
 
@@ -158,7 +158,7 @@ def read_file_spark(context, file_path, file_type, **kwargs):
 
         pd_rdd = rdd.mapPartitions(loadFile)
 
-    data_shards = SparkDataShards(pd_rdd)
+    data_shards = SparkXShards(pd_rdd)
     return data_shards
 
 

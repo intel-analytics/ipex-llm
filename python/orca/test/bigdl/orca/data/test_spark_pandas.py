@@ -23,10 +23,10 @@ from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.common.nncontext import *
 
 
-class TestSparkDataShards(ZooTestCase):
+class TestSparkXShards(ZooTestCase):
     def setup_method(self, method):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
-        sparkConf = init_spark_conf().setMaster("local[4]").setAppName("testSparkDataShards")
+        sparkConf = init_spark_conf().setMaster("local[4]").setAppName("testSparkXShards")
         self.sc = init_nncontext(sparkConf)
 
     def teardown_method(self, method):
