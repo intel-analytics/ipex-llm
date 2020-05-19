@@ -21,15 +21,13 @@ import zoo.orca.data.pandas
 from zoo.common.nncontext import init_nncontext
 
 
-def process_feature(awake_begin=6, awake_end=23):
-    def process(df):
-        import pandas as pd
-        df['datetime'] = pd.to_datetime(df['timestamp'])
-        df['hours'] = df['datetime'].dt.hour
-        df['awake'] = (((df['hours'] >= awake_begin) & (df['hours'] <= awake_end))
-                       | (df['hours'] == 0)).astype(int)
-        return df
-    return process
+def process_feature(df, awake_begin=6, awake_end=23):
+    import pandas as pd
+    df['datetime'] = pd.to_datetime(df['timestamp'])
+    df['hours'] = df['datetime'].dt.hour
+    df['awake'] = (((df['hours'] >= awake_begin) & (df['hours'] <= awake_end))
+                   | (df['hours'] == 0)).astype(int)
+    return df
 
 
 if __name__ == "__main__":
