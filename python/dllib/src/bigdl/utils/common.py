@@ -581,6 +581,7 @@ def _get_gateway():
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
     gateway = _get_gateway()
+    args = [_py2java(gateway, a) for a in args]
     error = Exception("Cannot find function: %s" % name)
     for jinvoker in JavaCreator.instance(bigdl_type, gateway).value:
         # hasattr(jinvoker, name) always return true here,
@@ -635,7 +636,6 @@ def _java2py(gateway, r, encoding="bytes"):
 def callJavaFunc(func, *args):
     """ Call Java Function """
     gateway = _get_gateway()
-    args = [_py2java(gateway, a) for a in args]
     result = func(*args)
     return _java2py(gateway, result)
 
