@@ -78,11 +78,9 @@ class TestSparkXShards(ZooTestCase):
         data = data_shard.collect()
         assert data[0]["value"].values[0] > 0, "value should be positive"
 
-        def negative(column_name):
-            def process(df):
-                df[column_name] = df[column_name] * (-1)
-                return df
-            return process
+        def negative(df, column_name):
+            df[column_name] = df[column_name] * (-1)
+            return df
 
         data_shard.transform_shard(negative, "value")
         data2 = data_shard.collect()
