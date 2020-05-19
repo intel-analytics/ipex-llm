@@ -41,7 +41,7 @@ time4=$((now-start))
 
 echo "#5 Start mxnet lenet example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/mxnet/lenet_mnist.py -e 1 -b 256
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/mxnet/lenet_mnist.py -e 1 -b 256
 now=$(date "+%s")
 time5=$((now-start))
 
