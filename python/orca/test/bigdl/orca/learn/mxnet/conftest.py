@@ -13,6 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 
-from .mxnet_trainer import MXNetTrainer
-from .utils import create_trainer_config
+sc = None
+ray_ctx = None
+
+
+@pytest.fixture(autouse=True, scope='package')
+def rayonspark_fixture():
+    from zoo import init_spark_on_local
+    from zoo.ray import RayContext
+    sc = init_spark_on_local(cores=8, spark_log_level="INFO")
+    ray_ctx = RayContext(sc=sc, object_store_memory="1g")
+    ray_ctx.init()
+    yield
+    ray_ctx.stop()
+    sc.stop()
