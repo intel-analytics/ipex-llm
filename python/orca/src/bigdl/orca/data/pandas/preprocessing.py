@@ -15,11 +15,10 @@
 #
 
 import random
-import ray
-from functools import reduce
-from pyspark.context import SparkContext
 
+import ray
 from bigdl.util.common import get_node_and_core_number
+from pyspark.context import SparkContext
 
 from zoo.ray import RayContext
 from zoo.orca.data.shard import RayXShards, RayPartition, SparkXShards
@@ -167,6 +166,7 @@ class RayPandasShard(object):
     """
     Actor to read csv/json file to Pandas DataFrame and manipulate data
     """
+
     def __init__(self, data=None):
         self.data = data
 

@@ -71,13 +71,6 @@ def extract_one_path(file_path, file_type, env):
     return file_paths
 
 
-def get_class_name(obj):
-    module = obj.__class__.__module__
-    if module is None or module == str.__class__.__module__:
-        return obj.__class__.__name__
-    return module + '.' + obj.__class__.__name__
-
-
 def open_text(path):
     # Return a list of lines
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
