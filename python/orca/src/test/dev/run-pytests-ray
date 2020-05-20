@@ -64,3 +64,11 @@ if [ $exit_status_5 -ne 0 ];
 then
     exit $exit_status_5
 fi
+
+echo "Running PyTorchTrainer tests"
+python -m pytest -v ../test/zoo/orca/learn/pytorch
+exit_status_6=$?
+if [ $exit_status_6 -ne 0 ];
+then
+    exit $exit_status_6
+fi
