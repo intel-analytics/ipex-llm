@@ -122,6 +122,7 @@ object Engine {
   private val singletonCounter = new AtomicBoolean()
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
+  private var optimizerVersion: Boolean = false
 
   @volatile
   private var gatewayServer: py4j.GatewayServer = null
@@ -312,6 +313,19 @@ object Engine {
   private[bigdl] def setNodeNumber(n : Int): Unit = {
     require(n > 0)
     nodeNum = n
+  }
+
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param optimizerV2
+   */
+  private[bigdl] def setOptimizeVersion(optimizerV2 : Boolean): Unit = {
+    optimizerVersion = optimizerV2
+  }
+
+  private[bigdl] def getOptimizeVersion(): Boolean = {
+    this.optimizerVersion
   }
 
   /**

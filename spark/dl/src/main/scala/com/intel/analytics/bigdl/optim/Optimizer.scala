@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.parameters.{ConstantClippingProcessor,
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
@@ -611,13 +612,24 @@ object Optimizer {
     val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
     val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
 
-    new DistriOptimizer[T](
-       _model = model,
-       _dataset = (DataSet.rdd(sampleRDD) ->
-         SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
-         .toDistributed(),
-       _criterion = criterion
-     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    Engine.getOptimizeVersion() match {
+      case false =>
+      new DistriOptimizer[T](
+      _model = model,
+      _dataset = (DataSet.rdd(sampleRDD) ->
+        SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
+        .toDistributed(),
+      _criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+      case true =>
+        new DistriOptimizerV2[T](
+          _model = model,
+          _dataset = (DataSet.rdd(sampleRDD) ->
+            SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
+            .toDistributed(),
+          _criterion = criterion
+        ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
   }
 
 
