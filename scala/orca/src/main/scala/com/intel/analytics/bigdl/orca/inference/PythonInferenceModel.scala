@@ -122,6 +122,19 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
       interOpParallelismThreads, usePerSessionThreads)
   }
 
+  def inferenceModelLoadTensorFlow(
+      model: InferenceModel,
+      modelPath: String,
+      modelType: String,
+      inputs: Array[String],
+      outputs: Array[String],
+      intraOpParallelismThreads: Int,
+      interOpParallelismThreads: Int,
+      usePerSessionThreads: Boolean): Unit = {
+    model.doLoadTensorflow(modelPath, modelType, inputs, outputs, intraOpParallelismThreads,
+      interOpParallelismThreads, usePerSessionThreads)
+  }
+
   def inferenceModelPredict(
       model: InferenceModel,
       inputs: JList[com.intel.analytics.bigdl.python.api.JTensor],
