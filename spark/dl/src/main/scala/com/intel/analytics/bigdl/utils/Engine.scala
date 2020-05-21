@@ -37,6 +37,14 @@ sealed trait EngineType
 case object MklBlas extends EngineType
 case object MklDnn extends EngineType
 
+/**
+ * define optimizer version trait
+ */
+sealed trait OptimizerVersion
+
+case object Optimizer1 extends OptimizerVersion
+case object Optimizer2 extends OptimizerVersion
+
 
 object Engine {
 
@@ -122,7 +130,6 @@ object Engine {
   private val singletonCounter = new AtomicBoolean()
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
-  private var optimizerVersion: Boolean = false
 
   @volatile
   private var gatewayServer: py4j.GatewayServer = null
@@ -213,6 +220,18 @@ object Engine {
       case "mklblas" => MklBlas
       case "mkldnn" => MklDnn
       case engineType => throw new IllegalArgumentException(s"Unknown engine type $engineType")
+    }
+  }
+
+  /**
+   * Notice: Please use property bigdl.optimizerVersion to set optimizerVersion.
+   * Default version is Optimizer1
+   */
+  private var optimizerVersion: OptimizerVersion = {
+    System.getProperty("bigdl.optimizerVersion", "optimizer1").toLowerCase(Locale.ROOT) match {
+      case "optimizer1" => Optimizer1
+      case "optimizer2" => Optimizer2
+      case optimizerVersion => throw new IllegalArgumentException(s"Unknown type $optimizerVersion")
     }
   }
 
@@ -318,13 +337,13 @@ object Engine {
   /**
    * This method should only be used for test purpose.
    *
-   * @param optimizerV2
+   * @param optimizerVersion
    */
-  private[bigdl] def setOptimizeVersion(optimizerV2 : Boolean): Unit = {
-    optimizerVersion = optimizerV2
+  private[bigdl] def setOptimizeVersion(optimizerVersion : OptimizerVersion): Unit = {
+    this.optimizerVersion = optimizerVersion
   }
 
-  private[bigdl] def getOptimizeVersion(): Boolean = {
+  private[bigdl] def getOptimizeVersion(): OptimizerVersion = {
     this.optimizerVersion
   }
 

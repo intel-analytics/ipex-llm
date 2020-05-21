@@ -613,15 +613,15 @@ object Optimizer {
     val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
 
     Engine.getOptimizeVersion() match {
-      case false =>
-      new DistriOptimizer[T](
-      _model = model,
-      _dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
-        .toDistributed(),
-      _criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-      case true =>
+      case Optimizer1 =>
+        new DistriOptimizer[T](
+          _model = model,
+          _dataset = (DataSet.rdd(sampleRDD) ->
+            SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
+            .toDistributed(),
+          _criterion = criterion
+        ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+      case Optimizer2 =>
         new DistriOptimizerV2[T](
           _model = model,
           _dataset = (DataSet.rdd(sampleRDD) ->
@@ -629,7 +629,8 @@ object Optimizer {
             .toDistributed(),
           _criterion = criterion
         ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-  }
+    }
+    
   }
 
 
@@ -652,13 +653,24 @@ object Optimizer {
           batchSize: Int,
           miniBatchImpl: MiniBatch[T]
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer[T](
-      _model = model,
-      _dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(miniBatchImpl, batchSize, None))
-        .toDistributed(),
-      _criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    Engine.getOptimizeVersion() match {
+      case Optimizer1 =>
+        new DistriOptimizer[T](
+          _model = model,
+          _dataset = (DataSet.rdd(sampleRDD) ->
+            SampleToMiniBatch(miniBatchImpl, batchSize, None))
+            .toDistributed(),
+          _criterion = criterion
+        ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+      case Optimizer2 =>
+        new DistriOptimizerV2[T](
+          _model = model,
+          _dataset = (DataSet.rdd(sampleRDD) ->
+            SampleToMiniBatch(miniBatchImpl, batchSize, None))
+            .toDistributed(),
+          _criterion = criterion
+        ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    }
   }
 
   /**
@@ -676,17 +688,29 @@ object Optimizer {
   )(implicit ev: TensorNumeric[T]): Optimizer[T, D] = {
     dataset match {
       case d: DistributedDataSet[_] =>
-        new DistriOptimizer[T](
-          _model = model,
-          _dataset = d.toDistributed().asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-          _criterion = criterion
-        ).asInstanceOf[Optimizer[T, D]]
+        Engine.getOptimizeVersion() match {
+          case Optimizer1 =>
+            new DistriOptimizer[T](
+              _model = model,
+              _dataset = d.toDistributed().asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+              _criterion = criterion
+            ).asInstanceOf[Optimizer[T, D]]
+          case Optimizer2 =>
+            new DistriOptimizerV2[T](
+              _model = model,
+              _dataset = d.toDistributed().asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+              _criterion = criterion
+            ).asInstanceOf[Optimizer[T, D]]
+        }
       case d: LocalDataSet[_] =>
-        new LocalOptimizer[T](
-          model = model,
-          dataset = d.toLocal().asInstanceOf[LocalDataSet[MiniBatch[T]]],
-          criterion = criterion
-        ).asInstanceOf[Optimizer[T, D]]
+        Engine.getOptimizeVersion() match {
+          case Optimizer1 =>
+            new LocalOptimizer[T](
+              model = model,
+              dataset = d.toLocal().asInstanceOf[LocalDataSet[MiniBatch[T]]],
+              criterion = criterion
+            ).asInstanceOf[Optimizer[T, D]]
+        }
       case _ =>
         throw new UnsupportedOperationException
     }
