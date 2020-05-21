@@ -703,14 +703,11 @@ object Optimizer {
             ).asInstanceOf[Optimizer[T, D]]
         }
       case d: LocalDataSet[_] =>
-        Engine.getOptimizeVersion() match {
-          case Optimizer1 =>
-            new LocalOptimizer[T](
-              model = model,
-              dataset = d.toLocal().asInstanceOf[LocalDataSet[MiniBatch[T]]],
-              criterion = criterion
-            ).asInstanceOf[Optimizer[T, D]]
-        }
+        new LocalOptimizer[T](
+          model = model,
+          dataset = d.toLocal().asInstanceOf[LocalDataSet[MiniBatch[T]]],
+          criterion = criterion
+        ).asInstanceOf[Optimizer[T, D]]
       case _ =>
         throw new UnsupportedOperationException
     }
