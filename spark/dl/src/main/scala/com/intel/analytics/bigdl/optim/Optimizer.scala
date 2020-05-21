@@ -630,7 +630,6 @@ object Optimizer {
           _criterion = criterion
         ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     }
-    
   }
 
 
