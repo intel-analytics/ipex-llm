@@ -4,7 +4,11 @@
 
 **Meetup:**
 
+* Building AI to play the FIFA video game using distributed TensorFlow On Analytics Zoo, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/270598470/), May 14 2020 ([Video](https://www.slidestalk.com/AliSpark/fifa_computer_player_trained_by_analytics_zoo?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0514%20Building%20AI%20to%20play%20the%20FIFA%20video%20game%20using%20distributed%20TensorFlow%20On%20Analytics%20Zoo.pdf))
+
 * Using Analytics-Zoo to Realize AI Diagnosis and Treatment of Thoracic Diseases Based on Deep Learning, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/270288381/), April 29 2020 ([Video](https://www.slidestalk.com/AliSpark/AnalyticsZooAI_v421285?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0429%20Using%20Analytics-Zoo%20to%20Realize%20AI%20Diagnosis%20and%20Treatment%20of%20Thoracic%20Diseases%20Based%20on%20Deep%20Learning.pdf))
+
+* Ultra Fast Deep Learning in Hybrid Cloud Using Intel Analytics Zoo & Alluxio, [ALLUXIO GLOBAL ONLINE MEETUP](https://www.alluxio.io/resources/videos/ultra-fast-deep-learning-in-hybrid-cloud-using-intel-analytics-zoo-alluxio/), April 23 2020 ([Video](https://youtu.be/Yu5nMyurKLU), [Slide](https://www.slideshare.net/Alluxio/ultra-fast-deep-learning-in-hybrid-cloud-using-intel-analytics-zoo-alluxio))
 
 * What’s on-going in Spark + AI Community - views from a contributor & practitioner, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/269943074/), April 17 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/SparkMeetup_SparkAI?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0417%20SparkMeetup_SparkAI_Shane.pdf))
 
