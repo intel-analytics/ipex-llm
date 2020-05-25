@@ -150,6 +150,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
 
   override def evaluate(): this.type = {
     super.evaluate()
+    loaded
     PythonInterpreter.set("newWeight", new NDArray[Array[Float]](weights.storage().array()))
     PythonInterpreter.exec(setWeightCode)
     PythonInterpreter.exec(s"${getName()}.eval()")
@@ -158,6 +159,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
 
   override def training(): this.type = {
     super.training()
+    loaded
     PythonInterpreter.exec(s"${getName()}.train()")
     this
   }
