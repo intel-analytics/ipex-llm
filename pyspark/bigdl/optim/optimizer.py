@@ -31,6 +31,7 @@ from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_node_and_core_number
 from bigdl.util.common import init_engine
 from bigdl.util.common import to_list
+from bigdl.util.common import get_optimizer_version_type
 from bigdl.dataset.dataset import *
 
 if sys.version >= '3':
@@ -985,9 +986,10 @@ class DistriOptimizer(Optimizer):
                                optim_methods, end_trigger, batch_size)
         elif isinstance(training_rdd, DataSet):
             self.bigdl_type = bigdl_type
+            optim_version = get_optimizer_version_type()
             self.value = callBigDlFunc(self.bigdl_type, "createDistriOptimizerFromDataSet",
                                        model.value, training_rdd, criterion,
-                                       optim_methods, end_trigger, batch_size)
+                                       optim_methods, end_trigger, batch_size, optim_version)
 
 
 class LocalOptimizer(BaseOptimizer):

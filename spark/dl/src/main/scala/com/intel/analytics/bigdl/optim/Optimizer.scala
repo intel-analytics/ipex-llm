@@ -612,8 +612,8 @@ object Optimizer {
     val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
     val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
 
-    Engine.getOptimizeVersion() match {
-      case Optimizer1 =>
+    Engine.getOptimizerVersion() match {
+      case OptimizerV1 =>
         new DistriOptimizer[T](
           _model = model,
           _dataset = (DataSet.rdd(sampleRDD) ->
@@ -621,7 +621,7 @@ object Optimizer {
             .toDistributed(),
           _criterion = criterion
         ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-      case Optimizer2 =>
+      case OptimizerV2 =>
         new DistriOptimizerV2[T](
           _model = model,
           _dataset = (DataSet.rdd(sampleRDD) ->
@@ -652,8 +652,8 @@ object Optimizer {
           batchSize: Int,
           miniBatchImpl: MiniBatch[T]
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    Engine.getOptimizeVersion() match {
-      case Optimizer1 =>
+    Engine.getOptimizerVersion() match {
+      case OptimizerV1 =>
         new DistriOptimizer[T](
           _model = model,
           _dataset = (DataSet.rdd(sampleRDD) ->
@@ -661,7 +661,7 @@ object Optimizer {
             .toDistributed(),
           _criterion = criterion
         ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-      case Optimizer2 =>
+      case OptimizerV2 =>
         new DistriOptimizerV2[T](
           _model = model,
           _dataset = (DataSet.rdd(sampleRDD) ->
@@ -687,14 +687,14 @@ object Optimizer {
   )(implicit ev: TensorNumeric[T]): Optimizer[T, D] = {
     dataset match {
       case d: DistributedDataSet[_] =>
-        Engine.getOptimizeVersion() match {
-          case Optimizer1 =>
+        Engine.getOptimizerVersion() match {
+          case OptimizerV1 =>
             new DistriOptimizer[T](
               _model = model,
               _dataset = d.toDistributed().asInstanceOf[DistributedDataSet[MiniBatch[T]]],
               _criterion = criterion
             ).asInstanceOf[Optimizer[T, D]]
-          case Optimizer2 =>
+          case OptimizerV2 =>
             new DistriOptimizerV2[T](
               _model = model,
               _dataset = d.toDistributed().asInstanceOf[DistributedDataSet[MiniBatch[T]]],

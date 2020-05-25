@@ -42,8 +42,8 @@ case object MklDnn extends EngineType
  */
 sealed trait OptimizerVersion
 
-case object Optimizer1 extends OptimizerVersion
-case object Optimizer2 extends OptimizerVersion
+case object OptimizerV1 extends OptimizerVersion
+case object OptimizerV2 extends OptimizerVersion
 
 
 object Engine {
@@ -225,12 +225,12 @@ object Engine {
 
   /**
    * Notice: Please use property bigdl.optimizerVersion to set optimizerVersion.
-   * Default version is Optimizer1
+   * Default version is OptimizerV1
    */
   private var optimizerVersion: OptimizerVersion = {
-    System.getProperty("bigdl.optimizerVersion", "optimizer1").toLowerCase(Locale.ROOT) match {
-      case "optimizer1" => Optimizer1
-      case "optimizer2" => Optimizer2
+    System.getProperty("bigdl.optimizerVersion", "optimizerv1").toLowerCase(Locale.ROOT) match {
+      case "optimizerv1" => OptimizerV1
+      case "optimizerv2" => OptimizerV2
       case optimizerVersion => throw new IllegalArgumentException(s"Unknown type $optimizerVersion")
     }
   }
@@ -339,11 +339,11 @@ object Engine {
    *
    * @param optimizerVersion
    */
-  private[bigdl] def setOptimizeVersion(optimizerVersion : OptimizerVersion): Unit = {
+  private[bigdl] def setOptimizerVersion(optimizerVersion : OptimizerVersion): Unit = {
     this.optimizerVersion = optimizerVersion
   }
 
-  private[bigdl] def getOptimizeVersion(): OptimizerVersion = {
+  private[bigdl] def getOptimizerVersion(): OptimizerVersion = {
     this.optimizerVersion
   }
 
