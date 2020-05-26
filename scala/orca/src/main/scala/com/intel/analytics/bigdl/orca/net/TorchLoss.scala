@@ -59,7 +59,7 @@ class TorchLoss(private val criterionHolder: Array[Byte])
           new NDArray[Array[Float]](t.storage().array().slice(
             t.storageOffset() - 1, t.nElement()), t.size(): _*))
       }
-      PythonInterpreter.exec("target = torch.Tensor(nd_target).long()")
+      PythonInterpreter.exec("target = torch.Tensor(nd_target)")
     }
     PythonInterpreter.exec(s"loss = ${name}(output, target)")
     output = PythonInterpreter.getValue("loss.item()").asInstanceOf[Double].toFloat
