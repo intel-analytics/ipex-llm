@@ -2351,11 +2351,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                             endTrigger: Trigger,
                             batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val sampleRDD = toJSample(trainingRdd)
-        val optimizer = new DistriOptimizer(
-          _model = model,
-          _dataset = batching(DataSet.rdd(sampleRDD), batchSize)
+        
+    val optimizer = Optimizer(
+          model = model,
+          dataset = batching(DataSet.rdd(sampleRDD), batchSize)
             .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-          _criterion = criterion
+          criterion = criterion
         ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
         enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
@@ -2367,22 +2368,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
-    Engine.getOptimizerVersion() match {
-      case OptimizerV1 =>
-        val optimizer = new DistriOptimizer(
-        _model = model,
-        _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-        _criterion = criterion
-      ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-        enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
-      case OptimizerV2 =>
-      val optimizer = new DistriOptimizerV2(
-        _model = model,
-        _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-        _criterion = criterion
-      ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-      enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
-    }
+    
+    val optimizer = Optimizer(
+      model = model,
+      dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
   
   def featureTransformDataset(dataset: DataSet[ImageFeature],
