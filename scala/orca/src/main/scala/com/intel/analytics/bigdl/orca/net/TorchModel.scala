@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.zoo.common.PythonInterpreter
-import com.intel.analytics.zoo.feature.PythonLoaderFeatureSet
+import com.intel.analytics.zoo.feature.PythonFeatureSet
 import com.intel.analytics.zoo.pipeline.api.net.TorchModel.TorchModel2Holder
 import jep.{Jep, NDArray}
 
@@ -76,16 +76,23 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
     loaded
     // TODO: delete this time counting
     val startTime = System.nanoTime()
-    // data is come from FeatureSet.
-    val dataExisted = PythonInterpreter.getValue[Boolean]("'data' in dir()")
+    // _data is come from FeatureSet.
+    val dataExisted = PythonInterpreter.getValue[Boolean]("'_data' in dir()")
     if (dataExisted) {
-      PythonInterpreter.exec("input = data[0]")
+      PythonInterpreter.exec("input = _data[0]")
     } else {
       // TODO: support table input
       require(input.isTensor, "only support tensor input")
       val i = input.toTensor[Float]
-      PythonInterpreter.set("nd_input",
-        new NDArray[Array[Float]](i.storage().array(), i.size(): _*))
+      if (i.nElement() == i.storage().array().length) {
+        PythonInterpreter.set("nd_input",
+          new NDArray[Array[Float]](i.storage().array(), i.size(): _*))
+      } else {
+        // The last mini batch during evaluation is smaller.
+        PythonInterpreter.set("nd_input",
+          new NDArray[Array[Float]](i.storage().array().slice(
+            i.storageOffset() - 1, i.nElement()), i.size(): _*))
+      }
       PythonInterpreter.exec("input = torch.Tensor(nd_input)")
     }
 
@@ -99,7 +106,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
     }
     PythonInterpreter.exec(forwardCode)
     println(s"run forward cost: ${(System.nanoTime() - startTime) / 1e9}")
-    val outputNd = PythonLoaderFeatureSet.toArrayTensor(
+    val outputNd = PythonFeatureSet.toArrayTensor(
       PythonInterpreter.getValue[NDArray[_]]("ptensor_to_numpy(output.data)"))
     if (outputNd.length == 1) {
       output = outputNd(0)
@@ -124,16 +131,21 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
         |grads=[]
         |for param in ${getName()}.parameters():
         |    grads.append(param.grad.view(-1))
+        |grad=torch.nn.utils.parameters_to_vector(grads)
         |""".stripMargin
     PythonInterpreter.exec(getWeightCode)
-    val newGrads = PythonInterpreter.getValue[util.ArrayList[NDArray[Array[Float]]]](
-      "ptensor_to_numpy(grads)").asScala
-    var index = 0
-    newGrads.foreach{g =>
-      System.arraycopy(gradients.storage().array(), index,
-        g.getData(), 0, g.getDimensions()(0))
-      index += g.getDimensions()(0)
-    }
+    // TODO: Optimize this
+//    val newGrads = PythonInterpreter.getValue[util.ArrayList[NDArray[Array[Float]]]](
+//      "ptensor_to_numpy(grads)").asScala
+//    var index = 0
+//    newGrads.foreach{g =>
+//      System.arraycopy(gradients.storage().array(), index,
+//        g.getData(), 0, g.getDimensions()(0))
+//      index += g.getDimensions()(0)
+//    }
+    val grad = PythonFeatureSet.ndArrayToTensor(
+      PythonInterpreter.getValue("grad.data.numpy()").asInstanceOf[NDArray[_]])
+    gradients.copy(grad)
     println(s"backward total cost: ${(System.nanoTime() - startTime) / 1e9}")
     gradInput
   }
