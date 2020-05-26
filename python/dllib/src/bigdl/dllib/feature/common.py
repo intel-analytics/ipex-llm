@@ -17,8 +17,10 @@
 from bigdl.util.common import *
 from zoo.common.utils import callZooFunc
 from bigdl.dataset.dataset import DataSet
-import sys
 from pyspark.serializers import CloudPickleSerializer
+import sys
+import math
+import warnings
 
 if sys.version >= '3':
     long = int
@@ -359,6 +361,25 @@ class FeatureSet(DataSet):
         """
         func = CloudPickleSerializer.dumps(CloudPickleSerializer, func)
         jvalue = callZooFunc(bigdl_type, "createFeatureSetFromTfDataset", func, total_size)
+        return cls(jvalue=jvalue)
+
+    @classmethod
+    def pytorch_dataloader(cls, dataloader, bigdl_type="float"):
+        """
+        Create FeatureSet from pytorch dataloader
+        :param dataloader: a pytorch dataloader
+        :param bigdl_type: numeric type
+        :return: A feature set
+        """
+        node_num, core_num = get_node_and_core_number()
+        if dataloader.batch_size % node_num != 0:
+            true_bs = math.ceil(dataloader.batch_size / node_num) * node_num
+            warning_msg = "Detect dataloader's batch_size is not divisible by node number(" + \
+                          node_num + "), will adjust batch_size to " + true_bs + " automatically"
+            warnings.warn(warning_msg)
+
+        bys = CloudPickleSerializer.dumps(CloudPickleSerializer, dataloader)
+        jvalue = callZooFunc(bigdl_type, "createFeatureSetFromPyTorch", bys)
         return cls(jvalue=jvalue)
 
     def transform(self, transformer):
