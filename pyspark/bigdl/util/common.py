@@ -425,10 +425,10 @@ def init_engine(bigdl_type="float"):
 def get_bigdl_engine_type(bigdl_type="float"):
     return callBigDlFunc(bigdl_type, "getEngineType")
 
-def set_optimizer_version_type(bigdl_type="float", optimizerVersion):
+def set_optimizer_version(optimizerVersion, bigdl_type="float"):
     return callBigDlFunc(bigdl_type, "setOptimizerVersion", optimizerVersion)
 
-def get_optimizer_version_type(bigdl_type="float"):
+def get_optimizer_version(bigdl_type="float"):
     return callBigDlFunc(bigdl_type, "getOptimizerVersion")
 
 def init_executor_gateway(sc, bigdl_type="float"):
