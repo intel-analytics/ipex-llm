@@ -83,7 +83,7 @@ object PythonInterpreter {
     } catch {
       case t: Throwable =>
         // Don't use logger here, or spark local will stuck when catch an exception.
-        println("Error: " + ExceptionUtils.getStackTrace(t))
+        println("Warn: " + ExceptionUtils.getStackTrace(t))
         throw new JepException(t)
     }
   }
