@@ -47,7 +47,7 @@ class TFPredictor:
         self.inputs = inputs
         self.tfnet = TFNet.from_session(sess, self.inputs, outputs)
         if self.dataset.batch_per_thread <= 0:
-            raise ValueError("You should set batch_per_thread on TFDataset" +
+            raise ValueError("You should set batch_per_thread on TFDataset " +
                              "instead of batch_size for prediction")
 
     @staticmethod
