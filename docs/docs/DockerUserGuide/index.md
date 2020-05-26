@@ -22,7 +22,8 @@ A Linux user (CentOS or Ubuntu) can pull a Docker image and launch the Docker co
 1. Fresh install OS such as Linux OS (CentOS, Ubuntu etc), MacOS or Windows.
 2. Download and Install Docker following the instructions on: 
 https://docs.docker.com/get-docker/
-3. Pull an Analytics Zoo docker image (optional)
+3. (Optional) For Docker Desktop users on MacOS and Windows, the default resources (2 CPUs and 2GB memory) is relatively small, you may want to increase them by changing docker desktop configuration. 8GB memory and 4 CPUs should be a good estimator for most examples, and the exact memory requirements vary from different applications. For more information on this, please refer to docker documentation. ([here](https://docs.docker.com/docker-for-mac/#resources) for Mac and [here](https://docs.docker.com/docker-for-windows/#resources) for windows)
+4. (optional) Pull an Analytics Zoo docker image
 * Note: It is optional to pull an Analytics Zoo docker image in advance, as the command “docker run” in [Launch Analytics Zoo Docker container](#launch-analytics-zoo-docker-container) step will check the availability of the docker image and pull the image if it is absent. To manually pull the latest docker image, use: 
 
 ```
