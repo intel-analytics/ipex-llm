@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.python.api
 
-import java.util.{Locale, ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
+import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
 import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{OptimizerVersion, Table, _}
+import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
@@ -2351,14 +2351,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                             endTrigger: Trigger,
                             batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val sampleRDD = toJSample(trainingRdd)
-        
     val optimizer = Optimizer(
-          model = model,
-          dataset = batching(DataSet.rdd(sampleRDD), batchSize)
-            .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-          criterion = criterion
-        ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-        enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
+      model = model,
+      dataset = batching(DataSet.rdd(sampleRDD), batchSize)
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
 
   def createDistriOptimizerFromDataSet(model: AbstractModule[Activity, Activity, T],
@@ -2368,7 +2367,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
-    
     val optimizer = Optimizer(
       model = model,
       dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
@@ -2526,7 +2524,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def getOptimizerVersion(): String = {
     Engine.getOptimizerVersion().toString
   }
-
 
   def setWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
     val weightTensor = weights.asScala.toArray.map(toTensor(_))

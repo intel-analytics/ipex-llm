@@ -31,7 +31,6 @@ from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_node_and_core_number
 from bigdl.util.common import init_engine
 from bigdl.util.common import to_list
-from bigdl.util.common import get_optimizer_version
 from bigdl.dataset.dataset import *
 
 if sys.version >= '3':
