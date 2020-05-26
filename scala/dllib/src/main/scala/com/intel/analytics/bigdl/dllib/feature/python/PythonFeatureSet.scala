@@ -96,6 +96,13 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
          |${iterName} = ${loaderName}.make_one_shot_iterator()
          |""".stripMargin
     }
+    def getLoader(nodeNumber: Int, partId: Int, localLoaderName: String): String = {
+      s"""
+         |by${partId} = bytes(b % 256 for b in pyjarray)
+         |func${partId} = CloudPickleSerializer.loads(CloudPickleSerializer, by${partId})
+         |${localLoaderName} = func${partId}().shard(${nodeNumber}, ${partId})
+         |""".stripMargin
+    }
     def getNext(iterName: String): String = {
       s"""
         |data = sess.run(${iterName}.get_next())
@@ -103,8 +110,77 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
         |""".stripMargin
     }
     FeatureSet.python[MiniBatch[Float]](dataset,
-      getIterator, getNext,
+      getLoader, getIterator, getNext,
       "data", "", totalSize, imports)
+  }
+
+  def createFeatureSetFromPyTorch(
+        dataloader: Array[Byte]): FeatureSet[MiniBatch[Float]] = {
+    val imports = s"""
+                     |from zoo.util.nest import ptensor_to_numpy
+                     |import torch
+                     |from torch.utils.data import DataLoader
+                     |
+                     |""".stripMargin
+
+    def getIterator(iterName: String, loaderName: String): String = {
+      s"""
+         |if '${loaderName}_epoch' not in dir():
+         |  ${loaderName}_epoch = 0
+         |else:
+         |  ${loaderName}_epoch += 1
+         |${loaderName}_sampler.set_epoch(${loaderName}_epoch)
+         |${iterName} = enumerate(${loaderName})
+         |""".stripMargin
+    }
+
+    def getNext(iterName: String): String = {
+      // _index and _data will used in TorchModel and TorchLoss
+      s"""
+         |_index, _data = next(${iterName})
+         |""".stripMargin
+    }
+
+    def getLoader(nodeNumber: Int, partId: Int, localLoaderName: String): String = {
+      val load = s"""
+                    |by${partId} = bytes(b % 256 for b in pyjarray)
+                    |func${partId} = CloudPickleSerializer.loads(CloudPickleSerializer, by${partId})
+                    |${localLoaderName} = func${partId}
+                    |""".stripMargin
+      load +
+        s"""
+           |from torch.utils.data.distributed import DistributedSampler
+           |from torch.utils.data.sampler import RandomSampler
+           |from zoo.pipeline.api.torch.utils import DistributedSequentialSampler
+           |from torch.utils.data import DataLoader
+           |import math
+           |
+           |if isinstance(${localLoaderName}.sampler, RandomSampler):
+           |    ${localLoaderName}_sampler=DistributedSampler(${localLoaderName}.dataset,
+           |                                                  ${nodeNumber}, ${partId}, True)
+           |else:
+           |    ${localLoaderName}_sampler=DistributedSequentialSampler(${localLoaderName}.dataset,
+           |                                                  ${nodeNumber}, ${partId})
+           |
+           |bs_node = int(math.ceil(${localLoaderName}.batch_size / ${nodeNumber}))
+           |
+           |data_loader_args = {
+           |                "dataset": ${localLoaderName}.dataset,
+           |                "batch_size": bs_node,
+           |                "shuffle": False,
+           |                "num_workers": 0,
+           |                "collate_fn": ${localLoaderName}.collate_fn,
+           |                "drop_last": ${localLoaderName}.drop_last,
+           |                "timeout": ${localLoaderName}.timeout,
+           |                "worker_init_fn": ${localLoaderName}.worker_init_fn,
+           |                "sampler": ${localLoaderName}_sampler
+           |            }
+           |${localLoaderName} = DataLoader(**data_loader_args)
+           |""".stripMargin
+    }
+
+    FeatureSet.python[MiniBatch[Float]](dataloader, getLoader, getIterator, getNext,
+      "ptensor_to_numpy(_data[0])", "ptensor_to_numpy(_data[1])", -1, imports)
   }
 
 }
