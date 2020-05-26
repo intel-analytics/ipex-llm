@@ -20,6 +20,7 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.dataset.{MiniBatch, _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.{DataSet, _}
@@ -965,7 +966,7 @@ private[zoo] object InternalOptimizerUtil {
   def setExecutorMklThread(cachedModels: RDD[_]): Unit = {
     cachedModels.mapPartitions{_ =>
       val numCores = scala.sys.env("OMP_NUM_THREADS").toInt
-      EngineRef.getDefaultThreadPool().setMKLThread(numCores)
+      System.setProperty("bigdl.mklNumThreads", numCores.toString)
       Iterator.single(1)
     }.count()
   }
@@ -1107,6 +1108,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
      * Currently, we only provide single model + multi OMP threads for torchnet model.
      * TODO: support tfnet.
      */
+    logger.info(s"${model} isTorchnet is ${TorchNet.isTorchNet(model)}")
     val torchNetOptimize = TorchNet.isTorchNet(model)
     val modelPerExecutor = if (torchNetOptimize) {
       require(EngineRef.getEngineType() != MklDnn, "torchnet shouldn't use MKLDNN engine.")
@@ -1155,15 +1157,14 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
 //      LarsSGD.containsLarsSGD(optimMethods).foreach(weightDecay =>
 //        parameterProcessors.append(new LarsProcessor(parameterSplits, weightDecay))
 //      )
-
+      if (torchNetOptimize) {
+        InternalOptimizerUtil.setExecutorMklThread(distDataset.originRDD())
+      }
       val modelsAndBroadcast = InternalOptimizerUtil.initThreadModels[T](
         trainingModel, distDataset, criterion, state,
         Int.box(nodeNumber), Int.box(modelPerExecutor), Boolean.box(checkSingleton),
         allReduceParameter, parameterSplits, validationMethods, optimMethods, parameterProcessors)
       cachedModels = modelsAndBroadcast._1
-      if (torchNetOptimize) {
-        InternalOptimizerUtil.setExecutorMklThread(cachedModels)
-      }
       modelBroadcast = modelsAndBroadcast._2
     }
 
