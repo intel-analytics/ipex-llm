@@ -89,7 +89,7 @@ class TorchModelSpec extends ZooSpecHelper{
         |import numpy as np
         |input = torch.tensor(np.random.rand(4, 1, 28, 28), dtype=torch.float32)
         |target = torch.tensor(np.ones([4]), dtype=torch.long)
-        |data = (input, target)
+        |_data = (input, target)
         |""".stripMargin
     PythonInterpreter.exec(genInputCode)
     model.forward(Tensor[Float]())
@@ -119,7 +119,7 @@ class TorchModelSpec extends ZooSpecHelper{
       """
         |import numpy as np
         |input = torch.tensor(np.random.rand(4, 1, 28, 28), dtype=torch.float32)
-        |data = [input]
+        |_data = [input]
         |""".stripMargin
     PythonInterpreter.exec(genInputCode)
     val output1 = model.forward(Tensor[Float]())
@@ -145,7 +145,7 @@ class TorchModelSpec extends ZooSpecHelper{
          |flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
          |bym = CloudPickleSerializer.dumps(CloudPickleSerializer, model)
          |byc = CloudPickleSerializer.dumps(CloudPickleSerializer, criterion)
-         |del data
+         |del _data
          |""".stripMargin
     PythonInterpreter.exec(code)
 
