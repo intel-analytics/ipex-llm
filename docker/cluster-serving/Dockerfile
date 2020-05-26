@@ -15,7 +15,7 @@ ENV ANALYTICS_ZOO_HOME  	/opt/work/analytics-zoo
 ENV PATH			${JAVA_HOME}/bin:${ANALYTICS_ZOO_HOME}/bin/cluster-serving:${PATH}
 
 RUN apt-get update && \
-    apt-get install -y apt-utils vim curl nano wget unzip maven git numactl && \
+    apt-get install -y apt-utils vim curl nano wget unzip maven git numactl net-tools && \
     apt-get install -y gcc g++ make && \
     apt-get install -y libsm6 libxext6 libxrender-dev
 
@@ -24,7 +24,6 @@ RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --upgrade pip && \
     pip install --upgrade setuptools && \
-
     pip install tensorboard && \
     pip install opencv-python && \
     pip install pyyaml && \
@@ -53,7 +52,7 @@ RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SP
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 
 
-ADD scripts/*.* /opt/work/scripts/
+ADD download-analytics-zoo.sh /opt/work/scripts/
 RUN chmod a+x /opt/work/scripts/*.*
 
 RUN /opt/work/scripts/download-analytics-zoo.sh
@@ -64,8 +63,10 @@ RUN mkdir -p cluster-serving/model && \
     cd ..
 
 ADD resources/test_image/*.* /opt/work/cluster-serving/test_image/
-ADD resources/model/*.* /opt/work/cluster-serving/model/
+#ADD resources/model/*.* /opt/work/cluster-serving/model/
 ADD quick_start.py /opt/work/cluster-serving/
+ADD perf /opt/work/perf/
+ADD freeze_checkpoint.py /opt/work
 
 RUN chmod a+x ${ANALYTICS_ZOO_HOME}/bin/cluster-serving/*
 
