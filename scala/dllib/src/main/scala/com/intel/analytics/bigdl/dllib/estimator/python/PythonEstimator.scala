@@ -108,7 +108,6 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
       validationSet, Option(validationMethod).map(_.asScala.toArray).orNull)
   }
 
-
   def estimatorTrainImageFeature(estimator: Estimator[T],
                                  trainSet: FeatureSet[ImageFeature],
                                  criterion: Criterion[T],
