@@ -133,8 +133,9 @@ class SparkRunner:
 
     def init_spark_on_local(self, cores, conf=None, python_location=None):
         print("Start to getOrCreate SparkContext")
-        os.environ['PYSPARK_PYTHON'] = \
-            python_location if python_location else self._detect_python_location()
+        if 'PYSPARK_PYTHON' not in os.environ:
+            os.environ['PYSPARK_PYTHON'] = \
+                python_location if python_location else self._detect_python_location()
         master = "local[{}]".format(cores)
         zoo_conf = init_spark_conf(conf).setMaster(master)
         sc = init_nncontext(conf=zoo_conf, redirect_spark_log=self.redirect_spark_log)
