@@ -2351,12 +2351,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                             endTrigger: Trigger,
                             batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val sampleRDD = toJSample(trainingRdd)
-
-    val optimizer = new DistriOptimizer(
-      _model = model,
-      _dataset = batching(DataSet.rdd(sampleRDD), batchSize)
+    val optimizer = Optimizer(
+      model = model,
+      dataset = batching(DataSet.rdd(sampleRDD), batchSize)
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      _criterion = criterion
+      criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
@@ -2368,11 +2367,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
-
-    val optimizer = new DistriOptimizer(
-      _model = model,
-      _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      _criterion = criterion
+    val optimizer = Optimizer(
+      model = model,
+      dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
@@ -2516,6 +2514,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Array(Engine.nodeNumber(), Engine.coreNumber())
   }
 
+  def setOptimizerVersion(version: String): Unit = {
+    version.toLowerCase() match {
+      case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+      case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
+    }
+  }
+
+  def getOptimizerVersion(): String = {
+    Engine.getOptimizerVersion().toString
+  }
 
   def setWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
     val weightTensor = weights.asScala.toArray.map(toTensor(_))
