@@ -37,6 +37,14 @@ sealed trait EngineType
 case object MklBlas extends EngineType
 case object MklDnn extends EngineType
 
+/**
+ * define optimizer version trait
+ */
+sealed trait OptimizerVersion
+
+case object OptimizerV1 extends OptimizerVersion
+case object OptimizerV2 extends OptimizerVersion
+
 
 object Engine {
 
@@ -215,6 +223,18 @@ object Engine {
     }
   }
 
+  /**
+   * Notice: Please use property bigdl.optimizerVersion to set optimizerVersion.
+   * Default version is OptimizerV1
+   */
+  private var optimizerVersion: OptimizerVersion = {
+    System.getProperty("bigdl.optimizerVersion", "optimizerv1").toLowerCase(Locale.ROOT) match {
+      case "optimizerv1" => OptimizerV1
+      case "optimizerv2" => OptimizerV2
+      case optimizerVersion => throw new IllegalArgumentException(s"Unknown type $optimizerVersion")
+    }
+  }
+
   // Thread pool for default use
   @volatile private var _default: ThreadPool = null
 
@@ -312,6 +332,19 @@ object Engine {
   private[bigdl] def setNodeNumber(n : Int): Unit = {
     require(n > 0)
     nodeNum = n
+  }
+
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param optimizerVersion
+   */
+  private[bigdl] def setOptimizerVersion(optimizerVersion : OptimizerVersion): Unit = {
+    this.optimizerVersion = optimizerVersion
+  }
+
+  private[bigdl] def getOptimizerVersion(): OptimizerVersion = {
+    this.optimizerVersion
   }
 
   /**
