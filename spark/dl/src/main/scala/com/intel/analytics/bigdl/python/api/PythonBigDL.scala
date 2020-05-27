@@ -2374,7 +2374,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
-  
+
   def featureTransformDataset(dataset: DataSet[ImageFeature],
     transformer: FeatureTransformer): DataSet[ImageFeature] = {
     dataset -> transformer
@@ -2520,7 +2520,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
     }
   }
-  
+
   def getOptimizerVersion(): String = {
     Engine.getOptimizerVersion().toString
   }
