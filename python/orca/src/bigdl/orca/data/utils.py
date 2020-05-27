@@ -48,15 +48,19 @@ def list_s3_file(file_path, file_type, env):
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key,
     ).client('s3', verify=False)
-    keys = []
-    resp = s3_client.list_objects_v2(Bucket=bucket,
-                                     Prefix=key)
-    for obj in resp['Contents']:
-        keys.append(obj['Key'])
-    # only get json/csv files
-    files = [file for file in keys if os.path.splitext(file)[1] == "." + file_type]
-    file_paths = [os.path.join("s3://" + bucket, file) for file in files]
-    return file_paths
+    # file
+    if os.path.splitext(file_path)[1] != '':
+        return ["s3://" + file_path]
+    else:
+        keys = []
+        resp = s3_client.list_objects_v2(Bucket=bucket,
+                                         Prefix=key)
+        for obj in resp['Contents']:
+            keys.append(obj['Key'])
+        # only get json/csv files
+        files = [file for file in keys if os.path.splitext(file)[1] == "." + file_type]
+        file_paths = [os.path.join("s3://" + bucket, file) for file in files]
+        return file_paths
 
 
 def extract_one_path(file_path, file_type, env):
@@ -64,10 +68,24 @@ def extract_one_path(file_path, file_type, env):
     prefix = file_url_splits[0]
     if prefix == "s3":
         file_paths = list_s3_file(file_url_splits[1], file_type, env)
+    elif prefix == "hdfs":
+        import pyarrow as pa
+        fs = pa.hdfs.connect()
+        if fs.isfile(file_path):
+            return [file_path]
+        else:
+            file_paths = get_file_list(file_path)
+            # only get json/csv files
+            file_paths = [file for file in file_paths
+                          if os.path.splitext(file)[1] == "." + file_type]
     else:
-        file_paths = get_file_list(file_path)
-    # only get json/csv files
-    file_paths = [file for file in file_paths if os.path.splitext(file)[1] == "." + file_type]
+        if os.path.isfile(file_path):
+            return [file_path]
+        else:
+            file_paths = get_file_list(file_path)
+            # only get json/csv files
+            file_paths = [file for file in file_paths
+                          if os.path.splitext(file)[1] == "." + file_type]
     return file_paths
 
 
