@@ -15,7 +15,7 @@
 #
 from bigdl.optim.optimizer import MaxIteration, SGD
 from zoo.orca.data.shard import SparkXShards
-from zoo.tfpark import TFEstimator, TFOptimizer, TFPredictor, TFNet
+from zoo.tfpark import TFEstimator, TFOptimizer, TFPredictor, TFNet, ZooOptimizer
 import pandas as pd
 import tensorflow as tf
 
@@ -36,10 +36,6 @@ class Estimator(object):
                    metrics=None, updates=None,
                    sess=None, model_dir=None, backend="spark"):
         assert backend == "spark", "only spark backend is supported for now"
-        if sess is None:
-            sess = tf.Session()
-            sess.run(tf.global_variables_initializer())
-
         return TFOptimizerWrapper(inputs=inputs,
                                   outputs=outputs,
                                   labels=labels,
@@ -140,10 +136,22 @@ class TFOptimizerWrapper(Estimator):
         self.outputs = outputs
         self.labels = labels
         self.loss = loss
-        self.optimizer = optimizer
+        if optimizer is not None:
+            assert isinstance(optimizer, tf.train.Optimizer), \
+                "optimizer is of type {}, ".format(type(self.optimizer)) + \
+                "it should be an instance of tf.train.Optimizer"
+            self.optimizer = ZooOptimizer(optimizer)
+            self.train_op = self.optimizer.minimize(self.loss)
+        else:
+            self.optimizer = None
+            self.train_op = None
         self.metrics = metrics
         self.updates = updates
-        self.sess = sess
+        if sess is None:
+            self.sess = tf.Session()
+            self.sess.run(tf.global_variables_initializer())
+        else:
+            self.sess = None
         self.model_dir = model_dir
 
     def fit(self, data_shard, steps,
@@ -151,7 +159,6 @@ class TFOptimizerWrapper(Estimator):
             validation_data_shard=None,
             feed_dict=None,
             session_config=None):
-        import bigdl
 
         assert self.labels is not None, \
             "labels is None; it should not be None in training"
@@ -159,9 +166,6 @@ class TFOptimizerWrapper(Estimator):
             "loss is None; it should not be None in training"
         assert self.optimizer is not None, \
             "optimizer is None; it not None in training"
-        assert isinstance(self.optimizer, bigdl.optim.optimizer.OptimMethod), \
-            "optimizer is of type {}, ".format(type(self.optimizer)) + \
-            "it should be an instance of bigdl.optim.optimizer.OptimMethod"
 
         dataset = _xshards_to_tf_dataset(data_shard,
                                          batch_size=batch_size,
@@ -172,13 +176,14 @@ class TFOptimizerWrapper(Estimator):
         else:
             tensor_with_value = None
 
-        optimizer = TFOptimizer.from_loss(
+        optimizer = TFOptimizer.from_train_op(
+            train_op=self.train_op,
             loss=self.loss,
-            optim_method=self.optimizer,
-            inputs=(self.inputs, self.labels),
+            inputs=self.inputs,
+            labels=self.labels,
             dataset=dataset,
             metrics=self.metrics,
-            updates=self.updates, session=self.sess,
+            updates=self.updates, sess=self.sess,
             tensor_with_value=tensor_with_value,
             session_config=session_config,
             model_dir=self.model_dir)

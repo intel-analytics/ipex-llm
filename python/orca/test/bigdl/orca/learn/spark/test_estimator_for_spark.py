@@ -37,10 +37,11 @@ class SimpleModel(object):
 
 
 def test_estimator_graph(estimator_for_spark_fixture):
-    from bigdl.optim.optimizer import SGD
     import zoo.orca.data.pandas
 
     sc = estimator_for_spark_fixture
+
+    tf.reset_default_graph()
 
     model = SimpleModel()
     file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
@@ -60,7 +61,7 @@ def test_estimator_graph(estimator_for_spark_fixture):
         labels=[model.label],
         outputs=[model.logits],
         loss=model.loss,
-        optimizer=SGD(),
+        optimizer=tf.train.AdamOptimizer(),
         metrics={"loss": model.loss})
     est.fit(data_shard=data_shard,
             batch_size=8,
@@ -81,8 +82,8 @@ def test_estimator_graph(estimator_for_spark_fixture):
 
 
 def test_estimator_graph_fit(estimator_for_spark_fixture):
-    from bigdl.optim.optimizer import SGD
     import zoo.orca.data.pandas
+    tf.reset_default_graph()
 
     model = SimpleModel()
     sc = estimator_for_spark_fixture
@@ -102,7 +103,7 @@ def test_estimator_graph_fit(estimator_for_spark_fixture):
         inputs=[model.user, model.item],
         labels=[model.label],
         loss=model.loss,
-        optimizer=SGD(),
+        optimizer=tf.train.AdamOptimizer(),
         metrics={"loss": model.loss})
     est.fit(data_shard=data_shard,
             batch_size=8,
@@ -112,6 +113,7 @@ def test_estimator_graph_fit(estimator_for_spark_fixture):
 
 def test_estimator_graph_predict(estimator_for_spark_fixture):
     import zoo.orca.data.pandas
+    tf.reset_default_graph()
 
     sc = estimator_for_spark_fixture
 
