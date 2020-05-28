@@ -38,8 +38,8 @@ class MXNetTrainer(object):
     You can specify "seed" in config to set random seed.
     You can specify "init" in seed to set model initializer.
 
-    :param data_creator: A function that takes config and kv as arguments and returns an MXNet
-    DataIter/DataLoader for training or a tuple of training and validation datasets.
+    :param train_data: An instance of xShards or a function that takes config and kv as arguments
+    and returns an MXNet DataIter/DataLoader for training.
     You can specify data related configurations for this function in the config argument above.
     kv is an instance of MXNet distributed key-value store. kv.num_workers and kv.rank
     can be used in this function to split data for different workers if necessary.
@@ -50,26 +50,45 @@ class MXNetTrainer(object):
     :param loss_creator: A function that takes config as argument and returns an MXNet loss.
     This is not needed for symbolic API where loss is already defined as model output.
 
-    :param metrics_creator: A function that takes config as argument and returns one or a list of
-    MXNet metrics or corresponding string representations of metrics, for example, 'accuracy'.
-    This is not needed if you don't have validation data throughout the training.
+    :param train_resize_batch_num: The number of batches per epoch to resize to. Default is None.
+    You might need to specify this if the size of train_data for each worker varies.
+
+    :param eval_metrics_creator: A function that takes config as argument and returns one or
+    a list of MXNet metrics or corresponding string representations of metrics, for example,
+    'accuracy'. This is not needed if you don't need evaluation on the training data set.
+
+    :param test_data: An instance of xShards or a function that takes config and kv as arguments
+    and returns an MXNet DataIter/DataLoader for testing.
+    You can specify data related configurations for this function in the config argument above.
+    kv is an instance of MXNet distributed key-value store. kv.num_workers and kv.rank
+    can be used in this function to split data for different workers if necessary.
+
+    :param validation_metrics_creator: A function that takes config as argument and returns one or
+    a list of MXNet metrics or corresponding string representations of metrics, for example,
+    'accuracy'. This is not needed if you don't have validation data throughout the training.
 
     :param num_workers: The number of workers for distributed training. Default is 1.
+
     :param num_servers: The number of servers for distributed training. Default is None and in this
     case it would be equal to the number of workers.
+
     :param runner_cores: The number of CPU cores allocated for each MXNet worker and server.
     Default is None. You may need to specify this for better performance.
     """
-    def __init__(self, config, data_creator, model_creator,
-                 loss_creator=None, metrics_creator=None,
+    def __init__(self, config, train_data, model_creator,
+                 loss_creator=None, train_resize_batch_num=None, eval_metrics_creator=None,
+                 test_data=None, validation_metrics_creator=None,
                  num_workers=1, num_servers=None, runner_cores=None):
         self.config = config
-        self.data_creator = data_creator
+        self.train_data = train_data
+        self.test_data = test_data
         self.model_creator = model_creator
         self.loss_creator = loss_creator
-        self.metrics_creator = metrics_creator
+        self.validation_metrics_creator = validation_metrics_creator
+        self.eval_metrics_creator = eval_metrics_creator
         self.num_workers = num_workers
         self.num_servers = num_servers if num_servers else self.num_workers
+        self.train_resize_batch_num = train_resize_batch_num
 
         # Generate actor class
         # Add a dummy custom resource: _mxnet_worker and _mxnet_server to diff worker from server
@@ -124,10 +143,13 @@ class MXNetTrainer(object):
 
         ray.get([
             runner.setup_distributed.remote(envs[i], self.config,
-                self.data_creator,
+                self.train_data,
                 self.model_creator,
                 self.loss_creator,
-                self.metrics_creator)
+                self.validation_metrics_creator,
+                self.test_data,
+                self.train_resize_batch_num,
+                self.eval_metrics_creator)
             for i, runner in enumerate(self.runners)
         ])
 
