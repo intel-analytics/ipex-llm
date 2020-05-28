@@ -30,6 +30,7 @@ import com.intel.analytics.zoo.tfpark.TFTensorNumeric.NumericByteArray
 
 class TFDataFeatureSet(private val graphRDD: RDD[Array[Byte]],
                        private val initIteratorOp: String,
+                       private val initTableOp: String,
                        private val outputNames: Array[String],
                        private val outputTypes: Array[DataType],
                        private val shardIndex: String,
@@ -65,6 +66,7 @@ class TFDataFeatureSet(private val graphRDD: RDD[Array[Byte]],
     val names = this.outputNames.toVector
     val types = this.outputTypes.toVector
     val shardIdx = this.shardIndex
+    val initTableOp = this.initTableOp
 
     graphRunnerRDD.mapPartitionsWithIndex { case (idx, dataIter) =>
       val graphRunner = dataIter.next()
@@ -72,6 +74,7 @@ class TFDataFeatureSet(private val graphRDD: RDD[Array[Byte]],
         graphRunner,
         train,
         initOp,
+        initTableOp,
         idx,
         shardIdx,
         types,
@@ -96,18 +99,20 @@ class TFDataFeatureSet(private val graphRDD: RDD[Array[Byte]],
 object TFDataFeatureSet {
   def apply(graph: Array[Byte],
             initIteratorOp: String,
+            initTableOp: String,
             outputNames: Array[String],
             outputTypes: Array[Int],
             shardIndex: String): TFDataFeatureSet = {
     val types = outputTypes.map(TFUtils.tfenum2datatype)
     val coreNumber = EngineRef.getCoreNumber()
     new TFDataFeatureSet(createGraphRDD(graph),
-      initIteratorOp, outputNames, types, shardIndex,
+      initIteratorOp, initTableOp, outputNames, types, shardIndex,
       sessionConfig = SessionConfig(intraOpParallelismThreads = coreNumber))
   }
 
   def apply(graphRDD: RDD[Array[Byte]],
             initIteratorOp: String,
+            initTableOp: String,
             outputNames: Array[String],
             outputTypes: Array[Int],
             shardIndex: String): TFDataFeatureSet = {
@@ -117,7 +122,7 @@ object TFDataFeatureSet {
     require(nodeNumber == graphRDD.getNumPartitions,
       s"number partitions should be the same as node number, " +
       s"got number partitions ${graphRDD.getNumPartitions}, node number ${nodeNumber}")
-    new TFDataFeatureSet(graphRDD, initIteratorOp, outputNames, types, shardIndex,
+    new TFDataFeatureSet(graphRDD, initIteratorOp, initTableOp, outputNames, types, shardIndex,
       sessionConfig = SessionConfig(intraOpParallelismThreads = coreNumber))
   }
 
@@ -154,18 +159,19 @@ object TFDataFeatureSet {
   private[zoo] def makeIterators(graphRunner: GraphRunner,
                                  train: Boolean,
                                  initOp: String,
+                                 initTableOp: String,
                                  idx: Int,
                                  shardIdx: String,
                                  types: Vector[DataType],
                                  names: Vector[String]): Iterator[TFMiniBatch] = {
     def intiIterator(): Unit = {
       if (shardIdx != null) {
-        graphRunner.runTargets(Vector(initOp),
+        graphRunner.runTargets(Vector(initOp, initTableOp),
           inputs = Vector(Tensor.scalar[Float](idx.toFloat)),
           inputTypes = Vector(DataType.INT64),
           inputNames = Vector(shardIdx))
       } else {
-        graphRunner.runTargets(Vector(initOp))
+        graphRunner.runTargets(Vector(initOp, initTableOp))
       }
 
     }
