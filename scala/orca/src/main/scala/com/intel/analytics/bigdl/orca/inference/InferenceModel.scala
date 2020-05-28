@@ -746,7 +746,8 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
       val batchSize = if (inputActivity.isTensor) {
         inputActivity.toTensor[Float].size(1)
       } else {
-        inputActivity.toTable(1).asInstanceOf[Tensor[Float]].size(1)
+        val sampleKey = inputActivity.toTable.keySet.head
+        inputActivity.toTable(sampleKey).asInstanceOf[Tensor[Float]].size(1)
       }
       val result = model.predict(inputActivity)
       val end = System.nanoTime()
