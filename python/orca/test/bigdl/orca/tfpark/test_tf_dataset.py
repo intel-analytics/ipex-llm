@@ -281,9 +281,34 @@ class TestTFDataset(ZooTestCase):
         images, labels = parse_fn(raw_bytes)
         flat = tf.layers.flatten(images)
         logits = tf.layers.dense(flat, 10)
-        loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
+        loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits,
+                                                                     labels=labels))
         opt = TFOptimizer.from_loss(loss, Adam())
         opt.optimize()
+
+    def test_tfdataset_with_tf_data_dataset_which_requires_table(self):
+
+        keys = [1, 0, -1]
+        dataset = tf.data.Dataset.from_tensor_slices([1, 2, -1, 5] * 40)
+        table = tf.contrib.lookup.HashTable(
+            initializer=tf.contrib.lookup.KeyValueTensorInitializer(
+                keys=keys, values=list(reversed(keys))),
+            default_value=100)
+        dataset = dataset.map(table.lookup)
+
+        def transform(x):
+            float_x = tf.to_float(x)
+            return float_x, 1
+        dataset = dataset.map(transform)
+        dataset = TFDataset.from_tf_data_dataset(dataset, batch_size=16)
+        seq = tf.keras.Sequential(
+            [tf.keras.layers.Flatten(input_shape=()),
+             tf.keras.layers.Dense(10, activation="softmax")])
+        seq.compile(optimizer=tf.keras.optimizers.RMSprop(),
+                    loss='sparse_categorical_crossentropy',
+                    metrics=['accuracy'])
+        model = KerasModel(seq)
+        model.fit(dataset)
 
     def test_tfdataset_with_tf_data_dataset(self):
         dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 1),
