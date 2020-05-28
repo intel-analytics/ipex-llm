@@ -134,6 +134,37 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     RDDWrapper(resultRDD)
   }
 
+  def createMiniBatchRDDFromTFDataset(graphRDD: JavaRDD[Array[Byte]],
+                                      initIteratorOp: String,
+                                      outputNames: JList[String],
+                                      outputTypes: JList[Int],
+                                      shardIndex: String): RDDWrapper[TFMiniBatch] = {
+    val types = outputTypes.asScala.map(TFUtils.tfenum2datatype).toVector
+    val names = outputNames.asScala.toVector
+    val coreNumber = EngineRef.getCoreNumber()
+
+    val resultRDD = graphRDD.rdd.mapPartitionsWithIndex { case (idx, iter) =>
+      if (iter.hasNext) {
+        val graphDef = iter.next()
+        val runner = GraphRunner(graphDef, null, null, null, null,
+          SessionConfig(intraOpParallelismThreads = coreNumber).toByteArray())
+        TFDataFeatureSet.makeIterators(
+          runner,
+          false,
+          initIteratorOp,
+          idx,
+          shardIndex,
+          types,
+          names
+        )
+      } else {
+        Iterator.empty
+      }
+
+    }
+    RDDWrapper(resultRDD)
+  }
+
   def createMiniBatchRDDFromTFDatasetEval(graph: Array[Byte],
                                           initIteratorOp: String,
                                           outputNames: JList[String],
@@ -155,6 +186,17 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
 
 
     TFDataFeatureSet(graph,
+      initIteratorOp,
+      outputNames.asScala.toArray, outputTypes.asScala.toArray, shardIndex)
+  }
+
+  def createTFDataFeatureSet(graphRDD: JavaRDD[Array[Byte]],
+                             initIteratorOp: String,
+                             outputNames: JList[String],
+                             outputTypes: JList[Int],
+                             shardIndex: String): TFDataFeatureSet = {
+
+    TFDataFeatureSet(graphRDD.rdd,
       initIteratorOp,
       outputNames.asScala.toArray, outputTypes.asScala.toArray, shardIndex)
   }
