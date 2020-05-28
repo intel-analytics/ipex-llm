@@ -33,7 +33,8 @@ class TestRayLocal(TestCase):
 
         sc = init_spark_on_local(cores=4)
         ray_ctx = RayContext(sc=sc, object_store_memory="1g")
-        ray_ctx.init()
+        address_info = ray_ctx.init()
+        assert "object_store_address" in address_info
         actors = [TestRay.remote() for i in range(0, 4)]
         print(ray.get([actor.hostname.remote() for actor in actors]))
         ray_ctx.stop()
