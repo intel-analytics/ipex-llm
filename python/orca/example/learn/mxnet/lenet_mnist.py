@@ -23,12 +23,22 @@ from zoo.ray import RayContext
 from zoo.orca.learn.mxnet import MXNetTrainer, create_trainer_config
 
 
-def get_data_iters(config, kv):
+def get_train_data_iter(config, kv):
     from mxnet.test_utils import get_mnist_iterator
     from filelock import FileLock
     with FileLock("data.lock"):
-        return get_mnist_iterator(config["batch_size"], (1, 28, 28),
-                                  num_parts=kv.num_workers, part_index=kv.rank)
+        iters = get_mnist_iterator(config["batch_size"], (1, 28, 28),
+                                   num_parts=kv.num_workers, part_index=kv.rank)
+        return iters[0]
+
+
+def get_test_data_iter(config, kv):
+    from mxnet.test_utils import get_mnist_iterator
+    from filelock import FileLock
+    with FileLock("data.lock"):
+        iters = get_mnist_iterator(config["batch_size"], (1, 28, 28),
+                                   num_parts=kv.num_workers, part_index=kv.rank)
+        return iters[1]
 
 
 def get_model(config):
@@ -117,9 +127,10 @@ if __name__ == '__main__':
     config = create_trainer_config(opt.batch_size, optimizer="sgd",
                                    optimizer_params={'learning_rate': opt.learning_rate},
                                    log_interval=opt.log_interval, seed=42)
-    trainer = MXNetTrainer(config, data_creator=get_data_iters, model_creator=get_model,
-                           loss_creator=get_loss, metrics_creator=get_metrics,
-                           num_workers=opt.num_workers, num_servers=opt.num_servers)
+    trainer = MXNetTrainer(config, train_data=get_train_data_iter, model_creator=get_model,
+                           loss_creator=get_loss, validation_metrics_creator=get_metrics,
+                           num_workers=opt.num_workers, num_servers=opt.num_servers,
+                           test_data=get_test_data_iter, eval_metrics_creator=get_metrics)
     trainer.train(nb_epoch=opt.epochs)
     ray_ctx.stop()
     sc.stop()
