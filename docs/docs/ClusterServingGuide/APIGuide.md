@@ -16,56 +16,36 @@ sets up a connection with configuration in your Cluster Serving [configuration f
 
 _return_: None
 
-#### enqueue_image
+#### enqueue
 [view source]()
 
 ```
-enqueue_image(uri, img)
+enqueue(uri, data*)
 ```
-puts image `img` with identification `uri` into Pipeline with JPG encoding. `img` can be either a string (which represents the file path of the image), or an ndarray of the image (which should be returned by cv2.imread() of opencv-python package)
+puts key-value pair into data pipeline, if your model has key regulation, pass corresponded key. Otherwise, give the key any name you want.
 
 _return_: None
 
 `uri`: a string, unique identification of your image
 
-`img`: path or `ndarray` of your image, could be loaded by `cv2.imread()` of opencv-python package.
-
+`data`: key-value pair of your data.
 _Example_
+To enqueue an image
 ```
 from zoo.serving.client import InputQueue
 input_api = InputQueue()
-input_api.enqueue_image('my-image1', 'path/to/image1')
-
-import cv2
-image2 = cv2.imread('path/to/image2')
-input_api.enqueue_image('my-image2', image2)
+input_api.enqueue('my-image1', user_define_key='path/to/image1')
 ```
-
-#### enqueue_tensor
-[view source]()
-
-```
-enqueue_tensor(uri, data)
-```
-puts ndarray or list of ndarray `data` with identification `uri` into Pipeline. 
-
-_return_: None
-
-`uri`: a string, unique identification of your input
-
-`data`: list of ndarray or ndarray
-
-_Example_
+To enqueue an instance containing 1 image and 2 ndarray
 ```
 from zoo.serving.client import InputQueue
 import numpy as np
 input_api = InputQueue()
-sample1 = np.array([1, 2])
-input_api.enqueue_tensor("sample1", sample1)
-
-sample2 = [np.array([1, 2]), np.array([[3, 4], [5, 6]])]
-input_api.enqueue_tensor("sample2", sample2)
+t1 = np.array([1,2])
+t2 = np.array([[1,2], [3,4]])
+input_api.enqueue_image('my-instance', img='path/to/image', tensor1=t1, tensor2=t2)
 ```
+
 
 ### class OutputQueue
 The class `Output` defines methods allowing you to get result from Cluster Serving [Output Pipeline]().

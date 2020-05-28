@@ -300,15 +300,22 @@ We support Python API for conducting inference with Data Pipeline in Cluster Ser
 
 We provide basic usage here, for more details, please see [API Guide](APIGuide.md).
 #### Input and Output API
-To input data to queue, you need a `InputQueue` instance, and using `enqueue` method by giving an image path or image ndarray. See following example.
+To input data to queue, you need a `InputQueue` instance, and using `enqueue` method, for each input, give a key correspond to your model or give arbitrary key if your model does not care about it.
+
+To enqueue an image
 ```
 from zoo.serving.client import InputQueue
 input_api = InputQueue()
-input_api.enqueue_image('my-image1', 'path/to/image1')
-
-import cv2
-image2 = cv2.imread('path/to/image2')
-input_api.enqueue_image('my-image2', image2)
+input_api.enqueue('my-image1', user_define_key='path/to/image1')
+```
+To enqueue an instance containing 1 image and 2 ndarray
+```
+from zoo.serving.client import InputQueue
+import numpy as np
+input_api = InputQueue()
+t1 = np.array([1,2])
+t2 = np.array([[1,2], [3,4]])
+input_api.enqueue_image('my-instance', img='path/to/image', tensor1=t1, tensor2=t2)
 ```
 To get data from queue, you need a `OutputQueue` instance, and using `query` or `dequeue` method. The `query` method takes image uri as parameter and returns the corresponding result. The `dequeue` method takes no parameter and just returns all results and also delete them in data queue. See following example.
 ```
