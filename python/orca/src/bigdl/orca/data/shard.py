@@ -38,6 +38,13 @@ class XShards(object):
         """
         pass
 
+    def num_partitions(self):
+        """
+        return the number of partitions in this XShards
+        :return: an int
+        """
+        pass
+
 
 class RayXShards(XShards):
     """
@@ -69,6 +76,9 @@ class RayXShards(XShards):
         """
         import ray
         return ray.get([shard.get_data.remote() for shard in self.shard_list])
+
+    def num_partitions(self):
+        return len(self.partitions)
 
     def repartition(self, num_partitions):
         """
@@ -110,6 +120,9 @@ class SparkXShards(XShards):
 
     def collect(self):
         return self.rdd.collect()
+
+    def num_partitions(self):
+        return self.rdd.getNumPartitions()
 
     def repartition(self, num_partitions):
         self.rdd = self.rdd.repartition(num_partitions)
