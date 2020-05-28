@@ -27,16 +27,20 @@ from zoo.orca.learn.mxnet import MXNetTrainer, create_trainer_config
 np.random.seed(1337)  # for reproducibility
 
 
-def get_data_iters(config, kv):
+def get_train_data_iter(config, kv):
     train_data = np.random.rand(200, 30)
     train_label = np.random.randint(0, 10, (200,))
     train = mx.io.NDArrayIter(train_data, train_label,
                               batch_size=config["batch_size"], shuffle=True)
+    return train
+
+
+def get_test_data_iter(config, kv):
     test_data = np.random.rand(80, 30)
     test_label = np.random.randint(0, 10, (80,))
     test = mx.io.NDArrayIter(test_data, test_label,
                              batch_size=config["batch_size"], shuffle=True)
-    return train, test
+    return test
 
 
 def get_model(config):
@@ -68,8 +72,10 @@ class TestMXNetGluon(TestCase):
     def test_gluon(self):
         config = create_trainer_config(batch_size=32, log_interval=2, optimizer="adam",
                                        optimizer_params={'learning_rate': 0.02})
-        trainer = MXNetTrainer(config, get_data_iters, get_model, get_loss, get_metrics,
-                               num_workers=2)
+        trainer = MXNetTrainer(config, get_train_data_iter, get_model, get_loss,
+                               eval_metrics_creator=get_metrics,
+                               validation_metrics_creator=get_metrics,
+                               num_workers=2, test_data=get_test_data_iter)
         trainer.train(nb_epoch=2)
 
 
