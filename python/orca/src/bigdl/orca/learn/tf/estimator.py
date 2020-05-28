@@ -15,11 +15,12 @@
 #
 from bigdl.optim.optimizer import MaxIteration, SGD
 from zoo.orca.data.shard import SparkXShards
+from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 from zoo.tfpark import TFEstimator, TFOptimizer, TFPredictor, TFNet, ZooOptimizer
 import pandas as pd
 import tensorflow as tf
 
-from zoo.tfpark.tf_dataset import TFDataset
+from zoo.tfpark.tf_dataset import TFDataset, TensorMeta
 from zoo.util import nest
 
 
@@ -59,19 +60,19 @@ def _xshards_to_tf_dataset(data_shard,
         x = data["x"]
         if isinstance(x, np.ndarray):
             new_x = [x]
-        elif isinstance(x, list) and all([isinstance(xi, np.ndarray) for xi in x]):
+        elif isinstance(x, tuple) and all([isinstance(xi, np.ndarray) for xi in x]):
             new_x = x
         else:
-            raise ValueError("value of x should be a ndarray or a list of ndarrays")
+            raise ValueError("value of x should be a ndarray or a tuple of ndarrays")
         result["x"] = new_x
         if "y" in data:
             y = data["y"]
             if isinstance(y, np.ndarray):
                 new_y = [y]
-            elif isinstance(y, list) and all([isinstance(yi, np.ndarray) for yi in y]):
+            elif isinstance(y, tuple) and all([isinstance(yi, np.ndarray) for yi in y]):
                 new_y = y
             else:
-                raise ValueError("value of x should be a ndarray or a list of ndarrays")
+                raise ValueError("value of x should be a ndarray or a tuple of ndarrays")
             result["y"] = new_y
         return result
 
@@ -154,9 +155,9 @@ class TFOptimizerWrapper(Estimator):
             self.sess = None
         self.model_dir = model_dir
 
-    def fit(self, data_shard, steps,
+    def fit(self, data, steps,
             batch_size=32,
-            validation_data_shard=None,
+            validation_data=None,
             feed_dict=None,
             session_config=None):
 
@@ -167,9 +168,17 @@ class TFOptimizerWrapper(Estimator):
         assert self.optimizer is not None, \
             "optimizer is None; it not None in training"
 
-        dataset = _xshards_to_tf_dataset(data_shard,
-                                         batch_size=batch_size,
-                                         validation_data_shard=validation_data_shard)
+        if isinstance(data, SparkXShards):
+            dataset = _xshards_to_tf_dataset(data,
+                                             batch_size=batch_size,
+                                             validation_data_shard=validation_data)
+        elif isinstance(data, Dataset):
+            dataset = TFDataDataset2(data, batch_size=batch_size,
+                                     batch_per_thread=-1,
+                                     validation_dataset=validation_data)
+        else:
+            raise ValueError("data type {} is not supported; "
+                             "it must be created by zoo.orca.data.package")
 
         if feed_dict is not None:
             tensor_with_value = {key: (value, value) for key, value in feed_dict.items()}
@@ -191,11 +200,18 @@ class TFOptimizerWrapper(Estimator):
         optimizer.optimize(end_trigger=MaxIteration(steps))
         return self
 
-    def predict(self, data_shard, batch_size=32):
+    def predict(self, data, batch_size=32):
         assert self.outputs is not None, \
             "output is None, it should not be None in prediction"
-        dataset = _xshards_to_tf_dataset(data_shard,
-                                         batch_per_thread=batch_size)
+
+        if isinstance(data, SparkXShards):
+            dataset = _xshards_to_tf_dataset(data,
+                                             batch_per_thread=batch_size)
+        elif isinstance(data, Dataset):
+            dataset = TFDataDataset2(data, batch_size=-1,
+                                     batch_per_thread=batch_size)
+        else:
+            raise ValueError("data must be a SparkXShards or an orca.data.tf.Dataset")
 
         flat_inputs = nest.flatten(self.inputs)
         flat_outputs = nest.flatten(self.outputs)

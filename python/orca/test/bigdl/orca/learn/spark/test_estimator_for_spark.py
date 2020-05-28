@@ -16,8 +16,9 @@
 import os
 import tensorflow as tf
 
-
-from zoo.orca.learn.tensorflow.estimator import Estimator
+from zoo.orca.data.tf.data import Dataset
+from zoo.orca.learn.tf.estimator import Estimator
+import zoo.orca.data.pandas
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
@@ -49,7 +50,7 @@ def test_estimator_graph(estimator_for_spark_fixture):
 
     def transform(df):
         result = {
-            "x": [df['user'].to_numpy(), df['item'].to_numpy()],
+            "x": (df['user'].to_numpy(), df['item'].to_numpy()),
             "y": df['label'].to_numpy()
         }
         return result
@@ -63,16 +64,16 @@ def test_estimator_graph(estimator_for_spark_fixture):
         loss=model.loss,
         optimizer=tf.train.AdamOptimizer(),
         metrics={"loss": model.loss})
-    est.fit(data_shard=data_shard,
+    est.fit(data=data_shard,
             batch_size=8,
             steps=10,
-            validation_data_shard=data_shard)
+            validation_data=data_shard)
 
     data_shard = zoo.orca.data.pandas.read_csv(file_path, sc)
 
     def transform(df):
         result = {
-            "x": [df['user'].to_numpy(), df['item'].to_numpy()],
+            "x": (df['user'].to_numpy(), df['item'].to_numpy()),
         }
         return result
 
@@ -92,7 +93,7 @@ def test_estimator_graph_fit(estimator_for_spark_fixture):
 
     def transform(df):
         result = {
-            "x": [df['user'].to_numpy(), df['item'].to_numpy()],
+            "x": (df['user'].to_numpy(), df['item'].to_numpy()),
             "y": df['label'].to_numpy()
         }
         return result
@@ -105,10 +106,10 @@ def test_estimator_graph_fit(estimator_for_spark_fixture):
         loss=model.loss,
         optimizer=tf.train.AdamOptimizer(),
         metrics={"loss": model.loss})
-    est.fit(data_shard=data_shard,
+    est.fit(data=data_shard,
             batch_size=8,
             steps=10,
-            validation_data_shard=data_shard)
+            validation_data=data_shard)
 
 
 def test_estimator_graph_predict(estimator_for_spark_fixture):
@@ -127,12 +128,67 @@ def test_estimator_graph_predict(estimator_for_spark_fixture):
 
     def transform(df):
         result = {
-            "x": [df['user'].to_numpy(), df['item'].to_numpy()],
+            "x": (df['user'].to_numpy(), df['item'].to_numpy()),
         }
         return result
 
     data_shard = data_shard.transform_shard(transform)
     predictions = est.predict(data_shard).collect()
+    print(predictions)
+
+
+def test_estimator_graph_fit_dataset(estimator_for_spark_fixture):
+    import zoo.orca.data.pandas
+    tf.reset_default_graph()
+    model = SimpleModel()
+    sc = estimator_for_spark_fixture
+    file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+    data_shard = zoo.orca.data.pandas.read_csv(file_path, sc)
+
+    def transform(df):
+        result = {
+            "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+            "y": df['label'].to_numpy()
+        }
+        return result
+
+    data_shard = data_shard.transform_shard(transform)
+    dataset = Dataset.from_tensor_slices(data_shard)
+
+    est = Estimator.from_graph(
+        inputs=[model.user, model.item],
+        labels=[model.label],
+        loss=model.loss,
+        optimizer=tf.train.AdamOptimizer(),
+        metrics={"loss": model.loss})
+    est.fit(data=dataset,
+            batch_size=8,
+            steps=10,
+            validation_data=dataset)
+
+
+def test_estimator_graph_predict_dataset(estimator_for_spark_fixture):
+
+    sc = estimator_for_spark_fixture
+    tf.reset_default_graph()
+
+    model = SimpleModel()
+    file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+    data_shard = zoo.orca.data.pandas.read_csv(file_path, sc)
+
+    est = Estimator.from_graph(
+        inputs=[model.user, model.item],
+        outputs=[model.logits])
+
+    def transform(df):
+        result = {
+            "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+        }
+        return result
+
+    data_shard = data_shard.transform_shard(transform)
+    dataset = Dataset.from_tensor_slices(data_shard)
+    predictions = est.predict(dataset).collect()
     print(predictions)
 
 
