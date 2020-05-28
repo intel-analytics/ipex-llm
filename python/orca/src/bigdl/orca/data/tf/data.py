@@ -51,6 +51,7 @@ class TFDataDataset2(TFDataset):
         self.init_op_name = meta_info["init_op_name"]
         self.output_names = meta_info["output_names"]
         self.output_types = meta_info["output_types"]
+        self.table_init_op = meta_info["table_init_op"]
 
         if validation_dataset is not None:
             self.val_rdd = validation_dataset.as_graph_rdd(batch_per_shard).cache()
@@ -72,22 +73,22 @@ class TFDataDataset2(TFDataset):
 
     def get_prediction_data(self):
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
-                             self.rdd.map(lambda x: x[0]), self.init_op_name, self.output_names,
-                             self.output_types, self.shard_index_op_name)
+                             self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
+                             self.output_names, self.output_types, self.shard_index_op_name)
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
     def get_training_data(self):
         jvalue = callZooFunc("float", "createTFDataFeatureSet",
-                             self.rdd.map(lambda x: x[0]), self.init_op_name, self.output_names,
-                             self.output_types, self.shard_index_op_name)
+                             self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
+                             self.output_names, self.output_types, self.shard_index_op_name)
         return FeatureSet(jvalue=jvalue)
 
     def get_validation_data(self):
         if self.validation_dataset is not None:
             jvalue = callZooFunc("float", "createTFDataFeatureSet",
                                  self.val_rdd.map(lambda x: x[0]), self.init_op_name,
-                                 self.output_names,
+                                 self.table_init_op, self.output_names,
                                  self.output_types, self.shard_index_op_name)
             return FeatureSet(jvalue=jvalue)
         return None
@@ -126,6 +127,7 @@ class Dataset(object):
                             for t in nest.flatten(dataset.output_types)]
 
             init_op_name = iterator.initializer.name
+            table_init_op = tf.tables_initializer().name
             output_names = [op.name for op in train_next_ops]
 
             graph = train_next_ops[0].graph
@@ -146,6 +148,7 @@ class Dataset(object):
 
             meta_info = {
                 "init_op_name": init_op_name,
+                "table_init_op": table_init_op,
                 "output_names": output_names,
                 "output_types": output_types,
                 "tensor_structure": tensor_structure
