@@ -15,9 +15,11 @@
 #
 
 import os.path
+import shutil
 
 import pytest
 
+import zoo.orca.data
 import zoo.orca.data.pandas
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.common.nncontext import *
@@ -122,6 +124,16 @@ class TestSparkXShards(ZooTestCase):
         data2 = shards_splits[1].collect()
         assert len(data1[0].index) > 1
         assert len(data2[0].index) == 1
+
+    def test_save(self):
+        temp = tempfile.mkdtemp()
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
+        path = os.path.join(temp, "data.pkl")
+        data_shard.save_pickle(path)
+        shards = zoo.orca.data.SparkXShards.load_pickle(path, self.sc)
+        assert isinstance(shards, zoo.orca.data.SparkXShards)
+        shutil.rmtree(temp)
 
 
 if __name__ == "__main__":

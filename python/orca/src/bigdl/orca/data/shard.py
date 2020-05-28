@@ -197,3 +197,11 @@ class SparkXShards(XShards):
                         for i in range(list_split_length[0])]
             else:
                 return [self]
+
+    def save_pickle(self, path, batchSize=10):
+        self.rdd.saveAsPickleFile(path, batchSize)
+        return self
+
+    @classmethod
+    def load_pickle(cls, path, sc, minPartitions=None):
+        return SparkXShards(sc.pickleFile(path, minPartitions))
