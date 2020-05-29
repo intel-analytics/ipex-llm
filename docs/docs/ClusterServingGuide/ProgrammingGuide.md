@@ -298,7 +298,7 @@ If you are using Docker, you could also run `docker rm` to shutdown Cluster Serv
 ### 4. Model Inference
 We support Python API for conducting inference with Data Pipeline in Cluster Serving. The requirements of API are `opencv-python`, `pyyaml`, `redis`.
 
-We provide basic usage here, for more details, please see [API Guide](APIGuide.md).
+We provide some basic usages here, for more details, please see [API Guide](APIGuide.md).
 #### Input and Output API
 To input data to queue, you need a `InputQueue` instance, and using `enqueue` method, for each input, give a key correspond to your model or give arbitrary key if your model does not care about it.
 
@@ -317,6 +317,8 @@ t1 = np.array([1,2])
 t2 = np.array([[1,2], [3,4]])
 input_api.enqueue_image('my-instance', img='path/to/image', tensor1=t1, tensor2=t2)
 ```
+There are 3 types of inputs in total, image, tensor, sparse tensor, which could represents nearly all types of models. For more details of usage, go to [API Guide](APIGuide.md)
+
 To get data from queue, you need a `OutputQueue` instance, and using `query` or `dequeue` method. The `query` method takes image uri as parameter and returns the corresponding result. The `dequeue` method takes no parameter and just returns all results and also delete them in data queue. See following example.
 ```
 from zoo.serving.client import OutputQueue
