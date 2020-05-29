@@ -45,10 +45,10 @@ if __name__ == "__main__":
     data = data_shard.collect()
 
     # repartition
-    data_shard.repartition(2)
+    data_shard = data_shard.repartition(2)
 
     # apply function on each element
-    data_shard.transform_shard(process_feature)
-    data2 = data_shard.collect()
+    trans_data_shard = data_shard.transform_shard(process_feature)
+    data2 = trans_data_shard.collect()
 
     sc.stop()
