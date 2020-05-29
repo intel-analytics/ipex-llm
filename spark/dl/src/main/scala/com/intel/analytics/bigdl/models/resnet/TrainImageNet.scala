@@ -89,6 +89,13 @@ object TrainImageNet {
 
       println(model)
 
+      if (param.optimizerVersion.isDefined) {
+        param.optimizerVersion.get.toLowerCase match {
+          case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+          case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
+        }
+      }
+      
       val optimMethod = if (param.stateSnapshot.isDefined) {
         val optim = OptimMethod.load[Float](param.stateSnapshot.get).asInstanceOf[SGD[Float]]
         val baseLr = param.learningRate
