@@ -115,8 +115,7 @@ class SparkXShards(XShards):
         self.rdd = rdd
 
     def transform_shard(self, func, *args):
-        self.rdd = self.rdd.map(lambda data: func(data, *args))
-        return self
+        return SparkXShards(self.rdd.map(lambda data: func(data, *args)))
 
     def collect(self):
         return self.rdd.collect()
@@ -125,8 +124,7 @@ class SparkXShards(XShards):
         return self.rdd.getNumPartitions()
 
     def repartition(self, num_partitions):
-        self.rdd = self.rdd.repartition(num_partitions)
-        return self
+        return SparkXShards(self.rdd.repartition(num_partitions))
 
     def partition_by(self, cols, num_partitions=None):
         import pandas as pd
@@ -159,8 +157,7 @@ class SparkXShards(XShards):
                     # no data in this partition
                     return []
             # merge records to df in each partition
-            self.rdd = partitioned_rdd.mapPartitions(merge)
-            return self
+            return SparkXShards(partitioned_rdd.mapPartitions(merge))
         else:
             raise Exception("Currently only support partition by for XShards"
                             " of Pandas DataFrame")
