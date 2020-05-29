@@ -125,6 +125,33 @@ class TestSparkXShards(ZooTestCase):
         assert len(data1[0].index) > 1
         assert len(data2[0].index) == 1
 
+    def test_len(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
+        assert data_shard.len() == 14
+        assert data_shard.len('ID') == 14
+        with self.assertRaises(Exception) as context:
+            data_shard.len('abc')
+        self.assertTrue('Invalid key for this XShards' in str(context.exception))
+
+        def to_dict(df):
+            return {'ID': df['ID'].to_numpy(), 'location': df['location'].to_numpy()}
+        data_shard = data_shard.transform_shard(to_dict)
+        assert data_shard.len('ID') == 14
+        assert data_shard.len() == 4
+        with self.assertRaises(Exception) as context:
+            data_shard.len('abc')
+        self.assertTrue('Invalid key for this XShards' in str(context.exception))
+
+        def to_number(d):
+            return 4
+        data_shard = data_shard.transform_shard(to_number)
+        assert data_shard.len() == 2
+        with self.assertRaises(Exception) as context:
+            data_shard.len('abc')
+        self.assertTrue('No selection operation available for this XShards' in
+                        str(context.exception))
+
     def test_save(self):
         temp = tempfile.mkdtemp()
         file_path = os.path.join(self.resource_path, "orca/data/csv")
