@@ -69,8 +69,8 @@ class TestSparkXShards(ZooTestCase):
         data_shard = zoo.orca.data.pandas.read_json(file_path, self.sc)
         partitions_num_1 = data_shard.rdd.getNumPartitions()
         assert partitions_num_1 == 4, "number of partition should be 4"
-        data_shard.repartition(1)
-        partitions_num_2 = data_shard.rdd.getNumPartitions()
+        partitioned_shard = data_shard.repartition(1)
+        partitions_num_2 = partitioned_shard.rdd.getNumPartitions()
         assert partitions_num_2 == 1, "number of partition should be 1"
 
     def test_apply(self):
@@ -84,8 +84,8 @@ class TestSparkXShards(ZooTestCase):
             df[column_name] = df[column_name] * (-1)
             return df
 
-        data_shard.transform_shard(negative, "value")
-        data2 = data_shard.collect()
+        trans_data_shard = data_shard.transform_shard(negative, "value")
+        data2 = trans_data_shard.collect()
         assert data2[0]["value"].values[0] < 0, "value should be negative"
 
     def test_read_csv_with_args(self):
@@ -99,13 +99,13 @@ class TestSparkXShards(ZooTestCase):
     def test_partition_by_single_column(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
-        data_shard.partition_by(cols="location")
-        partitions = data_shard.rdd.glom().collect()
+        partitioned_shard = data_shard.partition_by(cols="location")
+        partitions = partitioned_shard.rdd.glom().collect()
         assert len(partitions) == 4
 
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
-        data_shard.partition_by(cols="location", num_partitions=3)
-        partitions = data_shard.rdd.glom().collect()
+        partitioned_shard = data_shard.partition_by(cols="location", num_partitions=3)
+        partitions = partitioned_shard.rdd.glom().collect()
         assert len(partitions) == 3
 
     def test_unique(self):
@@ -117,8 +117,8 @@ class TestSparkXShards(ZooTestCase):
     def test_split(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
-        data_shard.transform_shard(lambda df: (df[0:-1], df[-1:]))
-        shards_splits = data_shard.split()
+        trans_data_shard = data_shard.transform_shard(lambda df: (df[0:-1], df[-1:]))
+        shards_splits = trans_data_shard.split()
         assert len(shards_splits) == 2
         data1 = shards_splits[0].collect()
         data2 = shards_splits[1].collect()
@@ -134,6 +134,23 @@ class TestSparkXShards(ZooTestCase):
         shards = zoo.orca.data.SparkXShards.load_pickle(path, self.sc)
         assert isinstance(shards, zoo.orca.data.SparkXShards)
         shutil.rmtree(temp)
+
+    def test_transform(self):
+        def trans_func(df):
+            data1 = {'ID': df['ID'].values, 'price': df['sale_price'].values}
+            data2 = {'location': df['location'].values}
+            return {'x': data1, 'y': data2}
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
+        transformed_data_shard = data_shard.transform_shard(trans_func)
+        data = data_shard.collect()
+        assert len(data) == 2, "number of shard should be 2"
+        df = data[0]
+        assert "location" in df.columns, "location is not in columns"
+        trans_data = transformed_data_shard.collect()
+        assert len(trans_data) == 2, "number of shard should be 2"
+        trans_dict = trans_data[0]
+        assert "x" in trans_dict, "x is not in the dictionary"
 
 
 if __name__ == "__main__":
