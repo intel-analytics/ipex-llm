@@ -38,7 +38,7 @@ transform_shard(func, *args)
 * `func` is your pre-processing function. In this function, you can do the pre-processing on a Pandas DataFrame, then return the processed object. 
 * `args` are the augurments for the pre-processing function.
 
-This method would parallelly pre-process each element in the XShards with the customized function.
+This method would parallelly pre-process each element in the XShards with the customized function, and return a new XShards after transformation.
 
 #### **Get all the elements in XShards**
 
