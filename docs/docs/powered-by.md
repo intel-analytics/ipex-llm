@@ -20,7 +20,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __JD__
 <br>[Object Detection and Image Feature Extraction at JD.com](https://software.intel.com/en-us/articles/building-large-scale-image-feature-extraction-with-bigdl-at-jdcom)
 * __MasterCard__
-</br> [Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://software.intel.com/en-us/articles/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service)
+</br> [Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://software.intel.com/en-us/articles/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service)
 * __Microsoft Azure__
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 1]( https://software.intel.com/en-us/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1)
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 2](https://www.infoq.com/articles/analytics-zoo-qa-module/?from=timeline&isappinstalled=0)
