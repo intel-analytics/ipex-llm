@@ -60,6 +60,7 @@ if __name__ == "__main__":
     parser.add_option("-t", "--endTriggerType", dest="endTriggerType", default="epoch")
     parser.add_option("-n", "--endTriggerNum", type=int, dest="endTriggerNum", default="20")
     parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -67,6 +68,8 @@ if __name__ == "__main__":
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
+
+    set_optimizer_version(options.optimizerVersion)
 
     # In order to use MklDnn as the backend, you should:
     # 1. Define a graph model with Model(graph container) or convert a sequential model to a graph model

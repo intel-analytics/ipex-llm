@@ -21,3 +21,4 @@ python ${BigDL_HOME}/pyspark/bigdl/models/local_lenet/local_lenet.py
 * ```--batchSize``` an option that can be used to set batch size.
 * ```--max_epoch``` an option that can be used to set how many epochs for which the model is to be trained.
 * ```--dataPath``` an option that can be used to set the path for downloading mnist data, the default value is /tmp/mnist. Make sure that you have write permission to the specified path.
+* ```--optimizerVersion``` an option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".

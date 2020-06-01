@@ -112,3 +112,4 @@ policy.
 * --weightDecay: weight decay.
 * -i: max iteration
 * --checkpointIteration: the checkpoint interval in iteration.
+* --optimizerVersion: option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".

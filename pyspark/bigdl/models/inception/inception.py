@@ -4,6 +4,7 @@ from bigdl.nn.criterion import *
 from bigdl.nn.initialization_method import *
 from bigdl.optim.optimizer import *
 from bigdl.transform.vision.image import *
+from bigdl.util.common import *
 from math import ceil
 
 
@@ -245,6 +246,7 @@ def config_option_parser():
     parser.add_option("--gradientMin", type=float, dest="gradientMin", default=0.0, help="min gradient clipping by")
     parser.add_option("--gradientMax", type=float, dest="gradientMax", default=0.0, help="max gradient clipping by")
     parser.add_option("--gradientL2NormThreshold", type=float, dest="gradientL2NormThreshold", default=0.0, help="gradient L2-Norm threshold")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1", help="state distri-optimizerVersion")
 
     return parser
 
@@ -264,6 +266,7 @@ if __name__ == "__main__":
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
+    set_optimizer_version(options.optimizerVersion)
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
