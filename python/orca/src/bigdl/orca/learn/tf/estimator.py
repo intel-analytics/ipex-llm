@@ -152,7 +152,7 @@ class TFOptimizerWrapper(Estimator):
             self.sess = tf.Session()
             self.sess.run(tf.global_variables_initializer())
         else:
-            self.sess = None
+            self.sess = sess
         self.model_dir = model_dir
 
     def fit(self, data, steps,
