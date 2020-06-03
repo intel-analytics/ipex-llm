@@ -23,6 +23,8 @@ This page contains the guide for you to run Analytics Zoo Cluster Serving, inclu
    
    4. [Model inference](#4-model-inference)
 
+   5. [HTTP Server](#5-http-server)
+
 * [Optional Operations](#optional-operations)
 
      - [Update Model or Configurations](#update-model-or-configurations)
@@ -339,6 +341,283 @@ Where `n` is the number of `top_n` in your configuration file. This string could
 ```
 import json
 result_class_prob_map = json.loads(img1_result)
+```
+
+### 5. HTTP Server
+We provide a HTTP server to support RESTful HTTP requests. User can submit HTTP requests to the HTTP server through RESTful APIs. The HTTP server will parse the input requests and pub them to Redis input queues, and also retrieve the output results and render them as json results in HTTP responses. The serving backend will leverage the cluster serving.
+
+### Start the HTTP Server
+User can download a analytics-zoo-${VERSION}-http.jar from the Nexus Repository with GAVP: 
+```
+<groupId>com.intel.analytics.zoo</groupId>
+<artifactId>analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}</artifactId>
+<version>${ZOO_VERSION}</version>
+```
+User can also build from the source code:
+```
+mvn clean package -P spark_2.4+ -Dmaven.test.skip=true
+```
+After that, start the HTTP server with below command.
+```
+java -jar analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ZOO_VERSION}-http.jar
+```
+And check the status of the HTTP server with:
+```
+curl  http://${BINDED_HOST_IP}:${BINDED_HOST_PORT}/
+```
+If you get a response like "welcome to analytics zoo web serving frontend", that means the HTTP server is started successfully.
+#### Start options
+User can pass options to the HTTP server when start it:
+```
+java -jar analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ZOO_VERSION}-http.jar --redisHost="172.16.0.109"
+```
+All the supported parameter are listed here:
+* **interface**: the binded server interface, default is "0.0.0.0"
+* **port**: the binded server port, default is 10020
+* **redisHost**: the host IP of redis server, default is "localhost"
+* **redisPort**: the host port of redis server, default is 6379
+* **redisInputQueue**: the input queue of redis server, default is "serving_stream"
+* **redisOutputQueue**: the output queue of redis server, default is "result:" 
+* **parallelism**: the parallelism of requests processing, default is 1000
+* **timeWindow**: the timeWindow wait to pub inputs to redis, default is 0
+* **countWindow**: the timeWindow wait to ub inputs to redis, default is 56
+* **tokenBucketEnabled**: the switch to enable/disable RateLimiter, default is false
+* **tokensPerSecond**: the rate of permits per second, default is 100
+* **tokenAcquireTimeout**: acquires a permit from this RateLimiter if it can be obtained without exceeding the specified timeout(ms), default is 100
+
+**User can adjust these options to tune the performance of the HTTP server.**
+
+#### RESTful API
+This part describes API endpoints and end-to-end examples on usage. 
+The requests and responses are in JSON format. The composition of them depends on the requests type or verb. See the APIs for details.
+In case of error, all APIs will return a JSON object in the response body with error as key and the error message as the value:
+```
+{
+  "error": <error message string>
+}
+```
+##### Predict API
+URL
+```
+POST http://host:port/predict
+```
+Request Example for images as inputs:
+```
+curl -d \
+'{
+  "instances": [
+    {
+      "image": "/9j/4AAQSkZJRgABAQEASABIAAD/7RcEUGhvdG9za..."
+    },
+    {
+      "image": "/9j/4AAQSkZJRgABAQEASABIAAD/7RcEUGhvdG9za..."
+    },
+    {
+      "image": "/9j/4AAQSkZJRgABAQEASABIAAD/7RcEUGhvdG9za..."
+    },
+    {
+      "image": "/9j/4AAQSkZJRgABAQEASABIAAD/7RcEUGhvdG9za..."
+    },
+    {
+      "image": "/9j/4AAQSkZJRgABAQEASABIAAD/7RcEUGhvdG9za..."
+    }
+  ]
+}' \
+-X POST http://host:port/predict
+```
+Response Example
+```
+{
+  "predictions": [
+    "{value=[[903,0.1306194]]}",
+    "{value=[[903,0.1306194]]}",
+    "{value=[[903,0.1306194]]}",
+    "{value=[[903,0.1306194]]}",
+    "{value=[[903,0.1306194]]}"
+  ]
+}
+```
+Request Example for tensor as inputs:
+```
+curl -d \
+'{
+  "instances" : [ {
+    "ids" : [ 100.0, 88.0 ]
+  }, {
+    "ids" : [ 100.0, 88.0 ]
+  }, {
+    "ids" : [ 100.0, 88.0 ]
+  }, {
+    "ids" : [ 100.0, 88.0 ]
+  }, {
+    "ids" : [ 100.0, 88.0 ]
+  } ]
+}' \
+-X POST http://host:port/predict
+```
+Response Example
+```
+{
+  "predictions": [
+    "{value=[[1,0.6427843]]}",
+    "{value=[[1,0.6427843]]}",
+    "{value=[[1,0.6427843]]}",
+    "{value=[[1,0.6427843]]}",
+    "{value=[[1,0.6427842]]}"
+  ]
+}
+```
+Another request example for composition of scalars and tensors.
+```
+curl -d \
+ '{
+  "instances" : [ {
+    "intScalar" : 12345,
+    "floatScalar" : 3.14159,
+    "stringScalar" : "hello, world. hello, arrow.",
+    "intTensor" : [ 7756, 9549, 1094, 9808, 4959, 3831, 3926, 6578, 1870, 1741 ],
+    "floatTensor" : [ 0.6804766, 0.30136853, 0.17394465, 0.44770062, 0.20275897, 0.32762378, 0.45966738, 0.30405098, 0.62053126, 0.7037923 ],
+    "stringTensor" : [ "come", "on", "united" ],
+    "intTensor2" : [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ],
+    "floatTensor2" : [ [ [ 0.2, 0.3 ], [ 0.5, 0.6 ] ], [ [ 0.2, 0.3 ], [ 0.5, 0.6 ] ] ],
+    "stringTensor2" : [ [ [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ], [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ] ], [ [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ], [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ] ] ]
+  }, {
+    "intScalar" : 12345,
+    "floatScalar" : 3.14159,
+    "stringScalar" : "hello, world. hello, arrow.",
+    "intTensor" : [ 7756, 9549, 1094, 9808, 4959, 3831, 3926, 6578, 1870, 1741 ],
+    "floatTensor" : [ 0.6804766, 0.30136853, 0.17394465, 0.44770062, 0.20275897, 0.32762378, 0.45966738, 0.30405098, 0.62053126, 0.7037923 ],
+    "stringTensor" : [ "come", "on", "united" ],
+    "intTensor2" : [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ],
+    "floatTensor2" : [ [ [ 0.2, 0.3 ], [ 0.5, 0.6 ] ], [ [ 0.2, 0.3 ], [ 0.5, 0.6 ] ] ],
+    "stringTensor2" : [ [ [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ], [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ] ], [ [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ], [ [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ], [ "come", "on", "united" ] ] ] ]
+  } ]
+}' \
+-X POST http://host:port/predict
+```
+Another request example for composition of sparse and dense tensors.
+```
+curl -d \
+'{
+  "instances" : [ {
+    "sparseTensor" : {
+      "shape" : [ 100, 10000, 10 ],
+      "data" : [ 0.2, 0.5, 3.45, 6.78 ],
+      "indices" : [ [ 1, 1, 1 ], [ 2, 2, 2 ], [ 3, 3, 3 ], [ 4, 4, 4 ] ]
+    },
+    "intTensor2" : [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ]
+  }, {
+    "sparseTensor" : {
+      "shape" : [ 100, 10000, 10 ],
+      "data" : [ 0.2, 0.5, 3.45, 6.78 ],
+      "indices" : [ [ 1, 1, 1 ], [ 2, 2, 2 ], [ 3, 3, 3 ], [ 4, 4, 4 ] ]
+    },
+    "intTensor2" : [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ]
+  } ]
+}' \
+-X POST http://host:port/predict
+```
+
+
+##### Metrics API
+URL
+```
+GET http://host:port/metrics
+```
+Response example:
+```
+[
+  {
+    name: "zoo.serving.redis.get",
+    count: 810,
+    meanRate: 12.627772820651845,
+    min: 0,
+    max: 25,
+    mean: 0.9687099303718213,
+    median: 0.928579,
+    stdDev: 0.8150031623593447,
+    _75thPercentile: 1.000047,
+    _95thPercentile: 1.141443,
+    _98thPercentile: 1.268665,
+    _99thPercentile: 1.608387,
+    _999thPercentile: 25.874584
+  },
+  {
+    name: "zoo.serving.redis.put",
+    count: 192,
+    meanRate: 2.9928448518681816,
+    min: 4,
+    max: 207,
+    mean: 8.470988823179553,
+    median: 6.909573,
+    stdDev: 13.269285415774808,
+    _75thPercentile: 8.262833,
+    _95thPercentile: 14.828704,
+    _98thPercentile: 18.860232,
+    _99thPercentile: 19.825203,
+    _999thPercentile: 207.541874
+  },
+  {
+    name: "zoo.serving.redis.wait",
+    count: 192,
+    meanRate: 2.992786169232195,
+    min: 82,
+    max: 773,
+    mean: 93.03099107296806,
+    median: 88.952799,
+    stdDev: 45.54085374821418,
+    _75thPercentile: 91.893393,
+    _95thPercentile: 118.370628,
+    _98thPercentile: 119.941905,
+    _99thPercentile: 121.158649,
+    _999thPercentile: 773.497556
+  },
+  {
+    name: "zoo.serving.request.metrics",
+    count: 1,
+    meanRate: 0.015586927261874562,
+    min: 18,
+    max: 18,
+    mean: 18.232472,
+    median: 18.232472,
+    stdDev: 0,
+    _75thPercentile: 18.232472,
+    _95thPercentile: 18.232472,
+    _98thPercentile: 18.232472,
+    _99thPercentile: 18.232472,
+    _999thPercentile: 18.232472
+  },
+  {
+    name: "zoo.serving.request.overall",
+    count: 385,
+    meanRate: 6.000929977336221,
+    min: 18,
+    max: 894,
+    mean: 94.5795886310155,
+    median: 89.946348,
+    stdDev: 49.63620144068503,
+    _75thPercentile: 93.851032,
+    _95thPercentile: 121.148026,
+    _98thPercentile: 123.118267,
+    _99thPercentile: 124.053326,
+    _999thPercentile: 894.004612
+  },
+  {
+    name: "zoo.serving.request.predict",
+    count: 192,
+    meanRate: 2.9925722215434205,
+    min: 85,
+    max: 894,
+    mean: 96.63308151066575,
+    median: 92.323305,
+    stdDev: 53.17110030594844,
+    _75thPercentile: 94.839714,
+    _95thPercentile: 122.564496,
+    _98thPercentile: 123.974892,
+    _99thPercentile: 125.636335,
+    _999thPercentile: 894.062819
+  }
+]
 ```
 
 ## Optional Operations
