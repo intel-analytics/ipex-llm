@@ -99,7 +99,7 @@ object Train {
         case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
       }
     }
-    
+
     val optimizer = Optimizer(
       model = TreeLSTMSentiment(word2VecTensor, param.hiddenSize, classNum, param.p),
       sampleRDD = trainRDD,

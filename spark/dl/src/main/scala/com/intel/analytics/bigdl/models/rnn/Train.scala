@@ -107,7 +107,7 @@ object Train {
           case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
         }
       }
-      
+
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
