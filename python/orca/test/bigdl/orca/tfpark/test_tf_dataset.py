@@ -310,6 +310,24 @@ class TestTFDataset(ZooTestCase):
         model = KerasModel(seq)
         model.fit(dataset)
 
+    def test_tfdataset_with_tf_data_dataset_which_contains_bool(self):
+        dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 1),
+                                                      np.random.randint(0, 10, size=(100,)),
+                                                      np.ones(shape=(100, 28, 28, 1),
+                                                              dtype=np.bool)))
+        dataset = TFDataset.from_tf_data_dataset(dataset, batch_size=16)
+
+        feature, labels, mask = dataset.tensors
+
+        float_mask = tf.to_float(mask)
+        masked_feature = tf.to_float(feature) * float_mask
+        flatten = tf.layers.flatten(masked_feature)
+        logits = tf.layers.dense(flatten, 10)
+        loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits,
+                                                                     labels=labels))
+        opt = TFOptimizer.from_loss(loss, Adam())
+        opt.optimize()
+
     def test_tfdataset_with_tf_data_dataset(self):
         dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 1),
                                                       np.random.randint(0, 10, size=(100,))))
