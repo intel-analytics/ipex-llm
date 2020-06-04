@@ -266,7 +266,6 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     val cache = dataset.originRDD().mapPartitions(_ => {
       val partitionId = TaskContext.getPartitionId
       val config = broadcast.value
-      Engine.setNodeAndCore(nExecutor, executorCores)
 
       val replicas = (0 until subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
@@ -856,12 +855,14 @@ class DistriOptimizerV2[T: ClassTag](
   private def validArgs(): Boolean = {
     val checkSingleton = this.checkSingleton
     val nodeNumber = Engine.nodeNumber()
+    val executorCores = Engine.coreNumber()
     val partitionNumber = dataset.toDistributed().originRDD().partitions.length
     require(partitionNumber == nodeNumber,
       s"Passed in rdd partition number $partitionNumber " +
         s" is not equal to configured node number $nodeNumber")
 
     dataset.toDistributed().originRDD().foreachPartition { _ =>
+      Engine.setNodeAndCore(nodeNumber, executorCores)
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
           require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
