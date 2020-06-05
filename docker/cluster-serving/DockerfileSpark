@@ -7,9 +7,7 @@ WORKDIR /opt/work
 ARG SPARK_VERSION=2.4.3 
 ARG BIGDL_VERSION=0.10.0
 ARG ANALYTICS_ZOO_VERSION=0.9.0-SNAPSHOT
-ARG FLINK_VERSION=1.10.0
 
-ENV FLINK_HOME			/opt/work/flink-${FLINK_VERSION}
 ENV SPARK_HOME			/opt/work/spark-${SPARK_VERSION}
 ENV JAVA_HOME			/opt/jdk
 ENV ANALYTICS_ZOO_VERSION 	${ANALYTICS_ZOO_VERSION}
@@ -52,18 +50,20 @@ RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SP
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 spark-${SPARK_VERSION} && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
-#flink
-RUN wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
-    tar xzf flink-*.tgz && \
-    rm flink-*.tgz
 
 
-ADD *.sh /opt/work/scripts/
+ADD download-analytics-zoo.sh /opt/work/scripts/
 RUN chmod a+x /opt/work/scripts/*.*
 
 RUN /opt/work/scripts/download-analytics-zoo.sh
 
+RUN mkdir -p cluster-serving/model && \    
+    cd cluster-serving && \
+    wget https://oss.sonatype.org/content/repositories/public/com/redislabs/spark-redis/2.4.0/spark-redis-2.4.0-jar-with-dependencies.jar && \
+    cd ..
+
 ADD resources/test_image/*.* /opt/work/cluster-serving/test_image/
+#ADD resources/model/*.* /opt/work/cluster-serving/model/
 ADD quick_start.py /opt/work/cluster-serving/
 ADD perf /opt/work/perf/
 ADD freeze_checkpoint.py /opt/work
@@ -74,13 +74,6 @@ ENV PYTHONPATH 		${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-
 ENV REDIS_HOME 		/opt/work/redis-5.0.5
 
 ENV OMP_NUM_THREADS	all
-
-# Download serving jar and delete standard jar
-RUN cd analytics-zoo/lib && \
-    rm *.jar && \
-    /opt/work/scripts/download-serving-jar.sh && \
-    cd ../..
-    
 
 RUN cd cluster-serving && \
     cluster-serving-init && \
