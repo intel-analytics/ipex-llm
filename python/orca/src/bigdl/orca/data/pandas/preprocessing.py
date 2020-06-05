@@ -16,7 +16,6 @@
 
 import random
 
-import ray
 from bigdl.util.common import get_node_and_core_number
 from pyspark.context import SparkContext
 
@@ -76,8 +75,10 @@ def read_file_ray(context, file_path, file_type, **kwargs):
     # remove empty partitions
     file_partition_list = [partition for partition
                            in list(chunk(file_paths, num_partitions)) if partition]
+    import ray
     # create shard actor to read data
-    shards = [RayPandasShard.remote() for i in range(len(file_partition_list))]
+    Shard = ray.remote(RayPandasShard)
+    shards = [Shard.remote() for i in range(len(file_partition_list))]
     done_ids, undone_ids = \
         ray.wait([shard.read_file_partitions.remote(file_partition_list[i], file_type, **kwargs)
                   for i, shard in enumerate(shards)], num_returns=len(shards))
@@ -161,7 +162,6 @@ def read_file_spark(context, file_path, file_type, **kwargs):
     return data_shards
 
 
-@ray.remote
 class RayPandasShard(object):
     """
     Actor to read csv/json file to Pandas DataFrame and manipulate data
