@@ -113,18 +113,41 @@ class RayPartition(object):
 class SparkXShards(XShards):
     def __init__(self, rdd):
         self.rdd = rdd
+        self.user_cached = False
+        self.rdd.cache()
 
     def transform_shard(self, func, *args):
-        return SparkXShards(self.rdd.map(lambda data: func(data, *args)))
+        transformed_shard = SparkXShards(self.rdd.map(lambda data: func(data, *args)))
+        self._uncache()
+        return transformed_shard
 
     def collect(self):
         return self.rdd.collect()
+
+    def cache(self):
+        self.user_cached = True
+        self.rdd.cache()
+        return self
+
+    def uncache(self):
+        self.user_cached = False
+        self.rdd.unpersist()
+        return self
+
+    def _uncache(self):
+        if not self.user_cached:
+            self.uncache()
+
+    def is_cached(self):
+        return self.rdd.is_cached
 
     def num_partitions(self):
         return self.rdd.getNumPartitions()
 
     def repartition(self, num_partitions):
-        return SparkXShards(self.rdd.repartition(num_partitions))
+        repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
+        self._uncache()
+        return repartitioned_shard
 
     def partition_by(self, cols, num_partitions=None):
         import pandas as pd
@@ -157,7 +180,9 @@ class SparkXShards(XShards):
                     # no data in this partition
                     return []
             # merge records to df in each partition
-            return SparkXShards(partitioned_rdd.mapPartitions(merge))
+            partitioned_shard = SparkXShards(partitioned_rdd.mapPartitions(merge))
+            self._uncache()
+            return partitioned_shard
         else:
             raise Exception("Currently only support partition by for XShards"
                             " of Pandas DataFrame")
@@ -203,8 +228,10 @@ class SparkXShards(XShards):
                     def transform(data):
                         return data[order]
                     return transform
-                return [SparkXShards(self.rdd.map(get_data(i)))
-                        for i in range(list_split_length[0])]
+                split_shard_list = [SparkXShards(self.rdd.map(get_data(i)))
+                                    for i in range(list_split_length[0])]
+                self._uncache()
+                return split_shard_list
             else:
                 return [self]
 
@@ -231,3 +258,6 @@ class SparkXShards(XShards):
     @classmethod
     def load_pickle(cls, path, sc, minPartitions=None):
         return SparkXShards(sc.pickleFile(path, minPartitions))
+
+    def __del__(self):
+        self.uncache()

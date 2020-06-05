@@ -69,7 +69,12 @@ class TestSparkXShards(ZooTestCase):
         data_shard = zoo.orca.data.pandas.read_json(file_path, self.sc)
         partitions_num_1 = data_shard.rdd.getNumPartitions()
         assert partitions_num_1 == 4, "number of partition should be 4"
+        data_shard.cache()
         partitioned_shard = data_shard.repartition(1)
+        assert data_shard.is_cached(), "data_shard should be cached"
+        assert partitioned_shard.is_cached(), "partitioned_shard should be cached"
+        data_shard.uncache()
+        assert not data_shard.is_cached(), "data_shard should be uncached"
         partitions_num_2 = partitioned_shard.rdd.getNumPartitions()
         assert partitions_num_2 == 1, "number of partition should be 1"
 
@@ -105,6 +110,8 @@ class TestSparkXShards(ZooTestCase):
 
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
         partitioned_shard = data_shard.partition_by(cols="location", num_partitions=3)
+        assert not data_shard.is_cached(), "data_shard should be uncached"
+        assert partitioned_shard.is_cached(), "partitioned_shard should be cached"
         partitions = partitioned_shard.rdd.glom().collect()
         assert len(partitions) == 3
 
@@ -118,8 +125,11 @@ class TestSparkXShards(ZooTestCase):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
         trans_data_shard = data_shard.transform_shard(lambda df: (df[0:-1], df[-1:]))
+        assert trans_data_shard.is_cached(), "trans_data_shard should be cached"
         shards_splits = trans_data_shard.split()
+        assert not trans_data_shard.is_cached(), "shards_splits should be uncached"
         assert len(shards_splits) == 2
+        assert shards_splits[0].is_cached(), "shards in shards_splits should be cached"
         data1 = shards_splits[0].collect()
         data2 = shards_splits[1].collect()
         assert len(data1[0].index) > 1
@@ -169,7 +179,10 @@ class TestSparkXShards(ZooTestCase):
             return {'x': data1, 'y': data2}
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
+        assert data_shard.is_cached(), "data_shard should be cached"
         transformed_data_shard = data_shard.transform_shard(trans_func)
+        assert not data_shard.is_cached(), "data_shard should be uncached"
+        assert transformed_data_shard.is_cached(), "transformed_data_shard should be cached"
         data = data_shard.collect()
         assert len(data) == 2, "number of shard should be 2"
         df = data[0]
