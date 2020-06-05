@@ -213,16 +213,16 @@ class SparkXShards(XShards):
             return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
                 .reduce(lambda l1, l2: l1 + l2)
         else:
-            first = self.rdd.first()
-            if not hasattr(first, '__getitem__'):
-                raise Exception("No selection operation available for this XShards")
-            else:
+
+            def get_len(data):
+                assert hasattr(data, '__getitem__'), \
+                    "No selection operation available for this XShards"
                 try:
-                    data = first[key]
+                    value = data[key]
                 except:
                     raise Exception("Invalid key for this XShards")
-            return self.rdd.map(lambda data: len(data[key]) if hasattr(data[key], '__len__')
-                                else 1).reduce(lambda l1, l2: l1 + l2)
+                return len(value) if hasattr(value, '__len__') else 1
+            return self.rdd.map(get_len).reduce(lambda l1, l2: l1 + l2)
 
     def save_pickle(self, path, batchSize=10):
         self.rdd.saveAsPickleFile(path, batchSize)
