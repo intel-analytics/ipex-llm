@@ -161,7 +161,8 @@ private[dlframes] trait DLParams[@specialized(Float, Double) T] extends HasFeatu
  * @param labelSize The size (Tensor dimensions) of the label data.
  */
 @deprecated("`DLEstimator` is deprecated." +
-  "com.intel.analytics.bigdl.dlframes is deprecated in BigDL 0.11", "0.10.0")
+  "com.intel.analytics.bigdl.dlframes is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class DLEstimator[@specialized(Float, Double) T: ClassTag](
     @transient val model: Module[T],
     val criterion : Criterion[T],
@@ -362,7 +363,8 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
  * featureSize = 28 * 28).
  */
 @deprecated("`DLModel` is deprecated." +
-  "com.intel.analytics.bigdl.dlframes is deprecated in BigDL 0.11", "0.10.0")
+  "com.intel.analytics.bigdl.dlframes is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class DLModel[@specialized(Float, Double) T: ClassTag](
     @transient val model: Module[T],
     var featureSize : Array[Int],
