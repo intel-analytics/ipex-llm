@@ -66,7 +66,8 @@ class TestSparkXShards(ZooTestCase):
 
     def test_repartition(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, self.sc)
+        data_shard = zoo.orca.data.pandas.read_json(file_path, self.sc,
+                                                    orient='columns', lines=True)
         partitions_num_1 = data_shard.rdd.getNumPartitions()
         assert partitions_num_1 == 4, "number of partition should be 4"
         data_shard.cache()

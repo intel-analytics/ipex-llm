@@ -15,6 +15,7 @@
 #
 
 from zoo.orca.data.utils import *
+import os
 
 
 class XShards(object):
@@ -110,11 +111,23 @@ class RayPartition(object):
         return [shard.get_data.remote() for shard in self.shard_list]
 
 
+def get_eager_mode():
+    is_eager = True
+    if os.getenv("EAGER_EXECUTION"):
+        eager_execution = os.getenv("EAGER_EXECUTION").lower()
+        if eager_execution == "false":
+            is_eager = False
+    return is_eager
+
+
 class SparkXShards(XShards):
     def __init__(self, rdd):
         self.rdd = rdd
         self.user_cached = False
+        self.eager = get_eager_mode()
         self.rdd.cache()
+        if self.eager:
+            self.compute()
 
     def transform_shard(self, func, *args):
         transformed_shard = SparkXShards(self.rdd.map(lambda data: func(data, *args)))
@@ -140,6 +153,10 @@ class SparkXShards(XShards):
 
     def is_cached(self):
         return self.rdd.is_cached
+
+    def compute(self):
+        self.rdd.count()
+        return self
 
     def num_partitions(self):
         return self.rdd.getNumPartitions()
