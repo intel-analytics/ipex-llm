@@ -16,10 +16,10 @@
 
 import os.path
 
-from zoo.orca.data.utils import open_image, open_text, load_numpy
+from zoo.orca.data.file import open_image, open_text, load_numpy
 
 
-class TestDataUtils:
+class TestFile:
     def setup_method(self, method):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
