@@ -34,6 +34,9 @@ import scala.reflect.ClassTag
  * @param activation Name of the activation function as string.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("`Activation` is deprecated." +
+  "com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class Activation[T: ClassTag](
    val activation: String,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
