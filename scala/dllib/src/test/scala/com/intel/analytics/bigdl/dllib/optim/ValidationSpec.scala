@@ -433,6 +433,35 @@ class ValidationSpec extends FlatSpec with Matchers {
     result should be(test)
   }
 
+  "top1 accuracy" should "shouldn't change output" in {
+    val output = Tensor(Storage(Array[Double](
+      0.1,
+      0.2,
+      0.8,
+      0,
+      0.9,
+      0,
+      0,
+      0
+    )), 1, Array(8, 1))
+    val cloneOutput = output.clone()
+
+    val target = Tensor(Storage(Array[Double](
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1
+    )))
+
+    val validation = new Top1Accuracy[Double]()
+    validation(output, target)
+    output should be (cloneOutput)
+  }
+
 
   "top1 accuracy" should "be correct on 2d tensor for binary inputs" in {
     val output = Tensor(Storage(Array[Double](
