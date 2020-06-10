@@ -67,10 +67,10 @@ def evaluate_string_metrics(*,
 
 def evaluate_metrics(inputs, sess, dataset, metrics):
 
-    if dataset.batch_per_thread < 0:
-        batch_size = dataset.batch_size
-    else:
+    if dataset.batch_per_thread > 0:
         batch_size = dataset.batch_per_thread * dataset.get_num_partitions()
+    else:
+        batch_size = dataset.batch_size
 
     real_batch_size = tf.shape(inputs[0])[0]
 

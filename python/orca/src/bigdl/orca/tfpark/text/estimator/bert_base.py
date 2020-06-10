@@ -93,11 +93,16 @@ def bert_input_fn(rdd, max_seq_length, batch_size,
                          "labels should be a set of label names if you have multiple labels")
 
     def input_fn(mode):
-        if mode == tf.estimator.ModeKeys.EVAL or mode == tf.estimator.ModeKeys.TRAIN:
+        if mode == tf.estimator.ModeKeys.TRAIN:
             return TFDataset.from_rdd(rdd,
                                       features=features_dict,
                                       labels=res_labels,
                                       batch_size=batch_size)
+        elif mode == tf.estimator.ModeKeys.EVAL:
+            return TFDataset.from_rdd(rdd,
+                                      features=features_dict,
+                                      labels=res_labels,
+                                      batch_per_thread=batch_size // rdd.getNumPartitions())
         else:
             return TFDataset.from_rdd(rdd,
                                       features=features_dict,

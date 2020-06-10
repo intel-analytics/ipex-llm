@@ -42,17 +42,20 @@ def make_bert_classifier_model_fn(optimizer):
             logits = tf.matmul(output_layer, output_weights, transpose_b=True)
             logits = tf.nn.bias_add(logits, output_bias)
             probabilities = tf.nn.softmax(logits, axis=-1)
-            log_probs = tf.nn.log_softmax(logits, axis=-1)
-            one_hot_labels = tf.one_hot(labels, depth=params["num_classes"], dtype=tf.float32)
-            per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-            loss = tf.reduce_mean(per_example_loss)
+
             if mode == tf.estimator.ModeKeys.PREDICT:
                 return tf.estimator.EstimatorSpec(mode=mode, predictions=probabilities)
-            elif mode == tf.estimator.ModeKeys.EVAL:
-                return tf.estimator.EstimatorSpec(mode=mode, predictions=probabilities, loss=loss)
             else:
-                train_op = ZooOptimizer(optimizer).minimize(loss)
-                return tf.estimator.EstimatorSpec(mode=mode, train_op=train_op, loss=loss)
+                log_probs = tf.nn.log_softmax(logits, axis=-1)
+                one_hot_labels = tf.one_hot(labels, depth=params["num_classes"], dtype=tf.float32)
+                per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+                loss = tf.reduce_mean(per_example_loss)
+                if mode == tf.estimator.ModeKeys.EVAL:
+                    return tf.estimator.EstimatorSpec(mode=mode, predictions=probabilities,
+                                                      loss=loss)
+                else:
+                    train_op = ZooOptimizer(optimizer).minimize(loss)
+                    return tf.estimator.EstimatorSpec(mode=mode, train_op=train_op, loss=loss)
     return _bert_classifier_model_fn
 
 
