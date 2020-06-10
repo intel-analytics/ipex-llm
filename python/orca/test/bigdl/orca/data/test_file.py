@@ -15,8 +15,10 @@
 #
 
 import os.path
+import shutil
+import tempfile
 
-from zoo.orca.data.file import open_image, open_text, load_numpy
+from zoo.orca.data.file import open_image, open_text, load_numpy, exists, makedirs
 
 
 class TestFile:
@@ -59,3 +61,44 @@ class TestFile:
             file_path = "s3://analytics-zoo-data/hyperseg/VGGcompression/core1.npy"
             res = load_numpy(file_path)
             assert res.shape == (32, 64, 3, 3)
+
+    def test_exists_local(self):
+        file_path = os.path.join(self.resource_path, "orca/data/random.npy")
+        assert exists(file_path)
+        file_path = os.path.join(self.resource_path, "orca/data/abc.npy")
+        assert not exists(file_path)
+
+    def test_exists_s3(self):
+        access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        if access_key_id and secret_access_key:
+            file_path = "s3://analytics-zoo-data/nyc_taxi.csv"
+            assert exists(file_path)
+            file_path = "s3://analytics-zoo-data/abc.csv"
+            assert not exists(file_path)
+
+    def test_mkdirs_local(self):
+        temp = tempfile.mkdtemp()
+        path = os.path.join(temp, "dir1")
+        makedirs(path)
+        assert exists(path)
+        path = os.path.join(temp, "dir2/dir3")
+        makedirs(path)
+        assert exists(path)
+        shutil.rmtree(temp)
+
+    def test_mkdirs_s3(self):
+        access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        if access_key_id and secret_access_key:
+            file_path = "s3://analytics-zoo-data/temp/abc/"
+            makedirs(file_path)
+            assert exists(file_path)
+            import boto3
+            s3_client = boto3.Session(
+                aws_access_key_id=access_key_id,
+                aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            path_parts = file_path.split("://")[1].split('/')
+            bucket = path_parts.pop(0)
+            key = "/".join(path_parts)
+            s3_client.delete_object(Bucket=bucket, Key=key)
