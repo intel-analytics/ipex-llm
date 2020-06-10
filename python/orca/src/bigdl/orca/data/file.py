@@ -23,7 +23,7 @@ def open_text(path):
         import pyarrow as pa
         fs = pa.hdfs.connect()
         with fs.open(path, 'rb') as f:
-            lines = f.read().decode("utf-8").split("\n")
+            lines = f.read().decode("utf-8").strip().split("\n")
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -35,7 +35,7 @@ def open_text(path):
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
         data = s3_client.get_object(Bucket=bucket, Key=key)
-        lines = data["Body"].read().decode("utf-8").split("\n")
+        lines = data["Body"].read().decode("utf-8").strip().split("\n")
     else:  # Local path
         lines = []
         for line in open(path):
@@ -136,3 +136,29 @@ def makedirs(path):
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
     else:
         return os.makedirs(path)
+
+
+def write_text(path, text):
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        fs = pa.hdfs.connect()
+        with fs.open(path, 'wb') as f:
+            result = f.write(text.encode('utf-8'))
+            f.close()
+            return result
+    elif path.startswith("s3"):   # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        return s3_client.put_object(Bucket=bucket, Key=key, Body=text)
+    else:
+        with open(path, 'w') as f:
+            result = f.write(text)
+            f.close()
+            return result
