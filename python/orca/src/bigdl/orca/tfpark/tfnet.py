@@ -176,18 +176,11 @@ class TFNet(Layer):
                                self.value,
                                dataset.get_evaluation_data(),
                                batch_size, val_methods)
-        if isinstance(dataset, TFDataDataset):
+        if isinstance(dataset, TFDataset):
             return callZooFunc(self.bigdl_type,
                                "tfnetEvaluate",
                                self.value,
                                dataset.get_evaluation_data(),
-                               val_methods)
-        if isinstance(dataset, TFDataset):
-            return callZooFunc(self.bigdl_type,
-                               "modelEvaluate",
-                               self.value,
-                               dataset.get_evaluation_data(),
-                               batch_size,
                                val_methods)
         else:
             return callZooFunc(self.bigdl_type,

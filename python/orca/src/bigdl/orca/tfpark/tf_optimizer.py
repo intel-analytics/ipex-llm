@@ -52,10 +52,11 @@ class TFValidationMethod(JavaValue):
 
 
 class StatelessMetric(JavaValue):
-    def __init__(self, metric_name, idx):
+    def __init__(self, metric_name, idx, count_idx):
         self.name = metric_name
         self.idx = idx
-        JavaValue.__init__(self, None, "float", metric_name, idx)
+        self.count_idx = count_idx
+        JavaValue.__init__(self, None, "float", metric_name, idx, count_idx)
 
 
 class BigDLMetric(object):
@@ -145,18 +146,18 @@ class TFModel(object):
         return grads
 
     @staticmethod
-    def _process_metrics(graph, metrics):
+    def _process_metrics(graph, metrics, real_batch_size):
 
-        outputs = []
+        outputs = [real_batch_size]
         val_methods = None
         if metrics is not None:
-            idx = 0
+            idx = 1
             val_methods = []
             for metric_name in metrics:
                 metric = metrics[metric_name]
                 if tf.is_numeric_tensor(metric):
                     outputs.append(metric)
-                    val_methods.append(StatelessMetric(metric_name, idx))
+                    val_methods.append(StatelessMetric(metric_name, idx, 0))
                     idx += 1
                 else:
                     outputs += metric.outputs
@@ -286,13 +287,12 @@ class TFModel(object):
     @staticmethod
     def export(model_dir, loss_tensor, sess, inputs, labels, predictions, grads, variables, graph,
                tensors_with_value, metrics, updates, train_op=None):
-        inputs, additional_inputs, additional_values = \
-            TFModel._expand_inputs(inputs, tensors_with_value, loss_tensor)
-        metric_tensors, val_methods = TFModel._process_metrics(graph, metrics)
-        grads = TFModel._process_grads(graph, grads)
-
         with graph.as_default():
             batch_size_tensor = tf.to_float(tf.shape(inputs[0])[0])
+        inputs, additional_inputs, additional_values = \
+            TFModel._expand_inputs(inputs, tensors_with_value, loss_tensor)
+        metric_tensors, val_methods = TFModel._process_metrics(graph, metrics, batch_size_tensor)
+        grads = TFModel._process_grads(graph, grads)
 
         trainable_variables, trainable_variable_placeholders, trainable_assign, \
             extra_variables, extra_variable_assign_placeholders, \

@@ -772,11 +772,10 @@ class TFDataDataset(TFDataset):
 
     def get_evaluation_data(self):
 
-        feature_length = len(nest.flatten(self.tensor_structure[0]))
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDatasetEval",
                              self.graph_def, self._train_init_op_name, self.table_init_name,
                              self._train_output_names,
-                             self.output_types, self.shard_index.name, feature_length)
+                             self.output_types, self.shard_index.name)
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
@@ -898,7 +897,9 @@ class TFTextDataset(TFDataset):
         return rdd_wrapper.value().toJavaRDD()
 
     def get_evaluation_data(self):
-        return self.text_set.get_samples()
+        rdd = self.text_set.get_samples()
+        rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
+        return rdd_wrapper.value().toJavaRDD()
 
     def get_training_data(self):
         sample_rdd = self.text_set.get_samples().map(
@@ -942,7 +943,8 @@ class TFImageDataset(TFDataset):
         return self.image_set
 
     def get_evaluation_data(self):
-        return self.image_set.to_image_frame()
+        return self.image_set.to_image_frame()\
+            .transform(MergeFeatureLabelImagePreprocessing())
 
     def get_training_data(self):
         fs = FeatureSet.image_set(self.image_set,
@@ -989,10 +991,9 @@ class TFNdarrayDataset(TFDataset):
         return rdd_wrapper.value().toJavaRDD()
 
     def get_evaluation_data(self):
-        if isinstance(self.tensor_structure, tuple):
-            return self.rdd.map(
-                lambda t: Sample.from_ndarray(nest.flatten(t[0]), nest.flatten(t[1])))
-        return self.rdd.map(lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
+        rdd = self.rdd.map(lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
+        rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
+        return rdd_wrapper.value().toJavaRDD()
 
     def get_training_data(self):
         sample_rdd = self.rdd.map(
