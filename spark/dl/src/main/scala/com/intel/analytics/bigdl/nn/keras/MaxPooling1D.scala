@@ -38,6 +38,8 @@ import scala.reflect.ClassTag
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class MaxPooling1D[T: ClassTag](
    poolLength: Int = 2,
    stride: Int = -1,

@@ -73,6 +73,8 @@ trait KerasLayerSerializable extends ContainerSerializable with TKerasSerializer
  * @param layer a torch style layer
  * @return a keras compatible layer
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class KerasIdentityWrapper[T: ClassTag]
 (val layer: AbstractModule[Activity, Activity, T])(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](null) {
@@ -92,6 +94,8 @@ class KerasIdentityWrapper[T: ClassTag]
  *   i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
  * @return a keras compatible layer
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class KerasLayerWrapper[T: ClassTag]
 (val torchLayer: AbstractModule[Activity, Activity, T],
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
@@ -162,6 +166,8 @@ private[bigdl] object KerasLayer {
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  * @param batchInputShape the first dim is batch
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
 (batchInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends TContainer[A, B, T] {
 

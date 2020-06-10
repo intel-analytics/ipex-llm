@@ -40,6 +40,8 @@ import scala.reflect.ClassTag
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class ZeroPadding2D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1, 1, 1),
    val dimOrdering: DataFormat = DataFormat.NCHW,

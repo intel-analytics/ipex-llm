@@ -23,6 +23,10 @@ from bigdl.nn.layer import SharedStaticUtils, Container
 
 
 class KerasModel(KerasLayer, Container, SharedStaticUtils):
+    """
+    .. note:: `bigdl.nn.keras` is deprecated in 0.11.
+    This will be removed in future releases.
+    """
     def __convert_optim_method(self, optimizer):
         optimizer = optimizer.lower()
         if optimizer == "adagrad":
@@ -200,6 +204,9 @@ class Sequential(KerasModel):
 
     >>> sequential = Sequential(name="seq1")
     creating: createKerasSequential
+
+    .. note:: `bigdl.nn.keras` is deprecated in 0.11.
+    This will be removed in future releases.
     """
     def __init__(self, jvalue=None, **kwargs):
         super(Sequential, self).__init__(jvalue, **kwargs)
@@ -228,6 +235,9 @@ class Model(KerasModel):
     input: An input node or a list of input nodes.
     output: An output node or a list of output nodes.
     name: String to specify the name of the graph model. Default is None.
+
+    .. note:: `bigdl.nn.keras` is deprecated in 0.11.
+    This will be removed in future releases.
     """
     def __init__(self, input, output, jvalue=None,  **kwargs):
         super(Model, self).__init__(jvalue,

@@ -36,6 +36,8 @@ import scala.reflect.ClassTag
  *                in order '(left_pad, right_pad)'. Default is (1, 1).
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class ZeroPadding1D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1),
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

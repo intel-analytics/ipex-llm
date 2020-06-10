@@ -53,6 +53,8 @@ import scala.reflect.ClassTag
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class AtrousConvolution1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,

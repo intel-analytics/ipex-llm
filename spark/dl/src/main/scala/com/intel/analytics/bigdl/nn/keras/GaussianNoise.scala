@@ -36,6 +36,8 @@ import scala.reflect.ClassTag
  * @param sigma Double, standard deviation of the noise distribution.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class GaussianNoise[T: ClassTag](
    val sigma: Double,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

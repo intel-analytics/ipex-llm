@@ -35,6 +35,8 @@ import scala.reflect.ClassTag
  *                 at the beginning and end of the cropping dimension. Default is (1, 1).
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class Cropping1D[T: ClassTag](
    val cropping: Array[Int] = Array(1, 1),
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

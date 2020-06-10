@@ -36,6 +36,8 @@ import scala.reflect.ClassTag
  *             Indexing starts at 1.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class Permute[T: ClassTag](
    val dims: Array[Int],
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

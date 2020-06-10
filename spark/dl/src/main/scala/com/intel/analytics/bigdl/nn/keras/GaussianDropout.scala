@@ -34,6 +34,8 @@ import scala.reflect.ClassTag
  *          The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class GaussianDropout[T: ClassTag](
    val p: Double,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

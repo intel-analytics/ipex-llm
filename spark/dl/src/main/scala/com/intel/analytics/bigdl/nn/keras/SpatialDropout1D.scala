@@ -40,6 +40,8 @@ import scala.reflect.ClassTag
  * @param p Fraction of the input units to drop. Double between 0 and 1.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class SpatialDropout1D[T: ClassTag](
    val p: Double = 0.5,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
