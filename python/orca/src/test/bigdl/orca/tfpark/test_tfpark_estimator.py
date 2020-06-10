@@ -57,7 +57,7 @@ class TestTFParkEstimator(ZooTestCase):
             rdd_y = self.sc.parallelize(y)
 
             rdd = rdd_x.zip(rdd_y)
-            if mode == tf.estimator.ModeKeys.TRAIN or mode == tf.estimator.ModeKeys.EVAL:
+            if mode == tf.estimator.ModeKeys.TRAIN:
                 dataset = TFDataset.from_rdd(rdd,
                                              features=(tf.float32, [10]),
                                              labels=(tf.int32, []),

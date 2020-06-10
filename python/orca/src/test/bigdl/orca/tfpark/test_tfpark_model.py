@@ -32,6 +32,7 @@ class TestTFParkModel(ZooTestCase):
         super(TestTFParkModel, self).setup_method(method)
 
     def create_model(self):
+        tf.set_random_seed(1)
         data = tf.keras.layers.Input(shape=[10])
 
         x = tf.keras.layers.Flatten()(data)
@@ -185,7 +186,7 @@ class TestTFParkModel(ZooTestCase):
 
         results_after = model.evaluate(x, y)
 
-        assert results_pre[0] > results_after[0]
+        assert results_pre["loss"] > results_after["loss"]
 
     def test_evaluate_with_ndarray_distributed(self):
 
@@ -194,13 +195,13 @@ class TestTFParkModel(ZooTestCase):
 
         x, y = self.create_training_data()
 
-        results_pre = model.evaluate(x, y)
+        results_pre = model.evaluate(x, y, batch_per_thread=1)
 
         model.fit(x, y, batch_size=4, epochs=10)
 
-        results_after = model.evaluate(x, y, distributed=True)
+        results_after = model.evaluate(x, y, distributed=True, batch_per_thread=1)
 
-        assert results_pre[0] > results_after[0]
+        assert results_pre["loss"] > results_after["loss"]
 
     def test_evaluate_and_distributed_evaluate(self):
 
@@ -213,8 +214,8 @@ class TestTFParkModel(ZooTestCase):
 
         results_after = model.evaluate(x, y, distributed=True)
 
-        assert np.square(results_pre[0] - results_after[0]) < 0.000001
-        assert np.square(results_pre[1] - results_after[1]) < 0.000001
+        assert np.square(results_pre["acc"] - results_after["acc Top1Accuracy"]) < 0.000001
+        assert np.square(results_pre["loss"] - results_after["loss"]) < 0.000001
 
     def test_evaluate_with_dataset(self):
 
@@ -229,8 +230,8 @@ class TestTFParkModel(ZooTestCase):
 
         results_after = model.evaluate(dataset)
 
-        assert np.square(results_pre[0] - results_after[0]) < 0.000001
-        assert np.square(results_pre[1] - results_after[1]) < 0.000001
+        assert np.square(results_pre["acc"] - results_after["acc Top1Accuracy"]) < 0.000001
+        assert np.square(results_pre["loss"] - results_after["loss"]) < 0.000001
 
     def test_predict_with_ndarray(self):
 
@@ -245,7 +246,7 @@ class TestTFParkModel(ZooTestCase):
 
         acc = np.average((pred_y == y))
 
-        assert np.square(acc - results_pre[1]) < 0.000001
+        assert np.square(acc - results_pre["acc"]) < 0.000001
 
     def test_predict_with_ndarray_distributed(self):
 
@@ -260,7 +261,9 @@ class TestTFParkModel(ZooTestCase):
 
         acc = np.average((pred_y == y))
 
-        assert np.square(acc - results_pre[1]) < 0.000001
+        print(results_pre)
+
+        assert np.square(acc - results_pre["acc"]) < 0.000001
 
     def test_predict_with_dataset(self):
 
@@ -276,7 +279,7 @@ class TestTFParkModel(ZooTestCase):
 
         acc = np.average((pred_y == y))
 
-        assert np.square(acc - results_pre[1]) < 0.000001
+        assert np.square(acc - results_pre["acc"]) < 0.000001
 
     # move the test here to avoid keras session to be closed (not sure about why)
     def test_tf_optimizer_with_sparse_gradient_using_keras(self):
