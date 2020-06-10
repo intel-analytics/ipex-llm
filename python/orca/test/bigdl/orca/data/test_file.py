@@ -18,7 +18,7 @@ import os.path
 import shutil
 import tempfile
 
-from zoo.orca.data.file import open_image, open_text, load_numpy, exists, makedirs
+from zoo.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text
 
 
 class TestFile:
@@ -98,7 +98,27 @@ class TestFile:
             s3_client = boto3.Session(
                 aws_access_key_id=access_key_id,
                 aws_secret_access_key=secret_access_key).client('s3', verify=False)
-            path_parts = file_path.split("://")[1].split('/')
-            bucket = path_parts.pop(0)
-            key = "/".join(path_parts)
-            s3_client.delete_object(Bucket=bucket, Key=key)
+            s3_client.delete_object(Bucket='analytics-zoo-data', Key='temp/abc/')
+
+    def test_write_text_local(self):
+        temp = tempfile.mkdtemp()
+        path = os.path.join(temp, "test.txt")
+        write_text(path, "abc\n")
+        text = open_text(path)
+        shutil.rmtree(temp)
+        assert text == ['abc']
+
+    def test_write_text_s3(self):
+        access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        if access_key_id and secret_access_key:
+            file_path = "s3://analytics-zoo-data/test.txt"
+            text = 'abc\ndef\n'
+            write_text(file_path, text)
+            lines = open_text(file_path)
+            assert lines == ['abc', 'def']
+            import boto3
+            s3_client = boto3.Session(
+                aws_access_key_id=access_key_id,
+                aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            s3_client.delete_object(Bucket='analytics-zoo-data', Key='test.txt')
