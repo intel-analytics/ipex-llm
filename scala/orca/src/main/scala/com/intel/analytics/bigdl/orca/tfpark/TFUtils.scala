@@ -311,13 +311,13 @@ class TFValidationMethod(val valMethod: ValidationMethod[Float],
   }
 }
 
-class StatelessMetric(name: String, idx: Int) extends ValidationMethod[Float] {
+class StatelessMetric(name: String, idx: Int, countIdx: Int) extends ValidationMethod[Float] {
   override def apply(output: Activity, target: Activity): ValidationResult = {
     // the output layout [grads..., metrics]
     val outputT = output.toTable
 
     val value = outputT[Tensor[Float]](idx + 1).value()
-    val count = outputT[Tensor[Float]](outputT.length() - 1).value().toInt
+    val count = outputT[Tensor[Float]](countIdx + 1).value().toInt
 
     new ContiguousResult(value * count, count, name)
   }

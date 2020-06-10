@@ -72,8 +72,8 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     new TFValidationMethod(valMethod, name, outputIndices, labelIndices)
   }
 
-  def createStatelessMetric(name: String, idx: Int): StatelessMetric = {
-    new StatelessMetric(name, idx)
+  def createStatelessMetric(name: String, idx: Int, countIdx: Int): StatelessMetric = {
+    new StatelessMetric(name, idx, countIdx)
   }
 
   def createGanOptimMethod(dOptim: OptimMethod[T],
@@ -174,13 +174,21 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                                           initTableOp: String,
                                           outputNames: JList[String],
                                           outputTypes: JList[Int],
-                                          shardIndex: String,
-                                          featureLength: Int): RDDWrapper[TFMiniBatch] = {
+                                          shardIndex: String): RDDWrapper[TFMiniBatch] = {
     val rdd = createMiniBatchRDDFromTFDataset(graph, initIteratorOp, initTableOp, outputNames,
       outputTypes, shardIndex).value
-    val resultRDD = rdd.map(batch => TFMiniBatch(batch.input.slice(0, featureLength),
-      batch.input.slice(featureLength, batch.input.length)))
-    RDDWrapper(resultRDD)
+    RDDWrapper(rdd)
+  }
+
+  def createMiniBatchRDDFromTFDatasetEval(graphRDD: JavaRDD[Array[Byte]],
+                                          initIteratorOp: String,
+                                          initTableOp: String,
+                                          outputNames: JList[String],
+                                          outputTypes: JList[Int],
+                                          shardIndex: String): RDDWrapper[TFMiniBatch] = {
+    val rdd = createMiniBatchRDDFromTFDataset(graphRDD, initIteratorOp, initTableOp, outputNames,
+      outputTypes, shardIndex).value
+    RDDWrapper(rdd)
   }
 
   def createTFDataFeatureSet(graph: Array[Byte],
