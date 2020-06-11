@@ -112,6 +112,35 @@ def test_estimator_graph_fit(estimator_for_spark_fixture):
             validation_data=data_shard)
 
 
+def test_estimator_graph_evaluate(estimator_for_spark_fixture):
+    import zoo.orca.data.pandas
+    tf.reset_default_graph()
+
+    model = SimpleModel()
+    sc = estimator_for_spark_fixture
+    file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+    data_shard = zoo.orca.data.pandas.read_csv(file_path, sc)
+
+    def transform(df):
+        result = {
+            "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+            "y": df['label'].to_numpy()
+        }
+        return result
+
+    data_shard = data_shard.transform_shard(transform)
+
+    est = Estimator.from_graph(
+        inputs=[model.user, model.item],
+        labels=[model.label],
+        loss=model.loss,
+        optimizer=tf.train.AdamOptimizer(),
+        metrics={"loss": model.loss})
+    result = est.evaluate(data_shard)
+    assert "loss" in result
+    print(result)
+
+
 def test_estimator_graph_predict(estimator_for_spark_fixture):
     import zoo.orca.data.pandas
     tf.reset_default_graph()
