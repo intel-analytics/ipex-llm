@@ -30,9 +30,11 @@ def chunk(lst, n):
         yield lst[c * size:(c + 1) * size] + extra
 
 
-def flatten(list_of_list):
-    flattend = [item for sublist in list_of_list for item in sublist]
-    return flattend
+def flatten(list_input):
+    if any(isinstance(i, list) for i in list_input):
+        return [item for sublist in list_input for item in sublist]
+    else:
+        return list_input
 
 
 def list_s3_file(file_path, file_type, env):
@@ -87,3 +89,30 @@ def extract_one_path(file_path, file_type, env):
             file_paths = [file for file in file_paths
                           if os.path.splitext(file)[1] == "." + file_type]
     return file_paths
+
+
+def get_node_ip():
+    """
+    This function is ported from ray to get the ip of the current node. In the settings where
+    Ray is not involved, calling ray.services.get_node_ip_address would introduce Ray overhead.
+    """
+    import socket
+    import errno
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # This command will raise an exception if there is no internet connection.
+        s.connect(("8.8.8.8", 80))
+        node_ip_address = s.getsockname()[0]
+    except OSError as e:
+        node_ip_address = "127.0.0.1"
+        # [Errno 101] Network is unreachable
+        if e.errno == errno.ENETUNREACH:
+            try:
+                # try get node ip address from host name
+                host_name = socket.getfqdn(socket.gethostname())
+                node_ip_address = socket.gethostbyname(host_name)
+            except Exception:
+                pass
+    finally:
+        s.close()
+    return node_ip_address

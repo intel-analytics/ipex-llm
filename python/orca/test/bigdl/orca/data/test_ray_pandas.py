@@ -70,7 +70,7 @@ class TestRayXShards(ZooTestCase):
         data_shard.repartition(1)
         partitions2 = data_shard.get_partitions()
         assert len(partitions2) == 1, "number of partition should be 1"
-        partition_data = ray.get(partitions2[0].get_data())
+        partition_data = partitions2[0].get_data()
         assert len(partition_data) == 2, "partition 0 should have 2 objects"
 
     def test_transform_shard(self):
