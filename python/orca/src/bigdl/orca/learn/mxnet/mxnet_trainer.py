@@ -15,7 +15,6 @@
 #
 
 import os
-import logging
 import subprocess
 import ray.services
 from dmlc_tracker.tracker import get_host_ip
@@ -80,8 +79,6 @@ class MXNetTrainer(object):
                  test_data=None, validation_metrics_creator=None,
                  num_workers=1, num_servers=None, runner_cores=None):
         self.config = config
-        self.train_data = train_data
-        self.test_data = test_data
         self.model_creator = model_creator
         self.loss_creator = loss_creator
         self.validation_metrics_creator = validation_metrics_creator
@@ -89,6 +86,22 @@ class MXNetTrainer(object):
         self.num_workers = num_workers
         self.num_servers = num_servers if num_servers else self.num_workers
         self.train_resize_batch_num = train_resize_batch_num
+
+        from zoo.orca.data import RayXShards, SparkXShards
+        if isinstance(train_data, SparkXShards):
+            train_data = train_data.repartition(self.num_workers).to_ray()
+            if test_data:
+                assert isinstance(test_data, SparkXShards)
+                test_data = test_data.repartition(self.num_workers).to_ray()
+        if isinstance(train_data, RayXShards):
+            if train_data.num_partitions() != self.num_workers:
+                train_data.repartition(self.num_workers)
+            if test_data:
+                assert isinstance(test_data, RayXShards)
+                if test_data.num_partitions() != self.num_workers:
+                    test_data.repartition(self.num_workers)
+        self.train_data = train_data
+        self.test_data = test_data
 
         # Generate actor class
         # Add a dummy custom resource: _mxnet_worker and _mxnet_server to diff worker from server
@@ -100,23 +113,18 @@ class MXNetTrainer(object):
             if runner_cores else ray.remote(MXNetRunner)
 
         # Start runners: workers followed by servers
-        self.runners = [
+        self.workers = [
             Worker.remote()
             for i in range(self.num_workers)
         ]
-        self.runners += [
+        self.servers = [
             Server.remote()
             for i in range(self.num_servers)
         ]
 
-        # Compute URL for initializing distributed setup
-        ips = ray.get(
-            [runner.get_node_ip.remote() for runner in self.runners])
-        ports = ray.get(
-            [runner.find_free_port.remote() for runner in self.runners])
-        logger = logging.getLogger()
-        logger.info(ips)
-        logger.info(ports)
+        if isinstance(self.train_data, RayXShards):
+            self.workers = self.train_data.colocate_actors(self.workers)
+        self.runners = self.workers + self.servers
 
         env = {
             "DMLC_PS_ROOT_URI": str(get_host_ip()),
