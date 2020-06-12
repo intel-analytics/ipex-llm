@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from py4j.protocol import Py4JError
 
 from zoo.orca.data.utils import *
 from zoo.common.nncontext import init_nncontext
@@ -175,7 +176,11 @@ class SparkXShards(XShards):
 
     def uncache(self):
         self.user_cached = False
-        self.rdd.unpersist()
+        if self.is_cached():
+            try:
+                self.rdd.unpersist()
+            except Py4JError:
+                print("Try to unpersist an uncached rdd")
         return self
 
     def _uncache(self):

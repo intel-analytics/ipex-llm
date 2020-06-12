@@ -129,6 +129,8 @@ class TestSparkXShards(ZooTestCase):
         assert trans_data_shard.is_cached(), "trans_data_shard should be cached"
         shards_splits = trans_data_shard.split()
         assert not trans_data_shard.is_cached(), "shards_splits should be uncached"
+        trans_data_shard.uncache()
+        del trans_data_shard
         assert len(shards_splits) == 2
         assert shards_splits[0].is_cached(), "shards in shards_splits should be cached"
         data1 = shards_splits[0].collect()
