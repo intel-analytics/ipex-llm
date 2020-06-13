@@ -29,8 +29,8 @@ np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 property_path = os.path.join(os.path.split(__file__)[0],
                              "../../../../../zoo/target/classes/app.properties")
-data_url = "http://download.tensorflow.org"
-s3_url = "https://s3-ap-southeast-1.amazonaws.com"
+tensorflow_url = "http://download.tensorflow.org"
+data_url = "https://s3-ap-southeast-1.amazonaws.com"
 with open(property_path) as f:
     for _ in range(2):  # skip the first two lines
         next(f)
@@ -58,8 +58,8 @@ class TestInferenceModel(ZooTestCase):
     def test_load_openvino(self):
         local_path = self.create_temp_dir()
         model = InferenceModel(1)
-        model_url = s3_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml"
-        weight_url = s3_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin"
+        model_url = data_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml"
+        weight_url = data_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin"
         model_path = maybe_download("resnet_v1_50.xml",
                                     local_path, model_url)
         weight_path = maybe_download("resnet_v1_50.bin",
@@ -98,7 +98,7 @@ class TestInferenceModel(ZooTestCase):
     # def test_load_tf_openvino_ic(self):
     #     local_path = self.create_temp_dir()
     #     print(local_path)
-    #     url = data_url + "/models/resnet_v1_50_2016_08_28.tar.gz"
+    #     url = tensorflow_url + "/models/resnet_v1_50_2016_08_28.tar.gz"
     #     file_abs_path = maybe_download("resnet_v1_50_2016_08_28.tar.gz", local_path, url)
     #     tar = tarfile.open(file_abs_path, "r:gz")
     #     print("Extracting %s to %s" % (file_abs_path, local_path))
