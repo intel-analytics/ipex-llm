@@ -44,6 +44,10 @@ class TestSparkXShards(ZooTestCase):
         assert len(data) == 2, "number of shard should be 2"
         df = data[0]
         assert "location" in df.columns, "location is not in columns"
+        file_path = os.path.join(self.resource_path, "abc")
+        with self.assertRaises(Exception) as context:
+            xshards = zoo.orca.data.pandas.read_csv(file_path, self.sc)
+        self.assertTrue('The file path is invalid/empty' in str(context.exception))
 
     def test_read_local_json(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
