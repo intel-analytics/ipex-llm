@@ -51,6 +51,11 @@ class TestRayXShards(ZooTestCase):
         assert len(data) == 2, "number of shard should be 2"
         df = data[0]
         assert "value" in df.columns, "value is not in columns"
+        file_path = os.path.join(self.resource_path, "abc")
+        with self.assertRaises(Exception) as context:
+            xshards = zoo.orca.data.pandas.read_json(file_path, self.ray_ctx, orient='columns',
+                                                     lines=True)
+        self.assertTrue('The file path is invalid/empty' in str(context.exception))
 
     def test_read_s3(self):
         access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
@@ -64,7 +69,8 @@ class TestRayXShards(ZooTestCase):
 
     def test_repartition(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, self.ray_ctx)
+        data_shard = zoo.orca.data.pandas.read_json(file_path, self.ray_ctx, orient='columns',
+                                                    lines=True)
         partitions1 = data_shard.get_partitions()
         assert len(partitions1) == 2, "number of partition should be 2"
         data_shard.repartition(1)
