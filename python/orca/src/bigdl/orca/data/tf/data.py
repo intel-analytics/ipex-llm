@@ -71,14 +71,14 @@ class TFDataDataset2(TFDataset):
         self.shard_index_op_name = None
         self.validation_dataset = validation_dataset
 
-    def get_prediction_data(self):
+    def _get_prediction_data(self):
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
                              self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
                              self.output_names, self.output_types, self.shard_index_op_name)
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
-    def get_evaluation_data(self):
+    def _get_evaluation_data(self):
 
         feature_length = len(nest.flatten(self.tensor_structure[0]))
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDatasetEval",
@@ -88,13 +88,13 @@ class TFDataDataset2(TFDataset):
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
-    def get_training_data(self):
+    def _get_training_data(self):
         jvalue = callZooFunc("float", "createTFDataFeatureSet",
                              self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
                              self.output_names, self.output_types, self.shard_index_op_name)
         return FeatureSet(jvalue=jvalue)
 
-    def get_validation_data(self):
+    def _get_validation_data(self):
         if self.validation_dataset is not None:
             jvalue = callZooFunc("float", "createTFDataFeatureSet",
                                  self.val_rdd.map(lambda x: x[0]), self.init_op_name,
