@@ -16,6 +16,7 @@
 
 import numpy as np
 import sys
+import functools
 
 from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
 from bigdl.transform.vision.image import FeatureTransformer
@@ -271,27 +272,43 @@ class TFDataset(object):
         :return: an object that can be used for TFNet.predict
         e.g. an RDD of Sample or a ImageSet
         """
-        raise NotImplementedError
+        assert self.batch_per_thread > 0, "batch_per_thread must be set when used in prediction"
+        return self._get_prediction_data()
 
     def get_evaluation_data(self):
         """
         :return: an object that can be used for TFNet.evaluate,
         e.g. an RDD of Sample or a ImageSet
         """
-        raise NotImplementedError
+        assert self.batch_per_thread > 0, "batch_per_thread must be set when used in evaluation"
+        return self._get_evaluation_data()
 
     def get_training_data(self):
         """
         :return: an object that can be used to create a BigDL optimizer,
         e.g. an RDD of Sample or a DataSet
         """
-        raise NotImplementedError
+        assert self.batch_size > 0, "batch_size must be set when used in training"
+        return self._get_training_data()
 
     def get_validation_data(self):
         """
         :return: an object that can be used to set validation in a BigDL optimizer,
         e.g. an RDD of Sample or a DataSet
         """
+        assert self.batch_size > 0, "batch_size must be set when used in training"
+        return self._get_validation_data()
+
+    def _get_prediction_data(self):
+        raise NotImplementedError
+
+    def _get_evaluation_data(self):
+        raise NotImplementedError
+
+    def _get_training_data(self):
+        raise NotImplementedError
+
+    def _get_validation_data(self):
         raise NotImplementedError
 
     def get_num_partitions(self):
@@ -762,7 +779,7 @@ class TFDataDataset(TFDataset):
         self.graph = self.train_next_ops[0].graph
         self.graph_def = bytearray(self.graph.as_graph_def().SerializeToString())
 
-    def get_prediction_data(self):
+    def _get_prediction_data(self):
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
                              self.graph_def, self._train_init_op_name, self.table_init_name,
                              self._train_output_names,
@@ -770,7 +787,7 @@ class TFDataDataset(TFDataset):
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
-    def get_evaluation_data(self):
+    def _get_evaluation_data(self):
 
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDatasetEval",
                              self.graph_def, self._train_init_op_name, self.table_init_name,
@@ -779,13 +796,13 @@ class TFDataDataset(TFDataset):
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
-    def get_training_data(self):
+    def _get_training_data(self):
         jvalue = callZooFunc("float", "createTFDataFeatureSet",
                              self.graph_def, self._train_init_op_name, self.table_init_name,
                              self._train_output_names, self.output_types, self.shard_index.name)
         return FeatureSet(jvalue=jvalue)
 
-    def get_validation_data(self):
+    def _get_validation_data(self):
         if self.validation_dataset is not None:
             jvalue = callZooFunc("float", "createTFDataFeatureSet",
                                  self.graph_def, self._val_init_op_name, self.table_init_name,
@@ -804,18 +821,18 @@ class TFFeatureDataset(TFDataset):
         self.dataset = dataset
         self.validation_dataset = validation_dataset
 
-    def get_prediction_data(self):
+    def _get_prediction_data(self):
         raise Exception("TFFeatureDataset is only supported in training")
 
-    def get_evaluation_data(self):
+    def _get_evaluation_data(self):
         raise Exception("TFFeatureDataset is only supported in training")
 
-    def get_training_data(self):
+    def _get_training_data(self):
         fs = self.dataset.transform(MergeFeatureLabelFeatureTransformer())
         fs = fs.transform(SampleToMiniBatch(self.batch_size))
         return fs
 
-    def get_validation_data(self):
+    def _get_validation_data(self):
         if self.validation_dataset is not None:
             fs = self.validation_dataset.transform(
                 MergeFeatureLabelFeatureTransformer())
@@ -846,28 +863,28 @@ class TFBytesDataset(TFDataset):
         self.sequential_order = sequential_order
         self.shuffle = shuffle
 
-    def get_prediction_data(self):
+    def _get_prediction_data(self):
         jvalue = callZooFunc("float", "createMiniBatchRDDFromStringRDD",
                              self.train_rdd,
                              self.batch_per_thread)
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
-    def get_evaluation_data(self):
+    def _get_evaluation_data(self):
         jvalue = callZooFunc("float", "createMiniBatchRDDFromStringRDD",
                              self.train_rdd,
                              self.batch_per_thread)
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
-    def get_training_data(self):
+    def _get_training_data(self):
         jvalue = callZooFunc("float", "createMiniBatchFeatureSetFromStringRDD",
                              self.train_rdd,
                              self.batch_size, self.sequential_order, self.shuffle)
         fs = FeatureSet(jvalue)
         return fs
 
-    def get_validation_data(self):
+    def _get_validation_data(self):
         if self.validation_rdd is not None:
             jvalue = callZooFunc("float", "createMiniBatchFeatureSetFromStringRDD",
                                  self.validation_rdd,
@@ -889,19 +906,19 @@ class TFTextDataset(TFDataset):
         self.sequential_order = sequential_order
         self.shuffle = shuffle
 
-    def get_prediction_data(self):
+    def _get_prediction_data(self):
         rdd = self.text_set.get_samples().map(
             lambda sample: Sample.from_jtensor(features=sample.features,
                                                labels=JTensor.from_ndarray(np.array([0.0]))))
         rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
         return rdd_wrapper.value().toJavaRDD()
 
-    def get_evaluation_data(self):
+    def _get_evaluation_data(self):
         rdd = self.text_set.get_samples()
         rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
         return rdd_wrapper.value().toJavaRDD()
 
-    def get_training_data(self):
+    def _get_training_data(self):
         sample_rdd = self.text_set.get_samples().map(
             lambda sample: Sample.from_jtensor(features=sample.features + sample.labels,
                                                labels=JTensor.from_ndarray(np.array([0.0]))))
@@ -911,7 +928,7 @@ class TFTextDataset(TFDataset):
         fs = fs.transform(SampleToMiniBatch(self.batch_size))
         return fs
 
-    def get_validation_data(self):
+    def _get_validation_data(self):
         if self.validation_text_set is not None:
             sample_rdd = self.validation_text_set.get_samples().map(
                 lambda sample: Sample.from_jtensor(features=sample.features + sample.labels,
@@ -939,14 +956,14 @@ class TFImageDataset(TFDataset):
         self.sequential_order = sequential_order
         self.shuffle = shuffle
 
-    def get_prediction_data(self):
+    def _get_prediction_data(self):
         return self.image_set
 
-    def get_evaluation_data(self):
+    def _get_evaluation_data(self):
         return self.image_set.to_image_frame()\
             .transform(MergeFeatureLabelImagePreprocessing())
 
-    def get_training_data(self):
+    def _get_training_data(self):
         fs = FeatureSet.image_set(self.image_set,
                                   sequential_order=self.sequential_order,
                                   shuffle=self.shuffle)
@@ -956,7 +973,7 @@ class TFImageDataset(TFDataset):
 
         return fs
 
-    def get_validation_data(self):
+    def _get_validation_data(self):
         if self.validation_image_set is not None:
             fs = FeatureSet.image_set(self.validation_image_set,
                                       sequential_order=self.sequential_order,
@@ -985,17 +1002,17 @@ class TFNdarrayDataset(TFDataset):
         self.sequential_order = sequential_order
         self.shuffle = shuffle
 
-    def get_prediction_data(self):
+    def _get_prediction_data(self):
         rdd = self.rdd.map(lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
         rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
         return rdd_wrapper.value().toJavaRDD()
 
-    def get_evaluation_data(self):
+    def _get_evaluation_data(self):
         rdd = self.rdd.map(lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
         rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
         return rdd_wrapper.value().toJavaRDD()
 
-    def get_training_data(self):
+    def _get_training_data(self):
         sample_rdd = self.rdd.map(
             lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
         fs = FeatureSet.sample_rdd(sample_rdd,
@@ -1004,7 +1021,7 @@ class TFNdarrayDataset(TFDataset):
         fs = fs.transform(SampleToMiniBatch(self.batch_size))
         return fs
 
-    def get_validation_data(self):
+    def _get_validation_data(self):
         if self.val_rdd is not None:
             sample_rdd = self.val_rdd.map(
                 lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
