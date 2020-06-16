@@ -18,6 +18,7 @@ from py4j.protocol import Py4JError
 from zoo.orca.data.utils import *
 from zoo.common.nncontext import init_nncontext
 import os
+from pyspark.context import SparkContext
 
 
 class XShards(object):
@@ -351,3 +352,18 @@ class SparkXShards(XShards):
                                    object_store_address=object_store_address)
                       for id_ip in object_id_node_ips]
         return RayXShards(partitions)
+
+
+class SharedValue(object):
+    def __init__(self, data):
+        sc = init_nncontext()
+        self.broadcast_data = sc.broadcast(data)
+        self._value = None
+
+    @property
+    def value(self):
+        self._value = self.broadcast_data.value
+        return self._value
+
+    def unpersist(self):
+        self.broadcast_data.unpersist()
