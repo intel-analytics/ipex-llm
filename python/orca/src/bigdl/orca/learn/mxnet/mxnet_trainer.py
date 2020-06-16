@@ -37,7 +37,7 @@ class MXNetTrainer(object):
     You can specify "seed" in config to set random seed.
     You can specify "init" in seed to set model initializer.
 
-    :param train_data: An instance of xShards or a function that takes config and kv as arguments
+    :param train_data: An instance of XShards or a function that takes config and kv as arguments
     and returns an MXNet DataIter/DataLoader for training.
     You can specify data related configurations for this function in the config argument above.
     kv is an instance of MXNet distributed key-value store. kv.num_workers and kv.rank
@@ -56,7 +56,7 @@ class MXNetTrainer(object):
     a list of MXNet metrics or corresponding string representations of metrics, for example,
     'accuracy'. This is not needed if you don't need evaluation on the training data set.
 
-    :param test_data: An instance of xShards or a function that takes config and kv as arguments
+    :param test_data: An instance of XShards or a function that takes config and kv as arguments
     and returns an MXNet DataIter/DataLoader for testing.
     You can specify data related configurations for this function in the config argument above.
     kv is an instance of MXNet distributed key-value store. kv.num_workers and kv.rank
@@ -72,7 +72,7 @@ class MXNetTrainer(object):
     case it would be equal to the number of workers.
 
     :param runner_cores: The number of CPU cores allocated for each MXNet worker and server.
-    Default is None. You may need to specify this for better performance.
+    Default is None. You may need to specify this for better performance when you run in cluster.
     """
     def __init__(self, config, train_data, model_creator,
                  loss_creator=None, train_resize_batch_num=None, eval_metrics_creator=None,
@@ -124,7 +124,23 @@ class MXNetTrainer(object):
 
         if isinstance(self.train_data, RayXShards):
             self.workers = self.train_data.colocate_actors(self.workers)
+            train_data_list = self.train_data.get_partitions()
+            if self.test_data:
+                test_data_list = self.test_data.get_partitions()
+            else:
+                test_data_list = [None] * self.num_workers
+        else:
+            assert callable(self.train_data),\
+                "train_data should be either an instance of XShards or a callable function"
+            train_data_list = [self.train_data] * self.num_workers
+            if self.test_data:
+                assert callable(self.test_data),\
+                    "test_data should be either an instance of XShards or a callable function"
+            test_data_list = [self.test_data] * self.num_workers
         self.runners = self.workers + self.servers
+        # For servers, data is not used and thus just input a None value.
+        train_data_list += [None] * self.num_servers
+        test_data_list += [None] * self.num_servers
 
         env = {
             "DMLC_PS_ROOT_URI": str(get_host_ip()),
@@ -151,11 +167,11 @@ class MXNetTrainer(object):
 
         ray.get([
             runner.setup_distributed.remote(envs[i], self.config,
-                self.train_data,
+                train_data_list[i],
                 self.model_creator,
                 self.loss_creator,
                 self.validation_metrics_creator,
-                self.test_data,
+                test_data_list[i],
                 self.train_resize_batch_num,
                 self.eval_metrics_creator)
             for i, runner in enumerate(self.runners)

@@ -98,6 +98,17 @@ class TestMXNetSparkXShards(TestCase):
                                eval_metrics_creator=get_metrics, num_workers=2)
         trainer.train(nb_epoch=2)
 
+    def test_xshards_symbol_without_val(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
+        train_data_shard = zoo.orca.data.pandas.read_json(
+            train_file_path, get_spark_ctx(),
+            orient='records', lines=False).transform_shard(prepare_data_symbol)
+        config = create_trainer_config(batch_size=32, log_interval=1, seed=42)
+        trainer = MXNetTrainer(config, train_data_shard, get_symbol_model,
+                               eval_metrics_creator=get_metrics, num_workers=2)
+        trainer.train(nb_epoch=2)
+
     def test_xshards_gluon(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
         train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")

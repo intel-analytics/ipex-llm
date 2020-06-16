@@ -54,36 +54,25 @@ class MXNetRunner(object):
             if "seed" in self.config:
                 mx.random.seed(self.config["seed"])
 
-            from zoo.orca.data import RayXShards
-            if isinstance(train_data, RayXShards):
-                # Retrieve train data for RayXShards
-                train_partition_data = train_data.get_partitions()[self.kv.rank].get_data()
-                data, label = get_data_label(train_partition_data)
+            from zoo.orca.data.shard import RayPartition
+            if isinstance(train_data, RayPartition):
+                data, label = get_data_label(train_data.get_data())
                 self.train_data = mx.io.NDArrayIter(data=data, label=label,
                                                     batch_size=config["batch_size"],
                                                     shuffle=True)
                 if train_resize_size is not None:
                     self.train_data = mx.io.ResizeIter(self.train_data, train_resize_size)
-                # retrieve val data
                 if test_data is None:
                     self.val_data = None
                 else:
-                    assert isinstance(test_data, RayXShards),\
-                        "Test data should be an instance of RayXShards, please check your input"
-                    val_partition_data = test_data.get_partitions()[self.kv.rank].get_data()
-                    val_data, val_label = get_data_label(val_partition_data)
+                    val_data, val_label = get_data_label(test_data.get_data())
                     self.val_data = mx.io.NDArrayIter(data=val_data,
                                                       label=val_label,
                                                       batch_size=config["batch_size"],
                                                       shuffle=True)
-            else:
-                # data_creator
-                assert callable(train_data), "Train data should be an instance of xShards or " \
-                                             "a callable function, please check your input"
+            else:  # data_creator functions
                 self.train_data = train_data(self.config, self.kv)
                 if test_data is not None:
-                    assert callable(test_data), "Test data should be an instance of xShards or " \
-                                                "a callable function, please check your input"
                     self.val_data = test_data(self.config, self.kv)
                 else:
                     self.val_data = None
