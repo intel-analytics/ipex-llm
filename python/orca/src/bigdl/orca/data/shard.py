@@ -317,6 +317,7 @@ class SparkXShards(XShards):
     def __del__(self):
         self.uncache()
 
+    # Tested on pyarrow 0.17.0; 0.16.0 would get errors.
     def to_ray(self):
         import random
         import string
