@@ -4,6 +4,8 @@
 
 **Meetup:**
 
+* Cluster Serving Introduction and Use Cases, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/271100667/), June 12 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/ClusterServing?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0612%20Cluster-Serving-Presentation.pdf))
+
 * BigDL: A Distributed Deep Learning Framework for Big Data, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/270802719/), May 29 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/BigDL_socc_qx_final40659?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0529%20BigDL%20A%20Distributed%20Deep%20Learning%20Framework%20for%20Big%20Data.pdf))
 
 * Building AI to play the FIFA video game using distributed TensorFlow On Analytics Zoo, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/270598470/), May 14 2020 ([Video](https://www.slidestalk.com/AliSpark/fifa_computer_player_trained_by_analytics_zoo?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0514%20Building%20AI%20to%20play%20the%20FIFA%20video%20game%20using%20distributed%20TensorFlow%20On%20Analytics%20Zoo.pdf))
