@@ -166,7 +166,7 @@ class TestTFParkEstimator(ZooTestCase):
         def input_fn(mode):
             import os
             resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
-            if mode == tf.estimator.ModeKeys.TRAIN or mode == tf.estimator.ModeKeys.EVAL:
+            if mode == tf.estimator.ModeKeys.TRAIN:
                 image_folder = os.path.join(resource_path, "cat_dog")
                 image_set = ImageSet.read(image_folder, with_label=True, sc=self.sc,
                                           one_based_label=False)
@@ -180,6 +180,20 @@ class TestTFParkEstimator(ZooTestCase):
                                                    image=(tf.float32, [224, 224, 3]),
                                                    label=(tf.int32, [1]),
                                                    batch_size=8)
+            elif mode == tf.estimator.ModeKeys.EVAL:
+                image_folder = os.path.join(resource_path, "cat_dog")
+                image_set = ImageSet.read(image_folder, with_label=True, sc=self.sc,
+                                          one_based_label=False)
+                transformer = ChainedPreprocessing([ImageResize(256, 256),
+                                                    ImageRandomCrop(224, 224, True),
+                                                    ImageMatToTensor(format="NHWC"),
+                                                    ImageSetToSample(input_keys=["imageTensor"],
+                                                                     target_keys=["label"])])
+                image_set = image_set.transform(transformer)
+                dataset = TFDataset.from_image_set(image_set,
+                                                   image=(tf.float32, [224, 224, 3]),
+                                                   label=(tf.int32, [1]),
+                                                   batch_per_thread=8)
             else:
                 image_folder = os.path.join(resource_path, "cat_dog/*/*")
                 image_set = ImageSet.read(image_folder, with_label=False, sc=self.sc,
