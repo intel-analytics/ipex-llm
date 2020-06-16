@@ -13,11 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Some portions of this file Copyright (c) 2017, Maxpoint
+# and licensed under the BSD license.
+#
 
 from bigdl.util.common import *
 import warnings
 import multiprocessing
 import os
+
+import threading
+import sys
 
 
 def init_spark_on_local(cores=2, conf=None, python_location=None, spark_log_level="WARN",
@@ -106,6 +112,55 @@ def init_spark_on_yarn(hadoop_conf,
     return sc
 
 
+class ZooContextMeta(type):
+
+    _log_output = False
+
+    @property
+    def log_output(cls):
+        """
+        Whether to redirect Spark driver JVM's stdout and stderr to the current
+        python process. This is useful when running Analytics Zoo in jupyter notebook.
+        Default to False. Needs to be set before initializing SparkContext.
+        """
+        return cls._log_output
+
+    @log_output.setter
+    def log_output(cls, value):
+        if SparkContext._active_spark_context is not None:
+            raise AttributeError("log_output cannot be set after SparkContext is created."
+                                 " Please set it before init_nncontext, init_spark_on_local"
+                                 "or init_spark_on_yarn")
+        cls._log_output = value
+
+
+class ZooContext(metaclass=ZooContextMeta):
+    pass
+
+
+# The following function copied from
+# https://github.com/Valassis-Digital-Media/spylon-kernel/blob/master/
+# spylon_kernel/scala_interpreter.py
+def _read_stream(fd, fn):
+    """Reads bytes from a file descriptor, utf-8 decodes them, and passes them
+    to the provided callback function on the next IOLoop tick.
+    Assumes fd.read will block and should be used in a thread.
+    Parameters
+    ----------
+    fd : file
+        File descriptor to read
+    fn : callable(str) -> None
+        Callback function that handles chunks of text
+    """
+    while True:
+        # Specify a max read size so the read doesn't block indefinitely
+        # Using a value less than the typical default max pipe size
+        # and greater than a single system page.
+        buff = fd.read(8192)
+        if buff:
+            fn(buff.decode('utf-8'))
+
+
 def init_nncontext(conf=None, redirect_spark_log=True):
     """
     Creates or gets a SparkContext with optimized configuration for BigDL performance.
@@ -117,10 +172,53 @@ def init_nncontext(conf=None, redirect_spark_log=True):
 
     :param conf: User defined Spark conf
     """
+
+    # The following code copied and modified from
+    # https://github.com/Valassis-Digital-Media/spylon-kernel/blob/master/
+    # spylon_kernel/scala_interpreter.py
+    if ZooContext.log_output:
+        import subprocess
+        import pyspark.java_gateway
+        spark_jvm_proc = None
+
+        def Popen(*args, **kwargs):
+            """Wraps subprocess.Popen to force stdout and stderr from the child process
+            to pipe to this process without buffering.
+            """
+            nonlocal spark_jvm_proc
+            # Override these in kwargs to avoid duplicate value errors
+            # Set streams to unbuffered so that we read whatever bytes are available
+            # when ready, https://docs.python.org/3.6/library/subprocess.html#popen-constructor
+            kwargs['bufsize'] = 0
+            # Capture everything from stdout for display in the notebook
+            kwargs['stdout'] = subprocess.PIPE
+            # Optionally capture stderr, otherwise it'll go to the kernel log
+            kwargs['stderr'] = subprocess.PIPE
+            spark_jvm_proc = subprocess.Popen(*args, **kwargs)
+            return spark_jvm_proc
+
+        pyspark.java_gateway.Popen = Popen
+
     if isinstance(conf, six.string_types):
         sc = getOrCreateSparkContext(conf=None, appName=conf)
     else:
         sc = getOrCreateSparkContext(conf=conf)
+
+    if ZooContext.log_output:
+        if spark_jvm_proc.stdout is not None:
+            stdout_reader = threading.Thread(target=_read_stream,
+                                             daemon=True,
+                                             kwargs=dict(
+                                                 fd=spark_jvm_proc.stdout,
+                                                 fn=sys.stdout.write))
+            stdout_reader.start()
+        if spark_jvm_proc.stderr is not None:
+            stderr_reader = threading.Thread(target=_read_stream,
+                                             daemon=True,
+                                             kwargs=dict(
+                                                 fd=spark_jvm_proc.stderr,
+                                                 fn=sys.stderr.write))
+            stderr_reader.start()
     check_version()
     if redirect_spark_log:
         redire_spark_logs()
@@ -135,6 +233,7 @@ def getOrCreateSparkContext(conf=None, appName=None):
     :param conf: combining bigdl configs into spark conf
     :return: SparkContext
     """
+
     with SparkContext._lock:
         if SparkContext._active_spark_context is None:
             spark_conf = init_spark_conf() if conf is None else conf
