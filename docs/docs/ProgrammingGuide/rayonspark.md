@@ -28,7 +28,7 @@ source activate zoo
 pip install analytics-zoo[ray]
 ```
 
-Note that the essential dependencies (including `ray==0.8.4`, `psutil`, `aiohttp`, `setproctitle`) will be installed by specifying the extras key `[ray]` when you pip install analytics-zoo.
+Note that the essential dependencies (including `ray==0.8.4`, `psutil`, `aiohttp`, `setproctitle`, `pyarrow==0.17.0`) will be installed by specifying the extras key `[ray]` when you pip install analytics-zoo.
 
 4) Download JDK8 and set the environment variable: JAVA_HOME (recommended).
 
@@ -76,18 +76,18 @@ ray_ctx = RayContext(sc=sc, object_store_memory="5g")
 ray_ctx.init()
 
 @ray.remote
-class TestRay():
-    def hostname(self):
-        import socket
-        return socket.gethostname()
+class Counter(object):
+      def __init__(self):
+          self.n = 0
 
-    def ip(self):
-        import ray.services as rservices
-        return rservices.get_node_ip_address()
+      def increment(self):
+          self.n += 1
+          return self.n
 
 
-actors = [TestRay.remote() for i in range(0, slave_num)]
-print(ray.get([actor.hostname.remote() for actor in actors]))
-print(ray.get([actor.ip.remote() for actor in actors]))
+counters = [Counter.remote() for i in range(5)]
+print(ray.get([c.increment.remote() for c in counters]))
+
 ray_ctx.stop()
+sc.stop()
 ```
