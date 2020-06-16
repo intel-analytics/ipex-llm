@@ -40,6 +40,20 @@ transform_shard(func, *args)
 
 This method would parallelly pre-process each element in the XShards with the customized function, and return a new XShards after transformation.
 
+##### **SharedValue**
+SharedValue can be used to give every node a copy of a large input dataset in an efficient manner.
+This is an example of using SharedValue:
+```
+def func(df, item_set)
+   item_set = item_set.value
+   ....
+
+item_set= ...
+item_set= orca.data.SharedValue(item_set)
+full_data.transform_shard(func, item_set)
+```
+
+
 #### **Get all the elements in XShards**
 
 You can get all of elements in XShards with such API:
