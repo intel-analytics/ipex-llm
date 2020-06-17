@@ -17,8 +17,7 @@ from py4j.protocol import Py4JError
 
 from zoo.orca.data.utils import *
 from zoo.common.nncontext import init_nncontext
-import os
-from pyspark.context import SparkContext
+from zoo import ZooContext
 
 
 class XShards(object):
@@ -144,20 +143,11 @@ class RayPartition(object):
             return client.get(self.shard_list)
 
 
-def get_eager_mode():
-    is_eager = True
-    if os.getenv("EAGER_EXECUTION"):
-        eager_execution = os.getenv("EAGER_EXECUTION").lower()
-        if eager_execution == "false":
-            is_eager = False
-    return is_eager
-
-
 class SparkXShards(XShards):
     def __init__(self, rdd):
         self.rdd = rdd
         self.user_cached = False
-        self.eager = get_eager_mode()
+        self.eager = ZooContext._orca_eager_mode
         self.rdd.cache()
         if self.eager:
             self.compute()
