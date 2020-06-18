@@ -151,6 +151,7 @@ class SparkXShards(XShards):
         self.rdd.cache()
         if self.eager:
             self.compute()
+        self.type = {}
 
     def transform_shard(self, func, *args):
         transformed_shard = SparkXShards(self.rdd.map(lambda data: func(data, *args)))
@@ -194,14 +195,12 @@ class SparkXShards(XShards):
         return repartitioned_shard
 
     def partition_by(self, cols, num_partitions=None):
-        import pandas as pd
-        elem_class, columns = self.rdd.map(
-            lambda data: (type(data), data.columns) if isinstance(data, pd.DataFrame)
-            else (type(data), None)).first()
-        if issubclass(elem_class, pd.DataFrame):
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
+            import pandas as pd
+            schema = self._get_schema()
             # if partition by a column
             if isinstance(cols, str):
-                if cols not in columns:
+                if cols not in schema['columns']:
                     raise Exception("The partition column is not in the DataFrame")
                 # change data to key value pairs
                 rdd = self.rdd.flatMap(
@@ -218,7 +217,7 @@ class SparkXShards(XShards):
             def merge(iterator):
                 data = [value[1] for value in list(iterator)]
                 if data:
-                    df = pd.DataFrame(data=data, columns=columns)
+                    df = pd.DataFrame(data=data, columns=schema['columns'])
                     return [df]
                 else:
                     # no data in this partition
@@ -232,15 +231,13 @@ class SparkXShards(XShards):
                             " of Pandas DataFrame")
 
     def unique(self, key):
-        import pandas as pd
-        elem_class, columns = self.rdd.map(
-            lambda data: (type(data), data.columns) if isinstance(data, pd.DataFrame)
-            else (type(data), None)).first()
-        if issubclass(elem_class, pd.DataFrame):
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
             if key is None:
                 raise Exception("Cannot apply unique operation on XShards of Pandas Dataframe"
                                 " without column name")
-            if key in columns:
+            import pandas as pd
+            schema = self._get_schema()
+            if key in schema['columns']:
                 rdd = self.rdd.map(lambda df: df[key].unique())
                 import numpy as np
                 result = rdd.reduce(lambda list1, list2: pd.unique(np.concatenate((list1, list2),
@@ -293,7 +290,12 @@ class SparkXShards(XShards):
                 except:
                     raise Exception("Invalid key for this XShards")
                 return len(value) if hasattr(value, '__len__') else 1
-            return self.rdd.map(get_len).reduce(lambda l1, l2: l1 + l2)
+            ret = self._for_each(lambda data: get_len(data))
+            first = ret.first()
+            if not isinstance(first, Exception):
+                return ret.reduce(lambda l1, l2: l1 + l2)
+            else:
+                raise first
 
     def save_pickle(self, path, batchSize=10):
         self.rdd.saveAsPickleFile(path, batchSize)
@@ -343,6 +345,34 @@ class SparkXShards(XShards):
                                    object_store_address=object_store_address)
                       for id_ip in object_id_node_ips]
         return RayXShards(partitions)
+
+    def _for_each(self, func, *args, **kwargs):
+        def utility_func(x, func, *args, **kwargs):
+            try:
+                result = func(x, *args, **kwargs)
+            except Exception as e:
+                return e
+            return result
+        result_rdd = self.rdd.map(lambda x: utility_func(x, func, *args, **kwargs))
+        return result_rdd
+
+    def _get_schema(self):
+        if 'schema' in self.type:
+            return self.type['schema']
+        else:
+            if self._get_class_name() == 'pandas.core.frame.DataFrame':
+                import pandas as pd
+                columns, dtypes = self.rdd.map(lambda x: (x.columns, x.dtypes)).first()
+                self.type['schema'] = {'columns': columns, 'dtype': dtypes}
+                return self.type['schema']
+            return None
+
+    def _get_class_name(self):
+        if 'class_name' in self.type:
+            return self.type['class_name']
+        else:
+            self.type['class_name'] = self._for_each(get_class_name).first()
+            return self.type['class_name']
 
 
 class SharedValue(object):
