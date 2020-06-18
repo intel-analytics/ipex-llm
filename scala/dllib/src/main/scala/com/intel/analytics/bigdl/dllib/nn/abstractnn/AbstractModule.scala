@@ -387,7 +387,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    *
    * @return this
    */
-  final def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
+  def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
     val currentExtraParam = this.getExtraParameter()
     if (extraParam != null && currentExtraParam != null) {
       require(extraParam.length == currentExtraParam.length,
