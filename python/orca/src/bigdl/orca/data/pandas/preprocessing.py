@@ -110,56 +110,13 @@ def read_file_spark(context, file_path, file_type, **kwargs):
     rdd = context.parallelize(file_paths, node_num * core_num)
 
     if prefix == "hdfs":
-        def loadFile(iterator):
-            import pandas as pd
-            import pyarrow as pa
-            fs = pa.hdfs.connect()
-
-            for x in iterator:
-                with fs.open(x, 'rb') as f:
-                    if file_type == "csv":
-                        df = pd.read_csv(f, **kwargs)
-                    elif file_type == "json":
-                        df = pd.read_json(f, **kwargs)
-                    else:
-                        raise Exception("Unsupported file type")
-                    yield df
-
-        pd_rdd = rdd.mapPartitions(loadFile)
+        pd_rdd = rdd.mapPartitions(lambda iter: read_pd_hdfs_file_list(iter, file_type, **kwargs))
     elif prefix == "s3":
-        def loadFile(iterator):
-            access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
-            secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
-            import boto3
-            import pandas as pd
-            s3_client = boto3.Session(
-                aws_access_key_id=access_key_id,
-                aws_secret_access_key=secret_access_key,
-            ).client('s3', verify=False)
-            for x in iterator:
-                path_parts = x.split("://")[1].split('/')
-                bucket = path_parts.pop(0)
-                key = "/".join(path_parts)
-                obj = s3_client.get_object(Bucket=bucket, Key=key)
-                if file_type == "json":
-                    df = pd.read_json(obj['Body'], **kwargs)
-                elif file_type == "csv":
-                    df = pd.read_csv(obj['Body'], **kwargs)
-                else:
-                    raise Exception("Unsupported file type")
-                yield df
-
-        pd_rdd = rdd.mapPartitions(loadFile)
+        pd_rdd = rdd.mapPartitions(lambda iter: read_pd_s3_file_list(iter, file_type, **kwargs))
     else:
         def loadFile(iterator):
-            import pandas as pd
             for x in iterator:
-                if file_type == "csv":
-                    df = pd.read_csv(x, **kwargs)
-                elif file_type == "json":
-                    df = pd.read_json(x, **kwargs)
-                else:
-                    raise Exception("Unsupported file type")
+                df = read_pd_file(x, file_type, **kwargs)
                 yield df
 
         pd_rdd = rdd.mapPartitions(loadFile)
@@ -170,57 +127,21 @@ def read_file_spark(context, file_path, file_type, **kwargs):
 
 class RayPandasShard(object):
     """
-    Actor to read csv/json file to Pandas DataFrame and manipulate data
+    Actor to manipulate data
     """
 
     def __init__(self, data=None):
         self.data = data
 
     def read_file_partitions(self, paths, file_type, **kwargs):
-        df_list = []
         import pandas as pd
         prefix = paths[0].split("://")[0]
         if prefix == "hdfs":
-            import pyarrow as pa
-            fs = pa.hdfs.connect()
-            for path in paths:
-                with fs.open(path, 'rb') as f:
-                    if file_type == "json":
-                        df = pd.read_json(f, **kwargs)
-                    elif file_type == "csv":
-                        df = pd.read_csv(f, **kwargs)
-                    else:
-                        raise Exception("Unsupported file type")
-                    df_list.append(df)
+            df_list = read_pd_hdfs_file_list(paths, file_type, **kwargs)
         elif prefix == "s3":
-            import boto3
-            access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
-            secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
-            s3_client = boto3.Session(
-                aws_access_key_id=access_key_id,
-                aws_secret_access_key=secret_access_key,
-            ).client('s3', verify=False)
-            for path in paths:
-                path_parts = path.split("://")[1].split('/')
-                bucket = path_parts.pop(0)
-                key = "/".join(path_parts)
-                obj = s3_client.get_object(Bucket=bucket, Key=key)
-                if file_type == "json":
-                    df = pd.read_json(obj['Body'], **kwargs)
-                elif file_type == "csv":
-                    df = pd.read_csv(obj['Body'], **kwargs)
-                else:
-                    raise Exception("Unsupported file type")
-                df_list.append(df)
+            df_list = read_pd_s3_file_list(paths, file_type, **kwargs)
         else:
-            for path in paths:
-                if file_type == "json":
-                    df = pd.read_json(path, **kwargs)
-                elif file_type == "csv":
-                    df = pd.read_csv(path, **kwargs)
-                else:
-                    raise Exception("Unsupported file type")
-                df_list.append(df)
+            df_list = [read_pd_file(path, file_type, **kwargs) for path in paths]
         self.data = pd.concat(df_list)
         return 0
 
