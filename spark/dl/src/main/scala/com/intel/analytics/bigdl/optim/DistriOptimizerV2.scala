@@ -176,6 +176,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       Run the forwards/backwards pass using multiple threads in each partition, and track the
       number of model updates that finished before the thread timeout mechanism.
      */
+    val startTime = System.nanoTime()
     val training = dataRDD.zipPartitions(models, preservesPartitioning = true) { (data, iter) =>
         val cached = iter.next()
         /*
@@ -186,12 +187,17 @@ object DistriOptimizerV2 extends AbstractOptimizer {
         val size = cached.parameter.size
         val weights = cached.modelWeights.head.narrow(1, offset, size)
 
-        TrainingTrace.time (
-          cached.parameter.getWeights(weights).waitResult(),
+        val miniBatchBuffer = TrainingTrace.time (
+          {
+            val weightsResults = cached.parameter.getWeights(weights)
+            val batch = context.preTrain(data)
+            weightsResults.waitResult()
+            batch
+          },
           metrics
         )(Array(GET_WEIGHTS_AVERAGE, GET_WEIGHTS_EACH_NODE))
 
-        val results = train(cached, data, context, metrics)
+        val results = train(cached, miniBatchBuffer, context, metrics)
 
         lossSum += results.loss
         recordsNum += results.records
@@ -200,6 +206,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       }
 
     val successModels = trainingTrace.traceIteration(training.reduce(_ + _))
+    println(s"Iteration time is ${(System.nanoTime() - startTime) / 1e9}")
 
     parameterSync(lossSum.value, successModels, cacheOfMaster, models, context)
 
@@ -375,15 +382,14 @@ object DistriOptimizerV2 extends AbstractOptimizer {
   private case class TrainingResults(successed: Int, loss: Double, records: Int)
   private def train[T: ClassTag](
     cached: Cache[T],
-    data: Iterator[MiniBatch[T]],
+    data: Array[MiniBatch[T]],
     context: TrainingContext[T],
     metrics: Metrics)(implicit ev: TensorNumeric[T]): TrainingResults = {
-    val miniBatchBuffer = context.preTrain(data)
-    val stackSize = miniBatchBuffer.head.size()
+    val stackSize = data.head.size()
 
     // ======================Start train models===================================
     val modelsResult = TrainingTrace.time (
-      context.train(miniBatchBuffer, cached.localModels, cached.localCriterions),
+      context.train(data, cached.localModels, cached.localCriterions),
       metrics
     )(Array(COMPUTING_TIME_EACH_NODE, COMPUTING_TIME_AVERAGE))
 
