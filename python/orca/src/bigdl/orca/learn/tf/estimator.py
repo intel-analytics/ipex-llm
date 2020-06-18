@@ -219,7 +219,7 @@ class TFOptimizerWrapper(Estimator):
 
     def evaluate(self, data, batch_size=32):
         assert self.metrics is not None, \
-            "output is None, it should not be None in prediction"
+            "metrics is None, it should not be None in evaluate"
 
         dataset = _to_dataset(data, batch_size=-1, batch_per_thread=batch_size)
 
