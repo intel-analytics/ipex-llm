@@ -190,7 +190,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
         val miniBatchBuffer = TrainingTrace.time (
           {
             val weightsResults = cached.parameter.getWeights(weights)
-            val batch = context.preTrain(data)
+            val batch = context.fetchBatch(data)
             weightsResults.waitResult()
             batch
           },
@@ -901,8 +901,7 @@ class TrainingContext[T: ClassTag](
     recordsProcessed >= numSamples
   }
 
-  def preTrain[T: ClassTag](data: Iterator[MiniBatch[T]]): Array[MiniBatch[T]] = {
-    val syWStart = System.nanoTime()
+  def fetchBatch[T: ClassTag](data: Iterator[MiniBatch[T]]): Array[MiniBatch[T]] = {
     val miniBatchBuffer = new Array[MiniBatch[T]](subModelNumber)
     val batch = data.next()
     val stackSize = batch.size() / subModelNumber
