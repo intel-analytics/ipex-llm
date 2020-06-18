@@ -3,6 +3,20 @@ For Python users, Analytics Zoo can be installed either [from pip](#install-from
 **NOTE**: We have tested on __Python 3.6__ and __Python 3.7__. Support for Python 2.7 has been removed due to its end of life.
 
 ---
+## **Install the latest nightly build wheels for pip**
+You can find the list of the latest nightly build wheels for pip [here](https://sourceforge.net/projects/analytics-zoo/files/zoo-py/). 
+Choose a wheel with timestamp for your platform and click to download it to your local repository.
+
+Note that if you are using Linux, you need to choose the file `analytics_zoo-VERSION-TIMESTAMP-py2.py3-none-manylinux1_x86_64.whl`.
+If you are using Mac, choose `analytics_zoo-VERSION-TIMESTAMP-py2.py3-none-macosx_10_11_x86_64.whl` instead. 
+
+After downloading the target wheel file, go to the download directory and run the following command:
+```bash
+pip install analytics_zoo-*-py2.py3-none-*_x86_64.whl
+```
+See [here](#install-from-pip-for-local-usage) for some remarks with regard to pip install.
+
+---
 ## **Install from pip for local usage**
 You can use the following command to install the latest release version of __analytics-zoo__ via pip easily:
 
@@ -12,6 +26,7 @@ pip install analytics-zoo
 
 * You are strongly recommended to use Python 3.6 or 3.7. You might need to run `pip3 install analytics-zoo` instead.
 * You might need to add `sudo` if you don't have the permission for installation.
+* See [here](#install-the-latest-nightly-build-wheels-for-pip) if you want to install the latest nightly build version.
 
 **Important:**
 
@@ -43,11 +58,13 @@ conda create -n zoo python=3.6
 source activate zoo
 ```
 
-3) Install Analytics-Zoo into the created conda-env.
+3) Install the latest release version of __analytics-zoo__ into the created conda environment.
 
 ```
 pip install analytics-zoo
 ```
+
+See [here](#install-the-latest-nightly-build-wheels-for-pip) if you want to install the latest nightly build version.
 
 4) Download JDK8 and set the environment variable: JAVA_HOME (recommended).
 
