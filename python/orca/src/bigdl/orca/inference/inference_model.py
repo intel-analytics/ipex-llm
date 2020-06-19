@@ -25,7 +25,7 @@ class InferenceModel(JavaValue):
     """
     Model for thread-safe inference.
     To do inference, you need to first initiate an InferenceModel instance, then call
-    load|load_caffe|load_tf|load_openvino to load a pre-trained model, and finally call predict.
+    load|load_caffe|load_openvino to load a pre-trained model, and finally call predict.
 
     # Arguments
     supported_concurrent_num: Int. How many concurrent threads to invoke. Default is 1.
@@ -115,120 +115,6 @@ class InferenceModel(JavaValue):
                     self.value, model_path, model_type,
                     inputs, outputs, intra_op_parallelism_threads,
                     inter_op_parallelism_threads, use_per_session_threads)
-
-    # deprecated in "0.8.0"
-    def load_tf(self, model_path, backend="tensorflow",
-                intra_op_parallelism_threads=1, inter_op_parallelism_threads=1,
-                use_per_session_threads=True, model_type=None,
-                ov_pipeline_config_path=None, ov_extensions_config_path=None):
-        """
-        Load an TensorFlow model using tensorflow or openvino backend.
-
-        :param model_path: String. The file path to the TensorFlow model.
-        :param backend: String. The backend to use for inference. Either 'tensorflow' or 'openvino'.
-                        For 'tensorflow' backend, only need to specify arguments
-                        intra_op_parallelism_threads, inter_op_parallelism_threads
-                        and use_per_session_threads.
-                        For 'openvino' backend, only need to specify either model_type or
-                        pipeline_config_path together with extensions_config_path.
-                        Default is 'tensorflow'.
-        :param intra_op_parallelism_threads: For 'tensorflow' backend only. Int.
-                                             The number of intraOpParallelismThreads. Default is 1.
-        :param inter_op_parallelism_threads: For 'tensorflow' backend only. Int.
-                                             The number of interOpParallelismThreads. Default is 1.
-        :param use_per_session_threads: For 'tensorflow' backend only. Boolean.
-                                        Whether to use perSessionThreads. Default is True.
-        :param model_type: For 'openvino' backend only. The type of the TensorFlow model,
-                           e.g. faster_rcnn_resnet101_coco, ssd_inception_v2_coco, etc.
-        :param ov_pipeline_config_path: For 'openvino' backend only. String.
-                                        The file path to the pipeline configure file.
-        :param ov_extensions_config_path: For 'openvino' backend only. String.
-                                          The file path to the extensions configure file.
-                                          Need pipeline_config_path and extensions_config_path
-                                          for 'openvino' backend if model_type is not specified.
-        """
-        warnings.warn("deprecated in 0.8.0")
-        backend = backend.lower()
-        if backend == "tensorflow" or backend == "tf":
-            callZooFunc(self.bigdl_type, "inferenceModelLoadTensorFlow",
-                        self.value, model_path, "frozenModel", intra_op_parallelism_threads,
-                        inter_op_parallelism_threads, use_per_session_threads)
-        elif backend == "openvino" or backend == "ov":
-            if model_type:
-                if ov_pipeline_config_path:
-                    callZooFunc(self.bigdl_type, "inferenceModelOpenVINOLoadTF",
-                                self.value, model_path, model_type, ov_pipeline_config_path, None)
-                else:
-                    callZooFunc(self.bigdl_type, "inferenceModelOpenVINOLoadTF",
-                                self.value, model_path, model_type)
-            else:
-                if ov_pipeline_config_path is None and ov_extensions_config_path is None:
-                    raise Exception("For openvino backend, you must provide either model_type or "
-                                    "both pipeline_config_path and extensions_config_path")
-                callZooFunc(self.bigdl_type, "inferenceModelOpenVINOLoadTF",
-                            self.value, model_path, ov_pipeline_config_path,
-                            ov_extensions_config_path)
-        else:
-            raise ValueError("Currently only tensorflow and openvino are supported as backend")
-
-    # deprecated in "0.8.0"
-    def load_tf_object_detection_as_openvino(self,
-                                             model_path,
-                                             object_detection_model_type,
-                                             pipeline_config_path,
-                                             extensions_config_path
-                                             ):
-        """
-        load object detection TF model as OpenVINO IR
-        :param model_path: String, the path of the tensorflow model
-        :param object_detection_model_type: String, the type of the tensorflow model
-        :param pipeline_config_path: String, the path of the pipeline configure file
-        :param extensions_config_path: String, the path of the extensions configure file
-        :return:
-        """
-        warnings.warn("deprecated in 0.8.0")
-        callZooFunc(self.bigdl_type,
-                    "inferenceModelOpenVINOLoadTF",
-                    self.value,
-                    model_path,
-                    object_detection_model_type,
-                    pipeline_config_path,
-                    extensions_config_path)
-
-    # deprecated in "0.8.0"
-    def load_tf_image_classification_as_openvino(self,
-                                                 model_path,
-                                                 image_classification_model_type,
-                                                 checkpoint_path,
-                                                 input_shape,
-                                                 if_reverse_input_channels,
-                                                 mean_values,
-                                                 scale):
-        """
-        load image classification TF model as OpenVINO IR
-        :param model_path: String, the path of the tensorflow model
-        :param image_classification_model_type: String, the type of the tensorflow model
-        :param checkpoint_path: String, the path of the tensorflow checkpoint file
-        :param input_shape: List of Int,
-                input shape that should be fed to an input node(s) of the model
-        :param if_reverse_input_channels: Boolean,
-                the boolean value of if need reverse input channels.
-        :param mean_values: List of Float, all input values coming from original network inputs
-                            will be divided by this value.
-        :param scale: Float, the scale value, to be used for the input image per channel.
-        :return:
-        """
-        warnings.warn("deprecated in 0.8.0")
-        callZooFunc(self.bigdl_type,
-                    "inferenceModelOpenVINOLoadTF",
-                    self.value,
-                    model_path,
-                    image_classification_model_type,
-                    checkpoint_path,
-                    input_shape,
-                    if_reverse_input_channels,
-                    [float(value) for value in mean_values],
-                    float(scale))
 
     def predict(self, inputs):
         """
