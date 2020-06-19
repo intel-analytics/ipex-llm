@@ -176,7 +176,6 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       Run the forwards/backwards pass using multiple threads in each partition, and track the
       number of model updates that finished before the thread timeout mechanism.
      */
-    val startTime = System.nanoTime()
     val training = dataRDD.zipPartitions(models, preservesPartitioning = true) { (data, iter) =>
         val cached = iter.next()
         /*
@@ -206,7 +205,6 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       }
 
     val successModels = trainingTrace.traceIteration(training.reduce(_ + _))
-    println(s"Iteration time is ${(System.nanoTime() - startTime) / 1e9}")
 
     parameterSync(lossSum.value, successModels, cacheOfMaster, models, context)
 
