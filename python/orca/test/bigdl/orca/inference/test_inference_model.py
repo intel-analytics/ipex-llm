@@ -29,7 +29,6 @@ np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 property_path = os.path.join(os.path.split(__file__)[0],
                              "../../../../../zoo/target/classes/app.properties")
-tensorflow_url = "http://download.tensorflow.org"
 data_url = "https://s3-ap-southeast-1.amazonaws.com"
 with open(property_path) as f:
     for _ in range(2):  # skip the first two lines
@@ -67,55 +66,6 @@ class TestInferenceModel(ZooTestCase):
         model.load_openvino(model_path, weight_path)
         input_data = np.random.random([4, 1, 224, 224, 3])
         model.predict(input_data)
-
-    def test_load_tf_openvino_od(self):
-        local_path = self.create_temp_dir()
-        url = data_url + "/models/object_detection/faster_rcnn_resnet101_coco_2018_01_28.tar.gz"
-        file_abs_path = maybe_download("faster_rcnn_resnet101_coco_2018_01_28.tar.gz",
-                                       local_path, url)
-        tar = tarfile.open(file_abs_path, "r:gz")
-        extracted_to = os.path.join(local_path, "faster_rcnn_resnet101_coco_2018_01_28")
-        if not os.path.exists(extracted_to):
-            print("Extracting %s to %s" % (file_abs_path, extracted_to))
-            tar.extractall(local_path)
-            tar.close()
-        model = InferenceModel(3)
-        model.load_tf(model_path=extracted_to + "/frozen_inference_graph.pb",
-                      backend="openvino",
-                      model_type="faster_rcnn_resnet101_coco",
-                      ov_pipeline_config_path=extracted_to + "/pipeline.config",
-                      ov_extensions_config_path=None)
-        input_data = np.random.random([4, 1, 3, 600, 600])
-        output_data = model.predict(input_data)
-        model2 = InferenceModel(3)
-        model2.load_tf_object_detection_as_openvino(
-            model_path=extracted_to + "/frozen_inference_graph.pb",
-            object_detection_model_type="faster_rcnn_resnet101_coco",
-            pipeline_config_path=extracted_to + "/pipeline.config",
-            extensions_config_path=None)
-        model2.predict(input_data)
-
-    # def test_load_tf_openvino_ic(self):
-    #     local_path = self.create_temp_dir()
-    #     print(local_path)
-    #     url = tensorflow_url + "/models/resnet_v1_50_2016_08_28.tar.gz"
-    #     file_abs_path = maybe_download("resnet_v1_50_2016_08_28.tar.gz", local_path, url)
-    #     tar = tarfile.open(file_abs_path, "r:gz")
-    #     print("Extracting %s to %s" % (file_abs_path, local_path))
-    #     tar.extractall(local_path)
-    #     tar.close()
-    #     model = InferenceModel(3)
-    #     model.load_tf_image_classification_as_openvino(
-    #         model_path=None,
-    #         image_classification_model_type="resnet_v1_50",
-    #         checkpoint_path=local_path + "/resnet_v1_50.ckpt",
-    #         input_shape=[4, 224, 224, 3],
-    #         if_reverse_input_channels=True,
-    #         mean_values=[123.68, 116.78, 103.94],
-    #         scale=1)
-    #     print(model)
-    #     input_data = np.random.random([4, 1, 224, 224, 3])
-    #     model.predict(input_data)
 
 
 if __name__ == "__main__":
