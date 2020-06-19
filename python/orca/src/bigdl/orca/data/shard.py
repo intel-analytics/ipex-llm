@@ -144,11 +144,14 @@ class RayPartition(object):
 
 
 class SparkXShards(XShards):
-    def __init__(self, rdd):
+    def __init__(self, rdd, transient=False):
         self.rdd = rdd
         self.user_cached = False
-        self.eager = ZooContext._orca_eager_mode
-        self.rdd.cache()
+        if transient:
+            self.eager = False
+        else:
+            self.eager = ZooContext._orca_eager_mode
+            self.rdd.cache()
         if self.eager:
             self.compute()
         self.type = {}
@@ -308,6 +311,17 @@ class SparkXShards(XShards):
 
     def __del__(self):
         self.uncache()
+
+    def __getitem__(self, key):
+        def get_data(data):
+            assert hasattr(data, '__getitem__'), \
+                "No selection operation available for this XShards"
+            try:
+                value = data[key]
+            except:
+                raise Exception("Invalid key for this XShards")
+            return value
+        return SparkXShards(self.rdd.map(get_data), transient=True)
 
     # Tested on pyarrow 0.17.0; 0.16.0 would get errors.
     def to_ray(self):
