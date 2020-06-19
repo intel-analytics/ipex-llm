@@ -93,42 +93,6 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadPyTorch(modelBytes);
   }
 
-  @Deprecated
-  public void loadTF(String modelPath, String objectDetectionModelType) {
-    doLoadTF(modelPath, objectDetectionModelType);
-  }
-
-  @Deprecated
-  public void loadTF(String modelPath, String pipelineConfigFilePath, String extensionsConfigFilePath) {
-    doLoadTF(modelPath, pipelineConfigFilePath, extensionsConfigFilePath);
-  }
-
-  @Deprecated
-  public void loadTF(String modelPath, String objectDetectionModelType, String pipelineConfigFilePath, String extensionsConfigFilePath) {
-    doLoadTF(modelPath, objectDetectionModelType, pipelineConfigFilePath, extensionsConfigFilePath);
-  }
-
-  @Deprecated
-  public void loadTF(String modelPath, String imageClassificationModelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale) {
-    doLoadTF(modelPath, imageClassificationModelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale);
-  }
-
-  @Deprecated
-  public void loadTF(byte[] modelBytes, String imageClassificationModelType, byte[] checkpointBytes, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale) {
-    doLoadTF(modelBytes, imageClassificationModelType, checkpointBytes, inputShape, ifReverseInputChannels, meanValues, scale);
-  }
-
-  @Deprecated
-  public void loadTF(String savedModelDir, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String input) {
-    doLoadTF(savedModelDir, inputShape, ifReverseInputChannels, meanValues, scale, input);
-  }
-
-  @Deprecated
-  public void loadTF(byte[] savedModelBytes, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String input) {
-    doLoadTF(savedModelBytes, inputShape, ifReverseInputChannels, meanValues, scale, input);
-  }
-
-
   public void loadOpenVINO(String modelFilePath, String weightFilePath, int batchSize) {
     doLoadOpenVINO(modelFilePath, weightFilePath, batchSize);
   }
@@ -177,13 +141,5 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
   @Override
   public String toString() {
     return super.toString();
-  }
-
-  public static void optimizeTF(String modelPath, String objectDetectionModelType, String pipelineConfigPath, String extensionsConfigPath, String outputDir) {
-    InferenceModel.doOptimizeTF(modelPath, objectDetectionModelType, pipelineConfigPath, extensionsConfigPath, outputDir);
-  }
-
-  public static void optimizeTF(String modelPath, String imageClassificationModelType, String checkpointPath, int[] inputShape, boolean ifReverseInputChannels, float[] meanValues, float scale, String outputDir) {
-    InferenceModel.doOptimizeTF(modelPath, imageClassificationModelType, checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale, outputDir);
   }
 }
