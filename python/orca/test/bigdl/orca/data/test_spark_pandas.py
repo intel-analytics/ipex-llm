@@ -220,6 +220,21 @@ class TestSparkXShards(ZooTestCase):
         assert data2[0]["value"].values[0] < 0, "value should be negative"
         assert data[0]["value"].values[0] + data2[0]["value"].values[0] == -2, "value should be -2"
 
+    def test_get_item(self):
+        file_path = os.path.join(self.resource_path, "orca/data/json")
+        data_shard = zoo.orca.data.pandas.read_json(file_path, self.sc,
+                                                    orient='columns', lines=True)
+        selected_shard = data_shard["value"]
+        assert data_shard.is_cached(), "data_shard should be cached"
+        assert not selected_shard.is_cached(), "selected_shard should not be cached"
+        data1 = data_shard.collect()
+        data2 = selected_shard.collect()
+        assert data1[0]["value"].values[0] == data2[0][0], "value should be same"
+        assert data1[1]["value"].values[0] == data2[1][0], "value should be same"
+        with self.assertRaises(Exception) as context:
+            data_shard.len('abc')
+        self.assertTrue('Invalid key for this XShards' in str(context.exception))
+
     def test_for_each(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         shards = zoo.orca.data.pandas.read_csv(file_path, self.sc)
