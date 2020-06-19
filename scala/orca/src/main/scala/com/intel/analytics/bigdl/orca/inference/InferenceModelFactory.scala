@@ -136,56 +136,6 @@ object InferenceModelFactory extends InferenceSupportive {
     new FloatModel(model, metaModel, true)
   }
 
-  def loadOpenVINOModelForTF(modelPath: String,
-                             modelType: String,
-                             pipelineConfigPath: String,
-                             extensionsConfigPath: String): OpenVINOModel = {
-    OpenVinoInferenceSupportive.loadTensorflowModel(
-      modelPath, modelType, pipelineConfigPath, extensionsConfigPath)
-  }
-
-  def loadOpenVINOModelForTF(modelPath: String,
-                             imageClassificationModelType: String,
-                             checkpointPath: String,
-                             inputShape: Array[Int],
-                             ifReverseInputChannels: Boolean,
-                             meanValues: Array[Float],
-                             scale: Float): OpenVINOModel = {
-    OpenVinoInferenceSupportive.loadTensorflowModel(modelPath, imageClassificationModelType,
-      checkpointPath, inputShape, ifReverseInputChannels, meanValues, scale)
-  }
-
-  def loadOpenVINOModelForTF(modelBytes: Array[Byte],
-                             imageClassificationModelType: String,
-                             checkpointBytes: Array[Byte],
-                             inputShape: Array[Int],
-                             ifReverseInputChannels: Boolean,
-                             meanValues: Array[Float],
-                             scale: Float): OpenVINOModel = {
-    OpenVinoInferenceSupportive.loadTensorflowModel(modelBytes, imageClassificationModelType,
-      checkpointBytes, inputShape, ifReverseInputChannels, meanValues, scale)
-  }
-
-  def loadOpenVINOModelForTF(savedModelDir: String,
-                             inputShape: Array[Int],
-                             ifReverseInputChannels: Boolean,
-                             meanValues: Array[Float],
-                             scale: Float,
-                             input: String): OpenVINOModel = {
-    OpenVinoInferenceSupportive.loadTensorflowModel(savedModelDir,
-      inputShape, ifReverseInputChannels, meanValues, scale, input)
-  }
-
-  def loadOpenVINOModelForTF(savedModelBytes: Array[Byte],
-                             inputShape: Array[Int],
-                             ifReverseInputChannels: Boolean,
-                             meanValues: Array[Float],
-                             scale: Float,
-                             input: String): OpenVINOModel = {
-    OpenVinoInferenceSupportive.loadTensorflowModel(savedModelBytes,
-      inputShape, ifReverseInputChannels, meanValues, scale, input)
-  }
-
   def loadOpenVINOModelForIR(modelFilePath: String,
                              weightFilePath: String,
                              deviceType: DeviceTypeEnumVal,

@@ -66,51 +66,6 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
     model.doLoadOpenVINO(modelPath, weightPath, batchSize)
   }
 
-  @deprecated("this method is deprecated", "0.8.0")
-  def inferenceModelOpenVINOLoadTF(
-      model: InferenceModel,
-      modelPath: String,
-      modelType: String): Unit = {
-    model.doLoadTF(modelPath, modelType)
-  }
-
-  @deprecated("this method is deprecated", "0.8.0")
-  def inferenceModelOpenVINOLoadTF(
-      model: InferenceModel,
-      modelPath: String,
-      pipelineConfigFilePath: String,
-      extensionsConfigFilePath: String): Unit = {
-    model.doLoadTF(modelPath, pipelineConfigFilePath, extensionsConfigFilePath)
-  }
-
-  @deprecated("this method is deprecated", "0.8.0")
-  def inferenceModelOpenVINOLoadTF(model: InferenceModel,
-                                   modelPath: String,
-                                   objectDetectionModelType: String,
-                                   pipelineConfigFilePath: String,
-                                   extensionsConfigFilePath: String): Unit = {
-    model.doLoadTF(modelPath, objectDetectionModelType,
-      pipelineConfigFilePath, extensionsConfigFilePath)
-  }
-
-  @deprecated("this method is deprecated", "0.8.0")
-  def inferenceModelOpenVINOLoadTF(model: InferenceModel,
-                                   modelPath: String,
-                                   imageClassificationModelType: String,
-                                   checkpointPath: String,
-                                   inputShape: JList[Int],
-                                   ifReverseInputChannels: Boolean,
-                                   meanValues: JList[Double],
-                                   scale: Double
-                                  ): Unit = {
-    require(inputShape != null, "inputShape can not be null")
-    require(meanValues != null, "meanValues can not be null")
-    require(scale != null, "scale can not be null")
-    model.doLoadTF(modelPath, imageClassificationModelType,
-      checkpointPath, inputShape.asScala.toArray,
-      ifReverseInputChannels, meanValues.asScala.toArray.map(_.toFloat), scale.toFloat)
-  }
-
   def inferenceModelLoadTensorFlow(
       model: InferenceModel,
       modelPath: String,

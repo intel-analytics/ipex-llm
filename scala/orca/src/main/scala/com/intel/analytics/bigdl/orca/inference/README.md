@@ -126,49 +126,6 @@ model = InferenceModel()
 model.load_tensorflow(modelPath, modelType)
 ```
 
-### **Load pre-trained TensorFlow model with OpenVINO backend**
-
-Load model into `OpenVINOModel` with OpenVINO backend, with corresponding `loadTF` methods (`loadTF` for Java, `doLoadTF` for Scala and `load_tf` Python). Note that OpenVINO cannot directly load TensorFlow models. We need to [covert TensorFlow models into OpenVINO models](https://docs.openvinotoolkit.org/2020.2/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html), then load models into OpenVINO.
-
-Herein Analytics Zoo, we merge these two steps into one, and provide `loadOpenVINOModelForTF` with the following parameters:
-
-* `modelPath`: String. Path of pre-trained tensorflow model.
-* `modelType`: String. Type the type of the tensorflow model.
-* `checkpointPath`: String. Path of the tensorflow checkpoint file
-* `inputShape`: Array[Int]. Input shape that should be fed to an input node(s) of the model
-* `ifReverseInputChannels`: Boolean. If need reverse input channels. switch the input channels order from RGB to BGR (or vice versa).
-* `meanValues`: Array[Int]. All input values coming from original network inputs will be divided by this value.
-* `scale`: Float. Scale value, to be used for the input image per channel.
-* `outputDir`: String. Path of pre-trained tensorflow model.
-
-Note that we prepare several implementations with less parameters based on this method, e.g., `loadTF(modelPath, modelType)`.
-
-**Java**
-
-```java
-public class ExtendedInferenceModel extends AbstractInferenceModel {
-}
-ExtendedInferenceModel model = new ExtendedInferenceModel();
-model.loadTF(modelPath, modelType);
-```
-
-**Scala**
-
-```scala
-val model = new InferenceModel()
-model.doLoadTF(modelPath, modelType)
-```
-
-**Python**
-
-```python
-model = InferenceModel()
-model.load_tf(modelPath, modelType)
-```
-
-* `modelPath`: String. Path of pre-trained model.
-* `weightPath`: String. Path of pre-trained model weight.
-
 ### **Load OpenVINO model**
 
 Load OpenVINO model with `loadOpenVINO` methods (`loadOpenVINO` for Java, `doLoadOpenVINO` for Scala and `load_openvino` Python).
@@ -230,14 +187,6 @@ predict_output = model.predict(predict_input)
 ## **Supportive classes**
 
 **InferenceModel**
-
-`doOptimizeTF` method in Scala is designed for coverting TensorFlow model into OpenVINO model.
-
-Pipline of these API:
-
-TensorFlow model -`doOptimizeTF`-> OpenVINO model -`Calibration`-> OpenVINO int8 optimized model
-
-From 0.8 version, analytics-zoo no longer provides `Calibration` tools. Pls refer to [OpenVINO Calibration tool](https://docs.openvinotoolkit.org/2019_R1/_inference_engine_samples_calibration_tool_README.html).
 
 **InferenceSupportive**
 
