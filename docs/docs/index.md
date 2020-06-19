@@ -30,6 +30,7 @@ Analytics Zoo seamless scales TensorFlow, Keras and PyTorch to distributed big d
 # <font size="6"><b>Why use Analytics Zoo?</b></font>
 
 You may want to develop your AI solutions using Analytics Zoo if:
+
 * You want to easily apply AI models (e.g., TensorFlow, Keras, PyTorch, BigDL, OpenVINO, etc.) to distributed big data.
 * You want to transparently scale your AI applications from a single laptop to large clusters with "zero" code changes.
 * You want to deploy your AI pipelines to existing YARN or K8S clusters *WITHOUT* any modifications to the clusters.
