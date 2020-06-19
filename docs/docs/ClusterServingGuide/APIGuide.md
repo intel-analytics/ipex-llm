@@ -30,14 +30,17 @@ _return_: None
 
 `data`: key-value pair of your data.
 
-There are 3 types of inputs in total, image, tensor, sparse tensor. See following example to enqueue specific type of data.
+There are 4 types of inputs in total, string, image, tensor, sparse tensor. See following example to enqueue specific type of data.
 _Example_
 Import the dependency and create an instance of `InputQueue`
 ```
 from zoo.serving.client import InputQueue
 input_api = InputQueue()
 ```
-
+To enqueue an list of string, specify key as `string*` and pass a list of str objects, list of str type input is usually used in Tensorflow models.
+```
+input_api.enqueue('my-string-input', string1=['hello', 'world'])
+```
 To enqueue an image, `cv2` package is required. (Could be installed by `pip install opencv-python`)
 ```
 input_api.enqueue('my-image1', user_define_key='path/to/image1')

@@ -319,7 +319,7 @@ t1 = np.array([1,2])
 t2 = np.array([[1,2], [3,4]])
 input_api.enqueue_image('my-instance', img='path/to/image', tensor1=t1, tensor2=t2)
 ```
-There are 3 types of inputs in total, image, tensor, sparse tensor, which could represents nearly all types of models. For more details of usage, go to [API Guide](APIGuide.md)
+There are 4 types of inputs in total, string, image, tensor, sparse tensor, which could represents nearly all types of models. For more details of usage, go to [API Guide](APIGuide.md)
 
 To get data from queue, you need a `OutputQueue` instance, and using `query` or `dequeue` method. The `query` method takes image uri as parameter and returns the corresponding result. The `dequeue` method takes no parameter and just returns all results and also delete them in data queue. See following example.
 ```
