@@ -233,24 +233,17 @@ class SparkXShards(XShards):
             raise Exception("Currently only support partition by for XShards"
                             " of Pandas DataFrame")
 
-    def unique(self, key):
-        if self._get_class_name() == 'pandas.core.frame.DataFrame':
-            if key is None:
-                raise Exception("Cannot apply unique operation on XShards of Pandas Dataframe"
-                                " without column name")
+    def unique(self):
+        if self._get_class_name() == 'pandas.core.series.Series':
             import pandas as pd
-            schema = self._get_schema()
-            if key in schema['columns']:
-                rdd = self.rdd.map(lambda df: df[key].unique())
-                import numpy as np
-                result = rdd.reduce(lambda list1, list2: pd.unique(np.concatenate((list1, list2),
-                                                                                  axis=0)))
-                return result
-            else:
-                raise Exception("The select key is not in the DataFrame in this XShards")
+            rdd = self.rdd.map(lambda s: s.unique())
+            import numpy as np
+            result = rdd.reduce(lambda list1, list2: pd.unique(np.concatenate((list1, list2),
+                                                                              axis=0)))
+            return result
         else:
             # we may support numpy or other types later
-            raise Exception("Currently only support unique() on XShards of Pandas DataFrame")
+            raise Exception("Currently only support unique() on XShards of Pandas Series")
 
     def split(self):
         """
@@ -279,26 +272,9 @@ class SparkXShards(XShards):
             else:
                 return [self]
 
-    def len(self, key=None):
-        if key is None:
-            return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
-                .reduce(lambda l1, l2: l1 + l2)
-        else:
-
-            def get_len(data):
-                assert hasattr(data, '__getitem__'), \
-                    "No selection operation available for this XShards"
-                try:
-                    value = data[key]
-                except:
-                    raise Exception("Invalid key for this XShards")
-                return len(value) if hasattr(value, '__len__') else 1
-            ret = self._for_each(lambda data: get_len(data))
-            first = ret.first()
-            if not isinstance(first, Exception):
-                return ret.reduce(lambda l1, l2: l1 + l2)
-            else:
-                raise first
+    def __len__(self):
+        return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
+            .reduce(lambda l1, l2: l1 + l2)
 
     def save_pickle(self, path, batchSize=10):
         self.rdd.saveAsPickleFile(path, batchSize)
