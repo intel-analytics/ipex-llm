@@ -124,7 +124,7 @@ class TestSparkXShards(ZooTestCase):
     def test_unique(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
-        location_list = data_shard.unique("location")
+        location_list = data_shard["location"].unique()
         assert len(location_list) == 6
 
     def test_split(self):
@@ -146,27 +146,27 @@ class TestSparkXShards(ZooTestCase):
     def test_len(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
-        assert data_shard.len() == 14
-        assert data_shard.len('ID') == 14
+        assert len(data_shard) == 14
+        assert len(data_shard['ID']) == 14
         with self.assertRaises(Exception) as context:
-            data_shard.len('abc')
+            len(data_shard['abc'])
         self.assertTrue('Invalid key for this XShards' in str(context.exception))
 
         def to_dict(df):
             return {'ID': df['ID'].to_numpy(), 'location': df['location'].to_numpy()}
         data_shard = data_shard.transform_shard(to_dict)
-        assert data_shard.len('ID') == 14
-        assert data_shard.len() == 4
+        assert len(data_shard['ID']) == 14
+        assert len(data_shard) == 4
         with self.assertRaises(Exception) as context:
-            data_shard.len('abc')
+            len(data_shard['abc'])
         self.assertTrue('Invalid key for this XShards' in str(context.exception))
 
         def to_number(d):
             return 4
         data_shard = data_shard.transform_shard(to_number)
-        assert data_shard.len() == 2
+        assert len(data_shard) == 2
         with self.assertRaises(Exception) as context:
-            data_shard.len('abc')
+            len(data_shard['abc'])
         self.assertTrue('No selection operation available for this XShards' in
                         str(context.exception))
 
@@ -232,7 +232,7 @@ class TestSparkXShards(ZooTestCase):
         assert data1[0]["value"].values[0] == data2[0][0], "value should be same"
         assert data1[1]["value"].values[0] == data2[1][0], "value should be same"
         with self.assertRaises(Exception) as context:
-            data_shard.len('abc')
+            len(data_shard['abc'])
         self.assertTrue('Invalid key for this XShards' in str(context.exception))
 
     def test_for_each(self):
