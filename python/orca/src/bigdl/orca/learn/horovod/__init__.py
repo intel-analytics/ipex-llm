@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .horovod_ray_trainer import HorovodRayTrainer
+from .horovod_ray_runner import HorovodRayRunner

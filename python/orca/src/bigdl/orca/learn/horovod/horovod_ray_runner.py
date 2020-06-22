@@ -24,25 +24,19 @@ from horovod.run.common.util import timeout, secret
 from horovod.run.task import task_service
 
 
-def make_horovod_worker(cores_per_node):
+class HorovodWorker:
 
-    # todo how to make user func honor this resource restriction
-    @ray.remote(num_cpus=cores_per_node)
-    class HorovodWorker:
+    def hostname(self):
+        import socket
+        return socket.gethostname()
 
-        def hostname(self):
-            import socket
-            return socket.gethostname()
+    def run(self, env, func):
+        import os
+        os.environ.update(env)
+        return func()
 
-        def run(self, env, func):
-            import os
-            os.environ.update(env)
-            return func()
-
-        def task_fn(self, index, driver_addresses, settings):
-            _task_fn(index, driver_addresses, settings)
-
-    return HorovodWorker
+    def task_fn(self, index, driver_addresses, settings):
+        _task_fn(index, driver_addresses, settings)
 
 
 def _get_driver_ip(common_intfs):
@@ -141,16 +135,25 @@ def _find_common_network_interface(host_to_size, host_rank_to_id, workers, setti
         driver.shutdown()
 
 
-class HorovodRayTrainer:
+class HorovodRayRunner:
 
     # todo check whether horovod is built with gloo
-    def __init__(self, ray_ctx, verbose=None, start_timeout=None):
+    def __init__(self, ray_ctx, worker_cls=None, worker_param=None,
+                 verbose=None, start_timeout=None):
 
         self.cores_per_node = ray_ctx.ray_node_cpu_cores
         self.num_nodes = ray_ctx.num_ray_nodes
-        self.worker_class = make_horovod_worker(self.cores_per_node)
-        self.remote_workers = [self.worker_class.remote() for i in range(0, self.num_nodes)]
-
+        if worker_param is None:
+            worker_param = {}
+        if worker_cls is None:
+            worker_cls = HorovodWorker
+        else:
+            assert issubclass(worker_cls, HorovodWorker),\
+                "worker_cls must be a subclass of HorovodWorker, " \
+                "got worker_cls {} ".format(worker_cls)
+        self.worker_class = ray.remote(num_cpus=self.cores_per_node)(worker_cls)
+        self.remote_workers = [self.worker_class.remote(**worker_param)
+                               for i in range(0, self.num_nodes)]
         hosts = ray.get([worker.hostname.remote() for worker in self.remote_workers])
         hosts_spec, name_rank_to_id, host_to_size = _hosts_to_hosts_spec(hosts)
         self.host_alloc_plan = _allocate(",".join(hosts_spec), self.num_nodes)
@@ -205,6 +208,6 @@ class HorovodRayTrainer:
             local_envs["HOROVOD_CROSS_RANK"] = str(alloc_info.cross_rank)
             local_envs["HOROVOD_CROSS_SIZE"] = str(alloc_info.cross_size)
 
-    def train(self, func):
+    def run(self, func):
         ray.wait([self.remote_workers[i].run.remote(self.per_worker_envs[i], func)
                   for i in range(self.num_nodes)])
