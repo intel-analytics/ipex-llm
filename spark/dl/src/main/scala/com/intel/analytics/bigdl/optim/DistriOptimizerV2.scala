@@ -178,8 +178,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       Run the forwards/backwards pass using multiple threads in each partition, and track the
       number of model updates that finished before the thread timeout mechanism.
      */
-    val startTime = System.nanoTime()
-    val successModels = dataRDD.zipPartitions(models, preservesPartitioning = true) {
+    val training = dataRDD.zipPartitions(models, preservesPartitioning = true) {
       (data, iter) =>
         val cached = iter.next()
         /*
@@ -206,13 +205,17 @@ object DistriOptimizerV2 extends AbstractOptimizer {
         recordsNum += results.records
 
         Iterator.single(results.successed)
-      }.reduce(_ + _)
-    
-    parameterSync(lossSum.value, successModels, cacheOfMaster, models, context)
-    val endTime = System.nanoTime() - startTime
-    
+      }
+
+    trainingTrace.traceIteration(
+      { val successModels = training.reduce(_ + _)
+        parameterSync(lossSum.value, successModels,
+          cacheOfMaster, models, context)
+        }
+      )
+
     driverStatesUpdate(cacheOfMaster, recordsNum.value,
-      context, trainingTrace, endTime, metrics)
+      context, trainingTrace, metrics)
   }
 
   /**
@@ -455,7 +458,6 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     recordsNum: Int,
     context: TrainingContext[T],
     trainingTrace: TrainingTrace,
-    time: Float,
     metrics: Metrics)(
     implicit ev: TensorNumeric[T]): Unit = {
     val optimMethods = cacheOfMaster.optimMethods
@@ -466,7 +468,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     }
 
     val trainingTakes = trainingTrace.trainingTakes
-    val iterationTakes = time
+    val iterationTakes = trainingTrace.iterationTakes
     val throughput = recordsNum.toFloat / (iterationTakes / 1e9f)
     val records = trainingTrace.updateRecords(recordsNum).recordsOfEpoch
     val _header = header(trainingTrace.epochs, records, context.numSamples,
