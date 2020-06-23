@@ -35,8 +35,9 @@ MTNetGridRandomRecipe(num_rand_samples=1,
                  epochs=5,
                  training_iteration=10,
                  time_step=[3, 4],
-                 filter_size=[2, 4],
                  long_num=[3, 4],
+                 cnn_height=[2, 3],
+                 cnn_hid_size=[32, 50, 100],
                  ar_size=[2, 3],
                  batch_size=[32, 64])
 ```
@@ -45,10 +46,11 @@ MTNetGridRandomRecipe(num_rand_samples=1,
 * :param training_iteration: no. of iterations for training (n epochs) in trials
 * :param epochs: no. of epochs to train in each iteration
 * :param time_step: random search candidates for model param "time_step"
-* :param filter_size: random search candidates for model param "filter_size"
 * :param long_num: random search candidates for model param "long_num"
 * :param ar_size: random search candidates for model param "ar_size"
 * :param batch_size: grid search candidates for batch size
+* :param cnn_height: random search candidates for model param "cnn_height"
+* :param cnn_hid_size: random search candidates for model param "cnn_hid_size"
 
 ### RandomRecipe
 Pure random sample Recipe. Often used as baseline.

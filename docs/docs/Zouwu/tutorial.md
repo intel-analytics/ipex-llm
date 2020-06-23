@@ -45,12 +45,12 @@ lstm_forecaster = LSTMForecaster(target_dim=1,
 #build a mtnet forecast model
 mtnet_forecaster = MTNetForecaster(target_dim=1,
                         feature_dim=4,
-                        lb_long_steps=1,
-                        lb_long_stepsize=3,
+                        long_series_num=1,
+                        series_length=3,
                         ar_window_size=2,
-                        cnn_kernel_size=2)
+                        cnn_height=2)
 ```
- 
+
 2.Use ```forecaster.fit/evalute/predict``` in the same way as [tfpark.KerasModel](https://analytics-zoo.github.io/master/#APIGuide/TFPark/model/)
 
 
@@ -121,10 +121,10 @@ ray_ctx.init()
 
 Both AutoTSTrainer and TSPipeline accepts data frames as input. An exmaple data frame looks like below.
 
-  |datetime|value|extra_feature_1|extra_feature_2|
-  | --------|----- |---| ---|
-  |2019-06-06|1.2|1|2|
-  |2019-06-07|2.3|0|2|
+|datetime|value|extra_feature_1|extra_feature_2|
+| --------|----- |---| ---|
+|2019-06-06|1.2|1|2|
+|2019-06-07|2.3|0|2|
 
 ---
 
@@ -144,7 +144,7 @@ Both AutoTSTrainer and TSPipeline accepts data frames as input. An exmaple data 
                          extra_features_col=None)
 
 ```
- 
+
 2.Use ```AutoTSTrainer.fit``` on train data and validation data. A TSPipeline will be returned. 
 ```python
  ts_pipeline = trainer.fit(train_df, validation_df)
@@ -169,5 +169,5 @@ Both AutoTSTrainer and TSPipeline accepts data frames as input. An exmaple data 
  # ... do sth. e.g. incremental fitting
  loaded_ppl.save(another_file)
 ```
- 
+
 
