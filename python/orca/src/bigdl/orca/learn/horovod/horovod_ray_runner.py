@@ -190,6 +190,7 @@ class HorovodRayRunner:
             "HOROVOD_CPU_OPERATIONS": "gloo",
             "HOROVOD_GLOO_IFACE": iface,
             "PYTHONUNBUFFERED": '1',
+            "OMP_NUM_THREADS": str(self.cores_per_node)
         }
 
         for key in os.environ:
