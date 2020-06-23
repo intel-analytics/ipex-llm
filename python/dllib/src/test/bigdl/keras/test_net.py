@@ -22,7 +22,7 @@ from test.zoo.pipeline.utils.test_utils import ZooTestCase
 import zoo.pipeline.api.keras.layers as ZLayer
 from zoo.pipeline.api.keras.models import Model as ZModel
 from zoo.pipeline.api.keras.models import Sequential as ZSequential
-from zoo.pipeline.api.net import Net, TFNet
+from zoo.pipeline.api.net import Net
 from bigdl.nn.layer import Linear, Sigmoid, SoftMax, Model as BModel
 from bigdl.util.common import *
 from bigdl.nn.layer import Sequential
