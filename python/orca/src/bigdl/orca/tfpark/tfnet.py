@@ -23,30 +23,17 @@ import six
 from pyspark import RDD
 
 from bigdl.nn.layer import Layer
-from zoo.common import JTensor, Sample
+from zoo.common import JTensor
 from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.common.utils import callZooFunc
 from zoo.feature.image import ImageSet
-from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset, TFDataDataset
+from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset
+from zoo.util.utils import to_sample_rdd
 import logging
 
 if sys.version >= '3':
     long = int
     unicode = str
-
-
-def to_sample_rdd(x, y, sc, num_slices=None):
-    """
-    Conver x and y into RDD[Sample]
-    :param sc: SparkContext
-    :param x: ndarray and the first dimension should be batch
-    :param y: ndarray and the first dimension should be batch
-    :param numSlices:
-    :return:
-    """
-    x_rdd = sc.parallelize(x, num_slices)
-    y_rdd = sc.parallelize(y, num_slices)
-    return x_rdd.zip(y_rdd).map(lambda item: Sample.from_ndarray(item[0], item[1]))
 
 
 class TFNet(Layer):
