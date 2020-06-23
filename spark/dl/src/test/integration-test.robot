@@ -76,7 +76,7 @@ Run Spark Test
    Log To Console                   begin inceptionV1 train
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 20g --executor-memory 40g --executor-cores 10 --total-executor-cores 20 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 40 -f ${imagenet_test_data_source} --learningRate 0.1 -i 100
    Log To Console                   begin text classification
-   Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
+   Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 30g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
    Remove Input
 
 Spark2.2 Test Suite
