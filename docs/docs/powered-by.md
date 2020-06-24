@@ -31,6 +31,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>[Image Similarity-Based House Recommendations and Search](https://software.intel.com/content/www/us/en/develop/articles/using-bigdl-to-build-image-similarity-based-house-recommendations.html)
 * __NeuSoft/BMW__
 <br>[Neusoft RealSight APM partners with Intel to create an application performance management platform with active defense capabilities](https://platform.neusoft.com/2020/01/17/xw-intel.html) (in Chinese)
+<br>[Landing Haima Automobile|JD.com, Neusoft and Intel jointly build an intelligent connected car cloud platform](https://platform.neusoft.com/2020/06/11/jjfa-haimaqiche.html) (in Chinese)
 * __Office Depot__
 <br>[Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://software.intel.com/en-us/articles/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on)
 <br>[Office Depot product recommender using Analytics Zoo on AWS](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079)
