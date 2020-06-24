@@ -32,7 +32,8 @@ import com.intel.analytics.zoo.feature.image._
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.feature.MinMaxScaler
+import org.apache.spark.ml.feature.{MinMaxScaler, VectorAssembler}
+import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.mllib.linalg.Vectors
@@ -440,6 +441,30 @@ class NNClassifierSpec extends ZooSpecHelper {
     val model = XGBClassifierModel.load(modelPath, 2)
     model.setFeaturesCol(Array("sepal length", "sepal width", "petal length", "petal width"))
     model.transform(df).count()
+  }
+
+  "XGBRegressorModel" should "work" in {
+    val path = getClass.getClassLoader.getResource("XGBClassifier").getPath
+    val filePath = path + "/regressor.csv"
+    val modelPath = path + "/xgbregressor0.model"
+
+    val spark = SparkSession.builder().getOrCreate()
+    val df = spark.read.format("csv")
+      .option("sep", ",")
+      .option("inferSchema", true)
+      .option("header", true)
+      .load(filePath)
+
+    val vectorAssembler = new VectorAssembler()
+      .setInputCols(Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"))
+      .setOutputCol("features_vec")
+    val data = vectorAssembler.transform(df)
+    val asDense = udf((v: Vector) => v.toDense)
+    val xgbInput = data.withColumn("features", asDense(col("features_vec")))
+
+    val model = XGBRegressorModel.loadFromXGB(modelPath)
+
+    model.transform(xgbInput).count()
   }
 }
 
