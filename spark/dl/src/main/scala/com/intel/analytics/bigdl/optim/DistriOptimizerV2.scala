@@ -207,7 +207,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
 
         Iterator.single(results.successed)
       }.reduce(_ + _)
-      
+
       parameterSync(lossSum.value, successModels, cacheOfMaster, models, context)
     })
 
