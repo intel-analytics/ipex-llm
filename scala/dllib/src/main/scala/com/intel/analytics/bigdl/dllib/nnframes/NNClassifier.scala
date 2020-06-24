@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.zoo.feature.common._
 import com.intel.analytics.zoo.pipeline.nnframes.NNModel.NNModelWriter
-import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper}
+import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper, XGBoostRegressionModel}
 import org.apache.spark.ml.DefaultParamsWriterWrapper
 import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.feature.VectorAssembler
@@ -359,5 +359,54 @@ class XGBClassifierModel private[zoo](
 object XGBClassifierModel {
   def load(path: String, numClass: Int): XGBClassifierModel = {
     new XGBClassifierModel(XGBoostHelper.load(path, numClass))
+  }
+}
+
+/**
+ * [[XGBRegressorModel]] xgboost wrapper of XGBRegressorModel.
+ */
+class XGBRegressorModel private[zoo](val model: XGBoostRegressionModel) {
+  var predictionCol: String = null
+  def setPredictionCol(value: String): this.type = {
+    predictionCol = value
+    this
+  }
+
+  def setInferBatchSize(value: Int): this.type = {
+    model.setInferBatchSize(value)
+    this
+  }
+
+  def setFeaturesCol(value: String): this.type = {
+    model.setFeaturesCol(value)
+    this
+  }
+
+  def transform(dataset: DataFrame): DataFrame = {
+    var output = model.transform(dataset)
+    if(predictionCol != null) {
+      output = output.withColumnRenamed("prediction", predictionCol)
+    }
+    output
+  }
+
+  def save(path: String): Unit = {
+    model.write.overwrite().save(path)
+  }
+}
+
+object XGBRegressorModel {
+  /**
+   * Load pretrained Zoo XGBRegressorModel.
+   */
+  def load(path: String): XGBRegressorModel = {
+    new XGBRegressorModel(XGBoostRegressionModel.load(path))
+  }
+
+  /**
+   * Load pretrained xgboost XGBoostRegressionModel.
+   */
+  def loadFromXGB(path: String): XGBRegressorModel = {
+    new XGBRegressorModel(XGBoostHelper.load(path))
   }
 }

@@ -22,4 +22,10 @@ object XGBoostHelper {
     val _booster = XGBoost.loadModel(path)
     new XGBoostClassificationModel("XGBClassifierModel", numClass, _booster)
   }
+
+  def load(path: String): XGBoostRegressionModel = {
+    import ml.dmlc.xgboost4j.scala.XGBoost
+    val _booster = XGBoost.loadModel(path)
+    new XGBoostRegressionModel("XGBRegressorModel", _booster)
+  }
 }
