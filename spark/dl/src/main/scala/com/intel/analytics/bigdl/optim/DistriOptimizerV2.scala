@@ -178,7 +178,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       Run the forwards/backwards pass using multiple threads in each partition, and track the
       number of model updates that finished before the thread timeout mechanism.
      */
-    val training = dataRDD.zipPartitions(models, preservesPartitioning = true) {
+    trainingTrace.traceIteration({
+      val successModels = dataRDD.zipPartitions(models, preservesPartitioning = true) {
       (data, iter) =>
         val cached = iter.next()
         /*
@@ -205,14 +206,10 @@ object DistriOptimizerV2 extends AbstractOptimizer {
         recordsNum += results.records
 
         Iterator.single(results.successed)
-      }
-
-    trainingTrace.traceIteration(
-      { val successModels = training.reduce(_ + _)
-        parameterSync(lossSum.value, successModels,
-          cacheOfMaster, models, context)
-        }
-      )
+      }.reduce(_ + _)
+      
+      parameterSync(lossSum.value, successModels, cacheOfMaster, models, context)
+    })
 
     driverStatesUpdate(cacheOfMaster, recordsNum.value,
       context, trainingTrace, metrics)
