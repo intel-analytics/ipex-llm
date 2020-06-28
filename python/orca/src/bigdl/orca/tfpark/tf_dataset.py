@@ -744,9 +744,11 @@ class TFDataDataset(TFDataset):
             self._per_partition_batch_size = self.batch_per_thread
             self._shard_num = self.total_core_num
 
-        tf_data_dataset = tf_data_dataset.batch(self._per_partition_batch_size)
+        tf_data_dataset = tf_data_dataset.batch(self._per_partition_batch_size, drop_remainder=True)
         if validation_dataset is not None:
-            validation_dataset = validation_dataset.batch(self._per_partition_batch_size)
+            drop_remainder = self.hard_code_batch_size
+            validation_dataset = validation_dataset.batch(self._per_partition_batch_size,
+                                                          drop_remainder=drop_remainder)
 
         shard_index = tf.placeholder(dtype=tf.int64, shape=())
         tf_data_dataset = tf_data_dataset.shard(self._shard_num, shard_index)
