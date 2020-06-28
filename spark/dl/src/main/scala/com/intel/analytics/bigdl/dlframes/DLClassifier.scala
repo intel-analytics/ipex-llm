@@ -34,6 +34,9 @@ import scala.reflect.ClassTag
  * @param criterion  BigDL criterion method
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
+@deprecated("`DLClassifier` is deprecated." +
+  "com.intel.analytics.bigdl.dlframes is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class DLClassifier[T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
@@ -65,6 +68,9 @@ class DLClassifier[T: ClassTag](
  * @param model BigDL module to be optimized
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
+@deprecated("`DLClassifierModel` is deprecated." +
+  "com.intel.analytics.bigdl.dlframes is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class DLClassifierModel[T: ClassTag](
     @transient override val model: Module[T],
     featureSize : Array[Int],
