@@ -79,7 +79,7 @@ if [ -f "$FILENAME" ]
 then
     echo "$FILENAME already exists"
 else
-    wget https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model -P ${ANALYTICS_ZOO_HOME}/apps/object-detection/
+    wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model -P ${ANALYTICS_ZOO_HOME}/apps/object-detection/
 fi
 FILENAME="${ANALYTICS_ZOO_HOME}/apps/object-detection/train_dog.mp4"
 if [ -f "$FILENAME" ]
@@ -92,7 +92,7 @@ if [ -f "$FILENAME" ]
 then
     echo "$FILENAME already exists"
 else
-    wget https://s3.amazonaws.com/analytics-zoo-data/train_dog.mp4 -P ${ANALYTICS_ZOO_HOME}/apps/object-detection/
+    wget $FTP_URI/analytics-zoo-data/apps/object-detection/train_dog.mp4  -P ${ANALYTICS_ZOO_HOME}/apps/object-detection/
 fi
 
 FILENAME="~/.imageio/ffmpeg/ffmpeg-linux64-v3.3.1"

@@ -123,8 +123,8 @@ RUN mkdir -p /opt/cluster-serving && \
 ADD https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/pyzoo/test/zoo/resources/serving_quick_start/cat1.jpeg /opt/cluster-serving/test_image 
 ADD https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/pyzoo/test/zoo/resources/serving_quick_start/dog1.jpeg /opt/cluster-serving/test_image
 ADD https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/pyzoo/test/zoo/resources/serving_quick_start/fish1.jpeg /opt/cluster-serving/test_image 
-ADD https://analytics-zoo-models.s3-ap-southeast-1.amazonaws.com/tf-res50/frozen_inference_graph.pb /opt/cluster-serving/model/tf_res50/frozen_inference_graph.pb
-ADD https://analytics-zoo-models.s3-ap-southeast-1.amazonaws.com/tf-res50/graph_meta.json /opt/cluster-serving/model/tf_res50/graph_meta.json
+ADD https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/tf-res50/frozen_inference_graph.pb /opt/cluster-serving/model/tf_res50/frozen_inference_graph.pb
+ADD https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/tf-res50/graph_meta.json /opt/cluster-serving/model/tf_res50/graph_meta.json
 RUN chmod a+x ${ANALYTICS_ZOO_HOME}/bin/cluster-serving/*
 RUN cd /opt/cluster-serving && cluster-serving-init && cd ..
 
