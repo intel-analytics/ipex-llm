@@ -40,8 +40,6 @@ import scala.reflect.ClassTag
  *                    'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class Cropping3D[T: ClassTag](
    val dim1Crop: Array[Int] = Array(1, 1),
    val dim2Crop: Array[Int] = Array(1, 1),

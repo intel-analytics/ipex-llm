@@ -55,8 +55,6 @@ import scala.reflect.ClassTag
  *                   set 'sharedAxes = Array(1,2)'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class SReLU[T: ClassTag](
    val tLeftInit: InitializationMethod = Zeros,
    val aLeftInit: InitializationMethod = Xavier,

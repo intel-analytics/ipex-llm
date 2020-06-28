@@ -27,8 +27,6 @@ import scala.reflect.ClassTag
  * Do not create a new instance of it or use it in a model.
  * Please use its child classes, 'GlobalAveragePooling3D' and 'GlobalMaxPooling3D' instead.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 abstract class GlobalPooling3D[T: ClassTag](
    val dimOrdering: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

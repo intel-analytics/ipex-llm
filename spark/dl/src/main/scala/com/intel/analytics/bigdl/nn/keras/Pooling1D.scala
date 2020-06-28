@@ -27,8 +27,6 @@ import scala.reflect.ClassTag
  * Do not create a new instance of it or use it in a model.
  * Please use its child classes, 'AveragePooling1D' and 'MaxPooling1D' instead.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 abstract class Pooling1D[T: ClassTag](
    val poolLength: Int = 2,
    val stride: Int = -1,

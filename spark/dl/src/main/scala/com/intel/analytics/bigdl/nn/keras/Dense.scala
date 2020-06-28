@@ -46,8 +46,6 @@ import scala.reflect.ClassTag
  *             Default is true.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class Dense[T: ClassTag](
    val outputDim: Int,
    val init: InitializationMethod = Xavier,

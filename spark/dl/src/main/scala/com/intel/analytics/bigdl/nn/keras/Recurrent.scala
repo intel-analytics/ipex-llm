@@ -29,8 +29,6 @@ import scala.reflect.ClassTag
  * Do not create a new instance of it or use it in a model.
  * Please use its child classes, 'SimpleRNN', 'LSTM' and 'GRU' instead.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 abstract class Recurrent[T: ClassTag](
    val outputDim: Int,
    val returnSequences: Boolean = false,

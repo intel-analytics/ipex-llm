@@ -27,8 +27,6 @@ import scala.reflect.ClassTag
  * Do not create a new instance of it or use it in a model.
  * Please use its child classes, 'GlobalAveragePooling1D' and 'GlobalMaxPooling1D' instead.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 abstract class GlobalPooling1D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {

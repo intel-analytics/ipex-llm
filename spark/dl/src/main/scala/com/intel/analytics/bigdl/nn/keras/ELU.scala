@@ -35,8 +35,6 @@ import scala.reflect.ClassTag
  * @param alpha Double, scale for the negative factor. Default is 1.0.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class ELU[T: ClassTag](
    val alpha: Double = 1.0,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

@@ -46,8 +46,6 @@ import scala.reflect.ClassTag
  *                    For NCHW, axis along which to normalize is 1. For NHWC, axis is 3.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class BatchNormalization[T: ClassTag](
    val epsilon: Double = 0.001,
    val momentum: Double = 0.99,

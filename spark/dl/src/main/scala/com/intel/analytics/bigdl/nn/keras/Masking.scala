@@ -36,8 +36,6 @@ import scala.reflect.ClassTag
  *                  then the timestep will masked (skipped) in all downstream layers.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class Masking[T: ClassTag](
    val maskValue: Double = 0.0,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
