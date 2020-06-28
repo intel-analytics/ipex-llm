@@ -74,7 +74,7 @@ class TestSparkXShards(ZooTestCase):
         data_shard = zoo.orca.data.pandas.read_json(file_path, self.sc,
                                                     orient='columns', lines=True)
         partitions_num_1 = data_shard.rdd.getNumPartitions()
-        assert partitions_num_1 == 4, "number of partition should be 4"
+        assert partitions_num_1 == 2, "number of partition should be 2"
         data_shard.cache()
         partitioned_shard = data_shard.repartition(1)
         assert data_shard.is_cached(), "data_shard should be cached"
@@ -110,7 +110,7 @@ class TestSparkXShards(ZooTestCase):
     def test_partition_by_single_column(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path, self.sc)
-        partitioned_shard = data_shard.partition_by(cols="location")
+        partitioned_shard = data_shard.partition_by(cols="location", num_partitions=4)
         partitions = partitioned_shard.rdd.glom().collect()
         assert len(partitions) == 4
 

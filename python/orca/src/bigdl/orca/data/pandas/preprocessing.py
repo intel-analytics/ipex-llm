@@ -107,7 +107,10 @@ def read_file_spark(context, file_path, file_type, **kwargs):
     if not file_paths:
         raise Exception("The file path is invalid/empty or does not include csv/json files")
 
-    rdd = context.parallelize(file_paths, node_num * core_num)
+    num_files = len(file_paths)
+    total_cores = node_num * core_num
+    num_partitions = num_files if num_files < total_cores else total_cores
+    rdd = context.parallelize(file_paths, num_partitions)
 
     if prefix == "hdfs":
         pd_rdd = rdd.mapPartitions(lambda iter: read_pd_hdfs_file_list(iter, file_type, **kwargs))
