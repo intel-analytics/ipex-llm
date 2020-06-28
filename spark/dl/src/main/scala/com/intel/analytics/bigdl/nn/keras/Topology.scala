@@ -32,9 +32,6 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-@deprecated("`KerasModel` is deprecated." +
-  "com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T] {
 

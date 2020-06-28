@@ -51,7 +51,6 @@ import scala.reflect.ClassTag
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-
 class GRU[T: ClassTag](
    outputDim: Int,
    val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
