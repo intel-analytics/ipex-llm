@@ -139,8 +139,29 @@ class RayPartition(object):
         # The ObjectID would contain a list of data.
         else:
             import pyarrow.plasma as plasma
-            client = plasma.connect(self.object_store_address)
-            return client.get(self.shard_list)
+            # Default num_retries=-1 would try 80 times.
+            self.client = plasma.connect(self.object_store_address, num_retries=5)
+            return self.client.get(self.shard_list)
+
+    def __del__(self):
+        if self.object_store_address:
+            import logging
+            logging.basicConfig(level=logging.WARNING)
+            logger = logging.getLogger()
+            try:
+                if "client" not in self.__dict__:
+                    import pyarrow.plasma as plasma
+                    self.client = plasma.connect(self.object_store_address, num_retries=5)
+                if self.client.contains(self.shard_list):
+                    self.client.delete([self.shard_list])
+                assert not self.client.contains(self.shard_list)
+                logger.info("Removed data from plasma object store on node " + str(self.node_ip))
+                self.client.disconnect()
+                del self.client
+            except Exception as e:
+                logger.warning(e)
+                logger.warning("Error occurred when removing the data from the plasma store "
+                               "on node " + str(self.node_ip))
 
 
 class SparkXShards(XShards):

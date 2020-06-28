@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 
 import mxnet as mx
-from zoo.orca.learn.mxnet import MXNetTrainer, create_trainer_config
+from zoo.orca.learn.mxnet import Estimator, create_config
 
 np.random.seed(1337)  # for reproducibility
 
@@ -59,11 +59,11 @@ def get_metrics(config):
 
 class TestMXNetSymbol(TestCase):
     def test_symbol(self):
-        config = create_trainer_config(batch_size=32, log_interval=2, seed=42)
-        trainer = MXNetTrainer(config, get_train_data_iter, get_model,
-                               validation_metrics_creator=get_metrics,
-                               test_data=get_test_data_iter, eval_metrics_creator=get_metrics)
-        trainer.train(nb_epoch=2)
+        config = create_config(batch_size=32, log_interval=2, seed=42)
+        estimator = Estimator(config, get_model, validation_metrics_creator=get_metrics,
+                              eval_metrics_creator=get_metrics)
+        estimator.fit(get_train_data_iter, get_test_data_iter, nb_epoch=2)
+        estimator.shutdown()
 
 
 if __name__ == "__main__":
