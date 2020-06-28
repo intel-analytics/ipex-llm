@@ -706,6 +706,35 @@ now=$(date "+%s")
 time19=$((now-start))
 echo "#19 automl-nyc-taxi time used:$time19 seconds"
 
+echo "#20 start app test for zouwu-anomaly-detect"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect
+
+chmod +x ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/get_data.sh
+${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/get_data.sh
+
+chmod +x ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/extract_data.sh
+${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/extract_data.sh
+
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
+sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/
+
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
+cd -
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "zouwu-anomaly-detect failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time20=$((now-start))
+echo "#20 zouwu-anomaly-detect time used:$time20 seconds"
+
 fi
 
 # This should be done at the very end after all tests finish.
