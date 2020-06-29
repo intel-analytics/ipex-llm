@@ -19,6 +19,7 @@ import random
 from bigdl.util.common import get_node_and_core_number
 from pyspark.context import SparkContext
 
+from zoo import ZooContext
 from zoo.ray import RayContext
 from zoo.orca.data.shard import RayXShards, RayPartition, SparkXShards
 from zoo.orca.data.utils import *
@@ -107,22 +108,48 @@ def read_file_spark(context, file_path, file_type, **kwargs):
     if not file_paths:
         raise Exception("The file path is invalid/empty or does not include csv/json files")
 
-    num_files = len(file_paths)
-    total_cores = node_num * core_num
-    num_partitions = num_files if num_files < total_cores else total_cores
-    rdd = context.parallelize(file_paths, num_partitions)
+    if ZooContext.orca_pandas_read_backend == "pandas":
+        num_files = len(file_paths)
+        total_cores = node_num * core_num
+        num_partitions = num_files if num_files < total_cores else total_cores
+        rdd = context.parallelize(file_paths, num_partitions)
 
-    if prefix == "hdfs":
-        pd_rdd = rdd.mapPartitions(lambda iter: read_pd_hdfs_file_list(iter, file_type, **kwargs))
-    elif prefix == "s3":
-        pd_rdd = rdd.mapPartitions(lambda iter: read_pd_s3_file_list(iter, file_type, **kwargs))
+        if prefix == "hdfs":
+            pd_rdd = rdd.mapPartitions(
+                lambda iter: read_pd_hdfs_file_list(iter, file_type, **kwargs))
+        elif prefix == "s3":
+            pd_rdd = rdd.mapPartitions(
+                lambda iter: read_pd_s3_file_list(iter, file_type, **kwargs))
+        else:
+            def loadFile(iterator):
+                for x in iterator:
+                    df = read_pd_file(x, file_type, **kwargs)
+                    yield df
+
+            pd_rdd = rdd.mapPartitions(loadFile)
     else:
-        def loadFile(iterator):
-            for x in iterator:
-                df = read_pd_file(x, file_type, **kwargs)
-                yield df
+        from pyspark.sql import SQLContext
+        sqlContext = SQLContext.getOrCreate(context)
+        spark = sqlContext.sparkSession
+        # TODO: add S3 confidentials
+        if file_type == "json":
+            df = spark.read.json(file_paths, **kwargs)
+        elif file_type == "csv":
+            df = spark.read.csv(file_paths, **kwargs)
+        else:
+            raise Exception("Unsupported file type")
+        if df.rdd.getNumPartitions() < node_num:
+            df = df.repartition(node_num)
 
-        pd_rdd = rdd.mapPartitions(loadFile)
+        def to_pandas(columns):
+            def f(iter):
+                import pandas as pd
+                data = list(iter)
+                yield pd.DataFrame(data, columns=columns)
+
+            return f
+
+        pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns))
 
     data_shards = SparkXShards(pd_rdd)
     return data_shards
