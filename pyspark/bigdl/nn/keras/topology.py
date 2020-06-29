@@ -18,6 +18,7 @@ from bigdl.nn.keras.layer import KerasLayer
 from bigdl.optim.optimizer import *
 from bigdl.nn.criterion import *
 import multiprocessing
+import warnings
 
 from bigdl.nn.layer import SharedStaticUtils, Container
 
@@ -209,6 +210,8 @@ class Sequential(KerasModel):
     This will be removed in future releases.
     """
     def __init__(self, jvalue=None, **kwargs):
+        warnings.warn("bigdl.nn.keras is deprecated in 0.11. "
+                      "Recommend to use Analytics Zoo's Keras API")
         super(Sequential, self).__init__(jvalue, **kwargs)
 
     @staticmethod
@@ -240,6 +243,8 @@ class Model(KerasModel):
     This will be removed in future releases.
     """
     def __init__(self, input, output, jvalue=None,  **kwargs):
+        warnings.warn("bigdl.nn.keras is deprecated in BigDL 0.11."
+                      "Recommend to use Analytics Zoo's Keras API")
         super(Model, self).__init__(jvalue,
                                     to_list(input),
                                     to_list(output),
