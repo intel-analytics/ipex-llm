@@ -37,14 +37,23 @@ Import the dependency and create an instance of `InputQueue`
 from zoo.serving.client import InputQueue
 input_api = InputQueue()
 ```
-To enqueue an list of string, specify key as `string*` and pass a list of str objects, list of str type input is usually used in Tensorflow models.
+To enqueue a list of string, pass a list of str objects, list of str type input is usually used in Tensorflow models.
 ```
-input_api.enqueue('my-string-input', string1=['hello', 'world'])
+input_api.enqueue('my-string-input', user_define_key=['hello', 'world'])
 ```
-To enqueue an image, `cv2` package is required. (Could be installed by `pip install opencv-python`)
+To enqueue an image, you could pass either image path or base64 encoded image bytes, the type of your parameter is identified by key of dict, see example below. If you pass image path, `cv2` package is required. (Could be installed by `pip install opencv-python`)
+
+To pass image path, use key `path`
 ```
-input_api.enqueue('my-image1', user_define_key='path/to/image1')
+image_path = "path/to/image"
+input_api.enqueue('my-image1', user_define_key={"path": image_path})
 ```
+To pass base64 encoded image bytes, use key `b64`
+```
+image_bytes = "base64_encoded_bytes"
+input_api.enqueue('my-image1', user_define_key={"b64": image_bytes})
+```
+
 To enqueue a tensor or sparse tensor, `numpy` package is required. (Would be installed while you installed Analytics Zoo, if not, could be installed by `pip install numpy`)
 
 To enqueue a tensor, pass a ndarray object.
@@ -72,15 +81,15 @@ tensor = [indices, values, shape]
 ```
 and enqueue it by
 ```
-input_api.enqueue(tensor)
+input_api.enqueue("my-sparse-tensor", input=tensor)
 ```
 
 To enqueue an instance containing several images, tensors and sparse tensors.
 ```
 import numpy as np
-input_api.enqueue_image('my-instance', 
-    img1='path/to/image1',
-    img2='path/to/image2
+input_api.enqueue('my-instance', 
+    img1={"path: 'path/to/image1'},
+    img2={"path: 'path/to/image2'},
     tensor1=np.array([1,2]), 
     tensor2=np.array([[1,3],[2,3]])
     sparse_tensor=[np.array([[0, 1, 4], [0, 2, 5]]),

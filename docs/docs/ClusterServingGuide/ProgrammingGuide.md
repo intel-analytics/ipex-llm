@@ -308,7 +308,7 @@ To enqueue an image
 ```
 from zoo.serving.client import InputQueue
 input_api = InputQueue()
-input_api.enqueue('my-image1', user_define_key='path/to/image1')
+input_api.enqueue('my-image1', user_define_key={"path: 'path/to/image1'})
 ```
 To enqueue an instance containing 1 image and 2 ndarray
 ```
@@ -317,7 +317,7 @@ import numpy as np
 input_api = InputQueue()
 t1 = np.array([1,2])
 t2 = np.array([[1,2], [3,4]])
-input_api.enqueue_image('my-instance', img='path/to/image', tensor1=t1, tensor2=t2)
+input_api.enqueue_image('my-instance', img={"path": 'path/to/image'}, tensor1=t1, tensor2=t2)
 ```
 There are 4 types of inputs in total, string, image, tensor, sparse tensor, which could represents nearly all types of models. For more details of usage, go to [API Guide](APIGuide.md)
 
