@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os.path
+import os
 from zoo import ZooContext
 
 import pytest
@@ -26,6 +26,7 @@ ray_ctx = None
 def orca_data_fixture():
     from zoo import init_spark_on_local
     from zoo.ray import RayContext
+    global sc
     global ray_ctx
     ZooContext._orca_eager_mode = True
     sc = init_spark_on_local(cores=4, spark_log_level="INFO")
@@ -45,16 +46,9 @@ def orca_data_fixture():
     sc.stop()
 
 
-# @pytest.fixture()
-# def setUpModule():
-#     sc = init_spark_on_local(cores=4, spark_log_level="INFO")
-#     ray_ctx = RayContext(sc=sc)
-#     ray_ctx.init()
-#
-#
-# def tearDownModule():
-#     ray_ctx.stop()
-#     sc.stop()
-
 def get_ray_ctx():
     return ray_ctx
+
+
+def get_spark_ctx():
+    return sc
