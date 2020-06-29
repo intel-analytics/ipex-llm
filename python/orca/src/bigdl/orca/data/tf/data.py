@@ -40,12 +40,15 @@ class TFDataDataset2(TFDataset):
                 "batch_size should be a multiple of num_shards, got" \
                 " batch_size {}, node_num {}".format(batch_size, node_num)
             batch_per_shard = batch_size // node_num
+            self.drop_remainder = True
         elif batch_per_thread > 0:
             batch_per_shard = batch_per_thread
+            self.drop_remainder = False
         else:
             raise ValueError("one of batch_size or batch_per_thread must be larger than 0")
 
-        self.rdd = dataset.as_graph_rdd(batch_per_shard).cache()
+        self.rdd = dataset.as_graph_rdd(batch_per_shard,
+                                        drop_remainder=self.drop_remainder).cache()
         meta_info = self.rdd.map(lambda x: x[1]).first()
         tensor_structure = meta_info["tensor_structure"]
         self.init_op_name = meta_info["init_op_name"]
@@ -54,7 +57,7 @@ class TFDataDataset2(TFDataset):
         self.table_init_op = meta_info["table_init_op"]
 
         if validation_dataset is not None:
-            self.val_rdd = validation_dataset.as_graph_rdd(batch_per_shard).cache()
+            self.val_rdd = validation_dataset.as_graph_rdd(batch_per_shard, False).cache()
             meta_info = self.val_rdd.map(lambda x: x[1]).first()
             self.val_init_op_name = meta_info["init_op_name"]
             self.val_output_names = meta_info["output_names"]
@@ -72,6 +75,9 @@ class TFDataDataset2(TFDataset):
         self.validation_dataset = validation_dataset
 
     def _get_prediction_data(self):
+        assert not self.drop_remainder, \
+            "sanity check: drop_remainder should be false in this case," \
+            " otherwise please report a bug"
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
                              self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
                              self.output_names, self.output_types, self.shard_index_op_name)
@@ -116,7 +122,7 @@ class Dataset(object):
         self.xshards = xshards
         self.create_dataset_fn = create_dataset_fn
 
-    def as_graph_rdd(self, batch_per_shard):
+    def as_graph_rdd(self, batch_per_shard, drop_remainder=True):
 
         create_dataset_fn = self.create_dataset_fn
 
@@ -130,7 +136,7 @@ class Dataset(object):
             datasets = [create_dataset_fn(data) for data in data_list]
             from functools import reduce
             dataset = reduce(lambda x, y: x.concatenate(y), datasets)
-            dataset = dataset.batch(batch_per_shard, True)
+            dataset = dataset.batch(batch_per_shard, drop_remainder)
             iterator = dataset.make_initializable_iterator()
             train_next_ops = nest.flatten(iterator.get_next())
             output_types = [t.as_datatype_enum
