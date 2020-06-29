@@ -17,6 +17,7 @@
 import numpy as np
 import sys
 import functools
+import logging
 
 from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
 from bigdl.transform.vision.image import FeatureTransformer
@@ -739,12 +740,28 @@ class TFDataDataset(TFDataset):
             # training case
             self._per_partition_batch_size = self.batch_size // self.node_num
             self._shard_num = self.node_num
+            self.drop_remainder = True
         else:
             # inference case
             self._per_partition_batch_size = self.batch_per_thread
             self._shard_num = self.total_core_num
+            if hard_code_batch_size:
+                self.drop_remainder = True
+                logging.warning("hard_code_batch_size is set to true, so we"
+                                " must drop remainder elements in the dataset"
+                                " to avoid outputting small batches, the dropped"
+                                " elements will not get processed. You can "
+                                "pad your dataset so that the total number "
+                                "of elements is divisible by the total batch size"
+                                " to avoid this.")
+            else:
+                self.drop_remainder = False
 
-        tf_data_dataset = tf_data_dataset.batch(self._per_partition_batch_size, drop_remainder=True)
+        if self.hard_code_batch_size:
+            self.drop_remainder = True
+
+        tf_data_dataset = tf_data_dataset.batch(self._per_partition_batch_size,
+                                                drop_remainder=self.drop_remainder)
         if validation_dataset is not None:
             drop_remainder = self.hard_code_batch_size
             validation_dataset = validation_dataset.batch(self._per_partition_batch_size,
