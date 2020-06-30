@@ -29,6 +29,7 @@ bert_config_path = os.path.join(resource_path, "bert/bert_config.json")
 class TestTextEstimators(ZooTestCase):
 
     def setup_method(self, method):
+        import tensorflow as tf
         tf.keras.backend.clear_session()
         super(TestTextEstimators, self).setup_method(method)
 
@@ -42,7 +43,7 @@ class TestTextEstimators(ZooTestCase):
                 return res, np.array(random.choice([0, 1]))
             else:
                 return res
-
+        import tensorflow as tf
         estimator = BERTClassifier(2, bert_config_path, optimizer=tf.train.AdamOptimizer())
         rdd = self.sc.parallelize([gen_record() for i in range(8)])
         # Training is too slow and memory consuming for a unit test. Skip here. Tested manually.
@@ -70,6 +71,7 @@ class TestTextEstimators(ZooTestCase):
             else:
                 res["unique_ids"] = np.array(np.random.randint(100))
                 return res
+        import tensorflow as tf
         estimator = BERTSQuAD(bert_config_path, optimizer=tf.train.AdamOptimizer())
         # Training is too slow and memory consuming for a unit test. Skip here. Tested manually.
         # rdd = self.sc.parallelize([gen_record() for i in range(8)])
@@ -91,6 +93,7 @@ class TestTextEstimators(ZooTestCase):
                 return res, np.array(np.random.randint(10, size=2))
             else:
                 return res
+        import tensorflow as tf
         estimator = BERTNER(10, bert_config_path, optimizer=tf.train.AdamOptimizer())
         # Training is too slow and memory consuming for a unit test. Skip here. Tested manually.
         # rdd = self.sc.parallelize([gen_record() for i in range(8)])
