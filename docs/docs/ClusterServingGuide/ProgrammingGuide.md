@@ -139,7 +139,9 @@ Go to `analytics-zoo/bin/cluster-serving`, run `cluster-serving-init`.
 
 Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
 ##### Pip
-`pip install analytics-zoo`. And go to any directory, run `cluster-serving-init`.
+Use `pip install analytics-zoo` to install release stable version. For latest nightly built version, download the wheel at [download page](https://sourceforge.net/projects/analytics-zoo/files/zoo-py/) and use `pip` to install it.
+
+Then, go to any directory, run `cluster-serving-init`.
 
 Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
 ### 2. Configuration
@@ -299,10 +301,13 @@ cluster-serving-shutdown
 
 If you are using Docker, you could also run `docker rm` to shutdown Cluster Serving.
 ### 4. Model Inference
-We support Python API for conducting inference with Data Pipeline in Cluster Serving. The requirements of API are `opencv-python`, `pyyaml`, `redis`.
+We support Python API and HTTP RESTful API for conducting inference with Data Pipeline in Cluster Serving. 
+
+#### Python API
+For Python API, the requirements of python packages are `opencv-python`(for raw image only), `pyyaml`, `redis`. You can use `InputQueue` and `OutputQueue` to connect to data pipeline by providing the pipeline url, e.g. `my_input_queue = InputQueue(host, port)` and `my_output_queue = OutputQueue(host, port)`. If parameters are not provided, default url `localhost:6379` would be used.
 
 We provide some basic usages here, for more details, please see [API Guide](APIGuide.md).
-#### Input and Output API
+##### Input and Output API
 To input data to queue, you need a `InputQueue` instance, and using `enqueue` method, for each input, give a key correspond to your model or give arbitrary key if your model does not care about it.
 
 To enqueue an image
@@ -329,7 +334,7 @@ output_api = OutputQueue()
 img1_result = output_api.query('img1')
 all_result = output_api.dequeue() # the output queue is empty after this code
 ```
-#### Output Format
+##### Output Format
 Consider the code above, in [Input and Output API](#input-and-output-api) Section.
 ```
 img1_result = output_api.query('img1')
@@ -344,10 +349,10 @@ import json
 result_class_prob_map = json.loads(img1_result)
 ```
 
-### 5. HTTP Server
-We provide a HTTP server to support RESTful HTTP requests. User can submit HTTP requests to the HTTP server through RESTful APIs. The HTTP server will parse the input requests and pub them to Redis input queues, and also retrieve the output results and render them as json results in HTTP responses. The serving backend will leverage the cluster serving.
+#### HTTP RESTful API
+For HTTP RESTful API, we provide a HTTP server to support RESTful HTTP requests. User can submit HTTP requests to the HTTP server through RESTful APIs. The HTTP server will parse the input requests and pub them to Redis input queues, and also retrieve the output results and render them as json results in HTTP responses. The serving backend will leverage the cluster serving.
 
-### Start the HTTP Server
+##### Start the HTTP Server
 User can download a analytics-zoo-${VERSION}-http.jar from the Nexus Repository with GAVP: 
 ```
 <groupId>com.intel.analytics.zoo</groupId>
@@ -367,7 +372,7 @@ And check the status of the HTTP server with:
 curl  http://${BINDED_HOST_IP}:${BINDED_HOST_PORT}/
 ```
 If you get a response like "welcome to analytics zoo web serving frontend", that means the HTTP server is started successfully.
-#### Start options
+##### Start options
 User can pass options to the HTTP server when start it:
 ```
 java -jar analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ZOO_VERSION}-http.jar --redisHost="172.16.0.109"
@@ -388,7 +393,7 @@ All the supported parameter are listed here:
 
 **User can adjust these options to tune the performance of the HTTP server.**
 
-#### RESTful API
+##### RESTful API
 This part describes API endpoints and end-to-end examples on usage. 
 The requests and responses are in JSON format. The composition of them depends on the requests type or verb. See the APIs for details.
 In case of error, all APIs will return a JSON object in the response body with error as key and the error message as the value:
