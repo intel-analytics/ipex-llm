@@ -24,6 +24,8 @@ import com.intel.analytics.bigdl.utils.{Node, Shape}
 
 import scala.reflect.ClassTag
 
+@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](KerasLayer.addBatch(inputShape)) {
 
