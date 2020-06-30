@@ -162,6 +162,10 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
 }
 
+
+@deprecated("`Model` is deprecated." +
+  "com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
       private val _outputs : Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
   extends KerasModel[T] {
@@ -259,6 +263,9 @@ object Model extends KerasLayerSerializable{
 
 }
 
+@deprecated("`Sequential` is deprecated." +
+  "com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "and will be removed in future releases", "0.10.0")
 class Sequential[T: ClassTag]()
 (implicit ev: TensorNumeric[T]) extends KerasModel[T] {
 
