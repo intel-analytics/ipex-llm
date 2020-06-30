@@ -17,7 +17,8 @@ from bigdl.optim.optimizer import MaxIteration
 from zoo.tfpark.gan.gan_estimator import GANEstimator
 
 from zoo import init_nncontext
-from zoo.tfpark import TFDataset, ZooOptimizer
+from zoo.tfpark import TFDataset
+from zoo.tfpark import ZooOptimizer
 import numpy as np
 import matplotlib.pyplot as plt
 
