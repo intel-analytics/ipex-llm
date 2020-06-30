@@ -111,3 +111,4 @@ In the above command
 * -f: where you put your MNIST data
 * --model: the model snapshot file
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
+* --optimizerVersion: option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".

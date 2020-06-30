@@ -44,7 +44,8 @@ object Utils {
     nesterov: Boolean = true,
     graphModel: Boolean = false,
     warmupEpoch: Int = 0,
-    maxLr: Double = 0.0)
+    maxLr: Double = 0.0,
+    optimizerVersion: Option[String] = None)
 
   val trainParser = new OptionParser[TrainParams]("BigDL ResNet Example") {
     head("Train ResNet model on single node")
@@ -102,6 +103,9 @@ object Utils {
     opt[Double]("maxLr")
       .text("maxLr")
       .action((x, c) => c.copy(maxLr = x))
+    opt[String]("optimizerVersion")
+      .text("state optimizer version")
+      .action((x, c) => c.copy(optimizerVersion = Some(x)))
   }
 
   case class TestParams(

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, OptimizerV1, OptimizerV2, T, Table}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -51,6 +51,13 @@ object Train {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) VggForCifar10.graph(classNum = 10) else VggForCifar10(classNum = 10)
+      }
+
+      if (param.optimizerVersion.isDefined) {
+        param.optimizerVersion.get.toLowerCase match {
+          case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+          case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
+        }
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
