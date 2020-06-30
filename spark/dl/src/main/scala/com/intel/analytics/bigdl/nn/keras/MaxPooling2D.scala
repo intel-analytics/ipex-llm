@@ -40,8 +40,6 @@ import scala.reflect.ClassTag
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class MaxPooling2D[T: ClassTag] (
    poolSize: Array[Int] = Array(2, 2),
    strides: Array[Int] = null,

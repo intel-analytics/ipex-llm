@@ -38,8 +38,6 @@ import scala.reflect.ClassTag
  * @param dimOrdering Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
-  "and will be removed in future releases", "0.10.0")
 class GlobalAveragePooling3D[T: ClassTag](
    dimOrdering: String = "CHANNEL_FIRST",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
