@@ -57,7 +57,8 @@ object Utils {
     checkpointIteration: Int = 1000,
     maxLr: Double = 0.06,
     warmupEpoch: Option[Int] = None,
-    gradientL2NormThreshold: Option[Double] = None
+    gradientL2NormThreshold: Option[Double] = None,
+    optimizerVersion: Option[String] = None
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Vgg Example") {
@@ -115,6 +116,9 @@ object Utils {
     opt[Double]("gradientL2NormThreshold")
       .text("gradient L2-Norm threshold")
       .action((x, c) => c.copy(gradientL2NormThreshold = Some(x)))
+    opt[String]("optimizerVersion")
+      .text("state optimizer version")
+      .action((x, c) => c.copy(optimizerVersion = Some(x)))
   }
 
   case class TestParams(

@@ -73,6 +73,7 @@ We support Local and Spark versions of training. Users can define <code>env</cod
     --weightDecay   [default 1e-4]
     --dampening     [default 0.0]
     --nesterov      [default true]
+    --optimizerVersion  [distriOptimizer version, default "optimizerV1"]
 ```
 ## Train ResNet on ImageNet
 This example shows the best practise we've experimented in multi-node training
