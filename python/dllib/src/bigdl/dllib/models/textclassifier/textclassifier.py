@@ -164,6 +164,7 @@ if __name__ == "__main__":
     parser.add_option("--model", dest="model_type", default="cnn")
     parser.add_option("-p", "--p", dest="p", default="0.0")
     parser.add_option("-d", "--data_path", dest="data_path", default="/tmp/news20/")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
@@ -182,6 +183,7 @@ if __name__ == "__main__":
         redire_spark_logs()
         show_bigdl_info_logs()
         init_engine()
+        set_optimizer_version(options.optimizerVersion)
         train(sc, data_path,
               batch_size,
               sequence_len, max_words, embedding_dim, training_split)
