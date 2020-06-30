@@ -18,11 +18,16 @@ from bigdl.nn.keras.layer import KerasLayer
 from bigdl.optim.optimizer import *
 from bigdl.nn.criterion import *
 import multiprocessing
+import warnings
 
 from bigdl.nn.layer import SharedStaticUtils, Container
 
 
 class KerasModel(KerasLayer, Container, SharedStaticUtils):
+    """
+    .. note:: `bigdl.nn.keras` is deprecated in 0.11.
+    This will be removed in future releases.
+    """
     def __convert_optim_method(self, optimizer):
         optimizer = optimizer.lower()
         if optimizer == "adagrad":
@@ -200,8 +205,13 @@ class Sequential(KerasModel):
 
     >>> sequential = Sequential(name="seq1")
     creating: createKerasSequential
+
+    .. note:: `bigdl.nn.keras` is deprecated in 0.11.
+    This will be removed in future releases.
     """
     def __init__(self, jvalue=None, **kwargs):
+        warnings.warn("bigdl.nn.keras is deprecated in 0.11. "
+                      "Recommend to use Analytics Zoo's Keras API.")
         super(Sequential, self).__init__(jvalue, **kwargs)
 
     @staticmethod
@@ -228,8 +238,13 @@ class Model(KerasModel):
     input: An input node or a list of input nodes.
     output: An output node or a list of output nodes.
     name: String to specify the name of the graph model. Default is None.
+
+    .. note:: `bigdl.nn.keras` is deprecated in 0.11.
+    This will be removed in future releases.
     """
     def __init__(self, input, output, jvalue=None,  **kwargs):
+        warnings.warn("bigdl.nn.keras is deprecated in BigDL 0.11."
+                      "Recommend to use Analytics Zoo's Keras API.")
         super(Model, self).__init__(jvalue,
                                     to_list(input),
                                     to_list(output),
