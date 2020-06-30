@@ -65,6 +65,7 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="32")
     parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="2")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
     (options, args) = parser.parse_args(sys.argv)
 
     keras_model = build_keras_model()
@@ -83,6 +84,7 @@ if __name__ == "__main__":
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
+    set_optimizer_version(options.optimizerVersion)
 
     X_train, y_train, X_test, y_test = load_imdb()
     train_data = to_sample_rdd(X_train, y_train)
