@@ -15,10 +15,6 @@
 #
 
 import numpy as np
-import tensorflow.keras.backend as K
-from tensorflow.python.keras import models
-from tensorflow.python.keras.engine import training_utils
-
 from bigdl.optim.optimizer import MaxEpoch
 
 from zoo.tfpark.utils import evaluate_string_metrics
@@ -82,8 +78,11 @@ class KerasModel(object):
         :param path: String. The path to the pre-defined model.
         :return: KerasModel.
         """
+        from tensorflow.python.keras import models
+
         def load_func(file_path):
             return models.load_model(file_path)
+
         keras_model = load_from_file(load_func, path)
         return KerasModel(keras_model)
 
@@ -206,6 +205,8 @@ class KerasModel(object):
                 return results
 
     def _evaluate_distributed(self, dataset):
+
+        import tensorflow.keras.backend as K
 
         if hasattr(self.model, "targets"):
             model_targets = self.model.targets
@@ -360,6 +361,7 @@ def _standarize_feature_dataset(dataset, model):
 
 
 def _create_rdd_x_y(x, y, input_names, output_names, sc):
+    from tensorflow.python.keras.engine import training_utils
     x = training_utils.standardize_input_data(x, input_names,
                                               check_batch_axis=False,
                                               exception_prefix='input')
@@ -399,6 +401,7 @@ def _create_rdd_x_y(x, y, input_names, output_names, sc):
 
 
 def _create_rdd_x(x, input_names, sc):
+    from tensorflow.python.keras.engine import training_utils
     x = training_utils.standardize_input_data(x, input_names,
                                               check_batch_axis=False,
                                               exception_prefix='input')

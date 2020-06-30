@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
+
 from bigdl.optim.optimizer import OptimMethod
 from zoo.util.tf import process_grad
 
@@ -22,6 +22,9 @@ class FakeOptimMethod(OptimMethod):
 
     def __init__(self):
         super(FakeOptimMethod, self).__init__(None, "float")
+
+# cannot subclass tf.train.Optimizer without importing it
+import tensorflow as tf
 
 
 class ZooOptimizer(tf.train.Optimizer):

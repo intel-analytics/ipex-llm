@@ -28,8 +28,9 @@ from zoo.common.nncontext import getOrCreateSparkContext
 from zoo.common.utils import callZooFunc
 from zoo.feature.image import ImageSet
 from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset
-from zoo.util.utils import to_sample_rdd
 import logging
+
+from zoo.util.utils import to_sample_rdd
 
 if sys.version >= '3':
     long = int

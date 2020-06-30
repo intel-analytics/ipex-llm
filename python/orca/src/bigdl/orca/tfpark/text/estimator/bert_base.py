@@ -23,6 +23,7 @@ def bert_model(features, labels, mode, params):
     Return an instance of BertModel and one can take its different outputs to
     perform specific tasks.
     """
+    import tensorflow as tf
     input_ids = features["input_ids"]
     if "input_mask" in features:
         input_mask = features["input_mask"]
@@ -64,6 +65,7 @@ def bert_input_fn(rdd, max_seq_length, batch_size,
     the argument `extra_features`, which is supposed to be the dict with feature name as key
     and tuple of (dtype, shape) as its value.
     """
+    import tensorflow as tf
     assert features.issubset({"input_ids", "input_mask", "token_type_ids"})
     features_dict = {}
     for feature in features:
@@ -122,6 +124,7 @@ class BERTBaseEstimator(TFEstimator):
     """
     def __init__(self, model_fn, bert_config_file, init_checkpoint=None,
                  use_one_hot_embeddings=False, model_dir=None, **kwargs):
+        import tensorflow as tf
         params = {"bert_config_file": bert_config_file,
                   "init_checkpoint": init_checkpoint,
                   "use_one_hot_embeddings": use_one_hot_embeddings}

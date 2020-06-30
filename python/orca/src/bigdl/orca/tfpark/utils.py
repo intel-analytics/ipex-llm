@@ -17,8 +17,6 @@ from zoo.tfpark.tfnet import TFNet
 from zoo.tfpark.tf_optimizer import BigDLMetric, TFModel
 from zoo.pipeline.api.keras import metrics as zmetrics
 
-import tensorflow as tf
-
 
 def to_bigdl_metric(metric):
     metric = metric.lower()
@@ -66,7 +64,7 @@ def evaluate_string_metrics(*,
 
 
 def evaluate_metrics(inputs, sess, dataset, metrics):
-
+    import tensorflow as tf
     if dataset.batch_per_thread > 0:
         batch_size = dataset.batch_per_thread * dataset.get_num_partitions()
     else:

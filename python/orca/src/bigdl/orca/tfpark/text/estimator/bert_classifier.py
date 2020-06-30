@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.tfpark import ZooOptimizer
+
 from zoo.tfpark.text.estimator import *
 
 
@@ -28,6 +28,8 @@ def make_bert_classifier_model_fn(optimizer):
         :param params: Must include the key "num_classes".
         :return: tf.estimator.EstimatorSpec.
         """
+        import tensorflow as tf
+        from zoo.tfpark import ZooOptimizer
         output_layer = bert_model(features, labels, mode, params).get_pooled_output()
         hidden_size = output_layer.shape[-1].value
         output_weights = tf.get_variable(

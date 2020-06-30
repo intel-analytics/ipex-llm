@@ -14,12 +14,13 @@
 # limitations under the License.
 #
 
-from zoo.tfpark import ZooOptimizer
 from zoo.tfpark.text.estimator import *
 
 
 def make_bert_squad_model_fn(optimizer):
     def _bert_squad_model_fn(features, labels, mode, params):
+        import tensorflow as tf
+        from zoo.tfpark import ZooOptimizer
         final_hidden = bert_model(features, labels, mode, params).get_sequence_output()
         final_hidden_shape = modeling.get_shape_list(final_hidden, expected_rank=3)
         batch_size = final_hidden_shape[0]

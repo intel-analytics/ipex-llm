@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from tensorflow.python.util import function_utils
-import tensorflow as tf
 
 from bigdl.optim.optimizer import MaxIteration, Loss, TreeNNAccuracy
 
@@ -77,7 +75,7 @@ class TFEstimator(object):
                 `tf.estimator.EstimatorSpec`
 
             For the train_op in tf.estimator.EstimatorSpec, it derive from and only from
-            `zoo.tfpark.ZooOptimizer`
+            `zoo.tfpark.zoo_optimizer.ZooOptimizer`
         :param model_dir: Directory to save model parameters, graph and etc. This can
             also be used to load checkpoints from the directory into an estimator to
             continue training a previously saved model. If `PathLike` object, the
@@ -95,11 +93,13 @@ class TFEstimator(object):
                        warm-started, and it is assumed that vocabularies
                        and `tf.Tensor` names are unchanged.
         """
+        import tensorflow as tf
         estimator = tf.estimator.Estimator(model_fn, model_dir=model_dir, config=config,
                                            params=params, warm_start_from=warm_start_from)
         return cls(estimator)
 
     def _call_model_fn(self, features, labels, mode, config):
+        from tensorflow.python.util import function_utils
         model_fn_args = function_utils.fn_args(self._model_fn)
         kwargs = {}
         if 'labels' in model_fn_args:
@@ -133,6 +133,7 @@ class TFEstimator(object):
         Returns:
           `self`, for chaining.
         """
+        import tensorflow as tf
 
         with tf.Graph().as_default() as g:
             global_step_tensor = self.estimator._create_and_assert_global_step(g)
@@ -201,6 +202,7 @@ class TFEstimator(object):
         if not all(isinstance(metric, six.string_types) for metric in eval_methods):
             raise ValueError("All metrics should be string types")
         from tensorflow_estimator.python.estimator.canned import prediction_keys
+        import tensorflow as tf
         with tf.Graph().as_default() as g:
             result = self.estimator._call_input_fn(input_fn, tf.estimator.ModeKeys.EVAL)
             if isinstance(result, TFDataset):
@@ -269,6 +271,8 @@ class TFEstimator(object):
           Evaluated values of `predictions` tensors.
 
         """
+        import tensorflow as tf
+
         with tf.Graph().as_default() as g:
             result = self.estimator._call_input_fn(input_fn, tf.estimator.ModeKeys.PREDICT)
             if isinstance(result, TFDataset):
