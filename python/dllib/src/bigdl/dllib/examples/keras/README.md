@@ -50,3 +50,4 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 * ```--batchSize``` an option that can be used to set batch size.
 * ```--max_epoch``` an option that can be used to set how many epochs for which the model is to be trained.
+* ```--optimizerVersion``` an option that can be used to set DistriOptimizer version, the default value is "optimizerV1".
