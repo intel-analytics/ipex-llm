@@ -62,6 +62,8 @@ We would train a LeNet model in spark local mode with the following commands and
 
 * ```--checkpointPath``` option can be used to set checkpoint path for saving model, the default value is /tmp/lenet5/.
 
+* ```--optimizerVersion``` option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".
+
 ##### In order to use MKL-DNN as the backend, you should:
 1. Define a graph model with Model or convert a sequential model to a graph model using:
    ```
