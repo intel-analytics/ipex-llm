@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -71,6 +71,13 @@ object Train {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) Autoencoder.graph(classNum = 32) else Autoencoder(classNum = 32)
+      }
+
+      if (param.optimizerVersion.isDefined) {
+        param.optimizerVersion.get.toLowerCase match {
+          case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+          case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
+        }
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {

@@ -62,6 +62,13 @@ object Train {
         case MklDnn => CrossEntropyCriterion()
       }
 
+      if (param.optimizerVersion.isDefined) {
+        param.optimizerVersion.get.toLowerCase match {
+          case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+          case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
+        }
+      }
+
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else {

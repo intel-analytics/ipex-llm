@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.ByteRecord
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.utils.{File, OptimizerVersion}
 import scopt.OptionParser
 
 object Utils {
@@ -42,7 +42,8 @@ object Utils {
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     overWriteCheckpoint: Boolean = false,
-    graphModel: Boolean = false
+    graphModel: Boolean = false,
+    optimizerVersion: Option[String] = None
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Lenet Train Example") {
@@ -79,6 +80,9 @@ object Utils {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[String]("optimizerVersion")
+      .text("state optimizer version")
+      .action((x, c) => c.copy(optimizerVersion = Some(x)))
   }
 
   case class TestParams(

@@ -65,5 +65,6 @@ Next just run the following command to run the code:
              --regRate           # number of L2 regularization rate, default is 1e-4
              --p                 # number of dropout probability rate, default is 0.5
              --epoch             # number of epochs, default is 5
+             --optimizerVersion  # option to set DistriOptimizer version, default is "optimizerV1"
     ```
 
