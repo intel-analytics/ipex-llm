@@ -14,20 +14,14 @@
 # limitations under the License.
 #
 
-from tensorflow.core.framework import attr_value_pb2
-from tensorflow.core.framework import graph_pb2
-from tensorflow.core.framework import node_def_pb2
-from tensorflow.python.framework import ops
-from tensorflow.python.platform import gfile
-import tensorflow as tf
 import os
 import json
 import copy
 
-import zoo.util.tf_graph_util as graph_util
-
 
 def process_grad(grad):
+    from tensorflow.python.framework import ops
+    import tensorflow as tf
     if grad is not None:
         grad = ops.convert_to_tensor_or_indexed_slices(grad)
         if isinstance(grad, ops.IndexedSlices):
@@ -68,6 +62,8 @@ def export_tf(sess, folder, inputs, outputs,
     :return:
     """
 
+    from tensorflow.python.platform import gfile
+    import tensorflow as tf
     output_node_names = list({t.op.name for t in outputs})
 
     graph_def = sess.graph_def
@@ -88,6 +84,7 @@ def export_tf(sess, folder, inputs, outputs,
 
     all_variables = graph.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 
+    import zoo.util.tf_graph_util as graph_util
     # freeze graph
     frozen_graph_def = graph_util.convert_variables_to_constants(
         sess,
@@ -255,6 +252,10 @@ def strip_unused(input_graph_def, input_tensor_names, output_tensor_names,
       of an operation.
     KeyError: If any element in `input_node_names` is not found in the graph.
   """
+
+    from tensorflow.core.framework import attr_value_pb2
+    from tensorflow.core.framework import graph_pb2
+    from tensorflow.core.framework import node_def_pb2
     for name in input_tensor_names:
         if ":" not in name:
             raise ValueError("Input '%s' appears to refer to a Operation, "
@@ -297,7 +298,7 @@ def strip_unused(input_graph_def, input_tensor_names, output_tensor_names,
 
     if not_found:
         raise KeyError("The following input nodes were not found: %s\n" % not_found)
-
+    import zoo.util.tf_graph_util as graph_util
     output_graph_def = graph_util.extract_sub_graph(inputs_replaced_graph_def,
                                                     output_node_names)
     return output_graph_def, old2new
