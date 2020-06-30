@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.{TimeDistributedCriterion, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, OptimizerV1, OptimizerV2, T}
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.apache.spark.SparkContext
 import org.slf4j.{Logger, LoggerFactory}
@@ -92,6 +92,13 @@ object Train {
 
     val trainRDD = toSample(trainTreeRDD, trainLabelRDD, trainSentenceRDD)
     val devRDD = toSample(devTreeRDD, devLabelRDD, devSentenceRDD)
+
+    if (param.optimizerVersion.isDefined) {
+      param.optimizerVersion.get.toLowerCase match {
+        case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+        case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
+      }
+    }
 
     val optimizer = Optimizer(
       model = TreeLSTMSentiment(word2VecTensor, param.hiddenSize, classNum, param.p),
