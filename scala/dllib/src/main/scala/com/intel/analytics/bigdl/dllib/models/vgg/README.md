@@ -58,6 +58,7 @@ there are some files already exist in the folder, the old file will not be overw
 safety of your model files.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
 * --summary: Where you store the training metainfo, which can be visualized in tensorboard
+* --optimizerVersion: option to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".
 ## Test Model
 Example command for running in Spark local mode
 ```

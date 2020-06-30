@@ -48,3 +48,4 @@ In the above commands:
 ```--overWrite```: do overwrite when saving checkpoint
 ```--keepProb```: the probability to do dropout
 ```--withTransformerModel```: use transformer model in this LM
+```--optimizerVersion```: option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2"

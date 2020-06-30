@@ -234,6 +234,9 @@ object Utils {
     opt[String]('e', "epoch")
       .text("max epoch")
       .action((x, c) => c.copy(epoch = x.toInt))
+    opt[String]("optimizerVersion")
+      .text("state optimizer version")
+      .action((x, c) => c.copy(optimizerVersion = Some(x)))
   }
 
   case class TreeLSTMSentimentParam (
@@ -243,6 +246,7 @@ object Utils {
     override val learningRate: Double = 0.05,
     regRate: Double = 1e-4,
     p: Double = 0.5,
-    epoch: Int = 5
+    epoch: Int = 5,
+    optimizerVersion: Option[String] = None
   ) extends AbstractTextClassificationParams
 }

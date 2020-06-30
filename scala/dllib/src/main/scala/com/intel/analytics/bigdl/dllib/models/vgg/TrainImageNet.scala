@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, SoftmaxWithCriterion}
 import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, MklBlas, MklDnn, OptimizerV1, OptimizerV2}
 import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -60,6 +60,13 @@ object TrainImageNet {
       }
 
       println(model)
+
+      if (param.optimizerVersion.isDefined) {
+        param.optimizerVersion.get.toLowerCase match {
+          case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+          case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
+        }
+      }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get).asInstanceOf[SGD[Float]]
