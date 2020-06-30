@@ -77,6 +77,8 @@ which are `cnn`, `lstm` and `gru`, default is `cnn`
 
 * `--learning_rate` option can be used to set learning rate, default is 0.05.
 
+* `--optimizerVersion` option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".
+
 To verify the accuracy, search "accuracy" from log:
 
 ```{r, engine='sh'}
