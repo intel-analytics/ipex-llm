@@ -135,7 +135,7 @@ Unzip the file and go into directory `analytics-zoo`, run `export ANALYTICS_ZOO_
 
 Run `source analytics-zoo/bin/analytics-zoo-env.sh` to set environment.
 
-Go to `analytics-zoo/scripts/cluster-serving`, run `cluster-serving-init`.
+Go to `analytics-zoo/bin/cluster-serving`, run `cluster-serving-init`.
 
 Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
 ##### Pip
