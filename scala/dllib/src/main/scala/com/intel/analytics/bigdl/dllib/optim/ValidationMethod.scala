@@ -1089,9 +1089,9 @@ class Loss[@specialized(Float, Double)T: ClassTag](
       output.toTensor[T]
     }
     val loss = ev.toType[Float](criterion.forward(_output, _target))
-    val count = 1
+    val count = _target.size().head
 
-    new LossResult(loss, count)
+    new LossResult(loss * count, count)
   }
 
   override def format(): String = "Loss"
