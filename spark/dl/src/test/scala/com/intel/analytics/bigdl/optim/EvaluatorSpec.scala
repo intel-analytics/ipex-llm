@@ -58,7 +58,7 @@ class EvaluatorSpec extends SparkContextLifeCycle with Matchers {
 
     result(0)._1 should be (new AccuracyResult(0, 100))
     result(1)._1 should be (new AccuracyResult(100, 100))
-    result(2)._1 should be (new LossResult(57.610695f, 25))
+    result(2)._1 should be (new LossResult(230.44278f, 100))
     result(0)._1.result()._1 should be (0f)
     result(1)._1.result()._1 should be (1f)
     result(2)._1.result()._1 should be (2.3044279f+-0.000001f)
@@ -82,7 +82,31 @@ class EvaluatorSpec extends SparkContextLifeCycle with Matchers {
 
     result(0)._1 should be (new AccuracyResult(0, 100))
     result(1)._1 should be (new AccuracyResult(100, 100))
-    result(2)._1 should be (new LossResult(57.610695f, 25))
+    result(2)._1 should be (new LossResult(230.44278f, 100))
+    result(0)._1.result()._1 should be (0f)
+    result(1)._1.result()._1 should be (1f)
+    result(2)._1.result()._1 should be (2.3044279f+-0.000001f)
+  }
+
+  "Evaluator different MiniBatch" should "be correct" in {
+    RNG.setSeed(100)
+    val tmp = new Array[MiniBatch[Float]](25)
+    var i = 1
+    while (i <= tmp.length) {
+      val input = Tensor[Float](i, 28, 28).fill(0.8f)
+      val label = Tensor[Float](i).fill(1.0f)
+      tmp(i - 1) = MiniBatch(input, label)
+      i += 1
+    }
+    val model = LeNet5(classNum = 10)
+    val dataSet = DataSet.array(tmp, sc).toDistributed().data(train = false)
+
+    val result = model.evaluate(dataSet, Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](),
+      new Loss[Float](CrossEntropyCriterion[Float]())))
+
+    result(0)._1 should be (new AccuracyResult(0, 325))
+    result(1)._1 should be (new AccuracyResult(325, 325))
+    result(2)._1 should be (new LossResult(748.93896f, 325))
     result(0)._1.result()._1 should be (0f)
     result(1)._1.result()._1 should be (1f)
     result(2)._1.result()._1 should be (2.3044279f+-0.000001f)
