@@ -415,7 +415,7 @@ object PythonFeatureSet{
 class PythonFeatureSet[T: ClassTag](
     dataset: Array[Byte],
     getLoader: (Int, Int, String) => String,
-    getIterator: (String, String) => String,
+    getIterator: (String, String, Boolean) => String,
     getNext: (String) => String,
     inputName: String,
     targetName: String = "",
@@ -441,7 +441,7 @@ class PythonFeatureSet[T: ClassTag](
       cachedRdd.mapPartitions{dataIter =>
         val localLoaderName = getLocalLoader(loaderName)
         val localIterName = getLocalIter(localLoaderName, train)
-        val getIteratorCode = getIterator(localIterName, localLoaderName)
+        val getIteratorCode = getIterator(localIterName, localLoaderName, train)
 
         val nextCode = getNext(localIterName)
         new Iterator[T] {
@@ -478,7 +478,7 @@ class PythonFeatureSet[T: ClassTag](
       cachedRdd.mapPartitions{ dataIter =>
         val localLoaderName = getLocalLoader(loaderName)
         val localIterName = getLocalIter(localLoaderName, train)
-        PythonInterpreter.exec(getIterator(localIterName, localLoaderName))
+        PythonInterpreter.exec(getIterator(localIterName, localLoaderName, train))
         new Iterator[T] {
           val nextCode = getNext(localIterName)
           var alreadyNext = false
@@ -639,7 +639,7 @@ object FeatureSet {
   private[zoo] def python[T: ClassTag](
       dataset: Array[Byte],
       getLoader: (Int, Int, String) => String,
-      getIterator: (String, String) => String,
+      getIterator: (String, String, Boolean) => String,
       getNext: (String) => String,
       inputName: String,
       targetName: String,

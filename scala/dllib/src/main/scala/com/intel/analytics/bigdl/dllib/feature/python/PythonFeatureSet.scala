@@ -91,7 +91,7 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
         |from zoo.util.nest import flatten
         |sess = tf.Session()
         |""".stripMargin
-    def getIterator(iterName: String, loaderName: String): String = {
+    def getIterator(iterName: String, loaderName: String, train: Boolean): String = {
       s"""
          |${iterName} = ${loaderName}.make_one_shot_iterator()
          |""".stripMargin
@@ -116,6 +116,8 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
 
   def createFeatureSetFromPyTorch(
         dataloader: Array[Byte]): FeatureSet[MiniBatch[Float]] = {
+    val trainPostfix = "_train"
+    val evalPostfix = "_eval"
     val imports = s"""
                      |from zoo.util.nest import ptensor_to_numpy
                      |import torch
@@ -123,15 +125,19 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
                      |
                      |""".stripMargin
 
-    def getIterator(iterName: String, loaderName: String): String = {
-      s"""
-         |if '${loaderName}_epoch' not in dir():
-         |  ${loaderName}_epoch = 0
-         |else:
-         |  ${loaderName}_epoch += 1
-         |${loaderName}_sampler.set_epoch(${loaderName}_epoch)
-         |${iterName} = enumerate(${loaderName})
-         |""".stripMargin
+    def getIterator(iterName: String, loaderName: String, train: Boolean): String = {
+      if (train) {
+        s"""
+           |if '${loaderName}_epoch' not in dir():
+           |  ${loaderName}_epoch = 0
+           |else:
+           |  ${loaderName}_epoch += 1
+           |${loaderName}_random_sampler.set_epoch(${loaderName}_epoch)
+           |${iterName} = enumerate(${loaderName}${trainPostfix})
+           |""".stripMargin
+      } else {
+        s"${iterName} = enumerate(${loaderName}${evalPostfix})"
+      }
     }
 
     def getNext(iterName: String): String = {
@@ -155,12 +161,10 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
            |from torch.utils.data import DataLoader
            |import math
            |
-           |if isinstance(${localLoaderName}.sampler, RandomSampler):
-           |    ${localLoaderName}_sampler=DistributedSampler(${localLoaderName}.dataset,
-           |                                                  ${nodeNumber}, ${partId}, True)
-           |else:
-           |    ${localLoaderName}_sampler=DistributedSequentialSampler(${localLoaderName}.dataset,
-           |                                                  ${nodeNumber}, ${partId})
+           |${localLoaderName}_rand_sampler=DistributedSampler(${localLoaderName}.dataset,
+           |                                              ${nodeNumber}, ${partId}, True)
+           |${localLoaderName}_seq_sampler=DistributedSequentialSampler(${localLoaderName}.dataset,
+           |                                              ${nodeNumber}, ${partId})
            |
            |bs_node = int(math.ceil(${localLoaderName}.batch_size / ${nodeNumber}))
            |
@@ -173,9 +177,11 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
            |                "drop_last": ${localLoaderName}.drop_last,
            |                "timeout": ${localLoaderName}.timeout,
            |                "worker_init_fn": ${localLoaderName}.worker_init_fn,
-           |                "sampler": ${localLoaderName}_sampler
+           |                "sampler": ${localLoaderName}_rand_sampler
            |            }
-           |${localLoaderName} = DataLoader(**data_loader_args)
+           |${localLoaderName}${trainPostfix} = DataLoader(**data_loader_args)
+           |data_loader_args["sampler"] = ${localLoaderName}_seq_sampler
+           |${localLoaderName}${evalPostfix} = DataLoader(**data_loader_args)
            |""".stripMargin
     }
 
