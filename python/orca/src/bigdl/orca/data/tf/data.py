@@ -85,12 +85,10 @@ class TFDataDataset2(TFDataset):
         return rdd
 
     def _get_evaluation_data(self):
-
-        feature_length = len(nest.flatten(self.tensor_structure[0]))
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDatasetEval",
                              self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
                              self.output_names,
-                             self.output_types, self.shard_index_op_name, feature_length)
+                             self.output_types, self.shard_index_op_name)
         rdd = jvalue.value().toJavaRDD()
         return rdd
 
@@ -108,6 +106,9 @@ class TFDataDataset2(TFDataset):
                                  self.output_types, self.shard_index_op_name)
             return FeatureSet(jvalue=jvalue)
         return None
+
+    def get_num_partitions(self):
+        return self.rdd.getNumPartitions()
 
 
 class Dataset(object):
