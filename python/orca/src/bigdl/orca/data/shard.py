@@ -322,33 +322,34 @@ class SparkXShards(XShards):
 
     # Tested on pyarrow 0.17.0; 0.16.0 would get errors.
     def to_ray(self):
-        import random
-        import string
         from zoo.ray import RayContext
         ray_ctx = RayContext.get()
         object_store_address = ray_ctx.address_info["object_store_address"]
 
-        # TODO: Handle failure when doing this?
-        # TODO: delete the data in the plasma?
-        def put_to_plasma(seed):
+        def put_to_plasma(ids):
             def f(index, iterator):
                 import pyarrow.plasma as plasma
                 from zoo.orca.data.utils import get_node_ip
-                # mapPartition would set the same random seed for each partition?
-                # Here use the partition index to override the random seed so that there won't be
-                # identical object_ids in plasma.
-                random.seed(seed+str(index))
                 res = list(iterator)
                 client = plasma.connect(object_store_address)
-                object_id = client.put(res)
-                yield object_id, get_node_ip()
+                target_id = ids[index]
+                # If the ObjectID exists in plasma, we assume a task trial
+                # succeeds and the data is already in the object store.
+                if not client.contains(target_id):
+                    object_id = client.put(res, target_id)
+                    assert object_id == target_id, \
+                        "Errors occurred when putting data into plasma object store"
+                client.disconnect()
+                yield target_id, get_node_ip()
             return f
 
-        # Generate a random string here to make sure that when this method is called twice, the
-        # seeds to generate plasma ObjectID are different.
-        random_str = ''.join(
-            [random.choice(string.ascii_letters + string.digits) for i in range(32)])
-        object_id_node_ips = self.rdd.mapPartitionsWithIndex(put_to_plasma(random_str)).collect()
+        # Create plasma ObjectIDs beforehand instead of creating a random one every time to avoid
+        # memory leak in case errors occur when putting data into plasma and Spark would retry.
+        # ObjectIDs in plasma is a byte string of length 20 containing characters and numbers.
+        # The random generation of ObjectIDs is often good enough to ensure unique IDs.
+        import pyarrow.plasma as plasma
+        object_ids = [plasma.ObjectID.from_random() for i in range(self.rdd.getNumPartitions())]
+        object_id_node_ips = self.rdd.mapPartitionsWithIndex(put_to_plasma(object_ids)).collect()
         self.uncache()
         # Sort the data according to the node_ips.
         object_id_node_ips.sort(key=lambda x: x[1])
