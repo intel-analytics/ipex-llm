@@ -195,6 +195,9 @@ def test_estimator_graph_fit_dataset(estimator_for_spark_fixture):
             steps=10,
             validation_data=dataset)
 
+    result = est.evaluate(dataset, batch_size=4)
+    assert 'loss' in result
+
 
 def test_estimator_graph_predict_dataset(estimator_for_spark_fixture):
 
