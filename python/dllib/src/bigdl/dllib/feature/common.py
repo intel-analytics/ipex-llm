@@ -375,7 +375,8 @@ class FeatureSet(DataSet):
         if dataloader.batch_size % node_num != 0:
             true_bs = math.ceil(dataloader.batch_size / node_num) * node_num
             warning_msg = "Detect dataloader's batch_size is not divisible by node number(" + \
-                          node_num + "), will adjust batch_size to " + true_bs + " automatically"
+                          str(node_num) + "), will adjust batch_size to " + str(true_bs) + \
+                          " automatically"
             warnings.warn(warning_msg)
 
         bys = CloudPickleSerializer.dumps(CloudPickleSerializer, dataloader)
