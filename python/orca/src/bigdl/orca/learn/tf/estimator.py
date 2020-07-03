@@ -16,7 +16,7 @@
 from bigdl.optim.optimizer import MaxIteration, SGD
 
 from zoo.tfpark.utils import evaluate_metrics
-from zoo.orca.data.shard import SparkXShards
+from zoo.orca.data import SparkXShards
 from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
 import tensorflow as tf

@@ -18,25 +18,6 @@ import os
 from zoo.common import get_file_list
 
 
-# split list into n chunks
-def chunk(lst, n):
-    size = len(lst) // n
-    leftovers = lst[size * n:]
-    for c in range(n):
-        if leftovers:
-            extra = [leftovers.pop()]
-        else:
-            extra = []
-        yield lst[c * size:(c + 1) * size] + extra
-
-
-def flatten(list_input):
-    if any(isinstance(i, list) for i in list_input):
-        return [item for sublist in list_input for item in sublist]
-    else:
-        return list_input
-
-
 def list_s3_file(file_path, file_type, env):
     path_parts = file_path.split('/')
     bucket = path_parts.pop(0)
