@@ -148,7 +148,7 @@ class Estimator(object):
             assert self.validation_metrics_creator,\
                 "Metrics not defined for validation, please specify validation_metrics_creator " \
                 "when creating the Estimator"
-        from zoo.orca.data import RayXShards, SparkXShards
+        from zoo.orca.data import SparkXShards
         if isinstance(train_data, SparkXShards):
             if train_data.num_partitions() != self.num_workers:
                 train_data = train_data.repartition(self.num_workers)
@@ -158,15 +158,6 @@ class Estimator(object):
                 if val_data.num_partitions() != self.num_workers:
                     val_data = val_data.repartition(self.num_workers)
                 val_data = val_data.to_ray()
-
-        if isinstance(train_data, RayXShards):
-            if train_data.num_partitions() != self.num_workers:
-                train_data.repartition(self.num_workers)
-            if val_data:
-                assert isinstance(val_data, RayXShards)
-                if val_data.num_partitions() != self.num_workers:
-                    val_data.repartition(self.num_workers)
-
             self.workers = train_data.colocate_actors(self.workers)
             train_data_list = train_data.get_partitions()
             if val_data:
@@ -175,11 +166,11 @@ class Estimator(object):
                 val_data_list = [None] * self.num_workers
         else:  # data_creator functions; should return Iter or DataLoader
             assert callable(train_data),\
-                "train_data should be either an instance of XShards or a callable function"
+                "train_data should be either an instance of SparkXShards or a callable function"
             train_data_list = [train_data] * self.num_workers
             if val_data:
                 assert callable(val_data),\
-                    "val_data should be either an instance of XShards or a callable function"
+                    "val_data should be either an instance of SparkXShards or a callable function"
             val_data_list = [val_data] * self.num_workers
         self.runners = self.workers + self.servers
         # For servers, data is not used and thus just input a None value.

@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from zoo.orca.data.shard import XShards, RayXShards, SparkXShards, SharedValue
+from .shard import SparkXShards, SharedValue
