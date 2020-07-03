@@ -26,8 +26,6 @@ ray_ctx = None
 def orca_data_fixture():
     from zoo import init_spark_on_local
     from zoo.ray import RayContext
-    global sc
-    global ray_ctx
     ZooContext._orca_eager_mode = True
     sc = init_spark_on_local(cores=4, spark_log_level="INFO")
     access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
@@ -44,11 +42,3 @@ def orca_data_fixture():
     yield
     ray_ctx.stop()
     sc.stop()
-
-
-def get_ray_ctx():
-    return ray_ctx
-
-
-def get_spark_ctx():
-    return sc
