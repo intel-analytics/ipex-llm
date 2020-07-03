@@ -340,9 +340,11 @@ def init_spark_conf(conf=None):
     # Set bigDL and TF conf
 
     spark_conf.setAll(zoo_conf.items())
+
     if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
-        for jar in os.environ["BIGDL_JARS"].split(":"):
-            extend_spark_driver_cp(spark_conf, jar)
+        submit_args = " --driver-class-path " + os.environ["BIGDL_JARS"] + " pyspark-shell "
+        print("pyspark_submit_args is: {}".format(submit_args))
+        os.environ['PYSPARK_SUBMIT_ARGS'] = submit_args
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
     # This is a workaround for current Spark on k8s
