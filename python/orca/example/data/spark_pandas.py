@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # read data
     file_path = options.file_path
-    data_shard = zoo.orca.data.pandas.read_csv(file_path, sc)
+    data_shard = zoo.orca.data.pandas.read_csv(file_path)
     data = data_shard.collect()
 
     # repartition
