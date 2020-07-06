@@ -19,12 +19,55 @@ from zoo.util.tf import process_grad
 
 
 class FakeOptimMethod(OptimMethod):
-
     def __init__(self):
         super(FakeOptimMethod, self).__init__(None, "float")
 
+
 # cannot subclass tf.train.Optimizer without importing it
 import tensorflow as tf
+
+
+def get_gradients_for_keras(optimizer, loss, params):
+    from tensorflow.python.util import nest
+    from tensorflow.python.keras import backend
+    from tensorflow.python.ops import gradients
+    from tensorflow.python.ops import clip_ops
+    from tensorflow.python.keras.optimizers import TFOptimizer
+
+    params = nest.flatten(params)
+    if isinstance(optimizer, TFOptimizer):
+        scope_name = optimizer.optimizer._name
+    else:
+        scope_name = optimizer._name
+
+    with backend.get_graph().as_default(), backend.name_scope(scope_name + "/gradients"):
+        grads = gradients.gradients(loss, params)
+
+        all_reduced_grads = []
+        for grad, param in zip(grads, params):
+            if grad is None:
+                raise ValueError("Variable {} has `None` for gradient. "
+                                 "Please make sure that all of your ops have a "
+                                 "gradient defined (i.e. are differentiable). "
+                                 "Common ops without gradient: "
+                                 "K.argmax, K.round, K.eval.".format(param))
+            grad = process_grad(grad)
+
+            with tf.control_dependencies([param]):
+                grad_i = tf.identity(grad, name="zoo_identity_op_for_grad")
+
+            all_reduced_grads.append(grad_i)
+
+        grads = all_reduced_grads
+
+        if hasattr(optimizer, "clipnorm"):
+            grads = [clip_ops.clip_by_norm(g, optimizer.clipnorm) for g in grads]
+        if hasattr(optimizer, "clipvalue"):
+            grads = [
+                clip_ops.clip_by_value(g, -optimizer.clipvalue, optimizer.clipvalue)
+                for g in grads
+            ]
+    return grads
 
 
 class ZooOptimizer(tf.train.Optimizer):

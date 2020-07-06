@@ -597,14 +597,12 @@ class TFOptimizer:
                     model_shape[i].value is None
 
     @classmethod
-    def from_keras(cls, keras_model, dataset, optim_method=None,
+    def from_keras(cls, keras_model, dataset,
                    session_config=None, model_dir=None):
         """
         Create a TFOptimizer from a tensorflow.keras model. The model must be compiled.
         :param keras_model: the tensorflow.keras model, which must be compiled.
         :param dataset: a TFDataset
-        :param optim_method: the optimization method to be used, such as bigdl.optim.optimizer.Adam
-        validation data.
         :return:
         """
         import tensorflow.keras.backend as K
@@ -643,24 +641,17 @@ class TFOptimizer:
         variables.sort(key=lambda variable: variable.name)
         keras_optimizer = keras_model.optimizer
 
-        grads = K.gradients(loss, variables)
-        if None in grads:
-            raise ValueError('An operation has `None` for gradient. '
-                             'Please make sure that all of your ops have a '
-                             'gradient defined (i.e. are differentiable). '
-                             'Common ops without gradient: '
-                             'K.argmax, K.round, K.eval.')
-        clip_norm = None
-        clip_value = None
-        if hasattr(keras_optimizer, 'clipnorm'):
-            clip_norm = keras_optimizer.clipnorm
-        if hasattr(keras_optimizer, 'clipvalue'):
-            clip_value = (-keras_optimizer.clipvalue, keras_optimizer.clipvalue)
+        from zoo.tfpark.zoo_optimizer import get_gradients_for_keras
+        grads = get_gradients_for_keras(keras_optimizer, loss, variables)
+        grads_and_vars = list(zip(grads, variables))
+        import tensorflow.python.keras.optimizers as koptimizers
+        if isinstance(keras_optimizer, koptimizers.TFOptimizer):
+            # work around keras TFOptimzier bug
+            train_op = keras_optimizer.optimizer.apply_gradients(grads_and_vars)
+        else:
+            train_op = keras_optimizer.apply_gradients(grads_and_vars)
 
         sess = K.get_session()
-        if optim_method is None:
-            optim_method = keras_optimizer
-        optim_method = to_bigdl_optim_method(optim_method)
 
         if keras_model.metrics and (dataset.get_validation_data() is not None):
             if isinstance(keras_model.metrics, dict):
@@ -702,13 +693,10 @@ class TFOptimizer:
             for i, method in enumerate(val_methods):
                 metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
 
-        tf_model = TFModel.create(loss, sess, model_inputs, model_targets, keras_model.outputs,
-                                  grads, variables, loss.graph,
-                                  tensor_with_value, session_config, metrics,
-                                  updates, model_dir=None)
-
-        return cls(tf_model, optim_method, sess=sess, dataset=dataset,
-                   clip_norm=clip_norm, clip_value=clip_value, model_dir=model_dir)
+        return cls.from_train_op(train_op, loss, inputs=model_inputs, labels=model_targets,
+                                 metrics=metrics, updates=updates, sess=sess, dataset=dataset,
+                                 tensor_with_value=tensor_with_value, session_config=session_config,
+                                 model_dir=model_dir)
 
     def set_constant_gradient_clipping(self, min_value, max_value):
         """
