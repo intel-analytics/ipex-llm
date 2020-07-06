@@ -51,6 +51,10 @@ class TFTrainingHelperV2(graphRunner: GraphRunner,
   @transient
   private var shouldUpdateParameter = false
 
+  override protected def evaluateInternal(): Unit = {
+    // do nothing
+  }
+
 
   override def beforeRunGradient(): Unit = {
 
@@ -79,7 +83,7 @@ class TFTrainingHelperV2(graphRunner: GraphRunner,
 
   override def afterRunGradient(): Unit = {
     super.afterRunGradient()
-    shouldUpdateParameter = true
+    if (this.isTraining()) shouldUpdateParameter = true
   }
 
   def moveWeightsOutOfTF(): Unit = {

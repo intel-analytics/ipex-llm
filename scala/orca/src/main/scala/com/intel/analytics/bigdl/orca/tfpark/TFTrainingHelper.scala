@@ -127,10 +127,14 @@ private[zoo] class TFTrainingHelper protected (val graphRunner: GraphRunner,
     }
   }
 
-  override def evaluate(): TFTrainingHelper.this.type = {
-    super.evaluate()
+  protected def evaluateInternal(): Unit = {
     setVariableIntoTF(weights, variableAssignPlaceholders,
       variableTypes.map(TFUtils.tfenum2datatype), assignVariableOp)
+  }
+
+  override def evaluate(): TFTrainingHelper.this.type = {
+    super.evaluate()
+    evaluateInternal()
     this
   }
 
