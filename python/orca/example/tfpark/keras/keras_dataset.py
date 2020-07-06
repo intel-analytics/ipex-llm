@@ -68,10 +68,11 @@ def main(max_epoch):
         labels=(tf.int32, []), batch_per_thread=80)
     result = keras_model.evaluate(eval_dataset)
 
-    print(model.metrics_names)
     print(result)
-    # >> ['loss', 'acc']
     # >> [0.08865142822265625, 0.9722]
+
+    # the following assert is used for internal testing
+    assert result['acc Top1Accuracy'] > 0.95
 
     model.save_weights("/tmp/mnist_keras.h5")
 
