@@ -52,12 +52,13 @@ def main(max_epoch):
                     distributed=True)
 
     result = keras_model.evaluate(testing_images_data, testing_labels_data,
-                                  distributed=False, batch_per_thread=80)
+                                  distributed=True, batch_per_thread=80)
 
-    print(keras_model.metrics_names)
     print(result)
-    # >> ['loss', 'acc']
     # >> [0.08865142822265625, 0.9722]
+
+    # the following assert is used for internal testing
+    assert result['acc Top1Accuracy'] > 0.95
 
     keras_model.save_weights("/tmp/mnist_keras.h5")
 
