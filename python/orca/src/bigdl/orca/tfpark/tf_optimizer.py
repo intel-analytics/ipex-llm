@@ -658,10 +658,6 @@ class TFOptimizer:
                 raise ValueError(
                     "different metrics for different outputs are not supported right now")
 
-            if dataset.get_validation_data() is None:
-                raise ValueError("Validation data is not specified. Please set " +
-                                 "val_rdd in TFDataset")
-
             if len(keras_model.outputs) > 1:
                 if not all([name.endswith("loss") for name in keras_model.metrics_names]):
                     raise ValueError("metrics (except loss) for multi-head model is not supported")
