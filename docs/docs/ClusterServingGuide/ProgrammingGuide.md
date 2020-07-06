@@ -5,7 +5,6 @@ The overall architecture of Analytics Zoo Cluster Serving solution is illustrate
 
 ![overview](cluster_serving_overview.jpg)
 
-Note: currently only **image classification** models are supported.
 
 This page contains the guide for you to run Analytics Zoo Cluster Serving, including following:
 
