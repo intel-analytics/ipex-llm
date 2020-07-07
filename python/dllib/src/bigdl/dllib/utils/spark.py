@@ -80,8 +80,6 @@ class SparkRunner:
         return tmp_path
 
     def _create_sc(self, submit_args, conf):
-        from pyspark.sql import SparkSession
-        print("pyspark_submit_args is: {}".format(submit_args))
         os.environ['PYSPARK_SUBMIT_ARGS'] = submit_args
         zoo_conf = init_spark_conf(conf)
         sc = init_nncontext(conf=zoo_conf, redirect_spark_log=self.redirect_spark_log)
@@ -110,13 +108,13 @@ class SparkRunner:
         from bigdl.util.engine import get_bigdl_classpath
         bigdl_classpath = get_bigdl_classpath()
         assert bigdl_classpath, "Cannot find bigdl classpath"
-        return bigdl_classpath, bigdl_classpath.split("/")[-1]
+        return bigdl_classpath.split("/")[-1]
 
     def _get_zoo_classpath_jar_name_on_driver(self):
         from zoo.util.engine import get_analytics_zoo_classpath
         zoo_classpath = get_analytics_zoo_classpath()
         assert zoo_classpath, "Cannot find Analytics-Zoo classpath"
-        return zoo_classpath, zoo_classpath.split("/")[-1]
+        return zoo_classpath.split("/")[-1]
 
     def _assemble_zoo_classpath_for_executor(self):
         conda_env_path = "/".join(self._detect_python_location().split("/")[:-2])
@@ -126,9 +124,9 @@ class SparkRunner:
         python_interpreter_name = python_interpreters[0].split("/")[-1]
         prefix = "{}/lib/{}/site-packages/".format(self.PYTHON_ENV, python_interpreter_name)
         return ["{}/zoo/share/lib/{}".format(prefix,
-                                             self._get_zoo_classpath_jar_name_on_driver()[1]),
+                                             self._get_zoo_classpath_jar_name_on_driver()),
                 "{}/bigdl/share/lib/{}".format(prefix,
-                                               self._get_bigdl_classpath_jar_name_on_driver()[1])
+                                               self._get_bigdl_classpath_jar_name_on_driver())
                 ]
 
     def init_spark_on_local(self, cores, conf=None, python_location=None):
@@ -176,9 +174,7 @@ class SparkRunner:
                 command = command + " --py-files {} ".format(extra_python_lib)
             if jars:
                 command = command + " --jars {}".format(jars)
-            return command + " --driver-class-path {}:{}".\
-                format(self._get_zoo_classpath_jar_name_on_driver()[0],
-                       self. _get_bigdl_classpath_jar_name_on_driver()[0])
+            return command
 
         def _submit_opt():
             conf = {
