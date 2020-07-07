@@ -671,7 +671,7 @@ cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
 
 python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_model_forecasting.py
 cd -
-
+ 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
@@ -734,6 +734,40 @@ fi
 now=$(date "+%s")
 time20=$((now-start))
 echo "#20 zouwu-anomaly-detect time used:$time20 seconds"
+
+echo "#21 start app test for zouwu-network-traffic-impute"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_impute
+
+FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data/data.csv"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading network traffic data"
+
+   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data
+
+   echo "Finished downloading network traffic data"
+fi
+
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_impute.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
+
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_impute.py
+cd -
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "zouwu-network-traffic-impute failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time21=$((now-start))
+echo "#21 zouwu-network-traffic-impute time used:$time21 seconds"
 
 fi
 
