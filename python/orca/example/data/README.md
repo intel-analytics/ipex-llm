@@ -15,4 +15,4 @@ You can easily use the following commands to run this example:
 export SPARK_DRIVER_MEMORY=4g
 nyc_path=the file path of nyc_taxi.csv
 
-python ray-pandas.py -f ${nyc_path} 
+python spark_pandas.py -f ${nyc_path} 
