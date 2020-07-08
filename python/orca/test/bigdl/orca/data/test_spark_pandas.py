@@ -22,7 +22,7 @@ from unittest import TestCase
 
 import zoo.orca.data
 import zoo.orca.data.pandas
-from zoo.orca.data.shard import SharedValue
+from zoo.orca.data import SharedValue
 from zoo.common.nncontext import *
 
 

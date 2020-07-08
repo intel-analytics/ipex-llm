@@ -73,13 +73,13 @@ class TestMXNetGluon(TestCase):
         current_ray_ctx = RayContext.get()
         address_info = current_ray_ctx.address_info
         assert "object_store_address" in address_info
-        config = create_config(batch_size=32, log_interval=2, optimizer="adam",
+        config = create_config(log_interval=2, optimizer="adam",
                                optimizer_params={'learning_rate': 0.02})
         estimator = Estimator(config, get_model, get_loss,
                               eval_metrics_creator=get_metrics,
                               validation_metrics_creator=get_metrics,
                               num_workers=2)
-        estimator.fit(get_train_data_iter, get_test_data_iter, nb_epoch=2)
+        estimator.fit(get_train_data_iter, validation_data=get_test_data_iter, epochs=2)
         estimator.shutdown()
 
 

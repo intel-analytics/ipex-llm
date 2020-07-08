@@ -34,7 +34,7 @@ class MXNetRunner(object):
         logging.basicConfig(level=logging.INFO)  # This can print log messages to console.
         self.logger = logging.getLogger()
         assert isinstance(config, dict), "config must be a dict"
-        for param in ["batch_size", "optimizer", "optimizer_params", "log_interval"]:
+        for param in ["optimizer", "optimizer_params", "log_interval"]:
             assert param in config, param + " must be specified in config"
         self.config = config
         self.model_creator = model_creator
@@ -76,7 +76,8 @@ class MXNetRunner(object):
             # For servers, just import mxnet and no need to do anything else
             subprocess.Popen("python -c 'import mxnet'", shell=True, env=modified_env)
 
-    def train(self, train_data, val_data=None, nb_epoch=1, train_resize_batch_num=None):
+    def train(self, train_data, epochs=1, batch_size=32,
+              validation_data=None, train_resize_batch_num=None):
         """Train the model and update the model parameters."""
         stats = dict()
         if self.is_worker:
@@ -84,23 +85,24 @@ class MXNetRunner(object):
             if isinstance(train_data, RayPartition):
                 data, label = get_data_label(train_data.get_data())
                 train_data_iter = mx.io.NDArrayIter(data=data, label=label,
-                                                    batch_size=self.config["batch_size"],
-                                                    shuffle=True)
+                                                    batch_size=batch_size, shuffle=True)
                 if train_resize_batch_num is not None:
                     train_data_iter = mx.io.ResizeIter(train_data_iter, train_resize_batch_num)
-                if val_data:
-                    data_val, label_val = get_data_label(val_data.get_data())
+                if validation_data:
+                    data_val, label_val = get_data_label(validation_data.get_data())
                     val_data_iter = mx.io.NDArrayIter(data=data_val, label=label_val,
-                                                      batch_size=self.config["batch_size"],
-                                                      shuffle=True)
+                                                      batch_size=batch_size, shuffle=True)
                 else:
                     val_data_iter = None
             else:  # data_creator functions; should return Iter or DataLoader
-                train_data_iter = train_data(self.config, self.kv)
-                val_data_iter = val_data(self.config, self.kv) if val_data else None
+                config = self.config
+                if "batch_size" not in config:
+                    config["batch_size"] = batch_size
+                train_data_iter = train_data(config, self.kv)
+                val_data_iter = validation_data(config, self.kv) if validation_data else None
             start_time = time.time()
             if self.trainer:  # Imperative API
-                for epoch in range(nb_epoch):
+                for epoch in range(epochs):
                     train_data_iter.reset()
                     if self.eval_metrics:
                         self.eval_metrics.reset()  # metrics will accumulate for one batch
@@ -130,7 +132,7 @@ class MXNetRunner(object):
                             iteration_log = \
                                 "Epoch[%d] Batch[%d]  Speed: %f samples/sec  %s=%f" \
                                 % (epoch, i,
-                                   self.config["batch_size"] / (time.time() - batch_start_time),
+                                   batch_size / (time.time() - batch_start_time),
                                    "loss", Ls[0].asnumpy().mean())
                             if self.eval_metrics:
                                 names, accs = self.eval_metrics.get()
@@ -183,7 +185,7 @@ class MXNetRunner(object):
                 if self.eval_metrics is None:
                     self.eval_metrics = 'acc'
                 self.model.fit(train_data=train_data_iter,
-                               num_epoch=nb_epoch,
+                               num_epoch=epochs,
                                initializer=self.config["init"],
                                kvstore=self.kv,
                                optimizer=self.config["optimizer"],
@@ -192,15 +194,15 @@ class MXNetRunner(object):
                                eval_metric=self.eval_metrics,
                                validation_metric=self.val_metrics,
                                batch_end_callback=mx.callback.Speedometer(
-                                   self.config["batch_size"], self.config["log_interval"]),
+                                   batch_size, self.config["log_interval"]),
                                epoch_end_callback=None if "model" not in self.config
                                else mx.callback.do_checkpoint(self.config["model"]))
             epoch_time = time.time() - start_time
             stats["epoch_time"] = epoch_time
             if isinstance(train_data, RayPartition):
                 del train_data
-            if val_data and isinstance(val_data, RayPartition):
-                del val_data
+            if validation_data and isinstance(validation_data, RayPartition):
+                del validation_data
         return stats
 
     def shutdown(self):
