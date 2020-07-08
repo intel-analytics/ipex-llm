@@ -27,15 +27,15 @@ class Estimator(object):
     MXNet Estimator provides an automatic setup for synchronous distributed MXNet training.
 
     :param config: A dictionary for training configurations. Keys must include the following:
-    batch_size, optimizer, optimizer_params, log_interval.
+    optimizer, optimizer_params, log_interval.
     optimizer should be an MXNet optimizer or its string representation.
     optimizer_params should be a dict in companion with the optimizer. It can contain learning_rate
     and other optimization configurations.
     log_interval should be an integer, specifying the interval for logging throughput and metrics
     information (if any) during the training process.
     You can call create_config to directly create it.
-    You can specify "seed" in config to set random seed.
-    You can specify "init" in seed to set model initializer.
+    You can specify "seed" in config to set random seed for weight initialization.
+    You can specify "init" in extra_config to set model initializer for gluon models.
 
     :param model_creator: A function that takes config as argument and returns an MXNet model.
     The model can be defined either using MXNet symbolic API or imperative(gluon) API.
@@ -122,18 +122,22 @@ class Estimator(object):
             for i, runner in enumerate(self.runners)
         ])
 
-    def fit(self, train_data, val_data=None, nb_epoch=1, train_resize_batch_num=None):
+    def fit(self, data, epochs=1, batch_size=32, validation_data=None, train_resize_batch_num=None):
         """
         Trains an MXNet model given train_data (with val_data) for several epochs.
 
-        :param train_data: An instance of XShards or a function that takes config and kv as
+        :param data: An instance of SparkXShards or a function that takes config and kv as
         arguments and returns an MXNet DataIter/DataLoader for training.
         You can specify data related configurations for this function in the config argument above.
         kv is an instance of MXNet distributed key-value store. kv.num_workers and kv.rank
         can be used in this function to split data for different workers if necessary.
 
-        :param val_data: An instance of XShards or a function that takes config and kv as arguments
-        and returns an MXNet DataIter/DataLoader for validation.
+        :param epochs: The number of epochs to train the MXNet model. Default is 1.
+
+        :param batch_size: The number of samples per batch. Default is 32.
+
+        :param validation_data: An instance of SparkXShards or a function that takes config and
+        kv as arguments and returns an MXNet DataIter/DataLoader for validation.
         You can specify data related configurations for this function in the config argument above.
         kv is an instance of MXNet distributed key-value store. kv.num_workers and kv.rank
         can be used in this function to split data for different workers if necessary.
@@ -144,42 +148,42 @@ class Estimator(object):
         the training if the workers have unbalanced training data.
         See this issue for more details: https://github.com/apache/incubator-mxnet/issues/17651
         """
-        if val_data:
+        if validation_data:
             assert self.validation_metrics_creator,\
                 "Metrics not defined for validation, please specify validation_metrics_creator " \
                 "when creating the Estimator"
         from zoo.orca.data import SparkXShards
-        if isinstance(train_data, SparkXShards):
-            if train_data.num_partitions() != self.num_workers:
-                train_data = train_data.repartition(self.num_workers)
-            train_data = train_data.to_ray()
-            if val_data:
-                assert isinstance(val_data, SparkXShards)
-                if val_data.num_partitions() != self.num_workers:
-                    val_data = val_data.repartition(self.num_workers)
-                val_data = val_data.to_ray()
-            self.workers = train_data.colocate_actors(self.workers)
-            train_data_list = train_data.get_partitions()
-            if val_data:
-                val_data_list = val_data.get_partitions()
+        if isinstance(data, SparkXShards):
+            if data.num_partitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
+            data = data.to_ray()
+            if validation_data:
+                assert isinstance(validation_data, SparkXShards)
+                if validation_data.num_partitions() != self.num_workers:
+                    validation_data = validation_data.repartition(self.num_workers)
+                validation_data = validation_data.to_ray()
+            self.workers = data.colocate_actors(self.workers)
+            train_data_list = data.get_partitions()
+            if validation_data:
+                val_data_list = validation_data.get_partitions()
             else:
                 val_data_list = [None] * self.num_workers
         else:  # data_creator functions; should return Iter or DataLoader
-            assert callable(train_data),\
+            assert callable(data),\
                 "train_data should be either an instance of SparkXShards or a callable function"
-            train_data_list = [train_data] * self.num_workers
-            if val_data:
-                assert callable(val_data),\
+            train_data_list = [data] * self.num_workers
+            if validation_data:
+                assert callable(validation_data),\
                     "val_data should be either an instance of SparkXShards or a callable function"
-            val_data_list = [val_data] * self.num_workers
+            val_data_list = [validation_data] * self.num_workers
         self.runners = self.workers + self.servers
         # For servers, data is not used and thus just input a None value.
         train_data_list += [None] * self.num_servers
         val_data_list += [None] * self.num_servers
 
         stats = ray.get(
-            [runner.train.remote(train_data_list[i], val_data_list[i],
-                                 nb_epoch, train_resize_batch_num)
+            [runner.train.remote(train_data_list[i], epochs, batch_size,
+                                 val_data_list[i], train_resize_batch_num)
              for i, runner in enumerate(self.runners)])
         return stats
 

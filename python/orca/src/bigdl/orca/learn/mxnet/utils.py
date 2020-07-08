@@ -25,12 +25,11 @@ def find_free_port():
         return s.getsockname()[1]
 
 
-def create_config(batch_size=32, optimizer="sgd", optimizer_params=None,
+def create_config(optimizer="sgd", optimizer_params=None,
                   log_interval=10, seed=None, extra_config=None):
     if not optimizer_params:
         optimizer_params = {'learning_rate': 0.01}
     config = {
-        "batch_size": batch_size,
         "optimizer": optimizer,
         "optimizer_params": optimizer_params,
         "log_interval": log_interval,
