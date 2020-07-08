@@ -29,7 +29,7 @@ $ [/tmp/news20]$ tree . -L 1
 
 ### Run via pip install
 - [Install from pip](https://bigdl-project.github.io/0.11.0/#PythonUserGuide/install-from-pip/)
-- Optional: check [Run after pip install](https://bigdl-project.github.io/0.11.0-SNAPSHOT/#PythonUserGuide/run-from-pip/)
+- Optional: check [Run after pip install](https://bigdl-project.github.io/0.11.0/#PythonUserGuide/run-from-pip/)
 - Run the following command locally
 ```
 python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max_epoch 3 --model cnn
@@ -38,7 +38,7 @@ python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max
 
 ### Run via spark-submit
 - [Install without pip](https://bigdl-project.github.io/0.11.0/#PythonUserGuide/install-without-pip/)
-- Optional: check [Run without pip](https://bigdl-project.github.io/0.11.0-SNAPSHOT/#PythonUserGuide/run-without-pip/)
+- Optional: check [Run without pip](https://bigdl-project.github.io/0.11.0/#PythonUserGuide/run-without-pip/)
 - Run the following command
 ```{r, engine='sh'}
         PYTHONHASHSEED=0
