@@ -35,7 +35,8 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
   extends AbstractModule[Activity, Activity, Float]{
   import TorchModel._
 
-  protected lazy val loaded = {
+  protected var loaded = false
+  protected lazy val load = {
     PythonInterpreter.set("model_bytes", modelHolder.torchBytes)
     val loadModelCode =
       s"""
@@ -50,6 +51,10 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
          |${getName()} = CloudPickleSerializer.loads(CloudPickleSerializer, by)
          |""".stripMargin
     PythonInterpreter.exec(loadModelCode)
+    if (extraParams.length != 0) {
+      setExtraParam(extraParams)
+    }
+    loaded = true
     true
   }
 
@@ -73,7 +78,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
        |""".stripMargin
 
   override def updateOutput(input: Activity): Activity = {
-    loaded
+    load
     // TODO: delete this time counting
     val startTime = System.nanoTime()
     // _data is come from FeatureSet.
@@ -118,7 +123,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    loaded
+    load
     val startTime = System.nanoTime()
     val backwardCode =
       s"""
@@ -162,16 +167,54 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
 
   override def evaluate(): this.type = {
     super.evaluate()
-    loaded
+    load
     PythonInterpreter.set("newWeight", new NDArray[Array[Float]](weights.storage().array()))
     PythonInterpreter.exec(setWeightCode)
     PythonInterpreter.exec(s"${getName()}.eval()")
     this
   }
 
+  protected var extraParams: Array[Tensor[Float]] = Array()
+  override def getExtraParameter(): Array[Tensor[Float]] = {
+    if (loaded) {
+      val getExtraParamCode =
+        s"""
+           |${getName()}_extra_parameters = []
+           |for named_buffer in ${this.getName()}.named_buffers():
+           |    ${getName()}_extra_parameters.append(named_buffer[1].data.numpy())
+           |""".stripMargin
+      PythonInterpreter.exec(getExtraParamCode)
+      val extraParams = PythonInterpreter.getValue[AnyRef](s"${getName()}_extra_parameters")
+      PythonFeatureSet.toArrayTensor(extraParams)
+    } else {
+      extraParams
+    }
+  }
+
+  // TODO: change to override setExtraParameter when switch to bigdl 0.11.0
+  private[zoo] def setExtraParam(extraParams: Array[Tensor[Float]]): this.type = {
+    if (loaded) {
+      val params = extraParams.map(param => new NDArray[Array[Float]](param.storage().array()))
+      val paramName = s"${getName()}_new_extra_param"
+      val idxName = s"${getName()}_buffer_idx"
+      PythonInterpreter.set(paramName, params)
+      val setExtraParamCode =
+        s"""
+           |${idxName} = 0
+           |for named_buffer in ${this.getName()}.named_buffers():
+           |    named_buffer[1].copy_(
+           |      torch.reshape(torch.Tensor(${paramName}[${idxName}]), named_buffer[1].size()))
+           |    ${idxName} += 1
+           |""".stripMargin
+      PythonInterpreter.exec(setExtraParamCode)
+    }
+    this.extraParams = extraParams
+    this
+  }
+
   override def training(): this.type = {
     super.training()
-    loaded
+    load
     PythonInterpreter.exec(s"${getName()}.train()")
     this
   }

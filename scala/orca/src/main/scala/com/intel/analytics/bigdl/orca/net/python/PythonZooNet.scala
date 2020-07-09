@@ -164,6 +164,10 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     pids.asScala.foreach(pid => processToBeKill.add(pid + ""))
   }
 
+  def getModuleExtraParameters(model: AbstractModule[_, _, T]): Array[JTensor] = {
+    model.getExtraParameter().map(toJTensor)
+  }
+
   def createTorchNet(modelPath: String): TorchNet = {
       TorchNet(modelPath)
   }
