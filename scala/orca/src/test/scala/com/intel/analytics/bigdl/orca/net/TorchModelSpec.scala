@@ -163,4 +163,40 @@ class TorchModelSpec extends ZooSpecHelper{
     val gradOutput = criterion.backward(input, target)
     model.backward(input, gradOutput)
   }
+
+  "TorchModel's get/set param" should "works" in {
+    ifskipTest()
+    val code = lenet +
+      s"""
+         |import torch
+         |import torchvision
+         |model = torchvision.models.resnet18()
+         |from pyspark.serializers import CloudPickleSerializer
+         |weights=[]
+         |for param in model.parameters():
+         |    weights.append(param.view(-1))
+         |flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
+         |bym = CloudPickleSerializer.dumps(CloudPickleSerializer, model)
+         |
+         |""".stripMargin
+    PythonInterpreter.exec(code)
+
+    val w = PythonInterpreter.getValue[NDArray[Array[Float]]]("flatten_weight").getData()
+    val bys = PythonInterpreter.getValue[Array[Byte]]("bym")
+    val model = TorchModel(bys, w)
+    model.training()
+    val extraParams = model.getExtraParameter()
+    extraParams.foreach{v =>
+      if (v.isScalar) {
+        v.fill(3)
+      } else {
+        v.rand()
+      }
+    }
+    model.setExtraParam(extraParams)
+    val newExtraParams = model.getExtraParameter()
+    extraParams.zip(newExtraParams).foreach{v =>
+      v._1 should be (v._2)
+    }
+  }
 }
