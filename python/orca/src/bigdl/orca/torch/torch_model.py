@@ -64,7 +64,17 @@ class TorchModel(Layer):
         """
         new_weight = self.get_weights()
         assert(len(new_weight) == 1, "TorchModel's weights should be one tensor")
+        # set weights
         m = CloudPickleSerializer.loads(CloudPickleSerializer, self.module_bytes)
         w = torch.Tensor(new_weight[0])
         torch.nn.utils.vector_to_parameters(w, m.parameters())
+
+        # set named buffers
+        new_extra_params = callZooFunc(self.bigdl_type, "getModuleExtraParameters", self.value)
+        if len(new_extra_params) != 0:
+            idx = 0
+            for named_buffer in m.named_buffers():
+                named_buffer[1].copy_(torch.reshape(
+                    torch.Tensor(new_extra_params[idx].to_ndarray()), named_buffer[1].size()))
+                idx += 1
         return m

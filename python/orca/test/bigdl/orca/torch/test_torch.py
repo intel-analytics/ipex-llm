@@ -92,6 +92,28 @@ class TestPytorch(TestCase):
         p = list(exported_model.parameters())
         assert p[0][0][0] == 1.0
 
+    def test_model_with_bn_to_pytorch(self):
+        class SimpleTorchModel(nn.Module):
+            def __init__(self):
+                super(SimpleTorchModel, self).__init__()
+                self.dense1 = nn.Linear(2, 4)
+                self.bn1 = torch.nn.BatchNorm1d(4)
+                self.dense2 = nn.Linear(4, 1)
+
+            def forward(self, x):
+                x = self.dense1(x)
+                x = self.bn1(x)
+                x = torch.sigmoid(self.dense2(x))
+                return x
+
+        torch_model = SimpleTorchModel()
+        az_model = TorchModel.from_pytorch(torch_model)
+        dummy_input = torch.ones(16, 2)
+        zoo_result = az_model.forward(dummy_input.numpy())
+
+        exported_model = az_model.to_pytorch()
+        print(list(exported_model.named_buffers()))
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
