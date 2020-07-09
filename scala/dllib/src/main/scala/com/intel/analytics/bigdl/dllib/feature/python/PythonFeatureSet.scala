@@ -132,7 +132,7 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
            |  ${loaderName}_epoch = 0
            |else:
            |  ${loaderName}_epoch += 1
-           |${loaderName}_random_sampler.set_epoch(${loaderName}_epoch)
+           |${loaderName}_rand_sampler.set_epoch(${loaderName}_epoch)
            |${iterName} = enumerate(${loaderName}${trainPostfix})
            |""".stripMargin
       } else {
