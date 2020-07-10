@@ -30,8 +30,7 @@ class TestSparkXShards(TestCase):
     def setup_method(self, method):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
-    def test_read_local_csv_pandas_backend(self):
-        ZooContext.orca_pandas_read_backend = "pandas"
+    def test_read_local_csv(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         data_shard = zoo.orca.data.pandas.read_csv(file_path)
         data = data_shard.collect()
@@ -43,21 +42,7 @@ class TestSparkXShards(TestCase):
             xshards = zoo.orca.data.pandas.read_csv(file_path)
         self.assertTrue('The file path is invalid/empty' in str(context.exception))
 
-    def test_read_local_csv_spark_backend(self):
-        ZooContext.orca_pandas_read_backend = "spark"
-        file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path, header=True)
-        data = data_shard.collect()
-        df = data[0]
-        assert "location" in df.columns, "location is not in columns"
-        file_path = os.path.join(self.resource_path, "abc")
-        with self.assertRaises(Exception) as context:
-            xshards = zoo.orca.data.pandas.read_csv(file_path)
-        self.assertTrue('The file path is invalid/empty' in str(context.exception))
-        # Change the backend to default pandas so that this won't affect other unit tests.
-        ZooContext.orca_pandas_read_backend = "pandas"
-
-    def test_read_local_json_pandas_backend(self):
+    def test_read_local_json(self):
         ZooContext.orca_pandas_read_backend = "pandas"
         file_path = os.path.join(self.resource_path, "orca/data/json")
         data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
@@ -65,15 +50,6 @@ class TestSparkXShards(TestCase):
         assert len(data) == 2, "number of shard should be 2"
         df = data[0]
         assert "value" in df.columns, "value is not in columns"
-
-    def test_read_local_json_spark_backend(self):
-        ZooContext.orca_pandas_read_backend = "spark"
-        file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path)
-        data = data_shard.collect()
-        df = data[0]
-        assert "value" in df.columns, "value is not in columns"
-        ZooContext.orca_pandas_read_backend = "pandas"
 
     def test_read_s3(self):
         access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
