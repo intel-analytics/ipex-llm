@@ -106,7 +106,8 @@ def read_pd_file(path, file_type, **kwargs):
     elif file_type == "json":
         df = pd.read_json(path, **kwargs)
     else:
-        raise Exception("Unsupported file type")
+        raise Exception("Unsupported file type: %s. Only csv and json files are "
+                        "supported for now" % file_type)
     return df
 
 
