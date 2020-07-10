@@ -78,29 +78,139 @@ def read_file_spark(file_path, file_type, **kwargs):
                     yield df
 
             pd_rdd = rdd.mapPartitions(loadFile)
-    else:
+    else:  # Spark backend
+        assert file_type == "json" or file_type == "csv", \
+            "Unsupported file type: %s. Only csv and json files are supported for now" % file_type
         from pyspark.sql import SQLContext
         sqlContext = SQLContext.getOrCreate(sc)
         spark = sqlContext.sparkSession
         # TODO: add S3 confidentials
-        if file_type == "json":
-            df = spark.read.json(file_paths, **kwargs)
-        elif file_type == "csv":
+
+        # The following implementation is adapted from
+        # https://github.com/databricks/koalas/blob/master/databricks/koalas/namespace.py
+        # with some modifications.
+
+        if "mangle_dupe_cols" in kwargs:
+            assert kwargs["mangle_dupe_cols"], "mangle_dupe_cols can only be True"
+            kwargs.pop("mangle_dupe_cols")
+        if "parse_dates" in kwargs:
+            assert not kwargs["parse_dates"], "parse_dates can only be False"
+            kwargs.pop("parse_dates")
+
+        names = kwargs.get("names", None)
+        if "names" in kwargs:
+            kwargs.pop("names")
+        usecols = kwargs.get("usecols", None)
+        if "usecols" in kwargs:
+            kwargs.pop("usecols")
+        dtype = kwargs.get("dtype", None)
+        if "dtype" in kwargs:
+            kwargs.pop("dtype")
+        squeeze = kwargs.get("squeeze", False)
+        if "squeeze" in kwargs:
+            kwargs.pop("squeeze")
+        index_col = kwargs.get("index_col", None)
+        if "index_col" in kwargs:
+            kwargs.pop("index_col")
+
+        if file_type == "csv":
+            # Handle pandas-compatible keyword arguments
+            kwargs["inferSchema"] = True
+            header = kwargs.get("header", "infer")
+            if isinstance(names, str):
+                kwargs["schema"] = names
+            if header == "infer":
+                header = 0 if names is None else None
+            if header == 0:
+                kwargs["header"] = True
+            elif header is None:
+                kwargs["header"] = False
+            else:
+                raise ValueError("Unknown header argument {}".format(header))
+            if "quotechar" in kwargs:
+                quotechar = kwargs["quotechar"]
+                kwargs.pop("quotechar")
+                kwargs["quote"] = quotechar
+            if "escapechar" in kwargs:
+                escapechar = kwargs["escapechar"]
+                kwargs.pop("escapechar")
+                kwargs["escape"] = escapechar
+            # sep and comment are the same as pandas
+            if "comment" in kwargs:
+                comment = kwargs["comment"]
+                if not isinstance(comment, str) or len(comment) != 1:
+                    raise ValueError("Only length-1 comment characters supported")
             df = spark.read.csv(file_paths, **kwargs)
+            if header is None:
+                df = df.selectExpr(
+                    *["`%s` as `%s`" % (field.name, i) for i, field in enumerate(df.schema)])
         else:
-            raise Exception("Unsupported file type")
+            df = spark.read.json(file_paths, **kwargs)
+
+        # Handle pandas-compatible postprocessing arguments
+        if isinstance(names, list):
+            if len(set(names)) != len(names):
+                raise ValueError("Found duplicate names, please check your names input")
+            if len(names) != len(df.schema):
+                raise ValueError(
+                    "The number of names [%s] does not match the number "
+                    "of columns [%d]. Try names by a Spark SQL DDL-formatted "
+                    "string." % (len(names), len(df.schema))
+                )
+            df = df.selectExpr(
+                *["`%s` as `%s`" % (field.name, name) for field, name in zip(df.schema, names)]
+            )
+        if usecols is not None and not callable(usecols):
+            usecols = list(usecols)
+        if usecols is not None:
+            if callable(usecols):
+                cols = [field.name for field in df.schema if usecols(field.name)]
+                missing = []
+            elif all(isinstance(col, int) for col in usecols):
+                cols = [field.name for i, field in enumerate(df.schema) if i in usecols]
+                missing = [
+                    col
+                    for col in usecols
+                    if col >= len(df.schema) or df.schema[col].name not in cols
+                ]
+            elif all(isinstance(col, str) for col in usecols):
+                cols = [field.name for field in df.schema if field.name in usecols]
+                missing = [col for col in usecols if col not in cols]
+            else:
+                raise ValueError(
+                    "usecols must only be list-like of all strings, "
+                    "all unicode, all integers or a callable.")
+            if len(missing) > 0:
+                raise ValueError(
+                    "usecols do not match columns, columns expected but not found: %s" % missing)
+
+            if len(cols) > 0:
+                df = df.select(cols)
+        if dtype is not None:
+            if isinstance(dtype, dict):
+                for col, type in dtype.items():
+                    df = df.withColumn(col, df[col].astype(type))
+            else:
+                for col in df.columns:
+                    df = df.withColumn(col, df[col].astype(dtype))
+
         if df.rdd.getNumPartitions() < node_num:
             df = df.repartition(node_num)
 
-        def to_pandas(columns):
+        def to_pandas(columns, squeeze=False, index_col=None):
             def f(iter):
                 import pandas as pd
                 data = list(iter)
-                yield pd.DataFrame(data, columns=columns)
+                pd_df = pd.DataFrame(data, columns=columns)
+                if squeeze and len(pd_df.columns) == 1:
+                    pd_df = pd_df.iloc[:, 0]
+                if index_col:
+                    pd_df = pd_df.set_index(index_col)
+                return [pd_df]
 
             return f
 
-        pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns))
+        pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns, squeeze, index_col))
 
     data_shards = SparkXShards(pd_rdd)
     return data_shards
