@@ -23,6 +23,8 @@ import mxnet as mx
 import numpy as np
 from mxnet import gluon
 from functools import reduce
+
+from zoo.orca.learn.utils import get_data_label
 from zoo.ray.utils import to_list
 
 
@@ -228,33 +230,3 @@ class MXNetRunner(object):
             from zoo.orca.learn.mxnet.utils import find_free_port
             self.port = find_free_port()
         return self.port
-
-
-def get_data_label(partition_data):
-    def combine_dict(dict1, dict2):
-        return {key: np.concatenate((value, dict2[key]), axis=0)
-                for (key, value) in dict1.items()}
-
-    def combine_list(list1, list2):
-        return [np.concatenate((list1[index], list2[index]), axis=0)
-                for index in range(0, len(list1))]
-
-    data_list = [data['x'] for data in partition_data]
-    label_list = [data['y'] for data in partition_data]
-    if isinstance(partition_data[0]['x'], dict):
-        data = reduce(lambda dict1, dict2: combine_dict(dict1, dict2), data_list)
-    elif isinstance(partition_data[0]['x'], np.ndarray):
-        data = reduce(lambda array1, array2: np.concatenate((array1, array2), axis=0),
-                      data_list)
-    elif isinstance(partition_data[0]['x'], list):
-        data = reduce(lambda list1, list2: combine_list(list1, list2), data_list)
-
-    if isinstance(partition_data[0]['y'], dict):
-        label = reduce(lambda dict1, dict2: combine_dict(dict1, dict2), label_list)
-    elif isinstance(partition_data[0]['y'], np.ndarray):
-        label = reduce(lambda array1, array2: np.concatenate((array1, array2), axis=0),
-                       label_list)
-    elif isinstance(partition_data[0]['y'], list):
-        label = reduce(lambda list1, list2: combine_list(list1, list2), data_list)
-
-    return data, label
