@@ -20,7 +20,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from zoo import init_spark_on_local
+from zoo import init_spark_on_yarn, init_spark_on_local
 from zoo.ray import RayContext
 from zoo.orca.learn.pytorch.pytorch_horovod_estimator import PyTorchHorovodEstimator
 
@@ -93,11 +93,54 @@ def train_example():
         print(stats)
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--hadoop_conf", type=str,
+                    help="turn on yarn mode by passing the path to the hadoop"
+                         " configuration folder. Otherwise, turn on local mode.")
+parser.add_argument("--slave_num", type=int, default=2,
+                    help="The number of slave nodes")
+parser.add_argument("--conda_name", type=str,
+                    help="The name of conda environment.")
+parser.add_argument("--executor_cores", type=int, default=8,
+                    help="The number of driver's cpu cores you want to use."
+                         "You can change it depending on your own cluster setting.")
+parser.add_argument("--executor_memory", type=str, default="10g",
+                    help="The size of slave(executor)'s memory you want to use."
+                         "You can change it depending on your own cluster setting.")
+parser.add_argument("--driver_memory", type=str, default="2g",
+                    help="The size of driver's memory you want to use."
+                         "You can change it depending on your own cluster setting.")
+parser.add_argument("--driver_cores", type=int, default=8,
+                    help="The number of driver's cpu cores you want to use."
+                         "You can change it depending on your own cluster setting.")
+parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
+                    help="The extra executor memory to store some data."
+                         "You can change it depending on your own cluster setting.")
+parser.add_argument("--object_store_memory", type=str, default="4g",
+                    help="The memory to store data on local."
+                         "You can change it depending on your own cluster setting.")
+
 if __name__ == "__main__":
 
-    sc = init_spark_on_local()
-    ray_ctx = RayContext(
-        sc=sc,
-        object_store_memory="4g")
-    ray_ctx.init()
+    args = parser.parse_args()
+    if args.hadoop_conf:
+        sc = init_spark_on_yarn(
+            hadoop_conf=args.hadoop_conf,
+            conda_name=args.conda_name,
+            num_executor=args.slave_num,
+            executor_cores=args.executor_cores,
+            executor_memory=args.executor_memory,
+            driver_memory=args.driver_memory,
+            driver_cores=args.driver_cores,
+            extra_executor_memory_for_ray=args.extra_executor_memory_for_ray)
+        ray_ctx = RayContext(
+            sc=sc,
+            object_store_memory=args.object_store_memory)
+        ray_ctx.init()
+    else:
+        sc = init_spark_on_local()
+        ray_ctx = RayContext(
+            sc=sc,
+            object_store_memory=args.object_store_memory)
+        ray_ctx.init()
     train_example()
