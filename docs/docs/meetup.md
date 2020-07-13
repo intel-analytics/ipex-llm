@@ -3,6 +3,7 @@
 * AI Monitoring of Network Health using Analytics Zoo in SK Telecom, March 26 2020 ([Video](https://webinar.intel.com/AI_Monitoring_WebinarREG?cid=em&source=elo&campid=dcg_EMEA_dcgnt_EN_2020_SKT%20AI%20Monitoring%20Webinar_C-MKA-16515_T-MKA-17410&content=dcg_EMEA_dcgnt_EMPW_EN_2020_SKT%20AI%20Monitoring%20WebinarOD_B_C-MKA-16515_T-MKA-17410&elq_cid=5656555&em_id=55798&elqrid=15231a3f77a74330ad6d259e4c4a719d&elqcampid=36699&erpm_id=8713909&trackSrc=MKA-17410_OD&elqTrackId=ed8961eb4a0e4506a15ba38a6b4150ab&elq=15231a3f77a74330ad6d259e4c4a719d&elqaid=55798&elqat=1&elqCampaignId=36699), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0326%20Webinar%20SKT_AI%20Network%20Analytics_FINAL.pdf))
 
 **Meetup:**
+* Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/271669740/), July 10 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/RayOnSpark_2020071082955?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0710%20RayOnSpark.pdf))
 
 * Cluster Serving Introduction and Use Cases, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/271100667/), June 12 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/ClusterServing?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0612%20Cluster-Serving-Presentation.pdf))
 
