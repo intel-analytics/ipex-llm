@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.zoo.feature.common._
 import com.intel.analytics.zoo.pipeline.nnframes.NNModel.NNModelWriter
-import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper, XGBoostRegressionModel}
+import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper,
+XGBoostRegressor, XGBoostRegressionModel}
 import org.apache.spark.ml.DefaultParamsWriterWrapper
 import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.feature.VectorAssembler
@@ -359,6 +360,204 @@ class XGBClassifierModel private[zoo](
 object XGBClassifierModel {
   def load(path: String, numClass: Int): XGBClassifierModel = {
     new XGBClassifierModel(XGBoostHelper.load(path, numClass))
+  }
+}
+
+/**
+ * [[XGBRegressor]] xgboost wrapper of XGBRegressor.
+ */
+class XGBRegressor () {
+
+  private val model = new XGBoostRegressor()
+
+  def setLabelCol(labelColName : String) : this.type = {
+    model.setLabelCol(labelColName)
+    this
+  }
+
+  def setFeaturesCol(featuresColName: String): this.type = {
+    model.setFeaturesCol(featuresColName)
+    this
+  }
+
+  def fit(df: DataFrame): XGBRegressorModel = {
+    val xgbModel = model.fit(df)
+    new XGBRegressorModel(xgbModel)
+  }
+
+  def setNumRound(value: Int): this.type = {
+    model.setNumRound(value)
+    this
+  }
+
+  def setNumWorkers(value: Int): this.type = {
+    model.setNumWorkers(value)
+    this
+  }
+
+  def setNthread(value: Int): this.type = {
+    model.setNthread(value)
+    this
+  }
+
+  def setSilent(value: Int): this.type = {
+    model.setSilent(value)
+    this
+  }
+
+  def setMissing(value: Float): this.type = {
+    model.setMissing(value)
+    this
+  }
+
+  def setCheckpointPath(value: String): this.type = {
+    model.setCheckpointPath(value)
+    this
+  }
+
+  def setCheckpointInterval(value: Int): this.type = {
+    model.setCheckpointInterval(value)
+    this
+  }
+
+  def setSeed(value: Long): this.type = {
+    model.setSeed(value)
+    this
+  }
+
+  def setEta(value: Double): this.type = {
+    model.setEta(value)
+    this
+  }
+
+  def setGamma(value: Double): this.type = {
+    model.setGamma(value)
+    this
+  }
+
+  def setMaxDepth(value: Int): this.type = {
+    model.setMaxDepth(value)
+    this
+  }
+
+  def setMinChildWeight(value: Double): this.type = {
+    model.setMinChildWeight(value)
+    this
+  }
+
+  def setMaxDeltaStep(value: Double): this.type = {
+    model.setMaxDeltaStep(value)
+    this
+  }
+
+  def setColsampleBytree(value: Double): this.type = {
+    model.setColsampleBytree(value)
+    this
+  }
+
+  def setColsampleBylevel(value: Double): this.type = {
+    model.setColsampleBylevel(value)
+    this
+  }
+
+  def setLambda(value: Double): this.type = {
+    model.setLambda(value)
+    this
+  }
+
+  def setAlpha(value: Double): this.type = {
+    model.setAlpha(value)
+    this
+  }
+
+  def setTreeMethod(value: String): this.type = {
+    model.setTreeMethod(value)
+    this
+  }
+
+  def setGrowPolicy(value: String): this.type = {
+    model.setGrowPolicy(value)
+    this
+  }
+
+  def setMaxBins(value: Int): this.type = {
+    model.setMaxBins(value)
+    this
+  }
+
+  def setMaxLeaves(value: Int): this.type = {
+    model.setMaxLeaves(value)
+    this
+  }
+
+  def setSketchEps(value: Double): this.type = {
+    model.setSketchEps(value)
+    this
+  }
+
+  def setScalePosWeight(value: Double): this.type = {
+    model.setScalePosWeight(value)
+    this
+  }
+
+  def setSampleType(value: String): this.type = {
+    model.setSampleType(value)
+    this
+  }
+
+  def setNormalizeType(value: String): this.type = {
+    model.setNormalizeType(value)
+    this
+  }
+
+  def setRateDrop(value: Double): this.type = {
+    model.setRateDrop(value)
+    this
+  }
+
+  def setSkipDrop(value: Double): this.type = {
+    model.setSkipDrop(value)
+    this
+  }
+
+  def setLambdaBias(value: Double): this.type = {
+    model.setLambdaBias(value)
+    this
+  }
+
+  def setObjective(value: String): this.type = {
+    model.setObjective(value)
+    this
+  }
+
+  def setObjectiveType(value: String): this.type = {
+    model.setObjectiveType(value)
+    this
+  }
+
+  def setSubsample(value: Double): this.type = {
+    model.setSubsample(value)
+    this
+  }
+
+  def setBaseScore(value: Double): this.type = {
+    model.setBaseScore(value)
+    this
+  }
+
+  def setEvalMetric(value: String): this.type = {
+    model.setEvalMetric(value)
+    this
+  }
+
+  def setNumEarlyStoppingRounds(value: Int): this.type = {
+    model.setNumEarlyStoppingRounds(value)
+    this
+  }
+
+  def setMaximizeEvaluationMetrics(value: Boolean): this.type = {
+    model.setMaximizeEvaluationMetrics(value)
+    this
   }
 }
 
