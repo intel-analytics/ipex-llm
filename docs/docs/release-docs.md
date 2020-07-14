@@ -1,3 +1,6 @@
+## **Release 0.11.0**
+[BigDL 0.11.0 Docs](https://bigdl-project.github.io/0.11.0)
+
 ## **Release 0.10.0**
 [BigDL 0.10.0 Docs](https://bigdl-project.github.io/0.10.0)
 
