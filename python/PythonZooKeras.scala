@@ -1032,9 +1032,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       beta_2: Double = 0.999,
       epsilon: Double = 1e-8,
       decay: Double = 0.0,
+      weightDecay: Double = 0.0,
       schedule: SGD.LearningRateSchedule = SGD.Default()
       ): Adam[T] = {
-    new Adam[T](lr, beta_1, beta_2, epsilon, decay, schedule)
+    new Adam[T](lr, beta_1, beta_2, epsilon, decay, weightDecay, schedule)
   }
 
   def createZooKerasHardShrink(
