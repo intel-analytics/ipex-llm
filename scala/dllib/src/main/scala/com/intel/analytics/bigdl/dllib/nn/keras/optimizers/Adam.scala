@@ -41,9 +41,10 @@ class Adam[@specialized(Float, Double) T: ClassTag](
     var beta_2: Double = 0.999,
     var epsilon: Double = 1e-8,
     var decay: Double = 0.0,
+    var wDecay: Double = 0.0,
     val schedule: LearningRateSchedule = Default()
   )(implicit ev: TensorNumeric[T]) extends SGD[T](learningRate = lr,
-    learningRateDecay = decay, learningRateSchedule = schedule) {
+    learningRateDecay = decay, weightDecay = wDecay, learningRateSchedule = schedule) {
 
   @transient
   private var buffer: Tensor[T] = null
@@ -65,6 +66,7 @@ class Adam[@specialized(Float, Double) T: ClassTag](
     val beta1 = this.beta_1
     val beta2 = this.beta_2
     val eps = this.epsilon
+    val wd = this.wDecay
 
     val (fx, dfdx) = feval(parameter)
     val state = SGDRef.getstate(this)
@@ -79,6 +81,10 @@ class Adam[@specialized(Float, Double) T: ClassTag](
       }
 
     val clr = - this.schedule.currentRate
+
+    if(wd > 0) {
+      dfdx.add(parameter * (ev.fromType(wd)))
+    }
 
     /**
      * m_t = beta_1 * m_t-1 + (1 - beta_1) * g_t
