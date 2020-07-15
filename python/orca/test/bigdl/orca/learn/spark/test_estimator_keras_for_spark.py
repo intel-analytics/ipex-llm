@@ -13,16 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+
 import shutil
 from unittest import TestCase
 
 import tensorflow as tf
 
-import zoo.orca.data.pandas
-from zoo.orca.data.tf.data import Dataset
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.common.nncontext import *
+import zoo.orca.data.pandas
 
 
 class TestEstimatorForKeras(TestCase):
@@ -176,6 +175,52 @@ class TestEstimatorForKeras(TestCase):
                 batch_size=8,
                 epochs=10,
                 validation_data=data_shard)
+
+    def test_estimator_keras_dataframe(self):
+        model = self.create_model()
+        sc = init_nncontext()
+        sqlcontext = SQLContext(sc)
+        file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
+        df = sqlcontext.read.csv(file_path, header=True, inferSchema=True)
+        from pyspark.sql.functions import array
+        df = df.withColumn('user', array('user')) \
+            .withColumn('item', array('item'))
+
+        est = Estimator.from_keras(keras_model=model)
+        est.fit(data=df,
+                batch_size=8,
+                epochs=4,
+                feature_cols=['user', 'item'],
+                labels_cols=['label'],
+                validation_data=df)
+
+        eval_result = est.evaluate(df, feature_cols=['user', 'item'], labels_cols=['label'])
+        assert 'acc Top1Accuracy' in eval_result
+
+        prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
+        assert 'prediction' in prediction_df.columns
+        predictions = prediction_df.collect()
+        assert len(predictions) == 10
+
+    def test_estimator_keras_dataframe_no_fit(self):
+        model = self.create_model()
+        sc = init_nncontext()
+        sqlcontext = SQLContext(sc)
+        file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
+        df = sqlcontext.read.csv(file_path, header=True, inferSchema=True)
+        from pyspark.sql.functions import array
+        df = df.withColumn('user', array('user')) \
+            .withColumn('item', array('item'))
+
+        est = Estimator.from_keras(keras_model=model)
+
+        eval_result = est.evaluate(df, feature_cols=['user', 'item'], labels_cols=['label'])
+        assert 'acc Top1Accuracy' in eval_result
+
+        prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
+        assert 'prediction' in prediction_df.columns
+        predictions = prediction_df.collect()
+        assert len(predictions) == 10
 
 
 if __name__ == "__main__":
