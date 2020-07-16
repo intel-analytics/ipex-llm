@@ -46,20 +46,21 @@ def read_json(file_path, **kwargs):
 
 def read_file_spark(file_path, file_type, **kwargs):
     sc = init_nncontext()
-    file_url_splits = file_path.split("://")
-    prefix = file_url_splits[0]
     node_num, core_num = get_node_and_core_number()
 
-    file_paths = []
-    if isinstance(file_path, list):
-        [file_paths.extend(extract_one_path(path, file_type, os.environ)) for path in file_path]
-    else:
-        file_paths = extract_one_path(file_path, file_type, os.environ)
-
-    if not file_paths:
-        raise Exception("The file path is invalid/empty or does not include csv/json files")
-
     if ZooContext.orca_pandas_read_backend == "pandas":
+        file_url_splits = file_path.split("://")
+        prefix = file_url_splits[0]
+
+        file_paths = []
+        if isinstance(file_path, list):
+            [file_paths.extend(extract_one_path(path, os.environ)) for path in file_path]
+        else:
+            file_paths = extract_one_path(file_path, os.environ)
+
+        if not file_paths:
+            raise Exception("The file path is invalid or empty, please check your data")
+
         num_files = len(file_paths)
         total_cores = node_num * core_num
         num_partitions = num_files if num_files < total_cores else total_cores
@@ -78,7 +79,7 @@ def read_file_spark(file_path, file_type, **kwargs):
                     yield df
 
             pd_rdd = rdd.mapPartitions(loadFile)
-    else:  # Spark backend
+    else:  # Spark backend; spark.read.csv/json accepts a folder path as input
         assert file_type == "json" or file_type == "csv", \
             "Unsupported file type: %s. Only csv and json files are supported for now" % file_type
         from pyspark.sql import SQLContext
@@ -140,12 +141,12 @@ def read_file_spark(file_path, file_type, **kwargs):
                 comment = kwargs["comment"]
                 if not isinstance(comment, str) or len(comment) != 1:
                     raise ValueError("Only length-1 comment characters supported")
-            df = spark.read.csv(file_paths, **kwargs)
+            df = spark.read.csv(file_path, **kwargs)
             if header is None:
                 df = df.selectExpr(
                     *["`%s` as `%s`" % (field.name, i) for i, field in enumerate(df.schema)])
         else:
-            df = spark.read.json(file_paths, **kwargs)
+            df = spark.read.json(file_path, **kwargs)
 
         # Handle pandas-compatible postprocessing arguments
         if isinstance(names, list):

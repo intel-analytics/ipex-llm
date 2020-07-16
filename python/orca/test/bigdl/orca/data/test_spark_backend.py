@@ -101,7 +101,8 @@ class TestSparkBackend(TestCase):
         file_path = os.path.join(self.resource_path, "abc")
         with self.assertRaises(Exception) as context:
             xshards = zoo.orca.data.pandas.read_csv(file_path)
-        self.assertTrue('The file path is invalid/empty' in str(context.exception))
+        # This error is raised by pyspark.sql.utils.AnalysisException
+        self.assertTrue('Path does not exist' in str(context.exception))
 
     def test_read_json(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
