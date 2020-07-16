@@ -17,42 +17,32 @@
 import ray
 import os
 from horovod.run.gloo_run import RendezvousServer, _allocate
-from horovod.run.driver import driver_service
-from horovod.run.task_fn import _task_fn
-from horovod.run.common.util import settings as hvd_settings
-from horovod.run.common.util import timeout, secret
-from horovod.run.task import task_service
 
 
 class HorovodWorker:
 
-    def hostname(self):
+    def ip_addr(self):
+        import ray
+        return ray.services.get_node_ip_address()
+
+    def set_gloo_iface(self):
+        ip_addr = self.ip_addr()
+        import psutil
         import socket
-        return socket.gethostname()
+        iface_name = None
+        for intf, intf_addresses in psutil.net_if_addrs().items():
+            for addr in intf_addresses:
+                if addr.family == socket.AF_INET and addr.address == ip_addr:
+                    iface_name = intf
+        assert iface_name is not None, "Cannot find network interface with ip {}".format(ip_addr)
+
+        os.environ["HOROVOD_GLOO_IFACE"] = iface_name
+        return iface_name
 
     def run(self, env, func):
         import os
         os.environ.update(env)
         return func()
-
-    def task_fn(self, index, driver_addresses, settings):
-        _task_fn(index, driver_addresses, settings)
-
-
-def _get_driver_ip(common_intfs):
-    from socket import AF_INET
-    from psutil import net_if_addrs
-    iface = list(common_intfs)[0]
-    driver_ip = None
-    for addr in net_if_addrs()[iface]:
-        if addr.family == AF_INET:
-            driver_ip = addr.address
-
-    if not driver_ip:
-        raise RuntimeError(
-            'Cannot find an IPv4 address of the common interface.')
-
-    return driver_ip
 
 
 def _hosts_to_hosts_spec(hosts):
@@ -72,74 +62,10 @@ def _hosts_to_hosts_spec(hosts):
     return hosts_spec, host_and_rank_to_worker_idx, host_to_size
 
 
-def _launch_task_servers(all_host_names, host_rank_to_id, driver_addresses, settings, workers):
-
-    result_ids = []
-    for index in range(len(all_host_names)):
-        host_name = all_host_names[index]
-        worker = workers[host_rank_to_id[(host_name, 0)]]
-
-        result_id = worker.task_fn.remote(index, driver_addresses, settings)
-        result_ids.append(result_id)
-
-    return result_ids
-
-
-def _find_common_network_interface(host_to_size, host_rank_to_id, workers, settings):
-    all_host_names = [k for k in host_to_size]
-    driver = driver_service.HorovodRunDriverService(len(all_host_names), settings.key, settings.nic)
-
-    _launch_task_servers(all_host_names, host_rank_to_id, driver.addresses(), settings, workers)
-
-    # the following code is copied and modified from horovod.run._driver_fn
-    try:
-        # wait for all the hosts to register with the service service.
-        if settings.verbose >= 2:
-            print('Waiting for the hosts to acknowledge.')
-        driver.wait_for_initial_registration(settings.timeout)
-        tasks = [
-            task_service.HorovodRunTaskClient(
-                index,
-                driver.task_addresses_for_driver(index),
-                settings.key,
-                settings.verbose) for index in range(
-                settings.num_hosts)]
-        # Notify all the drivers that the initial registration is complete.
-        for task in tasks:
-            task.notify_initial_registration_complete()
-        if settings.verbose >= 2:
-            print('Notified all the hosts that the registration is complete.')
-        # Each worker should probe the interfaces of the next worker in a ring
-        # manner and filter only the routed ones -- it should filter out
-        # interfaces that are not really connected to any external networks
-        # such as lo0 with address 127.0.0.1.
-        if settings.verbose >= 2:
-            print('Waiting for hosts to perform host-to-host '
-                  'interface checking.')
-        driver.wait_for_task_to_task_address_updates(settings.timeout)
-        if settings.verbose >= 2:
-            print('Host-to-host interface checking successful.')
-        # Determine a set of common interfaces for task-to-task communication.
-        common_intfs = set(driver.task_addresses_for_tasks(0).keys())
-        for index in range(1, settings.num_hosts):
-            common_intfs.intersection_update(
-                driver.task_addresses_for_tasks(index).keys())
-        if not common_intfs:
-            raise Exception(
-                'Unable to find a set of common task-to-task communication '
-                'interfaces: %s'
-                % [(index, driver.task_addresses_for_tasks(index))
-                   for index in range(settings.num_hosts)])
-        return common_intfs
-    finally:
-        driver.shutdown()
-
-
 class HorovodRayRunner:
 
     # todo check whether horovod is built with gloo
-    def __init__(self, ray_ctx, worker_cls=None, worker_param=None,
-                 verbose=None, start_timeout=None):
+    def __init__(self, ray_ctx, worker_cls=None, worker_param=None):
 
         self.cores_per_node = ray_ctx.ray_node_cpu_cores
         self.num_nodes = ray_ctx.num_ray_nodes
@@ -154,41 +80,19 @@ class HorovodRayRunner:
         self.worker_class = ray.remote(num_cpus=self.cores_per_node)(worker_cls)
         self.remote_workers = [self.worker_class.remote(**worker_param)
                                for i in range(0, self.num_nodes)]
-        hosts = ray.get([worker.hostname.remote() for worker in self.remote_workers])
+        hosts = ray.get([worker.ip_addr.remote() for worker in self.remote_workers])
         hosts_spec, name_rank_to_id, host_to_size = _hosts_to_hosts_spec(hosts)
         self.host_alloc_plan = _allocate(",".join(hosts_spec), self.num_nodes)
         global_rendezv = RendezvousServer(True)
         global_rendezv_port = global_rendezv.start_server(self.host_alloc_plan)
 
-        if start_timeout is None:
-            start_timeout = int(os.getenv('HOROVOD_START_TIMEOUT', '30'))
-
-        tmout = timeout.Timeout(start_timeout,
-                                message='Timed out waiting for {activity}. Please '
-                                        'check connectivity between servers. You '
-                                        'may need to increase the --start-timeout '
-                                        'parameter if you have too many servers.')
-
-        all_host_names = [k for k in host_to_size]
-
-        settings = hvd_settings.Settings(verbose=2 if verbose else 0,
-                                         key=secret.make_secret_key(),
-                                         timeout=tmout,
-                                         num_hosts=len(all_host_names),
-                                         num_proc=self.num_nodes,
-                                         hosts=",".join(hosts_spec))
-
-        common_intfs = _find_common_network_interface(host_to_size, name_rank_to_id,
-                                                      self.remote_workers, settings)
-        iface = list(common_intfs)[0]
-        driver_ip = _get_driver_ip([iface])
+        driver_ip = ray.services.get_node_ip_address()
 
         common_envs = {
             "HOROVOD_GLOO_RENDEZVOUS_ADDR": driver_ip,
             "HOROVOD_GLOO_RENDEZVOUS_PORT": str(global_rendezv_port),
             "HOROVOD_CONTROLLER": "gloo",
             "HOROVOD_CPU_OPERATIONS": "gloo",
-            "HOROVOD_GLOO_IFACE": iface,
             "PYTHONUNBUFFERED": '1',
             "OMP_NUM_THREADS": str(self.cores_per_node)
         }
@@ -208,6 +112,8 @@ class HorovodRayRunner:
             local_envs["HOROVOD_LOCAL_SIZE"] = str(alloc_info.local_size)
             local_envs["HOROVOD_CROSS_RANK"] = str(alloc_info.cross_rank)
             local_envs["HOROVOD_CROSS_SIZE"] = str(alloc_info.cross_size)
+
+        ray.get([worker.set_gloo_iface.remote() for worker in self.remote_workers])
 
     def run(self, func):
         ray.wait([self.remote_workers[i].run.remote(self.per_worker_envs[i], func)
