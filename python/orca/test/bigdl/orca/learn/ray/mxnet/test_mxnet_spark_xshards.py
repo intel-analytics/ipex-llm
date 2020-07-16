@@ -82,7 +82,7 @@ def get_gluon_model(config):
 
 class TestMXNetSparkXShards(TestCase):
     def test_xshards_symbol_with_val(self):
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../../resources")
         train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
         train_data_shard = zoo.orca.data.pandas.read_json(
             train_file_path, orient='records', lines=False).transform_shard(prepare_data_symbol)
@@ -99,7 +99,7 @@ class TestMXNetSparkXShards(TestCase):
         estimator.shutdown()
 
     def test_xshards_symbol_without_val(self):
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../../resources")
         train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
         train_data_shard = zoo.orca.data.pandas.read_json(
             train_file_path, orient='records', lines=False).transform_shard(prepare_data_symbol)
@@ -110,7 +110,7 @@ class TestMXNetSparkXShards(TestCase):
         estimator.shutdown()
 
     def test_xshards_gluon(self):
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../../resources")
         train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
         train_data_shard = zoo.orca.data.pandas.read_json(
             train_file_path, orient='records', lines=False).transform_shard(prepare_data_gluon)
