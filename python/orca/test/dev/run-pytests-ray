@@ -33,8 +33,8 @@ then
     exit $exit_status_1
 fi
 
-echo "Running MXNetTrainer tests"
-python -m pytest -v ../test/zoo/orca/learn/mxnet
+echo "Running orca learn ray tests"
+python -m pytest -v ../test/zoo/orca/learn/ray
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
@@ -65,10 +65,3 @@ then
     exit $exit_status_5
 fi
 
-echo "Running PyTorchTrainer tests"
-python -m pytest -v ../test/zoo/orca/learn/pytorch
-exit_status_6=$?
-if [ $exit_status_6 -ne 0 ];
-then
-    exit $exit_status_6
-fi
