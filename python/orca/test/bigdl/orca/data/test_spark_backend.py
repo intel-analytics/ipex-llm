@@ -77,10 +77,10 @@ class TestSparkBackend(TestCase):
         df = data[0]
         assert df.location.dtype == "float64"
         assert df.ID.dtype == "float64"
-        data_shard = zoo.orca.data.pandas.read_csv(file_path, dtype={"sale_price": "float"})
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32})
         data = data_shard.collect()
         df2 = data[0]
-        assert df2.sale_price.dtype == "float64" and df2.ID.dtype == "int64"
+        assert df2.sale_price.dtype == "float32" and df2.ID.dtype == "int64"
 
     def test_squeeze(self):
         import pandas as pd
@@ -96,6 +96,52 @@ class TestSparkBackend(TestCase):
         data = data_shard.collect()
         df = data[0]
         assert 100529 in df.index
+
+    def test_mix(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, header=0, names=['user', 'item'],
+                                                   usecols=[0, 1])
+        data = data_shard.collect()
+        df = data[0]
+        assert "user" in df.columns
+        assert "item" in df.columns
+        with self.assertRaises(Exception) as context:
+            data_shard = zoo.orca.data.pandas.read_csv(file_path, header=0,
+                                                       names=['ID', 'location'], usecols=["ID"])
+            data = data_shard.collect()
+        self.assertTrue('Passed names did not match usecols'
+                        in str(context.exception))
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, header=0,
+                                                   names=['user', 'item'], usecols=[0, 1],
+                                                   dtype={0: np.float32, 1: np.int32})
+        data = data_shard.collect()
+        df2 = data[0]
+        assert df2.user.dtype == "float32" and df2.item.dtype == "int32"
+
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, header=0,
+                                                   names=['user', 'item', 'location'],
+                                                   usecols=[1, 2])
+        data = data_shard.collect()
+        df2 = data[0]
+        assert "user" not in df2.columns
+        assert "item" in df2.columns
+        assert "location" in df2.columns
+
+        data_shard = zoo.orca.data.pandas.read_csv(file_path, header=0,
+                                                   names=['user', 'item', 'rating'],
+                                                   usecols=['user', 'item'],
+                                                   dtype={0: np.float32, 1: np.int32})
+        data = data_shard.collect()
+        df2 = data[0]
+        assert df2.user.dtype == "float32" and df2.item.dtype == "int32"
+
+        with self.assertRaises(Exception) as context:
+            data_shard = zoo.orca.data.pandas.read_csv(file_path, header=0,
+                                                       names=['user', 'item'], usecols=[0, 1],
+                                                       dtype={1: np.float32, 2: np.int32})
+            data = data_shard.collect()
+        self.assertTrue('column index to be set type is not in current dataframe'
+                        in str(context.exception))
 
     def test_read_invalid_path(self):
         file_path = os.path.join(self.resource_path, "abc")
