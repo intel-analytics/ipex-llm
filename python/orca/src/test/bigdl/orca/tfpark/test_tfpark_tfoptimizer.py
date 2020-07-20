@@ -27,7 +27,6 @@ from zoo.tfpark import TFDataset, TFOptimizer
 
 
 class TestTFParkTFOptimizer(ZooTestCase):
-
     def setup_method(self, method):
         tf.keras.backend.clear_session()
         super(TestTFParkTFOptimizer, self).setup_method(method)
@@ -132,6 +131,7 @@ class TestTFParkTFOptimizer(ZooTestCase):
                                                   metrics={"loss": loss}, model_dir=model_dir)
                 optimizer.optimize(end_trigger=MaxEpoch(1))
 
+                first_weights = optimizer.sess.run(tf.trainable_variables()[0])
                 import re
                 ckpt_path = None
                 versions = []
@@ -147,13 +147,30 @@ class TestTFParkTFOptimizer(ZooTestCase):
                         break
 
                 assert ckpt_path is not None, "Cannot fine checkpoint file"
+                optimizer.sess.run(tf.global_variables_initializer())  # reset variable
+                optimizer_load = TFOptimizer.from_loss(loss, Adam(),
+                                                       session=optimizer.sess,
+                                                       val_outputs=[output],
+                                                       val_labels=[label_tensor],
+                                                       val_method=Accuracy(),
+                                                       metrics={"loss": loss}, model_dir=model_dir)
+                optimizer_load.load_checkpoint(ckpt_path, max(versions))
+                loaded_first_weights_before_train = optimizer.sess.run(tf.trainable_variables()[0])
+                assert np.allclose(first_weights, loaded_first_weights_before_train)
+                # max epoch still 1, should not train
+                optimizer_load.optimize(end_trigger=MaxEpoch(1))
+                loaded_first_weights = optimizer.sess.run(tf.trainable_variables()[0])
+                assert np.allclose(first_weights, loaded_first_weights)
 
-                optimizer.load_checkpoint(ckpt_path, max(versions))
-                optimizer.optimize(end_trigger=MaxEpoch(1))
-                optimizer.sess.close()
+                # max epoch increase 1, should train 1 epoch
+                optimizer_load.optimize(end_trigger=MaxEpoch(2))
+                loaded_first_weights_2 = optimizer.sess.run(tf.trainable_variables()[0])
+                assert not np.allclose(first_weights, loaded_first_weights_2)
+                optimizer_load.sess.close()
             finally:
                 import shutil
                 shutil.rmtree(model_dir)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
