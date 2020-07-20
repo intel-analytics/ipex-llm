@@ -87,6 +87,9 @@ class TFTrainingHelperV2(graphRunner: GraphRunner,
   }
 
   def moveWeightsOutOfTF(): Unit = {
+    if (!weightsRestored) {
+      return
+    }
     if (shouldUpdateParameter) {
       graphRunner.runTargets(targets = Vector(trainOp),
         inputs = weights.toVector, inputNames = gradVariables.toVector,
