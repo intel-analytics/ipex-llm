@@ -268,14 +268,6 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   }
  // scalastyle:on
 
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    if (isBuilt()) {
-      labor.parameters()
-    } else {
-      null
-    }
-  }
-
   override def updateOutput(input: A): B = {
     output = labor.updateOutput(input)
     output
