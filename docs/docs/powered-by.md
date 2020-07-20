@@ -3,6 +3,8 @@
   <br>[Deploy Analytics Zoo in Aliyun EMR](https://partners-intl.aliyun.com/help/doc-detail/93155.htm)
 * __Baosight__
   <br>[LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://software.intel.com/en-us/articles/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl)
+ * __Burger King__
+  <br>[Context-Aware Fast Food Recommendation at Burger King with RayOnSpark](https://medium.com/riselab/context-aware-fast-food-recommendation-at-burger-king-with-rayonspark-2e7a6009dd2d)
 * __CERN__
  <br>[Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
  <br>[Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
