@@ -29,7 +29,8 @@ RUN apt-get install -y python3-minimal && \
     pip install tensorboard && \
     pip install opencv-python && \
     pip install pyyaml && \
-    pip install redis
+    pip install redis && \
+    pip install pyarrow
 
 #java
 RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \

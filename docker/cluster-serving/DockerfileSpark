@@ -27,8 +27,8 @@ RUN apt-get install -y python3-minimal && \
     pip install tensorboard && \
     pip install opencv-python && \
     pip install pyyaml && \
-    pip install redis
-
+    pip install redis && \
+    pip install pyarrow
 #java
 RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \
     gunzip jdk-8u241-linux-x64.tar.gz && \
@@ -63,8 +63,9 @@ RUN mkdir -p cluster-serving/model && \
     cd ..
 
 ADD resources/test_image/*.* /opt/work/cluster-serving/test_image/
-#ADD resources/model/*.* /opt/work/cluster-serving/model/
+ADD resources/model/*.* /opt/work/cluster-serving/model/
 ADD quick_start.py /opt/work/cluster-serving/
+ADD ncf.py /opt/work/cluster-serving/
 ADD perf /opt/work/perf/
 ADD freeze_checkpoint.py /opt/work
 
