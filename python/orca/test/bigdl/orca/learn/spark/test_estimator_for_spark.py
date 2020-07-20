@@ -162,6 +162,47 @@ class TestEstimatorForGraph(TestCase):
         predictions = est.predict(data_shard).collect()
         print(predictions)
 
+    def test_estimator_graph_fit_clip(self):
+        import zoo.orca.data.pandas
+        tf.reset_default_graph()
+
+        model = SimpleModel()
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+        def transform(df):
+            result = {
+                "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+                "y": df['label'].to_numpy()
+            }
+            return result
+
+        data_shard = data_shard.transform_shard(transform)
+
+        est = Estimator.from_graph(
+            inputs=[model.user, model.item],
+            labels=[model.label],
+            loss=model.loss,
+            optimizer=tf.train.AdamOptimizer(),
+            clip_norm=1.2,
+            metrics={"loss": model.loss})
+        est.fit(data=data_shard,
+                batch_size=8,
+                epochs=10,
+                validation_data=data_shard)
+
+        est = Estimator.from_graph(
+            inputs=[model.user, model.item],
+            labels=[model.label],
+            loss=model.loss,
+            optimizer=tf.train.AdamOptimizer(),
+            clip_value=0.2,
+            metrics={"loss": model.loss})
+        est.fit(data=data_shard,
+                batch_size=8,
+                epochs=10,
+                validation_data=data_shard)
+
     def test_estimator_graph_fit_dataset(self):
         import zoo.orca.data.pandas
         tf.reset_default_graph()
