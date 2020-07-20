@@ -91,6 +91,7 @@ class TFTrainingHelper(Layer):
 
     def load_checkpoint(self, path):
         callZooFunc(self.bigdl_type, "loadZooCheckpoint", self.value, path)
+        self.get_weights_to_python()
 
 
 def _to_operation_name(name):
