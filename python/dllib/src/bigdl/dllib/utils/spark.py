@@ -144,18 +144,18 @@ class SparkRunner:
     def init_spark_on_yarn(self,
                            hadoop_conf,
                            conda_name,
-                           num_executor,
+                           num_executors,
                            executor_cores,
-                           executor_memory="10g",
-                           driver_memory="1g",
+                           executor_memory="2g",
                            driver_cores=4,
+                           driver_memory="1g",
                            extra_executor_memory_for_ray=None,
                            extra_python_lib=None,
                            penv_archive=None,
                            additional_archive=None,
                            hadoop_user_name="root",
                            spark_yarn_archive=None,
-                           spark_conf=None,
+                           conf=None,
                            jars=None):
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
         os.environ['HADOOP_USER_NAME'] = hadoop_user_name
@@ -166,12 +166,13 @@ class SparkRunner:
             archive = "{}#{}".format(penv_archive, self.PYTHON_ENV)
             if additional_archive:
                 archive = archive + "," + additional_archive
-            command = " --archives {} --num-executors {} " \
-                      " --executor-cores {} --executor-memory {}". \
-                format(archive, num_executor, executor_cores, executor_memory)
+            command = " --archives {} --driver-cores {} --driver-memory {}" \
+                      " --num-executors {} --executor-cores {} --executor-memory {}". \
+                format(archive, driver_cores, driver_memory,
+                       num_executors, executor_cores, executor_memory)
 
             if extra_python_lib:
-                command = command + " --py-files {} ".format(extra_python_lib)
+                command = command + " --py-files {}".format(extra_python_lib)
             if jars:
                 command = command + " --jars {}".format(jars)
             return command
@@ -182,7 +183,7 @@ class SparkRunner:
                 "spark.driver.cores": driver_cores,
                 "spark.executor.cores": executor_cores,
                 "spark.executor.memory": executor_memory,
-                "spark.scheduler.minRegisterreResourcesRatio": "1.0"}
+                "spark.scheduler.minRegisteredResourcesRatio": "1.0"}
             if extra_executor_memory_for_ray:
                 conf["spark.executor.memoryOverhead"] = extra_executor_memory_for_ray
             if spark_yarn_archive:
@@ -197,23 +198,23 @@ class SparkRunner:
                 penv_archive = self.pack_penv(conda_name)
                 pack_env = True
 
-            submit_args, conf = _submit_opt()
+            submit_args, _conf = _submit_opt()
 
-            if not spark_conf:
-                spark_conf = {}
+            if not conf:
+                conf = {}
             zoo_bigdl_path_on_executor = ":".join(self._assemble_zoo_classpath_for_executor())
 
-            if "spark.executor.extraClassPath" in spark_conf:
-                spark_conf["spark.executor.extraClassPath"] = "{}:{}".format(
-                    zoo_bigdl_path_on_executor, spark_conf["spark.executor.extraClassPath"])
+            if "spark.executor.extraClassPath" in conf:
+                conf["spark.executor.extraClassPath"] = "{}:{}".format(
+                    zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
             else:
-                spark_conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
+                conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
 
-            spark_conf["spark.executorEnv.PYTHONHOME"] = self.PYTHON_ENV
+            conf["spark.executorEnv.PYTHONHOME"] = self.PYTHON_ENV
 
-            for item in spark_conf.items():
-                conf[str(item[0])] = str(item[1])
-            sc = self._create_sc(submit_args, conf)
+            for item in conf.items():
+                _conf[str(item[0])] = str(item[1])
+            sc = self._create_sc(submit_args, _conf)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
