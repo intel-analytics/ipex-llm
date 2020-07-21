@@ -58,7 +58,7 @@ if __name__ == '__main__':
         sc = init_spark_on_yarn(
             hadoop_conf=hadoop_conf_dir,
             conda_name=os.environ["ZOO_CONDA_NAME"],  # The name of the created conda-env
-            num_executor=num_executors,
+            num_executors=num_executors,
             executor_cores=num_cores_per_executor,
             executor_memory="8g",
             driver_memory="2g",

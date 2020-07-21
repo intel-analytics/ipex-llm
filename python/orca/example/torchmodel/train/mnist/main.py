@@ -93,14 +93,14 @@ def main():
         sc = init_spark_on_yarn(
             hadoop_conf=hadoop_conf_dir,
             conda_name=zoo_conda_name,
-            num_executor=num_executors,
+            num_executors=num_executors,
             executor_cores=num_cores_per_executor,
             executor_memory="2g",
             driver_memory="10g",
             driver_cores=1,
-            spark_conf={"spark.rpc.message.maxSize": "1024",
-                        "spark.task.maxFailures":  "1",
-                        "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+            conf={"spark.rpc.message.maxSize": "1024",
+                  "spark.task.maxFailures":  "1",
+                  "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
 
     model = Net()
     model.train()
