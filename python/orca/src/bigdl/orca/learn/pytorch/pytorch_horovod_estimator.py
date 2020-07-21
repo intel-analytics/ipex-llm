@@ -53,8 +53,6 @@ class TorchWorker(HorovodWorker, TorchRunner):
 
         assert all(isinstance(model, nn.Module) for model in self.models), (
             "All models must be PyTorch models: {}.".format(self.models))
-        if torch.cuda.is_available():
-            self.models = [model.cuda() for model in self.models]
 
         logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
@@ -129,11 +127,9 @@ class TorchWorker(HorovodWorker, TorchRunner):
         From: github.com/pytorch/pytorch/issues/10622#issuecomment-474733769
         """
         _buffer = io.BytesIO(byte_obj)
-        to_gpu = self.use_gpu and torch.cuda.is_available()
         state_dict = torch.load(
             _buffer,
-            map_location=("cpu" if not to_gpu else
-                          lambda storage, loc: storage.cuda()))
+            map_location="cpu")
         return self.load_state_dict(state_dict)
 
 
