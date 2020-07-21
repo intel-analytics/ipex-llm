@@ -117,7 +117,7 @@ if __name__ == '__main__':
         sc = init_spark_on_yarn(
             hadoop_conf=opt.hadoop_conf,
             conda_name=opt.conda_name,
-            num_executor=opt.num_workers,
+            num_executors=opt.num_workers,
             executor_cores=opt.executor_cores)
     else:
         sc = init_spark_on_local(cores="*")
