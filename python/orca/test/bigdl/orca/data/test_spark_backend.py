@@ -26,10 +26,6 @@ from zoo.common.nncontext import *
 class TestSparkBackend(TestCase):
     def setup_method(self, method):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
-        ZooContext.orca_pandas_read_backend = "spark"
-
-    def tearDown(self):
-        ZooContext.orca_pandas_read_backend = "pandas"
 
     def test_header_and_names(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")

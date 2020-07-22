@@ -15,7 +15,8 @@
 #
 
 from bigdl.util.common import get_node_and_core_number
-from zoo import init_nncontext, ZooContext
+from zoo import init_nncontext
+from zoo.orca import OrcaContext
 from zoo.orca.data import SparkXShards
 from zoo.orca.data.utils import *
 
@@ -47,8 +48,9 @@ def read_json(file_path, **kwargs):
 def read_file_spark(file_path, file_type, **kwargs):
     sc = init_nncontext()
     node_num, core_num = get_node_and_core_number()
+    backend = OrcaContext.pandas_read_backend
 
-    if ZooContext.orca_pandas_read_backend == "pandas":
+    if backend == "pandas":
         file_url_splits = file_path.split("://")
         prefix = file_url_splits[0]
 
@@ -252,5 +254,12 @@ def read_file_spark(file_path, file_type, **kwargs):
 
         pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns, squeeze, index_col))
 
-    data_shards = SparkXShards(pd_rdd)
+    try:
+        data_shards = SparkXShards(pd_rdd)
+    except Exception as e:
+        alternative_backend = "pandas" if backend == "spark" else "spark"
+        print("An error occurred when reading files with '%s' backend, you may switch to '%s' "
+              "backend for another try. You can set the backend using "
+              "OrcaContext.pandas_read_backend" % (backend, alternative_backend))
+        raise e
     return data_shards
