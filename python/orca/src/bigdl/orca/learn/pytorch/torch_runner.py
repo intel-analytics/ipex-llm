@@ -59,7 +59,6 @@ class TorchRunner:
 
     def __init__(self,
                  model_creator,
-                 data_creator,
                  optimizer_creator,
                  loss_creator=None,
                  scheduler_creator=None,
@@ -71,7 +70,6 @@ class TorchRunner:
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
-        self.data_creator = data_creator
         self.scheduler_creator = scheduler_creator
         self.training_operator_cls = training_operator_cls or TrainingOperator
         self.config = {} if config is None else config
@@ -88,33 +86,6 @@ class TorchRunner:
         self.serialize_data_creation = serialize_data_creation
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
-
-    def _validate_loaders(self, loaders):
-        assert loaders, "Loaders need to be returned in data_creator."
-        if isinstance(loaders, (tuple, list)):
-            if len(loaders) == 1:
-                return loaders, None
-            elif len(loaders) == 2:
-                return loaders
-            else:
-                raise ValueError(
-                    "Number of loaders must be <= 2. Got {}".format(loaders))
-        # No great way of checking type otherwise
-        return loaders, None
-
-    def _initialize_dataloaders(self):
-        logger.debug("Instantiating dataloaders.")
-        loaders = None
-        if self.serialize_data_creation:
-            logger.debug("Serializing the dataloading process.")
-            with FileLock(
-                    os.path.join(tempfile.gettempdir(), ".raydata.lock")):
-                loaders = self.data_creator(self.config)
-        else:
-            loaders = self.data_creator(self.config)
-        train_loader, val_loader = self._validate_loaders(loaders)
-
-        self.train_loader, self.validation_loader = train_loader, val_loader
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -138,9 +109,6 @@ class TorchRunner:
 
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
-        logger.debug("Loading data.")
-        if self.data_creator and callable(self.data_creator):
-            self._initialize_dataloaders()
 
         logger.debug("Creating model")
         self.models = self.model_creator(self.config)
@@ -179,11 +147,14 @@ class TorchRunner:
         """Finds a free port on the current node."""
         return utils.find_free_port()
 
+    def with_sampler(self, loader):
+        raise NotImplementedError("Please implement with_sampler in the subclass of TorchRunner")
+
     def train_epoch(self,
+                    data_creator,
                     num_steps=None,
                     profile=False,
-                    info=None,
-                    iterator=None):
+                    info=None):
         """Runs a training epoch and updates the model parameters."""
         logger.debug("Begin Training Step {}".format(self.epochs + 1))
         info = info or {}
@@ -194,16 +165,10 @@ class TorchRunner:
             SCHEDULER_STEP: self.scheduler_step_freq
         })
         with self.timers.record("train_epoch"):
-            if iterator is None:
-                iterator = iter(self.train_loader)
-            else:
-                # Dataset will provide us with a list of tuples but we
-                # need two lists.
-                def format_batch(batch):
-                    features, targets = zip(*batch)
-                    return torch.cat(features), torch.cat(targets)
-
-                iterator = map(format_batch, iterator)
+            with FileLock(
+                    os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
+                loader = self.with_sampler(data_creator(self.config))
+            iterator = iter(loader)
             if num_steps:
                 iterator = itertools.islice(iterator, num_steps)
             train_stats = self.training_operator.train_epoch(iterator, info)
@@ -215,15 +180,16 @@ class TorchRunner:
             stats.update(profile=self.timers.stats())
         return stats
 
-    def validate(self, num_steps=None, profile=False, info=None):
+    def validate(self, data_creator, num_steps=None, profile=False, info=None):
         """Evaluates the model on the validation data set."""
-        if self.validation_loader is None:
-            raise ValueError("No validation dataloader provided.")
         info = info or {}
         self._toggle_profiling(profile=profile)
 
         with self.timers.record("validation"):
-            iterator = self.validation_loader
+            with FileLock(
+                    os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
+                loader = self.with_sampler(data_creator(self.config))
+            iterator = iter(loader)
             if num_steps:
                 iterator = itertools.islice(
                     iter(self.validation_loader), num_steps)
