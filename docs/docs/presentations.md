@@ -3,6 +3,7 @@
 * Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, [AI conference](https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069), Sep 2019, San Jose ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf))
 
 **Talks:**
+
 * Scalable AutoML for Time Series Forecasting using Ray, [Spark + AI Summit 2020](https://databricks.com/session_na20/scalable-automl-for-time-series-forecasting-using-ray), June 2020, ([slides](https://www.slideshare.net/databricks/scalable-automl-for-time-series-forecasting-using-ray))
 
 * Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, [Spark + AI Summit 2020](https://databricks.com/session_na20/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark), June 2020, ([slides](https://www.slideshare.net/databricks/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark))
