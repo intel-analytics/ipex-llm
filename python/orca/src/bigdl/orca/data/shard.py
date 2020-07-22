@@ -16,8 +16,8 @@
 from py4j.protocol import Py4JError
 
 from zoo.orca.data.utils import *
+from zoo.orca import OrcaContext
 from zoo.common.nncontext import init_nncontext
-from zoo import ZooContext
 
 
 class XShards(object):
@@ -137,7 +137,7 @@ class SparkXShards(XShards):
         if transient:
             self.eager = False
         else:
-            self.eager = ZooContext._orca_eager_mode
+            self.eager = OrcaContext._eager_mode
             self.rdd.cache()
         if self.eager:
             self.compute()
