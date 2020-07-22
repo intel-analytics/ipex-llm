@@ -78,8 +78,6 @@ class TrainingOperator:
                  config,
                  models,
                  optimizers,
-                 train_loader,
-                 validation_loader,
                  world_rank,
                  criterion=None,
                  schedulers=None,
@@ -98,8 +96,6 @@ class TrainingOperator:
             optimizers,
             collections.Iterable), ("Components need to be iterable. Got: {}".format(
                 type(optimizers)))
-        self._train_loader = train_loader
-        self._validation_loader = validation_loader
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers
@@ -410,17 +406,6 @@ class TrainingOperator:
     def optimizers(self):
         """List of optimizers created by the ``optimizer_creator``."""
         return self._optimizers
-
-    @property
-    def train_loader(self):
-        """Iterable: 1st Dataloader from ``data_creator``.
-        """
-        return self._train_loader
-
-    @property
-    def validation_loader(self):
-        """Iterable: 2nd Dataloader from ``data_creator``."""
-        return self._validation_loader
 
     @property
     def world_rank(self):
