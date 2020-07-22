@@ -22,6 +22,7 @@ from unittest import TestCase
 
 import zoo.orca.data
 import zoo.orca.data.pandas
+from zoo.orca import OrcaContext
 from zoo.orca.data import SharedValue
 from zoo.common.nncontext import *
 
@@ -29,6 +30,10 @@ from zoo.common.nncontext import *
 class TestSparkXShards(TestCase):
     def setup_method(self, method):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        OrcaContext.pandas_read_backend = "pandas"
+
+    def tearDown(self):
+        OrcaContext.pandas_read_backend = "spark"
 
     def test_read_local_csv(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
@@ -48,7 +53,6 @@ class TestSparkXShards(TestCase):
         self.assertTrue('Error tokenizing data' in str(context.exception))
 
     def test_read_local_json(self):
-        ZooContext.orca_pandas_read_backend = "pandas"
         file_path = os.path.join(self.resource_path, "orca/data/json")
         data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
         data = data_shard.collect()
