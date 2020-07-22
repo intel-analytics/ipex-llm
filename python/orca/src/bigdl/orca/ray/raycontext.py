@@ -109,18 +109,20 @@ class RayServiceFuncGenerator(object):
     @staticmethod
     def _enrich_command(command, object_store_memory, extra_params):
         if object_store_memory:
-            command = command + "--object-store-memory {} ".format(str(object_store_memory))
+            command = command + " --object-store-memory {}".format(str(object_store_memory))
         if extra_params:
             for pair in extra_params.items():
-                command = command + " --{} {} ".format(pair[0], pair[1])
+                command = command + " --{} {}".format(pair[0], pair[1])
         return command
 
     def _gen_master_command(self):
         command = "{} start --head " \
                   "--include-webui true --redis-port {} " \
-                  "--redis-password {} --num-cpus {} {}". \
+                  "--redis-password {} --num-cpus {}". \
             format(self.ray_exec, self.redis_port, self.password,
-                   self.ray_node_cpu_cores, self.labels)
+                   self.ray_node_cpu_cores)
+        if self.labels:
+            command = command + " " + self.labels
         return RayServiceFuncGenerator._enrich_command(command=command,
                                                        object_store_memory=self.object_store_memory,
                                                        extra_params=self.extra_params)
@@ -133,8 +135,10 @@ class RayServiceFuncGenerator(object):
                             labels="",
                             object_store_memory=None,
                             extra_params=None):
-        command = "{} start --address {} --redis-password  {} --num-cpus {} {}  ".format(
-            ray_exec, redis_address, password, ray_node_cpu_cores, labels)
+        command = "{} start --address {} --redis-password {} --num-cpus {}".format(
+            ray_exec, redis_address, password, ray_node_cpu_cores)
+        if labels:
+            command = command + " " + labels
         return RayServiceFuncGenerator._enrich_command(command=command,
                                                        object_store_memory=object_store_memory,
                                                        extra_params=extra_params)
@@ -357,7 +361,7 @@ class RayContext(object):
             extra_param.update(self.extra_params)
         command = RayServiceFuncGenerator._get_raylet_command(
             redis_address=self.redis_address,
-            ray_exec="ray ",
+            ray_exec="ray",
             password=self.redis_password,
             ray_node_cpu_cores=num_cores,
             object_store_memory=self.object_store_memory,
