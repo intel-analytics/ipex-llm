@@ -3,6 +3,11 @@
 * Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, [AI conference](https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069), Sep 2019, San Jose ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf))
 
 **Talks:**
+* Scalable AutoML for Time Series Forecasting using Ray, [Spark + AI Summit 2020](https://databricks.com/session_na20/scalable-automl-for-time-series-forecasting-using-ray), June 2020, ([slides](https://www.slideshare.net/databricks/scalable-automl-for-time-series-forecasting-using-ray))
+
+* Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, [Spark + AI Summit 2020](https://databricks.com/session_na20/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark), June 2020, ([slides](https://www.slideshare.net/databricks/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark))
+
+* Vectorized Deep Learning Acceleration from Preprocessing to Inference and Training on Apache Spark in SK Telecom, [Spark + AI Summit 2020](https://databricks.com/session_na20/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom), June 2020, ([slides](https://www.slideshare.net/databricks/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom?from_action=save))
 
 * Architecture and practice of big data analysis and deep learning model inference using Analytics Zoo on Flink, [Flink Forward Asia 2019](https://developer.aliyun.com/special/ffa2019-conference?spm=a2c6h.13239638.0.0.21f27955PCNMUB#), Nov 2019, Beijing ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architecture%20and%20practice%20of%20big%20data%20analysis%20and%20deep%20learning%20model%20inference%20using%20Analytics%20Zoo%20on%20Flink(FFA2019)%20.pdf))
 
