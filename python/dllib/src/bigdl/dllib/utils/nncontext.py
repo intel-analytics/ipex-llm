@@ -120,15 +120,13 @@ def init_spark_on_yarn(hadoop_conf,
 class ZooContextMeta(type):
 
     _log_output = False
-    __orca_eager_mode = True
-    _orca_pandas_read_backend = "pandas"
 
     @property
     def log_output(cls):
         """
         Whether to redirect Spark driver JVM's stdout and stderr to the current
         python process. This is useful when running Analytics Zoo in jupyter notebook.
-        Default to False. Needs to be set before initializing SparkContext.
+        Default to be False. Needs to be set before initializing SparkContext.
         """
         return cls._log_output
 
@@ -138,37 +136,8 @@ class ZooContextMeta(type):
             raise AttributeError("log_output cannot be set after SparkContext is created."
                                  " Please set it before init_nncontext, init_spark_on_local"
                                  "or init_spark_on_yarn")
+        assert isinstance(value, bool), "log_output should either be True or False"
         cls._log_output = value
-
-    @property
-    def _orca_eager_mode(cls):
-        """
-        Default to True. Needs to be set before initializing SparkContext.
-        """
-        return cls.__orca_eager_mode
-
-    @_orca_eager_mode.setter
-    def _orca_eager_mode(cls, value):
-        if SparkContext._active_spark_context is not None:
-            raise AttributeError("orca_eager_mode cannot be set after SparkContext is created."
-                                 " Please set it before init_nncontext, init_spark_on_local"
-                                 "or init_spark_on_yarn")
-        cls.__orca_eager_mode = value
-
-    @property
-    def orca_pandas_read_backend(cls):
-        """
-        The backend for reading csv/json files. Either "spark" or "pandas".
-        spark backend would call spark.read and pandas backend would call pandas.read.
-        """
-        return cls._orca_pandas_read_backend
-
-    @orca_pandas_read_backend.setter
-    def orca_pandas_read_backend(cls, value):
-        value = value.lower()
-        assert value == "spark" or value == "pandas", \
-            "orca_pandas_read_backend must be either spark or pandas"
-        cls._orca_pandas_read_backend = value
 
 
 class ZooContext(metaclass=ZooContextMeta):
