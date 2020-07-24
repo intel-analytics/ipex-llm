@@ -129,12 +129,12 @@ class KerasNet(ZooKerasLayer):
         'Loss'                      |   'Loss'
         'MAE'                       |   'MAE'
         'NDCG'                      |   'NDCG'
-        'TFValidationMethod'        |   'TFValidationMethod'
+        'TFValidationMethod'        |   '${name + " " + valMethod.toString()}'
         'Top5Accuracy'              |   'Top5Accuracy'
         'TreeNNAccuracy'            |   'TreeNNAccuracy()'
-        'MeanAveragePrecision'      |   'MAP@k' (BigDL)
+        'MeanAveragePrecision'      |   'MAP@k' (k is Top-k) (BigDL)
         'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
-        'StatelessMetric'           |   'StatelessMetric'
+        'StatelessMetric'           |   '${name}'
         # Arguments
         tag: The string variable represents the scalar wanted
         """
