@@ -115,18 +115,29 @@ class KerasNet(ZooKerasLayer):
         Get the scalar from model validation summary
         Return 2-D array like object which could be converted
         by np.array()
+
+        Note: The metric and tag may not be consistent
+        Please look up following form to pass tag parameter
+        Left side is your metric during compile
+        Right side is the tag you should pass
+        'Accuracy'                  |   'Top1Accuracy'
+        'BinaryAccuracy'            |   'Top1Accuracy'
+        'CategoricalAccuracy'       |   'Top1Accuracy'
+        'SparseCategoricalAccuracy' |   'Top1Accuracy'
+        'AUC'                       |   'AucScore'
+        'HitRatio'                  |   'HitRate@k' (k is Top-k)
+        'Loss'                      |   'Loss'
+        'MAE'                       |   'MAE'
+        'NDCG'                      |   'NDCG'
+        'TFValidationMethod'        |   'TFValidationMethod'
+        'Top5Accuracy'              |   'Top5Accuracy'
+        'TreeNNAccuracy'            |   'TreeNNAccuracy()'
+        'MeanAveragePrecision'      |   'MAP@k' (BigDL)
+        'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
+        'StatelessMetric'           |   'StatelessMetric'
         # Arguments
         tag: The string variable represents the scalar wanted
         """
-        if tag == 'Accuracy':
-            tag = 'Top1Accuracy'
-        validation_set = set(('AUC', 'Accuracy', 'BinaryAccuracy', 'CategoricalAccuracy',
-                              'HitRatio', 'Loss', 'MAE', 'NDCG', 'SparseCategoricalAccuracy',
-                              'TFValidationMethod', 'Top1Accuracy',
-                              'Top5Accuracy', 'TreeNNAccuracy'))
-        if tag not in validation_set:
-            raise TypeError('Only subclasses of ValidationMethod are supported,'
-                            + 'which are ' + str(validation_set))
         return callZooFunc(self.bigdl_type, "zooGetScalarFromSummary",
                            self.value, tag, "Validation")
 
