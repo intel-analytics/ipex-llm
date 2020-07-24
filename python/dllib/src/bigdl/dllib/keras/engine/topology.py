@@ -118,6 +118,8 @@ class KerasNet(ZooKerasLayer):
         # Arguments
         tag: The string variable represents the scalar wanted
         """
+        if tag == 'Accuracy':
+            tag = 'Top1Accuracy'
         validation_set = set(('AUC', 'Accuracy', 'BinaryAccuracy', 'CategoricalAccuracy',
                               'HitRatio', 'Loss', 'MAE', 'NDCG', 'SparseCategoricalAccuracy',
                               'TFValidationMethod', 'Top1Accuracy',
