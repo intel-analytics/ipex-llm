@@ -41,6 +41,7 @@ object PythonFeatureSet {
   def ofDouble(): PythonFeatureSet[Double] = new PythonFeatureSet[Double]()
 }
 
+@SerialVersionUID(7610684191490849169L)
 class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
   def createFeatureSetFromImageFrame(
         imageFrame: ImageFrame,
