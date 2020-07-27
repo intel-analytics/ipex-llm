@@ -66,9 +66,10 @@ object DistriOptimizer extends AbstractOptimizer {
     def modelWeights: Array[Tensor[T]]
     def modelGradients: Array[Tensor[T]]
     def localCriterions: Array[Criterion[T]]
+    def localStates: Array[Table]
+    def moduleTimeList: Array[Long]
     def localMethods: Array[Option[Array[ValidationMethod[T]]]]
     def optimMethods: Map[String, OptimMethod[T]]
-    def moduleTimeList: Array[Long]
     def parameterSynchronizer: DistriParameterSynchronizer[T]
   }
 
