@@ -22,8 +22,6 @@ This page contains the guide for you to run Analytics Zoo Cluster Serving, inclu
    
    4. [Model inference](#4-model-inference)
 
-   5. [HTTP Server](#5-http-server)
-
 * [Optional Operations](#optional-operations)
 
      - [Update Model or Configurations](#update-model-or-configurations)
