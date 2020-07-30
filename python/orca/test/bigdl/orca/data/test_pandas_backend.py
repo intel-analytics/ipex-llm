@@ -175,7 +175,7 @@ class TestSparkXShards(TestCase):
         data_shard = zoo.orca.data.pandas.read_csv(file_path)
         path = os.path.join(temp, "data.pkl")
         data_shard.save_pickle(path)
-        shards = zoo.orca.data.SparkXShards.load_pickle(path)
+        shards = zoo.orca.data.XShards.load_pickle(path)
         assert isinstance(shards, zoo.orca.data.SparkXShards)
         shutil.rmtree(temp)
 
