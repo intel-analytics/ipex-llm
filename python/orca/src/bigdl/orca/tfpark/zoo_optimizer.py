@@ -93,9 +93,12 @@ class ZooOptimizer(tf.train.Optimizer):
             grad = grad_var[0]
             var = grad_var[1]
             grad = process_grad(grad)
-            with tf.control_dependencies([var]):
-                grad_i = tf.identity(grad, name="zoo_identity_op_for_grad")
-            results.append((grad_i, var))
+            if grad is not None:
+                with tf.control_dependencies([var]):
+                    grad_i = tf.identity(grad, name="zoo_identity_op_for_grad")
+                results.append((grad_i, var))
+            else:
+                results.append((grad, var))
         return results
 
     def apply_gradients(self, *args, **kwargs):
