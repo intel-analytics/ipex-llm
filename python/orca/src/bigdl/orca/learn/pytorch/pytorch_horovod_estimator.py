@@ -24,7 +24,7 @@ import io
 
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.pytorch.torch_runner import TorchRunner
-from torch.utils.data import DataLoader, IterableDataset
+from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from zoo.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner, HorovodWorker
 from zoo.ray import RayContext

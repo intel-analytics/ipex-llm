@@ -185,7 +185,7 @@ class TrainingOperator:
                 else:
                     desc = "{}e".format(info["epoch_idx"] + 1)
             _progress_bar = tqdm(
-                total=info[NUM_STEPS] or len(self.train_loader),
+                total=info[NUM_STEPS] or len(iterator),
                 desc=desc,
                 unit="batch",
                 leave=False)
@@ -255,6 +255,9 @@ class TrainingOperator:
         """
         # unpack features into list to support multiple inputs model
         *features, target = batch
+        # If features is already a tuple, we don't give it an extra list dimension.
+        if len(features) == 1 and isinstance(features[0], tuple):
+            features = features[0]
         # Create non_blocking tensors for distributed training
         if self.use_gpu:
             features = [
@@ -265,7 +268,11 @@ class TrainingOperator:
         # Compute output.
         with self.timers.record("fwd"):
             output = self.model(*features)
-            loss = self.criterion(output, target)
+            if isinstance(output, tuple) or isinstance(output, list):
+                # Then target is also assumed to be a tuple or list.
+                loss = self.criterion(*output, *target)
+            else:
+                loss = self.criterion(output, target)
 
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
