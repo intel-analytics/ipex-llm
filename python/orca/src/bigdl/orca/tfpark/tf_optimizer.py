@@ -614,6 +614,9 @@ class TFOptimizer:
         else:
             model_targets = keras_model._targets
 
+        # target can be None if loss is None
+        model_targets = list(filter(lambda x: x is not None, model_targets))
+
         flatten_inputs = nest.flatten(dataset.feature_tensors)
         assert len(model_inputs) == len(flatten_inputs), \
             ("the keras model and TFDataset should have the same number of tensors" +
