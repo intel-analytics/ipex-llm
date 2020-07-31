@@ -261,8 +261,10 @@ For Spark users only, the field `spark` contains your spark configuration.
 
 For more details of these config, please refer to [Spark Official Document](https://spark.apache.org/docs/latest/configuration.html)
 ### 3. Launching Service
+
+#### Start and Stop
 We provide following scripts to start, stop, restart Cluster Serving. 
-#### Start
+##### Start
 You can use following command to start Cluster Serving.
 ```
 cluster-serving-start
@@ -272,74 +274,25 @@ This command will start Redis and TensorBoard (for spark users only) if they are
 If you want to pass config `config.yaml` manually, run `cluster-serving-start -c config_path`
 For spark users, if you choose spark streaming, run `cluster-serving-start --backend spark`.
 
-#### Stop
+##### Stop
 You can use following command to stop Cluster Serving. Data in Redis and TensorBoard service will persist.
 ```
 cluster-serving-stop
 ```
-#### Restart
+##### Restart
 You can use following command to restart Cluster Serving.
 ```
 cluster-serving-restart
 ```
-#### Shut Down
+##### Shut Down
 You can use following command to shutdown Cluster Serving. This operation will stop all running services related to Cluster Serving, specifically, Redis and TensorBoard. Note that your data in Redis will be removed when you shutdown. 
 ```
 cluster-serving-shutdown
 ```
 
 If you are using Docker, you could also run `docker rm` to shutdown Cluster Serving.
-### 4. Model Inference
-We support Python API and HTTP RESTful API for conducting inference with Data Pipeline in Cluster Serving. 
-
-#### Python API
-For Python API, the requirements of python packages are `opencv-python`(for raw image only), `pyyaml`, `redis`. You can use `InputQueue` and `OutputQueue` to connect to data pipeline by providing the pipeline url, e.g. `my_input_queue = InputQueue(host, port)` and `my_output_queue = OutputQueue(host, port)`. If parameters are not provided, default url `localhost:6379` would be used.
-
-We provide some basic usages here, for more details, please see [API Guide](APIGuide.md).
-##### Input and Output API
-To input data to queue, you need a `InputQueue` instance, and using `enqueue` method, for each input, give a key correspond to your model or give arbitrary key if your model does not care about it.
-
-To enqueue an image
-```
-from zoo.serving.client import InputQueue
-input_api = InputQueue()
-input_api.enqueue('my-image1', user_define_key={"path: 'path/to/image1'})
-```
-To enqueue an instance containing 1 image and 2 ndarray
-```
-from zoo.serving.client import InputQueue
-import numpy as np
-input_api = InputQueue()
-t1 = np.array([1,2])
-t2 = np.array([[1,2], [3,4]])
-input_api.enqueue('my-instance', img={"path": 'path/to/image'}, tensor1=t1, tensor2=t2)
-```
-There are 4 types of inputs in total, string, image, tensor, sparse tensor, which could represents nearly all types of models. For more details of usage, go to [API Guide](APIGuide.md)
-
-To get data from queue, you need a `OutputQueue` instance, and using `query` or `dequeue` method. The `query` method takes image uri as parameter and returns the corresponding result. The `dequeue` method takes no parameter and just returns all results and also delete them in data queue. See following example.
-```
-from zoo.serving.client import OutputQueue
-output_api = OutputQueue()
-img1_result = output_api.query('img1')
-all_result = output_api.dequeue() # the output queue is empty after this code
-```
-##### Output Format
-Consider the code above, in [Input and Output API](#input-and-output-api) Section.
-```
-img1_result = output_api.query('img1')
-```
-The `img1_result` is a json format string, like following:
-```
-'{"class_1":"prob_1","class_2":"prob_2",...,"class_n","prob_n"}'
-```
-Where `n` is the number of `top_n` in your configuration file. This string could be parsed by `json.loads`.
-```
-import json
-result_class_prob_map = json.loads(img1_result)
-```
-
-#### HTTP RESTful API
-For HTTP RESTful API, we provide a HTTP server to support RESTful HTTP requests. User can submit HTTP requests to the HTTP server through RESTful APIs. The HTTP server will parse the input requests and pub them to Redis input queues, and also retrieve the output results and render them as json results in HTTP responses. The serving backend will leverage the cluster serving.
+#### HTTP Server (for sync API only)
+If you want to use sync API for inference, you should start a provided HTTP server first. User can submit HTTP requests to the HTTP server through RESTful APIs. The HTTP server will parse the input requests and pub them to Redis input queues, then retrieve the output results and render them as json results in HTTP responses.
 
 ##### Prepare
 User can download a analytics-zoo-${VERSION}-http.jar from the Nexus Repository with GAVP: 
@@ -383,7 +336,76 @@ All the supported parameter are listed here:
 
 **User can adjust these options to tune the performance of the HTTP server.**
 
-##### RESTful API
+
+### 4. Model Inference
+We support Python API and HTTP RESTful API for conducting inference with Data Pipeline in Cluster Serving. 
+
+#### Python API
+For Python API, the requirements of python packages are `opencv-python`(for raw image only), `pyyaml`, `redis`. You can use `InputQueue` and `OutputQueue` to connect to data pipeline by providing the pipeline url, e.g. `my_input_queue = InputQueue(host, port)` and `my_output_queue = OutputQueue(host, port)`. If parameters are not provided, default url `localhost:6379` would be used.
+
+We provide some basic usages here, for more details, please see [API Guide](APIGuide.md).
+##### Async API
+Async API provide method to enqueue data, the method would not block and user can query the data anytime afterwards.
+
+To input data to queue, you need a `InputQueue` instance, and using `enqueue` method, for each input, give a key correspond to your model or give arbitrary key if your model does not care about it.
+
+To enqueue an image
+```
+from zoo.serving.client import InputQueue
+input_api = InputQueue()
+input_api.enqueue('my-image1', user_define_key={"path: 'path/to/image1'})
+```
+To enqueue an instance containing 1 image and 2 ndarray
+```
+from zoo.serving.client import InputQueue
+import numpy as np
+input_api = InputQueue()
+t1 = np.array([1,2])
+t2 = np.array([[1,2], [3,4]])
+input_api.enqueue('my-instance', img={"path": 'path/to/image'}, tensor1=t1, tensor2=t2)
+```
+There are 4 types of inputs in total, string, image, tensor, sparse tensor, which could represents nearly all types of models. For more details of usage, go to [API Guide](APIGuide.md)
+
+To get data from queue, you need a `OutputQueue` instance, and using `query` or `dequeue` method. The `query` method takes image uri as parameter and returns the corresponding result. The `dequeue` method takes no parameter and just returns all results and also delete them in data queue. See following example.
+```
+from zoo.serving.client import OutputQueue
+output_api = OutputQueue()
+img1_result = output_api.query('img1')
+all_result = output_api.dequeue() # the output queue is empty after this code
+```
+Consider the code above,
+```
+img1_result = output_api.query('img1')
+```
+The `img1_result` is a json format string, like following:
+```
+'{"class_1":"prob_1","class_2":"prob_2",...,"class_n","prob_n"}'
+```
+Where `n` is the number of `top_n` in your configuration file. This string could be parsed by `json.loads`.
+```
+import json
+result_class_prob_map = json.loads(img1_result)
+```
+##### Sync API
+Sync API provide method to predict data, the method would block until the result is available.
+
+User need to create a `InputQueue` instance with `sync=True` and `frontend_url=frontend_server_url` argument.
+```
+from zoo.serving.client import InputQueue
+input_api = InputQueue(sync=True, frontend_url=frontend_server_url)
+response = input_api.predict(request_json_string)
+print(response.text)
+```
+example of `request_json_string` is 
+```
+'{
+  "instances" : [ {
+    "ids" : [ 100.0, 88.0 ]
+  }]
+}'
+```
+This API is also a python support of [Restful API](#restful-api) section, so for more details of input format, refer to it.
+#### RESTful API
 This part describes API endpoints and end-to-end examples on usage. 
 The requests and responses are in JSON format. The composition of them depends on the requests type or verb. See the APIs for details.
 In case of error, all APIs will return a JSON object in the response body with error as key and the error message as the value:
@@ -615,7 +637,6 @@ Response example:
   }
 ]
 ```
-
 ## Optional Operations
 ### Update Model or Configurations
 To update your model, you could replace your model file in your model directory, and restart Cluster Serving by `cluster-serving-restart`. Note that you could also change your configurations in `config.yaml` and restart serving.

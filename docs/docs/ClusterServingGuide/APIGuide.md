@@ -10,7 +10,7 @@ The class `Input` defines methods allowing you to input data into Cluster Servin
 [view source]()
 
 ```
-__init__()
+__init__(host=None, port=None, sync=False, frontend_url=None)
 ```
 sets up a connection with configuration in your Cluster Serving [configuration file]() `config.yaml`.
 
@@ -97,8 +97,25 @@ input_api.enqueue('my-instance',
                    np.array([5, 10])]
 )
 ```
-
-
+#### __predict__
+[view source]()
+```
+predict(request_str)
+```
+_return_: response of request string
+ 
+_Example_
+```
+from zoo.serving.client import InputQueue
+input_api = InputQueue(sync=True, frontend_url=frontend_server_url)
+request_json_string='''{
+  "instances" : [ {
+    "ids" : [ 100.0, 88.0 ]
+  }]
+}'''
+response = input_api.predict(request_json_string)
+print(response.text)
+```
 ### class OutputQueue
 The class `Output` defines methods allowing you to get result from Cluster Serving [Output Pipeline]().
 #### __init__
