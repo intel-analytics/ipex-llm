@@ -117,28 +117,19 @@ docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/wo
 ```
 
 #### Manual installation
+
+##### Requirements
 Non-Docker users need to install [Flink](https://archive.apache.org/dist/flink/flink-1.10.0/), 1.10.0 by default, for users choose Spark as backend, install [Spark](https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz), 2.4.3 by default, [Redis](https://redis.io/topics/quickstart), 0.5.0 by default and [TensorBoard](https://www.tensorflow.org/tensorboard/get_started) if you choose Spark backend and need visualization.
 
 After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), or `$SPARK_HOME` (/path/to/spark-SPARK_VERSION-bin-hadoop-HADOOP_VERSION), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
 For Spark user only, use `pip install tensorboard` to install TensorBoard.
 
-Install Analytics Zoo by Download Release or Pip.
+##### Install Cluster Serving
 
-##### Download Release
-Download Analytics Zoo from [release page](https://analytics-zoo.github.io/master/#release-download/) on the local node. 
+For users who need to deploy and start Cluster Serving, download Cluster Serving zip from [here]() and unzip it, then run `source cluster-serving-prepare.sh`. A demo `cluster-serving-demo.sh` is also prepared and users can run it to check if Cluster Serving could work.
 
-Unzip the file and go into directory `analytics-zoo`, run `export ANALYTICS_ZOO_HOME=$(pwd)` to set `$ANALYTICS_ZOO_HOME` variable.
-
-Run `source analytics-zoo/bin/analytics-zoo-env.sh` to set environment.
-
-Go to `analytics-zoo/bin/cluster-serving`, run `cluster-serving-init`.
-
-Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
-##### Pip
-Use `pip install analytics-zoo` to install release stable version. For latest nightly built version, download the wheel at [download page](https://sourceforge.net/projects/analytics-zoo/files/zoo-py/) and use `pip` to install it.
-
-Then, go to any directory, run `cluster-serving-init`.
+For users who need to do inference, aka. predict data only, download Analytics Zoo python zip from [here]() and run `export PYTHONPATH=$PYTHONPATH:/path/to/zip` to add this zip to `PYTHONPATH` environment variable.
 
 Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
 ### 2. Configuration
@@ -278,7 +269,8 @@ cluster-serving-start
 ```
 This command will start Redis and TensorBoard (for spark users only) if they are not running.
 
-For spark users, if you choose spark streaming, run `spark-streaming-cluster-serving-start`. If you choose spark structured streaming, run `spark-structured-streaming-cluster-serving-start`.
+If you want to pass config `config.yaml` manually, run `cluster-serving-start -c config_path`
+For spark users, if you choose spark streaming, run `cluster-serving-start --backend spark`.
 
 #### Stop
 You can use following command to stop Cluster Serving. Data in Redis and TensorBoard service will persist.
