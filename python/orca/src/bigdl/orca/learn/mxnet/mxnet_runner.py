@@ -22,9 +22,6 @@ import ray.services
 import mxnet as mx
 import numpy as np
 from mxnet import gluon
-from functools import reduce
-
-from zoo.orca.learn.utils import get_data_label
 from zoo.ray.utils import to_list
 
 
@@ -85,13 +82,18 @@ class MXNetRunner(object):
         if self.is_worker:
             from zoo.orca.data.shard import RayPartition
             if isinstance(train_data, RayPartition):
-                data, label = get_data_label(train_data.get_data())
+                from zoo.orca.data.utils import ray_partition_get_data_label
+                data, label = ray_partition_get_data_label(train_data.get_data(),
+                                                           allow_tuple=False,
+                                                           allow_list=False)
                 train_data_iter = mx.io.NDArrayIter(data=data, label=label,
                                                     batch_size=batch_size, shuffle=True)
                 if train_resize_batch_num is not None:
                     train_data_iter = mx.io.ResizeIter(train_data_iter, train_resize_batch_num)
                 if validation_data:
-                    data_val, label_val = get_data_label(validation_data.get_data())
+                    data_val, label_val = ray_partition_get_data_label(validation_data.get_data(),
+                                                                       allow_tuple=False,
+                                                                       allow_list=False)
                     val_data_iter = mx.io.NDArrayIter(data=data_val, label=label_val,
                                                       batch_size=batch_size, shuffle=True)
                 else:
