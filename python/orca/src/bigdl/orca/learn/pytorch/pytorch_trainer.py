@@ -46,5 +46,8 @@ class PyTorchTrainer(object):
             stats = ray.get(self.trainer.train.remote())
         return stats
 
+    def validate(self, num_steps=None, profile=False, reduce_results=True, info=None):
+        return ray.get(self.trainer.validate.remote(num_steps, profile, reduce_results, info))
+
     def shutdown(self, force=False):
         self.trainer.shutdown(force)

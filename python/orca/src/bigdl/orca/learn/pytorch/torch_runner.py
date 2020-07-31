@@ -150,6 +150,12 @@ class TorchRunner:
     def with_sampler(self, loader):
         raise NotImplementedError("Please implement with_sampler in the subclass of TorchRunner")
 
+    @staticmethod
+    def should_wrap_dataloader(loader):
+        from torch.utils.data import DataLoader, IterableDataset
+        return (isinstance(loader, DataLoader)
+                and not isinstance(loader.dataset, IterableDataset))
+
     def train_epoch(self,
                     data_creator,
                     num_steps=None,
@@ -167,11 +173,12 @@ class TorchRunner:
         with self.timers.record("train_epoch"):
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = self.with_sampler(data_creator(self.config))
-            iterator = iter(loader)
-            if num_steps:
-                iterator = itertools.islice(iterator, num_steps)
-            train_stats = self.training_operator.train_epoch(iterator, info)
+                loader = data_creator(self.config)
+            if TorchRunner.should_wrap_dataloader(loader):
+                loader = iter(self.with_sampler(loader))
+                if num_steps:
+                    loader = itertools.islice(loader, num_steps)
+            train_stats = self.training_operator.train_epoch(loader, info)
 
         self.epochs += 1
         # This is so that `epochs` is first in ordering.
@@ -188,13 +195,12 @@ class TorchRunner:
         with self.timers.record("validation"):
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = self.with_sampler(data_creator(self.config))
-            iterator = iter(loader)
-            if num_steps:
-                iterator = itertools.islice(
-                    iter(self.validation_loader), num_steps)
-            validation_stats = self.training_operator.validate(
-                iterator, info=info)
+                loader = data_creator(self.config)
+            if TorchRunner.should_wrap_dataloader(loader):
+                loader = iter(self.with_sampler(loader))
+                if num_steps:
+                    loader = itertools.islice(loader, num_steps)
+            validation_stats = self.training_operator.validate(loader, info=info)
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
