@@ -16,7 +16,6 @@
 
 import ray
 import os
-from horovod.run.gloo_run import RendezvousServer, _allocate
 
 
 class HorovodWorker:
@@ -66,6 +65,7 @@ class HorovodRayRunner:
 
     # todo check whether horovod is built with gloo
     def __init__(self, ray_ctx, worker_cls=None, worker_param=None):
+        from horovod.run.gloo_run import RendezvousServer, _allocate
 
         self.cores_per_node = ray_ctx.ray_node_cpu_cores
         self.num_nodes = ray_ctx.num_ray_nodes
