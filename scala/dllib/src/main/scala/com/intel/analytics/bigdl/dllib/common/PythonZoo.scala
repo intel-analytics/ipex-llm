@@ -252,4 +252,12 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
   def listPaths(path: String, recursive: Boolean = false): JList[String] = {
     com.intel.analytics.zoo.common.Utils.listPaths(path, recursive).toList.asJava
   }
+
+  def exists(path: String): Boolean = {
+    Utils.exists(path)
+  }
+
+  def mkdirs(path: String): Unit = {
+    Utils.mkdirs(path)
+  }
 }

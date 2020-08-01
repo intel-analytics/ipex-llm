@@ -241,6 +241,40 @@ private[zoo] object Utils {
     saveStream(inputStream, fileName = path, isOverwrite = isOverwrite)
   }
 
+  def exists(path: String): Boolean = {
+    val updatedPath = if (path.startsWith("/")) {
+      "file://" + path
+    } else {
+      path
+    }
+    val fs = getFileSystem(updatedPath)
+    var result = false
+    try {
+      result = fs.exists(new Path(updatedPath))
+    } catch {
+      case _: IOException => logger.error(s"Check existence of $path error!")
+    } finally {
+      fs.close()
+    }
+    result
+  }
+
+  def mkdirs(path: String): Unit = {
+    val updatedPath = if (path.startsWith("/")) {
+      "file://" + path
+    } else {
+      path
+    }
+    val fs = getFileSystem(updatedPath)
+    try {
+      fs.mkdirs(new Path(updatedPath))
+    } catch {
+      case _: IOException => logger.error(s"make directory of $path error!")
+    } finally {
+      fs.close()
+    }
+  }
+
   /**
    * Save bytes into given path (local or remote file system).
    * WARNING: Don't use it to read large files. It may cause performance issue
