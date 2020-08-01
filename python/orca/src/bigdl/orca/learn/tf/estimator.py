@@ -18,11 +18,12 @@ import tensorflow as tf
 from pyspark.sql.dataframe import DataFrame
 
 from bigdl.optim.optimizer import MaxEpoch
+
 from zoo.tfpark.utils import evaluate_metrics
 from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
 from zoo.tfpark import KerasModel
 from zoo.util import nest
-from zoo.orca.learn.tf.utils import to_dataset, convert_predict_to_dataframe
+from zoo.orca.learn.tf.utils import *
 
 
 class Estimator(object):
@@ -34,6 +35,17 @@ class Estimator(object):
 
     def evaluate(self, data, **kwargs):
         pass
+
+    def load(self, path, version):
+        self.load_checkpoint = True
+        self.checkpoint_path = path
+        self.checkpoint_version = version
+
+    def load_latest_checkpoint(self, path):
+        ckpt_path, version = find_latest_checkpoint(path)
+        if ckpt_path is None:
+            raise Exception("Cannot find checkpoint")
+        self.load(ckpt_path, version)
 
     @staticmethod
     def from_graph(*, inputs, outputs=None,
@@ -74,7 +86,7 @@ class TFOptimizerWrapper(Estimator):
         self.loss = loss
         if optimizer is not None:
             assert isinstance(optimizer, tf.train.Optimizer), \
-                "optimizer is of type {}, ".format(type(self.optimizer)) + \
+                "optimizer is of type {}, ".format(type(optimizer)) + \
                 "it should be an instance of tf.train.Optimizer"
             self.optimizer = ZooOptimizer(optimizer)
             if clip_norm or clip_value:
@@ -107,6 +119,7 @@ class TFOptimizerWrapper(Estimator):
         else:
             self.sess = sess
         self.model_dir = model_dir
+        self.load_checkpoint = False
 
     def fit(self, data,
             epochs=1,
@@ -116,7 +129,8 @@ class TFOptimizerWrapper(Estimator):
             validation_data=None,
             hard_code_batch_size=False,
             session_config=None,
-            feed_dict=None
+            feed_dict=None,
+            checkpoint_trigger=None
             ):
 
         assert self.labels is not None, \
@@ -156,7 +170,10 @@ class TFOptimizerWrapper(Estimator):
             session_config=session_config,
             model_dir=self.model_dir)
 
-        optimizer.optimize(end_trigger=MaxEpoch(epochs))
+        if self.load_checkpoint:
+            optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
+
+        optimizer.optimize(end_trigger=MaxEpoch(epochs), checkpoint_trigger=checkpoint_trigger)
         return self
 
     def predict(self, data, batch_size=4,
@@ -222,6 +239,7 @@ class TFKerasWrapper(Estimator):
 
     def __init__(self, keras_model, model_dir):
         self.model = KerasModel(keras_model, model_dir)
+        self.load_checkpoint = False
 
     def fit(self, data,
             epochs=1,
@@ -230,7 +248,8 @@ class TFKerasWrapper(Estimator):
             labels_cols=None,
             validation_data=None,
             hard_code_batch_size=False,
-            session_config=None
+            session_config=None,
+            checkpoint_trigger=None
             ):
 
         if isinstance(data, DataFrame):
@@ -246,9 +265,15 @@ class TFKerasWrapper(Estimator):
                              sequential_order=False, shuffle=True
                              )
 
-        self.model.fit(dataset, batch_size=batch_size, epochs=epochs,
-                       session_config=session_config
-                       )
+        optimizer = TFOptimizer.from_keras(self.model.model, dataset,
+                                           model_dir=self.model.model_dir,
+                                           session_config=session_config)
+
+        if self.load_checkpoint:
+            optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
+
+        optimizer.optimize(MaxEpoch(epochs), checkpoint_trigger=checkpoint_trigger)
+
         return self
 
     def predict(self, data, batch_size=4,
