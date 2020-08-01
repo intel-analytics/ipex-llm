@@ -16,6 +16,7 @@
 import os
 import tensorflow as tf
 from pyspark.sql.context import SQLContext
+import tempfile
 
 from unittest import TestCase
 
@@ -23,6 +24,8 @@ from zoo import init_nncontext
 from zoo.orca.data.tf.data import Dataset
 from zoo.orca.learn.tf.estimator import Estimator
 import zoo.orca.data.pandas
+from zoo.orca.learn.tf.utils import save_tf_checkpoint_to_remote, load_tf_checkpoint_from_remote,\
+    get_checkpoint_state_remote
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
@@ -338,6 +341,20 @@ class TestEstimatorForGraph(TestCase):
                     validation_data=[1, 2, 3])
         self.assertTrue('train data and validation data should be both Spark DataFrame'
                         in str(context.exception))
+
+    def test_checkpoint_remote(self):
+        tf.reset_default_graph()
+
+        model = SimpleModel()
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+        saver = tf.train.Saver(tf.global_variables())
+        temp = tempfile.mkdtemp()
+        save_tf_checkpoint_to_remote(sess, os.path.join(temp, "simple.ckpt"), saver)
+        ckpt = get_checkpoint_state_remote(temp)
+        assert ckpt.model_checkpoint_path == os.path.join(temp, "simple.ckpt")
+        assert ckpt.all_model_checkpoint_paths[0] == os.path.join(temp, "simple.ckpt")
+        load_tf_checkpoint_from_remote(sess, os.path.join(temp, "simple.ckpt"), saver)
 
 
 if __name__ == "__main__":

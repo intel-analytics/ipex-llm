@@ -16,6 +16,8 @@
 
 import os
 
+from zoo.common.utils import callZooFunc
+
 
 def open_text(path):
     # Return a list of lines
@@ -92,11 +94,7 @@ def load_numpy(path):
 
 
 def exists(path):
-    if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        import pyarrow as pa
-        fs = pa.hdfs.connect()
-        return fs.exists(path)
-    elif path.startswith("s3"):  # s3://bucket/file_path
+    if path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
@@ -113,17 +111,14 @@ def exists(path):
                 return False
             raise ex
         return True
+    elif path.startswith("hdfs://"):
+        return callZooFunc("float", "exists", path)
     else:
         return os.path.exists(path)
 
 
 def makedirs(path):
-    if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        import pyarrow as pa
-        fs = pa.hdfs.connect()
-        if not fs.exists(path):
-            return fs.mkdir(path)
-    elif path.startswith("s3"):  # s3://bucket/file_path
+    if path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
@@ -134,6 +129,8 @@ def makedirs(path):
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
+    elif path.startswith("hdfs://"):
+        callZooFunc("float", "mkdirs", path)
     else:
         return os.makedirs(path)
 
