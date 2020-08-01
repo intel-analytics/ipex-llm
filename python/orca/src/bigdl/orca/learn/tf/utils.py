@@ -18,15 +18,14 @@ import os
 from os.path import join, basename, dirname
 import re
 import shutil
-
-from zoo.common.utils import put_local_file_to_remote, get_remote_file_to_local, get_file_list
-from pyspark.sql.dataframe import DataFrame
 import tensorflow as tf
+from pyspark.sql.dataframe import DataFrame
 
-from zoo.tfpark.tf_dataset import TFDataset
 from zoo.orca.data import SparkXShards
 from zoo.orca.data.tf.data import Dataset, TFDataDataset2
+from zoo.tfpark.tf_dataset import TFDataset
 from zoo.orca.data.utils import get_spec, flatten_xy
+from zoo.common.utils import put_local_file_to_remote, get_remote_file_to_local, get_file_list
 
 
 def xshards_to_tf_dataset(data_shard,
@@ -124,6 +123,37 @@ def convert_predict_to_dataframe(df, prediction_rdd):
     schema = StructType(df.schema.fields + [StructField('prediction', type)])
     result_df = result_rdd.toDF(schema)
     return result_df
+
+
+def find_latest_checkpoint(model_dir):
+    import os
+    import re
+    import datetime
+    ckpt_path = None
+    latest_version = None
+    for (root, dirs, files) in os.walk(model_dir, topdown=True):
+        temp_versions = []
+        timestamps = []
+        for dir in dirs:
+            if re.match('(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$', dir) is not None:
+                try:
+                    # check if dir name is date time
+                    datetime.datetime.strptime(dir, '%Y-%m-%d_%H-%M-%S')
+                    timestamps.append(dir)
+                except:
+                    continue
+        if timestamps:
+            start_dir = os.path.join(root, max(timestamps))
+            return find_latest_checkpoint(start_dir)
+        for file_name in files:
+            if re.match("^optimMethod-TFParkTraining\.[0-9]+$", file_name) is not None:
+                version = int(file_name.split(".")[1])
+                temp_versions.append(version)
+        if temp_versions:
+            ckpt_path = root
+            latest_version = max(temp_versions)
+            break
+    return ckpt_path, latest_version
 
 
 def save_tf_checkpoint_to_remote(sess, checkpoint_path, saver=None):
