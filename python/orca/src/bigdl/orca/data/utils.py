@@ -77,11 +77,11 @@ def check_type_and_convert(data, allow_tuple=True, allow_list=True):
         if isinstance(convert_data, np.ndarray):
             return [convert_data]
         elif isinstance(convert_data, tuple) and \
-                all([isinstance(di, np.ndarray) for di in convert_data]):
+                all([isinstance(d, np.ndarray) for d in convert_data]):
             return _convert_list_tuple(convert_data, allow_tuple=allow_tuple,
                                        allow_list=allow_list)
         elif isinstance(convert_data, list) and \
-                all([isinstance(di, np.ndarray) for di in convert_data]):
+                all([isinstance(d, np.ndarray) for d in convert_data]):
             return _convert_list_tuple(convert_data, allow_tuple=allow_tuple,
                                        allow_list=allow_list)
         else:
