@@ -396,8 +396,9 @@ input_api = InputQueue(sync=True, frontend_url=frontend_server_url)
 response = input_api.predict(request_json_string)
 print(response.text)
 ```
-example of `request_json_string` is 
+example of `request_json_string` is
 ```
+
 '{
   "instances" : [ {
     "ids" : [ 100.0, 88.0 ]
