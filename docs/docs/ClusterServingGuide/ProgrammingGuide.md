@@ -121,17 +121,24 @@ docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/wo
 ##### Requirements
 Non-Docker users need to install [Flink](https://archive.apache.org/dist/flink/flink-1.10.0/), 1.10.0 by default, for users choose Spark as backend, install [Spark](https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz), 2.4.3 by default, [Redis](https://redis.io/topics/quickstart), 0.5.0 by default and [TensorBoard](https://www.tensorflow.org/tensorboard/get_started) if you choose Spark backend and need visualization.
 
-After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), or `$SPARK_HOME` (/path/to/spark-SPARK_VERSION-bin-hadoop-HADOOP_VERSION), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
+After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), or `$SPARK_HOME`(for Spark user only) (/path/to/spark-SPARK_VERSION-bin-hadoop-HADOOP_VERSION), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
 For Spark user only, use `pip install tensorboard` to install TensorBoard.
 
-##### Install Cluster Serving
-
+##### Install Cluster Serving by download release
 For users who need to deploy and start Cluster Serving, download Cluster Serving zip from [here]() and unzip it, then run `source cluster-serving-prepare.sh`. A demo `cluster-serving-demo.sh` is also prepared and users can run it to check if Cluster Serving could work.
 
 For users who need to do inference, aka. predict data only, download Analytics Zoo python zip from [here]() and run `export PYTHONPATH=$PYTHONPATH:/path/to/zip` to add this zip to `PYTHONPATH` environment variable.
 
-Run `export OMP_NUM_THREADS=all` if you want to use all cores on your machine to do inference in parallel manner.
+##### Install Cluster Serving by pip
+Download package from [here](), run following command to install Cluster Serving
+```
+pip install *.whl
+```
+For users who need to deploy and start Cluster Serving, run `cluster-serving-init` to download and prepare dependencies.
+
+For users who need to do inference, aka. predict data only, the environment is ready.
+
 ### 2. Configuration
 #### How to Config
 After [Installation](#1-installation), you will see a config file `config.yaml` in your current working directory. This file contains all the configurations that you can customize for your Cluster Serving. See an example of `config.yaml` below.

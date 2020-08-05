@@ -1,7 +1,16 @@
 # 天池大赛 Cluster Serving Quick Start 中文版
 
 ## 安装
-前置需求：Redis 5.0.5，Flink 1.11.0，在官网安装即可，安装后设置环境变量`REDIS_HOME=/path/to/redis-5.0.5, FLINK_HOME=/path/to/flink-1.11.0`
+前置需求：Python，Redis 5.0.5，Flink 1.11.0，在官网安装即可，安装后设置环境变量`REDIS_HOME=/path/to/redis-5.0.5, FLINK_HOME=/path/to/flink-1.11.0`
+### Python 依赖
+可复制以下内容到`requirement.txt`并使用`pip install -r requirements.txt`安装，也可在遇到找不到模块的报错时安装相应依赖
+```
+redis
+pyyaml
+httpx
+pyarrow
+pyspark
+```
 ### 安装Redis
 ```
 $ wget http://download.redis.io/releases/redis-5.0.5.tar.gz
@@ -14,8 +23,8 @@ $ make
 $ wget https://archive.apache.org/dist/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz
 $ tar xzf flink-1.11.0-bin-scala_2.11.tgz
 ```
-
-下载`analytics-zoo-xxx-cluster-serving-all.zip`，解压后运行`source cluster-serving-prepare.sh`
+### 安装Cluster Serving
+下载`analytics-zoo-xxx-cluster-serving-all.zip`[下载地址](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/analytics-zoo-bigdl_0.10.0-spark_2.4.3-0.9.0-20200804.085942-62-cluster-serving-all.zip)，解压后进入`cluster-serving`目录，运行`source cluster-serving-prepare.sh`
 
 若要使用同步API运行`java -jar analytics-zoo-xxx-http.jar`启动同步服务
 
@@ -23,7 +32,7 @@ $ tar xzf flink-1.11.0-bin-scala_2.11.tgz
 
 若想以当前目录为工作目录，则一切就绪
 
-若想以其他目录为工作目录，进入目录后，设置环境变量`export CS_PATH=/path/to/analytics-zoo-xxx-cluster-serving-all`（解压zip包的目录），之后命令行运行`cluster-serving-init`
+若想以其他目录为工作目录，进入目录后，设置环境变量`export CS_PATH=/path/to/analytics-zoo-xxx-cluster-serving-all/cluster-serving`（解压zip包的目录），之后命令行运行`cluster-serving-init`
 ## 配置
 修改`config.yaml`，配置模型路径为包含模型的文件夹路径，样例如下，假设用户模型为Tensorflow SavedModel模型，结构为
 ```
