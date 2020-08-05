@@ -599,7 +599,7 @@ class TFOptimizer:
 
     @classmethod
     def from_keras(cls, keras_model, dataset,
-                   session_config=None, model_dir=None):
+                   session_config=None, model_dir=None, metrics=None):
         """
         Create a TFOptimizer from a tensorflow.keras model. The model must be compiled.
         :param keras_model: the tensorflow.keras model, which must be compiled.
@@ -685,13 +685,17 @@ class TFOptimizer:
 
         updates = keras_model.updates
 
-        metrics = None
-
         if bigdl_val_methods is not None:
             val_methods = to_list(bigdl_val_methods)
-            metrics = {}
+            bigdl_metrics = {}
             for i, method in enumerate(val_methods):
-                metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
+                bigdl_metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method,
+                                                                      val_outputs,
+                                                                      val_labels)
+            if metrics is None:
+                metrics = bigdl_metrics
+            else:
+                metrics.update(bigdl_metrics)
 
         return cls.from_train_op(train_op, loss, inputs=model_inputs, labels=model_targets,
                                  metrics=metrics, updates=updates, sess=sess, dataset=dataset,

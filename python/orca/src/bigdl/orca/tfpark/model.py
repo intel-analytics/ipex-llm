@@ -37,6 +37,10 @@ class KerasModel(object):
         self.model_dir = model_dir
         import tensorflow as tf
         self.real_batch_size = tf.shape(self.model.inputs[0])[0]
+        self.metric_tensors = {}
+
+    def add_metric(self, tensor, name):
+        self.metric_tensors[name] = tensor
 
     @property
     def metrics_names(self):
@@ -152,6 +156,7 @@ class KerasModel(object):
     def _fit_distributed(self, dataset, epochs, **kwargs):
         self.tf_optimizer = TFOptimizer.from_keras(self.model, dataset,
                                                    model_dir=self.model_dir,
+                                                   metrics=self.metric_tensors,
                                                    **kwargs)
 
         self.tf_optimizer.optimize(MaxEpoch(epochs))
