@@ -10,10 +10,10 @@ ARG ANALYTICS_ZOO_VERSION=0.9.0-SNAPSHOT
 ARG FLINK_VERSION=1.10.0
 
 ENV FLINK_HOME			/opt/work/flink-${FLINK_VERSION}
-ENV SPARK_HOME			/opt/work/spark-${SPARK_VERSION}
 ENV JAVA_HOME			/opt/jdk
+ENV REDIS_HOME 		/opt/work/redis-5.0.5
 ENV ANALYTICS_ZOO_VERSION 	${ANALYTICS_ZOO_VERSION}
-ENV ANALYTICS_ZOO_HOME  	/opt/work/analytics-zoo
+ENV CS_HOME  	/opt/work/cluster-serving
 ENV PATH			${JAVA_HOME}/bin:${ANALYTICS_ZOO_HOME}/bin/cluster-serving:${PATH}
 
 RUN apt-get update && \
@@ -26,11 +26,11 @@ RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --upgrade pip && \
     pip install --upgrade setuptools && \
-    pip install tensorboard && \
     pip install opencv-python && \
     pip install pyyaml && \
     pip install redis && \
-    pip install pyarrow
+    pip install pyarrow && \
+    pip install httpx
 
 #java
 RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \
@@ -45,14 +45,9 @@ RUN wget http://download.redis.io/releases/redis-5.0.5.tar.gz && \
     rm redis-5.0.5.tar.gz && \
     cd redis-5.0.5 && \
     make && \
-    echo "bind 0.0.0.0" >> /opt/work/redis-5.0.5/redis.conf && \
+    echo bind 0.0.0.0 >> /opt/work/redis-5.0.5/redis.conf && \
     cd ..
 
-#spark
-RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop2.7 spark-${SPARK_VERSION} && \
-    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 #flink
 RUN wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
     tar xzf flink-*.tgz && \
@@ -62,30 +57,20 @@ RUN wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-${FLINK_VERSIO
 ADD *.sh /opt/work/scripts/
 RUN chmod a+x /opt/work/scripts/*.*
 
-RUN /opt/work/scripts/download-analytics-zoo.sh
+RUN /opt/work/scripts/download-cluster-serving-all-zip.sh
+RUN cd cluster-serving && \
+    ./cluster-serving-setup.sh
 
-ADD resources/test_image/*.* /opt/work/cluster-serving/test_image/
-ADD quick_start.py /opt/work/cluster-serving/
-ADD perf /opt/work/perf/
+ADD resources/ /opt/work/cluster-serving/resources/
+ADD *.py /opt/work/cluster-serving/
+ADD perf/ /opt/work/perf/
 ADD freeze_checkpoint.py /opt/work
 
-RUN chmod a+x ${ANALYTICS_ZOO_HOME}/bin/cluster-serving/*
+RUN chmod a+x /opt/work/cluster-serving/*
 
-ENV PYTHONPATH 		${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip
-ENV REDIS_HOME 		/opt/work/redis-5.0.5
+ENV PYTHONPATH 		${CS_HOME}/serving-python.zip
 
 ENV OMP_NUM_THREADS	all
-
-# Download serving jar and delete standard jar
-RUN cd analytics-zoo/lib && \
-    rm *.jar && \
-    /opt/work/scripts/download-serving-jar.sh && \
-    cd ../..
-    
-
-RUN cd cluster-serving && \
-    cluster-serving-init && \
-    cd ..
 
 CMD ["bash"]
 

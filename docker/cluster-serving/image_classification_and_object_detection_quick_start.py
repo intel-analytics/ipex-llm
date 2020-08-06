@@ -20,6 +20,7 @@ import cv2
 import json
 import time
 from optparse import OptionParser
+import base64
 
 
 def run(path):
@@ -36,7 +37,9 @@ def run(path):
             continue
         img = cv2.imread(os.path.join(base_path, p))
         img = cv2.resize(img, (224, 224))
-        input_api.enqueue_image(p, img)
+        data = cv2.imencode(".jpg", img)[1]
+        img_encoded = base64.b64encode(data).decode("utf-8")
+        input_api.enqueue("my-img", t={"b64": img_encoded})
 
     time.sleep(10)
 
