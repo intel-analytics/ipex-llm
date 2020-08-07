@@ -226,6 +226,13 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
       shuffle = shuffle).transform(new StringToMiniBatch(batchSize))
   }
 
+  import com.intel.analytics.zoo.tfpark
+  def createTFParkSampleToMiniBatch(batchSize: Int,
+                                    dropRemainder: Boolean): tfpark.SampleToMiniBatch[T] = {
+    new tfpark.SampleToMiniBatch[T](totalBatch = batchSize,
+      dropRemainder = dropRemainder)
+  }
+
   def loadZooCheckpoint(model: TFTrainingHelper, path: String): Unit = {
     model.loadZooCheckpoint(path)
   }
