@@ -25,7 +25,7 @@ import org.apache.spark.api.java.JavaRDD
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.{MiniBatch, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dataset.{MiniBatch}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.{LocalPredictor, ValidationMethod}
 import com.intel.analytics.bigdl.utils.Table
@@ -163,13 +163,17 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
 
   // todo support featurePaddingParam
   def zooRDDSampleToMiniBatch(rdd: JavaRDD[Sample],
-                              batchSizePerPartition: Int): RDDWrapper[MiniBatch[T]] = {
+                              batchSizePerPartition: Int,
+                              dropRemainder: Boolean): RDDWrapper[MiniBatch[T]] = {
+    import com.intel.analytics.zoo.tfpark.SampleToMiniBatch
     val partitionNum = rdd.rdd.getNumPartitions
     val totalBatchSize = batchSizePerPartition * partitionNum
-    val transBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
-      batchSize = totalBatchSize,
+    val transBroad = rdd.sparkContext.broadcast(new SampleToMiniBatch(
+      totalBatch = totalBatchSize,
+      None,
       partitionNum = Some(partitionNum),
-      featurePaddingParam = None))
+      featurePaddingParam = None,
+      dropRemainder = dropRemainder))
 
     val miniBatchRdd = rdd.rdd.map(toJSample).mapPartitions { iter =>
       val localTransformer = transBroad.value.cloneTransformer()
