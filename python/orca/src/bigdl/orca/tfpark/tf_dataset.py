@@ -25,10 +25,9 @@ from bigdl.util.common import get_node_and_core_number
 from zoo.common.utils import callZooFunc
 from zoo.common import Sample, JTensor
 from zoo.common.nncontext import getOrCreateSparkContext
-from zoo.feature.common import FeatureSet, SampleToMiniBatch
+from zoo.feature.common import FeatureSet, SampleToMiniBatch, Preprocessing
 from zoo.feature.image import ImagePreprocessing, ImageFeatureToSample
 from zoo.util import nest
-
 
 if sys.version >= '3':
     long = int
@@ -53,7 +52,6 @@ def _to_tensor_structure(tensors):
 
 
 def _tensors_to_rdd(tensors, sc, splits):
-
     import tensorflow as tf
 
     if isinstance(tensors, np.ndarray):
@@ -170,7 +168,7 @@ class TFDataset(object):
                                             for t in nest.flatten(self.tensor_structure)])
             else:
                 self.output_shapes = nest.pack_sequence_as(
-                    self.tensor_structure, [[self.batch_size // self.total_core_num] + t.shape
+                    self.tensor_structure, [[self.batch_size // self.total_core_num] + list(t.shape)
                                             if t is not None else None
                                             for t in nest.flatten(self.tensor_structure)])
 
@@ -662,7 +660,6 @@ class TFDataset(object):
 
 
 class TFDataDataset(TFDataset):
-
     def get_num_partitions(self):
         # only called in inference case
         return self.total_core_num
@@ -706,7 +703,7 @@ class TFDataDataset(TFDataset):
             lambda dataset, is_training: isinstance(dataset, dataset_ops.BatchDataset),
             "Dataset should not be batched, please use a dataset without the batch operation"),
             (
-            lambda dataset, is_training: isinstance(dataset, dataset_ops.RepeatDataset),
+                lambda dataset, is_training: isinstance(dataset, dataset_ops.RepeatDataset),
                 "Dataset should not be repeated, please use a dataset without the repeat operation")
         ]
 
@@ -735,7 +732,7 @@ class TFDataDataset(TFDataset):
                                     for i in range(len(flatten_shapes))]
         structure = tf_data_dataset.output_types
         if isinstance(structure, tf.DType):
-            structure = (structure, )
+            structure = (structure,)
         tensor_structure = nest.pack_sequence_as(structure,
                                                  flatten_tensor_structure)
 
@@ -838,7 +835,6 @@ class TFDataDataset(TFDataset):
 
 
 class TFFeatureDataset(TFDataset):
-
     def __init__(self, dataset, tensor_structure, batch_size,
                  batch_per_thread, hard_code_batch_size=False, validation_dataset=None):
         super(TFFeatureDataset, self).__init__(tensor_structure, batch_size,
@@ -870,7 +866,6 @@ class TFFeatureDataset(TFDataset):
 
 
 class TFBytesDataset(TFDataset):
-
     def get_num_partitions(self):
         return self.train_rdd.getNumPartitions()
 
@@ -920,7 +915,6 @@ class TFBytesDataset(TFDataset):
 
 
 class TFTextDataset(TFDataset):
-
     def __init__(self, text_set, tensor_structure, batch_size,
                  batch_per_thread, hard_code_batch_size=False,
                  validation_text_set=None, sequential_order=False, shuffle=True):
@@ -985,7 +979,7 @@ class TFImageDataset(TFDataset):
         return self.image_set
 
     def _get_evaluation_data(self):
-        return self.image_set.to_image_frame()\
+        return self.image_set.to_image_frame() \
             .transform(MergeFeatureLabelImagePreprocessing())
 
     def _get_training_data(self):
@@ -1013,8 +1007,19 @@ class TFImageDataset(TFDataset):
         return self.image_set.get_image().getNumPartitions()
 
 
-class TFNdarrayDataset(TFDataset):
+class TFParkSampleToMiniBatch(Preprocessing):
+    """
+     a Transformer that converts Feature to (Feature, None).
+    """
 
+    def __init__(self,
+                 batch_size,
+                 drop_remainder,
+                 bigdl_type="float"):
+        super(TFParkSampleToMiniBatch, self).__init__(bigdl_type, batch_size, drop_remainder)
+
+
+class TFNdarrayDataset(TFDataset):
     def __init__(self, rdd, tensor_structure, batch_size,
                  batch_per_thread, hard_code_batch_size=False,
                  val_rdd=None, sequential_order=True, shuffle=False):
@@ -1026,15 +1031,25 @@ class TFNdarrayDataset(TFDataset):
         self.rdd = rdd
         self.sequential_order = sequential_order
         self.shuffle = shuffle
+        if self.hard_code_batch_size:
+            logging.warning("hard_code_batch_size is set to true, so we"
+                            " must drop remainder elements in the dataset"
+                            " to avoid outputting small batches, the dropped"
+                            " elements will not get processed. You can "
+                            "pad your dataset so that the total number "
+                            "of elements is divisible by the total batch size"
+                            " to avoid this.")
 
     def _get_prediction_data(self):
         rdd = self.rdd.map(lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
-        rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
+        rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread,
+                                  self.hard_code_batch_size)
         return rdd_wrapper.value().toJavaRDD()
 
     def _get_evaluation_data(self):
         rdd = self.rdd.map(lambda t: Sample.from_ndarray(nest.flatten(t), np.array([0.0])))
-        rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread)
+        rdd_wrapper = callZooFunc("float", "zooRDDSampleToMiniBatch", rdd, self.batch_per_thread,
+                                  self.hard_code_batch_size)
         return rdd_wrapper.value().toJavaRDD()
 
     def _get_training_data(self):
@@ -1043,7 +1058,9 @@ class TFNdarrayDataset(TFDataset):
         fs = FeatureSet.sample_rdd(sample_rdd,
                                    sequential_order=self.sequential_order,
                                    shuffle=self.shuffle)
-        fs = fs.transform(SampleToMiniBatch(self.batch_size))
+        # for training there won't be any remainder, the input to SampleToMiniBatch
+        # will loop indefinitely
+        fs = fs.transform(TFParkSampleToMiniBatch(self.batch_size, drop_remainder=False))
         return fs
 
     def _get_validation_data(self):
@@ -1053,7 +1070,7 @@ class TFNdarrayDataset(TFDataset):
             fs = FeatureSet.sample_rdd(sample_rdd,
                                        sequential_order=self.sequential_order,
                                        shuffle=self.shuffle)
-            fs = fs.transform(SampleToMiniBatch(self.batch_size))
+            fs = fs.transform(TFParkSampleToMiniBatch(self.batch_size, self.hard_code_batch_size))
             return fs
         return None
 
@@ -1124,7 +1141,6 @@ class TFNdarrayDataset(TFDataset):
 
 
 class DataFrameDataset(TFNdarrayDataset):
-
     @staticmethod
     def df_datatype_to_tf(dtype):
         import tensorflow as tf
@@ -1212,12 +1228,13 @@ class DataFrameDataset(TFNdarrayDataset):
                     elif isinstance(row[name], DenseVector):
                         result.append(row[name].values)
                     else:
-                        assert isinstance(row[name], SparseVector),\
+                        assert isinstance(row[name], SparseVector), \
                             "unsupported field {}, data {}".format(schema[name], row[name])
                         result.append(row[name].toArray())
                 if len(result) == 1:
                     return result[0]
                 return result
+
             features = convert_for_cols(row, feature_cols)
             if labels_cols:
                 labels = convert_for_cols(row, labels_cols)
