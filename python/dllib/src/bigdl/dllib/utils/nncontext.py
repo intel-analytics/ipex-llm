@@ -117,6 +117,38 @@ def init_spark_on_yarn(hadoop_conf,
     return sc
 
 
+def init_spark_standalone(num_executors,
+                          executor_cores,
+                          executor_memory="10g",
+                          driver_memory="1g",
+                          driver_cores=4,
+                          extra_executor_memory_for_ray=None,
+                          extra_python_lib=None,
+                          conf=None,
+                          jars=None,
+                          spark_log_level="WARN",
+                          redirect_spark_log=True):
+    from zoo.util.spark import SparkRunner
+    sparkrunner = SparkRunner(spark_log_level=spark_log_level,
+                              redirect_spark_log=redirect_spark_log)
+    sc = sparkrunner.init_spark_standalone(
+        num_executors=num_executors,
+        executor_cores=executor_cores,
+        executor_memory=executor_memory,
+        driver_memory=driver_memory,
+        driver_cores=driver_cores,
+        extra_executor_memory_for_ray=extra_executor_memory_for_ray,
+        extra_python_lib=extra_python_lib,
+        conf=conf,
+        jars=jars)
+    return sc
+
+
+def stop_spark_standalone():
+    from zoo.util.spark import SparkRunner
+    SparkRunner.stop_spark_standalone()
+
+
 class ZooContextMeta(type):
 
     _log_output = False
