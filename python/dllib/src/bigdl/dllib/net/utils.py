@@ -47,16 +47,18 @@ def find_tensors(sources, predicate):
             visited.add(node.name)
             if predicate(node):
                 results.add(node)
-            if isinstance(node, tf.Tensor):
-                inputs = list(node.op.inputs) + list(node.op.control_inputs)
-            elif isinstance(node, tf.Operation):
-                inputs = list(node.inputs) + list(node.control_inputs)
             else:
-                raise ValueError("Unrecognized Node: {}".format(node))
-            for input_tensor in inputs:
-                # this is necessary because there may be a cycle in the graph such as tf.while_loop
-                if input_tensor.name not in visited:
-                    queue.append(input_tensor)
+                if isinstance(node, tf.Tensor):
+                    inputs = list(node.op.inputs) + list(node.op.control_inputs)
+                elif isinstance(node, tf.Operation):
+                    inputs = list(node.inputs) + list(node.control_inputs)
+                else:
+                    raise ValueError("Unrecognized Node: {}".format(node))
+                for input_tensor in inputs:
+                    # this is necessary because there may be a cycle in the graph
+                    # such as tf.while_loop
+                    if input_tensor.name not in visited:
+                        queue.append(input_tensor)
     return list(results)
 
 
