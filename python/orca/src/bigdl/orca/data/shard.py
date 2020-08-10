@@ -301,7 +301,7 @@ class SparkXShards(XShards):
         def put_to_plasma(ids):
             def f(index, iterator):
                 import pyarrow.plasma as plasma
-                from zoo.orca.data.utils import get_node_ip
+                from zoo.util.utils import get_node_ip
                 res = list(iterator)
                 client = plasma.connect(object_store_address)
                 target_id = ids[index]
