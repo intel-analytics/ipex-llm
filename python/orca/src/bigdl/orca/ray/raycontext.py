@@ -55,9 +55,19 @@ class RayServiceFuncGenerator(object):
     """
     def _prepare_env(self):
         modified_env = os.environ.copy()
-        cwd = os.getcwd()
-        modified_env["PATH"] = "{}/{}:{}".format(cwd, "/".join(self.python_loc.split("/")[:-1]),
-                                                 os.environ["PATH"])
+        if self.python_loc == "python_env/bin/python":
+            # In this case the executor is using the conda yarn archive under the current
+            # working directory. Need to get the full path.
+            executor_python_path = "{}/{}".format(
+                os.getcwd(), "/".join(self.python_loc.split("/")[:-1]))
+        else:
+            executor_python_path = "/".join(self.python_loc.split("/")[:-1])
+        if "PATH" in os.environ:
+            modified_env["PATH"] = "{}:{}".format(executor_python_path, os.environ["PATH"])
+        else:
+            modified_env["PATH"] = executor_python_path
+        modified_env["LC_ALL"] = "C.UTF-8"
+        modified_env["LANG"] = "C.UTF-8"
         modified_env.pop("MALLOC_ARENA_MAX", None)
         modified_env.pop("RAY_BACKEND_LOG_LEVEL", None)
         # Unset all MKL setting as Analytics Zoo would give default values when init env.
@@ -95,7 +105,7 @@ class RayServiceFuncGenerator(object):
         # This is useful to allocate workers and servers in the cluster.
         # Leave some reserved custom resources free to avoid unknown crash due to resources.
         self.labels = \
-            """--resources='{"_mxnet_worker": %s, "_mxnet_server": %s, "_reserved": %s}' """ \
+            """--resources '{"_mxnet_worker": %s, "_mxnet_server": %s, "_reserved": %s}'""" \
             % (1, 1, 2)
 
     def gen_stop(self):
