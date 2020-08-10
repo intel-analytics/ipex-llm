@@ -21,6 +21,7 @@ class OrcaContextMeta(type):
 
     _pandas_read_backend = "spark"
     __eager_mode = True
+    _serialize_data_creation = False
 
     @property
     def log_output(cls):
@@ -63,6 +64,19 @@ class OrcaContextMeta(type):
     def _eager_mode(cls, value):
         assert isinstance(value, bool), "_eager_mode should either be True or False"
         cls.__eager_mode = value
+
+    @property
+    def serialize_data_creation(cls):
+        """
+        Whether serialize the dataloading process..
+        Default to be False.
+        """
+        return cls._serialize_data_creation
+
+    @serialize_data_creation.setter
+    def serialize_data_creation(cls, value):
+        assert isinstance(value, bool), "serialize_data_creation should either be True or False"
+        cls._serialize_data_creation = value
 
 
 class OrcaContext(metaclass=OrcaContextMeta):
