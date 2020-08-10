@@ -42,6 +42,7 @@ import torch
 import torch.nn as nn
 
 import ray
+from zoo.orca import OrcaContext
 from zoo.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.pytorch import utils
@@ -156,9 +157,24 @@ class TorchRunner:
         return (isinstance(loader, DataLoader)
                 and not isinstance(loader.dataset, IterableDataset))
 
+    def train_epochs(self, data_creator, epochs=1, profile=False, info=None):
+        if OrcaContext.serialize_data_creation:
+            with FileLock(
+                    os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
+                loader = data_creator(self.config)
+        else:
+            loader = data_creator(self.config)
+
+        if TorchRunner.should_wrap_dataloader(loader):
+            loader = self.with_sampler(loader)
+        stats_list = list()
+        for i in range(epochs):
+            stats = self.train_epoch(loader, profile=profile, info=info)
+            stats_list.append(stats)
+        return stats_list
+
     def train_epoch(self,
-                    data_creator,
-                    num_steps=None,
+                    data_loader,
                     profile=False,
                     info=None):
         """Runs a training epoch and updates the model parameters."""
@@ -167,18 +183,12 @@ class TorchRunner:
         self._toggle_profiling(profile=profile)
 
         info.update({
-            NUM_STEPS: num_steps,
             SCHEDULER_STEP: self.scheduler_step_freq
         })
         with self.timers.record("train_epoch"):
-            with FileLock(
-                    os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = data_creator(self.config)
-            if TorchRunner.should_wrap_dataloader(loader):
-                loader = iter(self.with_sampler(loader))
-                if num_steps:
-                    loader = itertools.islice(loader, num_steps)
-            train_stats = self.training_operator.train_epoch(loader, info)
+            if TorchRunner.should_wrap_dataloader(data_loader):
+                data_loader = iter(data_loader)
+            train_stats = self.training_operator.train_epoch(data_loader, info)
 
         self.epochs += 1
         # This is so that `epochs` is first in ordering.

@@ -28,16 +28,16 @@ class Estimator(object):
         pass
 
     @staticmethod
-    def from_model_creator(*,
-                           model_creator,
-                           optimizer_creator,
-                           loss_creator=None,
-                           scheduler_creator=None,
-                           training_operator_cls=TrainingOperator,
-                           initialization_hook=None,
-                           config=None,
-                           scheduler_step_freq="batch",
-                           backend="ray"):
+    def from_torch(*,
+                   model_creator,
+                   optimizer_creator,
+                   loss_creator=None,
+                   scheduler_creator=None,
+                   training_operator_cls=TrainingOperator,
+                   initialization_hook=None,
+                   config=None,
+                   scheduler_step_freq="batch",
+                   backend="ray"):
         assert backend == "ray", "only ray backend is supported for now"
         return PyTorchHorovodEstimatorWrapper(model_creator=model_creator,
                                               optimizer_creator=optimizer_creator,
@@ -69,14 +69,12 @@ class PyTorchHorovodEstimatorWrapper(Estimator):
                                                  config=config,
                                                  scheduler_step_freq=scheduler_step_freq)
 
-    def fit(self, data, epochs=1, num_steps=None, profile=False, reduce_results=True, info=None):
+    def fit(self, data, epochs=1, profile=False, reduce_results=True, info=None):
         """
 
         :param data: (callable) a funtion that takes a config dict as input and return a data
             loader containing the training data.
         :param epochs: (int) Number of epochs to train the model
-        :param num_steps: (int) Number of batches to compute update steps on.
-            This corresponds also to the number of times `TrainingOperator.train_batch`` is called.
         :param profile: (bool) Returns time stats for the training procedure.
         :param reduce_results: (bool) Whether to average all metrics across all workers into one
             dict. If a metric is a non-numerical value (or nested dictionaries), one value will be
@@ -90,12 +88,8 @@ class PyTorchHorovodEstimatorWrapper(Estimator):
                     this will return a list of metric dictionaries whose
                     length will be equal to ``num_workers``.
         """
-        stats_list = list()
-        for i in range(epochs):
-            stats = self.estimator.train(data_creator=data, num_steps=num_steps, profile=profile,
-                                         reduce_results=reduce_results, info=info)
-            stats_list.append(stats)
-        return stats_list
+        return self.estimator.train(data_creator=data, epochs=epochs,
+                                    profile=profile, reduce_results=reduce_results, info=info)
 
     def predict(self, data, **kwargs):
         pass
