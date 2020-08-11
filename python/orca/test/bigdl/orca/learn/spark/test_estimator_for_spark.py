@@ -88,6 +88,7 @@ class TestEstimatorForGraph(TestCase):
 
         data_shard = data_shard.transform_shard(transform)
         predictions = est.predict(data_shard).collect()
+        assert 'prediction' in predictions[0]
         print(predictions)
 
     def test_estimator_graph_fit(self):

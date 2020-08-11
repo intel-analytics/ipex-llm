@@ -201,6 +201,8 @@ class TFOptimizerWrapper(Estimator):
         predicted_rdd = tfnet.predict(dataset)
         if isinstance(data, DataFrame):
             return convert_predict_to_dataframe(data, predicted_rdd)
+        elif isinstance(data, SparkXShards):
+            return convert_predict_to_xshard(data, predicted_rdd)
         else:
             return predicted_rdd
 
@@ -297,6 +299,8 @@ class TFKerasWrapper(Estimator):
         predicted_rdd = self.model.predict(dataset, batch_size)
         if isinstance(data, DataFrame):
             return convert_predict_to_dataframe(data, predicted_rdd)
+        elif isinstance(data, SparkXShards):
+            return convert_predict_to_xshard(data, predicted_rdd)
         else:
             return predicted_rdd
 
