@@ -44,6 +44,8 @@ class IdentityCriterion(Criterion):
 
 class TFValidationMethod(JavaValue):
     def __init__(self, val_method, name, output_indices, label_indices):
+        self.name = name
+        self.val_method = val_method
         JavaValue.__init__(self, None, "float",
                            val_method, name, output_indices, label_indices)
 
@@ -569,7 +571,7 @@ class TFOptimizer:
                 metrics = {}
 
             for i, method in enumerate(val_methods):
-                metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
+                metrics['bigdl_metric_' + str(i)] = BigDLMetric(method, val_outputs, val_labels)
 
         return TFOptimizer._from_grads(loss, sess, inputs, labels, grads, variables, dataset,
                                        optim_method, clip_norm, clip_value,
@@ -688,7 +690,7 @@ class TFOptimizer:
             val_methods = to_list(bigdl_val_methods)
             bigdl_metrics = {}
             for i, method in enumerate(val_methods):
-                bigdl_metrics['bigdl_metirc_' + str(i)] = BigDLMetric(method,
+                bigdl_metrics['bigdl_metric_' + str(i)] = BigDLMetric(method,
                                                                       val_outputs,
                                                                       val_labels)
             if metrics is None:
