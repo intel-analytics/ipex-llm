@@ -39,7 +39,7 @@ def run(path):
         img = cv2.resize(img, (224, 224))
         data = cv2.imencode(".jpg", img)[1]
         img_encoded = base64.b64encode(data).decode("utf-8")
-        input_api.enqueue("my-img", t={"b64": img_encoded})
+        input_api.enqueue(p, t={"b64": img_encoded})
 
     time.sleep(10)
 

@@ -16,9 +16,16 @@ $ wget https://archive.apache.org/dist/flink/flink-1.11.0/flink-1.11.0-bin-scala
 $ tar xzf flink-1.11.0-bin-scala_2.11.tgz
 ```
 ### 安装Cluster Serving
-下载[安装包]()，运行`pip install analytics-zoo-*.whl`进行安装，安装后运行`cluster-serving-init`，可以看到生成的`zoo.jar`依赖包，`analytics-zoo-xxx-http.jar`同步服务包，`config.yaml`配置文件
+下载天池提供的`whl`安装包，运行`pip install analytics-zoo-*.whl`进行安装，安装后运行`cluster-serving-init`，可以看到生成的`zoo.jar`依赖包，`analytics-zoo-xxx-http.jar`同步服务包，`config.yaml`配置文件
 
-若要使用同步API运行`java -jar analytics-zoo-xxx-http.jar`启动同步服务
+#### 对于下载安装包缓慢的选手
+对于在`cluster-serving-init`中下载缓慢的问题，天池提供了`analytics-zoo-*-serving.jar`和`analytics-zoo-*-http.jar`在内网，选手可以下载到工作目录，**并将`analytics-zoo-*-serving.jar`重命名为`zoo.jar`**，命令`mv analytics-zoo-*-serving.jar zoo.jar`，再运行`cluster-serving-init`可以看到生成的`config.yaml`配置文件
+
+当可以看到`zoo.jar, analytics-zoo-*-http.jar, config.yaml`时，即为安装完成
+
+运行`java -jar analytics-zoo-xxx-http.jar`启动同步服务
+
+PS: `zoo.jar`为集成了Flink分布式推理代码的依赖，`cluster-serving-start`会根据工作目录的配置文件`config.yaml`启动`zoo.jar`中的代码，`analytics-zoo-*-http.jar`为同步服务的依赖，本次天池大赛中不需要用到PS内的信息，对Cluster Serving的更多了解请移步[github官方文档](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md)
 ## 配置
 修改`config.yaml`，配置模型路径为包含模型的文件夹路径，样例如下，假设用户模型为Tensorflow SavedModel模型，结构为
 ```
