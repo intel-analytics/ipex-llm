@@ -15,6 +15,7 @@
 #
 
 from bigdl.util.common import JavaValue
+
 from zoo.common.utils import callZooFunc
 
 
@@ -58,6 +59,71 @@ class Estimator(JavaValue):
         """
         callZooFunc(self.bigdl_type, "setGradientClippingByL2Norm", self.value, clip_norm)
 
+    def set_tensorboad(self, log_dir, app_name):
+        """
+        Set summary information during the training process for visualization purposes.
+        Saved summary can be viewed via TensorBoard.
+        In order to take effect, it needs to be called before fit.
+
+        Training summary will be saved to 'log_dir/app_name/train'
+        and validation summary (if any) will be saved to 'log_dir/app_name/validation'.
+
+        # Arguments
+        :param log_dir: The base directory path to store training and validation logs.
+        :param app_name: The name of the application.
+        """
+        callZooFunc(self.bigdl_type, "estimatorSetTensorBoard",
+                    self.value,
+                    log_dir,
+                    app_name)
+
+    def get_train_summary(self, tag=None):
+        """
+        Get the scalar from model train summary
+        Return 2-D array like object which could be converted
+        by nd.array()
+        # Arguments
+        tag: The string variable represents the scalar wanted
+        """
+        # exception handle
+        if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
+            raise TypeError('Only "Loss", "LearningRate", "Throughput"'
+                            + 'are supported in train summary')
+
+        return callZooFunc("float", "estimatorGetScalarFromSummary",
+                           self.value, tag, "Train")
+
+    def get_validation_summary(self, tag=None):
+        """
+        Get the scalar from model validation summary
+        Return 2-D array like object which could be converted
+        by np.array()
+
+        Note: The metric and tag may not be consistent
+        Please look up following form to pass tag parameter
+        Left side is your metric during compile
+        Right side is the tag you should pass
+        'Accuracy'                  |   'Top1Accuracy'
+        'BinaryAccuracy'            |   'Top1Accuracy'
+        'CategoricalAccuracy'       |   'Top1Accuracy'
+        'SparseCategoricalAccuracy' |   'Top1Accuracy'
+        'AUC'                       |   'AucScore'
+        'HitRatio'                  |   'HitRate@k' (k is Top-k)
+        'Loss'                      |   'Loss'
+        'MAE'                       |   'MAE'
+        'NDCG'                      |   'NDCG'
+        'TFValidationMethod'        |   '${name + " " + valMethod.toString()}'
+        'Top5Accuracy'              |   'Top5Accuracy'
+        'TreeNNAccuracy'            |   'TreeNNAccuracy()'
+        'MeanAveragePrecision'      |   'MAP@k' (k is Top-k) (BigDL)
+        'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
+        'StatelessMetric'           |   '${name}'
+        # Arguments
+        tag: The string variable represents the scalar wanted
+        """
+        return callZooFunc("float", "estimatorGetScalarFromSummary",
+                           self.value, tag, "Validation")
+
     def train(self, train_set, criterion, end_trigger=None, checkpoint_trigger=None,
               validation_set=None, validation_method=None, batch_size=32):
         """
@@ -82,7 +148,6 @@ class Estimator(JavaValue):
 
     def train_minibatch(self, train_set, criterion, end_trigger=None, checkpoint_trigger=None,
                         validation_set=None, validation_method=None):
-
         """
         Train model with provided trainSet and criterion.
         The training will end until the endTrigger is triggered.
