@@ -67,9 +67,9 @@ class Estimator(object):
                                   )
 
     @staticmethod
-    def from_keras(keras_model, model_dir=None, backend="spark"):
+    def from_keras(keras_model, metrics=None, model_dir=None, backend="spark"):
         assert backend == "spark", "only spark backend is supported for now"
-        return TFKerasWrapper(keras_model, model_dir)
+        return TFKerasWrapper(keras_model, metrics, model_dir)
 
 
 class TFOptimizerWrapper(Estimator):
@@ -237,9 +237,10 @@ class TFOptimizerWrapper(Estimator):
 
 class TFKerasWrapper(Estimator):
 
-    def __init__(self, keras_model, model_dir):
+    def __init__(self, keras_model, metrics, model_dir):
         self.model = KerasModel(keras_model, model_dir)
         self.load_checkpoint = False
+        self.metrics = metrics
 
     def fit(self, data,
             epochs=1,
@@ -267,7 +268,8 @@ class TFKerasWrapper(Estimator):
 
         optimizer = TFOptimizer.from_keras(self.model.model, dataset,
                                            model_dir=self.model.model_dir,
-                                           session_config=session_config)
+                                           session_config=session_config,
+                                           metrics=self.metrics)
 
         if self.load_checkpoint:
             optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
