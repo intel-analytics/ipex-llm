@@ -422,6 +422,78 @@ class TestEstimatorForGraph(TestCase):
         load_tf_checkpoint_from_remote(sess, os.path.join(temp, "simple.ckpt"), saver)
         shutil.rmtree(temp)
 
+    def test_estimator_graph_tensorboard(self):
+        tf.reset_default_graph()
+
+        model = SimpleModel()
+
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+        def transform(df):
+            result = {
+                "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+                "y": df['label'].to_numpy()
+            }
+            return result
+
+        data_shard = data_shard.transform_shard(transform)
+
+        temp = tempfile.mkdtemp()
+        # only set model dir, summary generated under model dir
+        model_dir = os.path.join(temp, "test_model")
+
+        est = Estimator.from_graph(
+            inputs=[model.user, model.item],
+            labels=[model.label],
+            loss=model.loss,
+            optimizer=tf.train.AdamOptimizer(),
+            metrics={"loss": model.loss},
+            model_dir=model_dir
+        )
+        est.fit(data=data_shard,
+                batch_size=8,
+                epochs=5,
+                validation_data=data_shard)
+
+        train_tp = est.get_train_summary("Throughput")
+        val_scores = est.get_validation_summary("loss")
+        assert len(train_tp) > 0
+        assert len(val_scores) > 0
+
+        # set tensorboard dir to different directory
+        est.set_tensorboard("model", "test")
+
+        est.fit(data=data_shard,
+                batch_size=8,
+                epochs=5,
+                validation_data=data_shard)
+
+        train_tp = est.get_train_summary("Throughput")
+        val_scores = est.get_validation_summary("loss")
+        assert len(train_tp) > 0
+        assert len(val_scores) > 0
+
+        # no model dir, no tensorboard dir, no summary saved
+        est2 = Estimator.from_graph(
+            inputs=[model.user, model.item],
+            labels=[model.label],
+            loss=model.loss,
+            optimizer=tf.train.AdamOptimizer(),
+            metrics={"loss": model.loss}
+        )
+
+        est2.fit(data=data_shard,
+                 batch_size=8,
+                 epochs=5,
+                 validation_data=data_shard)
+
+        train_tp = est2.get_train_summary("Throughput")
+        val_scores = est2.get_validation_summary("loss")
+        assert train_tp is None
+        assert val_scores is None
+
+        shutil.rmtree(temp)
 
 if __name__ == "__main__":
     import pytest

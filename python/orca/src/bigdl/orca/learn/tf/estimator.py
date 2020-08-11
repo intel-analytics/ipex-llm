@@ -13,17 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
-
-from pyspark.sql.dataframe import DataFrame
 
 from bigdl.optim.optimizer import MaxEpoch
 
-from zoo.tfpark.utils import evaluate_metrics
-from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
-from zoo.tfpark import KerasModel
-from zoo.util import nest
 from zoo.orca.learn.tf.utils import *
+from zoo.tfpark import KerasModel
+from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
+from zoo.tfpark.tf_optimizer import StatelessMetric
+from zoo.tfpark.utils import evaluate_metrics
+from zoo.util import nest
 
 
 class Estimator(object):
@@ -46,6 +44,75 @@ class Estimator(object):
         if ckpt_path is None:
             raise Exception("Cannot find checkpoint")
         self.load(ckpt_path, version)
+
+    def set_tensorboard(self, log_dir, app_name):
+        """
+        Set summary information during the training process for visualization purposes.
+        Saved summary can be viewed via TensorBoard.
+        In order to take effect, it needs to be called before fit.
+
+        Training summary will be saved to 'log_dir/app_name/train'
+        and validation summary (if any) will be saved to 'log_dir/app_name/validation'.
+
+        # Arguments
+        :param log_dir: The base directory path to store training and validation logs.
+        :param app_name: The name of the application.
+        """
+        self.log_dir = log_dir
+        self.app_name = app_name
+
+    def get_train_summary(self, tag=None):
+        """
+        Get the scalar from model train summary
+        Return 2-D array like object which could be converted
+        by nd.array()
+        # Arguments
+        tag: The string variable represents the scalar wanted
+        """
+        if self.tf_optimizer:
+            return self.tf_optimizer.estimator.get_train_summary(tag)
+
+        return None
+
+    def get_validation_summary(self, tag=None):
+        """
+        Get the scalar from model validation summary
+        Return 2-D array like object which could be converted
+        by np.array()
+
+        Note: The metric and tag may not be consistent
+        Please look up following form to pass tag parameter
+        Left side is your metric during compile
+        Right side is the tag you should pass
+        'Accuracy'                  |   'Top1Accuracy'
+        'BinaryAccuracy'            |   'Top1Accuracy'
+        'CategoricalAccuracy'       |   'Top1Accuracy'
+        'SparseCategoricalAccuracy' |   'Top1Accuracy'
+        'AUC'                       |   'AucScore'
+        'HitRatio'                  |   'HitRate@k' (k is Top-k)
+        'Loss'                      |   'Loss'
+        'MAE'                       |   'MAE'
+        'NDCG'                      |   'NDCG'
+        'TFValidationMethod'        |   '${name + " " + valMethod.toString()}'
+        'Top5Accuracy'              |   'Top5Accuracy'
+        'TreeNNAccuracy'            |   'TreeNNAccuracy()'
+        'MeanAveragePrecision'      |   'MAP@k' (k is Top-k) (BigDL)
+        'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
+        'StatelessMetric'           |   '${name}'
+        # Arguments
+        tag: The string variable represents the scalar wanted
+        """
+        if self.tf_optimizer:
+            for val_method in self.tf_optimizer.tf_model.val_methods:
+                if isinstance(val_method, StatelessMetric):
+                    if tag == val_method.name:
+                        return self.tf_optimizer.estimator.get_validation_summary(tag)
+                else:
+                    if tag == str(val_method.val_method):
+                        return self.tf_optimizer.estimator.\
+                            get_validation_summary("{} {}".format(val_method.name, tag))
+                continue
+        return None
 
     @staticmethod
     def from_graph(*, inputs, outputs=None,
@@ -73,7 +140,6 @@ class Estimator(object):
 
 
 class TFOptimizerWrapper(Estimator):
-
     def __init__(self, *, inputs, outputs, labels, loss,
                  optimizer, clip_norm, clip_value,
                  metrics,
@@ -120,6 +186,9 @@ class TFOptimizerWrapper(Estimator):
             self.sess = sess
         self.model_dir = model_dir
         self.load_checkpoint = False
+        self.tf_optimizer = None
+        self.log_dir = None
+        self.app_name = None
 
     def fit(self, data,
             epochs=1,
@@ -158,7 +227,7 @@ class TFOptimizerWrapper(Estimator):
         else:
             tensor_with_value = None
 
-        optimizer = TFOptimizer.from_train_op(
+        self.tf_optimizer = TFOptimizer.from_train_op(
             train_op=self.train_op,
             loss=self.loss,
             inputs=self.inputs,
@@ -171,9 +240,13 @@ class TFOptimizerWrapper(Estimator):
             model_dir=self.model_dir)
 
         if self.load_checkpoint:
-            optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
+            self.tf_optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
 
-        optimizer.optimize(end_trigger=MaxEpoch(epochs), checkpoint_trigger=checkpoint_trigger)
+        if self.log_dir and self.app_name:
+            self.tf_optimizer.estimator.set_tensorboad(self.log_dir, self.app_name)
+
+        self.tf_optimizer.optimize(end_trigger=MaxEpoch(epochs),
+                                   checkpoint_trigger=checkpoint_trigger)
         return self
 
     def predict(self, data, batch_size=4,
@@ -238,11 +311,13 @@ class TFOptimizerWrapper(Estimator):
 
 
 class TFKerasWrapper(Estimator):
-
     def __init__(self, keras_model, metrics, model_dir):
         self.model = KerasModel(keras_model, model_dir)
         self.load_checkpoint = False
         self.metrics = metrics
+        self.tf_optimizer = None
+        self.log_dir = None
+        self.app_name = None
 
     def fit(self, data,
             epochs=1,
@@ -268,15 +343,18 @@ class TFKerasWrapper(Estimator):
                              sequential_order=False, shuffle=True
                              )
 
-        optimizer = TFOptimizer.from_keras(self.model.model, dataset,
-                                           model_dir=self.model.model_dir,
-                                           session_config=session_config,
-                                           metrics=self.metrics)
+        self.tf_optimizer = TFOptimizer.from_keras(self.model.model, dataset,
+                                                   model_dir=self.model.model_dir,
+                                                   session_config=session_config,
+                                                   metrics=self.metrics)
 
         if self.load_checkpoint:
-            optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
+            self.tf_optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
 
-        optimizer.optimize(MaxEpoch(epochs), checkpoint_trigger=checkpoint_trigger)
+        if self.log_dir and self.app_name:
+            self.tf_optimizer.estimator.set_tensorboad(self.log_dir, self.app_name)
+
+        self.tf_optimizer.optimize(MaxEpoch(epochs), checkpoint_trigger=checkpoint_trigger)
 
         return self
 
