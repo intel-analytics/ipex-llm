@@ -557,8 +557,16 @@ echo "#13 sentiment-analysis time used:$time13 seconds"
 echo "#14 start app test for anomaly-detection-hd"
 #timer
 start=$(date "+%s")
-chmod +x $ANALYTICS_ZOO_HOME/bin/data/HiCS/get_HiCS.sh
-$ANALYTICS_ZOO_HOME/bin/data/HiCS/get_HiCS.sh
+FILENAME="${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/realworld.zip"
+if [ -f "$FILENAME" ]
+then
+    echo "$FILENAME already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/HiCS/realworld.zip  -P ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd
+fi
+dataPath="${ANALYTICS_ZOO_HOME}/bin/data/HiCS/"
+rm -rf "$dataPath"
+unzip -d ${ANALYTICS_ZOO_HOME}/bin/data/HiCS/  ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/realworld.zip
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo
 sed -i '/get_ipython()/d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
 sed -i '127,273d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
