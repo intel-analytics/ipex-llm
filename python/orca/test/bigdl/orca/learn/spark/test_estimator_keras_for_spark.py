@@ -23,7 +23,6 @@ from bigdl.optim.optimizer import SeveralIteration
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.common.nncontext import *
 from zoo.orca.learn.tf.utils import convert_predict_to_dataframe
-import zoo.orca.data.pandas
 
 
 class TestEstimatorForKeras(TestCase):
@@ -283,6 +282,31 @@ class TestEstimatorForKeras(TestCase):
         assert 'prediction' in prediction_df.columns
         predictions = prediction_df.collect()
         assert len(predictions) == 10
+
+    def test_estimator_keras_tf_dataset(self):
+
+        tf.reset_default_graph()
+
+        model = self.create_model()
+
+        dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100, 1)),
+                                                      np.random.randint(0, 50, size=(100, 1)),
+                                                      np.ones(shape=(100,), dtype=np.int32)))
+        dataset = dataset.map(lambda user, item, label: [(user, item), label])
+        est = Estimator.from_keras(keras_model=model)
+        est.fit(data=dataset,
+                batch_size=8,
+                epochs=10,
+                validation_data=dataset)
+
+        eval_result = est.evaluate(dataset)
+        assert 'acc Top1Accuracy' in eval_result
+
+        dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100, 1)),
+                                                      np.random.randint(0, 50, size=(100, 1))))
+
+        predictions = est.predict(dataset).collect()
+        assert predictions[0]['prediction'].shape[1] == 2
 
     def test_estimator_keras_tensorboard(self):
         import zoo.orca.data.pandas
