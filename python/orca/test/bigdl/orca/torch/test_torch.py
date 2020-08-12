@@ -120,6 +120,30 @@ class TestPytorch(TestCase):
         exported_model = az_model.to_pytorch()
         assert len((list(exported_model.named_buffers()))) != 0
 
+    def test_freezed_model_to_pytorch(self):
+        class SimpleTorchModel(nn.Module):
+            def __init__(self):
+                super(SimpleTorchModel, self).__init__()
+                self.dense1 = nn.Linear(2, 4)
+                self.bn1 = torch.nn.BatchNorm1d(4)
+                self.dense2 = nn.Linear(4, 1)
+                for p in self.dense1.parameters():
+                    p.requires_grad_(False)
+
+            def forward(self, x):
+                x = self.dense1(x)
+                x = self.bn1(x)
+                x = torch.sigmoid(self.dense2(x))
+                return x
+
+        torch_model = SimpleTorchModel()
+        az_model = TorchModel.from_pytorch(torch_model)
+        dummy_input = torch.ones(16, 2)
+        zoo_result = az_model.forward(dummy_input.numpy())
+
+        exported_model = az_model.to_pytorch()
+        assert len((list(exported_model.named_buffers()))) != 0
+
     def test_train_model_with_bn(self):
         class SimpleTorchModel(nn.Module):
             def __init__(self):
