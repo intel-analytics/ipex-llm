@@ -44,11 +44,7 @@ Use one command to run Cluster Serving container. (We provide quick start model 
 ```
 docker run -itd --name cluster-serving --net=host intelanalytics/zoo-cluster-serving:0.9.0
 ```
-Log into the container using `docker exec -it cluster-serving bash`.
-
-Increase the memory size `jobmanager.heap.size` and `taskmanager.memory.process.size` to 8g (recommended) in `$FLINK_HOME/conf/flink-conf.yaml`and use `$FLINK_HOME/bin/start-cluster.sh` to start the cluster.
-
-Go to Cluster Serving working directory by `cd cluster-serving`.
+Log into the container using `docker exec -it cluster-serving bash`, go to Cluster Serving working directory by `cd cluster-serving`.
 
 You can see prepared TensorFlow frozen ResNet50 model in `resources/model` directory with following structure.
 
@@ -58,10 +54,17 @@ cluster-serving |
                  -- frozen_graph.pb
                  -- graph_meta.json
 ```
+Modify `config.yaml` and add following to `filter:` config
+```
+data:
+  shape: [3,224,224]
+  filter: topN(1)
+```
+This will tell the shape of input image is [3,224,224] and rank Top-1 result of the model output.
 
 Start Cluster Serving using `cluster-serving-start`. 
 
-Run python program `python3 image_classification_and_object_detection_quick_start.py` to push data into queue and get inference result. 
+Run python program `python3 image_classification_and_object_detection_quick_start.py -i resources/test_image` to push data into queue and get inference result. 
 
 Then you can see the inference output in console. 
 ```
