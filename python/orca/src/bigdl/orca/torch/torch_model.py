@@ -68,7 +68,7 @@ class TorchModel(Layer):
         # set weights
         m = CloudPickleSerializer.loads(CloudPickleSerializer, self.module_bytes)
         w = torch.Tensor(new_weight[0])
-        torch.nn.utils.vector_to_parameters(w, m.parameters())
+        torch.nn.utils.vector_to_parameters(w, trainable_param(m))
 
         # set named buffers
         new_extra_params = callZooFunc(self.bigdl_type, "getModuleExtraParameters", self.value)
