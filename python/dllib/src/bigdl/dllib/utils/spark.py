@@ -235,7 +235,7 @@ class SparkRunner:
                               executor_memory="10g",
                               driver_memory="1g",
                               driver_cores=4,
-                              spark_master=None,
+                              master=None,
                               extra_executor_memory_for_ray=None,
                               extra_python_lib=None,
                               conf=None,
@@ -248,7 +248,7 @@ class SparkRunner:
 
         if 'PYSPARK_PYTHON' not in os.environ:
             os.environ["PYSPARK_PYTHON"] = self._detect_python_location()
-        if not spark_master:
+        if not master:
             pyspark_home = os.path.abspath(pyspark.__file__ + "/../")
             zoo_standalone_home = os.path.abspath(__file__ + "/../../share/bin/standalone")
             node_ip = get_node_ip()
@@ -266,18 +266,19 @@ class SparkRunner:
                 "{}/sbin/start-master.sh".format(zoo_standalone_home),
                 shell=True, env=SparkRunner.standalone_env)
             os.waitpid(start_master_pro.pid, 0)
-            spark_master = "spark://{}:7077".format(node_ip)  # 7077 is the default port
+            master = "spark://{}:7077".format(node_ip)  # 7077 is the default port
             # Start worker
             start_worker_pro = subprocess.Popen(
-                "{}/sbin/start-worker.sh {}".format(zoo_standalone_home, spark_master),
+                "{}/sbin/start-worker.sh {}".format(zoo_standalone_home, master),
                 shell=True, env=SparkRunner.standalone_env)
             os.waitpid(start_worker_pro.pid, 0)
         else:  # A Spark standalone cluster has already been started by the user.
-            assert spark_master.startswith("spark://"), \
-                "Please input a valid master address for Spark standalone: spark://master:port"
+            assert master.startswith("spark://"), \
+                "Please input a valid master address for your Spark standalone cluster: " \
+                "spark://master:port"
 
         # Start pyspark-shell
-        submit_args = " --master " + spark_master
+        submit_args = " --master " + master
         submit_args = submit_args + " --driver-cores {} --driver-memory {} --num-executors {}" \
                                     " --executor-cores {} --executor-memory {}"\
             .format(driver_cores, driver_memory, num_executors, executor_cores, executor_memory)
@@ -318,6 +319,8 @@ class SparkRunner:
             import pyspark
             pyspark_home = os.path.abspath(pyspark.__file__ + "/../")
             zoo_standalone_home = os.path.abspath(__file__ + "/../../share/bin/standalone")
+            pro = subprocess.Popen(["chmod", "-R", "+x", "{}/sbin".format(zoo_standalone_home)])
+            os.waitpid(pro.pid, 0)
             env = {"SPARK_HOME": pyspark_home,
                    "ZOO_STANDALONE_HOME": zoo_standalone_home}
         stop_worker_pro = subprocess.Popen(

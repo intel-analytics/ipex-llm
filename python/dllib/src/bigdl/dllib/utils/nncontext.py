@@ -122,7 +122,7 @@ def init_spark_standalone(num_executors,
                           executor_memory="10g",
                           driver_memory="1g",
                           driver_cores=4,
-                          spark_master=None,
+                          master=None,
                           extra_executor_memory_for_ray=None,
                           extra_python_lib=None,
                           spark_log_level="WARN",
@@ -142,8 +142,8 @@ def init_spark_standalone(num_executors,
     :param executor_memory: The memory for each executor. Default to be '2g'.
     :param driver_cores: The number of cores for the Spark driver. Default to be 4.
     :param driver_memory: The memory for the Spark driver. Default to be '1g'.
-    :param spark_master: The master URL of an existing Spark standalone cluster starting with
-    'spark://'. You only need to specify this if you have already started a standalone cluster.
+    :param master: The master URL of an existing Spark standalone cluster: 'spark://master:port'.
+    You only need to specify this if you have already started a standalone cluster.
     Default to be None and a new standalone cluster would be started in this case.
     :param extra_executor_memory_for_ray: The extra memory for Ray services. Default to be None.
     :param extra_python_lib: Extra python files or packages needed for distribution.
@@ -167,7 +167,7 @@ def init_spark_standalone(num_executors,
         executor_memory=executor_memory,
         driver_memory=driver_memory,
         driver_cores=driver_cores,
-        spark_master=spark_master,
+        master=master,
         extra_executor_memory_for_ray=extra_executor_memory_for_ray,
         extra_python_lib=extra_python_lib,
         conf=conf,
