@@ -34,7 +34,8 @@ then
 fi
 
 echo "Running orca learn ray tests"
-python -m pytest -v ../test/zoo/orca/learn/ray
+python -m pytest -v ../test/zoo/orca/learn/ray \
+       --ignore=../test/zoo/orca/learn/ray/pytorch/test_pytorch_estimator.py
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
