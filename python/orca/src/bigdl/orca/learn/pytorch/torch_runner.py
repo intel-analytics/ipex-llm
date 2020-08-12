@@ -186,8 +186,7 @@ class TorchRunner:
             SCHEDULER_STEP: self.scheduler_step_freq
         })
         with self.timers.record("train_epoch"):
-            if TorchRunner.should_wrap_dataloader(data_loader):
-                data_loader = iter(data_loader)
+            data_loader = iter(data_loader)
             train_stats = self.training_operator.train_epoch(data_loader, info)
 
         self.epochs += 1

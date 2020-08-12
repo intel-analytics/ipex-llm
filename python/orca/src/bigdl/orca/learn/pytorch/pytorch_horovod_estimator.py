@@ -45,7 +45,7 @@ class TorchWorker(HorovodWorker, TorchRunner):
         if not isinstance(self.models, collections.Iterable):
             self.models = [self.models]
         else:
-            raise ValueError("not support single model for now")
+            raise ValueError("only support single model for now")
 
         assert all(isinstance(model, nn.Module) for model in self.models), (
             "All models must be PyTorch models: {}.".format(self.models))
@@ -116,7 +116,6 @@ class TorchWorker(HorovodWorker, TorchRunner):
             _buffer,
             map_location="cpu")
         return self.load_state_dict(state_dict)
-
 
 from ray.exceptions import RayActorError
 
@@ -315,3 +314,81 @@ class PyTorchHorovodEstimator(HorovodRayRunner):
             w.validate.remote(**params) for w in self.remote_workers
         ]
         return self._process_stats(ray.get(remote_worker_stats))
+
+    def get_model(self):
+        """Returns the learned model(s)."""
+        state = self.get_state_dict()
+        model = self.model_creator(self.config)
+        model_state = state["models"][0]
+        model.load_state_dict(model_state)
+        return model.module if hasattr(model, "module") else model
+
+    def save(self, checkpoint):
+        """Saves the Estimator state to the provided checkpoint path.
+
+        :param checkpoint: (str) Path to target checkpoint file.
+        """
+        state_dict = self.get_state_dict()
+        torch.save(state_dict, checkpoint)
+        return checkpoint
+
+    def get_state_dict(self):
+        stream_ids = [
+            worker.state_stream.remote()
+            for worker in self.remote_workers
+        ]
+        # get the first task id that finished executing.
+        [stream_id], stream_ids = ray.wait(stream_ids, num_returns=1, timeout=None)
+        byte_obj = ray.get(stream_id)
+        _buffer = io.BytesIO(byte_obj)
+        state_dict = torch.load(
+            _buffer,
+            map_location="cpu")
+        return state_dict
+
+    def load(self, checkpoint):
+        """Loads the Estimator and all workers from the provided checkpoint.
+
+        :param checkpoint: (str) Path to target checkpoint file.
+        """
+        state_dict = torch.load(checkpoint)
+        self.load_state_dict(state_dict)
+
+    def load_state_dict(self, state_dict, blocking=True):
+        _buffer = io.BytesIO()
+        torch.save(state_dict, _buffer)
+        state_stream = _buffer.getvalue()
+        state_id = ray.put(state_stream)
+
+        remote_calls = [
+            worker.load_state_stream.remote(state_id)
+            for worker in self.remote_workers
+        ]
+        if blocking:
+            ray.get(remote_calls)
+
+    def shutdown(self, force=False):
+        """Shuts down workers and releases resources."""
+        if not force:
+            cleanup = [
+                worker.shutdown.remote() for worker in self.remote_workers
+            ]
+            try:
+                ray.get(cleanup)
+                [
+                    worker.__ray_terminate__.remote()
+                    for worker in self.remote_workers
+                ]
+            except RayActorError:
+                logger.warning(
+                    "Failed to shutdown gracefully, forcing a shutdown.")
+
+                for worker in self.remote_workers:
+                    logger.warning("Killing worker {}.".format(worker))
+                    ray.kill(worker)
+        else:
+            for worker in self.remote_workers:
+                logger.debug("Killing worker {}.".format(worker))
+                ray.kill(worker)
+
+        self.remote_workers = []
