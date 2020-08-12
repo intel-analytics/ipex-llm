@@ -41,7 +41,7 @@ def flatten(seq):
 
 
 def ptensor_to_numpy(seq):
-    return [t.numpy() for t in flatten(seq)]
+    return [t.data.numpy() for t in flatten(seq)]
 
 
 def pack_sequence_as(structure, flat_sequence):
