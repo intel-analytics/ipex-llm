@@ -95,42 +95,46 @@ def train_example():
     val_stats = estimator.evaluate(validation_data_creator)
     print("validation stats: {}".format(val_stats))
 
+    # retrieve the model
+    model = estimator.estimator.get_model()
+    print("trained weight: % .2f, bias: % .2f" % (
+        model.weight.item(), model.bias.item()))
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--hadoop_conf", type=str,
-                    help="turn on yarn mode by passing the path to the hadoop"
-                         " configuration folder. Otherwise, turn on local mode.")
-parser.add_argument("--slave_num", type=int, default=2,
-                    help="The number of slave nodes")
-parser.add_argument("--conda_name", type=str,
-                    help="The name of conda environment.")
-parser.add_argument("--executor_cores", type=int, default=8,
-                    help="The number of driver's cpu cores you want to use."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--executor_memory", type=str, default="10g",
-                    help="The size of slave(executor)'s memory you want to use."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--driver_memory", type=str, default="2g",
-                    help="The size of driver's memory you want to use."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--driver_cores", type=int, default=8,
-                    help="The number of driver's cpu cores you want to use."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
-                    help="The extra executor memory to store some data."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--object_store_memory", type=str, default="4g",
-                    help="The memory to store data on local."
-                         "You can change it depending on your own cluster setting.")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--hadoop_conf", type=str,
+                        help="turn on yarn mode by passing the path to the hadoop"
+                             " configuration folder. Otherwise, turn on local mode.")
+    parser.add_argument("--num_executors", type=int, default=2,
+                        help="The number of executors")
+    parser.add_argument("--conda_name", type=str,
+                        help="The name of conda environment.")
+    parser.add_argument("--executor_cores", type=int, default=8,
+                        help="The number of executor's cpu cores you want to use."
+                             "You can change it depending on your own cluster setting.")
+    parser.add_argument("--executor_memory", type=str, default="10g",
+                        help="The size of executor's memory you want to use."
+                             "You can change it depending on your own cluster setting.")
+    parser.add_argument("--driver_memory", type=str, default="2g",
+                        help="The size of driver's memory you want to use."
+                             "You can change it depending on your own cluster setting.")
+    parser.add_argument("--driver_cores", type=int, default=8,
+                        help="The number of driver's cpu cores you want to use."
+                             "You can change it depending on your own cluster setting.")
+    parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
+                        help="The extra executor memory to store some data."
+                             "You can change it depending on your own cluster setting.")
+    parser.add_argument("--object_store_memory", type=str, default="4g",
+                        help="The memory to store data on local."
+                             "You can change it depending on your own cluster setting.")
 
     args = parser.parse_args()
     if args.hadoop_conf:
         sc = init_spark_on_yarn(
             hadoop_conf=args.hadoop_conf,
             conda_name=args.conda_name,
-            num_executors=args.slave_num,
+            num_executors=args.num_executors,
             executor_cores=args.executor_cores,
             executor_memory=args.executor_memory,
             driver_memory=args.driver_memory,
