@@ -17,6 +17,14 @@ from torch.utils.data.sampler import Sampler
 import math
 
 
+def trainable_param(model):
+    training = []
+    for p in model.parameters():
+        if p.requires_grad:
+            training.append(p)
+    return training
+
+
 class DistributedSequentialSampler(Sampler):
     """
     A sequential sampler used in FeatureSet when get (train=false) iterator .
