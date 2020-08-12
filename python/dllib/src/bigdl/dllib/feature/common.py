@@ -364,24 +364,38 @@ class FeatureSet(DataSet):
         return cls(jvalue=jvalue)
 
     @classmethod
-    def pytorch_dataloader(cls, dataloader, bigdl_type="float"):
+    def pytorch_dataloader(cls, dataloader,
+                           features="_data[0]", labels="_data[1]", bigdl_type="float"):
         """
         Create FeatureSet from pytorch dataloader
-        :param dataloader: a pytorch dataloader
+        :param dataloader: a pytorch dataloader, or a function return pytorch dataloader.
+        :param features: features in _data, _data is get from dataloader.
+        :param labels: lables in _data, _data is get from dataloader.
         :param bigdl_type: numeric type
         :return: A feature set
         """
-        node_num, core_num = get_node_and_core_number()
-        if dataloader.batch_size % node_num != 0:
-            true_bs = math.ceil(dataloader.batch_size / node_num) * node_num
-            warning_msg = "Detect dataloader's batch_size is not divisible by node number(" + \
-                          str(node_num) + "), will adjust batch_size to " + str(true_bs) + \
-                          " automatically"
-            warnings.warn(warning_msg)
+        import torch
+        if isinstance(dataloader, torch.utils.data.DataLoader):
+            node_num, core_num = get_node_and_core_number()
+            if dataloader.batch_size % node_num != 0:
+                true_bs = math.ceil(dataloader.batch_size / node_num) * node_num
+                warning_msg = "Detect dataloader's batch_size is not divisible by node number(" + \
+                              str(node_num) + "), will adjust batch_size to " + str(true_bs) + \
+                              " automatically"
+                warnings.warn(warning_msg)
 
-        bys = CloudPickleSerializer.dumps(CloudPickleSerializer, dataloader)
-        jvalue = callZooFunc(bigdl_type, "createFeatureSetFromPyTorch", bys)
-        return cls(jvalue=jvalue)
+            bys = CloudPickleSerializer.dumps(CloudPickleSerializer, dataloader)
+            jvalue = callZooFunc(bigdl_type, "createFeatureSetFromPyTorch", bys,
+                                 False, features, labels)
+            return cls(jvalue=jvalue)
+        elif callable(dataloader):
+            bys = CloudPickleSerializer.dumps(CloudPickleSerializer, dataloader)
+            jvalue = callZooFunc(bigdl_type, "createFeatureSetFromPyTorch", bys,
+                                 True, features, labels)
+            return cls(jvalue=jvalue)
+        else:
+            raise ValueError("Unsupported dataloader type, please pass pytorch dataloader" +
+                             " or a function to create pytorch dataloader.")
 
     def transform(self, transformer):
         """
