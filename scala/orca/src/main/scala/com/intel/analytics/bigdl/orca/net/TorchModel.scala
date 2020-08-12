@@ -45,6 +45,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
          |import torch.nn.functional as F
          |import torchvision
          |from zoo.util.nest import ptensor_to_numpy
+         |from zoo.pipeline.api.torch.utils import trainable_param
          |
          |from pyspark.serializers import CloudPickleSerializer
          |by = bytes(b % 256 for b in model_bytes)
@@ -68,7 +69,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
   val setWeightCode =
     s"""
         |w = torch.Tensor(newWeight)
-        |torch.nn.utils.vector_to_parameters(w, ${getName()}.parameters())
+        |torch.nn.utils.vector_to_parameters(w, trainable_param(${getName()}))
         |
         |""".stripMargin
 
@@ -112,7 +113,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
     PythonInterpreter.exec(forwardCode)
     println(s"run forward cost: ${(System.nanoTime() - startTime) / 1e9}")
     val outputNd = PythonFeatureSet.toArrayTensor(
-      PythonInterpreter.getValue[NDArray[_]]("ptensor_to_numpy(output.data)"))
+      PythonInterpreter.getValue[NDArray[_]]("ptensor_to_numpy(output)"))
     if (outputNd.length == 1) {
       output = outputNd(0)
     } else {
@@ -133,10 +134,18 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
     println(s"run backward cost: ${(System.nanoTime() - startTime) / 1e9}")
     val getWeightCode =
       s"""
-        |grads=[]
-        |for param in ${getName()}.parameters():
-        |    grads.append(param.grad.view(-1))
-        |grad=torch.nn.utils.parameters_to_vector(grads)
+        |grads = []
+        |none_grads = []
+        |for name, param in ${getName()}.named_parameters():
+        |    if param.requires_grad:
+        |        if param.grad is not None:
+        |            grads.append(param.grad.view(-1))
+        |        else:
+        |            none_grads.append(name)
+        |if len(none_grads) > 0:
+        |    raise Exception("Detect no gradient layer: " + " ,".join(none_grads) +
+        |                    ". Please set their require_grad to False.")
+        |grad = torch.nn.utils.parameters_to_vector(grads)
         |""".stripMargin
     PythonInterpreter.exec(getWeightCode)
     // TODO: Optimize this
@@ -158,7 +167,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
   override def zeroGradParameters(): Unit = {
     val zeroGradCode =
       s"""
-        |for param in ${this.getName()}.parameters():
+        |for param in trainable_param(${this.getName()}):
         |    param.grad.fill_(0)
         |""".stripMargin
     PythonInterpreter.exec(zeroGradCode)
