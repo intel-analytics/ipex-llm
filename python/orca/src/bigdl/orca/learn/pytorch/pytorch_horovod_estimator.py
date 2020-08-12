@@ -149,9 +149,8 @@ class PyTorchHorovodEstimator(HorovodRayRunner):
             training_operator_cls=TrainingOperator,
             initialization_hook=None,
             config=None,
-            scheduler_step_freq="batch"
-    ):
-
+            scheduler_step_freq="batch",
+            use_tqdm=False):
         if not (callable(model_creator) and callable(optimizer_creator)):
             raise ValueError(
                 "Must provide a callable model_creator and optimizer_creator")
@@ -162,6 +161,7 @@ class PyTorchHorovodEstimator(HorovodRayRunner):
         self.scheduler_creator = scheduler_creator
         self.training_operator_cls = training_operator_cls
         self.scheduler_step_freq = scheduler_step_freq
+        self.use_tqdm = use_tqdm
 
         if not training_operator_cls and not loss_creator:
             raise ValueError("If a loss_creator is not provided, you must "
@@ -179,6 +179,7 @@ class PyTorchHorovodEstimator(HorovodRayRunner):
             scheduler_creator=self.scheduler_creator,
             training_operator_cls=self.training_operator_cls,
             scheduler_step_freq=self.scheduler_step_freq,
+            use_tqdm=self.use_tqdm,
             config=worker_config)
         super().__init__(RayContext.get(), worker_cls=TorchWorker, worker_param=self.param)
 
