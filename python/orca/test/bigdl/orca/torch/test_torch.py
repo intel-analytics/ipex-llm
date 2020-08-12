@@ -22,6 +22,12 @@ import pytest
 from unittest import TestCase
 from zoo.pipeline.api.torch import TorchModel, TorchLoss
 from zoo.common.nncontext import *
+from torch.utils.data import TensorDataset, DataLoader
+from zoo.pipeline.estimator import *
+from zoo.pipeline.api.keras.optimizers import Adam
+from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
+from zoo.pipeline.api.keras.metrics import Accuracy
+from zoo.feature.common import FeatureSet
 
 
 class TestPytorch(TestCase):
@@ -112,7 +118,43 @@ class TestPytorch(TestCase):
         zoo_result = az_model.forward(dummy_input.numpy())
 
         exported_model = az_model.to_pytorch()
-        print(list(exported_model.named_buffers()))
+        assert len((list(exported_model.named_buffers()))) != 0
+
+    def test_train_model_with_bn(self):
+        class SimpleTorchModel(nn.Module):
+            def __init__(self):
+                super(SimpleTorchModel, self).__init__()
+                self.dense1 = nn.Linear(2, 4)
+                self.bn1 = torch.nn.BatchNorm1d(4)
+                self.dense2 = nn.Linear(4, 1)
+
+            def forward(self, x):
+                x = self.dense1(x)
+                x = self.bn1(x)
+                x = torch.sigmoid(self.dense2(x))
+                return x
+
+        torch_model = SimpleTorchModel()
+        loss_fn = torch.nn.BCELoss()
+        az_model = TorchModel.from_pytorch(torch_model)
+        zoo_loss = TorchLoss.from_pytorch(loss_fn)
+        inputs = torch.Tensor([[1, 2], [1, 3], [3, 2],
+                               [5, 6], [8, 9], [1, 9]])
+        targets = torch.Tensor([[0], [0], [0],
+                               [1], [1], [1]])
+        train_loader = DataLoader(TensorDataset(inputs, targets), batch_size=2)
+        train_featureset = FeatureSet.pytorch_dataloader(train_loader)
+        val_loader = DataLoader(TensorDataset(inputs, targets), batch_size=2)
+        val_featureset = FeatureSet.pytorch_dataloader(val_loader)
+
+        zooOptimizer = Adam()
+        estimator = Estimator(az_model, optim_methods=zooOptimizer)
+        estimator.train_minibatch(train_featureset, zoo_loss, end_trigger=MaxEpoch(4),
+                                  checkpoint_trigger=EveryEpoch(),
+                                  validation_set=val_featureset,
+                                  validation_method=[Accuracy()])
+
+        trained_model = az_model.to_pytorch()
 
 
 if __name__ == "__main__":
