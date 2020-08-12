@@ -387,27 +387,34 @@ object PythonFeatureSet{
       case ndArray: NDArray[_] =>
         Array(ndArrayToTensor(ndArray))
       case ndArrays: util.ArrayList[_] =>
-        require(ndArrays.size() > 0)
-        ndArrays.get(0) match {
-          case _: NDArray[_] =>
-            ndArrays.asInstanceOf[util.ArrayList[NDArray[_]]].asScala.toArray.map { input =>
-              ndArrayToTensor(input)
-            }
-          // TODO: support ArrayList[String]
+        if (ndArrays.size() > 0) {
+          ndArrays.get(0) match {
+            case _: NDArray[_] =>
+              ndArrays.asInstanceOf[util.ArrayList[NDArray[_]]].asScala.toArray.map { input =>
+                ndArrayToTensor(input)
+              }
+            // TODO: support ArrayList[String]
+          }
+        } else {
+          Array()
         }
       case _ =>
-        throw new IllegalArgumentException("")
+        throw new IllegalArgumentException(s"supported type ${data.getClass()}")
     }
   }
 
   private[zoo] def ndArrayToTensor(ndArray: NDArray[_]): Tensor[Float] = {
     val array = ndArray.asInstanceOf[NDArray[Array[_]]]
     val data = array.getData()
-    data(0) match {
-      case _: Float =>
-        Tensor[Float](data.asInstanceOf[Array[Float]], array.getDimensions)
-      case _ =>
-        Tensor[Float](data.map(_.toString.toFloat), array.getDimensions)
+    if (data.length > 0) {
+      data(0) match {
+        case _: Float =>
+          Tensor[Float](data.asInstanceOf[Array[Float]], array.getDimensions)
+        case _ =>
+          Tensor[Float](data.map(_.toString.toFloat), array.getDimensions)
+      }
+    } else {
+      Tensor[Float]()
     }
   }
 }
@@ -420,10 +427,10 @@ class PythonFeatureSet[T: ClassTag](
     inputName: String,
     targetName: String = "",
     totalSize: Int,
-    imports: String = "") extends DistributedFeatureSet[T] {
+    imports: String = "",
+    loaderName: String = s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
+  ) extends DistributedFeatureSet[T] {
   import PythonFeatureSet._
-  protected val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
-  protected val loaderName = s"loader${namePostfix}"
 
   loadPythonSet(loaderName, getLoader, dataset, imports, cachedRdd)
 
@@ -644,7 +651,9 @@ object FeatureSet {
       inputName: String,
       targetName: String,
       totalSize: Int,
-      imports: String = ""): PythonFeatureSet[T] = {
+      imports: String = "",
+      loaderName: String = s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
+    ): PythonFeatureSet[T] = {
     new PythonFeatureSet[T](dataset, getLoader, getIterator, getNext,
       inputName, targetName, totalSize, imports)
   }

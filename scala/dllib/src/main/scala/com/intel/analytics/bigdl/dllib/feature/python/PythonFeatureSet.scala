@@ -116,9 +116,14 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createFeatureSetFromPyTorch(
-        dataloader: Array[Byte]): FeatureSet[MiniBatch[Float]] = {
+        dataloader: Array[Byte],
+        creator: Boolean,
+        features: String,
+        labels: String): FeatureSet[MiniBatch[Float]] = {
     val trainPostfix = "_train"
     val evalPostfix = "_eval"
+    val loaderName: String =
+      s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
     val imports = s"""
                      |from zoo.util.nest import ptensor_to_numpy
                      |import torch
@@ -149,10 +154,11 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     }
 
     def getLoader(nodeNumber: Int, partId: Int, localLoaderName: String): String = {
+      val brace = if (creator) "()" else ""
       val load = s"""
                     |by${partId} = bytes(b % 256 for b in pyjarray)
                     |func${partId} = CloudPickleSerializer.loads(CloudPickleSerializer, by${partId})
-                    |${localLoaderName} = func${partId}
+                    |${localLoaderName} = func${partId}${brace}
                     |""".stripMargin
       load +
         s"""
@@ -167,11 +173,11 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
            |${localLoaderName}_seq_sampler=DistributedSequentialSampler(${localLoaderName}.dataset,
            |                                              ${nodeNumber}, ${partId})
            |
-           |bs_node = int(math.ceil(${localLoaderName}.batch_size / ${nodeNumber}))
+           |${loaderName}_bs_node = int(math.ceil(${localLoaderName}.batch_size / ${nodeNumber}))
            |
            |data_loader_args = {
            |                "dataset": ${localLoaderName}.dataset,
-           |                "batch_size": bs_node,
+           |                "batch_size": ${loaderName}_bs_node,
            |                "shuffle": False,
            |                "num_workers": 0,
            |                "collate_fn": ${localLoaderName}.collate_fn,
@@ -185,9 +191,19 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
            |${localLoaderName}${evalPostfix} = DataLoader(**data_loader_args)
            |""".stripMargin
     }
-
+    val inputsName = if (features == null || features == "") {
+      s"torch.Tensor(${loaderName}_bs_node, 1)"
+    } else {
+      features
+    }
+    val targetsName = if (labels == null || labels == "") {
+      s"torch.Tensor(${loaderName}_bs_node, 1)"
+    } else {
+      labels
+    }
     FeatureSet.python[MiniBatch[Float]](dataloader, getLoader, getIterator, getNext,
-      "ptensor_to_numpy(_data[0])", "ptensor_to_numpy(_data[1])", -1, imports)
+        s"ptensor_to_numpy(${inputsName})",
+        s"ptensor_to_numpy(${targetsName})", -1, imports)
   }
 
 }
