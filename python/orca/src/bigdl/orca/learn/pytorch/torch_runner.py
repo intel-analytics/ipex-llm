@@ -65,7 +65,6 @@ class TorchRunner:
                  scheduler_creator=None,
                  training_operator_cls=None,
                  config=None,
-                 serialize_data_creation=True,
                  use_tqdm=False,
                  scheduler_step_freq=None):
         self.model_creator = model_creator
@@ -84,7 +83,6 @@ class TorchRunner:
         self.train_loader = None
         self.validation_loader = None
         self.training_operator = None
-        self.serialize_data_creation = serialize_data_creation
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
 
