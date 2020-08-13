@@ -80,7 +80,7 @@ RUN apt-get install -y python3-minimal && \
     pip install pyyaml && \
     pip install redis && \
     pip install keras && \
-    pip install mxnet-mkl==1.6.0b20191025 && \
+    pip install mxnet-mkl==1.6.0 && \
     pip install ray==0.7.2 && \
     pip install Pillow==6.1 && \
     pip install psutil aiohttp && \
