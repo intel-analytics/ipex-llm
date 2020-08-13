@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.zoo.feature.common._
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import com.intel.analytics.zoo.pipeline.nnframes.NNModel.NNModelWriter
 import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper,
 XGBoostRegressor, XGBoostRegressionModel}
@@ -369,6 +370,7 @@ object XGBClassifierModel {
 class XGBRegressor () {
 
   private val model = new XGBoostRegressor()
+  model.setNthread(EngineRef.getCoreNumber())
 
   def setLabelCol(labelColName : String) : this.type = {
     model.setLabelCol(labelColName)
