@@ -70,6 +70,13 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     estimator.evaluate(validationMiniBatch, validationMethod.asScala.toArray)
   }
 
+  def estimatorEvaluateMiniBatch(
+      estimator: Estimator[T],
+      validationSet: FeatureSet[MiniBatch[T]],
+      validationMethod: JList[ValidationMethod[T]]): Map[ValidationMethod[T], ValidationResult] = {
+    estimator.evaluate(validationSet, validationMethod.asScala.toArray)
+  }
+
   def estimatorTrain(estimator: Estimator[T], trainSet: FeatureSet[Sample[T]],
                      criterion: Criterion[T],
                      endTrigger: Trigger = null,
