@@ -79,9 +79,9 @@ def validation_data_creator(config):
 
 def train_example():
     estimator = Estimator.from_torch(
-        model_creator=model_creator,
-        optimizer_creator=optimizer_creator,
-        loss_creator=nn.MSELoss,
+        model=model_creator,
+        optimizer=optimizer_creator,
+        loss=nn.MSELoss,
         scheduler_creator=scheduler_creator,
         config={
             "lr": 1e-2,  # used in optimizer_creator
