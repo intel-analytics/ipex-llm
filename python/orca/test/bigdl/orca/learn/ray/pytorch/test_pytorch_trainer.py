@@ -20,7 +20,7 @@ import pytest
 
 import torch
 import torch.nn as nn
-from zoo.orca.learn.pytorch import PyTorchTrainer
+from zoo.orca.learn.pytorch.pytorch_trainer import PyTorchTrainer
 
 np.random.seed(1337)  # for reproducibility
 

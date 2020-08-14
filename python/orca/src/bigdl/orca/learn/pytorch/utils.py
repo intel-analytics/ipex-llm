@@ -258,3 +258,18 @@ def override(interface_class):
         return method
 
     return overrider
+
+
+# todo: this might be very slow
+def to_sample(data):
+    from bigdl.util.common import Sample
+    from zoo.orca.data.utils import check_type_and_convert
+    data = check_type_and_convert(data, allow_list=True, allow_tuple=False)
+    features = data["x"]
+    labels = data["y"]
+    length = features[0].shape[0]
+
+    for i in range(length):
+        fs = [feat[i] for feat in features]
+        ls = [l[i] for l in labels]
+        yield Sample.from_ndarray(np.array(fs), np.array(ls))
