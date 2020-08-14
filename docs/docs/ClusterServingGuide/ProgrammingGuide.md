@@ -42,7 +42,7 @@ This section provides a quick start example for you to run Analytics Zoo Cluster
 
 Use one command to run Cluster Serving container. (We provide quick start model in older version of docker image, for newest version, please refer to following sections and we remove the model to reduce the docker image size).
 ```
-docker run -itd --name cluster-serving --net=host intelanalytics/zoo-cluster-serving:0.9.0
+docker run --name cluster-serving -itd --net=host intelanalytics/zoo-cluster-serving:0.9.0
 ```
 Log into the container using `docker exec -it cluster-serving bash`, go to Cluster Serving working directory by `cd cluster-serving`.
 
@@ -112,7 +112,7 @@ docker pull intelanalytics/zoo-cluster-serving
 ```
 then, (or directly run `docker run`, it will pull the image if it does not exist)
 ```
-docker run --name cluster-serving --net=host -itd intelanalytics/zoo-cluster-serving:0.9.0 bash
+docker run --name cluster-serving -itd --net=host intelanalytics/zoo-cluster-serving:0.9.0
 ```
 Log into the container
 ```
@@ -122,7 +122,7 @@ docker exec -it cluster-serving bash
 ##### Yarn user
 For Yarn user using docker, you have to set additional config, thus you need to call following when starting the container
 ```
-docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/work/HADOOP_CONF_DIR -e HADOOP_CONF_DIR=/opt/work/HADOOP_CONF_DIR -itd intelanalytics/zoo-cluster-serving:0.9.0 bash
+docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/work/HADOOP_CONF_DIR -e HADOOP_CONF_DIR=/opt/work/HADOOP_CONF_DIR -itd intelanalytics/zoo-cluster-serving:0.9.0
 ```
 
 #### Manual installation

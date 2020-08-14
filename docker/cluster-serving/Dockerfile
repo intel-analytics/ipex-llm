@@ -57,8 +57,9 @@ RUN wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-${FLINK_VERSIO
 ADD *.sh /opt/work/scripts/
 RUN chmod a+x /opt/work/scripts/*.*
 
-RUN /opt/work/scripts/download-cluster-serving-all-zip.sh
-RUN cd cluster-serving && \
+RUN /opt/work/scripts/download-cluster-serving-all-zip.sh && \
+    rm analytics-*-cluster-serving-all.zip && \
+    cd cluster-serving && \
     ./cluster-serving-setup.sh
 
 ADD resources/ /opt/work/cluster-serving/resources/

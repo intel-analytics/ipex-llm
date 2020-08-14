@@ -1,7 +1,7 @@
 # 天池大赛 Cluster Serving Quick Start 中文版
 
 ## 安装
-前置需求：Python，Redis 5.0.5，Flink 1.11.0，在官网安装即可，安装后设置环境变量`REDIS_HOME=/path/to/redis-5.0.5, FLINK_HOME=/path/to/flink-1.11.0`
+前置需求：Linux-x86_64，Python，Redis 5.0.5，Flink 1.11.0，在官网安装即可，安装后设置环境变量`REDIS_HOME=/path/to/redis-5.0.5, FLINK_HOME=/path/to/flink-1.11.0`
 
 ### 安装Redis
 ```
