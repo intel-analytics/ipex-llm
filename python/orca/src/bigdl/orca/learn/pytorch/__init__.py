@@ -13,8 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-from .pytorch_trainer import PyTorchTrainer
 from .training_operator import TrainingOperator
-from .pytorch_horovod_estimator import PyTorchHorovodEstimator
 from .estimator import Estimator
