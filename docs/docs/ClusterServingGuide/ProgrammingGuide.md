@@ -135,14 +135,14 @@ After preparing dependencies above, make sure the environment variable `$FLINK_H
 
 
 ##### Install Cluster Serving by download release
-For users who need to deploy and start Cluster Serving, download Cluster Serving zip from [here]() and unzip it, then run `source cluster-serving-prepare.sh`. A demo `cluster-serving-demo.sh` is also prepared and users can run it to check if Cluster Serving could work.
+For users who need to deploy and start Cluster Serving, download Cluster Serving zip `analytics-zoo-xxx-cluster-serving-all.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/) and unzip it, then run `source cluster-serving-prepare.sh`. A demo `cluster-serving-demo.sh` is also prepared and users can run it to check if Cluster Serving could work.
 
-For users who need to do inference, aka. predict data only, download Analytics Zoo python zip from [here]() and run `export PYTHONPATH=$PYTHONPATH:/path/to/zip` to add this zip to `PYTHONPATH` environment variable.
+For users who need to do inference, aka. predict data only, download Analytics Zoo python zip `analytics-zoo-xxx-cluster-serving-python.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/) and run `export PYTHONPATH=$PYTHONPATH:/path/to/zip` to add this zip to `PYTHONPATH` environment variable.
 
 ##### Install Cluster Serving by pip
-Download package from [here](), run following command to install Cluster Serving
+Download package from [here](https://sourceforge.net/projects/analytics-zoo/files/cluster-serving-py/), run following command to install Cluster Serving
 ```
-pip install *.whl
+pip install analytics_zoo_serving-*.whl
 ```
 For users who need to deploy and start Cluster Serving, run `cluster-serving-init` to download and prepare dependencies.
 
