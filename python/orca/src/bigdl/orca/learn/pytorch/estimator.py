@@ -198,7 +198,7 @@ class PytorchSparkEstimatorWrapper(Estimator):
             self.estimator.train(train_feature_set, self.loss, end_trigger, checkpoint_trigger,
                                  val_feature_set, validation_methods, batch_size)
         elif isinstance(data, DataLoader) or callable(data):
-            train_feature_set = FeatureSet.pytorch_dataloader(data)
+            train_feature_set = FeatureSet.pytorch_dataloader(data, "", "")
             if validation_data is None:
                 val_feature_set = None
             else:
