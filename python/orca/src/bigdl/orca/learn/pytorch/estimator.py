@@ -220,7 +220,7 @@ class PytorchSparkEstimatorWrapper(Estimator):
         raise NotImplementedError
 
     def get_model(self):
-        pass
+        return self.model.to_pytorch()
 
     def save(self, checkpoint):
         pass
