@@ -101,6 +101,14 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
     doLoadOpenVINO(modelFilePath, weightFilePath, 0);
   }
 
+  public void loadEncryptedOpenVINO(String modelFilePath, String weightFilePath, String secret, String salt, int batchSize) {
+    doLoadEncryptedOpenVINO(modelFilePath, weightFilePath, secret, salt, batchSize);
+  }
+
+  public void loadEncryptedOpenVINO(String modelFilePath, String weightFilePath, String secret, String salt) {
+    doLoadEncryptedOpenVINO(modelFilePath, weightFilePath, secret, salt, 0);
+  }
+
   public void loadOpenVINO(byte[] modelBytes, byte[] weightBytes, int batchSize) {
     doLoadOpenVINO(modelBytes, weightBytes, batchSize);
   }
