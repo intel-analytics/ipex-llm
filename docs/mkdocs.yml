@@ -47,7 +47,6 @@ pages:
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
-  - Orca Data:  ProgrammingGuide/orca-data.md
   - Built-in Models:
     - Object Detection API: ProgrammingGuide/object-detection.md
     - Image Classification API: ProgrammingGuide/image-classification.md
@@ -154,6 +153,8 @@ pages:
     - AutoTS: 
        - AutoTSTrainer: Zouwu/API/AutoTSTrainer.md 
        - TSPipeline: Zouwu/API/TSPipeline.md
+- Project Orca:
+  - Data: Orca/data.md
 - Powered by: powered-by.md
 - Presentations: presentations.md
 - Meetup & Webinar: meetup.md
