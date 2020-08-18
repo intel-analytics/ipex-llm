@@ -154,6 +154,8 @@ pages:
        - AutoTSTrainer: Zouwu/API/AutoTSTrainer.md 
        - TSPipeline: Zouwu/API/TSPipeline.md
 - Project Orca:
+  - Overview: Orca/overview.md
+  - OrcaContext: Orca/context.md
   - Data: Orca/data.md
 - Powered by: powered-by.md
 - Presentations: presentations.md
