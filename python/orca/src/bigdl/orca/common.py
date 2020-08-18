@@ -68,7 +68,9 @@ class OrcaContextMeta(type):
     @property
     def serialize_data_creation(cls):
         """
-        Whether serialize the dataloading process..
+        Whether add a file lock to the data loading process for PyTorch Horovod training.
+        This would be useful when you run multiple workers on a single node to download data
+        to the same destination.
         Default to be False.
         """
         return cls._serialize_data_creation
