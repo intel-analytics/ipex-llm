@@ -4,8 +4,8 @@ This is an example to show you how to use analytics-zoo to train a pytorch model
 
 # Requirements
 * Python 3.7
-* torch 1.5.0
-* torchvision 0.6.0
+* torch 1.5.0 or above
+* torchvision 0.6.0 or above
 * Apache Spark 2.4.3(pyspark)
 * jep 3.9.0
 
@@ -16,7 +16,7 @@ conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set anothe
 conda activate zoo
 pip install analytics-zoo==0.9.0.dev0 # or above
 pip install jep==3.9.0
-conda install pytorch-cpu torchvision-cpu -c pytorch #command for linux
+conda install pytorch torchvision cpuonly -c pytorch #command for linux
 conda install pytorch torchvision -c pytorch #command for macOS
 ```
 
@@ -50,7 +50,6 @@ You can easily use the following commands to run this example:
 - Run with Yarn Client mode, upload data to hdfs first, export env `HADOOP_CONF_DIR` and `ZOO_CONDA_NAME`:  
     ```bash
     conda activate zoo
-    hdfs dfs -put /tmp/zoo/dogs_cats dogs_cats 
     export HADOOP_CONF_DIR=[path to your hadoop conf directory who has yarn-site.xml]
     export ZOO_CONDA_NAME=zoo #conda environment name you just prepared above
     export ZOO_NUM_MKLTHREADS=all
