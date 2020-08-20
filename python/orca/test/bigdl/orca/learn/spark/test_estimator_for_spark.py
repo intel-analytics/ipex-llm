@@ -14,27 +14,25 @@
 # limitations under the License.
 #
 import os
-import tensorflow as tf
-from pyspark.sql.context import SQLContext
-import tempfile
 import shutil
-import numpy as np
-
+import tempfile
 from unittest import TestCase
 
+import numpy as np
+import tensorflow as tf
 from bigdl.optim.optimizer import SeveralIteration
+from pyspark.sql.context import SQLContext
+
+import zoo.orca.data.pandas
 from zoo import init_nncontext
 from zoo.orca.data.tf.data import Dataset
 from zoo.orca.learn.tf.estimator import Estimator
-import zoo.orca.data.pandas
-from zoo.orca.learn.tf.utils import save_tf_checkpoint_to_remote, load_tf_checkpoint_from_remote,\
-    get_checkpoint_state_remote
+from zoo.orca.learn.tf.utils import save_tf_checkpoint, load_tf_checkpoint, get_checkpoint_state
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
 
 class SimpleModel(object):
-
     def __init__(self):
         self.user = tf.placeholder(dtype=tf.int32, shape=(None,))
         self.item = tf.placeholder(dtype=tf.int32, shape=(None,))
@@ -48,7 +46,6 @@ class SimpleModel(object):
 
 
 class TestEstimatorForGraph(TestCase):
-
     def test_estimator_graph(self):
         import zoo.orca.data.pandas
 
@@ -260,7 +257,7 @@ class TestEstimatorForGraph(TestCase):
             model_dir=model_dir
         )
 
-        est.load_latest_checkpoint(model_dir)
+        est.load_latest_orca_checkpoint(model_dir)
 
         est.fit(data=data_shard,
                 batch_size=8,
@@ -327,7 +324,6 @@ class TestEstimatorForGraph(TestCase):
         assert len(predictions) == 10
 
     def test_estimator_graph_dataframe(self):
-
         tf.reset_default_graph()
 
         model = SimpleModel()
@@ -361,7 +357,6 @@ class TestEstimatorForGraph(TestCase):
         assert len(predictions) == 10
 
     def test_estimator_graph_dataframe_exception(self):
-
         tf.reset_default_graph()
 
         model = SimpleModel()
@@ -416,15 +411,14 @@ class TestEstimatorForGraph(TestCase):
         sess.run(tf.global_variables_initializer())
         saver = tf.train.Saver(tf.global_variables())
         temp = tempfile.mkdtemp()
-        save_tf_checkpoint_to_remote(sess, os.path.join(temp, "simple.ckpt"), saver)
-        ckpt = get_checkpoint_state_remote(temp)
+        save_tf_checkpoint(sess, os.path.join(temp, "simple.ckpt"), saver)
+        ckpt = get_checkpoint_state(temp)
         assert ckpt.model_checkpoint_path == os.path.join(temp, "simple.ckpt")
         assert ckpt.all_model_checkpoint_paths[0] == os.path.join(temp, "simple.ckpt")
-        load_tf_checkpoint_from_remote(sess, os.path.join(temp, "simple.ckpt"), saver)
+        load_tf_checkpoint(sess, os.path.join(temp, "simple.ckpt"), saver)
         shutil.rmtree(temp)
 
     def test_estimator_graph_tf_dataset(self):
-
         tf.reset_default_graph()
 
         model = SimpleModel()
@@ -455,7 +449,6 @@ class TestEstimatorForGraph(TestCase):
         assert predictions[0]['prediction'].shape[1] == 2
 
     def test_estimator_graph_tensorboard(self):
-
         tf.reset_default_graph()
 
         model = SimpleModel()
@@ -528,7 +521,79 @@ class TestEstimatorForGraph(TestCase):
 
         shutil.rmtree(temp)
 
+    def test_estimator_graph_save_load(self):
+        import zoo.orca.data.pandas
+
+        tf.reset_default_graph()
+        # save
+        model = SimpleModel()
+
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+        def transform(df):
+            result = {
+                "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+                "y": df['label'].to_numpy()
+            }
+            return result
+
+        data_shard = data_shard.transform_shard(transform)
+
+        est = Estimator.from_graph(
+            inputs=[model.user, model.item],
+            labels=[model.label],
+            outputs=[model.logits],
+            loss=model.loss,
+            optimizer=tf.train.AdamOptimizer(),
+            metrics={"loss": model.loss},
+            sess=None
+        )
+
+        est.fit(data=data_shard,
+                batch_size=8,
+                epochs=10,
+                validation_data=data_shard)
+
+        temp = tempfile.mkdtemp()
+        model_checkpoint = os.path.join(temp, 'test.ckpt')
+        est.save_tf_checkpoint(model_checkpoint)
+        est.sess.close()
+
+        tf.reset_default_graph()
+        # load
+        with tf.Session() as sess:
+            model = SimpleModel()
+
+            saver = tf.train.Saver(tf.global_variables())
+            saver.restore(sess, model_checkpoint)
+
+            est = Estimator.from_graph(
+                inputs=[model.user, model.item],
+                labels=[model.label],
+                outputs=[model.logits],
+                loss=model.loss,
+                metrics={"loss": model.loss},
+                sess=sess
+            )
+
+            data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+            def transform(df):
+                result = {
+                    "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+                }
+                return result
+
+            data_shard = data_shard.transform_shard(transform)
+            predictions = est.predict(data_shard).collect()
+            assert 'prediction' in predictions[0]
+            print(predictions)
+
+        shutil.rmtree(temp)
+
 
 if __name__ == "__main__":
     import pytest
+
     pytest.main([__file__])
