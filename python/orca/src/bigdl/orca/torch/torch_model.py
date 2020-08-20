@@ -22,10 +22,14 @@ from bigdl.util.common import JTensor
 from zoo.common.utils import callZooFunc
 from pyspark.serializers import CloudPickleSerializer
 from zoo.pipeline.api.torch.utils import trainable_param
+from importlib.util import find_spec
 
 if sys.version < '3.7':
     print("WARN: detect python < 3.7, if you meet zlib not available " +
           "exception on yarn, please update your python to 3.7")
+
+if find_spec('jep') is None:
+    raise Exception("jep not found, please install jep first.")
 
 
 class TorchModel(Layer):
