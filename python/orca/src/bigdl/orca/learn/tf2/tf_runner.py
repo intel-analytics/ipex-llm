@@ -142,7 +142,7 @@ class TFRunner:
         self.backend = "tf-distributed"
 
     def step(self, data_creator, epochs=1, verbose=1,
-             callbacks=None, validation_data_creator=None, class_weight=None, initial_epoch=0,
+             callbacks=None, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1):
         """Runs a training epoch and updates the model parameters."""
 
@@ -171,12 +171,12 @@ class TFRunner:
                 callbacks = hvd_callbacks
 
         history = self.model.fit(train_dataset,
-                                 epochs=epochs,
+                                 epochs=self.epoch + epochs,
                                  verbose=verbose,
                                  callbacks=callbacks,
-                                 validataion_data=test_dataset,
+                                 validation_data=test_dataset,
                                  class_weight=class_weight,
-                                 initial_epoch=initial_epoch,
+                                 initial_epoch=self.epoch,
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq)
@@ -185,7 +185,7 @@ class TFRunner:
         else:
             stats = {"train_" + k: v[-1] for k, v in history.history.items()}
 
-        self.epoch += 1
+        self.epoch += epochs
         return stats
 
     def validate(self, data_creator, verbose=1, sample_weight=None,
@@ -239,8 +239,6 @@ class TFRunner:
 
     def set_state(self, state):
         """Sets the state of the model."""
-
-        self.model = self.model_creator(self.config)
         self.epoch = state["epoch"]
         self.model.set_weights(state["weights"])
 
