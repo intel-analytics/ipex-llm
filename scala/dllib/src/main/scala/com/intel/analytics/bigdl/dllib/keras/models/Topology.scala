@@ -1445,7 +1445,11 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
 
     val coresPerNode = EngineRef.getCoreNumber()
     val _subModelNumber = EngineRef.getEngineType() match {
-      case MklBlas => coresPerNode
+      case MklBlas => if (TorchNet.isTorchNet(_model)) {
+        1
+      } else {
+        coresPerNode
+      }
       case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
