@@ -3,47 +3,37 @@ define their model and loss function with Pytorch API, and run it in a distribut
 with the wrapper layers provided by Analytics Zoo.
 
 # System Requirement
-Pytorch version: 1.1.0
-torchvision: 2.2.0
-
-tested OS version (all 64-bit): __Ubuntu 16.04 or later__ . We expect it to 
-support a wide range of Operating Systems, yet other systems have not been fully tested with.
-Please create issues on [issue page](https://github.com/intel-analytics/analytics-zoo/issues)
-if any error is found.
-
+Pytorch version: 1.5.0 or above  
+torchvision: 0.6.0 or above  
+jep: 3.9.0  
+Python: 3.7  
 
 # Pytorch API
 
 Two wrappers are defined in Analytics Zoo for Pytorch:
 
-1. TorchNet: TorchNet is a wrapper class for Pytorch model.
-User may create a TorchNet by providing a Pytorch model and example input or expected size, e.g.
+1. TorchModel: TorchModel is a wrapper class for Pytorch model.
+User may create a TorchModel by providing a Pytorch model, e.g.
 ```python
-    from zoo.pipeline.api.net.torch_net import TorchNet
-    TorchNet.from_pytorch(torchvision.models.resnet18(pretrained=True).eval(), [1, 3, 224, 224])
+    from zoo.pipeline.api.torch import TorchModel
+    TorchModel.from_pytorch(torchvision.models.resnet18(pretrained=True))
 ```
-The above line creates TorchNet wrapping a ResNet model, and user can use the TorchNet for
-training or inference with Analytics Zoo. Internally, we create a sample input
-from the input_shape provided, and use torch script module to trace the tensor operations
-performed on the input sample. The result TorchNet extends from BigDL module, and can be used
-with local or distributed data (RDD or DataFrame) just like other layers. For multi-input
-models, please use tuple of tensors or tuple of expected tensor sizes as example input.
+The above line creates TorchModel wrapping a ResNet model, and user can use the TorchModel for
+training or inference with Analytics Zoo.
 
-2. TorchCriterion: TorchCriterion is a wrapper for loss functions defined by Pytorch.
-User may create a TorchCriterion from a Pytorch Criterion, 
+2. TorchLoss: TorchLoss is a wrapper for loss functions defined by Pytorch.
+User may create a TorchLoss from a Pytorch Criterion, 
 ```python
     from torch import nn
-    from zoo.pipeline.api.net.torch_criterion import TorchCriterion
+    from zoo.pipeline.api.torch import TorchLoss
     
-    az_criterion = TorchCriterion.from_pytorch(loss=nn.MSELoss(),
-                                               input=[1, 1],
-                                               label=[1, 1])
+    az_criterion = TorchLoss.from_pytorch(loss=nn.MSELoss())
 ```
 or from a custom loss function, which takes input and label as parameters
 
 ```python
     from torch import nn
-    from zoo.pipeline.api.net.torch_criterion import TorchCriterion
+    from zoo.pipeline.api.torch import TorchLoss
     
     criterion = nn.MSELoss()
 
@@ -54,16 +44,11 @@ or from a custom loss function, which takes input and label as parameters
         loss = loss1 + 0.4 * loss2
         return loss
     
-    az_criterion = TorchCriterion.from_pytorch(loss=lossFunc,
-                                               input=(torch.ones(2, 2), torch.ones(2, 1)),
-                                               label=(torch.ones(2, 2), torch.ones(2, 1)))
+    az_criterion = TorchLoss.from_pytorch(loss=lossFunc)
 ```
-Similar to TorchNet, we also need users to provide example input shape or example input data,
-to trace the operations in the loss functions. The created TorchCriterion extends BigDL
-criterion, and can be used similarly as other criterions.
 
 # Examples
-Here we provide a simple end to end example, where we use TorchNet and TorchCriterion to
+Here we provide a simple end to end example, where we use TorchModel and TorchLoss to
 train a simple model with Spark DataFrame.
 ```python
 #
@@ -85,8 +70,7 @@ import torch
 import torch.nn as nn
 from bigdl.optim.optimizer import Adam
 from zoo.common.nncontext import *
-from zoo.pipeline.api.net.torch_net import TorchNet
-from zoo.pipeline.api.net.torch_criterion import TorchCriterion
+from zoo.pipeline.api.torch import TorchModel, TorchLoss
 from zoo.pipeline.nnframes import *
 
 from pyspark.ml.linalg import Vectors
@@ -122,8 +106,8 @@ if __name__ == '__main__':
     torch_model = SimpleTorchModel()
     torch_criterion = nn.MSELoss()
 
-    az_model = TorchNet.from_pytorch(torch_model, [1, 2])
-    az_criterion = TorchCriterion.from_pytorch(torch_criterion, [1, 1], [1, 1])
+    az_model = TorchModel.from_pytorch(torch_model)
+    az_criterion = TorchLoss.from_pytorch(torch_criterion)
 
     classifier = NNClassifier(az_model, az_criterion) \
         .setBatchSize(4) \
@@ -138,8 +122,7 @@ if __name__ == '__main__':
     res.show(10, False)
 
 ```
-
-and we expects to see the output like:
+Please export `PYTHONHOME` env before you run this code, and we expects to see the output like:
 ```python
 +---------+-----+----------+
 |features |label|prediction|
@@ -150,11 +133,3 @@ and we expects to see the output like:
 |[1.0,2.0]|0.0  |0.0       |
 +---------+-----+----------+
 ```
-
-More Pytorch examples (ResNet, Lenet etc.) are available [here](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/pytorch).
-
-# Training Best Practise
-As pytorch's `backward()` is serialized per device, see [pytorch issue #18333](https://github.com/pytorch/pytorch/issues/18333) and [pytorch issue #17566](https://github.com/pytorch/pytorch/issues/17566) for details, the performance of default distributed training mode(multi models on each executor) will be very bad. In order to reach the best performance, TorchNet's training should only create one model in each executor, and use multi OMP threads to speedup the single model's training.
-
-We recommend you use [Estimator](../APIGuide/PipelineAPI/estimator.md), [NNEstimator](../APIGuide/PipelineAPI/nnframes.md#nnestimator) or [NNClassifier](../APIGuide/PipelineAPI/nnframes.md#nnclassifier
-) for pytorch model training, and export environment `export ZOO_NUM_MKLTHREADS=all`, when Estimator, NNEstimator and NNClassifier detect TorchNet model, they will optimize training using single model multi OMP threads automatically. Here is a [ResNet50 finetune example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/examples/pytorch/train/resnet_finetune/).
