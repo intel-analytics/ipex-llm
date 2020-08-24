@@ -35,7 +35,8 @@ fi
 
 echo "Running orca learn ray tests"
 python -m pytest -v ../test/zoo/orca/learn/ray \
-       --ignore=../test/zoo/orca/learn/ray/pytorch/test_pytorch_estimator.py
+       --ignore=../test/zoo/orca/learn/ray/pytorch/test_pytorch_estimator.py \
+       --ignore=../test/zoo/orca/learn/ray/tf/ 
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
