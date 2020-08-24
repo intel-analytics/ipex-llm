@@ -59,7 +59,8 @@ def create_test_dataset(config):
 
 def simple_model(config):
     import tensorflow as tf
-    model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)), tf.keras.layers.Dense(1)])
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
+                                        tf.keras.layers.Dense(1)])
     return model
 
 
