@@ -1519,11 +1519,7 @@ object InternalDistriOptimizer {
                            ): Map[ValidationMethod[T], ValidationResult] = {
     val vMethods = validationMethods
     val validateRDD = validationFeatureSet.toDistributed().data(train = false)
-    val _subModelNumber = EngineRef.getEngineType match {
-      case MklBlas => EngineRef.getCoreNumber()
-      case MklDnn => 1
-      case _ => throw new IllegalArgumentException
-    }
+
     // TODO: evaluate local
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)(
       (modelIter, dataIter) => {
@@ -1532,6 +1528,7 @@ object InternalDistriOptimizer {
         val localVMethods = cached.localMethods
 
         workingModels.foreach(_.evaluate())
+        val _subModelNumber = workingModels.length
         dataIter.map(batch => {
           val stackSize = batch.size() / _subModelNumber
           val extraSize = batch.size() % _subModelNumber
