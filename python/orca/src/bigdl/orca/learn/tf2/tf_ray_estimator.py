@@ -126,7 +126,7 @@ class Estimator(HorovodRayRunner):
         return stats
 
     def evaluate(self, data_creator, verbose=1, sample_weight=None,
-                 steps=None, callbacks=None, return_dict=False):
+                 steps=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         logger.info("Starting validation step.")
         params = dict(
@@ -134,8 +134,7 @@ class Estimator(HorovodRayRunner):
             verbose=verbose,
             sample_weight=sample_weight,
             steps=steps,
-            callbacks=callbacks,
-            return_dict=return_dict
+            callbacks=callbacks
         )
         # see ./tf_runner.py:setup_distributed
         # for an explanation of only taking the first worker's data
