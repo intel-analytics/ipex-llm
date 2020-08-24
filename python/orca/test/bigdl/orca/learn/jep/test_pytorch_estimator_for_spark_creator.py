@@ -72,6 +72,7 @@ class TestEstimatorForSparkCreator(TestCase):
 
         estimator.fit(data=get_dataloader, epochs=2, validation_data=get_dataloader,
                       validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
+        estimator.evaluate(data=get_dataloader, validation_methods=[Accuracy()])
         model = estimator.get_model()
         assert isinstance(model, nn.Module)
 
