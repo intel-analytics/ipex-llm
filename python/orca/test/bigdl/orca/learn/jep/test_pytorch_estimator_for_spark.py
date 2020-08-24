@@ -74,6 +74,7 @@ class TestEstimatorForSpark(TestCase):
                                          optimizer=SGD(), backend="bigdl")
         estimator.fit(data=data_shard, epochs=4, batch_size=2, validation_data=data_shard,
                       validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
+        estimator.evaluate(data_shard, validation_methods=[Accuracy()], batch_size=2)
 
 
 if __name__ == "__main__":

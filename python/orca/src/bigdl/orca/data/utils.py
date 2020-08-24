@@ -192,6 +192,20 @@ def ray_partition_get_data_label(partition_data, allow_tuple=True, allow_list=Tr
     return data, label
 
 
+# todo: this might be very slow
+def to_sample(data):
+    from bigdl.util.common import Sample
+    data = check_type_and_convert(data, allow_list=True, allow_tuple=False)
+    features = data["x"]
+    labels = data["y"]
+    length = features[0].shape[0]
+
+    for i in range(length):
+        fs = [feat[i] for feat in features]
+        ls = [l[i] for l in labels]
+        yield Sample.from_ndarray(np.array(fs), np.array(ls))
+
+
 def read_pd_hdfs_file_list(iterator, file_type, **kwargs):
     import pyarrow as pa
     fs = pa.hdfs.connect()
