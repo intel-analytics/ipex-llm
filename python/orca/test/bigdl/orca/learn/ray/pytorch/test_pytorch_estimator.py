@@ -30,9 +30,9 @@ from tempfile import TemporaryDirectory
 class TestPyTorchTrainer(TestCase):
     def test_train(self):
         estimator = Estimator.from_torch(
-            model_creator=model_creator,
-            optimizer_creator=optimizer_creator,
-            loss_creator=nn.MSELoss,
+            model=model_creator,
+            optimizer=optimizer_creator,
+            loss=nn.MSELoss,
             scheduler_creator=scheduler_creator,
             config={
                 "lr": 1e-2,  # used in optimizer_creator
@@ -54,9 +54,9 @@ class TestPyTorchTrainer(TestCase):
 
     def test_save_and_restore(self):
         estimator1 = Estimator.from_torch(
-            model_creator=model_creator,
-            optimizer_creator=optimizer_creator,
-            loss_creator=nn.MSELoss,
+            model=model_creator,
+            optimizer=optimizer_creator,
+            loss=nn.MSELoss,
             scheduler_creator=scheduler_creator,
             config={
                 "lr": 1e-2,  # used in optimizer_creator
@@ -73,9 +73,9 @@ class TestPyTorchTrainer(TestCase):
             estimator1.shutdown()
 
             estimator2 = Estimator.from_torch(
-                model_creator=model_creator,
-                optimizer_creator=optimizer_creator,
-                loss_creator=nn.MSELoss,
+                model=model_creator,
+                optimizer=optimizer_creator,
+                loss=nn.MSELoss,
                 scheduler_creator=scheduler_creator,
                 config={
                     "lr": 1e-2,  # used in optimizer_creator
