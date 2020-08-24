@@ -77,6 +77,7 @@ class TestEstimatorForSparkDataLoader(TestCase):
         )
         estimator.fit(data=train_loader, epochs=2, validation_data=val_loader,
                       validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
+        estimator.evaluate(data=val_loader, validation_methods=[Accuracy()])
 
 
 if __name__ == "__main__":
