@@ -189,7 +189,7 @@ class TFRunner:
         return stats
 
     def validate(self, data_creator, verbose=1, sample_weight=None,
-                 steps=None, callbacks=None, return_dict=False):
+                 steps=None, callbacks=None):
         """Evaluates the model on the validation data set."""
 
         dataset = data_creator(self.config)
@@ -208,7 +208,6 @@ class TFRunner:
             sample_weight=sample_weight,
             steps=steps,
             callbacks=callbacks,
-            return_dict=return_dict
         )
         results = self.model.evaluate(dataset, **params)
         if results is None:
