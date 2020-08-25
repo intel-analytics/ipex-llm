@@ -438,6 +438,7 @@ class TestEstimatorForKeras(TestCase):
         data_shard = data_shard.transform_shard(transform)
         predictions = est.predict(data_shard).collect()
         assert predictions[0]['prediction'].shape[1] == 2
+        shutil.rmtree(temp)
 
 
 if __name__ == "__main__":
