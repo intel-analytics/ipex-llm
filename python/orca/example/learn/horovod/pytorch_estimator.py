@@ -77,12 +77,13 @@ def validation_data_creator(config):
     return validation_loader
 
 
-def train_example():
+def train_example(workers_per_node):
     estimator = Estimator.from_torch(
         model=model_creator,
         optimizer=optimizer_creator,
         loss=nn.MSELoss,
         scheduler_creator=scheduler_creator,
+        workers_per_node=workers_per_node,
         config={
             "lr": 1e-2,  # used in optimizer_creator
             "hidden_size": 1,  # used in model_creator
@@ -96,7 +97,7 @@ def train_example():
     print("validation stats: {}".format(val_stats))
 
     # retrieve the model
-    model = estimator.estimator.get_model()
+    model = estimator.get_model()
     print("trained weight: % .2f, bias: % .2f" % (
         model.weight.item(), model.bias.item()))
 
@@ -128,6 +129,10 @@ if __name__ == "__main__":
     parser.add_argument("--object_store_memory", type=str, default="4g",
                         help="The memory to store data on local."
                              "You can change it depending on your own cluster setting.")
+    parser.add_argument("--workers_per_node", type=int, default=1,
+                        help="The number of workers to run on each node")
+    parser.add_argument("--local_cores", type=int, default=4,
+                        help="The number of cores while running on local mode")
 
     args = parser.parse_args()
     if args.hadoop_conf:
@@ -145,9 +150,9 @@ if __name__ == "__main__":
             object_store_memory=args.object_store_memory)
         ray_ctx.init()
     else:
-        sc = init_spark_on_local()
+        sc = init_spark_on_local(cores=args.local_cores)
         ray_ctx = RayContext(
             sc=sc,
             object_store_memory=args.object_store_memory)
         ray_ctx.init()
-    train_example()
+    train_example(workers_per_node=args.workers_per_node)
