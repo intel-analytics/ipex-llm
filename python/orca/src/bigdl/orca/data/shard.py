@@ -28,7 +28,7 @@ class XShards(object):
     """
     def transform_shard(self, func, *args):
         """
-        Transform each shard in the XShards using func
+        Transform each shard in the XShards using specified function.
         :param func: pre-processing function
         :param args: arguments for the pre-processing function
         :return: DataShard
@@ -55,7 +55,7 @@ class XShards(object):
         Load XShards from pickle files.
         :param path: The pickle file path/directory
         :param minPartitions: The minimum partitions for the XShards
-        :return: SparkXShards
+        :return: SparkXShards object
         """
         sc = init_nncontext()
         return SparkXShards(sc.pickleFile(path, minPartitions))
@@ -189,6 +189,9 @@ class RayPartition(object):
 
 
 class SparkXShards(XShards):
+    """
+    A collection of data which can be pre-processed in parallel on Spark
+    """
     def __init__(self, rdd, transient=False):
         self.rdd = rdd
         self.user_cached = False
@@ -202,19 +205,37 @@ class SparkXShards(XShards):
         self.type = {}
 
     def transform_shard(self, func, *args):
+        """
+        Return a new SparkXShards by applying a function to each shard of this SparkXShards
+        :param func: python function to process data. The first argument is the data shard.
+        :param args: other arguments in this function.
+        :return: a new SparkXShards.
+        """
         transformed_shard = SparkXShards(self.rdd.map(lambda data: func(data, *args)))
         self._uncache()
         return transformed_shard
 
     def collect(self):
+        """
+        Returns a list that contains all of the elements in this SparkXShards
+        :return: a list of data elements.
+        """
         return self.rdd.collect()
 
     def cache(self):
+        """
+        Persist this SparkXShards in memory
+        :return:
+        """
         self.user_cached = True
         self.rdd.cache()
         return self
 
     def uncache(self):
+        """
+        Make this SparkXShards as non-persistent, and remove all blocks for it from memory
+        :return:
+        """
         self.user_cached = False
         if self.is_cached():
             try:
@@ -235,14 +256,31 @@ class SparkXShards(XShards):
         return self
 
     def num_partitions(self):
+        """
+        Get number of partitions for this SparkXShards.
+        :return: number of partitions.
+        """
         return self.rdd.getNumPartitions()
 
     def repartition(self, num_partitions):
+        """
+        Return a new SparkXShards that has exactly num_partitions partitions.
+        :param num_partitions: target number of partitions
+        :return: a new SparkXshards object.
+        """
         repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
         self._uncache()
         return repartitioned_shard
 
     def partition_by(self, cols, num_partitions=None):
+        """
+        Return a new SparkXShards partitioned using the specified columns.
+        This is only applicable for SparkXShards of Pandas DataFrame.
+        :param cols: specified columns to partition by.
+        :param num_partitions: target number of partitions. If not specified,
+        the new SparkXShards would keep the current partition number.
+        :return: a new SparkXShards.
+        """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
             schema = self._get_schema()
@@ -279,6 +317,11 @@ class SparkXShards(XShards):
                             " of Pandas DataFrame")
 
     def unique(self):
+        """
+        Return a unique list of elements of this SparkXShards.
+        This is only applicable for SparkXShards of Pandas Series.
+        :return: a unique list of elements of this SparkXShards.
+        """
         if self._get_class_name() == 'pandas.core.series.Series':
             import pandas as pd
             rdd = self.rdd.map(lambda s: s.unique())
@@ -322,6 +365,12 @@ class SparkXShards(XShards):
             .reduce(lambda l1, l2: l1 + l2)
 
     def save_pickle(self, path, batchSize=10):
+        """
+        Save this SparkXShards as a SequenceFile of serialized objects.
+        The serializer used is pyspark.serializers.PickleSerializer, default batch size is 10.
+        :param path: target path.
+        :param batchSize: batch size for each sequence file chunk.
+        """
         self.rdd.saveAsPickleFile(path, batchSize)
         return self
 
@@ -341,6 +390,10 @@ class SparkXShards(XShards):
 
     # Tested on pyarrow 0.17.0; 0.16.0 would get errors.
     def to_ray(self):
+        """
+        Put data of this SparkXShards to Ray cluster object store.
+        :return: a new RayXShards which contains data of this SparkXShards.
+        """
         from zoo.ray import RayContext
         ray_ctx = RayContext.get()
         object_store_address = ray_ctx.address_info["object_store_address"]
