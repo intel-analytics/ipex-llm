@@ -42,12 +42,18 @@ class PyTorchTrainer(object):
 
     def train(self, nb_epoch=1):
         """Trains a PyTorch model for several epochs."""
+        stats_list = list()
         for i in range(nb_epoch):
             stats = ray.get(self.trainer.train.remote())
-        return stats
+            stats_list.append(stats)
+        return stats_list
 
     def validate(self, num_steps=None, profile=False, reduce_results=True, info=None):
         return ray.get(self.trainer.validate.remote(num_steps, profile, reduce_results, info))
 
+    def get_model(self):
+        """Returns the learned model(s)."""
+        return ray.get(self.trainer.get_model.remote())
+
     def shutdown(self, force=False):
-        self.trainer.shutdown(force)
+        ray.get(self.trainer.shutdown.remote(force))

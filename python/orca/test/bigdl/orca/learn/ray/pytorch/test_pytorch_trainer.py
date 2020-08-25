@@ -71,6 +71,8 @@ class TestPyTorchTrainer(TestCase):
                                          "batch_size": 128})
         stats = trainer.train(nb_epoch=2)
         print(stats)
+        assert trainer.get_model()
+        trainer.shutdown()
 
 
 if __name__ == "__main__":
