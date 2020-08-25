@@ -17,6 +17,7 @@
 import os.path
 import pytest
 from unittest import TestCase
+import shutil
 
 import zoo.orca.data
 import zoo.orca.data.pandas
@@ -164,6 +165,24 @@ class TestSparkBackend(TestCase):
         data = data_shard.collect()
         df4 = data[0]
         assert df4.value.dtype == "float64"
+
+    def test_read_parquet(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        sc = init_nncontext()
+        from pyspark.sql import SQLContext
+        from pyspark.sql.functions import col
+        sqlContext = SQLContext.getOrCreate(sc)
+        spark = sqlContext.sparkSession
+        df = spark.read.csv(file_path, header=True)
+        df = df.withColumn('sale_price', col('sale_price').cast('int'))
+        temp = tempfile.mkdtemp()
+        df.write.parquet(os.path.join(temp, "test_parquet"))
+        data_shard2 = zoo.orca.data.pandas.read_parquet(os.path.join(temp, "test_parquet"))
+        data = data_shard2.collect()
+        assert len(data) == 2, "number of shard should be 2"
+        df = data[0]
+        assert "location" in df.columns
+        shutil.rmtree(temp)
 
 
 if __name__ == "__main__":
