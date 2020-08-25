@@ -16,3 +16,4 @@
 
 from zoo.orca.data.pandas.preprocessing import read_csv
 from zoo.orca.data.pandas.preprocessing import read_json
+from zoo.orca.data.pandas.preprocessing import read_parquet
