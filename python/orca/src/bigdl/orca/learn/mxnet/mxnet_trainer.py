@@ -69,6 +69,8 @@ class Estimator(object):
         self.eval_metrics_creator = eval_metrics_creator
         self.num_workers = num_workers
         self.num_servers = num_servers if num_servers else self.num_workers
+        from zoo.ray import RayContext
+        RayContext.get()
 
         # Generate actor class
         # Add a dummy custom resource: _mxnet_worker and _mxnet_server to diff worker from server
