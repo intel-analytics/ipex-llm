@@ -4,6 +4,8 @@
 
 **Meetup:**
 
+* Privacy Preserving Machine Learning with Analytics Zoo and Intel SGX, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/272571536/), August 21 2020 ([Video](https://www.slidestalk.com/w/259), [Slide1](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0821%20Privacy%20Preserving%20Machine%20Learning%20with%20Analytics%20Zoo%20and%20Intel%20SGX%20I.pdf), [Slide2](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0821%20Privacy%20Preserving%20Machine%20Learning%20with%20Analytics%20Zoo%20and%20Intel%20SGX%20II.pdf))
+
 * TFPark: Distributed TensorFlow in Production on Apache Spark, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/271981187/), July 23 2020 ([Video](https://tianchi.aliyun.com/course/video?spm=5176.12282027.0.0.5d90379cCaWPuw&liveId=41189), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0723%20Analytics-Zoo%20TensorFlow%20in%20production%20on%20Spark.pdf))
 
 * Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, [Shanghai Spark+AI Online Meetup](https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/271669740/), July 10 2020 ([Video](https://www.slidestalk.com/AnalyticsZoo/RayOnSpark_2020071082955?video), [Slide](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/0710%20RayOnSpark.pdf))
