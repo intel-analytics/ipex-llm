@@ -11,7 +11,7 @@
     <description>simple example of ncf recommender inference</description>
     <properties>
         <spark.version>2.4.3</spark.version>
-        <bigdl.version>0.10.0</bigdl.version>
+        <bigdl.version>0.11.1</bigdl.version>
         <zoo.version>0.9.0-SNAPSHOT</zoo.version>
     </properties>
 
