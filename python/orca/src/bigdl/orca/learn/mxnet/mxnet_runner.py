@@ -20,7 +20,6 @@ import logging
 import subprocess
 import ray.services
 import mxnet as mx
-import numpy as np
 from mxnet import gluon
 from zoo.ray.utils import to_list
 
@@ -39,7 +38,7 @@ class MXNetRunner(object):
         self.model_creator = model_creator
         self.loss_creator = loss_creator
         self.validation_metrics_creator = validation_metrics_creator
-        self.eval_metircs_creator = eval_metrics_creator
+        self.eval_metrics_creator = eval_metrics_creator
         self.is_worker = False
         env["DMLC_NODE_HOST"] = self.get_node_ip()
         if env["DMLC_ROLE"] == "worker":
@@ -48,16 +47,21 @@ class MXNetRunner(object):
         if self.is_worker:
             os.environ.update(env)
             self.kv = mx.kv.create("dist_sync")
-            # Set seed so that the model on each worker is initialized with the same weights
+            # Set seed so that the model on each worker is initialized with the same weights.
             if "seed" in self.config:
                 mx.random.seed(self.config["seed"])
 
             self.model = self.model_creator(self.config)
             self.loss = self.loss_creator(self.config) if self.loss_creator else None
-            self.eval_metrics = self.eval_metircs_creator(self.config) \
-                if self.eval_metircs_creator else None
+            self.eval_metrics = self.eval_metrics_creator(self.config) \
+                if self.eval_metrics_creator else None
+            from mxnet.metric import CompositeEvalMetric
+            if isinstance(self.eval_metrics, list):
+                self.eval_metrics = CompositeEvalMetric(self.eval_metrics)
             self.val_metrics = self.validation_metrics_creator(self.config) \
                 if self.validation_metrics_creator else None
+            if isinstance(self.val_metrics, list):
+                self.val_metrics = CompositeEvalMetric(self.val_metrics)
             # For BaseModule, use symbolic API. Otherwise, use imperative API.
             # TODO: change Gluon Trainer to Estimator API?
             if not isinstance(self.model, mx.module.BaseModule):
@@ -72,7 +76,7 @@ class MXNetRunner(object):
             # TODO: Need to kill this process manually?
             modified_env = os.environ.copy()
             modified_env.update(env)
-            # For servers, just import mxnet and no need to do anything else
+            # For servers, just import mxnet and no need to do anything else.
             subprocess.Popen("python -c 'import mxnet'", shell=True, env=modified_env)
 
     def train(self, train_data, epochs=1, batch_size=32,
@@ -106,38 +110,44 @@ class MXNetRunner(object):
                 val_data_iter = validation_data(config, self.kv) if validation_data else None
             start_time = time.time()
             if self.trainer:  # Imperative API
+                def cpu_context(target_data):
+                    if isinstance(target_data, list):
+                        return [cpu_context(d) for d in target_data]
+                    else:
+                        return target_data.as_in_context(mx.cpu())
+
                 for epoch in range(epochs):
-                    train_data_iter.reset()
+                    # DataLoader doesn't need to be reset.
+                    if isinstance(train_data_iter, mx.io.DataIter):
+                        train_data_iter.reset()
                     if self.eval_metrics:
-                        self.eval_metrics.reset()  # metrics will accumulate for one batch
+                        self.eval_metrics.reset()  # metrics will accumulate for one batch.
                     batch_start_time = time.time()
                     epoch_start_time = time.time()
                     for i, batch in enumerate(train_data_iter):
-                        data = gluon.utils.split_and_load(
-                            batch.data[0].astype("float32"), ctx_list=[mx.cpu()], batch_axis=0)
-                        label = gluon.utils.split_and_load(
-                            batch.label[0].astype("float32"), ctx_list=[mx.cpu()], batch_axis=0)
-                        outputs = []
-                        Ls = []
+                        data = cpu_context(batch.data)
+                        label = cpu_context(batch.label)
+                        if not isinstance(data, list):
+                            data = [data]
+                        if not isinstance(label, list):
+                            label = [label]
                         from mxnet import autograd as ag
                         with ag.record():
-                            for x, y in zip(data, label):
-                                z = self.model(x)  # forward
-                                L = self.loss(z, y)
-                                # store the loss and do backward on a batch for better speed
-                                Ls.append(L)
-                                outputs.append(z)
+                            output = self.model(*data)  # forward
+                            if not isinstance(output, list):
+                                output = [output]
+                            Ls = self.loss(*output, *label)
                             ag.backward(Ls)
-                        self.trainer.step(batch.data[0].shape[0])
+                        self.trainer.step(batch_size)
                         if self.eval_metrics:
-                            self.eval_metrics.update(label, outputs)
+                            self.eval_metrics.update(label, output)
                         if not (i + 1) % self.config["log_interval"]:
                             # This would be logged on driver for each worker process.
                             iteration_log = \
                                 "Epoch[%d] Batch[%d]  Speed: %f samples/sec  %s=%f" \
                                 % (epoch, i,
                                    batch_size / (time.time() - batch_start_time),
-                                   "loss", Ls[0].asnumpy().mean())
+                                   "loss", Ls.asnumpy().mean())
                             if self.eval_metrics:
                                 names, accs = self.eval_metrics.get()
                                 names, accs = to_list(names), to_list(accs)
@@ -145,10 +155,10 @@ class MXNetRunner(object):
                                     iteration_log += "  %s=%f" % (name, acc)
                             self.logger.info(iteration_log)
                         batch_start_time = time.time()
-                    # Epoch time log
+                    # Epoch time log.
                     self.logger.info("[Epoch %d] time cost: %f" %
                                      (epoch, time.time() - epoch_start_time))
-                    # Epoch metrics log on train data
+                    # Epoch metrics log on train data.
                     if self.eval_metrics:
                         epoch_train_log = "[Epoch %d] training: " % epoch
                         names, accs = self.eval_metrics.get()
@@ -156,19 +166,22 @@ class MXNetRunner(object):
                         for name, acc in zip(names, accs):
                             epoch_train_log += "%s=%f  " % (name, acc)
                         self.logger.info(epoch_train_log)
-                    # Epoch metrics log on validation data if any:
+                    # Epoch metrics log on validation data if any.
                     if val_data_iter:
+                        if isinstance(val_data_iter, mx.io.DataIter):
+                            val_data_iter.reset()
                         self.val_metrics.reset()
-                        val_data_iter.reset()
                         for batch in val_data_iter:
-                            data = gluon.utils.split_and_load(
-                                batch.data[0].astype("float32", copy=False),
-                                ctx_list=[mx.cpu()], batch_axis=0)
-                            label = gluon.utils.split_and_load(
-                                batch.label[0].astype("float32", copy=False),
-                                ctx_list=[mx.cpu()], batch_axis=0)
-                            outputs = [self.model(X) for X in data]
-                            self.val_metrics.update(label, outputs)
+                            data = cpu_context(batch.data)
+                            label = cpu_context(batch.label)
+                            if not isinstance(data, list):
+                                data = [data]
+                            if not isinstance(label, list):
+                                label = [label]
+                            output = self.model(*data)
+                            if not isinstance(output, list):
+                                output = [output]
+                            self.val_metrics.update(label, output)
                         epoch_val_log = "[Epoch %d] validation: " % epoch
                         names, accs = self.val_metrics.get()
                         names, accs = to_list(names), to_list(accs)
@@ -185,9 +198,9 @@ class MXNetRunner(object):
                 # TODO: seems no history (i.e. validation accuracy) returned by fit?
                 if "init" not in self.config:
                     from mxnet.initializer import Uniform
-                    self.config["init"] = Uniform(0.01)  # This is the default value for MXNet
+                    self.config["init"] = Uniform(0.01)  # This is the default value for MXNet.
                 if self.eval_metrics is None:
-                    self.eval_metrics = 'acc'
+                    self.eval_metrics = 'acc'  # This is the default value for MXNet.
                 self.model.fit(train_data=train_data_iter,
                                num_epoch=epochs,
                                initializer=self.config["init"],
