@@ -55,3 +55,21 @@ def get_node_ip():
     finally:
         s.close()
     return node_ip_address
+
+
+def detect_python_location():
+    import subprocess
+    pro = subprocess.Popen(
+        "command -v python",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    out, err = pro.communicate()
+    out = out.decode("utf-8")
+    err = err.decode("utf-8")
+    errorcode = pro.returncode
+    if 0 != errorcode:
+        raise Exception(err +
+                        "Cannot detect current python location."
+                        "Please set it manually by python_location")
+    return out.strip()
