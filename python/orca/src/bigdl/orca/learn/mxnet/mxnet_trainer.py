@@ -134,7 +134,7 @@ class Estimator(object):
 
         :param epochs: The number of epochs to train the MXNet model. Default is 1.
 
-        :param batch_size: The number of samples per batch. Default is 32.
+        :param batch_size: The number of samples per batch for each worker. Default is 32.
 
         :param validation_data: An instance of SparkXShards or a function that takes config and
         kv as arguments and returns an MXNet DataIter/DataLoader for validation.
