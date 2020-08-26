@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.nn.mkldnn.MklDnnModule
 import com.intel.analytics.bigdl.nn.{Container, Graph, Module, StaticGraph, Sequential => TSequential}
-import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
+import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, CacheV1}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
@@ -1007,14 +1007,14 @@ private[zoo] object InternalOptimizerUtil {
 
   def initThreadModels[T: ClassTag](
       args: Object*)(
-      implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer.Cache[T]], ModelBroadcast[T]) = {
+      implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer.CacheV1[T]], ModelBroadcast[T]) = {
     KerasUtils.invokeMethodWithEv(DistriOptimizer,
       "com$intel$analytics$bigdl$optim$DistriOptimizer$$initThreadModels",
-      args: _*).asInstanceOf[(RDD[DistriOptimizer.Cache[T]], ModelBroadcast[T])]
+      args: _*).asInstanceOf[(RDD[DistriOptimizer.CacheV1[T]], ModelBroadcast[T])]
   }
 
   def clearState[T: ClassTag](
-        models: RDD[DistriOptimizer.Cache[T]]): Unit = {
+        models: RDD[DistriOptimizer.CacheV1[T]]): Unit = {
     KerasUtils.invokeMethod(DistriOptimizer,
       "clearState", models, implicitly[reflect.ClassTag[T]])
   }
@@ -1034,7 +1034,7 @@ private[zoo] object InternalOptimizerUtil {
 
   // TODO: Delete this when switch to Bigdl 0.11.0.
   def getTorchModel[T: ClassTag](
-      models: RDD[Cache[T]],
+      models: RDD[CacheV1[T]],
       parameters: AllReduceParameter[T],
       trainingModel: TorchModel)(implicit ev: TensorNumeric[T]): TorchModel = {
     val partitionNum = models.partitions.length
@@ -1113,7 +1113,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
   import InternalDistriOptimizer._
   protected var checkpointDir: Option[String] = None
   protected var numSlice: Int = 1
-  protected var cachedModels: RDD[DistriOptimizer.Cache[T]] = null
+  protected var cachedModels: RDD[DistriOptimizer.CacheV1[T]] = null
   protected var modelBroadcast: ModelBroadcast[T] = null
   protected var parameterSplits: Map[String, (Int, Int)] = null
   protected var allReduceParameter: AllReduceParameter[T] = null
@@ -1457,7 +1457,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
     val models = if (null != cachedModels) {
       val bcVMethods = cachedModels.sparkContext.broadcast(validationMethod)
       cachedModels.map{cache =>
-        Cache[T](
+        CacheV1[T](
           cache.localModels,
           cache.modelWeights,
           cache.modelGradients,
@@ -1474,7 +1474,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
       val bcVMethods = validateRDD.sparkContext.broadcast(validationMethod)
       val bcModel = ModelBroadcast[T]().broadcast(sc, _model)
       validateRDD.mapPartitions{_ =>
-        Iterator.single(Cache[T](
+        Iterator.single(CacheV1[T](
           Array.tabulate(_subModelNumber)(_ => bcModel.value()),
           null,
           null,
@@ -1513,7 +1513,7 @@ object InternalDistriOptimizer {
 
   protected def validate[T](validationFeatureSet: FeatureSet[MiniBatch[T]],
                             validationMethods: Array[ValidationMethod[T]],
-                            models: RDD[Cache[T]],
+                            models: RDD[CacheV1[T]],
                             step: Int,
                             validationSummary: Option[ValidationSummary]
                            ): Map[ValidationMethod[T], ValidationResult] = {
@@ -1590,7 +1590,7 @@ object InternalDistriOptimizer {
   }
 
   def unpersistCachedModel[T: ClassTag](
-      models: RDD[DistriOptimizer.Cache[T]] ): Unit = {
+      models: RDD[DistriOptimizer.CacheV1[T]] ): Unit = {
     models.mapPartitions { iter =>
       iter.foreach { arrayModels =>
         arrayModels.localModels.foreach(_.release())
@@ -1600,7 +1600,7 @@ object InternalDistriOptimizer {
     models.unpersist()
   }
 
-  def getModel[T: ClassTag](models: RDD[Cache[T]],
+  def getModel[T: ClassTag](models: RDD[CacheV1[T]],
                             parameters: AllReduceParameter[T],
                             trainingModel: Module[T])(implicit ev: TensorNumeric[T])
   : Module[T] = {
