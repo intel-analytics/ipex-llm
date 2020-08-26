@@ -57,3 +57,7 @@ If you would like to open Analytics Zoo Notebook in a GitHub repo directly, the 
   to [https://colab.research.google.com/github/intel-analytics/zoo-tutorials/blob/master/keras/2.1-a-first-look-at-a-neural-network.ipynb](https://colab.research.google.com/github/intel-analytics/zoo-tutorials/blob/master/keras/2.1-a-first-look-at-a-neural-network.ipynb).
 
 Then, prepare the environment of Java8 and Analytics Zoo as described [above](#prepare-environment) at the beginning of the colab notebook. If you would like to save the changes, you can make a copy to drive and run it within the instructions.
+
+**Note**
+
+As Colab engine provides your application with some built-in Python libraries, you should check if the library versions are compatible with your application. You may refer this [document](https://analytics-zoo.github.io/master/#PythonUserGuide/python-lib-version) to specify the python library version that Analytics Zoo supports. 

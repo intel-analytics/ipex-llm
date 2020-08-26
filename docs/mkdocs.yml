@@ -22,6 +22,7 @@ pages:
     - Install: PythonUserGuide/install.md
     - Run: PythonUserGuide/run.md
     - Develop: DeveloperGuide/python.md
+    - Library version: PythonUserGuide/python-lib-version.md
     - FAQ: PythonUserGuide/python-faq.md
   - Scala: 
     - Install: ScalaUserGuide/install.md
