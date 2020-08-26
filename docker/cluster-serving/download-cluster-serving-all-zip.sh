@@ -17,7 +17,7 @@
 #
 if [ -z "${ANALYTICS_ZOO_VERSION}" ]; then
   export ANALYTICS_ZOO_VERSION=0.9.0-SNAPSHOT
-  export BIGDL_VERSION=0.10.0
+  export BIGDL_VERSION=0.11.1
   export SPARK_VERSION=2.4.3
   echo "You did not specify ANALYTICS_ZOO_VERSION, will download "$ANALYTICS_ZOO_VERSION
 fi

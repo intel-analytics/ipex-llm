@@ -5,7 +5,7 @@ MAINTAINER The Analytics Zoo Authors https://github.com/intel-analytics/analytic
 WORKDIR /opt/work
 
 ARG SPARK_VERSION=2.4.3 
-ARG BIGDL_VERSION=0.10.0
+ARG BIGDL_VERSION=0.11.1
 ARG ANALYTICS_ZOO_VERSION=0.9.0-SNAPSHOT
 ARG FLINK_VERSION=1.10.0
 

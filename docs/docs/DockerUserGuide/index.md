@@ -249,7 +249,7 @@ sudo docker build \
 ```
 sudo docker build \
     --build-arg ANALYTICS_ZOO_VERSION=0.7.0 \
-    --build-arg BIGDL_VERSION=0.10.0 \
+    --build-arg BIGDL_VERSION=0.11.1 \
     --build-arg SPARK_VERSION=2.4.3 \
     --rm -t intelanalytics/analytics-zoo:0.7.0-bigdl_0.10.0-spark_2.4.3 .
 ```
