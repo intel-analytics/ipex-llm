@@ -16,16 +16,22 @@
 
 import ray
 from ray.util.sgd.torch import TorchTrainer
+from zoo.ray import RayContext
 
 
 class PyTorchTrainer(object):
     def __init__(self, model_creator, data_creator, optimizer_creator,
                  loss_creator=None, scheduler_creator=None, training_operator_cls=None,
-                 initialization_hook=None, config=None, num_workers=1,
+                 initialization_hook=None, config=None, num_workers=None,
                  use_fp16=False, use_tqdm=False, scheduler_step_freq="batch"):
         # Lift TorchTrainer to an Actor so that its local worker would be
         # created on the cluster as well.
         RemoteTrainer = ray.remote(TorchTrainer)
+
+        # check whether there has been an active RayContext and get it.
+        ray_ctx = RayContext.get()
+        if not num_workers:
+            num_workers = ray_ctx.num_ray_nodes
         self.trainer = RemoteTrainer.remote(model_creator=model_creator,
                                             data_creator=data_creator,
                                             optimizer_creator=optimizer_creator,
