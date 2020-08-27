@@ -19,12 +19,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
-from zoo.pipeline.api.torch import TorchModel, TorchLoss
 from zoo.orca.learn.pytorch import Estimator
-from bigdl.optim.optimizer import SGD, Adam
+from bigdl.optim.optimizer import Adam
 from zoo.common.nncontext import *
-from zoo.feature.common import FeatureSet
-from zoo.pipeline.api.keras.metrics import Accuracy
+from zoo.orca.learn.metrics import Accuracy
+from zoo.orca.learn.trigger import EveryEpoch
 
 
 class LeNet(nn.Module):
@@ -109,7 +108,6 @@ def main():
     adam = Adam(args.lr)
     zoo_estimator = Estimator.from_torch(model=model, optimizer=adam, loss=criterion,
                                          backend="bigdl")
-    from bigdl.optim.optimizer import EveryEpoch
     zoo_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
                       validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
     zoo_estimator.evaluate(data=test_loader, validation_methods=[Accuracy()])
