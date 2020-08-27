@@ -48,11 +48,11 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libsm6
 
 #java
-RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \
-    gunzip jdk-8u241-linux-x64.tar.gz && \
-    tar -xf jdk-8u241-linux-x64.tar -C /opt && \
-    rm jdk-8u241-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_241 /opt/jdk
+RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u261-linux-x64.tar.gz  && \
+    gunzip jdk-8u261-linux-x64.tar.gz && \
+    tar -xf jdk-8u261-linux-x64.tar -C /opt && \
+    rm jdk-8u261-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_261 /opt/jdk
 
 #python
 RUN apt-get install -y python3-minimal && \
