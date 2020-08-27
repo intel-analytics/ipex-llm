@@ -25,9 +25,10 @@ import numpy as np
 
 from zoo.orca.data.pandas import read_csv
 from zoo.orca.learn.pytorch import Estimator
-from zoo.pipeline.api.keras.metrics import Accuracy
 from zoo.common.nncontext import *
-from bigdl.optim.optimizer import SGD, EveryEpoch, Adam
+from bigdl.optim.optimizer import Adam
+from zoo.orca.learn.metrics import *
+from zoo.orca.learn.trigger import EveryEpoch
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 

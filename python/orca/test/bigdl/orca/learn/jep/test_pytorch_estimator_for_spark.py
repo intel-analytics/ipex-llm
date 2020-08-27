@@ -21,9 +21,10 @@ import torch.nn.functional as F
 
 from zoo.orca.data.pandas import read_csv
 from zoo.orca.learn.pytorch import Estimator
-from zoo.pipeline.api.keras.metrics import Accuracy
+from zoo.orca.learn.metrics import Accuracy
+from zoo.orca.learn.trigger import EveryEpoch
 from zoo.common.nncontext import *
-from bigdl.optim.optimizer import SGD, EveryEpoch, Adam
+from bigdl.optim.optimizer import SGD
 from zoo.orca import OrcaContext
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
