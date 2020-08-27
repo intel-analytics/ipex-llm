@@ -1,0 +1,24 @@
+#!/bin/bash
+
+chmod a+x ./*
+fuser -k 6006/tcp
+rm cluster-serving.log
+rm -rf TensorboardEventLogs
+rm running &&
+echo "old logs removed"
+
+export ANALYTICS_ZOO_HOME=$(pwd)/../../../../..
+export PYTHONPATH=$PYTHONPATH:$ANALYTICS_ZOO_HOME/pyzoo
+export BPATH=$ANALYTICS_ZOO_HOME/scripts/cluster-serving
+
+python3 $BPATH/cluster-serving-init &&
+echo "initialized env" &&
+$BPATH/cluster-serving-start &
+sleep 20
+
+python3 ./cluster-serving-enqueue-test
+
+sleep 180
+$BPATH/cluster-serving-stop
+
+echo "Benchmark test end, please check at cluster-serving.log"

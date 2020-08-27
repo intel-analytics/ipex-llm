@@ -5,7 +5,9 @@ MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytic
 ARG ANALYTICS_ZOO_VERSION=0.9.0-SNAPSHOT
 ARG BIGDL_VERSION=0.11.1
 ARG SPARK_VERSION=2.4.3
+ARG FLINK_VERSION=1.10.0
 
+ENV FLINK_HOME                          /opt/flink-${FLINK_VERSION}
 ENV ANALYTICS_ZOO_VERSION               ${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
@@ -32,7 +34,8 @@ ENV HADOOP_CONF_DIR                     /opt/hadoop-conf
 ENV ANALYTICS_ZOO_HOME                  /opt/analytics-zoo-${ANALYTICS_ZOO_VERSION}
 ENV JAVA_HOME                           /opt/jdk
 ENV REDIS_HOME                          /opt/redis-5.0.5
-ENV PYTHONPATH                          ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip:/opt/models/research/slim
+ENV CS_HOME                             /opt/work/cluster-serving
+ENV PYTHONPATH                          ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip:${CS_HOME}/serving-python.zip:/opt/models/research/slim
 ENV PATH                                ${ANALYTICS_ZOO_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update --fix-missing && \
@@ -45,11 +48,11 @@ RUN apt-get update --fix-missing && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
 #java
-RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \
-    gunzip jdk-8u241-linux-x64.tar.gz && \
-    tar -xf jdk-8u241-linux-x64.tar -C /opt && \
-    rm jdk-8u241-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_241 /opt/jdk
+RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u261-linux-x64.tar.gz  && \
+    gunzip jdk-8u261-linux-x64.tar.gz && \
+    tar -xf jdk-8u261-linux-x64.tar -C /opt && \
+    rm jdk-8u261-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_261 /opt/jdk
 
 #spark
 RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
@@ -114,19 +117,32 @@ RUN /opt/download-analytics-zoo.sh && \
     rm -rf /opt/analytics-zoo-examples/python/zoo/examples
 
 #cluster-serving
-RUN mkdir -p /opt/cluster-serving && \
-    wget https://oss.sonatype.org/content/repositories/public/com/redislabs/spark-redis/2.4.0/spark-redis-2.4.0-jar-with-dependencies.jar && \
-    mv spark-redis-2.4.0-jar-with-dependencies.jar /opt/cluster-serving && \
-    mkdir -p /opt/cluster-serving/model && \
-    mkdir -p /opt/cluster-serving/test_image && \
-    unzip -p $ANALYTICS_ZOO_HOME/lib/*.zip zoo/serving/quick_start.py > /opt/cluster-serving/quick_start.py
-ADD https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/pyzoo/test/zoo/resources/serving_quick_start/cat1.jpeg /opt/cluster-serving/test_image 
-ADD https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/pyzoo/test/zoo/resources/serving_quick_start/dog1.jpeg /opt/cluster-serving/test_image
-ADD https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/pyzoo/test/zoo/resources/serving_quick_start/fish1.jpeg /opt/cluster-serving/test_image 
-ADD https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/tf-res50/frozen_inference_graph.pb /opt/cluster-serving/model/tf_res50/frozen_inference_graph.pb
-ADD https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/tf-res50/graph_meta.json /opt/cluster-serving/model/tf_res50/graph_meta.json
-RUN chmod a+x ${ANALYTICS_ZOO_HOME}/bin/cluster-serving/*
-RUN cd /opt/cluster-serving && cluster-serving-init && cd ..
+#flink
+RUN wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
+    tar xzf flink-*.tgz  -C /opt && \
+    rm flink-*.tgz
+
+
+ADD *.sh /opt/work/scripts/
+RUN chmod a+x /opt/work/scripts/*.*
+
+RUN /opt/work/scripts/download-cluster-serving-all-zip.sh
+RUN cd cluster-serving && \
+    ./cluster-serving-setup.sh
+
+ADD resources/ /opt/work/cluster-serving/resources/
+ADD *.py /opt/work/cluster-serving/
+ADD perf/ /opt/work/perf/
+ADD freeze_checkpoint.py /opt/work
+
+RUN chmod a+x /opt/work/cluster-serving/*
+
+
+ENV OMP_NUM_THREADS     all
+
+RUN sed -i "s/jobmanager\.heap\.size:.*/jobmanager\.heap\.size: 8g/g" $FLINK_HOME/conf/flink-conf.yaml && \
+    sed -i "s/taskmanager\.memory\.process\.size:.*/taskmanager\.memory\.process\.size: 8g/g" $FLINK_HOME/conf/flink-conf.yaml
+
 
 WORKDIR /opt/spark/work-dir
 
