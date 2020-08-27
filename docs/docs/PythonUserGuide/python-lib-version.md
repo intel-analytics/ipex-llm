@@ -1,6 +1,6 @@
 This page documents and describes Python library versions that Analytics Zoo supports. We have tested these libraries on Python 3.6 and Python 3.7.
 
-```
+```bash
 Name & version
 
 bayesian-optimization==1.1.0
