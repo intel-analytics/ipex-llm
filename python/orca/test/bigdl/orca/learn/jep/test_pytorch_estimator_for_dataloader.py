@@ -13,19 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 from unittest import TestCase
 
+import os
 import pytest
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import TensorDataset
-import numpy as np
 
-from zoo.orca.data.pandas import read_csv
+from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.pytorch import Estimator
-from zoo.common.nncontext import *
 from bigdl.optim.optimizer import Adam
 from zoo.orca.learn.metrics import *
 from zoo.orca.learn.trigger import EveryEpoch
@@ -39,13 +36,13 @@ class TestEstimatorForSparkDataLoader(TestCase):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        self.sc = init_spark_on_local(4)
+        self.sc = init_orca_context(cores=4)
 
     def tearDown(self):
         """ teardown any state that was previously setup with a setup_method
         call.
         """
-        self.sc.stop()
+        stop_orca_context()
 
     def test_bigdl_pytorch_estimator_dataloader(self):
         class SimpleModel(nn.Module):

@@ -15,17 +15,11 @@
 #
 import pytest
 
-sc = None
-ray_ctx = None
-
 
 @pytest.fixture(autouse=True, scope='package')
-def rayonspark_fixture():
-    from zoo import init_spark_on_local
-    from zoo.ray import RayContext
-    sc = init_spark_on_local(cores=8, spark_log_level="INFO")
-    ray_ctx = RayContext(sc=sc, object_store_memory="1g")
-    ray_ctx.init()
+def orca_context_fixture():
+    from zoo.orca import init_orca_context, stop_orca_context
+    init_orca_context(cores=8, init_ray_on_spark=True,
+                      object_store_memory="1g")
     yield
-    ray_ctx.stop()
-    sc.stop()
+    stop_orca_context()
