@@ -19,7 +19,6 @@ import subprocess
 import signal
 import atexit
 import sys
-import psutil
 
 from zoo.ray.utils import gen_shutdown_per_node, is_local
 
@@ -46,6 +45,7 @@ class ProcessInfo(object):
 
 
 def pids_from_gpid(gpid):
+    import psutil
     processes = psutil.process_iter()
     result = []
     for proc in processes:
@@ -124,7 +124,7 @@ class ProcessMonitor:
                 print(slave)
 
     def clean_fn(self):
-        if self.raycontext.stopped:
+        if not self.raycontext.initialized:
             return
         import ray
         ray.shutdown()
