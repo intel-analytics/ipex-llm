@@ -33,7 +33,7 @@ def accuracy(logits, labels):
 
 
 def main(max_epoch):
-    sc = init_orca_context(cluster_mode="local", cores=4, memory="2g")
+    sc = init_orca_context(cores=4, memory="2g")
 
     # get DataSet
     mnist_train = tfds.load(name="mnist", split="train")

@@ -38,23 +38,21 @@ For example, you can set --dir to `/tmp/data` if your structure is like this:
 ## Run example
 You can run this example on local mode and yarn client mode.
 
-- Run with Spark Local mode
-You can easily use the following commands to run this example:
-    ```bash
-    conda activate zoo
-    export PYTHONHOME=[conda install path]/envs/zoo # use command "conda env list" to find the path of PYTHONEHOME.
-    export ZOO_NUM_MKLTHREADS=4
-    python lenet_mnist.py
-    ```
+- Run with Spark Local mode:
+```bash
+conda activate zoo
+export PYTHONHOME=[conda install path]/envs/zoo # use command "conda env list" to find the path of PYTHONEHOME.
+export ZOO_NUM_MKLTHREADS=4
+python lenet_mnist.py
+```
 
-- Run with Yarn Client mode, upload data to hdfs first, export env `HADOOP_CONF_DIR` and `ZOO_CONDA_NAME`:
-    ```bash
-    conda activate zoo
-    export HADOOP_CONF_DIR=[path to your hadoop conf directory who has yarn-site.xml]
-    export ZOO_CONDA_NAME=zoo #conda environment name you just prepared above
-    export ZOO_NUM_MKLTHREADS=all
-    python lenet_mnist.py
-    ```
+- Run with Yarn Client mode:
+```bash
+conda activate zoo
+export HADOOP_CONF_DIR=[path to your hadoop conf directory which has yarn-site.xml]
+export ZOO_NUM_MKLTHREADS=all
+python lenet_mnist.py
+```
 
 In above commands
 * --dir: the path to mnist dataset

@@ -18,7 +18,7 @@ import sys
 from optparse import OptionParser
 
 import zoo.orca.data.pandas
-from zoo.common.nncontext import init_nncontext
+from zoo.orca import init_orca_context, stop_orca_context
 
 
 def process_feature(df, awake_begin=6, awake_end=23):
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args(sys.argv)
 
-    sc = init_nncontext()
+    sc = init_orca_context(cores="*", memory="4g")
 
     # read data
     file_path = options.file_path
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     trans_data_shard = data_shard.transform_shard(process_feature)
     data2 = trans_data_shard.collect()
 
-    sc.stop()
+    stop_orca_context()

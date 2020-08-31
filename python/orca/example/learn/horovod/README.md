@@ -24,11 +24,13 @@ HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod=
 pip install analytics-zoo[ray]
 ```
 
-## Running
+## Run on local after pip install
+```
+python simple_horovod_pytorch.py
+```
 
-After creating and activating the conda environment, you can run this example by:
-
-```bash
-python simple_horovod_pytorch.py --hadoop_conf $your_hadoop_conf_directory --conda_name $your_conda_env_name
-
+## Run on yarn cluster for yarn-client mode after pip install
+```
+export HADOOP_CONF_DIR=path to your hadoop conf directory
+python simple_horovod_pytorch.py --cluster_mode yarn-client 
 ```

@@ -13,15 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from __future__ import print_function
+import os
 import argparse
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
-from zoo.orca.learn.pytorch import Estimator
+
 from bigdl.optim.optimizer import Adam
-from zoo.common.nncontext import *
+from zoo.orca import init_orca_context, stop_orca_context
+from zoo.orca.learn.pytorch import Estimator
 from zoo.orca.learn.metrics import Accuracy
 from zoo.orca.learn.trigger import EveryEpoch
 
@@ -81,24 +85,15 @@ def main():
                        ])),
         batch_size=args.test_batch_size, shuffle=False)
 
-    # init on yarn when HADOOP_CONF_DIR and ZOO_CONDA_NAME is provided.
-    if os.environ.get('HADOOP_CONF_DIR') is None:
-        sc = init_spark_on_local(cores=1, conf={"spark.driver.memory": "20g"})
+    # Use yarn-client mode when HADOOP_CONF_DIR is detected in the environment variables.
+    if not os.environ.get('HADOOP_CONF_DIR'):
+        sc = init_orca_context(cores=1, memory="20g")
     else:
-        num_executors = 2
-        num_cores_per_executor = 4
-        hadoop_conf_dir = os.environ.get('HADOOP_CONF_DIR')
-        zoo_conda_name = os.environ.get('ZOO_CONDA_NAME')  # The name of the created conda-env
-        sc = init_spark_on_yarn(
-            hadoop_conf=hadoop_conf_dir,
-            conda_name=zoo_conda_name,
-            num_executors=num_executors,
-            executor_cores=num_cores_per_executor,
-            executor_memory="2g",
-            driver_memory="10g",
-            driver_cores=1,
+        sc = init_orca_context(
+            cluster_mode="yarn-client", cores=4, num_nodes=2, memory="2g",
+            driver_memory="10g", driver_cores=1,
             conf={"spark.rpc.message.maxSize": "1024",
-                  "spark.task.maxFailures":  "1",
+                  "spark.task.maxFailures": "1",
                   "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
 
     model = LeNet()
@@ -111,6 +106,7 @@ def main():
     zoo_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
                       validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
     zoo_estimator.evaluate(data=test_loader, validation_methods=[Accuracy()])
+    stop_orca_context()
 
 
 if __name__ == '__main__':
