@@ -22,7 +22,6 @@ import signal
 import warnings
 import multiprocessing
 
-from pyspark import BarrierTaskContext
 from zoo.ray.process import session_execute, ProcessMonitor
 from zoo.ray.utils import is_local
 from zoo.ray.utils import resource_to_bytes
@@ -169,6 +168,7 @@ class RayServiceFuncGenerator(object):
 
     def gen_ray_start(self):
         def _start_ray_services(iter):
+            from pyspark import BarrierTaskContext
             tc = BarrierTaskContext.get()
             # The address is sorted by partitionId according to the comments
             # Partition 0 is the Master
@@ -347,6 +347,7 @@ class RayContext(object):
         total_cores = int(self.num_ray_nodes) * int(self.ray_node_cpu_cores)
 
         def info_fn(iter):
+            from pyspark import BarrierTaskContext
             tc = BarrierTaskContext.get()
             task_addrs = [taskInfo.address.split(":")[0] for taskInfo in tc.getTaskInfos()]
             yield task_addrs
