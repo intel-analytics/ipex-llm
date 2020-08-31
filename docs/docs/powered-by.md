@@ -34,6 +34,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __NeuSoft/BMW__
 <br>[Neusoft RealSight APM partners with Intel to create an application performance management platform with active defense capabilities](https://platform.neusoft.com/2020/01/17/xw-intel.html) (in Chinese)
 * __NeuSoft/Mazda__
+<br>[JD, Neusoft and Intel Jointly Building Intelligent and Connected Vehicle Cloud for HaiMa(former Hainan Mazda)](https://www.neusoft.com/Products/Platforms/2472/4735110231.html)
 <br>[JD, Neusoft and Intel Jointly Building Intelligent and Connected Vehicle Cloud for Hainan-Mazda](https://platform.neusoft.com/2020/06/11/jjfa-haimaqiche.html) (in Chinese)
 * __Office Depot__
 <br>[Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://software.intel.com/en-us/articles/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on)
