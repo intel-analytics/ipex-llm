@@ -86,19 +86,27 @@ class OrcaContext(metaclass=OrcaContextMeta):
     pass
 
 
-def init_orca_context(cluster_mode="", cores=2, memory="2g", num_nodes=1,
+def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
     across the cluster).
 
-    :param cluster_mode: The mode for the Spark cluster. One of "", "local", "yarn-client" and
-           "standalone".
-           Default to be "" and in this case you can use spark-submit for yarn-cluster mode.
+    :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
+           "standalone" and "spark-submit". Default to be "local".
+
+           For "spark-submit", you are supposed to use spark-submit to submit the application.
+           In this case, please set the Spark configurations through command line options or
+           the properties file. You need to use "spark-submit" for yarn-cluster mode.
+           To make things easier, you are recommended to use the launching scripts under
+           `analytics-zoo/scripts`.
+
+           For other cluster modes, you are recommended to install and run analytics-zoo through
+           pip, which is more convenient.
     :param cores: The number of cores to be used on each node. Default to be 2.
     :param memory: The memory allocated for each node. Default to be '2g'.
-    :param num_nodes: The number of cores available in the cluster. Default to be 1.
-           For Spark local, num_nodes should always be 1.
+    :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
+           For Spark local, num_nodes should always be 1 and you don't need to change it.
     :param init_ray_on_spark: Whether to launch Ray services across the cluster.
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
@@ -112,7 +120,7 @@ def init_orca_context(cluster_mode="", cores=2, memory="2g", num_nodes=1,
     for key in ["conf", "spark_log_level", "redirect_spark_log"]:
         if key in kwargs:
             spark_args[key] = kwargs[key]
-    if cluster_mode == "":
+    if cluster_mode == "spark-submit":
         from zoo import init_nncontext
         sc = init_nncontext(**spark_args)
     elif cluster_mode == "local":
@@ -124,8 +132,8 @@ def init_orca_context(cluster_mode="", cores=2, memory="2g", num_nodes=1,
         sc = init_spark_on_local(cores, **spark_args)
     elif cluster_mode.startswith("yarn"):  # yarn or yarn-client
         if cluster_mode == "yarn-cluster":
-            raise ValueError('For yarn-cluster, please set cluster_mode to "" '
-                             'and use spark-submit instead')
+            raise ValueError('For yarn-cluster mode, please set cluster_mode to "spark-submit" '
+                             'and submit the application via spark-submit instead')
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         if not hadoop_conf:
             assert "hadoop_conf" in kwargs,\
@@ -154,7 +162,7 @@ def init_orca_context(cluster_mode="", cores=2, memory="2g", num_nodes=1,
         sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
                                    executor_memory=memory, **spark_args)
     else:
-        raise ValueError("cluster_mode can only be local, yarn-client or standalone, "
+        raise ValueError("cluster_mode can only be local, yarn-client, standalone or spark-submit, "
                          "but got: %s".format(cluster_mode))
     ray_args = {}
     for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
