@@ -23,7 +23,7 @@ from zoo.orca.learn.tf.estimator import Estimator
 
 
 def main(max_epoch):
-    sc = init_orca_context(cluster_mode="local", cores=4, memory="2g")
+    sc = init_orca_context(cores=4, memory="2g")
 
     # get DataSet
     # as_supervised returns tuple (img, label) instead of dict {'image': img, 'label':label}

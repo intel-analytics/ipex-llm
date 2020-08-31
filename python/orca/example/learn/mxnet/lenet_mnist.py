@@ -18,8 +18,7 @@
 
 import argparse
 
-from zoo import init_spark_on_local, init_spark_on_yarn
-from zoo.ray import RayContext
+from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.mxnet import Estimator, create_config
 
 
@@ -88,14 +87,10 @@ def get_metrics(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Train a LeNet model for handwritten digit recognition.')
-    parser.add_argument('--hadoop_conf', type=str,
-                        help='The path to the hadoop configuration folder. Required if you '
-                             'wish to run on yarn clusters. Otherwise, run in local mode.')
-    parser.add_argument('--conda_name', type=str,
-                        help='The name of conda environment. Required if you '
-                             'wish to run on yarn clusters.')
-    parser.add_argument('--executor_cores', type=int, default=4,
-                        help='The number of executor cores you want to use.')
+    parser.add_argument('--cluster_mode', type=str, default="local",
+                        help='The mode for the Spark cluster.')
+    parser.add_argument('--cores', type=int, default=4,
+                        help='The number of cores you want to use on each node.')
     parser.add_argument('-n', '--num_workers', type=int, default=2,
                         help='The number of MXNet workers to be launched.')
     parser.add_argument('-s', '--num_servers', type=int,
@@ -107,22 +102,13 @@ if __name__ == '__main__':
                         help='The number of epochs to train the model.')
     parser.add_argument('-l', '--learning_rate', type=float, default=0.02,
                         help='Learning rate for the LeNet model.')
-    parser.add_argument('--log_interval', type=int, default=100,
+    parser.add_argument('--log_interval', type=int, default=20,
                         help='The number of batches to wait before logging throughput and '
                              'metrics information during the training process.')
     opt = parser.parse_args()
 
-    if opt.hadoop_conf:
-        assert opt.conda_name is not None, "conda_name must be specified for yarn mode"
-        sc = init_spark_on_yarn(
-            hadoop_conf=opt.hadoop_conf,
-            conda_name=opt.conda_name,
-            num_executors=opt.num_workers,
-            executor_cores=opt.executor_cores)
-    else:
-        sc = init_spark_on_local(cores="*")
-    ray_ctx = RayContext(sc=sc)
-    ray_ctx.init()
+    num_nodes = 1 if opt.cluster_mode == "local" else opt.num_workers
+    init_orca_context(cluster_mode=opt.cluster_mode, cores=opt.cores, num_nodes=num_nodes)
 
     config = create_config(optimizer="sgd",
                            optimizer_params={'learning_rate': opt.learning_rate},
@@ -134,5 +120,4 @@ if __name__ == '__main__':
     estimator.fit(data=get_train_data_iter, validation_data=get_test_data_iter,
                   epochs=opt.epochs, batch_size=opt.batch_size)
     estimator.shutdown()
-    ray_ctx.stop()
-    sc.stop()
+    stop_orca_context()

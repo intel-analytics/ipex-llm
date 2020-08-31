@@ -29,9 +29,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data.distributed
 from torchvision import datasets, transforms
-from zoo.ray import RayContext
 
-from zoo import init_spark_on_yarn, init_spark_on_local
+from zoo.ray import RayContext
+from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.horovod import HorovodRayRunner
 
 
@@ -186,55 +186,26 @@ def run_horovod():
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--hadoop_conf", type=str,
-                    help="turn on yarn mode by passing the path to the hadoop"
-                         " configuration folder. Otherwise, turn on local mode.")
+parser.add_argument('--cluster_mode', type=str, default="local",
+                    help='The mode for the Spark cluster.')
 parser.add_argument("--slave_num", type=int, default=2,
-                    help="The number of slave nodes")
-parser.add_argument("--conda_name", type=str,
-                    help="The name of conda environment.")
-parser.add_argument("--executor_cores", type=int, default=8,
-                    help="The number of driver's cpu cores you want to use."
+                    help="The number of slave nodes to be used in the cluster."
                          "You can change it depending on your own cluster setting.")
-parser.add_argument("--executor_memory", type=str, default="10g",
+parser.add_argument("--cores", type=int, default=8,
+                    help="The number of cpu cores you want to use on each node. "
+                         "You can change it depending on your own cluster setting.")
+parser.add_argument("--memory", type=str, default="10g",
                     help="The size of slave(executor)'s memory you want to use."
                          "You can change it depending on your own cluster setting.")
-parser.add_argument("--driver_memory", type=str, default="2g",
-                    help="The size of driver's memory you want to use."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--driver_cores", type=int, default=8,
-                    help="The number of driver's cpu cores you want to use."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
-                    help="The extra executor memory to store some data."
-                         "You can change it depending on your own cluster setting.")
-parser.add_argument("--object_store_memory", type=str, default="4g",
-                    help="The memory to store data on local."
-                         "You can change it depending on your own cluster setting.")
+
 
 if __name__ == "__main__":
 
     args = parser.parse_args()
-    if args.hadoop_conf:
-        sc = init_spark_on_yarn(
-            hadoop_conf=args.hadoop_conf,
-            conda_name=args.conda_name,
-            num_executors=args.slave_num,
-            executor_cores=args.executor_cores,
-            executor_memory=args.executor_memory,
-            driver_memory=args.driver_memory,
-            driver_cores=args.driver_cores,
-            extra_executor_memory_for_ray=args.extra_executor_memory_for_ray)
-        ray_ctx = RayContext(
-            sc=sc,
-            object_store_memory=args.object_store_memory)
-        ray_ctx.init()
-    else:
-        sc = init_spark_on_local()
-        ray_ctx = RayContext(
-            sc=sc,
-            object_store_memory=args.object_store_memory)
-        ray_ctx.init()
+    num_nodes = 1 if args.cluster_mode == "local" else args.slave_num
+    init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores, num_nodes=num_nodes,
+                      memory=args.memory)
 
-    runner = HorovodRayRunner(ray_ctx)
+    runner = HorovodRayRunner(RayContext.get())
     runner.run(func=run_horovod)
+    stop_orca_context()

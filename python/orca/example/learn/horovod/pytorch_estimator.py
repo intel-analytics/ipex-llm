@@ -20,8 +20,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from zoo import init_spark_on_yarn, init_spark_on_local
-from zoo.ray import RayContext
+from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.pytorch import Estimator
 
 
@@ -104,55 +103,22 @@ def train_example(workers_per_node):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--hadoop_conf", type=str,
-                        help="turn on yarn mode by passing the path to the hadoop"
-                             " configuration folder. Otherwise, turn on local mode.")
-    parser.add_argument("--num_executors", type=int, default=2,
-                        help="The number of executors")
-    parser.add_argument("--conda_name", type=str,
-                        help="The name of conda environment.")
-    parser.add_argument("--executor_cores", type=int, default=8,
-                        help="The number of executor's cpu cores you want to use."
+    parser.add_argument('--cluster_mode', type=str, default="local",
+                        help='The mode for the Spark cluster.')
+    parser.add_argument("--num_nodes", type=int, default=1,
+                        help="The number of nodes to be used in the cluster. "
                              "You can change it depending on your own cluster setting.")
-    parser.add_argument("--executor_memory", type=str, default="10g",
-                        help="The size of executor's memory you want to use."
+    parser.add_argument("--cores", type=int, default=4,
+                        help="The number of cpu cores you want to use on each node. "
                              "You can change it depending on your own cluster setting.")
-    parser.add_argument("--driver_memory", type=str, default="2g",
-                        help="The size of driver's memory you want to use."
-                             "You can change it depending on your own cluster setting.")
-    parser.add_argument("--driver_cores", type=int, default=8,
-                        help="The number of driver's cpu cores you want to use."
-                             "You can change it depending on your own cluster setting.")
-    parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
-                        help="The extra executor memory to store some data."
-                             "You can change it depending on your own cluster setting.")
-    parser.add_argument("--object_store_memory", type=str, default="4g",
-                        help="The memory to store data on local."
+    parser.add_argument("--memory", type=str, default="10g",
+                        help="The memory you want to use on each node. "
                              "You can change it depending on your own cluster setting.")
     parser.add_argument("--workers_per_node", type=int, default=1,
                         help="The number of workers to run on each node")
-    parser.add_argument("--local_cores", type=int, default=4,
-                        help="The number of cores while running on local mode")
 
     args = parser.parse_args()
-    if args.hadoop_conf:
-        sc = init_spark_on_yarn(
-            hadoop_conf=args.hadoop_conf,
-            conda_name=args.conda_name,
-            num_executors=args.num_executors,
-            executor_cores=args.executor_cores,
-            executor_memory=args.executor_memory,
-            driver_memory=args.driver_memory,
-            driver_cores=args.driver_cores,
-            extra_executor_memory_for_ray=args.extra_executor_memory_for_ray)
-        ray_ctx = RayContext(
-            sc=sc,
-            object_store_memory=args.object_store_memory)
-        ray_ctx.init()
-    else:
-        sc = init_spark_on_local(cores=args.local_cores)
-        ray_ctx = RayContext(
-            sc=sc,
-            object_store_memory=args.object_store_memory)
-        ray_ctx.init()
+    init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
+                      num_nodes=args.num_nodes, memory=args.memory)
     train_example(workers_per_node=args.workers_per_node)
+    stop_orca_context()
