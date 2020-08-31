@@ -16,8 +16,9 @@
 
 import os
 import subprocess
-import ray.services
+import ray
 from dmlc_tracker.tracker import get_host_ip
+from zoo.ray import RayContext
 from zoo.orca.learn.mxnet.mxnet_runner import MXNetRunner
 from zoo.orca.learn.mxnet.utils import find_free_port
 
@@ -51,7 +52,8 @@ class Estimator(object):
     a list of MXNet metrics or corresponding string representations of metrics, for example,
     'accuracy'. This is not needed if you don't have validation data throughout the training.
 
-    :param num_workers: The number of workers for distributed training. Default is 1.
+    :param num_workers: The number of workers for distributed training. Default to be the number of
+    nodes in the cluster.
 
     :param num_servers: The number of servers for distributed training. Default is None and in this
     case it would be equal to the number of workers.
@@ -61,7 +63,10 @@ class Estimator(object):
     """
     def __init__(self, config, model_creator, loss_creator=None,
                  eval_metrics_creator=None, validation_metrics_creator=None,
-                 num_workers=1, num_servers=None, runner_cores=None):
+                 num_workers=None, num_servers=None, runner_cores=None):
+        ray_ctx = RayContext.get()
+        if not num_workers:
+            num_workers = ray_ctx.num_ray_nodes
         self.config = config
         self.model_creator = model_creator
         self.loss_creator = loss_creator
@@ -69,8 +74,6 @@ class Estimator(object):
         self.eval_metrics_creator = eval_metrics_creator
         self.num_workers = num_workers
         self.num_servers = num_servers if num_servers else self.num_workers
-        from zoo.ray import RayContext
-        RayContext.get()
 
         # Generate actor class
         # Add a dummy custom resource: _mxnet_worker and _mxnet_server to diff worker from server

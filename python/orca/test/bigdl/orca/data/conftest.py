@@ -13,32 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-from zoo.orca import OrcaContext
 
 import pytest
 
-sc = None
-ray_ctx = None
-
 
 @pytest.fixture(autouse=True, scope='package')
-def orca_data_fixture():
-    from zoo import init_spark_on_local
-    from zoo.ray import RayContext
+def orca_context_fixture():
+    import os
+    from zoo.orca import OrcaContext, init_orca_context, stop_orca_context
     OrcaContext._eager_mode = True
-    sc = init_spark_on_local(cores=4, spark_log_level="INFO")
     access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
     secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
     if access_key_id is not None and secret_access_key is not None:
-        ray_ctx = RayContext(sc=sc,
-                             object_store_memory="1g",
-                             env={"AWS_ACCESS_KEY_ID": access_key_id,
-                                  "AWS_SECRET_ACCESS_KEY": secret_access_key}
-                             )
+        env = {"AWS_ACCESS_KEY_ID": access_key_id,
+               "AWS_SECRET_ACCESS_KEY": secret_access_key}
     else:
-        ray_ctx = RayContext(sc=sc, object_store_memory="1g")
-    ray_ctx.init()
+        env = None
+    sc = init_orca_context(cores=4, spark_log_level="INFO",
+                           env=env, object_store_memory="1g")
     yield
-    ray_ctx.stop()
-    sc.stop()
+    stop_orca_context()
