@@ -60,4 +60,5 @@ Then, prepare the environment of Java8 and Analytics Zoo as described [above](#p
 
 **Note**
 
-As Colab engine provides your application with some built-in Python libraries, you should check if the library versions are compatible with your application. You may refer this [document](https://analytics-zoo.github.io/master/#PythonUserGuide/python-lib-version/) to specify the python library version that Analytics Zoo supports. 
+
+As Colab engine provides your application with some built-in Python libraries, you should check if the library versions are compatible with your application. You may refer this [document](./../PythonUserGuide/python-lib-version.md) to specify the python library version that Analytics Zoo supports. 
