@@ -19,7 +19,8 @@ package com.intel.analytics.zoo.common
 import java.io.InputStream
 import java.util.Properties
 
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2, OptimizerVersion}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{EngineRef, KerasUtils}
 import org.apache.log4j.Logger
 import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext, SparkException}
 import sys.env
@@ -243,6 +244,19 @@ object NNContext {
     }
     readConf.foreach(c => _conf.set(c._1, c._2))
     _conf
+  }
+
+  def getOptimizerVersion(): String = {
+    EngineRef.getOptimizerVersion().toString
+  }
+
+  def setOptimizerVersion(optimizerVersion: String): Unit = {
+    optimizerVersion.toLowerCase() match {
+      case "optimizerv1" => EngineRef.setOptimizerVersion(OptimizerV1)
+      case "optimizerv2" => EngineRef.setOptimizerVersion(OptimizerV2)
+      case _ =>
+        logger.warn("supported DistriOptimizerVersion is optimizerV1 or optimizerV2")
+    }
   }
 }
 
