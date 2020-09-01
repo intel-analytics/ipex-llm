@@ -23,13 +23,14 @@ import java.util.Calendar
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.dataset.{MiniBatch, _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.{DataSet, _}
+import com.intel.analytics.bigdl.{DataSet, optim, _}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.nn.mkldnn.MklDnnModule
 import com.intel.analytics.bigdl.nn.{Container, Graph, Module, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, CacheV1}
+import com.intel.analytics.bigdl.optim.DistriOptimizerV2.{Cache => CacheV2}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
@@ -97,13 +98,13 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
           ds = local,
           criterion = this.criterion)
       case distriDataSet: DistributedDataSet[MiniBatch[T]] =>
-        new InternalDistriOptimizer(_model = this,
-          _dataset = distriDataSet,
-          _criterion = this.criterion)
+        InternalOptimizer(model = this,
+          dataset = distriDataSet,
+          criterion = this.criterion)
       case distriFeatureSet: DistributedFeatureSet[MiniBatch[T]] =>
-        new InternalDistriOptimizer(_model = this,
-          _dataset = distriFeatureSet.toDistributed(),
-          _criterion = this.criterion)
+        InternalOptimizer(model = this,
+          dataset = distriFeatureSet.toDistributed(),
+          criterion = this.criterion)
       case _ =>
         throw new IllegalArgumentException(s"Unsupported DataSet type ${x.getClass.getName}," +
           s" excepted LocalDataSet, DistributedDataSet and DistributedFeatureSet.")
@@ -368,6 +369,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
         local.setTrainData(x)
       case dis: InternalDistriOptimizer[T] =>
         dis.setTrainData(x)
+      case disV2: InternalDistriOptimizerV2[T] =>
+        disV2.setTrainData(x)
     }
 
     internalOptimizer.optimize()
@@ -384,6 +387,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
           0
         }
       case dis: DistriOptimizer[T] =>
+        InternalOptimizerUtil.getStateFromOptiMethod(this.optimMethod).get[Int]("epoch").get - 1
+      case disV2: DistriOptimizerV2[T] =>
         InternalOptimizerUtil.getStateFromOptiMethod(this.optimMethod).get[Int]("epoch").get - 1
     }
   }
@@ -600,6 +605,27 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   def summary(
       lineLength: Int = 120,
       positions: Array[Double] = Array(.33, .55, .67, 1)): Unit
+}
+
+object InternalOptimizer {
+  def apply[T: ClassTag](
+    model: Module[T],
+    dataset: DistributedDataSet[MiniBatch[T]],
+    criterion: Criterion[T]
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    EngineRef.getOptimizerVersion() match {
+      case OptimizerV1 =>
+        new InternalDistriOptimizer[T](
+          _model = model,
+          _dataset = dataset,
+          _criterion = criterion)
+      case OptimizerV2 =>
+        new InternalDistriOptimizerV2[T](
+          _model = model,
+          _dataset = dataset,
+          _criterion = criterion)
+    }
+  }
 }
 
 class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
@@ -999,6 +1025,12 @@ private[zoo] object InternalOptimizerUtil {
     method.invoke(optimizer)
   }
 
+  def endEpochV2[T: ClassTag](optimizer: DistriOptimizerV2[T]): Unit = {
+    val method = classOf[DistriOptimizerV2[T]].getDeclaredMethod("endEpoch")
+    method.setAccessible(true)
+    method.invoke(optimizer)
+  }
+
   def getParametersFromModel[T: ClassTag](model: Module[T]): (Tensor[T], Tensor[T]) = {
     val method = classOf[Module[T]].getDeclaredMethod("getParameters")
     method.setAccessible(true)
@@ -1016,6 +1048,12 @@ private[zoo] object InternalOptimizerUtil {
   def clearState[T: ClassTag](
         models: RDD[DistriOptimizer.CacheV1[T]]): Unit = {
     KerasUtils.invokeMethod(DistriOptimizer,
+      "clearState", models, implicitly[reflect.ClassTag[T]])
+  }
+
+  def clearStateV2[T: ClassTag](
+        models: RDD[CacheV2[T]]): Unit = {
+    KerasUtils.invokeMethod(DistriOptimizerV2,
       "clearState", models, implicitly[reflect.ClassTag[T]])
   }
 
@@ -1508,6 +1546,164 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
   }
 }
 
+private[zoo] class InternalDistriOptimizerV2[T: ClassTag] (
+    _model: Module[T],
+    _dataset: DistributedDataSet[MiniBatch[T]],
+    _criterion: Criterion[T])
+  (implicit ev: TensorNumeric[T]) extends DistriOptimizerV2[T](_model, _dataset, _criterion)
+  with AbstractEstimator[T]{
+  import InternalDistriOptimizerV2._
+  protected var checkpointDir: Option[String] = None
+  protected var numSlice: Int = 1
+  protected var cachedModels: RDD[CacheV2[T]] = null
+  protected var modelBroadcast: ModelBroadcast[T] = null
+  protected var parameterSplits: Map[String, (Int, Int)] = null
+  protected var allReduceParameter: AllReduceParameter[T] = null
+
+  override def close(): Unit = {
+    if (cachedModels != null) {
+      InternalOptimizerUtil.clearStateV2(cachedModels)
+      if (modelBroadcast != null) {
+        InternalOptimizerUtil.releaseBroadcast(modelBroadcast.uuid())
+        modelBroadcast = null
+      }
+      unpersistCachedModel(cachedModels)
+      cachedModels = null
+    }
+  }
+
+
+  def setNumOfSlice(numOfSlice: Int): this.type = {
+    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+      s" but got $numOfSlice")
+    this.numSlice = numOfSlice
+    this
+  }
+
+  def getNumOfSlice(): Int = {
+    this.numSlice
+  }
+
+  def setCheckpointDir(path: Option[String]): this.type = {
+    if (path.isDefined) {
+      val pathAndTime = path.get + "/" +
+        new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss")
+          .format(Calendar.getInstance().getTime())
+      checkpointDir = Some(pathAndTime)
+      logger.info(s"Saving summaries to ${pathAndTime + "/summary"}")
+      val trainSummary = TrainSummary(pathAndTime, "summary")
+      val valSummary = ValidationSummary(pathAndTime, "summary")
+      this.setTrainSummary(trainSummary)
+      this.setValidationSummary(valSummary)
+    }
+    this
+  }
+
+  def setTrainData(trainingDataSet: DataSet[MiniBatch[T]]): this.type = {
+    this.dataset = trainingDataSet.toDistributed()
+    InternalOptimizerUtil.endEpochV2(this)
+    this
+  }
+
+
+  override def train(
+        trainSet: FeatureSet[MiniBatch[T]],
+        criterion: Criterion[T],
+        endTrigger: Option[Trigger] = None,
+        checkPointTrigger: Option[Trigger] = None,
+        validationSet: FeatureSet[MiniBatch[T]] = null,
+        validationMethod: Array[ValidationMethod[T]] = null): this.type = {
+    this.dataset = trainSet.toDataSet()
+    val endWhen = if (endTrigger.isDefined) {
+      endTrigger.get
+    } else {
+      Trigger.maxIteration(Int.MaxValue)
+    }
+    this.setEndWhen(endWhen)
+    if (checkPointTrigger.isDefined && checkpointDir.isDefined) {
+      // we should setCheckpoint every time before we call optimize(),
+      // as BigDL will overwrite checkpointPath to its subfolder.
+      val logPath = new Path(checkpointDir.get + "/models")
+      val fs = logPath.getFileSystem(new Configuration(false))
+      fs.mkdirs(logPath)
+      logger.info(s"Saving checkpoints to ${logPath.toUri.toString}")
+      this.setCheckpoint(logPath.toUri.toString(), checkPointTrigger.get)
+    }
+    if (checkPointTrigger.isDefined && validationMethod != null && validationSet != null) {
+      val validationTrigger = SerializationUtils.clone(checkPointTrigger.get)
+      this.setValidation(validationTrigger, validationSet.toDataSet(), validationMethod)
+    }
+    if (numSlice != 1) {
+      val state = InternalOptimizerUtil.getStateFromOptiMethod(
+        optimMethods.values.head)
+      if (checkPointTrigger.isDefined) {
+        if (checkPointTrigger.get.isInstanceOf[ZooTrigger]) {
+          checkPointTrigger.get.asInstanceOf[ZooTrigger].setZooState(state)
+        } else {
+          throw new IllegalArgumentException(
+            s"Excepted com.intel.analytics.zoo.common.ZooTrigger." +
+            s" Please change your trigger to an instance of ZooTrigger.")
+        }
+      }
+      if (!state.contains("numSlice")) {
+        state("numSlice") = numSlice
+        state("currentSlice") = 0
+      }
+      if (!state.contains("Loss")) {
+        state.update("Loss", Float.PositiveInfinity)
+      }
+      if (!state.contains("score")) {
+        state.update("score", 0f)
+      }
+
+      while(!endWhen(state)) {
+        val trueEpoch = Math.floor(state[Int]("currentSlice").toDouble / numSlice).toInt + 1
+        val newEndWhen = Trigger.or(endWhen, Trigger.maxEpoch(trueEpoch))
+        this.setEndWhen(newEndWhen)
+        if (checkPointTrigger.isDefined && checkpointDir.isDefined) {
+          // we should setCheckpoint every time before we call optimize(),
+          // as BigDL will overwrite checkpointPath to its subfolder.
+          this.setCheckpoint(checkpointDir.get, checkPointTrigger.get)
+        }
+        state("currentSlice") = state[Int]("currentSlice") + 1
+        this.optimize()
+        InternalOptimizerUtil.endEpochV2(this)
+        // (neval - 1) is true iteration
+        state("epoch") = Math.floor(state[Int]("currentSlice").toDouble / numSlice).toInt + 1
+      }
+    } else {
+      this.optimize()
+    }
+    this
+  }
+
+  override def evaluate(
+        validationSet: FeatureSet[MiniBatch[T]],
+        validationMethod: Array[ValidationMethod[T]]
+      ): Map[ValidationMethod[T], ValidationResult] = {
+    val validateRDD = validationSet.toDistributed().data(train = false)
+
+    val models = this.cachedModels
+
+    // get current iteration from optimMethod
+    val step = if (null != optimMethods && optimMethods.size != 0) {
+      val state = InternalOptimizerUtil.getStateFromOptiMethod(
+        optimMethods.values.head)
+      state.getOrElse[Int]("neval", -1)
+    } else {
+      -1
+    }
+
+    InternalDistriOptimizerV2.validate(
+      validationSet,
+      validationMethod,
+      models,
+      step,
+      validationSummary
+    )
+  }
+}
+
 object InternalDistriOptimizer {
   val logger = Logger.getLogger(this.getClass)
 
@@ -1654,5 +1850,79 @@ object InternalDistriOptimizer {
         InternalOptimizerUtil.getModel(models, parameters, trainingModel)
     }
     trainingModel
+  }
+}
+
+object InternalDistriOptimizerV2 {
+  val logger = Logger.getLogger(this.getClass)
+
+  protected def validate[T](validationFeatureSet: FeatureSet[MiniBatch[T]],
+                            validationMethods: Array[ValidationMethod[T]],
+                            models: RDD[CacheV2[T]],
+                            step: Int,
+                            validationSummary: Option[ValidationSummary]
+                           ): Map[ValidationMethod[T], ValidationResult] = {
+    val vMethods = validationMethods
+    val validateRDD = validationFeatureSet.toDistributed().data(train = false)
+
+    // TODO: evaluate local
+    val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)(
+      (modelIter, dataIter) => {
+        val cached = modelIter.next()
+        val workingModels = cached.localModels
+        val localVMethods = cached.localMethods
+
+        workingModels.foreach(_.evaluate())
+        val _subModelNumber = workingModels.length
+        dataIter.map(batch => {
+          val stackSize = batch.size() / _subModelNumber
+          val extraSize = batch.size() % _subModelNumber
+          val parallelism = if (stackSize == 0) extraSize else _subModelNumber
+          (0 until parallelism).toParArray.map { b =>
+            val offset = b * stackSize + math.min(b, extraSize) + 1
+            val length = stackSize + (if (b < extraSize) 1 else 0)
+            val miniBatch = batch.slice(offset, length)
+            val input = miniBatch.getInput()
+            val target = miniBatch.getTarget()
+            val output = workingModels(b).forward(input)
+            val validatMethods = localVMethods(b).get
+            validatMethods.map(validation => {
+              validation(output, target)
+            })
+          }.reduce((left, right) => {
+            left.zip(right).map { case (l, r) =>
+              l + r
+            }
+          })
+        })
+      }).reduce((left, right) => {
+        left.zip(right).map { case (l, r) =>
+          l + r
+        }
+      }).zip(vMethods)
+    results.foreach(r => {
+      // TODO:
+      DistriOptimizerV2.logger.info(s"${r._2} is ${r._1}")
+    })
+    if (validationSummary.isDefined && step > 0) {
+      results.foreach { r =>
+        val result = r._1.result
+        validationSummary.get.addScalar(r._2.toString(), result._1,
+          step - 1
+        )
+      }
+    }
+    results.map(a => (a._2, a._1)).toMap
+  }
+
+  def unpersistCachedModel[T: ClassTag](
+      models: RDD[CacheV2[T]] ): Unit = {
+      models.mapPartitions { iter =>
+      iter.foreach { arrayModels =>
+        arrayModels.localModels.foreach(_.release())
+      }
+      iter
+    }.count()
+    models.unpersist()
   }
 }
