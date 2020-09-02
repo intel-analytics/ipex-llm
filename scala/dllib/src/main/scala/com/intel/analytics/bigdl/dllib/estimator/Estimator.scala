@@ -147,31 +147,24 @@ class Estimator[T: ClassTag] private[zoo](
     trainSet match {
       case d: DistributedFeatureSet[MiniBatch[T]] =>
         if (internalEstimator == null) {
-          EngineRef.getOptimizerVersion() match {
+          internalEstimator = EngineRef.getOptimizerVersion() match {
             case OptimizerV1 =>
-              internalEstimator = new InternalDistriOptimizer[T](model, null, criterion)
+              new InternalDistriOptimizer[T](model, null, criterion)
                 .setCheckpointDir(modelDir)
                 .setOptimMethods(optimMethods)
                 .setNumOfSlice(d.numOfSlice)
-              if ((logDir != null)  && (appName != null)) {
-                val trainSummary = TrainSummary(logDir, appName)
-                val valSummary = ValidationSummary(logDir, appName)
-                internalEstimator.asInstanceOf[Optimizer[_, _]]
-                  .setTrainSummary(trainSummary)
-                  .setValidationSummary(valSummary)
-              }
             case OptimizerV2 =>
-              internalEstimator = new InternalDistriOptimizerV2[T](model, null, criterion)
+              new InternalDistriOptimizerV2[T](model, null, criterion)
                 .setCheckpointDir(modelDir)
                 .setOptimMethods(optimMethods)
                 .setNumOfSlice(d.numOfSlice)
-              if ((logDir != null)  && (appName != null)) {
-                val trainSummary = TrainSummary(logDir, appName)
-                val valSummary = ValidationSummary(logDir, appName)
-                internalEstimator.asInstanceOf[Optimizer[_, _]]
-                  .setTrainSummary(trainSummary)
-                  .setValidationSummary(valSummary)
-              }
+          }
+          if ((logDir != null)  && (appName != null)) {
+            val trainSummary = TrainSummary(logDir, appName)
+            val valSummary = ValidationSummary(logDir, appName)
+            internalEstimator.asInstanceOf[Optimizer[_, _]]
+              .setTrainSummary(trainSummary)
+              .setValidationSummary(valSummary)
           }
         }
       case _ => throw new IllegalArgumentException("Unsupported FeatureSet type.")
