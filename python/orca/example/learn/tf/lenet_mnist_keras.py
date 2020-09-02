@@ -17,7 +17,6 @@ import sys
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
-import numpy as np
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.tf.estimator import Estimator
 
