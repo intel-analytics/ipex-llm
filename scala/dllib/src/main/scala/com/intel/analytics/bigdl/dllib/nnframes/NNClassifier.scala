@@ -371,6 +371,7 @@ class XGBRegressor () {
 
   private val model = new XGBoostRegressor()
   model.setNthread(EngineRef.getCoreNumber())
+  model.setMaxBins(256)
 
   def setLabelCol(labelColName : String) : this.type = {
     model.setLabelCol(labelColName)
@@ -383,6 +384,7 @@ class XGBRegressor () {
   }
 
   def fit(df: DataFrame): XGBRegressorModel = {
+    df.repartition(EngineRef.getNodeNumber())
     val xgbModel = model.fit(df)
     new XGBRegressorModel(xgbModel)
   }
