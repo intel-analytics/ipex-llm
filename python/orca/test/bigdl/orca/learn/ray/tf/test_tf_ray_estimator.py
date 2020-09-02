@@ -16,6 +16,7 @@
 from unittest import TestCase
 
 import numpy as np
+import tensorflow as tf
 
 from zoo.orca.learn.tf2 import Estimator
 from zoo.ray import RayContext
@@ -69,7 +70,7 @@ def create_auto_shard_datasets(config):
     dataset = dataset.interleave(lambda x: tf.data.TextLineDataset(x))
     dataset = dataset.map(lambda x: tf.strings.to_number(x))
     dataset = dataset.map(lambda x: (x, x))
-    dataset = dataset.batch(2)
+    dataset = dataset.batch(config["batch_size"])
     return dataset
 
 
@@ -104,12 +105,37 @@ def simple_model(config):
 
 def compile_args(config):
     import tensorflow as tf
+    if "lr" in config:
+        lr = config["lr"]
+    else:
+        lr = 1e-3
     args = {
-        "optimizer": tf.keras.optimizers.Adam(),
+        "optimizer": tf.keras.optimizers.SGD(lr),
         "loss": "mean_squared_error",
         "metrics": ["mean_squared_error"]
     }
     return args
+
+
+class LRChecker(tf.keras.callbacks.Callback):
+    def __init__(self, *args):
+        super(LRChecker, self).__init__(*args)
+
+        self.warmup_lr = [0.16, 0.22, 0.28, 0.34, 0.4]
+
+    def on_epoch_end(self, epoch, logs=None):
+        current_lr = tf.keras.backend.get_value(self.model.optimizer.lr)
+        print("epoch {} current lr is {}".format(epoch, current_lr))
+        if epoch < 5:
+            assert abs(current_lr - self.warmup_lr[epoch]) < 1e-5
+        elif 5 <= epoch < 10:
+            assert abs(current_lr - 0.4) < 1e-5
+        elif 10 <= epoch < 15:
+            assert abs(current_lr - 0.04) < 1e-5
+        elif 15 <= epoch < 20:
+            assert abs(current_lr - 0.004) < 1e-5
+        else:
+            assert abs(current_lr - 0.0004) < 1e-5
 
 
 class TestTFRayEstimator(TestCase):
@@ -119,8 +145,9 @@ class TestTFRayEstimator(TestCase):
         batch_size = 32
         global_batch_size = batch_size * ray_ctx.num_ray_nodes
         config = {
-            "batch_size": batch_size
+            "batch_size": global_batch_size
         }
+
         trainer = Estimator(
             model_creator=simple_model,
             compile_args_creator=compile_args,
@@ -179,14 +206,57 @@ class TestTFRayEstimator(TestCase):
             model_creator=create_auto_shard_model,
             compile_args_creator=create_auto_shard_compile_args,
             verbose=True,
-            config={},
+            config={"batch_size": 4},
             backend=backend, workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, steps_per_epoch=2)
         assert stats["train_loss"] == 0.0
 
-    # this test has known issue and will be fixed by following pr
-    # def test_auto_shard_tf(self):
-    #     self.impl_test_auto_shard("tf")
+    def test_auto_shard_tf(self):
+        self.impl_test_auto_shard("tf")
 
     def test_auto_shard_horovod(self):
         self.impl_test_auto_shard("horovod")
+
+    # this needs horovod >= 0.19.2
+    def test_horovod_learning_rate_schedule(self):
+        import horovod
+        major, minor, patch = horovod.__version__.split(".")
+
+        larger_major = int(major) > 0
+        larger_minor = int(major) == 0 and int(minor) > 19
+        larger_patch = int(major) == 0 and int(minor) == 19 and int(patch) >= 2
+
+        if larger_major or larger_minor or larger_patch:
+            ray_ctx = RayContext.get()
+            batch_size = 32
+            workers_per_node = 4
+            global_batch_size = batch_size * workers_per_node
+            config = {
+                "batch_size": global_batch_size,
+                "lr": 0.8
+            }
+            trainer = Estimator(
+                model_creator=simple_model,
+                compile_args_creator=compile_args,
+                verbose=True,
+                config=config,
+                backend="horovod", workers_per_node=workers_per_node)
+            import horovod.tensorflow.keras as hvd
+            callbacks = [
+                hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, initial_lr=0.4,
+                                                         verbose=True),
+                hvd.callbacks.LearningRateScheduleCallback(start_epoch=5, end_epoch=10,
+                                                           multiplier=1., initial_lr=0.4),
+                hvd.callbacks.LearningRateScheduleCallback(start_epoch=10, end_epoch=15,
+                                                           multiplier=1e-1, initial_lr=0.4),
+                hvd.callbacks.LearningRateScheduleCallback(start_epoch=15, end_epoch=20,
+                                                           multiplier=1e-2, initial_lr=0.4),
+                hvd.callbacks.LearningRateScheduleCallback(start_epoch=20, multiplier=1e-3,
+                                                           initial_lr=0.4),
+                LRChecker()
+            ]
+            for i in range(30):
+                trainer.fit(create_train_datasets, epochs=1, callbacks=callbacks)
+        else:
+            # skip tests in horovod lower version
+            pass
