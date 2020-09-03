@@ -37,10 +37,10 @@ class TFWorker(HorovodWorker, TFRunner):
 class Estimator(HorovodRayRunner):
     def __init__(self,
                  model_creator,
-                 compile_args_creator,
+                 compile_args_creator=None,
                  config=None,
                  verbose=False,
-                 backend="horovod",
+                 backend="tf",
                  workers_per_node=1):
         """Sets up the TensorFlow trainer.
 
@@ -71,6 +71,10 @@ class Estimator(HorovodRayRunner):
 
         if "intra_op_parallelism" not in config:
             self.config["intra_op_parallelism"] = ray_ctx.ray_node_cpu_cores // workers_per_node
+
+        if backend == "horovod":
+            assert compile_args_creator is not None, "compile_args_creator should not be None," \
+                                                     " when backend is set to horovod"
 
         params = {
             "model_creator": model_creator,
@@ -104,6 +108,17 @@ class Estimator(HorovodRayRunner):
         else:
             raise Exception("Only \"tf\" and \"horovod\" are legal "
                             "value of backend, but got {}".format(backend))
+
+    @classmethod
+    def from_keras(cls, model_creator,
+                   config=None,
+                   verbose=False,
+                   workers_per_node=1,
+                   compile_args_creator=None,
+                   backend="tf"):
+        return cls(model_creator, config=config,
+                   verbose=verbose, workers_per_node=workers_per_node,
+                   backend=backend, compile_args_creator=compile_args_creator)
 
     def fit(self, data_creator, epochs=1, verbose=1,
             callbacks=None, validation_data_creator=None, class_weight=None,
