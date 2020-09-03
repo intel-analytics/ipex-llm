@@ -63,6 +63,33 @@ def create_test_dataset(config):
     return test_dataset
 
 
+def simple_model(config):
+    import tensorflow as tf
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
+                                        tf.keras.layers.Dense(1)])
+    return model
+
+
+def compile_args(config):
+    import tensorflow as tf
+    if "lr" in config:
+        lr = config["lr"]
+    else:
+        lr = 1e-3
+    args = {
+        "optimizer": tf.keras.optimizers.SGD(lr),
+        "loss": "mean_squared_error",
+        "metrics": ["mean_squared_error"]
+    }
+    return args
+
+
+def model_creator(config):
+    model = simple_model(config)
+    model.compile(**compile_args(config))
+    return model
+
+
 def create_auto_shard_datasets(config):
     import tensorflow as tf
     data_path = os.path.join(resource_path, "orca/learn/test_auto_shard/*.csv")
@@ -96,25 +123,10 @@ def create_auto_shard_compile_args(config):
     return args
 
 
-def simple_model(config):
-    import tensorflow as tf
-    model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
-                                        tf.keras.layers.Dense(1)])
+def auto_shard_model_creator(config):
+    model = create_auto_shard_model(config)
+    model.compile(**create_auto_shard_compile_args(config))
     return model
-
-
-def compile_args(config):
-    import tensorflow as tf
-    if "lr" in config:
-        lr = config["lr"]
-    else:
-        lr = 1e-3
-    args = {
-        "optimizer": tf.keras.optimizers.SGD(lr),
-        "loss": "mean_squared_error",
-        "metrics": ["mean_squared_error"]
-    }
-    return args
 
 
 class LRChecker(tf.keras.callbacks.Callback):
@@ -148,12 +160,20 @@ class TestTFRayEstimator(TestCase):
             "batch_size": global_batch_size
         }
 
-        trainer = Estimator(
-            model_creator=simple_model,
-            compile_args_creator=compile_args,
-            verbose=True,
-            config=config,
-            backend=backend)
+        if backend == "horovod":
+            trainer = Estimator.from_keras(
+                model_creator=simple_model,
+                compile_args_creator=compile_args,
+                verbose=True,
+                config=config,
+                backend=backend)
+        else:
+
+            trainer = Estimator.from_keras(model_creator=model_creator,
+                                           verbose=True,
+                                           config=config,
+                                           backend=backend,
+                                           workers_per_node=2)
 
         # model baseline performance
         start_stats = trainer.evaluate(create_test_dataset,
@@ -168,8 +188,8 @@ class TestTFRayEstimator(TestCase):
 
         scheduler = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
         # train for 2 epochs
-        trainer.fit(create_train_datasets, epochs=2, callbacks=[scheduler])
-        trainer.fit(create_train_datasets, epochs=2, callbacks=[scheduler])
+        trainer.fit(create_train_datasets, epochs=2, steps_per_epoch=10, callbacks=[scheduler])
+        trainer.fit(create_train_datasets, epochs=2, steps_per_epoch=10, callbacks=[scheduler])
 
         # model performance after training (should improve)
         end_stats = trainer.evaluate(create_test_dataset,
@@ -190,8 +210,26 @@ class TestTFRayEstimator(TestCase):
     def test_fit_and_evaluate_horovod(self):
         self.impl_test_fit_and_evaluate(backend="horovod")
 
-    def impl_test_auto_shard(self, backend):
+    def test_auto_shard_tf(self):
+        # file 1 contains all 0s, file 2 contains all 1s
+        # If shard by files, then each model will
+        # see the same records in the same batch.
+        # If shard by records, then each batch
+        # will have different records.
+        # The loss func is constructed such that
+        # the former case will return 0, and the latter
+        # case will return non-zero.
 
+        ray_ctx = RayContext.get()
+        trainer = Estimator(
+            model_creator=auto_shard_model_creator,
+            verbose=True,
+            config={"batch_size": 4},
+            backend="tf", workers_per_node=2)
+        stats = trainer.fit(create_auto_shard_datasets, epochs=1, steps_per_epoch=2)
+        assert stats["train_loss"] == 0.0
+
+    def test_auto_shard_horovod(self):
         # file 1 contains all 0s, file 2 contains all 1s
         # If shard by files, then each model will
         # see the same records in the same batch.
@@ -207,15 +245,9 @@ class TestTFRayEstimator(TestCase):
             compile_args_creator=create_auto_shard_compile_args,
             verbose=True,
             config={"batch_size": 4},
-            backend=backend, workers_per_node=2)
+            backend="horovod", workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, steps_per_epoch=2)
         assert stats["train_loss"] == 0.0
-
-    def test_auto_shard_tf(self):
-        self.impl_test_auto_shard("tf")
-
-    def test_auto_shard_horovod(self):
-        self.impl_test_auto_shard("horovod")
 
     # this needs horovod >= 0.19.2
     def test_horovod_learning_rate_schedule(self):

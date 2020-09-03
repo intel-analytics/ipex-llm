@@ -31,6 +31,7 @@
 import logging
 import json
 import os
+import numpy as np
 
 import ray
 import ray.services
@@ -135,7 +136,6 @@ class TFRunner:
         logger.debug("Creating model with MultiWorkerMirroredStrategy")
         with self.strategy.scope():
             self.model = self.model_creator(self.config)
-            self.model.compile(**self.compile_args_creator(self.config))
 
         # For use in model.evaluate()
         self.local_model = None
