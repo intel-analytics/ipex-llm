@@ -90,7 +90,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
-    across the cluster).
+    across the cluster if necessary).
 
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
            "standalone" and "spark-submit". Default to be "local".
@@ -181,7 +181,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
 
 def stop_orca_context():
     """
-    Stop the SparkContext (and stop Ray services across the cluster).
+    Stop the SparkContext (and stop Ray services across the cluster if necessary).
     """
     from pyspark import SparkContext
     from zoo.ray import RayContext
