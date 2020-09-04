@@ -112,7 +112,7 @@
         <scala.major.version>2.10</scala.major.version>
         <scala.version>2.10.7</scala.version>
         <scala.macros.version>2.1.0</scala.macros.version>
-        <scalatest.version>2.2.4</scalatest.version>
+        <scalatest.version>3.2.0</scalatest.version>
 
         <!-- platform encoding override -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -174,7 +174,7 @@
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <spark-version.project>1.5-plus</spark-version.project>
         <spark.version>1.5.1</spark.version>
-        <breeze.version>0.11.2</breeze.version>
+        <breeze.version>0.13.2</breeze.version>
         <spark-scope>provided</spark-scope>
 
         <bigdl-core-all-scope>compile</bigdl-core-all-scope>
@@ -617,6 +617,92 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>spark_3.x</id>
+            <properties>
+                <spark-version.project>3.0</spark-version.project>
+                <spark.version>3.0.0</spark.version>
+                <scala.major.version>2.12</scala.major.version>
+                <scala.version>2.12.8</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Redefine the plugin to enable fatal warninings -->
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>eclipse-add-source</id>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-compile-first</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-test-compile-first</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>testCompile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>attach-scaladocs</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>doc-jar</goal>
+                                </goals>
+                                <configuration>
+                                    <args>
+                                        <!-- Do not change the arg orders. It is a weird way to pass in
+                                        this arg. Maybe it is a bug of the plugin. -->
+                                        <arg>-skip-packages</arg>
+                                        <arg>caffe:org.tensorflow:netty:org.apache.spark.sparkExtension:org.apache.spark.rdd:org.apache.spark.storage:org.apache.spark.bigdl</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <scalaVersion>${scala.version}</scalaVersion>
+                            <recompileMode>incremental</recompileMode>
+                            <useZincServer>false</useZincServer>
+                            <args>
+                                <arg>-unchecked</arg>
+                                <!-- Too many deprecation usage, let's suspend it temporary-->
+                                <arg>-deprecation:false</arg>
+                                <arg>-feature</arg>
+                                <arg>-Xfatal-warnings</arg>
+                            </args>
+                            <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
+                                 by Spark SQL for code generation. -->
+                            <compilerPlugins>
+                                <compilerPlugin>
+                                    <groupId>org.scalamacros</groupId>
+                                    <artifactId>paradise_${scala.version}</artifactId>
+                                    <version>${scala.macros.version}</version>
+                                </compilerPlugin>
+                            </compilerPlugins>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>scala_2.12</id>
+            <properties>
+                <scala.major.version>2.12</scala.major.version>
+                <scala.version>2.12.12</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+            </properties>
         </profile>
         <profile>
             <id>scala_2.11</id>
