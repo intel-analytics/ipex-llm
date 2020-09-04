@@ -13,28 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import sys
+import argparse
 
 import tensorflow as tf
-import tensorflow_datasets as tfds
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.tf.estimator import Estimator
 
 
+def preprocess(x, y):
+    return tf.to_float(tf.reshape(x, (-1, 28, 28, 1))) / 255.0, y
+
+
 def main(max_epoch):
-    sc = init_orca_context(cores=4, memory="2g")
 
     # get DataSet
-    # as_supervised returns tuple (img, label) instead of dict {'image': img, 'label':label}
-    mnist_train = tfds.load(name="mnist", split="train", as_supervised=True)
-    mnist_test = tfds.load(name="mnist", split="test", as_supervised=True)
+    (train_feature, train_label), (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
 
-    # Normalizes images, unit8 -> float32
-    def normalize_img(image, label):
-        return tf.cast(image, tf.float32) / 255., label
-
-    mnist_train = mnist_train.map(normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    mnist_test = mnist_test.map(normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    # tf.data.Dataset.from_tensor_slices is for demo only. For production use, please use
+    # file-based approach (e.g. tfrecord).
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
+    train_dataset = train_dataset.map(preprocess)
+    val_dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
+    val_dataset = val_dataset.map(preprocess)
 
     model = tf.keras.Sequential(
         [tf.keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
@@ -54,22 +54,25 @@ def main(max_epoch):
                   metrics=['accuracy'])
 
     est = Estimator.from_keras(keras_model=model)
-    est.fit(data=mnist_train,
+    est.fit(data=train_dataset,
             batch_size=320,
             epochs=max_epoch,
-            validation_data=mnist_test)
+            validation_data=val_dataset)
 
-    result = est.evaluate(mnist_test)
+    result = est.evaluate(val_dataset)
     print(result)
 
     est.save_keras_model("/tmp/mnist_keras.h5")
-    stop_orca_context()
-
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cluster_mode', type=str, default="local",
+                        help='The mode for the Spark cluster. local or yarn.')
 
-    max_epoch = 5
-
-    if len(sys.argv) > 1:
-        max_epoch = int(sys.argv[1])
-    main(max_epoch)
+    args = parser.parse_args()
+    if args.cluster_mode == "local":
+        init_orca_context(cluster_mode="local", cores=4)
+    elif args.cluster_mode == "yarn":
+        init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="6g")
+    main(5)
+    stop_orca_context()

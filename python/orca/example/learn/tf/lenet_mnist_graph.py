@@ -13,17 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
-import tensorflow_datasets as tfds
-import sys
+import argparse
 
+import tensorflow as tf
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.orca import init_orca_context, stop_orca_context
-
-sys.path.append("/tmp/models/slim")  # add the slim library
-from nets import lenet
-
-slim = tf.contrib.slim
 
 
 def accuracy(logits, labels):
@@ -32,28 +26,39 @@ def accuracy(logits, labels):
     return tf.reduce_mean(is_correct)
 
 
+def lenet(images):
+    with tf.variable_scope('LeNet', [images]):
+        net = tf.layers.conv2d(images, 32, (5, 5), activation=tf.nn.relu, name='conv1')
+        net = tf.layers.max_pooling2d(net, (2, 2), 2, name='pool1')
+        net = tf.layers.conv2d(net, 64, (5, 5), activation=tf.nn.relu, name='conv2')
+        net = tf.layers.max_pooling2d(net, (2, 2), 2, name='pool2')
+        net = tf.layers.flatten(net)
+        net = tf.layers.dense(net, 1024, activation=tf.nn.relu, name='fc3')
+        logits = tf.layers.dense(net, 10)
+        return logits
+
+
+def preprocess(x, y):
+    return tf.to_float(tf.reshape(x, (-1, 28, 28, 1))) / 255.0, y
+
+
 def main(max_epoch):
-    sc = init_orca_context(cores=4, memory="2g")
 
-    # get DataSet
-    mnist_train = tfds.load(name="mnist", split="train")
-    mnist_test = tfds.load(name="mnist", split="test")
+    (train_feature, train_label), (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
 
-    # Normalizes images
-    def normalize_img(data):
-        data['image'] = tf.cast(data["image"], tf.float32) / 255.
-        return data
-
-    mnist_train = mnist_train.map(normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    mnist_test = mnist_test.map(normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    # tf.data.Dataset.from_tensor_slices is for demo only. For production use, please use
+    # file-based approach (e.g. tfrecord).
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
+    train_dataset = train_dataset.map(preprocess)
+    val_dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
+    val_dataset = val_dataset.map(preprocess)
 
     # tensorflow inputs
     images = tf.placeholder(dtype=tf.float32, shape=(None, 28, 28, 1))
     # tensorflow labels
     labels = tf.placeholder(dtype=tf.int32, shape=(None,))
 
-    with slim.arg_scope(lenet.lenet_arg_scope()):
-        logits, end_points = lenet.lenet(images, num_classes=10, is_training=True)
+    logits = lenet(images)
 
     loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
 
@@ -66,21 +71,26 @@ def main(max_epoch):
                                loss=loss,
                                optimizer=tf.train.AdamOptimizer(),
                                metrics={"acc": acc})
-    est.fit(data=mnist_train,
+    est.fit(data=train_dataset,
             batch_size=320,
             epochs=max_epoch,
-            validation_data=mnist_test)
+            validation_data=val_dataset)
 
-    result = est.evaluate(mnist_test)
+    result = est.evaluate(val_dataset)
     print(result)
 
     est.save_tf_checkpoint("/tmp/lenet/model")
-    stop_orca_context()
 
 
 if __name__ == '__main__':
-    max_epoch = 5
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cluster_mode', type=str, default="local",
+                        help='The mode for the Spark cluster. local or yarn.')
 
-    if len(sys.argv) > 1:
-        max_epoch = int(sys.argv[1])
-    main(max_epoch)
+    args = parser.parse_args()
+    if args.cluster_mode == "local":
+        init_orca_context(cluster_mode="local", cores=4)
+    elif args.cluster_mode == "yarn":
+        init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="6g")
+    main(5)
+    stop_orca_context()
