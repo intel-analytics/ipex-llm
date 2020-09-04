@@ -3,47 +3,43 @@
 This is an example to demonstrate how to use Analytics-Zoo's Orca TF Estimator API to run distributed
 Tensorflow and Keras on Spark.
 
-## Install or download Analytics Zoo
-Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
-
 ## Environment Preparation
-```
-pip install tensorflow==1.15 tensorflow-datasets==2.0
+
+Download and install latest analytics whl by following instructions ([here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/#install-the-latest-nightly-build-wheels-for-pip).
+
+```bash
+conda create -y -n analytics-zoo python==3.7.7
+conda activate analytics-zoo
+pip install analytics_zoo-${VERSION}-${TIMESTAMP}-py2.py3-none-${OS}_x86_64.whl
+pip install tensorflow==1.15.0
 pip install psutil
 ```
 
-## Model Preparation
+Note: conda environment is required to run on Yarn, but not strictly necessary for running on local.
 
-In this example, we will use the **slim** library to construct the model. You can
-clone it [here](https://github.com/tensorflow/models/tree/master/research/slim) and add
-the `research/slim` directory to `PYTHONPATH`.
+## Run examples on local
 
 ```bash
-git clone https://github.com/tensorflow/models/
-export PYTHONPATH=$PWD/models/research/slim:$PYTHONPATH
+python lenet_mnist_graph.py --cluster_mode local 
 ```
-
-## Run tf graph model example after pip install
 
 ```bash
-python lenet_mnist_graph.py
-```
-## Run tf graph model example with prebuilt package
-
-```bash
-export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
-export SPARK_HOME=... # the root directory of Spark
-bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] lenet_mnist_graph.py
+python lenet_mnist_keras.py --cluster_mode local
 ```
 
-## Run tf keras model example after pip install
+## Run examples on yarn cluster
 ```bash
-python lenet_mnist_keras.py
+python lenet_mnist_graph.py --cluster_mode yarn
 ```
 
-## Run tf keras model example with prebuilt package
 ```bash
-export ANALYTICS_ZOO_HOME=... # the directory where you extract the downloaded Analytics Zoo zip package
-export SPARK_HOME=... # the root directory of Spark
-bash $ANALYTICS_ZOO_HOME/bin/spark-submit-python-with-zoo.sh --master local[4] lenet_mnist_keras.py
+python lenet_mnist_keras.py --cluster_mode yarn
 ```
+
+## Additional Resources
+The application is also be able to run on spark standalone cluster or in yarn cluster mode.
+Please refer to the following links to learn more details.
+
+1. [Orca Overview](https://analytics-zoo.github.io/master/#Orca/overview/) and [Orca Context](https://analytics-zoo.github.io/master/#Orca/context/)
+2. [Download and install Analytics Zoo](https://analytics-zoo.github.io/master/#PythonUserGuide/install/)
+
