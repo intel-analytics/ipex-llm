@@ -241,6 +241,8 @@ class SparkRunner:
                 "ZOO_STANDALONE_HOME": zoo_standalone_home,
                 # If not set this, by default master is hostname but not ip,
                 "SPARK_MASTER_HOST": node_ip}
+            if 'JAVA_HOME' in os.environ:
+                SparkRunner.standalone_env["JAVA_HOME"] = os.environ["JAVA_HOME"]
             # The scripts installed from pip don't have execution permission
             # and need to first give them permission.
             pro = subprocess.Popen(["chmod", "-R", "+x", "{}/sbin".format(zoo_standalone_home)])
