@@ -32,10 +32,11 @@ ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
 ENV HADOOP_CONF_DIR                     /opt/hadoop-conf
 ENV ANALYTICS_ZOO_HOME                  /opt/analytics-zoo-${ANALYTICS_ZOO_VERSION}
+ENV BIGDL_CLASSPATH                     ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar
 ENV JAVA_HOME                           /opt/jdk
 ENV REDIS_HOME                          /opt/redis-5.0.5
 ENV CS_HOME                             /opt/work/cluster-serving
-ENV PYTHONPATH                          ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip:${CS_HOME}/serving-python.zip:/opt/models/research/slim
+ENV PYTHONPATH                          ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:${CS_HOME}/serving-python.zip:/opt/models/research/slim
 ENV PATH                                ${ANALYTICS_ZOO_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update --fix-missing && \
@@ -72,7 +73,7 @@ RUN apt-get install -y python3-minimal && \
     pip install numpy scipy && \
     pip install --no-binary pandas==0.23.4 -I pandas && \
     pip install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
-    pip install torch==1.1.0 torchvision==0.3.0 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip install torch==1.5.0 torchvision==0.6.0 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
@@ -84,9 +85,10 @@ RUN apt-get install -y python3-minimal && \
     pip install redis && \
     pip install keras && \
     pip install mxnet-mkl==1.6.0 && \
-    pip install ray==0.7.2 && \
+    pip install ray==0.8.4 && \
     pip install Pillow==6.1 && \
     pip install psutil aiohttp && \
+    pip install py4j && \
     pip install gym gym[atari] && \
     pip install lz4 && \
     pip install ray[rllib] && \
