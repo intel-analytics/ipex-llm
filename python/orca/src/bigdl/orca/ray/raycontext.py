@@ -106,7 +106,7 @@ class RayServiceFuncGenerator(object):
         if self.env:  # Add in env argument if any MKL setting is needed.
             modified_env.update(self.env)
         if self.verbose:
-            print("Executing with these environment setting:")
+            print("Executing with these environment settings:")
             for pair in modified_env.items():
                 print(pair)
             print("The $PATH is: {}".format(modified_env["PATH"]))
