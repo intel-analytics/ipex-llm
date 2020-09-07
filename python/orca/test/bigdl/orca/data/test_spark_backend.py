@@ -178,10 +178,17 @@ class TestSparkBackend(TestCase):
         temp = tempfile.mkdtemp()
         df.write.parquet(os.path.join(temp, "test_parquet"))
         data_shard2 = zoo.orca.data.pandas.read_parquet(os.path.join(temp, "test_parquet"))
+        assert data_shard2.num_partitions() == 2, "number of shard should be 2"
         data = data_shard2.collect()
-        assert len(data) == 2, "number of shard should be 2"
         df = data[0]
         assert "location" in df.columns
+
+        data_shard2 = zoo.orca.data.pandas.read_parquet(os.path.join(temp, "test_parquet"),
+                                                        columns=['ID', 'sale_price'])
+        data = data_shard2.collect()
+        df = data[0]
+        assert len(df.columns) == 2
+
         shutil.rmtree(temp)
 
 
