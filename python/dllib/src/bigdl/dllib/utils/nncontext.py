@@ -122,7 +122,7 @@ def init_spark_on_yarn(hadoop_conf,
 
 def init_spark_standalone(num_executors,
                           executor_cores,
-                          executor_memory="10g",
+                          executor_memory="2g",
                           driver_cores=4,
                           driver_memory="1g",
                           master=None,
@@ -175,6 +175,40 @@ def init_spark_standalone(num_executors,
         extra_python_lib=extra_python_lib,
         conf=conf,
         jars=jars)
+    return sc
+
+
+def init_spark_on_k8s(master,
+                      container_image,
+                      num_executors,
+                      executor_cores,
+                      executor_memory="2g",
+                      driver_memory="1g",
+                      driver_cores=4,
+                      extra_executor_memory_for_ray=None,
+                      extra_python_lib=None,
+                      spark_log_level="WARN",
+                      redirect_spark_log=True,
+                      jars=None,
+                      conf=None,
+                      python_location=None):
+
+    from zoo.util.spark import SparkRunner
+    runner = SparkRunner(spark_log_level=spark_log_level,
+                         redirect_spark_log=redirect_spark_log)
+    sc = runner.init_spark_on_k8s(
+        master=master,
+        container_image=container_image,
+        num_executors=num_executors,
+        executor_cores=executor_cores,
+        executor_memory=executor_memory,
+        driver_memory=driver_memory,
+        driver_cores=driver_cores,
+        extra_executor_memory_for_ray=extra_executor_memory_for_ray,
+        extra_python_lib=extra_python_lib,
+        jars=jars,
+        conf=conf,
+        python_location=python_location)
     return sc
 
 

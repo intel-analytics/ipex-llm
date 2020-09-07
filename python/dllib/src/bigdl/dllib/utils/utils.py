@@ -13,16 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import glob
 from zoo.common import Sample
 
 
 def to_sample_rdd(x, y, sc, num_slices=None):
     """
-    Conver x and y into RDD[Sample]
+    Convert x and y into RDD[Sample]
     :param sc: SparkContext
     :param x: ndarray and the first dimension should be batch
     :param y: ndarray and the first dimension should be batch
-    :param numSlices:
+    :param num_slices: The number of partitions for x and y.
     :return:
     """
     x_rdd = sc.parallelize(x, num_slices)
@@ -73,3 +75,78 @@ def detect_python_location():
                         "Cannot detect current python location."
                         "Please set it manually by python_location")
     return out.strip()
+
+
+# This is adopted from conda-pack.
+def pack_conda_main(args):
+    import sys
+    import traceback
+    from conda_pack.cli import fail, PARSER, context
+    import conda_pack
+    from conda_pack import pack, CondaPackException
+    args = PARSER.parse_args(args=args)
+    # Manually handle version printing to output to stdout in python < 3.4
+    if args.version:
+        print('conda-pack %s' % conda_pack.__version__)
+        sys.exit(0)
+
+    try:
+        with context.set_cli():
+            pack(name=args.name,
+                 prefix=args.prefix,
+                 output=args.output,
+                 format=args.format,
+                 force=args.force,
+                 compress_level=args.compress_level,
+                 n_threads=args.n_threads,
+                 zip_symlinks=args.zip_symlinks,
+                 zip_64=not args.no_zip_64,
+                 arcroot=args.arcroot,
+                 dest_prefix=args.dest_prefix,
+                 verbose=not args.quiet,
+                 filters=args.filters)
+    except CondaPackException as e:
+        fail("CondaPackError: %s" % e)
+    except KeyboardInterrupt:
+        fail("Interrupted")
+    except Exception:
+        fail(traceback.format_exc())
+
+
+def pack_penv(conda_name, output_name):
+    import tempfile
+    tmp_dir = tempfile.mkdtemp()
+    tmp_path = "{}/{}.tar.gz".format(tmp_dir, output_name)
+    print("Start to pack current python env")
+    pack_conda_main(["--output", tmp_path, "--n-threads", "8", "--name", conda_name])
+    print("Packing has been completed: {}".format(tmp_path))
+    return tmp_path
+
+
+def get_conda_python_path():
+    conda_env_path = "/".join(detect_python_location().split("/")[:-2])
+    python_interpreters = glob.glob("{}/lib/python*".format(conda_env_path))
+    assert len(python_interpreters) == 1, "Conda env should contain a single Python " \
+                                          "interpreter, but got: {}".format(python_interpreters)
+    return python_interpreters[0]
+
+
+def get_executor_conda_zoo_classpath(conda_path):
+    zoo_classpath, bigdl_classpath = get_zoo_bigdl_classpath_on_driver()
+    zoo_jar_name = zoo_classpath.split("/")[-1]
+    bigdl_jar_name = bigdl_classpath.split("/")[-1]
+    python_interpreter_name = get_conda_python_path().split("/")[-1]  # Python version
+    prefix = "{}/lib/{}/site-packages/"\
+        .format(conda_path, python_interpreter_name)
+    return ["{}/zoo/share/lib/{}".format(prefix, zoo_jar_name),
+            "{}/bigdl/share/lib/{}".format(prefix, bigdl_jar_name)]
+
+
+def get_zoo_bigdl_classpath_on_driver():
+    from bigdl.util.engine import get_bigdl_classpath
+    from zoo.util.engine import get_analytics_zoo_classpath
+    bigdl_classpath = get_bigdl_classpath()
+    assert bigdl_classpath, "Cannot find BigDL classpath, please check your installation"
+    zoo_classpath = get_analytics_zoo_classpath()
+    assert zoo_classpath, "Cannot find Analytics-Zoo classpath, please check your installation"
+    return zoo_classpath, bigdl_classpath
