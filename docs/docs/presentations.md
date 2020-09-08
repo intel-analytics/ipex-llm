@@ -4,6 +4,12 @@
 
 **Talks:**
 
+* Project Zouwu: Scalable AutoML for Telco Time Series Analysis using Ray and Analytics Zoo, [Ray Summit Connect 2020](https://anyscale.com/blog/videos-and-slides-for-the-fourth-ray-summit-connect-august-12-2020/), August 2020, ([slides](https://anyscale.com/wp-content/uploads/2020/08/Ding-Ding-Connect-slides.pdf))
+
+* Cluster Serving: Distributed Model Inference using Big Data Streaming in Analytics Zoo, [OpML 2020](https://www.usenix.org/conference/opml20/presentation/song), July 2020, ([slides](https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_43_slides_song.pdf))
+
+* Scalable AutoML for Time Series Forecasting using Ray, [OpML 2020](https://www.usenix.org/conference/opml20/presentation/huang), July 2020, ([slides](https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_84_slides_huang.pdf))
+
 * Scalable AutoML for Time Series Forecasting using Ray, [Spark + AI Summit 2020](https://databricks.com/session_na20/scalable-automl-for-time-series-forecasting-using-ray), June 2020, ([slides](https://www.slideshare.net/databricks/scalable-automl-for-time-series-forecasting-using-ray))
 
 * Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, [Spark + AI Summit 2020](https://databricks.com/session_na20/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark), June 2020, ([slides](https://www.slideshare.net/databricks/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark))
