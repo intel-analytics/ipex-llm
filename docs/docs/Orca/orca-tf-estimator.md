@@ -43,9 +43,10 @@ Estimator.from_graph(*, inputs, outputs=None, labels=None, loss=None, optimizer=
 * `clip_norm`: float >= 0. Gradients will be clipped when their L2 norm exceeds this value.
 * `clip_value`:  a float >= 0 or a tuple of two floats.
         
-  If clip_value is a float, gradients will be clipped when their absolute value exceeds this value.
+  If `clip_value` is a float, gradients will be clipped when their absolute value exceeds this value.
   
-  If clip_value is a tuple of two floats, gradients will be clipped when their value less than clip_value[0] or larger than clip_value[1].
+  If `clip_value` is a tuple of two floats, gradients will be clipped when their value less than `clip_value[0]` or larger than `clip_value[1]`.
+  
 * `metrics`: dictionary of {metric_name: metric tensor}.
 * `sess`: the current TensorFlow Session, if you want to used a pre-trained model, you should use the Session to load the pre-trained variables and pass it to estimator
 * `model_dir`: location to save model checkpoint and summaries.
@@ -97,11 +98,12 @@ fit(data,
 ```
 * `data`: train data. It can be XShards, Spark DataFrame, tf.data.Dataset.
         
-   If data is XShards, each element needs to be {'x': a feature numpy array
+   If `data` is XShards, each element needs to be {'x': a feature numpy array
          or a tuple of feature numpy arrays, 'y': a label numpy array or a tuple of
          label numpy arrays}
    
-   If data is tf.data.Dataset, each element is a tuple of input tensors.
+   If `data` is tf.data.Dataset, each element is a tuple of input tensors.
+   
 * `epochs`: number of epochs to train.
 * `batch_size`: total batch size for each iteration.
 * `feature_cols`: feature column names if train data is Spark DataFrame.
@@ -126,7 +128,6 @@ est.fit(data=dataset,
         epochs=10,
         validation_data=dataset)
 ```
-
 
 
 2.  Train data is Spark DataFrame. E.g.
@@ -209,11 +210,12 @@ fit(data,
 ```
 * `data`: train data. It can be XShards, Spark DataFrame, tf.data.Dataset.
         
-   If data is XShards, each element needs to be {'x': a feature numpy array
+   If `data` is XShards, each element needs to be {'x': a feature numpy array
          or a tuple of feature numpy arrays, 'y': a label numpy array or a tuple of
          label numpy arrays}
    
-   If data is tf.data.Dataset, each element is a tuple of input tensors.
+   If `data` is tf.data.Dataset, each element is a tuple of input tensors.
+   
 * `epochs`: number of epochs to train.
 * `batch_size`: total batch size for each iteration.
 * `feature_cols`: feature column names if train data is Spark DataFrame.
@@ -245,7 +247,6 @@ est.fit(data=df,
         labels_cols=['label'],
         validation_data=df)
 ```
-
 
 3. If train data is XShards, e.g.
 ```
@@ -281,9 +282,10 @@ evaluate(data, batch_size=4,
 ```
 * `data`: evaluation data. It can be XShards, Spark DataFrame, tf.data.Dataset.
         
-   If data is XShards, each element needs to be {'x': a feature numpy array or a tuple of feature numpy arrays, 'y': a label numpy array or a tuple of label numpy arrays}
+   If `data` is XShards, each element needs to be {'x': a feature numpy array or a tuple of feature numpy arrays, 'y': a label numpy array or a tuple of label numpy arrays}
    
-   If data is tf.data.Dataset, each element is [feature tensor tuple, label tensor tuple]
+   If `data` is tf.data.Dataset, each element is `[feature tensor tuple, label tensor tuple]`
+   
 * `batch_size`: batch size per thread.
 * `feature_cols`: feature_cols: feature column names if train data is Spark DataFrame.
 * `labels_cols`: label column names if train data is Spark DataFrame.
@@ -300,23 +302,19 @@ predict(data, batch_size=4,
         hard_code_batch_size=False
         ):
 ```
-* `data`: data to be predicted.
-        It can be XShards, Spark DataFrame, or tf.data.Dataset.
+* `data`: data to be predicted. It can be XShards, Spark DataFrame, or tf.data.Dataset.        
         
-        If data is XShard, each element needs to be {'x': a feature numpy array
-         or a tuple of feature numpy arrays}.
+    If `data` is XShard, each element needs to be {'x': a feature numpy array
+         or a tuple of feature numpy arrays}.         
          
-        If data is tf.data.Dataset, each element is feature tensor tuple
+    If `data` is tf.data.Dataset, each element is feature tensor tuple.
+
 * `batch_size`: batch size per thread
 * `feature_cols`: list of feature column names if input data is Spark DataFrame.
 * `hard_code_batch_size`: if require hard code batch size for prediction. The default value is False.
 
 This method returns a predicted result.
         
-If input data is XShards or tf.data.Dataset, the predict result is also a XShards, and the schema for each result is: {'prediction': predicted numpy array or list of predicted numpy arrays}.
-
-If input data is Spark DataFrame, the predict result is a DataFrame which includes original columns plus 'prediction' column. The 'prediction' column can be FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.
-
 1. Predict data is tf.data.DataSet. The prediction result should be an XShards and each element is {'prediction': predicted numpy array or list of predicted numpy arrays}.
 ```
 dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100, 1)),
@@ -329,8 +327,7 @@ predictions = prediction_shards.collect()
 assert 'prediction' in predictions[0]
 ```
 
-
-2. Predict data is Spark DataFrame. The predict result is a DataFrame which includes original columns plus 'prediction' column. 
+2. Predict data is Spark DataFrame. The predict result is a DataFrame which includes original columns plus `prediction` column. The `prediction` column can be FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.
 ```
 prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
 
@@ -355,8 +352,6 @@ predictions = prediction_shards.collect()
 
 assert 'prediction' in predictions[0]
 ```
-
-
 
 #### **Checkpointing and Resume Training**
 
