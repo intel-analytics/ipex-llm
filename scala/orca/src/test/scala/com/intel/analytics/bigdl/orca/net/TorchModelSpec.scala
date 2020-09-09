@@ -43,6 +43,8 @@ class TorchModelSpec extends ZooSpecHelper{
        |import torch.nn as nn
        |import torch.nn.functional as F
        |from zoo.util.nest import ptensor_to_numpy
+       |from zoo.pipeline.api.torch import zoo_pickle_module
+       |import io
        |
        |class LeNet(nn.Module):
        |    def __init__(self):
@@ -73,8 +75,10 @@ class TorchModelSpec extends ZooSpecHelper{
          |for param in model.parameters():
          |    weights.append(param.view(-1))
          |flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
-         |bym = CloudPickleSerializer.dumps(CloudPickleSerializer, model)
          |byc = CloudPickleSerializer.dumps(CloudPickleSerializer, criterion)
+         |bys = io.BytesIO()
+         |torch.save(model, bys, pickle_module=zoo_pickle_module)
+         |bym = bys.getvalue()
          |""".stripMargin
     PythonInterpreter.exec(code)
 
@@ -108,7 +112,9 @@ class TorchModelSpec extends ZooSpecHelper{
          |for param in model.parameters():
          |    weights.append(param.view(-1))
          |flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
-         |bym = CloudPickleSerializer.dumps(CloudPickleSerializer, model)
+         |bys = io.BytesIO()
+         |torch.save(model, bys, pickle_module=zoo_pickle_module)
+         |bym = bys.getvalue()
          |""".stripMargin
     PythonInterpreter.exec(code)
     val w = PythonInterpreter.getValue[NDArray[Array[Float]]]("flatten_weight").getData()
@@ -144,8 +150,10 @@ class TorchModelSpec extends ZooSpecHelper{
          |for param in model.parameters():
          |    weights.append(param.view(-1))
          |flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
-         |bym = CloudPickleSerializer.dumps(CloudPickleSerializer, model)
          |byc = CloudPickleSerializer.dumps(CloudPickleSerializer, lossFunc)
+         |bys = io.BytesIO()
+         |torch.save(model, bys, pickle_module=zoo_pickle_module)
+         |bym = bys.getvalue()
          |del _data
          |""".stripMargin
     PythonInterpreter.exec(code)
@@ -176,8 +184,9 @@ class TorchModelSpec extends ZooSpecHelper{
          |for param in model.parameters():
          |    weights.append(param.view(-1))
          |flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
-         |bym = CloudPickleSerializer.dumps(CloudPickleSerializer, model)
-         |
+         |bys = io.BytesIO()
+         |torch.save(model, bys, pickle_module=zoo_pickle_module)
+         |bym = bys.getvalue()
          |""".stripMargin
     PythonInterpreter.exec(code)
 
@@ -198,5 +207,29 @@ class TorchModelSpec extends ZooSpecHelper{
     extraParams.zip(newExtraParams).foreach{v =>
       v._1 should be (v._2)
     }
+  }
+
+  "TorchModel" should "loadModel without error" in {
+    ifskipTest()
+    val tmpname = createTmpFile().getAbsolutePath()
+    val code = lenet +
+      s"""
+         |model = LeNet()
+         |torch.save(model, "$tmpname", pickle_module=zoo_pickle_module)
+         |""".stripMargin
+    PythonInterpreter.exec(code)
+    val model = TorchModel.loadModel(tmpname)
+    model.evaluate()
+
+    val genInputCode =
+      s"""
+         |import numpy as np
+         |import torch
+         |input = torch.tensor(np.random.rand(4, 1, 28, 28), dtype=torch.float32)
+         |target = torch.tensor(np.ones([4]), dtype=torch.long)
+         |_data = (input, target)
+         |""".stripMargin
+    PythonInterpreter.exec(genInputCode)
+    model.forward(Tensor[Float]())
   }
 }
