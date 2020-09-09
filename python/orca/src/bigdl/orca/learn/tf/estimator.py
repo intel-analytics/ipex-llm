@@ -183,10 +183,11 @@ class Estimator(object):
         """
         raise NotImplementedError()
 
-    def save_keras_model(self, path):
+    def save_keras_model(self, path, overwrite=True):
         """
         Save tensorflow keras model in this estimator.
         :param path: keras model save path.
+        :param overwrite: Whether to silently overwrite any existing file at the target location.
         """
         raise NotImplementedError()
 
@@ -576,5 +577,5 @@ class TFKerasWrapper(Estimator):
 
         return self.model.evaluate(dataset, batch_per_thread=batch_size)
 
-    def save_keras_model(self, path):
-        self.model.save_model(path)
+    def save_keras_model(self, path, overwrite=True):
+        self.model.save_model(path, overwrite=overwrite)
