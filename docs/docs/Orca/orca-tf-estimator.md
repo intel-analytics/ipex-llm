@@ -458,9 +458,10 @@ est.save_tf_checkpoint(model_checkpoint)
 
 ##### **Save TF Keras model**
 ```
-save_keras_model(path)
+save_keras_model(path, overwrite=True)
 ```
 * `path`: keras model save path.
+* `overwrite`: Boolean. Whether to silently overwrite any existing file at the target location. Default: True.
 
 If you use tensorflow keras model in this estimator, this method would save keras model in specified path.
 
@@ -468,6 +469,6 @@ E.g.
 ```
 temp = tempfile.mkdtemp()
 model_path = os.path.join(temp, 'test.h5')
-est.save_keras_model(model_path)
+est.save_keras_model(model_path, overwrite=True)
 ```
 
