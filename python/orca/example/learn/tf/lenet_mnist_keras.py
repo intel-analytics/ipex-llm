@@ -64,6 +64,7 @@ def main(max_epoch):
 
     est.save_keras_model("/tmp/mnist_keras.h5")
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cluster_mode', type=str, default="local",
