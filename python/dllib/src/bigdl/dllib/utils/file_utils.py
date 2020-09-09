@@ -72,17 +72,17 @@ def append_suffix(prefix, path):
     return file_name
 
 
-def save_file(save_func, path):
+def save_file(save_func, path, **kwargs):
 
     if is_local_path(path):
-        save_func(path)
+        save_func(path, **kwargs)
     else:
         file_name = str(uuid.uuid1())
         file_name = append_suffix(file_name, path)
         temp_path = os.path.join(tempfile.gettempdir(), file_name)
 
         try:
-            save_func(temp_path)
+            save_func(temp_path, **kwargs)
             put_local_file_to_remote(temp_path, path)
         finally:
             os.remove(temp_path)
