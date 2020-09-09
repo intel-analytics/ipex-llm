@@ -15,6 +15,7 @@
 #
 
 import os
+import platform
 
 from pyspark import SparkContext
 from zoo import init_nncontext, init_spark_conf
@@ -99,8 +100,11 @@ class SparkRunner:
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
                                          extra_executor_memory_for_ray)
+            py_version = ".".join(platform.python_version().split(".")[0:2])
+            preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
             conf.update({"spark.scheduler.minRegisteredResourcesRatio": "1.0",
-                         "spark.executorEnv.PYTHONHOME": executor_python_env})
+                         "spark.executorEnv.PYTHONHOME": executor_python_env,
+                         "spark.executorEnv.LD_PRELOAD": preload_so})
             if spark_yarn_archive:
                 conf["spark.yarn.archive"] = spark_yarn_archive
             zoo_bigdl_path_on_executor = ":".join(
