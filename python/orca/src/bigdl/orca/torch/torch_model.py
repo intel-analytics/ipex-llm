@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import sys
+import io
 
 import torch
 
@@ -22,6 +23,7 @@ from bigdl.util.common import JTensor
 from zoo.common.utils import callZooFunc
 from pyspark.serializers import CloudPickleSerializer
 from zoo.pipeline.api.torch.utils import trainable_param
+from zoo.pipeline.api.torch import zoo_pickle_module
 from importlib.util import find_spec
 
 if sys.version < '3.7':
@@ -58,8 +60,9 @@ class TorchModel(Layer):
         for param in trainable_param(model):
             weights.append(param.view(-1))
         flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
-        bys = CloudPickleSerializer.dumps(CloudPickleSerializer, model)
-        net = TorchModel(bys, flatten_weight)
+        bys = io.BytesIO()
+        torch.save(model, bys, pickle_module=zoo_pickle_module)
+        net = TorchModel(bys.getvalue(), flatten_weight)
         return net
 
     def to_pytorch(self):
@@ -70,7 +73,7 @@ class TorchModel(Layer):
         new_weight = self.get_weights()
         assert(len(new_weight) == 1, "TorchModel's weights should be one tensor")
         # set weights
-        m = CloudPickleSerializer.loads(CloudPickleSerializer, self.module_bytes)
+        m = torch.load(io.BytesIO(self.module_bytes), pickle_module=zoo_pickle_module)
         w = torch.Tensor(new_weight[0])
         torch.nn.utils.vector_to_parameters(w, trainable_param(m))
 
