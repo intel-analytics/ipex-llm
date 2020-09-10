@@ -1,6 +1,6 @@
 # OpenVINO ResNet_v1_50 example
 This example illustrates how to use a pre-trained OpenVINO optimized model to make inferences with OpenVINO toolkit as backend using Analytics Zoo. We hereby illustrate the support of [VNNI](https://en.wikichip.org/wiki/x86/avx512vnni) using [OpenVINO](https://software.intel.com/en-us/openvino-toolkit) as backend in Analytics Zoo, which aims at accelerating inference by utilizing low numerical precision (Int8) computing. Int8 quantized models can generally give you better performance on Intel Xeon scalable processors.
- 
+
 ## Environment
 * Apache Spark (This version needs to be same with the version you use to build Analytics Zoo)
 * [Analytics Zoo](https://analytics-zoo.github.io/master/#PythonUserGuide/install/)
@@ -9,7 +9,11 @@ This example illustrates how to use a pre-trained OpenVINO optimized model to ma
 - Set `KMP_BLOCKTIME=200`, i.e., `export KMP_BLOCKTIME=200`
 
 ## Prepare OpenVINO Model
-TensorFlow models cannot be directly loaded by OpenVINO. It should be converted to OpenVINO optimized model and int8 optimized model first. You can use [OpenVINO toolkit](https://docs.openvinotoolkit.org/2020.2/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html) to finish this job. With the help of [OpenVINO Open Model Zoo](https://github.com/opencv/open_model_zoo), you can download and optimize Tensorflow models into OpenVINO model, then further convert them into OpenVINO int8 models.
+TensorFlow models cannot be directly loaded by OpenVINO. It should be converted to OpenVINO optimized model and int8 optimized model first. Please install [OpenVINO](https://software.intel.com/en-us/openvino-toolkit), and covert models with `downloader` tool in [OpenVINO Open Model Zoo](https://github.com/openvinotoolkit/open_model_zoo). This tool is located in OpenVINO installation directory (`deployment_tools/open_model_zoo`).
+
+The model we used is named [resnet-50-tf](https://github.com/openvinotoolkit/open_model_zoo/blob/master/models/public/resnet-50-tf/resnet-50-tf.md).
+
+If you prefer GUI workflow, you can use [OpenVINO DL Workbench](https://docs.openvinotoolkit.org/latest/_docs_Workbench_DG_Install_Workbench.html) with Docker container.
 
 __Sample Result files in MODEL_PATH__:
 ```
@@ -44,4 +48,3 @@ batch_0
 * Predict result {'Top-1': '334'}
 * Predict result {'Top-1': '795'}
 ```
-
