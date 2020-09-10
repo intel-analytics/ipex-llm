@@ -35,6 +35,7 @@ import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.util.AccumulatorV2
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -195,8 +196,8 @@ object DistriOptimizer extends AbstractOptimizer {
     var dataRDD = dataset.data(train = true)
 
     while (!endWhen(driverState)) {
-      val lossSum = sc.accumulator(0.0, "loss sum")
-      val recordsNum = sc.accumulator(0, "record number")
+      val lossSum = sc.doubleAccumulator("loss sum")
+      val recordsNum = sc.doubleAccumulator("record number")
       metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
       metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
       metrics.set("computing time average", 0.0, sc, partitionNum)
@@ -293,10 +294,10 @@ object DistriOptimizer extends AbstractOptimizer {
           driverMetrics.add("computing time for each node", computingTime)
 
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
-          recordsNum += finishedThreads.size * stackSize
+          recordsNum.add(finishedThreads.size * stackSize)
           var i = 0
           while (i < finishedThreads.size) {
-            lossSum += lossArray(finishedThreads(i))
+            lossSum.add(lossArray(finishedThreads(i)))
             i += 1
           }
 
@@ -409,7 +410,7 @@ object DistriOptimizer extends AbstractOptimizer {
         }.count()
 
         stateBroadcast.destroy()
-        recordsProcessedThisEpoch += recordsNum.value
+        recordsProcessedThisEpoch += (recordsNum.value).toInt
         val end = System.nanoTime()
         wallClockTime += end - start
         driverState("isGradientUpdated") = true

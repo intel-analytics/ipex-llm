@@ -168,8 +168,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     cacheOfMaster: MasterCache[T],
     context: TrainingContext[T], trainingTrace: TrainingTrace
     )(implicit ev: TensorNumeric[T]): Unit = {
-    val lossSum = sc.accumulator(0.0, "loss sum")
-    val recordsNum = sc.accumulator(0, "record number")
+    val lossSum = sc.doubleAccumulator("loss sum")
+    val recordsNum = sc.doubleAccumulator("record number")
     val metrics = cacheOfMaster.metrics
     val partitionNum = cacheOfMaster.partitionNum
     initMetrics(sc, metrics, partitionNum)
@@ -202,8 +202,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
 
         val results = train(cached, miniBatchBuffer, context, metrics)
 
-        lossSum += results.loss
-        recordsNum += results.records
+        lossSum.add(results.loss)
+        recordsNum.add(results.records)
 
         Iterator.single(results.successed)
       }.reduce(_ + _)
@@ -211,7 +211,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       parameterSync(lossSum.value, successModels, cacheOfMaster, models, context)
     })
 
-    driverStatesUpdate(cacheOfMaster, recordsNum.value,
+    driverStatesUpdate(cacheOfMaster, (recordsNum.value).toInt,
       context, trainingTrace, metrics)
   }
 
