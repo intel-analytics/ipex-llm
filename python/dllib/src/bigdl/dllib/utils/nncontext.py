@@ -131,7 +131,8 @@ def init_spark_standalone(num_executors,
                           spark_log_level="WARN",
                           redirect_spark_log=True,
                           conf=None,
-                          jars=None):
+                          jars=None,
+                          enable_numa_binding=False):
     """
     Create a SparkContext with Analytics Zoo configurations on Spark standalone cluster of
     a single node.
@@ -158,6 +159,9 @@ def init_spark_standalone(num_executors,
     :param conf: You can append extra conf for Spark in key-value format.
            i.e conf={"spark.executor.extraJavaOptions": "-XX:+PrintGCDetails"}.
            Default to be None.
+    :param enable_numa_binding: Whether to use numactl to start spark worker in order to bind
+           different worker processes to different cpus and memory areas. This is may lead to
+           better performance on a multi-sockets machine. Defaults to False.
 
     :return: An instance of SparkContext.
     """
@@ -174,7 +178,8 @@ def init_spark_standalone(num_executors,
         extra_executor_memory_for_ray=extra_executor_memory_for_ray,
         extra_python_lib=extra_python_lib,
         conf=conf,
-        jars=jars)
+        jars=jars,
+        enable_numa_binding=enable_numa_binding)
     return sc
 
 

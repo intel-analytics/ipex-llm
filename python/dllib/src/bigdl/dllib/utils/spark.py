@@ -131,7 +131,8 @@ class SparkRunner:
                               extra_executor_memory_for_ray=None,
                               extra_python_lib=None,
                               conf=None,
-                              jars=None):
+                              jars=None,
+                              enable_numa_binding=False):
         import subprocess
         import pyspark
         from zoo.util.utils import get_node_ip
@@ -157,13 +158,22 @@ class SparkRunner:
             start_master_pro = subprocess.Popen(
                 "{}/sbin/start-master.sh".format(zoo_standalone_home),
                 shell=True, env=SparkRunner.standalone_env)
-            os.waitpid(start_master_pro.pid, 0)
+            _, status = os.waitpid(start_master_pro.pid, 0)
+            if status != 0:
+                raise RuntimeError("starting master failed")
             master = "spark://{}:7077".format(node_ip)  # 7077 is the default port
             # Start worker
+            if enable_numa_binding:
+                worker_script = "start-worker-with-numactl.sh"
+                SparkRunner.standalone_env["SPARK_WORKER_INSTANCES"] = str(num_executors)
+            else:
+                worker_script = "start_worker.sh"
             start_worker_pro = subprocess.Popen(
-                "{}/sbin/start-worker.sh {}".format(zoo_standalone_home, master),
+                "{}/sbin/{} {}".format(zoo_standalone_home, worker_script, master),
                 shell=True, env=SparkRunner.standalone_env)
-            os.waitpid(start_worker_pro.pid, 0)
+            _, status = os.waitpid(start_worker_pro.pid, 0)
+            if status != 0:
+                raise RuntimeError("starting worker failed")
         else:  # A Spark standalone cluster has already been started by the user.
             assert master.startswith("spark://"), \
                 "Please input a valid master address for your Spark standalone cluster: " \
