@@ -218,7 +218,7 @@ class TFRunner:
             config = self.config.copy()
             assert "batch_size" in config, "batch_size must be set in config"
             config["batch_size"] = config["batch_size"] // hvd.size()
-            dataset = data_creator(self.config)
+            dataset = data_creator(config)
             from tensorflow.python.distribute.input_ops import auto_shard_dataset
             dataset = auto_shard_dataset(dataset, hvd.size(), hvd.rank())
 
