@@ -22,13 +22,15 @@ import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, ReLU, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T, TestUtils}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.optim._
 
 import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LarsSGDSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class LarsSGDSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   before {
     System.setProperty("bigdl.localMode", "true")

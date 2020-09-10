@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.transform.vision.image
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ConvertorSpec extends FlatSpec with Matchers {
+class ConvertorSpec extends AnyFlatSpec with should.Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
 
   "MatToFloat" should "work properly" in {

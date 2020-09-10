@@ -17,7 +17,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.math._
 
@@ -27,7 +29,7 @@ import scala.math._
   */
 
 @com.intel.analytics.bigdl.tags.Parallel
-class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
+class CrossEntropyCriterionSpec extends AnyFlatSpec with should.Matchers {
 
   "CrossEntropyCriterion " should "return return right output and gradInput" in {
     val criterion = new CrossEntropyCriterion[Double]()

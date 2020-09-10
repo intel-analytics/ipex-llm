@@ -26,13 +26,15 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, Customizable}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
 import scala.util.Random
 
-class CaffeLoaderSpec extends FlatSpec with Matchers {
+class CaffeLoaderSpec extends AnyFlatSpec with should.Matchers {
 
   val prototxt = getClass().getClassLoader().getResource("caffe/test.prototxt").getPath
   val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath

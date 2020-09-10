@@ -17,7 +17,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
@@ -25,7 +27,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LookupTableSpec extends FlatSpec with Matchers {
+class LookupTableSpec extends AnyFlatSpec with should.Matchers {
 
   "A LookupTable with padding input" should "generate correct output" in {
     val seed = 100

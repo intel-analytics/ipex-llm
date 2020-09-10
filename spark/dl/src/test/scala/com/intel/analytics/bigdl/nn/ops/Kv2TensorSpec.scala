@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Tensor}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
-class Kv2TensorSpec extends FlatSpec with Matchers {
+class Kv2TensorSpec extends AnyFlatSpec with should.Matchers {
 
   protected def randDoubles(length: Int,
                             lp: Double = 0.0,

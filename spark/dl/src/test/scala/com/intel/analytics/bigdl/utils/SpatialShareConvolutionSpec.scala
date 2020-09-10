@@ -23,12 +23,14 @@ import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
+class SpatialShareConvolutionSpec extends AnyFlatSpec with should.Matchers {
   val testSize = Array(
     (1, 1, 1, 1, 1, 1, 1, 1, 1),
     (1, 3, 1, 1, 1, 1, 1, 1, 1),

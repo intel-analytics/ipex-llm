@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
@@ -24,7 +24,7 @@ import scala.math.abs
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SigmoidSpec extends FlatSpec {
+class SigmoidSpec extends AnyFlatSpec {
   "A Sigmoid Module " should "generate correct output and grad" in {
     val module = new Sigmoid[Double]
     val input = Tensor[Double](2, 2, 2)

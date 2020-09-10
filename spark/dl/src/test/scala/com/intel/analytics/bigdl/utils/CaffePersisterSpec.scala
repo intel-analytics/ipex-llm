@@ -23,7 +23,9 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.caffe.{CaffeConversionException, CaffeLoader, CaffePersister, Customizable}
@@ -33,7 +35,7 @@ import scala.reflect.ClassTag
 import scala.util.Random
 
 
-class CaffePersisterSpec extends FlatSpec with Matchers{
+class CaffePersisterSpec extends AnyFlatSpec with should.Matchers{
 
   val resource = getClass().getClassLoader().getResource("caffe")
   val prototxt = Paths.get(TestUtils.processPath(resource.getPath()), "test.prototxt").toString

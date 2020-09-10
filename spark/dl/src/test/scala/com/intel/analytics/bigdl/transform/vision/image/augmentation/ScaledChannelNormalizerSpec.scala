@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFrame, LocalImageFrame}
 import org.opencv.imgcodecs.Imgcodecs
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ScaledChannelNormalizerSpec extends FlatSpec with Matchers {
+class ScaledChannelNormalizerSpec extends AnyFlatSpec with should.Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "ScaledChannelNormalizer" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)

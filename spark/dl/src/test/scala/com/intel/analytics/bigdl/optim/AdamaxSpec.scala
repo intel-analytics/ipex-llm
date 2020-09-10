@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, TestUtils}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
-class AdamaxSpec extends FlatSpec with Matchers {
+class AdamaxSpec extends AnyFlatSpec with should.Matchers {
   val start = System.currentTimeMillis()
   "adamax" should "perform well on rosenbrock function" in {
     val x = Tensor[Double](2).fill(0)

@@ -16,6 +16,8 @@
 package com.intel.analytics.bigdl.integration.torch
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest._
+import flatspec._
+import matchers._
 
 import scala.util.Random
 
@@ -23,7 +25,7 @@ case class TestCaseIdentity(value: String) {
   def suffix: String = List(".t7", value).mkString(".")
 }
 
-class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class TorchSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
 
   implicit var testCaseIdentity: TestCaseIdentity = _
 

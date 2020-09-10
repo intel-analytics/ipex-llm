@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.optim.SGD._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{TestUtils, T}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SGDSpec extends FlatSpec with Matchers {
+class SGDSpec extends AnyFlatSpec with should.Matchers {
   "A SGD optimMethod with 1 parameter" should "generate correct result" in {
     val state = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.01, "momentum" -> 0.002)

@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.nn.{ConcatTable, Linear}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Properties
 
 @com.intel.analytics.bigdl.tags.Parallel
-class TableSpec extends FlatSpec with Matchers {
+class TableSpec extends AnyFlatSpec with should.Matchers {
   "hashcode()" should "behave correctly" in {
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3, 3).randn()

@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class SplitHeadsSpec extends FlatSpec with Matchers {
+class SplitHeadsSpec extends AnyFlatSpec with should.Matchers {
     val inputX : Tensor[Float] = Tensor(
       T(T(T( 0.81217268, -0.30587821, -0.26408588, -0.53648431, 0.43270381,
       -1.15076935, 0.87240588, -0.38060345),

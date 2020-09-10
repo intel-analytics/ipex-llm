@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.{SparkContext, TaskContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class DistributedSynchronizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DistributedSynchronizerSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   var sc: SparkContext = null
 

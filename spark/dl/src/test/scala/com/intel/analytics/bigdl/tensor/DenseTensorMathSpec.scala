@@ -17,10 +17,12 @@
 package com.intel.analytics.bigdl.tensor
 
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class DenseTensorMathSpec extends FlatSpec with Matchers {
+class DenseTensorMathSpec extends AnyFlatSpec with should.Matchers {
   "a.dist(b, 1)" should "be correct" in {
     val a: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
     val b: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 3.0, 4.0)))

@@ -18,13 +18,15 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class ReverseSpec extends FlatSpec with Matchers {
+class ReverseSpec extends AnyFlatSpec with should.Matchers {
 
   "A Reverse()" should "generate correct output and grad for Tensor input dim1 inplace" in {
     def randomn(): Double = RandomGenerator.RNG.uniform(-10, 10)

@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.integration
 
 import com.intel.analytics.bigdl.models.lenet
 import com.intel.analytics.bigdl.models.vgg
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 @com.intel.analytics.bigdl.tags.Integration
-class SparkModeSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class SparkModeSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter{
 
   val mnistFolder = System.getProperty("mnist")
   val cifarFolder = System.getProperty("cifar")

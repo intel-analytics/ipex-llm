@@ -16,12 +16,13 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 @com.intel.analytics.bigdl.tags.Parallel
-class DenseToSparseSpec extends FlatSpec with Matchers  {
+class DenseToSparseSpec extends AnyFlatSpec with should.Matchers {
   "A DenseToSparse forward" should "generate correct output" in {
     val dts = DenseToSparse()
     val denseTensor = Tensor.range(1, 12, 1)

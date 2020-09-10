@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class NormalizeScaleSpec extends FlatSpec with Matchers {
+class NormalizeScaleSpec extends AnyFlatSpec with should.Matchers {
   "Normalize with 4d" should "work properly" in {
     val input = Tensor(Storage(Array(
       0.5507978797, 0.7081478238, 0.2909047306, 0.5108276010,

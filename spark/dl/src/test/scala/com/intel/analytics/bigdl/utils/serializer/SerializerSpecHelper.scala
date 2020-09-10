@@ -28,13 +28,15 @@ import com.intel.analytics.bigdl.utils.{Shape => KShape}
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 
-abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAndAfterAll{
+abstract class SerializerSpecHelper extends AnyFlatSpec with should.Matchers with BeforeAndAfterAll{
 
   val postFix = "bigdl"
   val excludedClass = new mutable.HashSet[String]()

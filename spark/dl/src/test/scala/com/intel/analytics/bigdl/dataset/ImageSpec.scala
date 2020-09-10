@@ -17,10 +17,12 @@
 package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ImageSpec extends FlatSpec with Matchers {
+class ImageSpec extends AnyFlatSpec with should.Matchers {
   "image with odd width" should "flip good" in {
     val image = new LabeledBGRImage(
       Array[Float](

@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.nn.quantized
 import com.intel.analytics.bigdl.nn.quantized.Quantization._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class QuantizationSpec extends FlatSpec with Matchers {
+class QuantizationSpec extends AnyFlatSpec with should.Matchers {
   "Quantize a number with same sign max and min" should "generate correct output" in {
     val src = 0.6f
     val (max, min) = (0.7f, 0.2f)

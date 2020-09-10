@@ -17,9 +17,11 @@
 package com.intel.analytics.bigdl.utils
 
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class EngineSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   private var sc: SparkContext = _
 

@@ -28,12 +28,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, TestUtils}
 import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.JavaConverters._
 
 @com.intel.analytics.bigdl.tags.Serial
-class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class LoggerFilterSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
 
   var sc: SparkContext = null
 

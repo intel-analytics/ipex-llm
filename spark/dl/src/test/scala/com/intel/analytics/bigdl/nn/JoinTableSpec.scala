@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class JoinTableSpec extends FlatSpec with Matchers {
+class JoinTableSpec extends AnyFlatSpec with should.Matchers {
 
   "Join Table " should "work for Int inputs" in {
     val input1 = Tensor[Int](T(1, 2))

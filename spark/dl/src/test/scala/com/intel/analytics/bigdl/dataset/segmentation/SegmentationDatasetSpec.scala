@@ -17,9 +17,11 @@
 package com.intel.analytics.bigdl.dataset.segmentation
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
-class SegmentationDatasetSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class SegmentationDatasetSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   val compressed1 = "Q:XX24Sm0e:jQ1]EajKSV69iZJV9T_OdF[>^NmB`2Z`0Y?a^OmR5lc6Zj2m[IckG0ZEXdl9l0j" +
     "[SFT9_\\e1Z:XgZNh[OPM:d\\4O"

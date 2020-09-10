@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
 import org.opencv.imgcodecs.Imgcodecs
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ExpandSpec extends FlatSpec with Matchers {
+class ExpandSpec extends AnyFlatSpec with should.Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "expand" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)

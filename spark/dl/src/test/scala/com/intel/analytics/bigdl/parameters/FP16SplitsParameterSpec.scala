@@ -17,10 +17,12 @@
 package com.intel.analytics.bigdl.parameters
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Serial
-class FP16SplitsParameterSpec extends FlatSpec with Matchers {
+class FP16SplitsParameterSpec extends AnyFlatSpec with should.Matchers {
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {
     val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.0)

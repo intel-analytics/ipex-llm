@@ -16,7 +16,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.mkldnn.Equivalent
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
@@ -24,7 +26,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
-class FPNSpec extends FlatSpec with Matchers {
+class FPNSpec extends AnyFlatSpec with should.Matchers {
   "FPN updateOutput with None TopBlocks" should "work correctly" in {
     val in_channels_list = Array(1, 2, 4)
     val out_channels = 2

@@ -16,11 +16,13 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.math._
 
-class TimeDistributedMaskCriterionSpec extends FlatSpec with Matchers {
+class TimeDistributedMaskCriterionSpec extends AnyFlatSpec with should.Matchers {
   "TimeDistributedMaskCriterion" should "works correctly" in {
     val criterion = ClassNLLCriterion[Double](paddingValue = 0)
     val layer = TimeDistributedMaskCriterion[Double](criterion, paddingValue = 0)

@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.integration.torch
 import com.intel.analytics.bigdl.nn.{RReLU, ReLU}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers, fixture}
 
 
 import scala.math._

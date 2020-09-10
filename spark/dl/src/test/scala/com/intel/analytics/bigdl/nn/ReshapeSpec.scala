@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.LayerException
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ReshapeSpec extends FlatSpec {
+class ReshapeSpec extends AnyFlatSpec {
   "A Reshape Module " should "generate correct output and grad" in {
     val module = new Reshape[Double](Array(3, 2))
     for (batchSize <- 1 to 4) {

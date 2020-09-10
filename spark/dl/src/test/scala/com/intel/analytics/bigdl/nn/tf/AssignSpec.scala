@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.tf
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class AssignSpec extends FlatSpec with Matchers {
+class AssignSpec extends AnyFlatSpec with should.Matchers {
   "Assign operation Float" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =

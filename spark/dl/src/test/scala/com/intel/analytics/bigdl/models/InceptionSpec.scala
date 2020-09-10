@@ -22,12 +22,14 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class InceptionSpec extends FlatSpec with Matchers {
+class InceptionSpec extends AnyFlatSpec with should.Matchers {
   "Inception_Layer_V1 graph" should "be correct" in {
     val batchSize = 8
     RNG.setSeed(1000)

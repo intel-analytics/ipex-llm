@@ -22,7 +22,9 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import java.io.{File => JFile}
 
 import com.google.protobuf.ByteString
@@ -30,7 +32,7 @@ import org.tensorflow.framework.AttrValue
 
 import scala.collection.JavaConverters._
 
-class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class SessionSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
 

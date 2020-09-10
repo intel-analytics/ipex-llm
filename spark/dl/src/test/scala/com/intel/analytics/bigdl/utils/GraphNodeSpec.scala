@@ -23,13 +23,15 @@ import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-class GraphNodeSpec extends FlatSpec with Matchers {
+class GraphNodeSpec extends AnyFlatSpec with should.Matchers {
 
   "Inception bn to Graph" should "generate correct output" in {
     val batchSize = 2

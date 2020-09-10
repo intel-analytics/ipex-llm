@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.utils
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.{CAddTable, Graph, Input, Reshape}
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class DirectedGraphSpec extends FlatSpec with Matchers {
+class DirectedGraphSpec extends AnyFlatSpec with should.Matchers {
   "Node add" should "be correct" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")

@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class DotProductSpec extends FlatSpec with Matchers {
+class DotProductSpec extends AnyFlatSpec with should.Matchers {
   "A DotProductSpec" should "generate correct output" in {
     val input = T(
       Tensor[Float](Storage(Array(1f, 2, 3))),

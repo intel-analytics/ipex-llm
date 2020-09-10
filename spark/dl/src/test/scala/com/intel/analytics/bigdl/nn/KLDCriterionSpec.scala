@@ -19,10 +19,12 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 
-class KLDCriterionSpec extends FlatSpec with Matchers{
+class KLDCriterionSpec extends AnyFlatSpec with should.Matchers{
   "A KLDCriterion Module " should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)

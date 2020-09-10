@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class MaskPostProcessorSpec extends FlatSpec with Matchers {
+class MaskPostProcessorSpec extends AnyFlatSpec with should.Matchers {
   "MaskPostProcessor" should "be ok" in {
     val inputMaskLogits = Tensor[Float](T(T(T(
       T(8.9266e-01, 5.2952e-02, 8.8993e-01, 2.1737e-01, 4.3262e-01,

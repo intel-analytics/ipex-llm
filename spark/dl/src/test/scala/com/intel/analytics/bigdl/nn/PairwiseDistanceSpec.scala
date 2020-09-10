@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class PairwiseDistanceSpec extends FlatSpec with Matchers {
+class PairwiseDistanceSpec extends AnyFlatSpec with should.Matchers {
 
   "hashcode()" should "behave correctly" in {
     val m1 = new PairwiseDistance[Double]()

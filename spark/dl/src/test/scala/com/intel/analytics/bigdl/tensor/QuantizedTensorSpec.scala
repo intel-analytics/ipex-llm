@@ -20,10 +20,12 @@ import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import org.apache.commons.lang.SerializationUtils
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class QuantizedTensorSpec extends FlatSpec with Matchers {
+class QuantizedTensorSpec extends AnyFlatSpec with should.Matchers {
   "A QuantizeTensor set to empty" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4

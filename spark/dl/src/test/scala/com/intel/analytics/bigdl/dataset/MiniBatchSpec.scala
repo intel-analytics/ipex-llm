@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
-class MiniBatchSpec extends FlatSpec with Matchers {
+class MiniBatchSpec extends AnyFlatSpec with should.Matchers {
   "TensorMiniBatch size" should "return right result" in {
     val a = Tensor[Float](3, 4).range(1, 12, 1)
     val b = Tensor[Float](3).range(1, 3, 1)

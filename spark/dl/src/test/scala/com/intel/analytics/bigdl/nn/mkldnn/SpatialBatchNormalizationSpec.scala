@@ -24,9 +24,10 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
-import org.scalatest.{FlatSpec, Ignore, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
+class SpatialBatchNormalizationSpec extends AnyFlatSpec with should.Matchers {
   "a simple bn with random input" should "work correctly" in {
     val batchSize = 2
     RNG.setSeed(100)

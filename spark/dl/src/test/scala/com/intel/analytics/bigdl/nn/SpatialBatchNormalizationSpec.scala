@@ -21,11 +21,13 @@ import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class SpatialBatchNormalizationSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   before {
     System.setProperty("bigdl.localMode", "true")
     System.setProperty("spark.master", "local[2]")

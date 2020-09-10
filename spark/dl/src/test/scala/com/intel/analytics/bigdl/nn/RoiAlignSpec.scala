@@ -21,11 +21,13 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class RoiAlignSpec extends FlatSpec with Matchers {
+class RoiAlignSpec extends AnyFlatSpec with should.Matchers {
   "updateOutput Float type" should "work properly" in {
     val spatio_scale: Float = 1.0f
     val sampling_ratio: Int = 3

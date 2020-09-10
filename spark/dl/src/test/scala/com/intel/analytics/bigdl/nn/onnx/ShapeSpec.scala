@@ -17,10 +17,12 @@ package com.intel.analytics.bigdl.nn.onnx
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 
-class ShapeSpec extends FlatSpec with Matchers {
+class ShapeSpec extends AnyFlatSpec with should.Matchers {
 
   "Shape" should "work" in {
     val inputTensor = Tensor[Float](20, 1, 9).rand()

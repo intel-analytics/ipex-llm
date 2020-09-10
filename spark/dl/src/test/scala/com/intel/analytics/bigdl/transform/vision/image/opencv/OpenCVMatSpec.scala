@@ -27,9 +27,11 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.opencv.core.CvType
 import org.opencv.imgcodecs.Imgcodecs
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class OpenCVMatSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   val resource = getClass().getClassLoader().getResource("pascal/000025.jpg")
 
   Logger.getLogger("org").setLevel(Level.ERROR)

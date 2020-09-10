@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, TestUtils}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
-class FtrlSpec extends FlatSpec with Matchers {
+class FtrlSpec extends AnyFlatSpec with should.Matchers {
   val start = System.currentTimeMillis()
   "Ftrl" should "perform well on rosenbrock function" in {
     val x = Tensor[Double](2).fill(0)

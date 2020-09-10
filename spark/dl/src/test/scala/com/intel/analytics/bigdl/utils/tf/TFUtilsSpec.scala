@@ -21,12 +21,14 @@ import java.nio.ByteOrder
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import org.tensorflow.framework.TensorProto
 
 import scala.collection.JavaConverters._
 
-class TFUtilsSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class TFUtilsSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   private var constTensors: Map[String, TensorProto] = null
   before {

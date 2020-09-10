@@ -17,10 +17,12 @@ package com.intel.analytics.bigdl.tensor
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.utils.Table
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ActivitySpec extends FlatSpec with Matchers {
+class ActivitySpec extends AnyFlatSpec with should.Matchers {
   "Activity.allocate" should "be able to allocate table" in {
     val r = Activity.allocate[Table, Any]()
     r.isInstanceOf[Table] should be(true)

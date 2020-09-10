@@ -20,12 +20,14 @@ import com.intel.analytics.bigdl.example.loadmodel.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class AlexNetSpec extends FlatSpec with Matchers {
+class AlexNetSpec extends AnyFlatSpec with should.Matchers {
   "ALexNet_OWT graph" should "be same with original one" in {
     Random.setSeed(1)
     val batchSize = 4

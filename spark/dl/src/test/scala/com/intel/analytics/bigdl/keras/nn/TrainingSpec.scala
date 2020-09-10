@@ -23,9 +23,11 @@ import com.intel.analytics.bigdl.utils.{Engine, Shape}
 import com.intel.analytics.bigdl.optim.{DummyDataSet, SGD, Top1Accuracy}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class TrainingSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   private var sc: SparkContext = _
   private val nodeNumber = 1
   private val coreNumber = 4

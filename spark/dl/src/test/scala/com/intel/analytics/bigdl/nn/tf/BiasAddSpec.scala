@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class BiasAddSpec extends FlatSpec with Matchers {
+class BiasAddSpec extends AnyFlatSpec with should.Matchers {
   "BiasAdd operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =

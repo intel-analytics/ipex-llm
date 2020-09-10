@@ -20,11 +20,13 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class NormalizeSpec extends FlatSpec with Matchers {
+class NormalizeSpec extends AnyFlatSpec with should.Matchers {
   "Normalize with 4d" should "work properly" in {
     val input = Tensor(Storage(Array(
       0.5507978797, 0.7081478238, 0.2909047306, 0.5108276010,

@@ -28,9 +28,11 @@ import com.intel.analytics.bigdl.utils.{Engine, TestUtils}
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class ImageFrameSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   val resource = getClass.getClassLoader.getResource("pascal/")
   var sc: SparkContext = null
   var sqlContext: SQLContext = null

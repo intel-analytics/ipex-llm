@@ -17,7 +17,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.math._
 import com.intel.analytics.bigdl._
@@ -30,7 +32,7 @@ import scala.util.Random
 import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialConvolutionSpec extends FlatSpec with Matchers {
+class SpatialConvolutionSpec extends AnyFlatSpec with should.Matchers {
   "SpatialConvolution L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
 

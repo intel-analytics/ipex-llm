@@ -15,9 +15,11 @@
  */
 package com.intel.analytics.bigdl.utils
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class UtilSpec extends FlatSpec with Matchers {
+class UtilSpec extends AnyFlatSpec with should.Matchers {
   "shift" should "be correct" in {
     Util.shift(Array(1, 2, 3, 4), 1, 1) should be(Array(1, 2, 3, 4))
     Util.shift(Array(1, 2, 3, 4), 1, 3) should be(Array(1, 3, 4, 2))

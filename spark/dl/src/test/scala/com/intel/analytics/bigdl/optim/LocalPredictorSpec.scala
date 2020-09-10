@@ -30,9 +30,11 @@ import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.io.FileUtils
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class LocalPredictorSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   private val nodeNumber = 1
   private val coreNumber = 4

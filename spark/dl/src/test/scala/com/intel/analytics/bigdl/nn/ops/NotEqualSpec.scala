@@ -19,9 +19,11 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class NotEqualSpec extends FlatSpec with Matchers {
+class NotEqualSpec extends AnyFlatSpec with should.Matchers {
   "NotEqual Float operation" should "works correctly" in {
     val input =
       T(

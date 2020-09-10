@@ -19,11 +19,11 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.LayerException
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
 
-class InferReshapeSpec extends FlatSpec {
+class InferReshapeSpec extends AnyFlatSpec {
   "A InferReshape Module with infer" should "generate correct output and grad" in {
     val module = new InferReshape[Double](Array(3, -1), true)
     for (batchSize <- 1 to 4) {

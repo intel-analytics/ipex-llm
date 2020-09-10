@@ -20,12 +20,14 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ConvLSTMPeephole3DSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
 
   "A ConvLSTMPeepwhole3D " should " work in BatchMode" in {
     val hiddenSize = 5

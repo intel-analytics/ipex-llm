@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{SparseTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
@@ -24,7 +26,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
-class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class SparseLinearSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   before {
     RandomGenerator.RNG.setSeed(100)

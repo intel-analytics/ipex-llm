@@ -16,11 +16,13 @@
 
 package com.intel.analytics.bigdl.tensor
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SparseTensorMathSpec extends FlatSpec with Matchers {
+class SparseTensorMathSpec extends AnyFlatSpec with should.Matchers {
   "Sparse Matrix * Dense Vector" should "be correct" in {
     val sparseM = Tensor.sparse(Tensor(2, 3).range(1, 12, 2))
     val a = Tensor(3)

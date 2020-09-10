@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.keras.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.nn.keras.{Dropout, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
@@ -24,7 +26,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
-class DropoutSpec extends FlatSpec with Matchers {
+class DropoutSpec extends AnyFlatSpec with should.Matchers {
 
   "Dropout forward and backward" should "work properly" in {
     val seq = KSequential[Float]()

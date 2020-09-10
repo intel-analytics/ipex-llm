@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.utils
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.ZippedPartitionsWithLocalityRDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Serial
-class ZippedPartitionsWithLocalityRDDSpec extends SparkContextLifeCycle with Matchers {
+class ZippedPartitionsWithLocalityRDDSpec extends SparkContextLifeCycle with should.Matchers {
   override def coreNumber: Int = 4
   override def appName: String = "ZippedPartitionsWithLocalityRDDSpec"
 

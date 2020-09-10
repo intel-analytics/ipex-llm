@@ -19,11 +19,13 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class RoiPoolingSpec extends FlatSpec with Matchers {
+class RoiPoolingSpec extends AnyFlatSpec with should.Matchers {
   val data = Array(-3.8623801600318241611, -5.5763739585689267031, 10.298773638368681205,
     9.0803885026851531848, 1.3665552448780498018, -0.44133702789011497458, -9.4017101101805629071,
     1.0564141421332300386, 13.553048566835151689, -13.990139481179310721, 0.38796681814726624582,

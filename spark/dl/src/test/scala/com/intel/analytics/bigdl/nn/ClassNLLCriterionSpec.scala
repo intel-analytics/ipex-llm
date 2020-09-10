@@ -16,13 +16,15 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ClassNLLCriterionSpec extends FlatSpec with Matchers {
+class ClassNLLCriterionSpec extends AnyFlatSpec with should.Matchers {
   "A ClassNLL Criterion with -1 label " should "generate correct output and grad" in {
     val criterion = new ClassNLLCriterion[Double]()
     val input = Tensor[Double](3, 3)

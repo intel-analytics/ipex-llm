@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.parameters
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.Engine
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.Tensor
 
 @com.intel.analytics.bigdl.tags.Parallel
-class FP16ParameterSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class FP16ParameterSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   before {
     Engine.setNodeAndCore(1, 4)

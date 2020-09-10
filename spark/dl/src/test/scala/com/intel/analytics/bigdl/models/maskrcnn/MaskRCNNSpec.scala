@@ -24,11 +24,13 @@ import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.reflect.io.File
 
-class MaskRCNNSpec extends FlatSpec with Matchers {
+class MaskRCNNSpec extends AnyFlatSpec with should.Matchers {
   "build maskrcnn" should "be ok" in {
     RandomGenerator.RNG.setSeed(100)
     val resNetOutChannels = 32

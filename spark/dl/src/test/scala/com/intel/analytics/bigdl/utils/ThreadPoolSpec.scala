@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.concurrent.ExecutionException
 
-class ThreadPoolSpec extends FlatSpec with Matchers {
+class ThreadPoolSpec extends AnyFlatSpec with should.Matchers {
 
   "mkldnn backend" should "create omp threads and bind correctly" in {
     com.intel.analytics.bigdl.mkl.MklDnn.isLoaded

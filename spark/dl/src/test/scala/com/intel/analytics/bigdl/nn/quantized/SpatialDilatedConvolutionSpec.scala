@@ -17,13 +17,15 @@
 package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
-class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
+class SpatialDilatedConvolutionSpec extends AnyFlatSpec with should.Matchers {
   "A SpatialDilatedConvolution" should "work correctly" in {
     val test = TestCase(1, 2, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0, 2, 2)
 

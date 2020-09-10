@@ -30,11 +30,13 @@ import java.awt.image.DataBufferByte
 import javax.imageio.ImageIO
 import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class DataSetSpec extends SparkContextLifeCycle with Matchers {
+class DataSetSpec extends SparkContextLifeCycle with should.Matchers {
   override def nodeNumber: Int = 1
   override def coreNumber: Int = 1
   override def appName: String = "DataSetSpec"

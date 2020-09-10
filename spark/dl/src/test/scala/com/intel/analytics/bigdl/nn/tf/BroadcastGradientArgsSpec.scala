@@ -19,9 +19,11 @@ import com.intel.analytics.bigdl.nn.ops.ModuleToOperation
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
+class BroadcastGradientArgsSpec extends AnyFlatSpec with should.Matchers {
   "BroadcastGradientArgs operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericInt
     val input =

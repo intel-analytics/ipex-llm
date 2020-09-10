@@ -33,7 +33,9 @@ import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 object DistriOptimizerV2Spec {
   private val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(0.0, 1.0, 0.0, 1.0)))
@@ -123,7 +125,7 @@ object DistriOptimizerV2SpecModel {
 }
 
 @com.intel.analytics.bigdl.tags.Serial
-class DistriOptimizerV2Spec extends FlatSpec with Matchers with BeforeAndAfter {
+class DistriOptimizerV2Spec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   import DistriOptimizerV2Spec._
   import DistriOptimizerV2SpecModel._

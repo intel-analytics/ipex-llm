@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.math._
 
-class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
+class TimeDistributedCriterionSpec extends AnyFlatSpec with should.Matchers {
   "A ClassNLL Criterion with sizeAverage True and TimeDistributedCriterion sizeAverage True" should
     "generate correct output and grad" in {
     val criterion = ClassNLLCriterion[Double]()

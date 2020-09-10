@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.models.maskrcnn
 import com.intel.analytics.bigdl.dataset.segmentation.MaskUtils
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class UtilsSpec extends FlatSpec with Matchers {
+class UtilsSpec extends AnyFlatSpec with should.Matchers {
   "expandBoxes" should "be ok" in {
     val bbox = Tensor[Float](T(415.3202, 176.3966, 441.3445, 251.7300))
     val bboxExpand = Tensor[Float](4)

@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.reflect.ClassTag
 
@@ -43,7 +45,7 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
 }
 
 @com.intel.analytics.bigdl.tags.Parallel
-class CellSpec extends FlatSpec with Matchers {
+class CellSpec extends AnyFlatSpec with should.Matchers {
 
   "A Cell" should "hidResize correctly" in {
     val cell = new CellUnit[Double](4)

@@ -20,10 +20,12 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class BCECriterionSpec extends FlatSpec with Matchers {
+class BCECriterionSpec extends AnyFlatSpec with should.Matchers {
 
   "BCECriterion " should "return return right output and gradInput" in {
     val criterion = new BCECriterion[Double]()

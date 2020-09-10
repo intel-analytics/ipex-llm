@@ -21,11 +21,12 @@ import java.io.PrintWriter
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.utils.{Engine, SparkContextLifeCycle}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import matchers._
 
 import scala.io.Source
 
-class SentenceTokenizerSpec extends SparkContextLifeCycle with Matchers {
+class SentenceTokenizerSpec extends SparkContextLifeCycle with should.Matchers {
 
   override def appName: String = "DocumentTokenizer"
 

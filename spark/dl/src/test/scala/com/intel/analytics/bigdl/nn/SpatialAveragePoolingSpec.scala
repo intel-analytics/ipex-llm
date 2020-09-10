@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.math.abs
@@ -27,7 +29,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
+class SpatialAveragePoolingSpec extends AnyFlatSpec with should.Matchers {
   "A SpatialAveragePooling" should "generate correct output and gradInput" in {
     val module = new SpatialAveragePooling[Double](3, 2, 2, 1)
     val input = Tensor[Double](1, 4, 3)

@@ -17,13 +17,15 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.utils.{TestUtils, T}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LBFGSSpec extends FlatSpec with Matchers {
+class LBFGSSpec extends AnyFlatSpec with should.Matchers {
   "torchLBFGS in regular batch test" should "perform well on rosenbrock function" in {
     val x = Tensor[Double](2).fill(0)
     val optm = new LBFGS[Double]

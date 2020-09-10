@@ -20,11 +20,13 @@ import com.intel.analytics.bigdl.nn.mkldnn.{Equivalent, Tools}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.math._
 
-class BoxHeadSpec extends FlatSpec with Matchers {
+class BoxHeadSpec extends AnyFlatSpec with should.Matchers {
   "BoxHead" should "be ok" in {
     val inChannels: Int = 6
     val resolution: Int = 7

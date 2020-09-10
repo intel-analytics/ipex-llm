@@ -17,10 +17,12 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class TransformerCriterionSpec extends FlatSpec with Matchers {
+class TransformerCriterionSpec extends AnyFlatSpec with should.Matchers {
 
   "TransformerCriterion" should "work correctly" in {
 

@@ -22,9 +22,11 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.mkldnn.ResNet.DatasetType.ImageNet
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class SerializeModelSpec extends FlatSpec with Matchers {
+class SerializeModelSpec extends AnyFlatSpec with should.Matchers {
 
   "Save a model" should "work correctly" in {
     val identity = System.identityHashCode(this).toString

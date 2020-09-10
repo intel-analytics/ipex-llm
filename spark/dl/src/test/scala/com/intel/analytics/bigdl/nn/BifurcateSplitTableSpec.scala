@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SplitTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class SplitTableSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
 
   "A BifurcateSplitTable " should "generate correct output and grad" in {
     val seed = 100

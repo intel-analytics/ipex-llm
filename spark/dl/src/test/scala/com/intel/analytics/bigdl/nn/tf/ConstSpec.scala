@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class ConstSpec extends FlatSpec with Matchers {
+class ConstSpec extends AnyFlatSpec with should.Matchers {
   "Const forward tensor" should "be correct" in {
     val value = Tensor(2, 3).rand()
     val layer = Const(value)

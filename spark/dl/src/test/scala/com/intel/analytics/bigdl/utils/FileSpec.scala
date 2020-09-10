@@ -19,11 +19,13 @@ package com.intel.analytics.bigdl.utils
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 
 @com.intel.analytics.bigdl.tags.Serial
-class FileSpec extends FlatSpec with Matchers {
+class FileSpec extends AnyFlatSpec with should.Matchers {
 
   "read/write alexnet" should "work properly" in {
     val tmpFile = java.io.File.createTempFile("module", ".t7")

@@ -23,9 +23,11 @@ import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, Bounding
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.T
 import org.opencv.imgcodecs.Imgcodecs
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class RoiTransformerSpec extends FlatSpec with Matchers {
+class RoiTransformerSpec extends AnyFlatSpec with should.Matchers {
   private def classes = Array(11.0, 11.0, 11.0, 16.0, 16.0, 16.0, 11.0, 16.0,
     16.0, 16.0, 16.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 1.0).map(_.toFloat)

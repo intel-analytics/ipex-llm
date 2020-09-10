@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.nn.ops.ModuleToOperation
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class MaxPoolSpec extends FlatSpec with Matchers {
+class MaxPoolSpec extends AnyFlatSpec with should.Matchers {
   "MaxPool operation VALID padding" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val expectOutput = Tensor(

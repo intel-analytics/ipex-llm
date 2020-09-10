@@ -29,13 +29,15 @@ import org.apache.spark.ml.{DLEstimator, DLModel, Pipeline, PipelineModel}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @deprecated("`DLEstimator` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
   "This will be removed in BigDL 0.6.", "0.5.0")
-class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DLEstimatorSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   var sc : SparkContext = _
   var sqlContext : SQLContext = _

@@ -19,9 +19,11 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class BinaryTreeLSTMSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   "BinaryTreeLSTM" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     import com.intel.analytics.bigdl.utils.RandomGenerator.RNG

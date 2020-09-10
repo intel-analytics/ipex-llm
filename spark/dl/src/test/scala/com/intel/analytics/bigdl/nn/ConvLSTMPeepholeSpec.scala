@@ -22,13 +22,15 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ConvLSTMPeepholeSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
 
   "A convLstm" should " work in BatchMode" in {
     val hiddenSize = 5

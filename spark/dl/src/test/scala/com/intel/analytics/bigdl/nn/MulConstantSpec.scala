@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
 
@@ -26,7 +26,7 @@ import scala.util.Random
   * Created by yao on 9/21/16.
   */
 @com.intel.analytics.bigdl.tags.Parallel
-class MulConstantSpec extends FlatSpec {
+class MulConstantSpec extends AnyFlatSpec {
   "MulConstant" should "generate correct output and grad" in {
     val input = Tensor[Double](2, 2, 2).randn()
     val scalar = 25.0

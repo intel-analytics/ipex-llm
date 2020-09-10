@@ -29,14 +29,16 @@ import org.apache.spark.SparkContext
 import org.apache.spark.ml._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 @deprecated("`DLClassifier` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
   "This will be removed in BigDL 0.6.", "0.5.0")
-class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DLClassifierSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   var sc : SparkContext = _
   var sqlContext : SQLContext = _
   var smallData: Seq[(Array[Double], Double)] = _

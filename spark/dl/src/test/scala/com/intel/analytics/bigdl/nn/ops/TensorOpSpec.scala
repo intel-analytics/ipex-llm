@@ -20,11 +20,13 @@ import com.intel.analytics.bigdl.nn.Sigmoid
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class TensorOpSpec extends FlatSpec with Matchers {
+class TensorOpSpec extends AnyFlatSpec with should.Matchers {
 
   private val tt = Tensor[Float](2, 3).rand()
   private val copiedTT = Tensor[Float]().resizeAs(tt).copy(tt)

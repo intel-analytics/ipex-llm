@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class DropoutSpec extends FlatSpec with Matchers {
+class DropoutSpec extends AnyFlatSpec with should.Matchers {
   "dropout output and gradinput" should "work correctly" in {
     val input = Tensor[Float](Array(2, 3, 4, 4)).fill(1)
     val zeros = Tensor[Float](Array(2, 3, 4, 4)).fill(0)

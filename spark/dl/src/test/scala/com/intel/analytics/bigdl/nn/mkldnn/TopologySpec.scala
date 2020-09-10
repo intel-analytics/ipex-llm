@@ -26,9 +26,11 @@ import com.intel.analytics.bigdl.nn.mkldnn.ResNet.DatasetType.ImageNet
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class TopologySpec extends FlatSpec with Matchers {
+class TopologySpec extends AnyFlatSpec with should.Matchers {
 
   "LeNet5 has no tanh" should "work correctly" in {
     val inputShape = Array(4, 1, 28, 28)

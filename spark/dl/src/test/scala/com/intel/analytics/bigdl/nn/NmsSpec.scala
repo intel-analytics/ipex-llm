@@ -17,9 +17,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class NmsSpec extends FlatSpec with Matchers {
+class NmsSpec extends AnyFlatSpec with should.Matchers {
   val nmsTool = new Nms
 
   val dets = Tensor(Storage(Array(

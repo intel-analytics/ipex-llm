@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class MaxSpec extends FlatSpec with Matchers {
+class MaxSpec extends AnyFlatSpec with should.Matchers {
   "Max operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     RandomGenerator.RNG.setSeed(10)

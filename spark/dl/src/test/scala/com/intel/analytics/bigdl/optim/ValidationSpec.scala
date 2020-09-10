@@ -21,11 +21,13 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import scala.collection.mutable.ArrayBuffer
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ValidationSpec extends FlatSpec with Matchers {
+class ValidationSpec extends AnyFlatSpec with should.Matchers {
   "MAPUtil" should "be correct for find top k" in {
     val arr = Array(
       Array(1f, 2f, 3f, 4f, 5f), // 0

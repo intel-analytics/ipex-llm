@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.{SparkConf, SparkContext, SparkException}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Serial
-class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class MetricsSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 
   after {

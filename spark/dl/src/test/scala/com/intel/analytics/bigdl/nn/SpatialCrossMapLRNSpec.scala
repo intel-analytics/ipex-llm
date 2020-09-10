@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
+class SpatialCrossMapLRNSpec extends AnyFlatSpec with should.Matchers {
   private def referenceLRNForwardAcrossChannels
   (input: Tensor[Double], alpha: Double, beta: Double, size: Int): Tensor[Double] = {
     val output = Tensor[Double]()

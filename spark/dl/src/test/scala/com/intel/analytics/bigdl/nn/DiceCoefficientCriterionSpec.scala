@@ -17,10 +17,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Serial
-class DiceCoefficientCriterionSpec extends FlatSpec with Matchers {
+class DiceCoefficientCriterionSpec extends AnyFlatSpec with should.Matchers {
 
   "A DiceCoefficientCriterionSpec" should "generate correct output and gradInput vector input" in {
     val input = Tensor[Float](Storage[Float](Array(0.1f, 0.2f)))

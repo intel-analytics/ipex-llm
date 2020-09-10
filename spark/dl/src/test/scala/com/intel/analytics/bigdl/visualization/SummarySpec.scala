@@ -21,11 +21,13 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils}
 import Summary._
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import org.tensorflow.framework
 
 @com.intel.analytics.bigdl.tags.Serial
-class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
+class SummarySpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   before {
     System.setProperty("bigdl.localMode", "false")

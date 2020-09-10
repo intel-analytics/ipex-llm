@@ -17,9 +17,11 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.Squeeze
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class SqueezeSpec extends FlatSpec with Matchers {
+class SqueezeSpec extends AnyFlatSpec with should.Matchers {
   "Squeeze operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =

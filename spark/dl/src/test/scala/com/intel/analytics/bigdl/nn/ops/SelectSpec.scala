@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class SelectSpec extends FlatSpec with Matchers {
+class SelectSpec extends AnyFlatSpec with should.Matchers {
   "select" should "be correct when condition is true" in {
     val cond = Tensor.scalar[Boolean](true)
     val t = Tensor[Int](T(1))

@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.nn.mkldnn.Equivalent
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class RegionProposalSpec extends FlatSpec with Matchers {
+class RegionProposalSpec extends AnyFlatSpec with should.Matchers {
   "RegionProposal" should "be ok" in {
     val layer = new RegionProposal(6,
       Array[Float](32, 64, 128, 256, 512),

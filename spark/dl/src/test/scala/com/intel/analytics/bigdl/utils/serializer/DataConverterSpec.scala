@@ -24,7 +24,9 @@ import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLTensor, DataType, TensorStorage}
 
 import scala.reflect.runtime.universe
@@ -37,7 +39,7 @@ import scala.collection.mutable
 import scala.util.Random
 
 
-class DataConverterSpec extends FlatSpec with Matchers{
+class DataConverterSpec extends AnyFlatSpec with should.Matchers{
 
   val map = new mutable.HashMap[Int, Any]()
 
