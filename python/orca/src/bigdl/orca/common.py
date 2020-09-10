@@ -155,7 +155,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                                 executor_memory=memory, **spark_args)
     elif cluster_mode == "standalone":
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
-                    "extra_python_lib", "jars", "master"]:
+                    "extra_python_lib", "jars", "master", "enable_numa_binding"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
         from zoo import init_spark_standalone
