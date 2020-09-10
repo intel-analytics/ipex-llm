@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 
+from zoo.orca import init_orca_context, stop_orca_context
 import os
 import argparse
-from zoo.orca import init_orca_context, stop_orca_context
+import tensorflow as tf
 
 _DEFAULT_IMAGE_SIZE = 224
 _NUM_CHANNELS = 3
@@ -28,6 +29,7 @@ _NUM_IMAGES = {
 }
 
 _NUM_TRAIN_FILES = 1024
+_NUM_VAL_FILES = 128
 _SHUFFLE_BUFFER = 1500
 
 _NUM_EXAMPLES_NAME = "num_examples"
@@ -91,7 +93,9 @@ def _mean_image_subtraction(image, means, num_channels):
         raise ValueError('len(means) must match the number of channels')
 
     # We have a 1-D tensor of means; convert to 3-D.
-    means = tf.expand_dims(tf.expand_dims(means, 0), 0)
+    # means = tf.expand_dims(tf.expand_dims(means, 0), 0)
+
+    means = tf.broadcast_to(means, tf.shape(image))
 
     return image - means
 
@@ -153,7 +157,7 @@ def get_filenames(is_training, data_dir):
     else:
         return [
             os.path.join(data_dir, 'validation-%05d-of-00128' % i)
-            for i in range(128)]
+            for i in range(_NUM_VAL_FILES)]
 
 
 def _parse_example_proto(example_serialized):
@@ -191,6 +195,8 @@ def parse_record(raw_record, is_training, dtype):
         is_training=is_training)
     image = tf.cast(image, dtype)
 
+    label = tf.cast(tf.reshape(label, shape=[1]), dtype=tf.float32)
+
     return image, label
 
 
@@ -207,7 +213,7 @@ def process_record_dataset(dataset, is_training, batch_size, shuffle_buffer,
         tf.data.experimental.map_and_batch(
             lambda value: parse_record_fn(value, is_training, dtype),
             batch_size=batch_size,
-            num_parallel_batches=tf.data.experimental.AUTOTUNE))
+            num_parallel_batches=1))
 
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
@@ -237,33 +243,42 @@ def input_fn(is_training, data_dir, batch_size):
 
 def model_creator(config):
     wd = config["wd"]
+    use_bf16 = config["bf16"]
     import tensorflow as tf
     import tensorflow.keras as keras
-    # from tensorflow.keras.mixed_precision import experimental as mixed_precision
-    # policy = mixed_precision.Policy('mixed_bfloat16')
-    # policy = mixed_precision.Policy('float32')
-    # mixed_precision.set_policy(policy)
+    if use_bf16:
+        from tensorflow.keras.mixed_precision import experimental as mixed_precision
+        policy = mixed_precision.Policy('mixed_bfloat16')
+        # policy = mixed_precision.Policy('float32')
+        mixed_precision.set_policy(policy)
 
     model = tf.keras.applications.resnet50.ResNet50(weights=None, classes=1001)
     model_config = model.get_config()
     for layer, layer_config in zip(model.layers, model_config['layers']):
         if hasattr(layer, 'kernel_regularizer'):
             regularizer = keras.regularizers.l2(wd)
-            regularizer_config = {'class_name': regularizer.__class__.__name__,
-                                  'config': regularizer.get_config()}
-            layer_config['config']['kernel_regularizer'] = regularizer_config
+            rg_config = {'class_name': regularizer.__class__.__name__,
+                         'config': regularizer.get_config()}
+            layer_config['config']['kernel_regularizer'] = rg_config
         if type(layer) == keras.layers.BatchNormalization:
             layer_config['config']['momentum'] = 0.9
             layer_config['config']['epsilon'] = 1e-5
 
     model = tf.keras.models.Model.from_config(model_config)
+    if use_bf16:
+        model = tf.keras.models.Sequential([
+            model,
+            tf.keras.layers.Lambda(
+                lambda x: tf.cast(x, dtype=tf.float32))
+        ])
     return model
 
 
 def compile_args_creator(config):
     momentum = config["momentum"]
+    lr = config["lr"]
     import tensorflow.keras as keras
-    opt = keras.optimizers.SGD(momentum=momentum)
+    opt = keras.optimizers.SGD(lr=lr, momentum=momentum)
     param = dict(loss=keras.losses.sparse_categorical_crossentropy, optimizer=opt,
                  metrics=['accuracy', 'sparse_top_k_categorical_accuracy'])
     return param
@@ -277,6 +292,15 @@ def train_data_creator(config):
     return train_dataset
 
 
+def dummy_data_creator(config):
+    batch_size = config["batch_size"]
+    images = tf.zeros((batch_size, 224, 224, 3), tf.float32)
+    labels = tf.zeros((batch_size,), tf.int32)
+    dataset = tf.data.Dataset.from_tensors((images, labels))
+    dataset = dataset.repeat()
+    return dataset
+
+
 def val_data_creator(config):
     val_dataset = input_fn(is_training=False,
                            data_dir=config["data_dir"],
@@ -285,20 +309,32 @@ def val_data_creator(config):
     return val_dataset
 
 
-def schedule(epoch, lr_multiplier):
-    if epoch < 5:
-        return 0.1 + 0.1 * (lr_multiplier - 1) * epoch / 5
+class LRLogger(tf.keras.callbacks.Callback):
+    def __init__(self, *args):
+        super(LRLogger, self).__init__(*args)
 
-    if 5 <= epoch < 30:
-        return 0.1 * lr_multiplier
+    def on_epoch_end(self, epoch, logs=None):
+        current_lr = tf.keras.backend.get_value(self.model.optimizer.lr)
+        print("epoch {} current lr is {}".format(epoch, current_lr))
 
-    if 30 <= epoch < 60:
-        return 0.1 * 0.1 * lr_multiplier
 
-    if 60 <= epoch < 80:
-        return 0.1 * 0.01 * lr_multiplier
+def get_lr_schedule_callbacks(initial_lr):
+    import horovod.tensorflow.keras as hvd
+    return [
+        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, initial_lr=initial_lr,
+                                                 verbose=True),
 
-    return 0.1 * 0.001 * lr_multiplier
+        # Horovod: after the warmup reduce learning rate by 10 on the 30th, 60th and 80th epochs.
+        hvd.callbacks.LearningRateScheduleCallback(start_epoch=5, end_epoch=30, multiplier=1.,
+                                                   initial_lr=initial_lr),
+        hvd.callbacks.LearningRateScheduleCallback(start_epoch=30, end_epoch=60, multiplier=1e-1,
+                                                   initial_lr=initial_lr),
+        hvd.callbacks.LearningRateScheduleCallback(start_epoch=60, end_epoch=80, multiplier=1e-2,
+                                                   initial_lr=initial_lr),
+        hvd.callbacks.LearningRateScheduleCallback(start_epoch=80, multiplier=1e-3,
+                                                   initial_lr=initial_lr),
+        LRLogger()
+    ]
 
 
 parser = argparse.ArgumentParser()
@@ -319,16 +355,27 @@ parser.add_argument("--data_dir", type=str, help="the directory of tfrecords of 
                                                  "v1.6.1/docs/image_recognition/tensorflow/"
                                                  "Tutorial.md#initial-setup for generating"
                                                  " data file")
-
+parser.add_argument("--log_dir", type=str, default="./logs")
+parser.add_argument("--use_bf16", action='store_true', default=False,
+                    help="Whether to use bfloat16 type for computations.")
+parser.add_argument("--use_dummy_data", action='store_true', default=False,
+                    help="Whether to use dummy data")
+parser.add_argument("--benchmark", action='store_true', default=False)
+parser.add_argument("--enable_numa_binding", action='store_true', default=False)
 
 if __name__ == "__main__":
 
     args = parser.parse_args()
     num_nodes = 1 if args.cluster_mode == "local" else args.worker_num
     init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores, num_nodes=num_nodes,
-                      memory=args.memory)
+                      memory=args.memory, init_ray_on_spark=True,
+                      enable_numa_binding=args.enable_numa_binding)
 
-    assert args.data_dir is not None, "--data_dir must be provided"
+    if not args.use_dummy_data:
+        assert args.data_dir is not None, "--data_dir must be provided if not using dummy data"
+
+    if not os.path.exists(args.log_dir):
+        os.mkdir(args.log_dir)
 
     from zoo.orca.learn.tf2 import Estimator
     import tensorflow as tf
@@ -339,33 +386,48 @@ if __name__ == "__main__":
 
     lr_multiplier = global_batch_size // base_batch_size
 
-    lr_schdule = tf.keras.callbacks.LearningRateScheduler(
-        lambda epoch: schedule(epoch, lr_multiplier), verbose=1)
+    initial_lr = 0.1 * lr_multiplier
+    callbacks = get_lr_schedule_callbacks(initial_lr)
 
     config = {
-        "momentum": 0.9,
         "wd": 0.00005,
-        "batch_size": args.batch_size_per_worker,
-        "val_batch_size": args.batch_size_per_worker,
+        "momentum": 0.9,
+        "batch_size": global_batch_size,
         "warmup_epoch": 5,
         "num_worker": args.worker_num,
         "data_dir": args.data_dir,
+        "bf16": args.use_bf16,
+        "lr": initial_lr,
     }
 
     trainer = Estimator(
         model_creator=model_creator,
         compile_args_creator=compile_args_creator,
         verbose=True,
-        config=config, backend="horovod")
+        config=config,
+        backend="horovod")
 
-    results = trainer.fit(
-        data_creator=train_data_creator,
-        epochs=90,
-        validation_data_creator=val_data_creator,
-        steps_per_epoch=_NUM_IMAGES['train'] // global_batch_size,
-        callbacks=[lr_schdule],
-        validation_steps=_NUM_IMAGES['validation'] // global_batch_size,
-    )
+    if args.benchmark:
+        trainer.fit(
+            data_creator=train_data_creator if not args.use_dummy_data else dummy_data_creator,
+            epochs=3,
+            steps_per_epoch=20,
+            callbacks=callbacks,
+        )
+    else:
+        epoch = 0
+        for i in range(5):
+            dummy = args.use_dummy_data
 
-    print(results)
+            results = trainer.fit(
+                data_creator=train_data_creator if not dummy else dummy_data_creator,
+                epochs=18,
+                validation_data_creator=val_data_creator if not dummy else dummy_data_creator,
+                steps_per_epoch=_NUM_IMAGES['train'] // global_batch_size,
+                callbacks=callbacks,
+                validation_steps=_NUM_IMAGES['validation'] // global_batch_size,
+            )
+            epoch += 18
+            trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))
+
     stop_orca_context()
