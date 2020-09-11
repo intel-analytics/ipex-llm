@@ -39,7 +39,7 @@ def lenet(images):
 
 
 def preprocess(x, y):
-    return tf.to_float(tf.reshape(x, (-1, 28, 28, 1))) / 255.0, y
+    return tf.to_float(tf.reshape(x, (28, 28, 1))) / 255.0, y
 
 
 def main(max_epoch):
