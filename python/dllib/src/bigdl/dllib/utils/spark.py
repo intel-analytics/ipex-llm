@@ -205,20 +205,16 @@ class SparkRunner:
     def stop_spark_standalone():
         import subprocess
         env = SparkRunner.standalone_env
-        if not env:
-            import pyspark
-            pyspark_home = os.path.abspath(pyspark.__file__ + "/../")
-            zoo_standalone_home = os.path.abspath(__file__ + "/../../share/bin/standalone")
-            pro = subprocess.Popen(["chmod", "-R", "+x", "{}/sbin".format(zoo_standalone_home)])
-            os.waitpid(pro.pid, 0)
-            env = {"SPARK_HOME": pyspark_home,
-                   "ZOO_STANDALONE_HOME": zoo_standalone_home}
-        stop_worker_pro = subprocess.Popen(
-            "{}/sbin/stop-worker.sh".format(env["ZOO_STANDALONE_HOME"]), shell=True, env=env)
-        os.waitpid(stop_worker_pro.pid, 0)
-        stop_master_pro = subprocess.Popen(
-            "{}/sbin/stop-master.sh".format(env["ZOO_STANDALONE_HOME"]), shell=True, env=env)
-        os.waitpid(stop_master_pro.pid, 0)
+        if env is not None:
+            stop_worker_pro = subprocess.Popen(
+                "{}/sbin/stop-worker.sh".format(env["ZOO_STANDALONE_HOME"]), shell=True, env=env)
+            os.waitpid(stop_worker_pro.pid, 0)
+            stop_master_pro = subprocess.Popen(
+                "{}/sbin/stop-master.sh".format(env["ZOO_STANDALONE_HOME"]), shell=True, env=env)
+            os.waitpid(stop_master_pro.pid, 0)
+        else:
+            # if env is None, then the standalone cluster is not started by analytics zoo
+            pass
 
     def init_spark_on_k8s(self,
                           master,
