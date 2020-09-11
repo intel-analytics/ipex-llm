@@ -61,6 +61,17 @@ def _hosts_to_hosts_spec(hosts):
     return hosts_spec, host_and_rank_to_worker_idx, host_to_size
 
 
+def make_worker(worker_cls, HorovodWorker):
+    if worker_cls is None:
+        return HorovodWorker
+    if issubclass(worker_cls, HorovodWorker):
+        return worker_cls
+
+    class Worker(worker_cls, HorovodWorker):
+        pass
+    return Worker
+
+
 class HorovodRayRunner:
 
     # todo check whether horovod is built with gloo
@@ -71,12 +82,7 @@ class HorovodRayRunner:
         self.num_nodes = ray_ctx.num_ray_nodes * workers_per_node
         if worker_param is None:
             worker_param = {}
-        if worker_cls is None:
-            worker_cls = HorovodWorker
-        else:
-            assert issubclass(worker_cls, HorovodWorker),\
-                "worker_cls must be a subclass of HorovodWorker, " \
-                "got worker_cls {} ".format(worker_cls)
+        worker_cls = make_worker(worker_cls, HorovodWorker)
         self.worker_class = ray.remote(num_cpus=self.cores_per_node)(worker_cls)
         self.remote_workers = [self.worker_class.remote(**worker_param)
                                for i in range(0, self.num_nodes)]
