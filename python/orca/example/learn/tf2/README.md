@@ -16,7 +16,7 @@ Here are the commands that work on for us on ubuntu 16.04. The exact steps may v
 conda create -n analytics-zoo python==3.7.7
 conda activate analytics-zoo
 conda install -y cmake==3.16.0 -c conda-forge
-pip install tensorflow==2.1.0
+pip install tensorflow==2.3.0
 HOROVOD_WITH_TENSORFLOW=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
 ```
 
