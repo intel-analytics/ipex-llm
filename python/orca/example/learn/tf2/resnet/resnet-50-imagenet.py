@@ -428,6 +428,4 @@ if __name__ == "__main__":
                 validation_steps=_NUM_IMAGES['validation'] // global_batch_size,
             )
             epoch += 18
-            trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))
-
-    stop_orca_context()
+        trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))
