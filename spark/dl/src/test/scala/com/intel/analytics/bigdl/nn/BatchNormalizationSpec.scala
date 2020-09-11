@@ -20,12 +20,14 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class BatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class BatchNormalizationSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter{
   before {
     System.setProperty("bigdl.localMode", "true")
     System.setProperty("spark.master", "local[2]")

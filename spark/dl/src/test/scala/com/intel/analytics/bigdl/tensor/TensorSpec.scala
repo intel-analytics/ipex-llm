@@ -15,9 +15,11 @@
  */
 package com.intel.analytics.bigdl.tensor
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class TensorSpec extends FlatSpec with Matchers {
+class TensorSpec extends AnyFlatSpec with should.Matchers {
 
   "Tensor factory method" should "be able to construct scalar" in {
     val tensor = Tensor[Int](Array(4), Array[Int]())

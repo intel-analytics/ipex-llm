@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.zookeeper.ZooDefs.Ids
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class TransformerLayerSpec extends FlatSpec with Matchers {
+class TransformerLayerSpec extends AnyFlatSpec with should.Matchers {
   "tranformer decode stack" should "work correctly" in {
     val vocabSize = 10
     val hiddenSize = 4

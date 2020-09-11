@@ -17,10 +17,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.tf.Log1p
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class Log1pSpec extends FlatSpec with Matchers {
+class Log1pSpec extends AnyFlatSpec with should.Matchers {
   "A Log" should "generate correct output" in {
     val input = Tensor(Storage[Double](Array(0.0, 1, 2, 3, 4, 5)), 1, Array(2, 3))
 

@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl.nn.{Module, Reshape}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 import com.intel.analytics.bigdl.utils.tf.loaders.Adapter
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 class AdapterSpec extends BigDLSpecHelper {
 

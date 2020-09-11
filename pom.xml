@@ -112,7 +112,7 @@
         <scala.major.version>2.10</scala.major.version>
         <scala.version>2.10.7</scala.version>
         <scala.macros.version>2.1.0</scala.macros.version>
-        <scalatest.version>2.2.4</scalatest.version>
+        <scalatest.version>3.2.0</scalatest.version>
 
         <!-- platform encoding override -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

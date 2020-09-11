@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 
-class BatchSamplerSpec extends FlatSpec with Matchers {
+class BatchSamplerSpec extends AnyFlatSpec with should.Matchers {
   "batch sampler with no change" should "work properly" in {
     val sampler = new BatchSampler(maxTrials = 1)
     val unitBox = BoundingBox(0, 0, 1, 1)

@@ -20,10 +20,12 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SaveObjSpec extends FlatSpec with Matchers {
+class SaveObjSpec extends AnyFlatSpec with should.Matchers {
   "A tensor load from saved file" should "be same with original tensor" in {
     val originTensor = Tensor[Float](3, 2, 4).rand()
     val filePath = java.io.File.createTempFile("SaveObjSpecTensor", ".obj").getAbsolutePath

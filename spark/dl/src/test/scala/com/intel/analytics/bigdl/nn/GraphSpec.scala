@@ -32,10 +32,12 @@ import com.intel.analytics.bigdl.utils._
 
 import scala.reflect.ClassTag
 import scala.util.Random
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class StaticGraphSpec extends FlatSpec with Matchers {
+class StaticGraphSpec extends AnyFlatSpec with should.Matchers {
   "Graph init" should "throw exceptions when there's cycle" in {
     val fc1 = Linear(4, 2).inputs()
     val relu1 = ReLU().inputs(fc1)

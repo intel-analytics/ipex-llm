@@ -16,10 +16,12 @@
 package com.intel.analytics.bigdl.tensor
 
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class TensorNumericSpec extends FlatSpec with Matchers {
+class TensorNumericSpec extends AnyFlatSpec with should.Matchers {
   "Int Tensor" should "works correctly" in {
     val a = Tensor[Int](T(1, 2, 3))
     val b = Tensor[Int](T(2, 3, 4))

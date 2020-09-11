@@ -23,12 +23,14 @@ import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
 import org.opencv.core.CvType
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 import scala.util.Random
 
-class DLImageTransformerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DLImageTransformerSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   private var sc : SparkContext = _
   private var sqlContext : SQLContext = _
   private val pascalResource = getClass.getClassLoader.getResource("pascal/")

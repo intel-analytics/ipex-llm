@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class CrossColSpec extends FlatSpec with Matchers {
+class CrossColSpec extends AnyFlatSpec with should.Matchers {
   "CrossCol Operation with two feature columns" should "work correctly" in {
     val input = T(
       Tensor[String](T("A,D", "B", "A,C")),

@@ -19,13 +19,15 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.{Module, StaticGraph}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 
-class FusionSpec extends FlatSpec with Matchers {
+class FusionSpec extends AnyFlatSpec with should.Matchers {
   "Conv with relu" should "work correctly" in {
     val batchSize = 2
     val input = Tensor[Float](batchSize, 3, 224, 224).fill(1.0f)

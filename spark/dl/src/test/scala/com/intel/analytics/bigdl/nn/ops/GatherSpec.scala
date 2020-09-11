@@ -15,13 +15,15 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-class GatherSpec extends FlatSpec with Matchers {
+class GatherSpec extends AnyFlatSpec with should.Matchers {
   "gather with scalar" should "works fine" in {
     val gather = Gather[Float, Float]()
     val indices = Tensor[Int](Array(1), Array[Int]())

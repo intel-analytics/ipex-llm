@@ -22,9 +22,11 @@ import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import java.awt.image.DataBufferByte
 import java.io.{File, FileInputStream}
 import javax.imageio.ImageIO
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
-class COCODatasetSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class COCODatasetSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {

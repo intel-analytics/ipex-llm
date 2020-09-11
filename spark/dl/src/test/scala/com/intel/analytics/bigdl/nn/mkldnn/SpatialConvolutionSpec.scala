@@ -24,11 +24,13 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class SpatialConvolutionSpec extends FlatSpec with Matchers {
+class SpatialConvolutionSpec extends AnyFlatSpec with should.Matchers {
 
   "MKL-DNN Dilated Convolution compared with BLAS Dilated Convolution" should "work correctly" in {
     val nInputPlane = 2

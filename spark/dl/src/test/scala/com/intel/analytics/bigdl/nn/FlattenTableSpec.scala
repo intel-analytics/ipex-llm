@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class FlattenTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class FlattenTableSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
   "An FlattenTable" should "generate correct output and grad" in {
     val layer = new FlattenTable[Double]()
     val input = T(Tensor[Double](

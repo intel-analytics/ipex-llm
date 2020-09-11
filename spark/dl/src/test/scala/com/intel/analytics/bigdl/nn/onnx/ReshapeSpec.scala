@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.nn.onnx
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 
-class ReshapeSpec extends FlatSpec with Matchers {
+class ReshapeSpec extends AnyFlatSpec with should.Matchers {
 
   "Reshape" should "work" in {
     // case when shape is an attribute

@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ParallelCriterionSpec extends FlatSpec with Matchers {
+class ParallelCriterionSpec extends AnyFlatSpec with should.Matchers {
   "A ParallelCriterion" should "generate correct output with type Double" in {
     val pc = new ParallelCriterion[Double]()
 

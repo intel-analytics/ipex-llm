@@ -20,9 +20,11 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.NumericWildcard
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
-class RowTransformerSpec extends FlatSpec with Matchers {
+class RowTransformerSpec extends AnyFlatSpec with should.Matchers {
 
   private val testRow = {
     new GenericRowWithSchema(Array(1, 2L, 3.3, 4.4f, "aa", false, 77.toShort),

@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class CAddTableSpec extends FlatSpec with Matchers {
+class CAddTableSpec extends AnyFlatSpec with should.Matchers {
   "CAddTable" should "be correct when input is scalar" in {
     val module = CAddTable[Float]()
     val scalar = Tensor[Float](Array(2.0f), Array[Int]())

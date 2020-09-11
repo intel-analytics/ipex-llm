@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class SingleLayerSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   "convolution" should "work correctly" in {
     val inputShape = Array(4, 3, 5, 5)
     val outputShape = Array(4, 2, 3, 3)

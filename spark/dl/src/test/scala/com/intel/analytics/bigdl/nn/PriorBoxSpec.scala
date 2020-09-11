@@ -18,9 +18,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
-class PriorBoxSpec extends FlatSpec {
+class PriorBoxSpec extends AnyFlatSpec {
   "Priorbox" should "work" in {
     val isClip = false
     val isFlip = true

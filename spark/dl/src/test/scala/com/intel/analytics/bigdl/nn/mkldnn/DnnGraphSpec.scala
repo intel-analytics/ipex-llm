@@ -27,14 +27,16 @@ import com.intel.analytics.bigdl.nn.{Graph, Module => _, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.models.resnet
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.utils.intermediate._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import org.apache.spark.SparkContext
 
-class DnnGraphSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DnnGraphSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   private var sc: SparkContext = _
 

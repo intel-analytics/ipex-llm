@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class NegativeSpec extends FlatSpec with Matchers {
+class NegativeSpec extends AnyFlatSpec with should.Matchers {
   "Negative forward" should "be correct" in {
     val input = Tensor[Double](T(1, 2, 3))
     val m = Negative[Float]()

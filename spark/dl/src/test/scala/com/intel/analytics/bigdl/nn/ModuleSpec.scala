@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ModuleSpec extends FlatSpec with Matchers {
+class ModuleSpec extends AnyFlatSpec with should.Matchers {
   "hashcode()" should "behave correctly" in {
     val r1 = new ReLU[Double]()
     val r2 = new ReLU[Double]()

@@ -22,11 +22,13 @@ import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
 import org.opencv.core.CvType
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class DLImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DLImageReaderSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   var sc : SparkContext = _
   var sQLContext: SQLContext = _

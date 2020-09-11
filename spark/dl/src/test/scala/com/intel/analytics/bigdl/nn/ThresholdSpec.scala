@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
@@ -24,7 +24,7 @@ import scala.math.abs
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ThresholdSpec extends FlatSpec {
+class ThresholdSpec extends AnyFlatSpec {
   "A Threshold Module " should "generate correct output and grad" in {
     val module = new Threshold[Double](1, 0.8)
     val input = Tensor[Double](2, 2, 2)

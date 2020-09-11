@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
@@ -24,7 +26,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.util.Random
 
-class PoolerSpec extends FlatSpec with Matchers {
+class PoolerSpec extends AnyFlatSpec with should.Matchers {
   "updateOutput Float type" should "work properly" in {
     val feature1 = Array(
       0.023863613605499268, 0.100520193576812744, 0.579659581184387207,

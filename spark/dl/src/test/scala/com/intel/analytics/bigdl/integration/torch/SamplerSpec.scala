@@ -20,9 +20,11 @@ import com.intel.analytics.bigdl.nn.{KLDCriterion, GaussianSampler}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
-class GaussianSamplerSpec extends FlatSpec with Matchers{
+class GaussianSamplerSpec extends AnyFlatSpec with should.Matchers{
   "A Sampler Module " should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)

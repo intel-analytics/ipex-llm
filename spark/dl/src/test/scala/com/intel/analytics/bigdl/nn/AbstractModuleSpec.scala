@@ -16,14 +16,16 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.util.Random
 
-class AbstractModuleSpec extends FlatSpec with Matchers {
+class AbstractModuleSpec extends AnyFlatSpec with should.Matchers {
   "Get name" should "find the module if it exists" in {
     val m = Linear(4, 3).setName("module")
     m("module").get should be(m)

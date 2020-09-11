@@ -23,9 +23,11 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.apache.commons.lang3.SerializationUtils
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ReLUSpec extends FlatSpec with Matchers {
+class ReLUSpec extends AnyFlatSpec with should.Matchers {
   "a simple relu" should "be correct" in {
     val layer = ReLU(0.0f)
     val input = Tensor[Float](T(

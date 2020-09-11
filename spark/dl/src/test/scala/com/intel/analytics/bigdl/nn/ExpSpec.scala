@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ExpSpec extends FlatSpec with Matchers {
+class ExpSpec extends AnyFlatSpec with should.Matchers {
   "A Exp" should "generate correct output" in {
     val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
 

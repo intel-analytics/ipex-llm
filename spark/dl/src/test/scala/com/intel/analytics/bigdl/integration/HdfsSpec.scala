@@ -38,7 +38,9 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -46,7 +48,7 @@ import scala.util.Random
 
 
 @com.intel.analytics.bigdl.tags.Integration
-class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class HdfsSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter{
 
   val hdfs = System.getProperty("hdfsMaster")
   val mnistFolder = System.getProperty("mnist")

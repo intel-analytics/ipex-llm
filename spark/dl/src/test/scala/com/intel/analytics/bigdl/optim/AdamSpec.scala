@@ -19,13 +19,15 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TestUtils}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class AdamSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class AdamSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   before {
     System.setProperty("bigdl.localMode", "true")

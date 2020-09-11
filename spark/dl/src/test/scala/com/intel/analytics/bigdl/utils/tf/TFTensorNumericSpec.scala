@@ -17,9 +17,11 @@ package com.intel.analytics.bigdl.utils.tf
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class TFTensorNumericSpec extends FlatSpec with Matchers {
+class TFTensorNumericSpec extends AnyFlatSpec with should.Matchers {
 
   import TFTensorNumeric.NumericByteString
 

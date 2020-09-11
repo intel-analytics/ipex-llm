@@ -20,11 +20,13 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class SparseJoinTableSpec  extends FlatSpec with Matchers {
+class SparseJoinTableSpec  extends AnyFlatSpec with should.Matchers {
 
   "Sparse JoinTable" should "return the same result" in {
     Random.setSeed(2)

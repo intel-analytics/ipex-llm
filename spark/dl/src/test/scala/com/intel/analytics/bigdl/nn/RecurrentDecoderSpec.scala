@@ -23,14 +23,16 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class RecurrentDecoderSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
   "A ConvLSTMPeepwhole forward" should "work with RecurrentDecoder" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 7

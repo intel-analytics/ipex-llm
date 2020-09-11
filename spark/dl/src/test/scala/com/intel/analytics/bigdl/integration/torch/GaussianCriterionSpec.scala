@@ -20,10 +20,12 @@ import com.intel.analytics.bigdl.nn.GaussianCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 
-class GaussianCriterionSpec extends FlatSpec with Matchers{
+class GaussianCriterionSpec extends AnyFlatSpec with should.Matchers{
   "A GaussianCriterion Module " should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)

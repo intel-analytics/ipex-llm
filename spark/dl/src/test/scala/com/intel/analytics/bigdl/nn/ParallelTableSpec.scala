@@ -15,7 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
@@ -23,7 +25,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ParallelTableSpec extends FlatSpec with Matchers {
+class ParallelTableSpec extends AnyFlatSpec with should.Matchers {
   "hashcode()" should "behave correctly" in {
     val log = new Log[Double]()
     val log2 = new Log[Double]()

@@ -21,12 +21,14 @@ import com.intel.analytics.bigdl.nn.{Reshape, SpatialConvolution => NNSpatialCon
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+import org.scalatest.{BeforeAndAfter, ParallelTestExecution}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialConvolutionSpec extends FlatSpec with Matchers with ParallelTestExecution {
+class SpatialConvolutionSpec extends AnyFlatSpec with should.Matchers with ParallelTestExecution {
   // Notice:
   // 1. if we set input channel more than 1, the result will be not the same
   // 2. multi groups can't work

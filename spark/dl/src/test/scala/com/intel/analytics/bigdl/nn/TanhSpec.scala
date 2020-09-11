@@ -21,12 +21,14 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.tf.TanhGrad
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.math.abs
 
 @com.intel.analytics.bigdl.tags.Parallel
-class TanhSpec extends FlatSpec with Matchers {
+class TanhSpec extends AnyFlatSpec with should.Matchers {
   "A Tanh Module " should "generate correct output and grad" in {
     val module = new Tanh[Double]()
     val input = Tensor[Double](2, 2, 2)

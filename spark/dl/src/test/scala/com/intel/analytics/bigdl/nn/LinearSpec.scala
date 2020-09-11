@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl._
 
@@ -29,7 +31,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, TestUtils}
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LinearSpec extends FlatSpec with Matchers {
+class LinearSpec extends AnyFlatSpec with should.Matchers {
   "Linear L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
 

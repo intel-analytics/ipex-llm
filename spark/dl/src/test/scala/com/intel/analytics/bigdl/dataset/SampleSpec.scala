@@ -21,12 +21,14 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 import scala.reflect.ClassTag
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SampleSpec extends FlatSpec with Matchers {
+class SampleSpec extends AnyFlatSpec with should.Matchers {
   private def newMiniBatch[T: ClassTag](
         samples: Array[Sample[T]],
         featurePadding: Option[Array[Tensor[T]]] = None,

@@ -25,7 +25,9 @@ import com.intel.analytics.bigdl.nn.mkldnn.HeapData
 import com.intel.analytics.bigdl.tensor.{DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import com.intel.analytics.bigdl.visualization.TrainSummary
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
   val totalSize = 10
@@ -129,7 +131,7 @@ object LocalOptimizerSpecModel {
 }
 
 @com.intel.analytics.bigdl.tags.Serial
-class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class LocalOptimizerSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter{
   import LocalOptimizerSpecModel._
   import DummyDataSet._
 

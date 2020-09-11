@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class ScaleSpec extends FlatSpec with Matchers{
+class ScaleSpec extends AnyFlatSpec with should.Matchers{
   val input = Tensor(Storage(Array(
     1.3968338966, 1.0623255968, 0.0113903601, 1.6713322401,
     1.2211480141, -1.4509917498, 0.9407374859, 1.3669412136,

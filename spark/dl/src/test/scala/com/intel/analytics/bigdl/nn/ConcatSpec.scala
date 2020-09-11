@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.LayerException
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ConcatSpec extends FlatSpec with Matchers {
+class ConcatSpec extends AnyFlatSpec with should.Matchers {
 
   "toString" should "return good value" in {
     val seq1 = new Sequential[Double]

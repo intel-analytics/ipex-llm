@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class TransposeSpec extends FlatSpec with Matchers {
+class TransposeSpec extends AnyFlatSpec with should.Matchers {
   "A Transpose Module " should "generate correct output" in {
     val input = Tensor[Float]().resize(Array(2, 3)).randn()
     val layer = Transpose[Float](Array((1, 2)))

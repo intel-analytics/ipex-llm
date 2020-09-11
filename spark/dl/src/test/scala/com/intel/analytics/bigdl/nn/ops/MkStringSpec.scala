@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class MkStringSpec extends FlatSpec with Matchers {
+class MkStringSpec extends AnyFlatSpec with should.Matchers {
   "MkString Operation with DenseTensor" should "work correctly" in {
     val input = Tensor[Double](
       T(T(1.0, 2.0, 3.0),

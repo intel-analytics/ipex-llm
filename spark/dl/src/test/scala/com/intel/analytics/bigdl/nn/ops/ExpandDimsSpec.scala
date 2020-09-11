@@ -17,9 +17,11 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn.{Unsqueeze => ExpandDims}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ExpandDimsSpec extends FlatSpec with Matchers {
+class ExpandDimsSpec extends AnyFlatSpec with should.Matchers {
   "ExpandDims operation Float" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input = Tensor[Float](Array(2, 3, 5))

@@ -21,12 +21,14 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ConcatTableSpec extends FlatSpec with Matchers {
+class ConcatTableSpec extends AnyFlatSpec with should.Matchers {
 
   "A ConcateTable" should "return right output and grad" in {
     val ct = new ConcatTable[Float]()

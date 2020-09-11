@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.tensor
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ArrayStorageSpec extends FlatSpec with Matchers {
+class ArrayStorageSpec extends AnyFlatSpec with should.Matchers {
 
   "update value" should "be test" in {
     var i = 0

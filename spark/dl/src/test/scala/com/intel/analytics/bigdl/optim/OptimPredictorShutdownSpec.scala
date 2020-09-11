@@ -34,9 +34,11 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, RandomGenerator, S
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class OptimPredictorShutdownSpec extends SparkContextLifeCycle with Matchers {
+class OptimPredictorShutdownSpec extends SparkContextLifeCycle with should.Matchers {
   override def nodeNumber: Int = 1
   override def coreNumber: Int = 1
   override def appName: String = "predictor"
@@ -101,7 +103,7 @@ class OptimPredictorShutdownSpec extends SparkContextLifeCycle with Matchers {
   }
 }
 
-class DistriOptimizerSpec2 extends SparkContextLifeCycle with Matchers {
+class DistriOptimizerSpec2 extends SparkContextLifeCycle with should.Matchers {
 
   import DistriOptimizerSpecModel._
 
@@ -175,7 +177,7 @@ class DistriOptimizerSpec2 extends SparkContextLifeCycle with Matchers {
   }
 }
 
-class LocalOptimizerSpec2 extends FlatSpec with Matchers with BeforeAndAfter {
+class LocalOptimizerSpec2 extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   import DummyDataSet._
   import LocalOptimizerSpecModel._

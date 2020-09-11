@@ -16,7 +16,9 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import java.io.{File => JFile}
 import java.nio.{ByteBuffer, ByteOrder}
 
@@ -27,7 +29,7 @@ import org.tensorflow.example.Example
 import org.tensorflow.framework.DataType
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
-class DecodeImageSpec extends FlatSpec with Matchers {
+class DecodeImageSpec extends AnyFlatSpec with should.Matchers {
 
   "DecodeRaw " should "be able to decode raw bytes" in {
 

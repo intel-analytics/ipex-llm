@@ -18,7 +18,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
@@ -26,7 +28,7 @@ import scala.util.Random
   * Created by yao on 9/20/16.
   */
 @com.intel.analytics.bigdl.tags.Parallel
-class IdentitySpec extends FlatSpec with Matchers {
+class IdentitySpec extends AnyFlatSpec with should.Matchers {
   "Identity" should "generate correct output and grad" in {
     val batchN = 3
     val inputN = 5

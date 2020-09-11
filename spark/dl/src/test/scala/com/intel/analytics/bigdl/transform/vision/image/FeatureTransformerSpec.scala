@@ -24,9 +24,11 @@ import com.intel.analytics.bigdl.transform.vision.image.label.roi._
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
 import org.opencv.imgcodecs.Imgcodecs
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class FeatureTransformerSpec extends FlatSpec with Matchers {
+class FeatureTransformerSpec extends AnyFlatSpec with should.Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
 
   "Image Transformer with empty byte input" should "throw exception" in {

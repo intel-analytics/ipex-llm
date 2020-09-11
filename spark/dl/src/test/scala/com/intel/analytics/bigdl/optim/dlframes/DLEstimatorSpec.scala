@@ -28,11 +28,13 @@ import org.apache.spark.ml.feature.MinMaxScaler
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DLEstimatorSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   var sc : SparkContext = _
   var sqlContext : SQLContext = _

@@ -23,10 +23,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, SparkContextLifeCycle}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl._
 
-class EvaluatorSpec extends SparkContextLifeCycle with Matchers {
+class EvaluatorSpec extends SparkContextLifeCycle with should.Matchers {
 
   override def nodeNumber: Int = 1
   override def coreNumber: Int = 1

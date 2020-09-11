@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class SplitAndSelectSpec extends FlatSpec with Matchers {
+class SplitAndSelectSpec extends AnyFlatSpec with should.Matchers {
   "SplitAndSelect forward" should "be correct" in {
     val layer = SplitAndSelect(1, 3, 4)
     val input = Tensor(T(

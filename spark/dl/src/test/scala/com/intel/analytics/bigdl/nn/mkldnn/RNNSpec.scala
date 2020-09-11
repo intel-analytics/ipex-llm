@@ -16,7 +16,9 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.example.languagemodel.PTBModel
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.mkl.{AlgKind, Direction, Memory}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,7 +31,7 @@ import com.intel.analytics.bigdl.utils._
 
 import scala.util.Random
 
-class RNNSpec extends FlatSpec with Matchers{
+class RNNSpec extends AnyFlatSpec with should.Matchers{
   "LSTM UnidirectionalInference updateOutput" should "work correctly" in {
     val seqLength = 3
     val batchSize = 2

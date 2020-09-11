@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 
-class SelectTensorSpec extends FlatSpec with Matchers  {
+class SelectTensorSpec extends AnyFlatSpec with should.Matchers  {
 
   private val t1 = Tensor[Double](2, 3).randn()
   private val t2 = Tensor[Double](2, 3).randn()

@@ -17,9 +17,11 @@
 package com.intel.analytics.bigdl.transform.vision.image.util
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class BoundingBoxSpec extends FlatSpec with Matchers {
+class BoundingBoxSpec extends AnyFlatSpec with should.Matchers {
   "scaleBBox" should "work properly" in {
     val bbox = BoundingBox(1f, 4f, 5f, 6f, false)
     val scaled = new BoundingBox()

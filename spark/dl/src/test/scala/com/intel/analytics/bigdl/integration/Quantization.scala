@@ -29,10 +29,12 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 @com.intel.analytics.bigdl.tags.Integration
-class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class QuantizationSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter{
   def test(model: Module[Float], evaluationSet: RDD[Sample[Float]], batchSize: Int)
   : Array[(ValidationResult, ValidationMethod[Float])] = {
     println(model)

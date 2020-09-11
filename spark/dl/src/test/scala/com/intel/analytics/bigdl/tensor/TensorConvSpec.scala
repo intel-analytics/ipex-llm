@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.tensor
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class TensorConvSpec extends FlatSpec with Matchers {
+class TensorConvSpec extends AnyFlatSpec with should.Matchers {
   "Valid conv" should "return correct value" in {
     val t = new DenseTensor[Double](3, 4)
     t(Array(1, 1)) = 1

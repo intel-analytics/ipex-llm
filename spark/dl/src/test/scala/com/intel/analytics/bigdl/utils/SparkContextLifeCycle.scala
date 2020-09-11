@@ -16,13 +16,15 @@
 package com.intel.analytics.bigdl.utils
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 /**
  * A trait which handles the creation of a [[SparkContext]] at the beginning
  * of the test suite and the finalization of its lifecyle when the test ends.
  */
-trait SparkContextLifeCycle extends FlatSpec with BeforeAndAfter {
+trait SparkContextLifeCycle extends AnyFlatSpec with BeforeAndAfter {
   var sc: SparkContext = null
   def nodeNumber: Int = 1
   def coreNumber: Int = 1

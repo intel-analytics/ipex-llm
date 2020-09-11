@@ -17,10 +17,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class PGCriterionSpec extends FlatSpec with Matchers {
+class PGCriterionSpec extends AnyFlatSpec with should.Matchers {
 
   "PGCriterion " should "give correct result with dense target" in {
     val criterion = PGCriterion[Float]()

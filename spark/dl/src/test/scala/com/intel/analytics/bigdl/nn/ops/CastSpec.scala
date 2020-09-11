@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.nn.tf.Assign
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class CastSpec extends FlatSpec with Matchers {
+class CastSpec extends AnyFlatSpec with should.Matchers {
   "Cast operation Float" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =

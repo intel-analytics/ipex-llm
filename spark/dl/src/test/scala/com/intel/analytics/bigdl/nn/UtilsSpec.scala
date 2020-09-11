@@ -16,9 +16,11 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class UtilsSpec extends FlatSpec with Matchers {
+class UtilsSpec extends AnyFlatSpec with should.Matchers {
 
   "getNamedModules" should "work properly" in {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat

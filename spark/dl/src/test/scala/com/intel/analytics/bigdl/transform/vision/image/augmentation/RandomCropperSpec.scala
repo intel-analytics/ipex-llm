@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 import com.intel.analytics.bigdl.dataset.image.CropRandom
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFrame, LocalImageFrame}
 import org.opencv.imgcodecs.Imgcodecs
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class RandomCropperSpec extends FlatSpec with Matchers {
+class RandomCropperSpec extends AnyFlatSpec with should.Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "RandomCropper" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)

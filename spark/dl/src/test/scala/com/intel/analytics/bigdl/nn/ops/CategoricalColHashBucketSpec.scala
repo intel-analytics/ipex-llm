@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class CategoricalColHashBucketSpec extends FlatSpec with Matchers {
+class CategoricalColHashBucketSpec extends AnyFlatSpec with should.Matchers {
 
   "CategoricalColHashBucket operation single value feature column" should "work correctly" in {
     val input = Tensor[String](T(T(1), T(2), T(3)))

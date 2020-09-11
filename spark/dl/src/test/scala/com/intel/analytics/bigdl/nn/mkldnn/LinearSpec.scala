@@ -26,9 +26,11 @@ import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, MklDnn, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class LinearSpec extends FlatSpec with Matchers {
+class LinearSpec extends AnyFlatSpec with should.Matchers {
 
   "Convert blas linear to mkldnn with NHWC" should "be correct" in {
     Engine.setEngineType(MklDnn)

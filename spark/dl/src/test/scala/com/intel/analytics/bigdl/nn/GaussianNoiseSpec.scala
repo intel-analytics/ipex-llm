@@ -19,7 +19,9 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
@@ -27,7 +29,7 @@ import scala.util.Random
   * Unit test for GaussianNoise
   */
 @com.intel.analytics.bigdl.tags.Parallel
-class GaussianNoiseSpec extends FlatSpec with Matchers {
+class GaussianNoiseSpec extends AnyFlatSpec with should.Matchers {
   "GaussianNoise" should "run through in training mode" in {
     val batchN = 3
     val inputN = 5

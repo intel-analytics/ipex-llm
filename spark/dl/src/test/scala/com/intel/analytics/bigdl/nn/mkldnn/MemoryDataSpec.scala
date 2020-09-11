@@ -17,9 +17,11 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{DataType, Memory}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class MemoryDataSpec extends FlatSpec with Matchers {
+class MemoryDataSpec extends AnyFlatSpec with should.Matchers {
   "memory data hashCode comparison data" should "work correctly" in {
     val fp32 = HeapData(Array(4, 3), Memory.Format.nc, DataType.F32)
     val int8 = HeapData(Array(4, 3), Memory.Format.nc, DataType.S8)

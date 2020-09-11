@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.nn.mkldnn.Equivalent
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class LayerNormalizationSpec extends FlatSpec with Matchers {
+class LayerNormalizationSpec extends AnyFlatSpec with should.Matchers {
 
   val input = Tensor[Float](
     T(T(1.62434536, -0.61175641, -0.52817175, -1.07296862, 0.86540763, -2.3015387,

@@ -26,12 +26,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import org.apache.log4j.Logger
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class ResNetSpec extends FlatSpec with Matchers {
+class ResNetSpec extends AnyFlatSpec with should.Matchers {
 
   "ResNet basicBlockFunc graph" should "be same with original one" in {
     val depth = 16

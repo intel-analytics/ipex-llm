@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
 import com.intel.analytics.bigdl.utils.{Engine, SparkContextLifeCycle}
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import matchers._
 
 import scala.io.Source
 
 @com.intel.analytics.bigdl.tags.Serial
-class SentenceBiPaddingSpec extends SparkContextLifeCycle with Matchers {
+class SentenceBiPaddingSpec extends SparkContextLifeCycle with should.Matchers {
   override def nodeNumber: Int = 1
   override def coreNumber: Int = 1
   override def appName: String = "DocumentTokenizer"

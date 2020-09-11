@@ -16,13 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class MSECriterionSpec extends FlatSpec {
+class MSECriterionSpec extends AnyFlatSpec {
   "A MSE Criterion" should " be fast" in {
     val mse = MSECriterion[Double]
     val input = Tensor[Double](3, 50, 50)

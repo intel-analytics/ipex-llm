@@ -27,12 +27,14 @@ import com.intel.analytics.bigdl.utils.tf.{TensorflowLoader, TensorflowSaver}
 import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Integration
-class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
+class S3Spec extends AnyFlatSpec with should.Matchers with BeforeAndAfter{
   val s3aPath = System.getProperty("s3aPath")
 
   private def processPath(path: String): String = {

@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.nn.CDivTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class RealDivSpec extends FlatSpec with Matchers {
+class RealDivSpec extends AnyFlatSpec with should.Matchers {
   "Divide operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =

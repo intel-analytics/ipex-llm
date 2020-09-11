@@ -25,9 +25,11 @@ import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class MultiModelsSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class MultiModelsSpec extends AnyFlatSpec with BeforeAndAfter with should.Matchers {
   var sc: SparkContext = _
   val nodeNumber = 1
   val coreNumber = 2

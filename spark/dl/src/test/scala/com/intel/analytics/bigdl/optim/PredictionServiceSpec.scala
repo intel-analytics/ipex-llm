@@ -19,11 +19,13 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class PredictionServiceSpec extends FlatSpec with Matchers {
+class PredictionServiceSpec extends AnyFlatSpec with should.Matchers {
 
   // sharing weights for testModule and testModule2
   private val linearWeights = Tensor[Float](5, 10).rand()

@@ -34,9 +34,11 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.reflect.ClassTag
 import scala.util.Random
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class DynamicGraphSpec  extends FlatSpec with Matchers {
+class DynamicGraphSpec  extends AnyFlatSpec with should.Matchers {
   "Dynamic Graph init" should "throw exceptions when there's cycle" in {
     val fc1 = Linear(4, 2).inputs()
     val relu1 = ReLU().inputs(fc1)

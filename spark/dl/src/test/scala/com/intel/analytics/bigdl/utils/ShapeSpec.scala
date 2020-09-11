@@ -16,9 +16,11 @@
 
 package com.intel.analytics.bigdl.utils
 
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ShapeSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class ShapeSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   "update of SingleShape" should "be test" in {
     assert(Shape(1, 2, 3).copyAndUpdate(-1, 20) == Shape(1, 2, 20))

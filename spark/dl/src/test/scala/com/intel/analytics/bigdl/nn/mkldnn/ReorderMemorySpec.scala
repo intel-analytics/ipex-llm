@@ -24,9 +24,11 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
+class ReorderMemorySpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   "lenet5 with reorder" should "works no segment fault" in {
     // after upgrade to mkldnn v0.17, the thread local variables will cause spark to stop
     // this test case tests the single pool

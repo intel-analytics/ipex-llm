@@ -26,10 +26,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class OptimizerSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   private var sc: SparkContext = _
   private val nodeNumber = 1

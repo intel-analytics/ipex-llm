@@ -16,10 +16,12 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 
-class MarginCriterionSpec extends FlatSpec with Matchers {
+class MarginCriterionSpec extends AnyFlatSpec with should.Matchers {
 
   "MarginCriterion " should "calculate correct squared hinge loss" in {
     val input = Tensor[Float](Array[Float](0.1f, 0.2f, 0.3f, 0.4f), Array(4))

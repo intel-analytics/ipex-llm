@@ -15,11 +15,13 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import java.io.{File => JFile}
 
 
-class TFRecordIteratorSpec extends FlatSpec with Matchers {
+class TFRecordIteratorSpec extends AnyFlatSpec with should.Matchers {
 
   "TFRecordIterator " should "be able to read .tfrecord file" in {
     val resource = getClass.getClassLoader.getResource("tf")

@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.nn.{Squeeze, StaticGraph, Input => NNInput}
 
-class SqueezeSpec extends FlatSpec with Matchers {
+class SqueezeSpec extends AnyFlatSpec with should.Matchers {
   "a graph with squeeze" should "convert correctly" in {
     System.setProperty("bigdl.engineType", "mkldnn")
     val input = NNInput[Float]()

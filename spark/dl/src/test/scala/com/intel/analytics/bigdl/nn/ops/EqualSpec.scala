@@ -19,11 +19,13 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
-class EqualSpec extends FlatSpec with Matchers {
+class EqualSpec extends AnyFlatSpec with should.Matchers {
   "Equal Float operation" should "works correctly" in {
     val input =
       T(

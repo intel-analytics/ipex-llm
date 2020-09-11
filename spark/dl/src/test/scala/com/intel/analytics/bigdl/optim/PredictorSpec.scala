@@ -31,9 +31,11 @@ import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class PredictorSpec extends SparkContextLifeCycle with Matchers {
+class PredictorSpec extends SparkContextLifeCycle with should.Matchers {
   override def nodeNumber: Int = 1
   override def coreNumber: Int = 1
   override def appName: String = "predictor"

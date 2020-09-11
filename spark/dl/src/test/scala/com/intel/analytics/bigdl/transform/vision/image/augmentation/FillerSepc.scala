@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame, MatToFloats}
 import org.opencv.imgcodecs.Imgcodecs
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class FillerSepc extends FlatSpec with Matchers {
+class FillerSepc extends AnyFlatSpec with should.Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
 
   "Filler all" should "work properly" in {

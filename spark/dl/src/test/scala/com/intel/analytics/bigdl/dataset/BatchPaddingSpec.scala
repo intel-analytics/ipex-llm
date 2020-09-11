@@ -22,13 +22,15 @@ import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
 import scala.util.Random
 
-class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class BatchPaddingSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   before {
     Engine.setNodeAndCore(1, 1)

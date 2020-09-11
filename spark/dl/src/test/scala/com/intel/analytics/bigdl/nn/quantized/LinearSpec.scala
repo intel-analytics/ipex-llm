@@ -20,12 +20,14 @@ import com.intel.analytics.bigdl.nn.{Module, Linear => NNLinear}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+import org.scalatest.{BeforeAndAfter, ParallelTestExecution}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
+class LinearSpec extends AnyFlatSpec with should.Matchers with ParallelTestExecution {
   val testCases = List(
     TestCase(1, 1, 1),
     TestCase(3, 3, 4),

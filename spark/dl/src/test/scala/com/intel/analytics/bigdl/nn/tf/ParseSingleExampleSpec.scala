@@ -19,11 +19,13 @@ import com.intel.analytics.bigdl.tensor.{FloatType, LongType, StringType, Tensor
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import org.tensorflow.example._
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
-class ParseSingleExampleSpec extends FlatSpec with Matchers {
+class ParseSingleExampleSpec extends AnyFlatSpec with should.Matchers {
 
   "ParseSingleExample" should "be able to parse a example" in {
 

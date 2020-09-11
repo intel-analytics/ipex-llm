@@ -25,10 +25,12 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
 
-class MklInt8ConvertibleSpec extends FlatSpec with Matchers with BeforeAndAfter  {
+class MklInt8ConvertibleSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter  {
 
   val modelPath: String = "myTestModel" + UUID.randomUUID().toString
   val weightPath: String = "myTestModelWeight" + UUID.randomUUID().toString

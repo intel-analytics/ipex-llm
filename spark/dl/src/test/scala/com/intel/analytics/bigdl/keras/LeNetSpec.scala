@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+import flatspec._
+import matchers._
 
-class LeNetSpec extends FlatSpec with Matchers {
+class LeNetSpec extends AnyFlatSpec with should.Matchers {
 
   "LeNet sequential" should "generate the correct outputShape" in {
     val lenet = LeNet5.keras(classNum = 10)

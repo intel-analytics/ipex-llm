@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn
 
 import breeze.numerics.abs
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
+class SoftmaxWithCriterionSpec extends AnyFlatSpec with should.Matchers {
   val inputArr = Array(-3.8623790740966796875, -5.576374053955078125,
     10.298772811889648438, 9.0803890228271484375,
     1.3665539026260375977, -0.44133603572845458984,

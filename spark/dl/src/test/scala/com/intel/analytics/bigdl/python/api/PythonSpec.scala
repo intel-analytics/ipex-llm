@@ -29,7 +29,9 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -38,7 +40,7 @@ import scala.util.Random
 import scala.collection.JavaConverters._
 
 
-class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class PythonSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfter {
 
   var sc: SparkContext = null
 

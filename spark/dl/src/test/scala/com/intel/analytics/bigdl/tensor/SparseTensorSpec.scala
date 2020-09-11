@@ -15,14 +15,16 @@
  */
 package com.intel.analytics.bigdl.tensor
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SparseTensorSpec  extends FlatSpec with Matchers {
+class SparseTensorSpec  extends AnyFlatSpec with should.Matchers {
   "dim, shape, nElement" should "return right result" in {
     val sTensor1 = Tensor.sparse(Tensor(3, 4).range(1, 12, 1))
     sTensor1.dim() should be (2)

@@ -20,11 +20,13 @@ import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVect
 import com.intel.analytics.bigdl.nn.Linear
 import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import spire.syntax.module
 
 @com.intel.analytics.bigdl.tags.Parallel
-class DenseTensorSpec extends FlatSpec with Matchers {
+class DenseTensorSpec extends AnyFlatSpec with should.Matchers {
 
   "Construct with empty parameter" should "be empty" in {
     val t: Tensor[Double] = new DenseTensor[Double]()

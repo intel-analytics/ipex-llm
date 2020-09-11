@@ -19,7 +19,9 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
@@ -27,7 +29,7 @@ import scala.math.abs
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
+class SpatialMaxPoolingSpec extends AnyFlatSpec with should.Matchers {
 
   "A SpatialMaxPooling" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Double](2, 2)

@@ -25,9 +25,9 @@ import org.apache.commons.lang3.SerializationUtils
 import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.matchers._
 
-class ModelBroadcastSpec extends SparkContextLifeCycle with Matchers {
+class ModelBroadcastSpec extends SparkContextLifeCycle with should.Matchers {
 
   override def appName: String = "ModelBroadcast"
 

@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class IndicatorColSpec extends FlatSpec with Matchers {
+class IndicatorColSpec extends AnyFlatSpec with should.Matchers {
 
   "IndicatorColSpec Operation with isCount=true" should "work correctly" in {
 

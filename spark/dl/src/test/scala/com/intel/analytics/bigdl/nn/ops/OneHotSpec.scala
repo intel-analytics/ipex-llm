@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 
-class OneHotSpec extends FlatSpec with Matchers {
+class OneHotSpec extends AnyFlatSpec with should.Matchers {
   "OneHot operation one dimension index" should "works correctly" in {
     val input =
       T(Tensor[Long](T(0, 2, -1, 1)),

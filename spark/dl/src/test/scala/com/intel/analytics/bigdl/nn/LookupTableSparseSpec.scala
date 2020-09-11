@@ -17,13 +17,15 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LookupTableSparseSpec extends FlatSpec with Matchers {
+class LookupTableSparseSpec extends AnyFlatSpec with should.Matchers {
   "A LookupTableSparse without weight" should "generate correct output and gradient" in {
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
