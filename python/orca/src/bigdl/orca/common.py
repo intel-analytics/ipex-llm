@@ -93,11 +93,11 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
     across the cluster if necessary).
 
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "standalone" and "spark-submit". Default to be "local".
+           "k8s-client", "standalone" and "spark-submit". Default to be "local".
 
            For "spark-submit", you are supposed to use spark-submit to submit the application.
            In this case, please set the Spark configurations through command line options or
-           the properties file. You need to use "spark-submit" for yarn-cluster mode.
+           the properties file. You need to use "spark-submit" for yarn-cluster or k8s-cluster mode.
            To make things easier, you are recommended to use the launching scripts under
            `analytics-zoo/scripts`.
 
@@ -155,9 +155,24 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                                 conda_name=python_location.split("/")[-3],
                                 num_executors=num_nodes, executor_cores=cores,
                                 executor_memory=memory, **spark_args)
+    elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
+        if cluster_mode == "k8s-cluster":
+            raise ValueError('For k8s-cluster mode, please set cluster_mode to "spark-submit" '
+                             'and submit the application via spark-submit instead')
+        assert "master" in kwargs, "Please specify master for k8s-client mode"
+        assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
+        for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
+                    "extra_python_lib", "jars", "python_location"]:
+            if key in kwargs:
+                spark_args[key] = kwargs[key]
+        from zoo import init_spark_on_k8s
+        sc = init_spark_on_k8s(master=kwargs["master"],
+                               container_image=kwargs["container_image"],
+                               num_executors=num_nodes, executor_cores=cores,
+                               executor_memory=memory, **spark_args)
     elif cluster_mode == "standalone":
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
-                    "extra_python_lib", "jars", "master", "enable_numa_binding"]:
+                    "extra_python_lib", "jars", "master", "python_location", "enable_numa_binding"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
         from zoo import init_spark_standalone
