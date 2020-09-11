@@ -167,7 +167,7 @@ class SparkRunner:
                 worker_script = "start-worker-with-numactl.sh"
                 SparkRunner.standalone_env["SPARK_WORKER_INSTANCES"] = str(num_executors)
             else:
-                worker_script = "start_worker.sh"
+                worker_script = "start-worker.sh"
             start_worker_pro = subprocess.Popen(
                 "{}/sbin/{} {}".format(zoo_standalone_home, worker_script, master),
                 shell=True, env=SparkRunner.standalone_env)
