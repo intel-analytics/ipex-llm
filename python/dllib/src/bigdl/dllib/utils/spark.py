@@ -132,13 +132,15 @@ class SparkRunner:
                               extra_python_lib=None,
                               conf=None,
                               jars=None,
+                              python_location=None,
                               enable_numa_binding=False):
         import subprocess
         import pyspark
         from zoo.util.utils import get_node_ip
 
         if "PYSPARK_PYTHON" not in os.environ:
-            os.environ["PYSPARK_PYTHON"] = detect_python_location()
+            os.environ["PYSPARK_PYTHON"] = \
+                python_location if python_location else detect_python_location()
         if not master:
             pyspark_home = os.path.abspath(pyspark.__file__ + "/../")
             zoo_standalone_home = os.path.abspath(__file__ + "/../../share/bin/standalone")
@@ -229,8 +231,10 @@ class SparkRunner:
                           conf=None,
                           jars=None,
                           python_location=None):
-        if python_location:
-            os.environ["PYSPARK_PYTHON"] = python_location
+        print("Initializing SparkContext for k8s-client mode")
+        if "PYSPARK_PYTHON" not in os.environ:
+            os.environ["PYSPARK_PYTHON"] = \
+                python_location if python_location else detect_python_location()
 
         submit_args = "--master " + master + " --deploy-mode client"
         submit_args = submit_args + gen_submit_args(
