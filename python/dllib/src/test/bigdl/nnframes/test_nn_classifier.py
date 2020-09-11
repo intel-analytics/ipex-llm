@@ -200,7 +200,7 @@ class TestNNClassifer():
             ((2.0, 1.0), (1.0, 2.0)),
             ((1.0, 2.0), (2.0, 1.0)),
             ((2.0, 1.0), (1.0, 2.0)),
-            ((1.0, 2.0), (2.0, 1.0))])
+            ((1.0, 2.0), (2.0, 1.0))] * 10)
 
         schema = StructType([
             StructField("features", ArrayType(DoubleType(), False), False),
