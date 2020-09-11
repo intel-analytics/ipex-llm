@@ -112,7 +112,7 @@
         <scala.major.version>2.10</scala.major.version>
         <scala.version>2.10.7</scala.version>
         <scala.macros.version>2.1.0</scala.macros.version>
-        <scalatest.version>3.2.0</scalatest.version>
+        <scalatest.version>3.0.7</scalatest.version>
 
         <!-- platform encoding override -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -142,7 +142,7 @@
         <maven-failsafe-plugin.version>${maven-surefire-plugin.version}</maven-failsafe-plugin.version>
 
         <maven-clean-plugin.version>2.5</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.2.1</maven-compiler-plugin.version>
         <maven-install-plugin.version>2.5.1</maven-install-plugin.version>
         <maven-resources-plugin.version>2.6</maven-resources-plugin.version>
         <maven-jar-plugin.version>2.5</maven-jar-plugin.version>

@@ -121,7 +121,7 @@ class Pooler[T: ClassTag] (
       val num_rois = rois.size(1)
       totalNum += num_rois
 
-      if (out.getOrElse(i + 1, null) == null) out(i + 1) = Tensor[T]()
+      if (out.getOrElse(i + 1, null).equals(null)) out(i + 1) = Tensor[T]()
       val outROI = out[Tensor[T]](i + 1)
       outROI.resize(num_rois, num_channels, resolution, resolution)
         .fill(ev.fromType[Float](Float.MinValue))

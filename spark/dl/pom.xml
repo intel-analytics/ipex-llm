@@ -190,7 +190,7 @@
                  or shade plugin will be executed after assembly plugin. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.1</version>
                 <configuration>
                     <filters>
                         <filter>

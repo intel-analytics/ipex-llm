@@ -668,6 +668,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
         assert(abs(v1 - v2) <= 1e-8)
         v1
       })
+    case _=>
     }
 
     luaOutput.map(output, (v1, v2) => {
