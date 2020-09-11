@@ -115,6 +115,8 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
 
     :return: An instance of SparkContext.
     """
+    import atexit
+    atexit.register(stop_orca_context)
     cluster_mode = cluster_mode.lower()
     spark_args = {}
     for key in ["conf", "spark_log_level", "redirect_spark_log"]:
@@ -183,6 +185,7 @@ def stop_orca_context():
     """
     Stop the SparkContext (and stop Ray services across the cluster if necessary).
     """
+    print("Stopping orca context")
     from pyspark import SparkContext
     from zoo.ray import RayContext
     ray_ctx = RayContext.get(initialize=False)
