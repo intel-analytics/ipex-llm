@@ -110,16 +110,15 @@ class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
   }
 
   override def copy(num: Int): Array[AbstractModel] = {
-    val arr = new Array[AbstractModel](1)
-
-    (0 until 1).foreach(i => {
-      val modelBytes = modelHolder.modelBytes.clone()
-      val weightBytes = modelHolder.weightBytes.clone()
-
-      arr(i) = new OpenVINOModel(
-        new OpenVINOModelHolder(modelBytes, weightBytes), isInt8, batchSize, DeviceType.CPU)
-    })
-    arr
+    Array(this)
+//    val arr = new Array[AbstractModel](num)
+//    val modelBytes = this.modelHolder.modelBytes.clone()
+//    val weightBytes = this.modelHolder.weightBytes.clone()
+//    val modelHolder = new OpenVINOModelHolder(modelBytes, weightBytes)
+//    (0 until num).foreach(i => {
+//      arr(i) = new OpenVINOModel(modelHolder, isInt8, batchSize, DeviceType.CPU)
+//    })
+//    arr
   }
 
   override def release(): Unit = {
