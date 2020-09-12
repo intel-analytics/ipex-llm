@@ -63,11 +63,22 @@ def kill_redundant_log_monitors(redis_address):
     import subprocess
     log_monitor_processes = []
     for proc in psutil.process_iter(["name", "cmdline"]):
-        cmdline = subprocess.list2cmdline(proc.cmdline())
-        is_log_monitor = "log_monitor.py" in cmdline
-        is_same_redis = "--redis-address={}".format(redis_address)
-        if is_log_monitor and is_same_redis in cmdline:
-            log_monitor_processes.append(proc)
+        try:
+            # Avoid throw exception when listing lwsslauncher in macOS
+            if proc.name() is None or proc.name() == "lwsslauncher":
+                continue
+            cmdline = subprocess.list2cmdline(proc.cmdline())
+            is_log_monitor = "log_monitor.py" in cmdline
+            is_same_redis = "--redis-address={}".format(redis_address)
+            if is_log_monitor and is_same_redis in cmdline:
+                log_monitor_processes.append(proc)
+        except psutil.AccessDenied:
+            # psutil may encounter AccessDenied exceptions
+            # when it's trying to visit core services
+            if psutil.MACOS:
+                continue
+            else:
+                raise
 
     if len(log_monitor_processes) > 1:
         for proc in log_monitor_processes[1:]:
