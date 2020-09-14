@@ -12,7 +12,8 @@ Test template    BigDL Test
 4                    Spark2.3 on Yarn Test Suite
 5                    Quantization Test Suite
 6                    PySpark2.2 Test Suite
-
+7                    PySpark3.0 Test Suite
+8                    Spark3.0 on Yarn Test Suite
 
 *** Keywords ***
 Build SparkJar
@@ -112,6 +113,9 @@ Spark1.6 on Yarn Test Suite
 Spark2.3 on Yarn Test Suite
    Yarn Test Suite	spark_2.x	/opt/work/spark-2.3.1-bin-hadoop2.7
 
+Spark3.0 on Yarn Test Suite
+   Yarn Test Suite      spark_3.x       /opt/work/spark-3.0.0-bin-hadoop2.7
+
 Yarn Test Suite
    [Arguments]                      ${bigdl_spark_version}                ${spark_home}
    DownLoad Input
@@ -147,4 +151,8 @@ PySpark2.2 Test Suite
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-2.2.0-bin-hadoop2.7/bin    spark-submit
    Run Shell                        ${submit} --master ${spark_22_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 10g --executor-cores 14 --total-executor-cores 28 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
 
-
+PySpark3.0 Test Suite
+   Build SparkJar                   spark_3.x
+   Set Environment Variable         SPARK_HOME     /opt/work/spark-3.0.0-bin-hadoop2.7
+   ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-3.0.0-bin-hadoop2.7/bin    spark-submit
+   Run Shell                        ${submit} --master ${spark_30_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 10g --executor-cores 14 --total-executor-cores 28 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
