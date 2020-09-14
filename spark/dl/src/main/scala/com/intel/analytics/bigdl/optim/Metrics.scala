@@ -73,6 +73,7 @@ class Metrics extends Serializable {
     } else {
       aggregateDistributeMetricsMap(name) =
         AggregateDistributeMetricsEntry(sc.doubleAccumulator(name), parallel)
+      aggregateDistributeMetricsMap(name).value.add(value)
     }
     this
   }
@@ -87,6 +88,7 @@ class Metrics extends Serializable {
       val accumulableCollection = new ArrayBufferAccumulator
       sc.register(accumulableCollection)
       distributeMetricsMap(name) = DistributeMetricsEntry(accumulableCollection)
+      distributeMetricsMap(name).value.add(value)
     }
     this
   }
