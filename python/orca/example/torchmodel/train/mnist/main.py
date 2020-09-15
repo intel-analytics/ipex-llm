@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
-from zoo.pipeline.api.torch import TorchModel, TorchLoss
+from zoo.pipeline.api.torch import TorchModel, TorchLoss, TorchOptim
 from zoo.pipeline.estimator import *
 from bigdl.optim.optimizer import SGD, Adam
 from zoo.common.nncontext import *
@@ -106,10 +106,11 @@ def main():
     model.train()
     criterion = nn.NLLLoss()
 
-    adam = Adam(args.lr)
+    adam = torch.optim.Adam(model.parameters(), lr=args.lr)
     zoo_model = TorchModel.from_pytorch(model)
     zoo_criterion = TorchLoss.from_pytorch(criterion)
-    zoo_estimator = Estimator(zoo_model, optim_methods=adam)
+    zoo_optim = TorchOptim.from_pytorch(adam)
+    zoo_estimator = Estimator(zoo_model, optim_methods=zoo_optim)
     train_featureset = FeatureSet.pytorch_dataloader(train_loader)
     test_featureset = FeatureSet.pytorch_dataloader(test_loader)
     from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
