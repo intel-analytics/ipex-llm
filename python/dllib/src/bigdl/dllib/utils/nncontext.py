@@ -19,6 +19,7 @@
 
 from bigdl.util.common import *
 from zoo.common.utils import callZooFunc
+from zoo.util.utils import set_python_home
 import warnings
 import multiprocessing
 import os
@@ -45,6 +46,7 @@ def init_spark_on_local(cores=2, conf=None, python_location=None, spark_log_leve
     from zoo.util.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
+    set_python_home()
     return runner.init_spark_on_local(cores=cores, conf=conf,
                                       python_location=python_location)
 
@@ -118,6 +120,7 @@ def init_spark_on_yarn(hadoop_conf,
         spark_yarn_archive=spark_yarn_archive,
         jars=jars,
         conf=conf)
+    set_python_home()
     return sc
 
 
@@ -185,6 +188,7 @@ def init_spark_standalone(num_executors,
         jars=jars,
         python_location=python_location,
         enable_numa_binding=enable_numa_binding)
+    set_python_home()
     return sc
 
 
@@ -378,6 +382,7 @@ def init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
         redire_spark_logs()
         show_bigdl_info_logs()
     init_engine()
+    set_python_home()
     return sc
 
 

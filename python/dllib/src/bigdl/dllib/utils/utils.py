@@ -78,39 +78,16 @@ def detect_python_location():
 
 
 # This is adopted from conda-pack.
-def pack_conda_main(args):
-    import sys
-    import traceback
-    from conda_pack.cli import fail, PARSER, context
-    import conda_pack
-    from conda_pack import pack, CondaPackException
-    args = PARSER.parse_args(args=args)
-    # Manually handle version printing to output to stdout in python < 3.4
-    if args.version:
-        print('conda-pack %s' % conda_pack.__version__)
-        sys.exit(0)
-
-    try:
-        with context.set_cli():
-            pack(name=args.name,
-                 prefix=args.prefix,
-                 output=args.output,
-                 format=args.format,
-                 force=args.force,
-                 compress_level=args.compress_level,
-                 n_threads=args.n_threads,
-                 zip_symlinks=args.zip_symlinks,
-                 zip_64=not args.no_zip_64,
-                 arcroot=args.arcroot,
-                 dest_prefix=args.dest_prefix,
-                 verbose=not args.quiet,
-                 filters=args.filters)
-    except CondaPackException as e:
-        fail("CondaPackError: %s" % e)
-    except KeyboardInterrupt:
-        fail("Interrupted")
-    except Exception:
-        fail(traceback.format_exc())
+def pack_conda_main(conda_name, tmp_path):
+    import subprocess
+    import os
+    pack_env = os.environ.copy()
+    if "PYTHONHOME" in pack_env:
+        pack_env.pop("PYTHONHOME")
+    pack_cmd = "conda pack --format tar.gz --n-threads 8 -f -n {} -o {}"\
+        .format(conda_name, tmp_path)
+    pro = subprocess.Popen(pack_cmd, shell=True, env=pack_env)
+    os.waitpid(pro.pid, 0)
 
 
 def pack_penv(conda_name, output_name):
@@ -118,7 +95,7 @@ def pack_penv(conda_name, output_name):
     tmp_dir = tempfile.mkdtemp()
     tmp_path = "{}/{}.tar.gz".format(tmp_dir, output_name)
     print("Start to pack current python env")
-    pack_conda_main(["--output", tmp_path, "--n-threads", "8", "--name", conda_name])
+    pack_conda_main(conda_name, tmp_path)
     print("Packing has been completed: {}".format(tmp_path))
     return tmp_path
 
@@ -150,3 +127,9 @@ def get_zoo_bigdl_classpath_on_driver():
     zoo_classpath = get_analytics_zoo_classpath()
     assert zoo_classpath, "Cannot find Analytics-Zoo classpath, please check your installation"
     return zoo_classpath, bigdl_classpath
+
+
+def set_python_home():
+    import os
+    if "PYTHONHOME" not in os.environ:
+        os.environ['PYTHONHOME'] = "/".join(detect_python_location().split("/")[:-2])
