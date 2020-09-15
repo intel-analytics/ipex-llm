@@ -19,7 +19,8 @@ import sys
 import gc
 from tempfile import NamedTemporaryFile
 
-from pyspark.cloudpickle import print_exec
+from pyspark.cloudpickle import *
+from pyspark.util import *
 from pyspark.broadcast import Broadcast
 from pyspark.broadcast import _from_id
 from bigdl.nn.layer import Model
