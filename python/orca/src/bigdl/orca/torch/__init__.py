@@ -16,3 +16,4 @@
 
 from .torch_loss import TorchLoss
 from .torch_model import TorchModel
+from .torch_optim import TorchOptim
