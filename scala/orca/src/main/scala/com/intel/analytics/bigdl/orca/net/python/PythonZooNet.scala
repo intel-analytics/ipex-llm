@@ -184,6 +184,10 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     TorchLoss(criterion)
   }
 
+  def createTorchOptim(optim: Array[Byte]): TorchOptim[T] = {
+    TorchOptim(optim)
+  }
+
   def torchNetSavePytorch(torchnet: TorchNet, path: String): Unit = {
     torchnet.savePytorch(path)
   }

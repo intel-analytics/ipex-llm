@@ -37,6 +37,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
   import TorchModel._
 
   protected var loaded = false
+  @transient
   protected lazy val load = {
     PythonInterpreter.set("model_bytes", modelHolder.torchBytes)
     val loadModelCode =
@@ -50,8 +51,6 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
          |from zoo.pipeline.api.torch.utils import trainable_param
          |from zoo.pipeline.api.torch import zoo_pickle_module
          |
-         |import pickle
-         |from pyspark.serializers import CloudPickleSerializer
          |by = bytes(b % 256 for b in model_bytes)
          |${getName()} = torch.load(io.BytesIO(by), pickle_module=zoo_pickle_module)
          |""".stripMargin
