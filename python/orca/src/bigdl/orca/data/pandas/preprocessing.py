@@ -76,9 +76,12 @@ def read_file_spark(file_path, file_type, **kwargs):
                 lambda iter: read_pd_s3_file_list(iter, file_type, **kwargs))
         else:
             def loadFile(iterator):
+                dfs = []
                 for x in iterator:
                     df = read_pd_file(x, file_type, **kwargs)
-                    yield df
+                    dfs.append(df)
+                import pandas as pd
+                return [pd.concat(dfs)]
 
             pd_rdd = rdd.mapPartitions(loadFile)
     else:  # Spark backend; spark.read.csv/json accepts a folder path as input
