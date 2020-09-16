@@ -25,6 +25,7 @@ import zoo.orca.data.pandas
 from zoo.orca import OrcaContext
 from zoo.orca.data import SharedValue
 from zoo.common.nncontext import *
+from zoo.orca.data import SparkXShards
 
 
 class TestSparkXShards(TestCase):
@@ -243,6 +244,62 @@ class TestSparkXShards(TestCase):
         assert isinstance(result1.first(), pd.Series)
         result2 = shards._for_each(get_item, 'abc')
         assert isinstance(result2.first(), KeyError)
+
+    def test_transform_with_repartition(self):
+        # shards of pandas dataframe
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        partitions = data_shard.rdd.glom().collect()
+        for par in partitions:
+            assert len(par) <= 1
+
+        def negative(df, column_name):
+            df[column_name] = df[column_name] * (-1)
+            return df
+        shard2 = data_shard.transform_shard(negative, "sale_price")
+
+        shard3 = shard2.repartition(4)
+        partitions3 = shard3.rdd.glom().collect()
+        for par in partitions3:
+            assert len(par) <= 1
+
+        shard4 = shard2.repartition(1)
+        partitions4 = shard4.rdd.glom().collect()
+        for par in partitions4:
+            assert len(par) <= 1
+
+        shard5 = shard4.transform_shard(negative, "sale_price")
+        partitions5 = shard5.rdd.glom().collect()
+        for par in partitions5:
+            assert len(par) <= 1
+        # shards of list
+        data = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
+        sc = init_nncontext()
+        rdd = sc.parallelize(data)
+        data_shard = SparkXShards(rdd)
+        shard2 = data_shard.repartition(6)
+        partitions2 = shard2.rdd.glom().collect()
+        for par in partitions2:
+            assert len(par) <= 1
+        shard3 = data_shard.repartition(1)
+        partitions2 = shard3.rdd.glom().collect()
+        for par in partitions2:
+            assert len(par) <= 1
+
+        # shards of numpy array
+        data = [np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8]),
+                np.array([9, 10, 11, 12]), np.array([13, 14, 15, 16])]
+        sc = init_nncontext()
+        rdd = sc.parallelize(data)
+        data_shard = SparkXShards(rdd)
+        shard2 = data_shard.repartition(6)
+        partitions2 = shard2.rdd.glom().collect()
+        for par in partitions2:
+            assert len(par) <= 1
+        shard3 = data_shard.repartition(1)
+        partitions2 = shard3.rdd.glom().collect()
+        for par in partitions2:
+            assert len(par) <= 1
 
 
 if __name__ == "__main__":
