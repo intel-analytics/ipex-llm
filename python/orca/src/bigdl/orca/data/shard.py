@@ -211,7 +211,12 @@ class SparkXShards(XShards):
         :param args: other arguments in this function.
         :return: a new SparkXShards.
         """
-        transformed_shard = SparkXShards(self.rdd.map(lambda data: func(data, *args)))
+        def transform(iter, func, *args):
+            for x in iter:
+                yield func(x, *args)
+
+        transformed_shard = SparkXShards(self.rdd.mapPartitions(lambda iter:
+                                                                transform(iter, func, *args)))
         self._uncache()
         return transformed_shard
 
@@ -268,7 +273,71 @@ class SparkXShards(XShards):
         :param num_partitions: target number of partitions
         :return: a new SparkXshards object.
         """
-        repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
+            import pandas as pd
+
+            if num_partitions > self.rdd.getNumPartitions():
+                rdd = self.rdd\
+                    .flatMap(lambda df: df.apply(lambda row: (row[0], row.values.tolist()), axis=1)
+                             .values.tolist())\
+                    .partitionBy(num_partitions)
+
+                schema = self._get_schema()
+
+                def merge_rows(iter):
+                    data = [value[1] for value in list(iter)]
+                    if data:
+                        df = pd.DataFrame(data=data, columns=schema['columns'])\
+                            .astype(schema['dtypes'])
+                        return [df]
+                    else:
+                        # no data in this partition
+                        return iter
+                repartitioned_shard = SparkXShards(rdd.mapPartitions(merge_rows))
+            else:
+                def combine_df(iter):
+                    dfs = list(iter)
+                    if len(dfs) > 0:
+                        return [pd.concat(dfs)]
+                    else:
+                        return iter
+                rdd = self.rdd.coalesce(num_partitions)
+                repartitioned_shard = SparkXShards(rdd.mapPartitions(combine_df))
+        elif self._get_class_name() == 'list':
+            if num_partitions > self.rdd.getNumPartitions():
+                rdd = self.rdd \
+                    .flatMap(lambda data: data) \
+                    .repartition(num_partitions)
+
+                repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                    lambda iter: [list(iter)]))
+            else:
+                rdd = self.rdd.coalesce(num_partitions)
+                from functools import reduce
+                repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]))
+        elif self._get_class_name() == 'numpy.ndarray':
+            elem = self.rdd.first()
+            shape = elem.shape
+            dtype = elem.dtype
+            if len(shape) > 0:
+                if num_partitions > self.rdd.getNumPartitions():
+                    rdd = self.rdd\
+                        .flatMap(lambda data: list(data))\
+                        .repartition(num_partitions)
+
+                    repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                        lambda iter: np.stack([list(iter)], axis=0)
+                        .astype(dtype)))
+                else:
+                    rdd = self.rdd.coalesce(num_partitions)
+                    from functools import reduce
+                    repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                        lambda iter: [np.concatenate(list(iter), axis=0)]))
+            else:
+                repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
+        else:
+            repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
         self._uncache()
         return repartitioned_shard
 
@@ -303,7 +372,7 @@ class SparkXShards(XShards):
             def merge(iterator):
                 data = [value[1] for value in list(iterator)]
                 if data:
-                    df = pd.DataFrame(data=data, columns=schema['columns'])
+                    df = pd.DataFrame(data=data, columns=schema['columns']).astype(schema['dtypes'])
                     return [df]
                 else:
                     # no data in this partition
@@ -447,7 +516,7 @@ class SparkXShards(XShards):
             if self._get_class_name() == 'pandas.core.frame.DataFrame':
                 import pandas as pd
                 columns, dtypes = self.rdd.map(lambda x: (x.columns, x.dtypes)).first()
-                self.type['schema'] = {'columns': columns, 'dtype': dtypes}
+                self.type['schema'] = {'columns': columns, 'dtypes': dtypes}
                 return self.type['schema']
             return None
 
