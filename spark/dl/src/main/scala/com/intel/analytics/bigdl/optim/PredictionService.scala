@@ -94,12 +94,12 @@ class PredictionService[T: ClassTag] private[optim](
           tensor.clone()
         case table: Table =>
           val clonedMap = mutable.HashMap[Any, Any]()
-          table.getState().foreach {
+          table.getState().foreach { x => (x: @unchecked) match {
             case (k: Tensor[_], v: Tensor[_]) =>
               clonedMap += k.clone() -> v.clone()
             case (k, v: Tensor[_]) =>
               clonedMap += k -> v.clone()
-            case _=>
+            }
           }
           new Table(clonedMap)
       }
