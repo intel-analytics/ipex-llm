@@ -137,16 +137,17 @@ def main():
 
     iterationPerEpoch = int(math.ceil(float(1281167) / args.batch_size))
     step = Step(iterationPerEpoch * 30, 0.1)
-    zooOptimizer = SGD(args.lr, momentum=args.momentum, dampening=0.0, leaningrate_schedule=step,
-                       weightdecay=args.weight_decay)
+    zooOptimizer = SGD(args.lr, momentum=args.momentum, dampening=0.0,
+                       leaningrate_schedule=step, weightdecay=args.weight_decay)
     zooModel = TorchModel.from_pytorch(model)
     criterion = torch.nn.CrossEntropyLoss()
     zooCriterion = TorchLoss.from_pytorch(criterion)
     estimator = Estimator(zooModel, optim_methods=zooOptimizer)
     train_featureSet = FeatureSet.pytorch_dataloader(train_loader)
     test_featureSet = FeatureSet.pytorch_dataloader(val_loader)
-    estimator.train_minibatch(train_featureSet, zooCriterion, end_trigger=MaxEpoch(90), checkpoint_trigger=EveryEpoch(),
-                              validation_set=test_featureSet, validation_method=[Accuracy(), Top5Accuracy()])
+    estimator.train_minibatch(train_featureSet, zooCriterion, end_trigger=MaxEpoch(90),
+                              checkpoint_trigger=EveryEpoch(), validation_set=test_featureSet,
+                              validation_method=[Accuracy(), Top5Accuracy()])
 
 
 if __name__ == '__main__':
