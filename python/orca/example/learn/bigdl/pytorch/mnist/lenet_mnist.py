@@ -23,7 +23,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 
-from bigdl.optim.optimizer import Adam
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.pytorch import Estimator
 from zoo.orca.learn.metrics import Accuracy
@@ -100,7 +99,7 @@ def main():
     model.train()
     criterion = nn.NLLLoss()
 
-    adam = Adam(args.lr)
+    adam = torch.optim.Adam(model.parameters(), args.lr)
     zoo_estimator = Estimator.from_torch(model=model, optimizer=adam, loss=criterion,
                                          backend="bigdl")
     zoo_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
