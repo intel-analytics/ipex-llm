@@ -34,6 +34,8 @@ Estimator.from_torch(*,
                    config=None,
                    scheduler_step_freq="batch",
                    use_tqdm=False,
+                   workers_per_node=1,
+                   model_dir=None,
                    backend="horovod"):
 ```
 * `model`: PyTorch model if `backend="bigdl"`, PyTorch model creator if `backend="horovod"`
@@ -45,6 +47,8 @@ Estimator.from_torch(*,
 * `config`: parameter for horovod. Config dict to create model, optimizer loss and data.
 * `scheduler_step_freq`: parameter for horovod. "batch", "epoch", "manual", or None. This will determine when ``scheduler.step`` is called. If "batch", ``step`` will be called after every optimizer step. If "epoch", ``step`` will be called after one pass of the DataLoader. If "manual", the scheduler will not be incremented automatically - you are expected to call ``trainer.update_schedulers`` manually. If a scheduler is passed in, this value is expected to not be None.
 * `use_tqdm`: parameter for horovod. You can monitor training progress if use_tqdm=True.
+* `workers_per_node`: parameter for horovod. worker number on each node. default: 1.
+* `model_dir`: parameter for `bigdl`. The path to save model. During the training, if checkpoint_trigger is defined and triggered, the model will be saved to model_dir.
 * `backend`: You can choose "horovod" or "bigdl" as backend.
 
 #### Use horovod Estimator
