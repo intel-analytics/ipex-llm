@@ -320,7 +320,8 @@ def init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
     Note: If you use spark-shell or Jupyter notebook, as the SparkContext is created
     before your code, you have to set the Spark configurations through command line options
     or the properties file before calling this method. In this case, you are recommended
-    to use the launching scripts under `analytics-zoo/scripts`.
+    to use the launch scripts we provide:
+    https://github.com/intel-analytics/analytics-zoo/tree/master/scripts.
 
     :param conf: An instance of SparkConf. If not specified, a new SparkConf with
            Analytics Zoo and BigDL configurations would be created and used.
