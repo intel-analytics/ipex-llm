@@ -115,6 +115,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
 
     :return: An instance of SparkContext.
     """
+    print("Initializing orca context")
     import atexit
     atexit.register(stop_orca_context)
     cluster_mode = cluster_mode.lower()
@@ -200,14 +201,18 @@ def stop_orca_context():
     """
     Stop the SparkContext (and stop Ray services across the cluster if necessary).
     """
-    print("Stopping orca context")
     from pyspark import SparkContext
-    from zoo.ray import RayContext
-    ray_ctx = RayContext.get(initialize=False)
-    if ray_ctx.initialized:
-        ray_ctx.stop()
-    sc = SparkContext.getOrCreate()
-    if sc.getConf().get("spark.master").startswith("spark://"):
-        from zoo import stop_spark_standalone
-        stop_spark_standalone()
-    sc.stop()
+    # If users successfully call stop_orca_context after the program finishes,
+    # namely when there is no active SparkContext, the registered exit function
+    # should do nothing.
+    if SparkContext._active_spark_context is not None:
+        print("Stopping orca context")
+        from zoo.ray import RayContext
+        ray_ctx = RayContext.get(initialize=False)
+        if ray_ctx.initialized:
+            ray_ctx.stop()
+        sc = SparkContext.getOrCreate()
+        if sc.getConf().get("spark.master").startswith("spark://"):
+            from zoo import stop_spark_standalone
+            stop_spark_standalone()
+        sc.stop()
