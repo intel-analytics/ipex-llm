@@ -19,6 +19,8 @@ from zoo.orca.data import SparkXShards
 from bigdl.optim.optimizer import MaxEpoch
 from zoo.feature.common import FeatureSet
 
+import torch
+from torch.optim.optimizer import Optimizer as TorchOptimizer
 from torch.utils.data import DataLoader
 
 
@@ -170,7 +172,7 @@ class PyTorchHorovodEstimatorWrapper(Estimator):
 
 class PytorchSparkEstimatorWrapper(Estimator):
     def __init__(self, model, loss, optimizer, model_dir=None, bigdl_type="float"):
-        from zoo.pipeline.api.torch import TorchModel, TorchLoss
+        from zoo.pipeline.api.torch import TorchModel, TorchLoss, TorchOptim
         self.loss = loss
         if self.loss is None:
             self.loss = TorchLoss()
@@ -179,6 +181,8 @@ class PytorchSparkEstimatorWrapper(Estimator):
         if optimizer is None:
             from bigdl.optim.optimizer import SGD
             optimizer = SGD()
+        elif isinstance(optimizer, TorchOptimizer):
+            optimizer = TorchOptim.from_pytorch(optimizer)
         self.model = TorchModel.from_pytorch(model)
         self.estimator = SparkEstimator(self.model, optimizer, model_dir, bigdl_type=bigdl_type)
 
