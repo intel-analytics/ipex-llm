@@ -107,10 +107,10 @@
         <findbugs.version>3.0.0</findbugs.version>
 
         <!-- define the Java language version used by the compiler -->
-        <java.version>1.7</java.version>
-        <javac.version>1.7</javac.version>
-        <scala.major.version>2.10</scala.major.version>
-        <scala.version>2.10.7</scala.version>
+        <java.version>1.8</java.version>
+        <javac.version>1.8</javac.version>
+        <scala.major.version>2.11</scala.major.version>
+        <scala.version>2.11.8</scala.version>
         <scala.macros.version>2.1.0</scala.macros.version>
         <scalatest.version>3.0.7</scalatest.version>
 
@@ -172,8 +172,8 @@
         <commons-math.version>2.2</commons-math.version>
         <collections.version>3.2.1</collections.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
-        <spark-version.project>1.5-plus</spark-version.project>
-        <spark.version>1.5.1</spark.version>
+        <spark-version.project>2.0</spark-version.project>
+        <spark.version>2.4.0</spark.version>
         <breeze.version>0.13.2</breeze.version>
         <spark-scope>provided</spark-scope>
 
@@ -544,7 +544,7 @@
             <id>spark_2.x</id>
             <properties>
                 <spark-version.project>2.0</spark-version.project>
-                <spark.version>2.0.0</spark.version>
+                <spark.version>2.4.0</spark.version>
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>

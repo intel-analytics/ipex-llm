@@ -240,10 +240,6 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       parameterProcessers: Array[ParameterProcessor]
     )
 
-    case class Replica(model: Module[T], weights: Tensor[T], gradients: Tensor[T],
-      criterion: Criterion[T], state: Table,
-      validationMethods: Option[Array[ValidationMethod[T]]])
-
     val config = TrainingConfig(
       cacheOfMaster.criterion,
       cacheOfMaster.validationMethods,
@@ -1055,6 +1051,10 @@ private case object PUT_GRADIENT extends MetricEntry("put gradient")
 private case object AGGREGATE_PARTITION_GRADIENT extends MetricEntry("aggregrateGradientParition average executor")
 // scalastyle:on
 private case object SEND_WEIGHTS_AVERAGE extends MetricEntry("send weights average")
+
+private case class Replica[T](model: Module[T], weights: Tensor[T], gradients: Tensor[T],
+                      criterion: Criterion[T], state: Table,
+                      validationMethods: Option[Array[ValidationMethod[T]]])
 
 private class TrainingTrace(
   private var _records: Int = 0,
