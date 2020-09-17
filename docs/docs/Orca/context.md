@@ -17,11 +17,11 @@ stop_orca_context()
 
 **Arguments for** `init_orca_context`:
 
-* `cluster_mode`: The mode for the Spark cluster. One of "local", "yarn-client", "standalone" and "spark-submit". Default to be "local". 
+* `cluster_mode`: The mode for the Spark cluster. One of "local", "yarn-client", "k8s-client", "standalone" and "spark-submit". Default to be "local". 
 
 For "spark-submit", you are supposed to use spark-submit to submit the application. In this case, please set the Spark configurations through command line options or
-the properties file. You need to use "spark-submit" for yarn-cluster mode.To make things easier, you are recommended to use the launching scripts under
-`analytics-zoo/scripts`.
+the properties file. You need to use "spark-submit" for yarn-cluster or k8s-cluster mode. To make things easier, you are recommended to use the 
+launch [scripts](https://github.com/intel-analytics/analytics-zoo/tree/master/scripts) we provide.
 
 For other cluster modes, you are recommended to install and run analytics-zoo through pip, which is more convenient.
 
