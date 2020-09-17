@@ -58,6 +58,7 @@ class Estimator(object):
                    scheduler_step_freq="batch",
                    use_tqdm=False,
                    workers_per_node=1,
+                   model_dir=None,
                    backend="horovod"):
         if backend == "horovod":
             return PyTorchHorovodEstimatorWrapper(model_creator=model,
@@ -74,7 +75,7 @@ class Estimator(object):
             return PytorchSparkEstimatorWrapper(model=model,
                                                 loss=loss,
                                                 optimizer=optimizer,
-                                                model_dir=None,
+                                                model_dir=model_dir,
                                                 bigdl_type="float")
         else:
             raise ValueError("only horovod and bigdl backend are supported for now")
@@ -256,3 +257,30 @@ class PytorchSparkEstimatorWrapper(Estimator):
 
     def shutdown(self, force=False):
         pass
+
+    def clear_gradient_clipping(self):
+        """
+        Clear gradient clipping parameters. In this case, gradient clipping will not be applied.
+        In order to take effect, it needs to be called before fit.
+        :return:
+        """
+        self.estimator.clear_gradient_clipping()
+
+    def set_constant_gradient_clipping(self, min, max):
+        """
+        Set constant gradient clipping during the training process.
+        In order to take effect, it needs to be called before fit.
+        :param min: The minimum value to clip by.
+        :param max: The maximum value to clip by.
+        :return:
+        """
+        self.estimator.set_constant_gradient_clipping(min=min, max=max)
+
+    def set_l2_norm_gradient_clipping(self, clip_norm):
+        """
+        Clip gradient to a maximum L2-Norm during the training process.
+        In order to take effect, it needs to be called before fit.
+        :param clip_norm: Gradient L2-Norm threshold.
+        :return:
+        """
+        self.estimator.set_l2_norm_gradient_clipping(clip_norm=clip_norm)
