@@ -159,7 +159,9 @@ pages:
   - OrcaContext: Orca/context.md
   - Data: Orca/data.md
   - TensorFlow Estimator: Orca/orca-tf-estimator.md
+  - TensorFlow Quickstart: Orca/orca-tf-quickstart.md
   - PyTorch Estimator: Orca/orca-pytorch-estimator.md
+  - PyTorch Quickstart: Orca/orca-pytorch-quickstart.md
 - Powered by: powered-by.md
 - Presentations: presentations.md
 - Meetup & Webinar: meetup.md
