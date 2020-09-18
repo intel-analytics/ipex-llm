@@ -260,6 +260,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case (name: String, params: Table) =>
         copyParameter(name, params)
       case _=>
+        throw new UnsupportedOperationException("unsupported $name and $params")
     }
     model
   }
