@@ -15,7 +15,13 @@ Install BigDL release via pip (we tested this on pip 9.0.1)
 - You might need to add `sudo` if without permission for the installation.
 
 -  `numpy>=1.7`, `six>=1.10.0`, `pyspark==2.4.3` and their dependencies will be automatically installed if they haven't been detected in the current Python environment. 
+<<<<<<< HEAD
 - _Note_, installing BigDL from pip will automatically install `pyspark==2.4.3`. You are highly recommended to **unset SPARK_HOME** to avoid possible conflicts.
+=======
+
+Note that installing BigDL from pip will automatically install `pyspark==2.4.3`. You are highly recommended to **unset SPARK_HOME** to avoid possible conflicts.
+
+>>>>>>> 546ed685ffa000a1787d8cb12e3e035d4cfe2678
 ```bash
 pip3 install --upgrade pip
 pip3 install BigDL        
