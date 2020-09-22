@@ -18,9 +18,11 @@ package com.intel.analytics.zoo.pipeline.api.net
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.common.{PythonInterpreter, PythonInterpreterTest}
 import com.intel.analytics.zoo.core.TFNetNative
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.models.InternalOptimizerUtil.getStateFromOptiMethod
 import org.apache.log4j.{Level, Logger}
 
 @PythonInterpreterTest
@@ -71,8 +73,8 @@ class TorchOptimSpec extends ZooSpecHelper{
     val code = lenet +
       s"""
          |model = LeNet()
-         |adam = torch.optim.SGD(model.parameters(), lr=0.1)
-         |torch.save(adam, "$tmpname", pickle_module=zoo_pickle_module)
+         |optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+         |torch.save(optimizer, "$tmpname", pickle_module=zoo_pickle_module)
          |""".stripMargin
     PythonInterpreter.exec(code)
     val bys = Files.readAllBytes(Paths.get(tmpname))
@@ -84,6 +86,32 @@ class TorchOptimSpec extends ZooSpecHelper{
     weight should be (Tensor[Float](Array(0.99f, 0.98f, 0.97f, 0.96f), Array(4)))
   }
 
+  "TorchOptim" should "load lrscheduler without error" in {
+    ifskipTest()
+    val tmpname = createTmpFile().getAbsolutePath()
+    val code = lenet +
+      s"""
+         |model = LeNet()
+         |lambda1 = lambda epoch: 0.95 ** epoch
+         |sgd = torch.optim.SGD(model.parameters(), lr=0.1)
+         |from torch.optim.lr_scheduler import LambdaLR
+         |scheduler = LambdaLR(sgd, lr_lambda=[lambda1])
+         |torch.save(scheduler, "$tmpname", pickle_module=zoo_pickle_module)
+         |""".stripMargin
+    PythonInterpreter.exec(code)
+    val bys = Files.readAllBytes(Paths.get(tmpname))
+    val torchOptim = TorchOptim[Float](bys)
 
-
+    val weight = Tensor[Float](4).fill(1)
+    val gradient = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
+    torchOptim.optimize(_ => (1f, gradient), weight)
+    torchOptim.getLearningRate() should be (0.1)
+    weight should be (Tensor[Float](Array(0.99f, 0.98f, 0.97f, 0.96f), Array(4)))
+    val gradient2 = Tensor[Float](Array(0.2f, 0.2f, 0.2f, 0.2f), Array(4))
+    val state = getStateFromOptiMethod(torchOptim)
+    state("epoch") = 2
+    torchOptim.optimize(_ => (1f, gradient2), weight)
+    torchOptim.getLearningRate() should be (0.095)
+    weight should be (Tensor[Float](Array(0.971f, 0.961f, 0.951f, 0.941f), Array(4)))
+  }
 }
