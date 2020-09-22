@@ -259,7 +259,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     parameterTable.foreach {
       case (name: String, params: Table) =>
         copyParameter(name, params)
-      case _=>
+      case _ =>
         throw new UnsupportedOperationException("unsupported $name and $params")
     }
     model

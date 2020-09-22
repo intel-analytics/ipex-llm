@@ -132,17 +132,17 @@ private case class DistributeMetricsEntry(value: ArrayBufferAccumulator)
 
 class ArrayBufferAccumulator extends AccumulatorV2[ArrayBuffer[Double], ArrayBuffer[Double]] {
   private var values = new ArrayBuffer[Double]()
-  
+
   def reset(): Unit = {
     values.clear()
   }
-  
+
   def value: ArrayBuffer[Double] = values
-  
+
   def add(v: ArrayBuffer[Double]): Unit = {
     values ++= v
   }
-  
+
   def copy(): ArrayBufferAccumulator = {
     val newArrayBufferAccumulator = new ArrayBufferAccumulator
     newArrayBufferAccumulator.values = this.values
@@ -157,5 +157,5 @@ class ArrayBufferAccumulator extends AccumulatorV2[ArrayBuffer[Double], ArrayBuf
       s"Cannot merge ${this.getClass.getName} with ${other.getClass.getName}"
     )
   }
-  
+
 }

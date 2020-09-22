@@ -663,12 +663,12 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
     val output = model.forward(input).toTensor.transpose(1, 2)
     model.backward(input, gradOutput)
 
-    rec.getHiddenState().toTable.foreach { case ((key: Int, value: Tensor[_])) => 
+    rec.getHiddenState().toTable.foreach { case ((key: Int, value: Tensor[_])) =>
       value.asInstanceOf[Tensor[Double]].map(luaState(key), (v1, v2) => {
         assert(abs(v1 - v2) <= 1e-8)
         v1
       })
-      case _=>
+      case _ =>
         throw new UnsupportedOperationException("unsupported $key and $value type")
     }
 

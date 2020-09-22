@@ -143,7 +143,7 @@ class RegionProposal(
       val postNmsTopN = if (this.isTraining()) min(postNmsTopNTrain, bboxNumber)
       else min(postNmsTopNTest, bboxNumber)
 
-      if (output.contains(b)) {
+      if (!output.contains(b)) {
         output(b) = Tensor[Float]()
       }
       output[Tensor[Float]](b).resize(postNmsTopN, 4)
