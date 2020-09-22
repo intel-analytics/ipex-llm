@@ -104,6 +104,7 @@ def init_spark_on_yarn(hadoop_conf,
     from zoo.util.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
+    set_python_home()
     sc = runner.init_spark_on_yarn(
         hadoop_conf=hadoop_conf,
         conda_name=conda_name,
@@ -120,7 +121,6 @@ def init_spark_on_yarn(hadoop_conf,
         spark_yarn_archive=spark_yarn_archive,
         jars=jars,
         conf=conf)
-    set_python_home()
     return sc
 
 
@@ -175,6 +175,7 @@ def init_spark_standalone(num_executors,
     from zoo.util.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
+    set_python_home()
     sc = runner.init_spark_standalone(
         num_executors=num_executors,
         executor_cores=executor_cores,
@@ -188,7 +189,6 @@ def init_spark_standalone(num_executors,
         jars=jars,
         python_location=python_location,
         enable_numa_binding=enable_numa_binding)
-    set_python_home()
     return sc
 
 
