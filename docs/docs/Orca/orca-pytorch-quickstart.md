@@ -69,35 +69,37 @@ adam = Adam(args.lr)
 
 ### **Step 3: Fit with Orca PyTorch Estimator**
 1. Define the data in whatever way you want. Orca just needs a dataloader, a callable datacreator or an Orca SparkXShards
-    ```python
-    torch.manual_seed(args.seed)
+```python
+torch.manual_seed(args.seed)
 
-    train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=True, download=True,
-                       transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
-        batch_size=args.batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=False,
-                       transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
-        batch_size=args.test_batch_size, shuffle=False) 
-    ```
+train_loader = torch.utils.data.DataLoader(
+    datasets.MNIST(args.dir, train=True, download=True,
+                   transform=transforms.Compose([
+                       transforms.ToTensor(),
+                       transforms.Normalize((0.1307,), (0.3081,))
+                   ])),
+    batch_size=args.batch_size, shuffle=True)
+test_loader = torch.utils.data.DataLoader(
+    datasets.MNIST(args.dir, train=False,
+                   transform=transforms.Compose([
+                       transforms.ToTensor(),
+                       transforms.Normalize((0.1307,), (0.3081,))
+                   ])),
+    batch_size=args.test_batch_size, shuffle=False) 
+```
+
 2. Create an estimator
-    ```python
-    from zoo.orca.learn.pytorch import Estimator 
-    zoo_estimator = Estimator.from_torch(model=model, optimizer=adam, loss=criterion, backend="bigdl") 
-    ```
+```python
+from zoo.orca.learn.pytorch import Estimator 
+zoo_estimator = Estimator.from_torch(model=model, optimizer=adam, loss=criterion, backend="bigdl") 
+```
+
 3. Fit with estimator
-    ```python
-    from zoo.orca.learn.metrics import Accuracy
-    from zoo.orca.learn.trigger import EveryEpoch 
-    zoo_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
-                      validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch()) 
-    ```
+```python
+from zoo.orca.learn.metrics import Accuracy
+from zoo.orca.learn.trigger import EveryEpoch 
+zoo_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
+                  validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch()) 
+```
 
 **Note:** you should call `stop_orca_context()` when your application finishes.

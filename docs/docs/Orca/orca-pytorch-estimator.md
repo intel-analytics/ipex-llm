@@ -51,8 +51,8 @@ Estimator.from_torch(*,
 * `model_dir`: parameter for `bigdl`. The path to save model. During the training, if checkpoint_trigger is defined and triggered, the model will be saved to model_dir.
 * `backend`: You can choose "horovod" or "bigdl" as backend.
 
-#### Use horovod Estimator
-##### Train model
+### Use horovod Estimator
+#### **Train model**
 After an Estimator is created, you can call estimator API to train PyTorch model:
 ```
 fit(self, data, epochs=1, profile=False, reduce_results=True, info=None)
@@ -63,7 +63,7 @@ fit(self, data, epochs=1, profile=False, reduce_results=True, info=None)
 * `reduce_results`: (bool) Whether to average all metrics across all workers into one dict. If a metric is a non-numerical value (or nested dictionaries), one value will be randomly selected among the workers. If False, returns a list of dicts.
 * `info`: (dict) Optional dictionary passed to the training operator for ``train_epoch`` and ``train_batch``.
 
-##### Evaluate model
+#### **Evaluate model**
 After Training, you can call estimator API to evaluate PyTorch model:
 ```
 evaluate(self, data, num_steps=None, profile=False, info=None)
@@ -73,23 +73,23 @@ evaluate(self, data, num_steps=None, profile=False, info=None)
 * `profile`: (bool) Returns time stats for the evaluation procedure.
 * `info`: (dict) Optional dictionary passed to the training operator for `validate` and `validate_batch`.
 
-##### Get model
+#### **Get model**
 You can get the trained model using `get_model(self)`
 
-##### Save model
+#### **Save model**
 You can save model using `save(self, checkpoint)`
 * `checkpoint`: (str) Path to target checkpoint file.
 
-##### Load model
+#### **Load model**
 You can load saved model using `load(self, checkpoint)`
 * `checkpoint`: (str) Path to target checkpoint file.
 
-##### Shutdown workers
+#### **Shutdown workers**
 You can shut down workers and releases resources using `shutdown(self, force=False)`
 
-#### Use BigDL Estimator
+### Use BigDL Estimator
 
-##### Train model
+#### **Train model**
 After an Estimator is created, you can call estimator API to train PyTorch model:
 ```
 fit(self, data, epochs=1, batch_size=32, validation_data=None, validation_methods=None, checkpoint_trigger=None):
@@ -101,7 +101,16 @@ fit(self, data, epochs=1, batch_size=32, validation_data=None, validation_method
 * `validation_methods`: BigDL validation methods.
 * `checkpoint_trigger`: BigDL Trigger to set a checkpoint.
 
-##### Get model
+#### **Evaluate model**
+After Training, you can call estimator API to evaluate PyTorch model:
+```
+evaluate(self, data, validation_methods=None, batch_size=32)
+```
+* `data`: Validation data. SparkXShard, PyTorch DataLoader and PyTorch DataLoader creator are supported.
+* `validation_methods`: BigDL validation methods.
+* `batch_size`: Batch size used for evaluation. Only used when data is a SparkXShard.
+
+#### **Get model**
 You can get model using `get_model(self)`
 
 

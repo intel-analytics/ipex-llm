@@ -129,7 +129,6 @@ est.fit(data=dataset,
         validation_data=dataset)
 ```
 
-
 2.  Train data is Spark DataFrame. E.g.
 ```
 est.fit(data=df,
@@ -238,6 +237,7 @@ est.fit(data=dataset,
         epochs=10,
         validation_data=dataset)
 ```
+
 2.  Train data is Spark DataFrame. E.g.
 ```
 est.fit(data=df,
@@ -314,7 +314,7 @@ predict(data, batch_size=4,
 * `hard_code_batch_size`: if require hard code batch size for prediction. The default value is False.
 
 This method returns a predicted result.
-        
+
 1. Predict data is tf.data.DataSet. The prediction result should be an XShards and each element is {'prediction': predicted numpy array or list of predicted numpy arrays}.
 ```
 dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100, 1)),

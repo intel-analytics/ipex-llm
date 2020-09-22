@@ -88,54 +88,58 @@ acc = accuracy(logits, labels)
 
 ### **Step 3: Fit with Orca TensorFlow Estimator**
 1. Define the dataset in whatever way you want. Orca just needs tf.data.Dataset, Spark DataFrame or Orca SparkXShards.
-    ```python
-    def preprocess(x, y):
-        return tf.to_float(tf.reshape(x, (-1, 28, 28, 1))) / 255.0, y
+```python
+def preprocess(x, y):
+    return tf.to_float(tf.reshape(x, (-1, 28, 28, 1))) / 255.0, y
 
-    # get DataSet
-    (train_feature, train_label), (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
+# get DataSet
+(train_feature, train_label), (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
 
-    # tf.data.Dataset.from_tensor_slices is for demo only. For production use, please use
-    # file-based approach (e.g. tfrecord).
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
-    train_dataset = train_dataset.map(preprocess)
-    val_dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
-    val_dataset = val_dataset.map(preprocess)
-    ```
+# tf.data.Dataset.from_tensor_slices is for demo only. For production use, please use
+# file-based approach (e.g. tfrecord).
+train_dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
+train_dataset = train_dataset.map(preprocess)
+val_dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
+val_dataset = val_dataset.map(preprocess)
+```
+
 2. Create an estimator
-    * For Keras Users
-        ```python
-        est = Estimator.from_keras(keras_model=model)
-        ```
-    * For Graph Users
-        ```python
-        est = Estimator.from_graph(inputs=images,
-                               outputs=logits,
-                               labels=labels,
-                               loss=loss,
-                               optimizer=tf.train.AdamOptimizer(),
-                               metrics={"acc": acc})
-        ```
+* For Keras Users
+```python
+est = Estimator.from_keras(keras_model=model)
+```
+* For Graph Users
+```python
+est = Estimator.from_graph(inputs=images, 
+                           outputs=logits,
+                           labels=labels,
+                           loss=loss,
+                           optimizer=tf.train.AdamOptimizer(),
+                           metrics={"acc": acc})
+```
+
 3. Fit with estimator
-    ```python
-    est.fit(data=train_dataset,
-            batch_size=320,
-            epochs=max_epoch,
-            validation_data=val_dataset)
-    ```
+```python
+est.fit(data=train_dataset,
+        batch_size=320,
+        epochs=max_epoch,
+        validation_data=val_dataset)
+```
+
 4. Evaluate with estimator
-    ```python
-    result = est.evaluate(val_dataset)
-    print(result)
-    ```
+```python
+result = est.evaluate(val_dataset)
+print(result)
+```
+
 5. Save Model
-    * For Keras Users
-        ```python
-        est.save_keras_model("/tmp/mnist_keras.h5")
-        ```
-    * For Graph Users
-        ```python
-        est.save_tf_checkpoint("/tmp/lenet/model")
-        ```
+* For Keras Users
+```python
+est.save_keras_model("/tmp/mnist_keras.h5")
+```
+* For Graph Users
+```python
+est.save_tf_checkpoint("/tmp/lenet/model")
+```
 
 **Note:** you should call `stop_orca_context()` when your application finishes.
