@@ -429,6 +429,28 @@ class SparkXShards(XShards):
             else:
                 return [self]
 
+    def zip(self, other):
+        """
+        Zips this SparkXShards with another one, returning key-value pairs with the first element
+        in each SparkXShards, second element in each SparkXShards, etc. Assumes that the two
+        SparkXShards have the *same number of partitions* and the *same number of elements
+        in each partition*(e.g. one was made through a transform_shard on the other
+        :param other: another SparkXShards
+        :return:
+        """
+        assert isinstance(other, SparkXShards), "other should be a SparkXShards"
+        assert self.num_partitions() == other.num_partitions(), \
+            "The two SparkXShards should have the same number of partitions"
+        try:
+            rdd = self.rdd.zip(other.rdd)
+            zipped_shard = SparkXShards(rdd)
+            other._uncache()
+            self._uncache()
+            return zipped_shard
+        except Exception:
+            raise ValueError("The two SparkXShards should have the same number of elements "
+                             "in each partition")
+
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
             .reduce(lambda l1, l2: l1 + l2)
