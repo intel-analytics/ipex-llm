@@ -37,7 +37,8 @@ ENV JAVA_HOME                           /opt/jdk
 ENV REDIS_HOME                          /opt/redis-5.0.5
 ENV CS_HOME                             /opt/work/cluster-serving
 ENV PYTHONPATH                          ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:${CS_HOME}/serving-python.zip:/opt/models/research/slim
-ENV PATH                                ${ANALYTICS_ZOO_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
+ENV PATH                                ${ANALYTICS_ZOO_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:/root/miniconda3/bin:${PATH}
+
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
@@ -48,15 +49,19 @@ RUN apt-get update --fix-missing && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
+#conda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
+    mkdir /root/.conda && \
+    bash Miniconda3-py37_4.8.3-Linux-x86_64.sh -b && \
+    rm -f Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
 #java
-RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u261-linux-x64.tar.gz  && \
+    wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u261-linux-x64.tar.gz  && \
     gunzip jdk-8u261-linux-x64.tar.gz && \
     tar -xf jdk-8u261-linux-x64.tar -C /opt && \
     rm jdk-8u261-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_261 /opt/jdk
-
+    ln -s /opt/jdk1.8.0_261 /opt/jdk && \
 #spark
-RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
@@ -80,6 +85,8 @@ RUN apt-get install -y python3-minimal && \
     pip install tornado==5.1.1 && \
     python3 -m ipykernel.kernelspec && \
     pip install tensorboard && \
+    pip install jep && \
+    pip install cloudpickle && \
     pip install opencv-python && \
     pip install pyyaml && \
     pip install redis && \
@@ -92,10 +99,9 @@ RUN apt-get install -y python3-minimal && \
     pip install gym gym[atari] && \
     pip install lz4 && \
     pip install ray[rllib] && \
-    git clone https://github.com/tensorflow/models/ /opt/models
-
+    git clone https://github.com/tensorflow/models/ /opt/models && \
 #redis
-RUN wget http://download.redis.io/releases/redis-5.0.5.tar.gz && \
+    wget http://download.redis.io/releases/redis-5.0.5.tar.gz && \
     tar xzf redis-5.0.5.tar.gz -C /opt && \
     rm redis-5.0.5.tar.gz && \
     cd /opt/redis-5.0.5 && \
@@ -139,8 +145,6 @@ ADD freeze_checkpoint.py /opt/work
 
 RUN chmod a+x /opt/work/cluster-serving/*
 
-
-ENV OMP_NUM_THREADS     all
 
 RUN sed -i "s/jobmanager\.heap\.size:.*/jobmanager\.heap\.size: 8g/g" $FLINK_HOME/conf/flink-conf.yaml && \
     sed -i "s/taskmanager\.memory\.process\.size:.*/taskmanager\.memory\.process\.size: 8g/g" $FLINK_HOME/conf/flink-conf.yaml
