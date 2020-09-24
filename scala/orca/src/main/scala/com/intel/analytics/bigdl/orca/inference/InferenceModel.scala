@@ -33,8 +33,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   extends InferenceSupportive with EncryptSupportive with Serializable {
 
   require(concurrentNum > 0, "concurrentNum should > 0")
-
-  @transient var inferenceSummary: InferenceSummary = null
   /**
    * default constructor, will create a InferenceModel with auto-scaling enabled.
    *
@@ -551,7 +549,13 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
       }
     }
   }
+  def blockModel(): Unit = {
+    while (modelQueue.peek() == null) {
+      val model = modelQueue.take()
+      modelQueue.offer(model)
+    }
 
+  }
   private def retrieveModel(): AbstractModel = {
     var model: AbstractModel = null
     autoScalingEnabled match {
@@ -597,12 +601,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
         models.map(this.modelQueue.offer(_))
     }
   }
-
-  def setInferenceSummary(value: InferenceSummary): this.type = {
-    this.inferenceSummary = value
-    this
-  }
-
 
   def getOriginalModel: AbstractModel = originalModel
 
