@@ -27,8 +27,6 @@ This page contains the guide for you to run Analytics Zoo Cluster Serving, inclu
      - [Update Model or Configurations](#update-model-or-configurations)
 
      - [Logs and Visualization](#logs-and-visualization)
-     
-     - [Cluster Serving on Spark](#cluster-serving-on-spark)
 
 
 ## Quick Start
@@ -89,7 +87,7 @@ The figure below illustrates the simple 3-step "Prepare-Launch-Inference" workfl
 
 - Copy a previously trained model to the local node; currently TensorFlow, PyTorch, Caffe, BigDL and OpenVINO models are supported.
 - Install Analytics Zoo on the local node (e.g., using a single pip install command)
-- Configure Cluster Server on the local node, including the file path to the trained model and the address of the cluster (such as Apache Hadoop YARN cluster, Spark Cluster, K8s cluster, etc.).
+- Configure Cluster Server on the local node, including the file path to the trained model and the address of the cluster (such as Apache Hadoop YARN cluster, K8s cluster, etc.).
 Please note that you only need to deploy the Cluster Serving solution on a single local node, and NO modifications are needed for the (YARN or K8s) cluster. 
 
 #### 2. Launch the Cluster Serving service
@@ -100,12 +98,12 @@ You can launch the Cluster Serving service by running the startup script on the 
 
 Cluster Serving provides a simple pub/sub API to the users, so that you can easily send the inference requests to an input queue (currently Redis Streams is used) using a simple Python API.
 
-Cluster Serving will then read the requests from the Redis stream, run the distributed real-time inference across the cluster (using Spark Streaming or Flink), and return the results back through Redis. As a result, you may get the inference results again using a simple Python API.
+Cluster Serving will then read the requests from the Redis stream, run the distributed real-time inference across the cluster (using Flink), and return the results back through Redis. As a result, you may get the inference results again using a simple Python API.
 
 
 ## Deploy your Own Cluster Serving
 ### 1. Installation
-It is recommended to install Cluster Serving by pulling the pre-built Docker image to your local node, which have packaged all the required dependencies. Alternatively, you may also manually install Cluster Serving (through either pip or direct downloading) as well as Spark, Redis and TensorBoard (for visualizing the serving status) on the local node.
+It is recommended to install Cluster Serving by pulling the pre-built Docker image to your local node, which have packaged all the required dependencies. Alternatively, you may also manually install Cluster Serving (through either pip or direct downloading), Redis on the local node.
 #### Docker
 ```
 docker pull intelanalytics/zoo-cluster-serving
@@ -120,23 +118,19 @@ docker exec -it cluster-serving bash
 ```
 `cd ./cluster-serving`, you can see all the environments are prepared.
 ##### Yarn user
-For Yarn user using docker, you have to set additional config, thus you need to call following when starting the container
-```
-docker run --name cluster-serving --net=host -v /path/to/HADOOP_CONF_DIR:/opt/work/HADOOP_CONF_DIR -e HADOOP_CONF_DIR=/opt/work/HADOOP_CONF_DIR -itd intelanalytics/zoo-cluster-serving:0.9.0
-```
+For Yarn user using docker, start Flink on Yarn inside the container. The other operations are the same.
 
 #### Manual installation
 
 ##### Requirements
-Non-Docker users need to install [Flink](https://archive.apache.org/dist/flink/flink-1.10.0/), 1.10.0 by default, for users choose Spark as backend, , [Redis](https://redis.io/topics/quickstart), 0.5.0 by default and [TensorBoard](https://www.tensorflow.org/tensorboard/get_started) if you choose Spark backend and need visualization.
+Non-Docker users need to install [Flink](https://archive.apache.org/dist/flink/flink-1.10.0/), 1.10.0 by default, [Redis](https://redis.io/topics/quickstart), 0.5.0 by default.
 
 After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
 
 
 ##### Install Cluster Serving by download release
-For users who need to deploy and start Cluster Serving, download Cluster Serving zip `analytics-zoo-xxx-cluster-serving-all.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/) and unzip it, then run `source cluster-serving-prepare.sh`. A demo `cluster-serving-demo.sh` is also prepared and users can run it to check if Cluster Serving could work.
-
+For users who need to deploy and start Cluster Serving, download Cluster Serving zip `analytics-zoo-xxx-cluster-serving-all.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/) and unzip it, then run `source cluster-serving-setup.sh`.
 For users who need to do inference, aka. predict data only, download Analytics Zoo python zip `analytics-zoo-xxx-cluster-serving-python.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/) and run `export PYTHONPATH=$PYTHONPATH:/path/to/zip` to add this zip to `PYTHONPATH` environment variable.
 
 ##### Install Cluster Serving by pip
@@ -157,9 +151,6 @@ After [Installation](#1-installation), you will see a config file `config.yaml` 
 model:
   # model path must be set
   path: /opt/work/model
-data:
-  # data input shape must be set
-  shape:  
 params:
   # default, 4
   core_num:  
@@ -507,59 +498,3 @@ See example of visualization:
 
 ![Example Chart](serving-visualization.png)
 
-### Cluster Serving on Spark
-
-For users who are more familiar to Spark and choose Spark as backend, install [Spark](https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz), 2.4.3 by default. And instead of setting `$FLINK_HOME` environment variable, set `$SPARK_HOME` (/path/to/spark-SPARK_VERSION-bin-hadoop-HADOOP_VERSION)
-
-Use `pip install tensorboard` to install TensorBoard if visualization is needed.
-
-Cluster Serving could be start by
-```
-cluster-serving-start -e spark
-# or also
-cluster-serving-start --backend spark
-```
-
-#### Extra config
-Users could set extra config valid in Cluster Serving on Spark in config file `config.yaml`.
-```
-param:
-  # default: OFF
-  performance_mode:
-spark:
-  # default, local[*], change this to spark://, yarn, k8s:// etc if you want to run on cluster
-  master: local[*]
-  # default, 4g
-  driver_memory:
-  # default, 1g
-  executor_memory:
-  # default, 1
-  num_executors:
-  # default, 4
-  executor_cores:
-  # default, 4
-  total_executor_cores:
-```
-##### param
-* performance_mode: The performance mode will utilize your CPU resource to achieve better inference performance on a single node. **Note:** numactl and net-tools should be installed in your system, and spark master should be `local[*]` in the config.yaml file.
-##### spark
-* master: Your cluster address, same as parameter `master` in spark
-* driver_memory: same as parameter `driver-memory` in spark
-* executor_memory: same as parameter `executor-memory` in spark
-* num_executors: same as parameter `num-executors` in spark
-* executor_cores: same as paramter `executor-cores` in spark
-* total_executor_cores: same as parameter ` total-executor-cores` in spark
-
-For more details of these config, please refer to [Spark Official Document](https://spark.apache.org/docs/latest/configuration.html)
-#### Visualization
-TensorBoard is integrated into Cluster Serving on Spark. TensorBoard service is started with Cluster Serving. Once your serving starts, you can go to `localhost:6006` to see visualization of your serving.
-
-Analytics Zoo Cluster Serving provides 2 attributes in Tensorboard so far, `Serving Throughput` and `Total Records Number`.
-
-* `Serving Throughput`: The overall throughput, including preprocessing and postprocessing of your serving. The line should be relatively stable after first few records. If this number has a drop and remains lower than previous, you might have lost the connection of some nodes in your cluster.
-
-* `Total Records Number`: The total number of records that Cluster Serving gets so far.
-
-See example of visualization:
-
-![Example Chart](example-chart.png)
