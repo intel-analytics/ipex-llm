@@ -237,6 +237,7 @@ class SparkRunner:
                           jars=None,
                           python_location=None):
         print("Initializing SparkContext for k8s-client mode")
+        python_env = "/".join(detect_python_location().split("/")[:-2])
         if "PYSPARK_PYTHON" not in os.environ:
             os.environ["PYSPARK_PYTHON"] = \
                 python_location if python_location else detect_python_location()
@@ -248,8 +249,17 @@ class SparkRunner:
 
         conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                      executor_cores, executor_memory, extra_executor_memory_for_ray)
+        py_version = ".".join(platform.python_version().split(".")[0:2])
+        preload_so = python_env + "/lib/libpython" + py_version + "m.so"
+        ld_path = python_env + "/lib:" + python_env + "/lib/python" +\
+            py_version + "/lib-dynload"
+        if "spark.executor.extraLibraryPath" in conf:
+            ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
         conf.update({"spark.cores.max": num_executors * executor_cores,
-                    "spark.kubernetes.container.image": container_image})
+                     "spark.executorEnv.PYTHONHOME": python_env,
+                     "spark.executor.extraLibraryPath": ld_path,
+                     "spark.executorEnv.LD_PRELOAD": preload_so,
+                     "spark.kubernetes.container.image": container_image})
         # Not targeted to use pip install. BIGDL_CLASSPATH is supposed to set.
         if "BIGDL_CLASSPATH" in os.environ:
             zoo_bigdl_jar_path = os.environ["BIGDL_CLASSPATH"]
