@@ -168,8 +168,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     cacheOfMaster: MasterCache[T],
     context: TrainingContext[T], trainingTrace: TrainingTrace
     )(implicit ev: TensorNumeric[T]): Unit = {
-    val lossSum = sc.accumulator(0.0, "loss sum")
-    val recordsNum = sc.accumulator(0, "record number")
+    val lossSum = sc.doubleAccumulator("loss sum")
+    val recordsNum = sc.doubleAccumulator("record number")
     val metrics = cacheOfMaster.metrics
     val partitionNum = cacheOfMaster.partitionNum
     initMetrics(sc, metrics, partitionNum)
@@ -202,8 +202,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
 
         val results = train(cached, miniBatchBuffer, context, metrics)
 
-        lossSum += results.loss
-        recordsNum += results.records
+        lossSum.add(results.loss)
+        recordsNum.add(results.records)
 
         Iterator.single(results.successed)
       }.reduce(_ + _)
@@ -211,7 +211,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       parameterSync(lossSum.value, successModels, cacheOfMaster, models, context)
     })
 
-    driverStatesUpdate(cacheOfMaster, recordsNum.value,
+    driverStatesUpdate(cacheOfMaster, (recordsNum.value).toInt,
       context, trainingTrace, metrics)
   }
 
@@ -239,10 +239,6 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       parameterSplits: Map[String, (Int, Int)],
       parameterProcessers: Array[ParameterProcessor]
     )
-
-    case class Replica(model: Module[T], weights: Tensor[T], gradients: Tensor[T],
-      criterion: Criterion[T], state: Table,
-      validationMethods: Option[Array[ValidationMethod[T]]])
 
     val config = TrainingConfig(
       cacheOfMaster.criterion,
@@ -1055,6 +1051,10 @@ private case object PUT_GRADIENT extends MetricEntry("put gradient")
 private case object AGGREGATE_PARTITION_GRADIENT extends MetricEntry("aggregrateGradientParition average executor")
 // scalastyle:on
 private case object SEND_WEIGHTS_AVERAGE extends MetricEntry("send weights average")
+
+private case class Replica[T](model: Module[T], weights: Tensor[T], gradients: Tensor[T],
+                      criterion: Criterion[T], state: Table,
+                      validationMethods: Option[Array[ValidationMethod[T]]])
 
 private class TrainingTrace(
   private var _records: Int = 0,

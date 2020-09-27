@@ -668,6 +668,8 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
         assert(abs(v1 - v2) <= 1e-8)
         v1
       })
+      case _ =>
+        throw new UnsupportedOperationException("unsupported $key and $value type")
     }
 
     luaOutput.map(output, (v1, v2) => {
