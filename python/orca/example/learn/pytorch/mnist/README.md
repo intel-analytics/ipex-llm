@@ -43,7 +43,7 @@ You can run this example on local mode and yarn client mode.
 conda activate zoo
 export PYTHONHOME=[conda install path]/envs/zoo # use command "conda env list" to find the path of PYTHONEHOME.
 export ZOO_NUM_MKLTHREADS=4
-python lenet_mnist.py
+python lenet_mnist.py --cluster_mode local
 ```
 
 - Run with Yarn Client mode:
@@ -51,7 +51,7 @@ python lenet_mnist.py
 conda activate zoo
 export HADOOP_CONF_DIR=[path to your hadoop conf directory which has yarn-site.xml]
 export ZOO_NUM_MKLTHREADS=all
-python lenet_mnist.py
+python lenet_mnist.py --cluster_mode yarn
 ```
 
 In above commands
@@ -62,3 +62,4 @@ In above commands
 * --epochs: number of epochs to train.
 * --seed: random seed.
 * --save-model: for saving the current model.
+* --cluster_mode: The mode for the Spark cluster. local or yarn.
