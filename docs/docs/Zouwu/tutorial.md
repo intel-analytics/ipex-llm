@@ -35,8 +35,8 @@ Below are some example code to create forecast models.
 
 ```python
 #import forecast models
-from zoo.zouwu.model.forecast import LSTMForecaster
-from zoo.zouwu.model.forecast import MTNetForecaster
+from zoo.zouwu.model.forecast.lstm_forecaster import LSTMForecaster
+from zoo.zouwu.model.forecast.mtnet_forecaster import MTNetForecaster
 
 #build a lstm forecast model
 lstm_forecaster = LSTMForecaster(target_dim=1, 
