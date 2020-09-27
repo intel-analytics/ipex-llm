@@ -65,6 +65,8 @@ def main():
                         help='random seed (default: 1)')
     parser.add_argument('--save-model', action='store_true', default=False,
                         help='For Saving the current Model')
+    parser.add_argument('--cluster_mode', type=str, default="local",
+                        help='The mode for the Spark cluster. local or yarn.')
     args = parser.parse_args()
 
     torch.manual_seed(args.seed)
@@ -84,11 +86,10 @@ def main():
                        ])),
         batch_size=args.test_batch_size, shuffle=False)
 
-    # Use yarn-client mode when HADOOP_CONF_DIR is detected in the environment variables.
-    if not os.environ.get('HADOOP_CONF_DIR'):
-        sc = init_orca_context(cores=1, memory="20g")
-    else:
-        sc = init_orca_context(
+    if args.cluster_mode == "local":
+        init_orca_context(cores=1, memory="20g")
+    elif args.cluster_mode == "yarn":
+        init_orca_context(
             cluster_mode="yarn-client", cores=4, num_nodes=2, memory="2g",
             driver_memory="10g", driver_cores=1,
             conf={"spark.rpc.message.maxSize": "1024",
