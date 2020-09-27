@@ -49,7 +49,7 @@ class TestDLImageTransformer():
         # test, and withhold the support for Spark 1.5, until the unit test failure reason
         # is clarified.
 
-        if not self.sc.version.startswith("1.5"):
+        if not self.sc.version.startswith("1.5" and "3.0"):
             image_frame = DLImageReader.readImages(self.image_path, self.sc)
             transformer = DLImageTransformer(
                 Pipeline([Resize(256, 256), CenterCrop(224, 224),
