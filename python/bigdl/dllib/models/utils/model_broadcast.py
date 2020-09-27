@@ -19,7 +19,6 @@ import sys
 import gc
 from tempfile import NamedTemporaryFile
 
-from pyspark.cloudpickle import print_exec
 from pyspark.broadcast import Broadcast
 from pyspark.broadcast import _from_id
 from bigdl.nn.layer import Model
@@ -49,6 +48,10 @@ class ModelBroadcast(Broadcast):
             value.saveModel(f.name, over_write=True)
         except Exception as e:
             msg = "Could not serialize broadcast: %s" % e.__class__.__name__
+            if not self.sc.version.startswith("2.1"):
+                from pyspark.cloudpickle import print_exec
+            else:
+                from pyspark.util import print_exec
             print_exec(sys.stderr)
             raise ValueError(msg)
         f.close()
