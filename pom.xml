@@ -107,12 +107,12 @@
         <findbugs.version>3.0.0</findbugs.version>
 
         <!-- define the Java language version used by the compiler -->
-        <java.version>1.7</java.version>
-        <javac.version>1.7</javac.version>
-        <scala.major.version>2.10</scala.major.version>
-        <scala.version>2.10.7</scala.version>
+        <java.version>1.8</java.version>
+        <javac.version>1.8</javac.version>
+        <scala.major.version>2.11</scala.major.version>
+        <scala.version>2.11.8</scala.version>
         <scala.macros.version>2.1.0</scala.macros.version>
-        <scalatest.version>2.2.4</scalatest.version>
+        <scalatest.version>3.0.7</scalatest.version>
 
         <!-- platform encoding override -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -142,7 +142,7 @@
         <maven-failsafe-plugin.version>${maven-surefire-plugin.version}</maven-failsafe-plugin.version>
 
         <maven-clean-plugin.version>2.5</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.2.1</maven-compiler-plugin.version>
         <maven-install-plugin.version>2.5.1</maven-install-plugin.version>
         <maven-resources-plugin.version>2.6</maven-resources-plugin.version>
         <maven-jar-plugin.version>2.5</maven-jar-plugin.version>
@@ -172,9 +172,9 @@
         <commons-math.version>2.2</commons-math.version>
         <collections.version>3.2.1</collections.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
-        <spark-version.project>1.5-plus</spark-version.project>
-        <spark.version>1.5.1</spark.version>
-        <breeze.version>0.11.2</breeze.version>
+        <spark-version.project>2.0</spark-version.project>
+        <spark.version>2.4.0</spark.version>
+        <breeze.version>0.13.2</breeze.version>
         <spark-scope>provided</spark-scope>
 
         <bigdl-core-all-scope>compile</bigdl-core-all-scope>
@@ -544,7 +544,7 @@
             <id>spark_2.x</id>
             <properties>
                 <spark-version.project>2.0</spark-version.project>
-                <spark.version>2.0.0</spark.version>
+                <spark.version>2.4.3</spark.version>
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>
@@ -617,6 +617,92 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>spark_3.x</id>
+            <properties>
+                <spark-version.project>3.0</spark-version.project>
+                <spark.version>3.0.0</spark.version>
+                <scala.major.version>2.12</scala.major.version>
+                <scala.version>2.12.8</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Redefine the plugin to enable fatal warninings -->
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>eclipse-add-source</id>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-compile-first</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-test-compile-first</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>testCompile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>attach-scaladocs</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>doc-jar</goal>
+                                </goals>
+                                <configuration>
+                                    <args>
+                                        <!-- Do not change the arg orders. It is a weird way to pass in
+                                        this arg. Maybe it is a bug of the plugin. -->
+                                        <arg>-skip-packages</arg>
+                                        <arg>caffe:org.tensorflow:netty:org.apache.spark.sparkExtension:org.apache.spark.rdd:org.apache.spark.storage:org.apache.spark.bigdl</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <scalaVersion>${scala.version}</scalaVersion>
+                            <recompileMode>incremental</recompileMode>
+                            <useZincServer>false</useZincServer>
+                            <args>
+                                <arg>-unchecked</arg>
+                                <!-- Too many deprecation usage, let's suspend it temporary-->
+                                <arg>-deprecation:false</arg>
+                                <arg>-feature</arg>
+                                <arg>-Xfatal-warnings</arg>
+                            </args>
+                            <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
+                                 by Spark SQL for code generation. -->
+                            <compilerPlugins>
+                                <compilerPlugin>
+                                    <groupId>org.scalamacros</groupId>
+                                    <artifactId>paradise_${scala.version}</artifactId>
+                                    <version>${scala.macros.version}</version>
+                                </compilerPlugin>
+                            </compilerPlugins>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>scala_2.12</id>
+            <properties>
+                <scala.major.version>2.12</scala.major.version>
+                <scala.version>2.12.12</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+            </properties>
         </profile>
         <profile>
             <id>scala_2.11</id>
