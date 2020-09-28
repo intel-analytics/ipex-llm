@@ -54,8 +54,8 @@ cd spark
 mv dl/pom.xml dl/pom.xml.origin
 cat dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-${SPARK_PLATFORM}<\/artifactId>/' | \
     sed 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' > dl/pom.xml
-#mv spark-version/1.5-plus/pom.xml spark-version/1.5-plus/pom.xml.origin
-#cat spark-version/1.5-plus/pom.xml.origin | sed 's/<artifactId>1.5-plus<\/artifactId>/<artifactId>1.5-plus-${SPARK_PLATFORM}<\/artifactId>/' > spark-version/1.5-plus/pom.xml
+# mv spark-version/1.5-plus/pom.xml spark-version/1.5-plus/pom.xml.origin
+# cat spark-version/1.5-plus/pom.xml.origin | sed 's/<artifactId>1.5-plus<\/artifactId>/<artifactId>1.5-plus-${SPARK_PLATFORM}<\/artifactId>/' > spark-version/1.5-plus/pom.xml
 mv spark-version/2.0/pom.xml spark-version/2.0/pom.xml.origin
 cat spark-version/2.0/pom.xml.origin | sed 's/<artifactId>2.0<\/artifactId>/<artifactId>2.0-${SPARK_PLATFORM}<\/artifactId>/' > spark-version/2.0/pom.xml
 
@@ -76,6 +76,6 @@ deploy 2.4.3 SPARK_2.4 '-P spark_2.x'
 deploy 3.0.0 SPARK_3.0 '-P spark_3.x'
 
 mv dl/pom.xml.origin dl/pom.xml
-#mv spark-version/1.5-plus/pom.xml.origin spark-version/1.5-plus/pom.xml
+# mv spark-version/1.5-plus/pom.xml.origin spark-version/1.5-plus/pom.xml
 mv spark-version/2.0/pom.xml.origin spark-version/2.0/pom.xml
 mv spark-version/3.0/pom.xml.origin spark-version/3.0/pom.xml
