@@ -52,7 +52,8 @@ then
 fi
 
 echo "Running zouwu tests"
-python -m pytest -v ../test/zoo/zouwu
+python -m pytest -v ../test/zoo/zouwu \
+       -k "not test_forecast_tcmf_distributed"
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];
 then
