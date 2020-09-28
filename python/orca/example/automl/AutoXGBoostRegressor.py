@@ -64,7 +64,7 @@ if __name__ == '__main__':
                                         target_col=target_col, config=config)
     pipeline = estimator.fit(train_df,
                              validation_df=val_df,
-                             metric="mse",
+                             metric="rmse",
                              recipe=XgbRegressorGridRandomRecipe(n_estimators=[800, 1000],
                                                                  max_depth=[10, 15]))
     print("Training completed.")
