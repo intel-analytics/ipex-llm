@@ -196,13 +196,17 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                              initTableOp: String,
                              outputNames: JList[String],
                              outputTypes: JList[Int],
-                             shardIndex: String): TFDataFeatureSet = {
+                             shardIndex: String,
+                             interOpParallelismThreads: Int,
+                             intraOpParallelismThreads: Int): TFDataFeatureSet = {
 
 
     TFDataFeatureSet(graph,
       initIteratorOp,
       initTableOp,
-      outputNames.asScala.toArray, outputTypes.asScala.toArray, shardIndex)
+      outputNames.asScala.toArray,
+      outputTypes.asScala.toArray, shardIndex, interOpParallelismThreads,
+      intraOpParallelismThreads)
   }
 
   def createTFDataFeatureSet(graphRDD: JavaRDD[Array[Byte]],
@@ -210,12 +214,16 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                              initTableOp: String,
                              outputNames: JList[String],
                              outputTypes: JList[Int],
-                             shardIndex: String): TFDataFeatureSet = {
+                             shardIndex: String,
+                             interOpParallelismThreads: Int,
+                             intraOpParallelismThreads: Int): TFDataFeatureSet = {
 
     TFDataFeatureSet(graphRDD.rdd,
       initIteratorOp,
       initTableOp,
-      outputNames.asScala.toArray, outputTypes.asScala.toArray, shardIndex)
+      outputNames.asScala.toArray,
+      outputTypes.asScala.toArray, shardIndex, interOpParallelismThreads,
+      intraOpParallelismThreads)
   }
 
   def createMiniBatchFeatureSetFromStringRDD(stringRDD: JavaRDD[Array[Byte]],

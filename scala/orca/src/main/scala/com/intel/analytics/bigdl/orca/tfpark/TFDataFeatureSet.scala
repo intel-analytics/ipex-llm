@@ -102,12 +102,15 @@ object TFDataFeatureSet {
             initTableOp: String,
             outputNames: Array[String],
             outputTypes: Array[Int],
-            shardIndex: String): TFDataFeatureSet = {
+            shardIndex: String,
+            interOpParallelismThreads: Int,
+            intraOpParallelismThreads: Int
+           ): TFDataFeatureSet = {
     val types = outputTypes.map(TFUtils.tfenum2datatype)
-    val coreNumber = EngineRef.getCoreNumber()
     new TFDataFeatureSet(createGraphRDD(graph),
       initIteratorOp, initTableOp, outputNames, types, shardIndex,
-      sessionConfig = SessionConfig(intraOpParallelismThreads = coreNumber))
+      sessionConfig = SessionConfig(intraOpParallelismThreads = intraOpParallelismThreads,
+        interOpParallelismThreads = interOpParallelismThreads))
   }
 
   def apply(graphRDD: RDD[Array[Byte]],
@@ -115,15 +118,18 @@ object TFDataFeatureSet {
             initTableOp: String,
             outputNames: Array[String],
             outputTypes: Array[Int],
-            shardIndex: String): TFDataFeatureSet = {
+            shardIndex: String,
+            interOpParallelismThreads: Int,
+            intraOpParallelismThreads: Int
+           ): TFDataFeatureSet = {
     val types = outputTypes.map(TFUtils.tfenum2datatype)
-    val coreNumber = EngineRef.getCoreNumber()
     val nodeNumber = EngineRef.getNodeNumber()
     require(nodeNumber == graphRDD.getNumPartitions,
       s"number partitions should be the same as node number, " +
       s"got number partitions ${graphRDD.getNumPartitions}, node number ${nodeNumber}")
     new TFDataFeatureSet(graphRDD, initIteratorOp, initTableOp, outputNames, types, shardIndex,
-      sessionConfig = SessionConfig(intraOpParallelismThreads = coreNumber))
+      sessionConfig = SessionConfig(intraOpParallelismThreads = intraOpParallelismThreads,
+        interOpParallelismThreads = interOpParallelismThreads))
   }
 
   private[zoo] def createGraphRDD(graph: Array[Byte]): RDD[Array[Byte]] = {
