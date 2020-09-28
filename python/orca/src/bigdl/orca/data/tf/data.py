@@ -28,9 +28,17 @@ class TFDataDataset2(TFDataset):
 
     def __init__(self, dataset, batch_size,
                  batch_per_thread,
-                 validation_dataset=None):
+                 validation_dataset=None, intra_threads=None, inter_threads=None):
 
         node_num, core_num = get_node_and_core_number()
+
+        self.intra_threads = intra_threads
+        self.inter_threads = inter_threads
+        if intra_threads is None:
+            self.intra_threads = core_num
+
+        if inter_threads is None:
+            self.inter_threads = 1
 
         if batch_size > 0:
             num_parts = dataset.xshards.num_partitions()
@@ -95,7 +103,8 @@ class TFDataDataset2(TFDataset):
     def _get_training_data(self):
         jvalue = callZooFunc("float", "createTFDataFeatureSet",
                              self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
-                             self.output_names, self.output_types, self.shard_index_op_name)
+                             self.output_names, self.output_types, self.shard_index_op_name,
+                             self.inter_threads, self.intra_threads)
         return FeatureSet(jvalue=jvalue)
 
     def _get_validation_data(self):
@@ -103,7 +112,8 @@ class TFDataDataset2(TFDataset):
             jvalue = callZooFunc("float", "createTFDataFeatureSet",
                                  self.val_rdd.map(lambda x: x[0]), self.init_op_name,
                                  self.table_init_op, self.output_names,
-                                 self.output_types, self.shard_index_op_name)
+                                 self.output_types, self.shard_index_op_name,
+                                 self.inter_threads, self.intra_threads)
             return FeatureSet(jvalue=jvalue)
         return None
 
