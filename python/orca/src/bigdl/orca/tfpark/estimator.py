@@ -166,9 +166,14 @@ class TFEstimator(object):
                                                     model_dir=zoo_ckpt_path,
                                                     session_config=session_config)
 
+                    start_step = sess.run(global_step_tensor)
                     opt.optimize(MaxIteration(steps))
-                    sess.run(assign_step, feed_dict={add_step_input: steps})
                     final_step = sess.run(global_step_tensor)
+                    if final_step == start_step:
+                        # user does not increase global step
+                        sess.run(assign_step, feed_dict={add_step_input: steps})
+                        final_step += steps
+
                     model_path = os.path.join(self._model_dir, "model")
                     saver.save(sess, model_path, global_step=final_step)
                     return self

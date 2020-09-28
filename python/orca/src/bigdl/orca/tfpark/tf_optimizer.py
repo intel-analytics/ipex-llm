@@ -741,6 +741,7 @@ class TFOptimizer:
         else:
             self.estimator.train_minibatch(train_set=self.train_data,
                                            criterion=self.tf_model.criterion,
-                                           end_trigger=end_trigger)
+                                           end_trigger=end_trigger,
+                                           checkpoint_trigger=checkpoint_trigger)
 
         self.tf_model.training_helper_layer.get_weights_to_python()
