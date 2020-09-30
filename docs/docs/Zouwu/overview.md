@@ -3,7 +3,7 @@
 Project Zouwu provides a reference solution that is designed and optimized for common time series applications in the Telco industry, including:
 
 * _Use case_ - reference time series use cases in the Telco industry (such as network traffic forcasting, etc.)
-* _Model_ - built-in deep learning models for time series analysis (such as LSTM and [MTNet](https://arxiv.org/abs/1809.02105))
+* _Model_ - built-in deep learning models for time series analysis (such as LSTM, [MTNet](https://arxiv.org/abs/1809.02105) and TCMF)
 * _AutoTS_ - AutoML support for building end-to-end time series analysis pipelines (including automatic feature generation, model selection and hyperparameter tuning).
 
 
@@ -13,8 +13,8 @@ Time series forecasting has many applications in telco. Accurate forecast of tel
 
 We provided a reference use case where we forecast network traffic KPI's as a demo. Refer to [Network Traffic](./use-case/network-traffic) for forecasting.
  
-To learn how to use built-in models, refer to [tutorials](./tutorial.md#using-built-in-forecast-models) and API docs (i.e. [LSTMForecaster](./API/LSTMForecaster.md) and [MTNetForecaster](./API/MTNetForecaster.md)) for built-in models. 
+To learn how to use built-in models, refer to tutorials (i.e. [LSTMForecaster and MTNetForcaster](tutorials/LSTMForecasterAndMTNetForecaster.md), [TCMFForecaster](tutorials/TCMFForecaster.md)) and API docs (i.e. [LSTMForecaster](./API/LSTMForecaster.md), [MTNetForecaster](./API/MTNetForecaster.md)) and [TCMFForecaster](./API/TCMFForecaster.md) for built-in models. 
 
-To learn how to use AutoTS, refer to [tutorials](./tutorial.md#using-autots) and API docs (i.e. [AutoTSTrainer](./API/AutoTSTrainer.md) and [TSPipeline](./API/TSPipeline.md)) for automated training.
+To learn how to use AutoTS, refer to [AutoTS tutorial](./tutorials/Autots.md) and API docs (i.e. [AutoTSTrainer](./API/AutoTSTrainer.md) and [TSPipeline](./API/TSPipeline.md)) for automated training.
 
 
