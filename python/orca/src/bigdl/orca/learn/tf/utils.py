@@ -64,9 +64,16 @@ def xshards_to_tf_dataset(data_shard,
     return dataset
 
 
+def is_tf_data_dataset(data):
+    is_dataset = isinstance(data, tf.data.Dataset)
+    is_dataset_v2 = isinstance(data, tf.python.data.ops.dataset_ops.DatasetV2)
+    return is_dataset or is_dataset_v2
+
+
 def to_dataset(data, batch_size, batch_per_thread, validation_data,
                feature_cols, labels_cols, hard_code_batch_size,
-               sequential_order, shuffle):
+               sequential_order, shuffle, auto_shard_files):
+    # todo wrap argument into kwargs
     if validation_data:
         if isinstance(data, SparkXShards):
             assert isinstance(validation_data, SparkXShards), \
@@ -102,14 +109,14 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
                                            sequential_order,
                                            shuffle
                                            )
-    elif isinstance(data, tf.data.Dataset):
+    elif is_tf_data_dataset(data):
         dataset = TFDataset.from_tf_data_dataset(data,
                                                  batch_size,
                                                  batch_per_thread,
                                                  hard_code_batch_size,
                                                  validation_data,
                                                  sequential_order,
-                                                 shuffle)
+                                                 shuffle, auto_shard_files=auto_shard_files)
     else:
         raise ValueError("data must be SparkXShards or orca.data.tf.Dataset or "
                          "Spark DataFrame or tf.data.Dataset")

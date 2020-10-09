@@ -418,10 +418,12 @@ class TestEstimatorForGraph(TestCase):
         load_tf_checkpoint(sess, os.path.join(temp, "simple.ckpt"), saver)
         shutil.rmtree(temp)
 
-    def test_estimator_graph_tf_dataset(self):
+    def _test_estimator_graph_tf_dataset(self, dataset_creator):
         tf.reset_default_graph()
 
         model = SimpleModel()
+
+        dataset = dataset_creator()
 
         dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100,)),
                                                       np.random.randint(0, 50, size=(100,)),
@@ -447,6 +449,26 @@ class TestEstimatorForGraph(TestCase):
             np.random.randint(0, 50, size=(20,))))
         predictions = est.predict(predict_dataset).collect()
         assert predictions[0]['prediction'].shape[1] == 2
+
+    def test_estimator_graph_tf_dataset(self):
+
+        def dataset_creator():
+
+            dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100,)),
+                                                          np.random.randint(0, 50, size=(100,)),
+                                                          np.ones(shape=(100,), dtype=np.int32)))
+            return dataset
+        self._test_estimator_graph_tf_dataset(dataset_creator)
+
+    def test_estimator_graph_tf_dataset_v2(self):
+
+        def dataset_creator():
+
+            dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100,)),
+                                                          np.random.randint(0, 50, size=(100,)),
+                                                          np.ones(shape=(100,), dtype=np.int32)))
+            return dataset._dataset
+        self._test_estimator_graph_tf_dataset(dataset_creator)
 
     def test_estimator_graph_tensorboard(self):
         tf.reset_default_graph()
