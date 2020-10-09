@@ -596,7 +596,7 @@ class TFDataset(object):
                              sequential_order=False,
                              shuffle=True,
                              remove_checking=False, batch_outside=False,
-                             inter_threads=None, intra_threads=None):
+                             inter_threads=None, intra_threads=None, auto_shard_files=True):
         """
         Create a TFDataset from a tf.data.Dataset.
 
@@ -627,7 +627,7 @@ class TFDataset(object):
         return TFDataDataset(dataset, batch_size, batch_per_thread,
                              hard_code_batch_size, validation_dataset,
                              sequential_order, shuffle, remove_checking, batch_outside,
-                             inter_threads, intra_threads)
+                             inter_threads, intra_threads, auto_shard_files=auto_shard_files)
 
     @staticmethod
     def from_dataframe(df, feature_cols, labels_cols=None, batch_size=-1,
@@ -699,7 +699,9 @@ class TFDataDataset(TFDataset):
                  validation_dataset=None,
                  sequential_order=False, shuffle=True,
                  remove_checking=False, batch_outside=False,
-                 inter_threads=None, intra_threads=None):
+                 inter_threads=None, intra_threads=None, auto_shard_files=True):
+
+        self.auto_shard_files = auto_shard_files
 
         from tensorflow.python.data.ops import dataset_ops
         import tensorflow as tf
@@ -792,10 +794,16 @@ class TFDataDataset(TFDataset):
 
         shard_index = tf.placeholder(dtype=tf.int64, shape=())
         from tensorflow.python.distribute.input_ops import auto_shard_dataset
-        tf_data_dataset = auto_shard_dataset(tf_data_dataset, self._shard_num, shard_index)
+        if self.auto_shard_files:
+            tf_data_dataset = auto_shard_dataset(tf_data_dataset, self._shard_num, shard_index)
+        else:
+            tf_data_dataset = tf_data_dataset.shard(self._shard_num, shard_index)
         if validation_dataset is not None:
-            validation_dataset = auto_shard_dataset(validation_dataset, self._shard_num,
-                                                    shard_index)
+            if self.auto_shard_files:
+                validation_dataset = auto_shard_dataset(validation_dataset, self._shard_num,
+                                                        shard_index)
+            else:
+                validation_dataset = validation_dataset.shard(self._shard_num, shard_index)
 
         self.shard_index = shard_index
         self.train_dataset = tf_data_dataset
