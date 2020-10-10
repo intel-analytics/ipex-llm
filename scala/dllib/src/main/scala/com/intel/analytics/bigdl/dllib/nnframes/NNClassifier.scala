@@ -67,13 +67,19 @@ class NNClassifier[T: ClassTag] private[zoo]  (
   }
 
   override def copy(extra: ParamMap): NNClassifier[T] = {
+    val newClassifier = new NNClassifier[T](
+      model.cloneModule(),
+      criterion.cloneCriterion(),
+      this.uid
+    )
+
     val copied = copyValues(
-      new NNClassifier[T](
-        model.cloneModule(),
-        criterion.cloneCriterion(),
-        this.uid
-      ),
+      newClassifier,
       extra)
+
+    // optimMethod has internal states like steps and epochs, and
+    // cannot be shared between estimators
+    copied.setOptimMethod(this.getOptimMethod.clone())
 
     if (this.validationTrigger.isDefined) {
       copied.setValidation(

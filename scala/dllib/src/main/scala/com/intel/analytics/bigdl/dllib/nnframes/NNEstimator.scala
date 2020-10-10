@@ -496,12 +496,19 @@ class NNEstimator[T: ClassTag] private[zoo] (
    * currently they are not thread-safe.
    */
   override def copy(extra: ParamMap): NNEstimator[T] = {
+
+    val newEstimator = new NNEstimator[T](
+      model.cloneModule(),
+      criterion.cloneCriterion(),
+      this.uid
+    )
+
     val copied = copyValues(
-      new NNEstimator[T](
-        model.cloneModule(),
-        criterion.cloneCriterion(),
-        this.uid
-      ), extra)
+      newEstimator, extra)
+
+    // optimMethod has internal states like steps and epochs, and
+    // cannot be shared between estimators
+    copied.setOptimMethod(this.getOptimMethod.clone())
 
     if (this.validationTrigger.isDefined) {
       copied.setValidation(
@@ -738,6 +745,8 @@ class NNModel[T: ClassTag] private[zoo] (
   }
 
   override def write: MLWriter = new NNModel.NNModelWriter[T](this)
+
+  def getModel(): Module[T] = model
 }
 
 object NNModel extends MLReadable[NNModel[_]] {
