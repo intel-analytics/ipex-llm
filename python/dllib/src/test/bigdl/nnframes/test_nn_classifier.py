@@ -25,6 +25,7 @@ from numpy.testing import assert_allclose
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.sql.types import *
+from pyspark.ml.tuning import ParamGridBuilder
 
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes import *
@@ -609,6 +610,80 @@ class TestNNClassifer():
         assert type(res).__name__ == 'DataFrame'
         assert len(lr_result) == 5
         assert len(top1_result) == 4
+
+    def test_nnestimator_with_param_maps(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        data = self.sc.parallelize([
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0),
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0)])
+
+        val_data = self.sc.parallelize([
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0)])
+
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", DoubleType(), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+        val_df = self.sqlContext.createDataFrame(val_data, schema)
+
+        classfier = NNEstimator(model, criterion, SeqToTensor([2]))\
+            .setBatchSize(4).setMaxEpoch(5) \
+            .setValidation(EveryEpoch(), val_df, [Top1Accuracy()], 2)
+
+        param = ParamGridBuilder().addGrid(classfier.learningRate, [1e-3, 1.0]).build()
+
+        print(param)
+        models = classfier.fit(df, params=param)
+        # print(models.model.get_weights())
+        assert len(models) == 2
+
+        w1 = models[0].model.get_weights()
+        w2 = models[1].model.get_weights()
+
+        for ww1, ww2 in zip(w1, w2):
+            diff = np.sum((ww1 - ww2) ** 2)
+            assert diff > 1e-2
+
+    def test_nnclassifier_with_param_maps(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        data = self.sc.parallelize([
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0),
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0)])
+
+        val_data = self.sc.parallelize([
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0)])
+
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", DoubleType(), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+        val_df = self.sqlContext.createDataFrame(val_data, schema)
+
+        print(model.get_weights())
+
+        classfier = NNClassifier(model, criterion, SeqToTensor([2]))\
+            .setBatchSize(4).setMaxEpoch(5) \
+            .setValidation(EveryEpoch(), val_df, [Top1Accuracy()], 2)
+
+        param = ParamGridBuilder().addGrid(classfier.learningRate, [1e-3, 1.0]).build()
+
+        models = classfier.fit(df, params=param)
+        assert len(models) == 2
+
+        w1 = models[0].model.get_weights()
+        w2 = models[1].model.get_weights()
+
+        for ww1, ww2 in zip(w1, w2):
+            diff = np.sum((ww1 - ww2) ** 2)
+            assert diff > 1e-2
 
     def test_nnclassifier_in_pipeline(self):
 
