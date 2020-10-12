@@ -101,13 +101,11 @@ model = TCMFForecaster(
 After an TCMFForecaster is created, you can call forecaster API to train a tcmf model:
 ```
 model.fit(x, 
-          incremental=False, 
           num_workers=None)
 ```
 * `x`: the input for fit. Only dict of ndarray and SparkXShards of dict of ndarray
        are supported. Example: {'id': id_arr, 'y': data_ndarray}. If input is SparkXShards, each partition will use one model to fit.
        
-* `incremental`: if the fit is incremental. Incremental fitting hasn't been enabled yet.
 * `num_workers`: the number of workers you want to use for fit. It is only effective while input x is dict of ndarray. If None, it defaults to
         num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
 
@@ -141,6 +139,17 @@ model.evaluate(target_value,
 * `num_workers`: the number of workers to use in evaluate. It is only effective while input target value is dict of ndarray. If None, it defaults to
         num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
 
+#### **Incrementally fit the model with additional data**
+Incrementally fit the model. Note that we only incrementally fit X_seq (TCN in global model). We haven't enable fit_incremental for input SparkXshards yet.
+```python
+model.fit_incremental(x_incr)
+```
+* `x_incr`: incremental data to be fitted. It should be of the same format as input x in fit, which is a dict of ndarray or SparkXShards of dict of ndarray.
+Example: {'id': id_arr, 'y': incr_ndarray}, and incr_ndarray is of shape (n, T_incr), where
+n is the number of target time series, T_incr is the number of time steps incremented. You
+can choose not to input 'id' in x_incr, but if you do, the elements of id in x_incr should
+be the same as id in x of fit.
+
 #### **Save model**
 You can save model after fit for future deployment.
 ```
@@ -159,5 +168,5 @@ TCMFForecaster.load(path,
 * `distributed`: Whether the model is distributed trained with input of dict of SparkXshards.
 * `minPartitions`: The minimum partitions for the XShards.
 
-#### **Check whether model is distributed**
-You can check whether model is distributed with `model.is_distributed()`.
+#### **Check whether model is distributed with input xshards**
+You can check whether model is distributed by input xshards with `model.is_xshards_distributed()`.

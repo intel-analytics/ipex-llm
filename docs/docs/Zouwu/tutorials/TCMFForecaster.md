@@ -92,30 +92,37 @@ model = TCMFForecaster(
          max_TCN_epoch=300,
          alt_iters=10)
 ```
-### **Step 3: Fit with TCMFForecaster**
+### **Step 3: Use TCMFForecaster**
+
+#### **Fit with TCMFForecaster**
 
 ```
-model.fit(x, incremental=False)
+model.fit(x, num_workers=num_workers_for_fit)
 ```
 
-### **Step 4: Evaluate with TCMFForecaster**
+#### **Evaluate with TCMFForecaster**
 You can either directly call `model.evaluate` as
 ```
-model.evaluate(target_value,metric=['mae'])
+model.evaluate(target_value,metric=['mae'], num_workers=num_workers_for_predict)
 ```
 
 Or you could predict first and then evaluate with metric name.
 
 ```
-yhat = model.predict(x=None, horizon=24, num_workers=2)
+yhat = model.predict(horizon, num_workers=num_workers_for_predict)
 
 from zoo.automl.common.metrics import Evaluator
 evaluate_mse = Evaluator.evaluate("mse", target_data, yhat)
 ```
 
-### **Step 5: Save and Load**
+#### **Incremental fit TCMFForecaster**
+```python
+model.fit_incremental(x_incr)
+```
+
+#### **Save and Load**
 
 ```python
 model.save(dirname)
-loaded_model = TCMFForecaster.load(dirname, distributed=False)
+loaded_model = TCMFForecaster.load(dirname)
 ```
