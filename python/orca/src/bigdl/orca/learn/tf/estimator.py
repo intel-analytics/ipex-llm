@@ -17,6 +17,7 @@
 from bigdl.optim.optimizer import MaxEpoch
 
 from zoo.orca.learn.tf.utils import *
+from zoo.orca.learn.utils import find_latest_checkpoint
 from zoo.tfpark import KerasModel
 from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
 from zoo.tfpark.tf_optimizer import StatelessMetric
@@ -51,7 +52,7 @@ class Estimator(object):
         Load latest Orca checkpoint under specified directory.
         :param path: directory containing Orca checkpoint files.
         """
-        ckpt_path, version = find_latest_checkpoint(path)
+        ckpt_path, _, version = find_latest_checkpoint(path, model_type="tf")
         if ckpt_path is None:
             raise Exception("Cannot find checkpoint")
         self.load_orca_checkpoint(ckpt_path, version)

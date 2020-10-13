@@ -184,6 +184,7 @@ class PytorchSparkEstimatorWrapper(Estimator):
             optimizer = SGD()
         elif isinstance(optimizer, TorchOptimizer):
             optimizer = TorchOptim.from_pytorch(optimizer)
+        self.model_dir = model_dir
         self.model = TorchModel.from_pytorch(model)
         self.estimator = SparkEstimator(self.model, optimizer, model_dir, bigdl_type=bigdl_type)
 
@@ -252,8 +253,24 @@ class PytorchSparkEstimatorWrapper(Estimator):
     def save(self, checkpoint):
         pass
 
-    def load(self, checkpoint):
-        pass
+    def load(self, checkpoint, loss=None, model_dir=None):
+        from zoo.orca.learn.utils import find_latest_checkpoint
+        from bigdl.nn.layer import Model
+        from bigdl.optim.optimizer import OptimMethod
+        import os
+        if loss is not None:
+            from zoo.pipeline.api.torch import TorchLoss
+            self.loss = TorchLoss.from_pytorch(loss)
+        path, prefix, version = find_latest_checkpoint(checkpoint, model_type="pytorch")
+        if path is None:
+            raise ValueError("Cannot find PyTorch checkpoint, please check your checkpoint path.")
+        try:
+            self.model = Model.load(os.path.join(path, "model.{}".format(version)))
+            optimizer = OptimMethod.load(os.path.join(path, "{}.{}".format(prefix, version)))
+        except Exception:
+            raise ValueError("Cannot load PyTorch checkpoint, please check your checkpoint path "
+                             "and checkpoint type.")
+        self.estimator = SparkEstimator(self.model, optimizer, self.model_dir)
 
     def shutdown(self, force=False):
         pass

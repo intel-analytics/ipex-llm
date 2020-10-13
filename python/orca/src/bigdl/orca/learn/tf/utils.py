@@ -167,37 +167,6 @@ def convert_predict_to_xshard(prediction_rdd):
     return SparkXShards(prediction_rdd.mapPartitions(transform_predict))
 
 
-def find_latest_checkpoint(model_dir):
-    import os
-    import re
-    import datetime
-    ckpt_path = None
-    latest_version = None
-    for (root, dirs, files) in os.walk(model_dir, topdown=True):
-        temp_versions = []
-        timestamps = []
-        for dir in dirs:
-            if re.match('(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$', dir) is not None:
-                try:
-                    # check if dir name is date time
-                    datetime.datetime.strptime(dir, '%Y-%m-%d_%H-%M-%S')
-                    timestamps.append(dir)
-                except:
-                    continue
-        if timestamps:
-            start_dir = os.path.join(root, max(timestamps))
-            return find_latest_checkpoint(start_dir)
-        for file_name in files:
-            if re.match("^optimMethod-TFParkTraining\.[0-9]+$", file_name) is not None:
-                version = int(file_name.split(".")[1])
-                temp_versions.append(version)
-        if temp_versions:
-            ckpt_path = root
-            latest_version = max(temp_versions)
-            break
-    return ckpt_path, latest_version
-
-
 def save_tf_checkpoint(sess, checkpoint_path, saver=None):
     """
     Save tf checkpoint without using native tensorflow remote access method.
