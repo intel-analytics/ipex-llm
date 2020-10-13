@@ -27,6 +27,7 @@ from zoo.orca.learn.metrics import Accuracy
 from zoo.orca.learn.trigger import EveryEpoch
 from bigdl.optim.optimizer import SGD
 from zoo.orca import OrcaContext
+import tempfile
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
@@ -72,11 +73,19 @@ class TestEstimatorForSpark(TestCase):
         data_shard = read_csv(file_path)
         data_shard = data_shard.transform_shard(transform)
 
-        estimator = Estimator.from_torch(model=model, loss=loss_func,
-                                         optimizer=SGD(), backend="bigdl")
-        estimator.fit(data=data_shard, epochs=4, batch_size=2, validation_data=data_shard,
-                      validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
-        estimator.evaluate(data_shard, validation_methods=[Accuracy()], batch_size=2)
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            estimator = Estimator.from_torch(model=model, loss=loss_func,
+                                             optimizer=SGD(), model_dir=temp_dir_name,
+                                             backend="bigdl")
+            estimator.fit(data=data_shard, epochs=4, batch_size=2, validation_data=data_shard,
+                          validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
+            estimator.evaluate(data_shard, validation_methods=[Accuracy()], batch_size=2)
+            est2 = Estimator.from_torch(model=model, loss=loss_func, optimizer=None,
+                                        backend="bigdl")
+            est2.load(temp_dir_name, loss=loss_func)
+            est2.fit(data=data_shard, epochs=8, batch_size=2, validation_data=data_shard,
+                     validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
+            est2.evaluate(data_shard, validation_methods=[Accuracy()], batch_size=2)
 
 
 if __name__ == "__main__":
