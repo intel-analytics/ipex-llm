@@ -23,6 +23,7 @@ import com.intel.analytics.zoo.common.{PythonInterpreter, PythonInterpreterTest}
 import com.intel.analytics.zoo.core.TFNetNative
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.models.InternalOptimizerUtil.getStateFromOptiMethod
+import com.intel.analytics.zoo.pipeline.api.net.TorchOptim.{EpochDecay, EpochDecayByScore, IterationDecay}
 import org.apache.log4j.{Level, Logger}
 
 @PythonInterpreterTest
@@ -78,7 +79,7 @@ class TorchOptimSpec extends ZooSpecHelper{
          |""".stripMargin
     PythonInterpreter.exec(code)
     val bys = Files.readAllBytes(Paths.get(tmpname))
-    val torchOptim = TorchOptim[Float](bys)
+    val torchOptim = TorchOptim[Float](bys, EpochDecay)
 
     val weight = Tensor[Float](4).fill(1)
     val gradient = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
@@ -100,7 +101,7 @@ class TorchOptimSpec extends ZooSpecHelper{
          |""".stripMargin
     PythonInterpreter.exec(code)
     val bys = Files.readAllBytes(Paths.get(tmpname))
-    val torchOptim = TorchOptim[Float](bys)
+    val torchOptim = TorchOptim[Float](bys, EpochDecay)
 
     val weight = Tensor[Float](4).fill(1)
     val gradient = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
@@ -113,5 +114,111 @@ class TorchOptimSpec extends ZooSpecHelper{
     torchOptim.optimize(_ => (1f, gradient2), weight)
     torchOptim.getLearningRate() should be (0.095)
     weight should be (Tensor[Float](Array(0.971f, 0.961f, 0.951f, 0.941f), Array(4)))
+  }
+
+  "TorchOptim IterationDecay" should "work without error" in {
+    ifskipTest()
+    val tmpname = createTmpFile().getAbsolutePath()
+    val code = lenet +
+      s"""
+         |model = LeNet()
+         |sgd = torch.optim.SGD(model.parameters(), lr=0.1)
+         |scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.1)
+         |torch.save(scheduler, "$tmpname", pickle_module=zoo_pickle_module)
+         |""".stripMargin
+    PythonInterpreter.exec(code)
+    val bys = Files.readAllBytes(Paths.get(tmpname))
+    val torchOptim = TorchOptim[Float](bys, IterationDecay)
+
+    val weight = Tensor[Float](4).fill(1)
+    val gradient = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
+    torchOptim.optimize(_ => (1f, gradient), weight)
+    torchOptim.getLearningRate() should be (0.1)
+    weight should be (Tensor[Float](Array(0.99f, 0.98f, 0.97f, 0.96f), Array(4)))
+
+    val gradient2 = Tensor[Float](Array(0.2f, 0.2f, 0.2f, 0.2f), Array(4))
+    torchOptim.optimize(_ => (1f, gradient2), weight)
+    torchOptim.getLearningRate() should be (0.01 +- 1e-10)
+    weight should be (Tensor[Float](Array(0.988f, 0.978f, 0.968f, 0.958f), Array(4)))
+
+    val gradient3 = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
+    torchOptim.optimize(_ => (1f, gradient3), weight)
+    torchOptim.getLearningRate() should be (0.001 +- 1e-10)
+    weight should be (Tensor[Float](Array(0.9879f, 0.9778f, 0.9677f, 0.9576f), Array(4)))
+  }
+
+  "TorchOptim EpochDecay" should "work without error" in {
+    ifskipTest()
+    val tmpname = createTmpFile().getAbsolutePath()
+    val code = lenet +
+      s"""
+         |model = LeNet()
+         |sgd = torch.optim.SGD(model.parameters(), lr=0.1)
+         |scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.1)
+         |torch.save(scheduler, "$tmpname", pickle_module=zoo_pickle_module)
+         |""".stripMargin
+    PythonInterpreter.exec(code)
+    val bys = Files.readAllBytes(Paths.get(tmpname))
+    val torchOptim = TorchOptim[Float](bys, EpochDecay)
+
+    val weight = Tensor[Float](4).fill(1)
+    val gradient = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
+    torchOptim.optimize(_ => (1f, gradient), weight)
+    torchOptim.getLearningRate() should be (0.1)
+    weight should be (Tensor[Float](Array(0.99f, 0.98f, 0.97f, 0.96f), Array(4)))
+
+    val gradient2 = Tensor[Float](Array(0.2f, 0.2f, 0.2f, 0.2f), Array(4))
+    torchOptim.optimize(_ => (1f, gradient2), weight)
+    torchOptim.getLearningRate() should be (0.1)
+    weight should be (Tensor[Float](Array(0.97f, 0.96f, 0.95f, 0.94f), Array(4)))
+
+    val state = getStateFromOptiMethod(torchOptim)
+    state("epoch") = 2
+
+    val gradient3 = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
+    torchOptim.optimize(_ => (1f, gradient3), weight)
+    torchOptim.getLearningRate() should be (0.01 +- 1e-10)
+    weight should be (Tensor[Float](Array(0.969f, 0.958f, 0.947f, 0.936f), Array(4)))
+  }
+
+  "TorchOptim EpochDecayByScore" should "work without error" in {
+    ifskipTest()
+    val tmpname = createTmpFile().getAbsolutePath()
+    val code = lenet +
+      s"""
+         |model = LeNet()
+         |sgd = torch.optim.SGD(model.parameters(), lr=0.1)
+         |from torch.optim.lr_scheduler import ReduceLROnPlateau
+         |scheduler = ReduceLROnPlateau(optimizer, 'min', patience=2)
+         |torch.save(scheduler, "$tmpname", pickle_module=zoo_pickle_module)
+         |""".stripMargin
+    PythonInterpreter.exec(code)
+    val bys = Files.readAllBytes(Paths.get(tmpname))
+    val torchOptim = TorchOptim[Float](bys, EpochDecayByScore)
+
+    val weight = Tensor[Float](4).fill(1)
+    val gradient = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f), Array(4))
+    torchOptim.getLearningRate() should be (0.1)
+    torchOptim.optimize(_ => (1f, gradient), weight)
+    weight should be (Tensor[Float](Array(0.99f, 0.98f, 0.97f, 0.96f), Array(4)))
+    val state = getStateFromOptiMethod(torchOptim)
+
+    for (i <- 2 to 5) {
+      state("epoch") = i
+      state("score") = 0.1f
+      torchOptim.optimize(_ => (1f, gradient), weight)
+    }
+    torchOptim.getLearningRate() should be (0.01 +- 1e-10)
+    weight should be (Tensor[Float](Array(0.959f, 0.918f, 0.877f, 0.836f), Array(4)))
+
+    val gradient2 = Tensor[Float](Array(0.1f, 0.1f, 0.1f, 0.1f), Array(4))
+    for (i <- 6 to 9) {
+      state("epoch") = i
+      state("score") = 0.01f
+      torchOptim.optimize(_ => (1f, gradient2), weight)
+    }
+    torchOptim.getLearningRate() should be (0.001 +- 1e-10)
+    weight should be (Tensor[Float](Array(0.9559f, 0.9149f, 0.8739f, 0.8329f), Array(4)))
+
   }
 }
