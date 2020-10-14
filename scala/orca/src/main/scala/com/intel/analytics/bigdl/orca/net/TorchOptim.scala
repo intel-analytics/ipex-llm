@@ -26,9 +26,11 @@ import org.apache.spark.TaskContext
 
 import scala.reflect.ClassTag
 import com.intel.analytics.zoo.pipeline.api.keras.models.InternalOptimizerUtil
+import com.intel.analytics.zoo.pipeline.api.net.TorchOptim.DecayType
 
 class TorchOptim[@specialized(Float, Double) T: ClassTag](
-    torchOptim: Array[Byte])(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
+    torchOptim: Array[Byte],
+    decayType: DecayType)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
   import TorchOptim._
 
   @transient
@@ -43,8 +45,9 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
       s"""
          |import torch
          |import io
-         |from torch.optim.optimizer import Optimizer
+         |from torch.optim.optimizer import *
          |from torch.optim.lr_scheduler import _LRScheduler
+         |from torch.optim.lr_scheduler import *
          |from zoo.pipeline.api.torch import zoo_pickle_module
          |
          |optim_by = bytes(b % 256 for b in optim_bytes)
@@ -53,9 +56,6 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
     PythonInterpreter.exec(loadModelCode)
     weightName = name + "_weight"
     gradientName = name + "gradient"
-    lrStepCode = s"""
-                  |${name}.step()
-                  |""".stripMargin
     if (PythonInterpreter.getValue[Boolean](s"isinstance($name, Optimizer)")) {
       initCode = s"""
            |$weightName = torch.tensor($weightName, requires_grad=True)
@@ -77,7 +77,20 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
            |${weightName}.grad = torch.tensor(${gradientName})
            |${name}.optimizer.step()
            |""".stripMargin
-      LrSchedule
+      LrScheduler
+    } else if (PythonInterpreter.getValue[Boolean](s"isinstance($name, ReduceLROnPlateau)")) {
+      // ReduceLROnPlateau is not subclass of LRScheduler
+      require(decayType == EpochDecayByScore, "Plateau should use decayType EpochDecayByScore")
+      initCode = s"""
+           |$weightName = torch.tensor($weightName, requires_grad=True)
+           |$weightName = torch.autograd.Variable($weightName)
+           |${name}.optimizer.__init__([${weightName}], **${name}.optimizer.defaults)
+           |""".stripMargin
+      stepCode = s"""
+           |${weightName}.grad = torch.tensor(${gradientName})
+           |${name}.optimizer.step()
+           |""".stripMargin
+      Plateau
     } else {
       val unknowType = PythonInterpreter.getValue[String](s"str(type($name))")
       throw new IllegalArgumentException(s"Unknown optimizer type: " + unknowType)
@@ -92,8 +105,6 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
   protected var gradientName = ""
   @transient
   protected var initCode = ""
-  @transient
-  protected var lrStepCode = ""
   @transient
   protected var stepCode = ""
   @transient
@@ -113,9 +124,8 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
         parameter.toTensor[Float].storage().array()))
       PythonInterpreter.exec(initCode)
       init = true
-    }
-    if (optimType == LrSchedule && lastEpoch < epoch) {
-      PythonInterpreter.exec(lrStepCode)
+    } else {
+      updateHyperParameter()
     }
     PythonInterpreter.set(gradientName, new NDArray[Array[Float]](
       dfdx.toTensor[Float].storage().array()))
@@ -135,9 +145,15 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
     optimType match {
       case Optim =>
         PythonInterpreter.getValue[Double](s"${name}.defaults['lr']")
-      case lrSchedule =>
+      case LrScheduler =>
         // TODO: multi LR support.
         PythonInterpreter.getValue[Double](s"${name}.get_last_lr()[0]")
+      case Plateau =>
+        if (PythonInterpreter.getValue[Boolean](s"hasattr(${name}, '_last_lr')")) {
+          PythonInterpreter.getValue[Double](s"${name}._last_lr[0]")
+        } else {
+          PythonInterpreter.getValue[Double](s"${name}.optimizer.defaults['lr']")
+        }
       case _ =>
         throw new IllegalArgumentException()
     }
@@ -148,14 +164,29 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateHyperParameter(): Unit = {
-    if (optimType == LrSchedule) {
+    if (optimType == LrScheduler || optimType == Plateau) {
       val epoch = getEpoch(this)
-      PythonInterpreter.exec(s"${name}.step(${epoch})")
+      decayType match {
+        case TorchOptim.EpochDecay =>
+          if (lastEpoch < epoch) {
+            PythonInterpreter.exec(s"${name}.step()")
+            lastEpoch += 1
+          }
+        case TorchOptim.IterationDecay =>
+          PythonInterpreter.exec(s"${name}.step()")
+        case TorchOptim.EpochDecayByScore =>
+          if (lastEpoch < epoch) {
+            val valScore = getScore(this)
+            PythonInterpreter.set("val_score", java.lang.Float.valueOf(valScore))
+            PythonInterpreter.exec(s"${name}.step(val_score)")
+            lastEpoch += 1
+          }
+      }
     }
   }
 
   override def getHyperParameter(): String = {
-    if (optimType == LrSchedule) {
+    if (optimType == LrScheduler) {
       s"Current learning rate is ${getLearningRate()}. "
     } else {
       ""
@@ -166,16 +197,53 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
 
 object TorchOptim{
   sealed trait OptimType
-
-  case object LrSchedule extends OptimType
+  case object LrScheduler extends OptimType
   case object Optim extends OptimType
+  case object Plateau extends OptimType
 
-  def apply[T: ClassTag](optimBytes: Array[Byte])(implicit ev: TensorNumeric[T]): TorchOptim[T] = {
-    new TorchOptim[T](optimBytes)
+  sealed trait DecayType
+  case object EpochDecay extends DecayType
+  case object IterationDecay extends DecayType
+  case object EpochDecayByScore extends DecayType
+  // TODO: Support this later.
+//  case object IterationDecayByEpoch extends DecayType
+
+  def getDecayType(decayType: String): DecayType = {
+    decayType.toLowerCase() match {
+      case "epochdecay" =>
+        EpochDecay
+      case "iterationdecay" =>
+        IterationDecay
+      case "epochdecaybyscore" =>
+        EpochDecayByScore
+//      case "iterationdecaybyepoch" =>
+//        IterationDecayByEpoch
+      case _ =>
+        throw new IllegalArgumentException(s"unknow decay type: ${decayType}, expected:" +
+          s"EpochDecay, IterationDecay, EpochDecayByScore")
+    }
+
+  }
+
+  def apply[T: ClassTag](
+        optimBytes: Array[Byte],
+        decayType: String)(implicit ev: TensorNumeric[T]): TorchOptim[T] = {
+    apply[T](optimBytes, getDecayType(decayType))
+  }
+
+  def apply[T: ClassTag](
+        optimBytes: Array[Byte],
+        decayType: DecayType)(implicit ev: TensorNumeric[T]): TorchOptim[T] = {
+    new TorchOptim[T](optimBytes, decayType)
   }
 
   protected[net] def getEpoch[T: ClassTag](optim: TorchOptim[T]): Int = {
     // BigDL's epoch starts from 1, while torch starts from 0.
     InternalOptimizerUtil.getStateFromOptiMethod(optim)[Int]("epoch") - 1
+  }
+
+  protected[net] def getScore[T: ClassTag](optim: TorchOptim[T]): Float = {
+    // BigDL's epoch starts from 1, while torch starts from 0.
+    InternalOptimizerUtil.getStateFromOptiMethod(optim)[Float]("score")
   }
 }
