@@ -17,7 +17,9 @@ from unittest import TestCase
 
 import numpy as np
 import tensorflow as tf
+from zoo.orca.data import XShards
 
+import zoo.orca.data.pandas
 from zoo.orca.learn.tf2 import Estimator
 from zoo.ray import RayContext
 
@@ -292,3 +294,49 @@ class TestTFRayEstimator(TestCase):
         else:
             # skip tests in horovod lower version
             pass
+
+    def test_sparkxshards(self):
+
+        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
+                                              "y": np.random.randint(0, 1, size=(100))})
+
+        config = {
+            "batch_size": 4,
+            "lr": 0.8
+        }
+        trainer = Estimator(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(train_data_shard, epochs=1)
+        trainer.evaluate(train_data_shard)
+
+    def test_sparkxshards_with_inbalanced_data(self):
+
+        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
+                                              "y": np.random.randint(0, 1, size=(100))})
+
+        def random_pad(data):
+            import numpy as np
+            import random
+            times = random.randint(1, 10)
+            data["x"] = np.concatenate([data["x"]] * times)
+            data["y"] = np.concatenate([data["y"]] * times)
+            return data
+
+        train_data_shard = train_data_shard.transform_shard(random_pad)
+
+        config = {
+            "batch_size": 4,
+            "lr": 0.8
+        }
+        trainer = Estimator(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(train_data_shard, epochs=1)
+        trainer.evaluate(train_data_shard)

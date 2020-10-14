@@ -167,6 +167,9 @@ class RayPartition(object):
         self.client = plasma.connect(self.object_store_address, num_retries=5)
         return self.client.get(self.object_id)
 
+    def __reduce__(self):
+        return (self.__class__, (self.object_id, self.node_ip, self.object_store_address))
+
     def __del__(self):
         if self.object_store_address:
             import logging
