@@ -781,6 +781,10 @@ class TestNNClassifer():
             raise ValueError("we do not find this error, test failed")
 
     def test_XGBClassifierModel_predict(self):
+        from sys import platform
+        if platform in ("darwin", "win32"):
+            return
+
         resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
         path = os.path.join(resource_path, "xgbclassifier/")
         modelPath = path + "XGBClassifer.bin"
