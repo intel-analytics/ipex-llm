@@ -23,29 +23,18 @@ __Ubuntu 16.04 or later__ and __macOS 10.12.6 or later__.
 ```python
 from zoo.zouwu.model.forecast.tcmf_forecaster import TCMFForecaster
 model = TCMFForecaster(
-        vbsize=128,
-        hbsize=256,
-        num_channels_X=[32, 32, 32, 32, 32, 1],
-        num_channels_Y=[16, 16, 16, 16, 16, 1],
-        kernel_size=7,
+         vbsize=128,
+         hbsize=256,
+         num_channels_X=[32, 32, 32, 32, 32, 1],
+         num_channels_Y=[16, 16, 16, 16, 16, 1],
+         kernel_size=7,
          dropout=0.1,
          rank=64,
          kernel_size_Y=7,
          learning_rate=0.0005,
-         val_len=24,
          normalize=False,
-         start_date="2020-4-1",
-         freq="1H",
-         covariates=None,
          use_time=True,
-         dti=None,
-         svd=True,
-         period=24,
-         y_iters=10,
-         init_FX_epoch=100,
-         max_FX_epoch=300,
-         max_TCN_epoch=300,
-         alt_iters=10)
+         svd=True,)
 ```
 * `vbsize`: int, default is 128.
             Vertical batch size, which is the number of cells per batch.
@@ -64,16 +53,39 @@ model = TCMFForecaster(
 * `kernel_size_Y`: int, default is 7.
             Kernel size of hybrid model
 * `learning_rate`:  float, default is 0.0005
-* `val_len`:int, default is 24.
-            Validation length. We will use the last val_len time points as validation data.
 * `normalize`: boolean, false by default.
             Whether to normalize input data for training.
+* `use_time`: boolean, default is True.
+            Whether to use time coveriates.
+* `svd`: boolean, default is False.
+            Whether factor matrices are initialized by NMF
+
+### Use TCMFForecaster
+#### **Train model**
+After an TCMFForecaster is created, you can call forecaster API to train a tcmf model:
+```python
+model.fit(x,
+          val_len=24,
+          start_date="2020-4-1",
+          freq="1H",
+          covariates=None,
+          dti=None,
+          period=24,
+          y_iters=10,
+          init_FX_epoch=100,
+          max_FX_epoch=300,
+          max_TCN_epoch=300,
+          alt_iters=10,
+          num_workers=None)
+```
+* `x`: the input for fit. Only dict of ndarray and SparkXShards of dict of ndarray
+       are supported. Example: {'id': id_arr, 'y': data_ndarray}. If input is SparkXShards, each partition will use one model to fit.
+* `val_len`:int, default is 24.
+            Validation length. We will use the last val_len time points as validation data.
 * `start_date`: str or datetime-like.
             Start date time for the time-series. e.g. "2020-01-01"
 * `freq`: str or DateOffset, default is 'H'
             Frequency of data
-* `use_time`: boolean, default is True.
-            Whether to use time coveriates.
 * `covariates`: 2-D ndarray or None. The shape of ndarray should be (r, T), where r is
             the number of covariates and T is the number of time points.
             Global covariates for all time series. If None, only default time coveriates will be
@@ -81,8 +93,6 @@ model = TCMFForecaster(
             covariates and default time coveriates.
 * `dti`: DatetimeIndex or None.
             If None, use default fixed frequency DatetimeIndex generated with start_date and freq.
-* `svd`: boolean, default is False.
-            Whether factor matrices are initialized by NMF
 * `period`: int, default is 24.
             Periodicity of input time series, leave it out if not known
 * `y_iters`: int, default is 10.
@@ -95,31 +105,28 @@ model = TCMFForecaster(
             Max number of iterations while training the local model.
 * `alt_iters`: int, default is 10.
             Number of iterations while alternate training.
-
-### Use TCMFForecaster
-#### **Train model**
-After an TCMFForecaster is created, you can call forecaster API to train a tcmf model:
-```
-model.fit(x, 
-          num_workers=None)
-```
-* `x`: the input for fit. Only dict of ndarray and SparkXShards of dict of ndarray
-       are supported. Example: {'id': id_arr, 'y': data_ndarray}. If input is SparkXShards, each partition will use one model to fit.
-       
 * `num_workers`: the number of workers you want to use for fit. It is only effective while input x is dict of ndarray. If None, it defaults to
         num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
 
 #### **Get prediction results of model**
 After Training, you can call forecaster API to get the prediction result of tcmf model. `model.predict` will output the prediction results of future `horizon` steps after `x` in `fit`.
 ```
-model.predict(x=None,
-              horizon=24,
-              covariates=None,
+model.predict(horizon=24,
+              future_covariates=None,
+              future_dti=None,
               num_workers=None,
               )
 ```
-* `x`: the input. We don't support input x directly. This is just for consistence with the forecaster API.
-* `covariates`: the global covariates. Defaults to None.
+* `future_covariates`: covariates corresponding to future horizon steps data to predict.
+        2-D ndarray or None.
+        The shape of ndarray should be (r, horizon), where r is the number of covariates.
+        Global covariates for all time series. If None, only default time coveriates will be
+        used while use_time is True. If not, the time coveriates used is the stack of input
+        covariates and default time coveriates.
+* `future_dti`: dti corresponding to future horizon steps data to predict.
+        DatetimeIndex or None.
+        If None, use default fixed frequency DatetimeIndex generated with the last date of x in
+        fit and freq.
 * `num_workers`: the number of workers to use in predict. It is only effective while input `x` in `fit` is dict of ndarray. If None, it defaults to
         num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
 
@@ -127,28 +134,49 @@ model.predict(x=None,
 After Training, you can call forecaster API to evaluate the tcmf model. `model.evaluate` will output the evaluation results for future `horizon` steps after `x` in `fit`.
 ```
 model.evaluate(target_value,
-               x=None,
                metric=['mae'],
-               covariates=None,
+               target_covariates=None,
+               target_dti=None,
                num_workers=None,
                )
 ```
 * `target_value`: target value for evaluation. It should be of the same format as input x in fit, which is a dict of ndarray or SparkXShards of dict of ndarray.
                   We interpret the second dimension of y in target value as the horizon length for evaluation.
-* `covariates`: global covariates corresponding to target value. Defaults to None.
+* `metric`: the metrics. A list of metric names.
+* `target_covariates`: covariates corresponding to target_value.
+        2-D ndarray or None.
+        The shape of ndarray should be (r, horizon), where r is the number of covariates.
+        Global covariates for all time series. If None, only default time coveriates will be
+        used while use_time is True. If not, the time coveriates used is the stack of input
+        covariates and default time coveriates.
+* `target_dti`: dti corresponding to target_value.
+        DatetimeIndex or None.
+        If None, use default fixed frequency DatetimeIndex generated with the last date of x in
+        fit and freq.
 * `num_workers`: the number of workers to use in evaluate. It is only effective while input target value is dict of ndarray. If None, it defaults to
         num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
 
 #### **Incrementally fit the model with additional data**
 Incrementally fit the model. Note that we only incrementally fit X_seq (TCN in global model). We haven't enable fit_incremental for input SparkXshards yet.
 ```python
-model.fit_incremental(x_incr)
+model.fit_incremental(x_incr,
+                      covariates_incr=None,
+                      dti_incr=None
+                     )
 ```
 * `x_incr`: incremental data to be fitted. It should be of the same format as input x in fit, which is a dict of ndarray or SparkXShards of dict of ndarray.
 Example: {'id': id_arr, 'y': incr_ndarray}, and incr_ndarray is of shape (n, T_incr), where
 n is the number of target time series, T_incr is the number of time steps incremented. You
 can choose not to input 'id' in x_incr, but if you do, the elements of id in x_incr should
 be the same as id in x of fit.
+* `covariates_incr`: covariates corresponding to x_incr. 2-D ndarray or None.
+    The shape of ndarray should be (r, T_incr), where r is the number of covariates.
+    Global covariates for all time series. If None, only default time coveriates will be
+    used while use_time is True. If not, the time coveriates used is the stack of input
+    covariates and default time coveriates.
+* `dti_incr`: dti corresponding to the x_incr. DatetimeIndex or None.
+    If None, use default fixed frequency DatetimeIndex generated with the last date of x in
+    fit and freq.
 
 #### **Save model**
 You can save model after fit for future deployment.

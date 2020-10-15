@@ -73,43 +73,53 @@ model = TCMFForecaster(
         num_channels_X=[32, 32, 32, 32, 32, 1],
         num_channels_Y=[16, 16, 16, 16, 16, 1],
         kernel_size=7,
-         dropout=0.1,
-         rank=64,
-         kernel_size_Y=7,
-         learning_rate=0.0005,
-         val_len=24,
-         normalize=False,
-         start_date="2020-4-1",
-         freq="1H",
-         covariates=None,
-         use_time=True,
-         dti=None,
-         svd=True,
-         period=24,
-         y_iters=10,
-         init_FX_epoch=100,
-         max_FX_epoch=300,
-         max_TCN_epoch=300,
-         alt_iters=10)
+        dropout=0.1,
+        rank=64,
+        kernel_size_Y=7,
+        learning_rate=0.0005,
+        normalize=False,
+        use_time=True,
+        svd=True,)
 ```
 ### **Step 3: Use TCMFForecaster**
 
 #### **Fit with TCMFForecaster**
 
 ```
-model.fit(x, num_workers=num_workers_for_fit)
+model.fit(
+        x,
+        val_len=24,
+        start_date="2020-4-1",
+        freq="1H",
+        covariates=None,
+        dti=None,
+        period=24,
+        y_iters=10,
+        init_FX_epoch=100,
+        max_FX_epoch=300,
+        max_TCN_epoch=300,
+        alt_iters=10,
+        num_workers=num_workers_for_fit)
 ```
 
 #### **Evaluate with TCMFForecaster**
 You can either directly call `model.evaluate` as
 ```
-model.evaluate(target_value,metric=['mae'], num_workers=num_workers_for_predict)
+model.evaluate(target_value,
+               metric=['mae'],
+               target_covariates=None,
+               target_dti=None,
+               num_workers=num_workers_for_predict,
+               )
 ```
 
 Or you could predict first and then evaluate with metric name.
 
 ```
-yhat = model.predict(horizon, num_workers=num_workers_for_predict)
+yhat = model.predict(horizon,
+                     future_covariates=None,
+                     future_dti=None,
+                     num_workers=num_workers_for_predict)
 
 from zoo.automl.common.metrics import Evaluator
 evaluate_mse = Evaluator.evaluate("mse", target_data, yhat)
@@ -117,7 +127,7 @@ evaluate_mse = Evaluator.evaluate("mse", target_data, yhat)
 
 #### **Incremental fit TCMFForecaster**
 ```python
-model.fit_incremental(x_incr)
+model.fit_incremental(x_incr, covariates_incr=None, dti_incr=None)
 ```
 
 #### **Save and Load**
