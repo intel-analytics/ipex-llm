@@ -143,13 +143,15 @@ class TFRunner:
 
     def step(self, data_creator, epochs=1, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
-             steps_per_epoch=None, validation_steps=None, validation_freq=1):
+             steps_per_epoch=None, validation_steps=None, validation_freq=1,
+             data_config=None):
         """Runs a training epoch and updates the model parameters."""
-
+        config = self.config.copy()
+        if data_config is not None:
+            config.update(data_config)
         # process datasets
         if self.backend == "horovod":
             import horovod.tensorflow.keras as hvd
-            config = self.config.copy()
             assert "batch_size" in config, "batch_size must be set in config"
             config["batch_size"] = config["batch_size"] // hvd.size()
             train_dataset = data_creator(config)
@@ -163,15 +165,15 @@ class TFRunner:
                 test_dataset = auto_shard_dataset(test_dataset, hvd.size(), hvd.rank())
         elif self.backend == "tf-distributed":
             with self.strategy.scope():
-                train_dataset = data_creator(self.config)
+                train_dataset = data_creator(config)
                 if validation_data_creator is not None:
-                    test_dataset = validation_data_creator(self.config)
+                    test_dataset = validation_data_creator(config)
                 else:
                     test_dataset = None
         else:
-            train_dataset = data_creator(self.config)
+            train_dataset = data_creator(config)
             if validation_data_creator is not None:
-                test_dataset = validation_data_creator(self.config)
+                test_dataset = validation_data_creator(config)
             else:
                 test_dataset = None
 
@@ -210,12 +212,14 @@ class TFRunner:
         return stats
 
     def validate(self, data_creator, verbose=1, sample_weight=None,
-                 steps=None, callbacks=None):
+                 steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
-
+        config = self.config.copy()
+        if data_config is not None:
+            config.update(data_config)
         if self.backend == "horovod":
             import horovod.tensorflow.keras as hvd
-            config = self.config.copy()
+
             assert "batch_size" in config, "batch_size must be set in config"
             config["batch_size"] = config["batch_size"] // hvd.size()
             dataset = data_creator(config)
@@ -224,9 +228,9 @@ class TFRunner:
 
         elif self.backend == "tf-distributed":
             with self.strategy.scope():
-                dataset = data_creator(self.config)
+                dataset = data_creator(config)
         else:
-            dataset = data_creator(self.config)
+            dataset = data_creator(config)
 
         if self.backend == "horovod":
             import horovod.tensorflow.keras as hvd

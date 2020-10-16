@@ -33,6 +33,7 @@ def ray_partition_to_creator(partition, max_length=None, shuffle=False):
         return None
 
     def data_creator(config):
+        assert "batch_size" in config, "batch_size must be set in config"
         import tensorflow as tf
         data, label = ray_partition_get_data_label(partition.get_data(),
                                                    allow_tuple=True,
@@ -69,7 +70,7 @@ class Estimator:
                  compile_args_creator=None,
                  config=None,
                  verbose=False,
-                 backend="tf",
+                 backend="tf2",
                  workers_per_node=1):
         """Sets up the TensorFlow trainer.
 
@@ -112,7 +113,7 @@ class Estimator:
             "verbose": self.verbose,
         }
 
-        if backend == "tf":
+        if backend == "tf2":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
 
@@ -144,7 +145,7 @@ class Estimator:
                 worker.setup_horovod.remote()
                 for i, worker in enumerate(self.remote_workers)])
         else:
-            raise Exception("Only \"tf\" and \"horovod\" are legal "
+            raise Exception("Only \"tf2\" and \"horovod\" are legal "
                             "value of backend, but got {}".format(backend))
 
         self.num_workers = len(self.remote_workers)
@@ -155,14 +156,15 @@ class Estimator:
                    verbose=False,
                    workers_per_node=1,
                    compile_args_creator=None,
-                   backend="tf"):
+                   backend="tf2"):
         return cls(model_creator, config=config,
                    verbose=verbose, workers_per_node=workers_per_node,
                    backend=backend, compile_args_creator=compile_args_creator)
 
     def fit(self, data_creator, epochs=1, verbose=1,
             callbacks=None, validation_data_creator=None, class_weight=None,
-            steps_per_epoch=None, validation_steps=None, validation_freq=1):
+            steps_per_epoch=None, validation_steps=None, validation_freq=1,
+            data_config=None):
         """Runs a training epoch."""
         params = dict(
             epochs=epochs,
@@ -172,6 +174,7 @@ class Estimator:
             steps_per_epoch=steps_per_epoch,
             validation_steps=validation_steps,
             validation_freq=validation_freq,
+            data_config=data_config
         )
 
         from zoo.orca.data import SparkXShards
@@ -223,14 +226,15 @@ class Estimator:
         return stats
 
     def evaluate(self, data_creator, verbose=1, sample_weight=None,
-                 steps=None, callbacks=None):
+                 steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
         logger.info("Starting validation step.")
         params = dict(
             verbose=verbose,
             sample_weight=sample_weight,
             steps=steps,
-            callbacks=callbacks
+            callbacks=callbacks,
+            data_config=data_config,
         )
         from zoo.orca.data import SparkXShards
         if isinstance(data_creator, SparkXShards):
