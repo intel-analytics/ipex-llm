@@ -59,7 +59,7 @@ class Estimator(object):
                    use_tqdm=False,
                    workers_per_node=1,
                    model_dir=None,
-                   backend="horovod"):
+                   backend="bigdl"):
         if backend == "horovod":
             return PyTorchHorovodEstimatorWrapper(model_creator=model,
                                                   optimizer_creator=optimizer,
@@ -253,7 +253,7 @@ class PytorchSparkEstimatorWrapper(Estimator):
     def save(self, checkpoint):
         pass
 
-    def load(self, checkpoint, loss=None, model_dir=None):
+    def load(self, checkpoint, loss=None):
         from zoo.orca.learn.utils import find_latest_checkpoint
         from bigdl.nn.layer import Model
         from bigdl.optim.optimizer import OptimMethod
