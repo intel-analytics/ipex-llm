@@ -22,7 +22,6 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.zoo.serving.engine.ModelHolder
 
 import scala.collection.JavaConverters._
 
