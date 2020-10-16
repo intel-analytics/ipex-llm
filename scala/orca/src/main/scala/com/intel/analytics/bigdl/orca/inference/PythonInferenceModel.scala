@@ -81,12 +81,13 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
       model: InferenceModel,
       modelPath: String,
       modelType: String,
-      inputs: Array[String],
-      outputs: Array[String],
+      inputs: JList[String],
+      outputs: JList[String],
       intraOpParallelismThreads: Int,
       interOpParallelismThreads: Int,
       usePerSessionThreads: Boolean): Unit = {
-    model.doLoadTensorflow(modelPath, modelType, inputs, outputs, intraOpParallelismThreads,
+    model.doLoadTensorflow(modelPath, modelType, Option(inputs).map(_.asScala.toArray).orNull,
+      Option(outputs).map(_.asScala.toArray).orNull, intraOpParallelismThreads,
       interOpParallelismThreads, usePerSessionThreads)
   }
 
