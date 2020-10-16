@@ -16,12 +16,14 @@
 from unittest import TestCase
 
 import numpy as np
+import pytest
 import tensorflow as tf
 from zoo.orca.data import XShards
 
 import zoo.orca.data.pandas
 from zoo.orca.learn.tf2 import Estimator
 from zoo.ray import RayContext
+import ray
 
 NUM_TRAIN_SAMPLES = 1000
 NUM_TEST_SAMPLES = 400
@@ -207,7 +209,7 @@ class TestTFRayEstimator(TestCase):
         assert dloss < 0 and dmse < 0, "training sanity check failed. loss increased!"
 
     def test_fit_and_evaluate_tf(self):
-        self.impl_test_fit_and_evaluate(backend="tf")
+        self.impl_test_fit_and_evaluate(backend="tf2")
 
     def test_fit_and_evaluate_horovod(self):
         self.impl_test_fit_and_evaluate(backend="horovod")
@@ -227,7 +229,7 @@ class TestTFRayEstimator(TestCase):
             model_creator=auto_shard_model_creator,
             verbose=True,
             config={"batch_size": 4},
-            backend="tf", workers_per_node=2)
+            backend="tf2", workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, steps_per_epoch=2)
         assert stats["train_loss"] == 0.0
 
@@ -340,3 +342,47 @@ class TestTFRayEstimator(TestCase):
 
         trainer.fit(train_data_shard, epochs=1)
         trainer.evaluate(train_data_shard)
+
+    def test_require_batch_size(self):
+        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
+                                              "y": np.random.randint(0, 1, size=(100,))})
+        config = {
+            "lr": 0.8
+        }
+        trainer = Estimator(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+        with pytest.raises(ray.exceptions.RayTaskError,
+                           match=r".*batch_size must be set in config*."):
+            trainer.fit(train_data_shard, epochs=1)
+
+    def test_changing_config_during_fit(self):
+        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
+                                              "y": np.random.randint(0, 1, size=(100,))})
+        config = {
+            "lr": 0.8
+        }
+        trainer = Estimator(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(train_data_shard, epochs=1, data_config={"batch_size": 8})
+
+    def test_changing_config_during_evaluate(self):
+        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
+                                              "y": np.random.randint(0, 1, size=(100,))})
+
+        config = {
+            "lr": 0.8
+        }
+        trainer = Estimator(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.evaluate(train_data_shard, data_config={"batch_size": 8})
