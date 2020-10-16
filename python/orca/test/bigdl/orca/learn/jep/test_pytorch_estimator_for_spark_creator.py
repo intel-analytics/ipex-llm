@@ -61,7 +61,7 @@ class TestEstimatorForSparkCreator(TestCase):
         model = SimpleModel()
 
         estimator = Estimator.from_torch(model=model, loss=nn.BCELoss(),
-                                         optimizer=Adam(), backend="bigdl")
+                                         optimizer=Adam())
 
         def get_dataloader():
             inputs = torch.Tensor([[1, 2], [1, 3], [3, 2], [5, 6], [8, 9], [1, 9]])
