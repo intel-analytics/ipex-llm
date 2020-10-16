@@ -87,7 +87,7 @@ def train_example(workers_per_node):
             "lr": 1e-2,  # used in optimizer_creator
             "hidden_size": 1,  # used in model_creator
             "batch_size": 4,  # used in data_creator
-        })
+        }, backend="horovod")
 
     # train 5 epochs
     stats = estimator.fit(train_data_creator, epochs=5)
