@@ -16,6 +16,7 @@
 import argparse
 
 import tensorflow as tf
+import tensorflow_datasets as tfds
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.orca import init_orca_context, stop_orca_context
 
@@ -38,20 +39,18 @@ def lenet(images):
         return logits
 
 
-def preprocess(x, y):
-    return tf.to_float(tf.reshape(x, (28, 28, 1))) / 255.0, y
+def preprocess(data):
+    data['image'] = tf.cast(data["image"], tf.float32) / 255.
+    return data['image'], data['label']
 
 
-def main(max_epoch):
+def main(max_epoch, dataset_dir):
 
-    (train_feature, train_label), (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
+    mnist_train = tfds.load(name="mnist", split="train", data_dir=dataset_dir)
+    mnist_test = tfds.load(name="mnist", split="test", data_dir=dataset_dir)
 
-    # tf.data.Dataset.from_tensor_slices is for demo only. For production use, please use
-    # file-based approach (e.g. tfrecord).
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
-    train_dataset = train_dataset.map(preprocess)
-    val_dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
-    val_dataset = val_dataset.map(preprocess)
+    mnist_train = mnist_train.map(preprocess)
+    mnist_test = mnist_test.map(preprocess)
 
     # tensorflow inputs
     images = tf.placeholder(dtype=tf.float32, shape=(None, 28, 28, 1))
@@ -71,12 +70,15 @@ def main(max_epoch):
                                loss=loss,
                                optimizer=tf.train.AdamOptimizer(),
                                metrics={"acc": acc})
-    est.fit(data=train_dataset,
+    est.fit(data=mnist_train,
             batch_size=320,
             epochs=max_epoch,
-            validation_data=val_dataset)
+            validation_data=mnist_test,
+            # tfds mnist only has one file and cannot be sharded on files,
+            # falling back on sharding on records.
+            auto_shard_files=False)
 
-    result = est.evaluate(val_dataset)
+    result = est.evaluate(mnist_test, auto_shard_files=False)
     print(result)
 
     est.save_tf_checkpoint("/tmp/lenet/model")
@@ -90,7 +92,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.cluster_mode == "local":
         init_orca_context(cluster_mode="local", cores=4)
+        dataset_dir = "~/tensorflow_datasets"
     elif args.cluster_mode == "yarn":
         init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="6g")
-    main(5)
-    stop_orca_context()
+        dataset_dir = "hdfs:///tensorflow_datasets"
+    else:
+        raise ValueError("This example only support local or yarn mode")
+
+    main(5, dataset_dir)

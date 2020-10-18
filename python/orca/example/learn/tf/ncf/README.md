@@ -22,25 +22,10 @@ Note: conda environment is required to run on Yarn, but not strictly necessary f
 ## Run examples on local
 
 ```bash
-python lenet_mnist_graph.py --cluster_mode local 
-```
-
-```bash
-python lenet_mnist_keras.py --cluster_mode local
-```
-
-```bash
 python ncf.py --cluster_mode local
 ```
 
 ## Run examples on yarn cluster
-```bash
-python lenet_mnist_graph.py --cluster_mode yarn
-```
-
-```bash
-python lenet_mnist_keras.py --cluster_mode yarn
-```
 
 ```bash
 python ncf.py --cluster_mode yarn
