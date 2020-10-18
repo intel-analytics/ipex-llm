@@ -20,10 +20,8 @@ import re
 import shutil
 import tensorflow as tf
 import numpy as np
-from pyspark.sql.dataframe import DataFrame
 
 from zoo.orca.data import SparkXShards
-from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 from zoo.tfpark.tf_dataset import TFDataset
 from zoo.orca.data.utils import get_spec, flatten_xy
 from zoo.common.utils import put_local_file_to_remote, get_remote_file_to_local, get_file_list,\
@@ -60,66 +58,6 @@ def xshards_to_tf_dataset(data_shard,
                                  hard_code_batch_size=hard_code_batch_size,
                                  sequential_order=sequential_order,
                                  shuffle=shuffle)
-
-    return dataset
-
-
-def is_tf_data_dataset(data):
-    is_dataset = isinstance(data, tf.data.Dataset)
-    is_dataset_v2 = isinstance(data, tf.python.data.ops.dataset_ops.DatasetV2)
-    return is_dataset or is_dataset_v2
-
-
-def to_dataset(data, batch_size, batch_per_thread, validation_data,
-               feature_cols, labels_cols, hard_code_batch_size,
-               sequential_order, shuffle, auto_shard_files):
-    # todo wrap argument into kwargs
-    if validation_data:
-        if isinstance(data, SparkXShards):
-            assert isinstance(validation_data, SparkXShards), \
-                "train data and validation data should be both SparkXShards"
-        if isinstance(data, Dataset):
-            assert isinstance(validation_data, Dataset), \
-                "train data and validation data should be both orca.data.tf.Dataset"
-        if isinstance(data, DataFrame):
-            assert isinstance(validation_data, DataFrame), \
-                "train data and validation data should be both Spark DataFrame"
-        if isinstance(data, tf.data.Dataset):
-            assert isinstance(validation_data, tf.data.Dataset), \
-                "train data and validation data should be both tf.data.Dataset"
-
-    if isinstance(data, SparkXShards):
-        dataset = xshards_to_tf_dataset(data,
-                                        batch_size,
-                                        batch_per_thread,
-                                        validation_data,
-                                        hard_code_batch_size=hard_code_batch_size,
-                                        sequential_order=sequential_order,
-                                        shuffle=shuffle)
-    elif isinstance(data, Dataset):
-        dataset = TFDataDataset2(data, batch_size=batch_size,
-                                 batch_per_thread=batch_per_thread,
-                                 validation_dataset=validation_data)
-    elif isinstance(data, DataFrame):
-        dataset = TFDataset.from_dataframe(data, feature_cols, labels_cols,
-                                           batch_size,
-                                           batch_per_thread,
-                                           hard_code_batch_size,
-                                           validation_data,
-                                           sequential_order,
-                                           shuffle
-                                           )
-    elif is_tf_data_dataset(data):
-        dataset = TFDataset.from_tf_data_dataset(data,
-                                                 batch_size,
-                                                 batch_per_thread,
-                                                 hard_code_batch_size,
-                                                 validation_data,
-                                                 sequential_order,
-                                                 shuffle, auto_shard_files=auto_shard_files)
-    else:
-        raise ValueError("data must be SparkXShards or orca.data.tf.Dataset or "
-                         "Spark DataFrame or tf.data.Dataset")
 
     return dataset
 
