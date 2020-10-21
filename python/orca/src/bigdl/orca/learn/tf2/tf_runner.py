@@ -119,6 +119,9 @@ class TFRunner:
             }
         }
         os.environ["TF_CONFIG"] = json.dumps(tf_config)
+        no_proxy = os.environ.get("no_proxy", "")
+        ips = [url.split(":")[0] for url in urls]
+        os.environ["no_proxy"] = ",".join(ips) + "," + no_proxy
 
         MultiWorkerMirroredStrategy = _try_import_strategy()
 
