@@ -122,5 +122,5 @@ class HorovodRayRunner:
         ray.get([worker.set_gloo_iface.remote() for worker in self.remote_workers])
 
     def run(self, func):
-        ray.wait([self.remote_workers[i].run.remote(self.per_worker_envs[i], func)
-                  for i in range(self.num_nodes)])
+        ray.get([self.remote_workers[i].run.remote(self.per_worker_envs[i], func)
+                 for i in range(self.num_nodes)])

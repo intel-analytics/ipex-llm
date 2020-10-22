@@ -40,7 +40,8 @@ import os
 import tempfile
 import torch
 import torch.nn as nn
-
+from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 import ray
 from zoo.orca import OrcaContext
 from zoo.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
@@ -86,6 +87,10 @@ class TorchRunner:
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
 
+        self.backend = "torch-local"
+        self.rank = 0
+        self.size = 0
+
     def _create_loss(self):
         if not self.loss_creator:
             return
@@ -106,6 +111,32 @@ class TorchRunner:
         if not isinstance(self.schedulers, Iterable):
             self.schedulers = [self.schedulers]
 
+    def setup(self, cores_per_node):
+        import torch
+        torch.set_num_threads(cores_per_node)
+
+    def setup_horovod(self):
+        import horovod.torch as hvd
+        hvd.init()
+        self.backend = "horovod"
+        self.rank = hvd.rank()
+        self.size = hvd.size()
+        self.setup_components_horovod()
+        self.setup_operator()
+
+    def setup_torch_distribute(self, url, world_rank, world_size):
+        import torch.distributed as dist
+        dist.init_process_group(
+            backend="gloo",
+            init_method=url,
+            rank=world_rank,
+            world_size=world_size)
+        self.backend = "torch-distributed"
+        self.rank = world_rank
+        self.size = world_size
+        self.setup_components()
+        self.setup_operator()
+
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
 
@@ -125,18 +156,46 @@ class TorchRunner:
         self._create_schedulers_if_available()
         self._create_loss()
 
+    def setup_components_horovod(self):
+        import horovod.torch as hvd
+
+        logger.debug("Creating model")
+        self.models = self.model_creator(self.config)
+        if not isinstance(self.models, Iterable):
+            self.models = [self.models]
+        else:
+            raise ValueError("only support single model for now")
+
+        assert all(isinstance(model, nn.Module) for model in self.models), (
+            "All models must be PyTorch models: {}.".format(self.models))
+
+        logger.debug("Creating optimizer.")
+        self.optimizers = self.optimizer_creator(self.given_models,
+                                                 self.config)
+        if not isinstance(self.optimizers, Iterable):
+            hvd.broadcast_parameters(self.models[0].state_dict(), root_rank=0)
+            hvd.broadcast_optimizer_state(self.optimizers, root_rank=0)
+            parameters = self.models[0].named_parameters()
+            self.optimizers = hvd.DistributedOptimizer(self.optimizers,
+                                                       named_parameters=parameters)
+            self.optimizers = [self.optimizers]
+        else:
+            raise ValueError("only support one optimizer for now")
+
+        self._create_schedulers_if_available()
+        self._create_loss()
+
     def setup_operator(self):
         """Create the training operator."""
-        self.training_operator = self.training_operator_cls(
-            self.config,
-            models=self.models,
-            optimizers=self.optimizers,
-            criterion=self.criterion,
-            train_loader=self.train_loader,
-            validation_loader=self.validation_loader,
-            world_rank=0,
-            schedulers=self.schedulers,
-            use_tqdm=self.use_tqdm)
+        self.training_operator =\
+            self.training_operator_cls(
+                self.config,
+                models=self.models,
+                optimizers=self.optimizers,
+                criterion=self.criterion,
+                world_rank=self.rank,
+                schedulers=self.schedulers,
+                use_tqdm=self.use_tqdm)
 
     def get_node_ip(self):
         """Returns the IP address of the current node."""
@@ -147,13 +206,32 @@ class TorchRunner:
         return utils.find_free_port()
 
     def with_sampler(self, loader):
-        raise NotImplementedError("Please implement with_sampler in the subclass of TorchRunner")
+        data_loader_args = {
+            "dataset": loader.dataset,
+            "batch_size": loader.batch_size,
+            "shuffle": False,
+            "num_workers": loader.num_workers,
+            "collate_fn": loader.collate_fn,
+            "pin_memory": loader.pin_memory,
+            "drop_last": loader.drop_last,
+            "timeout": loader.timeout,
+            "worker_init_fn": loader.worker_init_fn,
+            "sampler": DistributedSampler(loader.dataset,
+                                          num_replicas=self.size,
+                                          rank=self.rank)
+        }
+        return DataLoader(**data_loader_args)
 
     @staticmethod
     def should_wrap_dataloader(loader):
-        from torch.utils.data import DataLoader, IterableDataset
+        from torch.utils.data import DataLoader
+        try:
+            from torch.utils.data import IterableDataset
+            not_iterable = not isinstance(loader.dataset, IterableDataset)
+        except Exception as e:
+            not_iterable = TorchRunner
         return (isinstance(loader, DataLoader)
-                and not isinstance(loader.dataset, IterableDataset))
+                and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, profile=False, info=None):
         if OrcaContext.serialize_data_creation:
@@ -176,6 +254,9 @@ class TorchRunner:
                     profile=False,
                     info=None):
         """Runs a training epoch and updates the model parameters."""
+        if hasattr(self.train_loader, "sampler") and hasattr(
+                self.train_loader.sampler, "set_epoch"):
+            self.train_loader.sampler.set_epoch(self.epochs)
         logger.debug("Begin Training Step {}".format(self.epochs + 1))
         info = info or {}
         self._toggle_profiling(profile=profile)
@@ -253,7 +334,7 @@ class TorchRunner:
                 scheduler.load_state_dict(state_dict)
 
         self.epochs = state["epoch"]
-        self.training_operator.load_state_dict(state_dict)
+        self.training_operator.load_state_dict(state["operator"])
 
     def state_stream(self):
         """Returns a bytes object for the state dict."""
@@ -282,8 +363,6 @@ class TorchRunner:
         del self.criterion
         del self.optimizers
         del self.models
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
 
     @property
     def given_models(self):
