@@ -20,7 +20,7 @@ import pytest
 
 import torch
 import torch.nn as nn
-from zoo.orca.learn.pytorch.pytorch_trainer import PyTorchTrainer
+from zoo.orca.learn.pytorch import Estimator
 
 np.random.seed(1337)  # for reproducibility
 
@@ -40,17 +40,21 @@ class LinearDataset(torch.utils.data.Dataset):
         return len(self.x)
 
 
-def get_data_loaders(config):
+def train_data_loader(config):
     train_dataset = LinearDataset(2, 5, size=config.get("data_size", 1000))
-    val_dataset = LinearDataset(2, 5, size=config.get("val_size", 400))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.get("batch_size", 32),
     )
+    return train_loader
+
+
+def val_data_loader(config):
+    val_dataset = LinearDataset(2, 5, size=config.get("val_size", 400))
     validation_loader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=config.get("batch_size", 32))
-    return train_loader, validation_loader
+    return validation_loader
 
 
 def get_model(config):
@@ -63,16 +67,19 @@ def get_optimizer(model, config):
 
 class TestPyTorchTrainer(TestCase):
     def test_linear(self):
-        trainer = PyTorchTrainer(model_creator=get_model,
-                                 data_creator=get_data_loaders,
-                                 optimizer_creator=get_optimizer,
-                                 loss_creator=nn.MSELoss,
-                                 config={"lr": 1e-2, "hidden_size": 1,
-                                         "batch_size": 128})
-        stats = trainer.train(nb_epoch=2)
-        print(stats)
-        assert trainer.get_model()
-        trainer.shutdown()
+        estimator = Estimator.from_torch(model=get_model,
+                                         optimizer=get_optimizer,
+                                         loss=nn.MSELoss,
+                                         config={"lr": 1e-2, "hidden_size": 1,
+                                                 "batch_size": 128},
+                                         backend="pytorch")
+        train_stats = estimator.fit(train_data_loader, epochs=2)
+        print(train_stats)
+        # it seems validate on regression model is not supported
+        # val_stats = estimator.evaluate(val_data_loader)
+        # print(val_stats)
+        assert estimator.get_model()
+        estimator.shutdown()
 
 
 if __name__ == "__main__":

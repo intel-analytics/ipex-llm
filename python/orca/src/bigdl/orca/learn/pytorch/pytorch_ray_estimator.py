@@ -22,100 +22,13 @@ import numpy as np
 import numbers
 import io
 
+from zoo.orca.learn.pytorch import utils
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.pytorch.torch_runner import TorchRunner
-from torch.utils.data import DataLoader
-from torch.utils.data.distributed import DistributedSampler
-from zoo.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner, HorovodWorker
 from zoo.ray import RayContext
 import ray
 
 logger = logging.getLogger(__name__)
-
-
-class TorchWorker(HorovodWorker, TorchRunner):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def setup_components(self):
-        import horovod.torch as hvd
-
-        logger.debug("Creating model")
-        self.models = self.model_creator(self.config)
-        if not isinstance(self.models, collections.Iterable):
-            self.models = [self.models]
-        else:
-            raise ValueError("only support single model for now")
-
-        assert all(isinstance(model, nn.Module) for model in self.models), (
-            "All models must be PyTorch models: {}.".format(self.models))
-
-        logger.debug("Creating optimizer.")
-        self.optimizers = self.optimizer_creator(self.given_models,
-                                                 self.config)
-        if not isinstance(self.optimizers, collections.Iterable):
-            hvd.broadcast_parameters(self.models[0].state_dict(), root_rank=0)
-            hvd.broadcast_optimizer_state(self.optimizers, root_rank=0)
-            parameters = self.models[0].named_parameters()
-            self.optimizers = hvd.DistributedOptimizer(self.optimizers,
-                                                       named_parameters=parameters)
-            self.optimizers = [self.optimizers]
-        else:
-            raise ValueError("only support one optimizer for now")
-
-        self._create_schedulers_if_available()
-        self._create_loss()
-
-    def with_sampler(self, loader):
-        import horovod.torch as hvd
-        # Automatically set the DistributedSampler
-        data_loader_args = {
-            "dataset": loader.dataset,
-            "batch_size": loader.batch_size,
-            "shuffle": False,
-            "num_workers": loader.num_workers,
-            "collate_fn": loader.collate_fn,
-            "pin_memory": loader.pin_memory,
-            "drop_last": loader.drop_last,
-            "timeout": loader.timeout,
-            "worker_init_fn": loader.worker_init_fn,
-            "sampler": DistributedSampler(loader.dataset,
-                                          num_replicas=hvd.size(),
-                                          rank=hvd.rank())
-        }
-        return DataLoader(**data_loader_args)
-
-    def setup_ddp_and_operator(self):
-        """Runs distributed coordination components.
-
-        This helps avoid timeouts due to creator functions (perhaps
-        downloading data or models).
-        """
-        import horovod.torch as hvd
-
-        self.training_operator = self.training_operator_cls(
-            self.config,
-            models=self.models,
-            optimizers=self.optimizers,
-            criterion=self.criterion,
-            world_rank=hvd.rank(),
-            schedulers=self.schedulers,
-            use_tqdm=self.use_tqdm)
-
-    def load_state_stream(self, byte_obj):
-        """Loads a bytes object the training state dict.
-
-        This is needed because we don't want to deserialize the tensor
-        onto the same device (which is from the driver process). We want to
-        map it onto the actor's specific device.
-
-        From: github.com/pytorch/pytorch/issues/10622#issuecomment-474733769
-        """
-        _buffer = io.BytesIO(byte_obj)
-        state_dict = torch.load(
-            _buffer,
-            map_location="cpu")
-        return self.load_state_dict(state_dict)
 
 from ray.exceptions import RayActorError
 
@@ -138,7 +51,7 @@ def check_for_failure(remote_values):
     return False
 
 
-class PyTorchHorovodEstimator(HorovodRayRunner):
+class PyTorchRayEstimator:
     def __init__(
             self,
             *,
@@ -151,7 +64,11 @@ class PyTorchHorovodEstimator(HorovodRayRunner):
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
+            backend="pytorch",
             workers_per_node=1):
+
+        # todo remove ray_ctx to run on workers
+        ray_ctx = RayContext.get()
         if not (callable(model_creator) and callable(optimizer_creator)):
             raise ValueError(
                 "Must provide a callable model_creator and optimizer_creator")
@@ -170,10 +87,8 @@ class PyTorchHorovodEstimator(HorovodRayRunner):
 
         self.initialization_hook = initialization_hook
         self.config = {} if config is None else config
-
         worker_config = self.config.copy()
-
-        self.param = dict(
+        params = dict(
             model_creator=self.model_creator,
             optimizer_creator=self.optimizer_creator,
             loss_creator=self.loss_creator,
@@ -182,38 +97,48 @@ class PyTorchHorovodEstimator(HorovodRayRunner):
             scheduler_step_freq=self.scheduler_step_freq,
             use_tqdm=self.use_tqdm,
             config=worker_config)
-        super().__init__(RayContext.get(), worker_cls=TorchWorker,
-                         worker_param=self.param, workers_per_node=workers_per_node)
 
-        def setup_pytorch():
-            import torch
-            torch.set_num_threads(self.cores_per_node)
-            print("Worker initialized")
+        if backend == "pytorch":
+            cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
+            num_nodes = ray_ctx.num_ray_nodes * workers_per_node
+            RemoteRunner = ray.remote(num_cpus=1)(TorchRunner)
+            self.remote_workers = [
+                RemoteRunner.remote(**params) for i in range(num_nodes)
+            ]
+            ray.get([
+                worker.setup.remote(cores_per_node)
+                for i, worker in enumerate(self.remote_workers)
+            ])
 
-        self.run(setup_pytorch)
+            ip = ray.services.get_node_ip_address()
+            port = utils.find_free_port()
+            address = "tcp://{ip}:{port}".format(ip=ip, port=port)
 
-        def setup_horovod():
-            import horovod.torch as hvd
-            hvd.init()
-            print("Horovod initialized")
+            ray.get([
+                worker.setup_torch_distribute.remote(address, i, num_nodes)
+                for i, worker in enumerate(self.remote_workers)
+            ])
 
-        self.run(setup_horovod)
+        elif backend == "horovod":
+            from zoo.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
+            self.horovod_runner = HorovodRayRunner(ray_ctx,
+                                                   worker_cls=TorchRunner,
+                                                   worker_param=params,
+                                                   workers_per_node=workers_per_node)
+            self.remote_workers = self.horovod_runner.remote_workers
+            cores_per_node = self.horovod_runner.cores_per_node
+            ray.get([
+                worker.setup.remote(cores_per_node)
+                for i, worker in enumerate(self.remote_workers)
+            ])
 
-        # Runs the creator functions.
-        remote_component_setup = [
-            worker.setup_components.remote()
-            for i, worker in enumerate(self.remote_workers)
-        ]
-        # Get setup tasks in order to throw errors on failure
-        ray.get(remote_component_setup)
-
-        # Runs code that requires all creator functions to have run.
-        remote_operator_setups = [
-            worker.setup_ddp_and_operator.remote()
-            for worker in self.remote_workers
-        ]
-        # Get setup tasks in order to throw errors on failure
-        ray.get(remote_operator_setups)
+            ray.get([
+                worker.setup_horovod.remote()
+                for i, worker in enumerate(self.remote_workers)
+            ])
+        else:
+            raise Exception("Only \"pytorch\" and \"horovod\" are legal "
+                            "values of backend, but got {}".format(backend))
 
     def train(self,
               data_creator,
