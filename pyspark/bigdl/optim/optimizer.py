@@ -871,6 +871,7 @@ class Optimizer(BaseOptimizer):
                                       bigdl_type)
         self.value = self.pvalue.value
         self.bigdl_type = self.pvalue.bigdl_type
+        assert isinstance(training_rdd, RDD)
 
     @staticmethod
     def create(model,
