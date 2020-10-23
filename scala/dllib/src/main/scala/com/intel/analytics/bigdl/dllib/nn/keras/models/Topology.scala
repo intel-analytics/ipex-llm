@@ -1808,7 +1808,13 @@ object InternalDistriOptimizer {
           iter.next().localModels.head.asInstanceOf[TFTrainingHelperV2].moveWeightsOutOfTF()
           Iterator.single(1)
         }).reduce(_ + _)
-        val extraState = models.map(_.localModels.head.getExtraParameter()).first()
+
+        val extraParamLength = models.map(_.localModels.head.getExtraParameter().length).first()
+        val extraState = new Array[Tensor[T]](extraParamLength)
+        (0 until extraParamLength).foreach(i =>
+          extraState(i) = models.map(_.localModels.head.getExtraParameter()(i)).first()
+        )
+//        val extraState = models.map(_.localModels.head.getExtraParameter()).first()
         trainingModel.setExtraParameter(extraState)
 
         // make sure gradient is as the same length as weight
@@ -1819,7 +1825,6 @@ object InternalDistriOptimizer {
 
         val (parameter, gradientParameter) =
           InternalOptimizerUtil.getParametersFromModel(trainingModel)
-
 
         val (weights, gradients) = models.mapPartitions(iter => {
           val cached = iter.next()
