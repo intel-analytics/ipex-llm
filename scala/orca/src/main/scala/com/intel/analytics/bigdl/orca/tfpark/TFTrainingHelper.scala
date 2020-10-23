@@ -30,31 +30,34 @@ import scala.reflect.io.Path
 
 // variables and gradVariables need to be sorted by name if you want to use multiple
 // optimization methods for a TensorFlow model according to variable names.
-private[zoo] class TFTrainingHelper protected (val graphRunner: GraphRunner,
-                                    val checkpointPath: String,
-                                    val inputs: Array[String],
-                                    val inputTypes: Array[Int],
-                                    val additionalInputs: Array[String],
-                                    val additionalInputTypes: Array[Int],
-                                    val labels: Array[String],
-                                    val labelTypes: Array[Int],
-                                    val predictionOutputs: Array[String],
-                                    val metrics: Array[String],
-                                    val variables: Array[String],
-                                    val variableTypes: Array[Int],
-                                    val variableAssignPlaceholders: Array[String],
-                                    val assignVariableOp: String,
-                                    val extraVariables: Array[String],
-                                    val extraVariableTypes: Array[Int],
-                                    val extraVariableAssignPlaceholders: Array[String],
-                                    val assignExtraVariableOP: String,
-                                    val gradVariables: Array[String],
-                                    val updateOp: String,
-                                    val initOp: Option[String],
-                                    val defaultTensorValue: Array[Array[Float]])
+private[zoo] class TFTrainingHelper protected(val graphRunner: GraphRunner,
+                                              val checkpointPath: String,
+                                              val inputs: Array[String],
+                                              val inputTypes: Array[Int],
+                                              val additionalInputs: Array[String],
+                                              val additionalInputTypes: Array[Int],
+                                              val labels: Array[String],
+                                              val labelTypes: Array[Int],
+                                              val predictionOutputs: Array[String],
+                                              val metrics: Array[String],
+                                              val variables: Array[String],
+                                              val variableTypes: Array[Int],
+                                              val variableAssignPlaceholders: Array[String],
+                                              val assignVariableOp: String,
+                                              val extraVariables: Array[String],
+                                              val extraVariableTypes: Array[Int],
+                                              val extraVariableAssignPlaceholders: Array[String],
+                                              val assignExtraVariableOP: String,
+                                              val gradVariables: Array[String],
+                                              val updateOp: String,
+                                              val initOp: Option[String],
+                                              val defaultTensorValue: Array[Array[Float]])
   extends AbstractModule[Activity, Activity, Float] {
 
   this.setName("TFParkTraining")
+
+  System.setProperty("bigdl.ModelBroadcastFactory",
+    "com.intel.analytics.zoo.tfpark.TFModelBroadcastFactory")
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
     (weights, gradWeights)
@@ -127,6 +130,8 @@ private[zoo] class TFTrainingHelper protected (val graphRunner: GraphRunner,
     }
   }
 
+  def getGraphOut(): Vector[Tensor[Float]] = graphOutputs
+
   protected def evaluateInternal(): Unit = {
     setVariableIntoTF(weights, variableAssignPlaceholders,
       variableTypes.map(TFUtils.tfenum2datatype), assignVariableOp)
@@ -140,7 +145,7 @@ private[zoo] class TFTrainingHelper protected (val graphRunner: GraphRunner,
 
 
   protected def getVariableFromTF(weights: Array[Tensor[Float]],
-                                     variableNames: Array[String]) = {
+                                  variableNames: Array[String]) = {
     val outputTypes = Vector.fill(variableNames.length)(DataType.FLOAT)
     graphRunner.run(input = Vector.empty, inputNames = Vector.empty, inputTypes = Vector.empty,
       output = weights.toVector, outputNames = variableNames.toVector, outputTypes = outputTypes,
@@ -148,9 +153,9 @@ private[zoo] class TFTrainingHelper protected (val graphRunner: GraphRunner,
   }
 
   protected def setVariableIntoTF(weights: Array[Tensor[Float]],
-                                         inputNames: Array[String],
-                                         variableTypes: Array[DataType],
-                                         assignOp: String) = {
+                                  inputNames: Array[String],
+                                  variableTypes: Array[DataType],
+                                  assignOp: String) = {
     graphRunner.run(input = weights.toVector, inputNames = inputNames.toVector,
       inputTypes = variableTypes.toVector, output = Vector.empty,
       outputNames = Vector.empty, outputTypes = Vector.empty, targets = Vector(assignOp))

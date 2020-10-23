@@ -225,7 +225,6 @@ object TFUtils {
 
     }
   }
-
 }
 
 class IdentityCriterion extends AbstractCriterion[Activity, Activity, Float]() {
