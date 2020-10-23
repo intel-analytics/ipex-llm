@@ -861,7 +861,8 @@ class Optimizer(BaseOptimizer):
         :param end_trigger: when to end the optimization
         :param batch_size: training batch size
         """
-        warnings.warn("This is a deprecated method, you should use `create` method instead.")
+        warnings.warn("You are recommended to use `create` method to create an optimizer.")
+        assert isinstance(training_rdd, RDD), "Only type of RDD is allowed"
         self.pvalue = DistriOptimizer(model,
                                       training_rdd,
                                       criterion,
@@ -871,7 +872,6 @@ class Optimizer(BaseOptimizer):
                                       bigdl_type)
         self.value = self.pvalue.value
         self.bigdl_type = self.pvalue.bigdl_type
-        assert isinstance(training_rdd, RDD), "Only type of RDD is allowed"
 
     @staticmethod
     def create(model,
