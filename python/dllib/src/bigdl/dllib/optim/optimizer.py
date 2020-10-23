@@ -32,6 +32,7 @@ from bigdl.util.common import get_node_and_core_number
 from bigdl.util.common import init_engine
 from bigdl.util.common import to_list
 from bigdl.dataset.dataset import *
+import warnings
 
 if sys.version >= '3':
     long = int
@@ -860,6 +861,8 @@ class Optimizer(BaseOptimizer):
         :param end_trigger: when to end the optimization
         :param batch_size: training batch size
         """
+        warnings.warn("You are recommended to use `create` method to create an optimizer.")
+        assert isinstance(training_rdd, RDD), "Only type of RDD is allowed"
         self.pvalue = DistriOptimizer(model,
                                       training_rdd,
                                       criterion,
