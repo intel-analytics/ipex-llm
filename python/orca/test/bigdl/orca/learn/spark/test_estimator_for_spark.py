@@ -27,7 +27,7 @@ import zoo.orca.data.pandas
 from zoo import init_nncontext
 from zoo.orca.data.tf.data import Dataset
 from zoo.orca.learn.tf.estimator import Estimator
-from zoo.orca.learn.tf.utils import save_tf_checkpoint, load_tf_checkpoint, get_checkpoint_state
+from zoo.util.tf import save_tf_checkpoint, load_tf_checkpoint, get_checkpoint_state
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 

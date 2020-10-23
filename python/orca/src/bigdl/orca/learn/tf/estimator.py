@@ -25,6 +25,7 @@ from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
 from zoo.tfpark.tf_optimizer import StatelessMetric
 from zoo.tfpark.utils import evaluate_metrics
 from zoo.util import nest
+from zoo.util.tf import save_tf_checkpoint
 
 
 class Estimator(object):
