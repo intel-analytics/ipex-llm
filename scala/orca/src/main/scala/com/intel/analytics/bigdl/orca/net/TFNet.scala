@@ -62,6 +62,9 @@ class TFNet(private val graphDef: TFGraphHolder,
   implicit val ev = TensorNumeric.NumericFloat
   implicit val tag: ClassTag[Float] = ClassTag.Float
 
+  System.setProperty("bigdl.ModelBroadcastFactory",
+    "com.intel.analytics.zoo.tfpark.TFModelBroadcastFactory")
+
   @transient
   private lazy val tensorManager = new TFResourceManager()
 

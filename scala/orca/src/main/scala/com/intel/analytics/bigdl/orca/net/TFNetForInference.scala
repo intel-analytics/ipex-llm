@@ -49,6 +49,9 @@ private[zoo] class TFNetForInference(graphRunner: GraphRunner,
   implicit val ev = TensorNumeric.NumericFloat
   implicit val tag: ClassTag[Float] = ClassTag.Float
 
+  System.setProperty("bigdl.ModelBroadcastFactory",
+    "com.intel.analytics.zoo.tfpark.TFModelBroadcastFactory")
+
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
     (weights, gradWeights)
   }
