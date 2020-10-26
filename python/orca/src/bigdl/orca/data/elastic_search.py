@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pyspark import SparkContext
 from pyspark.sql.types import *
 from pyspark.sql import SQLContext
 
+from zoo.common.nncontext import init_nncontext
 
-class ESReader:
+
+class elastic_search:
     """
     Primary DataFrame-based loading data from elastic search interface,
     defining API to read data from ES to DataFrame.
@@ -28,7 +29,7 @@ class ESReader:
         pass
 
     @staticmethod
-    def readData(esConfig, esResource, schema=None):
+    def read(esConfig, esResource, schema=None):
         """
         Read the data from elastic search into DataFrame.
         :param esConfig Dictionary which represents configuration for
@@ -38,7 +39,7 @@ class ESReader:
                 If each column in Es is single value, don't need set schema.
         :return Spark DataFrame. Each row represents a document in ES.
         """
-        sc = SparkContext.getOrCreate()
+        sc = init_nncontext()
         sqlContext = SQLContext.getOrCreate(sc)
         spark = sqlContext.sparkSession
 
@@ -53,7 +54,7 @@ class ESReader:
         return df
 
     @staticmethod
-    def save2ES(esConfig, esResource, df):
+    def write(esConfig, esResource, df):
         """
         Read the data from elastic search into DataFrame.
         :param esConfig Dictionary which represents configuration for
