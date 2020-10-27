@@ -323,7 +323,7 @@ object TFNetForInference {
     val graphRunner = new GraphRunner(
       graph.toGraphDef,
       null, null, null, null,
-      TFNet.defaultSessionConfig.toByteArray())
+      sessionConfig)
 
     val session = savedModelBundle.session()
 
