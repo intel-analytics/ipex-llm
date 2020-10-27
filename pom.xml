@@ -544,9 +544,13 @@
             <properties>
                 <spark-version.project>2.0</spark-version.project>
                 <spark.version>2.1.1</spark.version>
+                <java.version>11</java.version>
+                <javac.version>11</javac.version>
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>
+                <maven.compiler.source>1.6</maven.compiler.source>
+                <maven.compiler.target>1.6</maven.compiler.target>
             </properties>
             <build>
                 <plugins>
