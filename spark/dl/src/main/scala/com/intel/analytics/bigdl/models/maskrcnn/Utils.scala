@@ -21,7 +21,7 @@ import breeze.linalg.{*, dim, max}
 import com.intel.analytics.bigdl.nn.ResizeBilinear
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.sun.xml.internal.bind.v2.TODO
+//import com.sun.xml.internal.bind.v2.TODO
 
 import scala.collection.mutable.ArrayBuffer
 
