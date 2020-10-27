@@ -27,11 +27,8 @@ import com.intel.analytics.zoo.common.PythonInterpreter
 import com.intel.analytics.zoo.feature.PythonFeatureSet
 import com.intel.analytics.zoo.pipeline.api.net.TorchModel.TorchModel2Holder
 import jep.{Jep, NDArray}
+import org.apache.spark.TaskContext
 
-import scala.collection.JavaConverters._
-
-import scala.reflect.ClassTag
-// TODO: support Train function
 class TorchModel private(private val modelHolder: TorchModel2Holder, init_weights: Array[Float])
   extends AbstractModule[Activity, Activity, Float]{
   import TorchModel._
@@ -76,9 +73,9 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
         |
         |""".stripMargin
 
-  val forwardCode =
+  def forwardCode(): String =
     s"""
-       |output = ${getName()}(input)
+       |output_${taskId} = ${getName()}(input_${taskId})
        |""".stripMargin
 
   override def updateOutput(input: Activity): Activity = {
@@ -88,21 +85,21 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
     // _data is come from FeatureSet.
     val dataExisted = PythonInterpreter.getValue[Boolean]("'_data' in dir()")
     if (dataExisted) {
-      PythonInterpreter.exec("input = _data[0]")
+      PythonInterpreter.exec(s"input_${taskId} = _data[0]")
     } else {
       // TODO: support table input
       require(input.isTensor, "only support tensor input")
       val i = input.toTensor[Float]
       if (i.nElement() == i.storage().array().length) {
-        PythonInterpreter.set("nd_input",
+        PythonInterpreter.set("nd_input_" + taskId,
           new NDArray[Array[Float]](i.storage().array(), i.size(): _*))
       } else {
         // The last mini batch during evaluation is smaller.
-        PythonInterpreter.set("nd_input",
+        PythonInterpreter.set("nd_input" + taskId,
           new NDArray[Array[Float]](i.storage().array().slice(
             i.storageOffset() - 1, i.nElement()), i.size(): _*))
       }
-      PythonInterpreter.exec("input = torch.Tensor(nd_input)")
+      PythonInterpreter.exec(s"input_${taskId} = torch.Tensor(nd_input_${taskId})")
     }
 
     val forwardCode = if (train && weights.nElement() > 0) {
@@ -116,7 +113,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
     PythonInterpreter.exec(forwardCode)
     println(s"run forward cost: ${(System.nanoTime() - startTime) / 1e9}")
     val outputNd = PythonFeatureSet.toArrayTensor(
-      PythonInterpreter.getValue[NDArray[_]]("ptensor_to_numpy(output)"))
+      PythonInterpreter.getValue[NDArray[_]](s"ptensor_to_numpy(output_${taskId})"))
     if (outputNd.length == 1) {
       output = outputNd(0)
     } else {
@@ -131,7 +128,7 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
     val startTime = System.nanoTime()
     val backwardCode =
       s"""
-        |loss.backward(retain_graph=True)
+        |loss_${taskId}.backward(retain_graph=True)
         |""".stripMargin
     PythonInterpreter.exec(backwardCode)
     println(s"run backward cost: ${(System.nanoTime() - startTime) / 1e9}")
@@ -299,6 +296,8 @@ object TorchModel {
     val weights = new Array[Float](0)
     apply(bys, weights)
   }
+
+  private[net] def taskId(): Int = TaskContext.getPartitionId()
 }
 
 
