@@ -457,6 +457,7 @@ class RayContext(object):
                     os.environ.update(self.env)
                 import ray
                 self._address_info = ray.init(num_cpus=self.ray_node_cpu_cores,
+                                              redis_password=self.redis_password,
                                               object_store_memory=self.object_store_memory,
                                               resources=self.extra_params)
             else:
@@ -479,6 +480,10 @@ class RayContext(object):
         else:
             raise Exception("The Ray cluster has not been launched yet. Please call init first")
 
+    @property
+    def redis_address(self):
+        return self.address_info["redis_address"]
+
     def _start_cluster(self):
         print("Start to launch ray on cluster")
         ray_rdd = self.sc.range(0, self.num_ray_nodes,
@@ -489,7 +494,6 @@ class RayContext(object):
 
         self.ray_processesMonitor = ProcessMonitor(process_infos, self.sc, ray_rdd, self,
                                                    verbose=self.verbose)
-        self.redis_address = self.ray_processesMonitor.master.master_addr
         return self
 
     def _start_restricted_worker(self, num_cores, node_ip_address):
