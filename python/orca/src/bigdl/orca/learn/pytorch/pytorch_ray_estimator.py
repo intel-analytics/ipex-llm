@@ -101,7 +101,7 @@ class PyTorchRayEstimator:
         if backend == "pytorch":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
-            RemoteRunner = ray.remote(num_cpus=1)(TorchRunner)
+            RemoteRunner = ray.remote(num_cpus=cores_per_node)(TorchRunner)
             self.remote_workers = [
                 RemoteRunner.remote(**params) for i in range(num_nodes)
             ]
@@ -110,9 +110,10 @@ class PyTorchRayEstimator:
                 for i, worker in enumerate(self.remote_workers)
             ])
 
-            ip = ray.services.get_node_ip_address()
-            port = utils.find_free_port()
-            address = "tcp://{ip}:{port}".format(ip=ip, port=port)
+            head_worker = self.remote_workers[0]
+            address = ray.get(head_worker.setup_address.remote())
+
+            logger.info(f"initializing pytorch process group on {address}")
 
             ray.get([
                 worker.setup_torch_distribute.remote(address, i, num_nodes)
