@@ -18,7 +18,7 @@ import pytest
 
 
 @pytest.fixture(autouse=True, scope='package')
-def orca_context_fixture():
+def orca_context_fixture(request):
     import os
     from zoo.orca import OrcaContext, init_orca_context, stop_orca_context
     OrcaContext._eager_mode = True
@@ -30,6 +30,7 @@ def orca_context_fixture():
     else:
         env = None
     sc = init_orca_context(cores=4, spark_log_level="INFO",
-                           env=env, object_store_memory="1g")
-    yield
+                           env=env, object_store_memory="1g",
+                           init_ray_on_spark=True)
+    yield sc
     stop_orca_context()
