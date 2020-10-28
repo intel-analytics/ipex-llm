@@ -72,6 +72,8 @@ Both AutoTSTrainer and TSPipeline accepts data frames as input. An exmaple data 
 
 **Note:** you should call `stop_orca_context()` when your distributed automated training finishes.
 
+For visualization, please refer to [here](../../ProgrammingGuide/AutoML/visualization.md).
+
 ### **Step 4: Further deployment with TSPipeline**
 Use ```TSPipeline.fit/evaluate/predict``` to train pipeline (incremental fitting), evaluate or predict. 
 ```python

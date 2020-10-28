@@ -45,6 +45,7 @@ pages:
   - AutoML:
     - Overview: ProgrammingGuide/AutoML/overview.md
     - Time Series Forecasting: ProgrammingGuide/AutoML/forecasting.md
+    - Visualization: ProgrammingGuide/AutoML/visualization.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
     - Working with Texts: ProgrammingGuide/workingwithtexts.md
