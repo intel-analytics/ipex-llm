@@ -13,13 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import json
 from bigdl.nn.layer import Layer
 from pyspark.ml.param.shared import *
 from pyspark.ml.wrapper import JavaModel, JavaEstimator, JavaTransformer
+from pyspark.ml.util import MLWritable, MLReadable, JavaMLWriter
 from bigdl.optim.optimizer import SGD
-from zoo.common.utils import callZooFunc
+from zoo.common.utils import callZooFunc, put_local_file_to_remote
 from bigdl.util.common import *
 from zoo.feature.common import *
+from zoo import init_nncontext
+
 
 if sys.version >= '3':
     long = int
@@ -451,8 +456,8 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         return nnModel
 
 
-class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
-              HasSamplePreprocessing, JavaValue):
+class NNModel(JavaTransformer, MLWritable, MLReadable, HasFeaturesCol, HasPredictionCol,
+              HasBatchSize, HasSamplePreprocessing, JavaValue):
     """
     NNModel extends Spark ML Transformer and supports BigDL model with Spark DataFrame.
 
@@ -500,15 +505,39 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
         self.bigdl_type = bigdl_type
         self.setBatchSize(self.value.getBatchSize())
 
-    def save(self, path):
-        self._transfer_params_to_java()
-        callZooFunc(self.bigdl_type, "saveNNModel", self.value, path)
-        return self
+    def write(self):
+        return NNModelWriter(self)
 
     @staticmethod
     def load(path):
         jvalue = callZooFunc("float", "loadNNModel", path)
         return NNModel(model=None, feature_preprocessing=None, jvalue=jvalue)
+
+
+class NNModelWriter(JavaMLWriter):
+    def __init__(self, instance):
+        super(NNModelWriter, self).__init__(instance)
+
+    def save(self, path):
+        """Save the ML instance to the input path."""
+        super(NNModelWriter, self).save(path)
+        sc = init_nncontext()
+        # change class name in metadata to python class name
+        metadata_path = os.path.join(path, "metadata")
+        metadataStr = sc.textFile(metadata_path, 1).first()
+        metadata = json.loads(metadataStr)
+        py_type = metadata['class'].replace("com.intel.analytics.zoo", "zoo")
+        metadata['class'] = py_type
+        metadata_json = json.dumps(metadata, separators=[',', ':'])
+        # replace old metadata
+        temp_dir = tempfile.mkdtemp()
+        temp_meta_path = os.path.join(temp_dir, "metadata")
+        sc.parallelize([metadata_json], 1).saveAsTextFile(temp_meta_path)
+        for file in os.listdir(temp_meta_path):
+            put_local_file_to_remote(os.path.join(temp_meta_path, file),
+                                     os.path.join(metadata_path, file), True)
+        import shutil
+        shutil.rmtree(temp_dir)
 
 
 class NNClassifier(NNEstimator):
