@@ -400,10 +400,9 @@ class TFOptimizerWrapper(Estimator):
                 ):
         """
         Predict input data
-        :param data: data to be predicted. It can be XShards, Spark DataFrame, or tf.data.Dataset.
+        :param data: data to be predicted. It can be XShards, Spark DataFrame.
         If data is XShards, each element needs to be {'x': a feature numpy array
          or a tuple of feature numpy arrays}.
-        If data is tf.data.Dataset, each element is a tuple of input tensors.
         :param batch_size: batch size per thread
         :param feature_cols: list of feature column names if input data is Spark DataFrame.
         :param hard_code_batch_size: whether to hard code batch size for prediction.
@@ -422,6 +421,9 @@ class TFOptimizerWrapper(Estimator):
         if isinstance(data, DataFrame):
             assert feature_cols is not None, \
                 "feature columns is None; it should not be None in prediction"
+
+        assert not is_tf_data_dataset(data), "tf.data.Dataset currently cannot be used for" \
+                                             "estimator prediction"
 
         dataset = to_dataset(data, batch_size=-1, batch_per_thread=batch_size,
                              validation_data=None,
