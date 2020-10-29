@@ -425,10 +425,6 @@ class TestEstimatorForGraph(TestCase):
 
         dataset = dataset_creator()
 
-        dataset = tf.data.Dataset.from_tensor_slices((np.random.randint(0, 200, size=(100,)),
-                                                      np.random.randint(0, 50, size=(100,)),
-                                                      np.ones(shape=(100,), dtype=np.int32)))
-
         est = Estimator.from_graph(
             inputs=[model.user, model.item],
             labels=[model.label],
@@ -443,12 +439,6 @@ class TestEstimatorForGraph(TestCase):
 
         result = est.evaluate(dataset, batch_size=4)
         assert 'loss' in result
-
-        predict_dataset = tf.data.Dataset.from_tensor_slices((
-            np.random.randint(0, 200, size=(20,)),
-            np.random.randint(0, 50, size=(20,))))
-        predictions = est.predict(predict_dataset).collect()
-        assert predictions[0]['prediction'].shape[1] == 2
 
     def test_estimator_graph_tf_dataset(self):
 
