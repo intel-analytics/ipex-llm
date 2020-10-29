@@ -348,11 +348,6 @@ class TestTFDataset(ZooTestCase):
                                                       label))
         dataset = TFDataset.from_tf_data_dataset(dataset, batch_per_thread=16)
         model.evaluate(dataset)
-        dataset = tf.data.Dataset.from_tensor_slices(np.random.randn(102, 28, 28, 1))
-        dataset = dataset.map(lambda data: tf.to_float(data))
-        dataset = TFDataset.from_tf_data_dataset(dataset, batch_per_thread=16)
-        result = model.predict(dataset).collect()
-        assert len(result) == 102
 
     def check_dataset(self, create_ds):
 
