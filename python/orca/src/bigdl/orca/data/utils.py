@@ -203,6 +203,10 @@ def to_sample(data):
     for i in range(length):
         fs = [feat[i] for feat in features]
         ls = [l[i] for l in labels]
+        if len(fs) == 1:
+            fs = fs[0]
+        if len(ls) == 1:
+            ls = ls[0]
         yield Sample.from_ndarray(np.array(fs), np.array(ls))
 
 
