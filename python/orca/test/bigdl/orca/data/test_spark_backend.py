@@ -189,6 +189,17 @@ class TestSparkBackend(TestCase):
         df = data[0]
         assert len(df.columns) == 2
 
+        from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+        schema = StructType([StructField("ID", StringType(), True),
+                             StructField("sale_price", IntegerType(), True),
+                             StructField("location", StringType(), True)])
+        data_shard3 = zoo.orca.data.pandas.read_parquet(os.path.join(temp, "test_parquet"),
+                                                        columns=['ID', 'sale_price'],
+                                                        schema=schema)
+        data = data_shard3.collect()
+        df = data[0]
+        assert str(df['sale_price'].dtype) == 'int64'
+
         shutil.rmtree(temp)
 
 
