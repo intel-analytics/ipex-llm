@@ -834,12 +834,7 @@ class TFDataDataset(TFDataset):
         self.graph_def = bytearray(self.graph.as_graph_def().SerializeToString())
 
     def _get_prediction_data(self):
-        jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
-                             self.graph_def, self._train_init_op_name, self.table_init_name,
-                             self._train_output_names,
-                             self.output_types, self.shard_index.name)
-        rdd = jvalue.value().toJavaRDD()
-        return rdd
+        raise Exception("TFDataDataset cannot be used for prediction")
 
     def _get_evaluation_data(self):
 
