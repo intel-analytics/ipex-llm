@@ -38,7 +38,7 @@ class Estimator(JavaValue):
         In order to take effect, it needs to be called before fit.
         :return:
         """
-        callZooFunc(self.bigdl_type, "clearGradientClipping")
+        callZooFunc(self.bigdl_type, "clearGradientClipping", self.value)
 
     def set_constant_gradient_clipping(self, min, max):
         """
