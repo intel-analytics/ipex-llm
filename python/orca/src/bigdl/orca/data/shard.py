@@ -15,6 +15,7 @@
 #
 from py4j.protocol import Py4JError
 
+from zoo.orca.data.ray_rdd import RayRdd
 from zoo.orca.data.utils import *
 from zoo.orca import OrcaContext
 from zoo.common.nncontext import init_nncontext
@@ -110,85 +111,57 @@ class RayXShards(XShards):
     """
     A collection of data which can be pre-processed in parallel on Ray
     """
-    def __init__(self, partitions):
-        assert all([isinstance(partition, RayPartition) for partition in partitions]), \
-            "partitions should be list of RayPartition"
-        self.partitions = partitions
+    def __init__(self, ray_rdd):
+        self.ray_rdd = ray_rdd
 
     def transform_shard(self, func, *args):
         raise Exception("Transform is not supported for RayXShards")
 
+    def transform_shards_with_actors(self, actors, func,
+                                     gang_scheduling=True):
+        '''
+        Assign each partition_ref (referencing a list of shards) to an actor,
+        and run func for each actor and partition_ref pair.
+
+        Actors should have a `get_node_ip` method to achieve locality scheduling.
+        The `get_node_ip` method should call ray.serivice.get_node_ip_address()
+        to return the correct ip address.
+
+        The `func` should take an actor and a partition_ref as argument and
+        invoke some remote func on that actor and return a new partition_ref.
+
+        Note that if you pass partition_ref directly to actor method, ray
+        will resolve that partition_ref to the actual partition object, which
+        is a list of shards. If you pass partition_ref indirectly through other
+        object, say [partition_ref], ray will send the partition_ref itself to
+        actor, and you may need to use ray.get(partition_ref) on actor to retrieve
+        the actor partition objects.
+        '''
+        new_ray_rdd = self.ray_rdd.map_partitions_with_actors(actors,
+                                                              func,
+                                                              gang_scheduling)
+        return RayXShards(new_ray_rdd)
+
+    def zip_shards_with_actors(self, xshards, actors, func, gang_scheduling=True):
+        new_ray_rdd = self.ray_rdd.zip_partitions_with_actors(xshards.ray_rdd,
+                                                              actors,
+                                                              func,
+                                                              gang_scheduling)
+        return RayXShards(new_ray_rdd)
+
     def collect(self):
-        return [partition.get_data() for partition in self.partitions]
+        return self.ray_rdd.collect()
 
     def num_partitions(self):
-        return len(self.partitions)
+        return self.ray_rdd.num_partitions()
 
-    def get_partitions(self):
-        """
-        Return the list of RayPartition of the RayXShards
-        """
-        return self.partitions
+    def to_spark_xshards(self):
+        return SparkXShards(self.ray_rdd.to_spark_rdd())
 
-    def colocate_actors(self, actors):
-        """
-        Sort Ray actors and RayPartitions by node_ip so that each actor is colocated
-        with the data partition on the same node.
-        """
-        if self.partitions[0].node_ip:
-            # Assume that the partitions are already sorted by node_ip
-            import ray
-            actor_ips = ray.get([actor.get_node_ip.remote() for actor in actors])
-            actor_zip_ips = list(zip(actors, actor_ips))
-            actor_zip_ips.sort(key=lambda x: x[1])
-            for i in range(len(actors)):
-                actor_ip = actor_zip_ips[i][1]
-                partition_ip = self.partitions[i].node_ip
-                assert actor_ip == partition_ip
-            return [actor_ip[0] for actor_ip in actor_zip_ips]
-        else:
-            return actors
-
-
-class RayPartition(object):
-    """
-    A partition of RayXShards containing the plasma ObjectID, the plasma object_store_address,
-    and the node of the partition.
-    """
-    def __init__(self, object_id, node_ip, object_store_address):
-        # The object_id would contain a list of data from a partition of Spark RDD.
-        self.object_id = object_id
-        self.node_ip = node_ip
-        self.object_store_address = object_store_address
-
-    def get_data(self):
-        import pyarrow.plasma as plasma
-        # Default num_retries=-1 would try 80 times.
-        self.client = plasma.connect(self.object_store_address, num_retries=5)
-        return self.client.get(self.object_id)
-
-    def __reduce__(self):
-        return (self.__class__, (self.object_id, self.node_ip, self.object_store_address))
-
-    def __del__(self):
-        if self.object_store_address:
-            import logging
-            logging.basicConfig(level=logging.WARNING)
-            logger = logging.getLogger()
-            try:
-                if "client" not in self.__dict__:
-                    import pyarrow.plasma as plasma
-                    self.client = plasma.connect(self.object_store_address, num_retries=5)
-                if self.client.contains(self.object_id):
-                    self.client.delete([self.object_id])
-                assert not self.client.contains(self.object_id)
-                logger.info("Removed data from plasma object store on node " + str(self.node_ip))
-                self.client.disconnect()
-                del self.client
-            except Exception as e:
-                logger.warning(e)
-                logger.warning("Error occurred when removing the data from the plasma store "
-                               "on node " + str(self.node_ip))
+    @staticmethod
+    def from_spark_xshards(spark_xshards):
+        ray_rdd = RayRdd.from_spark_rdd(spark_xshards.rdd)
+        return RayXShards(ray_rdd)
 
 
 class SparkXShards(XShards):

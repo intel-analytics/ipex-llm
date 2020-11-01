@@ -84,30 +84,15 @@ class MXNetRunner(object):
         """Train the model and update the model parameters."""
         stats = dict()
         if self.is_worker:
-            from zoo.orca.data.shard import RayPartition
-            if isinstance(train_data, RayPartition):
-                from zoo.orca.data.utils import ray_partition_get_data_label
-                data, label = ray_partition_get_data_label(train_data.get_data(),
-                                                           allow_tuple=False,
-                                                           allow_list=False)
-                train_data_iter = mx.io.NDArrayIter(data=data, label=label,
-                                                    batch_size=batch_size, shuffle=True)
-                if train_resize_batch_num is not None:
-                    train_data_iter = mx.io.ResizeIter(train_data_iter, train_resize_batch_num)
-                if validation_data:
-                    data_val, label_val = ray_partition_get_data_label(validation_data.get_data(),
-                                                                       allow_tuple=False,
-                                                                       allow_list=False)
-                    val_data_iter = mx.io.NDArrayIter(data=data_val, label=label_val,
-                                                      batch_size=batch_size, shuffle=True)
-                else:
-                    val_data_iter = None
-            else:  # data_creator functions; should return Iter or DataLoader
-                config = self.config
-                if "batch_size" not in config:
-                    config["batch_size"] = batch_size
-                train_data_iter = train_data(config, self.kv)
-                val_data_iter = validation_data(config, self.kv) if validation_data else None
+            config = self.config
+            if "batch_size" not in config:
+                config["batch_size"] = batch_size
+
+            if train_resize_batch_num is not None:
+                config["train_resize_batch_num"] = train_resize_batch_num
+            train_data_iter = train_data(config, self.kv)
+            val_data_iter = validation_data(config, self.kv) if validation_data else None
+
             start_time = time.time()
             if self.trainer:  # Imperative API
                 def cpu_context(target_data):
@@ -216,11 +201,7 @@ class MXNetRunner(object):
                                else mx.callback.do_checkpoint(self.config["model"]))
             epoch_time = time.time() - start_time
             stats["epoch_time"] = epoch_time
-            if isinstance(train_data, RayPartition):
-                del train_data
-            if validation_data and isinstance(validation_data, RayPartition):
-                del validation_data
-        return stats
+        return [stats]
 
     def shutdown(self):
         """Attempts to shut down the runner."""
