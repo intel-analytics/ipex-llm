@@ -143,7 +143,10 @@ def flatten_xy(allow_tuple=True, allow_list=True):
     return _flatten_xy
 
 
-def ray_partition_get_data_label(partition_data, allow_tuple=True, allow_list=True):
+def ray_partition_get_data_label(partition_data,
+                                 allow_tuple=True,
+                                 allow_list=True,
+                                 get_label=True):
     """
     :param partition_data:
     :param allow_tuple: boolean, if the model accepts a tuple as input. Default: True
@@ -187,7 +190,10 @@ def ray_partition_get_data_label(partition_data, allow_tuple=True, allow_list=Tr
     label_list = [data['y'] for data in partition_data]
 
     data = check_type_and_combine(data_list)
-    label = check_type_and_combine(label_list)
+    if get_label:
+        label = check_type_and_combine(label_list)
+    else:
+        label = None
 
     return data, label
 
