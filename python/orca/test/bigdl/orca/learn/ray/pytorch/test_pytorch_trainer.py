@@ -69,7 +69,7 @@ class TestPyTorchTrainer(TestCase):
     def test_linear(self):
         estimator = Estimator.from_torch(model=get_model,
                                          optimizer=get_optimizer,
-                                         loss=nn.MSELoss,
+                                         loss=nn.MSELoss(),
                                          config={"lr": 1e-2, "hidden_size": 1,
                                                  "batch_size": 128},
                                          backend="pytorch")

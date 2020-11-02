@@ -32,7 +32,7 @@ class TestPyTorchTrainer(TestCase):
         estimator = Estimator.from_torch(
             model=model_creator,
             optimizer=optimizer_creator,
-            loss=nn.MSELoss,
+            loss=nn.MSELoss(),
             scheduler_creator=scheduler_creator,
             config={
                 "lr": 1e-2,  # used in optimizer_creator
@@ -56,7 +56,7 @@ class TestPyTorchTrainer(TestCase):
         estimator1 = Estimator.from_torch(
             model=model_creator,
             optimizer=optimizer_creator,
-            loss=nn.MSELoss,
+            loss=nn.MSELoss(),
             scheduler_creator=scheduler_creator,
             config={
                 "lr": 1e-2,  # used in optimizer_creator
@@ -75,7 +75,7 @@ class TestPyTorchTrainer(TestCase):
             estimator2 = Estimator.from_torch(
                 model=model_creator,
                 optimizer=optimizer_creator,
-                loss=nn.MSELoss,
+                loss=nn.MSELoss(),
                 scheduler_creator=scheduler_creator,
                 config={
                     "lr": 1e-2,  # used in optimizer_creator
