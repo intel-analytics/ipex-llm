@@ -80,7 +80,7 @@ def train_example(workers_per_node):
     estimator = Estimator.from_torch(
         model=model_creator,
         optimizer=optimizer_creator,
-        loss=nn.MSELoss,
+        loss=nn.MSELoss(),
         scheduler_creator=scheduler_creator,
         workers_per_node=workers_per_node,
         config={
