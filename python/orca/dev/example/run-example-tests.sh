@@ -419,23 +419,6 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 now=$(date "+%s")
 time9=$((now-start))
 
-echo "#10 start example test for pytorch"
-#timer
-start=$(date "+%s")
-echo "start example test for pytorch SimpleTrainingExample"
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-   --master local[1] \
-   --driver-memory 5g \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/SimpleTrainingExample.py
-
-echo "start example test for pytorch mnist training"
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-   --master local[1] \
-   --driver-memory 5g \
-   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/Lenet_mnist.py
-now=$(date "+%s")
-time10=$((now-start))
-
 echo "#11 start example test for openvino"
 #timer
 start=$(date "+%s")
