@@ -143,9 +143,8 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                 "Directory path to hadoop conf not found for yarn-client mode. Please either " \
                 "specify argument hadoop_conf or set the environment variable HADOOP_CONF_DIR"
             hadoop_conf = kwargs["hadoop_conf"]
-        from zoo.util.utils import detect_python_location
-        python_location = detect_python_location()  # /path/to/conda/envs/conda_name/bin/python
-        assert "envs" in python_location, "You must use a conda environment for yarn-client mode"
+        from zoo.util.utils import detect_conda_env_name
+        conda_env_name = detect_conda_env_name()
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                     "extra_python_lib", "penv_archive", "additional_archive",
                     "hadoop_user_name", "spark_yarn_archive", "jars"]:
@@ -153,7 +152,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                 spark_args[key] = kwargs[key]
         from zoo import init_spark_on_yarn
         sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
-                                conda_name=python_location.split("/")[-3],
+                                conda_name=conda_env_name,
                                 num_executors=num_nodes, executor_cores=cores,
                                 executor_memory=memory, **spark_args)
     elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
