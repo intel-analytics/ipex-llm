@@ -676,8 +676,7 @@ object DistriOptimizer extends AbstractOptimizer {
   : Module[T] = {
     val partitionNum = models.partitions.length
 
-    val extraState = Util.collectExtraParameters(models, trainingModel, maxSize = 500000000)
-    trainingModel.setExtraParameter(extraState)
+    Util.setExtraParametersFromModelRDD(models, trainingModel, maxSize = 500000000)
 
     // make sure gradient is as the same length as weight
     val parameterArray = trainingModel.parameters()

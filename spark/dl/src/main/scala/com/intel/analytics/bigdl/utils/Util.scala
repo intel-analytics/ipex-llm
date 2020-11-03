@@ -320,19 +320,19 @@ object Util {
     }
   }
 
-  def collectExtraParameters[T: ClassTag]
+  def setExtraParametersFromModelRDD[T: ClassTag]
   (models: RDD[Cache[T]], trainingModel: Module[T], maxSize: Int)(implicit ev: TensorNumeric[T])
-  : Array[Tensor[T]] = {
+  : Unit = {
 
     val totalElements = models.map(_.localModels.head.getExtraParameter().map(_.nElement()).
       reduce(_ + _)).first()
 
-    if (totalElements < maxSize) {
-      return models.map(_.localModels.head.getExtraParameter()).first()
+    val extraStates = if (totalElements < maxSize) {
+      models.map(_.localModels.head.getExtraParameter()).first()
     } else {
       val individualLength = models.map(_.localModels.head.getExtraParameter().
         map(_.nElement())).first()
-      val extraParamLength = models.map(_.localModels.head.getExtraParameter().length).first()
+      val extraParamLength = individualLength.length
       val extraState = new Array[Tensor[T]](extraParamLength)
       (0 until extraParamLength).foreach(i =>
         if (individualLength(i) < maxSize) {
@@ -356,5 +356,6 @@ object Util {
       )
       extraState
     }
+    trainingModel.setExtraParameter(extraStates)
   }
 }
