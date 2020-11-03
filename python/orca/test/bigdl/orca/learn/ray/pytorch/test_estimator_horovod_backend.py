@@ -27,7 +27,7 @@ import os
 from tempfile import TemporaryDirectory
 
 
-class TestPyTorchTrainer(TestCase):
+class TestPyTorchEstimator(TestCase):
     def test_train(self):
         estimator = Estimator.from_torch(
             model=model_creator,

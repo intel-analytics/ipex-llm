@@ -326,7 +326,7 @@ class TrainingOperator:
         return metric_meters.summary()
 
     def validate_batch(self, batch, batch_info):
-        """Calcuates the loss and accuracy over a given batch.
+        """Calculates the loss and accuracy over a given batch.
 
         You can override this method to provide arbitrary metrics.
 
@@ -349,6 +349,11 @@ class TrainingOperator:
         """
         # unpack features into list to support multiple inputs model
         *features, target = batch
+        if len(target.size()) > 1:
+            # Can't directly call torch.squeeze() in case batch size is 1.
+            for i in reversed(range(1, len(target.size()))):
+                target = torch.squeeze(target, i)
+
         if self.use_gpu:
             features = [
                 feature.cuda(non_blocking=True) for feature in features
@@ -356,13 +361,32 @@ class TrainingOperator:
             target = target.cuda(non_blocking=True)
 
         # compute output
-
         with self.timers.record("eval_fwd"):
             output = self.model(*features)
             loss = self.criterion(output, target)
-            _, predicted = torch.max(output.data, 1)
+            if len(output.size()) > 1:
+                # In case there is extra trailing dimensions.
+                for i in reversed(range(1, len(output.size()))):
+                    output = torch.squeeze(output, i)
 
-        num_correct = (predicted == target).sum().item()
+        np_output = output.detach().numpy()
+        np_target = target.detach().numpy()
+        # validate will be called by TCMF to get val_loss for regression tasks.
+        # In this case, accuracy is calculated but not used and the result is wrong.
+        # So do not directly raise an Exception here to avoid errors in TCMF.
+        # TODO: Support other validation metrics.
+        if len(np_target.shape) != 1 or len(np_output.shape) > 2:
+            import warnings
+            warnings.warn("Currently in validate, only accuracy for classification with "
+                          "zero-based label is supported by default. You can override "
+                          "validate_batch in TrainingOperator for other validation metrics")
+        import numpy as np
+        if len(np_output.shape) == 1:  # Binary classification
+            np_output = np.round(np_output, 0)
+        else:  # Multi-class classification
+            np_output = np.argmax(np_output, axis=1)
+
+        num_correct = np.sum(np_output == np_target)
         num_samples = target.size(0)
         return {
             "val_loss": loss.item(),

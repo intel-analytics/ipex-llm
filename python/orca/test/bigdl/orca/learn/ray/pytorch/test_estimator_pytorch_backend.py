@@ -28,10 +28,13 @@ np.random.seed(1337)  # for reproducibility
 class LinearDataset(torch.utils.data.Dataset):
     """y = a * x + b"""
 
-    def __init__(self, a, b, size=1000):
-        x = np.arange(0, 10, 10 / size, dtype=np.float32)
-        self.x = torch.from_numpy(x)
-        self.y = torch.from_numpy(a * x + b)
+    def __init__(self, size=1000):
+        X1 = torch.randn(size // 2, 50)
+        X2 = torch.randn(size // 2, 50) + 1.5
+        self.x = torch.cat([X1, X2], dim=0)
+        Y1 = torch.zeros(size // 2, 1)
+        Y2 = torch.ones(size // 2, 1)
+        self.y = torch.cat([Y1, Y2], dim=0)
 
     def __getitem__(self, index):
         return self.x[index, None], self.y[index, None]
@@ -40,8 +43,30 @@ class LinearDataset(torch.utils.data.Dataset):
         return len(self.x)
 
 
+class Net(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.relu1 = nn.ReLU()
+        self.dout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(50, 100)
+        self.prelu = nn.PReLU(1)
+        self.out = nn.Linear(100, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, input_):
+        a1 = self.fc1(input_)
+        h1 = self.relu1(a1)
+        dout = self.dout(h1)
+        a2 = self.fc2(dout)
+        h2 = self.prelu(a2)
+        a3 = self.out(h2)
+        y = self.out_act(a3)
+        return y
+
+
 def train_data_loader(config):
-    train_dataset = LinearDataset(2, 5, size=config.get("data_size", 1000))
+    train_dataset = LinearDataset(size=config.get("data_size", 1000))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.get("batch_size", 32),
@@ -50,7 +75,7 @@ def train_data_loader(config):
 
 
 def val_data_loader(config):
-    val_dataset = LinearDataset(2, 5, size=config.get("val_size", 400))
+    val_dataset = LinearDataset(size=config.get("val_size", 400))
     validation_loader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=config.get("batch_size", 32))
@@ -58,26 +83,26 @@ def val_data_loader(config):
 
 
 def get_model(config):
-    return nn.Linear(1, config.get("hidden_size", 1))
+    return Net()
 
 
 def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
-class TestPyTorchTrainer(TestCase):
+class TestPyTorchEstimator(TestCase):
     def test_linear(self):
         estimator = Estimator.from_torch(model=get_model,
                                          optimizer=get_optimizer,
-                                         loss=nn.MSELoss(),
-                                         config={"lr": 1e-2, "hidden_size": 1,
+                                         loss=nn.BCELoss(),
+                                         config={"lr": 1e-2,
                                                  "batch_size": 128},
                                          backend="pytorch")
         train_stats = estimator.fit(train_data_loader, epochs=2)
         print(train_stats)
-        # it seems validate on regression model is not supported
-        # val_stats = estimator.evaluate(val_data_loader)
-        # print(val_stats)
+        val_stats = estimator.evaluate(val_data_loader)
+        print(val_stats)
+        assert 0 < val_stats["val_accuracy"] < 1
         assert estimator.get_model()
         estimator.shutdown()
 
