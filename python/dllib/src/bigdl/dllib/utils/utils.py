@@ -77,6 +77,29 @@ def detect_python_location():
     return out.strip()
 
 
+def detect_conda_env_name():
+    import subprocess
+    pro = subprocess.Popen(
+        "conda info",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    out, err = pro.communicate()
+    out = out.decode("utf-8")
+    err = err.decode("utf-8")
+    errorcode = pro.returncode
+    if 0 != errorcode:
+        raise EnvironmentError(err +
+                               "Cannot find conda info.")
+    for line in out.split('\n'):
+        item = line.split(':')
+        if len(item) == 2:
+            if item[0].strip() == "active environment":
+                return item[1].strip()
+    raise EnvironmentError(err +
+                           "Failed to detect conda env name.")
+
+
 # This is adopted from conda-pack.
 def pack_conda_main(conda_name, tmp_path):
     import subprocess
