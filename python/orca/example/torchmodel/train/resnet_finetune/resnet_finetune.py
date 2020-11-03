@@ -13,31 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-import torch
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
-from pyspark.sql import SparkSession
 from pyspark.sql.types import StringType, DoubleType
 from pyspark.sql.functions import col, udf
 from bigdl.optim.optimizer import *
 from zoo.common.nncontext import *
 from zoo.feature.image import *
-from zoo.pipeline.api.net.torch_net import TorchNet
-from zoo.pipeline.api.net.torch_criterion import TorchCriterion
+from zoo.pipeline.api.torch import TorchModel, TorchLoss
 from zoo.pipeline.nnframes import *
 from zoo.pipeline.api.keras.metrics import Accuracy
+from zoo.util.utils import detect_conda_env_name
 
 
 # Define model with Pytorch
 class CatDogModel(nn.Module):
     def __init__(self):
         super(CatDogModel, self).__init__()
-        self.features = torchvision.models.resnet18(pretrained=True).eval()
+        self.features = torchvision.models.resnet18(pretrained=True)
+        # freeze weight update
+        for parameter in self.features.parameters():
+            parameter.requires_grad_(False)
         self.dense1 = nn.Linear(1000, 2)
 
     def forward(self, x):
+        # freeze BatchNorm
+        self.features.eval()
         x = self.features(x)
         x = F.log_softmax(self.dense1(x), dim=1)
         return x
@@ -55,25 +57,26 @@ if __name__ == '__main__':
     if hadoop_conf_dir:
         num_executors = 2
         num_cores_per_executor = 4
+        zoo_conda_name = detect_conda_env_name()  # auto detect current conda env name
         sc = init_spark_on_yarn(
             hadoop_conf=hadoop_conf_dir,
-            conda_name=os.environ["ZOO_CONDA_NAME"],  # The name of the created conda-env
+            conda_name=zoo_conda_name,
             num_executors=num_executors,
             executor_cores=num_cores_per_executor,
             executor_memory="8g",
             driver_memory="2g",
             driver_cores=1)
     else:
-        num_executors = 1
         num_cores_per_executor = 4
-        sc = init_spark_on_local(cores=4, conf={"spark.driver.memory": "10g"})
+        sc = init_spark_on_local(cores=num_cores_per_executor, conf={"spark.driver.memory": "10g"})
 
-    torchnet = TorchNet.from_pytorch(CatDogModel(), [4, 3, 224, 224])
+    model = CatDogModel()
+    zoo_model = TorchModel.from_pytorch(model)
 
     def lossFunc(input, target):
         return nn.NLLLoss().forward(input, target.flatten().long())
 
-    torchcriterion = TorchCriterion.from_pytorch(lossFunc, [1, 2], torch.LongTensor([1]))
+    zoo_loss = TorchLoss.from_pytorch(lossFunc)
 
     # prepare training data as Spark DataFrame
     image_path = sys.argv[1]
@@ -90,7 +93,7 @@ if __name__ == '__main__':
          ImageChannelNormalize(123.0, 117.0, 104.0, 255.0, 255.0, 255.0),
          ImageMatToTensor(), ImageFeatureToTensor()])
 
-    classifier = NNClassifier(torchnet, torchcriterion, featureTransformer) \
+    classifier = NNClassifier(zoo_model, zoo_loss, featureTransformer) \
         .setLearningRate(0.001) \
         .setBatchSize(16) \
         .setMaxEpoch(1) \
@@ -103,11 +106,12 @@ if __name__ == '__main__':
     shift = udf(lambda p: p - 1, DoubleType())
     predictionDF = catdogModel.transform(validationDF) \
         .withColumn("prediction", shift(col('prediction'))).cache()
-    predictionDF.sample(False, 0.1).show()
 
     correct = predictionDF.filter("label=prediction").count()
     overall = predictionDF.count()
     accuracy = correct * 1.0 / overall
 
-    # expecting: accuracy > 96%
-    print("Validation accuracy = %g " % accuracy)
+    predictionDF.sample(False, 0.1).show()
+
+    # expecting: accuracy around 95%
+    print("Validation accuracy = {}, correct {},  total {}".format(accuracy, correct, overall))

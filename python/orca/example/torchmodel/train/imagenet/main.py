@@ -24,7 +24,7 @@ from zoo.pipeline.estimator import *
 from zoo.common.nncontext import *
 from zoo.feature.common import FeatureSet
 from zoo.pipeline.api.keras.metrics import Accuracy, Top5Accuracy
-from zoo.util.utils import detect_python_location
+from zoo.util.utils import detect_conda_env_name
 
 import math
 
@@ -83,7 +83,6 @@ def main():
     parser.add_argument('--driver_cores', default=1, type=int,
                         help='num of driver cores to use.')
     args = parser.parse_args()
-    # sc = init_nncontext()
     if os.environ.get('HADOOP_CONF_DIR') is None:
         sc = init_spark_on_local(cores=args.cores, conf={"spark.driver.memory": "20g"})
     else:
@@ -97,7 +96,7 @@ def main():
         os.environ['OMP_NUM_THREADS'] = str(num_cores_per_executor)
         sc = init_spark_on_yarn(
             hadoop_conf=hadoop_conf_dir,
-            conda_name=detect_python_location().split("/")[-3],  # The name of the created conda-env
+            conda_name=detect_conda_env_name(),  # auto detect current conda env name
             num_executors=num_executors,
             executor_cores=num_cores_per_executor,
             executor_memory=executor_memory,
