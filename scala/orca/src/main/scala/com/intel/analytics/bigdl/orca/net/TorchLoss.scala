@@ -27,6 +27,12 @@ import org.apache.spark.TaskContext
 class TorchLoss(private val criterionHolder: Array[Byte])
   extends AbstractCriterion[Activity, Activity, Float]() {
   import TorchLoss._
+  def postId(): String = {
+    taskId() + "_" + postfix
+  }
+
+  @transient
+  lazy val postfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
 
   protected lazy val loaded = {
     PythonInterpreter.set("criterion_bytes", criterionHolder)
@@ -45,30 +51,36 @@ class TorchLoss(private val criterionHolder: Array[Byte])
     // _data is come from FeatureSet.
     val dataExisted = PythonInterpreter.getValue[Boolean]("'_data' in dir()")
     if (dataExisted) {
-      PythonInterpreter.exec(s"target_${taskId} = _data[1]")
+      PythonInterpreter.exec(s"target_${postId} = _data[1]")
     } else {
       // TODO: support table target
       require(target.isTensor, "only support tensor target")
       // TODO: detect type
       val t = target.toTensor[Float]
       if (t.nElement() == t.storage().array().length) {
-        PythonInterpreter.set(s"nd_target_${taskId}",
+        PythonInterpreter.set(s"nd_target_${postId}",
           new NDArray[Array[Float]](t.storage().array(), t.size(): _*))
       } else {
         // The last mini batch during evaluation is smaller.
-        PythonInterpreter.set(s"nd_target_${taskId}",
+        PythonInterpreter.set(s"nd_target_${postId}",
           new NDArray[Array[Float]](t.storage().array().slice(
             t.storageOffset() - 1, t.nElement()), t.size(): _*))
       }
-      PythonInterpreter.exec(s"target_${taskId} = torch.Tensor(nd_target_${taskId})")
+      PythonInterpreter.exec(s"target_${postId} = torch.Tensor(nd_target_${postId})")
     }
-    PythonInterpreter.exec(s"loss_${taskId} = ${name}(output_${taskId}, target_${taskId})")
-    output = PythonInterpreter.getValue(s"loss_${taskId}.item()").asInstanceOf[Double].toFloat
+    PythonInterpreter.exec(s"loss_${postId} = ${name}(" +
+      s"output_${Integer.toHexString(input.hashCode())}, target_${postId})")
+    output = PythonInterpreter.getValue(s"loss_${postId}.item()").asInstanceOf[Double].toFloat
     output
   }
 
   override def updateGradInput(input: Activity, target: Activity): Activity = {
     // TODO: return a empty result
+    val backwardCode =
+      s"""
+         |loss_${postId}.backward(retain_graph=True)
+         |""".stripMargin
+    PythonInterpreter.exec(backwardCode)
     Tensor[Float]()
   }
 
