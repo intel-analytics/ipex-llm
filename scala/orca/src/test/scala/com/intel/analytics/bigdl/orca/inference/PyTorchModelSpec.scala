@@ -22,12 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.zoo.common.{PythonInterpreter, PythonInterpreterTest}
 import com.intel.analytics.zoo.core.TFNetNative
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.net.TorchModel
 import org.apache.log4j.{Level, Logger}
-
-import com.intel.analytics.zoo.common.NNContext.initNNContext
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
-import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.language.postfixOps
 
@@ -39,11 +34,8 @@ class PyTorchModelSpec extends ZooSpecHelper with InferenceSupportive {
   var model2: InferenceModel = _
   val currentNum = 10
   var modelPath: String = _
-  var sc: SparkContext = _
 
   override def doBefore(): Unit = {
-    val conf = new SparkConf().setAppName("SimpleTorchModel").setMaster("local[4]")
-    sc = initNNContext(conf)
     model = new InferenceModel(currentNum) { }
     model2 = new InferenceModel(currentNum) { }
     modelPath = ZooSpecHelper.createTmpFile().getAbsolutePath()
@@ -91,13 +83,10 @@ class PyTorchModelSpec extends ZooSpecHelper with InferenceSupportive {
 
   "PyTorch Model" should "be loaded" in {
     ifskipTest()
-    val modelone = TorchModel.loadModel(modelPath)
-    modelone.evaluate()
-
-    val PyTorchModel = ModelLoader.loadFloatModelForPyTorch(modelPath)
-    PyTorchModel.evaluate()
-    val metaModel = makeMetaModel(PyTorchModel)
-    val floatFromPyTorch = new FloatModel(PyTorchModel, metaModel, true)
+    val pyTorchModel = ModelLoader.loadFloatModelForPyTorch(modelPath)
+    pyTorchModel.evaluate()
+    val metaModel = makeMetaModel(pyTorchModel)
+    val floatFromPyTorch = new FloatModel(pyTorchModel, metaModel, true)
     floatFromPyTorch shouldNot be(null)
 
     model.doLoadPyTorch(modelPath)
@@ -107,16 +96,14 @@ class PyTorchModelSpec extends ZooSpecHelper with InferenceSupportive {
     model2.doLoadPyTorch(modelBytes)
     model2 shouldNot be(null)
 
-    EngineRef.getDefaultThreadPool.invokeAndWait[Float](
-      (0 until currentNum).map(i => () => {
-        model.doLoadPyTorch(modelPath)
-        model shouldNot be(null)
+    (0 until currentNum).toParArray.foreach(i => {
+      model.doLoadPyTorch(modelPath)
+      model shouldNot be(null)
 
-        model2.doLoadPyTorch(modelBytes)
-        model2 shouldNot be(null)
-        1f
-      })
-    )
+      model2.doLoadPyTorch(modelBytes)
+      model2 shouldNot be(null)
+      1f
+    })
 
   }
 
@@ -125,19 +112,17 @@ class PyTorchModelSpec extends ZooSpecHelper with InferenceSupportive {
     model.doLoadPyTorch(modelPath)
     model2.doLoadPyTorch(modelPath)
 
-    EngineRef.getDefaultThreadPool.invokeAndWait[Float](
-      (0 until currentNum * 10).map(i => () => {
-        val inputTensor = Tensor[Float](1, 2).rand()
-        val exceptedResult = inputTensor.valueAt(1, 1) * 0.2f +
-          inputTensor.valueAt(1, 2) * 0.5f + 0.3f
-        val r = model.doPredict(inputTensor)
-        r should be(Tensor[Float](Array(exceptedResult), Array(1, 1)))
+    (0 until currentNum * 10).toParArray.foreach(i => {
+      val inputTensor = Tensor[Float](1, 2).rand()
+      val exceptedResult = inputTensor.valueAt(1, 1) * 0.2f +
+        inputTensor.valueAt(1, 2) * 0.5f + 0.3f
+      val r = model.doPredict(inputTensor)
+      r should be(Tensor[Float](Array(exceptedResult), Array(1, 1)))
 
-        val r2 = model2.doPredict(inputTensor)
-        r2 should be(Tensor[Float](Array(exceptedResult), Array(1, 1)))
-        1f
-      })
-    )
+      val r2 = model2.doPredict(inputTensor)
+      r2 should be(Tensor[Float](Array(exceptedResult), Array(1, 1)))
+      1f
+    })
 
   }
 
