@@ -349,10 +349,6 @@ class TrainingOperator:
         """
         # unpack features into list to support multiple inputs model
         *features, target = batch
-        if len(target.size()) > 1:
-            # Can't directly call torch.squeeze() in case batch size is 1.
-            for i in reversed(range(1, len(target.size()))):
-                target = torch.squeeze(target, i)
 
         if self.use_gpu:
             features = [
@@ -364,6 +360,10 @@ class TrainingOperator:
         with self.timers.record("eval_fwd"):
             output = self.model(*features)
             loss = self.criterion(output, target)
+            if len(target.size()) > 1:
+                # Can't directly call torch.squeeze() in case batch size is 1.
+                for i in reversed(range(1, len(target.size()))):
+                    target = torch.squeeze(target, i)
             if len(output.size()) > 1:
                 # In case there is extra trailing dimensions.
                 for i in reversed(range(1, len(output.size()))):
@@ -388,6 +388,7 @@ class TrainingOperator:
 
         num_correct = np.sum(np_output == np_target)
         num_samples = target.size(0)
+
         return {
             "val_loss": loss.item(),
             "val_accuracy": num_correct / num_samples,
