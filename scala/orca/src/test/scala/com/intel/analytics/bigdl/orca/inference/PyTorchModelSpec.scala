@@ -16,79 +16,129 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import java.io.File
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.zoo.common.Utils
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, FunSuite, Matchers}
+import com.intel.analytics.zoo.common.{PythonInterpreter, PythonInterpreterTest}
+import com.intel.analytics.zoo.core.TFNetNative
+import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.net.TorchModel
+import org.apache.log4j.{Level, Logger}
+
+import com.intel.analytics.zoo.common.NNContext.initNNContext
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.language.postfixOps
-import sys.process._
 
-/*
 
-class PyTorchModelSpec extends FunSuite with Matchers with BeforeAndAfterAll
-  with InferenceSupportive {
+@PythonInterpreterTest
+class PyTorchModelSpec extends ZooSpecHelper with InferenceSupportive {
 
-  val s3Url = "https://s3-ap-southeast-1.amazonaws.com"
-  val s3DataUrl = s"$s3Url" + s"/analytics-zoo-models"
-  val modelURL = s"$s3DataUrl/pytorch/pytorch-resnet.pt"
-  var tmpDir: File = _
   var model: InferenceModel = _
   var model2: InferenceModel = _
   val currentNum = 10
   var modelPath: String = _
+  var sc: SparkContext = _
 
-  override def beforeAll()  {
-    tmpDir = Utils.createTmpDir("ZooVino").toFile()
-    val dir = new File(s"${tmpDir.getAbsolutePath}/PyTorchModelSpec").getCanonicalPath
-    s"wget -nv -P $dir $modelURL" !;
-
-    s"ls -alh $dir" !;
-
-    modelPath = s"$dir/pytorch-resnet.pt"
+  override def doBefore(): Unit = {
+    val conf = new SparkConf().setAppName("SimpleTorchModel").setMaster("local[4]")
+    sc = initNNContext(conf)
     model = new InferenceModel(currentNum) { }
     model2 = new InferenceModel(currentNum) { }
+    modelPath = ZooSpecHelper.createTmpFile().getAbsolutePath()
   }
 
-  override def afterAll() {
+  override def doAfter(): Unit = {
     model.doRelease()
     model2.doRelease()
-    s"rm -rf $tmpDir" !;
   }
 
-  test("pytorch model should be loaded") {
+  protected def ifskipTest(): Unit = {
+    // Skip unitest if environment is not ready, PYTHONHOME should be set in environment
+    if (System.getenv("PYTHONHOME") == null) {
+      cancel("Please export PYTHONHOME before this test.")
+    } else {
+      logger.info(s"use python home: ${System.getenv("PYTHONHOME")}")
+      Logger.getLogger(PythonInterpreter.getClass()).setLevel(Level.DEBUG)
+      // Load TFNet before create interpreter, or the TFNet will throw an OMP error #13
+      TFNetNative.isLoaded
+      val resnetModel =
+        s"""
+           |import torch
+           |import torch.nn as nn
+           |import torchvision.models as models
+           |from zoo.pipeline.api.torch import zoo_pickle_module
+           |
+           |class SimpleTorchModel(nn.Module):
+           |    def __init__(self):
+           |        super(SimpleTorchModel, self).__init__()
+           |        self.dense1 = nn.Linear(2, 1)
+           |        list(self.dense1.parameters())[0][0][0] = 0.2
+           |        list(self.dense1.parameters())[0][0][1] = 0.5
+           |        list(self.dense1.parameters())[1][0] = 0.3
+           |    def forward(self, x):
+           |        x = self.dense1(x)
+           |        return x
+           |
+           |model = SimpleTorchModel()
+           |torch.save(model, "$modelPath", pickle_module=zoo_pickle_module)
+           |""".stripMargin
+      PythonInterpreter.exec(resnetModel)
+    }
+  }
+
+
+  "PyTorch Model" should "be loaded" in {
+    ifskipTest()
+    val modelone = TorchModel.loadModel(modelPath)
+    modelone.evaluate()
+
+    val PyTorchModel = ModelLoader.loadFloatModelForPyTorch(modelPath)
+    PyTorchModel.evaluate()
+    val metaModel = makeMetaModel(PyTorchModel)
+    val floatFromPyTorch = new FloatModel(PyTorchModel, metaModel, true)
+    floatFromPyTorch shouldNot be(null)
+
     model.doLoadPyTorch(modelPath)
-    println(model)
     model shouldNot be(null)
 
     val modelBytes = Files.readAllBytes(Paths.get(modelPath))
     model2.doLoadPyTorch(modelBytes)
-    println(model2)
     model2 shouldNot be(null)
+
+    EngineRef.getDefaultThreadPool.invokeAndWait[Float](
+      (0 until currentNum).map(i => () => {
+        model.doLoadPyTorch(modelPath)
+        model shouldNot be(null)
+
+        model2.doLoadPyTorch(modelBytes)
+        model2 shouldNot be(null)
+        1f
+      })
+    )
+
   }
 
-  test("pytorch model can do predict") {
-    val inputTensor = Tensor[Float](1, 3, 224, 224).rand()
-    val results = model.doPredict(inputTensor)
-    println(results)
-    val threads = List.range(0, currentNum).map(i => {
-      new Thread() {
-        override def run(): Unit = {
-          val r = model.doPredict(inputTensor)
-          println(r)
-          r should be (results)
+  "PyTorch Model" should "do predict" in {
+    ifskipTest()
+    model.doLoadPyTorch(modelPath)
+    model2.doLoadPyTorch(modelPath)
 
-          val r2 = model2.doPredict(inputTensor)
-          println(r2)
-          r2 should be (results)
-        }
-      }
-    })
-    threads.foreach(_.start())
-    threads.foreach(_.join())
+    EngineRef.getDefaultThreadPool.invokeAndWait[Float](
+      (0 until currentNum * 10).map(i => () => {
+        val inputTensor = Tensor[Float](1, 2).rand()
+        val exceptedResult = inputTensor.valueAt(1, 1) * 0.2f +
+          inputTensor.valueAt(1, 2) * 0.5f + 0.3f
+        val r = model.doPredict(inputTensor)
+        r should be(Tensor[Float](Array(exceptedResult), Array(1, 1)))
+
+        val r2 = model2.doPredict(inputTensor)
+        r2 should be(Tensor[Float](Array(exceptedResult), Array(1, 1)))
+        1f
+      })
+    )
+
   }
 
 }
-*/
