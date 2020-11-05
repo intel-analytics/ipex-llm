@@ -99,9 +99,9 @@ class TorchModelSpec extends ZooSpecHelper{
         |_data = (input, target)
         |""".stripMargin
     PythonInterpreter.exec(genInputCode)
-    model.forward(Tensor[Float]())
-    criterion.forward(Tensor[Float](), Tensor[Float]())
-    criterion.backward(Tensor[Float](), Tensor[Float]())
+    val output = model.forward(Tensor[Float]())
+    criterion.forward(output, Tensor[Float]())
+    criterion.backward(output, Tensor[Float]())
     model.backward(Tensor[Float](), Tensor[Float]())
   }
 
@@ -157,7 +157,8 @@ class TorchModelSpec extends ZooSpecHelper{
          |bys = io.BytesIO()
          |torch.save(model, bys, pickle_module=zoo_pickle_module)
          |bym = bys.getvalue()
-         |del _data
+         |if '_data' in locals():
+         |  del _data
          |""".stripMargin
     PythonInterpreter.exec(code)
 
@@ -169,9 +170,9 @@ class TorchModelSpec extends ZooSpecHelper{
 
     val input = Tensor[Float](4, 1, 28, 28).rand()
     val target = Tensor[Float](Array(0f, 1f, 3f, 4f), Array(4))
-    model.forward(input)
-    criterion.forward(input, target)
-    val gradOutput = criterion.backward(input, target)
+    val output = model.forward(input)
+    criterion.forward(output, target)
+    val gradOutput = criterion.backward(output, target)
     model.backward(input, gradOutput)
   }
 
