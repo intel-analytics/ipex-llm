@@ -123,7 +123,7 @@ For Yarn user using docker, start Flink on Yarn inside the container. The other 
 #### Manual installation
 
 ##### Requirements
-Non-Docker users need to install [Flink](https://archive.apache.org/dist/flink/flink-1.10.0/), 1.10.0 by default, [Redis](https://redis.io/topics/quickstart), 0.5.0 by default.
+Non-Docker users need to install [Flink 1.10.0+](https://archive.apache.org/dist/flink/flink-1.10.0/), 1.10.0 by default, [Redis 5.0.0+](https://redis.io/topics/quickstart), 5.0.5 by default.
 
 After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
