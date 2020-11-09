@@ -15,7 +15,11 @@ tsp = TimeSequencePredictor(name="automl",
                             dt_col="datetime",
                             target_col="value",
                             extra_features_col=None,
-                            drop_missing=True,)
+                            drop_missing=True,
+                            search_alg=None,
+                            search_alg_params=None,
+                            scheduler=None,
+                            scheduler_params=None,)
 ```
 
 #### Arguments
@@ -34,6 +38,14 @@ tsp = TimeSequencePredictor(name="automl",
 
 * **drop_missing**: Boolean. Whether to drop missing values of the input data frame.
 
+* **search_alg**: Optional(str). The search algorithm to use. We only support "bayesopt" and "skopt" for now.
+                The default search_alg is None and variants will be generated according to the search method in search space.
+* **search_alg_params**: Optional(Dict). params of search_alg.
+
+* **scheduler**: Optional(str). Scheduler name. Allowed scheduler names are "fifo", "async_hyperband",
+    "asynchyperband", "median_stopping_rule", "medianstopping", "hyperband", "hb_bohb", "pbt". The default scheduler is "fifo".
+
+* **scheduler_params**: Optional(Dict). Necessary params of scheduler.
 
 ### fit
 
