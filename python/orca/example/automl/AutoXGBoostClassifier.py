@@ -114,7 +114,17 @@ if __name__ == '__main__':
 
     estimator = AutoXGBoost().classifier(feature_cols=input_cols,
                                          target_col="ArrDelayBinary",
-                                         config=config)
+                                         config=config,
+                                         search_alg="skopt",
+                                         search_alg_params=None,
+                                         scheduler="AsyncHyperBand",
+                                         scheduler_params=dict(
+                                             max_t=50,
+                                             grace_period=1,
+                                             reduction_factor=3,
+                                             brackets=3,
+                                         ),
+                                         )
 
     import time
     start = time.time()
