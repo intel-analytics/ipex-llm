@@ -119,12 +119,12 @@ class RayXShards(XShards):
 
     def transform_shards_with_actors(self, actors, func,
                                      gang_scheduling=True):
-        '''
+        """
         Assign each partition_ref (referencing a list of shards) to an actor,
         and run func for each actor and partition_ref pair.
 
         Actors should have a `get_node_ip` method to achieve locality scheduling.
-        The `get_node_ip` method should call ray.serivice.get_node_ip_address()
+        The `get_node_ip` method should call ray.services.get_node_ip_address()
         to return the correct ip address.
 
         The `func` should take an actor and a partition_ref as argument and
@@ -136,7 +136,7 @@ class RayXShards(XShards):
         object, say [partition_ref], ray will send the partition_ref itself to
         actor, and you may need to use ray.get(partition_ref) on actor to retrieve
         the actor partition objects.
-        '''
+        """
         new_ray_rdd = self.ray_rdd.map_partitions_with_actors(actors,
                                                               func,
                                                               gang_scheduling)
@@ -247,7 +247,7 @@ class SparkXShards(XShards):
         """
         Return a new SparkXShards that has exactly num_partitions partitions.
         :param num_partitions: target number of partitions
-        :return: a new SparkXshards object.
+        :return: a new SparkXShards object.
         """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
@@ -454,48 +454,6 @@ class SparkXShards(XShards):
                 raise Exception("Invalid key for this XShards")
             return value
         return SparkXShards(self.rdd.map(get_data), transient=True)
-
-    # Tested on pyarrow 0.17.0; 0.16.0 would get errors.
-    def to_ray(self):
-        """
-        Put data of this SparkXShards to Ray cluster object store.
-        :return: a new RayXShards which contains data of this SparkXShards.
-        """
-        from zoo.ray import RayContext
-        ray_ctx = RayContext.get()
-        object_store_address = ray_ctx.address_info["object_store_address"]
-
-        def put_to_plasma(ids):
-            def f(index, iterator):
-                import pyarrow.plasma as plasma
-                from zoo.util.utils import get_node_ip
-                res = list(iterator)
-                client = plasma.connect(object_store_address)
-                target_id = ids[index]
-                # If the ObjectID exists in plasma, we assume a task trial
-                # succeeds and the data is already in the object store.
-                if not client.contains(target_id):
-                    object_id = client.put(res, target_id)
-                    assert object_id == target_id, \
-                        "Errors occurred when putting data into plasma object store"
-                client.disconnect()
-                yield target_id, get_node_ip()
-            return f
-
-        # Create plasma ObjectIDs beforehand instead of creating a random one every time to avoid
-        # memory leak in case errors occur when putting data into plasma and Spark would retry.
-        # ObjectIDs in plasma is a byte string of length 20 containing characters and numbers.
-        # The random generation of ObjectIDs is often good enough to ensure unique IDs.
-        import pyarrow.plasma as plasma
-        object_ids = [plasma.ObjectID.from_random() for i in range(self.rdd.getNumPartitions())]
-        object_id_node_ips = self.rdd.mapPartitionsWithIndex(put_to_plasma(object_ids)).collect()
-        self.uncache()
-        # Sort the data according to the node_ips.
-        object_id_node_ips.sort(key=lambda x: x[1])
-        partitions = [RayPartition(object_id=id_ip[0], node_ip=id_ip[1],
-                                   object_store_address=object_store_address)
-                      for id_ip in object_id_node_ips]
-        return RayXShards(partitions)
 
     def _for_each(self, func, *args, **kwargs):
         def utility_func(x, func, *args, **kwargs):
