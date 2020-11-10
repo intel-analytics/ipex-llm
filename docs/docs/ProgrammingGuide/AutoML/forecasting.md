@@ -7,10 +7,20 @@
 _TimeSequencePredictor_ can be used to train a model on historical time sequence data and predict future sequences. Note that:   
   * We require input time series data to be uniformly sampled in timeline. Missing data points will lead to errors or unreliable prediction result. 
 
+#### 0. Prepare environment
+
+We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run automated training on a yarn cluster (yarn-client mode only).
+
+```bash
+conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set another name you like.
+conda activate zoo
+pip install analytics-zoo[automl]==0.9.0.dev0 # or above
+```
+
 #### 1. Before training, init RayOnSpark.   
 
 * Run ray on spark local mode, Example
-     
+  
 ```python
 from zoo import init_spark_on_local
 from zoo.ray import RayContext
@@ -18,7 +28,7 @@ sc = init_spark_on_local(cores=4)
 ray_ctx = RayContext(sc=sc)
 ray_ctx.init()
 ```
-   
+
 * run ray on yarn cluster, Example  
       
 ```python
@@ -42,7 +52,7 @@ ray_ctx.init()
 
 * `dt_col` and `target_col` are datetime cols and target column in the input dataframe 
 * `future_seq_len` is how many data points ahead to predict. 
-    
+  
 ```python
 from zoo.automl.regression.time_sequence_predictor import TimeSequencePredictor
 tsp = TimeSequencePredictor(dt_col="datetime", target_col="value", extra_features_col=None, future_seq_len=1)
@@ -57,16 +67,16 @@ tsp = TimeSequencePredictor(dt_col="datetime", target_col="value", extra_feature
 * input train dataframe look like below: 
 
 |datetime|value|
-| --------|----- | 
+| --------|----- |
 |2019-06-06|1.2|
 |2019-06-07|2.3|...|
-  
+
 ```python
 pipeline = tsp.fit(train_df, metric="mean_squared_error", recipe=RandomRecipe(num_samples=1), distributed=False)
 ```
 
 #### 4. After training finished, stop RayOnSpark
- 
+
 ```python
 ray_ctx.stop()
 ```
@@ -77,18 +87,18 @@ ray_ctx.stop()
 ```python
 pipeline.save("/tmp/saved_pipeline/my.ppl")
 ```
- 
+
 * Load the _Pipeline_ object from a file 
 ```python
 from zoo.automl.pipeline.time_sequence import load_ts_pipeline
  
 pipeline = load_ts_pipeline("/tmp/saved_pipeline/my.ppl")
 ```
- 
+
 ### Prediction and Evaluation using _TimeSequencePipeline_ 
 
 A _TimeSequencePipeline_ contains a chain of feature transformers and models, which does end-to-end time sequence prediction on input data. _TimeSequencePipeline_ can be saved and loaded for future deployment.      
- 
+
 * Prediction using _Pipeline_ object
 
 Output dataframe look likes below (assume predict n values forward). col `datetime` is the starting timestamp.  
@@ -100,7 +110,7 @@ Output dataframe look likes below (assume predict n values forward). col `dateti
 ```python
 result_df = pipeline.predict(test_df)
 ```
- 
+
 * Evaluation using _Pipeline_ object
 
 ```python

@@ -13,7 +13,7 @@ Refer to [AutoTS API Guide](https://analytics-zoo.github.io/master/#Zouwu/API/Au
 
 ---
 ### **Step 0: Prepare environment**
-We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the enviroments, especially if you want to run automated training on a yarn cluster (yarn-client mode only).
+We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run automated training on a yarn cluster (yarn-client mode only).
 ```bash
 conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set another name you like.
 conda activate zoo
