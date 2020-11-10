@@ -15,7 +15,6 @@
 #
 from py4j.protocol import Py4JError
 
-from zoo.orca.data.ray_rdd import RayRdd
 from zoo.orca.data.utils import *
 from zoo.orca import OrcaContext
 from zoo.common.nncontext import init_nncontext
@@ -160,6 +159,7 @@ class RayXShards(XShards):
 
     @staticmethod
     def from_spark_xshards(spark_xshards):
+        from zoo.orca.data.ray_rdd import RayRdd
         ray_rdd = RayRdd.from_spark_rdd(spark_xshards.rdd)
         return RayXShards(ray_rdd)
 
