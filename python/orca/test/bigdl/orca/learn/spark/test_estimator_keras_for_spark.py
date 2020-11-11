@@ -43,6 +43,19 @@ class TestEstimatorForKeras(TestCase):
                       metrics=['accuracy'])
         return model
 
+    def create_model_lr_schedule(self, init_lr, decay_steps, decay_rate):
+        x = tf.keras.layers.Input(shape=[8])
+
+        predictions = tf.keras.layers.Dense(1, use_bias=False,
+                                            kernel_initializer=tf.ones_initializer())(x)
+
+        model = tf.keras.models.Model(inputs=[x], outputs=predictions)
+        schedule = tf.keras.optimizers.schedules.ExponentialDecay(init_lr, decay_steps, decay_rate)
+        optimizer = tf.keras.optimizers.SGD(schedule)
+        model.compile(optimizer=optimizer,
+                      loss=lambda label, pred: tf.reduce_mean(pred - label))
+        return model
+
     def create_model_with_clip(self):
 
         user = tf.keras.layers.Input(shape=[1])
@@ -434,6 +447,31 @@ class TestEstimatorForKeras(TestCase):
         assert predictions[0]['prediction'].shape[1] == 2
         shutil.rmtree(temp)
 
+    def test_estimator_keras_learning_rate_schedule(self):
+
+        tf.reset_default_graph()
+
+        # loss = reduce_sum(w)
+        # dloss/dw = 1
+        model = self.create_model_lr_schedule(0.1, 1, 0.1)
+
+        dataset = tf.data.Dataset.from_tensor_slices((np.ones((16, 8)),
+                                                      np.zeros((16, 1))))
+        est = Estimator.from_keras(keras_model=model)
+        weights_before = model.get_weights()[0]
+        est.fit(data=dataset,
+                batch_size=8,
+                epochs=1,
+                validation_data=dataset)
+
+        sess = tf.keras.backend.get_session()
+        iteartion = sess.run(model.optimizer.iterations)
+        weights_after = model.get_weights()[0]
+        first_step = weights_before - 0.1
+        second_step = first_step - 0.01
+
+        assert iteartion == 2
+        assert np.allclose(second_step, weights_after)
 
 if __name__ == "__main__":
     import pytest
