@@ -293,12 +293,12 @@ private[bigdl] class ModelInfo[T: ClassTag](val uuid: String, @transient var mod
   }
 }
 
-private[bigdl] object ModelInfo {
+object ModelInfo {
   def apply[T: ClassTag](uuid: String, model: Module[T])(
     implicit ev: TensorNumeric[T]): ModelInfo[T] = new ModelInfo[T](uuid, model)
 }
 
-private[bigdl] object CachedModels {
+object CachedModels {
   import java.util.concurrent.ConcurrentHashMap
 
   import scala.collection._
