@@ -3,13 +3,13 @@ In this notebook, we use automl to do time series forecasting on NYC taxi datase
 
 ## Prepare environment
 
-We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the enviroments.
+We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments.
 ```
 conda create -n zoo python=3.6 #zoo is conda enviroment name, you can set another name you like.
 source activate zoo
 pip install analytics-zoo[automl]
 ```
-Note that the extra dependencies (including `ray`, `psutil`, `aiohttp`, `setproctitle`, `scikit-learn`,`featuretools`, `tensorflow`, `pandas`, `requests`, `bayesian-optimization`) will be installed by specifying `[automl]`.  
+Note that the extra dependencies (including `ray`, `psutil`, `aiohttp`, `setproctitle`, `scikit-learn`, `tensorflow`, `pandas`, `requests`, `bayesian-optimization`) will be installed by specifying `[automl]`.  
 You can also find the details of zoo installation [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) 
 
 ## Run Jupyter

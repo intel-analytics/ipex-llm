@@ -5,7 +5,6 @@ Name & version
 
 bayesian-optimization==1.1.0
 dask==2.14.0
-featuretools==0.13.4
 h5py==2.10.0
 imageio==2.8.0
 imageio-ffmpeg==0.4.1
