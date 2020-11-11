@@ -92,7 +92,7 @@ object Util {
   }
 
 
-  private[bigdl] def getAndClearWeightBias[T: ClassTag]
+  def getAndClearWeightBias[T: ClassTag]
   (parameters: (Array[Tensor[T]], Array[Tensor[T]]))(implicit ev: TensorNumeric[T])
   : Array[Tensor[T]] = {
     if (parameters._1.length != 0) {
@@ -136,7 +136,7 @@ object Util {
     }
   }
 
-  private[bigdl] def getAndClearConsts[T: ClassTag](
+  def getAndClearConsts[T: ClassTag](
         model: Container[_, _, T])(implicit ev: TensorNumeric[T]): Map[String, Tensor[_]] = {
     val moduleConsts = model.findModules("Const")
       .map(_.asInstanceOf[Const[T, _]])
@@ -148,7 +148,7 @@ object Util {
     result
   }
 
-  private[bigdl] def putConsts[T: ClassTag](
+  def putConsts[T: ClassTag](
         model: Container[_, _, T],
         consts: Map[String, Tensor[_]])(implicit ev: TensorNumeric[T]) : Unit = {
     val moduleConsts = model.findModules("Const")
@@ -161,7 +161,7 @@ object Util {
     }
   }
 
-  private def clearTensor[T: ClassTag](tensors: Array[Tensor[T]])
+  def clearTensor[T: ClassTag](tensors: Array[Tensor[T]])
     (implicit ev: TensorNumeric[T]): Unit = {
     var i = 0
     while (i < tensors.length) {
@@ -176,7 +176,7 @@ object Util {
     }
   }
 
-  private[bigdl] def putWeightBias[T: ClassTag](
+  def putWeightBias[T: ClassTag](
       broadcastWeightBias: Array[Tensor[T]],
       localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val localWeightBias = localModel.parameters()._1
@@ -202,7 +202,7 @@ object Util {
     }
   }
 
-  private[bigdl] def initGradWeightBias[T: ClassTag](
+  def initGradWeightBias[T: ClassTag](
       broadcastWeightBias: Array[Tensor[T]],
       localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
@@ -230,7 +230,7 @@ object Util {
    * except `resolveClass` method of [[ObjectInputStream]] is overridden,
    * which fix potential [[ClassNotFoundException]] caused by uncertain `latestUserDefinedLoader`.
    */
-  private[bigdl] def deserialize[T: ClassTag](objectData: Array[Byte]): T = {
+  def deserialize[T: ClassTag](objectData: Array[Byte]): T = {
     if (objectData == null) {
       throw new IllegalArgumentException("The byte[] must not be null")
     }
@@ -242,7 +242,7 @@ object Util {
    * except `resolveClass` method of [[ObjectInputStream]] is overridden,
    * which fix potential [[ClassNotFoundException]] caused by uncertain `latestUserDefinedLoader`.
    */
-  private[bigdl] def deserialize[T: ClassTag](inputStream: InputStream): T = {
+  def deserialize[T: ClassTag](inputStream: InputStream): T = {
     if (inputStream == null) {
       throw new IllegalArgumentException("The InputStream must not be null")
     }
