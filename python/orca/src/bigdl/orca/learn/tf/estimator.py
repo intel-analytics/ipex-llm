@@ -168,17 +168,19 @@ class Estimator(object):
                                   )
 
     @staticmethod
-    def from_keras(keras_model, metrics=None, model_dir=None, backend="bigdl"):
+    def from_keras(keras_model, metrics=None, model_dir=None, optimizer=None, backend="bigdl"):
         """
         Create an Estimator from a tensorflow.keras model. The model must be compiled.
         :param keras_model: the tensorflow.keras model, which must be compiled.
         :param metrics: user specified metric.
         :param model_dir: location to save model checkpoint and summaries.
+        :param optimizer: an optional bigdl optimMethod that will override the optimizer in
+                          keras_model.compile
         :param backend: backend for estimator. Now it only can be "bigdl".
         :return: an Estimator object.
         """
         assert backend == "bigdl", "only bigdl backend is supported for now"
-        return TFKerasWrapper(keras_model, metrics, model_dir)
+        return TFKerasWrapper(keras_model, metrics, model_dir, optimizer)
 
     def save_tf_checkpoint(self, path):
         """
@@ -267,30 +269,39 @@ class TFOptimizerWrapper(Estimator):
         self.outputs = outputs
         self.labels = labels
         self.loss = loss
+        self.use_bigdl_optim = False
+        self.clip_norm = clip_norm
+        self.clip_value = clip_value
         if optimizer is not None:
-            assert isinstance(optimizer, tf.train.Optimizer), \
-                "optimizer is of type {}, ".format(type(optimizer)) + \
-                "it should be an instance of tf.train.Optimizer"
-            self.optimizer = ZooOptimizer(optimizer)
-            if clip_norm or clip_value:
-                gvs = self.optimizer.compute_gradients(self.loss)
-                if clip_norm:
-                    gvs = [(tf.clip_by_norm(g_v[0], clip_norm), g_v[1]) for g_v in gvs]
-                if clip_value:
-                    if isinstance(clip_value, tuple):
-                        assert len(clip_value) == 2 and clip_value[0] < clip_value[1], \
-                            "clip value should be (clip_min, clip_max)"
-                        gvs = [(tf.clip_by_value(g_v[0], clip_value[0], clip_value[1]), g_v[1])
-                               for g_v in gvs]
-                    if isinstance(clip_value, (int, float)):
-                        assert clip_value > 0, "clip value should be larger than 0"
-                        gvs = [(tf.clip_by_value(g_v[0], -clip_value, clip_value), g_v[1])
-                               for g_v in gvs]
-                    else:
-                        raise Exception("clip_value should be a tuple or one number")
-                self.train_op = self.optimizer.apply_gradients(gvs)
+            from bigdl.optim.optimizer import OptimMethod
+            if isinstance(optimizer, OptimMethod):
+                self.train_op = None
+                self.optimizer = optimizer
+                self.use_bigdl_optim = True
             else:
-                self.train_op = self.optimizer.minimize(self.loss)
+                assert isinstance(optimizer, tf.train.Optimizer), \
+                    "optimizer is of type {}, ".format(type(optimizer)) + \
+                    "it should be an instance of tf.train.Optimizer"
+                self.optimizer = ZooOptimizer(optimizer)
+                if clip_norm or clip_value:
+                    gvs = self.optimizer.compute_gradients(self.loss)
+                    if clip_norm:
+                        gvs = [(tf.clip_by_norm(g_v[0], clip_norm), g_v[1]) for g_v in gvs]
+                    if clip_value:
+                        if isinstance(clip_value, tuple):
+                            assert len(clip_value) == 2 and clip_value[0] < clip_value[1], \
+                                "clip value should be (clip_min, clip_max)"
+                            gvs = [(tf.clip_by_value(g_v[0], clip_value[0], clip_value[1]), g_v[1])
+                                   for g_v in gvs]
+                        if isinstance(clip_value, (int, float)):
+                            assert clip_value > 0, "clip value should be larger than 0"
+                            gvs = [(tf.clip_by_value(g_v[0], -clip_value, clip_value), g_v[1])
+                                   for g_v in gvs]
+                        else:
+                            raise Exception("clip_value should be a tuple or one number")
+                    self.train_op = self.optimizer.apply_gradients(gvs)
+                else:
+                    self.train_op = self.optimizer.minimize(self.loss)
         else:
             self.optimizer = None
             self.train_op = None
@@ -371,17 +382,26 @@ class TFOptimizerWrapper(Estimator):
         else:
             tensor_with_value = None
 
-        self.tf_optimizer = TFOptimizer.from_train_op(
-            train_op=self.train_op,
-            loss=self.loss,
-            inputs=self.inputs,
-            labels=self.labels,
-            dataset=dataset,
-            metrics=self.metrics,
-            updates=self.updates, sess=self.sess,
-            tensor_with_value=tensor_with_value,
-            session_config=session_config,
-            model_dir=self.model_dir)
+        if self.use_bigdl_optim:
+            self.tf_optimizer = TFOptimizer.from_loss(
+                self.loss, self.optimizer,
+                session=self.sess, inputs=(self.inputs, self.labels), dataset=dataset,
+                clip_norm=self.clip_norm, clip_value=self.clip_value, metrics=self.metrics,
+                tensor_with_value=tensor_with_value, session_config=session_config,
+                model_dir=self.model_dir, updates=self.updates)
+        else:
+
+            self.tf_optimizer = TFOptimizer.from_train_op(
+                train_op=self.train_op,
+                loss=self.loss,
+                inputs=self.inputs,
+                labels=self.labels,
+                dataset=dataset,
+                metrics=self.metrics,
+                updates=self.updates, sess=self.sess,
+                tensor_with_value=tensor_with_value,
+                session_config=session_config,
+                model_dir=self.model_dir)
 
         if self.load_checkpoint:
             self.tf_optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
@@ -495,11 +515,12 @@ class TFOptimizerWrapper(Estimator):
 
 
 class TFKerasWrapper(Estimator):
-    def __init__(self, keras_model, metrics, model_dir):
+    def __init__(self, keras_model, metrics, model_dir, optimizer):
         self.model = KerasModel(keras_model, model_dir)
         self.load_checkpoint = False
         self.metrics = metrics
         self.tf_optimizer = None
+        self.optimizer = optimizer
         self.log_dir = None
         self.app_name = None
 
@@ -563,7 +584,8 @@ class TFKerasWrapper(Estimator):
         self.tf_optimizer = TFOptimizer.from_keras(self.model.model, dataset,
                                                    model_dir=self.model.model_dir,
                                                    session_config=session_config,
-                                                   metrics=self.metrics)
+                                                   metrics=self.metrics,
+                                                   optimizer=self.optimizer)
 
         if self.load_checkpoint:
             self.tf_optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
