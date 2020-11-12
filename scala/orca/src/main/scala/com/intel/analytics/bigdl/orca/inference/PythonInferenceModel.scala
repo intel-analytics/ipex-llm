@@ -91,6 +91,12 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
       interOpParallelismThreads, usePerSessionThreads)
   }
 
+  def inferenceModelLoadPytorch(
+      model: InferenceModel,
+      modelBytes: Array[Byte]): Unit = {
+    model.doLoadPyTorch(modelBytes)
+  }
+
   def inferenceModelPredict(
       model: InferenceModel,
       inputs: JList[com.intel.analytics.bigdl.python.api.JTensor],
