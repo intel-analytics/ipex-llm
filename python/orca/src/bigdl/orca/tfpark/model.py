@@ -29,12 +29,13 @@ from zoo.tfpark.tf_predictor import TFPredictor
 
 class KerasModel(object):
 
-    def __init__(self, model, model_dir=None):
+    def __init__(self, model, model_dir=None, optimizer=None):
         """
         :param model: a compiled keras model
         """
         self.model = model
         self.model_dir = model_dir
+        self.optimizer = optimizer
         import tensorflow as tf
         self.real_batch_size = tf.shape(self.model.inputs[0])[0]
         self.metric_tensors = {}
@@ -160,6 +161,7 @@ class KerasModel(object):
         self.tf_optimizer = TFOptimizer.from_keras(self.model, dataset,
                                                    model_dir=self.model_dir,
                                                    metrics=self.metric_tensors,
+                                                   optimizer=self.optimizer,
                                                    **kwargs)
 
         self.tf_optimizer.optimize(MaxEpoch(epochs))

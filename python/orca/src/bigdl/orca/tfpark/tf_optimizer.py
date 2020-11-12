@@ -600,7 +600,7 @@ class TFOptimizer:
 
     @classmethod
     def from_keras(cls, keras_model, dataset,
-                   session_config=None, model_dir=None, metrics=None):
+                   session_config=None, model_dir=None, metrics=None, optimizer=None):
         """
         Create a TFOptimizer from a tensorflow.keras model. The model must be compiled.
         :param keras_model: the tensorflow.keras model, which must be compiled.
@@ -697,6 +697,21 @@ class TFOptimizer:
                 metrics = bigdl_metrics
             else:
                 metrics.update(bigdl_metrics)
+
+        if optimizer is not None:
+            clip_norm = None
+            clip_value = None
+            if hasattr(keras_optimizer, 'clipnorm'):
+                clip_norm = keras_optimizer.clipnorm
+            if hasattr(keras_optimizer, 'clipvalue'):
+                clip_value = (-keras_optimizer.clipvalue, keras_optimizer.clipvalue)
+            tf_model = TFModel.create(loss, sess, model_inputs, model_targets, keras_model.outputs,
+                                      grads, variables, loss.graph,
+                                      tensor_with_value, session_config, metrics,
+                                      updates, model_dir=None)
+
+            return cls(tf_model, optimizer, sess=sess, dataset=dataset,
+                       clip_norm=clip_norm, clip_value=clip_value, model_dir=model_dir)
 
         return cls.from_train_op(train_op, loss, inputs=model_inputs, labels=model_targets,
                                  metrics=metrics, updates=updates, sess=sess, dataset=dataset,
