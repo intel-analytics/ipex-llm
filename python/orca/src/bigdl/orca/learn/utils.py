@@ -58,3 +58,21 @@ def find_latest_checkpoint(model_dir, model_type="bigdl"):
             optim_prefix = prefix
             break
     return ckpt_path, optim_prefix, latest_version
+
+
+def convert_predict_to_xshard(prediction_rdd):
+    import numpy as np
+    from zoo.orca.data import SparkXShards
+
+    def transform_predict(iter):
+        predictions = list(iter)
+        # list of np array
+        if isinstance(predictions[0], list):
+            predictions = np.array(predictions).T.tolist()
+            result = [np.array(predict) for predict in predictions]
+            return [{'prediction': result}]
+        # np array
+        else:
+            return [{'prediction': np.array(predictions)}]
+
+    return SparkXShards(prediction_rdd.mapPartitions(transform_predict))

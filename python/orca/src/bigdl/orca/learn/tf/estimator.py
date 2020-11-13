@@ -19,7 +19,7 @@ from bigdl.optim.optimizer import MaxEpoch
 from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 
 from zoo.orca.learn.tf.utils import *
-from zoo.orca.learn.utils import find_latest_checkpoint
+from zoo.orca.learn.utils import find_latest_checkpoint, convert_predict_to_xshard
 from zoo.tfpark import KerasModel
 from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
 from zoo.tfpark.tf_optimizer import StatelessMetric
