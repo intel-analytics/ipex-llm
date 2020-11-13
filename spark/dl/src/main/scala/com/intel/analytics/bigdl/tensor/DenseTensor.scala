@@ -1707,7 +1707,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     require(selectDim > 0 && selectDim <= this.nDimension)
 
     val sliceSize = this.size(selectDim)
-    require(k > 0 && k <= sliceSize)
+    require(k > 0 && k <= sliceSize,
+      s"top ${k} should be less than or equal to size of dimension ${selectDim}")
 
     val tmpResult = new Array[(T, Int)](sliceSize)
 
