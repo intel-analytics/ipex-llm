@@ -210,7 +210,7 @@ class BigDLEstimatorWrapper(Estimator):
             return self.nn_model.transform(data)
         elif isinstance(data, SparkXShards):
             from zoo.orca.data.utils import to_sample
-            from zoo.orca.learn.tf.utils import convert_predict_to_xshard
+            from zoo.orca.learn.utils import convert_predict_to_xshard
             sample_rdd = data.rdd.flatMap(to_sample)
             result_rdd = self.model.predict(sample_rdd)
             return convert_predict_to_xshard(result_rdd)
