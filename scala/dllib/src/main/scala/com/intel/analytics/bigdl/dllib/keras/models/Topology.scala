@@ -48,7 +48,7 @@ import com.intel.analytics.zoo.pipeline.api.autograd.{Lambda, Variable}
 import com.intel.analytics.zoo.pipeline.api.autograd._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils._
-import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, TorchModel, TorchNet}
+import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, TorchModel}
 import com.intel.analytics.zoo.pipeline.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
 import org.apache.commons.lang.exception.ExceptionUtils
@@ -1182,8 +1182,8 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
      * Currently, we only provide single model + multi OMP threads for torchnet model.
      * TODO: support tfnet.
      */
-    logger.info(s"${model} isTorchnet is ${TorchNet.isTorchNet(model)}")
-    val torchNetOptimize = TorchNet.isTorchNet(model)
+    logger.info(s"${model} isTorch is ${TorchModel.isTorch(model)}")
+    val torchNetOptimize = TorchModel.isTorch(model)
     val modelPerExecutor = if (torchNetOptimize) {
       require(EngineRef.getEngineType() != MklDnn, "torchnet shouldn't use MKLDNN engine.")
       val numOmpThread = distDataset.originRDD().sparkContext
@@ -1483,7 +1483,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
 
     val coresPerNode = EngineRef.getCoreNumber()
     val _subModelNumber = EngineRef.getEngineType() match {
-      case MklBlas => if (TorchNet.isTorchNet(_model)) {
+      case MklBlas => if (TorchModel.isTorch(_model)) {
         1
       } else {
         coresPerNode
