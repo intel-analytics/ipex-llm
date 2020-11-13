@@ -31,7 +31,6 @@ import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import com.intel.analytics.zoo.pipeline.api.keras.models.InternalDistriOptimizer
-import com.intel.analytics.zoo.pipeline.api.net.TorchNet
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -838,30 +837,16 @@ object NNModel extends MLReadable[NNModel[_]] {
     Net // this is necessary to load Net and register the serializer
     val meta = DefaultParamsWriterWrapper.loadMetadata(path, sc)
     val typeTag = (meta.metadata \ "tensorDataType").extract[String]
-    val modelType = try {
-      (meta.metadata \ "modelType").extract[String]
-    } catch {
-      // for compatibility with previous AZ versions
-      case _: Throwable => "default"
-    }
 
-    val model = modelType match {
-      case "TorchNet" =>
-        val torchPath = new Path(path, "torchscript.pt").toString
-        TorchNet(torchPath)
-      case "default" =>
-        val (modulePath, weightPath) =
-          new Path(path, "module").toString -> new Path(path, "weight").toString
-        typeTag match {
-          case "TensorDouble" =>
-            ModuleLoader.loadFromFile[Double](modulePath, weightPath)
-          case "TensorFloat" =>
-            ModuleLoader.loadFromFile[Float](modulePath, weightPath)
-          case _ =>
-            throw new Exception("Only support float and double for now")
-        }
+    val (modulePath, weightPath) =
+      new Path(path, "module").toString -> new Path(path, "weight").toString
+    val model = typeTag match {
+      case "TensorDouble" =>
+        ModuleLoader.loadFromFile[Double](modulePath, weightPath)
+      case "TensorFloat" =>
+        ModuleLoader.loadFromFile[Float](modulePath, weightPath)
       case _ =>
-        throw new IllegalArgumentException(s"unsupported modelType: $modelType")
+        throw new Exception("Only support float and double for now")
     }
 
     val featurePreprocessing =
@@ -905,20 +890,11 @@ object NNModel extends MLReadable[NNModel[_]] {
     val spCache = instance.getSamplePreprocessing
     File.save(spCache, new Path(path, "samplePreprocessing").toString, isOverWrite)
 
-    val modelType = module match {
-      case torchnet: TorchNet =>
-        val modulePath = new Path(path, "torchscript.pt").toString
-        torchnet.savePytorch(modulePath, isOverWrite)
-        "TorchNet"
-      case _ =>
-        val (modulePath, weightPath) =
-          new Path(path, "module").toString -> new Path(path, "weight").toString
-        module.saveModule(modulePath, weightPath, isOverWrite)
-        "default"
-    }
+    val (modulePath, weightPath) =
+      new Path(path, "module").toString -> new Path(path, "weight").toString
+    module.saveModule(modulePath, weightPath, isOverWrite)
 
-    val extra = extraMetadata.getOrElse(JObject()) ~ ("tensorDataType" -> tensorDataType) ~ (
-      "modelType" -> modelType)
+    val extra = extraMetadata.getOrElse(JObject()) ~ ("tensorDataType" -> tensorDataType)
 
     // bypass the default save for samplePreprocessing
     instance.clear(instance.samplePreprocessing)
