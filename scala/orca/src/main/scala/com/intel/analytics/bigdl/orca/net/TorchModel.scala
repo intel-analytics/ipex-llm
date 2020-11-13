@@ -20,6 +20,7 @@ import java.util
 import java.util.UUID
 import java.nio.file.{Files, Paths}
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
@@ -304,6 +305,10 @@ object TorchModel {
   }
 
   private[net] def taskId(): Int = TaskContext.getPartitionId()
+
+  def isTorch(module: Module[_]): Boolean = {
+    module.isInstanceOf[TorchModel]
+  }
 }
 
 

@@ -168,14 +168,6 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     model.getExtraParameter().map(toJTensor)
   }
 
-  def createTorchNet(modelPath: String): TorchNet = {
-      TorchNet(modelPath)
-  }
-
-  def createTorchCriterion(lossPath: String): TorchCriterion = {
-    TorchCriterion(lossPath)
-  }
-
   def createTorchModel(model: Array[Byte], weights: JTensor): TorchModel = {
     TorchModel(model, weights.storage)
   }
@@ -186,10 +178,6 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
 
   def createTorchOptim(optim: Array[Byte], decayType: String): TorchOptim[T] = {
     TorchOptim(optim, decayType)
-  }
-
-  def torchNetSavePytorch(torchnet: TorchNet, path: String): Unit = {
-    torchnet.savePytorch(path)
   }
 
 }
