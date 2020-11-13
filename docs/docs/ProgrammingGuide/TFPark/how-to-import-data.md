@@ -43,7 +43,7 @@ val_feature_data = np.random.randn(100, 28, 28, 1)
 val_label_data = np.random.randint(0, 10, size=(100,))
 dataset = TFDataset.from_ndarrays((feature_data, label_data), batch_size=32, val_tensors=(val_feature_data, val_label_data))
 ```
- 
+
 
 ### Working with in-memory ndarray
 

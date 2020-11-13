@@ -99,7 +99,7 @@ from zoo.tfpark import TFEstimator, ZooOptimizer
 def model_fn(features, labels, mode):
 
     hidden = tf.layers.dense(features, 32, activation=tf.nn.relu)
-    
+
     logits = tf.layers.dense(hidden, 10)
 
     if mode == tf.estimator.ModeKeys.EVAL or mode == tf.estimator.ModeKeys.TRAIN:
@@ -227,7 +227,7 @@ model.compile(optimizer='rmsprop',
             loss='sparse_categorical_crossentropy',
             metrics=['accuracy'])
 ```
-   
+
 3.Distributed training on Spark and BigDL
 
 ```python
@@ -251,7 +251,7 @@ optimizer.optimize(end_trigger=MaxEpoch(5))
 ```
 
 4.Save the variable to checkpoint
-   
+
 ```python
 saver = tf.train.Saver()
 saver.save(optimizer.sess, "/tmp/lenet/")
@@ -285,7 +285,7 @@ dataset = TFDataset.from_rdd(testing_rdd,
                              features=(tf.float32, [28, 28, 1]),
                              batch_per_thread=4)
 ```
-   
+
 2.Reconstruct the model for inference and load the checkpoint
 
 ```python

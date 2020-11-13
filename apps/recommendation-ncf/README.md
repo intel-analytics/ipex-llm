@@ -28,7 +28,6 @@ Run the following command for Spark local mode (MASTER=local[*]) or cluster mode
     export SPARK_HOME=the root directory of Spark
     export ANALYTICS_ZOO_HOME=the folder where you extract the downloaded Analytics Zoo zip package
 
-```
     ${ANALYTICS_ZOO_HOME}/bin/jupyter-with-zoo.sh \
     --master ${MASTER} \
     --driver-cores 4  \
@@ -36,6 +35,5 @@ Run the following command for Spark local mode (MASTER=local[*]) or cluster mode
     --total-executor-cores 4  \
     --executor-cores 4  \
     --executor-memory 22g
-```
 
 See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-without-pip-install) for more running guidance without pip install. 

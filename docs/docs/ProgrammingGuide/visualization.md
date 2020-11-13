@@ -230,6 +230,6 @@ plt.plot(val_loss[:,0],val_loss[:,1],label='val loss',color='green')
 plt.scatter(val_loss[:,0],val_loss[:,1],color='green')
 plt.legend();
 ```
- 
+
 ![jupyter](../Image/jupyter.png)
 

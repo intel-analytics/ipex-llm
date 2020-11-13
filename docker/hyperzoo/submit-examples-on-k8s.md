@@ -26,7 +26,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 #### anomalydetection
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -57,7 +57,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 #### attention
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -89,7 +89,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 ###### autograd custom
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -120,7 +120,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 ###### autograd customloss
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -150,7 +150,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 #### image classification
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -183,7 +183,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 #### inception
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -218,7 +218,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 ###### nnframes image finetuning
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -251,7 +251,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 ###### nnframes image inference
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -284,7 +284,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 ###### nnframes image transfer learning
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -317,7 +317,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 #### object-detection
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -348,7 +348,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 #### openvino
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -382,7 +382,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 ###### pytorch inference 
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -412,7 +412,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 #### qranker
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -448,7 +448,7 @@ Look into [python example](https://github.com/intel-analytics/analytics-zoo/tree
 ###### tensorflow tfnet
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -510,7 +510,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ###### tensorflow TFPark tf_optimizer train
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -540,7 +540,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ###### tensorflow tfpark tf_optimizer evaluate
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -570,7 +570,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### text classification
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -603,7 +603,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### vnniopenvino
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -684,7 +684,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### chatbot
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -716,7 +716,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### imageClassification
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -750,7 +750,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### inception
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -786,7 +786,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ###### nnframes  finetune
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -893,7 +893,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### objectdetection
 
 ```bash
-   ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -925,7 +925,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### qaranker
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -961,7 +961,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ###### recommendation wideAndDeepExample
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -1027,7 +1027,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### resnet
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -1061,7 +1061,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### tensorflow/tfnet
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -1095,7 +1095,7 @@ ${SPARK_HOME}/bin/spark-submit \
 #### textClassification
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -1130,7 +1130,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ###### vnni perf
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -1231,7 +1231,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ###### vnni BigDL ImageNet evaluation
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
@@ -1264,7 +1264,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ###### **vnni BigDL predict**
 
 ```bash
-  ${SPARK_HOME}/bin/spark-submit \
+${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \

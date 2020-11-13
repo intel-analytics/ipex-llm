@@ -53,12 +53,12 @@ To create an AutoTSTrainer. Specify below arguments in constructor. See below ex
 * ```scheduler_params```: Optional(Dict). Necessary params of scheduler.
 
 ```python
- from zoo.zouwu.autots.forecast import AutoTSTrainer
+from zoo.zouwu.autots.forecast import AutoTSTrainer
 
- trainer = AutoTSTrainer(dt_col="datetime",
-                         target_col="value",
-                         horizon=1,
-                         extra_features_col=None)
+trainer = AutoTSTrainer(dt_col="datetime",
+                        target_col="value",
+                        horizon=1,
+                        extra_features_col=None)
 
 ```
 ### **Step 3: Fit with AutoTSTrainer**
@@ -66,7 +66,7 @@ To create an AutoTSTrainer. Specify below arguments in constructor. See below ex
 Use ```AutoTSTrainer.fit``` on train data and validation data. A TSPipeline will be returned. 
 
 ```python
- ts_pipeline = trainer.fit(train_df, validation_df)
+ts_pipeline = trainer.fit(train_df, validation_df)
 ```
 
 Both AutoTSTrainer and TSPipeline accepts data frames as input. An exmaple data frame looks like below.
@@ -83,21 +83,21 @@ For visualization, please refer to [here](../../ProgrammingGuide/AutoML/visualiz
 ### **Step 4: Further deployment with TSPipeline**
 Use ```TSPipeline.fit/evaluate/predict``` to train pipeline (incremental fitting), evaluate or predict. 
 ```python
- #incremental fitting
- ts_pipeline.fit(new_train_df, new_val_df, epochs=10)
- #evaluate
- ts_pipeline.evalute(val_df)
- ts_pipeline.predict(test_df) 
+#incremental fitting
+ts_pipeline.fit(new_train_df, new_val_df, epochs=10)
+#evaluate
+ts_pipeline.evalute(val_df)
+ts_pipeline.predict(test_df) 
 
 ```
 
 Use ```TSPipeline.save/load``` to load from file or save to file. 
 
 ```python
- from zoo.zouwu.autots.forecast import TSPipeline
- loaded_ppl = TSPipeline.load(file)
- # ... do sth. e.g. incremental fitting
- loaded_ppl.save(another_file)
+from zoo.zouwu.autots.forecast import TSPipeline
+loaded_ppl = TSPipeline.load(file)
+# ... do sth. e.g. incremental fitting
+loaded_ppl.save(another_file)
 ```
 
 

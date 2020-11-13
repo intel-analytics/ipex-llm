@@ -51,7 +51,7 @@ You can run a analytics zoo program, e.g., the [Object Detection](https://github
 1. Download the pre-trained model from [here](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ProgrammingGuide/object-detection.md).
 2. Prepare predict images
 3. Run the following command:
-```bash
+  ```bash
   # Spark local mode
   spark-submit --master local[core_number] --class com.intel.analytics.zoo.examples.objectdetection.Predict \
   dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
@@ -79,7 +79,7 @@ You can run a analytics zoo program, e.g., the [Object Detection](https://github
   --class com.intel.analytics.zoo.examples.objectdetection.Predict \
   dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
   --image path_to_your_images --output path_to_output --model path_to_model
-```
+  ```
 
 If you are to run your own program, do remember to create SparkContext and initialize before calling other Analytics Zoo API's, as shown below.
 ```scala

@@ -30,7 +30,7 @@ BigDL also provides seamless integrations of deep learning technologies into the
 ## **2.	Programming Model** 
 
 BigDL is implemented on Apache Spark, a widely used cluster computing engine for big data analysis. Spark provides a comprehensive set of libraries for relational processing, streaming, graph processing [16] and machine learning (in Python, Scala or Java); as a result, one can easily build the end-to-end, “data-analytics integrated” deep learning and AI pipelines (under a unified programing paradigm) using Spark and BigDL, as illustrated in Figure 1.
- 
+
 
 ```
 1    spark = SparkContext(appName="text_classifier", …)
@@ -103,7 +103,7 @@ Besides RDD, Spark provides a high level *DataFrame* abstraction [13], which is 
 Similar to other Big Data systems (such as MapReduce [30]), a Spark cluster consists of a single driver node and multiple worker nodes, as shown in Figure 2.  The driver node is responsible for coordinating the tasks in a Spark job (e.g., scheduling and dispatching), while the worker nodes are responsible for the actual computation and physical data storage. To automatically parallelize the large-scale data processing across the cluster in a fault-tolerant fashion, Spark provides a functional compute model where immutable RDDs are transformed through coarse-grained operators (i.e., applying the same operation to all data items). 
 
  ![fig2](Image/WP/fig2.jpg) 
- 
+
 *Figure 2. A Spark job contains many Spark tasks; the driver node is responsible for scheduling and dispatching the tasks to worker nodes, which runs the actual Spark tasks.*
 
 On the other hand, efficient and distributed training of deep neural networks would necessitate very different operations (such as fine-grained data access and in-place data mutation [3]). In this section, we describe in details how BigDL supports highly efficient and scalable distributed training, directly on top of the data parallel and functional compute model of Spark (in addition to various optimizations for model inference).
@@ -125,14 +125,14 @@ for (i <- 1 to N) {
   update the weights per specified optimization method
 }
 ```
- 
+
 
 *Figure 3. BigDL provides efficient, data-parallel, synchronous mini-batch SGD, where each iteration runs two Spark jobs for “model forward-backward” and “parameter synchronization”.*
 
 As described in Section 2, BigDL models the training data as an RDD of Samples, which are automatically partitioned and potentially cached in memory across the Spark cluster. In addition, to implement the data-parallel training, BigDL also constructs an RDD of models, each of which is a replica of the original neural network model. The model and Sample RDDs are co-partitioned and co-located [14] across the cluster, as shown in Figure 4; consequently, in each iteration of the model training, a single “model forward-backward” Spark job can apply the functional *zip* operator to the partitions of model and Sample RDDs, and compute the gradients in parallel for each model replica (using a small batch of data in the co-located Sample partition), as illustrated in Figure 4.
 
 ![fig4](Image/WP/fig4.jpg) 
- 
+
 *Figure 4. The “model forward-backward” spark job, which computes the local gradients for each model replica in parallel.*
 
 ### **3.2. Parameter synchronization**
@@ -140,7 +140,7 @@ As described in Section 2, BigDL models the training data as an RDD of Samples, 
 Parameter synchronization is a performance critical operation for data-parallel training (in terms of speed and scalability). To support efficient parameter synchronization, existing deep learning frameworks usually implement the *parameter server* [33][34][35] architecture or *AllReduce* [36] operation, which unfortunately cannot be directly supported by the functional compute model provided by the Big Data systems.
 
 In BigDL, we have adapted the primitives available in Spark (e.g., *shuffle, broadcast, in-memory cache*, etc.) to implement an efficient AllReduce-like operation, so as to mimic the functionality of a parameter server architecture (as illustrated in Figure 5).
- 
+
 ![fig5](Image/WP/fig5.jpg) 
 
 *Figure 5. Parameter synchronization in BigDL. Each local gradient (computed by a task in the “model forward-backward” job) is evenly divided into N partitions; then each task n in the “parameter synchronization” job aggregates these local gradients and update the weights for the nth partition.*
@@ -152,13 +152,13 @@ In BigDL, we have adapted the primitives available in Spark (e.g., *shuffle, bro
 ![fig6](Image/WP/fig6.jpg) 
 
 *Figure 6. The “parameter synchronization” Spark job, manages the n<sup>th</sup> partition of the parameters (similar to a parameter server).*
- 
+
 * After that, each task *n* in the “*parameter synchronization*” job **broadcasts** the n<sup>th</sup> partition of the updated weights; consequently, tasks in the “*model forward-backward*” job of the next iteration can read the latest value of all the weights before the next training step begins.
 
 * The *shuffle* and *task-side broadcast* operations described above are implemented on top of the distributed **in-memory** storage in Spark: both the shuffled *gradients* and broadcasted *weights* are materialized in memory, which can be read remotely by the Spark tasks with extremely low latency.
 
 By implementing the AllReduce operation using primitives in Spark, BigDL provides a highly efficient “parameter server” style architecture directly on top of Big Data frameworks. As a result, it is demonstrated to support highly scalable distributed training on up to 256-node, as reported by Cray [37] and shown in Figure 7. 
- 
+
  ![fig7](Image/WP/fig7.jpg) 
 
 *Figure 7. Throughput of ImageNet Inception v1 training reported by Cary [37] (using BigDL 0.3.0 and dual-socket Intel Broadwell 2.1 GHz); the training throughput scales almost linear up to 128 nodes (and continue to scale reasonably up to 256 nodes).*
@@ -173,7 +173,7 @@ In contrast, BigDL runs a series of short-lived Spark jobs (e.g., two jobs per m
 To scale to an even larger number (e.g., 500) of workers, one can potentially leverages the iterative nature of the model training (in which the same operations are executed repeatedly). For instance, group scheduling introduced by *Drizzle* [38] (a low latency execution engine for Spark) can help schedule multiple iterations (or a group) of computations at once, so as to greatly reduce scheduling overheads even if there are a large number of tasks, as benchmarked by RISELab [39] and shown in Figure 8.
 
 ![fig8](Image/WP/fig8.jpg) 
-  
+
 *Figure 8. Overheads of task scheduling and dispatch (as a fraction of average compute time) for ImageNet Inception v1 training in BigDL [39].*
 
 ### **3.4. Model quantization** 
@@ -186,13 +186,13 @@ Math.round(1.0 * value
            / Math.max(Math.abs(max), Math.abs(min)) 
            * Byte.MaxValue).toByte
 ```
- 
+
 *Figure 9. Equation for quantizing 32-bit floating point to 8-bit integer.*
 
 Unlike many existing quantization implementations, BigDL adopts a new local quantization scheme. That is, it performs the quantization and dequantization operations (as described above) in each small local quantization window, a small sub-block (such as a patch or kernel in convolution) of the parameters or input data. As a result, BigDL can use very low bit integers, such as 8-bit, in model quantization with extremely low model accuracy drop (less than 0.1%), 4x model size reduction, and up to 2x inference speedup, as benchmarked on AWS EC2 [40] and shown in Figure 10.
 
 ![fig10](Image/WP/fig10.jpg)
-   
+
 *Figure 10. Model quantization results (accuracy, inference speed and model size) for SSD, VGG16 and VGG19 (using BigDL 0.3.0 and AWS EC2 C5.18xlarge instances) [40].*
 
 ### **3.5. Local execution**
@@ -209,7 +209,7 @@ JD.com [41] is one of the largest online retailers in the world. It has built an
 
 
 ![fig11](Image/WP/fig11.jpg) 
- 
+
 *Figure 11. End-to-end object detection and image feature extraction pipeline (using SSD and DeepBit models) on top of Spark and BigDL [42].*
 
 * The pipeline first reads hundreds of millions of pictures from a distributed database into Spark (as an RDD of pictures), and then pre-processes the RDD of pictures (including *resizing*, *normalization*, and *batching*) in a distributed fashion using Spark.
@@ -224,7 +224,7 @@ The entire data analytics and deep learning pipeline, including data loading, pa
 
 
 ![fig12](Image/WP/fig12.jpg) 
- 
+
 *Figure 12. Throughput of GPU clusters and Xeon clusters for the image feature extraction pipeline benchmarked by JD [42]; the GPU throughput is tested on 20 NVIDIA Tesla K40 cards, and the Xeon throughput is tested on 1200 logical cores (where each dual-socket Intel Xeon E5-2650 v4 server runs 50 logical cores).*
 
 ### **4.2. Distributed training: precipitation nowcasting**
@@ -233,7 +233,7 @@ Cray has integrated BigDL to their Urika-XC analytics software suite, and built 
 
 
 ![fig13](Image/WP/fig13.jpg) 
- 
+
 *Figure 13. End-to-end precipitation nowcasting workflow (using sequence-to-sequence model) [37] on Spark and BigDL.*
 
 * The application first reads over a terabyte of raw radar scan data into Spark (as an RDD of radar images), and then converts it into an RDD of *NumPy ndarrays*.
@@ -241,7 +241,7 @@ Cray has integrated BigDL to their Urika-XC analytics software suite, and built 
 * It then trains a *sequence-to-sequence* model [45][46] (as illustrated in Figure 13), using a sequence of images leading up to the current time as the input, and a sequence of predicted images in the future as the output.
 
 * After the model is trained, it can be used to predict, say, precipitation patterns for the next hour, as illustrated in Figure 14.
- 
+
 ![fig14](Image/WP/fig14.jpg) 
 
 *Figure 14. Predicting precipitation patterns for the next hour (i.e., a sequence of images for the future time steps of the next hour) on Spark and BigDL [37]*
@@ -261,7 +261,7 @@ To compute the visual similarity, the system use the VGG-16 [50] model pre-train
 At *model serving* time, the user can select a house listing photo, and have the system to recommend house listings of similar visual characteristics (by computing the cosine similarity score using the image features, while taking into considerations other properties of the houses such as photo tags, house prices, locations, etc.), as illustrated in the *“Similar Houses”* section of the webpage in Figure 16.
 
 ![fig16](Image/WP/fig16.jpg) 
- 
+
 *Figure 16. Automatically recommending “Similar Houses” with similar visual characteristics [47]*
 
 ## **5.Related Work**

@@ -47,7 +47,7 @@ model:
 使用同步API，需要传入符合模型格式的输入，**并且注意数据类型为float，即末尾加上小数点代表float格式**，样例如下，
 
 假设Redis启动host为"localhost"，port为"6379"，[同步服务](#安装)启动url为"127.0.0.1:10020"，模型输入为一维，有两个常数，则推理脚本代码如下
-```
+
     input_api = InputQueue(host="localhost", port="6379", sync=True, frontend_url="http://127.0.0.1:10020")
     s = '''{
           "instances": [
@@ -58,4 +58,3 @@ model:
         }'''
     a = input_api.predict(s)
     print(a)
-```
