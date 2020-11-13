@@ -21,7 +21,6 @@ import torch
 from bigdl.nn.layer import Layer
 from bigdl.util.common import JTensor
 from zoo.common.utils import callZooFunc
-from pyspark.serializers import CloudPickleSerializer
 from zoo.pipeline.api.torch.utils import trainable_param
 from zoo.pipeline.api.torch import zoo_pickle_module
 from importlib.util import find_spec
@@ -38,9 +37,6 @@ class TorchModel(Layer):
     """
     TorchModel wraps a PyTorch model as a single layer, thus the PyTorch model can be used for
     distributed inference or training.
-    The implement of TorchModel is different from TorchNet, this TorchModel is running running
-    pytorch model in an embedding Cpython interpreter, while TorchNet transfer the pytorch model
-    to TorchScript and run with libtorch.
     """
 
     def __init__(self, module_bytes, weights, bigdl_type="float"):
