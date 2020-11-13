@@ -29,7 +29,7 @@ class elastic_search:
         pass
 
     @staticmethod
-    def read(esConfig, esResource, schema=None):
+    def read_df(esConfig, esResource, schema=None):
         """
         Read the data from elastic search into DataFrame.
         :param esConfig Dictionary which represents configuration for
@@ -43,7 +43,7 @@ class elastic_search:
         sqlContext = SQLContext.getOrCreate(sc)
         spark = sqlContext.sparkSession
 
-        reader = spark.read.format("org.elasticsearch.spark.sql")
+        reader = spark.read_df.format("org.elasticsearch.spark.sql")
 
         for key in esConfig:
             reader.option(key, esConfig[key])
@@ -74,7 +74,7 @@ class elastic_search:
         return fields
 
     @staticmethod
-    def write(esConfig, esResource, df):
+    def write_df(esConfig, esResource, df):
         """
         Write the Spark DataFrame to elastic search.
         :param esConfig Dictionary which represents configuration for
@@ -82,10 +82,29 @@ class elastic_search:
         :param esResource resource file in elastic search.
         :param df Spark DataFrame that will be saved.
         """
-        wdf = df.write.format("org.elasticsearch.spark.sql")\
+        wdf = df.write_df.format("org.elasticsearch.spark.sql")\
             .option("es.resource", esResource)
 
         for key in esConfig:
             wdf.option(key, esConfig[key])
 
         wdf.save()
+
+    @staticmethod
+    def read_rdd(esConfig, esResource=None):
+        """
+        Read the data from elastic search into Spark RDD.
+        :param esConfig Dictionary which represents configuration for
+               elastic search(eg. ip, port, es query etc).
+        :param esResource Optional. resource file in elastic search.
+               It also can be set in esConfig
+        :return Spark DataFrame. Each row represents a document in ES.
+        """
+        sc = init_nncontext()
+        if "es.resource" not in esConfig:
+            esConfig["es.resource"] = esResource
+        rdd = sc.newAPIHadoopRDD("org.elasticsearch.hadoop.mr.EsInputFormat",
+                                 "org.apache.hadoop.io.NullWritable",
+                                 "org.elasticsearch.hadoop.mr.LinkedMapWritable",
+                                 conf=esConfig)
+        return rdd
