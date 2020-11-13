@@ -76,6 +76,6 @@ After inference, you should see something like this in the console:
 |file:/tmp/zoo/infer_images/ILSVRC2012_val_00000020.JPEG|518.0     |
 +-------------------------------------------------------+----------+
 only showing top 20 rows
-
 ```
-    To map the class to human readable text, please refer to https://github.com/Lasagne/Recipes/blob/master/examples/resnet50/imagenet_classes.txt 
+
+To map the class to human readable text, please refer to https://github.com/Lasagne/Recipes/blob/master/examples/resnet50/imagenet_classes.txt 
