@@ -146,3 +146,18 @@ class InferenceModel(JavaValue):
                              jinputs,
                              input_is_table)
         return KerasNet.convert_output(output)
+
+    def distributed_predict(self, inputs, sc):
+        data_type = inputs.map(lambda x: x.__class__.__name__).first()
+        input_is_table = False
+        if data_type == "list":
+            input_is_table = True
+        jinputs = inputs.map(lambda x: Layer.check_input(x)[0])
+
+        output = callZooFunc(self.bigdl_type,
+                             "inferenceModelDistriPredict",
+                             self.value,
+                             sc,
+                             jinputs,
+                             input_is_table)
+        return output.map(lambda x: KerasNet.convert_output(x))
