@@ -42,6 +42,7 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.nn.tf.ControlDependency",
     "com.intel.analytics.bigdl.utils.tf.AdapterForTest",
     "com.intel.analytics.bigdl.utils.serializer.TestModule",
+    "com.intel.analytics.bigdl.utils.TestModule",
     "com.intel.analytics.bigdl.utils.ExceptionTest",
     "com.intel.analytics.bigdl.utils.serializer.SubModuleOne",
     "com.intel.analytics.bigdl.utils.serializer.SubModuleTwo",
