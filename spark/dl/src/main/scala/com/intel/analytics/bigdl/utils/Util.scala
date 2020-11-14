@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, CacheV1}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor._
+import org.apache.commons.lang.SerializationUtils
 import org.apache.commons.lang3.SerializationException
 import org.apache.spark.rdd.RDD
 
@@ -298,9 +299,11 @@ object Util {
             param.getTensorType match {
               case QuantizedType =>
                 val quantTensor = param.asInstanceOf[QuantizedTensor[T]]
-                retParams(i) = QuantizedDummyTensor()
-                retParams(i).copy(quantTensor)
-              case _ =>
+                val storage = new Array[Byte](quantTensor.nElement())
+                retParams(i) = QuantizedTensor[T](storage, quantTensor.maxOfRow,
+                  quantTensor.minOfRow, quantTensor.sumOfRow,
+                  quantTensor.size(), quantTensor.params)
+             case _ =>
                 retParams(i) = if (isCompacted) {
                   Tensor[T](resultStorage, param.storageOffset(), param.size(), param.stride())
                 } else {
