@@ -675,8 +675,8 @@ object DistriOptimizer extends AbstractOptimizer {
     ev: TensorNumeric[T])
   : Module[T] = {
     val partitionNum = models.partitions.length
-    val extraState = models.map(_.localModels.head.getExtraParameter()).first()
-    trainingModel.setExtraParameter(extraState)
+
+    Util.setExtraParametersFromModelRDD(models, trainingModel, maxSize = 500000000)
 
     // make sure gradient is as the same length as weight
     val parameterArray = trainingModel.parameters()
