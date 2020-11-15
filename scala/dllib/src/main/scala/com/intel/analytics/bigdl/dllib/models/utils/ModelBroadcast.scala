@@ -135,7 +135,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
 
       // For quantized model if we don't clone weightsBias, the original model will be released also
       // when we delete all models used in `ModelBroadcast`.
-      putWeightBias(SerializationUtils.clone(weightsBias), model)
+      putWeightBias(cloneParameters(weightsBias), model)
       initGradWeightBias(weightsBias, model)
     }
     setNodeAndCore()
@@ -170,7 +170,7 @@ private[bigdl] class ModelBroadcastImp[T: ClassTag](applyProtoBuffer: Boolean = 
       val parameters = if (shareWeight) {
         broadcastParameters.value
       } else {
-        SerializationUtils.clone(broadcastParameters.value)
+        cloneParameters(broadcastParameters.value)
       }
 
       // share weight
