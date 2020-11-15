@@ -49,7 +49,7 @@ class TorchModel(Layer):
     @staticmethod
     def from_pytorch(model):
         """
-        Create a TorchNet directly from PyTorch model, e.g. model in torchvision.models.
+        Create a TorchModel directly from PyTorch model, e.g. model in torchvision.models.
         :param model: a PyTorch model
         """
         weights = []
