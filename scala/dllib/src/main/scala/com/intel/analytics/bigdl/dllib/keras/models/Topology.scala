@@ -1177,18 +1177,18 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
     val nodeNumber = EngineRef.getNodeNumber()
 
     /**
-     * The best practice of torchnet's training is single model in each executor.
+     * The best practice of torch's training is single model in each executor.
      * And use multi OMP threads to speedup the single model's training.
-     * Currently, we only provide single model + multi OMP threads for torchnet model.
+     * Currently, we only provide single model + multi OMP threads for torch model.
      * TODO: support tfnet.
      */
     logger.info(s"${model} isTorch is ${TorchModel.isTorch(model)}")
-    val torchNetOptimize = TorchModel.isTorch(model)
-    val modelPerExecutor = if (torchNetOptimize) {
-      require(EngineRef.getEngineType() != MklDnn, "torchnet shouldn't use MKLDNN engine.")
+    val torchOptimize = TorchModel.isTorch(model)
+    val modelPerExecutor = if (torchOptimize) {
+      require(EngineRef.getEngineType() != MklDnn, "torch model shouldn't use MKLDNN engine.")
       val numOmpThread = distDataset.originRDD().sparkContext
         .getConf.get("spark.executorEnv.OMP_NUM_THREADS").toInt
-      logger.info(s"torchnet will use ${numOmpThread} OMP threads.")
+      logger.info(s"torch model will use ${numOmpThread} OMP threads.")
       1
     } else {
       EngineRef.getCoreNumber()
@@ -1231,7 +1231,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
 //      LarsSGD.containsLarsSGD(optimMethods).foreach(weightDecay =>
 //        parameterProcessors.append(new LarsProcessor(parameterSplits, weightDecay))
 //      )
-      if (torchNetOptimize) {
+      if (torchOptimize) {
         InternalOptimizerUtil.setExecutorMklThread(distDataset.originRDD())
       }
       val modelsAndBroadcast = InternalOptimizerUtil.initThreadModels[T](
