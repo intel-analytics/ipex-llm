@@ -151,6 +151,10 @@ class RayXShards(XShards):
     def collect(self):
         return self.ray_rdd.collect()
 
+    # Collect without flattening the results.
+    def collect_partitions(self):
+        return self.ray_rdd.collect_partitions()
+
     def num_partitions(self):
         return self.ray_rdd.num_partitions()
 

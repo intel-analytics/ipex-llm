@@ -36,14 +36,13 @@ class TestPyTorchEstimator(TestCase):
             scheduler_creator=scheduler_creator,
             config={
                 "lr": 1e-2,  # used in optimizer_creator
-                "hidden_size": 1,  # used in model_creator
-                "batch_size": 4,  # used in data_creator
+                "hidden_size": 1  # used in model_creator
             }, backend="horovod")
-        stats1 = estimator.fit(train_data_creator, epochs=5)
+        stats1 = estimator.fit(train_data_creator, batch_size=4, epochs=5)
         train_loss1 = stats1[-1]["train_loss"]
         validation_loss1 = estimator.evaluate(validation_data_creator)["val_loss"]
 
-        stats2 = estimator.fit(train_data_creator, epochs=3)
+        stats2 = estimator.fit(train_data_creator, batch_size=4, epochs=3)
         train_loss2 = stats2[-1]["train_loss"]
         validation_loss2 = estimator.evaluate(validation_data_creator)["val_loss"]
 
@@ -60,11 +59,10 @@ class TestPyTorchEstimator(TestCase):
             scheduler_creator=scheduler_creator,
             config={
                 "lr": 1e-2,  # used in optimizer_creator
-                "hidden_size": 1,  # used in model_creator
-                "batch_size": 4,  # used in data_creator
+                "hidden_size": 1  # used in model_creator
             }, backend="horovod")
         with TemporaryDirectory() as tmp_path:
-            estimator1.fit(train_data_creator, epochs=1)
+            estimator1.fit(train_data_creator, batch_size=4, epochs=1)
             checkpoint_path = os.path.join(tmp_path, "checkpoint")
             estimator1.save(checkpoint_path)
 
@@ -79,8 +77,7 @@ class TestPyTorchEstimator(TestCase):
                 scheduler_creator=scheduler_creator,
                 config={
                     "lr": 1e-2,  # used in optimizer_creator
-                    "hidden_size": 1,  # used in model_creator
-                    "batch_size": 4,  # used in data_creator
+                    "hidden_size": 1  # used in model_creator
                 }, backend="horovod")
             estimator2.load(checkpoint_path)
 

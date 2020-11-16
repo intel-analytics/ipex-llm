@@ -31,9 +31,6 @@ class MXNetRunner(object):
                           validation_metrics_creator=None, eval_metrics_creator=None):
         logging.basicConfig(level=logging.INFO)  # This can print log messages to console.
         self.logger = logging.getLogger()
-        assert isinstance(config, dict), "config must be a dict"
-        for param in ["optimizer", "optimizer_params", "log_interval"]:
-            assert param in config, param + " must be specified in config"
         self.config = config
         self.model_creator = model_creator
         self.loss_creator = loss_creator
@@ -84,7 +81,7 @@ class MXNetRunner(object):
         """Train the model and update the model parameters."""
         stats = dict()
         if self.is_worker:
-            config = self.config
+            config = self.config.copy()
             if "batch_size" not in config:
                 config["batch_size"] = batch_size
 

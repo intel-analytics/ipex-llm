@@ -143,55 +143,46 @@ def flatten_xy(allow_tuple=True, allow_list=True):
     return _flatten_xy
 
 
+def combine(data_list):
+    item = data_list[0]
+    if isinstance(item, dict):
+        res = {}
+        for k, v in item.items():
+            res[k] = np.concatenate([data[k] for data in data_list], axis=0)
+    elif isinstance(item, list) or isinstance(item, tuple):
+        res = []
+        for i in range(len(data_list[0])):
+            res.append(np.concatenate([data[i] for data in data_list], axis=0))
+        if isinstance(item, tuple):
+            res = tuple(res)
+    elif isinstance(data_list[0], np.ndarray):
+        res = np.concatenate(data_list, axis=0)
+    else:
+        raise ValueError(
+            "value of x and y should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+            " or a list of ndarrays, please check your input")
+    return res
+
+
 def ray_partition_get_data_label(partition_data,
                                  allow_tuple=True,
                                  allow_list=True,
-                                 get_label=True):
+                                 has_label=True):
     """
-    :param partition_data:
-    :param allow_tuple: boolean, if the model accepts a tuple as input. Default: True
-    :param allow_list: boolean, if the model accepts a list as input. Default: True
-    :return:
+    :param partition_data: The data partition from Spark RDD, which should be a list of records.
+    :param allow_tuple: Boolean. Whether the model accepts a tuple as input. Default is True.
+    :param allow_list: Boolean. Whether the model accepts a list as input. Default is True.
+    :param has_label: Boolean. Whether the data partition contains labels.
+    :return: Concatenated data for the data partition.
     """
-    from functools import reduce
-
-    def combine_dict(dict1, dict2):
-        return {key: np.concatenate((value, dict2[key]), axis=0)
-                for (key, value) in dict1.items()}
-
-    def combine_list(list1, list2):
-        return [np.concatenate((list1[index], list2[index]), axis=0)
-                for index in range(0, len(list1))]
-
-    def combine_tuple(tuple1, tuple2):
-        return tuple(np.concatenate((tuple1[index], tuple2[index]), axis=0)
-                     for index in range(0, len(tuple1)))
-
-    def check_type_and_combine(data_list):
-        if isinstance(data_list[0], dict):
-            return reduce(lambda dict1, dict2: combine_dict(dict1, dict2), data_list)
-        elif isinstance(data_list[0], np.ndarray):
-            return reduce(lambda array1, array2: np.concatenate((array1, array2), axis=0),
-                          data_list)
-        elif isinstance(data_list[0], list):
-            data = reduce(lambda list1, list2: combine_list(list1, list2), data_list)
-            data = _convert_list_tuple(data, allow_tuple=allow_tuple, allow_list=allow_list)
-            return data
-        elif isinstance(data_list[0], tuple):
-            data = reduce(lambda tuple1, tuple2: combine_tuple(tuple1, tuple2), data_list)
-            data = _convert_list_tuple(data, allow_tuple=allow_tuple, allow_list=allow_list)
-            return data
-        else:
-            raise ValueError(
-                "value of x and y should be a ndarray, a dict of ndarrays, a tuple of ndarrays"
-                " or a list of ndarrays, please check")
-
     data_list = [data['x'] for data in partition_data]
     label_list = [data['y'] for data in partition_data]
 
-    data = check_type_and_combine(data_list)
-    if get_label:
-        label = check_type_and_combine(label_list)
+    data = _convert_list_tuple(combine(data_list),
+                               allow_tuple=allow_tuple, allow_list=allow_list)
+    if has_label:
+        label = _convert_list_tuple(combine(label_list),
+                                    allow_tuple=allow_tuple, allow_list=allow_list)
     else:
         label = None
 
@@ -267,9 +258,6 @@ def get_class_name(obj):
 
 
 def _convert_list_tuple(data, allow_tuple, allow_list):
-    if not allow_list and not allow_tuple:
-        raise ValueError("value of x and y should be a ndarray, but get a " +
-                         data.__class__.__name__ + " instead")
     if isinstance(data, list):
         if not allow_list and allow_tuple:
             return tuple(data)
@@ -277,3 +265,44 @@ def _convert_list_tuple(data, allow_tuple, allow_list):
         if not allow_tuple and allow_list:
             return list(data)
     return data
+
+
+def process_spark_xshards(spark_xshards, num_workers):
+    from zoo.orca.data.shard import RayXShards
+    data = spark_xshards
+    if data.num_partitions() != num_workers:
+        data = data.repartition(num_workers)
+    ray_xshards = RayXShards.from_spark_xshards(data)
+    return ray_xshards
+
+
+def index_data(x, i):
+    if isinstance(x, np.ndarray):
+        return x[i]
+    elif isinstance(x, dict):
+        res = {}
+        for k, v in x.items():
+            res[k] = v[i]
+        return res
+    elif isinstance(x, tuple):
+        return tuple(item[i] for item in x)
+    elif isinstance(x, list):
+        return [item[i] for item in x]
+    else:
+        raise ValueError(
+            "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+            " or a list of ndarrays, please check your input")
+
+
+def get_size(x):
+    if isinstance(x, np.ndarray):
+        return len(x)
+    elif isinstance(x, dict):
+        for k, v in x.items():
+            return len(v)
+    elif isinstance(x, tuple) or isinstance(x, list):
+        return len(x[0])
+    else:
+        raise ValueError(
+            "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+            " or a list of ndarrays, please check your input")

@@ -214,6 +214,7 @@ class TorchRunner:
         return utils.find_free_port()
 
     def with_sampler(self, loader):
+        logger.debug("Wrapping DistributedSampler on DataLoader")
         data_loader_args = {
             "dataset": loader.dataset,
             "batch_size": loader.batch_size,
@@ -241,15 +242,22 @@ class TorchRunner:
         return (isinstance(loader, DataLoader)
                 and not_iterable)
 
-    def train_epochs(self, data_creator, epochs=1, profile=False, info=None):
+    def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
+                     info=None, wrap_dataloader=None):
+        config = self.config.copy()
+        if "batch_size" not in config:
+            config["batch_size"] = batch_size
         if OrcaContext.serialize_data_creation:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = data_creator(self.config)
+                loader = data_creator(config)
         else:
-            loader = data_creator(self.config)
+            loader = data_creator(config)
 
-        if TorchRunner.should_wrap_dataloader(loader):
+        if wrap_dataloader is None:
+            if TorchRunner.should_wrap_dataloader(loader):
+                loader = self.with_sampler(loader)
+        elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
         stats_list = list()
         for i in range(epochs):
@@ -283,23 +291,31 @@ class TorchRunner:
             stats.update(profile=self.timers.stats())
         return stats
 
-    def validate(self, data_creator, num_steps=None, profile=False, info=None):
+    def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
+                 info=None, wrap_dataloader=None):
         """Evaluates the model on the validation data set."""
+        config = self.config.copy()
+        if "batch_size" not in config:
+            config["batch_size"] = batch_size
         info = info or {}
         self._toggle_profiling(profile=profile)
 
         if OrcaContext.serialize_data_creation:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = data_creator(self.config)
+                loader = data_creator(config)
         else:
-            loader = data_creator(self.config)
+            loader = data_creator(config)
 
-        with self.timers.record("validation"):
+        if wrap_dataloader is None:
             if TorchRunner.should_wrap_dataloader(loader):
-                loader = iter(self.with_sampler(loader))
-                if num_steps:
-                    loader = itertools.islice(loader, num_steps)
+                loader = self.with_sampler(loader)
+        elif wrap_dataloader is True:
+            loader = self.with_sampler(loader)
+        loader = iter(loader)
+        if num_steps:
+            loader = itertools.islice(loader, num_steps)
+        with self.timers.record("validation"):
             validation_stats = self.training_operator.validate(loader, info=info)
         if profile:
             validation_stats.update(profile=self.timers.stats())
