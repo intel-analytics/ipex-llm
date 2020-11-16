@@ -85,12 +85,11 @@ def train_example(workers_per_node):
         workers_per_node=workers_per_node,
         config={
             "lr": 1e-2,  # used in optimizer_creator
-            "hidden_size": 1,  # used in model_creator
-            "batch_size": 4,  # used in data_creator
+            "hidden_size": 1  # used in model_creator
         }, backend="horovod")
 
     # train 5 epochs
-    stats = estimator.fit(train_data_creator, epochs=5)
+    stats = estimator.fit(train_data_creator, batch_size=4, epochs=5)
     print("train stats: {}".format(stats))
     val_stats = estimator.evaluate(validation_data_creator)
     print("validation stats: {}".format(val_stats))
