@@ -93,6 +93,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
        s"input dim(${input.dim()})")
     val nClasses = input.size(input.dim())
     if (input.dim() == 1) {
+      if (target.dim() == 2 && target.size(1) == 1) {
+        target.squeeze()
+      }
       require(input.dim() == target.dim(),
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
