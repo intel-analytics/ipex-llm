@@ -36,7 +36,7 @@ Each record in "image" column represents one image record, in the format of
 Row(origin, height, width, num of channels, mode, data), where origin contains the URI for the image file,
 and `data` holds the original file bytes for the image file. `mode` represents the OpenCV-compatible
 type: CV_8UC3, CV_8UC1 in most cases.
-  ```scala
+```scala
   val byteSchema = StructType(
     StructField("origin", StringType, true) ::
       StructField("height", IntegerType, false) ::
@@ -46,7 +46,7 @@ type: CV_8UC3, CV_8UC1 in most cases.
       StructField("mode", IntegerType, false) ::
       // Bytes in OpenCV-compatible order: row-wise BGR in most cases
       StructField("data", BinaryType, false) :: Nil)
-  ```
+```
 
 After loading the image, user can compose the preprocess steps with the `Preprocessing` defined
 in `com.intel.analytics.zoo.feature.image`.
@@ -374,11 +374,11 @@ Here is a scala [example](https://github.com/intel-analytics/analytics-zoo/blob/
 
 In the InceptionV1 example, we use an new dataset called [FeatureSet](../APIGuide/FeatureEngineering/featureset.md) to cache the data. Only scala API is currently available.
 
- **Scala example:**
+**Scala example:**
  
- ```scala
+```scala
  val rawData = readFromSeqFiles(path, sc, classNumber)
  val featureSet = FeatureSet.rdd(rawData, memoryType = PMEM)
- ```
+```
  `readFromSeqFiles` read the Sequence File into `RDD[ByteRecord]`, then `FeatureSet.rdd(rawData, memoryType = PMEM)` will cache the data to Intel Optane DC Persistent Memory.
 
