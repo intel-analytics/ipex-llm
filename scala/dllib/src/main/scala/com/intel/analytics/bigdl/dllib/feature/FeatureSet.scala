@@ -29,7 +29,6 @@ import com.intel.analytics.zoo.core.TFNetNative
 import com.intel.analytics.zoo.feature.common.{ArrayLike, ArrayLikeWrapper}
 import com.intel.analytics.zoo.feature.pmem._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
-import com.intel.analytics.zoo.pipeline.api.net.{PytorchModel, PytorchModelWrapper}
 import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
