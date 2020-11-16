@@ -14,23 +14,21 @@
 # limitations under the License.
 #
 
-import logging
-import torch
-import torch.nn as nn
-import collections
-import numpy as np
-import numbers
 import io
+import types
+import logging
+import numbers
+import torch
+import numpy as np
 
-from zoo.orca.learn.pytorch import utils
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.pytorch.torch_runner import TorchRunner
 from zoo.ray import RayContext
+
 import ray
+from ray.exceptions import RayActorError
 
 logger = logging.getLogger(__name__)
-
-from ray.exceptions import RayActorError
 
 
 def check_for_failure(remote_values):
@@ -51,6 +49,41 @@ def check_for_failure(remote_values):
     return False
 
 
+def shards_ref_to_creator(shards_ref):
+
+    def data_creator(config):
+        from zoo.orca.data.utils import ray_partition_get_data_label, index_data, get_size
+        from torch.utils.data import Dataset, DataLoader
+
+        class NDArrayDataset(Dataset):
+            def __init__(self, x, y):
+                self.x = x  # features
+                self.y = y  # labels
+
+            def __len__(self):
+                return get_size(self.y)
+
+            def __getitem__(self, i):
+                return index_data(self.x, i), index_data(self.y, i)
+
+        assert "batch_size" in config, "batch_size must be set in config"
+        params = {"batch_size": config["batch_size"], "shuffle": True}
+        for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
+                    "pin_memory", "drop_last", "timeout", "worker_init_fn",
+                    "multiprocessing_context"]:
+            if arg in config:
+                params[arg] = config[arg]
+        data, label = ray_partition_get_data_label(ray.get(shards_ref),
+                                                   allow_tuple=False,
+                                                   allow_list=False)
+        print("Data size on worker: ", len(label))
+        dataset = NDArrayDataset(data, label)
+        data_loader = DataLoader(dataset, **params)
+        return data_loader
+
+    return data_creator
+
+
 class PyTorchRayEstimator:
     def __init__(
             self,
@@ -69,7 +102,6 @@ class PyTorchRayEstimator:
 
         # todo remove ray_ctx to run on workers
         ray_ctx = RayContext.get()
-        import types
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
             raise ValueError(
@@ -142,46 +174,46 @@ class PyTorchRayEstimator:
         else:
             raise Exception("Only \"pytorch\" and \"horovod\" are legal "
                             "values of backend, but got {}".format(backend))
+        self.num_workers = len(self.remote_workers)
 
     def train(self,
-              data_creator,
+              data,
               epochs=1,
+              batch_size=32,
               profile=False,
               reduce_results=True,
               info=None):
-        """Runs a training epoch.
-
-        Calls `operator.train_epoch()` on N parallel workers simultaneously
-        underneath the hood.
-        :param data_creator: (callable) a funtion that takes a config dict as input
-                  and return a data loader containing the training data.
-        :param epochs: (int) Number of epochs to train the model
-        :param profile: (bool) Returns time stats for the training procedure.
-        :param reduce_results: (bool) Whether to average all metrics across
-                all workers into one dict. If a metric is a non-numerical
-                value (or nested dictionaries), one value will be randomly
-                selected among the workers. If False, returns a list of dicts.
-        :param info: (dict) Optional dictionary passed to the training
-                operator for ``train_epoch`` and ``train_batch``.
-
-        :return
-            (dict | list) A dictionary of metrics for training.
-                You can provide custom metrics by passing in a custom
-                ``training_operator_cls``. If ``reduce_results=False``,
-                this will return a list of metric dictionaries whose
-                length will be equal to ``num_workers``.
         """
-        if not callable(data_creator):
-            raise ValueError(
-                "Must provide a callable data_creator, "
-                "but got a data_creator of type: {}".format(type(data_creator)))
+        See the documentation in
+        'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.fit'.
+        """
+        from zoo.orca.data import SparkXShards
+        if isinstance(data, SparkXShards):
+            from zoo.orca.data.utils import process_spark_xshards
+            ray_xshards = process_spark_xshards(data, self.num_workers)
 
-        success, worker_stats = self._train_epochs(data_creator,
-                                                   epochs=epochs,
-                                                   profile=profile,
-                                                   info=info)
+            def transform_func(worker, shards_ref):
+                data_creator = shards_ref_to_creator(shards_ref)
+                # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
+                return worker.train_epochs.remote(
+                    data_creator, epochs, batch_size, profile, info, False)
+
+            stats_shards = ray_xshards.transform_shards_with_actors(self.remote_workers,
+                                                                    transform_func,
+                                                                    gang_scheduling=True)
+            worker_stats = stats_shards.collect_partitions()
+        else:
+            assert isinstance(data, types.FunctionType), \
+                "data should be either an instance of SparkXShards or a callable function, but " \
+                "got type: {}".format(type(data))
+
+            success, worker_stats = self._train_epochs(data,
+                                                       epochs=epochs,
+                                                       batch_size=batch_size,
+                                                       profile=profile,
+                                                       info=info)
+
         epoch_stats = list(map(list, zip(*worker_stats)))
-
         if reduce_results:
             for i in range(len(epoch_stats)):
                 epoch_stats[i] = self._process_stats(epoch_stats[i])
@@ -203,8 +235,9 @@ class PyTorchRayEstimator:
                 stats[stat_key] = worker_stats[0][stat_key]
         return stats
 
-    def _train_epochs(self, data_creator, epochs=1, profile=False, info=None):
-        params = dict(data_creator=data_creator, epochs=epochs, profile=profile, info=info)
+    def _train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False, info=None):
+        params = dict(data_creator=data_creator, epochs=epochs,
+                      batch_size=batch_size, profile=profile, info=info)
         remote_worker_stats = []
         for i, w in enumerate(self.remote_workers):
             stats = w.train_epochs.remote(**params)
@@ -216,35 +249,36 @@ class PyTorchRayEstimator:
         else:
             return success, None
 
-    def validate(self, data_creator, num_steps=None, profile=False, info=None):
-        """Evaluates the model on the validation data set.
-
-        :param data_creator: (callable) a funtion that takes a config dict as input
-                  and return a data loader containing the validation data.
-        :param num_steps: (int) Number of batches to compute update steps on.
-               This corresponds also to the number of times
-                ``TrainingOperator.validate_batch`` is called.
-        :param profile: (bool) Returns time stats for the evaluation procedure.
-        :param info: (dict) Optional dictionary passed to the training
-                operator for `validate` and `validate_batch`.
-        :return: A dictionary of metrics for validation.
-                You can provide custom metrics by passing in a custom
-                ``training_operator_cls``.
+    def validate(self, data, batch_size=32, num_steps=None, profile=False, info=None):
         """
-        if not callable(data_creator):
-            raise ValueError(
-                "Must provide a callable data_creator, "
-                "but got a data_creator of type: {}".format(type(data_creator)))
+        See the documentation in
+        'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.evaluate'.
+        """
+        from zoo.orca.data import SparkXShards
+        if isinstance(data, SparkXShards):
+            from zoo.orca.data.utils import process_spark_xshards
+            ray_xshards = process_spark_xshards(data, self.num_workers)
 
-        params = dict(data_creator=data_creator,
-                      num_steps=num_steps,
-                      profile=profile,
-                      info=info)
+            def transform_func(worker, shards_ref):
+                data_creator = shards_ref_to_creator(shards_ref)
+                # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
+                return worker.validate.remote(
+                    data_creator, batch_size, num_steps, profile, info, False)
 
-        remote_worker_stats = [
-            w.validate.remote(**params) for w in self.remote_workers
-        ]
-        return self._process_stats(ray.get(remote_worker_stats))
+            stats_shards = ray_xshards.transform_shards_with_actors(self.remote_workers,
+                                                                    transform_func,
+                                                                    gang_scheduling=True)
+            worker_stats = stats_shards.collect_partitions()
+        else:
+            assert isinstance(data, types.FunctionType), \
+                "data should be either an instance of SparkXShards or a callable function, but " \
+                "got type: {}".format(type(data))
+
+            params = dict(data_creator=data, batch_size=batch_size, num_steps=num_steps,
+                          profile=profile, info=info)
+
+            worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
+        return self._process_stats(worker_stats)
 
     def get_model(self):
         """Returns the learned model(s)."""

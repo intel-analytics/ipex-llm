@@ -110,47 +110,67 @@ class PyTorchRayEstimatorWrapper(Estimator):
                                              backend=backend,
                                              workers_per_node=workers_per_node)
 
-    def fit(self, data, epochs=1, profile=False, reduce_results=True, info=None):
+    def fit(self, data, epochs=1, batch_size=32, profile=False, reduce_results=True, info=None):
         """
+        Trains a PyTorch model given training data for several epochs.
 
-        :param data: (callable) a funtion that takes a config dict as input and return a data
-            loader containing the training data.
-        :param epochs: (int) Number of epochs to train the model
-        :param profile: (bool) Returns time stats for the training procedure.
-        :param reduce_results: (bool) Whether to average all metrics across all workers into one
-            dict. If a metric is a non-numerical value (or nested dictionaries), one value will be
-            randomly selected among the workers. If False, returns a list of dicts.
-        :param info: (dict) Optional dictionary passed to the training operator for ``train_epoch``
-            and ``train_batch``.
-        :return: (list) A list of stats whose length will be equal to ``epochs``.
-                stats is a dictionary of metrics for training.
-                    You can provide custom metrics by passing in a custom
-                    ``training_operator_cls``. If ``reduce_results=False``,
-                    this will return a list of metric dictionaries whose
-                    length will be equal to ``num_workers``.
+        Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
+        underneath the hood.
+        :param data: An instance of SparkXShards or a function that takes config as
+        argument and returns a PyTorch DataLoader for training.
+        :param epochs: The number of epochs to train the model. Default is 1.
+        :param batch_size: The number of samples per batch for each worker. Default is 32.
+        The total batch size would be workers_per_node*num_nodes.
+        If you training data is a function, you can set batch_size to be config["batch_size"]
+        for the PyTorch DataLoader.
+        :param profile: Boolean. Whether to return time stats for the training procedure.
+        Default is False.
+        :param reduce_results: Boolean. Whether to average all metrics across all workers into
+        one dict. If a metric is a non-numerical value (or nested dictionaries), one value will
+        be randomly selected among the workers. If False, returns a list of dicts for all workers.
+        Default is True.
+        :param info: An optional dictionary that can be passed to the TrainingOperator for
+        train_epoch and train_batch.
+
+        :return A list of dictionary of metrics for every training epoch. If reduce_results is
+        False, this will return a nested list of metric dictionaries whose length will be equal
+        to the total number of workers.
+        You can also provide custom metrics by passing in a custom training_operator_cls when
+        creating the Estimator.
         """
-        return self.estimator.train(data_creator=data, epochs=epochs,
+        return self.estimator.train(data=data, epochs=epochs, batch_size=batch_size,
                                     profile=profile, reduce_results=reduce_results, info=info)
 
     def predict(self, data, **kwargs):
         pass
 
-    def evaluate(self, data, num_steps=None, profile=False, info=None):
+    def evaluate(self, data, batch_size=32, num_steps=None, profile=False, info=None):
         """
+        Evaluates a PyTorch model given validation data.
+        Note that only accuracy for classification with zero-based label is supported by
+        default. You can override validate_batch in TrainingOperator for other metrics.
 
-        :param data: (callable) a funtion that takes a config dict as input and return
-            a data loader containing the validation data.
-        :param num_steps: (int) Number of batches to compute update steps on.
-               This corresponds also to the number of times ``TrainingOperator.validate_batch``
-               is called.
-        :param profile: (bool) Returns time stats for the evaluation procedure.
-        :param info: (dict) Optional dictionary passed to the training operator for `validate`
-            and `validate_batch`.
-        :return: A dictionary of metrics for validation.
-            You can provide custom metrics by passing in a custom ``training_operator_cls``.
+        Calls `TrainingOperator.validate()` on N parallel workers simultaneously
+        underneath the hood.
+        :param data: An instance of SparkXShards or a function that takes config as
+        argument and returns a PyTorch DataLoader for validation.
+        :param batch_size: The number of samples per batch for each worker. Default is 32.
+        The total batch size would be workers_per_node*num_nodes.
+        If you validation data is a function, you can set batch_size to be config["batch_size"]
+        for the PyTorch DataLoader.
+        :param num_steps: The number of batches to compute the validation results on. This
+        corresponds to the number of times `TrainingOperator.validate_batch` is called.
+        :param profile: Boolean. Whether to return time stats for the training procedure.
+        Default is False.
+        :param info: An optional dictionary that can be passed to the TrainingOperator
+        for validate.
+
+        :return A dictionary of metrics for the given data, including validation accuracy and loss.
+        You can also provide custom metrics by passing in a custom training_operator_cls when
+        creating the Estimator.
         """
-        return self.estimator.validate(data_creator=data, num_steps=num_steps, profile=profile,
-                                       info=info)
+        return self.estimator.validate(data=data, batch_size=batch_size, num_steps=num_steps,
+                                       profile=profile, info=info)
 
     def get_model(self):
         """Returns the learned model(s)."""
