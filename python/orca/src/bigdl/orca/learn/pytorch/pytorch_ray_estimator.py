@@ -97,7 +97,7 @@ class PyTorchRayEstimator:
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
-            backend="pytorch",
+            backend="torch_distributed",
             workers_per_node=1):
 
         # todo remove ray_ctx to run on workers
@@ -132,7 +132,7 @@ class PyTorchRayEstimator:
             use_tqdm=self.use_tqdm,
             config=worker_config)
 
-        if backend == "pytorch":
+        if backend == "torch_distributed":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
             RemoteRunner = ray.remote(num_cpus=cores_per_node)(TorchRunner)
@@ -172,7 +172,7 @@ class PyTorchRayEstimator:
                 for i, worker in enumerate(self.remote_workers)
             ])
         else:
-            raise Exception("Only \"pytorch\" and \"horovod\" are legal "
+            raise Exception("Only \"torch_distributed\" and \"horovod\" are supported "
                             "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 

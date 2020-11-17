@@ -96,7 +96,7 @@ class TestPyTorchEstimator(TestCase):
                                          optimizer=get_optimizer,
                                          loss=nn.BCELoss(),
                                          config={"lr": 1e-2},
-                                         backend="pytorch")
+                                         backend="torch_distributed")
         train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
         print(train_stats)
         val_stats = estimator.evaluate(val_data_loader, batch_size=64)
@@ -112,7 +112,7 @@ class TestPyTorchEstimator(TestCase):
                                          optimizer=get_optimizer,
                                          loss=nn.BCELoss(),
                                          config={"lr": 1e-1},
-                                         backend="pytorch")
+                                         backend="torch_distributed")
         sc = init_nncontext()
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1)).astype(np.float32))
