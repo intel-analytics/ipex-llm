@@ -60,7 +60,7 @@ class Estimator(object):
                    workers_per_node=1,
                    model_dir=None,
                    backend="bigdl"):
-        if backend in {"horovod", "pytorch"}:
+        if backend in {"horovod", "torch_distributed"}:
             return PyTorchRayEstimatorWrapper(model_creator=model,
                                               optimizer_creator=optimizer,
                                               loss_creator=loss,
@@ -95,7 +95,7 @@ class PyTorchRayEstimatorWrapper(Estimator):
                  config=None,
                  scheduler_step_freq="batch",
                  use_tqdm=False,
-                 backend="pytorch",
+                 backend="torch_distributed",
                  workers_per_node=1):
         from zoo.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
         self.estimator = PyTorchRayEstimator(model_creator=model_creator,
