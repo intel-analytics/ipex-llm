@@ -19,10 +19,12 @@
 <br>[AI-assisted Radiology Using Distributed Deep
 Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en-us/asset/white-papers/solutions/h17686_hornet_wp.pdf)
 <br>[Using Deep Learning on Apache Spark to Diagnose Thoracic Pathology from Chest X-rays](https://databricks.com/session/using-deep-learning-on-apache-spark-to-diagnose-thoracic-pathology-from-chest-x-rays)
+* __GOLDENWIND SE__
+<br>[Intel big data analysis + AI platform helps GOLDENWIND SE to build a new energy intelligent power prediction solution](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/create-power-forecasting-solutions.html)
 * __JD__
 <br>[Object Detection and Image Feature Extraction at JD.com](https://software.intel.com/en-us/articles/building-large-scale-image-feature-extraction-with-bigdl-at-jdcom)
 * __MasterCard__
-</br> [Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://software.intel.com/en-us/articles/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service)
+<br> [Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://software.intel.com/en-us/articles/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service)
 * __Microsoft Azure__
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 1]( https://software.intel.com/en-us/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1)
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 2](https://www.infoq.com/articles/analytics-zoo-qa-module/?from=timeline&isappinstalled=0)
@@ -40,8 +42,9 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>[Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://software.intel.com/en-us/articles/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on)
 <br>[Office Depot product recommender using Analytics Zoo on AWS](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079)
 * __SK Telecom__
- <br>[Vectorized Deep Learning Acceleration from Preprocessing to Inference and Training on Apache Spark in SK Telecom](https://databricks.com/session_na20/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom)
- <br>[Apache Spark AI Use Case in Telco: Network Quality Analysis and Prediction with Geospatial Visualization](https://databricks.com/session_eu19/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization)
+<br>[SK Telecom, Intel Build AI Pipeline to Improve Network Quality](https://networkbuilders.intel.com/solutionslibrary/sk-telecom-intel-build-ai-pipeline-to-improve-network-quality)
+<br>[Vectorized Deep Learning Acceleration from Preprocessing to Inference and Training on Apache Spark in SK Telecom](https://databricks.com/session_na20/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom)
+<br>[Apache Spark AI Use Case in Telco: Network Quality Analysis and Prediction with Geospatial Visualization](https://databricks.com/session_eu19/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization)
  * __Talroo__
 <br>[Uses Analytics Zoo and AWS to Leverage Deep Learning for Job Recommendations](https://software.intel.com/en-us/articles/talroo-uses-analytics-zoo-and-aws-to-leverage-deep-learning-for-job-recommendations)
 <br>[Job recommendations leveraging deep learning using Analytics Zoo on Apache Spark and BigDL](https://conferences.oreilly.com/strata/strata-ny-2018/public/schedule/detail/69113)
