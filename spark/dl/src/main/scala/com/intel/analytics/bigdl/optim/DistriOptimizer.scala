@@ -725,6 +725,15 @@ class DistriOptimizer[T: ClassTag](
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     _model, _dataset, _criterion) {
+
+
+  var compress: String = "fp16"
+
+  def setCompressType(compressType: String): this.type = {
+    compress = compressType
+    this
+  }
+
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.CacheV1[T]] = null
@@ -840,7 +849,7 @@ class DistriOptimizer[T: ClassTag](
     val partitionNum = distDataset.originRDD().partitions.length
     val modelParameters = trainingModel.getParameters()
     val allReduceParameter = AllReduceParameter.newParameter[T](partitionNum,
-      modelParameters._1.nElement())
+      modelParameters._1.nElement(), compress = this.compress)
     // subModuleName -> (storageOffset, length, AllReduceParameter)
     val parameterSplits = if (optimMethods.size != 1) {
       val p = optimMethods.map { case (subModuleName, optimMethod) =>
