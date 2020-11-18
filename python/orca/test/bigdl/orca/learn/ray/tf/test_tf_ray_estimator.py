@@ -418,7 +418,7 @@ class TestTFRayEstimator(TestCase):
 
         result = trainer.predict(train_data_shard, batch_size=10).collect()
 
-        result = [shard["x"] for shard in result]
+        result = [shard["prediction"] for shard in result]
 
         result = np.concatenate(result)
 
