@@ -56,8 +56,9 @@ object AllReduceParameter {
   def newParameter[T: ClassTag](
         partitionNum: Int,
         size: Int,
-        offset: Int = 1)(implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
-    new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size, offset)
+        offset: Int = 1,
+        compress: String = "fp16")(implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
+    new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size, offset, compress)
   }
 }
 
@@ -81,7 +82,8 @@ class AllReduceParameter[T: ClassTag](
       id: Long,
       partitionNum: Int,
       val size: Int,
-      val paramOffset: Int = 1)(implicit ev: TensorNumeric[T]) extends Serializable {
+      val paramOffset: Int = 1,
+      val compress: String = "fp16")(implicit ev: TensorNumeric[T]) extends Serializable {
   import AllReduceParameter._
 
   @transient private var taskSize = 0
@@ -168,9 +170,9 @@ class AllReduceParameter[T: ClassTag](
     BlockManagerWrapper.putSingle(getGradientPartitionId(),
       _gradients, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     val blockId = getWeightBlockId(partitionId)
-    val fp16param = new FP16CompressedTensor[T](length)(_classTag)
-    fp16param.compress(0, parameter, start, length)
-    BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+    val compressed: CompressedTensor[T] = SerializerInstance.create(length, compress)
+    compressed.compress(0, parameter, start, length)
+    BlockManagerWrapper.putBytes(blockId, compressed.bytes(), StorageLevel.MEMORY_ONLY_SER)
     (partitionId, start, length)
   }
 
@@ -212,8 +214,8 @@ class AllReduceParameter[T: ClassTag](
               }
               val start = pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
-              require(localBuffer.array().length == length * 2)
-              SerializerInstance.create(localBuffer).deCompress(0, localParameter, start, length)
+              SerializerInstance.create(localBuffer, compress)
+                .deCompress(0, localParameter, start, length)
               BlockManagerWrapper.unlock(blockId)
               pid
             } catch {
@@ -244,7 +246,7 @@ class AllReduceParameter[T: ClassTag](
           try {
             val blockId = getGradientBlockId(pid, partitionId)
             val tmp = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).get
-            params(pid) = SerializerInstance.create(tmp)
+            params(pid) = SerializerInstance.create(tmp, compress)
             BlockManagerWrapper.unlock(blockId)
             pid
           } catch {
@@ -295,13 +297,13 @@ class AllReduceParameter[T: ClassTag](
           val blockId = getGradientBlockId(partitionId, i)
           val block = BlockManagerWrapper.getLocalBytes(blockId)
           if (block.isDefined) {
-            val fp16param = new FP16CompressedTensor[T](block.get)(_classTag)
-            fp16param.compress(0, parameter, start, length)
+            val compressed: CompressedTensor[T] = SerializerInstance.create(block.get, compress)
+            compressed.compress(0, parameter, start, length)
             i
           } else {
-            val fp16param = new FP16CompressedTensor[T](length)(_classTag)
-            fp16param.compress(0, parameter, start, length)
-            BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+            val compressd: CompressedTensor[T] = SerializerInstance.create(length, compress)
+            compressd.compress(0, parameter, start, length)
+            BlockManagerWrapper.putBytes(blockId, compressd.bytes(), StorageLevel.MEMORY_ONLY_SER)
             i
           }
         }
@@ -319,7 +321,7 @@ class AllReduceParameter[T: ClassTag](
       throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
         s"manager. Did you initialize this AllReduceParameter on every executor?")
     }
-    SerializerInstance.create(localBuffer).compress(weightPartition)
+    SerializerInstance.create(localBuffer, compress).compress(weightPartition)
 
     val weightsId = getWeightPartitionId()
     val weights = BlockManagerWrapper.getLocal(weightsId)
