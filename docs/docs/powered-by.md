@@ -19,8 +19,8 @@
 <br>[AI-assisted Radiology Using Distributed Deep
 Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en-us/asset/white-papers/solutions/h17686_hornet_wp.pdf)
 <br>[Using Deep Learning on Apache Spark to Diagnose Thoracic Pathology from Chest X-rays](https://databricks.com/session/using-deep-learning-on-apache-spark-to-diagnose-thoracic-pathology-from-chest-x-rays)
-* __GOLDENWIND SE__
-<br>[Intel big data analysis + AI platform helps GOLDENWIND SE to build a new energy intelligent power prediction solution](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/create-power-forecasting-solutions.html)
+* __GOLDWIND SE__
+<br>[Intel big data analysis + AI platform helps GOLDWIND SE to build a new energy intelligent power prediction solution](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/create-power-forecasting-solutions.html)
 * __JD__
 <br>[Object Detection and Image Feature Extraction at JD.com](https://software.intel.com/en-us/articles/building-large-scale-image-feature-extraction-with-bigdl-at-jdcom)
 * __MasterCard__
