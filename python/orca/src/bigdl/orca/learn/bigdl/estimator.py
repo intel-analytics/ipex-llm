@@ -34,7 +34,7 @@ class Estimator(object):
     def get_model(self):
         pass
 
-    def save(self, checkpoint):
+    def save(self, model_path):
         pass
 
     def load(self, checkpoint):
@@ -241,10 +241,10 @@ class BigDLEstimatorWrapper(Estimator):
     def get_model(self):
         return self.model
 
-    def save(self, checkpoint):
+    def save(self, model_path):
         try:
             model = self.get_model()
-            model.saveModel(checkpoint + ".bigdl", checkpoint + ".bin", True)
+            model.saveModel(model_path + ".bigdl", model_path + ".bin", True)
         except ValueError:
             raise ValueError("You should fit before calling save")
 
