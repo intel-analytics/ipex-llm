@@ -128,7 +128,6 @@ Non-Docker users need to install [Flink 1.10.0+](https://archive.apache.org/dist
 After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
 
-
 ##### Install Cluster Serving by download release
 For users who need to deploy and start Cluster Serving, download Cluster Serving zip `analytics-zoo-xxx-cluster-serving-all.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/) and unzip it, then run `source cluster-serving-setup.sh`.
 For users who need to do inference, aka. predict data only, download Analytics Zoo python zip `analytics-zoo-xxx-cluster-serving-python.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.10.0-spark_2.4.3/0.9.0-SNAPSHOT/) and run `export PYTHONPATH=$PYTHONPATH:/path/to/zip` to add this zip to `PYTHONPATH` environment variable.
@@ -159,21 +158,10 @@ params:
 #### Preparing Model
 Currently Analytics Zoo Cluster Serving supports TensorFlow, OpenVINO, PyTorch, BigDL, Caffe models. Supported types are listed below.
 
-You need to put your model file into a directory and the directory could have layout like following according to model type, note that only one model is allowed in your directory.
+You need to put your model file into a directory with layout like following according to model type, note that only one model is allowed in your directory. Then, set in `config.yaml` file with `model:path:/path/to/dir`.
 
 **Tensorflow**
-
-***Tensorflow checkpoint***
-Please refer to [freeze checkpoint example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tensorflow/freeze_checkpoint)
-
-***Tensorflow frozen model***
-```
-|-- model
-   |-- frozen_graph.pb
-   |-- graph_meta.json
-```
-
-***Tensorflow saved model***
+***Tensorflow SavedModel***
 ```
 |-- model
    |-- saved_model.pb
@@ -181,15 +169,14 @@ Please refer to [freeze checkpoint example](https://github.com/intel-analytics/a
        |-- variables.data-00000-of-00001
        |-- variables.index
 ```
-Note: you can specify model inputs and outputs in the config.yaml file. If the inputs or outputs are not provided, the signature "serving_default" will be used to find input and output tensors.
-
-**Caffe**
-
+***Tensorflow Frozen Graph***
 ```
 |-- model
-   |-- xx.prototxt
-   |-- xx.caffemodel
+   |-- frozen_graph.pb
+   |-- graph_meta.json
 ```
+***Tensorflow Checkpoint***
+Please refer to [freeze checkpoint example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tensorflow/freeze_checkpoint)
 
 **Pytorch**
 
@@ -197,14 +184,7 @@ Note: you can specify model inputs and outputs in the config.yaml file. If the i
 |-- model
    |-- xx.pt
 ```
-
-**BigDL**
-
-```
-|--model
-   |-- xx.model
-```
-
+Running Pytorch model needs extra dependency and config. Refer to [here](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/examples/pytorch/train/README.md) to install dependencies, and set environment variable `$PYTHONHOME` to your python, e.g. python could be run by `$PYTHONHOME/bin/python` and library is at `$PYTHONHOME/lib/`.
 **OpenVINO**
 
 ```
@@ -212,8 +192,19 @@ Note: you can specify model inputs and outputs in the config.yaml file. If the i
    |-- xx.xml
    |-- xx.bin
 ```
+**BigDL**
 
-Put the model in any of your local directory, and set `model:/path/to/dir`.
+```
+|--model
+   |-- xx.model
+```
+**Caffe**
+
+```
+|-- model
+   |-- xx.prototxt
+   |-- xx.caffemodel
+```
 
 #### Data Configuration
 The field `data` contains your input data configuration.
@@ -335,15 +326,6 @@ all_result = output_api.dequeue() # the output queue is empty after this code
 Consider the code above,
 ```
 img1_result = output_api.query('img1')
-```
-The `img1_result` is a json format string, like following:
-```
-'{"class_1":"prob_1","class_2":"prob_2",...,"class_n","prob_n"}'
-```
-Where `n` is the number of `top_n` in your configuration file. This string could be parsed by `json.loads`.
-```
-import json
-result_class_prob_map = json.loads(img1_result)
 ```
 ##### Sync API
 Sync API provide method to predict data, the method would block until the result is available.

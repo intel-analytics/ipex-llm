@@ -102,7 +102,7 @@ input_api.enqueue('my-instance',
 ```
 predict(request_str)
 ```
-_return_: response of request string
+_return_: Numpy ndarray
  
 _Example_
 ```
@@ -133,7 +133,7 @@ query(uri)
 ```
 query result in output Pipeline by key `uri`
 
-_return_: string type, the output of your prediction, which can be parsed to a dict by json. 
+_return_: Numpy ndarray
 
 Format: 
 ```
@@ -167,7 +167,7 @@ dequeue()
 ```
 gets all result of your model prediction and dequeue them from OutputQueue
 
-_return_: dict(), with keys the `uri` of your [enqueue](), string type, and values the output of your prediction, string type, which can be parsed by json. 
+_return_: dict(), with keys the `uri` of your [enqueue](), string type, and values the output of your prediction, Numpy ndarray
 
 Format: 
 ```
