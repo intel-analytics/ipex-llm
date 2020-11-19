@@ -52,10 +52,11 @@ abstract trait CompressedTensor[T] extends Serializable {
 
 object SerializerInstance {
 
+  // todo use abstract factory
   def serialize[T: ClassTag](data: Tensor[T], pm: String = "fp16"): CompressedTensor[T] = {
     pm.toLowerCase match {
       case "fp16" => new FP16CompressedTensor[T](data)
-      case "no" => new NoCompressTensor[T](data)
+      case "none" => new UncompressedTensor[T](data)
       case _ => throw new IllegalArgumentException("Unsupported parameter type")
     }
   }
@@ -63,7 +64,7 @@ object SerializerInstance {
   def create[T: ClassTag](length: Int, pm: String): CompressedTensor[T] = {
     pm.toLowerCase() match {
       case "fp16" => new FP16CompressedTensor[T](length)
-      case "no" => new NoCompressTensor[T](length)
+      case "none" => new UncompressedTensor[T](length)
       case _ => throw new IllegalArgumentException("Unsupported parameter type")
     }
   }
@@ -71,7 +72,7 @@ object SerializerInstance {
   def create[T: ClassTag](data: ByteBuffer, pm: String = "fp16"): CompressedTensor[T] = {
     pm.toLowerCase() match {
       case "fp16" => new FP16CompressedTensor[T](data)
-      case "no" => new NoCompressTensor[T](data)
+      case "none" => new UncompressedTensor[T](data)
       case _ => throw new IllegalArgumentException("Unsupported parameter type")
     }
   }

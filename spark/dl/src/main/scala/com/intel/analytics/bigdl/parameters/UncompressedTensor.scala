@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Engine
 
 import scala.reflect._
 
-private[bigdl] class NoCompressTensor[T: ClassTag](
+private[bigdl] class UncompressedTensor[T: ClassTag](
                                                         buffer: Array[Byte],
                                                         bufferOffset: Int,
                                                         bufferLength: Int)
@@ -49,7 +49,7 @@ private[bigdl] class NoCompressTensor[T: ClassTag](
     if (classTag[T] == classTag[Double]) {
       throw new Exception("Double type is not supported")
     } else if (classTag[T] == classTag[Float]) {
-      NoCompressTensor.toBytes(src.storage().array().asInstanceOf[Array[Float]], tOffset,
+      UncompressedTensor.toBytes(src.storage().array().asInstanceOf[Array[Float]], tOffset,
         buffer, bufferOffset + offset, length)
     } else {
       throw new IllegalArgumentException
@@ -86,7 +86,7 @@ private[bigdl] class NoCompressTensor[T: ClassTag](
     } else if (classTag[T] == classTag[Float]) {
       val tdata = tensor.storage().array().asInstanceOf[Array[Float]]
       val toffset = tensor.storageOffset() - 1 + tgtOffset
-      NoCompressTensor.fromBytes(buffer, srcOffset * 4 + bufferOffset,
+      UncompressedTensor.fromBytes(buffer, srcOffset * 4 + bufferOffset,
         length * 4, tdata, toffset)
     } else {
       throw new IllegalArgumentException
@@ -98,7 +98,7 @@ private[bigdl] class NoCompressTensor[T: ClassTag](
   override def add(data: ByteBuffer, offset: Int, length: Int): this.type = {
     require(offset >= 0 && length > 0 && (offset + length) * 4 <= bufferLength)
     require(length * 4 == data.remaining())
-    NoCompressTensor.add(buffer, offset * 4 + bufferOffset,
+    UncompressedTensor.add(buffer, offset * 4 + bufferOffset,
       data.array(), data.position(), data.remaining())
     this
   }
@@ -108,13 +108,13 @@ private[bigdl] class NoCompressTensor[T: ClassTag](
   override def parAdd(data: ByteBuffer, offset: Int, length: Int): this.type = {
     require(offset >= 0 && length > 0 && (offset + length) * 4 <= bufferLength)
     require(length * 4 == data.remaining())
-    NoCompressTensor.parAdd(buffer, offset * 4 + bufferOffset, data.array(),
+    UncompressedTensor.parAdd(buffer, offset * 4 + bufferOffset, data.array(),
       data.position(), data.remaining())
     this
   }
 }
 
-object NoCompressTensor {
+object UncompressedTensor {
   private def parAdd(l: Array[Byte], lOffset: Int, r: Array[Byte],
                      rOffset: Int, length: Int): Array[Byte] = {
     val start = System.nanoTime()
