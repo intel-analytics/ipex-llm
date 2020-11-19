@@ -38,7 +38,7 @@ class Estimator(object):
     def save(self, model_path):
         pass
 
-    def load(self, model_path):
+    def load(self, model_path, **kwargs):
         pass
 
     @staticmethod
@@ -47,7 +47,7 @@ class Estimator(object):
         Load an openVINO Estimator.
 
         :param model_path: String. The file path to the OpenVINO IR xml file.
-        :param batch_size: Int.
+        :param batch_size: Int. Set batch Size, default is 0 (use default batch size).
         """
         return OpenvinoEstimatorWrapper(model_path=model_path, batch_size=batch_size)
 
@@ -159,12 +159,27 @@ class OpenvinoEstimatorWrapper(Estimator):
     def save(self, model_path):
         raise NotImplementedError
 
-    def load(self, model_path):
+    def load(self, model_path, batch_size=0):
         """
         Load an openVINO model.
 
         :param model_path: String. The file path to the OpenVINO IR xml file.
+        :param batch_size: Int. Set batch Size, default is 0 (use default batch size).
         :return:
         """
+        self.node_num, self.core_num = get_node_and_core_number()
+        self.path = model_path
+        if batch_size != 0:
+            self.batch_size = batch_size
+        else:
+            import xml.etree.ElementTree as ET
+            tree = ET.parse(model_path)
+            root = tree.getroot()
+            shape_item = root.find('./layers/layer/output/port/dim[1]')
+            if shape_item is None:
+                raise ValueError("Invalid openVINO IR xml file, please check your model_path")
+            self.batch_size = int(shape_item.text)
+        self.model = InferenceModel(supported_concurrent_num=self.core_num)
         self.model.load_openvino(model_path=model_path,
-                                 weight_path=model_path[:model_path.rindex(".")] + ".bin")
+                                 weight_path=model_path[:model_path.rindex(".")] + ".bin",
+                                 batch_size=batch_size)
