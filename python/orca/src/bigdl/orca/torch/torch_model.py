@@ -50,11 +50,16 @@ class TorchModel(Layer):
     def from_pytorch(model):
         """
         Create a TorchModel directly from PyTorch model, e.g. model in torchvision.models.
-        :param model: a PyTorch model
+        :param model: a PyTorch model, or a function to create PyTorch model
         """
         weights = []
-        for param in trainable_param(model):
-            weights.append(param.view(-1))
+        import types
+        if isinstance(model, types.FunctionType) or isinstance(model, types.ClassType):
+            for param in trainable_param(model()):
+                weights.append(param.view(-1))
+        else:
+            for param in trainable_param(model):
+                weights.append(param.view(-1))
         flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
         bys = io.BytesIO()
         torch.save(model, bys, pickle_module=zoo_pickle_module)
@@ -70,6 +75,9 @@ class TorchModel(Layer):
         assert(len(new_weight) == 1, "TorchModel's weights should be one tensor")
         # set weights
         m = torch.load(io.BytesIO(self.module_bytes), pickle_module=zoo_pickle_module)
+        import types
+        if isinstance(m, types.FunctionType) or isinstance(m, types.ClassType):
+            m = m()
         w = torch.Tensor(new_weight[0])
         torch.nn.utils.vector_to_parameters(w, trainable_param(m))
 
