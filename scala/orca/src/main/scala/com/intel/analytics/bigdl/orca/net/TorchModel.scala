@@ -59,6 +59,10 @@ class TorchModel private(private val modelHolder: TorchModel2Holder, init_weight
          |
          |by = bytes(b % 256 for b in model_bytes)
          |${getName()} = torch.load(io.BytesIO(by), pickle_module=zoo_pickle_module)
+         |import types
+         |if isinstance(${getName()}, types.FunctionType) or \\
+         |   isinstance(${getName()}, types.ClassType):
+         |    ${getName()} = ${getName()}()
          |""".stripMargin
     PythonInterpreter.exec(loadModelCode)
     if (extraParams.length != 0) {
