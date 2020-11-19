@@ -180,6 +180,27 @@ class TestPytorch(TestCase):
 
         trained_model = az_model.to_pytorch()
 
+    def test_train_model_function_with_bn(self):
+        class SimpleTorchModel(nn.Module):
+            def __init__(self):
+                super(SimpleTorchModel, self).__init__()
+                self.dense1 = nn.Linear(2, 4)
+                self.dense2 = nn.Linear(4, 1)
+
+            def forward(self, x):
+                x = self.dense1(x)
+                x = torch.sigmoid(self.dense2(x))
+                return x
+
+        torch_model = SimpleTorchModel()
+        az_model = TorchModel.from_pytorch(torch_model)
+
+        weights = az_model.get_weights()
+        weights[0][0] = 1.0
+        az_model.set_weights(weights)
+
+        exported_model = az_model.to_pytorch()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
