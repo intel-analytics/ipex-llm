@@ -168,6 +168,7 @@ pages:
   - TensorFlow Estimator: Orca/orca-tf-estimator.md
   - PyTorch Quickstart: Orca/orca-pytorch-quickstart.md
   - PyTorch Estimator: Orca/orca-pytorch-estimator.md
+  - OpenVINO Estimator: Orca/orca-openvino-estimator.md
   - BigDL Estimator: Orca/orca-bigdl-estimator.md
 - Powered by: powered-by.md
 - Presentations: presentations.md
