@@ -74,9 +74,9 @@ def get_bigdl_packages():
         package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
         if "__pycache__" not in package:
             bigdl_packages.append(package)
-    print ("=========================bigdl packages=========================")
-    print ("\n".join(bigdl_packages))
-    print ("================================================================")
+    print "=========================bigdl packages========================="
+    print "\n".join(bigdl_packages)
+    print "================================================================"
     return bigdl_packages
 
 def setup_package():
