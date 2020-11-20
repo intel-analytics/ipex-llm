@@ -16,8 +16,9 @@
 from pyspark.sql import DataFrame
 
 from bigdl.optim.optimizer import MaxEpoch
-from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 
+from zoo.common.utils import load_from_file
+from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 from zoo.orca.learn.tf.utils import *
 from zoo.orca.learn.trigger import Trigger
 from zoo.orca.learn.utils import find_latest_checkpoint, convert_predict_to_xshard
@@ -195,6 +196,43 @@ class Estimator(object):
         Save tensorflow keras model in this estimator.
         :param path: keras model save path.
         :param overwrite: Whether to silently overwrite any existing file at the target location.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
+    def load_keras_model(path):
+        """
+        Create Estimator by loading an existing keras model (with weights) from HDF5 file.
+
+        :param path: String. The path to the pre-defined model.
+        :return: Orca TF Estimator.
+        """
+        from tensorflow.python.keras import models
+
+        def load_func(file_path):
+            return models.load_model(file_path)
+
+        model = load_from_file(load_func, path)
+        return Estimator.from_keras(keras_model=model)
+
+    def save_keras_weights(self, filepath, overwrite=True, save_format=None):
+        """
+        Save tensorflow keras model weights in this estimator.
+        :param path: keras model weights save path.
+        :param overwrite: Whether to silently overwrite any existing file at the target location.
+        :param save_format: Either 'tf' or 'h5'. A `filepath` ending in '.h5' or
+            '.keras' will default to HDF5 if `save_format` is `None`. Otherwise
+            `None` defaults to 'tf'.
+        """
+        raise NotImplementedError()
+
+    def load_keras_weights(self, filepath, by_name=False):
+        """
+        Save tensorflow keras model in this estimator.
+        :param filepath: keras model weights save path.
+        :param by_name: Boolean, whether to load weights by name or by topological
+            order. Only topological loading is supported for weight files in
+            TensorFlow format.
         """
         raise NotImplementedError()
 
@@ -690,3 +728,9 @@ class TFKerasWrapper(Estimator):
 
     def save_keras_model(self, path, overwrite=True):
         self.model.save_model(path, overwrite=overwrite)
+
+    def save_keras_weights(self, filepath, overwrite=True, save_format=None):
+        self.model.save_weights(filepath, overwrite, save_format)
+
+    def load_keras_weights(self, filepath, by_name=False):
+        self.model.load_weights(filepath, by_name)
