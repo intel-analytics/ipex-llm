@@ -74,9 +74,9 @@ def get_bigdl_packages():
         package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
         if "__pycache__" not in package:
             bigdl_packages.append(package)
-    print "=========================bigdl packages========================="
-    print "\n".join(bigdl_packages)
-    print "================================================================"
+    print ("=========================bigdl packages=========================")
+    print ("\n".join(bigdl_packages))
+    print ("================================================================")
     return bigdl_packages
 
 def setup_package():
@@ -90,7 +90,7 @@ def setup_package():
         url='https://github.com/intel-analytics/Bigdl',
         packages=get_bigdl_packages(),
         install_requires=['numpy>=1.7', 'pyspark==3.0.0', 'six>=1.10.0'],
-        dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
+        dependency_links=['https://archive.apache.org/dist/spark/spark-3.0.0/spark-3.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share": ['bigdl/share/lib', 'bigdl/share/conf', 'bigdl/share/bin']},
         classifiers=[
@@ -99,6 +99,8 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: Implementation :: CPython'],
         platforms=['mac', 'linux']
     )
