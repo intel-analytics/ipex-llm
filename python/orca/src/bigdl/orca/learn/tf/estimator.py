@@ -17,6 +17,9 @@ from pyspark.sql import DataFrame
 
 from bigdl.optim.optimizer import MaxEpoch
 
+from zoo.tfpark.tf_dataset import TFNdarrayDataset
+from zoo.tfpark.model import _standarize_feature_label_dataset
+
 from zoo.common.utils import load_from_file
 from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 from zoo.orca.learn.tf.utils import *
@@ -628,6 +631,8 @@ class TFKerasWrapper(Estimator):
                              hard_code_batch_size=hard_code_batch_size,
                              sequential_order=False, shuffle=True,
                              auto_shard_files=auto_shard_files)
+        if isinstance(dataset, TFNdarrayDataset):
+            dataset = _standarize_feature_label_dataset(dataset, self.model.model)
 
         self.tf_optimizer = TFOptimizer.from_keras(self.model.model, dataset,
                                                    model_dir=self.model.model_dir,
