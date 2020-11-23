@@ -98,7 +98,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       require(input.dim() == newTarget.dim(),
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ newTarget.dim() }")
-      val curTarget = ev.toType[Int](newTarget.valueAt(1, 1))
+      val curTarget = ev.toType[Int](newTarget.valueAt(1))
       assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
         s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
