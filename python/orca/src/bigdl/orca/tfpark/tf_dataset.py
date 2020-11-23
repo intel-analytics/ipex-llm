@@ -663,6 +663,21 @@ class TFDataset(object):
                                 sequential_order, shuffle)
 
 
+def _tf_get_types(dataset):
+    import tensorflow as tf
+    return tf.compat.v1.data.get_output_types(dataset)
+
+
+def _tf_get_shapes(dataset):
+    import tensorflow as tf
+    return tf.compat.v1.data.get_output_shapes(dataset)
+
+
+def _tf_make_iterator(dataset):
+    import tensorflow as tf
+    return tf.compat.v1.data.make_initializable_iterator(dataset)
+
+
 class TFDataDataset(TFDataset):
     def get_num_partitions(self):
         # only called in inference case
@@ -735,17 +750,17 @@ class TFDataDataset(TFDataset):
             from tensorflow.python.keras.engine import training_utils
             training_utils.verify_dataset_shuffled(tf_data_dataset)
 
-        flatten_shapes = nest.flatten(tf.compat.v1.data.get_output_shapes(tf_data_dataset))
+        flatten_shapes = nest.flatten(_tf_get_shapes(tf_data_dataset))
         if batch_outside:
             flatten_shapes = [shape[1:] for shape in flatten_shapes]
 
-        flatten_types = nest.flatten(tf.compat.v1.data.get_output_types(tf_data_dataset))
+        flatten_types = nest.flatten(_tf_get_types(tf_data_dataset))
 
         flatten_tensor_structure = [TensorMeta(dtype=flatten_types[i],
                                                shape=list(flatten_shapes[i]),
                                                name="zoo_input_{}".format(i))
                                     for i in range(len(flatten_shapes))]
-        structure = tf.compat.v1.data.get_output_types(tf_data_dataset)
+        structure = _tf_get_types(tf_data_dataset)
         if isinstance(structure, tf.DType):
             structure = (structure,)
         tensor_structure = nest.pack_sequence_as(structure,
@@ -807,11 +822,10 @@ class TFDataDataset(TFDataset):
 
         self.shard_index = shard_index
         self.train_dataset = tf_data_dataset
-        self.train_iterator = tf.compat.v1.data.make_initializable_iterator(self.train_dataset)
+        self.train_iterator = _tf_make_iterator(self.train_dataset)
         self.train_next_ops = nest.flatten(self.train_iterator.get_next())
         self.output_types = [t.as_datatype_enum
-                             for t in nest.flatten(
-                                 tf.compat.v1.data.get_output_types(self.train_dataset))]
+                             for t in nest.flatten(_tf_get_types(self.train_dataset))]
 
         self.validation_dataset = validation_dataset
         self.validation_iterator = None
@@ -820,7 +834,7 @@ class TFDataDataset(TFDataset):
         self._train_init_op_name = self.train_iterator.initializer.name
         self._train_output_names = [op.name for op in self.train_next_ops]
         if validation_dataset is not None:
-            self.validation_iterator = tf.compat.v1.data.make_initializable_iterator(
+            self.validation_iterator = _tf_make_iterator(
                 self.validation_dataset)
             self.validation_next_ops = nest.flatten(self.validation_iterator.get_next())
             self._val_init_op_name = self.validation_iterator.initializer.name
@@ -1169,6 +1183,34 @@ class TFNdarrayDataset(TFDataset):
                                 val_rdd, sequential_order=sequential_order, shuffle=shuffle)
 
 
+def convert_row_to_numpy(row, schema, feature_cols, labels_cols):
+    def convert_for_cols(row, cols):
+        import pyspark.sql.types as df_types
+        result = []
+        for name in cols:
+            feature_type = schema[name].dataType
+            if DataFrameDataset.is_scalar_type(feature_type):
+                result.append(np.array(row[name]))
+            elif isinstance(feature_type, df_types.ArrayType):
+                result.append(np.array(row[name]))
+            elif isinstance(row[name], DenseVector):
+                result.append(row[name].values)
+            else:
+                assert isinstance(row[name], SparseVector), \
+                    "unsupported field {}, data {}".format(schema[name], row[name])
+                result.append(row[name].toArray())
+        if len(result) == 1:
+            return result[0]
+        return result
+
+    features = convert_for_cols(row, feature_cols)
+    if labels_cols:
+        labels = convert_for_cols(row, labels_cols)
+        return (features, labels)
+    else:
+        return (features,)
+
+
 class DataFrameDataset(TFNdarrayDataset):
     @staticmethod
     def df_datatype_to_tf(dtype):
@@ -1243,36 +1285,17 @@ class DataFrameDataset(TFNdarrayDataset):
         else:
             tensor_structure = (feature_meta,)
 
-        def convert(row):
-
-            def convert_for_cols(row, cols):
-                import pyspark.sql.types as df_types
-                result = []
-                for name in cols:
-                    feature_type = schema[name].dataType
-                    if DataFrameDataset.is_scalar_type(feature_type):
-                        result.append(np.array(row[name]))
-                    elif isinstance(feature_type, df_types.ArrayType):
-                        result.append(np.array(row[name]))
-                    elif isinstance(row[name], DenseVector):
-                        result.append(row[name].values)
-                    else:
-                        assert isinstance(row[name], SparseVector), \
-                            "unsupported field {}, data {}".format(schema[name], row[name])
-                        result.append(row[name].toArray())
-                if len(result) == 1:
-                    return result[0]
-                return result
-
-            features = convert_for_cols(row, feature_cols)
-            if labels_cols:
-                labels = convert_for_cols(row, labels_cols)
-                return (features, labels)
-            else:
-                return (features,)
-
-        rdd = selected_df.rdd.map(lambda row: convert(row))
-        val_rdd = validation_df.rdd.map(lambda row: convert(row)) if validation_df else None
+        rdd = selected_df.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                   schema,
+                                                                   feature_cols,
+                                                                   labels_cols))
+        if validation_df is not None:
+            val_rdd = validation_df.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                             schema,
+                                                                             feature_cols,
+                                                                             labels_cols))
+        else:
+            val_rdd = None
 
         super(DataFrameDataset, self).__init__(rdd, tensor_structure, batch_size,
                                                batch_per_thread, hard_code_batch_size,
