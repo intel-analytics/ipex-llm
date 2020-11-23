@@ -25,6 +25,7 @@ from zoo.orca.data.utils import ray_partition_get_data_label
 
 from zoo.orca.learn.tf2.tf_runner import TFRunner
 from zoo.ray import RayContext
+from zoo.tfpark.tf_dataset import convert_row_to_numpy
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,42 @@ def process_spark_xshards(spark_xshards, num_workers):
         .mapPartitions(lambda iterator: [sum(iterator)]).max()
     ray_xshards = RayXShards.from_spark_xshards(data)
     return max_length, ray_xshards
+
+
+def arrays2dict(iter, feature_cols, label_cols):
+
+    feature_lists = [[] for col in feature_cols]
+    if label_cols is not None:
+        label_lists = [[] for col in label_cols]
+    else:
+        label_lists = None
+
+    for row in iter:
+        # feature
+        if not isinstance(row[0], list):
+            features = [row[0]]
+        else:
+            features = row[0]
+
+        for i, arr in enumerate(features):
+            feature_lists[i].append(arr)
+
+        # label
+        if label_cols is not None:
+            if not isinstance(row[1], list):
+                labels = [row[1]]
+            else:
+                labels = row[1]
+
+            for i, arr in enumerate(labels):
+                label_lists[i].append(arr)
+
+    feature_arrs = [np.stack(l) for l in feature_lists]
+    if label_lists is not None:
+        label_arrs = [np.stack(l) for l in label_lists]
+        return [{"x": feature_arrs, "y": label_arrs}]
+
+    return [{"x": feature_arrs}]
 
 
 class Estimator:
@@ -156,7 +193,8 @@ class Estimator:
     def fit(self, data_creator, epochs=1, verbose=1,
             callbacks=None, validation_data_creator=None, class_weight=None,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
-            data_config=None):
+            data_config=None, feature_cols=None,
+            label_cols=None,):
         """Runs a training epoch."""
         params = dict(
             epochs=epochs,
@@ -170,6 +208,22 @@ class Estimator:
         )
 
         from zoo.orca.data import SparkXShards
+        from pyspark.sql import DataFrame
+        if isinstance(data_creator, DataFrame):
+            assert feature_cols is not None,\
+                "feature_col must be provided if data_creator is a spark dataframe"
+            assert label_cols is not None,\
+                "label_cols must be provided if data_creator is a spark dataframe"
+            schema = data_creator.schema
+            numpy_rdd = data_creator.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                              schema,
+                                                                              feature_cols,
+                                                                              label_cols))
+            shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
+                                                                      feature_cols,
+                                                                      label_cols))
+            data_creator = SparkXShards(shard_rdd)
+
         if isinstance(data_creator, SparkXShards):
             max_length, ray_xshards = process_spark_xshards(data_creator, self.num_workers)
 
@@ -208,7 +262,8 @@ class Estimator:
         return stats
 
     def evaluate(self, data_creator, verbose=1, sample_weight=None,
-                 steps=None, callbacks=None, data_config=None):
+                 steps=None, callbacks=None, data_config=None,
+                 feature_cols=None, label_cols=None):
         """Evaluates the model on the validation data set."""
         logger.info("Starting validation step.")
         params = dict(
@@ -219,11 +274,27 @@ class Estimator:
             data_config=data_config,
         )
         from zoo.orca.data import SparkXShards
+        from pyspark.sql import DataFrame
+
+        if isinstance(data_creator, DataFrame):
+            assert feature_cols is not None,\
+                "feature_col must be provided if data_creator is a spark dataframe"
+            assert label_cols is not None,\
+                "label_cols must be provided if data_creator is a spark dataframe"
+            schema = data_creator.schema
+            numpy_rdd = data_creator.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                              schema,
+                                                                              feature_cols,
+                                                                              label_cols))
+            shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
+                                                                      feature_cols,
+                                                                      label_cols))
+            data_creator = SparkXShards(shard_rdd)
+
         if isinstance(data_creator, SparkXShards):
             data = data_creator
             if data.num_partitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
-            max_length = data.rdd.map(data_length).max()
 
             ray_xshards = RayXShards.from_spark_xshards(data)
 
@@ -247,7 +318,8 @@ class Estimator:
         return stats
 
     def predict(self, data_creator, batch_size=None, verbose=1,
-                steps=None, callbacks=None, data_config=None):
+                steps=None, callbacks=None, data_config=None,
+                feature_cols=None):
         """Evaluates the model on the validation data set."""
         logger.info("Starting predict step.")
         params = dict(
@@ -258,6 +330,19 @@ class Estimator:
             data_config=data_config,
         )
         from zoo.orca.data import SparkXShards
+        from pyspark.sql import DataFrame
+        if isinstance(data_creator, DataFrame):
+            assert feature_cols is not None,\
+                "feature_col must be provided if data_creator is a spark dataframe"
+            schema = data_creator.schema
+            numpy_rdd = data_creator.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                              schema,
+                                                                              feature_cols,
+                                                                              None))
+            shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
+                                                                      feature_cols,
+                                                                      None))
+            data_creator = SparkXShards(shard_rdd)
         if isinstance(data_creator, SparkXShards):
             ray_xshards = RayXShards.from_spark_xshards(data_creator)
 
