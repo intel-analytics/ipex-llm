@@ -18,6 +18,8 @@ from unittest import TestCase
 import numpy as np
 import pytest
 import tensorflow as tf
+
+from zoo import init_nncontext
 from zoo.orca.data import XShards
 
 import zoo.orca.data.pandas
@@ -323,6 +325,32 @@ class TestTFRayEstimator(TestCase):
 
         trainer.fit(train_data_shard, epochs=1, steps_per_epoch=25)
         trainer.evaluate(train_data_shard, steps=25)
+
+    def test_dataframe(self):
+
+        sc = init_nncontext()
+        rdd = sc.range(0, 10)
+        from pyspark.sql import SparkSession
+        spark = SparkSession(sc)
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+                                int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "batch_size": 4,
+            "lr": 0.8
+        }
+        trainer = Estimator(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(df, epochs=1, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"])
+        trainer.evaluate(df, steps=25, feature_cols=["feature"], label_cols=["label"])
+        trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_sparkxshards_with_inbalanced_data(self):
 
