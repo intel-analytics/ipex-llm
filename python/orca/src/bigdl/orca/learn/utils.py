@@ -26,7 +26,7 @@ def find_latest_checkpoint(model_dir, model_type="bigdl"):
     if model_type == "bigdl":
         optim_regex = ".*\.[0-9]+$"
     elif model_type == "pytorch":
-        optim_regex = "TorchModel[0-9a-z]{8}\.[0-9]+$"
+        optim_regex = "TorchModel[0-9a-z]*\.[0-9]+$"
     elif model_type == "tf":
         optim_regex = "TFParkTraining\.[0-9]+$"
     else:
