@@ -64,10 +64,9 @@ Analytics Zoo provides comprehensive support for for building end-to-end, integr
 
  **4.2 PyTorch** 
 
-Pytorch users can user either: 
-
+Pytorch users can use [Torch Model](ProgrammingGuide/pytorch.md) and either:
 - [NNFrame APIs](APIGuide/PipelineAPI/nnframes.md) to run Spark ML Pipeline and Dataframe with PyTorch support, or 
-- [Estimator APIs](APIGuide/PipelineAPI/estimator.md) to train and evaluate distributed PyTorch on Spark.
+- [Estimator APIs](APIGuide/PipelineAPI/estimator.md) to train and evaluate distributed PyTorch on Spark.  
 
  **4.3 BigDL** 
 

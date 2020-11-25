@@ -39,6 +39,6 @@ tensorflow-hub==0.8.0
 tensorflow-metadata==0.21.1
 tensorflow-probability==0.7.0
 Theano==1.0.4
-torch==1.1.0
-torchvision==0.3.0
+torch==1.6.0
+torchvision==0.7.0
 ```
