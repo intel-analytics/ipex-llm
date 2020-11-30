@@ -31,7 +31,9 @@ def run(path):
         raise EOFError("You have to set your image path")
     output_api = OutputQueue()
     output_api.dequeue()
-    path = os.listdir(base_path)
+    path = [os.path.join(base_path, "cat1.jpeg"),
+            os.path.join(base_path, "dog1.jpeg"),
+            os.path.join(base_path, "fish1.jpeg")]
     for p in path:
         if not p.endswith("jpeg"):
             continue
