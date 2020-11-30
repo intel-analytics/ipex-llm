@@ -188,13 +188,17 @@ object TFNetForInference {
   val frameworkDataType2Class = Map(
     org.tensorflow.framework.DataType.DT_FLOAT -> classOf[java.lang.Float],
     org.tensorflow.framework.DataType.DT_INT32 -> classOf[java.lang.Integer],
-    org.tensorflow.framework.DataType.DT_INT64 -> classOf[java.lang.Long]
+    org.tensorflow.framework.DataType.DT_INT64 -> classOf[java.lang.Long],
+    org.tensorflow.framework.DataType.DT_BOOL -> classOf[java.lang.Boolean],
+    org.tensorflow.framework.DataType.DT_STRING -> classOf[java.lang.String]
   )
 
   val frameworkDataType2DataType = Map(
     org.tensorflow.framework.DataType.DT_FLOAT -> org.tensorflow.DataType.FLOAT,
     org.tensorflow.framework.DataType.DT_INT32 -> org.tensorflow.DataType.INT32,
-    org.tensorflow.framework.DataType.DT_INT64 -> org.tensorflow.DataType.INT64
+    org.tensorflow.framework.DataType.DT_INT64 -> org.tensorflow.DataType.INT64,
+    org.tensorflow.framework.DataType.DT_BOOL -> org.tensorflow.DataType.BOOL,
+    org.tensorflow.framework.DataType.DT_STRING -> org.tensorflow.DataType.STRING
   )
 
   /*
