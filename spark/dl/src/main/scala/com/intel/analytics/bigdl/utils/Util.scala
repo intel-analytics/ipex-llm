@@ -20,7 +20,6 @@ import java.io._
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.quantized.Desc
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, CacheV1}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
