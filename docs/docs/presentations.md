@@ -6,7 +6,7 @@
 
 * Context-aware Fast Food Recommendation with Ray on Apache Spark at Burger King, [Data + AI Summit Europe 2020](https://databricks.com/session_eu20/context-aware-fast-food-recommendation-with-ray-on-apache-spark-at-burger-king), November 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1118%20Context-aware%20Fast%20Food%20Recommendation%20with%20Ray%20on%20Apache%20Spark%20at%20Burger%20King.pdf))
 
-* Cluster Serving: Distributed Model Inference using Apache Flink in Analytics Zoo, [Flink Forward Global Virtual 2020](https://www.flink-forward.org/global-2020/conference-program#cluster-serving--distributed-model-inference-using-apache-flink-in-analytics-zoo), October 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1020%20Cluster%20Serving%20Distributed%20Model%20Inference%20using%20Apache%20Flink%20in%20Analytics%20Zoo%20.pdf))
+* Cluster Serving: Distributed Model Inference using Apache Flink in Analytics Zoo, [Flink Forward 2020](https://www.flink-forward.org/global-2020/conference-program#cluster-serving--distributed-model-inference-using-apache-flink-in-analytics-zoo), October 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1020%20Cluster%20Serving%20Distributed%20Model%20Inference%20using%20Apache%20Flink%20in%20Analytics%20Zoo%20.pdf))
 
 * Project Zouwu: Scalable AutoML for Telco Time Series Analysis using Ray and Analytics Zoo, [Ray Summit Connect 2020](https://anyscale.com/blog/videos-and-slides-for-the-fourth-ray-summit-connect-august-12-2020/), August 2020, ([slides](https://anyscale.com/wp-content/uploads/2020/08/Ding-Ding-Connect-slides.pdf))
 
