@@ -60,24 +60,12 @@ def get_node_ip():
 
 
 def detect_python_location():
-    import subprocess
-    pro = subprocess.Popen(
-        "command -v python",
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-    out, err = pro.communicate()
-    out = out.decode("utf-8")
-    err = err.decode("utf-8")
-    errorcode = pro.returncode
-    if 0 != errorcode:
-        raise Exception(err +
-                        "Cannot detect current python location."
-                        "Please set it manually by python_location")
-    return out.strip()
+    import sys
+    return sys.executable
 
 
 def detect_conda_env_name():
+    # This only works for anaconda3
     import subprocess
     pro = subprocess.Popen(
         "conda info",
@@ -90,14 +78,18 @@ def detect_conda_env_name():
     errorcode = pro.returncode
     if 0 != errorcode:
         raise EnvironmentError(err +
-                               "Cannot find conda info.")
+                               "Cannot find conda info. Please verify your conda installation")
     for line in out.split('\n'):
         item = line.split(':')
         if len(item) == 2:
             if item[0].strip() == "active environment":
                 return item[1].strip()
-    raise EnvironmentError(err +
-                           "Failed to detect conda env name.")
+    # For anaconda2 or if any error occurs above
+    python_location = detect_python_location()
+    if "envs" in python_location:
+        return python_location.split("/")[-3]
+    raise EnvironmentError(err + "Failed to detect the current conda environment. Please verify"
+                                 "your conda installation and activate the env you want to use")
 
 
 # This is adopted from conda-pack.
