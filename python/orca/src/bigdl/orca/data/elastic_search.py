@@ -82,7 +82,7 @@ class elastic_search:
         :param esResource resource file in elastic search.
         :param df Spark DataFrame that will be saved.
         """
-        wdf = df.write_df.format("org.elasticsearch.spark.sql")\
+        wdf = df.write.format("org.elasticsearch.spark.sql")\
             .option("es.resource", esResource)
 
         for key in esConfig:
