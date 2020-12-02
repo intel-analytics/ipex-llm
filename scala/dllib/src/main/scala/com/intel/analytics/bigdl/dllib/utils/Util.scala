@@ -298,8 +298,31 @@ object Util {
             val param = parameters(i)
             param.getTensorType match {
               case QuantizedType =>
-                retParams(i) = SerializationUtils.clone(param).asInstanceOf[QuantizedTensor[T]]
-             case _ =>
+                val quantizedTensor = param.asInstanceOf[QuantizedTensor[T]]
+                val storage = new Array[Byte](quantizedTensor.nElement())
+                System.arraycopy(quantizedTensor.getStorage, 0,
+                  storage, 0, quantizedTensor.nElement())
+
+                val sizeLength = quantizedTensor.size.length
+                val size = new Array[Int](sizeLength)
+                System.arraycopy(quantizedTensor.size, 0, size, 0, sizeLength)
+
+                val params = quantizedTensor.params.copy()
+
+                val length = quantizedTensor.maxOfRow.length
+                val maxOfRow = new Array[T](length)
+                System.arraycopy(quantizedTensor.maxOfRow, 0, maxOfRow, 0, length)
+
+                val minOfRow = new Array[T](length)
+                System.arraycopy(quantizedTensor.minOfRow, 0, minOfRow, 0, length)
+
+                val sumOfRow = new Array[T](length)
+                System.arraycopy(quantizedTensor.sumOfRow, 0, sumOfRow, 0, length)
+
+                retParams(i) = QuantizedTensor[T](storage, maxOfRow, minOfRow, sumOfRow, size,
+                  params)
+
+              case _ =>
                 retParams(i) = if (isCompacted) {
                   Tensor[T](resultStorage, param.storageOffset(), param.size(), param.stride())
                 } else {
