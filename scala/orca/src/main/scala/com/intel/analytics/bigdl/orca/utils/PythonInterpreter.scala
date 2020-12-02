@@ -53,7 +53,20 @@ object PythonInterpreter {
     sharedInterpreter
   }
 
-  private val sharedInterpreter: SharedInterpreter = createInterpreter()
+  def check(): Unit = {
+    if (sharedInterpreter == null) {
+      init()
+
+    }
+  }
+
+  def init(): Unit = synchronized {
+    if (sharedInterpreter == null) {
+      sharedInterpreter = createInterpreter()
+    }
+  }
+
+  private var sharedInterpreter: SharedInterpreter = null
   private def createInterpreter(): SharedInterpreter = {
     if (System.getenv("PYTHONHOME") == null) {
       throw new RuntimeException("PYTHONHOME is unset, please set PYTHONHOME first.")
@@ -72,7 +85,7 @@ object PythonInterpreter {
   }
 
   private def threadExecute[T](task: () => T,
-                               timeout: Duration = Duration.Inf): T = {
+                               timeout: Duration = Duration("100s")): T = {
     try {
       val re = Array(task).map(t => Future {
         t()
@@ -90,6 +103,7 @@ object PythonInterpreter {
 
   def exec(s: String): Unit = {
     logger.debug(s"jep exec ${s}")
+    check()
     val func = () => {
       sharedInterpreter.exec(s)
     }
@@ -98,6 +112,7 @@ object PythonInterpreter {
 
   def set(s: String, o: AnyRef): Unit = {
     logger.debug(s"jep set ${s}")
+    check()
     val func = () => {
       sharedInterpreter.set(s, o)
     }
@@ -106,6 +121,7 @@ object PythonInterpreter {
 
   def getValue[T](name: String): T = {
     logger.debug(s"jep getValue ${name}")
+    check()
     val func = () => {
       val re = sharedInterpreter.getValue(name)
       re
