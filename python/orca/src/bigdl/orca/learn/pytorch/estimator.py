@@ -79,8 +79,8 @@ class Estimator(object):
                                                 model_dir=model_dir,
                                                 bigdl_type="float")
         else:
-            raise ValueError("only horovod, pytorch and bigdl backend are supported for now,"
-                             f" got backend: {backend}")
+            raise ValueError("Only horovod, torch_distributed and bigdl backends are supported"
+                             f" for now, got backend: {backend}")
 
 
 class PyTorchRayEstimatorWrapper(Estimator):
