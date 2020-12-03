@@ -102,8 +102,6 @@ class RayServiceFuncGenerator(object):
             modified_env["PATH"] = "{}:{}".format(executor_python_path, os.environ["PATH"])
         else:
             modified_env["PATH"] = executor_python_path
-        modified_env["LC_ALL"] = "C.UTF-8"
-        modified_env["LANG"] = "C.UTF-8"
         modified_env.pop("MALLOC_ARENA_MAX", None)
         modified_env.pop("RAY_BACKEND_LOG_LEVEL", None)
         # Unset all MKL setting as Analytics Zoo would give default values when init env.
