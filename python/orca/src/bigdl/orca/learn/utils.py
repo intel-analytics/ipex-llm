@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+from zoo.common.utils import get_file_list
+
 
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
     import os
@@ -24,39 +26,40 @@ def find_latest_checkpoint(model_dir, model_type="bigdl"):
     optim_prefix = None
     optim_regex = None
     if model_type == "bigdl":
-        optim_regex = ".*\.[0-9]+$"
+        optim_regex = ".*\.([0-9]+)$"
     elif model_type == "pytorch":
-        optim_regex = "TorchModel[0-9a-z]*\.[0-9]+$"
+        optim_regex = "TorchModel[0-9a-z]*\.([0-9]+)$"
     elif model_type == "tf":
-        optim_regex = "TFParkTraining\.[0-9]+$"
+        optim_regex = "TFParkTraining\.([0-9]+)$"
     else:
         ValueError("Only bigdl, pytorch and tf are supported for now.")
-    for (root, dirs, files) in os.walk(model_dir, topdown=True):
-        temp_versions = []
-        timestamps = []
-        prefix = None
-        for dir in dirs:
-            if re.match('(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$', dir) is not None:
-                try:
-                    # check if dir name is date time
-                    datetime.datetime.strptime(dir, '%Y-%m-%d_%H-%M-%S')
-                    timestamps.append(dir)
-                except:
-                    continue
-        if timestamps:
-            start_dir = os.path.join(root, max(timestamps))
-            return find_latest_checkpoint(start_dir, model_type=model_type)
-        for file_name in files:
-            if re.match("^optimMethod-" + optim_regex, file_name) is not None:
-                file_split = file_name.split(".")
-                version = int(file_split[1])
-                temp_versions.append(version)
-                prefix = file_split[0]
-        if temp_versions:
-            ckpt_path = root
-            latest_version = max(temp_versions)
-            optim_prefix = prefix
-            break
+
+    file_list = get_file_list(model_dir, recursive=True)
+    optim_dict = {}
+    pattern_re = re.compile('(.*)(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})(.*)optimMethod-'
+                            + optim_regex)
+    for file_path in file_list:
+        matched = pattern_re.match(file_path)
+        if matched is not None:
+            try:
+                # check if dir name is date time
+                timestamp = matched.group(2)
+                datetime.datetime.strptime(timestamp, '%Y-%m-%d_%H-%M-%S')
+                if timestamp in optim_dict:
+                    optim_dict[timestamp].append((int(matched.group(4)),
+                                                  os.path.dirname(file_path),
+                                                  os.path.basename(file_path).split('.')[0]))
+                else:
+                    optim_dict[timestamp] = [(int(matched.group(4)),
+                                              os.path.dirname(file_path),
+                                              os.path.basename(file_path).split('.')[0])]
+            except:
+                continue
+    if optim_dict:
+        latest_timestamp = max(optim_dict)
+        latest_version, ckpt_path, optim_prefix = max(optim_dict[latest_timestamp],
+                                                      key=lambda version_path: version_path[0])
+
     return ckpt_path, optim_prefix, latest_version
 
 
