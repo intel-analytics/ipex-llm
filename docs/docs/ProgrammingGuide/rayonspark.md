@@ -91,3 +91,17 @@ print(ray.get([c.increment.remote() for c in counters]))
 ray_ctx.stop()
 sc.stop()
 ```
+
+---
+### **FAQ**
+- If you encounter the following error when initiating RayOnSpark, especially when you are using Spark standalone cluster:
+```
+This system supports the C.UTF-8 locale which is recommended. You might be able to resolve your issue by exporting the following environment variables:
+
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+```
+Add the environment variables when initiating RayContext would resolve the issue:
+```python
+ray_ctx = RayContext(sc=sc, object_store_memory="5g", env={"LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"})
+```
