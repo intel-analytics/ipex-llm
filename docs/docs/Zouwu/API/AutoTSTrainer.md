@@ -39,9 +39,7 @@ fit(train_df,
     validation_df=None,
     metric="mse",
     recipe: Recipe = SmokeRecipe(),
-    uncertainty: bool = False,
-    distributed: bool = False,
-    hdfs_url=None    validation_df)
+    uncertainty: bool = False)
  ```
 
 * **train_df**: the input dataframe (as pandas.dataframe)
@@ -49,8 +47,6 @@ fit(train_df,
 * **recipe**: the configuration of searching, refer to definition in [automl.config.recipe](../../APIGuide/AutoML/recipe.md)
 * **metric**: the evaluation metric to optimize
 * **uncertainty**: whether to enable uncertainty calculation (will output an uncertainty sigma)
-* **hdfs_url**: the hdfs_url to use for storing trail and intermediate results
-* **distributed**: whether to enable distributed training
 * **return**: a TSPipeline
  
 __Note:__

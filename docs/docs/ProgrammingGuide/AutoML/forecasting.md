@@ -61,7 +61,6 @@ tsp = TimeSequencePredictor(dt_col="datetime", target_col="value", extra_feature
 #### 3. Train on historical time sequence. 
 
 * ```recipe``` contains parameters to control the search space, stop criteria and number of samples (e.g. for random search strategy, how many samples are taken from the search space). Some recipe with large number of samples may lead to a large trial pool and take very long time to finish. Current avaiable recipes are: _SmokeRecipe_, _RandomRecipe_, _GridRandomRecipe_ and _BayesRecipe_. _SmokeRecipe_ is a very simple Recipe for smoke test that runs one epoch and one iteration with only 1 random sample. Other recipes all have arguments ```num_random_samples``` and ```look_back```. ```num_random_samples``` is used to control the number of samples. Note that for GridRandomRecipe, the actual number of trials generated will be 2*```num_samples```, as it needs to do a grid search from 2 possble values for every random sample. ```look_back``` is the length of sequence you want to look back. The default values is 1. You can either put a tuple of (min_len, max_len) or a single int to control the look back sequence length search space. _BayesRecipe_ use bayesian-optimization package to perform sequential model-based hyperparameter optimization.
-* ```distributed```specifies whether to run it in a distributed fashion. 
 * ```fit``` returns a _Pipeline_ object (see next section for details). 
 * Now we don't support resume training - i.e. calling ```fit``` multiple times retrains on the input data from scratch. 
 * input train dataframe look like below: 
@@ -72,7 +71,7 @@ tsp = TimeSequencePredictor(dt_col="datetime", target_col="value", extra_feature
 |2019-06-07|2.3|...|
 
 ```python
-pipeline = tsp.fit(train_df, metric="mean_squared_error", recipe=RandomRecipe(num_samples=1), distributed=False)
+pipeline = tsp.fit(train_df, metric="mean_squared_error", recipe=RandomRecipe(num_samples=1))
 ```
 
 #### 4. After training finished, stop RayOnSpark

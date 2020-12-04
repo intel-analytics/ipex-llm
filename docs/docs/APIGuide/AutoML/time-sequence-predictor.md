@@ -59,7 +59,6 @@ tsp.fit(self,
         recipe=SmokeRecipe(),
         mc=False,
         resources_per_trial={"cpu": 2},
-        distributed=False
         )
 ```
 
@@ -80,7 +79,5 @@ tsp.fit(self,
               Available recipes are `SmokeRecipe`, `RandomRecipe`, `GridRandomRecipe` and `BayesRecipe`.
               
 * **resources_per_trial**: Machine resources to allocate per trial, e.g. `{"cpu": 64, "gpu": 8}`.
-
-* **distributed**: Boolean. Whether to run in distributed mode. Default is False. 
 
 
