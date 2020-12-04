@@ -43,7 +43,7 @@ class elastic_search:
         sqlContext = SQLContext.getOrCreate(sc)
         spark = sqlContext.sparkSession
 
-        reader = spark.read_df.format("org.elasticsearch.spark.sql")
+        reader = spark.read.format("org.elasticsearch.spark.sql")
 
         for key in esConfig:
             reader.option(key, esConfig[key])
