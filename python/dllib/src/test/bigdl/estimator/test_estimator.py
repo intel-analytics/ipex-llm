@@ -22,6 +22,7 @@ from zoo.pipeline.estimator import *
 from bigdl.nn.layer import Sequential, View, Linear, LogSoftMax, SpatialConvolution
 from bigdl.nn.criterion import ClassNLLCriterion
 from bigdl.optim.optimizer import *
+from bigdl.util.common import EvaluatedResult
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.feature.common import FeatureSet
 from zoo import init_nncontext, init_spark_conf
@@ -88,6 +89,10 @@ class TestEstimator(ZooTestCase):
                                      validation_set=data_set,
                                      validation_method=[Top1Accuracy()],
                                      batch_size=batch_size)
+        eval_result = estimator.evaluate_imagefeature(validation_set=data_set,
+                                                      validation_method=[Top1Accuracy()])
+        assert isinstance(eval_result[0], EvaluatedResult)
+        assert len(eval_result) == 1
         predict_result = model.predict_image(image_frame.transform(transformer))
         assert (predict_result.get_predict().count(), 8)
 
@@ -117,6 +122,10 @@ class TestEstimator(ZooTestCase):
                         validation_set=data_set,
                         validation_method=[Top1Accuracy()],
                         batch_size=batch_size)
+        eval_result = estimator.evaluate(validation_set=data_set,
+                                         validation_method=[Top1Accuracy()])
+        assert isinstance(eval_result[0], EvaluatedResult)
+        assert len(eval_result) == 1
         predict_result = model.predict(sample_rdd)
         assert (predict_result.count(), 8)
 
