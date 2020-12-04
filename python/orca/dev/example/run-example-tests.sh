@@ -9,6 +9,7 @@ export ANALYTICS_ZOO_JAR=`find ${ANALYTICS_ZOO_HOME}/lib -type f -name "analytic
 export ANALYTICS_ZOO_PYZIP=`find ${ANALYTICS_ZOO_HOME}/lib -type f -name "analytics-zoo*python-api.zip"`
 export ANALYTICS_ZOO_CONF=${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf
 export PYTHONPATH=${ANALYTICS_ZOO_PYZIP}:$PYTHONPATH
+export BIGDL_CLASSPATH=${ANALYTICS_ZOO_JAR}
 
 set -e
 
@@ -599,6 +600,38 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 now=$(date "+%s")
 time16=$((now-start))
 
+echo "#17 start test for orca tf imagesegmentation"
+#timer
+start=$(date "+%s")
+# prepare data
+if [ -f analytics-zoo-data/data/carvana ]
+then
+    echo "analytics-zoo-data/data/carvana already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/carvana/train.zip \
+    -P analytics-zoo-data/data/carvana/
+    wget $FTP_URI/analytics-zoo-data/data/carvana/train_masks.zip \
+    -P analytics-zoo-data/data/carvana/
+    wget $FTP_URI/analytics-zoo-data/data/carvana/train_masks.csv.zip \
+    -P analytics-zoo-data/data/carvana/
+fi
+
+# Run the example
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 3g \
+    --executor-memory 3g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/tf/image_segmentation/image_segmentation.py \
+    --file_path analytics-zoo-data/data/carvana --epochs 1
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "orca tf imagesegmentation failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time17=$((now-start))
 
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
@@ -616,3 +649,4 @@ echo "#13 streaming Object Detection time used: $time13 seconds"
 echo "#14 streaming text classification time used: $time14 seconds"
 echo "#15 attention time used:$time15 seconds"
 echo "#16 orca data time used:$time16 seconds"
+echo "#17 orca tf imagesegmentation time used:$time17 seconds"
