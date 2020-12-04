@@ -13,7 +13,21 @@ Refer to [AutoTS API Guide](https://analytics-zoo.github.io/master/#Zouwu/API/Au
 
 ---
 ### **Step 0: Prepare environment**
-We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run automated training on a yarn cluster (yarn-client mode only).
+Zouwu AutoTS needs below requirements to run.
+* python 3.6 or 3.7
+* pySpark
+* analytics-zoo
+* tensorflow>=1.15.0,<2.0.0
+* h5py==2.10.0
+* ray[tune]==0.8.4
+* psutil
+* aiohttp
+* setproctitle
+* pandas
+* scikit-learn>=0.20.0,<=0.22.0
+* requests
+
+You can install above python dependencies manually. But we strongly recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run automated training on a yarn cluster (yarn-client mode only).
 ```bash
 conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set another name you like.
 conda activate zoo
