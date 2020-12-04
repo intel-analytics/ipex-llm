@@ -160,8 +160,7 @@ private[zoo] class ModelInfo[T: ClassTag](val uuid: String, @transient var model
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()
-    val vin = new ModelInfoObjectInputStream(in)
-    model = vin.readObject().asInstanceOf[Module[T]]
+    model = in.readObject().asInstanceOf[Module[T]]
     CachedModels.add(uuid, model)
   }
 }
@@ -169,18 +168,6 @@ private[zoo] class ModelInfo[T: ClassTag](val uuid: String, @transient var model
 private[zoo] object ModelInfo {
   def apply[T: ClassTag](uuid: String, model: Module[T])(
     implicit ev: TensorNumeric[T]): ModelInfo[T] = new ModelInfo[T](uuid, model)
-}
-
-private class ModelInfoObjectInputStream[T: ClassTag](val inputStream: InputStream)
-  extends ObjectInputStream(inputStream) {
-  @throws[IOException]
-  @throws[ClassNotFoundException]
-  override protected def resolveClass(desc: ObjectStreamClass): Class[_] = {
-    if (!desc.getName.equals(classOf[ModelInfo[T]].getName)) {
-      throw new InvalidClassException("Unrecognized Class", desc.getName)
-    }
-    super.resolveClass(desc)
-  }
 }
 
 private[zoo] object CachedModels {
