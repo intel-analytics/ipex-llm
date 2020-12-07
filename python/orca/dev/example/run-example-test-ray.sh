@@ -13,6 +13,8 @@ export BIGDL_JARS=`find ${ANALYTICS_ZOO_HOME}/lib -type f -name "analytics-zoo*j
 
 set -e
 
+ray stop -f
+
 echo "Start ray example tests"
 #start execute
 echo "#1 Start rl_pong example"
