@@ -91,11 +91,12 @@ def get_optimizer(model, config):
 
 
 class TestPyTorchEstimator(TestCase):
-    def test_linear(self):
+    def test_data_creator(self):
         estimator = Estimator.from_torch(model=get_model,
                                          optimizer=get_optimizer,
                                          loss=nn.BCELoss(),
                                          config={"lr": 1e-2},
+                                         workers_per_node=2,
                                          backend="torch_distributed")
         train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
         print(train_stats)
@@ -103,9 +104,20 @@ class TestPyTorchEstimator(TestCase):
         print(val_stats)
         assert 0 < val_stats["val_accuracy"] < 1
         assert estimator.get_model()
+
+        # Verify syncing weights, i.e. the two workers have the same weights after training
+        import ray
+        remote_workers = estimator.estimator.remote_workers
+        state_dicts = ray.get([worker.state_dict.remote() for worker in remote_workers])
+        weights = [state["models"] for state in state_dicts]
+        worker1_weights = weights[0][0]
+        worker2_weights = weights[1][0]
+        for layer in list(worker1_weights.keys()):
+            assert np.allclose(worker1_weights[layer].numpy(),
+                               worker2_weights[layer].numpy())
         estimator.shutdown()
 
-    def test_linear_spark_xshards(self):
+    def test_spark_xshards(self):
         from zoo import init_nncontext
         from zoo.orca.data import SparkXShards
         estimator = Estimator.from_torch(model=get_model,
