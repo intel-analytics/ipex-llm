@@ -113,7 +113,7 @@ if __name__ == "__main__":
     parser.add_argument("--memory", type=str, default="10g",
                         help="The memory you want to use on each node. "
                              "You can change it depending on your own cluster setting.")
-    parser.add_argument("--workers_per_node", type=int, default=1,
+    parser.add_argument("--workers_per_node", type=int, default=2,
                         help="The number of workers to run on each node")
 
     args = parser.parse_args()
