@@ -20,6 +20,16 @@ start=$(date "+%s")
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/horovod/pytorch_estimator.py
 now=$(date "+%s")
 time1=$((now-start))
-
 echo "horovod pytorch example tests finished"
+
+echo "Start zouwu tcmf tests"
+#start execute
+echo "#2 zouwu tcmf example"
+start=$(date "+%s")
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/zouwu/examples/run_electricity.py --use_dummy_data --smoke
+now=$(date "+%s")
+time2=$((now-start))
+echo "zouwu tcmf example tests finished"
+
 echo "#1 pytorch estimator example time used:$time1 seconds"
+echo "#2 zouwu tcmf example time used:$time2 seconds"
