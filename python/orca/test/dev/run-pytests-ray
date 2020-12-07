@@ -23,15 +23,7 @@ cd "`dirname $0`"
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
-echo "Running RayOnSpark tests"
-python -m pytest -v ../test/zoo/ray/ \
-       --ignore=../test/zoo/ray/integration/ \
-       --ignore=../test/zoo/ray/test_reinit_raycontext.py
-exit_status_1=$?
-if [ $exit_status_1 -ne 0 ];
-then
-    exit $exit_status_1
-fi
+ray stop -f
 
 echo "Running orca learn ray tests"
 python -m pytest -v ../test/zoo/orca/learn/ray \
@@ -43,6 +35,8 @@ then
     exit $exit_status_2
 fi
 
+ray stop -f
+
 echo "Running automl tests"
 python -m pytest -v ../test/zoo/automl
 exit_status_3=$?
@@ -50,6 +44,8 @@ if [ $exit_status_3 -ne 0 ];
 then
     exit $exit_status_3
 fi
+
+ray stop -f
 
 echo "Running zouwu tests"
 python -m pytest -v ../test/zoo/zouwu \
@@ -60,6 +56,8 @@ then
     exit $exit_status_4
 fi
 
+ray stop -f
+
 echo "Running orca data tests"
 python -m pytest -v ../test/zoo/orca/data
 exit_status_5=$?
@@ -68,3 +66,16 @@ then
     exit $exit_status_5
 fi
 
+ray stop -f
+
+echo "Running RayOnSpark tests"
+python -m pytest -v ../test/zoo/ray/ \
+	--ignore=../test/zoo/ray/integration/ \
+	--ignore=../test/zoo/ray/test_reinit_raycontext.py
+exit_status_1=$?
+if [ $exit_status_1 -ne 0 ];
+then
+    exit $exit_status_1
+fi
+
+ray stop -f
