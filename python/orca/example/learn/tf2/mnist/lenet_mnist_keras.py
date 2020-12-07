@@ -90,6 +90,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The mode for the Spark cluster. local or yarn.')
+    parser.add_argument('--max_epoch', type=int, default=5,
+                        help='max epoch')
 
     args = parser.parse_args()
     if args.cluster_mode == "local":
@@ -97,4 +99,4 @@ if __name__ == '__main__':
     elif args.cluster_mode == "yarn":
         init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2,
                           init_ray_on_spark=True, driver_memory="6g")
-    main(5)
+    main(args.max_epoch)
