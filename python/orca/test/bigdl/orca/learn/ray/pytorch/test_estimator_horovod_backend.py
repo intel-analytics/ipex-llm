@@ -37,7 +37,7 @@ class TestPyTorchEstimator(TestCase):
             config={
                 "lr": 1e-2,  # used in optimizer_creator
                 "hidden_size": 1  # used in model_creator
-            }, backend="horovod")
+            }, backend="horovod", workers_per_node=2)
         stats1 = estimator.fit(train_data_creator, batch_size=4, epochs=5)
         train_loss1 = stats1[-1]["train_loss"]
         validation_loss1 = estimator.evaluate(validation_data_creator)["val_loss"]
@@ -46,10 +46,46 @@ class TestPyTorchEstimator(TestCase):
         train_loss2 = stats2[-1]["train_loss"]
         validation_loss2 = estimator.evaluate(validation_data_creator)["val_loss"]
 
+        # Verify syncing weights, i.e. the two workers have the same weights after training
+        import ray
+        import numpy as np
+        remote_workers = estimator.estimator.remote_workers
+        state_dicts = ray.get([worker.state_dict.remote() for worker in remote_workers])
+        weights = [state["models"] for state in state_dicts]
+        worker1_weights = weights[0][0]
+        worker2_weights = weights[1][0]
+        for layer in list(worker1_weights.keys()):
+            assert np.allclose(worker1_weights[layer].numpy(),
+                               worker2_weights[layer].numpy())
+
         assert train_loss2 <= train_loss1, (train_loss2, train_loss1)
         assert validation_loss2 <= validation_loss1, (validation_loss2,
                                                       validation_loss1)
         estimator.shutdown()
+
+    def test_horovod_initialized_correctly(self):
+        estimator = Estimator.from_torch(
+            model=model_creator,
+            optimizer=optimizer_creator,
+            loss=nn.MSELoss(),
+            scheduler_creator=scheduler_creator,
+            config={
+                "lr": 1e-2,  # used in optimizer_creator
+                "hidden_size": 1  # used in model_creator
+            }, backend="horovod", workers_per_node=2)
+
+        def get_size():
+            import horovod.torch as hvd
+            return hvd.size()
+        results = estimator.estimator.horovod_runner.run(get_size)
+        assert results == [2, 2]
+
+        def get_rank():
+            import horovod.torch as hvd
+            return hvd.rank()
+        results = estimator.estimator.horovod_runner.run(get_rank)
+        results = sorted(results)
+        assert results == [0, 1]
 
     def test_save_and_restore(self):
         estimator1 = Estimator.from_torch(

@@ -120,7 +120,8 @@ class HorovodRayRunner:
             local_envs["HOROVOD_CROSS_SIZE"] = str(alloc_info.cross_size)
 
         ray.get([worker.set_gloo_iface.remote() for worker in self.remote_workers])
+        self.run(lambda: print("horovod worker initialized"))
 
     def run(self, func):
-        ray.get([self.remote_workers[i].run.remote(self.per_worker_envs[i], func)
-                 for i in range(self.num_nodes)])
+        return ray.get([self.remote_workers[i].run.remote(self.per_worker_envs[i], func)
+                       for i in range(self.num_nodes)])
