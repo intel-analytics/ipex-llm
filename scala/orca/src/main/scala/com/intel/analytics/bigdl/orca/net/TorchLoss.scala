@@ -69,7 +69,7 @@ class TorchLoss(private val criterionHolder: Array[Byte])
       PythonInterpreter.exec(s"target_${postId} = torch.Tensor(nd_target_${postId})")
     }
     PythonInterpreter.exec(s"loss_${postId} = ${name}(" +
-      s"output_${Integer.toHexString(input.hashCode())}, target_${postId})")
+      s"output_${Integer.toHexString(System.identityHashCode(input))}, target_${postId})")
     output = PythonInterpreter.getValue(s"loss_${postId}.item()").asInstanceOf[Double].toFloat
     output
   }
