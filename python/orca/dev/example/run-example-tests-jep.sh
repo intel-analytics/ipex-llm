@@ -2,7 +2,7 @@
 
 set -e
 
-echo "start example for MNIST"
+echo "#1 start example for MNIST"
 #timer
 start=$(date "+%s")
 if [ -f analytics-zoo-data/data/MNIST ]
@@ -17,7 +17,10 @@ fi
 
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/mnist/main.py --dir analytics-zoo-data/data
 
-echo "start example for orca MNIST"
+now=$(date "+%s")
+time1=$((now-start))
+
+echo "#2 start example for orca MNIST"
 #timer
 start=$(date "+%s")
 if [ -f analytics-zoo-data/data/MNIST ]
@@ -31,3 +34,25 @@ else
 fi
 
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/mnist/lenet_mnist.py --dir analytics-zoo-data/data
+
+now=$(date "+%s")
+time2=$((now-start))
+
+echo "#3 start example for orca Cifar10"
+#timer
+start=$(date "+%s")
+if [ -d ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/data ]
+then
+    echo "Cifar10 already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/cifar10.zip -P ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10
+    unzip ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10.zip
+fi
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10.py
+
+now=$(date "+%s")
+time3=$((now-start))
+
+echo "#1 MNIST example time used:$time1 seconds"
+echo "#2 orca MNIST example time used:$time2 seconds"
+echo "#3 orca Cifar10 example time used:$time3 seconds"
