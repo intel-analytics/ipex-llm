@@ -2,8 +2,19 @@ These are built BigDL packages including dependency and Python files. You can do
 
 ---
 ## **Remark**
-- Only __Python 2.7__, __Python 3.5__ and __Python 3.6__ are supported for now.
-- Note that __Python 3.6__ is only compatible with Spark 1.6.4, 2.0.3, 2.1.1, 2.2 and 2.3. See [this issue](https://issues.apache.org/jira/browse/SPARK-19019) for more discussion.
+- We have tested on __Python 3.6__ and __Python 3.7__. Support for Python 2.7 has been removed due to its end of life.
+- Note that __Python 3.6__ is only compatible with Spark 1.6.4, 2.0.3, 2.1.1, and >=2.2.0. See [this issue](https://issues.apache.org/jira/browse/SPARK-19019) for more discussion.
+
+---
+
+## **Release 0.12.1**
+|             | Download Link (for Linux x64 and Mac)                 |
+| ----------- | ------------------------------------------------------------ |
+| Spark 2.1.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-all/0.12.1/dist-spark-2.1.1-scala-2.11.8-all-0.12.1-dist.zip) |
+| Spark 2.2.0 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.2.0-scala-2.11.8-all/0.12.1/dist-spark-2.2.0-scala-2.11.8-all-0.12.1-dist.zip) |
+| Spark 2.3.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.3.1-scala-2.11.8-all/0.12.1/dist-spark-2.3.1-scala-2.11.8-all-0.12.1-dist.zip) |
+| Spark 2.4.3 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.4.3-scala-2.11.8-all/0.12.1/dist-spark-2.4.3-scala-2.11.8-all-0.12.1-dist.zip) |
+| Spark 3.0.0 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-3.0.0-scala-2.12.10-all/0.12.1/dist-spark-3.0.0-scala-2.12.10-all-0.12.1-dist.zip) |
 
 ---
 
