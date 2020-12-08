@@ -280,4 +280,50 @@ class TorchModelSpec extends ZooSpecHelper{
     }
     sc.stop()
   }
+
+  "SimpleTorchModel" should "predict without error with multioutput" in {
+    ifskipTest()
+    val conf = new SparkConf().setAppName("SimpleTorchModel").setMaster("local[4]")
+    val sc = initNNContext(conf)
+    val tmpname = createTmpFile().getAbsolutePath()
+    val code =
+      s"""
+         |import torch
+         |from torch import nn
+         |from zoo.pipeline.api.torch import zoo_pickle_module
+         |if '_data' in locals():
+         |  del _data
+         |
+         |class SimpleTorchModel(nn.Module):
+         |    def __init__(self):
+         |        super(SimpleTorchModel, self).__init__()
+         |        self.dense1 = nn.Linear(2, 1)
+         |        list(self.dense1.parameters())[0][0][0] = 0.2
+         |        list(self.dense1.parameters())[0][0][1] = 0.5
+         |        list(self.dense1.parameters())[1][0] = 0.3
+         |    def forward(self, x):
+         |        x1 = self.dense1(x)
+         |        x2 = self.dense1(x)
+         |        return (x1, x2)
+         |
+         |model = SimpleTorchModel()
+         |torch.save(model, "$tmpname", pickle_module=zoo_pickle_module)
+         |""".stripMargin
+    PythonInterpreter.exec(code)
+    val model = TorchModel.loadModel(tmpname)
+    model.evaluate()
+    RandomGenerator.RNG.setSeed(1L)
+    val input = Array.tabulate(1024)(_ =>
+      (RandomGenerator.RNG.uniform(0, 1).toFloat,
+        RandomGenerator.RNG.uniform(0, 1).toFloat))
+    val exceptedTarget = input.map(v => 0.2f * v._1 + 0.5f * v._2 + 0.3f)
+    val rddSample = sc.parallelize(input, 4).map(v =>
+      Sample(Tensor[Float](Array(v._1, v._2), Array(2))))
+    val results = model.predict(rddSample, batchSize = 16).collect()
+    (0 until 1024).foreach{i =>
+      results(i).toTable[Tensor[Float]](1).value() should be (exceptedTarget(i))
+      results(i).toTable[Tensor[Float]](2).value() should be (exceptedTarget(i))
+    }
+    sc.stop()
+  }
 }
