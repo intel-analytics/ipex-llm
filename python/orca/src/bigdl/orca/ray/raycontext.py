@@ -123,6 +123,7 @@ class RayServiceFuncGenerator(object):
 
     def __init__(self, python_loc, redis_port, ray_node_cpu_cores,
                  password, object_store_memory, verbose=False, env=None,
+                 include_webui=False,
                  extra_params=None):
         """object_store_memory: integer in bytes"""
         self.env = env
@@ -133,6 +134,7 @@ class RayServiceFuncGenerator(object):
         self.ray_exec = self._get_ray_exec()
         self.object_store_memory = object_store_memory
         self.extra_params = extra_params
+        self.include_webui = include_webui
         self.verbose = verbose
         # _mxnet_worker and _mxnet_server are resource tags for distributed MXNet training only
         # in order to diff worker from server.
@@ -161,10 +163,11 @@ class RayServiceFuncGenerator(object):
         return command
 
     def _gen_master_command(self):
+        webui = "true" if self.include_webui else "false"
         command = "{} start --head " \
-                  "--include-webui true --redis-port {} " \
+                  "--include-webui {} --redis-port {} " \
                   "--redis-password {} --num-cpus {}". \
-            format(self.ray_exec, self.redis_port, self.password,
+            format(self.ray_exec, webui, self.redis_port, self.password,
                    self.ray_node_cpu_cores)
         if self.labels:
             command = command + " " + self.labels
@@ -260,7 +263,7 @@ class RayContext(object):
     _active_ray_context = None
 
     def __init__(self, sc, redis_port=None, password="123456", object_store_memory=None,
-                 verbose=False, env=None, extra_params=None,
+                 verbose=False, env=None, extra_params=None, include_webui=False,
                  num_ray_nodes=None, ray_node_cpu_cores=None):
         """
         The RayContext would initiate a ray cluster on top of the configuration of SparkContext.
@@ -285,6 +288,7 @@ class RayContext(object):
         :param env: The environment variable dict for running ray processes. Default is None.
         :param extra_params: The key value dict for extra options to launch ray.
         For example, extra_params={"temp-dir": "/tmp/ray/"}
+        :param include_webui: whether to include ray web ui
         :param num_ray_nodes: The number of raylets to start across the cluster.
         For Spark local mode, you don't need to specify this value.
         For Spark cluster mode, it is default to be the number of Spark executors. If
@@ -309,6 +313,7 @@ class RayContext(object):
         self.ray_processesMonitor = None
         self.env = env
         self.extra_params = extra_params
+        self.include_webui = include_webui
         self._address_info = None
         if self.is_local:
             self.num_ray_nodes = 1
@@ -373,6 +378,7 @@ class RayContext(object):
                 object_store_memory=self.object_store_memory,
                 verbose=self.verbose,
                 env=self.env,
+                include_webui=self.include_webui,
                 extra_params=self.extra_params)
         RayContext._active_ray_context = self
 
@@ -457,6 +463,7 @@ class RayContext(object):
                 self._address_info = ray.init(num_cpus=self.ray_node_cpu_cores,
                                               redis_password=self.redis_password,
                                               object_store_memory=self.object_store_memory,
+                                              include_webui=self.include_webui,
                                               resources=self.extra_params)
             else:
                 self.cluster_ips = self._gather_cluster_ips()
