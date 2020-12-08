@@ -183,7 +183,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                          "but got: %s".format(cluster_mode))
     ray_args = {}
     for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
-                "extra_params", "num_ray_nodes", "ray_node_cpu_cores"]:
+                "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
         if key in kwargs:
             ray_args[key] = kwargs[key]
     from zoo.ray import RayContext
