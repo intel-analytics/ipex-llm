@@ -92,7 +92,6 @@ Hdfs Test Suite
    Set Environment Variable         s3aPath                  ${s3a_path}
    Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_272_master} -Dmnist=${mnist_data_source} -P integration-test -DforkMode=never
    Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.S3Spec -Ds3aPath=${s3a_path} -P integration-test -DforkMode=never
-   Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.optim.OptimPredictorShutdownSpec  -DhdfsMaster=${hdfs_272_master} -P integration-test -DforkMode=never
    Remove Environment Variable      hdfsMaster               mnist                   s3aPath
 
 
