@@ -278,17 +278,17 @@ class RayContext(object):
         to start raylets.
 
         :param sc: An instance of SparkContext.
-        :param redis_port: redis port for the "head" node.
+        :param redis_port: The redis port for the ray head node. Default is None.
         The value would be randomly picked if not specified.
-        :param password: Password for the redis. Default to be "123456" if not specified.
+        :param password: The password for redis. Default to be "123456" if not specified.
         :param object_store_memory: The memory size for ray object_store in string.
         This can be specified in bytes(b), kilobytes(k), megabytes(m) or gigabytes(g).
-        For example, 50b, 100k, 250m, 30g.
+        For example, "50b", "100k", "250m", "30g".
         :param verbose: True for more logs when starting ray. Default is False.
         :param env: The environment variable dict for running ray processes. Default is None.
         :param extra_params: The key value dict for extra options to launch ray.
         For example, extra_params={"temp-dir": "/tmp/ray/"}
-        :param include_webui: whether to include ray web ui
+        :param include_webui: True for including web ui when starting ray. Default is False.
         :param num_ray_nodes: The number of raylets to start across the cluster.
         For Spark local mode, you don't need to specify this value.
         For Spark cluster mode, it is default to be the number of Spark executors. If
