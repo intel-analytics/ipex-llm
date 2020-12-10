@@ -72,13 +72,13 @@ def kill_redundant_log_monitors(redis_address):
             is_same_redis = "--redis-address={}".format(redis_address)
             if is_log_monitor and is_same_redis in cmdline:
                 log_monitor_processes.append(proc)
-        except psutil.AccessDenied:
-            # psutil may encounter AccessDenied exceptions
-            # when it's trying to visit core services
+        except (psutil.AccessDenied, psutil.ZombieProcess, psutil.ProcessLookupError):
+            # psutil may encounter AccessDenied or ZombieProcess exceptions
+            # when it's trying to visit some MacOS core services
             if psutil.MACOS:
                 continue
             else:
-                raise
+                raise Exception("List process with list2cmdline failed!")
 
     if len(log_monitor_processes) > 1:
         for proc in log_monitor_processes[1:]:
