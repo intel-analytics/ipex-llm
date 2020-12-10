@@ -24,7 +24,7 @@ Currently, our default compiling version is java 1.8. To compile with java 11, i
 ```bash
 $ bash make-dist.sh -P spark_3.x -Djava.version=11 -Djavac.version=11
 ```
-After that, you can find a dist folder, which contains all the needed files to run a BigDL program. Follow this [general guide](./../install-build-src.md) to see usage of each file in the folder.
+After that, you can find a dist folder, which contains all the needed files to run a BigDL program. Follow this [general guide](./install-build-src.md) to see usage of each file in the folder.
 
 **Build with Maven**
  
@@ -33,4 +33,4 @@ To build BigDL directly using Maven, run the command below:
 $ mvn clean package -DskipTests -P spark_3.x -Djava.version=11 -Djavac.version=11
 ```
 
-After that, you can find that the three jar packages in PATH_To_BigDL/target/, where PATH_To_BigDL is the path to the directory of the BigDL. Follow this [general guide](./../install-build-src.md) to see usage of each file in the folder.
+After that, you can find that the three jar packages in PATH_To_BigDL/target/, where PATH_To_BigDL is the path to the directory of the BigDL. Follow this [general guide](./install-build-src.md) to see usage of each file in the folder.
