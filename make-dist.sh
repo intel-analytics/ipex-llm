@@ -34,12 +34,12 @@ MVN_OPTS_LIST="-Xmx2g -XX:ReservedCodeCacheSize=512m"
 
 if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-    if [[ "$version" < "1.7" ]]; then
+    if [[ "expr $version" < "1.7" ]]; then
         echo Require a java version not lower than 1.7
         exit 1
     fi
     # For jdk7
-    if [[ "$version" < "1.8" ]]; then
+    if [[ "expr $version" < "1.8" ]]; then
         MVN_OPTS_LIST="$MVN_OPTS_LIST -XX:MaxPermSize=1G"
     fi
 fi
