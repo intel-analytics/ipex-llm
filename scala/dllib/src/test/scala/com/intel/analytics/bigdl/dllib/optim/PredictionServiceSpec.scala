@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -133,6 +134,8 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
   "PredictionService" should "work properly with concurrent calls" in {
     val service = PredictionService[Float](testModule, 4)
     val service2 = PredictionService[Float](testModule, 1)
+
+    RNG.setSeed(100)
 
     val sumResults = (1 to 100).par.map { _ =>
       val tensor = Tensor[Float](2, 10).randn()
