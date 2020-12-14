@@ -128,7 +128,7 @@ class Estimator:
         if "inter_op_parallelism" not in self.config:
             self.config["inter_op_parallelism"] = 1
 
-        if "intra_op_parallelism" not in config:
+        if "intra_op_parallelism" not in self.config:
             self.config["intra_op_parallelism"] = ray_ctx.ray_node_cpu_cores // workers_per_node
 
         if backend == "horovod":
