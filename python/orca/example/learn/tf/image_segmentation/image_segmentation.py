@@ -46,7 +46,11 @@ def load_data(file_path):
     load_data_from_zip(file_path, 'train_masks.csv.zip')
 
 
-def main(cluster_mode, max_epoch, file_path, batch_size):
+def main(cluster_mode, max_epoch, file_path, batch_size, platform, non_interactive):
+    import matplotlib
+    if not non_interactive and platform == "mac":
+        matplotlib.use('qt5agg')
+
     if cluster_mode == "local":
         init_orca_context(cluster_mode="local", cores=4, memory="3g")
     elif cluster_mode == "yarn":
@@ -174,25 +178,27 @@ def main(cluster_mode, max_epoch, file_path, batch_size):
     val_image_label = val_shards.collect()[0]
     val_image = val_image_label["x"]
     val_label = val_image_label["y"]
-    # visualize 5 predicted results
-    plt.figure(figsize=(10, 20))
-    for i in range(5):
-        img = val_image[i]
-        label = val_label[i]
-        predicted_label = pred[i]
+    if not non_interactive:
+        # visualize 5 predicted results
+        plt.figure(figsize=(10, 20))
+        for i in range(5):
+            img = val_image[i]
+            label = val_label[i]
+            predicted_label = pred[i]
 
-        plt.subplot(5, 3, 3 * i + 1)
-        plt.imshow(img)
-        plt.title("Input image")
+            plt.subplot(5, 3, 3 * i + 1)
+            plt.imshow(img)
+            plt.title("Input image")
 
-        plt.subplot(5, 3, 3 * i + 2)
-        plt.imshow(label[:, :, 0], cmap='gray')
-        plt.title("Actual Mask")
-        plt.subplot(5, 3, 3 * i + 3)
-        plt.imshow(predicted_label, cmap='gray')
-        plt.title("Predicted Mask")
-    plt.suptitle("Examples of Input Image, Label, and Prediction")
-    plt.show()
+            plt.subplot(5, 3, 3 * i + 2)
+            plt.imshow(label[:, :, 0], cmap='gray')
+            plt.title("Actual Mask")
+            plt.subplot(5, 3, 3 * i + 3)
+            plt.imshow(predicted_label, cmap='gray')
+            plt.title("Predicted Mask")
+        plt.suptitle("Examples of Input Image, Label, and Prediction")
+
+        plt.show()
 
     stop_orca_context()
 
@@ -207,6 +213,11 @@ if __name__ == '__main__':
                         help="The number of epochs to train the model")
     parser.add_argument('--batch_size', type=int, default=8,
                         help="Batch size for training and prediction")
+    parser.add_argument('--platform', type=str, default="linux",
+                        help="The platform you used. Only linux and mac are supported.")
+    parser.add_argument('--non_interactive', default=False, action="store_true",
+                        help="Flag to not visualize the result.")
 
     args = parser.parse_args()
-    main(args.cluster_mode, args.epochs, args.file_path, args.batch_size)
+    main(args.cluster_mode, args.epochs, args.file_path, args.batch_size, args.platform,
+         args.non_interactive)
