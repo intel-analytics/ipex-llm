@@ -15,6 +15,7 @@
 #
 from zoo.pipeline.nnframes import NNEstimator, NNModel
 from zoo.pipeline.estimator import Estimator as SparkEstimator
+from zoo.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from zoo.orca.data import SparkXShards
 from bigdl.optim.optimizer import MaxEpoch
 from zoo.feature.common import FeatureSet
@@ -22,54 +23,6 @@ from pyspark.sql.dataframe import DataFrame
 
 
 class Estimator(object):
-    def fit(self, data, epochs, **kwargs):
-        pass
-
-    def predict(self, data, **kwargs):
-        pass
-
-    def evaluate(self, data, **kwargs):
-        pass
-
-    def get_model(self):
-        pass
-
-    def save(self, model_path):
-        pass
-
-    def load(self, checkpoint):
-        pass
-
-    def set_tensorboard(self, log_dir, app_name):
-        """
-        Set summary information during the training process for visualization purposes.
-        Saved summary can be viewed via TensorBoard.
-        In order to take effect, it needs to be called before fit.
-
-        Training summary will be saved to 'log_dir/app_name/train'
-        and validation summary (if any) will be saved to 'log_dir/app_name/validation'.
-
-        # Arguments
-        :param log_dir: The base directory path to store training and validation logs.
-        :param app_name: The name of the application.
-        """
-        pass
-
-    def clear_gradient_clipping(self):
-        pass
-
-    def set_constant_gradient_clipping(self, min, max):
-        pass
-
-    def set_l2_norm_gradient_clipping(self, clip_norm):
-        pass
-
-    def get_train_summary(self, tag=None):
-        pass
-
-    def get_validation_summary(self, tag=None):
-        pass
-
     @staticmethod
     def from_bigdl(*, model, loss=None, optimizer=None, feature_preprocessing=None,
                    label_preprocessing=None, model_dir=None):
@@ -107,7 +60,7 @@ class Estimator(object):
                                      label_preprocessing=label_preprocessing, model_dir=model_dir)
 
 
-class BigDLEstimatorWrapper(Estimator):
+class BigDLEstimatorWrapper(OrcaSparkEstimator):
     def __init__(self, *, model, loss, optimizer=None, feature_preprocessing=None,
                  label_preprocessing=None, model_dir=None):
         self.loss = loss
@@ -187,7 +140,7 @@ class BigDLEstimatorWrapper(Estimator):
                     assert isinstance(val_data, SparkXShards), "val_data should be a XShards"
                     val_feature_set = FeatureSet.sample_rdd(val_data.rdd.flatMap(to_sample))
                 if self.log_dir is not None and self.app_name is not None:
-                    self.estimator.set_tensorboad(self.log_dir, self.app_name)
+                    self.estimator.set_tensorboard(self.log_dir, self.app_name)
                 self.estimator.train(train_feature_set, self.loss, end_trigger, checkpoint_trigger,
                                      val_feature_set, val_methods, batch_size)
                 self.is_nnframe_fit = False
@@ -234,10 +187,6 @@ class BigDLEstimatorWrapper(Estimator):
             raise ValueError("Data should be XShards or Spark DataFrame, but get " +
                              data.__class__.__name__)
 
-    def set_tensorboard(self, log_dir, app_name):
-        self.log_dir = log_dir
-        self.app_name = app_name
-
     def get_model(self):
         return self.model
 
@@ -262,29 +211,7 @@ class BigDLEstimatorWrapper(Estimator):
             self.model_dir = model_dir
 
         if is_checkpoint:
-            from zoo.orca.learn.utils import find_latest_checkpoint
-            from zoo.pipeline.api.net import Net
-            from bigdl.nn.layer import Model, Container
-            from bigdl.optim.optimizer import OptimMethod
-            import os
-            path, prefix, version = find_latest_checkpoint(checkpoint, model_type="bigdl")
-            if path is None:
-                raise ValueError("Cannot find BigDL checkpoint, please check your checkpoint path.")
-            try:
-                self.model = Model.load(os.path.join(path, "model.{}".format(version)))
-                assert isinstance(self.model, Container), \
-                    "The loaded model should be a Container, please check your checkpoint type."
-                self.optimizer = OptimMethod.load(os.path.join(path,
-                                                               "{}.{}".format(prefix, version)))
-            except Exception:
-                raise ValueError("Cannot load BigDL checkpoint, please check your checkpoint path "
-                                 "and checkpoint type.")
-            self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
-            self.nn_estimator = NNEstimator(self.model, self.loss, self.feature_preprocessing,
-                                            self.label_preprocessing)
-            if self.optimizer is not None:
-                self.nn_estimator.setOptimMethod(self.optimizer)
-            self.nn_model = NNModel(self.model, feature_preprocessing=self.feature_preprocessing)
+            self.load_latest_orca_checkpoint(checkpoint)
         else:
             from zoo.pipeline.api.net import Net
             self.model = Net.load_bigdl(checkpoint + ".bigdl", checkpoint + ".bin")
@@ -298,6 +225,33 @@ class BigDLEstimatorWrapper(Estimator):
             self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
             self.nn_model = NNModel(self.model, feature_preprocessing=self.feature_preprocessing)
         return self
+
+    def load_orca_checkpoint(self, path, version, prefix=None):
+        from bigdl.nn.layer import Model, Container
+        from bigdl.optim.optimizer import OptimMethod
+        import os
+        try:
+            self.model = Model.load(os.path.join(path, "model.{}".format(version)))
+            assert isinstance(self.model, Container), \
+                "The loaded model should be a Container, please check your checkpoint type."
+            self.optimizer = OptimMethod.load(os.path.join(path,
+                                                           "{}.{}".format(prefix, version)))
+        except Exception:
+            raise ValueError("Cannot load BigDL checkpoint, please check your checkpoint path "
+                             "and checkpoint type.")
+        self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
+        self.nn_estimator = NNEstimator(self.model, self.loss, self.feature_preprocessing,
+                                        self.label_preprocessing)
+        if self.optimizer is not None:
+            self.nn_estimator.setOptimMethod(self.optimizer)
+        self.nn_model = NNModel(self.model, feature_preprocessing=self.feature_preprocessing)
+
+    def load_latest_orca_checkpoint(self, path):
+        from zoo.orca.learn.utils import find_latest_checkpoint
+        path, prefix, version = find_latest_checkpoint(path, model_type="bigdl")
+        if path is None:
+            raise ValueError("Cannot find BigDL checkpoint, please check your checkpoint path.")
+        self.load_orca_checkpoint(path=path, version=version, prefix=prefix)
 
     def clear_gradient_clipping(self):
         self.nn_estimator.clearGradientClipping()
