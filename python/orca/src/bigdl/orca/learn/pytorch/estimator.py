@@ -15,11 +15,11 @@
 #
 from zoo.pipeline.estimator.estimator import Estimator as SparkEstimator
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
+from zoo.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
+from zoo.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
 from zoo.orca.data import SparkXShards
-from bigdl.optim.optimizer import MaxEpoch
+from bigdl.optim.optimizer import MaxEpoch, OptimMethod
 from zoo.feature.common import FeatureSet
-
-import torch
 from torch.optim.optimizer import Optimizer as TorchOptimizer
 from torch.utils.data import DataLoader
 
@@ -195,7 +195,7 @@ class PyTorchRayEstimatorWrapper(Estimator):
         return self.estimator.shutdown(force=force)
 
 
-class PytorchSparkEstimatorWrapper(Estimator):
+class PytorchSparkEstimatorWrapper(OrcaSparkEstimator):
     def __init__(self, model, loss, optimizer, model_dir=None, bigdl_type="float"):
         from zoo.pipeline.api.torch import TorchModel, TorchLoss, TorchOptim
         self.loss = loss
@@ -204,10 +204,16 @@ class PytorchSparkEstimatorWrapper(Estimator):
         else:
             self.loss = TorchLoss.from_pytorch(loss)
         if optimizer is None:
-            from bigdl.optim.optimizer import SGD
-            optimizer = SGD()
-        elif isinstance(optimizer, TorchOptimizer):
+            from zoo.orca.learn.optimizers.schedule import Default
+            optimizer = SGD(learningrate_schedule=Default())
+        if isinstance(optimizer, TorchOptimizer):
             optimizer = TorchOptim.from_pytorch(optimizer)
+        elif isinstance(optimizer, OrcaOptimizer):
+            optimizer = optimizer.get_optimizer()
+        else:
+            raise ValueError("Only PyTorch optimizer and orca optimizer are supported")
+        self.log_dir = None
+        self.app_name = None
         self.model_dir = model_dir
         self.model = TorchModel.from_pytorch(model)
         self.estimator = SparkEstimator(self.model, optimizer, model_dir, bigdl_type=bigdl_type)
@@ -222,6 +228,9 @@ class PytorchSparkEstimatorWrapper(Estimator):
         assert batch_size > 0, "batch_size should be greater than 0"
         validation_methods = Metrics.convert_metrics_list(validation_methods)
         checkpoint_trigger = Trigger.convert_trigger(checkpoint_trigger)
+
+        if self.log_dir is not None and self.app_name is not None:
+            self.estimator.set_tensorboard(self.log_dir, self.app_name)
 
         if isinstance(data, SparkXShards):
             train_rdd = data.rdd.flatMap(to_sample)
@@ -282,20 +291,25 @@ class PytorchSparkEstimatorWrapper(Estimator):
     def get_model(self):
         return self.model.to_pytorch()
 
-    def save(self, checkpoint):
-        pass
+    def save(self, model_path):
+        raise NotImplementedError
 
     def load(self, checkpoint, loss=None):
         from zoo.orca.learn.utils import find_latest_checkpoint
-        from bigdl.nn.layer import Model
-        from bigdl.optim.optimizer import OptimMethod
-        import os
         if loss is not None:
             from zoo.pipeline.api.torch import TorchLoss
             self.loss = TorchLoss.from_pytorch(loss)
         path, prefix, version = find_latest_checkpoint(checkpoint, model_type="pytorch")
         if path is None:
             raise ValueError("Cannot find PyTorch checkpoint, please check your checkpoint path.")
+        self.load_orca_checkpoint(path, version=version, prefix=prefix)
+
+    def load_orca_checkpoint(self, path, version, prefix=None):
+        import os
+        from bigdl.nn.layer import Model
+        from bigdl.optim.optimizer import OptimMethod
+        assert prefix is not None, "You should provide optimMethod prefix, " \
+                                   "for example 'optimMethod-TorchModelf53bddcc'"
         try:
             self.model = Model.load(os.path.join(path, "model.{}".format(version)))
             optimizer = OptimMethod.load(os.path.join(path, "{}.{}".format(prefix, version)))
@@ -304,8 +318,14 @@ class PytorchSparkEstimatorWrapper(Estimator):
                              "and checkpoint type.")
         self.estimator = SparkEstimator(self.model, optimizer, self.model_dir)
 
-    def shutdown(self, force=False):
-        pass
+    def load_latest_orca_checkpoint(self, path):
+        self.load(checkpoint=path)
+
+    def get_train_summary(self, tag=None):
+        return self.estimator.get_train_summary(tag=tag)
+
+    def get_validation_summary(self, tag=None):
+        return self.estimator.get_validation_summary(tag=tag)
 
     def clear_gradient_clipping(self):
         """

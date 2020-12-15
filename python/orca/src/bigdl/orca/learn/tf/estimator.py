@@ -32,55 +32,36 @@ from zoo.tfpark.tf_optimizer import StatelessMetric
 from zoo.tfpark.utils import evaluate_metrics
 from zoo.util import nest
 from zoo.util.tf import save_tf_checkpoint
+from zoo.orca.learn.spark_estimator import Estimator as SparkEstimator
 
 
-class Estimator(object):
+class Estimator(SparkEstimator):
     def fit(self, data, epochs, **kwargs):
-        pass
+        raise NotImplementedError
 
     def predict(self, data, **kwargs):
-        pass
+        raise NotImplementedError
 
     def evaluate(self, data, **kwargs):
-        pass
+        raise NotImplementedError
 
-    def load_orca_checkpoint(self, path, version):
-        """
-        Load specified Orca checkpoint.
-        :param path: checkpoint directory which contains model.* and
-        optimMethod-TFParkTraining.* files.
-        :param version: checkpoint version, which is the suffix of model.* file,
-        i.e., for modle.4 file, the version is 4.
-        """
-        self.load_checkpoint = True
-        self.checkpoint_path = path
-        self.checkpoint_version = version
+    def get_model(self):
+        raise NotImplementedError
 
-    def load_latest_orca_checkpoint(self, path):
-        """
-        Load latest Orca checkpoint under specified directory.
-        :param path: directory containing Orca checkpoint files.
-        """
-        ckpt_path, _, version = find_latest_checkpoint(path, model_type="tf")
-        if ckpt_path is None:
-            raise Exception("Cannot find checkpoint")
-        self.load_orca_checkpoint(ckpt_path, version)
+    def save(self, model_path):
+        raise NotImplementedError
 
-    def set_tensorboard(self, log_dir, app_name):
-        """
-        Set summary information during the training process for visualization purposes.
-        Saved summary can be viewed via TensorBoard.
-        In order to take effect, it needs to be called before fit.
+    def load(self, checkpoint, **kwargs):
+        self.load_latest_orca_checkpoint(checkpoint)
 
-        Training summary will be saved to 'log_dir/app_name/train'
-        and validation summary (if any) will be saved to 'log_dir/app_name/validation'.
+    def clear_gradient_clipping(self):
+        raise NotImplementedError
 
-        # Arguments
-        :param log_dir: The base directory path to store training and validation logs.
-        :param app_name: The name of the application.
-        """
-        self.log_dir = log_dir
-        self.app_name = app_name
+    def set_constant_gradient_clipping(self, min, max):
+        raise NotImplementedError
+
+    def set_l2_norm_gradient_clipping(self, clip_norm):
+        raise NotImplementedError
 
     def get_train_summary(self, tag=None):
         """
@@ -98,7 +79,6 @@ class Estimator(object):
         """
         Get the scalar from model validation summary
         Return list of summary data of [iteration_number, scalar_value, timestamp]
-
         Note: The metric and tag may not be consistent
         Please look up following form to pass tag parameter
         Left side is your metric during compile
@@ -132,6 +112,37 @@ class Estimator(object):
                             get_validation_summary("{} {}".format(val_method.name, tag))
                 continue
         return None
+
+    def save_tf_checkpoint(self, path):
+        raise NotImplementedError
+
+    def save_keras_model(self, path, overwrite=True):
+        raise NotImplementedError
+
+    def save_keras_weights(self, filepath, overwrite=True, save_format=None):
+        raise NotImplementedError
+
+    def load_orca_checkpoint(self, path, version):
+        """
+        Load specified Orca checkpoint.
+        :param path: checkpoint directory which contains model.* and
+        optimMethod-TFParkTraining.* files.
+        :param version: checkpoint version, which is the suffix of model.* file,
+        i.e., for modle.4 file, the version is 4.
+        """
+        self.load_checkpoint = True
+        self.checkpoint_path = path
+        self.checkpoint_version = version
+
+    def load_latest_orca_checkpoint(self, path):
+        """
+        Load latest Orca checkpoint under specified directory.
+        :param path: directory containing Orca checkpoint files.
+        """
+        ckpt_path, _, version = find_latest_checkpoint(path, model_type="tf")
+        if ckpt_path is None:
+            raise Exception("Cannot find checkpoint")
+        self.load_orca_checkpoint(ckpt_path, version)
 
     @staticmethod
     def from_graph(*, inputs, outputs=None,
@@ -188,21 +199,6 @@ class Estimator(object):
         assert backend == "bigdl", "only bigdl backend is supported for now"
         return TFKerasWrapper(keras_model, metrics, model_dir, optimizer)
 
-    def save_tf_checkpoint(self, path):
-        """
-        Save tensorflow checkpoint in this estimator.
-        :param path: tensorflow checkpoint path.
-        """
-        raise NotImplementedError()
-
-    def save_keras_model(self, path, overwrite=True):
-        """
-        Save tensorflow keras model in this estimator.
-        :param path: keras model save path.
-        :param overwrite: Whether to silently overwrite any existing file at the target location.
-        """
-        raise NotImplementedError()
-
     @staticmethod
     def load_keras_model(path):
         """
@@ -218,27 +214,6 @@ class Estimator(object):
 
         model = load_from_file(load_func, path)
         return Estimator.from_keras(keras_model=model)
-
-    def save_keras_weights(self, filepath, overwrite=True, save_format=None):
-        """
-        Save tensorflow keras model weights in this estimator.
-        :param path: keras model weights save path.
-        :param overwrite: Whether to silently overwrite any existing file at the target location.
-        :param save_format: Either 'tf' or 'h5'. A `filepath` ending in '.h5' or
-            '.keras' will default to HDF5 if `save_format` is `None`. Otherwise
-            `None` defaults to 'tf'.
-        """
-        raise NotImplementedError()
-
-    def load_keras_weights(self, filepath, by_name=False):
-        """
-        Save tensorflow keras model in this estimator.
-        :param filepath: keras model weights save path.
-        :param by_name: Boolean, whether to load weights by name or by topological
-            order. Only topological loading is supported for weight files in
-            TensorFlow format.
-        """
-        raise NotImplementedError()
 
 
 def is_tf_data_dataset(data):
@@ -453,7 +428,7 @@ class TFOptimizerWrapper(Estimator):
             self.tf_optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
 
         if self.log_dir and self.app_name:
-            self.tf_optimizer.estimator.set_tensorboad(self.log_dir, self.app_name)
+            self.tf_optimizer.estimator.set_tensorboard(self.log_dir, self.app_name)
 
         self.tf_optimizer.optimize(end_trigger=MaxEpoch(epochs),
                                    checkpoint_trigger=checkpoint_trigger)
@@ -559,6 +534,21 @@ class TFOptimizerWrapper(Estimator):
     def save_tf_checkpoint(self, path):
         save_tf_checkpoint(self.sess, path)
 
+    def get_model(self):
+        raise NotImplementedError
+
+    def save(self, model_path):
+        self.save_tf_checkpoint(model_path)
+
+    def clear_gradient_clipping(self):
+        raise NotImplementedError
+
+    def set_constant_gradient_clipping(self, min, max):
+        raise NotImplementedError
+
+    def set_l2_norm_gradient_clipping(self, clip_norm):
+        raise NotImplementedError
+
 
 class TFKerasWrapper(Estimator):
     def __init__(self, keras_model, metrics, model_dir, optimizer):
@@ -572,6 +562,9 @@ class TFKerasWrapper(Estimator):
             self.optimizer = self.optimizer.get_optimizer()
         self.log_dir = None
         self.app_name = None
+        self.clip_norm = None
+        self.clip_min = None
+        self.clip_max = None
 
     def fit(self, data,
             epochs=1,
@@ -641,11 +634,16 @@ class TFKerasWrapper(Estimator):
                                                    metrics=self.metrics,
                                                    optimizer=self.optimizer)
 
+        if self.clip_norm:
+            self.tf_optimizer.set_gradient_clipping_by_l2_norm(clip_norm=self.clip_norm)
+        if self.clip_min and self.clip_max:
+            self.tf_optimizer.set_constant_gradient_clipping(self.clip_min, self.clip_max)
+
         if self.load_checkpoint:
             self.tf_optimizer.load_checkpoint(self.checkpoint_path, self.checkpoint_version)
 
         if self.log_dir and self.app_name:
-            self.tf_optimizer.estimator.set_tensorboad(self.log_dir, self.app_name)
+            self.tf_optimizer.estimator.set_tensorboard(self.log_dir, self.app_name)
 
         self.tf_optimizer.optimize(MaxEpoch(epochs), checkpoint_trigger=checkpoint_trigger)
 
@@ -734,6 +732,26 @@ class TFKerasWrapper(Estimator):
 
     def save_keras_model(self, path, overwrite=True):
         self.model.save_model(path, overwrite=overwrite)
+
+    def get_model(self):
+        raise NotImplementedError
+
+    def save(self, model_path, overwrite=True):
+        self.save_keras_model(model_path, overwrite=True)
+
+    def clear_gradient_clipping(self):
+        self.clip_norm = None
+        self.clip_min = None
+        self.clip_max = None
+
+    def set_constant_gradient_clipping(self, min, max):
+        assert min > 0, "clip value should be larger than 0"
+        assert min < max, "clip max should be larger than clip min"
+        self.clip_min = min
+        self.clip_max = max
+
+    def set_l2_norm_gradient_clipping(self, clip_norm):
+        self.clip_norm = clip_norm
 
     def save_keras_weights(self, filepath, overwrite=True, save_format=None):
         self.model.save_weights(filepath, overwrite, save_format)

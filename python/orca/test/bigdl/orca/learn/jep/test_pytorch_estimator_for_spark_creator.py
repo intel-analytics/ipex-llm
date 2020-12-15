@@ -25,7 +25,7 @@ from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.pytorch import Estimator
 from zoo.orca.learn.metrics import Accuracy
 from zoo.orca.learn.trigger import EveryEpoch
-from bigdl.optim.optimizer import Adam
+from zoo.orca.learn.optimizers import Adam
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
