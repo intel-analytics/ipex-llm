@@ -59,7 +59,7 @@ class Estimator(JavaValue):
         """
         callZooFunc(self.bigdl_type, "setGradientClippingByL2Norm", self.value, clip_norm)
 
-    def set_tensorboad(self, log_dir, app_name):
+    def set_tensorboard(self, log_dir, app_name):
         """
         Set summary information during the training process for visualization purposes.
         Saved summary can be viewed via TensorBoard.
