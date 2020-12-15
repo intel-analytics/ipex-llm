@@ -123,5 +123,4 @@ res = orca_estimator.evaluate(data=testloader, validation_methods=[Accuracy()])[
 total_num = res.total_num
 result = res.result
 print("Accuracy of the network on the %s test images: %s" % (total_num, result))
-orca_estimator.shutdown()
 stop_orca_context()
