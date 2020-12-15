@@ -24,12 +24,18 @@ You should manually download the dataset from kaggle [carvana-image-masking-chal
 
 ## Run example on local
 ```bash
-python image_segmentation.py --cluster_mode local 
+# linux
+python image_segmentation.py --cluster_mode local
+# macos
+python image_segmentation.py --cluster_mode local --platform mac
 ```
 
 ## Run example on yarn cluster
 ```bash
-python image_segmentation.py --cluster_mode yarn 
+# linux
+python image_segmentation.py --cluster_mode yarn
+# macos
+python image_segmentation.py --cluster_mode yarn --platform mac
 ```
 
 Options
@@ -37,3 +43,5 @@ Options
 * `--file_path` The path to carvana train.zip, train_mask.zip and train_mask.csv.zip. Default to be `/tmp/carvana/`.
 * `--epochs` The number of epochs to train the model. Default to be 8.
 * `--batch_size` Batch size for training and prediction. Default to be 8.
+* `--platform` The platform you used to run the example. Default to be `linux`. You should pass `mac` if you use macos.
+* `--non_interactive` Flag to not visualize the result.

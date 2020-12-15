@@ -622,7 +622,7 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
     --driver-memory 3g \
     --executor-memory 3g \
     ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/tf/image_segmentation/image_segmentation.py \
-    --file_path analytics-zoo-data/data/carvana --epochs 1
+    --file_path analytics-zoo-data/data/carvana --epochs 1 --non_interactive
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
