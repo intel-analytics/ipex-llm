@@ -23,7 +23,7 @@ from torch.utils.data import TensorDataset
 
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.pytorch import Estimator
-from bigdl.optim.optimizer import Adam
+from zoo.orca.learn.optimizers import Adam
 from zoo.orca.learn.metrics import *
 from zoo.orca.learn.trigger import EveryEpoch
 
@@ -61,7 +61,7 @@ class TestEstimatorForSparkDataLoader(TestCase):
         model = SimpleModel()
 
         estimator = Estimator.from_torch(model=model, loss=nn.BCELoss(),
-                                         optimizer=Adam(), backend="bigdl")
+                                         optimizer=Adam())
 
         inputs = torch.Tensor([[1, 2], [1, 3], [3, 2], [5, 6], [8, 9], [1, 9]])
         targets = torch.Tensor([[0], [0], [0], [1], [1], [1]])

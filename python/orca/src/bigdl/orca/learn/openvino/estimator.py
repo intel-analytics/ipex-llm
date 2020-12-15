@@ -15,6 +15,7 @@
 #
 from zoo.pipeline.inference import InferenceModel
 from zoo.orca.data import SparkXShards
+from zoo.orca.learn.spark_estimator import Estimator as SparkEstimator
 from zoo import get_node_and_core_number
 from zoo.util import nest
 from zoo.common.nncontext import init_nncontext
@@ -23,24 +24,6 @@ import numpy as np
 
 
 class Estimator(object):
-    def fit(self, data, epochs, **kwargs):
-        pass
-
-    def predict(self, data, **kwargs):
-        pass
-
-    def evaluate(self, data, **kwargs):
-        pass
-
-    def get_model(self):
-        pass
-
-    def save(self, model_path):
-        pass
-
-    def load(self, model_path, **kwargs):
-        pass
-
     @staticmethod
     def from_openvino(*, model_path, batch_size=0):
         """
@@ -52,7 +35,7 @@ class Estimator(object):
         return OpenvinoEstimatorWrapper(model_path=model_path, batch_size=batch_size)
 
 
-class OpenvinoEstimatorWrapper(Estimator):
+class OpenvinoEstimatorWrapper(SparkEstimator):
     def __init__(self,
                  *,
                  model_path,
@@ -183,3 +166,27 @@ class OpenvinoEstimatorWrapper(Estimator):
         self.model.load_openvino(model_path=model_path,
                                  weight_path=model_path[:model_path.rindex(".")] + ".bin",
                                  batch_size=batch_size)
+
+    def set_tensorboard(self, log_dir, app_name):
+        raise NotImplementedError
+
+    def clear_gradient_clipping(self):
+        raise NotImplementedError
+
+    def set_constant_gradient_clipping(self, min, max):
+        raise NotImplementedError
+
+    def set_l2_norm_gradient_clipping(self, clip_norm):
+        raise NotImplementedError
+
+    def get_train_summary(self, tag=None):
+        raise NotImplementedError
+
+    def get_validation_summary(self, tag=None):
+        raise NotImplementedError
+
+    def load_orca_checkpoint(self, path, version):
+        raise NotImplementedError
+
+    def load_latest_orca_checkpoint(self, path):
+        raise NotImplementedError

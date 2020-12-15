@@ -22,7 +22,6 @@ import tensorflow as tf
 from zoo.orca.learn.trigger import SeveralIteration
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.common.nncontext import *
-from zoo.orca.learn.tf.estimator import Estimator
 from zoo.orca.learn.tf.utils import convert_predict_to_dataframe
 
 

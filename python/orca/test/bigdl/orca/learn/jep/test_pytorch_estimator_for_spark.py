@@ -26,7 +26,8 @@ from zoo.orca.data import SparkXShards
 from zoo.orca.learn.pytorch import Estimator
 from zoo.orca.learn.metrics import Accuracy
 from zoo.orca.learn.trigger import EveryEpoch
-from bigdl.optim.optimizer import SGD
+from zoo.orca.learn.optimizers import SGD
+from zoo.orca.learn.optimizers.schedule import Default
 from zoo.orca import OrcaContext
 import tempfile
 
@@ -80,7 +81,8 @@ class TestEstimatorForSpark(TestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir_name:
             estimator = Estimator.from_torch(model=model, loss=loss_func,
-                                             optimizer=SGD(), model_dir=temp_dir_name)
+                                             optimizer=SGD(learningrate_schedule=Default()),
+                                             model_dir=temp_dir_name)
             estimator.fit(data=data_shard, epochs=4, batch_size=2, validation_data=data_shard,
                           validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
             estimator.evaluate(data_shard, validation_methods=[Accuracy()], batch_size=2)
