@@ -1,66 +1,37 @@
 
-**In this guide we’ll show you how to organize your TensorFlow code into Orca in 3 steps.**
-
-Scaling your TensorFlow applications with Orca makes your code:
-
-* Well-organized and flexible
-* Easier to reproduce
-* Able to perform distributed training without changing your model
+**In this guide we will describe how to scale out TensorFlow (v1.15) programs using Orca in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
-We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
 
-Download and install latest analytics-zoo whl by the following instructions [here](../PythonUserGuide/install/#install-the-latest-nightly-build-wheels-for-pip).
+We recommend using [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../PythonUserGuide/install/) for more details.
 
-**Note:** Conda environment is required to run on Yarn, but not strictly necessary for running on local.
+**Note:** Conda environment is required to run on the distributed cluster, but not strictly necessary for running on the local machine.
 
 ```bash
-conda create -n zoo python=3.7 # zoo is conda enviroment name, you can set another name you like.
+conda create -n zoo python=3.7 # "zoo" is conda enviroment name, you can use any name you like.
 conda activate zoo
-pip install analytics_zoo-${VERSION}-${TIMESTAMP}-py2.py3-none-${OS}_x86_64.whl
+pip install analytics_zoo-${VERSION} # install either version 0.9 or latest nightly build
 pip install tensorflow==1.15.0
 pip install psutil
 ```
+**Note:** The original [source code](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/examples/orca/learn/tf/lenet/lenet_mnist_graph.py) for the tutorial below only supports TensorFlow 1.15.
 
 ### **Step 1: Init Orca Context**
 ```python
-from zoo.orca import init_orca_context, stop_orca_context
-
-# run in local mode
-init_orca_context(cluster_mode="local", cores=4)
-
-# run in yarn client mode
-init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="6g")
-```
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir`.
-
-View [Orca Context](./context) for more details.
-
-### **Step 2: Define Model, Loss Function and Metrics**
-
-* For Keras Users
-```python
-import tensorflow as tf
-
-model = tf.keras.Sequential(
-    [tf.keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
-                            input_shape=(28, 28, 1), padding='valid'),
-     tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-     tf.keras.layers.Conv2D(50, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
-                            padding='valid'),
-     tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-     tf.keras.layers.Flatten(),
-     tf.keras.layers.Dense(500, activation='tanh'),
-     tf.keras.layers.Dense(10, activation='softmax'),
-    ]
-)
-
-model.compile(optimizer=tf.keras.optimizers.RMSprop(),
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+if args.cluster_mode == "local":  
+    init_orca_context(cluster_mode="local", cores=4)# run in local mode
+elif args.cluster_mode == "yarn":  
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2) # run on K8s cluster
+elif args.cluster_mode == "yarn":  
+    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2) # run on Hadoop YARN cluster
 ```
 
-* For Graph Users
+This is the only place where you need to specify local or distributed mode. View [Orca Context](./context) for more details.
+
+### **Step 2: Define the Model**
+
+You may define your model, loss and metrics in the same way as in any standard (single node) TensorFlow program.
+
 ```python
 import tensorflow as tf
 
@@ -89,9 +60,10 @@ logits = lenet(images)
 loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
 acc = accuracy(logits, labels)
 ```
+### **Step 3: Define Train Dataset**
 
-### **Step 3: Fit with Orca TensorFlow Estimator**
-1)  Define the dataset in whatever way you want. Orca supports [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset), [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca SparkXShards](./data).
+You can define the dataset using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset). Orca also supports [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca XShards](./data).
+
 ```python
 def preprocess(x, y):
     return tf.to_float(tf.reshape(x, (-1, 28, 28, 1))) / 255.0, y
@@ -107,49 +79,32 @@ val_dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
 val_dataset = val_dataset.map(preprocess)
 ```
 
-2)  Create an Estimator
+### **Step 4: Fit with Orca Estimator**
 
-* For Keras Users
+First, create an Estimator.
+
 ```python
 from zoo.orca.learn.tf.estimator import Estimator
 
-zoo_estimator = Estimator.from_keras(keras_model=model)
-```
-* For Graph Users
-```python
-from zoo.orca.learn.tf.estimator import Estimator
-
-zoo_estimator = Estimator.from_graph(inputs=images, 
-                                     outputs=logits,
-                                     labels=labels,
-                                     loss=loss,
-                                     optimizer=tf.train.AdamOptimizer(),
-                                     metrics={"acc": acc})
+est = Estimator.from_graph(inputs=images,
+                           outputs=logits,
+                           labels=labels,
+                           loss=loss,
+                           optimizer=tf.train.AdamOptimizer(),
+                           metrics={"acc": acc})
 ```
 
-3)  Fit with Estimator
+Next, fit and evaluate using the Estimator.
 ```python
-zoo_estimator.fit(data=train_dataset,
-                  batch_size=320,
-                  epochs=100,
-                  validation_data=val_dataset)
-```
+est.fit(data=train_dataset,
+        batch_size=320,
+        epochs=100,
+        validation_data=val_dataset)
 
-4)  Evaluate with Estimator
-```python
-result = zoo_estimator.evaluate(val_dataset)
+result = est.evaluate(val_dataset)
 print(result)
 ```
 
-5)  Save Model
+That's it, the same code can run seamlessly in your local laptop and the distribute K8s or Hadoop cluster.
 
-* For Keras Users
-```python
-zoo_estimator.save_keras_model("/tmp/mnist_keras.h5")
-```
-* For Graph Users
-```python
-zoo_estimator.save_tf_checkpoint("/tmp/lenet/model")
-```
-
-**Note:** You should call `stop_orca_context()` when your application finishes.
+**Note:** You should call `stop_orca_context()` when your program finishes.
