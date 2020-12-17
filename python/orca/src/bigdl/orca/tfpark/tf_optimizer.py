@@ -610,6 +610,7 @@ class TFOptimizer:
         import tensorflow.keras.backend as K
 
         model_inputs = keras_model.inputs
+
         if hasattr(keras_model, "targets"):
             model_targets = keras_model.targets
         else:
@@ -684,7 +685,11 @@ class TFOptimizer:
             K.learning_phase(): [True, False]
         }
 
-        updates = keras_model.updates
+        updates = []
+
+        updates += keras_model.get_updates_for(None)
+        # Conditional updates relevant to this model
+        updates += keras_model.get_updates_for(keras_model.inputs)
 
         if bigdl_val_methods is not None:
             val_methods = to_list(bigdl_val_methods)
