@@ -534,6 +534,28 @@ class TestEstimatorForKeras(TestCase):
                 epochs=10,
                 validation_data=dataset)
 
+    def test_submodel_in_keras_squential(self):
+        mnet = tf.keras.applications.MobileNetV2(input_shape=(160, 160, 3),
+                                                 include_top=False,
+                                                 weights='imagenet')
+
+        model = tf.keras.Sequential([
+            mnet,
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dense(1, activation='sigmoid')
+        ])
+
+        model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=0.0001),
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
+
+        dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(16, 160, 160, 3),
+                                                      np.random.randint(0, 1000, (16, 1))))
+        est = Estimator.from_keras(keras_model=model)
+        est.fit(data=dataset,
+                batch_size=4,
+                epochs=1,
+                validation_data=dataset)
 
 if __name__ == "__main__":
     import pytest
