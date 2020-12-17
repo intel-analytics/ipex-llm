@@ -185,6 +185,7 @@ Please refer to [freeze checkpoint example](https://github.com/intel-analytics/a
    |-- xx.pt
 ```
 Running Pytorch model needs extra dependency and config. Refer to [here](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/examples/pytorch/train/README.md) to install dependencies, and set environment variable `$PYTHONHOME` to your python, e.g. python could be run by `$PYTHONHOME/bin/python` and library is at `$PYTHONHOME/lib/`.
+
 **OpenVINO**
 
 ```
