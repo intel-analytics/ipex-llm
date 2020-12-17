@@ -77,8 +77,6 @@ Build with `make-dist.sh`:
 $ bash make-dist.sh -P spark_3.x -Djava.version=11 -Djavac.version=11
 ```
 
-After that, you can find a dist folder, which contains all the needed files to run a BigDL program. Follow [Build with script](#Build with script (Recommended)) to see usage of each file in the folder.
-
 Or build with Maven:
 ```bash
 $ mvn clean package -DskipTests -P spark_3.x -Djava.version=11 -Djavac.version=11
