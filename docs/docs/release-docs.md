@@ -1,7 +1,9 @@
 
 ---
-## **Release 0.8.0**
-[Analytics-Zoo 0.8.0 Docs](https://analytics-zoo.github.io/0.8.0)
+## **Release 0.9.0**
+[Analytics-Zoo 0.9.0 Docs](https://analytics-zoo.github.io/0.9.0)
+## **Release 0.8.1**
+[Analytics-Zoo 0.8.1 Docs](https://analytics-zoo.github.io/0.8.1)
 ## **Release 0.7.0**
 [Analytics-Zoo 0.7.0 Docs](https://analytics-zoo.github.io/0.7.0)
 ## **Release 0.6.0**
