@@ -65,6 +65,25 @@ Note that the instructions above will build BigDL with Spark 1.5.x or 1.6.x (usi
  * `-P full-build`: full build
  * `-P scala_2.10` (or `-P scala_2.11`): build using Scala 2.10 (or Scala 2.11) 
 
+## **Build with JDK 11**
+
+It's recommended to download [Oracle JDK 11](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html). And it will avoid possible incompatibility with maven plugins. Update PATH and make sure your JAVA_HOME environment variable is set to Java 11 if you're running from the command line. Or if you're running from an IDE, you need to make sure it is set to run maven with your current JDK.
+
+Jdk 11 supports few Scala versions. You can see scala version compatibility [description](https://docs.scala-lang.org/overviews/jdk-compatibility/overview.html). And Spark 3 runs on Java8/11. BigDL supports Spark3 with Scala 2.12. You can use `-P spark_3.x` to specify Spark3 and scala 2.12. Additionally, `make-dist.sh` default uses Java 8. To compile with java 11, it requires to specify building opts `-Djava.version=11 -Djavac.version=11`. You can build with `make-dist.sh` or Maven with following command.
+
+Build with `make-dist.sh`:
+ 
+```bash
+$ bash make-dist.sh -P spark_3.x -Djava.version=11 -Djavac.version=11
+```
+
+Or build with Maven:
+```bash
+$ mvn clean package -DskipTests -P spark_3.x -Djava.version=11 -Djavac.version=11
+```
+
+---
+
 ---
 ## **Setup IDE**
 
