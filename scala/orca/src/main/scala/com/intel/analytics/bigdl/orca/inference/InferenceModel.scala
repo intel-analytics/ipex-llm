@@ -537,7 +537,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
 
       val latency = end - begin
       val name = s"Thread ${Thread.currentThread().getId} Inference"
-      InferenceSupportive.logger.info(s"$name time [${latency/1e9} s, ${latency/1e6} ms].")
+      InferenceSupportive.logger.debug(s"$name time [${latency/1e9} s, ${latency/1e6} ms].")
 
       result
     } finally {
