@@ -78,6 +78,7 @@ object AllReduceParameter {
  * @param paramOffset start index in the origin parameter.
  * @tparam T Tensor element type
  */
+@SerialVersionUID(6448488922682975680L)
 class AllReduceParameter[T: ClassTag](
       id: Long,
       partitionNum: Int,
