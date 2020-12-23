@@ -162,6 +162,8 @@ private[bigdl] object KerasLayer {
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  * @param batchInputShape the first dim is batch
  */
+
+@SerialVersionUID(- 5478928791418343950L)
 abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
 (batchInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends TContainer[A, B, T] {
 
