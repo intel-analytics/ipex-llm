@@ -20,7 +20,7 @@ import shutil
 import numpy as np
 import os
 from zoo.orca.data.image.parquet_dataset import ParquetDataset
-from zoo.orca.data.image.parquet_dataset import _write_ndarrays
+from zoo.orca.data.image.parquet_dataset import _write_ndarrays, write_from_directory
 from zoo.orca.data.image.utils import DType, FeatureType, SchemaField
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.orca.data.image import write_mnist
@@ -56,7 +56,6 @@ def test_write_parquet_simple(orca_context_fixture):
 
 
 def test_write_parquet_images(orca_context_fixture):
-
     sc = orca_context_fixture
     temp_dir = tempfile.mkdtemp()
 
@@ -93,7 +92,6 @@ def test_write_parquet_images(orca_context_fixture):
 
 
 def _images_to_mnist_file(images, filepath):
-
     assert len(images.shape) == 3
     assert images.dtype == np.uint8
 
@@ -104,7 +102,6 @@ def _images_to_mnist_file(images, filepath):
 
 
 def _labels_to_mnist_file(labels, filepath):
-
     assert len(labels.shape) == 1
     assert labels.dtype == np.uint8
 
@@ -157,6 +154,7 @@ def test_train_simple(orca_context_fixture):
 
         def preprocess(data):
             return data['image'], data["label"]
+
         dataset = dataset.map(preprocess)
 
         import tensorflow as tf
@@ -181,6 +179,26 @@ def test_train_simple(orca_context_fixture):
         est.fit(data=dataset,
                 batch_size=100,
                 epochs=1)
+
+    finally:
+        shutil.rmtree(temp_dir)
+
+
+def test_write_from_directory(orca_context_fixture):
+    sc = orca_context_fixture
+    temp_dir = tempfile.mkdtemp()
+    try:
+        label_map = {"cats": 0, "dogs": 1}
+        write_from_directory(os.path.join(resource_path, "cat_dog"), label_map, temp_dir)
+        train_xshard = ParquetDataset._read_as_xshards(temp_dir)
+
+        data = train_xshard.collect()[0]
+        image_path = data["image_id"][0]
+
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
+
+        assert image_bytes == data['image'][0]
 
     finally:
         shutil.rmtree(temp_dir)
