@@ -21,10 +21,11 @@ from zoo import init_nncontext
 from zoo.orca.data import SparkXShards
 from zoo.orca.data.file import open_text, write_text
 from zoo.orca.data.image.utils import chunks, dict_to_row, row_to_dict, encode_schema, \
-    decode_schema, SchemaField, FeatureType, ndarray_dtype_to_dtype
+    decode_schema, SchemaField, FeatureType, DType, ndarray_dtype_to_dtype
 from bigdl.util.common import get_node_and_core_number
 import os
 import numpy as np
+import random
 
 
 class ParquetDataset:
@@ -63,7 +64,7 @@ class ParquetDataset:
         node_num, core_num = get_node_and_core_number()
         for i, chunk in enumerate(chunks(generator, block_size)):
             chunk_path = os.path.join(path, f"chunk={i}")
-            rows_rdd = sc.parallelize(chunk, core_num * node_num)\
+            rows_rdd = sc.parallelize(chunk, core_num * node_num) \
                 .map(lambda x: dict_to_row(schema, x))
             spark.createDataFrame(rows_rdd).write.mode(write_mode).parquet(chunk_path)
         metadata_path = os.path.join(path, "_orca_metadata")
@@ -74,6 +75,7 @@ class ParquetDataset:
     def _read_as_dict_rdd(path):
         sc = SparkContext.getOrCreate()
         spark = SparkSession(sc)
+
         df = spark.read.parquet(path)
         schema_path = os.path.join(path, "_orca_metadata")
 
@@ -98,9 +100,9 @@ class ParquetDataset:
 
                 for k in schema.keys():
                     result[k].append(rec[k])
-
-            for k in schema.keys():
-                result[k] = np.stack(result[k])
+            for k, v in schema.items():
+                if not v.feature_type == FeatureType.IMAGE:
+                    result[k] = np.stack(result[k])
 
             return [result]
 
@@ -163,8 +165,39 @@ def _extract_mnist_labels(labels_filepath):
         return labels
 
 
-def _write_ndarrays(images, labels, output_path, **kwargs):
+def write_from_directory(directory, label_map, output_path, shuffle=True, **kwargs):
+    labels = os.listdir(directory)
+    valid_labels = [label for label in labels if label in label_map]
+    generator = []
+    for label in valid_labels:
+        label_path = os.path.join(directory, label)
+        images = os.listdir(label_path)
+        for image in images:
+            image_path = os.path.join(label_path, image)
+            generator.append({"image": image_path,
+                              "label": label_map[label],
+                              "image_id": image_path,
+                              "label_str": label})
+    if shuffle:
+        random.shuffle(generator)
 
+    schema = {"image": SchemaField(feature_type=FeatureType.IMAGE,
+                                   dtype=DType.FLOAT32,
+                                   shape=()),
+              "label": SchemaField(feature_type=FeatureType.SCALAR,
+                                   dtype=DType.INT32,
+                                   shape=()),
+              "image_id": SchemaField(feature_type=FeatureType.SCALAR,
+                                      dtype=DType.STRING,
+                                      shape=()),
+              "label_str": SchemaField(feature_type=FeatureType.SCALAR,
+                                       dtype=DType.STRING,
+                                       shape=())}
+
+    ParquetDataset.write(output_path, generator, schema, **kwargs)
+
+
+def _write_ndarrays(images, labels, output_path, **kwargs):
     images_shape = [int(x) for x in images.shape[1:]]
     labels_shape = [int(x) for x in labels.shape[1:]]
     schema = {
