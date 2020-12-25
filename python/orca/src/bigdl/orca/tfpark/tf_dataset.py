@@ -15,6 +15,7 @@
 #
 
 import numpy as np
+import tensorflow as tf
 import sys
 import functools
 import logging
@@ -1300,3 +1301,19 @@ class DataFrameDataset(TFNdarrayDataset):
         super(DataFrameDataset, self).__init__(rdd, tensor_structure, batch_size,
                                                batch_per_thread, hard_code_batch_size,
                                                val_rdd, sequential_order, shuffle)
+
+
+def _standardize_keras_target_data(x, ys):
+    def check_y_dims(y):
+        return y is not None and len(y.shape) == 0
+
+    if isinstance(ys, dict):
+        ys = {k: tf.expand_dims(y, axis=0) if check_y_dims(y) else y for k, y in ys.items()}
+    elif isinstance(ys, list):
+        ys = [tf.expand_dims(y, axis=0) if check_y_dims(y) else y for y in ys]
+    elif isinstance(ys, tuple):
+        ys = tuple(tf.expand_dims(y, axis=0) if check_y_dims(y) else y for y in ys)
+    else:
+        ys = tf.expand_dims(ys, axis=0) if check_y_dims(ys) else ys
+
+    return x, ys
