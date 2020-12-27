@@ -344,7 +344,7 @@ class TFOptimizerWrapper(Estimator):
             labels_cols=None,
             validation_data=None,
             hard_code_batch_size=False,
-            auto_shard_files=True,
+            auto_shard_files=False,
             session_config=None,
             feed_dict=None,
             checkpoint_trigger=None
@@ -438,7 +438,7 @@ class TFOptimizerWrapper(Estimator):
     def predict(self, data, batch_size=4,
                 feature_cols=None,
                 hard_code_batch_size=False,
-                auto_shard_files=True,
+                auto_shard_files=False,
                 ):
         """
         Predict input data
@@ -491,7 +491,7 @@ class TFOptimizerWrapper(Estimator):
                  feature_cols=None,
                  labels_cols=None,
                  hard_code_batch_size=False,
-                 auto_shard_files=True,
+                 auto_shard_files=False,
                  ):
         """
         Evaluate model.
@@ -576,7 +576,7 @@ class TFKerasWrapper(Estimator):
             hard_code_batch_size=False,
             session_config=None,
             checkpoint_trigger=None,
-            auto_shard_files=True,
+            auto_shard_files=False,
             ):
         """
         Train this keras model with train data.
@@ -658,7 +658,7 @@ class TFKerasWrapper(Estimator):
     def predict(self, data, batch_size=4,
                 feature_cols=None,
                 hard_code_batch_size=False,
-                auto_shard_files=True,
+                auto_shard_files=False,
                 ):
         """
         Predict input data
@@ -704,7 +704,7 @@ class TFKerasWrapper(Estimator):
                  feature_cols=None,
                  labels_cols=None,
                  hard_code_batch_size=False,
-                 auto_shard_files=True
+                 auto_shard_files=False
                  ):
         """
         Evaluate model.
