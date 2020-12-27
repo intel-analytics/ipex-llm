@@ -633,6 +633,25 @@ fi
 now=$(date "+%s")
 time17=$((now-start))
 
+echo "#18 start test for orca tf transfer_learning"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 3g \
+    --executor-memory 3g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/tf/transfer_learning/transfer_learning.py
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "orca tf transfer_learning failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time18=$((now-start))
+
+
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
 echo "#3 image-classification time used: $time3 seconds"
@@ -650,3 +669,4 @@ echo "#14 streaming text classification time used: $time14 seconds"
 echo "#15 attention time used:$time15 seconds"
 echo "#16 orca data time used:$time16 seconds"
 echo "#17 orca tf imagesegmentation time used:$time17 seconds"
+echo "#18 orca tf transfer_learning time used:$time18 seconds"
