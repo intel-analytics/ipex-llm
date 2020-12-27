@@ -55,9 +55,9 @@ def main(max_epoch, dataset_dir):
     est.fit(data=mnist_train,
             batch_size=320,
             epochs=max_epoch,
-            validation_data=mnist_test, auto_shard_files=False)
+            validation_data=mnist_test)
 
-    result = est.evaluate(mnist_test, auto_shard_files=False)
+    result = est.evaluate(mnist_test)
     print(result)
 
     est.save_keras_model("/tmp/mnist_keras.h5")
