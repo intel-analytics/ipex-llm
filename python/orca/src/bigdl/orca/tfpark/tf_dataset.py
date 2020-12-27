@@ -597,7 +597,7 @@ class TFDataset(object):
                              sequential_order=False,
                              shuffle=True,
                              remove_checking=False, batch_outside=False,
-                             inter_threads=None, intra_threads=None, auto_shard_files=True):
+                             inter_threads=None, intra_threads=None, auto_shard_files=False):
         """
         Create a TFDataset from a tf.data.Dataset.
 
@@ -715,7 +715,7 @@ class TFDataDataset(TFDataset):
                  validation_dataset=None,
                  sequential_order=False, shuffle=True,
                  remove_checking=False, batch_outside=False,
-                 inter_threads=None, intra_threads=None, auto_shard_files=True):
+                 inter_threads=None, intra_threads=None, auto_shard_files=False):
 
         self.auto_shard_files = auto_shard_files
 
