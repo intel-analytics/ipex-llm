@@ -11,10 +11,10 @@ Run the command on the colaboratory file to install jdk 1.8:
 ```python
 # Install jdk8
 !apt-get install openjdk-8-jdk-headless -qq > /dev/null
-
 # Set jdk environment path which enables you to run Pyspark in your Colab environment.
 import os
 os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-8-openjdk-amd64"
+!update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 ```
 
 **Install Analytics Zoo from pip**
