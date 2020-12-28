@@ -1,5 +1,5 @@
 
-**In this guide we will describe how to scale out TensorFlow (v1.15) programs using Orca in 4 simple steps.**
+**In this guide we will describe how to scale out Keras (v2.3) programs using Orca in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
 
@@ -14,58 +14,53 @@ pip install analytics_zoo-${VERSION} # install either version 0.9 or latest nigh
 pip install tensorflow==1.15.0
 pip install tensorflow-datasets==2.0
 pip install psutil
+pip install pandas
+pip install scikit-learn
 ```
-**Note:** The original [source code](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/examples/orca/learn/tf/lenet/lenet_mnist_graph.py) for the tutorial below only supports TensorFlow 1.15.
+**Note:** The original [source code](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/examples/orca/learn/tf/lenet/lenet_mnist_keras.py) for the tutorial below only supports TensorFlow 1.15.
 
 ### **Step 1: Init Orca Context**
 ```python
-if args.cluster_mode == "local":  
+if args.cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4)# run in local mode
-elif args.cluster_mode == "yarn":  
+elif args.cluster_mode == "yarn":
     init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2) # run on K8s cluster
-elif args.cluster_mode == "yarn":  
-    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2) # run on Hadoop YARN cluster
+elif args.cluster_mode == "yarn":
+    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="6g") # run on Hadoop YARN cluster
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./context) for more details.
 
 ### **Step 2: Define the Model**
 
-You may define your model, loss and metrics in the same way as in any standard (single node) TensorFlow program.
+You may define your model, loss and metrics in the same way as in any standard (single node) Keras program.
 
 ```python
-import tensorflow as tf
+from tensorflow import keras
 
-def accuracy(logits, labels):
-    predictions = tf.argmax(logits, axis=1, output_type=labels.dtype)
-    is_correct = tf.cast(tf.equal(predictions, labels), dtype=tf.float32)
-    return tf.reduce_mean(is_correct)
+model = keras.Sequential(
+    [keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
+                         input_shape=(28, 28, 1), padding='valid'),
+     keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+     keras.layers.Conv2D(50, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
+                         padding='valid'),
+     keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+     keras.layers.Flatten(),
+     keras.layers.Dense(500, activation='tanh'),
+     keras.layers.Dense(10, activation='softmax'),
+     ]
+)
 
-def lenet(images):
-    with tf.variable_scope('LeNet', [images]):
-        net = tf.layers.conv2d(images, 32, (5, 5), activation=tf.nn.relu, name='conv1')
-        net = tf.layers.max_pooling2d(net, (2, 2), 2, name='pool1')
-        net = tf.layers.conv2d(net, 64, (5, 5), activation=tf.nn.relu, name='conv2')
-        net = tf.layers.max_pooling2d(net, (2, 2), 2, name='pool2')
-        net = tf.layers.flatten(net)
-        net = tf.layers.dense(net, 1024, activation=tf.nn.relu, name='fc3')
-        logits = tf.layers.dense(net, 10)
-        return logits
-
-# tensorflow inputs
-images = tf.placeholder(dtype=tf.float32, shape=(None, 28, 28, 1))
-# tensorflow labels
-labels = tf.placeholder(dtype=tf.int32, shape=(None,))
-
-logits = lenet(images)
-loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
-acc = accuracy(logits, labels)
+model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
 ```
 ### **Step 3: Define Train Dataset**
 
 You can define the dataset using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset). Orca also supports [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca XShards](./data).
 
 ```python
+import tensorflow as tf
 import tensorflow_datasets as tfds
 
 def preprocess(data):
@@ -87,17 +82,12 @@ First, create an Estimator.
 ```python
 from zoo.orca.learn.tf.estimator import Estimator
 
-est = Estimator.from_graph(inputs=images,
-                           outputs=logits,
-                           labels=labels,
-                           loss=loss,
-                           optimizer=tf.train.AdamOptimizer(),
-                           metrics={"acc": acc})
+est = Estimator.from_keras(keras_model=model)
 ```
 
 Next, fit and evaluate using the Estimator.
 ```python
-est.fit(data=train_dataset,
+est.fit(data=mnist_train,
         batch_size=320,
         epochs=5,
         validation_data=mnist_test)

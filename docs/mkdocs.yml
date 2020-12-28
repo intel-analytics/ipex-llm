@@ -165,6 +165,7 @@ pages:
   - OrcaContext: Orca/context.md
   - Data: Orca/data.md
   - TensorFlow Quickstart: Orca/orca-tf-quickstart.md
+  - TensorFlow Keras Quickstart: Orca/orca-keras-quickstart.md
   - TensorFlow Estimator: Orca/orca-tf-estimator.md
   - PyTorch Quickstart: Orca/orca-pytorch-quickstart.md
   - PyTorch Estimator: Orca/orca-pytorch-estimator.md
