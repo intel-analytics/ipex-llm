@@ -15,6 +15,7 @@
 #
 import argparse
 
+from tensorflow import keras
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from zoo.orca import init_orca_context, stop_orca_context
@@ -34,20 +35,20 @@ def main(max_epoch, dataset_dir):
     mnist_train = mnist_train.map(preprocess)
     mnist_test = mnist_test.map(preprocess)
 
-    model = tf.keras.Sequential(
-        [tf.keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
-                                input_shape=(28, 28, 1), padding='valid'),
-         tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-         tf.keras.layers.Conv2D(50, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
-                                padding='valid'),
-         tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-         tf.keras.layers.Flatten(),
-         tf.keras.layers.Dense(500, activation='tanh'),
-         tf.keras.layers.Dense(10, activation='softmax'),
+    model = keras.Sequential(
+        [keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
+                             input_shape=(28, 28, 1), padding='valid'),
+         keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+         keras.layers.Conv2D(50, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
+                             padding='valid'),
+         keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+         keras.layers.Flatten(),
+         keras.layers.Dense(500, activation='tanh'),
+         keras.layers.Dense(10, activation='softmax'),
          ]
     )
 
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+    model.compile(optimizer=keras.optimizers.RMSprop(),
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
 
