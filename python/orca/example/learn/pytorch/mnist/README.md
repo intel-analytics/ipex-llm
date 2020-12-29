@@ -14,10 +14,10 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 ```
 conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set another name you like.
 conda activate zoo
-pip install analytics-zoo==0.9.0.dev0 # or above
+pip install analytics-zoo==0.9.0 # or above
+pip install torch==1.7.1 torchvision==0.8.2
+pip install six cloudpickle
 pip install jep==3.9.0
-conda install pytorch torchvision cpuonly -c pytorch #command for linux
-conda install pytorch torchvision -c pytorch #command for macOS
 ```
 
 ## Prepare Dataset
