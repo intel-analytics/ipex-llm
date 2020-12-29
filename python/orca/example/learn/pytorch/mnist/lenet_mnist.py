@@ -87,7 +87,7 @@ def main():
         batch_size=args.test_batch_size, shuffle=False)
 
     if args.cluster_mode == "local":
-        init_orca_context(cores=1, memory="20g")
+        init_orca_context(cores=1, memory="2g")
     elif args.cluster_mode == "yarn":
         init_orca_context(
             cluster_mode="yarn-client", cores=4, num_nodes=2, memory="2g",
@@ -101,10 +101,12 @@ def main():
     criterion = nn.NLLLoss()
 
     adam = torch.optim.Adam(model.parameters(), args.lr)
-    zoo_estimator = Estimator.from_torch(model=model, optimizer=adam, loss=criterion)
-    zoo_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
-                      validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
-    zoo_estimator.evaluate(data=test_loader, validation_methods=[Accuracy()])
+    est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion)
+    est.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
+            validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
+    result = est.evaluate(data=test_loader, validation_methods=[Accuracy()])
+    for r in result:
+        print(str(r))
     stop_orca_context()
 
 
