@@ -29,6 +29,8 @@ elif args.cluster_mode == "yarn":
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./context) for more details.
 
+**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when you run on Hadoop YARN cluster.
+
 ### **Step 2: Define the Model**
 
 You may define your model, loss and metrics in the same way as in any standard (single node) TensorFlow program.
