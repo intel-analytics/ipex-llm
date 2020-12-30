@@ -30,6 +30,8 @@ from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss, OptimM
 from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method, find_tensors
 from zoo.pipeline.estimator import Estimator
 from zoo.util import nest
+from zoo.tfpark.tf_dataset import TFNdarrayDataset
+from zoo.tfpark.tf_dataset import _standarize_feature_label_dataset
 
 
 if sys.version >= '3':
@@ -618,6 +620,10 @@ class TFOptimizer:
 
         # target can be None if loss is None
         model_targets = list(filter(lambda x: x is not None, model_targets))
+
+        # standarize feature, labels to support keras model
+        if isinstance(dataset, TFNdarrayDataset):
+            dataset = _standarize_feature_label_dataset(dataset, keras_model)
 
         flatten_inputs = nest.flatten(dataset.feature_tensors)
         assert len(model_inputs) == len(flatten_inputs), \
