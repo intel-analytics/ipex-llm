@@ -21,20 +21,46 @@ Orca supports Spark Dataframes as the input to the distributed training, and as 
 ### **3. XShards (Distributed Data-Parallel Python Processing)**
 
 `XShards` in Orca allows the user to process large-scale dataset using *existing* Pyhton codes in a distributed and data-parallel fashion, as shown below. 
-<TODO: show a simple example, maybe using `XShards.partition` and `XShards.transform_partition`?>
 
-In essence, an `XShards` contains an automatically sharded (or partitioned) Python object (e.g., Pandas Dataframe, Numpy NDArray,  Python Dictionary or List, etc.). Each partition of the `XShards` stores a subset of the Python object and is distributed across different nodes in the cluster; and the user may run arbitrary Python codes on each partition in a data-parallel fashion using `XShards.transform_partition`.
+```python
+import numpy as np
+from zoo.orca.data import XShards
 
-View the related [Python API doc]() for more details.
+train_images = np.random.random((20, 3, 224, 224))
+train_label_images = np.zeros(20)
+train_shards = XShards.partition([train_images, train_label_images])
+
+def transform_to_dict(train_data):
+    return {"x": train_data[0], "y": train_data[1]}
+    
+train_shards = train_shards.transform_shard(transform_to_dict)
+```
+
+In essence, an `XShards` contains an automatically sharded (or partitioned) Python object (e.g., Pandas Dataframe, Numpy NDArray,  Python Dictionary or List, etc.). Each partition of the `XShards` stores a subset of the Python object and is distributed across different nodes in the cluster; and the user may run arbitrary Python codes on each partition in a data-parallel fashion using `XShards.transform_shard`.
+
+View the related [Python API doc](./data) for more details.
  
 #### **3.1 Data-Parallel Pandas**
 The user may use `XShards` to efficiently process large-size Pandas Dataframes in a distributed and data-parallel fashion.
 
 First, the user can read CVS, JSON or Parquet files (stored on local disk, HDFS, AWS S3, etc.) to obtain an `XShards` of Pandas Dataframe, as shown below:
-<TODO: shown a simple pandas read example>
+```python
+from zoo.orca.data.pandas import read_csv
+csv_path = "/path/to/csv_file_or_folder"
+shard = read_csv(csv_path)
+```
 
 Each partition of the returned `XShards` stores a Pandas Dataframe object (containing a subset of the entire dataset), and then the user can apply Pandas operations as well as other (e.g., sklearn) operations on each partition, as shown below:   
-<TODO: shown a simple `transform_partition` example>
+```python
+def negative(df, column_name):
+    df[column_name] = df[column_name] * (-1)
+    return df
+    
+train_shards = shard.transform_shard(negative, 'value')
+```
 
 In addition, some global operations  (such as `partition_by`, `unique`, etc.) are also supported on the `XShards` of Pandas Dataframe, as shown below:
-<TODO: shown a simple `partition_by`, `unique` example>
+```python
+shard.partition_by(cols="location", num_partitions=4)
+location_list = shard["location"].unique()
+```
