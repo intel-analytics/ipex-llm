@@ -6,12 +6,13 @@ Analytics Zoo includes the *Orca* library that seamlessly scales single-node Pyt
   - [TensroFlow 1.15]() 
   - [Keras 2.3]() 
   - [PyTroch]() 
-  - [TensorFlow 2 and Keras 2.4]() 
+  - [TensorFlow 2 and Keras 2.4]()
+  - [MXNet]()
   - [Horovod]() 
  
 - User guide
   - [Python guide]() 
-  - [Docker  guide]() 
+  - [Docker guide]() 
   - [K8s guide]() 
   - [Hadoop/YARN guide]() 
   - [Colab guide]() 
