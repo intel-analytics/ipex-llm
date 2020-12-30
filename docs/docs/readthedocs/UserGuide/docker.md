@@ -26,6 +26,14 @@ For instance, users in China may add the USTC mirror as follows:
 }
 ```
 
+
+After that, flush changes and restart docker：
+
+```
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
 ### **2. Launch Docker Container**
 
 ### **3. Run Jupyter Notebook Examples in the Container**
