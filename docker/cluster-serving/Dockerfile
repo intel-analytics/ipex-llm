@@ -4,10 +4,10 @@ MAINTAINER The Analytics Zoo Authors https://github.com/intel-analytics/analytic
 
 WORKDIR /opt/work
 
-ARG SPARK_VERSION=2.4.3 
+ARG SPARK_VERSION=2.4.3
 ARG BIGDL_VERSION=0.12.1
-ARG ANALYTICS_ZOO_VERSION=0.10.0-SNAPSHOT
-ARG FLINK_VERSION=1.10.0
+ARG ANALYTICS_ZOO_VERSION=0.9.0
+ARG FLINK_VERSION=1.11.2
 
 ENV FLINK_HOME			/opt/work/flink-${FLINK_VERSION}
 ENV JAVA_HOME			/opt/jdk
@@ -26,18 +26,14 @@ RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --upgrade pip==20.2.4 && \
     pip install --upgrade setuptools && \
-    pip install opencv-python && \
-    pip install pyyaml && \
-    pip install redis && \
-    pip install pyarrow && \
-    pip install httpx
+    pip install analytics-zoo-serving
 
 #java
-RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \
-    gunzip jdk-8u241-linux-x64.tar.gz && \
-    tar -xf jdk-8u241-linux-x64.tar -C /opt && \
-    rm jdk-8u241-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_241 /opt/jdk
+RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u261-linux-x64.tar.gz && \
+    gunzip jdk-8u261-linux-x64.tar.gz && \
+    tar -xf jdk-8u261-linux-x64.tar -C /opt && \
+    rm jdk-8u261-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_261 /opt/jdk
 
 #redis
 RUN wget http://download.redis.io/releases/redis-5.0.5.tar.gz && \
@@ -49,27 +45,19 @@ RUN wget http://download.redis.io/releases/redis-5.0.5.tar.gz && \
     cd ..
 
 #flink
-RUN wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
+RUN wget https://archive.apache.org/dist/flink/flink-1.11.2/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
     tar xzf flink-*.tgz && \
     rm flink-*.tgz
 
-
-ADD *.sh /opt/work/scripts/
-RUN chmod a+x /opt/work/scripts/*.*
-
-RUN /opt/work/scripts/download-cluster-serving-all-zip.sh && \
-    rm analytics-*-cluster-serving-all.zip && \
-    cd cluster-serving && \
-    ./cluster-serving-setup.sh
 
 ADD resources/ /opt/work/cluster-serving/resources/
 ADD *.py /opt/work/cluster-serving/
 ADD perf/ /opt/work/perf/
 ADD freeze_checkpoint.py /opt/work
 
-RUN chmod a+x /opt/work/cluster-serving/*
-
-ENV PYTHONPATH 		${CS_HOME}/serving-python.zip
+RUN cd cluster-serving && \
+    wget https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}/${ANALYTICS_ZOO_VERSION}/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar && \
+    mv *-serving.jar zoo.jar
 
 ENV OMP_NUM_THREADS	all
 

@@ -17,10 +17,10 @@
 from zoo.serving.client import InputQueue, OutputQueue
 import os
 import cv2
-import json
 import time
 from optparse import OptionParser
 import base64
+import numpy as np
 
 
 def run(path):
@@ -31,29 +31,29 @@ def run(path):
         raise EOFError("You have to set your image path")
     output_api = OutputQueue()
     output_api.dequeue()
-    path = [os.path.join(base_path, "cat1.jpeg"),
-            os.path.join(base_path, "dog1.jpeg"),
-            os.path.join(base_path, "fish1.jpeg")]
+    path = [os.path.join(base_path, "cat1.jpeg")]
     for p in path:
         if not p.endswith("jpeg"):
             continue
-        img = cv2.imread(os.path.join(base_path, p))
+        img = cv2.imread(p)
         img = cv2.resize(img, (224, 224))
         data = cv2.imencode(".jpg", img)[1]
         img_encoded = base64.b64encode(data).decode("utf-8")
-        input_api.enqueue(p, t={"b64": img_encoded})
+        result = input_api.enqueue("cat", t={"b64": img_encoded})
 
     time.sleep(10)
+
+    cat_image_prediction = output_api.query("cat")
+    print("cat prediction layer shape: ", cat_image_prediction.shape)
+    class_idx = np.argmax(cat_image_prediction)
+    print("the class index of prediction of cat image result: ", class_idx)
 
     # get all result and dequeue
     result = output_api.dequeue()
     for k in result.keys():
-        output = "image: " + k + ", classification-result:"
-        tmp_list = json.loads(result[k])
-        for record in range(len(tmp_list)):
-            output += " class: " + str(tmp_list[record][0]) \
-                      + "'s prob: " + str(tmp_list[record][1])
-        print(output)
+        prediction = output_api.get_ndarray_from_b64(result[k])
+        # this prediction is the same as the cat_image_prediction above
+        print(k, "prediction layer shape: ", prediction.shape)
 
 
 if __name__ == "__main__":
