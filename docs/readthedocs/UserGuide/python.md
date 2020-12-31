@@ -1,4 +1,4 @@
-### **1. Installing**
+### **1. Instal**
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment, especially when running on distributed cluster.
 
 ```bash
@@ -31,17 +31,17 @@ Alternatively, you can find the list of the nightly build versions [here](), and
 pip install analytics-zoo=xxx
 ```
 
-### **2. Running**
+### **2. Run**
 
 _**Note:**  Installing Analytics Zoo from pip will automatically install  `pyspark`. To avoid possible conflicts, you are highly recommended to  **unset  `SPARK_HOME`**  if it exists in your environment._
 
-#### **2.1 Running Interactive Shell**
+#### **2.1 Interactive Shell**
 
 You may test if the installation was successful using the interactive Python shell as follows:
 
-#### **2.2 Running Jupyter Notebook**
+#### **2.2 Jupyter Notebook**
 
-#### **2.3 Running Python Script**
+#### **2.3 Python Script**
 
 
 ### **3. Compatibility**
