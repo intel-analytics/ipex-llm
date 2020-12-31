@@ -3,20 +3,95 @@
 ### **1. TensorFlow Dataset and PyTorch DataLoader**
 
 Orca will seamlessly parallelize the standard `tf.data.Dataset` or `torch.utils.data.DataLoader` pipelines across a large cluster in a data-parallel fashion, which can be directly used for distributed deep learning training, as shown below:
-<TODO: shown a simple example>
+
+TensorFlow Dataset:
+```python
+import tensorflow as tf
+import tensorflow_datasets as tfds
+from zoo.orca.learn.tf.estimator import Estimator
+
+def preprocess(data):
+    data['image'] = tf.cast(data["image"], tf.float32) / 255.
+    return data['image'], data['label']
+
+dataset = tfds.load(name="mnist", split="train", data_dir=dataset_dir)
+dataset = dataset.map(preprocess)
+dataset = dataset.shuffle(1000)
+
+est = Estimator.from_keras(keras_model=model)
+est.fit(data=dataset)
+```
+
+Pytorch DataLoader:
+```python
+import torch
+from torchvision import datasets, transforms
+from zoo.orca.learn.pytorch import Estimator
+
+train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST("/tmp/mnist", train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=batch_size, shuffle=True)
+
+est = Estimator.from_torch(model=torch_model, optimizer=torch_optim, loss=torch_criterion)
+zoo_estimator.fit(data=train_loader)
+```
+
+
 
 Under the hood, Orca will automatically replicate the _TensorFlow Dataset_ or _PyTorch DataLoader_ pipeline on each node in the cluster, shard the input data, and execute the data pipelines using Apache Spark and/or Ray distributedly. 
 
-**Note:** Known limitations include: <TODO: describe known limitations>
+**Note:** Known limitations include:
+1. TensorFlow Dataset pipeline that contains transformations defined in native python function, such as `tf.py_func`, `tf.py_function`
+and `tf.numpy_function` are currently not supported.
+2. TensorFlow Dataset pipeline created from generators, such as `Dataset.from_generators` are currently not supported.
+3. For TensorFlow Dataset and Pytorch DataLoader pipelines that read from files (including `tf.data.TFRecordDataset` and `tf.data.TextLineDataset`), one needs to ensure that the same file paths can be accessed on every node in the cluster.
 
 #### **1.1. Data Creator Function**
 Alternatively, the user may also pass a *Data Creator Function* as the input to the distributed training and inference. Inside the *Data Creator Function*, the user needs to create and return a `tf.data.Dataset` or `torch.utils.data.DataLoader` object, as shown below.
-<TODO: shown a simple example>
+
+TensorFlow:
+```python
+import tensorflow as tf
+import tensorflow_datasets as tfds
+def preprocess(data):
+    data['image'] = tf.cast(data["image"], tf.float32) / 255.
+    return data['image'], data['label']
+
+def train_data_creator(config):
+    dataset = tfds.load(name="mnist", split="train", data_dir=dataset_dir)
+    dataset = dataset.map(preprocess)
+    dataset = dataset.shuffle(1000)
+    dataset = dataset.batch(config["batch_size"])
+    return dataset
+```
+
+Pytorch:
+```python
+def train_data_creator(config):
+    train_loader = torch.utils.data.DataLoader(
+            datasets.MNIST(config["dir"], train=True, download=True,
+                           transform=transforms.Compose([
+                               transforms.ToTensor(),
+                               transforms.Normalize((0.1307,), (0.3081,))
+                           ])),
+            batch_size=config["batch_size"], shuffle=True)
+    return train_loader
+```
 
 ### **2. Spark Dataframes**
 Orca supports Spark Dataframes as the input to the distributed training, and as the input/output of the distributed inference. Consequently, the user can easily process large-scale dataset using Apache Spark, and directly apply AI models on the distributed (and possibly in-memory) Dataframes without data conversion or serialization. 
 
-<TODO: shown a simple example, explain the input and output dataframe format>
+```python
+df = spark.read.parquet("data.parquet")
+est = Estimator.from_keras(keras_model=model) # the model accept two inputs and one label
+est.fit(data=df,
+        feature_cols=['user', 'item'], # specifies which column(s) to be used as inputs
+        labels_cols=['label']) # specifies which column(s) to be used as labels
+```
 
 ### **3. XShards (Distributed Data-Parallel Python Processing)**
 
