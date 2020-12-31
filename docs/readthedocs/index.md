@@ -18,9 +18,10 @@ Analytics Zoo includes the ***Orca*** library that seamlessly scale out your sin
   - [Docker guide]() 
   - [K8s guide]() 
   - [Hadoop/YARN guide]()
-  - [Scala Guide]()
   - [Amazon EMR guide]() 
   - [Databricks guide]() 
+  - [Scala Guide]()
+  - [Develop guide]()
 
 - Orca overview
   - [Orca Context]() 
