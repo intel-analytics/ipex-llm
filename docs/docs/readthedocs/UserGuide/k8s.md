@@ -34,10 +34,18 @@ sudo systemctl restart docker
 
 _**Note**: Please make sure `kubectl` has appropriate permission to create, list and delete pod._
 
-#### **3.1 Run Python programs**
+#### **3.1 Use `init_orca_context`**
 
-#### **3.2 Run Jupyter Notebooks**
+We recommend using `init_orca_context` in your code to run on standard K8s clusters. <TODO: add detailed descriptions>
 
-#### **3.3 Run Scala programs**
+#### **3.2 Use `spark_submit`**
 
-#### **3.4 Access logs and clear pods**
+Alternatively, you may use `spark_submit` to run your program on K8s clusters.
+
+**Run Python programs**
+
+**Run Jupyter Notebooks**
+
+**Run Scala programs**
+
+#### **3.3 Access logs and clear pods**
