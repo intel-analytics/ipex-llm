@@ -20,27 +20,78 @@ from zoo.orca.learn.base_estimator import BaseEstimator
 
 class Estimator(BaseEstimator):
     @abstractmethod
-    def fit(self, data, epochs, **kwargs):
+    def fit(self, data, epochs, batch_size=32, feature_cols=None, labels_cols=None,
+            validation_data=None, checkpoint_trigger=None):
+        """
+        Train the model with train data.
+
+        :param data: train data.
+        :param epochs: number of epochs to train.
+        :param batch_size: total batch size for each iteration. Default: 32.
+        :param feature_cols: feature column names if train data is Spark DataFrame.
+        :param labels_cols: label column names if train data is Spark DataFrame.
+        :param validation_data: validation data. Validation data type should be the same
+        as train data.
+        :param checkpoint_trigger: when to trigger checkpoint during training.
+        Should be a zoo.orca.learn.trigger, like EveryEpoch(), SeveralIteration(num_iterations),etc.
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def predict(self, data, **kwargs):
+    def predict(self, data, batch_size=4, feature_cols=None):
+        """
+        Predict input data
+
+        :param data: data to be predicted.
+        :param batch_size: batch size per thread. Default: 4.
+        :param feature_cols: list of feature column names if input data is Spark DataFrame.
+        :return: predicted result.
+         If input data is XShards or tf.data.Dataset, the predict result is a XShards,
+         and the schema for each result is: {'prediction': predicted numpy array or
+          list of predicted numpy arrays}.
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def evaluate(self, data, **kwargs):
+    def evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None):
+        """
+        Evaluate model.
+
+        :param data: evaluation data.
+        :param batch_size: batch size per thread. Default: 32.
+        :param feature_cols: feature column names if train data is Spark DataFrame.
+        :param labels_cols: label column names if train data is Spark DataFrame.
+        :return: evaluation result as a dictionary of {'metric name': metric value}
+        """
         raise NotImplementedError
 
     @abstractmethod
     def get_model(self):
+        """
+        Get the trained model
+
+        :return: Trained model
+        """
         raise NotImplementedError
 
     @abstractmethod
     def save(self, model_path):
+        """
+        Save model to model_path
+
+        :param model_path: path to save the trained model.
+        :return:
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def load(self, checkpoint, **kwargs):
+    def load(self, checkpoint):
+        """
+        Load existing model or checkpoint
+
+        :param checkpoint: Path to the existing model or checkpoint.
+        :return:
+        """
         raise NotImplementedError
 
     def set_tensorboard(self, log_dir, app_name):
@@ -52,7 +103,6 @@ class Estimator(BaseEstimator):
         Training summary will be saved to 'log_dir/app_name/train'
         and validation summary (if any) will be saved to 'log_dir/app_name/validation'.
 
-        # Arguments
         :param log_dir: The base directory path to store training and validation logs.
         :param app_name: The name of the application.
         """
@@ -64,8 +114,9 @@ class Estimator(BaseEstimator):
         """
         Clear gradient clipping parameters. In this case, gradient clipping will not be applied.
         In order to take effect, it needs to be called before fit.
+
         :return:
-         """
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -73,6 +124,7 @@ class Estimator(BaseEstimator):
         """
         Set constant gradient clipping during the training process.
         In order to take effect, it needs to be called before fit.
+
         :param min: The minimum value to clip by.
         :param max: The maximum value to clip by.
         :return:
@@ -84,6 +136,7 @@ class Estimator(BaseEstimator):
         """
         Clip gradient to a maximum L2-Norm during the training process.
         In order to take effect, it needs to be called before fit.
+
         :param clip_norm: Gradient L2-Norm threshold.
         :return:
         """
@@ -94,8 +147,8 @@ class Estimator(BaseEstimator):
         """
         Get the scalar from model train summary
         Return list of summary data of [iteration_number, scalar_value, timestamp]
-        # Arguments
-        tag: The string variable represents the scalar wanted
+
+        :param tag: The string variable represents the scalar wanted
         """
         raise NotImplementedError
 
@@ -124,51 +177,16 @@ class Estimator(BaseEstimator):
         'MeanAveragePrecision'      |   'MAP@k' (k is Top-k) (BigDL)
         'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
         'StatelessMetric'           |   '${name}'
-        # Arguments
-        tag: The string variable represents the scalar wanted
+
+        :param tag: The string variable represents the scalar wanted
         """
         raise NotImplementedError
-
-    def save_tf_checkpoint(self, path):
-        """
-        Save tensorflow checkpoint in this estimator.
-        :param path: tensorflow checkpoint path.
-        """
-        raise NotImplementedError
-
-    def save_keras_model(self, path, overwrite=True):
-        """
-        Save tensorflow keras model in this estimator.
-        :param path: keras model save path.
-        :param overwrite: Whether to silently overwrite any existing file at the target location.
-        """
-        raise NotImplementedError
-
-    def save_keras_weights(self, filepath, overwrite=True, save_format=None):
-        """
-        Save tensorflow keras model weights in this estimator.
-        :param filepath: keras model weights save path.
-        :param overwrite: Whether to silently overwrite any existing file at the target location.
-        :param save_format: Either 'tf' or 'h5'. A `filepath` ending in '.h5' or
-            '.keras' will default to HDF5 if `save_format` is `None`. Otherwise
-            `None` defaults to 'tf'.
-        """
-        raise NotImplementedError
-
-    def load_keras_weights(self, filepath, by_name=False):
-        """
-        Save tensorflow keras model in this estimator.
-        :param filepath: keras model weights save path.
-        :param by_name: Boolean, whether to load weights by name or by topological
-            order. Only topological loading is supported for weight files in
-            TensorFlow format.
-        """
-        pass
 
     @abstractmethod
     def load_orca_checkpoint(self, path, version):
         """
         Load specified Orca checkpoint.
+
         :param path: checkpoint directory which contains model.* and
         optimMethod-TFParkTraining.* files.
         :param version: checkpoint version, which is the suffix of model.* file,
@@ -180,6 +198,7 @@ class Estimator(BaseEstimator):
     def load_latest_orca_checkpoint(self, path):
         """
         Load latest Orca checkpoint under specified directory.
+
         :param path: directory containing Orca checkpoint files.
         """
         raise NotImplementedError
