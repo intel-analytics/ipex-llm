@@ -92,23 +92,36 @@ You can shut down workers and releases resources using `shutdown(self, force=Fal
 #### **Train model**
 After an Estimator is created, you can call estimator API to train PyTorch model:
 ```
-fit(self, data, epochs=1, batch_size=32, validation_data=None, validation_methods=None, checkpoint_trigger=None):
+fit(self, data, epochs=1, batch_size=32, feature_cols=None, labels_cols=None, validation_data=None, validation_metrics=None, checkpoint_trigger=None)
 ```
 * `data`: Training data. SparkXShard, PyTorch DataLoader and PyTorch DataLoader creator are supported.
 * `epochs`: Number of epochs to train the model.
 * `batch_size`: Batch size used for training. Only used when data is a SparkXShard.
+* `feature_cols`: (Not supported yet) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `labels_cols`: (Not supported yet) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
 * `validation_data`: Validation data. SparkXShard, PyTorch DataLoader and PyTorch DataLoader creator are supported.
-* `validation_methods`: BigDL validation methods.
-* `checkpoint_trigger`: BigDL Trigger to set a checkpoint.
+* `validation_metrics`: Orca validation methods.
+* `checkpoint_trigger`: Orca Trigger to set a checkpoint.
 
 #### **Evaluate model**
 After Training, you can call estimator API to evaluate PyTorch model:
 ```
-evaluate(self, data, validation_methods=None, batch_size=32)
+evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None, validation_metrics=None)
 ```
 * `data`: Validation data. SparkXShard, PyTorch DataLoader and PyTorch DataLoader creator are supported.
-* `validation_methods`: BigDL validation methods.
 * `batch_size`: Batch size used for evaluation. Only used when data is a SparkXShard.
+* `feature_cols`: (Not supported yet) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `labels_cols`: (Not supported yet) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `validation_metrics`: Orca ovalidation methods.
+
+#### **Inference**
+After training or loading trained model, you can call estimator API to inference:
+```
+predict(self, data, batch_size=4, feature_cols=None)
+```
+* `data`: Inference data. Only SparkXShards is supported.
+* `batch_size`: Batch size used for inference.
+* `feature_cols`: (Not supported yet) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
 
 #### **Get model**
 You can get model using `get_model(self)`

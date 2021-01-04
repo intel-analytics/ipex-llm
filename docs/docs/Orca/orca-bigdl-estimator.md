@@ -35,46 +35,49 @@ Estimator.from_bigdl(*, model, loss=None, optimizer=None, feature_preprocessing=
 ### Train BigDL model with orca BigDL Estimator
 After an Estimator is created, you can call estimator API to train BigDL model:
 ```
-fit(self, data, epochs, feature_cols="features", labels_cols="label", batch_size=32,
-    caching_sample=True, val_data=None, val_trigger=None, val_methods=None,
-    checkpoint_trigger=None)
+fit(self, data, epochs, batch_size=32, feature_cols="features", labels_cols="label",
+    caching_sample=True, validation_data=None, validation_trigger=None,
+    validation_metrics=None, checkpoint_trigger=None)
 ```
 * `data`: Training data. SparkXShard and Spark DataFrame are supported.
 * `epochs`: (int) Number of epochs to train the model.
+* `batch_size`: (int) Batch size used for training. Default: 32.
 * `feature_cols`: (string or list of string) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: "features".
 * `labels_cols`: (string or list of string) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: "label".
-* `batch_size`: (int) Batch size used for training. Default: 32.
 * `caching_sample`: (Boolean) Whether to cache the Samples after preprocessing. Default: True.
-* `val_data`: Validation data. SparkXShard and Spark DataFrame are supported. Default: None.
-* `val_trigger`: BigDL Trigger to validate model.
-* `val_methods`: BigDL validation methods.
-* `checkpoint_trigger`: BigDL Trigger to set a checkpoint.
+* `validation_data`: Validation data. SparkXShard and Spark DataFrame are supported. Default: None.
+* `validation_trigger`: Orca Trigger to validate model.
+* `validation_metrics`: Orca validation methods.
+* `checkpoint_trigger`: Orca Trigger to set a checkpoint.
 
 ### Inference with orca BigDL Estimator
 After training or loading trained model, you can call estimator API to inference:
 ```
-predict(self, data, batch_size=8, feature_cols="features", sample_preprocessing=None)
+predict(self, data, batch_size=4, feature_cols="features", sample_preprocessing=None)
 ```
 * `data`: Inference data. SparkXShard and Spark DataFrame are supported.
-* `batch_size`: (int) Batch size used for inference. Default: 8.
+* `batch_size`: (int) Batch size used for inference. Default: 4.
 * `feature_cols`:  (string or list of string) Feature column name(s) of data. Only used when data is a Spark DataFrame.
 * `sample_preprocessing`: Used if the input data in predict function is Spark DataFrame. The user defined sample_preprocessing will directly compose Sample according to user-specified Preprocessing.
 
 ### Evaluate model
 After Training, you can call estimator API to evaluate BigDL model:
 ```
-evaluate(self, data, validation_methods=None, batch_size=32)
+evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None, validation_metrics=None)
 ```
 * `data`: Validation data. SparkXShard and Spark DataFrame are supported.
-* `validation_methods`: BigDL validation methods.
 * `batch_size`: Batch size used for evaluation. Only used when data is a SparkXShard.
+* `feature_cols`: (string or list of string) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `labels_cols`: (string or list of string) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `validation_metrics`: Orca validation methods.
+
 
 ### Get model
 You can get model using `get_model(self)`
 
 ### Save model
 You can save model using `save(self, model_path)`
-* `checkpoint`: (str) Path to model saved folder.
+* `model_path`: (str) Path to model saved folder.
 
 ### Load model
 You can load saved model using
