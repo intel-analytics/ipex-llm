@@ -1,3 +1,7 @@
+# Docker User Guide
+
+---
+
 ### **1. Pull Docker Image**
 
 You may pull a Docker image from the  [Analytics Zoo Docker Hub](https://hub.docker.com/r/intelanalytics/analytics-zoo).
