@@ -46,7 +46,7 @@ from zoo import init_spark_on_yarn
 sc = init_spark_on_yarn(
     hadoop_conf="path to the yarn configuration folder",
     conda_name="zoo", # The name of the created conda-env
-    num_executor=2,
+    num_executors=2,
     executor_cores=4,
     executor_memory="8g",
     driver_memory="2g",
