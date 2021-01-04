@@ -1,3 +1,7 @@
+# Scala User Guide
+
+---
+
 ### **1. Install**
 
 #### **1.1 Official Release** 
