@@ -17,8 +17,8 @@
 # visualizing training with tensorboard
 # https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html
 #
+
 from __future__ import print_function
-import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -152,6 +152,7 @@ def main():
     orca_estimator.shutdown()
 
     stop_orca_context()
+
 
 if __name__ == '__main__':
     main()

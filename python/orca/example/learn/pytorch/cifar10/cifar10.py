@@ -17,8 +17,8 @@
 # neural networks training on Cifar10
 # https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 #
+
 from __future__ import print_function
-import os
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
@@ -74,6 +74,7 @@ def imshow(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
+
 dataiter = iter(trainloader)
 images, labels = dataiter.next()
 
@@ -101,6 +102,7 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
 
 net = Net()
 criterion = nn.CrossEntropyLoss()
