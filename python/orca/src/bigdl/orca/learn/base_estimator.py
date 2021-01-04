@@ -19,25 +19,63 @@ from abc import ABC, abstractmethod
 
 class BaseEstimator(ABC):
     @abstractmethod
-    def fit(self, data, epochs, **kwargs):
+    def fit(self, data, epochs, batch_size):
+        """
+        Train the model with train data.
+
+        :param data: train data.
+        :param epochs: number of epochs to train.
+        :param batch_size: total batch size for each iteration.
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def predict(self, data, **kwargs):
+    def predict(self, data, batch_size):
+        """
+        Predict input data
+
+        :param data: data to be predicted.
+        :param batch_size: batch size per thread. Default: 4.
+        :return: predicted result.
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def evaluate(self, data, **kwargs):
+    def evaluate(self, data, batch_size):
+        """
+        Evaluate model.
+
+        :param data: evaluation data.
+        :param batch_size: batch size per thread.
+        :return: evaluation result as a dictionary of {'metric name': metric value}
+        """
         raise NotImplementedError
 
     @abstractmethod
     def get_model(self):
+        """
+        Get the trained model
+
+        :return: Trained model
+        """
         raise NotImplementedError
 
     @abstractmethod
     def save(self, model_path):
+        """
+        Save model to model_path
+
+        :param model_path: path to save the trained model.
+        :return:
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def load(self, checkpoint, **kwargs):
+    def load(self, checkpoint):
+        """
+        Load existing model or checkpoint
+
+        :param checkpoint: Path to the existing model or checkpoint.
+        :return:
+        """
         raise NotImplementedError
