@@ -1,3 +1,7 @@
+# Distributed Training and Inference
+
+---
+
 **Orca `Estimator` provides sklearn-style APIs for transparently distributed model training and inference** 
 
 ### **1. Estimator**
