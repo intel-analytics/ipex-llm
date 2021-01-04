@@ -32,10 +32,10 @@ class Estimator(object):
         :param model_path: String. The file path to the OpenVINO IR xml file.
         :param batch_size: Int. Set batch Size, default is 0 (use default batch size).
         """
-        return OpenvinoEstimatorWrapper(model_path=model_path, batch_size=batch_size)
+        return OpenvinoEstimator(model_path=model_path, batch_size=batch_size)
 
 
-class OpenvinoEstimatorWrapper(SparkEstimator):
+class OpenvinoEstimator(SparkEstimator):
     def __init__(self,
                  *,
                  model_path,

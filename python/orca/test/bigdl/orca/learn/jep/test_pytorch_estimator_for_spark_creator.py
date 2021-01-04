@@ -69,8 +69,8 @@ class TestEstimatorForSparkCreator(TestCase):
             return torch.utils.data.DataLoader(TensorDataset(inputs, targets), batch_size=2)
 
         estimator.fit(data=get_dataloader, epochs=2, validation_data=get_dataloader,
-                      validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
-        estimator.evaluate(data=get_dataloader, validation_methods=[Accuracy()])
+                      validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
+        estimator.evaluate(data=get_dataloader, validation_metrics=[Accuracy()])
         model = estimator.get_model()
         assert isinstance(model, nn.Module)
 

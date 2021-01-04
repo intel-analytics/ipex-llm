@@ -37,13 +37,17 @@ from zoo.orca.learn.spark_estimator import Estimator as SparkEstimator
 
 
 class Estimator(SparkEstimator):
-    def fit(self, data, epochs, **kwargs):
+    def fit(self, data, epochs, batch_size=32, feature_cols=None, labels_cols=None,
+            validation_data=None, hard_code_batch_size=False, session_config=None,
+            checkpoint_trigger=None, auto_shard_files=False):
         raise NotImplementedError
 
-    def predict(self, data, **kwargs):
+    def predict(self, data, batch_size=4, feature_cols=None, hard_code_batch_size=False,
+                auto_shard_files=False):
         raise NotImplementedError
 
-    def evaluate(self, data, **kwargs):
+    def evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None,
+                 hard_code_batch_size=False, auto_shard_files=False):
         raise NotImplementedError
 
     def get_model(self):
@@ -115,12 +119,39 @@ class Estimator(SparkEstimator):
         return None
 
     def save_tf_checkpoint(self, path):
+        """
+        Save tensorflow checkpoint in this estimator.
+        :param path: tensorflow checkpoint path.
+        """
         raise NotImplementedError
 
     def save_keras_model(self, path, overwrite=True):
+        """
+        Save tensorflow keras model in this estimator.
+        :param path: keras model save path.
+        :param overwrite: Whether to silently overwrite any existing file at the target location.
+        """
         raise NotImplementedError
 
     def save_keras_weights(self, filepath, overwrite=True, save_format=None):
+        """
+        Save tensorflow keras model weights in this estimator.
+        :param filepath: keras model weights save path.
+        :param overwrite: Whether to silently overwrite any existing file at the target location.
+        :param save_format: Either 'tf' or 'h5'. A `filepath` ending in '.h5' or
+            '.keras' will default to HDF5 if `save_format` is `None`. Otherwise
+            `None` defaults to 'tf'.
+        """
+        raise NotImplementedError
+
+    def load_keras_weights(self, filepath, by_name=False):
+        """
+        Save tensorflow keras model in this estimator.
+        :param filepath: keras model weights save path.
+        :param by_name: Boolean, whether to load weights by name or by topological
+            order. Only topological loading is supported for weight files in
+            TensorFlow format.
+        """
         raise NotImplementedError
 
     def load_orca_checkpoint(self, path, version):
@@ -173,17 +204,17 @@ class Estimator(SparkEstimator):
         :return: an Estimator object.
         """
         assert backend == "bigdl", "only bigdl backend is supported for now"
-        return TFOptimizerWrapper(inputs=inputs,
-                                  outputs=outputs,
-                                  labels=labels,
-                                  loss=loss,
-                                  optimizer=optimizer,
-                                  clip_norm=clip_norm,
-                                  clip_value=clip_value,
-                                  metrics=metrics, updates=updates,
-                                  sess=sess,
-                                  model_dir=model_dir
-                                  )
+        return TensorFlowEstimator(inputs=inputs,
+                                   outputs=outputs,
+                                   labels=labels,
+                                   loss=loss,
+                                   optimizer=optimizer,
+                                   clip_norm=clip_norm,
+                                   clip_value=clip_value,
+                                   metrics=metrics, updates=updates,
+                                   sess=sess,
+                                   model_dir=model_dir
+                                   )
 
     @staticmethod
     def from_keras(keras_model, metrics=None, model_dir=None, optimizer=None, backend="bigdl"):
@@ -198,7 +229,7 @@ class Estimator(SparkEstimator):
         :return: an Estimator object.
         """
         assert backend == "bigdl", "only bigdl backend is supported for now"
-        return TFKerasWrapper(keras_model, metrics, model_dir, optimizer)
+        return KerasEstimator(keras_model, metrics, model_dir, optimizer)
 
     @staticmethod
     def load_keras_model(path):
@@ -277,7 +308,7 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
     return dataset
 
 
-class TFOptimizerWrapper(Estimator):
+class TensorFlowEstimator(Estimator):
     def __init__(self, *, inputs, outputs, labels, loss,
                  optimizer, clip_norm, clip_value,
                  metrics,
@@ -344,10 +375,10 @@ class TFOptimizerWrapper(Estimator):
             labels_cols=None,
             validation_data=None,
             hard_code_batch_size=False,
-            auto_shard_files=False,
             session_config=None,
-            feed_dict=None,
-            checkpoint_trigger=None
+            checkpoint_trigger=None,
+            auto_shard_files=False,
+            feed_dict=None
             ):
         """
         Train this graph model with train data.
@@ -551,7 +582,7 @@ class TFOptimizerWrapper(Estimator):
         raise NotImplementedError
 
 
-class TFKerasWrapper(Estimator):
+class KerasEstimator(Estimator):
     def __init__(self, keras_model, metrics, model_dir, optimizer):
         self.model = KerasModel(keras_model, model_dir)
         self.load_checkpoint = False
@@ -700,7 +731,7 @@ class TFKerasWrapper(Estimator):
         else:
             return predicted_rdd
 
-    def evaluate(self, data, batch_size=4,
+    def evaluate(self, data, batch_size=32,
                  feature_cols=None,
                  labels_cols=None,
                  hard_code_batch_size=False,
