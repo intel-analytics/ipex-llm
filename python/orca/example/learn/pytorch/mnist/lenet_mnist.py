@@ -103,8 +103,8 @@ def main():
     adam = torch.optim.Adam(model.parameters(), args.lr)
     est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion)
     est.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
-            validation_methods=[Accuracy()], checkpoint_trigger=EveryEpoch())
-    result = est.evaluate(data=test_loader, validation_methods=[Accuracy()])
+            validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
+    result = est.evaluate(data=test_loader, validation_metrics=[Accuracy()])
     for r in result:
         print(str(r))
     stop_orca_context()
