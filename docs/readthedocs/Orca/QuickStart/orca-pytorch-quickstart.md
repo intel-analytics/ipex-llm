@@ -1,5 +1,9 @@
+# PyTorch Quickstart
 
-**In this guide we will describe how to scale out PyTorch (v1.5 or above) programs using Orca in 4 simple steps.**
+---
+
+
+**In this guide we will describe how to scale out PyTorch (v1.5+) programs using Orca in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
 
