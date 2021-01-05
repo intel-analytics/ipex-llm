@@ -189,6 +189,8 @@ def write_text(path, text):
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body=text)
     else:
+        if path.startswith("file://"):
+            path = path[len("file://"):]
         with open(path, 'w') as f:
             result = f.write(text)
             f.close()
