@@ -251,7 +251,7 @@ class TorchRunner:
         config = self.config.copy()
         if "batch_size" not in config:
             config["batch_size"] = batch_size
-        if OrcaContext.serialize_data_creation:
+        if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
                 loader = data_creator(config)
@@ -304,7 +304,7 @@ class TorchRunner:
         info = info or {}
         self._toggle_profiling(profile=profile)
 
-        if OrcaContext.serialize_data_creation:
+        if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
                 loader = data_creator(config)
