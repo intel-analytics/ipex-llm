@@ -264,4 +264,36 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
   def mkdirs(path: String): Unit = {
     Utils.mkdirs(path)
   }
+
+  def createZooEveryEpoch(): EveryEpoch = {
+    new EveryEpoch()
+  }
+
+  def createZooSeveralIteration(interval: Int): SeveralIteration = {
+    new SeveralIteration(interval)
+  }
+
+  def createZooMaxEpoch(max: Int): MaxEpoch = {
+    new MaxEpoch(max)
+  }
+
+  def createZooMaxIteration(max: Int): MaxIteration = {
+    new MaxIteration(max)
+  }
+
+  def createZooMaxScore(max: Float): MaxScore = {
+    new MaxScore(max)
+  }
+
+  def createZooMinLoss(min: Float): MinLoss = {
+    new MinLoss(min)
+  }
+
+  def createZooTriggerAnd(first: ZooTrigger, others: JList[ZooTrigger]): And = {
+    new And(first, others.asScala: _*)
+  }
+
+  def createZooTriggerOr(first: ZooTrigger, others: JList[ZooTrigger]): Or = {
+    new Or(first, others.asScala: _*)
+  }
 }
