@@ -24,6 +24,7 @@ def xshards_to_tf_dataset(data_shard,
                           batch_size=-1, batch_per_thread=-1,
                           validation_data_shard=None,
                           hard_code_batch_size=False,
+                          memory_type='DRAM',
                           sequential_order=False,
                           shuffle=True):
     # todo data_shard.head ?
@@ -48,6 +49,7 @@ def xshards_to_tf_dataset(data_shard,
                                  batch_per_thread=batch_per_thread,
                                  val_rdd=val_rdd,
                                  hard_code_batch_size=hard_code_batch_size,
+                                 memory_type=memory_type,
                                  sequential_order=sequential_order,
                                  shuffle=shuffle)
 

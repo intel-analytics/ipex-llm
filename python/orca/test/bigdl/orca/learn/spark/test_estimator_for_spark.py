@@ -26,6 +26,7 @@ from pyspark.sql.context import SQLContext
 
 import zoo.orca.data.pandas
 from zoo import init_nncontext
+from zoo.orca import OrcaContext
 from zoo.orca.data.tf.data import Dataset
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.util.tf import save_tf_checkpoint, load_tf_checkpoint, get_checkpoint_state
@@ -47,6 +48,9 @@ class SimpleModel(object):
 
 
 class TestEstimatorForGraph(TestCase):
+    def setup_method(self, method):
+        OrcaContext.train_data_store = "DRAM"
+
     def test_estimator_graph(self):
         import zoo.orca.data.pandas
 
@@ -322,7 +326,7 @@ class TestEstimatorForGraph(TestCase):
         data_shard = data_shard.transform_shard(transform)
         dataset = Dataset.from_tensor_slices(data_shard)
         predictions = est.predict(dataset).collect()
-        assert len(predictions) == 10
+        assert len(predictions) == 16
 
     def test_estimator_graph_dataframe(self):
         tf.reset_default_graph()
@@ -355,7 +359,7 @@ class TestEstimatorForGraph(TestCase):
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
         assert 'prediction' in prediction_df.columns
         predictions = prediction_df.collect()
-        assert len(predictions) == 10
+        assert len(predictions) == 16
 
     def test_estimator_graph_dataframe_exception(self):
         tf.reset_default_graph()
@@ -640,6 +644,38 @@ class TestEstimatorForGraph(TestCase):
                 batch_size=8,
                 epochs=10,
                 validation_data=data_shard)
+
+    def test_estimator_graph_fit_mem_type(self):
+        import zoo.orca.data.pandas
+        tf.reset_default_graph()
+
+        model = SimpleModel()
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+        def transform(df):
+            result = {
+                "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+                "y": df['label'].to_numpy()
+            }
+            return result
+
+        data_shard = data_shard.transform_shard(transform)
+
+        est = Estimator.from_graph(
+            inputs=[model.user, model.item],
+            labels=[model.label],
+            loss=model.loss,
+            optimizer=tf.train.AdamOptimizer(),
+            metrics={"loss": model.loss})
+
+        OrcaContext.train_data_store = "DISK_2"
+        est.fit(data=data_shard,
+                batch_size=4,
+                epochs=10,
+                validation_data=data_shard
+                )
+        OrcaContext.train_data_store = "DRAM"
 
 
 if __name__ == "__main__":

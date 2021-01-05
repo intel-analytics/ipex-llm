@@ -19,6 +19,7 @@ from unittest import TestCase
 
 import tensorflow as tf
 
+from zoo.orca import OrcaContext
 from zoo.orca.learn.trigger import SeveralIteration
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.common.nncontext import *
@@ -28,6 +29,7 @@ from zoo.orca.learn.tf.utils import convert_predict_to_dataframe
 class TestEstimatorForKeras(TestCase):
     def setup_method(self, method):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        OrcaContext.train_data_store = "DRAM"
 
     def create_model(self):
         user = tf.keras.layers.Input(shape=[1])
@@ -268,7 +270,7 @@ class TestEstimatorForKeras(TestCase):
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
         assert 'prediction' in prediction_df.columns
         predictions = prediction_df.collect()
-        assert len(predictions) == 10
+        assert len(predictions) == 16
 
     def test_estimator_keras_dataframe_no_fit(self):
         tf.reset_default_graph()
@@ -290,7 +292,7 @@ class TestEstimatorForKeras(TestCase):
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
         assert 'prediction' in prediction_df.columns
         predictions = prediction_df.collect()
-        assert len(predictions) == 10
+        assert len(predictions) == 16
 
     def test_estimator_keras_tf_dataset(self):
         tf.reset_default_graph()
@@ -556,6 +558,108 @@ class TestEstimatorForKeras(TestCase):
                 batch_size=4,
                 epochs=1,
                 validation_data=dataset)
+
+    def test_estimator_keras_xshards_with_mem_type(self):
+        import zoo.orca.data.pandas
+
+        tf.reset_default_graph()
+
+        model = self.create_model()
+        file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+        def transform(df):
+            result = {
+                "x": (df['user'].to_numpy().reshape([-1, 1]),
+                      df['item'].to_numpy().reshape([-1, 1])),
+                "y": df['label'].to_numpy()
+            }
+            return result
+
+        data_shard = data_shard.transform_shard(transform)
+
+        est = Estimator.from_keras(keras_model=model)
+        OrcaContext.train_data_store = "DISK_2"
+        est.fit(data=data_shard,
+                batch_size=4,
+                epochs=10,
+                validation_data=data_shard
+                )
+
+        eval_result = est.evaluate(data_shard)
+        print(eval_result)
+        OrcaContext.train_data_store = "DRAM"
+
+    def test_estimator_keras_xshards_disk_featureset_trigger(self):
+        import zoo.orca.data.pandas
+
+        tf.reset_default_graph()
+
+        model = self.create_model()
+        file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+        def transform(df):
+            result = {
+                "x": (df['user'].to_numpy().reshape([-1, 1]),
+                      df['item'].to_numpy().reshape([-1, 1])),
+                "y": df['label'].to_numpy()
+            }
+            return result
+
+        data_shard = data_shard.transform_shard(transform)
+        from bigdl.optim.optimizer import SeveralIteration
+        from zoo.util.triggers import SeveralIteration as ZSeveralIteration
+        from zoo.util.triggers import MinLoss as ZMinLoss
+        from zoo.util.triggers import TriggerAnd as ZTriggerAnd
+        est = Estimator.from_keras(keras_model=model)
+        OrcaContext.train_data_store = "DISK_2"
+        with self.assertRaises(Exception) as context:
+            est.fit(data=data_shard,
+                    batch_size=4,
+                    epochs=10,
+                    validation_data=data_shard,
+                    checkpoint_trigger=SeveralIteration(2))
+        self.assertTrue('Please use a trigger defined in zoo.util.triggers'
+                        in str(context.exception))
+
+        est.fit(data=data_shard,
+                batch_size=4,
+                epochs=10,
+                validation_data=data_shard,
+                checkpoint_trigger=ZTriggerAnd(ZSeveralIteration(2), ZMinLoss(0.2)))
+        OrcaContext.train_data_store = "DRAM"
+
+    def test_estimator_keras_dataframe_mem_type(self):
+        tf.reset_default_graph()
+
+        model = self.create_model()
+        sc = init_nncontext()
+        sqlcontext = SQLContext(sc)
+        file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
+        df = sqlcontext.read.csv(file_path, header=True, inferSchema=True)
+        from pyspark.sql.functions import array
+        df = df.withColumn('user', array('user')) \
+            .withColumn('item', array('item'))
+
+        est = Estimator.from_keras(keras_model=model)
+        OrcaContext.train_data_store = "DISK_2"
+        est.fit(data=df,
+                batch_size=4,
+                epochs=4,
+                feature_cols=['user', 'item'],
+                labels_cols=['label'],
+                validation_data=df)
+
+        eval_result = est.evaluate(df, feature_cols=['user', 'item'], labels_cols=['label'])
+        assert 'acc Top1Accuracy' in eval_result
+
+        prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
+        assert 'prediction' in prediction_df.columns
+        predictions = prediction_df.collect()
+        assert len(predictions) == 16
+        OrcaContext.train_data_store = "DRAM"
+
 
 if __name__ == "__main__":
     import pytest
