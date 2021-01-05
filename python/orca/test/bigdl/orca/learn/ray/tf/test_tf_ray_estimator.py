@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import shutil
 from unittest import TestCase
 
 import numpy as np
@@ -451,3 +452,47 @@ class TestTFRayEstimator(TestCase):
         result = np.concatenate(result)
 
         assert np.allclose(expected, result)
+
+    def test_save_and_restore(self):
+        def model_creator(config):
+            import tensorflow as tf
+            model = tf.keras.Sequential([
+                tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation='relu',
+                                       padding='valid'),
+                tf.keras.layers.BatchNormalization(),
+                tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+                tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation='relu',
+                                       padding='valid'),
+                tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(10, activation='softmax')]
+            )
+            model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+                          loss='sparse_categorical_crossentropy',
+                          metrics=['accuracy'])
+            return model
+
+        def train_data_creator(config):
+            dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 3),
+                                                          np.random.randint(0, 10, (100, 1))))
+            dataset = dataset.repeat()
+            dataset = dataset.shuffle(1000)
+            dataset = dataset.batch(config["batch_size"])
+            return dataset
+
+        batch_size = 320
+        config = {
+            "batch_size": batch_size
+        }
+        try:
+            est = Estimator.from_keras(model_creator, config=config, workers_per_node=2)
+
+            history = est.fit(train_data_creator,
+                              epochs=1,
+                              steps_per_epoch=5)
+            print("start saving")
+            est.save("/tmp/cifar10_keras.ckpt")
+            est.restore("/tmp/cifar10_keras.ckpt")
+            print("save success")
+        finally:
+            os.remove("/tmp/cifar10_keras.ckpt")
