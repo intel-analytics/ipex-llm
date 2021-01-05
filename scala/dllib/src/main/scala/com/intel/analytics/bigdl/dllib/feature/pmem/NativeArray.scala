@@ -36,19 +36,15 @@ case object REPLICATED extends DataStrategy
 
 object MemoryType {
   def fromString(str: String): MemoryType = {
+    val diskPattern = "DISK_(\\d+)".r
     str.toUpperCase() match {
       case "PMEM" => PMEM
       case "DRAM" => DRAM
       case "DIRECT" => DIRECT
+      case diskPattern(num) => DISK_AND_DRAM(num.toInt)
       case default =>
-        try {
-          DISK_AND_DRAM(str.toInt)
-        } catch {
-          case nfe: NumberFormatException =>
-            throw new IllegalArgumentException(s"Unknown memory type $default," +
-              s"excepted PMEM, DRAM, DIRECT or a int number.")
-        }
-
+        throw new IllegalArgumentException(s"Unknown memory type $default," +
+              s"excepted PMEM, DRAM, DIRECT or DISK_n.")
     }
   }
 }

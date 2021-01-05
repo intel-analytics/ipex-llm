@@ -189,6 +189,10 @@ trait DistributedFeatureSet[T] extends AbstractFeatureSet[T, RDD[T]] {
   override def toDataSet(): DataSet[T] = {
     toDistributed()
   }
+
+  def getNumOfSlice(): Int = {
+    this.numOfSlice
+  }
 }
 
 /**
