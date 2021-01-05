@@ -23,6 +23,7 @@ class OrcaContextMeta(type):
     _pandas_read_backend = "spark"
     __eager_mode = True
     _serialize_data_creator = False
+    _train_data_store = "DRAM"
 
     @property
     def log_output(cls):
@@ -80,6 +81,25 @@ class OrcaContextMeta(type):
     def serialize_data_creator(cls, value):
         assert isinstance(value, bool), "serialize_data_creator should either be True or False"
         cls._serialize_data_creator = value
+
+    @property
+    def train_data_store(cls):
+        """
+        The memory type for train data storage. Either 'DRAM', 'PMEM', or 'DISK_n'.
+        The default value is 'DRAM', you can change it to 'PMEM' if have AEP hardware.
+        If you give 'DISK_n', in which 'n' is an integer, we will cache the data into disk,
+        and hold only `1/n` of the data in memory. After going through the `1/n`,
+        we will release the current cache, and load another `1/n` into memory.
+        """
+        return cls._train_data_store
+
+    @train_data_store.setter
+    def train_data_store(cls, value):
+        value = value.upper()
+        import re
+        assert value == "DRAM" or value == "PMEM" or re.match("DISK_\d+", value), \
+            "train_data_store must be either DRAM or PMEM or DIRECT or DISK_n"
+        cls._train_data_store = value
 
 
 class OrcaContext(metaclass=OrcaContextMeta):
