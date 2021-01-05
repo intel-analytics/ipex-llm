@@ -373,7 +373,14 @@ class Estimator:
 
         """
 
-        state = ray.get(self.remote_workers[0].get_state.remote())
+        # Some model might need to aggregate variables during checkpointing
+        # which requires both the chief and workers to participate in the
+        # allreduce communication protocol.
+        # So we need to call get_state on every remote workers, otherwise
+        # it might get stuck
+        state_refs = [w.get_state.remote() for w in self.remote_workers]
+
+        state = ray.get(state_refs[0])
 
         with open(checkpoint, "wb") as f:
             pickle.dump(state, f)
