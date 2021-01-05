@@ -22,7 +22,7 @@ class OrcaContextMeta(type):
 
     _pandas_read_backend = "spark"
     __eager_mode = True
-    _serialize_data_creation = False
+    _serialize_data_creator = False
 
     @property
     def log_output(cls):
@@ -67,23 +67,34 @@ class OrcaContextMeta(type):
         cls.__eager_mode = value
 
     @property
-    def serialize_data_creation(cls):
+    def serialize_data_creator(cls):
         """
         Whether add a file lock to the data loading process for PyTorch Horovod training.
         This would be useful when you run multiple workers on a single node to download data
         to the same destination.
         Default to be False.
         """
-        return cls._serialize_data_creation
+        return cls._serialize_data_creator
 
-    @serialize_data_creation.setter
-    def serialize_data_creation(cls, value):
-        assert isinstance(value, bool), "serialize_data_creation should either be True or False"
-        cls._serialize_data_creation = value
+    @serialize_data_creator.setter
+    def serialize_data_creator(cls, value):
+        assert isinstance(value, bool), "serialize_data_creator should either be True or False"
+        cls._serialize_data_creator = value
 
 
 class OrcaContext(metaclass=OrcaContextMeta):
-    pass
+    @staticmethod
+    def get_spark_context():
+        from pyspark import SparkContext
+        if SparkContext._active_spark_context is not None:
+            return SparkContext.getOrCreate()
+        else:
+            raise Exception("No active SparkContext. Please create a SparkContext first")
+
+    @staticmethod
+    def get_ray_context():
+        from zoo.ray import RayContext
+        return RayContext.get()
 
 
 def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
