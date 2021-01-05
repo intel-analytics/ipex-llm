@@ -30,11 +30,11 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libgtk2.0-dev
 
 #jdk8
-RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u241-linux-x64.tar.gz && \
-    gunzip jdk-8u241-linux-x64.tar.gz && \
-    tar -xf jdk-8u241-linux-x64.tar -C /opt && \
-    rm jdk-8u241-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_241 /opt/jdk && \
+RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u271-linux-x64.tar.gz && \
+    gunzip jdk-8u271-linux-x64.tar.gz && \
+    tar -xf jdk-8u271-linux-x64.tar -C /opt && \
+    rm jdk-8u271-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_271 /opt/jdk && \
 #scala
     wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
     gunzip scala-2.11.8.tgz && \

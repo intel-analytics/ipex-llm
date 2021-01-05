@@ -29,11 +29,11 @@ RUN apt-get install -y python3-minimal && \
     pip install analytics-zoo-serving
 
 #java
-RUN wget http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u261-linux-x64.tar.gz && \
-    gunzip jdk-8u261-linux-x64.tar.gz && \
-    tar -xf jdk-8u261-linux-x64.tar -C /opt && \
-    rm jdk-8u261-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_261 /opt/jdk
+RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u271-linux-x64.tar.gz && \
+    gunzip jdk-8u271-linux-x64.tar.gz && \
+    tar -xf jdk-8u271-linux-x64.tar -C /opt && \
+    rm jdk-8u271-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_271 /opt/jdk
 
 #redis
 RUN wget http://download.redis.io/releases/redis-5.0.5.tar.gz && \
