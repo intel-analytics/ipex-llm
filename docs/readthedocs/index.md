@@ -1,4 +1,4 @@
-# ANALYTICS ZOO DOCUMENTATION
+# Analytics Zoo Documentation
 
 ---
 
