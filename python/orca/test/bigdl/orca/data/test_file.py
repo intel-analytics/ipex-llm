@@ -30,6 +30,11 @@ class TestFile:
         lines = open_text(file_path)
         assert lines == ["Q1,Q1,1", "Q1,Q2,0", "Q2,Q1,0", "Q2,Q2,1"]
 
+    def test_open_local_text_2(self):
+        file_path = os.path.join(self.resource_path, "qa/relations.txt")
+        lines = open_text("file://" + file_path)
+        assert lines == ["Q1,Q1,1", "Q1,Q2,0", "Q2,Q1,0", "Q2,Q2,1"]
+
     def test_open_s3_text(self):
         access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -42,6 +47,10 @@ class TestFile:
         file_path = os.path.join(self.resource_path, "cat_dog/cats/cat.7000.jpg")
         image = open_image(file_path)
 
+    def test_open_local_image_2(self):
+        file_path = os.path.join(self.resource_path, "cat_dog/cats/cat.7000.jpg")
+        image = open_image("file://" + file_path)
+
     def test_open_s3_image(self):
         access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -52,6 +61,11 @@ class TestFile:
     def test_load_local_numpy(self):
         file_path = os.path.join(self.resource_path, "orca/data/random.npy")
         res = load_numpy(file_path)
+        assert res.shape == (2, 5)
+
+    def test_load_local_numpy_2(self):
+        file_path = os.path.join(self.resource_path, "orca/data/random.npy")
+        res = load_numpy("file://" + file_path)
         assert res.shape == (2, 5)
 
     def test_load_s3_numpy(self):
@@ -67,6 +81,12 @@ class TestFile:
         assert exists(file_path)
         file_path = os.path.join(self.resource_path, "orca/data/abc.npy")
         assert not exists(file_path)
+
+    def test_exists_local(self):
+        file_path = os.path.join(self.resource_path, "orca/data/random.npy")
+        assert exists("file://" + file_path)
+        file_path = os.path.join(self.resource_path, "orca/data/abc.npy")
+        assert not exists("file://" + file_path)
 
     def test_exists_s3(self):
         access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
@@ -87,6 +107,16 @@ class TestFile:
         assert exists(path)
         shutil.rmtree(temp)
 
+    def test_mkdirs_local_2(self):
+        temp = tempfile.mkdtemp()
+        path = os.path.join(temp, "dir1")
+        makedirs("file://" + path)
+        assert exists("file://" + path)
+        path = os.path.join(temp, "dir2/dir3")
+        makedirs("file://" + path)
+        assert exists("file://" + path)
+        shutil.rmtree(temp)
+
     def test_mkdirs_s3(self):
         access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -105,6 +135,14 @@ class TestFile:
         path = os.path.join(temp, "test.txt")
         write_text(path, "abc\n")
         text = open_text(path)
+        shutil.rmtree(temp)
+        assert text == ['abc']
+
+    def test_write_text_local_2(self):
+        temp = tempfile.mkdtemp()
+        path = os.path.join(temp, "test.txt")
+        write_text("file://" + path, "abc\n")
+        text = open_text("file://" + path)
         shutil.rmtree(temp)
         assert text == ['abc']
 
