@@ -1,0 +1,8 @@
+name = "analytics-zoo"
+version = "0.1"
+description = "A unified Data Analytics and AI platform for distributed TensorFlow, Keras and PyTorch on Apache Spark/Flink & Ray"
+license = "Apache"
+repository = "https://github.com/intel-analytics/analytics-zoo"
+documentation = "https://analytics-zoo-doc.readthedocs.io/en/latest/"
+
+
