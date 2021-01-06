@@ -24,10 +24,26 @@ from zoo.orca.data.shard import RayXShards
 from zoo.orca.data.utils import ray_partition_get_data_label
 
 from zoo.orca.learn.tf2.tf_runner import TFRunner
+from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from zoo.ray import RayContext
 from zoo.tfpark.tf_dataset import convert_row_to_numpy
 
 logger = logging.getLogger(__name__)
+
+
+class Estimator(object):
+    @staticmethod
+    def from_keras(*,
+                   model_creator,
+                   config=None,
+                   verbose=False,
+                   workers_per_node=1,
+                   compile_args_creator=None,
+                   backend="tf2"
+                   ):
+        return TensorFlow2Estimator(model_creator=model_creator, config=config,
+                                    verbose=verbose, workers_per_node=workers_per_node,
+                                    backend=backend, compile_args_creator=compile_args_creator)
 
 
 def shards_ref_to_creator(shards_ref):
@@ -93,7 +109,7 @@ def arrays2dict(iter, feature_cols, label_cols):
     return [{"x": feature_arrs}]
 
 
-class Estimator:
+class TensorFlow2Estimator(OrcaRayEstimator):
     def __init__(self,
                  model_creator,
                  compile_args_creator=None,
@@ -179,25 +195,15 @@ class Estimator:
 
         self.num_workers = len(self.remote_workers)
 
-    @classmethod
-    def from_keras(cls, model_creator,
-                   config=None,
-                   verbose=False,
-                   workers_per_node=1,
-                   compile_args_creator=None,
-                   backend="tf2"):
-        return cls(model_creator, config=config,
-                   verbose=verbose, workers_per_node=workers_per_node,
-                   backend=backend, compile_args_creator=compile_args_creator)
-
-    def fit(self, data_creator, epochs=1, verbose=1,
+    def fit(self, data, epochs=1, batch_size=32, verbose=1,
             callbacks=None, validation_data_creator=None, class_weight=None,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            label_cols=None,):
+            label_cols=None):
         """Runs a training epoch."""
         params = dict(
             epochs=epochs,
+            batch_size=batch_size,
             verbose=verbose,
             callbacks=callbacks,
             class_weight=class_weight,
@@ -209,23 +215,23 @@ class Estimator:
 
         from zoo.orca.data import SparkXShards
         from pyspark.sql import DataFrame
-        if isinstance(data_creator, DataFrame):
+        if isinstance(data, DataFrame):
             assert feature_cols is not None,\
                 "feature_col must be provided if data_creator is a spark dataframe"
             assert label_cols is not None,\
                 "label_cols must be provided if data_creator is a spark dataframe"
-            schema = data_creator.schema
-            numpy_rdd = data_creator.rdd.map(lambda row: convert_row_to_numpy(row,
-                                                                              schema,
-                                                                              feature_cols,
-                                                                              label_cols))
+            schema = data.schema
+            numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                      schema,
+                                                                      feature_cols,
+                                                                      label_cols))
             shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
                                                                       feature_cols,
                                                                       label_cols))
-            data_creator = SparkXShards(shard_rdd)
+            data = SparkXShards(shard_rdd)
 
-        if isinstance(data_creator, SparkXShards):
-            max_length, ray_xshards = process_spark_xshards(data_creator, self.num_workers)
+        if isinstance(data, SparkXShards):
+            max_length, ray_xshards = process_spark_xshards(data, self.num_workers)
 
             if validation_data_creator is None:
                 def transform_func(worker, shards_ref):
@@ -251,7 +257,7 @@ class Estimator:
                                                                   gang_scheduling=True)
             worker_stats = stats_shards.collect()
         else:
-            params["data_creator"] = data_creator
+            params["data_creator"] = data
             params["validation_data_creator"] = validation_data_creator
             params_list = [params] * self.num_workers
 
@@ -261,38 +267,39 @@ class Estimator:
         stats = worker_stats[0].copy()
         return stats
 
-    def evaluate(self, data_creator, verbose=1, sample_weight=None,
-                 steps=None, callbacks=None, data_config=None,
+    def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
+                 sample_weight=None, callbacks=None, data_config=None,
                  feature_cols=None, label_cols=None):
         """Evaluates the model on the validation data set."""
         logger.info("Starting validation step.")
         params = dict(
+            batch_size=batch_size,
             verbose=verbose,
             sample_weight=sample_weight,
-            steps=steps,
+            steps=num_steps,
             callbacks=callbacks,
             data_config=data_config,
         )
         from zoo.orca.data import SparkXShards
         from pyspark.sql import DataFrame
 
-        if isinstance(data_creator, DataFrame):
+        if isinstance(data, DataFrame):
             assert feature_cols is not None,\
                 "feature_col must be provided if data_creator is a spark dataframe"
             assert label_cols is not None,\
                 "label_cols must be provided if data_creator is a spark dataframe"
-            schema = data_creator.schema
-            numpy_rdd = data_creator.rdd.map(lambda row: convert_row_to_numpy(row,
-                                                                              schema,
-                                                                              feature_cols,
-                                                                              label_cols))
+            schema = data.schema
+            numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                      schema,
+                                                                      feature_cols,
+                                                                      label_cols))
             shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
                                                                       feature_cols,
                                                                       label_cols))
-            data_creator = SparkXShards(shard_rdd)
+            data = SparkXShards(shard_rdd)
 
-        if isinstance(data_creator, SparkXShards):
-            data = data_creator
+        if isinstance(data, SparkXShards):
+            data = data
             if data.num_partitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
 
@@ -308,7 +315,7 @@ class Estimator:
             worker_stats = stats_shards.collect()
 
         else:  # data_creator functions; should return Iter or DataLoader
-            params["data_creator"] = data_creator
+            params["data_creator"] = data
             params_list = [params] * self.num_workers
 
             worker_stats = ray.get([w.validate.remote(**params_list[i])
@@ -317,7 +324,7 @@ class Estimator:
         stats = worker_stats[0].copy()
         return stats
 
-    def predict(self, data_creator, batch_size=None, verbose=1,
+    def predict(self, data, batch_size=None, verbose=1,
                 steps=None, callbacks=None, data_config=None,
                 feature_cols=None):
         """Evaluates the model on the validation data set."""
@@ -331,20 +338,20 @@ class Estimator:
         )
         from zoo.orca.data import SparkXShards
         from pyspark.sql import DataFrame
-        if isinstance(data_creator, DataFrame):
+        if isinstance(data, DataFrame):
             assert feature_cols is not None,\
                 "feature_col must be provided if data_creator is a spark dataframe"
-            schema = data_creator.schema
-            numpy_rdd = data_creator.rdd.map(lambda row: convert_row_to_numpy(row,
-                                                                              schema,
-                                                                              feature_cols,
-                                                                              None))
+            schema = data.schema
+            numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                                      schema,
+                                                                      feature_cols,
+                                                                      None))
             shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
                                                                       feature_cols,
                                                                       None))
-            data_creator = SparkXShards(shard_rdd)
-        if isinstance(data_creator, SparkXShards):
-            ray_xshards = RayXShards.from_spark_xshards(data_creator)
+            data = SparkXShards(shard_rdd)
+        if isinstance(data, SparkXShards):
+            ray_xshards = RayXShards.from_spark_xshards(data)
 
             def transform_func(worker, shards_ref):
                 params["data_creator"] = shards_ref_to_creator(shards_ref)
@@ -387,7 +394,7 @@ class Estimator:
 
         return checkpoint
 
-    def restore(self, checkpoint):
+    def load(self, checkpoint, **kwargs):
         """Restores the model from the provided checkpoint.
 
         Args:

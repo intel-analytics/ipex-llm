@@ -25,6 +25,7 @@ from zoo.orca.data.utils import ray_partition_get_data_label, process_spark_xsha
 from zoo.ray import RayContext
 from zoo.orca.learn.mxnet.mxnet_runner import MXNetRunner
 from zoo.orca.learn.mxnet.utils import find_free_port
+from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 
 
 def shards_ref_to_creator(shards_ref, shuffle=False):
@@ -48,6 +49,19 @@ def shards_ref_to_creator(shards_ref, shuffle=False):
 
 
 class Estimator(object):
+    @staticmethod
+    def from_mxnet(*, config, model_creator, loss_creator=None, eval_metrics_creator=None,
+                   validation_metrics_creator=None, num_workers=None, num_servers=None,
+                   runner_cores=None):
+        return MXNetEstimator(config=config, model_creator=model_creator,
+                              loss_creator=loss_creator,
+                              eval_metrics_creator=eval_metrics_creator,
+                              validation_metrics_creator=validation_metrics_creator,
+                              num_workers=num_workers, num_servers=num_servers,
+                              runner_cores=runner_cores)
+
+
+class MXNetEstimator(OrcaRayEstimator):
     """
     MXNet Estimator provides an automatic setup for synchronous distributed MXNet training.
 
@@ -252,6 +266,21 @@ class Estimator(object):
         for runner in self.runners:
             runner.shutdown.remote()
             runner.__ray_terminate__.remote()
+
+    def predict(self, data, batch_size=32, **kwargs):
+        raise NotImplementedError
+
+    def evaluate(self, data, batch_size=32, num_steps=None, **kwargs):
+        raise NotImplementedError
+
+    def get_model(self):
+        raise NotImplementedError
+
+    def save(self, checkpoint):
+        raise NotImplementedError
+
+    def load(self, checkpoint, **kwargs):
+        raise NotImplementedError
 
 # TODO: add model save and restore
 # TODO: add predict, evaluate
