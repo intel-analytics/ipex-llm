@@ -113,10 +113,10 @@ if __name__ == '__main__':
     config = create_config(optimizer="sgd",
                            optimizer_params={'learning_rate': opt.learning_rate},
                            log_interval=opt.log_interval, seed=42)
-    estimator = Estimator(config, model_creator=get_model,
-                          loss_creator=get_loss, validation_metrics_creator=get_metrics,
-                          num_workers=opt.num_workers, num_servers=opt.num_servers,
-                          eval_metrics_creator=get_metrics)
+    estimator = Estimator.from_mxnet(config=config, model_creator=get_model,
+                                     loss_creator=get_loss, validation_metrics_creator=get_metrics,
+                                     num_workers=opt.num_workers, num_servers=opt.num_servers,
+                                     eval_metrics_creator=get_metrics)
     estimator.fit(data=get_train_data_iter, validation_data=get_test_data_iter,
                   epochs=opt.epochs, batch_size=opt.batch_size)
     estimator.shutdown()

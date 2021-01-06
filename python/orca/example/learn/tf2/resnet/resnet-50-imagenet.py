@@ -392,7 +392,6 @@ if __name__ == "__main__":
     config = {
         "wd": 0.00005,
         "momentum": 0.9,
-        "batch_size": global_batch_size,
         "warmup_epoch": 5,
         "num_worker": args.worker_num,
         "data_dir": args.data_dir,
@@ -400,7 +399,7 @@ if __name__ == "__main__":
         "lr": initial_lr,
     }
 
-    trainer = Estimator(
+    trainer = Estimator.from_keras(
         model_creator=model_creator,
         compile_args_creator=compile_args_creator,
         verbose=True,
@@ -409,8 +408,9 @@ if __name__ == "__main__":
 
     if args.benchmark:
         trainer.fit(
-            data_creator=train_data_creator if not args.use_dummy_data else dummy_data_creator,
+            data=train_data_creator if not args.use_dummy_data else dummy_data_creator,
             epochs=3,
+            batch_size=global_batch_size,
             steps_per_epoch=20,
             callbacks=callbacks,
         )
@@ -420,8 +420,9 @@ if __name__ == "__main__":
             dummy = args.use_dummy_data
 
             results = trainer.fit(
-                data_creator=train_data_creator if not dummy else dummy_data_creator,
+                data=train_data_creator if not dummy else dummy_data_creator,
                 epochs=18,
+                batch_size=global_batch_size,
                 validation_data_creator=val_data_creator if not dummy else dummy_data_creator,
                 steps_per_epoch=_NUM_IMAGES['train'] // global_batch_size,
                 callbacks=callbacks,
