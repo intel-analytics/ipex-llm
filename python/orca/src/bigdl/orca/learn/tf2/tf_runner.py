@@ -320,15 +320,15 @@ class TFRunner:
         self.size = world_size
         self.rank = world_rank
 
-    def step(self, data_creator, epochs=1, verbose=1,
+    def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
              data_config=None):
-        import tensorflow as tf
         """Runs a training epoch and updates the model parameters."""
         config = self.config.copy()
         if data_config is not None:
             config.update(data_config)
+        config['batch_size'] = batch_size
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler\
@@ -371,12 +371,13 @@ class TFRunner:
         self.epoch += epochs
         return [stats]
 
-    def validate(self, data_creator, verbose=1, sample_weight=None,
+    def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
         if data_config is not None:
             config.update(data_config)
+        config["batch_size"] = batch_size
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,

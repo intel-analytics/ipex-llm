@@ -73,10 +73,12 @@ class TestMXNetGluonMultipleInput(TestCase):
     def test_gluon_multiple_input(self):
         config = create_config(log_interval=2, optimizer="adagrad", seed=1128,
                                optimizer_params={'learning_rate': 0.02})
-        estimator = Estimator(config, get_model, get_loss,
-                              eval_metrics_creator=get_metrics,
-                              validation_metrics_creator=get_metrics,
-                              num_workers=4)
+        estimator = Estimator.from_mxnet(config=config,
+                                         model_creator=get_model,
+                                         loss_creator=get_loss,
+                                         eval_metrics_creator=get_metrics,
+                                         validation_metrics_creator=get_metrics,
+                                         num_workers=4)
         estimator.fit(get_train_data_iter, validation_data=get_test_data_iter, epochs=2)
         estimator.shutdown()
 

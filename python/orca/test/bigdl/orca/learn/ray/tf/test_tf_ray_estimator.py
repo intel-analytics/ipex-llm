@@ -172,28 +172,25 @@ class TestTFRayEstimator(TestCase):
         ray_ctx = RayContext.get()
         batch_size = 32
         global_batch_size = batch_size * ray_ctx.num_ray_nodes
-        config = {
-            "batch_size": global_batch_size
-        }
 
         if backend == "horovod":
             trainer = Estimator.from_keras(
                 model_creator=simple_model,
                 compile_args_creator=compile_args,
                 verbose=True,
-                config=config,
+                config=None,
                 backend=backend)
         else:
 
             trainer = Estimator.from_keras(model_creator=model_creator,
                                            verbose=True,
-                                           config=config,
+                                           config=None,
                                            backend=backend,
                                            workers_per_node=2)
 
         # model baseline performance
-        start_stats = trainer.evaluate(create_test_dataset,
-                                       steps=NUM_TEST_SAMPLES // global_batch_size)
+        start_stats = trainer.evaluate(create_test_dataset, batch_size=global_batch_size,
+                                       num_steps=NUM_TEST_SAMPLES // global_batch_size)
         print(start_stats)
 
         def scheduler(epoch):
@@ -204,12 +201,14 @@ class TestTFRayEstimator(TestCase):
 
         scheduler = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
         # train for 2 epochs
-        trainer.fit(create_train_datasets, epochs=2, steps_per_epoch=10, callbacks=[scheduler])
-        trainer.fit(create_train_datasets, epochs=2, steps_per_epoch=10, callbacks=[scheduler])
+        trainer.fit(create_train_datasets, epochs=2, batch_size=global_batch_size,
+                    steps_per_epoch=10, callbacks=[scheduler])
+        trainer.fit(create_train_datasets, epochs=2, batch_size=global_batch_size,
+                    steps_per_epoch=10, callbacks=[scheduler])
 
         # model performance after training (should improve)
-        end_stats = trainer.evaluate(create_test_dataset,
-                                     steps=NUM_TEST_SAMPLES // global_batch_size)
+        end_stats = trainer.evaluate(create_test_dataset, batch_size=global_batch_size,
+                                     num_steps=NUM_TEST_SAMPLES // global_batch_size)
         print(end_stats)
 
         # sanity check that training worked
@@ -237,12 +236,11 @@ class TestTFRayEstimator(TestCase):
         # case will return non-zero.
 
         ray_ctx = RayContext.get()
-        trainer = Estimator(
+        trainer = Estimator.from_keras(
             model_creator=auto_shard_model_creator,
             verbose=True,
-            config={"batch_size": 4},
             backend="tf2", workers_per_node=2)
-        stats = trainer.fit(create_auto_shard_datasets, epochs=1, steps_per_epoch=2)
+        stats = trainer.fit(create_auto_shard_datasets, epochs=1, batch_size=4, steps_per_epoch=2)
         assert stats["train_loss"] == 0.0
 
     def test_auto_shard_horovod(self):
@@ -256,13 +254,12 @@ class TestTFRayEstimator(TestCase):
         # case will return non-zero.
 
         ray_ctx = RayContext.get()
-        trainer = Estimator(
+        trainer = Estimator.from_keras(
             model_creator=create_auto_shard_model,
             compile_args_creator=create_auto_shard_compile_args,
             verbose=True,
-            config={"batch_size": 4},
             backend="horovod", workers_per_node=2)
-        stats = trainer.fit(create_auto_shard_datasets, epochs=1, steps_per_epoch=2)
+        stats = trainer.fit(create_auto_shard_datasets, epochs=1, batch_size=4, steps_per_epoch=2)
         assert stats["train_loss"] == 0.0
 
     # this needs horovod >= 0.19.2
@@ -280,10 +277,9 @@ class TestTFRayEstimator(TestCase):
             workers_per_node = 4
             global_batch_size = batch_size * workers_per_node
             config = {
-                "batch_size": global_batch_size,
                 "lr": 0.8
             }
-            trainer = Estimator(
+            trainer = Estimator.from_keras(
                 model_creator=simple_model,
                 compile_args_creator=compile_args,
                 verbose=True,
@@ -304,7 +300,8 @@ class TestTFRayEstimator(TestCase):
                 LRChecker()
             ]
             for i in range(30):
-                trainer.fit(create_train_datasets, epochs=1, callbacks=callbacks)
+                trainer.fit(create_train_datasets, epochs=1, batch_size=global_batch_size,
+                            callbacks=callbacks)
         else:
             # skip tests in horovod lower version
             pass
@@ -315,17 +312,16 @@ class TestTFRayEstimator(TestCase):
                                               "y": np.random.randint(0, 1, size=(100))})
 
         config = {
-            "batch_size": 4,
             "lr": 0.8
         }
-        trainer = Estimator(
+        trainer = Estimator.from_keras(
             model_creator=model_creator,
             verbose=True,
             config=config,
             workers_per_node=2)
 
-        trainer.fit(train_data_shard, epochs=1, steps_per_epoch=25)
-        trainer.evaluate(train_data_shard, steps=25)
+        trainer.fit(train_data_shard, epochs=1, batch_size=4, steps_per_epoch=25)
+        trainer.evaluate(train_data_shard, batch_size=4, num_steps=25)
 
     def test_dataframe(self):
 
@@ -338,19 +334,19 @@ class TestTFRayEstimator(TestCase):
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
 
         config = {
-            "batch_size": 4,
             "lr": 0.8
         }
-        trainer = Estimator(
+        trainer = Estimator.from_keras(
             model_creator=model_creator,
             verbose=True,
             config=config,
             workers_per_node=2)
 
-        trainer.fit(df, epochs=1, steps_per_epoch=25,
+        trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
                     label_cols=["label"])
-        trainer.evaluate(df, steps=25, feature_cols=["feature"], label_cols=["label"])
+        trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                         label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_sparkxshards_with_inbalanced_data(self):
@@ -369,61 +365,16 @@ class TestTFRayEstimator(TestCase):
         train_data_shard = train_data_shard.transform_shard(random_pad)
 
         config = {
-            "batch_size": 4,
             "lr": 0.8
         }
-        trainer = Estimator(
+        trainer = Estimator.from_keras(
             model_creator=model_creator,
             verbose=True,
             config=config,
             workers_per_node=2)
 
-        trainer.fit(train_data_shard, epochs=1, steps_per_epoch=25)
-        trainer.evaluate(train_data_shard, steps=25)
-
-    def test_require_batch_size(self):
-        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
-                                              "y": np.random.randint(0, 1, size=(100,))})
-        config = {
-            "lr": 0.8
-        }
-        trainer = Estimator(
-            model_creator=model_creator,
-            verbose=True,
-            config=config,
-            workers_per_node=2)
-        with pytest.raises(ray.exceptions.RayTaskError,
-                           match=r".*batch_size must be set in config*."):
-            trainer.fit(train_data_shard, epochs=1, steps_per_epoch=25)
-
-    def test_changing_config_during_fit(self):
-        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
-                                              "y": np.random.randint(0, 1, size=(100,))})
-        config = {
-            "lr": 0.8
-        }
-        trainer = Estimator(
-            model_creator=model_creator,
-            verbose=True,
-            config=config,
-            workers_per_node=2)
-
-        trainer.fit(train_data_shard, epochs=1, steps_per_epoch=25,  data_config={"batch_size": 8})
-
-    def test_changing_config_during_evaluate(self):
-        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
-                                              "y": np.random.randint(0, 1, size=(100,))})
-
-        config = {
-            "lr": 0.8
-        }
-        trainer = Estimator(
-            model_creator=model_creator,
-            verbose=True,
-            config=config,
-            workers_per_node=2)
-
-        trainer.evaluate(train_data_shard, steps=12, data_config={"batch_size": 8})
+        trainer.fit(train_data_shard, epochs=1, batch_size=4, steps_per_epoch=25)
+        trainer.evaluate(train_data_shard, batch_size=4, num_steps=25)
 
     def test_predict_xshards(self):
         train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
@@ -439,7 +390,7 @@ class TestTFRayEstimator(TestCase):
 
         config = {
         }
-        trainer = Estimator(
+        trainer = Estimator.from_keras(
             model_creator=identity_model_creator,
             verbose=True,
             config=config,
@@ -453,7 +404,7 @@ class TestTFRayEstimator(TestCase):
 
         assert np.allclose(expected, result)
 
-    def test_save_and_restore(self):
+    def test_save_and_load(self):
         def model_creator(config):
             import tensorflow as tf
             model = tf.keras.Sequential([
@@ -485,14 +436,15 @@ class TestTFRayEstimator(TestCase):
             "batch_size": batch_size
         }
         try:
-            est = Estimator.from_keras(model_creator, config=config, workers_per_node=2)
+            est = Estimator.from_keras(model_creator=model_creator,
+                                       config=config, workers_per_node=2)
 
             history = est.fit(train_data_creator,
                               epochs=1,
                               steps_per_epoch=5)
             print("start saving")
             est.save("/tmp/cifar10_keras.ckpt")
-            est.restore("/tmp/cifar10_keras.ckpt")
+            est.load("/tmp/cifar10_keras.ckpt")
             print("save success")
         finally:
             os.remove("/tmp/cifar10_keras.ckpt")
