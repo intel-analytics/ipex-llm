@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from zoo.pipeline.estimator.estimator import Estimator as SparkEstimator
+from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from zoo.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
@@ -25,27 +26,6 @@ from torch.utils.data import DataLoader
 
 
 class Estimator(object):
-    def fit(self, data, epochs, **kwargs):
-        pass
-
-    def predict(self, data, **kwargs):
-        pass
-
-    def evaluate(self, data, **kwargs):
-        pass
-
-    def get_model(self):
-        pass
-
-    def save(self, checkpoint):
-        pass
-
-    def load(self, checkpoint):
-        pass
-
-    def shutdown(self, force=False):
-        pass
-
     @staticmethod
     def from_torch(*,
                    model,
@@ -61,17 +41,17 @@ class Estimator(object):
                    model_dir=None,
                    backend="bigdl"):
         if backend in {"horovod", "torch_distributed"}:
-            return PyTorchRayEstimatorWrapper(model_creator=model,
-                                              optimizer_creator=optimizer,
-                                              loss_creator=loss,
-                                              scheduler_creator=scheduler_creator,
-                                              training_operator_cls=training_operator_cls,
-                                              initialization_hook=initialization_hook,
-                                              config=config,
-                                              scheduler_step_freq=scheduler_step_freq,
-                                              use_tqdm=use_tqdm,
-                                              workers_per_node=workers_per_node,
-                                              backend=backend)
+            return PyTorchRayEstimator(model_creator=model,
+                                       optimizer_creator=optimizer,
+                                       loss_creator=loss,
+                                       scheduler_creator=scheduler_creator,
+                                       training_operator_cls=training_operator_cls,
+                                       initialization_hook=initialization_hook,
+                                       config=config,
+                                       scheduler_step_freq=scheduler_step_freq,
+                                       use_tqdm=use_tqdm,
+                                       workers_per_node=workers_per_node,
+                                       backend=backend)
         elif backend == "bigdl":
             return PyTorchSparkEstimator(model=model,
                                          loss=loss,
@@ -83,7 +63,7 @@ class Estimator(object):
                              f" for now, got backend: {backend}")
 
 
-class PyTorchRayEstimatorWrapper(Estimator):
+class PyTorchRayEstimator(OrcaRayEstimator):
     def __init__(self,
                  *,
                  model_creator,
@@ -141,8 +121,8 @@ class PyTorchRayEstimatorWrapper(Estimator):
         return self.estimator.train(data=data, epochs=epochs, batch_size=batch_size,
                                     profile=profile, reduce_results=reduce_results, info=info)
 
-    def predict(self, data, **kwargs):
-        pass
+    def predict(self, data, batch_size=32, **kwargs):
+        raise NotImplementedError
 
     def evaluate(self, data, batch_size=32, num_steps=None, profile=False, info=None):
         """

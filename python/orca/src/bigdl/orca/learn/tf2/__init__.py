@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .tf_ray_estimator import Estimator
+from .estimator import TensorFlow2Estimator, Estimator
