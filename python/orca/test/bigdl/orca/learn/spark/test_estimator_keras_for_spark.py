@@ -660,6 +660,27 @@ class TestEstimatorForKeras(TestCase):
         assert len(predictions) == 16
         OrcaContext.train_data_store = "DRAM"
 
+    def test_estimator_keras_get_model(self):
+        tf.reset_default_graph()
+
+        model = self.create_model()
+        sc = init_nncontext()
+        sqlcontext = SQLContext(sc)
+        file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
+        df = sqlcontext.read.csv(file_path, header=True, inferSchema=True)
+        from pyspark.sql.functions import array
+        df = df.withColumn('user', array('user')) \
+            .withColumn('item', array('item'))
+
+        est = Estimator.from_keras(keras_model=model)
+        est.fit(data=df,
+                batch_size=4,
+                epochs=4,
+                feature_cols=['user', 'item'],
+                labels_cols=['label'],
+                validation_data=df)
+        assert est.get_model() is model
+
 
 if __name__ == "__main__":
     import pytest
