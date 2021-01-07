@@ -772,7 +772,7 @@ class KerasEstimator(Estimator):
         self.model.save_model(path, overwrite=overwrite)
 
     def get_model(self):
-        raise NotImplementedError
+        return self.model.model
 
     def save(self, model_path, overwrite=True):
         self.save_keras_model(model_path, overwrite=True)
