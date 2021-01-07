@@ -335,10 +335,11 @@ def init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
 
     :return: An instance of SparkContext.
     """
+    has_activate_sc = SparkContext._active_spark_context is not None
     # The following code copied and modified from
     # https://github.com/Valassis-Digital-Media/spylon-kernel/blob/master/
     # spylon_kernel/scala_interpreter.py
-    if ZooContext.log_output:
+    if ZooContext.log_output and not has_activate_sc:
         import subprocess
         import pyspark.java_gateway
         spark_jvm_proc = None
@@ -367,7 +368,7 @@ def init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
         sc = getOrCreateSparkContext(conf=conf)
     sc.setLogLevel(spark_log_level)
 
-    if ZooContext.log_output:
+    if ZooContext.log_output and not has_activate_sc:
         if spark_jvm_proc.stdout is not None:
             stdout_reader = threading.Thread(target=_read_stream,
                                              daemon=True,
