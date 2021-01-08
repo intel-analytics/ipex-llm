@@ -270,7 +270,7 @@ class TestEstimatorForKeras(TestCase):
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
         assert 'prediction' in prediction_df.columns
         predictions = prediction_df.collect()
-        assert len(predictions) == 16
+        assert len(predictions) == 48
 
     def test_estimator_keras_dataframe_no_fit(self):
         tf.reset_default_graph()
@@ -292,7 +292,7 @@ class TestEstimatorForKeras(TestCase):
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
         assert 'prediction' in prediction_df.columns
         predictions = prediction_df.collect()
-        assert len(predictions) == 16
+        assert len(predictions) == 48
 
     def test_estimator_keras_tf_dataset(self):
         tf.reset_default_graph()
@@ -657,7 +657,7 @@ class TestEstimatorForKeras(TestCase):
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
         assert 'prediction' in prediction_df.columns
         predictions = prediction_df.collect()
-        assert len(predictions) == 16
+        assert len(predictions) == 48
         OrcaContext.train_data_store = "DRAM"
 
     def test_estimator_keras_get_model(self):
