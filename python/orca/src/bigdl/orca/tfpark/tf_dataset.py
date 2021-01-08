@@ -1269,8 +1269,7 @@ class DataFrameDataset(TFNdarrayDataset):
         if labels_cols is None:
             labels_cols = []
 
-        selected_df = df.select(*(feature_cols + labels_cols))
-        schema = selected_df.schema
+        schema = df.schema
         feature_meta = []
         for feature_col in feature_cols:
             field = schema[feature_col]
@@ -1298,10 +1297,10 @@ class DataFrameDataset(TFNdarrayDataset):
         else:
             tensor_structure = (feature_meta,)
 
-        rdd = selected_df.rdd.map(lambda row: convert_row_to_numpy(row,
-                                                                   schema,
-                                                                   feature_cols,
-                                                                   labels_cols))
+        rdd = df.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                          schema,
+                                                          feature_cols,
+                                                          labels_cols))
         if validation_df is not None:
             val_rdd = validation_df.rdd.map(lambda row: convert_row_to_numpy(row,
                                                                              schema,
