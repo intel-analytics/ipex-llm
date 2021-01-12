@@ -78,7 +78,7 @@ def main(max_epoch):
     stats = est.fit(train_data_creator,
                     epochs=max_epoch,
                     steps_per_epoch=60000 // batch_size,
-                    validation_data_creator=val_data_creator,
+                    validation_data=val_data_creator,
                     validation_steps=10000 // batch_size)
     print(stats)
     est.save("/tmp/mnist_keras.ckpt")

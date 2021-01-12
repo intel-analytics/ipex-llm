@@ -423,7 +423,7 @@ if __name__ == "__main__":
                 data=train_data_creator if not dummy else dummy_data_creator,
                 epochs=18,
                 batch_size=global_batch_size,
-                validation_data_creator=val_data_creator if not dummy else dummy_data_creator,
+                validation_data=val_data_creator if not dummy else dummy_data_creator,
                 steps_per_epoch=_NUM_IMAGES['train'] // global_batch_size,
                 callbacks=callbacks,
                 validation_steps=_NUM_IMAGES['validation'] // global_batch_size,
