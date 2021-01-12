@@ -534,8 +534,8 @@ class TensorFlowEstimator(Estimator):
          label numpy arrays}
         If data is tf.data.Dataset, each element is a tuple of input tensors.
         :param batch_size: batch size per thread.
-        :param feature_cols: feature_cols: feature column names if train data is Spark DataFrame.
-        :param labels_cols: label column names if train data is Spark DataFrame.
+        :param feature_cols: feature_cols: feature column names if data is Spark DataFrame.
+        :param labels_cols: label column names if data is Spark DataFrame.
         :param hard_code_batch_size: whether to hard code batch size for evaluation.
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """

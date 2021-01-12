@@ -344,9 +344,9 @@ class TestTFRayEstimator(TestCase):
 
         trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
-                    label_cols=["label"])
+                    labels_cols=["label"])
         trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                         label_cols=["label"])
+                         labels_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_sparkxshards_with_inbalanced_data(self):
