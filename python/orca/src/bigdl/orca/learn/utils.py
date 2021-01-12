@@ -15,6 +15,9 @@
 #
 
 from zoo.common.utils import get_file_list
+from zoo.orca.data import SparkXShards
+from zoo.util.utils import convert_row_to_numpy
+import numpy as np
 
 
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
@@ -79,3 +82,76 @@ def convert_predict_to_xshard(prediction_rdd):
             return [{'prediction': np.array(predictions)}]
 
     return SparkXShards(prediction_rdd.mapPartitions(transform_predict))
+
+
+def arrays2dict(iter, feature_cols, labels_cols):
+
+    feature_lists = [[] for col in feature_cols]
+    if labels_cols is not None:
+        label_lists = [[] for col in labels_cols]
+    else:
+        label_lists = None
+
+    for row in iter:
+        # feature
+        if not isinstance(row[0], list):
+            features = [row[0]]
+        else:
+            features = row[0]
+
+        for i, arr in enumerate(features):
+            feature_lists[i].append(arr)
+
+        # label
+        if labels_cols is not None:
+            if not isinstance(row[1], list):
+                labels = [row[1]]
+            else:
+                labels = row[1]
+
+            for i, arr in enumerate(labels):
+                label_lists[i].append(arr)
+
+    feature_arrs = [np.stack(l) for l in feature_lists]
+    if len(feature_arrs) == 1:
+        feature_arrs = feature_arrs[0]
+    if label_lists is not None:
+        label_arrs = [np.stack(l) for l in label_lists]
+        if len(label_arrs) == 1:
+            label_arrs = label_arrs[0]
+        return [{"x": feature_arrs, "y": label_arrs}]
+
+    return [{"x": feature_arrs}]
+
+
+def dataframe_to_xshards(data, feature_cols, labels_cols=None):
+    schema = data.schema
+    numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                              schema,
+                                                              feature_cols,
+                                                              labels_cols))
+    shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
+                                                              feature_cols,
+                                                              labels_cols))
+    return SparkXShards(shard_rdd)
+
+
+def maybe_dataframe_to_xshards(data, validation_data, feature_cols, labels_cols, mode="fit"):
+    from pyspark.sql import DataFrame
+    if isinstance(data, DataFrame):
+        valid_mode = {"fit", "evaluate", "predict"}
+        assert mode in valid_mode, f"invalid mode {mode} " \
+                                   f"mode should be one of {valid_mode}"
+        assert validation_data is None or isinstance(validation_data, DataFrame), \
+            "validation data must be a spark DataFrame when data is a DataFrame"
+        assert feature_cols is not None, \
+            "feature_col must be provided if data is a spark dataframe"
+
+        if mode != "predict":
+            assert labels_cols is not None, \
+                "labels_cols must be provided if data is a spark dataframe"
+
+        data = dataframe_to_xshards(data, feature_cols, labels_cols)
+        if validation_data is not None:
+            validation_data = dataframe_to_xshards(validation_data, feature_cols, labels_cols)
+    return data, validation_data

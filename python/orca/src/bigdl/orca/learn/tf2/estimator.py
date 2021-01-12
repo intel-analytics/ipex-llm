@@ -21,12 +21,10 @@ import numpy as np
 import ray
 
 from zoo.orca.data.shard import RayXShards
-from zoo.orca.data.utils import ray_partition_get_data_label
-
 from zoo.orca.learn.tf2.tf_runner import TFRunner
 from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
+from zoo.orca.learn.utils import maybe_dataframe_to_xshards
 from zoo.ray import RayContext
-from zoo.tfpark.tf_dataset import convert_row_to_numpy
 
 logger = logging.getLogger(__name__)
 
@@ -71,42 +69,6 @@ def process_spark_xshards(spark_xshards, num_workers):
         .mapPartitions(lambda iterator: [sum(iterator)]).max()
     ray_xshards = RayXShards.from_spark_xshards(data)
     return max_length, ray_xshards
-
-
-def arrays2dict(iter, feature_cols, label_cols):
-
-    feature_lists = [[] for col in feature_cols]
-    if label_cols is not None:
-        label_lists = [[] for col in label_cols]
-    else:
-        label_lists = None
-
-    for row in iter:
-        # feature
-        if not isinstance(row[0], list):
-            features = [row[0]]
-        else:
-            features = row[0]
-
-        for i, arr in enumerate(features):
-            feature_lists[i].append(arr)
-
-        # label
-        if label_cols is not None:
-            if not isinstance(row[1], list):
-                labels = [row[1]]
-            else:
-                labels = row[1]
-
-            for i, arr in enumerate(labels):
-                label_lists[i].append(arr)
-
-    feature_arrs = [np.stack(l) for l in feature_lists]
-    if label_lists is not None:
-        label_arrs = [np.stack(l) for l in label_lists]
-        return [{"x": feature_arrs, "y": label_arrs}]
-
-    return [{"x": feature_arrs}]
 
 
 class TensorFlow2Estimator(OrcaRayEstimator):
@@ -196,10 +158,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         self.num_workers = len(self.remote_workers)
 
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
-            callbacks=None, validation_data_creator=None, class_weight=None,
+            callbacks=None, validation_data=None, class_weight=None,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            label_cols=None):
+            labels_cols=None):
         """Runs a training epoch."""
         params = dict(
             epochs=epochs,
@@ -214,26 +176,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         )
 
         from zoo.orca.data import SparkXShards
-        from pyspark.sql import DataFrame
-        if isinstance(data, DataFrame):
-            assert feature_cols is not None,\
-                "feature_col must be provided if data_creator is a spark dataframe"
-            assert label_cols is not None,\
-                "label_cols must be provided if data_creator is a spark dataframe"
-            schema = data.schema
-            numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
-                                                                      schema,
-                                                                      feature_cols,
-                                                                      label_cols))
-            shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
-                                                                      feature_cols,
-                                                                      label_cols))
-            data = SparkXShards(shard_rdd)
+        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
+                                                           feature_cols, labels_cols,
+                                                           mode="fit")
 
         if isinstance(data, SparkXShards):
             max_length, ray_xshards = process_spark_xshards(data, self.num_workers)
 
-            if validation_data_creator is None:
+            if validation_data is None:
                 def transform_func(worker, shards_ref):
                     params["data_creator"] = shards_ref_to_creator(shards_ref)
                     return worker.step.remote(**params)
@@ -242,7 +192,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                         transform_func,
                                                                         gang_scheduling=True)
             else:
-                val_max_length, val_ray_xshards = process_spark_xshards(validation_data_creator,
+                val_max_length, val_ray_xshards = process_spark_xshards(validation_data,
                                                                         self.num_workers)
 
                 def zip_func(worker, this_shards_ref, that_shards_ref):
@@ -258,7 +208,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = stats_shards.collect()
         else:
             params["data_creator"] = data
-            params["validation_data_creator"] = validation_data_creator
+            params["validation_data_creator"] = validation_data
             params_list = [params] * self.num_workers
 
             worker_stats = ray.get([self.remote_workers[i].step.remote(**params_list[i])
@@ -269,7 +219,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
-                 feature_cols=None, label_cols=None):
+                 feature_cols=None, labels_cols=None):
         """Evaluates the model on the validation data set."""
         logger.info("Starting validation step.")
         params = dict(
@@ -281,22 +231,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             data_config=data_config,
         )
         from zoo.orca.data import SparkXShards
-        from pyspark.sql import DataFrame
 
-        if isinstance(data, DataFrame):
-            assert feature_cols is not None,\
-                "feature_col must be provided if data_creator is a spark dataframe"
-            assert label_cols is not None,\
-                "label_cols must be provided if data_creator is a spark dataframe"
-            schema = data.schema
-            numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
-                                                                      schema,
-                                                                      feature_cols,
-                                                                      label_cols))
-            shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
-                                                                      feature_cols,
-                                                                      label_cols))
-            data = SparkXShards(shard_rdd)
+        data, _ = maybe_dataframe_to_xshards(data,
+                                             validation_data=None,
+                                             feature_cols=feature_cols,
+                                             labels_cols=labels_cols,
+                                             mode="evaluate")
 
         if isinstance(data, SparkXShards):
             data = data
@@ -337,19 +277,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             data_config=data_config,
         )
         from zoo.orca.data import SparkXShards
-        from pyspark.sql import DataFrame
-        if isinstance(data, DataFrame):
-            assert feature_cols is not None,\
-                "feature_col must be provided if data_creator is a spark dataframe"
-            schema = data.schema
-            numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
-                                                                      schema,
-                                                                      feature_cols,
-                                                                      None))
-            shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
-                                                                      feature_cols,
-                                                                      None))
-            data = SparkXShards(shard_rdd)
+        data, _ = maybe_dataframe_to_xshards(data,
+                                             validation_data=None,
+                                             feature_cols=feature_cols,
+                                             labels_cols=None,
+                                             mode="predict")
+
         if isinstance(data, SparkXShards):
             ray_xshards = RayXShards.from_spark_xshards(data)
 
@@ -357,13 +290,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 params["data_creator"] = shards_ref_to_creator(shards_ref)
                 return worker.predict.remote(**params)
 
-            stats_shards = ray_xshards.transform_shards_with_actors(self.remote_workers,
-                                                                    transform_func,
-                                                                    gang_scheduling=False)
-            spark_xshards = stats_shards.to_spark_xshards()
+            pred_shards = ray_xshards.transform_shards_with_actors(self.remote_workers,
+                                                                   transform_func,
+                                                                   gang_scheduling=False)
+            spark_xshards = pred_shards.to_spark_xshards()
 
         else:
-            raise ValueError("Only xshards is supported for predict")
+            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
 
         return spark_xshards
 

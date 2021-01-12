@@ -21,8 +21,10 @@ import numbers
 import torch
 import numpy as np
 
+from zoo.orca.data.shard import RayXShards
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.pytorch.torch_runner import TorchRunner
+from zoo.orca.learn.utils import maybe_dataframe_to_xshards
 from zoo.ray import RayContext
 
 import ray
@@ -55,17 +57,6 @@ def shards_ref_to_creator(shards_ref):
         from zoo.orca.data.utils import ray_partition_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
 
-        class NDArrayDataset(Dataset):
-            def __init__(self, x, y):
-                self.x = x  # features
-                self.y = y  # labels
-
-            def __len__(self):
-                return get_size(self.y)
-
-            def __getitem__(self, i):
-                return index_data(self.x, i), index_data(self.y, i)
-
         assert "batch_size" in config, "batch_size must be set in config"
         params = {"batch_size": config["batch_size"], "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -77,7 +68,7 @@ def shards_ref_to_creator(shards_ref):
                                                    allow_tuple=False,
                                                    allow_list=False)
         print("Data size on worker: ", len(label))
-        dataset = NDArrayDataset(data, label)
+        dataset = torch.utils.data.TensorDataset(torch.from_numpy(data), torch.from_numpy(label))
         data_loader = DataLoader(dataset, **params)
         return data_loader
 
@@ -182,12 +173,21 @@ class PyTorchRayEstimator:
               batch_size=32,
               profile=False,
               reduce_results=True,
-              info=None):
+              info=None,
+              feature_cols=None,
+              labels_cols=None):
         """
         See the documentation in
         'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.fit'.
         """
         from zoo.orca.data import SparkXShards
+
+        data, _ = maybe_dataframe_to_xshards(data,
+                                             validation_data=None,
+                                             feature_cols=feature_cols,
+                                             labels_cols=labels_cols,
+                                             mode="fit")
+
         if isinstance(data, SparkXShards):
             from zoo.orca.data.utils import process_spark_xshards
             ray_xshards = process_spark_xshards(data, self.num_workers)
@@ -249,12 +249,24 @@ class PyTorchRayEstimator:
         else:
             return success, None
 
-    def validate(self, data, batch_size=32, num_steps=None, profile=False, info=None):
+    def validate(self,
+                 data,
+                 batch_size=32,
+                 num_steps=None,
+                 profile=False,
+                 info=None,
+                 feature_cols=None,
+                 labels_cols=None):
         """
         See the documentation in
         'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.evaluate'.
         """
         from zoo.orca.data import SparkXShards
+        data, _ = maybe_dataframe_to_xshards(data,
+                                             validation_data=None,
+                                             feature_cols=feature_cols,
+                                             labels_cols=labels_cols,
+                                             mode="evaluate")
         if isinstance(data, SparkXShards):
             from zoo.orca.data.utils import process_spark_xshards
             ray_xshards = process_spark_xshards(data, self.num_workers)
@@ -279,6 +291,34 @@ class PyTorchRayEstimator:
 
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
         return self._process_stats(worker_stats)
+
+    def predict(self,
+                data,
+                batch_size=32,
+                feature_cols=None,
+                profile=False):
+        from zoo.orca.data import SparkXShards
+        data, _ = maybe_dataframe_to_xshards(data,
+                                             validation_data=None,
+                                             feature_cols=feature_cols,
+                                             labels_cols=None,
+                                             mode="predict")
+        if isinstance(data, SparkXShards):
+            ray_xshards = RayXShards.from_spark_xshards(data)
+
+            def transform_func(worker, shards_ref):
+                data_creator = lambda config: shards_ref
+                return worker.predict.remote(
+                    data_creator, batch_size, profile)
+
+            pred_shards = ray_xshards.transform_shards_with_actors(self.remote_workers,
+                                                                   transform_func,
+                                                                   gang_scheduling=False)
+            spark_xshards = pred_shards.to_spark_xshards()
+        else:
+            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+
+        return spark_xshards
 
     def get_model(self):
         """Returns the learned model(s)."""
