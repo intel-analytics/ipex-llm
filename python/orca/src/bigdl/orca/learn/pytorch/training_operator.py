@@ -33,6 +33,7 @@
 
 import collections
 import torch
+import numpy as np
 
 from zoo.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
                                           NUM_SAMPLES)
@@ -81,8 +82,6 @@ class TrainingOperator:
                  world_rank,
                  criterion=None,
                  schedulers=None,
-                 device_ids=None,
-                 use_gpu=False,
                  use_fp16=False,
                  use_tqdm=False):
         # You are not expected to override this method.
@@ -106,9 +105,6 @@ class TrainingOperator:
                     type(schedulers)))
         self._config = config
         self._use_fp16 = use_fp16
-        self._device_ids = device_ids
-        self._use_gpu = use_gpu and torch.cuda.is_available()
-        self._device = torch.device("cuda" if self._use_gpu else "cpu")
         if tqdm is None and use_tqdm:
             raise ValueError("tqdm must be installed to use tqdm in training.")
         self._use_tqdm = use_tqdm
@@ -258,12 +254,6 @@ class TrainingOperator:
         # If features is already a tuple, we don't give it an extra list dimension.
         if len(features) == 1 and isinstance(features[0], tuple):
             features = features[0]
-        # Create non_blocking tensors for distributed training
-        if self.use_gpu:
-            features = [
-                feature.cuda(non_blocking=True) for feature in features
-            ]
-            target = target.cuda(non_blocking=True)
 
         # Compute output.
         with self.timers.record("fwd"):
@@ -325,6 +315,32 @@ class TrainingOperator:
 
         return metric_meters.summary()
 
+    def predict(self, pred_iterator):
+        # switch to evaluate mode
+        self.model.eval()
+        result = []
+        with torch.no_grad():
+            for batch in pred_iterator:
+                result.append(self.predict_batch(batch))
+
+        return np.concatenate(result, axis=0)
+
+    def predict_batch(self, batch):
+        # unpack features into list to support multiple inputs model
+
+        # compute output
+        with self.timers.record("pred_fwd"):
+            output = self.model(*batch)
+
+            if len(output.size()) > 1:
+                # In case there is extra trailing dimensions.
+                for i in reversed(range(1, len(output.size()))):
+                    output = torch.squeeze(output, i)
+
+        # todo support multi-output model
+        np_output = output.detach().numpy()
+        return np_output
+
     def validate_batch(self, batch, batch_info):
         """Calculates the loss and accuracy over a given batch.
 
@@ -349,12 +365,6 @@ class TrainingOperator:
         """
         # unpack features into list to support multiple inputs model
         *features, target = batch
-
-        if self.use_gpu:
-            features = [
-                feature.cuda(non_blocking=True) for feature in features
-            ]
-            target = target.cuda(non_blocking=True)
 
         # compute output
         with self.timers.record("eval_fwd"):
@@ -410,11 +420,6 @@ class TrainingOperator:
         pass
 
     @property
-    def device(self):
-        """torch.device: The appropriate torch device, at your convenience."""
-        return self._device
-
-    @property
     def config(self):
         """dict: Provided into TorchTrainer."""
         return self._config
@@ -461,11 +466,6 @@ class TrainingOperator:
         return self._schedulers
 
     @property
-    def use_gpu(self):
-        """Returns True if cuda is available and use_gpu is True."""
-        return self._use_gpu
-
-    @property
     def use_fp16(self):
         """bool: Whether the model and optimizer have been FP16 enabled."""
         return self._use_fp16
@@ -474,11 +474,3 @@ class TrainingOperator:
     def use_tqdm(self):
         """bool: Whether tqdm progress bars are enabled."""
         return self._use_tqdm
-
-    @property
-    def device_ids(self):
-        """List[int]: Device IDs for the model.
-
-        This is useful for using batch norm with DistributedDataParallel.
-        """
-        return self._device_ids

@@ -90,7 +90,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                              backend=backend,
                                              workers_per_node=workers_per_node)
 
-    def fit(self, data, epochs=1, batch_size=32, profile=False, reduce_results=True, info=None):
+    def fit(self, data, epochs=1, batch_size=32, profile=False, reduce_results=True, info=None,
+            feature_cols=None, labels_cols=None):
         """
         Trains a PyTorch model given training data for several epochs.
 
@@ -111,6 +112,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
         train_epoch and train_batch.
+        :param feature_cols: feature column names if data is Spark DataFrame.
+        :param labels_cols: label column names if data is Spark DataFrame.
 
         :return A list of dictionary of metrics for every training epoch. If reduce_results is
         False, this will return a nested list of metric dictionaries whose length will be equal
@@ -119,12 +122,27 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         creating the Estimator.
         """
         return self.estimator.train(data=data, epochs=epochs, batch_size=batch_size,
-                                    profile=profile, reduce_results=reduce_results, info=info)
+                                    profile=profile, reduce_results=reduce_results,
+                                    info=info, feature_cols=feature_cols,
+                                    labels_cols=labels_cols)
 
-    def predict(self, data, batch_size=32, **kwargs):
-        raise NotImplementedError
+    def predict(self, data, batch_size=32, feature_cols=None, profile=False):
+        """
+        Using this PyTorch model to make predictions on the data.
 
-    def evaluate(self, data, batch_size=32, num_steps=None, profile=False, info=None):
+        :param data: An instance of SparkXShards or a Spark DataFrame
+        :param batch_size: The number of samples per batch for each worker. Default is 32.
+        :param profile: Boolean. Whether to return time stats for the training procedure.
+        Default is False.
+        :param feature_cols: feature column names if data is a Spark DataFrame.
+        :return A SparkXShards that contains the predictions with key "prediction" in each shard
+        """
+        return self.estimator.predict(data, batch_size=batch_size,
+                                      feature_cols=feature_cols,
+                                      profile=profile)
+
+    def evaluate(self, data, batch_size=32, num_steps=None, profile=False, info=None,
+                 feature_cols=None, labels_cols=None):
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -144,13 +162,16 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Default is False.
         :param info: An optional dictionary that can be passed to the TrainingOperator
         for validate.
+        :param feature_cols: feature column names if train data is Spark DataFrame.
+        :param labels_cols: label column names if train data is Spark DataFrame.
 
         :return A dictionary of metrics for the given data, including validation accuracy and loss.
         You can also provide custom metrics by passing in a custom training_operator_cls when
         creating the Estimator.
         """
         return self.estimator.validate(data=data, batch_size=batch_size, num_steps=num_steps,
-                                       profile=profile, info=info)
+                                       profile=profile, info=info, feature_cols=feature_cols,
+                                       labels_cols=labels_cols)
 
     def get_model(self):
         """Returns the learned model(s)."""
