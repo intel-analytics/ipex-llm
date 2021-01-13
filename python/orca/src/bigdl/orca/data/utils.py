@@ -17,6 +17,7 @@ import os
 import numpy as np
 
 from zoo.common import get_file_list
+from zoo.util.utils import convert_row_to_numpy
 
 
 def list_s3_file(file_path, env):
@@ -190,7 +191,7 @@ def ray_partition_get_data_label(partition_data,
 
 
 # todo: this might be very slow
-def to_sample(data):
+def xshard_to_sample(data):
     from bigdl.util.common import Sample
     data = check_type_and_convert(data, allow_list=True, allow_tuple=False)
     features = data["x"]
@@ -208,6 +209,17 @@ def to_sample(data):
         if len(ls) == 1:
             ls = ls[0]
         yield Sample.from_ndarray(np.array(fs), np.array(ls))
+
+
+def row_to_sample(row, schema, feature_cols, label_cols):
+    from bigdl.util.common import Sample
+    if label_cols:
+        feature, label = convert_row_to_numpy(row, schema, feature_cols, label_cols)
+        sample = Sample.from_ndarray(feature, label)
+    else:
+        feature, label = convert_row_to_numpy(row, schema, feature_cols, label_cols)
+        sample = Sample.from_ndarray(feature, np.array([0.0]))
+    return sample
 
 
 def read_pd_hdfs_file_list(iterator, file_type, **kwargs):
