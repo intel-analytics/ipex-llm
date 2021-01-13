@@ -161,7 +161,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             callbacks=None, validation_data=None, class_weight=None,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            labels_cols=None):
+            label_cols=None):
         """Runs a training epoch."""
         params = dict(
             epochs=epochs,
@@ -177,7 +177,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         from zoo.orca.data import SparkXShards
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
-                                                           feature_cols, labels_cols,
+                                                           feature_cols, label_cols,
                                                            mode="fit")
 
         if isinstance(data, SparkXShards):
@@ -219,7 +219,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
-                 feature_cols=None, labels_cols=None):
+                 feature_cols=None, label_cols=None):
         """Evaluates the model on the validation data set."""
         logger.info("Starting validation step.")
         params = dict(
@@ -235,7 +235,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
-                                             labels_cols=labels_cols,
+                                             label_cols=label_cols,
                                              mode="evaluate")
 
         if isinstance(data, SparkXShards):
@@ -280,7 +280,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
-                                             labels_cols=None,
+                                             label_cols=None,
                                              mode="predict")
 
         if isinstance(data, SparkXShards):

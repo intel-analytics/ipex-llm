@@ -349,11 +349,11 @@ class TestEstimatorForGraph(TestCase):
                 batch_size=8,
                 epochs=10,
                 feature_cols=['user', 'item'],
-                labels_cols=['label'],
+                label_cols=['label'],
                 validation_data=df)
 
         result = est.evaluate(df, batch_size=4, feature_cols=['user', 'item'],
-                              labels_cols=['label'])
+                              label_cols=['label'])
         print(result)
 
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
@@ -391,7 +391,7 @@ class TestEstimatorForGraph(TestCase):
                 batch_size=8,
                 epochs=10,
                 feature_cols=['user', 'item'],
-                labels_cols=['label']
+                label_cols=['label']
                 )
         with self.assertRaises(Exception) as context:
             predictions = est.predict(df, batch_size=4).collect()
@@ -403,7 +403,7 @@ class TestEstimatorForGraph(TestCase):
                     batch_size=8,
                     epochs=10,
                     feature_cols=['user', 'item'],
-                    labels_cols=['label'],
+                    label_cols=['label'],
                     validation_data=[1, 2, 3])
         self.assertTrue('train data and validation data should be both Spark DataFrame'
                         in str(context.exception))
