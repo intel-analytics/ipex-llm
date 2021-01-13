@@ -651,6 +651,24 @@ fi
 now=$(date "+%s")
 time18=$((now-start))
 
+echo "#19 start test for orca tf basic_text_classification"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+    --master ${MASTER} \
+    --driver-memory 3g \
+    --executor-memory 3g \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "orca tf basic_text_classification failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time19=$((now-start))
+
 
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
@@ -661,7 +679,7 @@ echo "#6 tensorflow time used: $time6 seconds"
 echo "#7 anomalydetection time used: $time7 seconds"
 echo "#8 qaranker time used: $time8 seconds"
 echo "#9 inceptionV1 training time used: $time9 seconds"
-echo "#10 pytorch time used: $time10 seconds"
+#echo "#10 pytorch time used: $time10 seconds"
 echo "#11 openvino time used: $time11 seconds"
 echo "#12 vnni/openvino time used: $time12 seconds"
 echo "#13 streaming Object Detection time used: $time13 seconds"
@@ -670,3 +688,4 @@ echo "#15 attention time used:$time15 seconds"
 echo "#16 orca data time used:$time16 seconds"
 echo "#17 orca tf imagesegmentation time used:$time17 seconds"
 echo "#18 orca tf transfer_learning time used:$time18 seconds"
+echo "#19 orca tf basic_text_classification time used:$time19 seconds"
