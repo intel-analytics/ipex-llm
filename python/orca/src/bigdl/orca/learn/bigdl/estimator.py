@@ -81,7 +81,7 @@ class BigDLEstimator(OrcaSparkEstimator):
         self.app_name = None
         self.is_nnframe_fit = False
 
-    def fit(self, data, epochs, batch_size=32, feature_cols="features", labels_cols="label",
+    def fit(self, data, epochs, batch_size=32, feature_cols="features", label_cols="label",
             caching_sample=True, validation_data=None, validation_trigger=None,
             validation_metrics=None, checkpoint_trigger=None):
         from zoo.orca.learn.metrics import Metrics
@@ -95,14 +95,14 @@ class BigDLEstimator(OrcaSparkEstimator):
                     BigDLEstimator._combine_cols(data, feature_cols, col_name="features",
                                                  val_data=validation_data)
 
-            if isinstance(labels_cols, list):
-                data, validation_data, labels_cols = \
-                    BigDLEstimator._combine_cols(data, labels_cols, col_name="label",
+            if isinstance(label_cols, list):
+                data, validation_data, label_cols = \
+                    BigDLEstimator._combine_cols(data, label_cols, col_name="label",
                                                  val_data=validation_data)
 
             self.nn_estimator.setBatchSize(batch_size).setMaxEpoch(epochs)\
                 .setCachingSample(caching_sample).setFeaturesCol(feature_cols)\
-                .setLabelCol(labels_cols)
+                .setLabelCol(label_cols)
 
             if validation_data is not None:
                 assert isinstance(validation_data, DataFrame), \
@@ -175,7 +175,7 @@ class BigDLEstimator(OrcaSparkEstimator):
             raise ValueError("Data should be XShards or Spark DataFrame, but get " +
                              data.__class__.__name__)
 
-    def evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None,
+    def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None,
                  validation_metrics=None):
         assert data is not None, "validation data shouldn't be None"
 

@@ -261,10 +261,10 @@ class TestEstimatorForKeras(TestCase):
                 batch_size=8,
                 epochs=4,
                 feature_cols=['user', 'item'],
-                labels_cols=['label'],
+                label_cols=['label'],
                 validation_data=df)
 
-        eval_result = est.evaluate(df, feature_cols=['user', 'item'], labels_cols=['label'])
+        eval_result = est.evaluate(df, feature_cols=['user', 'item'], label_cols=['label'])
         assert 'acc Top1Accuracy' in eval_result
 
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
@@ -286,7 +286,7 @@ class TestEstimatorForKeras(TestCase):
 
         est = Estimator.from_keras(keras_model=model)
 
-        eval_result = est.evaluate(df, feature_cols=['user', 'item'], labels_cols=['label'])
+        eval_result = est.evaluate(df, feature_cols=['user', 'item'], label_cols=['label'])
         assert 'acc Top1Accuracy' in eval_result
 
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
@@ -648,10 +648,10 @@ class TestEstimatorForKeras(TestCase):
                 batch_size=4,
                 epochs=4,
                 feature_cols=['user', 'item'],
-                labels_cols=['label'],
+                label_cols=['label'],
                 validation_data=df)
 
-        eval_result = est.evaluate(df, feature_cols=['user', 'item'], labels_cols=['label'])
+        eval_result = est.evaluate(df, feature_cols=['user', 'item'], label_cols=['label'])
         assert 'acc Top1Accuracy' in eval_result
 
         prediction_df = est.predict(df, batch_size=4, feature_cols=['user', 'item'])
@@ -677,7 +677,7 @@ class TestEstimatorForKeras(TestCase):
                 batch_size=4,
                 epochs=4,
                 feature_cols=['user', 'item'],
-                labels_cols=['label'],
+                label_cols=['label'],
                 validation_data=df)
         assert est.get_model() is model
 

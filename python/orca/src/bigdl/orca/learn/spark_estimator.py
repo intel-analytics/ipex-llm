@@ -20,7 +20,7 @@ from zoo.orca.learn.base_estimator import BaseEstimator
 
 class Estimator(BaseEstimator):
     @abstractmethod
-    def fit(self, data, epochs, batch_size=32, feature_cols=None, labels_cols=None,
+    def fit(self, data, epochs, batch_size=32, feature_cols=None, label_cols=None,
             validation_data=None, checkpoint_trigger=None):
         """
         Train the model with train data.
@@ -29,7 +29,7 @@ class Estimator(BaseEstimator):
         :param epochs: number of epochs to train.
         :param batch_size: total batch size for each iteration. Default: 32.
         :param feature_cols: feature column names if train data is Spark DataFrame.
-        :param labels_cols: label column names if train data is Spark DataFrame.
+        :param label_cols: label column names if train data is Spark DataFrame.
         :param validation_data: validation data. Validation data type should be the same
         as train data.
         :param checkpoint_trigger: when to trigger checkpoint during training.
@@ -53,14 +53,14 @@ class Estimator(BaseEstimator):
         raise NotImplementedError
 
     @abstractmethod
-    def evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None):
+    def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         """
         Evaluate model.
 
         :param data: evaluation data.
         :param batch_size: batch size per thread. Default: 32.
         :param feature_cols: feature column names if train data is Spark DataFrame.
-        :param labels_cols: label column names if train data is Spark DataFrame.
+        :param label_cols: label column names if train data is Spark DataFrame.
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
         raise NotImplementedError

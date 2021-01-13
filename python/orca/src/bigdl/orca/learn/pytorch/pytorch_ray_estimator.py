@@ -175,7 +175,7 @@ class PyTorchRayEstimator:
               reduce_results=True,
               info=None,
               feature_cols=None,
-              labels_cols=None):
+              label_cols=None):
         """
         See the documentation in
         'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.fit'.
@@ -185,7 +185,7 @@ class PyTorchRayEstimator:
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
-                                             labels_cols=labels_cols,
+                                             label_cols=label_cols,
                                              mode="fit")
 
         if isinstance(data, SparkXShards):
@@ -256,7 +256,7 @@ class PyTorchRayEstimator:
                  profile=False,
                  info=None,
                  feature_cols=None,
-                 labels_cols=None):
+                 label_cols=None):
         """
         See the documentation in
         'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.evaluate'.
@@ -265,7 +265,7 @@ class PyTorchRayEstimator:
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
-                                             labels_cols=labels_cols,
+                                             label_cols=label_cols,
                                              mode="evaluate")
         if isinstance(data, SparkXShards):
             from zoo.orca.data.utils import process_spark_xshards
@@ -301,7 +301,7 @@ class PyTorchRayEstimator:
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
-                                             labels_cols=None,
+                                             label_cols=None,
                                              mode="predict")
         if isinstance(data, SparkXShards):
             ray_xshards = RayXShards.from_spark_xshards(data)

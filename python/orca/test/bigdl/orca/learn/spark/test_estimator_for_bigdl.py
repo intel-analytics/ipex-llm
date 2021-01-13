@@ -207,7 +207,7 @@ class TestEstimatorForKeras(TestCase):
         est = Estimator.from_bigdl(model=linear_model, loss=mse_criterion, optimizer=Adam(),
                                    feature_preprocessing=SeqToTensor([2]),
                                    label_preprocessing=SeqToTensor([2]))
-        est.fit(df, 1, batch_size=4, feature_cols=["user", "age"], labels_cols=["label1", "label2"])
+        est.fit(df, 1, batch_size=4, feature_cols=["user", "age"], label_cols=["label1", "label2"])
         result = est.predict(df, feature_cols=["user", "age"])
         result_c = result.collect()
         assert type(result).__name__ == 'DataFrame'

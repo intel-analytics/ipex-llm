@@ -166,10 +166,10 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["feature"],
-                      labels_cols=["label"])
+                      label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["feature"],
-                           labels_cols=["label"])
+                           label_cols=["label"])
 
     def test_dataframe_predict(self):
 
