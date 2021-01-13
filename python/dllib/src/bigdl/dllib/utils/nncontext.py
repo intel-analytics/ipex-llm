@@ -282,9 +282,10 @@ class ZooContextMeta(type):
     @log_output.setter
     def log_output(cls, value):
         if SparkContext._active_spark_context is not None:
-            raise AttributeError("log_output cannot be set after SparkContext is created."
-                                 " Please set it before init_nncontext, init_spark_on_local"
-                                 "or init_spark_on_yarn")
+            msg = "Setting log_output takes no effect after the context has been initialized." \
+                  " You need to set log_output before initializing the context" \
+                  " (e.g., before calling init_orca_context, init_nncontext, etc.)"
+            warnings.warn(msg)
         assert isinstance(value, bool), "log_output should either be True or False"
         cls._log_output = value
 
