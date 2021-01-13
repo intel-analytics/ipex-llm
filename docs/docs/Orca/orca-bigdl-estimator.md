@@ -35,7 +35,7 @@ Estimator.from_bigdl(*, model, loss=None, optimizer=None, feature_preprocessing=
 ### Train BigDL model with orca BigDL Estimator
 After an Estimator is created, you can call estimator API to train BigDL model:
 ```
-fit(self, data, epochs, batch_size=32, feature_cols="features", labels_cols="label",
+fit(self, data, epochs, batch_size=32, feature_cols="features", label_cols="label",
     caching_sample=True, validation_data=None, validation_trigger=None,
     validation_metrics=None, checkpoint_trigger=None)
 ```
@@ -43,7 +43,7 @@ fit(self, data, epochs, batch_size=32, feature_cols="features", labels_cols="lab
 * `epochs`: (int) Number of epochs to train the model.
 * `batch_size`: (int) Batch size used for training. Default: 32.
 * `feature_cols`: (string or list of string) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: "features".
-* `labels_cols`: (string or list of string) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: "label".
+* `label_cols`: (string or list of string) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: "label".
 * `caching_sample`: (Boolean) Whether to cache the Samples after preprocessing. Default: True.
 * `validation_data`: Validation data. SparkXShard and Spark DataFrame are supported. Default: None.
 * `validation_trigger`: Orca Trigger to validate model.
@@ -63,12 +63,12 @@ predict(self, data, batch_size=4, feature_cols="features", sample_preprocessing=
 ### Evaluate model
 After Training, you can call estimator API to evaluate BigDL model:
 ```
-evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None, validation_metrics=None)
+evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None, validation_metrics=None)
 ```
 * `data`: Validation data. SparkXShard and Spark DataFrame are supported.
 * `batch_size`: Batch size used for evaluation. Only used when data is a SparkXShard.
 * `feature_cols`: (string or list of string) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
-* `labels_cols`: (string or list of string) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `label_cols`: (string or list of string) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
 * `validation_metrics`: Orca validation methods.
 
 

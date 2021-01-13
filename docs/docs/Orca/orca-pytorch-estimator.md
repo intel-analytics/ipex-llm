@@ -92,13 +92,13 @@ You can shut down workers and releases resources using `shutdown(self, force=Fal
 #### **Train model**
 After an Estimator is created, you can call estimator API to train PyTorch model:
 ```
-fit(self, data, epochs=1, batch_size=32, feature_cols=None, labels_cols=None, validation_data=None, validation_metrics=None, checkpoint_trigger=None)
+fit(self, data, epochs=1, batch_size=32, feature_cols=None, label_cols=None, validation_data=None, validation_metrics=None, checkpoint_trigger=None)
 ```
 * `data`: Training data. SparkXShard, PyTorch DataLoader and PyTorch DataLoader creator are supported.
 * `epochs`: Number of epochs to train the model.
 * `batch_size`: Batch size used for training. Only used when data is a SparkXShard.
 * `feature_cols`: (Not supported yet) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
-* `labels_cols`: (Not supported yet) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `label_cols`: (Not supported yet) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
 * `validation_data`: Validation data. SparkXShard, PyTorch DataLoader and PyTorch DataLoader creator are supported.
 * `validation_metrics`: Orca validation methods.
 * `checkpoint_trigger`: Orca Trigger to set a checkpoint.
@@ -106,12 +106,12 @@ fit(self, data, epochs=1, batch_size=32, feature_cols=None, labels_cols=None, va
 #### **Evaluate model**
 After Training, you can call estimator API to evaluate PyTorch model:
 ```
-evaluate(self, data, batch_size=32, feature_cols=None, labels_cols=None, validation_metrics=None)
+evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None, validation_metrics=None)
 ```
 * `data`: Validation data. SparkXShard, PyTorch DataLoader and PyTorch DataLoader creator are supported.
 * `batch_size`: Batch size used for evaluation. Only used when data is a SparkXShard.
 * `feature_cols`: (Not supported yet) Feature column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
-* `labels_cols`: (Not supported yet) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
+* `label_cols`: (Not supported yet) Label column name(s) of data. Only used when data is a Spark DataFrame. Default: None.
 * `validation_metrics`: Orca ovalidation methods.
 
 #### **Inference**
