@@ -345,7 +345,11 @@ class TorchRunner:
                 params[arg] = config[arg]
 
         def predict_fn(shard):
-            dataset = torch.utils.data.TensorDataset(torch.from_numpy(shard["x"].copy()))
+            if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
+                tensors = [torch.from_numpy(arr) for arr in shard["x"]]
+            else:
+                tensors = [torch.from_numpy(shard["x"])]
+            dataset = torch.utils.data.TensorDataset(*tensors)
             data_loader = DataLoader(dataset, **params)
             y = self.training_operator.predict(iter(data_loader))
             shard["prediction"] = y

@@ -115,10 +115,14 @@ def arrays2dict(iter, feature_cols, label_cols):
     feature_arrs = [np.stack(l) for l in feature_lists]
     if len(feature_arrs) == 1:
         feature_arrs = feature_arrs[0]
+    else:
+        feature_arrs = tuple(feature_arrs)
     if label_lists is not None:
         label_arrs = [np.stack(l) for l in label_lists]
         if len(label_arrs) == 1:
             label_arrs = label_arrs[0]
+        else:
+            label_arrs = tuple(label_arrs)
         return [{"x": feature_arrs, "y": label_arrs}]
 
     return [{"x": feature_arrs}]
