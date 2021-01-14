@@ -77,6 +77,21 @@ class IdentityNet(nn.Module):
         return input_[:, 0]
 
 
+class MultiInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.out = nn.Linear(50, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, input1, input2):
+        x = torch.cat((input1, input2), 1)
+        x = self.fc1(x)
+        x = self.out(x)
+        x = self.out_act(x)
+        return x
+
+
 def train_data_loader(config):
     train_dataset = LinearDataset(size=config.get("data_size", 1000))
     train_loader = torch.utils.data.DataLoader(
@@ -188,6 +203,29 @@ class TestPyTorchEstimator(TestCase):
                                    feature_cols=["feature"])
         result = np.concatenate([shard["prediction"] for shard in result.collect()])
         assert np.array_equal(result, np.array(range(100)).astype(np.float))
+
+    def test_multiple_inputs_model(self):
+
+        sc = init_nncontext()
+        rdd = sc.parallelize(range(100))
+
+        from pyspark.sql import SparkSession
+        spark = SparkSession(sc)
+        df = rdd.map(lambda x: ([float(x)] * 25, [float(x)] * 25,
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["f1", "f2", "label"])
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: MultiInputNet())
+        estimator.fit(df, batch_size=4, epochs=2,
+                      feature_cols=["f1", "f2"],
+                      label_cols=["label"])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["f1", "f2"],
+                           label_cols=["label"])
+        result = estimator.predict(df, batch_size=4,
+                                   feature_cols=["f1", "f2"])
+        result.collect()
 
 if __name__ == "__main__":
     pytest.main([__file__])
