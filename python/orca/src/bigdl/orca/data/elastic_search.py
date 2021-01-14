@@ -32,12 +32,13 @@ class elastic_search:
     def read_df(esConfig, esResource, schema=None):
         """
         Read the data from elastic search into DataFrame.
-        :param esConfig Dictionary which represents configuration for
+
+        :param esConfig: Dictionary which represents configuration for
                elastic search(eg. ip, port etc).
-        :param esResource resource file in elastic search.
-        :param schema Optional. Defines the schema of Spark dataframe.
+        :param esResource: resource file in elastic search.
+        :param schema: Optional. Defines the schema of Spark dataframe.
                 If each column in Es is single value, don't need set schema.
-        :return Spark DataFrame. Each row represents a document in ES.
+        :return: Spark DataFrame. Each row represents a document in ES.
         """
         sc = init_nncontext()
         sqlContext = SQLContext.getOrCreate(sc)
@@ -77,10 +78,11 @@ class elastic_search:
     def write_df(esConfig, esResource, df):
         """
         Write the Spark DataFrame to elastic search.
-        :param esConfig Dictionary which represents configuration for
+
+        :param esConfig: Dictionary which represents configuration for
                elastic search(eg. ip, port etc).
-        :param esResource resource file in elastic search.
-        :param df Spark DataFrame that will be saved.
+        :param esResource: resource file in elastic search.
+        :param df: Spark DataFrame that will be saved.
         """
         wdf = df.write.format("org.elasticsearch.spark.sql")\
             .option("es.resource", esResource)
@@ -94,13 +96,14 @@ class elastic_search:
     def read_rdd(esConfig, esResource=None, filter=None, esQuery=None):
         """
         Read the data from elastic search into Spark RDD.
-        :param esConfig Dictionary which represents configuration for
+
+        :param esConfig: Dictionary which represents configuration for
                elastic search(eg. ip, port, es query etc).
-        :param esResource Optional. resource file in elastic search.
+        :param esResource: Optional. resource file in elastic search.
                It also can be set in esConfig
-        :param filter Optional. Request only those fields from Elasticsearch
-        :param esQuery Optional. es query
-        :return Spark DataFrame. Each row represents a document in ES.
+        :param filter: Optional. Request only those fields from Elasticsearch
+        :param esQuery: Optional. es query
+        :return: Spark RDD
         """
         sc = init_nncontext()
         if "es.resource" not in esConfig:
