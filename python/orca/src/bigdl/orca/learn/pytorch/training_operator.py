@@ -252,7 +252,8 @@ class TrainingOperator:
         # unpack features into list to support multiple inputs model
         *features, target = batch
         # If features is already a tuple, we don't give it an extra list dimension.
-        if len(features) == 1 and isinstance(features[0], tuple):
+        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
+        if len(features) == 1 and already_list:
             features = features[0]
 
         # Compute output.
@@ -326,7 +327,9 @@ class TrainingOperator:
         return np.concatenate(result, axis=0)
 
     def predict_batch(self, batch):
-        # unpack features into list to support multiple inputs model
+
+        if isinstance(batch, torch.Tensor):
+            batch = [batch]
 
         # compute output
         with self.timers.record("pred_fwd"):
@@ -365,6 +368,10 @@ class TrainingOperator:
         """
         # unpack features into list to support multiple inputs model
         *features, target = batch
+        # If features is already a tuple, we don't give it an extra list dimension.
+        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
+        if len(features) == 1 and already_list:
+            features = features[0]
 
         # compute output
         with self.timers.record("eval_fwd"):

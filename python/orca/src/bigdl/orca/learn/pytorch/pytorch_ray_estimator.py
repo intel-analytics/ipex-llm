@@ -57,6 +57,17 @@ def shards_ref_to_creator(shards_ref):
         from zoo.orca.data.utils import ray_partition_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
 
+        class NDArrayDataset(Dataset):
+            def __init__(self, x, y):
+                self.x = x  # features
+                self.y = y  # labels
+
+            def __len__(self):
+                return get_size(self.y)
+
+            def __getitem__(self, i):
+                return index_data(self.x, i), index_data(self.y, i)
+
         assert "batch_size" in config, "batch_size must be set in config"
         params = {"batch_size": config["batch_size"], "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -68,7 +79,7 @@ def shards_ref_to_creator(shards_ref):
                                                    allow_tuple=False,
                                                    allow_list=False)
         print("Data size on worker: ", len(label))
-        dataset = torch.utils.data.TensorDataset(torch.from_numpy(data), torch.from_numpy(label))
+        dataset = NDArrayDataset(data, label)
         data_loader = DataLoader(dataset, **params)
         return data_loader
 
