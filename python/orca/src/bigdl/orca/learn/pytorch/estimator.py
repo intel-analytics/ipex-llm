@@ -272,17 +272,21 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         if isinstance(data, SparkXShards):
             train_fset, val_fset = self._handle_xshards(data, validation_data)
+            self.estimator.train(train_fset, self.loss, end_trigger, checkpoint_trigger,
+                                 val_fset, validation_metrics, batch_size)
         elif isinstance(data, DataFrame):
             train_fset, val_fset = self._handle_dataframe(data, validation_data,
                                                           feature_cols, label_cols)
+            self.estimator.train(train_fset, self.loss, end_trigger, checkpoint_trigger,
+                                 val_fset, validation_metrics, batch_size)
         elif isinstance(data, DataLoader) or callable(data):
             train_fset, val_fset = self._hanle_data_loader(data, validation_data)
+            self.estimator.train_minibatch(train_fset, self.loss, end_trigger,
+                                           checkpoint_trigger, val_fset, validation_metrics)
         else:
             raise ValueError("Data and validation data should be SparkXShards, DataLoaders or "
                              "callable data_creators but get " + data.__class__.__name__)
 
-        self.estimator.train(train_fset, self.loss, end_trigger, checkpoint_trigger,
-                             val_fset, validation_metrics, batch_size)
         return self
 
     def predict(self, data, batch_size=4, feature_cols=None):
