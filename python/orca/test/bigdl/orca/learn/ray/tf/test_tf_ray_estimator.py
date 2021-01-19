@@ -356,7 +356,7 @@ class TestTFRayEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
-        esimator = Estimator.from_keras(
+        estimator = Estimator.from_keras(
             model_creator=identity_model_creator,
             verbose=True,
             config={},
