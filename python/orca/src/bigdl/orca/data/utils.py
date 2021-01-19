@@ -217,7 +217,7 @@ def row_to_sample(row, schema, feature_cols, label_cols):
         feature, label = convert_row_to_numpy(row, schema, feature_cols, label_cols)
         sample = Sample.from_ndarray(feature, label)
     else:
-        feature, label = convert_row_to_numpy(row, schema, feature_cols, label_cols)
+        feature, = convert_row_to_numpy(row, schema, feature_cols, label_cols)
         sample = Sample.from_ndarray(feature, np.array([0.0]))
     return sample
 

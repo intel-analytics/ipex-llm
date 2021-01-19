@@ -54,31 +54,3 @@ def xshards_to_tf_dataset(data_shard,
                                  shuffle=shuffle)
 
     return dataset
-
-
-def convert_predict_to_dataframe(df, prediction_rdd):
-    from pyspark.sql import Row
-    from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
-    from pyspark.ml.linalg import VectorUDT, Vectors
-
-    def combine(pair):
-        # list of np array
-        if isinstance(pair[1], list):
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [[Vectors.dense(elem) for elem in pair[1]]]))
-            return row, ArrayType(VectorUDT())
-        # scalar
-        elif len(pair[1].shape) == 0:
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
-            return row, FloatType()
-        # np array
-        else:
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] + [Vectors.dense(pair[1])]))
-            return row, VectorUDT()
-
-    combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-    type = combined_rdd.map(lambda data: data[1]).first()
-    result_rdd = combined_rdd.map(lambda data: data[0])
-    schema = StructType(df.schema.fields + [StructField('prediction', type)])
-    result_df = result_rdd.toDF(schema)
-    return result_df
