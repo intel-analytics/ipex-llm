@@ -104,8 +104,7 @@ This file implements Batch Normalization as described in the paper:
 "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"
 by Sergey Ioffe, Christian Szegedy.
 
-This implementation is useful for inputs coming from convolution layers.
-For non-convolutional layers, see `BatchNormalization`
+This implementation is useful for inputs coming from convolution layers and it only supports 4D tensors( including batch). For non-convolutional layers, see `BatchNormalization`
 The operation implemented is:
 ``` 
         ( x - mean(x) )
