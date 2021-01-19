@@ -23,7 +23,7 @@ from zoo.orca import OrcaContext
 from zoo.orca.learn.trigger import SeveralIteration
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.common.nncontext import *
-from zoo.orca.learn.tf.utils import convert_predict_to_dataframe
+from zoo.orca.learn.utils import convert_predict_rdd_to_dataframe
 
 
 class TestEstimatorForKeras(TestCase):
@@ -378,11 +378,11 @@ class TestEstimatorForKeras(TestCase):
         rdd = sc.parallelize([(1, 2, 3), (4, 5, 6), (7, 8, 9)])
         df = rdd.toDF(["feature", "label", "c"])
         predict_rdd = df.rdd.map(lambda row: [np.array([1, 2]), np.array(0)])
-        resultDF = convert_predict_to_dataframe(df, predict_rdd)
+        resultDF = convert_predict_rdd_to_dataframe(df, predict_rdd)
         resultDF.printSchema()
         print(resultDF.collect()[0])
         predict_rdd = df.rdd.map(lambda row: np.array(1))
-        resultDF = convert_predict_to_dataframe(df, predict_rdd)
+        resultDF = convert_predict_rdd_to_dataframe(df, predict_rdd)
         resultDF.printSchema()
         print(resultDF.collect()[0])
 

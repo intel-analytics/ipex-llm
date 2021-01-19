@@ -352,8 +352,8 @@ class TorchRunner:
             dataset = torch.utils.data.TensorDataset(*tensors)
             data_loader = DataLoader(dataset, **params)
             y = self.training_operator.predict(iter(data_loader))
-            shard["prediction"] = y
-            return shard
+
+            return {"prediction": y}
 
         with self.timers.record("predict"):
             new_part = [predict_fn(shard) for shard in partition]
