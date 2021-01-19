@@ -24,7 +24,8 @@ import numpy as np
 from zoo.orca.data.shard import RayXShards
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.pytorch.torch_runner import TorchRunner
-from zoo.orca.learn.utils import maybe_dataframe_to_xshards
+from zoo.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
+    convert_predict_xshards_to_dataframe, update_predict_xshards
 from zoo.ray import RayContext
 
 import ray
@@ -303,33 +304,46 @@ class PyTorchRayEstimator:
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
         return self._process_stats(worker_stats)
 
+    def _predict_spark_xshards(self, xshards, param):
+        ray_xshards = RayXShards.from_spark_xshards(xshards)
+
+        def transform_func(worker, shards_ref):
+            data_creator = lambda config: shards_ref
+            return worker.predict.remote(
+                data_creator, **param)
+
+        pred_shards = ray_xshards.transform_shards_with_actors(self.remote_workers,
+                                                               transform_func,
+                                                               gang_scheduling=False)
+        spark_xshards = pred_shards.to_spark_xshards()
+        return spark_xshards
+
     def predict(self,
                 data,
                 batch_size=32,
                 feature_cols=None,
                 profile=False):
         from zoo.orca.data import SparkXShards
-        data, _ = maybe_dataframe_to_xshards(data,
-                                             validation_data=None,
-                                             feature_cols=feature_cols,
-                                             label_cols=None,
-                                             mode="predict")
-        if isinstance(data, SparkXShards):
-            ray_xshards = RayXShards.from_spark_xshards(data)
-
-            def transform_func(worker, shards_ref):
-                data_creator = lambda config: shards_ref
-                return worker.predict.remote(
-                    data_creator, batch_size, profile)
-
-            pred_shards = ray_xshards.transform_shards_with_actors(self.remote_workers,
-                                                                   transform_func,
-                                                                   gang_scheduling=False)
-            spark_xshards = pred_shards.to_spark_xshards()
+        param = dict(
+            batch_size=batch_size,
+            profile=profile
+        )
+        from pyspark.sql import DataFrame
+        if isinstance(data, DataFrame):
+            xshards, _ = dataframe_to_xshards(data,
+                                              validation_data=None,
+                                              feature_cols=feature_cols,
+                                              label_cols=None,
+                                              mode="predict")
+            pred_shards = self._predict_spark_xshards(xshards, param)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+        elif isinstance(data, SparkXShards):
+            pred_shards = self._predict_spark_xshards(data, param)
+            result = update_predict_xshards(data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
 
-        return spark_xshards
+        return result
 
     def get_model(self):
         """Returns the learned model(s)."""

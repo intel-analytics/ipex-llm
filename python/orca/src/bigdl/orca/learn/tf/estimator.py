@@ -24,7 +24,8 @@ from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 from zoo.orca.data import SparkXShards
 from zoo.orca.learn.tf.utils import *
 from zoo.orca.learn.trigger import Trigger
-from zoo.orca.learn.utils import find_latest_checkpoint, convert_predict_to_xshard
+from zoo.orca.learn.utils import find_latest_checkpoint, convert_predict_rdd_to_xshard, \
+    convert_predict_rdd_to_dataframe
 from zoo.tfpark import KerasModel
 from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
 from zoo.tfpark.tf_optimizer import StatelessMetric
@@ -514,9 +515,9 @@ class TensorFlowEstimator(Estimator):
         tfnet = TFNet.from_session(sess=self.sess, inputs=flat_inputs, outputs=flat_outputs)
         predicted_rdd = tfnet.predict(dataset)
         if isinstance(data, DataFrame):
-            return convert_predict_to_dataframe(data, predicted_rdd)
-        elif isinstance(data, SparkXShards) or isinstance(data, tf.data.Dataset):
-            return convert_predict_to_xshard(predicted_rdd)
+            return convert_predict_rdd_to_dataframe(data, predicted_rdd)
+        elif isinstance(data, SparkXShards):
+            return convert_predict_rdd_to_xshard(data, predicted_rdd)
         else:
             return predicted_rdd
 
@@ -716,6 +717,9 @@ class KerasEstimator(Estimator):
             assert feature_cols is not None, \
                 "feature columns is None; it should not be None in prediction"
 
+        assert not is_tf_data_dataset(data), "tf.data.Dataset currently cannot be used for" \
+                                             "estimator prediction"
+
         dataset = to_dataset(data, batch_size=-1, batch_per_thread=batch_size,
                              validation_data=None,
                              feature_cols=feature_cols, label_cols=None,
@@ -726,9 +730,9 @@ class KerasEstimator(Estimator):
 
         predicted_rdd = self.model.predict(dataset, batch_size)
         if isinstance(data, DataFrame):
-            return convert_predict_to_dataframe(data, predicted_rdd)
-        elif isinstance(data, SparkXShards) or isinstance(data, tf.data.Dataset):
-            return convert_predict_to_xshard(predicted_rdd)
+            return convert_predict_rdd_to_dataframe(data, predicted_rdd)
+        elif isinstance(data, SparkXShards):
+            return convert_predict_rdd_to_xshard(data, predicted_rdd)
         else:
             return predicted_rdd
 

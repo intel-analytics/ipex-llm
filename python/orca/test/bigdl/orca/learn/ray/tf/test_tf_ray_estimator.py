@@ -349,6 +349,23 @@ class TestTFRayEstimator(TestCase):
                          label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
 
+    def test_dataframe_predict(self):
+        sc = init_nncontext()
+        rdd = sc.parallelize(range(20))
+        df = rdd.map(lambda x: ([float(x)] * 5,
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+
+        esimator = Estimator.from_keras(
+            model_creator=identity_model_creator,
+            verbose=True,
+            config={},
+            workers_per_node=2)
+        result = estimator.predict(df, batch_size=4,
+                                   feature_cols=["feature"])
+        expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
+        assert result.selectExpr(expr).first()["error"] == 0
+
     def test_sparkxshards_with_inbalanced_data(self):
 
         train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
@@ -396,9 +413,10 @@ class TestTFRayEstimator(TestCase):
             config=config,
             workers_per_node=2)
 
-        result = trainer.predict(train_data_shard, batch_size=10).collect()
+        result_shards = trainer.predict(train_data_shard, batch_size=10).collect()
 
-        result = [shard["prediction"] for shard in result]
+        result = [shard["prediction"] for shard in result_shards]
+        expected_result = [shard["x"] for shard in result_shards]
 
         result = np.concatenate(result)
 

@@ -446,8 +446,7 @@ class TFRunner:
 
         def predict_fn(shard):
             y = local_model.predict(shard["x"], **params)
-            shard["prediction"] = y
-            return shard
+            return {"prediction": y}
 
         new_part = [predict_fn(shard) for shard in partition]
 

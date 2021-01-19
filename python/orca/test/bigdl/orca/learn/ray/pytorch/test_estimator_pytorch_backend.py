@@ -23,6 +23,9 @@ import torch.nn as nn
 
 from zoo import init_nncontext
 from zoo.orca.learn.pytorch import Estimator
+from zoo.orca.data import SparkXShards
+from zoo.orca.data.image.utils import chunks
+
 
 np.random.seed(1337)  # for reproducibility
 
@@ -74,7 +77,7 @@ class IdentityNet(nn.Module):
         self.fc1 = nn.Linear(50, 50)
 
     def forward(self, input_):
-        return input_[:, 0]
+        return input_
 
 
 class MultiInputNet(nn.Module):
@@ -171,9 +174,6 @@ class TestPyTorchEstimator(TestCase):
 
         sc = init_nncontext()
         rdd = sc.range(0, 100)
-        from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
-        from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
@@ -189,11 +189,8 @@ class TestPyTorchEstimator(TestCase):
     def test_dataframe_predict(self):
 
         sc = init_nncontext()
-        rdd = sc.parallelize(range(100))
-
-        from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
-        df = rdd.map(lambda x: ([float(x)] * 50,
+        rdd = sc.parallelize(range(20))
+        df = rdd.map(lambda x: ([float(x)] * 5,
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
@@ -201,8 +198,23 @@ class TestPyTorchEstimator(TestCase):
                                   model_fn=lambda config: IdentityNet())
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["feature"])
-        result = np.concatenate([shard["prediction"] for shard in result.collect()])
-        assert np.array_equal(result, np.array(range(100)).astype(np.float))
+        expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
+        assert result.selectExpr(expr).first()["error"] == 0
+
+    def test_xshards_predict(self):
+
+        sc = init_nncontext()
+        rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = SparkXShards(shards)
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: IdentityNet())
+        result_shards = estimator.predict(shards, batch_size=4)
+        result = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
+        expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
+
+        assert np.array_equal(result, expected_result)
 
     def test_multiple_inputs_model(self):
 
