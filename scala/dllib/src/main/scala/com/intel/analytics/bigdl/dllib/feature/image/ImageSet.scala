@@ -231,6 +231,8 @@ object ImageSet {
    *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
    * @param withLabel whether to treat folders in the path as image classification labels and read
    *                  the labels into ImageSet.
+   * @param oneBasedLabel whether the labels start from 1. By default is true,
+   *                      else the labels start from 0.
    * @return ImageSet
    */
   def read(path: String, sc: SparkContext = null, minPartitions: Int = 1,
