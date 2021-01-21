@@ -51,7 +51,7 @@ Create DistributedImageSet from rdd of ImageFeature
 
 * data: array of ImageFeature
 ```
-def read(path: String, sc: SparkContext = null, minPartitions: Int = 1, resizeH: Int = -1, resizeW: Int = -1): ImageSet
+def read(path: String, sc: SparkContext = null, minPartitions: Int = 1, resizeH: Int = -1, resizeW: Int = -1, imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED, withLabel: Boolean = false, oneBasedLabel: Boolean = true): ImageSet
 ```
 Read images as Image Set.
 If sc is defined, read image as DistributedImageSet from local file system or HDFS.
@@ -62,6 +62,9 @@ If sc is null, Read image as LocalImageSet from local file system
 * minPartitions: A suggestion value of the minimal splitting number for input data.
 * resizeH: height after resize, by default is -1 which will not resize the image
 * resizeW: width after resize, by default is -1 which will not resize the image
+* imageCodec: specifying the color type of a loaded image, same as in OpenCV.imread. By default is `Imgcodecs.CV_LOAD_IMAGE_UNCHANGED`.
+* withLabel: whether to treat folders in the path as image classification labels and read the labels into ImageSet.
+* oneBasedLabel: whether the labels start from 1. If true, the labels starts from 1, else the labels start from 0.
    
 Example:
 ```
@@ -78,7 +81,7 @@ val distributedImageSet2 = ImageSet.read("/tmp/image/", sc, 2)
 class zoo.feature.image.ImageSet
 ```
 ```
-read(path, sc=None, min_partitions=1, resize_height=-1, resize_width=-1, bigdl_type="float")
+read(path, sc=None, min_partitions=1, resize_height=-1, resize_width=-1, image_codec=-1, with_label=False, one_based_label=True, bigdl_type="float")
 ```
 Read images as Image Set.
 If sc is defined, read image as DistributedImageSet from local file system or HDFS.
@@ -89,6 +92,10 @@ If sc is null, Read image as LocalImageSet from local file system
 * min_partitions: A suggestion value of the minimal splitting number for input data.
 * resize_height height after resize, by default is -1 which will not resize the image
 * resize_width width after resize, by default is -1 which will not resize the image
+* image_codec: specifying the color type of a loaded image, same as in OpenCV.imread. By default is -1(`Imgcodecs.CV_LOAD_IMAGE_UNCHANGED`).
+* with_label: whether to treat folders in the path as image classification labels and read the labels into ImageSet.
+* one_based_label: whether the labels start from 1. By default it is true, else the labels start from 0.
+
 
 Python example:
 ```python
