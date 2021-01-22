@@ -23,11 +23,11 @@ COPY jenkins.sh ${JENKINS_HOME}/jenkins.sh
 RUN apt-get update && apt-get install -y git wget curl && rm -rf /var/lib/apt/lists/*
 
 #java
-RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u271-linux-x64.tar.gz && \
-    gunzip jdk-8u271-linux-x64.tar.gz && \
-    tar -xf jdk-8u271-linux-x64.tar -C /opt && \
-    rm jdk-8u271-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_271 /opt/jdk
+RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u281-linux-x64.tar.gz && \
+    gunzip jdk-8u281-linux-x64.tar.gz && \
+    tar -xf jdk-8u281-linux-x64.tar -C /opt && \
+    rm jdk-8u281-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_281 /opt/jdk
 
 # Install Jenkins Master
 RUN curl -fsSL ${JENKINS_URL} -o ${JENKINS_HOME}/jenkins.war && \

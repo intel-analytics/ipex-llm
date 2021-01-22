@@ -55,11 +55,11 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.
     bash Miniconda3-py37_4.8.3-Linux-x86_64.sh -b && \
     rm -f Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
 #java
-    wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u271-linux-x64.tar.gz  && \
-    gunzip jdk-8u271-linux-x64.tar.gz && \
-    tar -xf jdk-8u271-linux-x64.tar -C /opt && \
-    rm jdk-8u271-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_271 /opt/jdk && \
+    wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u281-linux-x64.tar.gz  && \
+    gunzip jdk-8u281-linux-x64.tar.gz && \
+    tar -xf jdk-8u281-linux-x64.tar -C /opt && \
+    rm jdk-8u281-linux-x64.tar && \
+    ln -s /opt/jdk1.8.0_281 /opt/jdk && \
 #spark
     wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
