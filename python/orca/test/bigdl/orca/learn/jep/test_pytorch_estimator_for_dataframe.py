@@ -39,7 +39,6 @@ resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
 
 class TestEstimatorForDataFrame(TestCase):
-
     def setUp(self):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
@@ -119,8 +118,10 @@ class TestEstimatorForDataFrame(TestCase):
             estimator.fit(data=df, epochs=4, batch_size=2, validation_data=df,
                           validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch(),
                           feature_cols=["feature"], label_cols=["label"])
-            estimator.evaluate(df, validation_metrics=[Accuracy()], batch_size=2,
-                               feature_cols=["feature"], label_cols=["label"])
+            eval_result = estimator.evaluate(df, validation_metrics=[Accuracy()], batch_size=2,
+                                             feature_cols=["feature"], label_cols=["label"])
+            assert isinstance(eval_result, dict)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

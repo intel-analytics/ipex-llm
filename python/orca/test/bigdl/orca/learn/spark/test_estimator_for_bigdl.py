@@ -243,7 +243,10 @@ class TestEstimatorForKeras(TestCase):
             summary = estimator.get_train_summary(tag="Loss")
             temp_path = os.path.join(temp_dir_name, "save_model")
             estimator.save(temp_path)
-            estimator.evaluate(data=data_shard, validation_metrics=[Accuracy()], batch_size=8)
+            eval_result = estimator.evaluate(data=data_shard,
+                                             validation_metrics=[Accuracy()],
+                                             batch_size=8)
+            assert isinstance(eval_result, dict)
             result = estimator.predict(data=data_shard)
             assert type(result).__name__ == 'SparkXShards'
             result_c = result.collect()
