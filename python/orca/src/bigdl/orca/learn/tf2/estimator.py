@@ -48,6 +48,7 @@ class Estimator(object):
 def shards_ref_to_creator(shards_ref):
     def data_creator(config):
         return shards_ref
+
     return data_creator
 
 
@@ -198,7 +199,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
                 def zip_func(worker, this_shards_ref, that_shards_ref):
                     params["data_creator"] = shards_ref_to_creator(this_shards_ref)
-                    params["validation_data_creator"] =\
+                    params["validation_data_creator"] = \
                         shards_ref_to_creator(that_shards_ref)
                     return worker.step.remote(**params)
 
@@ -311,7 +312,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def get_model(self):
         """Returns the learned model."""
-        state = ray.get(self.remote_workers[0].get_state.remote())
+        state_refs = [w.get_state.remote() for w in self.remote_workers]
+        state = ray.get(state_refs[0])
         return self._get_model_from_state(state)
 
     def save(self, checkpoint):
@@ -358,15 +360,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
     def _get_model_from_state(self, state):
         """Creates model and load weights from state"""
 
+        # keep the same behavior as `set_state` in `load` do
         model = self.model_creator(self.config)
         model.set_weights(state["weights"])
-
-        # This part is due to ray.get() changing scalar np.int64 object to int
-        state["optimizer_weights"][0] = np.array(
-            state["optimizer_weights"][0], dtype=np.int64)
-
-        if model.optimizer.weights == []:
-            model._make_train_function()
-        model.optimizer.set_weights(state["optimizer_weights"])
 
         return model
