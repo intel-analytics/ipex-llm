@@ -262,3 +262,7 @@ def maybe_dataframe_to_xshards(data, validation_data, feature_cols, label_cols, 
                                                      feature_cols=feature_cols,
                                                      label_cols=label_cols, mode=mode)
     return data, validation_data
+
+
+def bigdl_metric_results_to_dict(results):
+    return dict([(r.method, r.result) for r in results])
