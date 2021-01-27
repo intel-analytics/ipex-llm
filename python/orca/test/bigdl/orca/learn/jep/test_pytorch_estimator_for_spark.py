@@ -17,6 +17,7 @@ from unittest import TestCase
 
 import os
 import pytest
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -65,7 +66,7 @@ class TestEstimatorForSpark(TestCase):
 
         def transform(df):
             result = {
-                "x": [df['user'].to_numpy(), df['item'].to_numpy()],
+                "x": np.stack([df['user'].to_numpy(), df['item'].to_numpy()], axis=1),
                 "y": df['label'].to_numpy()
             }
             return result
