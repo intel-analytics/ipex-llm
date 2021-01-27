@@ -77,8 +77,8 @@ RUN apt-get install -y python3-minimal && \
     pip install --upgrade setuptools && \
     pip install numpy scipy && \
     pip install --no-binary pandas==0.23.4 -I pandas && \
-    pip install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
-    pip install torch==1.5.0 torchvision==0.6.0 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip install scikit-learn matplotlib seaborn jupyter jupyterlab wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
+    pip install torch==1.7.1 torchvision==0.8.2  && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
