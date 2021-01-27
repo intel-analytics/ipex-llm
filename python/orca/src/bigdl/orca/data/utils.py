@@ -192,7 +192,7 @@ def ray_partition_get_data_label(partition_data,
 
 # todo: this might be very slow
 def xshard_to_sample(data):
-    from zoo.common.utils import Sample
+    from bigdl.util.common import Sample
     data = check_type_and_convert(data, allow_list=True, allow_tuple=False)
     features = data["x"]
     length = features[0].shape[0]
@@ -208,7 +208,7 @@ def xshard_to_sample(data):
             fs = fs[0]
         if len(ls) == 1:
             ls = ls[0]
-        yield Sample.from_ndarray(fs, ls)
+        yield Sample.from_ndarray(np.array(fs), np.array(ls))
 
 
 def row_to_sample(row, schema, feature_cols, label_cols):
