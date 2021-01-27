@@ -75,6 +75,7 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
         for data in iter:
             size = get_size(data["x"])
             for i in range(size):
+                print(size)
                 yield size
 
     def transform_predict(predictions):
