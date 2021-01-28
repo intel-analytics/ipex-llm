@@ -178,9 +178,8 @@ class Estimator(SparkEstimator):
     @staticmethod
     def from_graph(*, inputs, outputs=None,
                    labels=None, loss=None, optimizer=None,
-                   clip_norm=None, clip_value=None,
-                   metrics=None, updates=None,
-                   sess=None, model_dir=None, backend="bigdl"):
+                   metrics=None, clip_norm=None, clip_value=None,
+                   updates=None, sess=None, model_dir=None, backend="bigdl"):
         """
         Create an Estimator for tesorflow graph.
         :param inputs: input tensorflow tensors.
@@ -208,9 +207,10 @@ class Estimator(SparkEstimator):
                                    labels=labels,
                                    loss=loss,
                                    optimizer=optimizer,
+                                   metrics=metrics,
                                    clip_norm=clip_norm,
                                    clip_value=clip_value,
-                                   metrics=metrics, updates=updates,
+                                   updates=updates,
                                    sess=sess,
                                    model_dir=model_dir
                                    )
@@ -312,10 +312,7 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
 class TensorFlowEstimator(Estimator):
     def __init__(self, *, inputs, outputs, labels, loss,
                  optimizer, clip_norm, clip_value,
-                 metrics,
-                 updates, sess,
-                 model_dir
-                 ):
+                 metrics, updates, sess, model_dir):
         self.inputs = inputs
         self.outputs = outputs
         self.labels = labels
