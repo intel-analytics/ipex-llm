@@ -110,9 +110,10 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 net.train()
 orca_estimator = Estimator.from_torch(model=net, optimizer=optimizer, loss=criterion,
+                                      metrics=[Accuracy()],
                                       backend="bigdl")
 orca_estimator.fit(data=trainloader, epochs=2, validation_data=testloader,
-                   validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
+                   checkpoint_trigger=EveryEpoch())
 print('Finished Training')
 dataiter = iter(testloader)
 images, labels = dataiter.next()
@@ -121,6 +122,6 @@ images, labels = dataiter.next()
 imshow(torchvision.utils.make_grid(images))
 print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
-res = orca_estimator.evaluate(data=testloader, validation_metrics=[Accuracy()])
+res = orca_estimator.evaluate(data=testloader)
 print("Accuracy of the network on the test images: %s" % res)
 stop_orca_context()
