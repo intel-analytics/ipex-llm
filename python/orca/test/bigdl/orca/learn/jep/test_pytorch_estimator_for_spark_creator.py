@@ -61,6 +61,7 @@ class TestEstimatorForSparkCreator(TestCase):
         model = SimpleModel()
 
         estimator = Estimator.from_torch(model=model, loss=nn.BCELoss(),
+                                         metrics=[Accuracy()],
                                          optimizer=Adam())
 
         def get_dataloader():
@@ -69,8 +70,8 @@ class TestEstimatorForSparkCreator(TestCase):
             return torch.utils.data.DataLoader(TensorDataset(inputs, targets), batch_size=2)
 
         estimator.fit(data=get_dataloader, epochs=2, validation_data=get_dataloader,
-                      validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
-        estimator.evaluate(data=get_dataloader, validation_metrics=[Accuracy()])
+                      checkpoint_trigger=EveryEpoch())
+        estimator.evaluate(data=get_dataloader)
         model = estimator.get_model()
         assert isinstance(model, nn.Module)
 

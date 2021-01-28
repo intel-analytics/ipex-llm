@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from zoo.orca.learn.metrics import Metrics
 from zoo.orca.learn.utils import bigdl_metric_results_to_dict
 from zoo.pipeline.nnframes import NNEstimator, NNModel
 from zoo.pipeline.estimator import Estimator as SparkEstimator
@@ -25,14 +26,16 @@ from pyspark.sql.dataframe import DataFrame
 
 class Estimator(object):
     @staticmethod
-    def from_bigdl(*, model, loss=None, optimizer=None, feature_preprocessing=None,
-                   label_preprocessing=None, model_dir=None):
+    def from_bigdl(*, model, loss=None, optimizer=None, metrics=None,
+                   feature_preprocessing=None, label_preprocessing=None,
+                   model_dir=None):
         """
         Construct an Estimator with BigDL model, loss function and Preprocessing for feature and
         label data.
         :param model: BigDL Model to be trained.
         :param loss: BigDL criterion.
         :param optimizer: BigDL optimizer.
+        :param metrics: A evaluation metric or a list of evaluation metrics
         :param feature_preprocessing: The param converts the data in feature column to a
                Tensor or to a Sample directly. It expects a List of Int as the size of the
                converted Tensor, or a Preprocessing[F, Tensor[T]]
@@ -57,15 +60,17 @@ class Estimator(object):
         :return:
         """
         return BigDLEstimator(model=model, loss=loss, optimizer=optimizer,
+                              metrics=metrics,
                               feature_preprocessing=feature_preprocessing,
                               label_preprocessing=label_preprocessing, model_dir=model_dir)
 
 
 class BigDLEstimator(OrcaSparkEstimator):
-    def __init__(self, *, model, loss, optimizer=None, feature_preprocessing=None,
-                 label_preprocessing=None, model_dir=None):
+    def __init__(self, *, model, loss, optimizer=None, metrics=None,
+                 feature_preprocessing=None, label_preprocessing=None, model_dir=None):
         self.loss = loss
         self.optimizer = optimizer
+        self.metrics = Metrics.convert_metrics_list(metrics)
         self.feature_preprocessing = feature_preprocessing
         self.label_preprocessing = label_preprocessing
         self.model_dir = model_dir
@@ -84,7 +89,7 @@ class BigDLEstimator(OrcaSparkEstimator):
 
     def fit(self, data, epochs, batch_size=32, feature_cols="features", label_cols="label",
             caching_sample=True, validation_data=None, validation_trigger=None,
-            validation_metrics=None, checkpoint_trigger=None):
+            checkpoint_trigger=None):
         from zoo.orca.learn.metrics import Metrics
         from zoo.orca.learn.trigger import Trigger
 
@@ -108,13 +113,12 @@ class BigDLEstimator(OrcaSparkEstimator):
             if validation_data is not None:
                 assert isinstance(validation_data, DataFrame), \
                     "validation_data should be a spark DataFrame."
-                assert validation_trigger is not None and validation_metrics is not None, \
-                    "You should provide validation_trigger and validation_metrics " \
+                assert validation_trigger is not None and self.metrics is not None, \
+                    "You should provide validation_trigger and metrics " \
                     "if you provide validation_data."
                 validation_trigger = Trigger.convert_trigger(validation_trigger)
-                validation_metrics = Metrics.convert_metrics_list(validation_metrics)
                 self.nn_estimator.setValidation(validation_trigger, validation_data,
-                                                validation_metrics, batch_size)
+                                                self.metrics, batch_size)
             if self.log_dir is not None and self.app_name is not None:
                 from bigdl.optim.optimizer import TrainSummary
                 from bigdl.optim.optimizer import ValidationSummary
@@ -132,7 +136,6 @@ class BigDLEstimator(OrcaSparkEstimator):
             from zoo.orca.data.utils import xshard_to_sample
 
             end_trigger = MaxEpoch(epochs)
-            validation_metrics = Metrics.convert_metrics_list(validation_metrics)
             checkpoint_trigger = Trigger.convert_trigger(checkpoint_trigger)
 
             if isinstance(data, SparkXShards):
@@ -148,7 +151,7 @@ class BigDLEstimator(OrcaSparkEstimator):
                 if self.log_dir is not None and self.app_name is not None:
                     self.estimator.set_tensorboard(self.log_dir, self.app_name)
                 self.estimator.train(train_feature_set, self.loss, end_trigger, checkpoint_trigger,
-                                     val_feature_set, validation_metrics, batch_size)
+                                     val_feature_set, self.metrics, batch_size)
                 self.is_nnframe_fit = False
             else:
                 raise ValueError("Data and validation data should be XShards, but get " +
@@ -177,8 +180,7 @@ class BigDLEstimator(OrcaSparkEstimator):
             raise ValueError("Data should be XShards or Spark DataFrame, but get " +
                              data.__class__.__name__)
 
-    def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None,
-                 validation_metrics=None):
+    def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         assert data is not None, "validation data shouldn't be None"
 
         if isinstance(data, DataFrame):
@@ -187,9 +189,8 @@ class BigDLEstimator(OrcaSparkEstimator):
             from zoo.orca.data.utils import xshard_to_sample
             from zoo.orca.learn.metrics import Metrics
 
-            validation_metrics = Metrics.convert_metrics_list(validation_metrics)
             val_feature_set = FeatureSet.sample_rdd(data.rdd.flatMap(xshard_to_sample))
-            result = self.estimator.evaluate(val_feature_set, validation_metrics, batch_size)
+            result = self.estimator.evaluate(val_feature_set, self.metrics, batch_size)
         else:
             raise ValueError("Data should be XShards or Spark DataFrame, but get " +
                              data.__class__.__name__)
