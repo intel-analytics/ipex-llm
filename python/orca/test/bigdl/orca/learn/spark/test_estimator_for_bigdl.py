@@ -231,7 +231,9 @@ class TestEstimatorForKeras(TestCase):
         optim_method = SGD(learningrate=0.01)
         with tempfile.TemporaryDirectory() as temp_dir_name:
             estimator = Estimator.from_bigdl(model=model, optimizer=optim_method,
-                                             loss=ClassNLLCriterion(), model_dir=temp_dir_name,
+                                             loss=ClassNLLCriterion(),
+                                             metrics=[Accuracy()],
+                                             model_dir=temp_dir_name,
                                              feature_preprocessing=SeqToTensor([2]),
                                              label_preprocessing=SeqToTensor([1]))
             estimator.set_constant_gradient_clipping(0.1, 1.2)
@@ -239,12 +241,11 @@ class TestEstimatorForKeras(TestCase):
             r_c = r1.collect()
             estimator.set_tensorboard(log_dir=temp_dir_name, app_name="test")
             estimator.fit(data=data_shard, epochs=5, batch_size=8, validation_data=data_shard,
-                          validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
+                          checkpoint_trigger=EveryEpoch())
             summary = estimator.get_train_summary(tag="Loss")
             temp_path = os.path.join(temp_dir_name, "save_model")
             estimator.save(temp_path)
             eval_result = estimator.evaluate(data=data_shard,
-                                             validation_metrics=[Accuracy()],
                                              batch_size=8)
             assert isinstance(eval_result, dict)
             result = estimator.predict(data=data_shard)
@@ -258,11 +259,12 @@ class TestEstimatorForKeras(TestCase):
                 assert abs(r0_c[idx]["prediction"][0] - result_c[0]["prediction"][idx][0]) == 0
                 assert abs(r0_c[idx]["prediction"][1] - result_c[0]["prediction"][idx][1]) == 0
             estimator.fit(data=df, epochs=6, batch_size=8, validation_data=df,
-                          validation_metrics=[Accuracy()], validation_trigger=EveryEpoch())
+                          validation_trigger=EveryEpoch())
             summary = estimator.get_train_summary()
 
             # test load from checkpoint
             est2 = Estimator.from_bigdl(model=Sequential(), optimizer=None, loss=None,
+                                        metrics=[Accuracy()],
                                         model_dir=None)
             est2.load(temp_dir_name, loss=ClassNLLCriterion(), is_checkpoint=True)
             r2 = est2.predict(data=data_shard)
@@ -270,8 +272,8 @@ class TestEstimatorForKeras(TestCase):
             assert (result_c[0]["prediction"] == r2_c[0]["prediction"]).all()
             # resume training
             est2.fit(data=data_shard, epochs=10, batch_size=8, validation_data=data_shard,
-                     validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
-            est2.evaluate(data=data_shard, validation_metrics=[Accuracy()], batch_size=8)
+                     checkpoint_trigger=EveryEpoch())
+            est2.evaluate(data=data_shard, batch_size=8)
             # test load from saved model
             est3 = Estimator.from_bigdl(model=Sequential(), optimizer=None, loss=None,
                                         model_dir=None)
@@ -303,18 +305,19 @@ class TestEstimatorForKeras(TestCase):
         optim_method = SGD(learningrate=0.01)
         with tempfile.TemporaryDirectory() as temp_dir_name:
             estimator = Estimator.from_bigdl(model=model, optimizer=optim_method,
-                                             loss=ClassNLLCriterion(), model_dir=temp_dir_name)
+                                             loss=ClassNLLCriterion(),
+                                             metrics=[Accuracy()],
+                                             model_dir=temp_dir_name)
             estimator.set_constant_gradient_clipping(0.1, 1.2)
             r1 = estimator.predict(data=data_shard)
             r_c = r1.collect()
             estimator.set_tensorboard(log_dir=temp_dir_name, app_name="test")
             estimator.fit(data=data_shard, epochs=5, batch_size=8, validation_data=data_shard,
-                          validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
+                          checkpoint_trigger=EveryEpoch())
             summary = estimator.get_train_summary(tag="Loss")
             temp_path = os.path.join(temp_dir_name, "save_model")
             estimator.save(temp_path)
             eval_result = estimator.evaluate(data=data_shard,
-                                             validation_metrics=[Accuracy()],
                                              batch_size=8)
 
 

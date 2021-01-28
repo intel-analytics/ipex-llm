@@ -112,13 +112,13 @@ class TestEstimatorForDataFrame(TestCase):
                                                        size=()))])).toDF(["feature", "label"])
 
         with tempfile.TemporaryDirectory() as temp_dir_name:
-            estimator = Estimator.from_torch(model=model, loss=loss_func,
+            estimator = Estimator.from_torch(model=model, loss=loss_func, metrics=[Accuracy()],
                                              optimizer=SGD(learningrate_schedule=Default()),
                                              model_dir=temp_dir_name)
             estimator.fit(data=df, epochs=4, batch_size=2, validation_data=df,
-                          validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch(),
+                          checkpoint_trigger=EveryEpoch(),
                           feature_cols=["feature"], label_cols=["label"])
-            eval_result = estimator.evaluate(df, validation_metrics=[Accuracy()], batch_size=2,
+            eval_result = estimator.evaluate(df, batch_size=2,
                                              feature_cols=["feature"], label_cols=["label"])
             assert isinstance(eval_result, dict)
 
