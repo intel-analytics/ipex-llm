@@ -72,6 +72,9 @@ if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
 elif cluster_mode == "yarn":
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+else:
+    print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+          + cluster_mode)
 
 print(tf.__version__)
 
