@@ -61,6 +61,9 @@ elif cluster_mode == "yarn":
     additional = "datasets/cats_and_dogs_filtered.zip#" + dataset_dir
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g",
                       additional_archive=additional)
+else:
+    print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+          + cluster_mode)
 
 train_dir = os.path.join(base_dir, 'train')
 validation_dir = os.path.join(base_dir, 'validation')
