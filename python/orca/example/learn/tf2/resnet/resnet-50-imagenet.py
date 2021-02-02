@@ -284,16 +284,15 @@ def compile_args_creator(config):
     return param
 
 
-def train_data_creator(config):
+def train_data_creator(config, batch_size):
     train_dataset = input_fn(is_training=True,
                              data_dir=config["data_dir"],
-                             batch_size=config["batch_size"])
+                             batch_size=batch_size)
 
     return train_dataset
 
 
-def dummy_data_creator(config):
-    batch_size = config["batch_size"]
+def dummy_data_creator(config, batch_size):
     images = tf.zeros((batch_size, 224, 224, 3), tf.float32)
     labels = tf.zeros((batch_size,), tf.int32)
     dataset = tf.data.Dataset.from_tensors((images, labels))
@@ -301,10 +300,10 @@ def dummy_data_creator(config):
     return dataset
 
 
-def val_data_creator(config):
+def val_data_creator(config, batch_size):
     val_dataset = input_fn(is_training=False,
                            data_dir=config["data_dir"],
-                           batch_size=config["batch_size"])
+                           batch_size=batch_size)
 
     return val_dataset
 
