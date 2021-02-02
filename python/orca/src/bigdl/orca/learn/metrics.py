@@ -31,11 +31,12 @@ class Metrics(ABC):
                 if isinstance(m, Metrics):
                     keras_metrics.append(m.get_metrics())
                 else:
-                    keras_metrics.append(m)
+                    raise ValueError("Only orca metrics are supported, but get " +
+                                     m.__class__.__name__)
             return keras_metrics
         else:
             if isinstance(metrics, Metrics):
-                return metrics.get_metrics()
+                return [metrics.get_metrics()]
             else:
                 raise ValueError("Only orca metrics are supported, but get " +
                                  metrics.__class__.__name__)
