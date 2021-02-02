@@ -47,9 +47,8 @@ def linear_dataset(a=2, size=1000):
     return x, y
 
 
-def create_train_datasets(config):
+def create_train_datasets(config, batch_size):
     import tensorflow as tf
-    batch_size = config["batch_size"]
     x_train, y_train = linear_dataset(size=NUM_TRAIN_SAMPLES)
 
     train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
@@ -59,9 +58,8 @@ def create_train_datasets(config):
     return train_dataset
 
 
-def create_test_dataset(config):
+def create_test_dataset(config, batch_size):
     import tensorflow as tf
-    batch_size = config["batch_size"]
     x_test, y_test = linear_dataset(size=NUM_TEST_SAMPLES)
 
     test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
@@ -106,14 +104,14 @@ def identity_model_creator(config):
     return model
 
 
-def create_auto_shard_datasets(config):
+def create_auto_shard_datasets(config, batch_size):
     import tensorflow as tf
     data_path = os.path.join(resource_path, "orca/learn/test_auto_shard/*.csv")
     dataset = tf.data.Dataset.list_files(data_path)
     dataset = dataset.interleave(lambda x: tf.data.TextLineDataset(x))
     dataset = dataset.map(lambda x: tf.strings.to_number(x))
     dataset = dataset.map(lambda x: (x, x))
-    dataset = dataset.batch(config["batch_size"])
+    dataset = dataset.batch(batch_size)
     return dataset
 
 
@@ -441,24 +439,21 @@ class TestTFRayEstimator(TestCase):
                           metrics=['accuracy'])
             return model
 
-        def train_data_creator(config):
+        def train_data_creator(config, batch_size):
             dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 3),
                                                           np.random.randint(0, 10, (100, 1))))
             dataset = dataset.repeat()
             dataset = dataset.shuffle(1000)
-            dataset = dataset.batch(config["batch_size"])
+            dataset = dataset.batch(batch_size)
             return dataset
 
         batch_size = 320
-        config = {
-            "batch_size": batch_size
-        }
         try:
-            est = Estimator.from_keras(model_creator=model_creator,
-                                       config=config, workers_per_node=2)
+            est = Estimator.from_keras(model_creator=model_creator, workers_per_node=2)
 
             history = est.fit(train_data_creator,
                               epochs=1,
+                              batch_size=batch_size,
                               steps_per_epoch=5)
             print("start saving")
             est.save("/tmp/cifar10_keras.ckpt")

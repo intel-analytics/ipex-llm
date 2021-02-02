@@ -31,6 +31,7 @@
 import logging
 import json
 import os
+
 import numpy as np
 
 import ray
@@ -69,7 +70,7 @@ class DatasetHandler:
                               validation_steps):
 
         config, local_batch_size = self._handle_batch_size(config)
-        train_dataset = data_creator(config)
+        train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, ray.ObjectID):
             assert steps_per_epoch is not None, "steps_per_epoch must be provided for xshard"
             train_dataset = self._handle_xshards(train_dataset,
@@ -80,7 +81,7 @@ class DatasetHandler:
             train_dataset = self._handle_sharding(train_dataset)
 
         if validation_data_creator is not None:
-            test_dataset = validation_data_creator(config)
+            test_dataset = validation_data_creator(config, config["batch_size"])
             if isinstance(test_dataset, ray.ObjectID):
                 assert validation_steps is not None, "validation_steps must be provided" \
                                                      "when use xshards for evaluate"
@@ -97,7 +98,7 @@ class DatasetHandler:
 
     def handle_dataset_validation(self, data_creator, config, steps):
         config, local_batch_size = self._handle_batch_size(config)
-        dataset = data_creator(config)
+        dataset = data_creator(config, config["batch_size"])
         if isinstance(dataset, ray.ObjectID):
             assert steps is not None, "steps must be provided for xshard"
             dataset = self._handle_xshards(dataset,
@@ -328,10 +329,11 @@ class TFRunner:
         config = self.config.copy()
         if data_config is not None:
             config.update(data_config)
-        config['batch_size'] = batch_size
+        config["batch_size"] = batch_size
+
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
-            train_dataset, test_dataset = dataset_handler\
+            train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator,
                                        validation_data_creator,
                                        config=config, epochs=epochs,
@@ -426,7 +428,7 @@ class TFRunner:
         if data_config is not None:
             config.update(data_config)
 
-        dataset = data_creator(config)
+        dataset = data_creator(config, batch_size)
         if not isinstance(dataset, ray.ObjectID):
             raise ValueError("Only xshards is supported for predict")
 
