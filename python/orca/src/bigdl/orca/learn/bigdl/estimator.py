@@ -21,6 +21,7 @@ from zoo.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from zoo.orca.data import SparkXShards
 from bigdl.optim.optimizer import MaxEpoch
 from zoo.feature.common import FeatureSet
+from zoo.orca.learn.metrics import Accuracy
 from pyspark.sql.dataframe import DataFrame
 
 
@@ -90,10 +91,14 @@ class BigDLEstimator(OrcaSparkEstimator):
     def fit(self, data, epochs, batch_size=32, feature_cols="features", label_cols="label",
             caching_sample=True, validation_data=None, validation_trigger=None,
             checkpoint_trigger=None):
-        from zoo.orca.learn.metrics import Metrics
         from zoo.orca.learn.trigger import Trigger
 
         assert batch_size > 0, "batch_size should be greater than 0"
+
+        if validation_data is not None:
+            assert self.metrics is not None, \
+                "You should provide metrics when creating this estimator if you provide " \
+                "validation_data."
 
         if isinstance(data, DataFrame):
             if isinstance(feature_cols, list):
@@ -113,9 +118,8 @@ class BigDLEstimator(OrcaSparkEstimator):
             if validation_data is not None:
                 assert isinstance(validation_data, DataFrame), \
                     "validation_data should be a spark DataFrame."
-                assert validation_trigger is not None and self.metrics is not None, \
-                    "You should provide validation_trigger and metrics " \
-                    "if you provide validation_data."
+                assert validation_trigger is not None, \
+                    "You should provide validation_trigger if you provide validation_data."
                 validation_trigger = Trigger.convert_trigger(validation_trigger)
                 self.nn_estimator.setValidation(validation_trigger, validation_data,
                                                 self.metrics, batch_size)
@@ -124,7 +128,7 @@ class BigDLEstimator(OrcaSparkEstimator):
                 from bigdl.optim.optimizer import ValidationSummary
                 train_summary = TrainSummary(log_dir=self.log_dir, app_name=self.app_name)
                 self.nn_estimator.setTrainSummary(train_summary)
-                val_summary = ValidationSummary(log_dir=self.log_dir, app_name=self.log_dir)
+                val_summary = ValidationSummary(log_dir=self.log_dir, app_name=self.app_name)
                 self.nn_estimator.setValidationSummary(val_summary)
             if self.model_dir is not None and checkpoint_trigger is not None:
                 checkpoint_trigger = Trigger.convert_trigger(checkpoint_trigger)
@@ -182,6 +186,8 @@ class BigDLEstimator(OrcaSparkEstimator):
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         assert data is not None, "validation data shouldn't be None"
+        assert self.metrics is not None, "metrics shouldn't be None, please specify the metrics" \
+                                         " argument when creating this estimator."
 
         if isinstance(data, DataFrame):
             raise NotImplementedError
@@ -276,14 +282,24 @@ class BigDLEstimator(OrcaSparkEstimator):
         self.estimator.set_l2_norm_gradient_clipping(clip_norm)
 
     def get_train_summary(self, tag=None):
+        # Exception handle
+        if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
+            raise TypeError('Only "Loss", "LearningRate", "Throughput"'
+                            + 'are supported in train summary')
         if self.is_nnframe_fit:
-            return self.nn_estimator.getTrainSummary()
+            train_summary = self.nn_estimator.getTrainSummary()
+            return train_summary.read_scalar(tag=tag)
         else:
             return self.estimator.get_train_summary(tag=tag)
 
     def get_validation_summary(self, tag=None):
         if self.is_nnframe_fit:
-            return self.nn_estimator.getValidationSummary()
+            assert tag is not None, "You should provide tag which should match the name of " \
+                                    "the ValidationMethod set into the optimizer. " \
+                                    "e.g.'MAE', 'Top1AccuracyLoss', 'Top1Accuracy' or " \
+                                    "'Top5Accuracy'."
+            val_summary = self.nn_estimator.getValidationSummary()
+            return val_summary.read_scalar(tag=tag)
         else:
             return self.estimator.get_validation_summary(tag=tag)
 
