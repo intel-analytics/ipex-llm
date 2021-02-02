@@ -25,25 +25,25 @@ def preprocess(x, y):
     return x, y
 
 
-def train_data_creator(config):
+def train_data_creator(config, batch_size):
     (train_feature, train_label), _ = tf.keras.datasets.mnist.load_data()
 
     dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
     dataset = dataset.repeat()
     dataset = dataset.map(preprocess)
     dataset = dataset.shuffle(1000)
-    dataset = dataset.batch(config["batch_size"])
+    dataset = dataset.batch(batch_size)
 
     return dataset
 
 
-def val_data_creator(config):
+def val_data_creator(config, batch_size):
     _, (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
 
     dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
     dataset = dataset.repeat()
     dataset = dataset.map(preprocess)
-    dataset = dataset.batch(config["batch_size"])
+    dataset = dataset.batch(batch_size)
 
     return dataset
 
@@ -71,12 +71,10 @@ def model_creator(config):
 def main(max_epoch):
 
     batch_size = 320
-    config = {
-        "batch_size": batch_size
-    }
-    est = Estimator.from_keras(model_creator=model_creator, config=config, workers_per_node=2)
+    est = Estimator.from_keras(model_creator=model_creator, workers_per_node=2)
     stats = est.fit(train_data_creator,
                     epochs=max_epoch,
+                    batch_size=batch_size,
                     steps_per_epoch=60000 // batch_size,
                     validation_data=val_data_creator,
                     validation_steps=10000 // batch_size)
