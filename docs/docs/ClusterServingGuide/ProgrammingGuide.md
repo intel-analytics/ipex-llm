@@ -179,6 +179,7 @@ You need to put your model file into a directory with layout like following acco
    |-- graph_meta.json
 ```
 **note:** `.pb` is the weight file which name must be `frozen_inference_graph.pb`, `.json` is the inputs and outputs definition file which name must be `graph_meta.json`, with contents like `{"input_names":["input:0"],"output_names":["output:0"]}`
+
 ***Tensorflow Checkpoint***
 Please refer to [freeze checkpoint example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tensorflow/freeze_checkpoint)
 
