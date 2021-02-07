@@ -21,12 +21,5 @@ python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/tf2/resnet/resnet-50-
 now=$(date "+%s")
 time1=$((now-start))
 
-echo "#2 Start tf2 estimator lenet"
-start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/tf2/mnist/lenet_mnist_keras.py --cluster_mode local --max_epoch 1
-now=$(date "+%s")
-time2=$((now-start))
-
 echo "Ray example tests finished"
 echo "#1 tf2 estimator resnet 50 time used:$time1 seconds"
-echo "#2 tf2 estimator lenet used:$time2 seconds"
