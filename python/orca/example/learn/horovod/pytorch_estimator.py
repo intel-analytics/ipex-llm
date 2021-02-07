@@ -124,7 +124,7 @@ if __name__ == "__main__":
                              "You can change it with your k8s image.")
     parser.add_argument('--k8s_driver_host', type=str, default="",
                         help="The k8s driver localhost.")
-    parser.add_argument('--k8s_driver_port', type=int, default="",
+    parser.add_argument('--k8s_driver_port', type=str, default="",
                         help="The k8s driver port.")
 
     args = parser.parse_args()
@@ -144,6 +144,6 @@ if __name__ == "__main__":
                           container_image=args.container_image,
                           num_nodes=args.num_nodes, cores=args.cores,
                           conf={"spark.driver.host": args.k8s_driver_host,
-                                "spark.driver.port": str(args.k8s_driver_port)})
+                                "spark.driver.port": args.k8s_driver_port})
     train_example(workers_per_node=args.workers_per_node)
     stop_orca_context()
