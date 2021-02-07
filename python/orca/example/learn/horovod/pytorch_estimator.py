@@ -117,7 +117,8 @@ if __name__ == "__main__":
                         help="The number of workers to run on each node")
     parser.add_argument('--k8s_master', type=str, default="",
                         help="The k8s master. "
-                             "It should be k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>.")
+                             "It should be k8s://https://<k8s-apiserver-host>: "
+                             "<k8s-apiserver-port>.")
     parser.add_argument("--container_image", type=str, default="",
                         help="The runtime k8s image. "
                              "You can change it with your k8s image.")
@@ -128,17 +129,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.cluster_mode == "local":
-        init_orca_context(cluster_mode="local", cores=args.cores, num_nodes=args.num_nodes, memory=args.memory)
+        init_orca_context(cluster_mode="local", cores=args.cores,
+                          num_nodes=args.num_nodes, memory=args.memory)
     elif args.cluster_mode == "yarn":
-        init_orca_context(cluster_mode="yarn-client", cores=args.cores, num_nodes=args.num_nodes, memory=args.memory)
+        init_orca_context(cluster_mode="yarn-client", cores=args.cores,
+                          num_nodes=args.num_nodes, memory=args.memory)
     elif args.cluster_mode == "k8s":
-        if not args.k8s_master or not args.container_image or not args.k8s_driver_host or not args.k8s_driver_port:
+        if not args.k8s_master or not args.container_image \
+                or not args.k8s_driver_host or not args.k8s_driver_port:
             parser.print_help()
-            parser.error('k8s_master, container_image, k8s_driver_host/port are required not to be empty')
+            parser.error('k8s_master, container_image,'
+                         'k8s_driver_host/port are required not to be empty')
         init_orca_context(cluster_mode="k8s", master=args.k8s_master,
-                  container_image=args.container_image,
-                  num_nodes=args.num_nodes, cores=args.cores,
-                  conf={"spark.driver.host": args.k8s_driver_host,
-                  "spark.driver.port": str(args.k8s_driver_port)})
+                          container_image=args.container_image,
+                          num_nodes=args.num_nodes, cores=args.cores,
+                          conf={"spark.driver.host": args.k8s_driver_host,
+                                "spark.driver.port": str(args.k8s_driver_port)})
     train_example(workers_per_node=args.workers_per_node)
     stop_orca_context()
