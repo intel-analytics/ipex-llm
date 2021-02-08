@@ -6,13 +6,20 @@ Jenkins has master nodes and slave agents. To make Jenkins well functioning, mas
 ### 1.1 Build master
 First, you should step into the directory jenkins-master and run
 ```bash
-sudo docker build --rm -t intelanalytics/jenkins-master .
+sudo docker build \
+    --build-arg JDK_VERSION=8u192 \
+    --build-arg JDK_URL=http://your-http-url-to-download-jdk \
+    --rm -t intelanalytics/jenkins-master .
 ```
 If proxy is needed for building the image, building arguments related to proxy should be added in the command above. For example,
 ```bash
-sudo docker build --build-arg http_proxy=http://yourproxyhost:port \
-                  --build-arg https_proxy=https://yourproxyhost:port \
-                  --rm -t intelanalytics/jenkins-master .
+sudo docker build \
+    --build-arg http_proxy=http://yourproxyhost:port \
+    --build-arg https_proxy=https://yourproxyhost:port \
+    --build-arg JDK_VERSION=8u192 \
+    --build-arg JDK_URL=http://your-http-url-to-download-jdk \
+    --build-arg no_proxy=x.x.x.x \
+    --rm -t intelanalytics/jenkins-master .
 ```
 Note that you can set any tag of the image by changine the parameter after the option -t.
 
@@ -25,13 +32,20 @@ There are some extra files other than Dockerfile in the directory jenkins-master
 ### 1.2 Build slaves
 Building Jenkins slave is similar to building Jenkins master. First, step into the directory jenkins-slave and run
 ```bash
-sudo docker build --rm -t intelanalytics/jenkins-slave .
+sudo docker build \
+    --build-arg JDK_VERSION=8u192 \
+    --build-arg JDK_URL=http://your-http-url-to-download-jdk \
+    --rm -t intelanalytics/jenkins-slave .
 ```
 If proxy is needed for building the image, the following command should be run.
 ```bash
-sudo docker build --build-arg http_proxy=http://yourproxyhost:port \
-                  --build-arg https_proxy=https://yourproxyhost:port \
-                  --rm -t intelanalytics/jenkins-slave .
+sudo docker build \
+    --build-arg http_proxy=http://yourproxyhost:port \
+    --build-arg https_proxy=https://yourproxyhost:port \
+    --build-arg JDK_VERSION=8u192 \
+    --build-arg JDK_URL=http://your-http-url-to-download-jdk \
+    --build-arg no_proxy=x.x.x.x \
+    --rm -t intelanalytics/jenkins-slave .
 ```
 There are some extra files other than Dockerfile in the directory jenkins-slave.
 + pip.conf: provide configurations of pip

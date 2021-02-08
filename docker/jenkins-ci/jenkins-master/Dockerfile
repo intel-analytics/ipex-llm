@@ -4,6 +4,9 @@ MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytic
 
 WORKDIR /opt/work
 
+ARG JDK_VERSION=8u192
+ARG JDK_URL=your_jdk_url
+
 ENV JAVA_HOME                /opt/work/jdk
 ENV JAVA_OPTS                -Djenkins.install.runSetupWizard=false
 ENV JENKINS_HOME             /opt/work/jenkins
@@ -23,11 +26,12 @@ COPY jenkins.sh ${JENKINS_HOME}/jenkins.sh
 RUN apt-get update && apt-get install -y git wget curl && rm -rf /var/lib/apt/lists/*
 
 #java
-RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u281-linux-x64.tar.gz && \
-    gunzip jdk-8u281-linux-x64.tar.gz && \
-    tar -xf jdk-8u281-linux-x64.tar -C /opt && \
-    rm jdk-8u281-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_281 /opt/jdk
+RUN wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
 # Install Jenkins Master
 RUN curl -fsSL ${JENKINS_URL} -o ${JENKINS_HOME}/jenkins.war && \

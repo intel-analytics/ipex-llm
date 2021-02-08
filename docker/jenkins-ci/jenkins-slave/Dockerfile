@@ -2,6 +2,9 @@ FROM ubuntu:16.04
 
 WORKDIR /opt/work
 
+ARG JDK_VERSION=8u192
+ARG JDK_URL=your_jdk_url
+
 ENV JAVA_8_HOME         /opt/work/jdk8
 ENV JAVA_HOME           ${JAVA_8_HOME}
 ENV SCALA_HOME          /opt/work/scala
@@ -30,11 +33,12 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libgtk2.0-dev
 
 #jdk8
-RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u281-linux-x64.tar.gz && \
-    gunzip jdk-8u281-linux-x64.tar.gz && \
-    tar -xf jdk-8u281-linux-x64.tar -C /opt && \
-    rm jdk-8u281-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_281 /opt/jdk && \
+RUN wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 #scala
     wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
     gunzip scala-2.11.8.tgz && \

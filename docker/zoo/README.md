@@ -35,15 +35,21 @@
 
 ## How to build it.
 
-### By default, you can build a Analytics-Zoo:default image with latest nightly-build Analytics-Zoo distributions:
+### By default, you can build a Analytics-Zoo:default image with latest nightly-build Analytics-Zoo distributions, you also need to provide jdk version and jdk download url:
 
-    sudo docker build --rm -t intelanalytics/analytics-zoo:default .
+    sudo docker build \
+        --build-arg JDK_VERSION=8u192 \
+        --build-arg JDK_URL=http://your-http-url-to-download-jdk \
+        --rm -t intelanalytics/analytics-zoo:default .
 
 ### If you need http and https proxy to build the image:
 
     sudo docker build \
         --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
         --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
+        --build-arg JDK_VERSION=8u192 \
+        --build-arg JDK_URL=http://your-http-url-to-download-jdk \
+        --build-arg no_proxy=x.x.x.x \
         --rm -t intelanalytics/analytics-zoo:default .
 
 ### You can also specify the ANALYTICS_ZOO_VERSION and SPARK_VERSION to build a specific Analytics-Zoo image:
@@ -51,6 +57,9 @@
     sudo docker build \
         --build-arg http_proxy=http://your-proxy-host:your-proxy-port \
         --build-arg https_proxy=https://your-proxy-host:your-proxy-port \
+        --build-arg JDK_VERSION=8u192 \
+        --build-arg JDK_URL=http://your-http-url-to-download-jdk \
+        --build-arg no_proxy=x.x.x.x \
         --build-arg ANALYTICS_ZOO_VERSION=0.3.0 \
         --build-arg BIGDL_VERSION=0.6.0 \
         --build-arg SPARK_VERSION=2.3.1 \

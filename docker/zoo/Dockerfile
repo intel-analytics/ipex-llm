@@ -29,6 +29,8 @@ ARG RUNTIME_DRIVER_MEMORY=20g
 ARG RUNTIME_EXECUTOR_CORES=4
 ARG RUNTIME_EXECUTOR_MEMORY=20g
 ARG RUNTIME_TOTAL_EXECUTOR_CORES=4
+ARG JDK_VERSION=8u192
+ARG JDK_URL=your_jdk_url
 ENV ANALYTICS_ZOO_VERSION           ${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION                   ${SPARK_VERSION}
 ENV BIGDL_VERSION                   ${BIGDL_VERSION}
@@ -48,11 +50,12 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libsm6
 
 #java
-RUN wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u281-linux-x64.tar.gz && \
-    gunzip jdk-8u281-linux-x64.tar.gz && \
-    tar -xf jdk-8u281-linux-x64.tar -C /opt && \
-    rm jdk-8u281-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_281 /opt/jdk
+RUN wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
 #python
 RUN apt-get install -y python3-minimal && \

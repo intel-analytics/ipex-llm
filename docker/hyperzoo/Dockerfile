@@ -6,6 +6,8 @@ ARG ANALYTICS_ZOO_VERSION=0.10.0-SNAPSHOT
 ARG BIGDL_VERSION=0.12.1
 ARG SPARK_VERSION=2.4.3
 ARG FLINK_VERSION=1.10.0
+ARG JDK_VERSION=8u192
+ARG JDK_URL=your_jdk_url
 
 ENV FLINK_HOME                          /opt/flink-${FLINK_VERSION}
 ENV ANALYTICS_ZOO_VERSION               ${ANALYTICS_ZOO_VERSION}
@@ -55,11 +57,12 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.
     bash Miniconda3-py37_4.8.3-Linux-x86_64.sh -b && \
     rm -f Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
 #java
-    wget https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u281-linux-x64.tar.gz  && \
-    gunzip jdk-8u281-linux-x64.tar.gz && \
-    tar -xf jdk-8u281-linux-x64.tar -C /opt && \
-    rm jdk-8u281-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_281 /opt/jdk && \
+    wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 #spark
     wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
