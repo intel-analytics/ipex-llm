@@ -5,40 +5,68 @@ set -e
 echo "#1 start example for MNIST"
 #timer
 start=$(date "+%s")
-if [ -f analytics-zoo-data/data/MNIST ]
-then
-    echo "MNIST already exists"
+if [ -f analytics-zoo-data/data/MNIST ]; then
+  echo "MNIST already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
-    wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
-    wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
-    wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
 fi
 
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/mnist/main.py --dir analytics-zoo-data/data
 
 now=$(date "+%s")
-time1=$((now-start))
+time1=$((now - start))
 
 echo "#2 start example for orca Cifar10"
 #timer
 start=$(date "+%s")
-if [ -d ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/data ]
-then
-    echo "Cifar10 already exists"
+if [ -d ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/data ]; then
+  echo "Cifar10 already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/cifar10.zip -P ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10
-    unzip ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10.zip
+  wget -nv $FTP_URI/analytics-zoo-data/cifar10.zip -P ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10
+  unzip ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10.zip
 fi
 
 sed "s/epochs=2/epochs=1/g;s/batch_size=4/batch_size=256/g" \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10.py \
-    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10_tmp.py
+  ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10.py \
+  >${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10_tmp.py
 
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10_tmp.py
 
 now=$(date "+%s")
-time2=$((now-start))
+time2=$((now - start))
+
+echo "#3 start test for orca bigdl resnet-finetune"
+#timer
+start=$(date "+%s")
+#prepare dataset
+wget $FTP_URI/analytics-zoo-data/data/cats_and_dogs_filtered.zip -P analytics-zoo-data/data
+unzip -q analytics-zoo-data/data/cats_and_dogs_filtered.zip -d analytics-zoo-data/data
+mkdir analytics-zoo-data/data/cats_and_dogs_filtered/samples
+cp analytics-zoo-data/data/cats_and_dogs_filtered/train/cats/cat.7* analytics-zoo-data/data/cats_and_dogs_filtered/samples
+cp analytics-zoo-data/data/cats_and_dogs_filtered/train/dogs/dog.7* analytics-zoo-data/data/cats_and_dogs_filtered/samples
+#prepare model
+if [ -d ${HOME}/.cache/torch/hub/checkpoints/resnet18-5c106cde.pth ]; then
+  echo "resnet model found."
+else
+  if [ ! -d ${HOME}/.cache/torch/hub/checkpoints ]; then
+    mkdir ${HOME}/.cache/torch/hub/checkpoints
+  fi
+  wget $FTP_URI/analytics-zoo-models/pytorch/resnet18-5c106cde.pth -P ${HOME}/.cache/torch/hub/checkpoints
+fi
+#run the example
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/bigdl/resnet_finetune/resnet_finetune.py --imagePath analytics-zoo-data/data/cats_and_dogs_filtered/samples
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca bigdl resnet-finetune"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time3=$((now - start))
 
 echo "#1 MNIST example time used:$time1 seconds"
 echo "#2 orca Cifar10 example time used:$time2 seconds"
+echo "#3 orca bigdl resnet-finetune time used:$time3 seconds"
