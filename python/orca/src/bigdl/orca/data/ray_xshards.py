@@ -20,44 +20,54 @@ import ray.services
 import uuid
 import random
 
+from zoo.orca.data import XShards
 from zoo.ray import RayContext
 
 
-class PartitionUploader:
+class LocalStore:
 
     def __init__(self):
+        self.shards = {}
+        self.shard_count = {}
         self.partitions = {}
 
-    def upload_partition(self, idx, partition):
-        self.partitions[idx] = partition
+    def upload_shards(self, shard_id, shard):
+        partition_idx, shard_idx = shard_id
+        self.shards[shard_id] = shard
+        if partition_idx in self.shard_count:
+            self.shard_count[partition_idx] += 1
+        else:
+            self.shard_count[partition_idx] = 1
         return 0
 
-    def upload_shards(self, shard_id, shard):
-        self.partitions[shard_id] = shard
-        return 0
+    def upload_partition(self, partition_id, partition):
+        self.partitions[partition_id] = partition
+
+    def get_shards(self, shard_id):
+        return self.shards[shard_id]
+
+    def get_partition(self, partition_id):
+        if not self.partitions:
+            partition = []
+            for shard_idx in range(self.shard_count[partition_id]):
+                shard = self.shards[(partition_id, shard_idx)]
+                partition.append(shard)
+            return partition
+        else:
+            return self.partitions[partition_id]
 
     def get_partitions(self):
-        return self.partitions
-
-    def get_partition(self, idx):
-        return self.partitions[idx]
-
-    def upload_multiple_partitions(self, idxs, partitions):
-        for idx, partition in zip(idxs, partitions):
-            self.upload_partition(idx, partition)
-        return 0
-
-    def upload_partitions_from_plasma(self, partition_id, plasma_object_id, object_store_address):
-        import pyarrow.plasma as plasma
-        client = plasma.connect(object_store_address)
-        partition = client.get(plasma_object_id)
-        self.partitions[partition_id] = partition
-        return 0
+        if not self.partitions:
+            result = {partition_id: self.get_partition(partition_id)
+                      for partition_id in self.shard_count.keys()}
+            return result
+        else:
+            return self.partitions
 
 
 def write_to_ray(idx, partition, redis_address, redis_password, partition_store_names):
-    partition = list(partition)
-    ray.init(address=redis_address, redis_password=redis_password, ignore_reinit_error=True)
+    if not ray.is_initialized():
+        ray.init(address=redis_address, redis_password=redis_password, ignore_reinit_error=True)
     ip = ray.services.get_node_ip_address()
     local_store_name = None
     for name in partition_store_names:
@@ -72,7 +82,11 @@ def write_to_ray(idx, partition, redis_address, redis_password, partition_store_
     # directly calling ray.put will set this driver as the owner of this object,
     # when the spark job finished, the driver might exit and make the object
     # eligible for deletion.
-    ray.get(local_store.upload_partition.remote(idx, partition))
+    result = []
+    for shard_id, shard in enumerate(partition):
+        shard_ref = ray.put(shard)
+        result.append(local_store.upload_shards.remote((idx, shard_id), shard_ref))
+    ray.get(result)
     ray.shutdown()
 
     return [(idx, local_store_name.split(":")[-1], local_store_name)]
@@ -87,13 +101,16 @@ def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
     return partition
 
 
-class RayRdd:
+class RayXShards(XShards):
 
     def __init__(self, uuid, partition2store_name, partition2ip, partition_stores):
         self.uuid = uuid
         self.partition2store_name = partition2store_name
         self.partition2ip = partition2ip
         self.partition_stores = partition_stores
+
+    def transform_shard(self, func, *args):
+        raise Exception("Transform is not supported for RayXShards")
 
     def num_partitions(self):
         return len(self.partition2ip)
@@ -113,7 +130,8 @@ class RayRdd:
             result.update(part)
         return [result[idx] for idx in range(self.num_partitions())]
 
-    def to_spark_rdd(self):
+    def to_spark_xshards(self):
+        from zoo.orca.data import SparkXShards
         ray_ctx = RayContext.get()
         sc = ray_ctx.sc
         address = ray_ctx.redis_address
@@ -123,7 +141,8 @@ class RayRdd:
         rdd = sc.parallelize([0] * num_parts * 10, num_parts)\
             .mapPartitionsWithIndex(
             lambda idx, _: get_from_ray(idx, address, password, partition2store))
-        return rdd
+        spark_xshards = SparkXShards(rdd)
+        return spark_xshards
 
     def _get_multiple_partition_refs(self, ids):
         refs = []
@@ -133,7 +152,26 @@ class RayRdd:
             refs.append(partition_ref)
         return refs
 
-    def map_partitions_with_actors(self, actors, func, gang_scheduling=True):
+    def transform_shards_with_actors(self, actors, func,
+                                     gang_scheduling=True):
+        """
+        Assign each partition_ref (referencing a list of shards) to an actor,
+        and run func for each actor and partition_ref pair.
+
+        Actors should have a `get_node_ip` method to achieve locality scheduling.
+        The `get_node_ip` method should call ray.services.get_node_ip_address()
+        to return the correct ip address.
+
+        The `func` should take an actor and a partition_ref as argument and
+        invoke some remote func on that actor and return a new partition_ref.
+
+        Note that if you pass partition_ref directly to actor method, ray
+        will resolve that partition_ref to the actual partition object, which
+        is a list of shards. If you pass partition_ref indirectly through other
+        object, say [partition_ref], ray will send the partition_ref itself to
+        actor, and you may need to use ray.get(partition_ref) on actor to retrieve
+        the actor partition objects.
+        """
         assigned_partitions, actor_ips = self.assign_partitions_to_actors(actors,
                                                                           gang_scheduling)
         assigned_partition_refs = [(part_ids, self._get_multiple_partition_refs(part_ids))
@@ -146,17 +184,17 @@ class RayRdd:
         for actor_ip, part_ids in zip(actor_ips, assigned_partitions):
             actor_ip2part_id[actor_ip].extend(part_ids)
 
-        return RayRdd.from_partition_refs(actor_ip2part_id, new_part_id_refs)
+        return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs)
 
-    def zip_partitions_with_actors(self, ray_rdd, actors, func, gang_scheduling=True):
-        assert self.num_partitions() == ray_rdd.num_partitions(),\
+    def zip_shards_with_actors(self, xshards, actors, func, gang_scheduling=True):
+        assert self.num_partitions() == xshards.num_partitions(),\
             "the rdds to be zipped must have the same number of partitions"
         assigned_partitions, actor_ips = self.assign_partitions_to_actors(actors,
                                                                           gang_scheduling)
         new_part_id_refs = {}
         for actor, part_ids in zip(actors, assigned_partitions):
             assigned_partition_refs = self._get_multiple_partition_refs(part_ids)
-            assigned_partition_refs_other = ray_rdd._get_multiple_partition_refs(part_ids)
+            assigned_partition_refs_other = xshards._get_multiple_partition_refs(part_ids)
             for part_id, this_part_ref, that_part_ref in \
                     zip(part_ids, assigned_partition_refs, assigned_partition_refs_other):
                 new_ref = func(actor, this_part_ref, that_part_ref)
@@ -166,7 +204,7 @@ class RayRdd:
         for actor_ip, part_ids in zip(actor_ips, assigned_partitions):
             actor_ip2part_id[actor_ip].extend(part_ids)
 
-        return RayRdd.from_partition_refs(actor_ip2part_id, new_part_id_refs)
+        return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs)
 
     def assign_partitions_to_actors(self, actors, one_to_one=True):
         num_parts = self.num_partitions()
@@ -247,7 +285,7 @@ class RayRdd:
         result = []
         for node, part_ids in ip2part_id.items():
             name = f"partition:{uuid_str}:{node}"
-            store = ray.remote(num_cpus=0, resources={f"node:{node}": 1e-4})(PartitionUploader) \
+            store = ray.remote(num_cpus=0, resources={f"node:{node}": 1e-4})(LocalStore) \
                 .options(name=name).remote()
             partition_stores[name] = store
             for idx in part_ids:
@@ -255,14 +293,14 @@ class RayRdd:
                 id2store_name[idx] = name
                 part_id2ip[idx] = node
         ray.get(result)
-        return RayRdd(uuid_str, id2store_name, part_id2ip, partition_stores)
+        return RayXShards(uuid_str, id2store_name, part_id2ip, partition_stores)
 
     @staticmethod
-    def from_spark_rdd(rdd):
-        return RayRdd._from_spark_rdd_ray_api(rdd)
+    def from_spark_xshards(spark_xshards):
+        return RayXShards._from_spark_xshards_ray_api(spark_xshards)
 
     @staticmethod
-    def _from_spark_rdd_ray_api(rdd):
+    def _from_spark_xshards_ray_api(spark_xshards):
         ray_ctx = RayContext.get()
         address = ray_ctx.redis_address
         password = ray_ctx.redis_password
@@ -279,13 +317,13 @@ class RayRdd:
         partition_stores = {}
         for node in nodes:
             name = f"partition:{uuid_str}:{node}"
-            store = ray.remote(num_cpus=0, resources={node: 1e-4})(PartitionUploader)\
+            store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
                 .options(name=name).remote()
             partition_stores[name] = store
         partition_store_names = list(partition_stores.keys())
-        result = rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
+        result = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
             idx, part, address, password, partition_store_names)).collect()
         id2ip = {idx: ip for idx, ip, _ in result}
         id2store_name = {idx: store for idx, _, store in result}
 
-        return RayRdd(uuid_str, dict(id2store_name), dict(id2ip), partition_stores)
+        return RayXShards(uuid_str, dict(id2store_name), dict(id2ip), partition_stores)

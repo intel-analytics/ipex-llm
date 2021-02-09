@@ -106,68 +106,6 @@ But got data of type {}
         return data_shards
 
 
-class RayXShards(XShards):
-    """
-    A collection of data which can be pre-processed in parallel on Ray
-    """
-    def __init__(self, ray_rdd):
-        self.ray_rdd = ray_rdd
-
-    def transform_shard(self, func, *args):
-        raise Exception("Transform is not supported for RayXShards")
-
-    def transform_shards_with_actors(self, actors, func,
-                                     gang_scheduling=True):
-        """
-        Assign each partition_ref (referencing a list of shards) to an actor,
-        and run func for each actor and partition_ref pair.
-
-        Actors should have a `get_node_ip` method to achieve locality scheduling.
-        The `get_node_ip` method should call ray.services.get_node_ip_address()
-        to return the correct ip address.
-
-        The `func` should take an actor and a partition_ref as argument and
-        invoke some remote func on that actor and return a new partition_ref.
-
-        Note that if you pass partition_ref directly to actor method, ray
-        will resolve that partition_ref to the actual partition object, which
-        is a list of shards. If you pass partition_ref indirectly through other
-        object, say [partition_ref], ray will send the partition_ref itself to
-        actor, and you may need to use ray.get(partition_ref) on actor to retrieve
-        the actor partition objects.
-        """
-        new_ray_rdd = self.ray_rdd.map_partitions_with_actors(actors,
-                                                              func,
-                                                              gang_scheduling)
-        return RayXShards(new_ray_rdd)
-
-    def zip_shards_with_actors(self, xshards, actors, func, gang_scheduling=True):
-        new_ray_rdd = self.ray_rdd.zip_partitions_with_actors(xshards.ray_rdd,
-                                                              actors,
-                                                              func,
-                                                              gang_scheduling)
-        return RayXShards(new_ray_rdd)
-
-    def collect(self):
-        return self.ray_rdd.collect()
-
-    # Collect without flattening the results.
-    def collect_partitions(self):
-        return self.ray_rdd.collect_partitions()
-
-    def num_partitions(self):
-        return self.ray_rdd.num_partitions()
-
-    def to_spark_xshards(self):
-        return SparkXShards(self.ray_rdd.to_spark_rdd())
-
-    @staticmethod
-    def from_spark_xshards(spark_xshards):
-        from zoo.orca.data.ray_rdd import RayRdd
-        ray_rdd = RayRdd.from_spark_rdd(spark_xshards.rdd)
-        return RayXShards(ray_rdd)
-
-
 class SparkXShards(XShards):
     """
     A collection of data which can be pre-processed in parallel on Spark
