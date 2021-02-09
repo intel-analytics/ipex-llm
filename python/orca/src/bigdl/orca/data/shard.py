@@ -61,16 +61,17 @@ class XShards(object):
         return SparkXShards(sc.pickleFile(path, minPartitions))
 
     @staticmethod
-    def partition(data):
+    def partition(data, num_shards=None):
         """
         Partition local in memory data and form a SparkXShards
         :param data: np.ndarray, a tuple, list, dict of np.ndarray, or a nested structure
         made of tuple, list, dict with ndarray as the leaf value
+        :param num_shards: the number of shards that the data will be partitioned into
         :return: a SparkXShards
         """
         sc = init_nncontext()
         node_num, core_num = get_node_and_core_number()
-        total_core_num = node_num * core_num
+        shard_num = node_num * core_num if num_shards is None else num_shards
         import numpy as np
         type_err_msg = """
 The types supported in zoo.orca.data.XShards.partition are
@@ -82,20 +83,28 @@ But got data of type {}
         """.format(type(data))
         supported_types = {list, tuple, dict}
         if isinstance(data, np.ndarray):
-            arrays = np.array_split(data, total_core_num)
+            if data.shape[0] < shard_num:
+                raise ValueError("The length of data {} is smaller than the total number "
+                                 "of shards {}. Please adjust the num_shards option to be "
+                                 "at most {}.".format(data.shape[0], shard_num, data.shape[0]))
+            arrays = np.array_split(data, shard_num)
             rdd = sc.parallelize(arrays)
         else:
             assert type(data) in supported_types, type_err_msg
             flattened = nest.flatten(data)
             data_length = len(flattened[0])
             data_to_be_shard = []
-            for i in range(total_core_num):
+            if data_length < shard_num:
+                raise ValueError("The length of data {} is smaller than the total number "
+                                 "of shards {}. Please adjust the num_shards option to be "
+                                 "at most {}.".format(data_length, shard_num, data_length))
+            for i in range(shard_num):
                 data_to_be_shard.append([])
             for x in flattened:
                 assert len(x) == data_length, \
                     "the ndarrays in data must all have the same size in first dimension, " \
                     "got first ndarray of size {} and another {}".format(data_length, len(x))
-                x_parts = np.array_split(x, total_core_num)
+                x_parts = np.array_split(x, shard_num)
                 for idx, x_part in enumerate(x_parts):
                     data_to_be_shard[idx].append(x_part)
 
