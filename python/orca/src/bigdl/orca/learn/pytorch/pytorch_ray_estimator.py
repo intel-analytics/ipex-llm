@@ -21,7 +21,7 @@ import numbers
 import torch
 import numpy as np
 
-from zoo.orca.data.shard import RayXShards
+from zoo.orca.data import RayXShards
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
 from zoo.orca.learn.pytorch.torch_runner import TorchRunner
 from zoo.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
