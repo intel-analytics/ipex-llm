@@ -76,7 +76,7 @@ RUN chmod +x /sbin/tini
 #python
 RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
-    pip3 install --upgrade pip==20.2.4 && \
+    pip3 install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install numpy scipy && \
     pip install pandas==1.0.3 && \
@@ -85,7 +85,7 @@ RUN apt-get install -y python3-minimal && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
-    pip install tornado==5.1.1 && \
+    pip install tornado && \
     python3 -m ipykernel.kernelspec && \
     pip install tensorboard && \
     pip install jep && \
