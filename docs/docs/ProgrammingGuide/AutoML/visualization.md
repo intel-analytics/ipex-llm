@@ -4,12 +4,12 @@
 
 AutoML visualization provides two kinds of visualization.
 
-1. During the searching process, the visualizations of each trail are shown and updated every 30 seconds.
-2. After the searching process, a leaderboard of each trail's configs and metrics is shown.
+1. During the searching process, the visualizations of each trail are shown and updated every 30 seconds. (Monitor view)
+2. After the searching process, a leaderboard of each trail's configs and metrics is shown. (Leaderboard view)
 
 Note that: AutoML visualization is based on tensorboard and tensorboardx. They should be installed properly before the training starts.
 
-## Scalar view
+## Monitor view
 
 Before training, start the tensorboard server through
 
@@ -21,7 +21,7 @@ tensorboard --logdir=<logs_dir>/<job_name>/
 
 The data in SCALARS tag will be updated every 30 seconds for users to see the training progress.
 
-![Scalar](../../Image/automl_scalar.png)
+![Monitor](../../Image/automl_monitor.png)
 
 ## Leaderboard view
 
@@ -31,11 +31,15 @@ After training, start the tensorboard server through
 tensorboard --logdir=<logs_dir>/<job_name>_leaderboard/
 ```
 
-where `logs_dir` and `job_name` are the same as stated in [Scalar view](#Scalar view).
+where `logs_dir` and `job_name` are the same as stated in [Monitor  view](#Scalar view).
+
+A dashboard of each trail's configs and metrics is shown in the SCALARS tag.
+
+![Leaderboard_scalars](../../Image/automl_scalars.png)
 
 A leaderboard of each trail's configs and metrics is shown in the HPARAMS tag.
 
-![Leaderboard](../../Image/automl_hparams.png)
+![Leaderboard_hparams](../../Image/automl_hparams.png)
 
 ## Use visualization in Jupyter Notebook
 
