@@ -97,5 +97,43 @@ class TestSparkBackend(TestCase):
         assert np.allclose(data1, reconstructed1)
         assert np.allclose(data2, reconstructed2)
 
+    def test_partition_ndarray_with_num_shards_specification(self):
+        data = np.random.randn(10, 4)
+        # Reasonable number of shards
+        xshards = XShards.partition(data, num_shards=2)
+
+        data_parts = xshards.rdd.collect()
+
+        reconstructed = np.concatenate(data_parts)
+        assert np.allclose(data, reconstructed)
+        # Empty shards
+        with pytest.raises(ValueError) as errorInfo:
+            xshards = XShards.partition(data, num_shards=20)
+
+        assert errorInfo.type == ValueError
+        assert "number of shards" in str(errorInfo.value)
+
+    def test_partition_nested_with_num_shards_specification(self):
+        data1 = np.random.randn(10, 4)
+        data2 = np.random.randn(10, 4)
+        # Reasonable number of shards
+        xshards = XShards.partition({"x": (data1, ), "y": [data2]}, num_shards=2)
+
+        data_parts = xshards.rdd.collect()
+
+        data1_parts = [part["x"][0] for part in data_parts]
+        data2_parts = [part["y"][0] for part in data_parts]
+
+        reconstructed1 = np.concatenate(data1_parts)
+        reconstructed2 = np.concatenate(data2_parts)
+        assert np.allclose(data1, reconstructed1)
+        assert np.allclose(data2, reconstructed2)
+        # Empty shards
+        with pytest.raises(ValueError) as errorInfo:
+            xshards = XShards.partition({"x": (data1, ), "y": [data2]}, num_shards=20)
+
+        assert errorInfo.type == ValueError
+        assert "number of shards" in str(errorInfo.value)
+
 if __name__ == "__main__":
     pytest.main([__file__])
