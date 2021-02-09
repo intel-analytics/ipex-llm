@@ -636,6 +636,31 @@ fi
 now=$(date "+%s")
 time19=$((now - start))
 
+echo "#20 start test for orca bigdl imageInference"
+#timer
+start=$(date "+%s")
+if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P analytics-zoo-models
+fi
+
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+  --master ${MASTER} \
+  --driver-memory 3g \
+  --executor-memory 3g \
+  ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/bigdl/imageInference/imageInference.py \
+  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/kaggle/train_100
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  echo "orca bigdl imageInference failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time20=$((now - start))
+
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
 echo "#3 image-classification time used: $time3 seconds"
@@ -655,3 +680,4 @@ echo "#16 orca tf imagesegmentation time used:$time16 seconds"
 echo "#17 orca tf transfer_learning time used:$time17 seconds"
 echo "#18 orca tf basic_text_classification time used:$time18 seconds"
 echo "#19 orca bigdl attention time used:$time19 seconds"
+echo "#20 orca bigdl imageInference time used:$time20 seconds"
