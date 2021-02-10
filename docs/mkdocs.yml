@@ -157,6 +157,7 @@ pages:
       - LSTMForecaster: Zouwu/API/LSTMForecaster.md
       - MTNetForecaster: Zouwu/API/MTNetForecaster.md
       - TCMFForecaster: Zouwu/API/TCMFForecaster.md
+      - TCNForecaster: Zouwu/API/TCNForecaster.md
     - AutoTS:
       - AutoTSTrainer: Zouwu/API/AutoTSTrainer.md
       - TSPipeline: Zouwu/API/TSPipeline.md
