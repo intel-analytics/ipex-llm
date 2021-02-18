@@ -311,7 +311,7 @@ class RayXShards(XShards):
         for key, value in resources.items():
             if key.startswith("node:"):
                 # if running in cluster, filter out driver ip
-                if not (not ray_ctx.is_local and key == f"node:{driver_ip}"):
+                if ray_ctx.is_local or key != f"node:{driver_ip}":
                     nodes.append(key)
 
         partition_stores = {}
