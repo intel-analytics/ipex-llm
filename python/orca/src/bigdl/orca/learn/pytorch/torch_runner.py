@@ -249,14 +249,12 @@ class TorchRunner:
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None):
         config = self.config.copy()
-        if "batch_size" not in config:
-            config["batch_size"] = batch_size
         if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = data_creator(config)
+                loader = data_creator(config, batch_size)
         else:
-            loader = data_creator(config)
+            loader = data_creator(config, batch_size)
 
         if wrap_dataloader is None:
             if TorchRunner.should_wrap_dataloader(loader):
@@ -299,17 +297,15 @@ class TorchRunner:
                  info=None, wrap_dataloader=None):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
-        if "batch_size" not in config:
-            config["batch_size"] = batch_size
         info = info or {}
         self._toggle_profiling(profile=profile)
 
         if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = data_creator(config)
+                loader = data_creator(config, batch_size)
         else:
-            loader = data_creator(config)
+            loader = data_creator(config, batch_size)
 
         if wrap_dataloader is None:
             if TorchRunner.should_wrap_dataloader(loader):
@@ -328,16 +324,14 @@ class TorchRunner:
     def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
-        if "batch_size" not in config:
-            config["batch_size"] = batch_size
         self._toggle_profiling(profile=profile)
 
-        shards_ref = data_creator(config)
+        shards_ref = data_creator(config, batch_size)
         if not isinstance(shards_ref, ray.ObjectID):
             raise ValueError("Only xshards is supported for predict")
 
         partition = ray.get(shards_ref)
-        params = {"batch_size": config["batch_size"], "shuffle": False}
+        params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
                     "pin_memory", "drop_last", "timeout", "worker_init_fn",
                     "multiprocessing_context"]:

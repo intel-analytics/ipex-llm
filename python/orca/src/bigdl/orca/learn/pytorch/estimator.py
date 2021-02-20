@@ -87,6 +87,11 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                  use_tqdm=False,
                  backend="torch_distributed",
                  workers_per_node=1):
+
+        if config is not None and "batch_size" in config:
+            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
+                            " fit/evaluate/predict function of the estimator instead.")
+
         from zoo.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
         self.estimator = PyTorchRayEstimator(model_creator=model_creator,
                                              optimizer_creator=optimizer_creator,
@@ -108,12 +113,12 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
         underneath the hood.
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-        takes config as argument and returns a PyTorch DataLoader for training.
+        takes config and batch_size as argument and returns a PyTorch DataLoader for training.
         :param epochs: The number of epochs to train the model. Default is 1.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
         The total batch size would be workers_per_node*num_nodes.
-        If you training data is a function, you can set batch_size to be config["batch_size"]
-        for the PyTorch DataLoader.
+        If your training data is a function, you can set batch_size to be the input batch_size
+        of the function for the PyTorch DataLoader.
         :param profile: Boolean. Whether to return time stats for the training procedure.
         Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
@@ -161,11 +166,11 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.validate()` on N parallel workers simultaneously
         underneath the hood.
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-        takes config as argument and returns a PyTorch DataLoader for validation.
+        takes config and batch_size as argument and returns a PyTorch DataLoader for validation.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
         The total batch size would be workers_per_node*num_nodes.
-        If you validation data is a function, you can set batch_size to be config["batch_size"]
-        for the PyTorch DataLoader.
+        If your validation data is a function, you can set batch_size to be the input batch_size
+        of the function for the PyTorch DataLoader.
         :param num_steps: The number of batches to compute the validation results on. This
         corresponds to the number of times `TrainingOperator.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.

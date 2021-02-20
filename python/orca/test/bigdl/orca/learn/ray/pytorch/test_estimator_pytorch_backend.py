@@ -95,20 +95,21 @@ class MultiInputNet(nn.Module):
         return x
 
 
-def train_data_loader(config):
+def train_data_loader(config, batch_size):
     train_dataset = LinearDataset(size=config.get("data_size", 1000))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=config.get("batch_size", 32),
+        batch_size=batch_size
     )
     return train_loader
 
 
-def val_data_loader(config):
+def val_data_loader(config, batch_size):
     val_dataset = LinearDataset(size=config.get("val_size", 400))
     validation_loader = torch.utils.data.DataLoader(
         val_dataset,
-        batch_size=config.get("batch_size", 32))
+        batch_size=batch_size
+    )
     return validation_loader
 
 
