@@ -145,7 +145,7 @@ def target_transform(crop_size):
     ])
 
 
-def train_data_creator(config):
+def train_data_creator(config, batch_size):
     def get_training_set(upscale_factor):
         root_dir = download_bsd300()
         train_dir = join(root_dir, "train")
@@ -157,13 +157,13 @@ def train_data_creator(config):
 
     train_set = get_training_set(config.get("upscale_factor", 3))
     training_data_loader = DataLoader(dataset=train_set,
-                                      batch_size=config.get("batch_size", 64),
+                                      batch_size=batch_size,
                                       num_workers=config.get("threads", 4),
                                       shuffle=True)
     return training_data_loader
 
 
-def validation_data_creator(config):
+def validation_data_creator(config, batch_size):
     def get_test_set(upscale_factor):
         root_dir = download_bsd300()
         test_dir = join(root_dir, "test")
@@ -175,7 +175,7 @@ def validation_data_creator(config):
 
     test_set = get_test_set(config.get("upscale_factor", 3))
     testing_data_loader = DataLoader(dataset=test_set,
-                                     batch_size=config.get("batch_size", 64),
+                                     batch_size=batch_size,
                                      num_workers=config.get("threads", 4),
                                      shuffle=False)
     return testing_data_loader
@@ -229,7 +229,6 @@ estimator = Estimator.from_torch(
     config={
         "lr": opt.lr,
         "upscale_factor": opt.upscale_factor,
-        "batch_size": opt.batch_size,
         "threads": opt.threads,
         "seed": opt.seed
     }
