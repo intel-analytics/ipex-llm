@@ -104,21 +104,21 @@ test_loader = torch.utils.data.DataLoader(
 First, Create an Estimator
 
 ```python
-from zoo.orca.learn.pytorch import Estimator 
+from zoo.orca.learn.pytorch import Estimator
+from zoo.orca.learn.metrics import Accuracy 
 
-est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion)
+est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion, metrics=[Accuracy()])
 ```
 
 Next, fit and evaluate using the Estimator
 
 ```python
-from zoo.orca.learn.metrics import Accuracy
 from zoo.orca.learn.trigger import EveryEpoch 
 
 est.fit(data=train_loader, epochs=10, validation_data=test_loader,
-        validation_metrics=[Accuracy()], checkpoint_trigger=EveryEpoch())
+        checkpoint_trigger=EveryEpoch())
 
-result = est.evaluate(data=test_loader, validation_metrics=[Accuracy()])
+result = est.evaluate(data=test_loader)
 for r in result:
     print(str(r))
 ```

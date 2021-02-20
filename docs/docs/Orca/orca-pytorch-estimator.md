@@ -57,7 +57,7 @@ After an Estimator is created, you can call estimator API to train PyTorch model
 ```
 fit(self, data, epochs=1, profile=False, reduce_results=True, info=None)
 ```
-* `data`: (callable) a funtion that takes a config dict as input and return a data loader containing the training data.
+* `data`: (callable) a funtion that takes a config dict and `batch_size` as input and return a data loader containing the training data.
 * `epochs`: (int) Number of epochs to train the model
 * `profile`: (bool) Returns time stats for the training procedure.
 * `reduce_results`: (bool) Whether to average all metrics across all workers into one dict. If a metric is a non-numerical value (or nested dictionaries), one value will be randomly selected among the workers. If False, returns a list of dicts.
@@ -68,7 +68,7 @@ After Training, you can call estimator API to evaluate PyTorch model:
 ```
 evaluate(self, data, num_steps=None, profile=False, info=None)
 ```
-* `data`: (callable) a funtion that takes a config dict as input and return a data loader containing the validation data.
+* `data`: (callable) a funtion that takes a config dict and `batch_size` as input and return a data loader containing the validation data.
 * `num_steps`: (int) Number of batches to compute update steps on. This corresponds also to the number of times ``TrainingOperator.validate_batch`` is called.
 * `profile`: (bool) Returns time stats for the evaluation procedure.
 * `info`: (dict) Optional dictionary passed to the training operator for `validate` and `validate_batch`.
