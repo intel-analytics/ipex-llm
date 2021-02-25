@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pyspark.sql.types import *
-from pyspark.sql import SQLContext
 
+from zoo.orca import OrcaContext
 from zoo.common.nncontext import init_nncontext
 
 
@@ -41,8 +40,7 @@ class elastic_search:
         :return: Spark DataFrame. Each row represents a document in ES.
         """
         sc = init_nncontext()
-        sqlContext = SQLContext.getOrCreate(sc)
-        spark = sqlContext.sparkSession
+        spark = OrcaContext.get_spark_session()
 
         reader = spark.read.format("org.elasticsearch.spark.sql")
 
