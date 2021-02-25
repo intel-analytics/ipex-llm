@@ -21,6 +21,7 @@ import shutil
 
 import zoo.orca.data
 import zoo.orca.data.pandas
+from zoo.orca import OrcaContext
 from zoo.common.nncontext import *
 
 
@@ -169,10 +170,8 @@ class TestSparkBackend(TestCase):
     def test_read_parquet(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         sc = init_nncontext()
-        from pyspark.sql import SQLContext
         from pyspark.sql.functions import col
-        sqlContext = SQLContext.getOrCreate(sc)
-        spark = sqlContext.sparkSession
+        spark = OrcaContext.get_spark_session()
         df = spark.read.csv(file_path, header=True)
         df = df.withColumn('sale_price', col('sale_price').cast('int'))
         temp = tempfile.mkdtemp()
