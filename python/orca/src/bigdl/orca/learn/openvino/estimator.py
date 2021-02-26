@@ -57,10 +57,27 @@ class OpenvinoEstimator(SparkEstimator):
                                  weight_path=model_path[:model_path.rindex(".")] + ".bin",
                                  batch_size=batch_size)
 
-    def fit(self, data, epochs, **kwargs):
+    def fit(self, data, epochs, batch_size=32, feature_cols=None, label_cols=None,
+            validation_data=None, checkpoint_trigger=None):
+        """
+        Fit is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
-    def predict(self, data, **kwargs):
+    def predict(self, data):
+        """
+        Predict input data
+
+        :param data: data to be predicted. XShards, numpy array and list of numpy arrays are
+        supported. If data is XShards, each partition is a dictionary of  {'x': feature},
+        where feature(label) is a numpy array or a list of numpy arrays.
+        :return: predicted result.
+         If the input data is XShards, the predict result is a XShards, each partition of the
+         XShards is a dictionary of {'prediction': result}, where the result is a numpy array or
+         a list of numpy arrays.
+         If the input data is numpy arrays or list of numpy arrays, the predict result is a numpy
+         array or a list of numpy arrays.
+        """
         def predict_transform(dict_data, batch_size):
             assert isinstance(dict_data, dict), "each shard should be an dict"
             assert "x" in dict_data, "key x should in each shard"
@@ -138,13 +155,22 @@ class OpenvinoEstimator(SparkEstimator):
             raise ValueError("Only XShards, a numpy array and a list of numpy arrays are supported "
                              "as input data, but get " + data.__class__.__name__)
 
-    def evaluate(self, data, **kwargs):
+    def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
+        """
+        Evaluate is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def get_model(self):
+        """
+        Get_model is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def save(self, model_path):
+        """
+        Save is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def load(self, model_path, batch_size=0):
@@ -173,25 +199,49 @@ class OpenvinoEstimator(SparkEstimator):
                                  batch_size=batch_size)
 
     def set_tensorboard(self, log_dir, app_name):
+        """
+        Set_tensorboard is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def clear_gradient_clipping(self):
+        """
+        Clear_gradient_clipping is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def set_constant_gradient_clipping(self, min, max):
+        """
+        Set_constant_gradient_clipping is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def set_l2_norm_gradient_clipping(self, clip_norm):
+        """
+        Set_l2_norm_gradient_clipping is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def get_train_summary(self, tag=None):
+        """
+        Get_train_summary is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def get_validation_summary(self, tag=None):
+        """
+        Get_validation_summary is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def load_orca_checkpoint(self, path, version):
+        """
+        Load_orca_checkpoint is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
 
     def load_latest_orca_checkpoint(self, path):
+        """
+        Load_latest_orca_checkpoint is not supported in OpenVINOEstimator
+        """
         raise NotImplementedError
