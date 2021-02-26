@@ -90,7 +90,6 @@ fit(data,
     feature_cols=None,
     label_cols=None,
     validation_data=None,
-    hard_code_batch_size=False,
     session_config=None,
     feed_dict=None,
     checkpoint_trigger=None
@@ -109,7 +108,6 @@ fit(data,
 * `feature_cols`: feature column names if train data is Spark DataFrame.
 * `label_cols`: label column names if train data is Spark DataFrame.
 * `validation_data`: validation data. Validation data type should be the same as train data.
-* `hard_code_batch_size`: whether hard code batch size for training. Default is False.
 * `session_config`: tensorflow session configuration for training. Should be object of tf.ConfigProto
 * `feed_dict`: a dictionary. The key is TensorFlow tensor, usually a placeholder, the value of the dictionary is a tuple of two elements. 
   
@@ -202,7 +200,6 @@ fit(data,
     feature_cols=None,
     label_cols=None,
     validation_data=None,
-    hard_code_batch_size=False,
     session_config=None,
     checkpoint_trigger=None
     )
@@ -220,7 +217,6 @@ fit(data,
 * `feature_cols`: feature column names if train data is Spark DataFrame.
 * `label_cols`: label column names if train data is Spark DataFrame.
 * `validation_data`: validation data. Validation data type should be the same as train data.
-* `hard_code_batch_size`: whether hard code batch size for training. Default is False.
 * `session_config`: tensorflow session configuration for training. Should be object of tf.ConfigProto
 * `checkpoint_trigger`: when to trigger checkpoint during training. Should be bigdl optimzer trigger, like EveryEpoch(), SeveralIteration(num_iterations),etc.
 
@@ -277,7 +273,6 @@ You can call estimator's API to evaluate Tensorflow graph model or keras model.
 evaluate(data, batch_size=4,
          feature_cols=None,
          label_cols=None,
-         hard_code_batch_size=False
         )
 ```
 * `data`: evaluation data. It can be XShards, Spark DataFrame, tf.data.Dataset.
@@ -289,7 +284,6 @@ evaluate(data, batch_size=4,
 * `batch_size`: batch size per thread.
 * `feature_cols`: feature_cols: feature column names if train data is Spark DataFrame.
 * `label_cols`: label column names if train data is Spark DataFrame.
-* `hard_code_batch_size`: whether to hard code batch size for evaluation.
 
 This method returns evaluation result as a dictionary in the format of {'metric name': metric value}
 
@@ -299,7 +293,6 @@ You can call estimator's such APIs to predict with trained model.
 ```
 predict(data, batch_size=4,
         feature_cols=None,
-        hard_code_batch_size=False
         ):
 ```
 * `data`: data to be predicted. It can be XShards, Spark DataFrame, or tf.data.Dataset.        
@@ -311,7 +304,6 @@ predict(data, batch_size=4,
 
 * `batch_size`: batch size per thread
 * `feature_cols`: list of feature column names if input data is Spark DataFrame.
-* `hard_code_batch_size`: if require hard code batch size for prediction. The default value is False.
 
 This method returns a predicted result.
 
