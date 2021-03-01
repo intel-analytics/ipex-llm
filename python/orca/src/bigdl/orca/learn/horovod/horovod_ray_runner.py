@@ -72,12 +72,16 @@ def make_worker(worker_cls, HorovodWorker):
     return Worker
 
 
+def get_horovod_version():
+    import horovod
+    major, minor, patch = horovod.__version__.split(".")
+    return int(major), int(minor), int(patch), horovod.__version__
+
+
 class HorovodRayRunner:
 
     # todo check whether horovod is built with gloo
     def __init__(self, ray_ctx, worker_cls=None, worker_param=None, workers_per_node=1):
-        from horovod.run.gloo_run import RendezvousServer, _allocate
-
         self.cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
         self.num_nodes = ray_ctx.num_ray_nodes * workers_per_node
         if worker_param is None:
@@ -88,9 +92,24 @@ class HorovodRayRunner:
                                for i in range(0, self.num_nodes)]
         hosts = ray.get([worker.ip_addr.remote() for worker in self.remote_workers])
         hosts_spec, name_rank_to_id, host_to_size = _hosts_to_hosts_spec(hosts)
-        self.host_alloc_plan = _allocate(",".join(hosts_spec), self.num_nodes)
-        global_rendezv = RendezvousServer(True)
-        global_rendezv_port = global_rendezv.start_server(self.host_alloc_plan)
+
+        major, minor, patch, version_str = get_horovod_version()
+
+        if major == 0 and minor < 19:
+            raise RuntimeError(f"We only support horovod versions newer "
+                               f"than 0.19.0, but got {version_str}")
+        if major == 0 and minor == 19:
+            from horovod.run.gloo_run import RendezvousServer, _allocate
+            self.host_alloc_plan = _allocate(",".join(hosts_spec), self.num_nodes)
+            self.global_rendezv = RendezvousServer(True)
+            global_rendezv_port = self.global_rendezv.start_server(self.host_alloc_plan)
+        else:
+            from horovod.runner.gloo_run import RendezvousServer, parse_hosts, get_host_assignments
+            self.host_alloc_plan = get_host_assignments(parse_hosts(",".join(hosts_spec)),
+                                                        self.num_nodes)
+            self.global_rendezv = RendezvousServer(True)
+            global_rendezv_port = self.global_rendezv.start()
+            self.global_rendezv.init(self.host_alloc_plan)
 
         driver_ip = ray.services.get_node_ip_address()
 
@@ -112,6 +131,7 @@ class HorovodRayRunner:
         for alloc_info in self.host_alloc_plan:
             key = (alloc_info.hostname, alloc_info.local_rank)
             local_envs = self.per_worker_envs[name_rank_to_id[key]]
+            local_envs["HOROVOD_HOSTNAME"] = str(alloc_info.hostname)
             local_envs["HOROVOD_RANK"] = str(alloc_info.rank)
             local_envs["HOROVOD_SIZE"] = str(alloc_info.size)
             local_envs["HOROVOD_LOCAL_RANK"] = str(alloc_info.local_rank)
