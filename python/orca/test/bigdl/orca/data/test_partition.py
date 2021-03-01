@@ -135,5 +135,6 @@ class TestSparkBackend(TestCase):
         assert errorInfo.type == ValueError
         assert "number of shards" in str(errorInfo.value)
 
+
 if __name__ == "__main__":
     pytest.main([__file__])
