@@ -183,6 +183,49 @@ class TestUtil(TestCase):
         expr = "sum(cast(feature <> flatten(prediction) as int)) as error"
         assert result_df.selectExpr(expr).first()["error"] == 0
 
+    def test_array2dict(self):
+        from zoo.orca.learn.utils import arrays2dict
+        record_num = 100
+        shard_size = 30
+        data = [(np.float32(np.random.randn(1, 50)), np.float32([np.random.randint(0, 2,)]))
+                for i in range(record_num)]
+        result = arrays2dict(data, feature_cols=["feature"], label_cols=["label"],
+                             shard_size=shard_size)
+        for i, d in enumerate(result):
+            if (record_num % shard_size == 0) or (i != record_num // shard_size):
+                assert d['x'].shape[0] == shard_size
+                assert d['y'].shape[0] == shard_size
+            else:
+                assert d['x'].shape[0] == record_num % shard_size
+                assert d['y'].shape[0] == record_num % shard_size
+
+    def test_array2dict_shard_size_none(self):
+        from zoo.orca.learn.utils import arrays2dict
+        record_num = 100
+        data = [(np.float32(np.random.randn(1, 50)), np.float32([np.random.randint(0, 2,)]))
+                for i in range(record_num)]
+        result = arrays2dict(data, feature_cols=["feature"], label_cols=["label"], shard_size=None)
+        for i, d in enumerate(result):
+            assert d['x'].shape[0] == record_num
+            assert d['y'].shape[0] == record_num
+
+    def test_dataframe_to_xshards(self):
+        rdd = self.sc.range(0, 100)
+        df = rdd.map(lambda x: ([float(x)] * 50,
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+        num_partitions = df.rdd.getNumPartitions()
+        # test shard_size = None
+        shards = _dataframe_to_xshards(df, feature_cols=["feature"], label_cols=["label"])
+        num_shards = shards.rdd.count()
+        assert num_shards == num_partitions
+
+        from zoo.orca import OrcaContext
+        OrcaContext._shard_size = 1
+        shards = _dataframe_to_xshards(df, feature_cols=["feature"], label_cols=["label"])
+        num_shards = shards.rdd.count()
+        assert num_shards == df.rdd.count()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

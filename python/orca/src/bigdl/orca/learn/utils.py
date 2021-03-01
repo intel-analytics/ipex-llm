@@ -177,59 +177,69 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     return result_df
 
 
-def arrays2dict(iter, feature_cols, label_cols):
+def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
+    def init_result_lists():
+        feature_lists = [[] for col in feature_cols]
+        if label_cols is not None:
+            label_lists = [[] for col in label_cols]
+        else:
+            label_lists = None
+        return feature_lists, label_lists
 
-    feature_lists = [[] for col in feature_cols]
-    if label_cols is not None:
-        label_lists = [[] for col in label_cols]
-    else:
-        label_lists = None
+    def add_row(data, results):
+        if not isinstance(data, list):
+            arrays = [data]
+        else:
+            arrays = data
+
+        for i, arr in enumerate(arrays):
+            results[i].append(arr)
+
+    def merge_rows(results):
+        result_arrs = [np.stack(l) for l in results]
+        if len(result_arrs) == 1:
+            result_arrs = result_arrs[0]
+        else:
+            result_arrs = tuple(result_arrs)
+        return result_arrs
+
+    def generate_output(feature_lists, label_lists):
+        feature_arrs = merge_rows(feature_lists)
+        if label_cols is not None:
+            label_arrs = merge_rows(label_lists)
+            return {"x": feature_arrs, "y": label_arrs}
+        else:
+            return {"x": feature_arrs}
+
+    feature_lists, label_lists = init_result_lists()
+    counter = 0
 
     for row in iter:
-        # feature
-        if not isinstance(row[0], list):
-            features = [row[0]]
-        else:
-            features = row[0]
-
-        for i, arr in enumerate(features):
-            feature_lists[i].append(arr)
-
-        # label
+        counter += 1
+        add_row(row[0], feature_lists)
         if label_cols is not None:
-            if not isinstance(row[1], list):
-                labels = [row[1]]
-            else:
-                labels = row[1]
+            add_row(row[1], label_lists)
 
-            for i, arr in enumerate(labels):
-                label_lists[i].append(arr)
+        if shard_size and counter % shard_size == 0:
+            yield generate_output(feature_lists, label_lists)
+            feature_lists, label_lists = init_result_lists()
 
-    feature_arrs = [np.stack(l) for l in feature_lists]
-    if len(feature_arrs) == 1:
-        feature_arrs = feature_arrs[0]
-    else:
-        feature_arrs = tuple(feature_arrs)
-    if label_lists is not None:
-        label_arrs = [np.stack(l) for l in label_lists]
-        if len(label_arrs) == 1:
-            label_arrs = label_arrs[0]
-        else:
-            label_arrs = tuple(label_arrs)
-        return [{"x": feature_arrs, "y": label_arrs}]
-
-    return [{"x": feature_arrs}]
+    if feature_lists[0]:
+        yield generate_output(feature_lists, label_lists)
 
 
 def _dataframe_to_xshards(data, feature_cols, label_cols=None):
+    from zoo.orca import OrcaContext
     schema = data.schema
+    shard_size = OrcaContext._shard_size
     numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
                                                               schema,
                                                               feature_cols,
                                                               label_cols))
     shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
                                                               feature_cols,
-                                                              label_cols))
+                                                              label_cols,
+                                                              shard_size))
     return SparkXShards(shard_rdd)
 
 
@@ -259,7 +269,8 @@ def maybe_dataframe_to_xshards(data, validation_data, feature_cols, label_cols, 
     if isinstance(data, DataFrame):
         data, validation_data = dataframe_to_xshards(data, validation_data,
                                                      feature_cols=feature_cols,
-                                                     label_cols=label_cols, mode=mode)
+                                                     label_cols=label_cols,
+                                                     mode=mode)
     return data, validation_data
 
 

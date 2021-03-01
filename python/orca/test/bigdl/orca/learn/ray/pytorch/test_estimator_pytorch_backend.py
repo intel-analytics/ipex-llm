@@ -187,6 +187,23 @@ class TestPyTorchEstimator(TestCase):
                            feature_cols=["feature"],
                            label_cols=["label"])
 
+    def test_dataframe_shard_size_train_eval(self):
+        from zoo.orca import OrcaContext
+        OrcaContext._shard_size = 30
+        sc = init_nncontext()
+        rdd = sc.range(0, 100)
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2)
+        estimator.fit(df, batch_size=4, epochs=2,
+                      feature_cols=["feature"],
+                      label_cols=["label"])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["feature"],
+                           label_cols=["label"])
+
     def test_dataframe_predict(self):
 
         sc = init_nncontext()
