@@ -19,8 +19,8 @@ package com.intel.analytics.zoo.pipeline.inference
 import java.io.{File, IOException}
 import java.nio.file.{Files, Paths}
 import java.util.{ArrayList, Arrays, UUID, List => JList}
-
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.zoo.common.Utils.createTmpDir
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
 import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
 import com.intel.analytics.zoo.pipeline.inference.OpenVINOModel.OpenVINOModelHolder
@@ -49,9 +49,11 @@ class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
     OpenVINOModel.logger.info("Lazy loading OpenVINO model")
     var nativeRef = -1L
     try {
-      val modelFile = File.createTempFile("OpenVINO", ".xml")
+      val tmpDir = createTmpDir("ZooOpenVINOTempModel")
+      val randomID = UUID.randomUUID().toString
+      val modelFile = new File(tmpDir.toString + "/OpenVINO" + randomID +  ".xml")
       Files.write(Paths.get(modelFile.toURI), modelHolder.modelBytes)
-      val weightFile = File.createTempFile("OpenVINO", ".bin")
+      val weightFile = new File(tmpDir.toString + "/OpenVINO" + randomID +  ".bin")
       Files.write(Paths.get(weightFile.toURI), modelHolder.weightBytes)
 
       nativeRef = if (isInt8) {
@@ -65,8 +67,7 @@ class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
           weightFile.getAbsolutePath,
           deviceType.value, batchSize)
       }
-      FileUtils.deleteQuietly(modelFile)
-      FileUtils.deleteQuietly(weightFile)
+      FileUtils.deleteQuietly(tmpDir.toFile)
     }
     catch {
       case io: IOException =>
