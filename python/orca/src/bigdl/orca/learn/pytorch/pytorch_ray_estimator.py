@@ -93,6 +93,7 @@ class PyTorchRayEstimator:
             model_creator,
             optimizer_creator,
             loss_creator=None,
+            metrics=None,
             scheduler_creator=None,
             training_operator_cls=TrainingOperator,
             initialization_hook=None,
@@ -132,7 +133,9 @@ class PyTorchRayEstimator:
             training_operator_cls=self.training_operator_cls,
             scheduler_step_freq=self.scheduler_step_freq,
             use_tqdm=self.use_tqdm,
-            config=worker_config)
+            config=worker_config,
+            metrics=metrics
+        )
 
         if backend == "torch_distributed":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node

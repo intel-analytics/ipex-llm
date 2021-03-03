@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.orca.learn.metrics import Metrics
+from zoo.orca.learn.metrics import Metric
 from zoo.orca.learn.utils import bigdl_metric_results_to_dict
 from zoo.pipeline.nnframes import NNEstimator, NNModel
 from zoo.pipeline.estimator import Estimator as SparkEstimator
@@ -74,7 +74,7 @@ class BigDLEstimator(OrcaSparkEstimator):
                  feature_preprocessing=None, label_preprocessing=None, model_dir=None):
         self.loss = loss
         self.optimizer = optimizer
-        self.metrics = Metrics.convert_metrics_list(metrics)
+        self.metrics = Metric.convert_metrics_list(metrics)
         self.feature_preprocessing = feature_preprocessing
         self.label_preprocessing = label_preprocessing
         self.model_dir = model_dir
@@ -248,8 +248,6 @@ class BigDLEstimator(OrcaSparkEstimator):
             raise NotImplementedError
         elif isinstance(data, SparkXShards):
             from zoo.orca.data.utils import xshard_to_sample
-            from zoo.orca.learn.metrics import Metrics
-
             val_feature_set = FeatureSet.sample_rdd(data.rdd.flatMap(xshard_to_sample))
             result = self.estimator.evaluate(val_feature_set, self.metrics, batch_size)
         else:
