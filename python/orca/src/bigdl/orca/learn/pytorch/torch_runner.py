@@ -63,6 +63,7 @@ class TorchRunner:
                  model_creator,
                  optimizer_creator,
                  loss_creator=None,
+                 metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=None,
                  config=None,
@@ -79,6 +80,7 @@ class TorchRunner:
         self.epochs = 0
         self.models = None
         self.optimizers = None
+        self.metrics = metrics
         self.criterion = None
         self.schedulers = None
         self.train_loader = None
@@ -316,7 +318,9 @@ class TorchRunner:
         if num_steps:
             loader = itertools.islice(loader, num_steps)
         with self.timers.record("validation"):
-            validation_stats = self.training_operator.validate(loader, info=info)
+            validation_stats = self.training_operator.validate(loader,
+                                                               info=info,
+                                                               metrics=self.metrics)
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats

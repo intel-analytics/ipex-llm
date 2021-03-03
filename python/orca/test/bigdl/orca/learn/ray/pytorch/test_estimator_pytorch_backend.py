@@ -20,6 +20,7 @@ import pytest
 
 import torch
 import torch.nn as nn
+from zoo.orca.learn.metrics import Accuracy
 
 from zoo import init_nncontext
 from zoo.orca.learn.pytorch import Estimator
@@ -125,6 +126,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
+                                     metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
                                      backend="torch_distributed")
@@ -138,7 +140,7 @@ class TestPyTorchEstimator(TestCase):
         print(train_stats)
         val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(val_stats)
-        assert 0 < val_stats["val_accuracy"] < 1
+        assert 0 < val_stats["Accuracy"] < 1
         assert estimator.get_model()
 
         # Verify syncing weights, i.e. the two workers have the same weights after training

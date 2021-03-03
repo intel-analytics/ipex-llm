@@ -78,12 +78,10 @@ class Estimator(object):
         :return: an Estimator object.
         """
         if backend in {"horovod", "torch_distributed"}:
-            if metrics is not None:
-                warnings.warn(f"The metrics argument is not support in {backend} backend, "
-                              f"this takes no effect")
             return PyTorchRayEstimator(model_creator=model,
                                        optimizer_creator=optimizer,
                                        loss_creator=loss,
+                                       metrics=metrics,
                                        scheduler_creator=scheduler_creator,
                                        training_operator_cls=training_operator_cls,
                                        initialization_hook=initialization_hook,
@@ -110,6 +108,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                  model_creator,
                  optimizer_creator,
                  loss_creator=None,
+                 metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=TrainingOperator,
                  initialization_hook=None,
@@ -127,6 +126,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         self.estimator = PyTorchRayEstimator(model_creator=model_creator,
                                              optimizer_creator=optimizer_creator,
                                              loss_creator=loss_creator,
+                                             metrics=metrics,
                                              scheduler_creator=scheduler_creator,
                                              training_operator_cls=training_operator_cls,
                                              initialization_hook=initialization_hook,
@@ -271,8 +271,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             optimizer = optimizer.get_optimizer()
         else:
             raise ValueError("Only PyTorch optimizer and orca optimizer are supported")
-        from zoo.orca.learn.metrics import Metrics
-        self.metrics = Metrics.convert_metrics_list(metrics)
+        from zoo.orca.learn.metrics import Metric
+        self.metrics = Metric.convert_metrics_list(metrics)
         self.log_dir = None
         self.app_name = None
         self.model_dir = model_dir

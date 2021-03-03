@@ -35,6 +35,7 @@ import collections
 import torch
 import numpy as np
 
+from zoo.orca.learn.metrics import Metric
 from zoo.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
                                           NUM_SAMPLES)
 from zoo.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
@@ -280,7 +281,7 @@ class TrainingOperator:
 
         return {"train_loss": loss.item(), NUM_SAMPLES: features[0].size(0)}
 
-    def validate(self, val_iterator, info):
+    def validate(self, val_iterator, info, metrics):
         """Runs one standard validation pass over the val_iterator.
 
         This will call ``model.eval()`` and ``torch.no_grad`` when iterating
@@ -303,18 +304,29 @@ class TrainingOperator:
                 from ``validate_batch`` and dividing it by the sum of
                 ``num_samples`` from all calls to ``self.validate_batch``.
         """
-        metric_meters = AverageMeterCollection()
-
         # switch to evaluate mode
         self.model.eval()
+        metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
+        losses = []
+        total_samples = 0
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
-                metrics = self.validate_batch(batch, batch_info)
-                metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
+                output, target, loss = self.forward_batch(batch, batch_info)
+                num_samples = target.size(0)
+                total_samples += num_samples
+                losses.append(loss.item() * num_samples)
+                for metric in metrics.values():
+                    metric(output, target)
 
-        return metric_meters.summary()
+        result = {name: metric.compute() for name, metric in metrics.items()}
+
+        result["val_loss"] = sum(losses) / total_samples
+
+        result["num_samples"] = total_samples
+
+        return result
 
     def predict(self, pred_iterator):
         # switch to evaluate mode
@@ -344,7 +356,7 @@ class TrainingOperator:
         np_output = output.detach().numpy()
         return np_output
 
-    def validate_batch(self, batch, batch_info):
+    def forward_batch(self, batch, batch_info):
         """Calculates the loss and accuracy over a given batch.
 
         You can override this method to provide arbitrary metrics.
@@ -377,40 +389,8 @@ class TrainingOperator:
         with self.timers.record("eval_fwd"):
             output = self.model(*features)
             loss = self.criterion(output, target)
-            if len(target.size()) > 1:
-                # Can't directly call torch.squeeze() in case batch size is 1.
-                for i in reversed(range(1, len(target.size()))):
-                    target = torch.squeeze(target, i)
-            if len(output.size()) > 1:
-                # In case there is extra trailing dimensions.
-                for i in reversed(range(1, len(output.size()))):
-                    output = torch.squeeze(output, i)
 
-        np_output = output.detach().numpy()
-        np_target = target.detach().numpy()
-        # validate will be called by TCMF to get val_loss for regression tasks.
-        # In this case, accuracy is calculated but not used and the result is wrong.
-        # So do not directly raise an Exception here to avoid errors in TCMF.
-        # TODO: Support other validation metrics.
-        if len(np_target.shape) != 1 or len(np_output.shape) > 2:
-            import warnings
-            warnings.warn("Currently in validate, only accuracy for classification with "
-                          "zero-based label is supported by default. You can override "
-                          "validate_batch in TrainingOperator for other validation metrics")
-        import numpy as np
-        if len(np_output.shape) == 1:  # Binary classification
-            np_output = np.round(np_output, 0)
-        else:  # Multi-class classification
-            np_output = np.argmax(np_output, axis=1)
-
-        num_correct = np.sum(np_output == np_target)
-        num_samples = target.size(0)
-
-        return {
-            "val_loss": loss.item(),
-            "val_accuracy": num_correct / num_samples,
-            NUM_SAMPLES: num_samples
-        }
+        return output, target, loss
 
     def state_dict(self):
         """Override this to return a representation of the operator state.
