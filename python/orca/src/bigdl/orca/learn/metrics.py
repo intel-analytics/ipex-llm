@@ -16,33 +16,79 @@
 from abc import ABC, abstractmethod
 
 
-class Metrics(ABC):
+class Metric(ABC):
+
+    def get_metric(self, backend="bigdl"):
+
+        if backend == "bigdl":
+            metric_impl = self.get_bigdl_metric()
+        elif backend == "pytorch":
+            metric_impl = self.get_pytorch_metric()
+        elif backend == "tf":
+            metric_impl = self.get_tf_metric()
+        elif backend == "mxnet":
+            metric_impl = self.get_mxnet_metric()
+        else:
+            valid_backends = {
+                "bigdl",
+                "pytorch",
+                "tf",
+                "mxnet"
+            }
+            raise ValueError(f"backend should be one of {valid_backends}, but got {backend}")
+        return metric_impl
+
+    def get_bigdl_metric(self):
+        raise NotImplementedError()
+
+    def get_tf_metric(self):
+        raise NotImplementedError()
+
+    def get_pytorch_metric(self):
+        raise NotImplementedError()
+
+    def get_mxnet_metric(self):
+        raise NotImplementedError()
+
     @abstractmethod
-    def get_metrics(self):
+    def get_name(self):
         pass
 
     @staticmethod
-    def convert_metrics_list(metrics):
+    def convert_metrics_list(metrics, backend="bigdl"):
         if metrics is None:
             return None
         if isinstance(metrics, list):
-            keras_metrics = []
+            metric_impls = []
             for m in metrics:
-                if isinstance(m, Metrics):
-                    keras_metrics.append(m.get_metrics())
+                if isinstance(m, Metric):
+                    metric_impls.append(m.get_metric(backend))
                 else:
                     raise ValueError("Only orca metrics are supported, but get " +
                                      m.__class__.__name__)
-            return keras_metrics
+            return metric_impls
         else:
-            if isinstance(metrics, Metrics):
-                return [metrics.get_metrics()]
+            if isinstance(metrics, Metric):
+                return [metrics.get_metric(backend)]
+
+    @staticmethod
+    def convert_metrics_dict(metrics, backend="bigdl"):
+        if metrics is None:
+            return {}
+        if isinstance(metrics, list):
+            metric_impls = {}
+            for m in metrics:
+                metric_impls[m.get_name()] = m.get_metric(backend)
+            return metric_impls
+        else:
+            if isinstance(metrics, Metric):
+                return {metrics.get_name(): metrics.get_metric(backend)}
             else:
                 raise ValueError("Only orca metrics are supported, but get " +
                                  metrics.__class__.__name__)
 
 
-class AUC(Metrics):
+class AUC(Metric):
     """
     Metric for binary(0/1) classification, support single label and multiple labels.
 
@@ -53,29 +99,33 @@ class AUC(Metrics):
     >>> meter = AUC(20)
     """
     def __init__(self, threshold_num=200):
+        self.threshold_num = threshold_num
+
+    def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import AUC as KerasAUC
-        self.metrics = KerasAUC(threshold_num=threshold_num)
+        return KerasAUC(threshold_num=self.threshold_num)
 
-    def get_metrics(self):
-        return self.metrics
+    def get_name(self):
+        return "AUC"
 
 
-class MAE(Metrics):
+class MAE(Metric):
     """
     Metric for mean absoluate error, similar from MAE criterion
 
     >>> mae = MAE()
 
     """
-    def __init__(self):
+
+    def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import MAE as KerasMAE
-        self.metrics = KerasMAE()
+        return KerasMAE()
 
-    def get_metrics(self):
-        return self.metrics
+    def get_name(self):
+        return "MAE"
 
 
-class Accuracy(Metrics):
+class Accuracy(Metric):
     """
     Measures top1 accuracy for multi-class classification
     or accuracy for binary classification.
@@ -89,57 +139,70 @@ class Accuracy(Metrics):
     >>> acc = Accuracy()
     """
     def __init__(self, zero_based_label=True):
+        self.zero_based_label = zero_based_label
+
+    def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import Accuracy as KerasAccuracy
-        self.metrics = KerasAccuracy(zero_based_label=zero_based_label)
+        return KerasAccuracy(zero_based_label=self.zero_based_label)
 
-    def get_metrics(self):
-        return self.metrics
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        if not self.zero_based_label:
+            raise ValueError("pytorch Accuracy does not support one based accuracy, "
+                             "please set zero_based_label to True")
+        return pytorch_metrics.Accuracy()
+
+    def get_name(self):
+        return "Accuracy"
 
 
-class SparseCategoricalAccuracy(Metrics):
+class SparseCategoricalAccuracy(Metric):
     """
     Measures top1 accuracy for multi-class classification with sparse target.
 
     >>> acc = SparseCategoricalAccuracy()
     """
-    def __init__(self):
+
+    def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import \
             SparseCategoricalAccuracy as KerasSparseCategoricalAccuracy
-        self.metrics = KerasSparseCategoricalAccuracy()
+        return KerasSparseCategoricalAccuracy()
 
-    def get_metrics(self):
-        return self.metrics
+    def get_name(self):
+        return "SparseCategoricalAccuracy"
 
 
-class CategoricalAccuracy(Metrics):
+class CategoricalAccuracy(Metric):
     """
     Measures top1 accuracy for multi-class classification when target is one-hot encoded.
 
     >>> acc = CategoricalAccuracy()
     """
-    def __init__(self):
+
+    def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import CategoricalAccuracy as KerasCategoricalAccuracy
-        self.metrics = KerasCategoricalAccuracy()
+        return KerasCategoricalAccuracy()
 
-    def get_metrics(self):
-        return self.metrics
+    def get_name(self):
+        return "CategoricalAccuracy"
 
 
-class BinaryAccuracy(Metrics):
+class BinaryAccuracy(Metric):
     """
     Measures top1 accuracy for binary classification with zero-based index.
 
     >>> acc = BinaryAccuracy()
     """
-    def __init__(self):
+
+    def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import BinaryAccuracy as KerasBinaryAccuracy
-        self.metrics = KerasBinaryAccuracy()
+        return KerasBinaryAccuracy()
 
-    def get_metrics(self):
-        return self.metrics
+    def get_name(self):
+        return "BinaryAccuracy"
 
 
-class Top5Accuracy(Metrics):
+class Top5Accuracy(Metric):
     """
     Measures top5 accuracy for multi-class classification.
 
@@ -149,9 +212,10 @@ class Top5Accuracy(Metrics):
 
     >>> acc = Top5Accuracy()
     """
-    def __init__(self):
-        from zoo.pipeline.api.keras.metrics import Top5Accuracy as KerasTop5Accuracy
-        self.metrics = KerasTop5Accuracy()
 
-    def get_metrics(self):
-        return self.metrics
+    def get_bigdl_metric(self):
+        from zoo.pipeline.api.keras.metrics import Top5Accuracy as KerasTop5Accuracy
+        return KerasTop5Accuracy()
+
+    def get_name(self):
+        return "Top5Accuracy"
