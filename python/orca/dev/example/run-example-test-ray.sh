@@ -15,29 +15,29 @@ set -e
 
 ray stop -f
 
-echo "Start ray example tests"
-#start execute
+echo "#start orca ray example tests"
+
 echo "#1 Start rl_pong example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/rl_pong/rl_pong.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/rl_pong/rl_pong.py --iterations 10
 now=$(date "+%s")
 time1=$((now-start))
 
-echo "#2 Start async_parameter example"
+echo "#2 Start multiagent example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/parameter_server/async_parameter_server.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
 now=$(date "+%s")
 time2=$((now-start))
 
-echo "#3 Start sync_parameter example"
+echo "#3 Start async_parameter example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/parameter_server/sync_parameter_server.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
 now=$(date "+%s")
 time3=$((now-start))
 
-echo "#4 Start multiagent example"
+echo "#4 Start sync_parameter example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray/rllib/multiagent_two_trainers.py --iterations 5
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
 now=$(date "+%s")
 time4=$((now-start))
 
@@ -96,10 +96,10 @@ time7=$((now-start))
 
 
 echo "Ray example tests finished"
-echo "#1 rl_pong time used:$time1 seconds"
-echo "#2 async_parameter_server time used:$time2 seconds"
-echo "#3 sync_parameter_server time used:$time3 seconds"
-echo "#4 multiagent_two_trainers time used:$time4 seconds"
+echo "#1 orca rl_pong time used:$time1 seconds"
+echo "#2 orca async_parameter_server time used:$time2 seconds"
+echo "#3 orca sync_parameter_server time used:$time3 seconds"
+echo "#4 orca multiagent_two_trainers time used:$time4 seconds"
 echo "#5 mxnet_lenet time used:$time5 seconds"
 echo "#6 fashion-mnist time used:$time6 seconds"
 echo "#7 orca super-resolution example time used:$time7 seconds"
