@@ -130,12 +130,6 @@ Non-Docker users need to install [Flink 1.10.0+](https://archive.apache.org/dist
 
 After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
-
-##### Install Cluster Serving by download release
-For users who need to deploy and start Cluster Serving, download Cluster Serving zip `analytics-zoo-xxx-cluster-serving-all.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.1-spark_2.4.3/0.10.0-SNAPSHOT/) and unzip it, then run `source cluster-serving-setup.sh`.
-For users who need to do inference, aka. predict data only, download Analytics Zoo python zip `analytics-zoo-xxx-cluster-serving-python.zip` from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.1-spark_2.4.3/0.10.0-SNAPSHOT/) and run `export PYTHONPATH=$PYTHONPATH:/path/to/zip` to add this zip to `PYTHONPATH` environment variable.
-
-##### Install Cluster Serving by pip
 Download package from [here](https://sourceforge.net/projects/analytics-zoo/files/cluster-serving-py/), run following command to install Cluster Serving
 ```
 pip install analytics_zoo_serving-*.whl
@@ -226,6 +220,19 @@ The field `params` contains your inference parameter configuration.
 
 * core_number: the **batch size** you use for model inference, usually the core number of your machine is recommended. Thus you could just provide your machine core number at this field. We recommend this value to be not smaller than 4 and not larger than 512. In general, using larger batch size means higher throughput, but also increase the latency between batches accordingly.
 
+#### High Performance Configuration Recommended
+Tensorflow, Pytorch, BigDL model recommend following configuration
+```
+params:  
+  # default: model number will auto-adapt to core_number, do not set it if not sure about the behavior
+  model_number: core_number of your machine
+```
+
+OpenVINO model recommend following configuration
+```
+export OMP_NUM_THREADS=core_number of your machine
+```
+
 ### 3. Launching Service
 This section is about how to start and stop Cluster Serving. 
 #### Start
@@ -245,6 +252,16 @@ You can use following command to shutdown Cluster Serving. This operation will s
 ```
 cluster-serving-shutdown
 ```
+#### Start Multiple Serving
+To run multiple Cluster Serving job, e.g. the second job name is `serving2`, then use following configuration
+```
+model:
+  # model path must be provided
+  path: /path/to/model
+  # name, default is serving_stream, you need to specify if running multiple servings
+  name: serving2
+```
+then call `cluster-serving-start` in this directory
 
 If you are using Docker, you could also run `docker rm` to shutdown Cluster Serving.
 #### HTTP Server (for sync API only)
