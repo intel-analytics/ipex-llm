@@ -168,6 +168,10 @@ class SparseCategoricalAccuracy(Metric):
             SparseCategoricalAccuracy as KerasSparseCategoricalAccuracy
         return KerasSparseCategoricalAccuracy()
 
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.SparseCategoricalAccuracy()
+
     def get_name(self):
         return "SparseCategoricalAccuracy"
 
@@ -183,6 +187,10 @@ class CategoricalAccuracy(Metric):
         from zoo.pipeline.api.keras.metrics import CategoricalAccuracy as KerasCategoricalAccuracy
         return KerasCategoricalAccuracy()
 
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.CategoricalAccuracy()
+
     def get_name(self):
         return "CategoricalAccuracy"
 
@@ -197,6 +205,10 @@ class BinaryAccuracy(Metric):
     def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import BinaryAccuracy as KerasBinaryAccuracy
         return KerasBinaryAccuracy()
+
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.BinaryAccuracy()
 
     def get_name(self):
         return "BinaryAccuracy"
@@ -216,6 +228,10 @@ class Top5Accuracy(Metric):
     def get_bigdl_metric(self):
         from zoo.pipeline.api.keras.metrics import Top5Accuracy as KerasTop5Accuracy
         return KerasTop5Accuracy()
+
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.Top5Accuracy()
 
     def get_name(self):
         return "Top5Accuracy"
