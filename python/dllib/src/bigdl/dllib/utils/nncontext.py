@@ -369,7 +369,7 @@ def init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
         sc = getOrCreateSparkContext(conf=conf)
     sc.setLogLevel(spark_log_level)
 
-    if ZooContext.log_output and not has_activate_sc:
+    if ZooContext.log_output and not has_activate_sc and spark_jvm_proc is not None:
         if spark_jvm_proc.stdout is not None:
             stdout_reader = threading.Thread(target=_read_stream,
                                              daemon=True,
