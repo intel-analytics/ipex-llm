@@ -55,7 +55,7 @@ def resource_to_bytes(resource_str):
 
 
 def gen_shutdown_per_node(pgids, node_ips=None):
-    import ray.services as rservices
+    import ray._private.services as rservices
     pgids = to_list(pgids)
 
     def _shutdown_per_node(iter):
