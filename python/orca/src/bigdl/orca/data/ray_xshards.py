@@ -16,7 +16,7 @@
 from collections import defaultdict
 
 import ray
-import ray.services
+import ray._private.services
 import uuid
 import random
 
@@ -67,8 +67,8 @@ class LocalStore:
 
 def write_to_ray(idx, partition, redis_address, redis_password, partition_store_names):
     if not ray.is_initialized():
-        ray.init(address=redis_address, redis_password=redis_password, ignore_reinit_error=True)
-    ip = ray.services.get_node_ip_address()
+        ray.init(address=redis_address, _redis_password=redis_password, ignore_reinit_error=True)
+    ip = ray._private.services.get_node_ip_address()
     local_store_name = None
     for name in partition_store_names:
         if name.endswith(ip):
@@ -77,7 +77,7 @@ def write_to_ray(idx, partition, redis_address, redis_password, partition_store_
     if local_store_name is None:
         local_store_name = random.choice(partition_store_names)
 
-    local_store = ray.util.get_actor(local_store_name)
+    local_store = ray.get_actor(local_store_name)
 
     # directly calling ray.put will set this driver as the owner of this object,
     # when the spark job finished, the driver might exit and make the object
@@ -87,17 +87,15 @@ def write_to_ray(idx, partition, redis_address, redis_password, partition_store_
         shard_ref = ray.put(shard)
         result.append(local_store.upload_shards.remote((idx, shard_id), shard_ref))
     ray.get(result)
-    ray.shutdown()
 
     return [(idx, local_store_name.split(":")[-1], local_store_name)]
 
 
 def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
     if not ray.is_initialized():
-        ray.init(address=redis_address, redis_password=redis_password, ignore_reinit_error=True)
-    local_store_handle = ray.util.get_actor(idx_to_store_name[idx])
+        ray.init(address=redis_address, _redis_password=redis_password, ignore_reinit_error=True)
+    local_store_handle = ray.get_actor(idx_to_store_name[idx])
     partition = ray.get(local_store_handle.get_partition.remote(idx))
-    ray.shutdown()
     return partition
 
 
@@ -141,7 +139,13 @@ class RayXShards(XShards):
         rdd = sc.parallelize([0] * num_parts * 10, num_parts)\
             .mapPartitionsWithIndex(
             lambda idx, _: get_from_ray(idx, address, password, partition2store))
-        spark_xshards = SparkXShards(rdd)
+
+        # the reason why we trigger computation here is to ensure we get the data
+        # from ray before the RayXShards goes out of scope and the data get garbage collected
+        from pyspark.storagelevel import StorageLevel
+        rdd = rdd.cache()
+        result_rdd = rdd.map(lambda x: x) # sparkxshards will uncache the rdd when gc
+        spark_xshards = SparkXShards(result_rdd)
         return spark_xshards
 
     def _get_multiple_partition_refs(self, ids):
@@ -159,7 +163,7 @@ class RayXShards(XShards):
         and run func for each actor and partition_ref pair.
 
         Actors should have a `get_node_ip` method to achieve locality scheduling.
-        The `get_node_ip` method should call ray.services.get_node_ip_address()
+        The `get_node_ip` method should call ray._private.services.get_node_ip_address()
         to return the correct ip address.
 
         The `func` should take an actor and a partition_ref as argument and
@@ -304,7 +308,7 @@ class RayXShards(XShards):
         ray_ctx = RayContext.get()
         address = ray_ctx.redis_address
         password = ray_ctx.redis_password
-        driver_ip = ray.services.get_node_ip_address()
+        driver_ip = ray._private.services.get_node_ip_address()
         uuid_str = str(uuid.uuid4())
         resources = ray.cluster_resources()
         nodes = []
@@ -320,6 +324,9 @@ class RayXShards(XShards):
             store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
                 .options(name=name).remote()
             partition_stores[name] = store
+
+        # actor creation is aync, this is to make sure they all have been started
+        ray.get([v.get_partitions.remote() for v in partition_stores.values()])
         partition_store_names = list(partition_stores.keys())
         result = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
             idx, part, address, password, partition_store_names)).collect()

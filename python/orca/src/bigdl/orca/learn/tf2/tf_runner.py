@@ -35,7 +35,6 @@ import os
 import numpy as np
 
 import ray
-import ray.services
 from contextlib import closing
 import logging
 import socket
@@ -473,7 +472,7 @@ class TFRunner:
 
     def get_node_ip(self):
         """Returns the IP address of the current node."""
-        return ray.services.get_node_ip_address()
+        return ray._private.services.get_node_ip_address()
 
     def find_free_port(self):
         """Finds a free port on the current node."""
