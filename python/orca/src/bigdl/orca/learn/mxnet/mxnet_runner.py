@@ -18,7 +18,7 @@ import os
 import time
 import logging
 import subprocess
-import ray.services
+import ray._private.services
 import mxnet as mx
 from mxnet import gluon
 from zoo.ray.utils import to_list
@@ -214,7 +214,7 @@ class MXNetRunner(object):
     def get_node_ip(self):
         """Returns the IP address of the current node."""
         if "node_ip" not in self.__dict__:
-            self.node_ip = ray.services.get_node_ip_address()
+            self.node_ip = ray._private.services.get_node_ip_address()
         return self.node_ip
 
     def find_free_port(self):

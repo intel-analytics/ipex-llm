@@ -22,7 +22,7 @@ class HorovodWorker:
 
     def ip_addr(self):
         import ray
-        return ray.services.get_node_ip_address()
+        return ray._private.services.get_node_ip_address()
 
     def set_gloo_iface(self):
         ip_addr = self.ip_addr()
@@ -111,7 +111,7 @@ class HorovodRayRunner:
             global_rendezv_port = self.global_rendezv.start()
             self.global_rendezv.init(self.host_alloc_plan)
 
-        driver_ip = ray.services.get_node_ip_address()
+        driver_ip = ray._private.services.get_node_ip_address()
 
         common_envs = {
             "HOROVOD_GLOO_RENDEZVOUS_ADDR": driver_ip,

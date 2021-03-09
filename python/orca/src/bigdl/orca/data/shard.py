@@ -114,7 +114,6 @@ But got data of type {}
         data_shards = SparkXShards(rdd)
         return data_shards
 
-
 class SparkXShards(XShards):
     """
     A collection of data which can be pre-processed in parallel on Spark
