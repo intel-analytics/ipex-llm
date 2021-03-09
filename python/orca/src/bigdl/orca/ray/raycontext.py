@@ -165,7 +165,7 @@ class RayServiceFuncGenerator(object):
     def _gen_master_command(self):
         webui = "true" if self.include_webui else "false"
         command = "{} start --head " \
-                  "--include-webui {} --redis-port {} " \
+                  "--include-dashboard {} --dashboard-host 0.0.0.0 --port {} " \
                   "--redis-password {} --num-cpus {}". \
             format(self.ray_exec, webui, self.redis_port, self.password,
                    self.ray_node_cpu_cores)
@@ -196,7 +196,7 @@ class RayServiceFuncGenerator(object):
         print("Starting {} by running: {}".format(tag, command))
         process_info = session_execute(command=command, env=modified_env, tag=tag)
         JVMGuard.register_pids(process_info.pids)
-        import ray.services as rservices
+        import ray._private.services as rservices
         process_info.node_ip = rservices.get_node_ip_address()
         return process_info
 
@@ -263,7 +263,7 @@ class RayContext(object):
     _active_ray_context = None
 
     def __init__(self, sc, redis_port=None, password="123456", object_store_memory=None,
-                 verbose=False, env=None, extra_params=None, include_webui=False,
+                 verbose=False, env=None, extra_params=None, include_webui=True,
                  num_ray_nodes=None, ray_node_cpu_cores=None):
         """
         The RayContext would initiate a ray cluster on top of the configuration of SparkContext.
@@ -460,11 +460,17 @@ class RayContext(object):
                 if self.env:
                     os.environ.update(self.env)
                 import ray
+                kwargs = {}
+                if self.extra_params is not None:
+                    for k, v in self.extra_params.items():
+                        kw = k.replace("-", "_")
+                        kwargs[kw] = v
                 self._address_info = ray.init(num_cpus=self.ray_node_cpu_cores,
-                                              redis_password=self.redis_password,
+                                              _redis_password=self.redis_password,
                                               object_store_memory=self.object_store_memory,
-                                              include_webui=self.include_webui,
-                                              resources=self.extra_params)
+                                              include_dashboard=self.include_webui,
+                                              dashboard_host="0.0.0.0",
+                                              *kwargs)
             else:
                 self.cluster_ips = self._gather_cluster_ips()
                 from bigdl.util.common import init_executor_gateway
@@ -521,12 +527,12 @@ class RayContext(object):
 
     def _start_driver(self, num_cores, redis_address):
         print("Start to launch ray driver on local")
-        import ray.services
-        node_ip = ray.services.get_node_ip_address(redis_address)
+        import ray._private.services
+        node_ip = ray._private.services.get_node_ip_address(redis_address)
         self._start_restricted_worker(num_cores=num_cores,
                                       node_ip_address=node_ip,
                                       redis_address=redis_address)
         ray.shutdown()
         return ray.init(address=redis_address,
-                        redis_password=self.ray_service.password,
-                        node_ip_address=node_ip)
+                        _redis_password=self.ray_service.password,
+                        _node_ip_address=node_ip)

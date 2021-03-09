@@ -53,8 +53,7 @@ class TestRay():
         return cv2.__version__
 
     def ip(self):
-        import ray.services as rservices
-        return rservices.get_node_ip_address()
+        return ray._private.services.get_node_ip_address()
 
     def network(self):
         from urllib.request import urlopen
