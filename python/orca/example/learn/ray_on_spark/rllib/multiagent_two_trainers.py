@@ -32,10 +32,10 @@ import gym
 import os
 
 from ray.rllib.agents.dqn.dqn import DQNTrainer
-from ray.rllib.agents.dqn.dqn_policy import DQNTFPolicy
+from ray.rllib.agents.dqn.dqn_tf_policy import DQNTFPolicy
 from ray.rllib.agents.ppo.ppo import PPOTrainer
 from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
-from ray.rllib.tests.test_multi_agent_env import MultiCartpole
+from ray.rllib.tests.test_multi_agent_env import MultiAgentCartPole
 from ray.tune.logger import pretty_print
 from ray.tune.registry import register_env
 from zoo.orca import init_orca_context, stop_orca_context
@@ -91,7 +91,7 @@ if __name__ == "__main__":
               + cluster_mode)
 
     # Simple environment with 4 independent cartpole entities
-    register_env("multi_cartpole", lambda _: MultiCartpole(4))
+    register_env("multi_cartpole", lambda _: MultiAgentCartPole({"num_agents": 4}))
     single_env = gym.make("CartPole-v0")
     obs_space = single_env.observation_space
     act_space = single_env.action_space
