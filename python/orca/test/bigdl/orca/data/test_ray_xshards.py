@@ -56,7 +56,7 @@ class Add1Actor:
 
     def get_node_ip(self):
         import ray
-        return ray.services.get_node_ip_address()
+        return ray._private.services.get_node_ip_address()
 
     def add_one(self, partition):
         return [{k: (value + 1) for k, value in shards.items()} for shards in partition]
