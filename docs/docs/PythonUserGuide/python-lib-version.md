@@ -21,7 +21,7 @@ psutil==5.7.0
 pyarrow==0.17.0
 py4j==0.10.7
 pyspark==2.4.3
-ray==0.8.4
+ray==1.2.0
 redis==3.4.1
 scikit-learn==0.22.2.post1
 scipy==1.4.1

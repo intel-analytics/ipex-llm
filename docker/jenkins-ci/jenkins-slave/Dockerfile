@@ -110,7 +110,7 @@ RUN export TENSOR_FLOW_VERION=1.10.0 && \
     conda install -y -n py35 -c mingfeima mkldnn==0.16.1 && \
     conda install -y -n py35 -c pytorch pytorch-cpu==1.0.0 torchvision-cpu==0.2.1 && \
         /bin/bash -c "source activate py35 && \
-        pip install onnx==1.3.0 ray==0.7.2 conda-pack==0.3.1 psutil==5.6.2 && \
+        pip install onnx==1.3.0 ray==1.2.0 conda-pack==0.3.1 psutil==5.6.2 && \
         pip install aiohttp==3.5.4 setproctitle==1.1.10 gym==0.14.0 && \
         pip install atari_py==0.2.6 lz4==2.1.10 && source deactivate" && \
 #py36
@@ -130,7 +130,7 @@ RUN export TENSOR_FLOW_VERION=1.10.0 && \
     conda install -y -n py36 -c mingfeima mkldnn==0.16.1 && \
     conda install -y -n py36 -c pytorch pytorch-cpu==1.0.0 torchvision-cpu==0.2.1 && \
         /bin/bash -c "source activate py36 && \
-        pip install onnx==1.3.0 ray==0.7.2 conda-pack==0.3.1 psutil==5.6.2 && \
+        pip install onnx==1.3.0 ray==1.2.0 conda-pack==0.3.1 psutil==5.6.2 && \
         pip install aiohttp==3.5.4 setproctitle==1.1.10 gym==0.14.0 && \
         pip install atari_py==0.2.6 lz4==2.1.10 && source deactivate" && \
 #keras=2.1.6
