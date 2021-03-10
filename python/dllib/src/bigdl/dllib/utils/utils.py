@@ -37,7 +37,8 @@ def to_sample_rdd(x, y, sc, num_slices=None):
 def get_node_ip():
     """
     This function is ported from ray to get the ip of the current node. In the settings where
-    Ray is not involved, calling ray._private.services.get_node_ip_address would introduce Ray overhead.
+    Ray is not involved, calling ray._private.services.get_node_ip_address would introduce
+    Ray overhead.
     """
     import socket
     import errno
