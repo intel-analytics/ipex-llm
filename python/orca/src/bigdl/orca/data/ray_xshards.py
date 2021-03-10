@@ -144,7 +144,7 @@ class RayXShards(XShards):
         # from ray before the RayXShards goes out of scope and the data get garbage collected
         from pyspark.storagelevel import StorageLevel
         rdd = rdd.cache()
-        result_rdd = rdd.map(lambda x: x) # sparkxshards will uncache the rdd when gc
+        result_rdd = rdd.map(lambda x: x)  # sparkxshards will uncache the rdd when gc
         spark_xshards = SparkXShards(result_rdd)
         return spark_xshards
 
