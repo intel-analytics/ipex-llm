@@ -236,6 +236,12 @@ else
   export PYTHONPATH=$(pwd)/analytics-zoo-tensorflow-models/slim:$PYTHONPATH
 fi
 
+rm -f /tmp/mnist/*
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mnist
+
 echo "start example test for TFPark tf_optimizer train 1"
 ${SPARK_HOME}/bin/spark-submit \
   --master ${MASTER} \
