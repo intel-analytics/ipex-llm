@@ -81,3 +81,29 @@ def test_torch_Top5Accuracy():
     target = torch.tensor([[2], [1]])
     top5acc(pred, target)
     assert top5acc.compute() == 0.75
+
+
+def test_torch_MAE():
+    from zoo.orca.learn.pytorch.pytorch_metrics import MAE
+    pred = torch.tensor([[1, -2], [1, 1]])
+    target = torch.tensor([[0, 1], [0, 1]])
+    m = MAE()
+    m(pred, target)
+    assert m.compute() == 1.25
+    pred = torch.tensor([[1, 1], [1, 1]])
+    target = torch.tensor([[0, 1], [0, 1]])
+    m(pred, target)
+    assert m.compute() == 0.875
+
+
+def test_torch_MSE():
+    from zoo.orca.learn.pytorch.pytorch_metrics import MSE
+    pred = torch.tensor([[1, -2], [1, 1]])
+    target = torch.tensor([[1, 1], [1, 1]])
+    m = MSE()
+    m(pred, target)
+    assert m.compute() == 2.25
+    pred = torch.tensor([[1, 1], [1, 1]])
+    target = torch.tensor([[1, 1], [0, 1]])
+    m(pred, target)
+    assert m.compute() == 1.25
