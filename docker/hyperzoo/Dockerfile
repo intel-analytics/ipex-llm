@@ -140,8 +140,6 @@ ADD *.sh /opt/work/scripts/
 RUN chmod a+x /opt/work/scripts/*.*
 
 RUN /opt/work/scripts/download-cluster-serving-all-zip.sh
-RUN cd cluster-serving && \
-    ./cluster-serving-setup.sh
 
 ADD resources/ /opt/work/cluster-serving/resources/
 ADD *.py /opt/work/cluster-serving/
