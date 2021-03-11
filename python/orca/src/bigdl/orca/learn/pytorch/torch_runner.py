@@ -156,7 +156,7 @@ class TorchRunner:
 
         logger.debug("Creating model")
         self.models = self.model_creator(self.config)
-        if not isinstance(self.models, Iterable):
+        if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
             self.models = [self.models]
         assert all(isinstance(model, nn.Module) for model in self.models), (
             "All models must be PyTorch models: {}.".format(self.models))
