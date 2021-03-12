@@ -97,7 +97,7 @@ fit(data,
 ```
 * `data`: train data. It can be XShards, Spark DataFrame, tf.data.Dataset.
         
-   If `data` is XShards, each element needs to be {'x': a feature numpy array
+   If `data` is XShards, each element can be Pandas Dataframe or {'x': a feature numpy array
          or a tuple of feature numpy arrays, 'y': a label numpy array or a tuple of
          label numpy arrays}
    
