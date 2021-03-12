@@ -51,7 +51,7 @@ if __name__ == '__main__':
     ray_ctx.init()
 
     import pandas as pd
-    df = pd.read_csv(opt.path)
+    df = pd.read_csv(opt.path, encoding='latin-1')
     feature_cols = ["FIPS", "Lower 95% Confidence Interval", "Upper 95% Confidence Interval",
                     "Average Annual Count", "Recent 5-Year Trend"]
     target_col = "Age-Adjusted Incidence Rate"
@@ -71,8 +71,8 @@ if __name__ == '__main__':
 
     pred_df = pipeline.predict(val_df)
 
-    mse = pipeline.evaluate(val_df, metrics=["mse"])
-    print("Evaluate: the mean square error is", mse)
+    rmse = pipeline.evaluate(val_df, metrics=["rmse"])
+    print("Evaluate: the square root of mean square error is", rmse)
 
     ray_ctx.stop()
     sc.stop()
