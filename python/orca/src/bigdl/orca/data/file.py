@@ -21,7 +21,9 @@ from zoo.common.utils import callZooFunc
 
 def open_text(path):
     """
+
     Read a text file to list of lines. It supports local, hdfs, s3 file systems.
+
     :param path: text file path
     :return: list of lines
     """
@@ -54,7 +56,9 @@ def open_text(path):
 
 def open_image(path):
     """
+
     Open a image file. It supports local, hdfs, s3 file systems.
+
     :param path: an image file path
     :return: An :py:class:`~PIL.Image.Image` object.
     """
@@ -85,8 +89,10 @@ def open_image(path):
 
 def load_numpy(path):
     """
+
     Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
     It supports local, hdfs, s3 file systems.
+
     :param path: file path
     :return: array, tuple, dict, etc.
         Data stored in the file. For ``.npz`` files, the returned instance
@@ -119,7 +125,9 @@ def load_numpy(path):
 
 def exists(path):
     """
+
     Check if a path exists or not. It supports local, hdfs, s3 file systems.
+
     :param path: file or directory path string.
     :return: if path exists or not.
     """
@@ -150,8 +158,10 @@ def exists(path):
 
 def makedirs(path):
     """
+
     Make a directory with creating intermediate directories.
     It supports local, hdfs, s3 file systems.
+
     :param path: directory path string to be created.
     """
     if path.startswith("s3"):  # s3://bucket/file_path
@@ -175,7 +185,9 @@ def makedirs(path):
 
 def write_text(path, text):
     """
+
     Write text to a file. It supports local, hdfs, s3 file systems.
+
     :param path: file path
     :param text: text string
     :return: number of bytes written or AWS response(s3 file systems)
