@@ -50,31 +50,31 @@ class Estimator(object):
         Create an Estimator for torch.
 
         :param model: PyTorch model if backend="bigdl", PyTorch model creator function if
-        backend="horovod" or "torch_distributed"
+               backend="horovod" or "torch_distributed"
         :param optimizer: Orca or PyTorch optimizer if backend="bigdl", PyTorch optimizer creator
-        function if backend="horovod" or "torch_distributed"
+               function if backend="horovod" or "torch_distributed"
         :param loss: PyTorch loss if backend="bigdl", PyTorch loss creator function if
-        backend="horovod" or "torch_distributed"
+               backend="horovod" or "torch_distributed"
         :param metrics: Orca validation methods for evaluate.
         :param scheduler_creator: parameter for `horovod` and `torch_distributed` backends. a
-        learning rate scheduler wrapping the optimizer. You will need to set
-        ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
+               learning rate scheduler wrapping the optimizer. You will need to set
+               ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
         :param config: parameter for `horovod` and `torch_distributed` backends. Config dict to
-        create model, optimizer loss and data.
+               create model, optimizer loss and data.
         :param scheduler_step_freq: parameter for `horovod` and `torch_distributed` backends.
-        "batch", "epoch" or None. This will determine when ``scheduler.step`` is called. If
-        "batch", ``step`` will be called after every optimizer step. If "epoch", ``step`` will be
-        called after one pass of the DataLoader. If a scheduler is passed in, this value is expected
-        to not be None.
+               "batch", "epoch" or None. This will determine when ``scheduler.step`` is called. If
+               "batch", ``step`` will be called after every optimizer step. If "epoch", ``step``
+               will be called after one pass of the DataLoader. If a scheduler is passed in, this
+               value is expected to not be None.
         :param use_tqdm: parameter for `horovod` and `torch_distributed` backends. You can monitor
-        training progress if use_tqdm=True.
+               training progress if use_tqdm=True.
         :param workers_per_node: parameter for `horovod` and `torch_distributed` backends. worker
-        number on each node. default: 1.
+               number on each node. default: 1.
         :param model_dir: parameter for `bigdl` backend. The path to save model. During the
-        training, if checkpoint_trigger is defined and triggered, the model will be saved to
-        model_dir.
+               training, if checkpoint_trigger is defined and triggered, the model will be saved to
+               model_dir.
         :param backend: You can choose "horovod",  "torch_distributed" or "bigdl" as backend.
-        Default: `bigdl`.
+               Default: `bigdl`.
         :return: an Estimator object.
         """
         if backend in {"horovod", "torch_distributed"}:
@@ -144,28 +144,30 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
         underneath the hood.
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-        takes config and batch_size as argument and returns a PyTorch DataLoader for training.
+               takes config and batch_size as argument and returns a PyTorch DataLoader for
+               training.
         :param epochs: The number of epochs to train the model. Default is 1.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
-        The total batch size would be workers_per_node*num_nodes.
-        If your training data is a function, you can set batch_size to be the input batch_size
-        of the function for the PyTorch DataLoader.
+               The total batch size would be workers_per_node*num_nodes.
+               If your training data is a function, you can set batch_size to be the input
+               batch_size of the function for the PyTorch DataLoader.
         :param profile: Boolean. Whether to return time stats for the training procedure.
-        Default is False.
+               Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
-        one dict. If a metric is a non-numerical value (or nested dictionaries), one value will
-        be randomly selected among the workers. If False, returns a list of dicts for all workers.
-        Default is True.
+               one dict. If a metric is a non-numerical value (or nested dictionaries), one value
+               will be randomly selected among the workers. If False, returns a list of dicts for
+               all workers.
+               Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
-        train_epoch and train_batch.
+               train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
 
         :return A list of dictionary of metrics for every training epoch. If reduce_results is
-        False, this will return a nested list of metric dictionaries whose length will be equal
-        to the total number of workers.
-        You can also provide custom metrics by passing in a custom training_operator_cls when
-        creating the Estimator.
+                False, this will return a nested list of metric dictionaries whose length will be
+                equal to the total number of workers.
+                You can also provide custom metrics by passing in a custom training_operator_cls
+                when creating the Estimator.
         """
         return self.estimator.train(data=data, epochs=epochs, batch_size=batch_size,
                                     profile=profile, reduce_results=reduce_results,
@@ -179,7 +181,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param data: An instance of SparkXShards or a Spark DataFrame
         :param batch_size: The number of samples per batch for each worker. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
-        Default is False.
+               Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame.
         :return A SparkXShards that contains the predictions with key "prediction" in each shard
         """
@@ -197,23 +199,24 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.validate()` on N parallel workers simultaneously
         underneath the hood.
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-        takes config and batch_size as argument and returns a PyTorch DataLoader for validation.
+               takes config and batch_size as argument and returns a PyTorch DataLoader for
+               validation.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
-        The total batch size would be workers_per_node*num_nodes.
-        If your validation data is a function, you can set batch_size to be the input batch_size
-        of the function for the PyTorch DataLoader.
+               The total batch size would be workers_per_node*num_nodes.
+               If your validation data is a function, you can set batch_size to be the input
+               batch_size of the function for the PyTorch DataLoader.
         :param num_steps: The number of batches to compute the validation results on. This
-        corresponds to the number of times `TrainingOperator.validate_batch` is called.
+               corresponds to the number of times `TrainingOperator.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.
-        Default is False.
+               Default is False.
         :param info: An optional dictionary that can be passed to the TrainingOperator
-        for validate.
+               for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
         :param label_cols: label column names if train data is Spark DataFrame.
 
         :return A dictionary of metrics for the given data, including validation accuracy and loss.
-        You can also provide custom metrics by passing in a custom training_operator_cls when
-        creating the Estimator.
+                You can also provide custom metrics by passing in a custom training_operator_cls
+                when creating the Estimator.
         """
         return self.estimator.validate(data=data, batch_size=batch_size, num_steps=num_steps,
                                        profile=profile, info=info, feature_cols=feature_cols,
@@ -321,20 +324,20 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         Train this torch model with train data.
 
         :param data: train data. It can be a XShards, Spark Dataframe, PyTorch DataLoader and
-        PyTorch DataLoader creator function.
-        If data is an XShards, each partition is a dictionary of  {'x': feature,
-        'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               PyTorch DataLoader creator function.
+               If data is an XShards, each partition is a dictionary of  {'x': feature,
+               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
         :param epochs: Number of epochs to train the model. Default: 1.
         :param batch_size: Batch size used for training. Only used when data is an XShards.
-        Default: 32.
+               Default: 32.
         :param feature_cols: Feature column name(s) of data. Only used when data
-        is a Spark DataFrame. Default: None.
+               is a Spark DataFrame. Default: None.
         :param label_cols: Label column name(s) of data. Only used when data is
-        a Spark DataFrame. Default: None.
+               a Spark DataFrame. Default: None.
         :param validation_data: Validation data. XShards, PyTorch DataLoader and PyTorch DataLoader
-        creator function are supported.
-        If data is XShards, each partition is a dictionary of  {'x': feature,
-        'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               creator function are supported.
+               If data is XShards, each partition is a dictionary of  {'x': feature,
+               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
         :param checkpoint_trigger: Orca Trigger to set a checkpoint.
         :return: The trained estimator object.
         """
@@ -375,14 +378,14 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         Predict input data.
 
         :param data: data to be predicted. It can be an XShards or a Spark Dataframe.
-        If it is an XShards, each partition is a dictionary of
-        {'x': feature}, where feature is a numpy array or a list of numpy arrays.
+               If it is an XShards, each partition is a dictionary of
+               {'x': feature}, where feature is a numpy array or a list of numpy arrays.
         :param batch_size: batch size used for inference.
         :param feature_cols: Feature column name(s) of data. Only used when data
-        is a Spark DataFrame. Default: None.
+               is a Spark DataFrame. Default: None.
         :return: predicted result. The predict result is a XShards, each partition of the XShards
-        is a dictionary of {'prediction': result}, where result is a numpy array or a list of numpy
-        arrays.
+                 is a dictionary of {'prediction': result}, where result is a numpy array or a list
+                 of numpy arrays.
         """
         from zoo.orca.learn.utils import convert_predict_rdd_to_xshard
         if isinstance(data, SparkXShards):
@@ -410,14 +413,14 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         Evaluate model.
 
         :param data: data: evaluation data. It can be an XShards, Spark Dataframe,
-        PyTorch DataLoader and PyTorch DataLoader creator function.
-        If data is an XShards, each partition is a dictionary of  {'x': feature,
-        'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               PyTorch DataLoader and PyTorch DataLoader creator function.
+               If data is an XShards, each partition is a dictionary of  {'x': feature,
+               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
         :param batch_size: Batch size used for evaluation. Only used when data is a SparkXShard.
         :param feature_cols: Feature column name(s) of data. Only used when data
-        is a Spark DataFrame. Default: None.
+               is a Spark DataFrame. Default: None.
         :param label_cols: Label column name(s) of data. Only used when data is
-        a Spark DataFrame. Default: None.
+               a Spark DataFrame. Default: None.
         :param validation_metrics: Orca validation metrics to be computed on validation_data.
         :return: validation results.
         """
@@ -483,7 +486,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         :param path: Path to the existing checkpoint.
         :param version: checkpoint version, which is the suffix of model.* file,
-        i.e., for modle.4 file, the version is 4.
+               i.e., for model.4 file, the version is 4.
         :param prefix: optimMethod prefix, for example 'optimMethod-TorchModelf53bddcc'
         :return:
         """
@@ -513,7 +516,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         Get the scalar from model train summary
         Return list of summary data of [iteration_number, scalar_value, timestamp]
 
-        tag: The string variable represents the scalar wanted
+        :param tag: The string variable represents the scalar wanted
         """
         return self.estimator.get_train_summary(tag=tag)
 
@@ -541,7 +544,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
         'StatelessMetric'           |   '${name}'
 
-        tag: The string variable represents the scalar wanted
+        :param tag: The string variable represents the scalar wanted
         """
         return self.estimator.get_validation_summary(tag=tag)
 

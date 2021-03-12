@@ -69,14 +69,14 @@ class OpenvinoEstimator(SparkEstimator):
         Predict input data
 
         :param data: data to be predicted. XShards, numpy array and list of numpy arrays are
-        supported. If data is XShards, each partition is a dictionary of  {'x': feature},
-        where feature(label) is a numpy array or a list of numpy arrays.
+               supported. If data is XShards, each partition is a dictionary of  {'x': feature},
+               where feature(label) is a numpy array or a list of numpy arrays.
         :return: predicted result.
-         If the input data is XShards, the predict result is a XShards, each partition of the
-         XShards is a dictionary of {'prediction': result}, where the result is a numpy array or
-         a list of numpy arrays.
-         If the input data is numpy arrays or list of numpy arrays, the predict result is a numpy
-         array or a list of numpy arrays.
+                 If the input data is XShards, the predict result is a XShards, each partition
+                 of the XShards is a dictionary of {'prediction': result}, where the result is a
+                 numpy array or a list of numpy arrays.
+                 If the input data is numpy arrays or list of numpy arrays, the predict result is
+                 a numpy array or a list of numpy arrays.
         """
         def predict_transform(dict_data, batch_size):
             assert isinstance(dict_data, dict), "each shard should be an dict"
