@@ -58,9 +58,9 @@ class Estimator(object):
                The feature_preprocessing will also be copied to the generated NNModel and applied
                to feature column during transform.
         :param label_preprocessing: Used when data in `fit` and `predict` is a Spark DataFrame.
-            similar to feature_preprocessing, but applies to Label data.
+               similar to feature_preprocessing, but applies to Label data.
         :param model_dir: The path to save model. During the training, if checkpoint_trigger is
-            defined and triggered, the model will be saved to model_dir.
+               defined and triggered, the model will be saved to model_dir.
         :return:
         """
         return BigDLEstimator(model=model, loss=loss, optimizer=optimizer,
@@ -98,18 +98,18 @@ class BigDLEstimator(OrcaSparkEstimator):
         Train this BigDL model with train data.
 
         :param data: train data. It can be XShards or Spark DataFrame.
-        If data is XShards, each partition is a dictionary of  {'x': feature,
-        'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               If data is XShards, each partition is a dictionary of  {'x': feature,
+               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
         :param epochs: Number of epochs to train the model.
         :param batch_size: Batch size used for training. Default: 32.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-        DataFrame. Default: "features".
+               DataFrame. Default: "features".
         :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame.
-        Default: "label".
+               Default: "label".
         :param caching_sample: whether to cache the Samples after preprocessing. Default: True
         :param validation_data: Validation data. XShards and Spark DataFrame are supported.
-        If data is XShards, each partition is a dictionary of  {'x': feature,
-        'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               If data is XShards, each partition is a dictionary of  {'x': feature,
+               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
         :param validation_trigger: Orca Trigger to trigger validation computation.
         :param checkpoint_trigger: Orca Trigger to set a checkpoint.
         :return:
@@ -193,21 +193,21 @@ class BigDLEstimator(OrcaSparkEstimator):
         Predict input data
 
         :param data: predict input data. It can be XShards or Spark DataFrame.
-        If data is XShards, each partition is a dictionary of  {'x': feature}, where feature
-        is a numpy array or a list of numpy arrays.
+               If data is XShards, each partition is a dictionary of  {'x': feature}, where feature
+               is a numpy array or a list of numpy arrays.
         :param batch_size: Batch size used for inference. Default: 4.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-        DataFrame. Default: "features".
+               DataFrame. Default: "features".
         :param sample_preprocessing: Used when data is a Spark DataFrame. If the user want change
-        the default feature_preprocessing specified in Estimator.from_bigdl, the user can pass the
-        new sample_preprocessing methods.
+               the default feature_preprocessing specified in Estimator.from_bigdl, the user can
+               pass the new sample_preprocessing methods.
         :return: predicted result.
-        If input data is Spark DataFrame, the predict result is a DataFrame which includes original
-         columns plus 'prediction' column. The 'prediction' column can be FloatType, VectorUDT
-         or Array of VectorUDT depending on model outputs shape.
-        If input data is an XShards, the predict result is a XShards, each partition of the XShards
-        is a dictionary of {'prediction': result}, where result is a numpy array or a list of numpy
-        arrays.
+                 If input data is Spark DataFrame, the predict result is a DataFrame which includes
+                 original columns plus 'prediction' column. The 'prediction' column can be
+                 FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.
+                 If input data is an XShards, the predict result is a XShards, each partition
+                 of the XShards is a dictionary of {'prediction': result}, where result is a numpy
+                 array or a list of numpy arrays.
         """
         if isinstance(data, DataFrame):
             if isinstance(feature_cols, list):
@@ -232,12 +232,13 @@ class BigDLEstimator(OrcaSparkEstimator):
         Evaluate model.
 
         :param data: validation data. It can be XShards, each partition is a dictionary of
-        {'x': feature, 'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               {'x': feature, 'y': label}, where feature(label) is a numpy array or a list of numpy
+               arrays.
         :param batch_size: Batch size used for validation. Default: 32.
         :param feature_cols: (Not supported yet) Feature column name(s) of data. Only used when
-        data is a Spark  DataFrame. Default: None.
+               data is a Spark  DataFrame. Default: None.
         :param label_cols: (Not supported yet) Label column name(s) of data. Only used when data
-        is a Spark DataFrame. Default: None.
+               is a Spark DataFrame. Default: None.
         :return:
         """
         assert data is not None, "validation data shouldn't be None"
@@ -305,11 +306,11 @@ class BigDLEstimator(OrcaSparkEstimator):
                The feature_preprocessing will also be copied to the generated NNModel and applied
                to feature column during transform.
         :param label_preprocessing: Used when data in `fit` and `predict` is a Spark DataFrame.
-            similar to feature_preprocessing, but applies to Label data.
+               similar to feature_preprocessing, but applies to Label data.
         :param model_dir: The path to save model. During the training, if checkpoint_trigger is
-            defined and triggered, the model will be saved to model_dir.
+               defined and triggered, the model will be saved to model_dir.
         :param is_checkpoint: Whether the path is a checkpoint or a saved BigDL model.
-            Default: False.
+               Default: False.
         :return: The loaded estimator object.
         """
         if loss is not None:
@@ -345,7 +346,7 @@ class BigDLEstimator(OrcaSparkEstimator):
 
         :param path: Path to the existing checkpoint.
         :param version: checkpoint version, which is the suffix of model.* file,
-        i.e., for modle.4 file, the version is 4.
+               i.e., for modle.4 file, the version is 4.
         :param prefix: optimMethod prefix, for example 'optimMethod-Sequentialf53bddcc'
         :return:
         """
@@ -418,7 +419,7 @@ class BigDLEstimator(OrcaSparkEstimator):
         Get the scalar from model train summary
         Return list of summary data of [iteration_number, scalar_value, timestamp]
 
-        tag: The string variable represents the scalar wanted
+        :param tag: The string variable represents the scalar wanted
         """
         # Exception handle
         if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
@@ -454,7 +455,7 @@ class BigDLEstimator(OrcaSparkEstimator):
         'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
         'StatelessMetric'           |   '${name}'
 
-        tag: The string variable represents the scalar wanted
+        :param tag: The string variable represents the scalar wanted
         """
         if self.is_nnframe_fit:
             assert tag is not None, "You should provide tag which should match the name of " \
