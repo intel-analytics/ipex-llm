@@ -79,3 +79,12 @@ class BaseEstimator(ABC):
         :return:
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def shutdown(self):
+        """
+        Releases resources.
+
+        :return:
+        """
+        pass
