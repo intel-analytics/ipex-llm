@@ -107,3 +107,52 @@ def test_torch_MSE():
     target = torch.tensor([[1, 1], [0, 1]])
     m(pred, target)
     assert m.compute() == 1.25
+
+
+def test_torch_BinaryCrossEntropy():
+    from zoo.orca.learn.pytorch.pytorch_metrics import BinaryCrossEntropy
+    pred = torch.tensor([[0.6, 0.4], [0.4, 0.6]])
+    target = torch.tensor([[0, 1], [0, 0]])
+    entropy = BinaryCrossEntropy()
+    entropy(pred, target)
+    assert abs(entropy.compute() - 0.81492424) < 1e-6
+    pred = torch.tensor([0.6, 0.4, 0.4, 0.6])
+    target = torch.tensor([0, 1, 0, 0])
+    entropy(pred, target)
+    assert abs(entropy.compute() - 0.81492424) < 1e-6
+
+
+def test_torch_CategoricalCrossEntropy():
+    from zoo.orca.learn.pytorch.pytorch_metrics import CategoricalCrossEntropy
+    pred = torch.tensor([[0.05, 0.95, 0], [0.1, 0.8, 0.1]])
+    target = torch.tensor([[0, 1, 0], [0, 0, 1]])
+    entropy = CategoricalCrossEntropy()
+    entropy(pred, target)
+    assert abs(entropy.compute() - 1.1769392) < 1e-6
+
+
+def test_torch_SparseCategoricalCrossEntropy():
+    from zoo.orca.learn.pytorch.pytorch_metrics import SparseCategoricalCrossEntropy
+    pred = torch.tensor([[0.05, 0.95, 0], [0.1, 0.8, 0.1]])
+    target = torch.tensor([1, 2])
+    entropy = SparseCategoricalCrossEntropy()
+    entropy(pred, target)
+    assert abs(entropy.compute() - 1.1769392) < 1e-6
+
+
+def test_torch_KLDivergence():
+    from zoo.orca.learn.pytorch.pytorch_metrics import KLDivergence
+    pred = torch.tensor([[0.6, 0.4], [0.4, 0.6]])
+    target = torch.tensor([[0, 1], [0, 0]])
+    div = KLDivergence()
+    div(pred, target)
+    assert abs(div.compute() - 0.45814) < 1e-5
+
+
+def test_torch_Poisson():
+    from zoo.orca.learn.pytorch.pytorch_metrics import Poisson
+    pred = torch.tensor([[1, 1], [0, 0]])
+    target = torch.tensor([[0, 1], [0, 0]])
+    poisson = Poisson()
+    poisson(pred, target)
+    assert abs(poisson.compute() - 0.49999997) < 1e-6
