@@ -743,6 +743,12 @@ class TensorFlowEstimator(Estimator):
         """
         raise NotImplementedError
 
+    def shutdown(self):
+        """
+        Close TensorFlow session and release resources.
+        """
+        self.sess.close()
+
 
 class KerasEstimator(Estimator):
     def __init__(self, keras_model, metrics, model_dir, optimizer):
