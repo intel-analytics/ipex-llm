@@ -258,3 +258,81 @@ class Top5Accuracy(Metric):
 
     def get_name(self):
         return "Top5Accuracy"
+
+
+class BinaryCrossEntropy(Metric):
+    """
+    Calculates the cross entropy metric between the label and prediction when there
+    are only 2 labels (0 and 1).
+
+    >>> crossentropy = BinaryCrossEntropy()
+    """
+
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.BinaryCrossEntropy()
+
+    def get_name(self):
+        return "BinaryCrossEntropy"
+
+
+class CategoricalCrossEntropy(Metric):
+    """
+    Calculates the cross entropy metric between the label and prediction when there
+    are multiple labels (represented using one-hot vectors
+
+    >>> crossentropy = CategoricalCrossEntropy()
+    """
+
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.CategoricalCrossEntropy()
+
+    def get_name(self):
+        return "CategoricalCrossEntropy"
+
+
+class SparseCategoricalCrossEntropy(Metric):
+    """
+    Calculates the cross entropy metric between the label and prediction when there
+    are multiple labels (represented using integers)
+
+    >>> crossentropy = SparseCategoricalCrossEntropy()
+    """
+
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.SparseCategoricalCrossEntropy()
+
+    def get_name(self):
+        return "SparseCategoricalCrossEntropy"
+
+
+class KLDivergence(Metric):
+    """
+    Calculates the Kullback-Liebler Divergence metric between the label and prediction.
+
+    >>> div = KLDivergence()
+    """
+
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.KLDivergence()
+
+    def get_name(self):
+        return "KLDivergence"
+
+
+class Poisson(Metric):
+    """
+    Calculates the Poisson metric between the label and prediction.
+
+    >>> poisson = Poisson()
+    """
+
+    def get_pytorch_metric(self):
+        from zoo.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.Poisson()
+
+    def get_name(self):
+        return "Poisson"

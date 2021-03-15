@@ -192,6 +192,35 @@ class Top5Accuracy:
         return self.correct.float() / self.total
 
 
+class MSE:
+    """Computes the mean square error between labels and predictions.
+
+    `loss = square(abs(y_true - y_pred), axis=-1)`
+
+    Usage:
+
+    ```python
+    pred = torch.tensor([[1, -2], [1, 1]])
+    target = torch.tensor([[0, 1], [0, 1]])
+    m = MSE()
+    m(pred, target)
+    print(m.compute())  # tensor(2.7500)
+    ```
+    """
+
+    def __init__(self):
+        self.total = torch.tensor(0)
+        self.correct = torch.tensor(0)
+
+    def __call__(self, preds, targets):
+        preds = preds.type_as(targets)
+        self.correct += torch.sum(torch.square(torch.sub(preds, targets)))
+        self.total += targets.numel()
+
+    def compute(self):
+        return self.correct.float() / self.total
+
+
 class MAE:
     """Computes the mean absolute error between labels and predictions.
 
@@ -221,29 +250,170 @@ class MAE:
         return self.correct.float() / self.total
 
 
-class MSE:
-    """Computes the mean square error between labels and predictions.
-
-    `loss = square(abs(y_true - y_pred), axis=-1)`
+class BinaryCrossEntropy:
+    """Computes the crossentropy metric between the labels and predictions.
+    This is used when there are only two labels (0 and 1).
 
     Usage:
 
     ```python
-    pred = torch.tensor([[1, -2], [1, 1]])
-    target = torch.tensor([[0, 1], [0, 1]])
-    m = MSE()
-    m(pred, target)
-    print(m.compute())  # tensor(2.7500)
+    pred = torch.tensor([[0.6, 0.4], [0.4, 0.6]])
+    target = torch.tensor([[0, 1], [0, 0]])
+    entropy = BinaryCrossEntropy()
+    entropy(pred, target)
+    assert abs(entropy.compute() - 0.81492424) < 1e-6
     ```
     """
+
     def __init__(self):
         self.total = torch.tensor(0)
-        self.correct = torch.tensor(0)
+        self.crossentropy = torch.tensor(0)
 
     def __call__(self, preds, targets):
-        preds = preds.type_as(targets)
-        self.correct += torch.sum(torch.square(torch.sub(preds, targets)))
-        self.total += targets.numel()
+        # Avoid problems with logarithm
+        epsilon = 1e-7
+        preds[preds <= 0] = epsilon
+        preds[preds >= 1] = 1 - epsilon
+
+        output_size = targets.view(-1).size(0)
+        self.crossentropy = self.crossentropy + \
+            (- targets * torch.log(preds) - (1-targets) * torch.log(1-preds)).view(-1).sum()
+        self.total += output_size
 
     def compute(self):
-        return self.correct.float() / self.total
+        return self.crossentropy.float() / self.total
+
+
+class CategoricalCrossEntropy:
+    """Computes the crossentropy metric between the labels and predictions.
+    This is used when there are multiple lables. The labels should be in
+    the form of one-hot vectors.
+
+    Usage:
+
+    ```python
+    pred = torch.tensor([[0.05, 0.95, 0], [0.1, 0.8, 0.1]])
+    target = torch.tensor([[0, 1, 0], [0, 0, 1]])
+    entropy = CategoricalCrossEntropy()
+    entropy(pred, target)
+    assert abs(entropy.compute() - 1.1769392) < 1e-6
+    ```
+    """
+
+    def __init__(self):
+        self.total = torch.tensor(0)
+        self.crossentropy = torch.tensor(0)
+
+    def __call__(self, preds, targets):
+        # Avoid problems with logarithm
+        epsilon = 1e-7
+        preds[preds <= 0] = epsilon
+        preds[preds >= 1] = 1 - epsilon
+
+        output_size = targets.size(0)
+        self.crossentropy = self.crossentropy + \
+            (-preds.log() * targets).sum()
+        self.total += output_size
+
+    def compute(self):
+        return self.crossentropy.float() / self.total
+
+
+class SparseCategoricalCrossEntropy:
+    """Computes the crossentropy metric between the labels and predictions.
+    This is used when there are multiple lables. The labels should be in
+    the form of integers, instead of one-hot vectors.
+
+    Usage:
+
+    ```python
+    pred = torch.tensor([[0.05, 0.95, 0], [0.1, 0.8, 0.1]])
+    target = torch.tensor([1, 2])
+    entropy = SparseCategoricalCrossEntropy()
+    entropy(pred, target)
+    assert abs(entropy.compute() - 1.1769392) < 1e-6
+    ```
+    """
+
+    def __init__(self):
+        self.total = torch.tensor(0)
+        self.crossentropy = torch.tensor(0)
+
+    def __call__(self, preds, targets):
+        # Avoid problems with logarithm
+        epsilon = 1e-7
+        preds[preds <= 0] = epsilon
+        preds[preds >= 1] = 1 - epsilon
+
+        output_size = targets.size(0)
+        self.crossentropy = self.crossentropy + \
+            (-preds.log() * torch.nn.functional.one_hot(targets)).sum()
+        self.total += output_size
+
+    def compute(self):
+        return self.crossentropy.float() / self.total
+
+
+class KLDivergence:
+    """Computes the Kullback-Liebler divergence metric between labels and
+    predictions.
+
+    Usage:
+
+    ```python
+    pred = torch.tensor([[0.6, 0.4], [0.4, 0.6]])
+    target = torch.tensor([[0, 1], [0, 0]])
+    div = KLDivergence()
+    div(pred, target)
+    assert abs(div.compute() - 0.45814306) < 1e-6
+    ```
+    """
+
+    def __init__(self):
+        self.total = torch.tensor(0)
+        self.divergence = torch.tensor(0)
+
+    def __call__(self, preds, targets):
+        # Avoid problems with dividing zero
+        epsilon = 1e-7
+
+        output_size = targets.size(0)
+        div = targets / preds
+        self.divergence = self.divergence + \
+            (targets * (targets / preds + epsilon).log()).sum()
+        self.total += output_size
+
+    def compute(self):
+        return self.divergence.float() / self.total
+
+
+class Poisson:
+    """Computes the Poisson metric between labels and
+    predictions.
+
+    Usage:
+
+    ```python
+    pred = torch.tensor([[1, 1], [0, 0]])
+    target = torch.tensor([[0, 1], [0, 0]])
+    poisson = Poisson()
+    poisson(pred, target)
+    assert abs(poisson.compute() - 0.49999997) < 1e-6
+    ```
+    """
+
+    def __init__(self):
+        self.total = torch.tensor(0)
+        self.poisson = torch.tensor(0)
+
+    def __call__(self, preds, targets):
+        # Avoid problems with dividing zero
+        epsilon = 1e-7
+
+        output_size = targets.view(-1).size(0)
+        self.poisson = self.poisson + \
+            (preds - targets * torch.log(preds + epsilon)).sum()
+        self.total += output_size
+
+    def compute(self):
+        return self.poisson.float() / self.total
