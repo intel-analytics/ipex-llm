@@ -488,3 +488,7 @@ class TestTFRayEstimator(TestCase):
             print("save success")
         finally:
             os.remove("/tmp/cifar10_keras.ckpt")
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

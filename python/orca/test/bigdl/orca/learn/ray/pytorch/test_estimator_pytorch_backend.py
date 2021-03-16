@@ -259,5 +259,6 @@ class TestPyTorchEstimator(TestCase):
                                    feature_cols=["f1", "f2"])
         result.collect()
 
+
 if __name__ == "__main__":
     pytest.main([__file__])
