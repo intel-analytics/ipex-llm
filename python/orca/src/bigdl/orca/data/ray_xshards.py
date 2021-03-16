@@ -156,19 +156,15 @@ class RayXShards(XShards):
             refs.append(partition_ref)
         return refs
 
-    def transform_shards_with_actors(self, actors, func,
-                                     gang_scheduling=True):
+    def transform_shards_with_actors(self, actors, func):
         """
         Assign each partition_ref (referencing a list of shards) to an actor,
         and run func for each actor and partition_ref pair.
-
         Actors should have a `get_node_ip` method to achieve locality scheduling.
         The `get_node_ip` method should call ray._private.services.get_node_ip_address()
         to return the correct ip address.
-
         The `func` should take an actor and a partition_ref as argument and
         invoke some remote func on that actor and return a new partition_ref.
-
         Note that if you pass partition_ref directly to actor method, ray
         will resolve that partition_ref to the actual partition object, which
         is a list of shards. If you pass partition_ref indirectly through other
@@ -176,8 +172,7 @@ class RayXShards(XShards):
         actor, and you may need to use ray.get(partition_ref) on actor to retrieve
         the actor partition objects.
         """
-        assigned_partitions, actor_ips = self.assign_partitions_to_actors(actors,
-                                                                          gang_scheduling)
+        assigned_partitions, actor_ips = self.assign_partitions_to_actors(actors)
         assigned_partition_refs = [(part_ids, self._get_multiple_partition_refs(part_ids))
                                    for part_ids in assigned_partitions]
         new_part_id_refs = {part_id: func(actor, part_ref)
@@ -190,27 +185,48 @@ class RayXShards(XShards):
 
         return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs)
 
-    def zip_shards_with_actors(self, xshards, actors, func, gang_scheduling=True):
+    def reduce_partitions_for_actors(self, actors, reduce_partitions_func, return_refs=False):
+        """
+        Evenly allocate partitions for actors and run `reduce_partitions_func` on partitions of each
+        worker.
+        Return a list of results, where one result corresponds to one worker.
+
+        :param actors: ray actors
+        :param reduce_partitions_func: Function to run on each ray actor which reduces the
+            partition refs on the actor to one result_ref. It should take an actor and a list of
+            partition_refs as argument return a result_ref
+        :param return_refs: Whether to return ray objects refs or ray objects. If True, return a
+        list of ray object refs, otherwise return a list of ray objects. Defaults to be False,
+        """
+        assigned_partitions, _ = self.assign_partitions_to_actors(actors)
+        result_refs = []
+        for actor, part_ids in zip(actors, assigned_partitions):
+            assigned_partition_refs = self._get_multiple_partition_refs(part_ids)
+            result_ref = reduce_partitions_func(actor, assigned_partition_refs)
+            result_refs.append(result_ref)
+        if return_refs:
+            return result_refs
+        results = ray.get(result_refs)
+        return results
+
+    def zip_reduce_shards_with_actors(self, xshards, actors, reduce_partitions_func,
+                                      return_refs=False):
         assert self.num_partitions() == xshards.num_partitions(),\
             "the rdds to be zipped must have the same number of partitions"
-        assigned_partitions, actor_ips = self.assign_partitions_to_actors(actors,
-                                                                          gang_scheduling)
-        new_part_id_refs = {}
+        assigned_partitions, _ = self.assign_partitions_to_actors(actors)
+        result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):
             assigned_partition_refs = self._get_multiple_partition_refs(part_ids)
             assigned_partition_refs_other = xshards._get_multiple_partition_refs(part_ids)
-            for part_id, this_part_ref, that_part_ref in \
-                    zip(part_ids, assigned_partition_refs, assigned_partition_refs_other):
-                new_ref = func(actor, this_part_ref, that_part_ref)
-                new_part_id_refs[part_id] = new_ref
+            result_ref = reduce_partitions_func(actor, assigned_partition_refs,
+                                                assigned_partition_refs_other)
+            result_refs.append(result_ref)
+        if return_refs:
+            return result_refs
+        results = ray.get(result_refs)
+        return results
 
-        actor_ip2part_id = defaultdict(list)
-        for actor_ip, part_ids in zip(actor_ips, assigned_partitions):
-            actor_ip2part_id[actor_ip].extend(part_ids)
-
-        return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs)
-
-    def assign_partitions_to_actors(self, actors, one_to_one=True):
+    def assign_partitions_to_actors(self, actors):
         num_parts = self.num_partitions()
         if num_parts < len(actors):
             raise ValueError(f"this rdd has {num_parts} partitions, which is smaller"
@@ -218,11 +234,6 @@ class RayXShards(XShards):
 
         avg_part_num = num_parts // len(actors)
         remainder = num_parts % len(actors)
-
-        if one_to_one:
-            assert avg_part_num == 1 and remainder == 0,\
-                "there must be the same number of actors and partitions," \
-                f" got actor number: {len(actors)}, partition number: {num_parts}"
 
         part_id2ip = self.partition2ip.copy()
         # the assigning algorithm

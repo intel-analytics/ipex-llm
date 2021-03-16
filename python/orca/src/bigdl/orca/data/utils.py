@@ -190,6 +190,18 @@ def ray_partition_get_data_label(partition_data,
     return data, label
 
 
+def ray_partitions_get_data_label(partition_list,
+                                  allow_tuple=True,
+                                  allow_list=True,
+                                  has_label=True):
+    partition_data = [item for partition in partition_list for item in partition]
+    data, label = ray_partition_get_data_label(partition_data,
+                                               allow_tuple=allow_tuple,
+                                               allow_list=allow_list,
+                                               has_label=has_label)
+    return data, label
+
+
 # todo: this might be very slow
 def xshard_to_sample(data):
     from zoo.common.utils import Sample
@@ -285,8 +297,6 @@ def _convert_list_tuple(data, allow_tuple, allow_list):
 def process_spark_xshards(spark_xshards, num_workers):
     from zoo.orca.data.ray_xshards import RayXShards
     data = spark_xshards
-    if data.num_partitions() != num_workers:
-        data = data.repartition(num_workers)
     ray_xshards = RayXShards.from_spark_xshards(data)
     return ray_xshards
 
