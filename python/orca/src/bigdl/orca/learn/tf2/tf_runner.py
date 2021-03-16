@@ -39,7 +39,7 @@ from contextlib import closing
 import logging
 import socket
 
-from zoo.orca.data.utils import ray_partition_get_data_label
+from zoo.orca.data.utils import ray_partitions_get_data_label
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,8 @@ class DatasetHandler:
 
         config, local_batch_size = self._handle_batch_size(config)
         train_dataset = data_creator(config, config["batch_size"])
-        if isinstance(train_dataset, ray.ObjectID):
+        if isinstance(train_dataset, list) and \
+                all([isinstance(x, ray.ObjectID) for x in train_dataset]):
             assert steps_per_epoch is not None, "steps_per_epoch must be provided for xshard"
             train_dataset = self._handle_xshards(train_dataset,
                                                  steps=steps_per_epoch * epochs,
@@ -81,7 +82,8 @@ class DatasetHandler:
 
         if validation_data_creator is not None:
             test_dataset = validation_data_creator(config, config["batch_size"])
-            if isinstance(test_dataset, ray.ObjectID):
+            if isinstance(test_dataset, list) and \
+                    all([isinstance(x, ray.ObjectID) for x in test_dataset]):
                 assert validation_steps is not None, "validation_steps must be provided" \
                                                      "when use xshards for evaluate"
                 test_dataset = self._handle_xshards(test_dataset,
@@ -98,7 +100,7 @@ class DatasetHandler:
     def handle_dataset_validation(self, data_creator, config, steps):
         config, local_batch_size = self._handle_batch_size(config)
         dataset = data_creator(config, config["batch_size"])
-        if isinstance(dataset, ray.ObjectID):
+        if isinstance(dataset, list) and all([isinstance(x, ray.ObjectID) for x in dataset]):
             assert steps is not None, "steps must be provided for xshard"
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
@@ -137,9 +139,9 @@ class HorovodDatasetHanlder(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partition_get_data_label(ray.get(dataset),
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = ray_partitions_get_data_label(ray.get(dataset),
+                                                    allow_tuple=True,
+                                                    allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
@@ -166,9 +168,10 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partition_get_data_label(ray.get(dataset),
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+
+        data, label = ray_partitions_get_data_label(ray.get(dataset),
+                                                    allow_tuple=True,
+                                                    allow_list=False)
 
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
@@ -201,9 +204,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partition_get_data_label(ray.get(dataset),
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = ray_partitions_get_data_label(ray.get(dataset),
+                                                    allow_tuple=True,
+                                                    allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)

@@ -21,21 +21,21 @@ import subprocess
 import ray
 from dmlc_tracker.tracker import get_host_ip
 
-from zoo.orca.data.utils import ray_partition_get_data_label, process_spark_xshards
+from zoo.orca.data.utils import ray_partitions_get_data_label, process_spark_xshards
 from zoo.ray import RayContext
 from zoo.orca.learn.mxnet.mxnet_runner import MXNetRunner
 from zoo.orca.learn.mxnet.utils import find_free_port
 from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 
 
-def shards_ref_to_creator(shards_ref, shuffle=False):
+def partition_refs_to_creator(partition_refs, shuffle=False):
 
     def data_creator(config, kv):
         import mxnet as mx
         assert "batch_size" in config, "batch_size must be set in config"
-        data, label = ray_partition_get_data_label(ray.get(shards_ref),
-                                                   allow_tuple=False,
-                                                   allow_list=False)
+        data, label = ray_partitions_get_data_label(ray.get(partition_refs),
+                                                    allow_tuple=False,
+                                                    allow_list=False)
 
         train_data_iter = mx.io.NDArrayIter(data=data, label=label,
                                             batch_size=config["batch_size"],
@@ -195,8 +195,8 @@ class MXNetEstimator(OrcaRayEstimator):
             ray_xshards = process_spark_xshards(data, self.num_workers)
 
             if validation_data is None:
-                def transform_func(worker, shards_ref):
-                    data_creator = shards_ref_to_creator(shards_ref, shuffle=True)
+                def transform_func(worker, partition_refs):
+                    data_creator = partition_refs_to_creator(partition_refs, shuffle=True)
 
                     return worker.train.remote(data_creator,
                                                epochs,
@@ -204,30 +204,27 @@ class MXNetEstimator(OrcaRayEstimator):
                                                None,
                                                train_resize_batch_num)
 
-                stats_shards = ray_xshards.transform_shards_with_actors(self.workers,
-                                                                        transform_func,
-                                                                        gang_scheduling=True)
+                worker_stats = ray_xshards.reduce_partitions_for_actors(self.workers,
+                                                                        transform_func)
             else:
                 val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
 
-                def zip_func(worker, this_shards_ref, that_shards_ref):
-                    data_creator = shards_ref_to_creator(this_shards_ref,
-                                                         shuffle=True)
-                    validation_data_creator = shards_ref_to_creator(that_shards_ref,
-                                                                    shuffle=True)
+                def zip_func(worker, this_partition_refs, that_partition_refs):
+                    data_creator = partition_refs_to_creator(this_partition_refs,
+                                                             shuffle=True)
+                    validation_data_creator = partition_refs_to_creator(that_partition_refs,
+                                                                        shuffle=True)
                     return worker.train.remote(data_creator,
                                                epochs,
                                                batch_size,
                                                validation_data_creator,
                                                train_resize_batch_num)
-                stats_shards = ray_xshards.zip_shards_with_actors(val_ray_xshards,
-                                                                  self.workers,
-                                                                  zip_func,
-                                                                  gang_scheduling=True)
+                worker_stats = ray_xshards.zip_reduce_shards_with_actors(val_ray_xshards,
+                                                                         self.workers,
+                                                                         zip_func)
             server_stats = [server.train.remote(None, epochs, batch_size,
                                                 None, train_resize_batch_num)
                             for server in self.servers]
-            worker_stats = stats_shards.collect()
             server_stats = ray.get(server_stats)
             server_stats = list(itertools.chain.from_iterable(server_stats))
             stats = worker_stats + server_stats
