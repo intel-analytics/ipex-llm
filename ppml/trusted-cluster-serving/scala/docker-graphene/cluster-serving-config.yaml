@@ -1,0 +1,34 @@
+## Analytics-zoo Cluster Serving
+
+model:
+  # model path must be provided
+  path: /ppml/trusted-cluster-serving/java/work/models/resnet50
+  # name, default is serving_stream, you need to specify if running multiple servings
+  name:
+data:
+  # default, localhost:6379
+  src:
+  # default, None
+  filter:
+params:
+  # default, 4
+  core_number:
+  # default: model number will auto-adapt to core_number, do not set it if not sure about the behavior
+  model_number:
+  # default: OFF
+  performance_mode:
+flink:
+  rest:
+redis:
+  # default, 4g
+  maxmem:
+  timeout: 5000
+secure:
+  # default: false
+  secure_enabled:
+  # default:
+  secure_trust_store_path: /ppml/trusted-cluster-serving/redis/work/keys/keystore.jks
+  # default:
+  secure_struct_store_password:
+  # default: false
+  model_encrypted:
