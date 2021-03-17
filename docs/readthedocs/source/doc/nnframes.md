@@ -57,7 +57,8 @@ NNImageReader loads image into Spark DataFrame.
 please check our
 [ImageProcessing](#NNImageReader) for detailed usage.
 
-## NNEstimator
+---
+### NNEstimator
 
 **Scala:**
 
@@ -234,7 +235,7 @@ res = nnClassifierModel.transform(df).collect()
 
 ---
 
-## NNModel
+### NNModel
 **Scala:**
 ```scala
 val nnModel = NNModel(bigDLModel)
@@ -279,7 +280,7 @@ Sample according to user-specified Preprocessing.
 
 ---
 
-## NNClassifier
+### NNClassifier
 **Scala:**
 ```scala
 val classifer =  NNClassifer(model, criterion)
@@ -374,7 +375,7 @@ dlModel = estimator.fit(df)
 dlModel.transform(df).show(False)
 ```
 
-## NNClassifierModel ##
+### NNClassifierModel ##
 
 **Scala:**
 ```scala
@@ -416,7 +417,7 @@ Sample according to user-specified Preprocessing.
 
 ---
 
-## Hyperparameter setting
+### Hyperparameter setting
 
 Prior to the commencement of the training process, you can modify the optimization algorithm, batch 
 size, the epoch number of your training, and learning rate to meet your goal or
@@ -442,7 +443,7 @@ classifier.setBatchSize(4).setMaxEpoch(10).setLearningRate(0.01).setOptimMethod(
 
 ```
 
-## Prepare the data and start the training process
+### Prepare the data and start the training process
 
 NNEstimator/NNCLassifer supports training with Spark's
 [DataFrame/DataSet](https://spark.apache.org/docs/latest/sql-programming-guide.html#datasets-and-dataframes)
@@ -468,7 +469,7 @@ Train summay and validation summary can also be configured to log the training p
 visualization in Tensorboard. See [Visualization](../../ProgrammingGuide/visualization.md) for the details.
 
 
-## Make prediction on chosen data
+### Make prediction on chosen data
 
 Since `NNModel`/`NNClassifierModel` inherits from Spark's `Transformer` abstract class, simply call 
 `transform` method on `NNModel`/`NNClassifierModel` to make prediction.
@@ -490,7 +491,7 @@ For the complete examples of NNFrames, please refer to:
 [Python examples](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes)
 
 
-## NNImageReader
+### NNImageReader
 
 `NNImageReader` is the primary DataFrame-based image loading interface, defining API to read images
 into DataFrame.
