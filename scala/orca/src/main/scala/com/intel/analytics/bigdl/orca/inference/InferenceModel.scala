@@ -320,8 +320,8 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    */
   def doLoadEncryptedOpenVINO(modelPath: String, weightPath: String, secret: String,
       salt: String, batchSize: Int = 0): Unit = {
-    val modelBytes = decryptFileWithAES256(modelPath, secret, salt).getBytes("ISO-8859-1")
-    val weightBytes = decryptFileWithAES256(weightPath, secret, salt).getBytes("ISO-8859-1")
+    val modelBytes = decryptFileWithAESCBC(modelPath, secret, salt).getBytes("ISO-8859-1")
+    val weightBytes = decryptFileWithAESCBC(weightPath, secret, salt).getBytes("ISO-8859-1")
     doLoadOpenVINO(modelBytes, weightBytes, batchSize)
   }
 
