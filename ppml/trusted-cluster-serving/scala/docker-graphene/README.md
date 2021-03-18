@@ -70,3 +70,17 @@ sudo docker run -itd \
     intelanalytics/analytics-zoo-ppml-trusted-cluster-serving-scala-graphene:0.10-SNAPSHOT /ppml/trusted-cluster-serving/start-all.sh
 ```
 
+#### In distributed mode
+##### setup passwordless ssh login to all the nodes.
+##### config the environments for master, workers, docker image and security keys/passowrd files.
+```bash
+nano environments.sh
+```
+##### start the distributed cluster serving
+```bash
+./start-distributed-cluster-serving.sh
+```
+##### stop the distributed cluster serving 
+```bash
+./stop-distributed-cluster-serving.sh
+```
