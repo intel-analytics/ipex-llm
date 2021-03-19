@@ -26,6 +26,10 @@ tcp6       0      0 :::6123                 :::*                    LISTEN      
 tcp6       0      0 :::8081                 :::*                    LISTEN      xxxxx/java
 ```
 if not, run `$FLINK_HOME/bin/start-cluster.sh` to start Flink cluster.
+
+After that, check Flink log in `$FLINK_HOME/log/`, check the log file of `flink-xxx-standalone-xxx.log` and `flink-xxx-taskexecutor-xxx.log` to make sure there is no error.
+
+If the port could not bind in this step, kill the program which use the port, and `$FLINK_HOME/bin/stop-cluster.sh && $FLINK_HOME/bin/start-cluster.sh` to restart Flink cluster.
 ### Check if Cluster Serving is running
 ```
 $FLINK_HOME/bin/flink list
