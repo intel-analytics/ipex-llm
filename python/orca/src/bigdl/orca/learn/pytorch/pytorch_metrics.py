@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import torch
+from abc import ABC, abstractmethod
 
 
 def _unify_input_formats(preds, target):
@@ -28,7 +29,25 @@ def _unify_input_formats(preds, target):
     return preds, target
 
 
-class Accuracy:
+def _check_same_shape(preds, targets):
+    if preds.shape != targets.shape:
+        raise RuntimeError("preds and targets are expected to have the same shape")
+
+
+class PytorchMetric(ABC):
+    """
+    Base class for all pytorch metrics
+    """
+    @abstractmethod
+    def __call__(self, preds, targets):
+        pass
+
+    @abstractmethod
+    def compute(self):
+        pass
+
+
+class Accuracy(PytorchMetric):
     """Calculates how often predictions matches labels.
 
     For example, if `y_true` is tensor([1, 2, 3, 4])_ and `y_pred` is tensor([0, 2, 3, 4])
@@ -57,7 +76,7 @@ class Accuracy:
         return self.correct.float() / self.total
 
 
-class SparseCategoricalAccuracy:
+class SparseCategoricalAccuracy(PytorchMetric):
     """Calculates how often predictions matches integer labels.
 
     For example, if `y_true` is tensor([[2], [1]]) and `y_pred` is
@@ -92,7 +111,7 @@ class SparseCategoricalAccuracy:
         return self.correct.float() / self.total
 
 
-class CategoricalAccuracy:
+class CategoricalAccuracy(PytorchMetric):
     """Calculates how often predictions matches integer labels.
 
     For example, if `y_true` is torch.tensor([[0, 0, 1], [0, 1, 0]]) and `y_pred` is
@@ -126,7 +145,7 @@ class CategoricalAccuracy:
         return self.correct.float() / self.total
 
 
-class BinaryAccuracy:
+class BinaryAccuracy(PytorchMetric):
     """Calculates how often predictions matches labels.
 
     For example, if `y_true` is tensor([1, 1, 0, 0]) and `y_pred` is tensor([0.98, 1, 0, 0.6])
@@ -160,7 +179,7 @@ class BinaryAccuracy:
         return self.correct.float() / self.total
 
 
-class Top5Accuracy:
+class Top5Accuracy(PytorchMetric):
     """Computes how often integer targets are in the top `K` predictions.
 
       Usage:
@@ -192,7 +211,7 @@ class Top5Accuracy:
         return self.correct.float() / self.total
 
 
-class MSE:
+class MSE(PytorchMetric):
     """Computes the mean square error between labels and predictions.
 
     `loss = square(abs(y_true - y_pred), axis=-1)`
@@ -210,18 +229,19 @@ class MSE:
 
     def __init__(self):
         self.total = torch.tensor(0)
-        self.correct = torch.tensor(0)
+        self.sum_squared_error = torch.tensor(0)
 
     def __call__(self, preds, targets):
+        _check_same_shape(preds, targets)
         preds = preds.type_as(targets)
-        self.correct += torch.sum(torch.square(torch.sub(preds, targets)))
+        self.sum_squared_error += torch.sum(torch.square(torch.sub(preds, targets)))
         self.total += targets.numel()
 
     def compute(self):
-        return self.correct.float() / self.total
+        return self.sum_squared_error.float() / self.total
 
 
-class MAE:
+class MAE(PytorchMetric):
     """Computes the mean absolute error between labels and predictions.
 
     `loss = mean(abs(y_true - y_pred), axis=-1)`
@@ -239,18 +259,19 @@ class MAE:
 
     def __init__(self):
         self.total = torch.tensor(0)
-        self.correct = torch.tensor(0)
+        self.sum_abs_error = torch.tensor(0)
 
-    def __call__(self, preds, targets, threshold=0.5):
+    def __call__(self, preds, targets):
+        _check_same_shape(preds, targets)
         preds = preds.type_as(targets)
-        self.correct += torch.sum(torch.abs(torch.sub(preds, targets)))
+        self.sum_abs_error += torch.sum(torch.abs(torch.sub(preds, targets)))
         self.total += targets.numel()
 
     def compute(self):
-        return self.correct.float() / self.total
+        return self.sum_abs_error.float() / self.total
 
 
-class BinaryCrossEntropy:
+class BinaryCrossEntropy(PytorchMetric):
     """Computes the crossentropy metric between the labels and predictions.
     This is used when there are only two labels (0 and 1).
 
@@ -284,7 +305,7 @@ class BinaryCrossEntropy:
         return self.crossentropy.float() / self.total
 
 
-class CategoricalCrossEntropy:
+class CategoricalCrossEntropy(PytorchMetric):
     """Computes the crossentropy metric between the labels and predictions.
     This is used when there are multiple lables. The labels should be in
     the form of one-hot vectors.
@@ -319,7 +340,7 @@ class CategoricalCrossEntropy:
         return self.crossentropy.float() / self.total
 
 
-class SparseCategoricalCrossEntropy:
+class SparseCategoricalCrossEntropy(PytorchMetric):
     """Computes the crossentropy metric between the labels and predictions.
     This is used when there are multiple lables. The labels should be in
     the form of integers, instead of one-hot vectors.
@@ -354,7 +375,7 @@ class SparseCategoricalCrossEntropy:
         return self.crossentropy.float() / self.total
 
 
-class KLDivergence:
+class KLDivergence(PytorchMetric):
     """Computes the Kullback-Liebler divergence metric between labels and
     predictions.
 
@@ -376,7 +397,7 @@ class KLDivergence:
     def __call__(self, preds, targets):
         # Avoid problems with dividing zero
         epsilon = 1e-7
-
+        _check_same_shape(preds, targets)
         output_size = targets.size(0)
         div = targets / preds
         self.divergence = self.divergence + \
@@ -387,7 +408,7 @@ class KLDivergence:
         return self.divergence.float() / self.total
 
 
-class Poisson:
+class Poisson(PytorchMetric):
     """Computes the Poisson metric between labels and
     predictions.
 
@@ -409,7 +430,7 @@ class Poisson:
     def __call__(self, preds, targets):
         # Avoid problems with dividing zero
         epsilon = 1e-7
-
+        _check_same_shape(preds, targets)
         output_size = targets.view(-1).size(0)
         self.poisson = self.poisson + \
             (preds - targets * torch.log(preds + epsilon)).sum()
