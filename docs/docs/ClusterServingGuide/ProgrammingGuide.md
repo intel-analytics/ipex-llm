@@ -252,6 +252,7 @@ You can use following command to shutdown Cluster Serving. This operation will s
 ```
 cluster-serving-shutdown
 ```
+If you are using Docker, you could also run `docker rm` to shutdown Cluster Serving.
 #### Start Multiple Serving
 To run multiple Cluster Serving job, e.g. the second job name is `serving2`, then use following configuration
 ```
@@ -261,9 +262,15 @@ model:
   # name, default is serving_stream, you need to specify if running multiple servings
   name: serving2
 ```
-then call `cluster-serving-start` in this directory
+then call `cluster-serving-start` in this directory would start another Cluster Serving job with this new configuration.
 
-If you are using Docker, you could also run `docker rm` to shutdown Cluster Serving.
+Then, in Python API, pass `name=serving2` argument during creating object, e.g.
+```
+input_queue=InputQueue(name=serving2)
+output_queue=OutputQueue(name=serving2)
+```
+Then the Python API would interact with job `serving2`.
+
 #### HTTP Server (for sync API only)
 If you want to use sync API for inference, you should start a provided HTTP server first. User can submit HTTP requests to the HTTP server through RESTful APIs. The HTTP server will parse the input requests and pub them to Redis input queues, then retrieve the output results and render them as json results in HTTP responses.
 
