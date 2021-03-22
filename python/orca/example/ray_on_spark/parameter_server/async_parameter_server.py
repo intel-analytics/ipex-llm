@@ -24,7 +24,7 @@ import argparse
 import os
 import time
 
-from zoo.examples.orca.learn.ray_on_spark.parameter_server import model
+from zoo.examples.ray_on_spark.parameter_server import model
 import ray
 
 from zoo.orca import init_orca_context, stop_orca_context
