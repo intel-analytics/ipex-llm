@@ -18,25 +18,25 @@ ray stop -f
 echo "#start orca ray example tests"
 echo "#1 Start rl_pong example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/rl_pong/rl_pong.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray_on_spark/rl_pong/rl_pong.py --iterations 10
 now=$(date "+%s")
 time1=$((now-start))
 
 echo "#2 Start multiagent example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
 now=$(date "+%s")
 time2=$((now-start))
 
 echo "#3 Start async_parameter example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
 now=$(date "+%s")
 time3=$((now-start))
 
 echo "#4 Start sync_parameter example"
 #start=$(date "+%s")
-#python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
+#python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
 #now=$(date "+%s")
 #time4=$((now-start))
 
