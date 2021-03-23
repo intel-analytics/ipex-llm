@@ -18,7 +18,7 @@ pySpark
 analytics-zoo
 tensorflow>=1.15.0,<2.0.0
 h5py==2.10.0
-ray[tune]==0.8.4
+ray[tune]==1.2.0
 psutil
 aiohttp
 setproctitle

@@ -4,7 +4,7 @@
 
 [Ray](https://github.com/ray-project/ray) is an open source distributed framework for emerging AI applications. With the _**RayOnSpark**_ support in Analytics Zoo, Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster (such as [Hadoop/YARN](./hadoop.md) or [K8s](./k8s.md)).
 
-_**Note:** Analytics Zoo has been tested on Ray 0.8.4 and you are highly recommended to use this tested version._
+_**Note:** Analytics Zoo has been tested on Ray 1.2.0 and you are highly recommended to use this tested version._
 
 
 ### **1. Install**
