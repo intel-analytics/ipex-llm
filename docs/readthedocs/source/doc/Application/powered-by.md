@@ -63,3 +63,4 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>[Using Crowdsourced Images to Create Image Recognition Models with Analytics Zoo using BigDL](https://databricks.com/session/using-crowdsourced-images-to-create-image-recognition-models-with-bigdl)
 * __Yunda__
 <br>[Intelligent transformation brings "quality change" to the express delivery industry](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/yunda-brings-quality-change-to-the-express-delivery-industry.html) (in Chinese)
+

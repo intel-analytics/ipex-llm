@@ -1,22 +1,22 @@
-# PyTorch Quickstart (BigDL backend)
+# PyTorch Quickstart (torch\_distributed backend)
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/pytorch_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/pytorch_lenet_mnist.ipynb)
+<a target="_blank" href="https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/pytorch_distributed_lenet_mnist.ipynb"><img src="https://www.tensorflow.org/images/colab_logo_32px.png" />Run in Google Colab</a>&nbsp; <a target="_blank" href="https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/pytorch_distributed_lenet_mnist.ipynb"><img src="https://www.tensorflow.org/images/GitHub-Mark-32px.png" />View source on GitHub</a>
 
 ---
 
-**In this guide we will describe how to scale out _PyTorch_ programs with _BigDL_ backend using Orca in 4 simple steps.**
+**In this guide we will describe how to scale out _PyTorch_ programs with pytorch\_distributed backend using Orca in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
-
 ```bash
 conda create -n zoo python=3.7 # zoo is conda environment name, you can use any name you like.
 conda activate zoo
 pip install analytics-zoo # install either version 0.9 or latest nightly build
+pip install ray==1.2.0
 pip install torch==1.7.1 torchvision==0.8.2
 pip install six cloudpickle
 pip install jep==3.9.0
@@ -70,62 +70,51 @@ class LeNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
-        
-model = LeNet()
-model.train()
+
 criterion = nn.NLLLoss()
-adam = torch.optim.Adam(model.parameters(), 0.001)
+```
+After defining your model, you need to define a *Model Creator Function* that returns an instance of your model, and a *Optimizer Creator Function* that returns a PyTorch optimizer.
+
+```python
+def model_creator(config):
+    model = LeNet()
+    return model
+
+def optim_creator(model, config):
+    return torch.optim.Adam(model.parameters(), lr=0.001)
 ```
 
 ### **Step 3: Define Train Dataset**
 
-You can define the dataset using standard [Pytorch DataLoader](https://pytorch.org/docs/stable/data.html).
+You can define the dataset using a *Data Creator Function* that returns a PyTorch `DataLoader`. Orca also supports [Orca SparkXShards](./data).
 
 ```python
 import torch
 from torchvision import datasets, transforms
 
 torch.manual_seed(0)
-dir='./dataset'
-batch_size=64
-test_batch_size=64
-train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST(dir, train=True, download=True,
-                   transform=transforms.Compose([
-                       transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,))
-                   ])),
-    batch_size=batch_size, shuffle=True)
-test_loader = torch.utils.data.DataLoader(
-    datasets.MNIST(dir, train=False,
-                   transform=transforms.Compose([
-                       transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,))
-                   ])),
-    batch_size=test_batch_size, shuffle=False) 
-```
+batch_size = 320
+test_batch_size = 320
+dir = './dataset'
 
-We can also use a data creator function (as shown below) or [Orca SparkXShards](./data) to represent the data. 
-
-```python
-def train_loader_creator():
+def train_loader_creator(config, batch_size):
     train_loader = torch.utils.data.DataLoader(
         datasets.MNIST(dir, train=True, download=True,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
-        batch_size=320, shuffle=True)
+        batch_size=batch_size, shuffle=True)
     return train_loader
 
-def test_loader_creator():
+def test_loader_creator(config, batch_size):
     test_loader = torch.utils.data.DataLoader(
         datasets.MNIST(dir, train=False,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
-        batch_size=320, shuffle=False)
+        batch_size=batch_size, shuffle=False)
     return test_loader
 ```
 
@@ -137,29 +126,17 @@ First, Create an Estimator
 from zoo.orca.learn.pytorch import Estimator 
 from zoo.orca.learn.metrics import Accuracy
 
-est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion, metrics=[Accuracy()])
+est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()],
+                           backend="torch_distributed")
 ```
 
 Next, fit and evaluate using the Estimator
 
 ```python
-from zoo.orca.learn.trigger import EveryEpoch 
-
-est.fit(data=train_loader, epochs=10, validation_data=test_loader,
-        checkpoint_trigger=EveryEpoch())
-
-result = est.evaluate(data=test_loader)
+est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
+result = est.evaluate(data=test_loader_creator, batch_size=test_batch_size)
 for r in result:
-    print(str(r))
-```
-
-If you are using a data creator function, then you may use the following instead.
-
-```python
-est.fit(data=train_loader_creator, epochs=10, validation_data=test_loader_creator,
-        checkpoint_trigger=EveryEpoch())
-
-result = est.evaluate(data=test_loader_creator)
+    print(r, ":", result[r])
 ```
 
 **Note:** You should call `stop_orca_context()` when your application finishes.

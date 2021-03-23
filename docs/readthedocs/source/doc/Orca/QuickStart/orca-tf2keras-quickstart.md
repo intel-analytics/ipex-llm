@@ -63,6 +63,7 @@ def model_creator(config):
 
 You can define the dataset in the _Creator Function_ using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) APIs. Orca also supports [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca XShards](../Overview/data-parallel-processing.md).
 
+
 ```python
 def preprocess(x, y):
     x = tf.cast(tf.reshape(x, (28, 28, 1)), dtype=tf.float32) / 255.0

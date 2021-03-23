@@ -92,6 +92,7 @@ stats = est.fit(data=train_data_creator,
 predictions = est.predict(data=df,
                           feature_cols=['image'])
 ```
+
 The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a *Data Creator Function* (that returns a `tf.data.Dataset`). The `data` argument in `predict` method can be a spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
 View the related [Python API doc]() for more details.
@@ -119,6 +120,7 @@ Then users can perform distributed model training and inference as follows:
 est.fit(data=train_loader, epochs=args.epochs)
 predictions = est.predict(xshards)
 ```
+
 The input to `fit` methods can be a `torch.utils.data.DataLoader`, a Spark Dataframe, an *XShards*, or a *Data Creator Function* (that returns a `torch.utils.data.DataLoader`). The input to `predict` methods should be a Spark Dataframe, or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
 View the related [Python API doc]() for more details.
