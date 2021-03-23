@@ -71,11 +71,11 @@ class BaseEstimator(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def load(self, checkpoint):
+    def load(self, model_path):
         """
-        Load existing model or checkpoint
+        Load existing model from model_path
 
-        :param checkpoint: Path to the existing model or checkpoint.
+        :param model_path: Path to the existing model.
         :return:
         """
         raise NotImplementedError
