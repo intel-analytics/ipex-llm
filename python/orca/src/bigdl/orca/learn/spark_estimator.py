@@ -85,11 +85,11 @@ class Estimator(BaseEstimator):
         raise NotImplementedError
 
     @abstractmethod
-    def load(self, checkpoint):
+    def load(self, model_path):
         """
-        Load existing model or checkpoint
+        Load existing model from model_path
 
-        :param checkpoint: Path to the existing model or checkpoint.
+        :param model_path: Path to the existing model.
         :return:
         """
         raise NotImplementedError
@@ -191,15 +191,6 @@ class Estimator(BaseEstimator):
         optimMethod-TFParkTraining.* files.
         :param version: checkpoint version, which is the suffix of model.* file,
         i.e., for modle.4 file, the version is 4.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def load_latest_orca_checkpoint(self, path):
-        """
-        Load latest Orca checkpoint under specified directory.
-
-        :param path: directory containing Orca checkpoint files.
         """
         raise NotImplementedError
 

@@ -91,7 +91,7 @@ class TestEstimatorForSpark(TestCase):
             est2 = Estimator.from_torch(model=model, loss=loss_func,
                                         metrics=[Accuracy()],
                                         optimizer=None)
-            est2.load(temp_dir_name, loss=loss_func)
+            est2.load_orca_checkpoint(temp_dir_name)
             est2.fit(data=data_shard, epochs=8, batch_size=2, validation_data=data_shard,
                      checkpoint_trigger=EveryEpoch())
             est2.evaluate(data_shard, batch_size=2)
