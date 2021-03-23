@@ -5,7 +5,7 @@ set -x
 worker_port=$SPARK_WORKER_PORT
 worker_webui_port=$SPARK_WORKER_WEBUI_PORT
 spark_master=$SPARK_MASTER
-secure_passowrd=$SPARK_SECURE_PASSWORD
+secure_passowrd=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/passowrd/key.txt -decrypt </ppml/trusted-big-data-ml/work/passowrd/output.bin`
 
 SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -cp "/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*" \

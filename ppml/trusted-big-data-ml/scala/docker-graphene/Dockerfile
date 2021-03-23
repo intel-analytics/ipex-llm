@@ -102,7 +102,6 @@ ENV SPARK_DRIVER_PORT			10027
 ENV SPARK_DRIVER_BLOCK_MANAGER_PORT	10026
 ENV SPARK_DRIVER_IP			$LOCAL_IP
 ENV SPARK_BLOCK_MANAGER_PORT		10025
-ENV SPARK_SECURE_PASSWORD		1234qwer
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
@@ -110,10 +109,11 @@ RUN mkdir -p /graphene && \
     mkdir -p /graphene/Tools && \
     mkdir -p /graphene/Pal/src && \
     mkdir -p /ppml/trusted-big-data-ml/work && \
+    mkdir -p /ppml/trusted-big-data-ml/work/keys && \
+    mkdir -p /ppml/trusted-big-data-ml/work/passowrd && \
     mkdir -p /ppml/trusted-big-data-ml/work/data && \
     mkdir -p /ppml/trusted-big-data-ml/work/models && \
-    mkdir -p /ppml/trusted-big-data-ml/work/apps && \
-    chmod a+x /ppml/trusted-big-data-ml/work
+    mkdir -p /ppml/trusted-big-data-ml/work/apps
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
 COPY --from=graphene /graphene/Runtime/ /graphene/Runtime

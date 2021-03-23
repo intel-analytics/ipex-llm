@@ -20,7 +20,7 @@ sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=$JDK_URL \
     --build-arg no_proxy=x.x.x.x \
-    -t analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.10-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.10-SNAPSHOT -f ./Dockerfile .
 ```
 
 ## How to Run
@@ -69,7 +69,7 @@ sudo docker run -itd \
     --name=spark-local \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=64G \
-    intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:latest \
+    intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.10-SNAPSHOT \
     bash -c "cd /ppml/trusted-big-data-ml/ && ./init.sh && ./start-spark-local-train-sgx.sh"
 ```
 check the log:
@@ -82,3 +82,16 @@ sudo docker logs spark-local | egrep "###|INFO"
 ```
 
 #### In spark standalone cluster mode
+##### setup passwordless ssh login to all the nodes.
+##### config the environments for master, workers, docker image, security keys/passowrd files and data path.
+```bash
+nano environments.sh
+```
+##### start the distributed cluster serving
+```bash
+./start-distributed-big-data-ml.sh
+```
+##### stop the distributed cluster serving 
+```bash
+./stop-distributed-big-data-ml.sh
+```

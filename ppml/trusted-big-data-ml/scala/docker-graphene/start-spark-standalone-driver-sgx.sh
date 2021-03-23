@@ -7,7 +7,7 @@ driver_port=$SPARK_DRIVER_PORT
 block_manager_port=$SPARK_BLOCK_MANAGER_PORT
 driver_host=$SPARK_DRIVER_IP
 driver_block_manager_port=$SPARK_DRIVER_BLOCK_MANAGER_PORT
-secure_passowrd=$SPARK_SECURE_PASSWORD
+secure_passowrd=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/passowrd/key.txt -decrypt </ppml/trusted-big-data-ml/work/passowrd/output.bin`
 
 export SPARK_HOME=/ppml/trusted-big-data-ml/work/spark-2.4.3
 
