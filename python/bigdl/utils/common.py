@@ -634,8 +634,8 @@ def _java2py(gateway, r, encoding="bytes"):
             except Py4JJavaError:
                 pass  # not pickable
 
-    if isinstance(r, (bytearray, bytes)):
-        r = PickleSerializer().loads(bytes(r), encoding=encoding)
+        if isinstance(r, (bytearray, bytes)):
+            r = PickleSerializer().loads(bytes(r), encoding=encoding)
     return r
 
 
