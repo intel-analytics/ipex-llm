@@ -350,14 +350,14 @@ class PyTorchRayEstimator:
         model.load_state_dict(model_state)
         return model.module if hasattr(model, "module") else model
 
-    def save(self, checkpoint):
-        """Saves the Estimator state to the provided checkpoint path.
+    def save(self, model_path):
+        """Saves the Estimator state to the provided model_path.
 
-        :param checkpoint: (str) Path to target checkpoint file.
+        :param model_path: (str) Path to save the model.
         """
         state_dict = self.get_state_dict()
-        torch.save(state_dict, checkpoint)
-        return checkpoint
+        torch.save(state_dict, model_path)
+        return model_path
 
     def get_state_dict(self):
         stream_ids = [
@@ -373,12 +373,12 @@ class PyTorchRayEstimator:
             map_location="cpu")
         return state_dict
 
-    def load(self, checkpoint):
-        """Loads the Estimator and all workers from the provided checkpoint.
+    def load(self, model_path):
+        """Loads the Estimator and all workers from the provided model_path.
 
-        :param checkpoint: (str) Path to target checkpoint file.
+        :param model_path: (str) Path to the existing model.
         """
-        state_dict = torch.load(checkpoint)
+        state_dict = torch.load(model_path)
         self.load_state_dict(state_dict)
 
     def load_state_dict(self, state_dict, blocking=True):
