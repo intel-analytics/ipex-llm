@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir keys && cd keys
 openssl genrsa -des3 -out server.key 2048
 openssl req -new -key server.key -out server.csr
