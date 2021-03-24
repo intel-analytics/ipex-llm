@@ -34,6 +34,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import org.apache.flink.types.Nothing
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -45,8 +46,8 @@ import scala.reflect.io.Path
 
 
 class NNEstimatorSpec extends ZooSpecHelper {
-  var sc : SparkContext = _
-  var sqlContext : SQLContext = _
+  var sc: SparkContext = _
+  var sqlContext: SQLContext = _
   var smallData: Seq[(Array[Double], Double)] = _
   val nRecords = 100
   val maxEpoch = 20
@@ -354,6 +355,21 @@ class NNEstimatorSpec extends ZooSpecHelper {
     logdir.deleteOnExit()
   }
 
+  "An NNEstimator" should "supports Evaluation" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ZooClassNLLCriterion[Float]()
+    val logdir = createTmpDir()
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val estimator = NNEstimator(model, criterion, Array(6), Array(1))
+      .setBatchSize(4)
+      .setValidation(null, null, Array(new Loss[Float]()), 2)
+      .setValidationSummary(ValidationSummary(logdir.getPath, "NNEstimatorValidation"))
+
+    val result = estimator.internalEval(df)
+    result
+  }
+
   "An NNEstimator" should "throw exception when EndWhen and MaxEpoch are set" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ZooClassNLLCriterion[Float]()
@@ -361,7 +377,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
 
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
-    val estimator = NNEstimator( model, criterion, Array(6), Array(1))
+    val estimator = NNEstimator(model, criterion, Array(6), Array(1))
       .setBatchSize(4)
       .setEndWhen(Trigger.maxIteration(5))
       .setMaxEpoch(5)
@@ -382,7 +398,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
         .setMax(1).setMin(-1)
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ZooClassNLLCriterion[Float]()
-      val estimator = NNEstimator( model, criterion, Array(6), Array(1))
+      val estimator = NNEstimator(model, criterion, Array(6), Array(1))
         .setOptimMethod(new LBFGS[Float]())
         .setLearningRate(0.1)
         .setBatchSize(nRecords)
@@ -466,14 +482,14 @@ class NNEstimatorSpec extends ZooSpecHelper {
 
   "An NNModel" should "support save/load keras model" in {
     val modelLocation = getClass.getClassLoader.getResource("models/nnframes_keras").getFile
-    /**   code to generate model
-     *  import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Embedding, Input}
-     *  import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-     *  val input = Input(inputShape = Shape(6))
-     *  val output = Dense(2).inputs(input)
-     *  val module = Model(input, output)
-     *  val nnModel = NNModel(module, Array(6)).setBatchSize(10)
-     *  nnModel.write.overwrite().save(modelLocation)
+    /** code to generate model
+     * import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Embedding, Input}
+     * import com.intel.analytics.zoo.pipeline.api.keras.models.Model
+     * val input = Input(inputShape = Shape(6))
+     * val output = Dense(2).inputs(input)
+     * val module = Model(input, output)
+     * val nnModel = NNModel(module, Array(6)).setBatchSize(10)
+     * nnModel.write.overwrite().save(modelLocation)
      */
     var appSparkVersion = org.apache.spark.SPARK_VERSION
     if (appSparkVersion.trim.startsWith("2")) {
@@ -529,7 +545,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val data = sc.parallelize(
       smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("abc", "la")
-    val estimator = NNEstimator( model, criterion, Array(6), Array(1))
+    val estimator = NNEstimator(model, criterion, Array(6), Array(1))
       .setBatchSize(32)
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.123)
@@ -612,7 +628,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
   }
 }
 
-private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])
+private case class MinibatchData[T](featureData: Array[T], labelData: Array[T])
 
 object NNEstimatorSpec {
   // Generate noisy input of the form Y = signum(x.dot(weights) + intercept + noise)
@@ -623,7 +639,7 @@ object NNEstimatorSpec {
       seed: Long): Seq[(Array[Double], Double)] = {
     val rnd = RandomGenerator.RNG
     val data = (1 to numRecords)
-      .map( i => Array.tabulate(weight.length)(index => rnd.uniform(0, 1) * 2 - 1))
+      .map(i => Array.tabulate(weight.length)(index => rnd.uniform(0, 1) * 2 - 1))
       .map { record =>
         val y = record.zip(weight).map(t => t._1 * t._2).sum
         +intercept + 0.01 * rnd.normal(0, 1)
