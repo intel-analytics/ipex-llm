@@ -134,8 +134,8 @@ class BigDLEstimator(OrcaSparkEstimator):
                     BigDLEstimator._combine_cols(data, label_cols, col_name="label",
                                                  val_data=validation_data)
 
-            self.nn_estimator.setBatchSize(batch_size).setMaxEpoch(epochs)\
-                .setCachingSample(caching_sample).setFeaturesCol(feature_cols)\
+            self.nn_estimator.setBatchSize(batch_size).setMaxEpoch(epochs) \
+                .setCachingSample(caching_sample).setFeaturesCol(feature_cols) \
                 .setLabelCol(label_cols)
 
             if validation_data is not None:
@@ -227,13 +227,13 @@ class BigDLEstimator(OrcaSparkEstimator):
             raise ValueError("Data should be XShards or Spark DataFrame, but get " +
                              data.__class__.__name__)
 
-    def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
+    def evaluate(self, data, batch_size=32, feature_cols="features", label_cols="label"):
         """
         Evaluate model.
 
-        :param data: validation data. It can be XShards, each partition is a dictionary of
-               {'x': feature, 'y': label}, where feature(label) is a numpy array or a list of numpy
-               arrays.
+        :param data: validation data. It can be XShardsor or Spark DataFrame, each partition is
+               a dictionary of {'x': feature, 'y': label}, where feature(label) is a numpy array
+               or a list of numpy arrays.
         :param batch_size: Batch size used for validation. Default: 32.
         :param feature_cols: (Not supported yet) Feature column name(s) of data. Only used when
                data is a Spark  DataFrame. Default: None.
@@ -246,7 +246,27 @@ class BigDLEstimator(OrcaSparkEstimator):
                                          " argument when creating this estimator."
 
         if isinstance(data, DataFrame):
-            raise NotImplementedError
+            if isinstance(feature_cols, list):
+                data, _, feature_cols = \
+                    BigDLEstimator._combine_cols(data, [feature_cols], col_name="features")
+
+            if isinstance(label_cols, list):
+                data, _, label_cols = \
+                    BigDLEstimator._combine_cols(data, label_cols, col_name="label")
+
+            self.nn_estimator._setNNBatchSize(batch_size)._setNNFeaturesCol(feature_cols) \
+                ._setNNLabelCol(label_cols)
+
+            self.nn_estimator.setValidation(None, None,
+                                            self.metrics, batch_size)
+            if self.log_dir is not None and self.app_name is not None:
+                from bigdl.optim.optimizer import TrainSummary
+                from bigdl.optim.optimizer import ValidationSummary
+                val_summary = ValidationSummary(log_dir=self.log_dir, app_name=self.app_name)
+                self.nn_estimator.setValidationSummary(val_summary)
+
+            result = self.nn_estimator._eval(data)
+
         elif isinstance(data, SparkXShards):
             from zoo.orca.data.utils import xshard_to_sample
             val_feature_set = FeatureSet.sample_rdd(data.rdd.flatMap(xshard_to_sample))
