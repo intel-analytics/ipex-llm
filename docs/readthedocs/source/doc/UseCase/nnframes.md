@@ -45,7 +45,7 @@ pattern, thus users can conveniently fit Analytics Zoo into a ML pipeline. The f
 `NNEstimator` is a NNModel, which is a Spark ML Transformer.
 
 please check our
-[NNEstimator API](#NNEstimator) for detailed usage.
+[NNEstimator API](#nnestimator) for detailed usage.
 
 **NNClassifier and NNClassifierModel**
 `NNClassifier` and `NNClassifierModel`extends `NNEstimator` and `NNModel` and focus on 
@@ -55,7 +55,7 @@ classification tasks, where both label column and prediction column are of Doubl
 NNImageReader loads image into Spark DataFrame.
 
 please check our
-[ImageProcessing](#NNImageReader) for detailed usage.
+[ImageProcessing](#nnimagereader) for detailed usage.
 
 ---
 ### NNEstimator
