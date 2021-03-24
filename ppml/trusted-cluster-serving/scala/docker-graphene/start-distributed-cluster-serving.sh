@@ -6,15 +6,15 @@ source ./environment.sh
 
 echo "### phase.1 distribute the keys and password"
 echo ">>> $MASTER"
-ssh root@$MASTER "rm -rf /opt/analytics-zoo-ppml && mkdir -p /opt/analytics-zoo-ppml"
-scp -r keys root@$MASTER:/opt/analytics-zoo-ppml
-scp -r password root@$MASTER:/opt/analytics-zoo-ppml
+ssh root@$MASTER "rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && mkdir -p $AZ_PPML_PATH"
+scp -r $SOURCE_KEYS_PATH root@$MASTER:$KEYS_PATH
+scp -r $SOURCE_SECURE_PASSWORD_PATH root@$MASTER:$SECURE_PASSWORD_PATH
 for worker in ${WORKERS[@]}
   do
     echo ">>> $worker"
-    ssh root@$worker "rm -rf /opt/analytics-zoo-ppml && mkdir -p /opt/analytics-zoo-ppml"
-    scp -r keys root@$worker:/opt/analytics-zoo-ppml
-    scp -r password root@$worker:/opt/analytics-zoo-ppml
+    ssh root@$worker "rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && mkdir -p $AZ_PPML_PATH"
+    scp -r $SOURCE_KEYS_PATH root@$worker:$KEYS_PATH
+    scp -r $SOURCE_SECURE_PASSWORD_PATH root@$worker:$SECURE_PASSWORD_PATH
   done
 echo "### phase.1 distribute the keys and password finished successfully"
 
