@@ -20,6 +20,7 @@ from unittest import TestCase
 from bigdl.nn.criterion import *
 from bigdl.nn.layer import *
 from pyspark.sql.types import *
+from pyspark.sql.functions import col, udf
 
 from zoo.common.nncontext import *
 from zoo.feature.common import *
@@ -137,6 +138,25 @@ class TestEstimatorForKeras(TestCase):
         for idx in range(len(res5_c)):
             assert abs(res5_c[idx]["prediction"][0][0] - res6_c[idx]["prediction"][0]) == 0
             assert abs(res5_c[idx]["prediction"][0][1] - res6_c[idx]["prediction"][1]) == 0
+
+    def test_nnEstimator_evaluation(self):
+        df = self.get_estimator_df2()
+        linear_model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
+
+        est = Estimator.from_bigdl(model=linear_model, loss=ClassNLLCriterion(), optimizer=Adam(),
+                                   feature_preprocessing=SeqToTensor([2]),
+                                   label_preprocessing=SeqToTensor([1]),
+                                   metrics=Accuracy())
+        est.fit(data=df, epochs=10, batch_size=8)
+        result = est.evaluate(df, batch_size=8)
+
+        shift = udf(lambda p: float(p.index(max(p))), DoubleType())
+        pred = est.predict(df).withColumn("prediction", shift(col('prediction'))).cache()
+
+        correct = pred.filter("label=prediction").count()
+        overall = pred.count()
+        accuracy = correct * 1.0 / overall
+        assert accuracy == round(result['Top1Accuracy'], 2)
 
     def test_nnEstimator_multiInput(self):
         zx1 = ZLayer.Input(shape=(1,))
