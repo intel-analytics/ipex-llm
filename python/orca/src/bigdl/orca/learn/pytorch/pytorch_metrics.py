@@ -229,16 +229,15 @@ class MSE(PytorchMetric):
 
     def __init__(self):
         self.total = torch.tensor(0)
-        self.sum_squared_error = torch.tensor(0)
+        self.sum_squared_error = torch.tensor(0.0)
 
     def __call__(self, preds, targets):
         _check_same_shape(preds, targets)
-        preds = preds.type_as(targets)
         self.sum_squared_error += torch.sum(torch.square(torch.sub(preds, targets)))
         self.total += targets.numel()
 
     def compute(self):
-        return self.sum_squared_error.float() / self.total
+        return self.sum_squared_error / self.total
 
 
 class MAE(PytorchMetric):
@@ -259,16 +258,15 @@ class MAE(PytorchMetric):
 
     def __init__(self):
         self.total = torch.tensor(0)
-        self.sum_abs_error = torch.tensor(0)
+        self.sum_abs_error = torch.tensor(0.0)
 
     def __call__(self, preds, targets):
         _check_same_shape(preds, targets)
-        preds = preds.type_as(targets)
         self.sum_abs_error += torch.sum(torch.abs(torch.sub(preds, targets)))
         self.total += targets.numel()
 
     def compute(self):
-        return self.sum_abs_error.float() / self.total
+        return self.sum_abs_error / self.total
 
 
 class BinaryCrossEntropy(PytorchMetric):
