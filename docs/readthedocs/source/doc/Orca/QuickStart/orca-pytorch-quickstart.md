@@ -1,4 +1,4 @@
-# PyTorch Quickstart (BigDL backend)
+# PyTorch Quickstart
 
 ---
 
@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to scale out _PyTorch_ programs with _BigDL_ backend using Orca in 4 simple steps.**
+**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
 
