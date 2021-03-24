@@ -24,7 +24,8 @@ from zoo.orca.data.ray_xshards import RayXShards
 from zoo.orca.learn.tf2.tf_runner import TFRunner
 from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from zoo.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_rdd_to_dataframe, convert_predict_xshards_to_dataframe, update_predict_xshards
+    convert_predict_xshards_to_dataframe, update_predict_xshards, \
+    process_xshards_of_pandas_dataframe
 from zoo.ray import RayContext
 
 logger = logging.getLogger(__name__)
@@ -172,8 +173,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
                returns Iter or DataLoader.
-               If data is XShards, each partition is a dictionary of  {'x': feature,
-               'y': label}, where feature(label) is a numpy array or a tuple of numpy arrays.
+               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
+               {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
+               numpy arrays.
         :param epochs: Number of epochs to train the model. Default: 1.
         :param batch_size: Batch size used for training. Default: 32.
         :param verbose: Prints output of one model if true.
@@ -197,8 +199,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                validation at the end of the 1st, 2nd, and 10th epochs.
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-               DataFrame. Default: None.
-        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame.
+               DataFrame or an XShards of Pandas DataFrame. Default: None.
+        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame or
+               an XShards of Pandas DataFrame.
                Default: None.
         :return:
         """
@@ -220,6 +223,11 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                            mode="fit")
 
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
+                                                                            label_cols,
+                                                                            validation_data, "fit")
+
             max_length, ray_xshards = process_spark_xshards(data, self.num_workers)
 
             if validation_data is None:
@@ -261,8 +269,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         :param data: evaluate data. It can be XShards, Spark DataFrame or creator function which
                returns Iter or DataLoader.
-               If data is XShards, each partition is a dictionary of  {'x': feature,
-               'y': label}, where feature(label) is a numpy array or a tuple of numpy arrays.
+               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
+               {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
+               numpy arrays.
         :param batch_size: Batch size used for evaluation. Default: 32.
         :param num_steps: Total number of steps (batches of samples) before declaring the evaluation
                round finished. Ignored with the default value of `None`.
@@ -275,8 +284,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-               DataFrame. Default: None.
-        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame.
+               DataFrame or an XShards of Pandas DataFrame. Default: None.
+        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame or
+               an XShards of Pandas DataFrame.
                Default: None.
         :return: validation result
         """
@@ -298,6 +308,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              mode="evaluate")
 
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
+
             data = data
             if data.num_partitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
@@ -339,8 +352,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         Predict the input data
 
         :param data: predict input data.  It can be XShards or Spark DataFrame.
-               If data is XShards, each partition is a dictionary of  {'x': feature}, where feature
-               is a numpy array or a tuple of numpy arrays.
+               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
+               {'x': feature}, where feature is a numpy array or a tuple of numpy arrays.
         :param batch_size: Batch size used for inference. Default: None.
         :param verbose: Prints output of one model if true.
         :param steps: Total number of steps (batches of samples) before declaring the prediction
@@ -348,7 +361,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         :param callbacks: List of Keras compatible callbacks to apply during prediction.
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-               DataFrame. Default: None.
+               DataFrame or an XShards of Pandas DataFrame. Default: None.
         :return:
         """
         logger.info("Starting predict step.")
@@ -371,6 +384,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
         else:
