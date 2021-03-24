@@ -19,7 +19,8 @@ package com.intel.analytics.zoo.pipeline.nnframes.python
 import java.util.{ArrayList => JArrayList, List => JList}
 
 import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
-import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod}
+import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
+import com.intel.analytics.bigdl.python.api.EvaluatedResult
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
@@ -250,5 +251,25 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def transformXGBClassifierModel(model: XGBClassifierModel,
                                         dataset: DataFrame): DataFrame = {
     model.transform(dataset)
+  }
+
+  def internalEval(estimator: NNEstimator[T],
+                   dataFrame: DataFrame): JList[EvaluatedResult] = {
+    estimator.internalEval(dataFrame)
+  }
+
+  def setNNFeaturesCol(estimator: NNEstimator[T],
+                       featuresColName: String): NNEstimator[T] = {
+    estimator.setFeaturesCol(featuresColName)
+  }
+
+  def setNNLabelCol(estimator: NNEstimator[T],
+                    labelColName: String): NNEstimator[T] = {
+    estimator.setLabelCol(labelColName)
+  }
+
+  def setNNBatchSize(estimator: NNEstimator[T],
+                     value: Int): NNEstimator[T] = {
+    estimator.setBatchSize(value)
   }
 }
