@@ -105,7 +105,7 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=test_batch_size, shuffle=False) 
 ```
 
-- ***Alternatively***, you may also use a _Data Creator Function_ (as shown below) or [Orca XShards](./data) as the input data: 
+- ***Alternatively***, you may also use a _Data Creator Function_ (as shown below) or [Orca XShards](./data) as the input data, especially when the data size is very large
 
   ```python
   def train_loader_creator():
@@ -127,7 +127,7 @@ test_loader = torch.utils.data.DataLoader(
                          ])),
           batch_size=320, shuffle=False)
       return test_loader
-```
+   ```
 
 ### **Step 4: Fit with Orca Estimator**
 
