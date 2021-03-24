@@ -105,28 +105,28 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=test_batch_size, shuffle=False) 
 ```
 
-We can also use a data creator function (as shown below) or [Orca SparkXShards](./data) to represent the data. 
+- ***Alternatively***, you may also use a _Data Creator Function_ (as shown below) or [Orca XShards](./data) as the input data: 
 
-```python
-def train_loader_creator():
-    train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(dir, train=True, download=True,
-                       transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
-        batch_size=320, shuffle=True)
-    return train_loader
+  ```python
+  def train_loader_creator():
+      train_loader = torch.utils.data.DataLoader(
+          datasets.MNIST(dir, train=True, download=True,
+                         transform=transforms.Compose([
+                             transforms.ToTensor(),
+                             transforms.Normalize((0.1307,), (0.3081,))
+                         ])),
+          batch_size=320, shuffle=True)
+      return train_loader
 
-def test_loader_creator():
-    test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(dir, train=False,
-                       transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
-        batch_size=320, shuffle=False)
-    return test_loader
+  def test_loader_creator():
+      test_loader = torch.utils.data.DataLoader(
+          datasets.MNIST(dir, train=False,
+                         transform=transforms.Compose([
+                             transforms.ToTensor(),
+                             transforms.Normalize((0.1307,), (0.3081,))
+                         ])),
+          batch_size=320, shuffle=False)
+      return test_loader
 ```
 
 ### **Step 4: Fit with Orca Estimator**
@@ -153,13 +153,13 @@ for r in result:
     print(str(r))
 ```
 
-If you are using a data creator function, then you may use the following instead.
+- ***Alternatively***, if you are using _Data Creator Functions_, you may do the following:
 
-```python
-est.fit(data=train_loader_creator, epochs=10, validation_data=test_loader_creator,
-        checkpoint_trigger=EveryEpoch())
+  ```python
+  est.fit(data=train_loader_creator, epochs=10, validation_data=test_loader_creator,
+          checkpoint_trigger=EveryEpoch())
 
-result = est.evaluate(data=test_loader_creator)
-```
+  result = est.evaluate(data=test_loader_creator)
+  ```
 
 **Note:** You should call `stop_orca_context()` when your application finishes.
