@@ -50,12 +50,13 @@ trainer = AutoTSTrainer(dt_col="timestamp",
 You can then train on the input data using `AutoTSTrainer.fit` with a recipe to specify search space.
 
 ```python
-from zoo.automl.config.recipe import LSTMGridRandomRecipe
-ts_pipeline = trainer.fit(train_df, val_df, 
+from zoo.zouwu.config.recipe import LSTMGridRandomRecipe
+
+ts_pipeline = trainer.fit(train_df, val_df,
                           recipe=LSTMGridRandomRecipe(
                               num_rand_samples=1,
                               epochs=1,
-                              look_back=6, 
+                              look_back=6,
                               batch_size=[64]),
                           metric="mse")
 ```
