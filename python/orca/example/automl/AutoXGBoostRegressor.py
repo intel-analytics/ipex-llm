@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 from zoo import init_spark_on_local, init_spark_on_yarn
 from zoo.ray import RayContext
 from zoo.orca.automl.AutoXGBoost import AutoXGBoost
-from zoo.automl.config.recipe import *
+from zoo.zouwu.config.recipe import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
