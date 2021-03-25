@@ -32,7 +32,7 @@ You can easily install all the dependencies for _Zouwu_ as follows:
 ```bash
 conda create -n my_env python=3.7
 conda activate my_env
-pip install --pre analytics-zoo[automl]
+pip install --pre --upgrade analytics-zoo[automl]
 ```
 
 ---

@@ -39,7 +39,7 @@ _**Note:** Installing Analytics Zoo will automatically install `bigdl==0.12.1`, 
 You can install the latest nightly build of Analytics Zoo as follows:
 
 ```bash
-pip install --pre analytics-zoo
+pip install --pre --upgrade analytics-zoo
 ```
 
 Alternatively, you can find the list of the nightly build versions [here](https://pypi.org/project/analytics-zoo/#history), and install a specific version as follows: 

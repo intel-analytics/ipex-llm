@@ -49,11 +49,11 @@ os.environ['PYTHONHOME']="/usr/local"
 
 **Install Analytics Zoo**
 
-Install the latest pre-release version using `pip install --pre analytics-zoo`. 
+Install the latest pre-release version using `pip install --pre --upgrade analytics-zoo`. 
 ```bash
 # Install latest pre-release version of Analytics Zoo 
 # Installing Analytics Zoo from pip will automatically install pyspark, bigdl, and their dependencies.
-!pip install --pre analytics-zoo
+!pip install --pre --upgrade analytics-zoo
 ```
 
 **Install Python Dependencies**
