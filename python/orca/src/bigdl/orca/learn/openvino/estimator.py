@@ -55,7 +55,7 @@ class OpenvinoEstimator(SparkEstimator):
         self.model = InferenceModel(supported_concurrent_num=self.core_num)
         self.model.load_openvino(model_path=model_path,
                                  weight_path=model_path[:model_path.rindex(".")] + ".bin",
-                                 batch_size=batch_size)
+                                 batch_size=self.batch_size)
 
     def fit(self, data, epochs, batch_size=32, feature_cols=None, label_cols=None,
             validation_data=None, checkpoint_trigger=None):
@@ -64,13 +64,15 @@ class OpenvinoEstimator(SparkEstimator):
         """
         raise NotImplementedError
 
-    def predict(self, data):
+    def predict(self, data, feature_cols=None):
         """
         Predict input data
 
-        :param data: data to be predicted. XShards, numpy array and list of numpy arrays are
-               supported. If data is XShards, each partition is a dictionary of  {'x': feature},
-               where feature(label) is a numpy array or a list of numpy arrays.
+        :param data: data to be predicted. XShards, Spark DataFrame, numpy array and list of numpy
+               arrays are supported. If data is XShards, each partition is a dictionary of  {'x':
+               feature}, where feature(label) is a numpy array or a list of numpy arrays.
+        :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
+               DataFrame. Default: None.
         :return: predicted result.
                  If the input data is XShards, the predict result is a XShards, each partition
                  of the XShards is a dictionary of {'prediction': result}, where the result is a
@@ -78,6 +80,8 @@ class OpenvinoEstimator(SparkEstimator):
                  If the input data is numpy arrays or list of numpy arrays, the predict result is
                  a numpy array or a list of numpy arrays.
         """
+        from pyspark.sql import DataFrame
+
         def predict_transform(dict_data, batch_size):
             assert isinstance(dict_data, dict), "each shard should be an dict"
             assert "x" in dict_data, "key x should in each shard"
@@ -101,8 +105,17 @@ class OpenvinoEstimator(SparkEstimator):
 
         sc = init_nncontext()
 
-        if isinstance(data, SparkXShards):
-            assert sc is not None, "You should pass sc(spark context) if data is a XShards."
+        if isinstance(data, DataFrame):
+            from zoo.orca.learn.utils import dataframe_to_xshards, convert_predict_rdd_to_dataframe
+            xshards, _ = dataframe_to_xshards(data,
+                                              validation_data=None,
+                                              feature_cols=feature_cols,
+                                              label_cols=None,
+                                              mode="predict")
+            transformed_data = xshards.transform_shard(predict_transform, self.batch_size)
+            result_rdd = self.model.distributed_predict(transformed_data.rdd, sc)
+            return convert_predict_rdd_to_dataframe(data, result_rdd.flatMap(lambda data: data))
+        elif isinstance(data, SparkXShards):
             from zoo.orca.learn.utils import convert_predict_rdd_to_xshard
             transformed_data = data.transform_shard(predict_transform, self.batch_size)
             result_rdd = self.model.distributed_predict(transformed_data.rdd, sc)
@@ -152,8 +165,8 @@ class OpenvinoEstimator(SparkEstimator):
             result_arr = np.concatenate(result_arr_list, axis=0)
             return result_arr
         else:
-            raise ValueError("Only XShards, a numpy array and a list of numpy arrays are supported "
-                             "as input data, but get " + data.__class__.__name__)
+            raise ValueError("Only XShards, Spark DataFrame, a numpy array and a list of numpy arr"
+                             "ays are supported as input data, but get " + data.__class__.__name__)
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         """
