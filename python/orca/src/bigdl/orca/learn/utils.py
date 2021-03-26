@@ -231,7 +231,7 @@ def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
     def to_shard_dict(df):
         result = dict()
-        result["x"] = tuple([df[feature_col].to_numpy() for feature_col in feature_cols])
+        result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
         if label_cols:
             result["y"] = df[label_cols[0]].to_numpy()
         return result

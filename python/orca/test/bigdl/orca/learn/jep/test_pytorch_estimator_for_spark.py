@@ -18,6 +18,7 @@ from unittest import TestCase
 import os
 import pytest
 import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -103,6 +104,40 @@ class TestEstimatorForSpark(TestCase):
             pred_c_2 = pred_result2.collect()
             assert (pred_c[0]["prediction"] == pred_c_2[0]["prediction"]).all()
 
+    def test_bigdl_pytorch_estimator_pandas_dataframe(self):
+        class SimpleModel(nn.Module):
+            def __init__(self):
+                super(SimpleModel, self).__init__()
+                self.fc = nn.Linear(1, 10)
+
+            def forward(self, x):
+                x = torch.unsqueeze(x, dim=1)
+                x = self.fc(x)
+                return F.log_softmax(x, dim=1)
+
+        def loss_func(input, target):
+            return nn.CrossEntropyLoss().forward(input, target.flatten().long())
+        model = SimpleModel()
+
+        OrcaContext.pandas_read_backend = "pandas"
+        file_path = os.path.join(resource_path, "orca/learn/simple_feature_label.csv")
+        data_shard = read_csv(file_path)
+
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            estimator = Estimator.from_torch(model=model, loss=loss_func,
+                                             metrics=[Accuracy()],
+                                             optimizer=SGD(learningrate_schedule=Default()),
+                                             model_dir=temp_dir_name)
+            estimator.fit(data=data_shard, epochs=1, batch_size=4, feature_cols=['feature'],
+                          label_cols=['label'], validation_data=data_shard,
+                          checkpoint_trigger=EveryEpoch())
+            estimator.evaluate(data_shard, batch_size=4, feature_cols=['feature'],
+                               label_cols=['label'])
+            est2 = Estimator.from_torch(model=model, loss=loss_func,
+                                        metrics=[Accuracy()],
+                                        optimizer=None)
+            est2.load_orca_checkpoint(temp_dir_name)
+            est2.predict(data_shard, batch_size=4, feature_cols=['feature'])
 
 if __name__ == "__main__":
     pytest.main([__file__])
