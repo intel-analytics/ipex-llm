@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 from zoo.orca.data.utils import row_to_sample, xshard_to_sample
-from zoo.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict
+from zoo.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
+    process_xshards_of_pandas_dataframe
 from zoo.pipeline.estimator.estimator import Estimator as SparkEstimator
 from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from zoo.orca.learn.pytorch.training_operator import TrainingOperator
@@ -327,19 +328,21 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         :param data: train data. It can be a XShards, Spark Dataframe, PyTorch DataLoader and
                PyTorch DataLoader creator function.
-               If data is an XShards, each partition is a dictionary of  {'x': feature,
-               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               If data is an XShards, each partition can be a Pandas DataFrame or a dictionary of
+               {'x': feature, 'y': label}, where feature(label) is a numpy array or
+               a list of numpy arrays.
         :param epochs: Number of epochs to train the model. Default: 1.
         :param batch_size: Batch size used for training. Only used when data is an XShards.
                Default: 32.
         :param feature_cols: Feature column name(s) of data. Only used when data
-               is a Spark DataFrame. Default: None.
+               is a Spark DataFrame or an XShards of Pandas DataFrame. Default: None.
         :param label_cols: Label column name(s) of data. Only used when data is
-               a Spark DataFrame. Default: None.
+               a Spark DataFrame or an XShards of Pandas DataFrame. Default: None.
         :param validation_data: Validation data. XShards, PyTorch DataLoader and PyTorch DataLoader
                creator function are supported.
-               If data is XShards, each partition is a dictionary of  {'x': feature,
-               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
+               {'x': feature, 'y': label}, where feature(label) is a numpy array or a list of
+               numpy arrays.
         :param checkpoint_trigger: Orca Trigger to set a checkpoint.
         :return: The trained estimator object.
         """
@@ -357,6 +360,11 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                                              "estimator if you provide validation_data."
 
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
+                                                                            label_cols,
+                                                                            validation_data,
+                                                                            mode="fit")
             train_fset, val_fset = self._handle_xshards(data, validation_data)
             self.estimator.train(train_fset, self.loss, end_trigger, checkpoint_trigger,
                                  val_fset, self.metrics, batch_size)
@@ -380,17 +388,19 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         Predict input data.
 
         :param data: data to be predicted. It can be an XShards or a Spark Dataframe.
-               If it is an XShards, each partition is a dictionary of
+               If it is an XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature}, where feature is a numpy array or a list of numpy arrays.
         :param batch_size: batch size used for inference.
         :param feature_cols: Feature column name(s) of data. Only used when data
-               is a Spark DataFrame. Default: None.
+               is a Spark DataFrame or an XShards of Pandas DataFrame. Default: None.
         :return: predicted result. The predict result is a XShards, each partition of the XShards
                  is a dictionary of {'prediction': result}, where result is a numpy array or a list
                  of numpy arrays.
         """
         from zoo.orca.learn.utils import convert_predict_rdd_to_xshard
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols)
             from zoo.orca.data.utils import xshard_to_sample
             data_rdd = data.rdd.flatMap(xshard_to_sample)
 
@@ -416,13 +426,14 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         :param data: data: evaluation data. It can be an XShards, Spark Dataframe,
                PyTorch DataLoader and PyTorch DataLoader creator function.
-               If data is an XShards, each partition is a dictionary of  {'x': feature,
-               'y': label}, where feature(label) is a numpy array or a list of numpy arrays.
+               If data is an XShards, each partition can be a Pandas DataFrame or a dictionary of
+               {'x': feature, 'y': label}, where feature(label) is a numpy array or a list of
+               numpy arrays.
         :param batch_size: Batch size used for evaluation. Only used when data is a SparkXShard.
         :param feature_cols: Feature column name(s) of data. Only used when data
-               is a Spark DataFrame. Default: None.
+               is a Spark DataFrame or an XShards of Pandas DataFrame. Default: None.
         :param label_cols: Label column name(s) of data. Only used when data is
-               a Spark DataFrame. Default: None.
+               a Spark DataFrame or an XShards of Pandas DataFrame. Default: None.
         :param validation_metrics: Orca validation metrics to be computed on validation_data.
         :return: validation results.
         """
@@ -433,6 +444,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                                          " argument when creating this estimator."
 
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             val_feature_set = FeatureSet.sample_rdd(data.rdd.flatMap(xshard_to_sample))
             result = self.estimator.evaluate(val_feature_set, self.metrics, batch_size)
         elif isinstance(data, DataFrame):
