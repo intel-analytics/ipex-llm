@@ -172,6 +172,10 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     TorchModel(model, weights.storage)
   }
 
+  def getTorchModelBytes(torchModel: TorchModel): Array[Byte] = {
+    torchModel.modelHolder.torchBytes
+  }
+
   def createTorchLoss(criterion: Array[Byte]): TorchLoss = {
     TorchLoss(criterion)
   }

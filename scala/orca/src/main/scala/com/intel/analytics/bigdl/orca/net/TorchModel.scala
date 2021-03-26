@@ -31,7 +31,9 @@ import jep.{Jep, NDArray}
 import org.apache.spark.TaskContext
 import com.intel.analytics.bigdl.nn.Utils._
 
-class TorchModel private(private val modelHolder: TorchModel2Holder, init_weights: Array[Float])
+class TorchModel private(
+    private[zoo] val modelHolder: TorchModel2Holder,
+    init_weights: Array[Float])
   extends AbstractModule[Activity, Activity, Float]{
   import TorchModel._
   def postId(): String = {
