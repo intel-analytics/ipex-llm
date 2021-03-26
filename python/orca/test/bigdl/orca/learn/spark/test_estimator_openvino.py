@@ -39,7 +39,7 @@ with open(property_path) as f:
 
 
 class TestEstimatorForOpenVINO(TestCase):
-    def test_openvino(self):
+    def setUp(self):
         with tempfile.TemporaryDirectory() as local_path:
             model_url = data_url + "/analytics-zoo-data/openvino2020_resnet50.tar"
             model_path = maybe_download("openvino2020_resnet50.tar",
@@ -48,27 +48,42 @@ class TestEstimatorForOpenVINO(TestCase):
             tar.extractall(path=local_path)
             tar.close()
             model_path = os.path.join(local_path, "openvino2020_resnet50/resnet_v1_50.xml")
-            est = Estimator.from_openvino(model_path=model_path)
+            self.est = Estimator.from_openvino(model_path=model_path)
 
-            # ndarray
-            input_data = np.random.random([20, 4, 3, 224, 224])
-            result = est.predict(input_data)
-            print(result)
+    def test_openvino_predict_ndarray(self):
+        input_data = np.random.random([20, 4, 3, 224, 224])
+        result = self.est.predict(input_data)
+        assert isinstance(result, np.ndarray)
+        assert result.shape == (20, 4, 1000)
 
-            # xshards
-            input_data_list = [np.random.random([1, 4, 3, 224, 224]),
-                               np.random.random([2, 4, 3, 224, 224])]
-            sc = init_nncontext()
-            rdd = sc.parallelize(input_data_list, numSlices=2)
-            shards = SparkXShards(rdd)
+    def test_openvino_predict_xshards(self):
+        input_data_list = [np.random.random([1, 4, 3, 224, 224]),
+                           np.random.random([2, 4, 3, 224, 224])]
+        sc = init_nncontext()
+        rdd = sc.parallelize(input_data_list, numSlices=2)
+        shards = SparkXShards(rdd)
 
-            def pre_processing(images):
-                return {"x": images}
+        def pre_processing(images):
+            return {"x": images}
 
-            shards = shards.transform_shard(pre_processing)
-            result = est.predict(shards)
-            result_c = result.collect()
-            print(result_c)
+        shards = shards.transform_shard(pre_processing)
+        result = self.est.predict(shards)
+        result_c = result.collect()
+        assert isinstance(result, SparkXShards)
+        assert result_c[0]["prediction"].shape == (1, 4, 1000)
+        assert result_c[1]["prediction"].shape == (2, 4, 1000)
+
+    def test_openvino_predict_spark_df(self):
+        from pyspark.sql import SparkSession
+
+        sc = init_nncontext()
+        spark = SparkSession(sc)
+        rdd = sc.range(0, 20, numSlices=2)
+        input_df = rdd.map(lambda x: (np.random.random([1, 4, 3, 224, 224]).tolist())
+                           ).toDF(["feature"])
+        result_df = self.est.predict(input_df, feature_cols=["feature"])
+        assert np.array(result_df.select("prediction").first()).shape == (1, 4, 1000)
+        assert result_df.count() == 20
 
 
 if __name__ == "__main__":
