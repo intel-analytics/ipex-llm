@@ -292,7 +292,7 @@ class TestEstimatorForGraph(TestCase):
             model_dir=model_dir
         )
 
-        est.load_latest_orca_checkpoint(model_dir)
+        est.load_orca_checkpoint(model_dir)
 
         est.fit(data=data_shard,
                 batch_size=8,
@@ -624,6 +624,75 @@ class TestEstimatorForGraph(TestCase):
                 sess=sess
             )
 
+            data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+            def transform(df):
+                result = {
+                    "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+                }
+                return result
+
+            data_shard = data_shard.transform_shard(transform)
+            predictions = est.predict(data_shard).collect()
+            assert 'prediction' in predictions[0]
+            print(predictions)
+
+        shutil.rmtree(temp)
+
+    def test_estimator_save_load(self):
+        import zoo.orca.data.pandas
+
+        tf.reset_default_graph()
+        # save
+        model = SimpleModel()
+
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+
+        def transform(df):
+            result = {
+                "x": (df['user'].to_numpy(), df['item'].to_numpy()),
+                "y": df['label'].to_numpy()
+            }
+            return result
+
+        data_shard = data_shard.transform_shard(transform)
+
+        est = Estimator.from_graph(
+            inputs=[model.user, model.item],
+            labels=[model.label],
+            outputs=[model.logits],
+            loss=model.loss,
+            optimizer=tf.train.AdamOptimizer(),
+            metrics={"loss": model.loss},
+            sess=None
+        )
+
+        est.fit(data=data_shard,
+                batch_size=8,
+                epochs=5,
+                validation_data=data_shard)
+
+        temp = tempfile.mkdtemp()
+        model_checkpoint = os.path.join(temp, 'tmp.ckpt')
+        est.save(model_checkpoint)
+        est.shutdown()
+        tf.reset_default_graph()
+
+        # load
+        with tf.Session() as sess:
+            model = SimpleModel()
+
+            est = Estimator.from_graph(
+                inputs=[model.user, model.item],
+                labels=[model.label],
+                outputs=[model.logits],
+                loss=model.loss,
+                metrics={"loss": model.loss},
+                sess=sess
+            )
+
+            est.load(model_checkpoint)
             data_shard = zoo.orca.data.pandas.read_csv(file_path)
 
             def transform(df):
