@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dir=${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/quickstart
-pytorchFiles=("pytorch_lenet_mnist" "pytorch_distributed_lenet_mnist")
+pytorchFiles=("pytorch_lenet_mnist_data_creator_func" "pytorch_lenet_mnist" "pytorch_distributed_lenet_mnist")
 index=1
 for f in $pytorchFiles
 do
@@ -30,5 +30,5 @@ do
 	now=$(date "+%s")
 	time=$((now-start))
 	index=$((index+1))
-	echo "Complete #${index} with time ${time}"	
+	echo "Complete #${index} with time ${time} seconds"	
 done
