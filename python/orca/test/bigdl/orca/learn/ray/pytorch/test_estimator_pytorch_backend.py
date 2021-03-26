@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 from unittest import TestCase
 
 import numpy as np
@@ -20,6 +21,9 @@ import pytest
 
 import torch
 import torch.nn as nn
+
+from zoo.orca import OrcaContext
+from zoo.orca.data.pandas import read_csv
 from zoo.orca.learn.metrics import Accuracy
 
 from zoo import init_nncontext
@@ -29,6 +33,8 @@ from zoo.orca.data.image.utils import chunks
 
 
 np.random.seed(1337)  # for reproducibility
+resource_path = os.path.join(
+    os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
 
 
 class LinearDataset(torch.utils.data.Dataset):
@@ -93,6 +99,19 @@ class MultiInputNet(nn.Module):
         x = self.fc1(x)
         x = self.out(x)
         x = self.out_act(x)
+        return x
+
+
+class SimpleModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(2, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, input1, input2):
+        x = torch.stack((input1, input2), dim=1)
+        x = self.fc(x)
+        x = self.out_act(x).flatten()
         return x
 
 
@@ -235,6 +254,23 @@ class TestPyTorchEstimator(TestCase):
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
 
         assert np.array_equal(result, expected_result)
+
+    def test_pandas_dataframe(self):
+
+        OrcaContext.pandas_read_backend = "pandas"
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+        data_shard = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,
+                                                                   2: np.float32})
+
+        estimator = get_estimator(model_fn=lambda config: SimpleModel())
+        estimator.fit(data_shard, batch_size=2, epochs=2,
+                      feature_cols=["user", "item"],
+                      label_cols=["label"])
+
+        estimator.evaluate(data_shard, batch_size=2, feature_cols=["user", "item"],
+                           label_cols=["label"])
+        result = estimator.predict(data_shard, batch_size=2, feature_cols=["user", "item"])
+        result.collect()
 
     def test_multiple_inputs_model(self):
 
