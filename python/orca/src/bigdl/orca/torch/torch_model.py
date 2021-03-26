@@ -39,12 +39,16 @@ class TorchModel(Layer):
     distributed inference or training.
     """
 
-    def __init__(self, module_bytes, weights, bigdl_type="float"):
-        weights = JTensor.from_ndarray(weights)
+    def __init__(self, jvalue, module_bytes, bigdl_type="float"):
+        self.value = jvalue
         self.module_bytes = module_bytes
-        self.value = callZooFunc(
-            bigdl_type, self.jvm_class_constructor(), module_bytes, weights)
         self.bigdl_type = bigdl_type
+
+    @staticmethod
+    def from_value(model_value):
+        model_bytes = callZooFunc("float", "getTorchModelBytes", model_value)
+        net = TorchModel(model_value, model_bytes)
+        return net
 
     @staticmethod
     def from_pytorch(model):
@@ -63,7 +67,10 @@ class TorchModel(Layer):
         flatten_weight = torch.nn.utils.parameters_to_vector(weights).data.numpy()
         bys = io.BytesIO()
         torch.save(model, bys, pickle_module=zoo_pickle_module)
-        net = TorchModel(bys.getvalue(), flatten_weight)
+        weights = JTensor.from_ndarray(flatten_weight)
+        jvalue = callZooFunc(
+            "float", "createTorchModel", bys.getvalue(), weights)
+        net = TorchModel(jvalue, bys.getvalue())
         return net
 
     def to_pytorch(self):

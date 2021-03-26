@@ -29,6 +29,8 @@ from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
 from zoo.pipeline.api.keras.metrics import Accuracy
 from zoo.feature.common import FeatureSet
 
+from bigdl.nn.layer import Model
+
 
 class TestPytorch(TestCase):
 
@@ -200,6 +202,30 @@ class TestPytorch(TestCase):
         az_model.set_weights(weights)
 
         exported_model = az_model.to_pytorch()
+
+    def test_model_save_and_load(self):
+        class SimpleTorchModel(nn.Module):
+            def __init__(self):
+                super(SimpleTorchModel, self).__init__()
+                self.dense1 = nn.Linear(2, 4)
+                self.dense2 = nn.Linear(4, 1)
+
+            def forward(self, x):
+                x = self.dense1(x)
+                x = torch.sigmoid(self.dense2(x))
+                return x
+
+        torch_model = SimpleTorchModel()
+        az_model = TorchModel.from_pytorch(torch_model)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            path = tmp_dir_name + "/model.obj"
+            az_model.save(path, True)
+            loaded_model = Model.load(path)
+            loaded_torchModel = TorchModel.from_value(loaded_model.value)
+            dummy_input = torch.ones(16, 2)
+            loaded_torchModel.forward(dummy_input.numpy())
+            loaded_torchModel.to_pytorch()
 
 
 if __name__ == "__main__":
