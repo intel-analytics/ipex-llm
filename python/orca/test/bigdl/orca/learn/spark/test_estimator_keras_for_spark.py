@@ -233,7 +233,7 @@ class TestEstimatorForKeras(TestCase):
         model = self.create_model()
 
         est = Estimator.from_keras(keras_model=model, model_dir=model_dir)
-        est.load_latest_orca_checkpoint(model_dir)
+        est.load_orca_checkpoint(model_dir)
         est.fit(data=data_shard,
                 batch_size=8,
                 epochs=10,
