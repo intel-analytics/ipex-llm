@@ -79,12 +79,12 @@ evaluate(self, data, num_steps=None, profile=False, info=None)
 You can get the trained model using `get_model(self)`
 
 #### **Save model**
-You can save model using `save(self, checkpoint)`
-* `checkpoint`: (str) Path to target checkpoint file.
+You can save model using `save(self, model_path)`
+* `model_path`: (str) Path to save the model.
 
 #### **Load model**
-You can load saved model using `load(self, checkpoint)`
-* `checkpoint`: (str) Path to target checkpoint file.
+You can load saved model using `load(self, model_path)`
+* `model_path`: (str) Path to the existing model.
 
 #### **Shutdown workers**
 You can shut down workers and releases resources using `shutdown(self, force=False)`
@@ -126,10 +126,21 @@ predict(self, data, batch_size=4, feature_cols=None)
 #### **Get model**
 You can get model using `get_model(self)`
 
+#### **Save model**
+You can save model using `save(self, model_path)`
+* `model_path`: (str) Path to save the model.
+
 #### **Load model**
-You can load saved model using `load(self, checkpoint, loss=None)`
-* `checkpoint`: (str) Path to target checkpoint file.
-* `loss`: PyTorch loss function.
+You can load saved model using `load(self, model_path)`
+* `model_path`: (str) Path to the existing model.
+
+#### **Load orca checkpoint**
+You can load saved orca checkpoint using `load_orca_checkpoint(self, path, version, prefix)`. To load a specific checkpoint, 
+please provide both `version` and `perfix`. If `version` is None, then the latest checkpoint will be loaded.
+* `path`: Path to the existing checkpoint (or directory containing Orca checkpoint files if `version` is None).
+* `version`: checkpoint version, which is the suffix of model.* file, i.e., for
+               modle.4 file, the version is 4. If it is `None`, then load the latest checkpoint.
+* `prefix`: optimMethod prefix, for example 'optimMethod-TorchModelf53bddcc'. If loading the latest checkpoint, just leave it as `None`.
 
 #### **Clear gradient clipping**
 You can clear gradient clipping parameters using `clear_gradient_clipping(self)`. In this case, gradient clipping will not be applied.
