@@ -530,7 +530,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         `perfix`. If `version` is None, then the latest checkpoint will be loaded.
 
         :param path: Path to the existing checkpoint (or directory containing Orca checkpoint
-               files if `version` is None).
+               files).
         :param version: checkpoint version, which is the suffix of model.* file, i.e., for
                modle.4 file, the version is 4. If it is None, then load the latest checkpoint.
         :param prefix: optimMethod prefix, for example 'optimMethod-TorchModelf53bddcc'.
