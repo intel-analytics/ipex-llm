@@ -310,7 +310,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             val_feature_set = FeatureSet.sample_rdd(validation_data.rdd.flatMap(xshard_to_sample))
         return train_feature_set, val_feature_set
 
-    def _hanle_data_loader(self, data, validation_data):
+    def _handle_data_loader(self, data, validation_data):
         train_feature_set = FeatureSet.pytorch_dataloader(data, "", "")
         if validation_data is None:
             val_feature_set = None
@@ -374,7 +374,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             self.estimator.train(train_fset, self.loss, end_trigger, checkpoint_trigger,
                                  val_fset, self.metrics, batch_size)
         elif isinstance(data, DataLoader) or callable(data):
-            train_fset, val_fset = self._hanle_data_loader(data, validation_data)
+            train_fset, val_fset = self._handle_data_loader(data, validation_data)
             self.estimator.train_minibatch(train_fset, self.loss, end_trigger,
                                            checkpoint_trigger, val_fset, self.metrics)
         else:
@@ -486,7 +486,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         optim_path = self._get_optimizer_path(model_path)
         torch.save(self.get_model().state_dict(), model_path)
-        self.optimizer.save(path=optim_path, overWrite=True)
+        if self.optimizer is not None:
+            self.optimizer.save(path=optim_path, overWrite=True)
 
         return model_path
 
@@ -539,6 +540,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         from bigdl.nn.layer import Model
         from bigdl.optim.optimizer import OptimMethod
         from zoo.orca.learn.utils import find_latest_checkpoint
+        from zoo.pipeline.api.torch import TorchModel
 
         if version is None:
             path, prefix, version = find_latest_checkpoint(path, model_type="pytorch")
@@ -550,7 +552,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                                        "for example 'optimMethod-TorchModelf53bddcc'"
 
         try:
-            self.model = Model.load(os.path.join(path, "model.{}".format(version)))
+            loaded_model = Model.load(os.path.join(path, "model.{}".format(version)))
+            self.model = TorchModel.from_value(loaded_model.value)
             self.optimizer = OptimMethod.load(os.path.join(path, "{}.{}".format(prefix, version)))
         except Exception:
             raise ValueError("Cannot load PyTorch checkpoint, please check your checkpoint path "

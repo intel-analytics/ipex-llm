@@ -88,11 +88,21 @@ class TestEstimatorForSpark(TestCase):
                                              model_dir=temp_dir_name)
             estimator.fit(data=data_shard, epochs=4, batch_size=2, validation_data=data_shard,
                           checkpoint_trigger=EveryEpoch())
+            state_dict1 = estimator.get_model().state_dict()
+
             estimator.evaluate(data_shard, batch_size=2)
             est2 = Estimator.from_torch(model=model, loss=loss_func,
                                         metrics=[Accuracy()],
                                         optimizer=None)
             est2.load_orca_checkpoint(temp_dir_name)
+            state_dict2 = est2.get_model().state_dict()
+
+            for name in state_dict1:
+                para1 = state_dict1[name]
+                para2 = state_dict2[name]
+                assert torch.all(torch.eq(para1, para2)), "After reloading the model, " \
+                                                          "%r does not match" % name
+
             est2.fit(data=data_shard, epochs=8, batch_size=2, validation_data=data_shard,
                      checkpoint_trigger=EveryEpoch())
             est2.evaluate(data_shard, batch_size=2)
