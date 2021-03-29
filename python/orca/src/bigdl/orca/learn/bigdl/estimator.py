@@ -345,7 +345,7 @@ class BigDLEstimator(OrcaSparkEstimator):
             self.model_dir = model_dir
 
         if is_checkpoint:
-            self.load_latest_orca_checkpoint(checkpoint)
+            self.load_orca_checkpoint(checkpoint)
         else:
             from zoo.pipeline.api.net import Net
             self.model = Net.load_bigdl(checkpoint + ".bigdl", checkpoint + ".bin")
@@ -360,19 +360,33 @@ class BigDLEstimator(OrcaSparkEstimator):
             self.nn_model = NNModel(self.model, feature_preprocessing=self.feature_preprocessing)
         return self
 
-    def load_orca_checkpoint(self, path, version, prefix=None):
+    def load_orca_checkpoint(self, path, version=None, prefix=None):
         """
-        Load existing checkpoint
+        Load existing checkpoint. To load a specific checkpoint, please provide both `version`
+        and `perfix`. If `version` is None, then the latest checkpoint under the specified
+        directory will be loaded.
 
-        :param path: Path to the existing checkpoint.
-        :param version: checkpoint version, which is the suffix of model.* file,
-               i.e., for modle.4 file, the version is 4.
+        :param path: Path to the existing checkpoint (or directory containing Orca checkpoint
+               files).
+        :param version: checkpoint version, which is the suffix of model.* file, i.e., for
+               modle.4 file, the version is 4. If it is None, then load the latest checkpoint.
         :param prefix: optimMethod prefix, for example 'optimMethod-Sequentialf53bddcc'
         :return:
         """
         from bigdl.nn.layer import Model, Container
         from bigdl.optim.optimizer import OptimMethod
+        from zoo.orca.learn.utils import find_latest_checkpoint
         import os
+
+        if version is None:
+            path, prefix, version = find_latest_checkpoint(path, model_type="bigdl")
+            if path is None:
+                raise ValueError("Cannot find BigDL checkpoint, please check your checkpoint"
+                                 " path.")
+        else:
+            assert prefix is not None, "You should provide optimMethod prefix, " \
+                                       "for example 'optimMethod-TorchModelf53bddcc'"
+
         try:
             self.model = Model.load(os.path.join(path, "model.{}".format(version)))
             assert isinstance(self.model, Container), \
@@ -388,18 +402,6 @@ class BigDLEstimator(OrcaSparkEstimator):
         if self.optimizer is not None:
             self.nn_estimator.setOptimMethod(self.optimizer)
         self.nn_model = NNModel(self.model, feature_preprocessing=self.feature_preprocessing)
-
-    def load_latest_orca_checkpoint(self, path):
-        """
-        Load latest Orca checkpoint under specified directory.
-
-        :param path: directory containing Orca checkpoint files.
-        """
-        from zoo.orca.learn.utils import find_latest_checkpoint
-        path, prefix, version = find_latest_checkpoint(path, model_type="bigdl")
-        if path is None:
-            raise ValueError("Cannot find BigDL checkpoint, please check your checkpoint path.")
-        self.load_orca_checkpoint(path=path, version=version, prefix=prefix)
 
     def clear_gradient_clipping(self):
         """
