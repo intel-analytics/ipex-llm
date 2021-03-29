@@ -17,5 +17,5 @@ sudo docker run -itd \
     --name=flink-local \
     -e LOCAL_IP=$LOCAL_IP \
     -e CORE_NUM=30 \
-    intelanalyticszoo/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.10-SNAPSHOT \
+    intelanalytics/analytics-zoo-ppml-trusted-cluster-serving-scala-graphene:0.10-SNAPSHOT \
     bash  -c "cd /ppml/trusted-cluster-serving/ && ./start-all.sh"
