@@ -19,7 +19,6 @@ import numpy as np
 import os
 import tempfile
 import uuid
-import shutil
 
 from urllib.parse import urlparse
 
@@ -140,15 +139,12 @@ def callZooFunc(bigdl_type, name, *args):
 def _java2py(gateway, r, encoding="bytes"):
     from py4j.protocol import Py4JJavaError
     from py4j.java_gateway import JavaObject
-    from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap, MapConverter
-    from py4j.java_gateway import JavaGateway, GatewayClient
-    from pyspark import RDD, SparkContext
-    from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
-    from pyspark.sql import DataFrame, SQLContext
-    from pyspark.mllib.common import callJavaFunc
-    from pyspark import SparkConf
-    from pyspark.files import SparkFiles
+    from py4j.java_collections import JavaArray, JavaList, JavaMap
+    from pyspark import RDD
+    from pyspark.serializers import PickleSerializer
+    from pyspark.sql import DataFrame
     from bigdl.util.common import get_spark_context, _picklable_classes, get_spark_sql_context
+
     if isinstance(r, JavaObject):
         clsName = r.getClass().getSimpleName()
         # convert RDD into JavaRDD
@@ -171,6 +167,11 @@ def _java2py(gateway, r, encoding="bytes"):
 
         if clsName in _picklable_classes:
             r = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
+        elif isinstance(r, (JavaArray, JavaList)) and len(r) != 0 \
+                and isinstance(r[0], JavaObject) \
+                and r[0].getClass().getSimpleName() in ['DataFrame', 'Dataset']:
+            spark = get_spark_sql_context(get_spark_context())
+            r = list(map(lambda x: DataFrame(x, spark), r))
         elif isinstance(r, (JavaArray, JavaList, JavaMap)):
             try:
                 r = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
