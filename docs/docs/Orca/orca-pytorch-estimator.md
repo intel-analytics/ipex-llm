@@ -83,7 +83,7 @@ You can save model using `save(self, model_path)`
 * `model_path`: (str) Path to save the model.
 
 #### **Load model**
-You can load saved model using `load(self, model_path)`
+You can load an exsiting model saved by `save(self, model_path)` using `load(self, model_path)`
 * `model_path`: (str) Path to the existing model.
 
 #### **Shutdown workers**
@@ -131,7 +131,7 @@ You can save model using `save(self, model_path)`
 * `model_path`: (str) Path to save the model.
 
 #### **Load model**
-You can load saved model using `load(self, model_path)`
+You can load an exsiting model saved by `save(self, model_path)` using `load(self, model_path)`
 * `model_path`: (str) Path to the existing model.
 
 #### **Load orca checkpoint**
