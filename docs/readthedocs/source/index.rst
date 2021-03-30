@@ -53,7 +53,7 @@ Analytics Zoo includes the **Orca** library that seamlessly scale out your singl
    :maxdepth: 1
    :caption: Python API
    
-   doc/PythonAPI/Orca/zoo.orca.rst
+   doc/PythonAPI/Orca/orca.rst
    
 .. toctree::
    :maxdepth: 1
