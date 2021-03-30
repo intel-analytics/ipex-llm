@@ -204,7 +204,10 @@ class Top5Accuracy(PytorchMetric):
         preds = preds.type_as(targets).t()
         targets = targets.view(1, -1).expand_as(preds)
 
-        self.correct += preds.eq(targets).view(-1).sum()
+        # torch.view requests Elements of tensors are stored
+        # as a long contiguous vector in memory.
+        # So need to call contiguous() before view().
+        self.correct += preds.eq(targets).contiguous().view(-1).sum()
         self.total += batch_size
 
     def compute(self):
