@@ -26,18 +26,17 @@ pip install jep==3.9.0
 ```python
 from zoo.orca import init_orca_context, stop_orca_context
 
-
-if args.cluster_mode == "local":
-    init_orca_context(cores=1, memory="2g") # run in local mode
-elif args.cluster_mode == "k8s":
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=4) # run on K8s cluster
-elif args.cluster_mode == "yarn":
+if cluster_mode == "local":  # For local machine
+    init_orca_context(cores=4, memory="10g")
+elif cluster_mode == "k8s":  # For K8s cluster
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
     init_orca_context(
-    cluster_mode="yarn-client", cores=4, num_nodes=2, memory="2g",
+    cluster_mode="yarn", cores=2, num_nodes=2, memory="10g",
     driver_memory="10g", driver_cores=1,
     conf={"spark.rpc.message.maxSize": "1024",
         "spark.task.maxFailures": "1",
-        "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"}) # run on Hadoop YARN cluster
+        "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.

@@ -21,12 +21,14 @@ pip install tensorflow==2.3.0
 
 ### **Step 1: Init Orca Context**
 ```python
-if args.cluster_mode == "local":
-    init_orca_context(cluster_mode="local", cores=4) # run in local mode
-elif args.cluster_mode == "k8s":
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2) # run on K8s cluster
-elif args.cluster_mode == "yarn":
-    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2) # run on Hadoop YARN cluster
+from zoo.orca import init_orca_context, stop_orca_context
+
+if cluster_mode == "local":  # For local machine
+    init_orca_context(cluster_mode="local", cores=4, memory="10g")
+elif cluster_mode == "k8s":  # For K8s cluster
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
+    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
