@@ -2,7 +2,7 @@
 
 ---
 
-[Ray](https://github.com/ray-project/ray) is an open source distributed framework for emerging AI applications. With the _**RayOnSpark**_ support in Analytics Zoo, Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster (such as [Hadoop/YARN](./hadoop.md) or [K8s](./k8s.md)).
+[Ray](https://github.com/ray-project/ray) is an open source distributed framework for emerging AI applications. With the _**RayOnSpark**_ support in Analytics Zoo, Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster (such as [Hadoop/YARN](../../UserGuide/hadoop.md) or [K8s](../../UserGuide/k8s.md)).
 
 _**Note:** Analytics Zoo has been tested on Ray 1.2.0 and you are highly recommended to use this tested version._
 
@@ -32,7 +32,7 @@ from zoo.orca import init_orca_context
 sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True)
 ```
 
-View [Orca Context](../Orca/Overview/orca-context.md) for more details.
+View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
 
 ---
 ### **3. Run**
