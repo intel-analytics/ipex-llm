@@ -119,8 +119,9 @@ The result should look like: <br>
 >   ############# ModuleLoader.saveToFile saveWeightsToFile end, used 842543 ms[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x4b <br>
 >   ############# model saved[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x19 <br>
 
-##### Example 3: Spark TPC-H on Graphene-SGX
-Before run TPC-H test in container we created, we should download and install [SBT](https://www.scala-sbt.org/download.html), then build and package TPC-H dataset according to [TPC-H](https://github.com/qiuxin2012/tpch-spark) with your needs. After packaged, check if we have `spark-tpc-h-queries_2.11-1.0.jar ` under `/tpch-spark/target/scala-2.11`, if have, we package successfully.
+##### Example Test 3
+Before run TPC-H test in container we created, we should download and install [SBT](https://www.scala-sbt.org/download.html) and deploy a [HDFS](https://hadoop.apache.org/docs/r1.2.1/) for TPC-H output, then build and package TPC-H dataset according to [TPC-H](https://github.com/qiuxin2012/tpch-spark) with your needs. After packaged, check if we have `spark-tpc-h-queries_2.11-1.0.jar ` under `/tpch-spark/target/scala-2.11`, if have, we package successfully.
+
 
 Copy TPC-H to container: <br>
 ```bash
@@ -131,7 +132,7 @@ cd ppml/trusted-big-data-ml/
 vim start-spark-local-tpc-h-sgx.sh
 ```
 
-Add these code in the `start-spark-local-tpc-h-sgx.sh` file: <br>
+Please modify HDFS_NAMENODE_IP in this script and then add these code in the `start-spark-local-tpc-h-sgx.sh` file: <br>
 ```bash
 #!/bin/bash
 
@@ -158,7 +159,7 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
         --total-executor-cores 4 \
         --executor-memory 10G \
         /ppml/trusted-big-data-ml/work/tpch-spark/target/scala-2.11/spark-tpc-h-queries_2.11-1.0.jar \
-        /ppml/trusted-big-data-ml/work/tpch-spark/dbgen | tee spark.local.tpc.h.sgx.log
+        hdfs://HDFS_NAMENODE_IP:8020/dbgen hdfs://HDFS_NAMENODE_IP:8020/tmp/output | tee spark.local.tpc.h.sgx.log
 ```
 
 Then run the script to run TPC-H test in spark: <br>
