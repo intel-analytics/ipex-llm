@@ -55,10 +55,10 @@ class KerasModel(object):
 
     def save_weights(self, filepath, overwrite=True, save_format=None):
 
-        def save_func(file_path):
-            self.model.save_weights(file_path, overwrite, save_format)
+        def save_func(file_path, overwrite=True, save_format=None):
+            self.model.save_weights(file_path, overwrite=overwrite, save_format=save_format)
 
-        save_file(save_func, filepath)
+        save_file(save_func, filepath, overwrite=overwrite, save_format=save_format)
 
     def load_weights(self, filepath, by_name=False):
 
@@ -76,10 +76,10 @@ class KerasModel(object):
                 location
         """
 
-        def save_func(file_path, over_write=True):
-            self.model.save(file_path, overwrite=over_write)
+        def save_func(file_path, overwrite=True):
+            self.model.save(file_path, overwrite=overwrite)
 
-        save_file(save_func, path, over_write=overwrite)
+        save_file(save_func, path, overwrite=overwrite)
 
     @staticmethod
     def load_model(path):
