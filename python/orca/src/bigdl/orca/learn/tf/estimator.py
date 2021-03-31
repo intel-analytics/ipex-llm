@@ -184,21 +184,22 @@ class Estimator(SparkEstimator):
         Please look up following form to pass tag parameter
         Left side is your metric during compile
         Right side is the tag you should pass
-        'Accuracy'                  |   'Top1Accuracy'
-        'BinaryAccuracy'            |   'Top1Accuracy'
-        'CategoricalAccuracy'       |   'Top1Accuracy'
-        'SparseCategoricalAccuracy' |   'Top1Accuracy'
-        'AUC'                       |   'AucScore'
-        'HitRatio'                  |   'HitRate@k' (k is Top-k)
-        'Loss'                      |   'Loss'
-        'MAE'                       |   'MAE'
-        'NDCG'                      |   'NDCG'
-        'TFValidationMethod'        |   '${name + " " + valMethod.toString()}'
-        'Top5Accuracy'              |   'Top5Accuracy'
-        'TreeNNAccuracy'            |   'TreeNNAccuracy()'
-        'MeanAveragePrecision'      |   'MAP@k' (k is Top-k) (BigDL)
-        'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
-        'StatelessMetric'           |   '${name}'
+
+        >>> 'Accuracy'                  |   'Top1Accuracy'
+        >>> 'BinaryAccuracy'            |   'Top1Accuracy'
+        >>> 'CategoricalAccuracy'       |   'Top1Accuracy'
+        >>> 'SparseCategoricalAccuracy' |   'Top1Accuracy'
+        >>> 'AUC'                       |   'AucScore'
+        >>> 'HitRatio'                  |   'HitRate@k' (k is Top-k)
+        >>> 'Loss'                      |   'Loss'
+        >>> 'MAE'                       |   'MAE'
+        >>> 'NDCG'                      |   'NDCG'
+        >>> 'TFValidationMethod'        |   '${name + " " + valMethod.toString()}'
+        >>> 'Top5Accuracy'              |   'Top5Accuracy'
+        >>> 'TreeNNAccuracy'            |   'TreeNNAccuracy()'
+        >>> 'MeanAveragePrecision'      |   'MAP@k' (k is Top-k) (BigDL)
+        >>> 'MeanAveragePrecision'      |   'PascalMeanAveragePrecision' (Zoo)
+        >>> 'StatelessMetric'           |   '${name}'
 
         :param tag: The string variable represents the scalar wanted
         """
