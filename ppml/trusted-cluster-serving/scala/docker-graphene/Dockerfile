@@ -155,6 +155,7 @@ ADD ./start-http-frontend.sh /ppml/trusted-cluster-serving/java/start-http-front
 ADD ./cluster-serving-config.yaml /ppml/trusted-cluster-serving/java/config.yaml
 ADD ./init-cluster-serving.sh /ppml/trusted-cluster-serving/java/init-cluster-serving.sh
 ADD ./start-cluster-serving-job.sh /ppml/trusted-cluster-serving/java/start-cluster-serving-job.sh
+ADD ./check-status.sh /ppml/trusted-cluster-serving/check-status.sh
 ADD ./start-all.sh /ppml/trusted-cluster-serving/start-all.sh
 
 RUN chmod a+x /ppml/trusted-cluster-serving/redis/init-redis.sh && \
@@ -165,4 +166,5 @@ RUN chmod a+x /ppml/trusted-cluster-serving/redis/init-redis.sh && \
     chmod a+x /ppml/trusted-cluster-serving/java/start-http-frontend.sh && \
     chmod a+x /ppml/trusted-cluster-serving/java/init-cluster-serving.sh && \
     chmod a+x /ppml/trusted-cluster-serving/java/start-cluster-serving-job.sh && \
+    chmod a+x /ppml/trusted-cluster-serving/check-status.sh && \
     chmod a+x /ppml/trusted-cluster-serving/start-all.sh
