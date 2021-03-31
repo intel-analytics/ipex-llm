@@ -166,8 +166,10 @@ class Estimator(SparkEstimator):
 
     def get_train_summary(self, tag=None):
         """
-        Get the scalar from model train summary
-        Return list of summary data of [iteration_number, scalar_value, timestamp]
+        Get the scalar from model train summary.
+
+        This method will return a list of summary data of
+        [iteration_number, scalar_value, timestamp].
 
         :param tag: The string variable represents the scalar wanted
         """
@@ -178,12 +180,14 @@ class Estimator(SparkEstimator):
 
     def get_validation_summary(self, tag=None):
         """
-        Get the scalar from model validation summary
-        Return list of summary data of [iteration_number, scalar_value, timestamp]
-        Note: The metric and tag may not be consistent
-        Please look up following form to pass tag parameter
-        Left side is your metric during compile
-        Right side is the tag you should pass
+        Get the scalar from model validation summary.
+
+        This method will return a list of summary data of
+        [iteration_number, scalar_value, timestamp].
+        Note that the metric and tag may not be consistent.
+        Please look up following form to pass tag parameter.
+        Left side is your metric during compile.
+        Right side is the tag you should pass.
 
         >>> 'Accuracy'                  |   'Top1Accuracy'
         >>> 'BinaryAccuracy'            |   'Top1Accuracy'
