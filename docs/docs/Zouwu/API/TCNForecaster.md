@@ -16,6 +16,7 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
 - **`kernel_size`**: Specify convolutional layer filter height in TCN's encoder. This value defaults to 7.
 - **`dropout`**: Specify the dropout close possibility (i.e. the close possibility to a neuron). This value defaults to 0.2.
 - **`optimizer`**: Specify the optimizer used for training. This value defaults to "Adam".
+- **`loss`**: Specify the loss function used for training. This value defaults to "mse". You can choose from "mse", "mae" and "huber_loss".
 - **`lr`**: Specify the learning rate. This value defaults to 0.001.
 
 ### \_\_init\_\_
@@ -29,6 +30,7 @@ TCNForecaster(past_seq_len,
               kernel_size=7,
               dropout=0.2,
               optimizer="Adam",
+              loss="mse",
               lr=0.001)
 ```
 
