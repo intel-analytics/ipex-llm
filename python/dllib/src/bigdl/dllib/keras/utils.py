@@ -89,6 +89,8 @@ def to_bigdl_metric(metric, loss):
         return metrics.Top5Accuracy()
     elif metric == "mae":
         return metrics.MAE()
+    elif metric == "mse":
+        return metrics.MSE()
     elif metric == "auc":
         return metrics.AUC()
     elif metric == "loss":
