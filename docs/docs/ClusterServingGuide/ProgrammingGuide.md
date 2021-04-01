@@ -20,13 +20,18 @@ This page contains the guide for you to run Analytics Zoo Cluster Serving, inclu
    
    3. [Launching Service](#3-launching-service)
    
-   4. [Model inference](#4-model-inference)
+   4. [Model Inference](#4-model-inference)
 
 * [Optional Operations](#optional-operations)
 
      - [Update Model or Configurations](#update-model-or-configurations)
 
      - [Logs and Visualization](#logs-and-visualization)
+     
+* [Others](#others)
+     - [Transfer Local Code to Cluster Serving](#transfer-local-code-to-cluster-serving)
+     - [Debug Guide](#debug-guide)
+     - [Contribution Guide](#contribution-guide)
 
 
 ## Quick Start
@@ -119,9 +124,7 @@ Log into the container
 ```
 docker exec -it cluster-serving bash
 ```
-`cd ./cluster-serving`, you can see all the environments are prepared.
-##### Yarn user
-For Yarn user using docker, start Flink on Yarn inside the container. The other operations are the same.
+`cd ./cluster-serving`, you can see all the environments prepared.
 
 #### Manual installation
 
@@ -130,6 +133,11 @@ Non-Docker users need to install [Flink 1.10.0+](https://archive.apache.org/dist
 
 After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
+##### Install release version
+```
+pip install analytics-zoo-serving
+```
+##### Install nightly version
 Download package from [here](https://sourceforge.net/projects/analytics-zoo/files/cluster-serving-py/), run following command to install Cluster Serving
 ```
 pip install analytics_zoo_serving-*.whl
@@ -139,7 +147,18 @@ For users who need to deploy and start Cluster Serving, run `cluster-serving-ini
 For users who need to do inference, aka. predict data only, the environment is ready.
 
 ### 2. Configuration
-#### How to Config
+#### Set up cluster
+Cluster Serving uses Flink cluster, make sure you have it according to [Installation](#1-installation).
+
+For docker user, the cluster should be already started. You could use `netstat -tnlp | grep 8081` to check if Flink REST port is working, if not, call `$FLINK_HOME/bin/start-cluster.sh` to start Flink cluster.
+
+If you need to start Flink on yarn, refer to [Flink on Yarn](https://ci.apache.org/projects/flink/flink-docs-stable/deployment/resource-providers/yarn.html), or K8s, refer to [Flink on K8s](https://ci.apache.org/projects/flink/flink-docs-stable/deployment/resource-providers/standalone/kubernetes.html) at Flink official documentation.
+
+If you use Flink standalone, call `$FLINK_HOME/bin/start-cluster.sh` to start Flink cluster.
+
+
+
+#### Configuration file
 After [Installation](#1-installation), you will see a config file `config.yaml` in your current working directory. This file contains all the configurations that you can customize for your Cluster Serving. See an example of `config.yaml` below.
 ```
 ## Analytics Zoo Cluster Serving Config Example
@@ -210,8 +229,7 @@ Running Pytorch model needs extra dependency and config. Refer to [here](https:/
 The field `data` contains your input data configuration.
 
 * src: the queue you subscribe for your input data, e.g. default config of Redis on local machine is `localhost:6379`. Note that please use the host address in your network instead of localhost or 127.0.0.1 when you run serving in cluster, and make sure other nodes in cluster could also recognize this address.
-* shape: the shape of your input data. e.g. [[1],[3,224,224],[3]], if your model contains only one input, brackets could be omitted.
-* filter: the post-processing of pipeline, could be none. Except none, currently supported filters are,
+* filter: the post-processing of pipeline, usually none, the model output would be returned. Except none, currently supported filters are,
 
 Top-N, e.g. `topN(1)` represents Top-1 result is kept and returned with index. User should follow this schema `topN(n)`. Noted if the top-N number is larger than model output size of the the final layer, it would just return all the outputs.
 
@@ -235,14 +253,14 @@ export OMP_NUM_THREADS=core_number of your machine
 
 ### 3. Launching Service
 This section is about how to start and stop Cluster Serving. 
+
 #### Start
 You can use following command to start Cluster Serving.
 ```
 cluster-serving-start
 ```
-Use `cluster-serving-start -p 5` to start Cluster Serving with Flink parallelism 5.
 
-Use `cluster-serving-start -c config_path` to path config path `config_path` to Cluster Serving manually.
+Normally, when calling `cluster-serving-start`, your `config.yaml` should be in current directory. You can also use `cluster-serving-start -c config_path` to pass config path `config_path` to Cluster Serving manually.
 
 #### Stop
 You can use Flink UI in `localhost:8081` by default, to cancel your Cluster Serving job.
@@ -509,4 +527,15 @@ To visualize Cluster Serving performance, go to your flink job UI, default `loca
 See example of visualization:
 
 ![Example Chart](serving-visualization.png)
+
+## Others
+### Transfer Local Code to Cluster Serving
+If you have existed local application, we provide some example for you to transfer them to Cluster Serving application.
+
+We recommend [Keras tranformation guide](OtherFrameworkUsers/keras-to-cluster-serving-example.ipynb). For Tensorflow v1 users, we also provide [Tensorflow v1 transformation guide](OtherFrameworkUsers/tf1-to-cluster-serving-example.ipynb).
+### Debug Guide
+If you follow this programming guide but Cluster Serving does not work, we provide a [Debug Guide](DebugGuide.md) for you to figure out the problem step by step.
+
+### Contribution Guide
+We are glad if you are willing to contribute to Cluster Serving, refer to [Contribution Guide](ContributeGuide.md) for details.
 
