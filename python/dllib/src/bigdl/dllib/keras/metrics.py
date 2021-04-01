@@ -49,6 +49,18 @@ class MAE(ZooKerasCreator, JavaValue):
         super(MAE, self).__init__(None, bigdl_type)
 
 
+class MSE(ZooKerasCreator, JavaValue):
+    """
+    Metric for mean square error, similar from MSE criterion
+
+    >>> mse = MSE()
+    creating: createZooKerasMSE
+
+    """
+    def __init__(self, bigdl_type="float"):
+        super(MSE, self).__init__(None, bigdl_type)
+
+
 class Accuracy(ZooKerasCreator, JavaValue):
     """
     Measures top1 accuracy for multi-class classification
