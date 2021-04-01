@@ -4,5 +4,5 @@
 echo "### Launching Redis ###"
 
 cd /opt/redis
-./redis-server -p $REDIS_PORT \
+./bin/redis-server --port $REDIS_PORT \
     --protected-mode no --maxmemory 10g | tee ./redis-sgx.log

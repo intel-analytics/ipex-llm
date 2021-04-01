@@ -31,8 +31,8 @@ java \
     -D jobmanager.rpc.port=${job_manager_rpc_port} \
     -D jobmanager.heap.size=5g \
     -D security.ssl.internal.enabled=true \
-    -D security.ssl.internal.keystore=/ppml/trusted-cluster-serving/java/work/keys/keystore.pkcs12 \
-    -D security.ssl.internal.truststore=/ppml/trusted-cluster-serving/java/work/keys/keystore.pkcs12 \
+    -D security.ssl.internal.keystore=/opt/keys/keystore.pkcs12 \
+    -D security.ssl.internal.truststore=/opt/keys/keystore.pkcs12 \
     -D security.ssl.internal.keystore-password=${secure_passowrd} \
     -D security.ssl.internal.truststore-password=${secure_passowrd} \
     -D security.ssl.internal.key-password=${secure_passowrd} \

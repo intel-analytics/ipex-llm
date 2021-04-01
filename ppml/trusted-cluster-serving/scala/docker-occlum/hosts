@@ -1,0 +1,4 @@
+127.0.0.1 occlum-node
+127.0.0.1 localhost
+::1 occlum-node
+::1 localhost

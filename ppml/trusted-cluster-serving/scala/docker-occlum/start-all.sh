@@ -3,7 +3,7 @@ set -x
 
 cd /opt
 ./init-occlum-taskmanager.sh
-echo "occlum jobmanager image built"
+echo "occlum flink jobmanager image built"
 
 cd /opt
 ./start-redis.sh &

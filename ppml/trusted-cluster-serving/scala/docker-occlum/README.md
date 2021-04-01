@@ -50,8 +50,12 @@ Before run the following command, please modify pathes in the `start-local-clust
 
 #### Distributed mode (Multi-containers/Multi-nodes)
 
-##### Setup passwordless ssh login in all nodes
-##### config the environments for master, workers, docker image and security keys/passowrd files
+In this mode, all components, redis, Flink & http front end, are running in different containers, some of them can be distributed to multi-nodes. 
+
+Pre-requests:
+
+1. Setup `no password ssh login` between all nodes.
+2. Modify IP/pathes in the `environments.sh` file. 
 
 ```bash
 nano environments.sh

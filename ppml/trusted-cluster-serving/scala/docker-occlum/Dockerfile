@@ -76,6 +76,8 @@ ARG BIGDL_VERSION=0.12.1
 ARG SPARK_VERSION=2.4.3
 ARG FLINK_VERSION=1.10.1
 ENV ANALYTICS_ZOO_VERSION		${ANALYTICS_ZOO_VERSION}
+ENV SPARK_VERSION			${SPARK_VERSION}
+ENV BIGDL_VERSION			${BIGDL_VERSION}
 ENV JAVA_HOME				/usr/lib/jvm/java-11-openjdk-amd64
 ENV PATH				${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP				127.0.0.1
@@ -111,14 +113,16 @@ RUN apt-get update && \
     apt-get clean
 
 # Cluster Serving config
-ADD ./cluster-serving-config.yaml /opt/analytics-zoo/config.yaml
+ADD ./cluster-serving-config.yaml /opt/config.yaml
 # PPML scripts
 ADD ./init-occlum-taskmanager.sh /opt/init-occlum-taskmanager.sh
 ADD ./start-redis.sh /opt/start-redis.sh
 ADD ./start-flink-jobmanager.sh /opt/start-flink-jobmanager.sh
 ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
+ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
-ADD ./start-local-cluster-serving.sh /opt/start-local-cluster-serving.sh
 ADD ./start-all.sh /opt/start-all.sh
+# PPML Start & Stop shell
+ADD ./start-local-cluster-serving.sh /opt/start-local-cluster-serving.sh
 ADD ./start-distributed-cluster-serving.sh /opt/start-distributed-cluster-serving.sh
-
+ADD ./stop-distributed-cluster-serving.sh /opt/stop-distributed-cluster-serving.sh
