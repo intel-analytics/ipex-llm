@@ -138,7 +138,8 @@ class MSE(Metric):
     """
 
     def get_bigdl_metric(self):
-        raise NotImplementedError
+        from zoo.pipeline.api.keras.metrics import MSE as KerasMSE
+        return KerasMSE()
 
     def get_pytorch_metric(self):
         from zoo.orca.learn.pytorch import pytorch_metrics
