@@ -9,7 +9,7 @@ FRONTENDLOG="/ppml/trusted-cluster-serving/java/http-frontend-sgx.log"
 SERVINGLOG="/ppml/trusted-cluster-serving/java/cluster-serving-job-sgx.log"
 
 redis () {
-    echo "(1/5) Detecting redis state..."
+    echo "Detecting redis state..."
     REDISSUCCESS=""
     test -f  $REDISLOG
     if [ $? -eq 1 ] ; then
@@ -18,7 +18,7 @@ redis () {
         REDISSUCCESS=$(cat $REDISLOG | grep "Ready to accept connections")
         if [ -z "$REDISSUCCESS" ] ; then
             echo "Redis initilization failed. See" $REDISLOG " for details."
-            echo "To restart Redis, run ./start-redis.sh in the docker container."
+            echo "To restart Redis, run /ppml/trusted-cluster-serving/redis/start-redis.sh in the docker container."
         fi
     fi
     REDISPORT=$(netstat -nlp | grep 6379)
@@ -33,7 +33,7 @@ redis () {
 }
 
 flinkjm () {
-    echo "(2/5) Detecting Flink job manager state..."
+    echo "Detecting Flink job manager state..."
     JMSUCCESS=""
     test -f $JMSGXLOG
     if [ $? -eq 1 ] ; then
@@ -46,7 +46,7 @@ flinkjm () {
         JMSUCCESS=$(cat $STANDALONELOG | grep "Successfully recovered 0 persisted job graphs.")
         if [ -z "$JMSUCCESS" ] ; then
             echo "Flink job manager initilization failed. See" $STANDALONELOG "for details."
-            echo "To restart Flink job manager, run ./start-flink-jobmanager.sh. in the docker container."
+            echo "To restart Flink job manager, run /ppml/trusted-cluster-serving/java/start-flink-jobmanager.sh. in the docker container."
         fi
     fi
     JMPORT=$(netstat -nlp | grep 8081)
@@ -61,7 +61,7 @@ flinkjm () {
 }
 
 flinktm () {
-    echo "(3/5) Detecting Flink task manager state..."
+    echo "Detecting Flink task manager state..."
     TMSUCCESS=""
     test -f $TMSGXLOG
     if [ $? -eq 1 ] ; then
@@ -70,7 +70,7 @@ flinktm () {
         TMSUCCESS=$(cat $TMSGXLOG | grep "Successful registration at job manager")
         if [ -z "$TMSUCCESS" ] ; then
             echo "Flink task manager initilization failed. See" $TMSGXLOG "for details."
-            echo "To restart Flink task manager, run ./start-flink-taskmanager.sh in the docker container."
+            echo "To restart Flink task manager, run /ppml/trusted-cluster-serving/java/start-flink-taskmanager.sh in the docker container."
         fi
     fi
     TMPORT=$(netstat -nlp | grep 6123)
@@ -85,7 +85,7 @@ flinktm () {
 }
 
 frontend () {
-    echo "(4/5) Detecting http frontend state. This may take a while."
+    echo "Detecting http frontend state. This may take a while."
     test -f "$FRONTENDLOG"
     if [ $? -eq 1 ] ; then
         echo "Cannot find http frontend log at path" $FRONTENDLOG 
@@ -93,7 +93,7 @@ frontend () {
         FRONTENDSUCCESS=$(cat $FRONTENDLOG | grep "https started at https://0.0.0.0:10023")
         if [ -z "$FRONTENDSUCCESS" ] ; then
             echo "Http frontend initilization failed. See" $FRONTENDLOG "for details."
-            echo "To restart http frontend, run ./start-http-frontend.sh in the docker container."
+            echo "To restart http frontend, run /ppml/trusted-cluster-serving/java/start-http-frontend.sh in the docker container."
         else 
             echo "Http frontend initilization successful."
         fi
@@ -101,7 +101,7 @@ frontend () {
 }
 
 serving () {
-    echo "(5/5) Detecting cluster-serving-job state..."
+    echo "Detecting cluster-serving-job state..."
     test -f "$SERVINGLOG" 
     if [ $? -eq 1 ] ; then
         echo "Cannot find cluster-serving-job log at path" $SERVINGLOG 
@@ -109,7 +109,7 @@ serving () {
         SERVINGSUCCESS=$(cat $SERVINGLOG | grep "Job has been submitted with JobID")
         if [ -z "$SERVINGSUCCESS" ] ; then
             echo "cluster-serving-job initilization failed. See" $SERVINGLOG "for details."
-            echo "To restart cluster-serving-job, run ./start-cluster-serving-job.sh in the docker container."
+            echo "To restart cluster-serving-job, run /ppml/trusted-cluster-serving/java/start-cluster-serving-job.sh in the docker container."
         else 
             echo "cluster-serving-job initilization successful."
         fi

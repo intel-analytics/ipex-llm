@@ -18,13 +18,17 @@ echo "cluster serving initiated"
 cd /ppml/trusted-cluster-serving/redis
 ./start-redis.sh &
 echo "redis started"
-./check-status.sh redis
+{ set +x; } 2>/dev/null
+bash /ppml/trusted-cluster-serving/check-status.sh redis
+set -x
 
 cd /ppml/trusted-cluster-serving/java
 export FLINK_JOB_MANAGER_IP=$LOCAL_IP
 ./start-flink-jobmanager.sh &
 echo "flink-jobmanager started"
-./check-status.sh flinkjm
+{ set +x; } 2>/dev/null
+bash /ppml/trusted-cluster-serving/check-status.sh flinkjm
+set -x
 
 export FLINK_TASK_MANAGER_IP=$LOCAL_IP
 while ! nc -z $FLINK_TASK_MANAGER_IP $FLINK_JOB_MANAGER_REST_PORT; do
@@ -32,20 +36,25 @@ while ! nc -z $FLINK_TASK_MANAGER_IP $FLINK_JOB_MANAGER_REST_PORT; do
 done
 ./start-flink-taskmanager.sh &
 echo "flink-taskmanager started"
-./check-status.sh flinktm
+{ set +x; } 2>/dev/null
+bash /ppml/trusted-cluster-serving/check-status.sh flinktm
+set -x
 
 while ! nc -z $REDIS_HOST $REDIS_PORT; do
   sleep 1
 done
 ./start-http-frontend.sh &
 echo "http-frontend started"
-./check-status.sh frontend
+{ set +x; } 2>/dev/null
+bash /ppml/trusted-cluster-serving/check-status.sh frontend
+set -x
 
 while ! nc -z $FLINK_TASK_MANAGER_IP $FLINK_TASK_MANAGER_DATA_PORT; do
   sleep 1
 done
 ./start-cluster-serving-job.sh &
 echo "cluster-serving-job started"
-./check-status.sh cluster
+{ set +x; } 2>/dev/null
+bash /ppml/trusted-cluster-serving/check-status.sh cluster
 
-./check-status.sh
+bash /ppml/trusted-cluster-serving/check-status.sh
