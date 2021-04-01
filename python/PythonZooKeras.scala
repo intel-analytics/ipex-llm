@@ -1237,6 +1237,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     new zmetrics.MAE()
   }
 
+  def createZooKerasMSE(): ValidationMethod[T] = {
+    new zmetrics.MSE()
+  }
+
   def createZooKerasAccuracy(
       zeroBasedLabel: Boolean = true): ValidationMethod[T] = {
     new zmetrics.Accuracy(zeroBasedLabel)
