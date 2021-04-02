@@ -31,15 +31,17 @@ def run(path):
         raise EOFError("You have to set your image path")
     output_api = OutputQueue()
     output_api.dequeue()
-    path = [os.path.join(base_path, "cat1.jpeg")]
-    for p in path:
+    paths = {"cat": os.path.join(base_path, "cat1.jpeg"),
+             "dog": os.path.join(base_path, "dog1.jpeg"),
+             "fish": os.path.join(base_path, "fish1.jpeg")}
+    for key, p in paths.items():
         if not p.endswith("jpeg"):
             continue
         img = cv2.imread(p)
         img = cv2.resize(img, (224, 224))
         data = cv2.imencode(".jpg", img)[1]
         img_encoded = base64.b64encode(data).decode("utf-8")
-        result = input_api.enqueue("cat", t={"b64": img_encoded})
+        result = input_api.enqueue(key, t={"b64": img_encoded})
 
     time.sleep(10)
 
@@ -51,9 +53,11 @@ def run(path):
     # get all result and dequeue
     result = output_api.dequeue()
     for k in result.keys():
-        prediction = output_api.get_ndarray_from_b64(result[k])
+        prediction = result[k]
         # this prediction is the same as the cat_image_prediction above
         print(k, "prediction layer shape: ", prediction.shape)
+        class_idx = np.argmax(prediction)
+        print("the class index of prediction of " + k + " image result: ", class_idx)
 
 
 if __name__ == "__main__":
