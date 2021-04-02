@@ -39,6 +39,9 @@ from zoo.orca.learn.trigger import EveryEpoch
 parser = argparse.ArgumentParser(description='PyTorch Cifar10 Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn or k8s.')
+parser.add_argument('--backend', type=str, default="bigdl",
+                    help='The backend of PyTorch Estimator; '
+                         'bigdl and torch-distributed are supported')
 args = parser.parse_args()
 
 if args.cluster_mode == "local":
@@ -54,15 +57,22 @@ transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                        download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
-                                          shuffle=True, num_workers=2)
 
-testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                         shuffle=False, num_workers=2)
+def train_loader_creator(config, batch_size):
+    trainset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=True,
+                                            download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                              shuffle=True, num_workers=2)
+    return trainloader
+
+
+def test_loader_creator(config, batch_size):
+    testset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=False,
+                                           download=True, transform=transform)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                             shuffle=False, num_workers=2)
+    return testloader
+
 
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -73,15 +83,6 @@ def imshow(img):
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
-
-
-dataiter = iter(trainloader)
-images, labels = dataiter.next()
-
-# show images
-imshow(torchvision.utils.make_grid(images))
-# print labels
-print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 
 class Net(nn.Module):
@@ -104,24 +105,68 @@ class Net(nn.Module):
         return x
 
 
-net = Net()
+def model_creator(config):
+    net = Net()
+    return net
+
+
+def optim_creator(model, config):
+    optimizer = optim.SGD(model.parameters(),
+                          lr=config.get("lr", 0.001),
+                          momentum=config.get("momentum", 0.9))
+    return optimizer
+
+
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+batch_size = 4
+root_dir = "./data"
 
-net.train()
-orca_estimator = Estimator.from_torch(model=net, optimizer=optimizer, loss=criterion,
-                                      metrics=[Accuracy()],
-                                      backend="bigdl")
-orca_estimator.fit(data=trainloader, epochs=2, validation_data=testloader,
-                   checkpoint_trigger=EveryEpoch())
-print('Finished Training')
-dataiter = iter(testloader)
+train_loader = train_loader_creator(config={"root": root_dir}, batch_size=batch_size)
+test_loader = test_loader_creator(config={"root": root_dir}, batch_size=batch_size)
+
+# plot some random images
+dataiter = iter(train_loader)
 images, labels = dataiter.next()
-
-# print images
+# show images
 imshow(torchvision.utils.make_grid(images))
-print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
+# print labels
+print(' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
-res = orca_estimator.evaluate(data=testloader)
-print("Accuracy of the network on the test images: %s" % res)
+dataiter = iter(test_loader)
+images, labels = dataiter.next()
+imshow(torchvision.utils.make_grid(images))
+print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
+
+if args.backend == "bigdl":
+    net = model_creator(config={})
+    optimizer = optim_creator(model=net, config={"lr": 0.001})
+    orca_estimator = Estimator.from_torch(model=net,
+                                          optimizer=optimizer,
+                                          loss=criterion,
+                                          metrics=[Accuracy()],
+                                          backend="bigdl")
+
+    orca_estimator.fit(data=train_loader, epochs=2, validation_data=test_loader,
+                       checkpoint_trigger=EveryEpoch())
+
+    res = orca_estimator.evaluate(data=test_loader)
+    print("Accuracy of the network on the test images: %s" % res)
+elif args.backend == "torch_distributed":
+    orca_estimator = Estimator.from_torch(model=model_creator,
+                                          optimizer=optim_creator,
+                                          loss=criterion,
+                                          metrics=[Accuracy()],
+                                          backend="torch_distributed",
+                                          config={"lr": 0.001,
+                                                  "root": root_dir})
+
+    orca_estimator.fit(data=train_loader_creator, epochs=2, batch_size=batch_size)
+
+    res = orca_estimator.evaluate(data=test_loader_creator)
+    for r in res:
+        print(r, ":", res[r])
+else:
+    raise NotImplementedError("Only bigdl and torch_distributed are supported as the backend,"
+                              " but got {}".format(args.backend))
+
 stop_orca_context()
