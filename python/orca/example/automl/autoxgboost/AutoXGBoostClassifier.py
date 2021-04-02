@@ -102,6 +102,7 @@ if __name__ == '__main__':
 
     train_df, val_df = train_test_split(pdf, test_size=0.2, random_state=2)
 
+    num_rand_samples = 1
     n_estimators_range = (50, 1000)
     max_depth_range = (2, 15)
     # max_features_range = (0.1, 0.8)
@@ -130,8 +131,13 @@ if __name__ == '__main__':
     pipeline = estimator.fit(train_df,
                              validation_df=val_df,
                              metric="error",
-                             recipe=XgbRegressorSkOptRecipe(num_rand_samples=3))
+                             recipe=XgbRegressorSkOptRecipe(
+                                 num_rand_samples=num_rand_samples,
+                                 n_estimators_range=n_estimators_range,
+                                 max_depth_range=max_depth_range,
+                             ),
+                             )
     end = time.time()
-    print("elapse: ", (end-start))
+    print("elapse: ", (end-start), "s")
     accuracy = pipeline.evaluate(val_df, metrics=["accuracy"])
     print("Evaluate: accuracy is", accuracy)
