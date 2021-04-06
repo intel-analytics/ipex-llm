@@ -177,7 +177,7 @@ sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/spark.local.tpc.h
 
 #### In spark standalone cluster mode
 ##### setup passwordless ssh login to all the nodes.
-##### config the environments for master, workers, docker image, security keys/passowrd files and data path.
+##### config the environments for master, workers, docker image, security keys/password files and data path.
 ```bash
 nano environments.sh
 ```

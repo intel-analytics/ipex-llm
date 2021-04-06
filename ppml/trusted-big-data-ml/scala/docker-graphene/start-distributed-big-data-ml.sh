@@ -42,7 +42,7 @@ ssh root@$MASTER "docker run -itd \
       --device=/dev/sgx/provision \
       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
       -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-      -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/passowrd \
+      -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
       --name=spark-master \
       -e LOCAL_IP=$MASTER \
       -e SGX_MEM_SIZE=16G \
@@ -68,7 +68,7 @@ for worker in ${WORKERS[@]}
           --device=/dev/sgx/provision \
           -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
           -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-          -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/passowrd \
+          -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
           --name=spark-worker-$worker \
           -e LOCAL_IP=$worker \
           -e SGX_MEM_SIZE=64G \
@@ -98,7 +98,7 @@ ssh root@$MASTER "docker run -itd \
       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
       -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
       -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-      -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/passowrd \
+      -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
       --name=spark-driver \
       -e LOCAL_IP=$MASTER \
       -e SGX_MEM_SIZE=32G \

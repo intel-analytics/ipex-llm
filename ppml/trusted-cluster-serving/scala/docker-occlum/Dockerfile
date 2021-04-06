@@ -109,7 +109,7 @@ RUN wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.k
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk curl wget && \
+        build-essential ca-certificates openjdk-11-jdk curl wget netcat && \
     apt-get clean
 
 # Cluster Serving config

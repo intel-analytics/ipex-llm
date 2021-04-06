@@ -6,7 +6,7 @@ core_num=$CORE_NUM
 job_manager_host=$FLINK_JOB_MANAGER_IP
 job_manager_rest_port=$FLINK_JOB_MANAGER_REST_PORT
 job_manager_rpc_port=$FLINK_JOB_MANAGER_RPC_PORT
-secure_passowrd=`openssl rsautl -inkey /opt/passowrd/key.txt -decrypt </opt/passowrd/output.bin`
+secure_password=`openssl rsautl -inkey /opt/password/key.txt -decrypt </opt/password/output.bin`
 flink_home=$FLINK_HOME
 flink_version=$FLINK_VERSION
 
@@ -33,8 +33,8 @@ java \
     -D security.ssl.internal.enabled=true \
     -D security.ssl.internal.keystore=/opt/keys/keystore.pkcs12 \
     -D security.ssl.internal.truststore=/opt/keys/keystore.pkcs12 \
-    -D security.ssl.internal.keystore-password=${secure_passowrd} \
-    -D security.ssl.internal.truststore-password=${secure_passowrd} \
-    -D security.ssl.internal.key-password=${secure_passowrd} \
+    -D security.ssl.internal.keystore-password=${secure_password} \
+    -D security.ssl.internal.truststore-password=${secure_password} \
+    -D security.ssl.internal.key-password=${secure_password} \
     --executionMode cluster | tee ./flink-jobmanager-sgx.log
 

@@ -107,10 +107,10 @@ RUN mkdir -p /graphene && \
     mkdir -p /graphene/Pal/src && \
     mkdir -p /ppml/trusted-cluster-serving/redis && \
     mkdir -p /ppml/trusted-cluster-serving/redis/work/keys && \
-    mkdir -p /ppml/trusted-cluster-serving/redis/work/passowrd && \
+    mkdir -p /ppml/trusted-cluster-serving/redis/work/password && \
     mkdir -p /ppml/trusted-cluster-serving/java/work && \
     mkdir -p /ppml/trusted-cluster-serving/java/work/keys && \
-    mkdir -p /ppml/trusted-cluster-serving/java/work/passowrd && \
+    mkdir -p /ppml/trusted-cluster-serving/java/work/password && \
     mkdir -p /ppml/trusted-cluster-serving/java/work/data && \
     mkdir -p /ppml/trusted-cluster-serving/java/work/models
 

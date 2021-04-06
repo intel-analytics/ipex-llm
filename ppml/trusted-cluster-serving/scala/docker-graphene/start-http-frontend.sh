@@ -6,8 +6,8 @@ echo "### Launching HTTP Frontend ###"
 
 redis_host=$REDIS_HOST
 core_num=$CORE_NUM
-redis_secure_password=`openssl rsautl -inkey /ppml/trusted-cluster-serving/redis/work/passowrd/key.txt -decrypt </ppml/trusted-cluster-serving/redis/work/passowrd/output.bin`
-https_secure_password=`openssl rsautl -inkey /ppml/trusted-cluster-serving/java/work/passowrd/key.txt -decrypt </ppml/trusted-cluster-serving/java/work/passowrd/output.bin`
+redis_secure_password=`openssl rsautl -inkey /ppml/trusted-cluster-serving/redis/work/password/key.txt -decrypt </ppml/trusted-cluster-serving/redis/work/password/output.bin`
+https_secure_password=`openssl rsautl -inkey /ppml/trusted-cluster-serving/java/work/password/key.txt -decrypt </ppml/trusted-cluster-serving/java/work/password/output.bin`
 
 SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -Xms2g \

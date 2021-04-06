@@ -50,7 +50,7 @@ ssh root@$MASTER "docker run -itd \
       --cpuset-cpus="3-5" \
       --oom-kill-disable \
       -v $KEYS_PATH:/opt/keys \
-      -v $SECURE_PASSWORD_PATH:/opt/passowrd \
+      -v $SECURE_PASSWORD_PATH:/opt/password \
       --name=flink-job-manager \
       -e FLINK_JOB_MANAGER_IP=$MASTER \
       -e FLINK_JOB_MANAGER_REST_PORT=8081 \
@@ -72,7 +72,7 @@ for worker in ${WORKERS[@]}
         --oom-kill-disable \
         --device=/dev/sgx \
         -v $KEYS_PATH:/opt/keys \
-        -v $SECURE_PASSWORD_PATH:/opt/passowrd \
+        -v $SECURE_PASSWORD_PATH:/opt/password \
         --name=flink-task-manager-$worker \
         -e SGX_MEM_SIZE=64G \
         -e FLINK_JOB_MANAGER_IP=$MASTER \
@@ -102,7 +102,7 @@ ssh root@$MASTER "docker run -itd \
       --oom-kill-disable \
       --device=/dev/sgx \
       -v $KEYS_PATH:/opt/keys \
-      -v $SECURE_PASSWORD_PATH:/opt/passowrd \
+      -v $SECURE_PASSWORD_PATH:/opt/password \
       --name=http-frontend \
       -e SGX_MEM_SIZE=32G \
       -e REDIS_HOST=$MASTER \
@@ -120,7 +120,7 @@ ssh root@$MASTER "docker run -itd \
       --cpuset-cpus="33-34" \
       --oom-kill-disable \
       -v $KEYS_PATH:/opt/keys \
-      -v $SECURE_PASSWORD_PATH:/opt/passowrd \
+      -v $SECURE_PASSWORD_PATH:/opt/password \
       --name=cluster-serving \
       -e REDIS_HOST=$MASTER \
       -e CORE_NUM=2 \

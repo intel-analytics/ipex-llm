@@ -6,8 +6,8 @@ echo "### Launching HTTP Frontend ###"
 
 redis_host=$REDIS_HOST
 core_num=$CORE_NUM
-redis_secure_password=`openssl rsautl -inkey /opt/passowrd/key.txt -decrypt </opt/passowrd/output.bin`
-https_secure_password=`openssl rsautl -inkey /opt/passowrd/key.txt -decrypt </opt/passowrd/output.bin`
+redis_secure_password=`openssl rsautl -inkey /opt/password/key.txt -decrypt </opt/password/output.bin`
+https_secure_password=`openssl rsautl -inkey /opt/password/key.txt -decrypt </opt/password/output.bin`
 
 java \
     -Xms2g \

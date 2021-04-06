@@ -5,12 +5,12 @@ set -x
 worker_port=$SPARK_WORKER_PORT
 worker_webui_port=$SPARK_WORKER_WEBUI_PORT
 spark_master=$SPARK_MASTER
-secure_passowrd=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/passowrd/key.txt -decrypt </ppml/trusted-big-data-ml/work/passowrd/output.bin`
+secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
 SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -cp "/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*" \
     -Dspark.authenticate=true \
-    -Dspark.authenticate.secret=$secure_passowrd \
+    -Dspark.authenticate.secret=$secure_password \
     -Dspark.network.crypto.enabled=true \
     -Dspark.network.crypto.keyLength=128 \
     -Dspark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
@@ -19,12 +19,12 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -Dspark.io.encryption.keygen.algorithm=HmacSHA1 \
     -Dspark.ssl.enabled=true \
     -Dspark.ssl.port=8043 \
-    -Dspark.ssl.keyPassword=$secure_passowrd \
+    -Dspark.ssl.keyPassword=$secure_password \
     -Dspark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    -Dspark.ssl.keyStorePassword=$secure_passowrd \
+    -Dspark.ssl.keyStorePassword=$secure_password \
     -Dspark.ssl.keyStoreType=JKS \
     -Dspark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    -Dspark.ssl.trustStorePassword=$secure_passowrd \
+    -Dspark.ssl.trustStorePassword=$secure_password \
     -Dspark.ssl.trustStoreType=JKS \
     -Xmx2g \
     org.apache.spark.deploy.worker.Worker \

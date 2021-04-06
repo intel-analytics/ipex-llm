@@ -6,7 +6,7 @@ core_num=$CORE_NUM
 job_manager_host=$FLINK_JOB_MANAGER_IP
 job_manager_rest_port=$FLINK_JOB_MANAGER_REST_PORT
 job_manager_rpc_port=$FLINK_JOB_MANAGER_RPC_PORT
-secure_passowrd=`openssl rsautl -inkey /ppml/trusted-cluster-serving/java/work/passowrd/key.txt -decrypt </ppml/trusted-cluster-serving/java/work/passowrd/output.bin`
+secure_password=`openssl rsautl -inkey /ppml/trusted-cluster-serving/java/work/password/key.txt -decrypt </ppml/trusted-cluster-serving/java/work/password/output.bin`
 flink_home=$FLINK_HOME
 flink_version=$FLINK_VERSION
 
@@ -33,7 +33,7 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -D security.ssl.internal.enabled=true \
     -D security.ssl.internal.keystore=/ppml/trusted-cluster-serving/java/work/keys/keystore.pkcs12 \
     -D security.ssl.internal.truststore=/ppml/trusted-cluster-serving/java/work/keys/keystore.pkcs12 \
-    -D security.ssl.internal.keystore-password=${secure_passowrd} \
-    -D security.ssl.internal.truststore-password=${secure_passowrd} \
-    -D security.ssl.internal.key-password=${secure_passowrd} \
+    -D security.ssl.internal.keystore-password=${secure_password} \
+    -D security.ssl.internal.truststore-password=${secure_password} \
+    -D security.ssl.internal.key-password=${secure_password} \
     --executionMode cluster | tee ./flink-jobmanager-sgx.log

@@ -112,7 +112,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /graphene/Pal/src && \
     mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/keys && \
-    mkdir -p /ppml/trusted-big-data-ml/work/passowrd && \
+    mkdir -p /ppml/trusted-big-data-ml/work/password && \
     mkdir -p /ppml/trusted-big-data-ml/work/data && \
     mkdir -p /ppml/trusted-big-data-ml/work/models && \
     mkdir -p /ppml/trusted-big-data-ml/work/apps
