@@ -40,7 +40,7 @@ getInputShape()
 ```scala
 getOutputShape()
 ```
-* Return the input or output shape of a model, which is a [`2-Shape`](#shape) object. For `SingleShape`, the first entry is `-1` representing the batch dimension. For a model with multiple inputs or outputs, it will return a `MultiShape`.
+* Return the input or output shape of a model, which is a [`Shape`](#2-shape) object. For `SingleShape`, the first entry is `-1` representing the batch dimension. For a model with multiple inputs or outputs, it will return a `MultiShape`.
 
 ```scala
 setName(name)
