@@ -21,13 +21,11 @@ Analytics Zoo includes the **Orca** library that seamlessly scale out your singl
    doc/Orca/QuickStart/orca-keras-quickstart.md
    doc/Orca/QuickStart/orca-tf2keras-quickstart.md
    doc/Orca/QuickStart/orca-pytorch-quickstart.md
-   doc/Orca/QuickStart/orca-mxnet-quickstart.md
-   doc/Orca/QuickStart/orca-horovod-quickstart.md
    doc/Ray/QuickStart/ray-quickstart.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: User guide
+   :caption: User Guide
 
    doc/UserGuide/python.md
    doc/UserGuide/colab.md
@@ -41,6 +39,15 @@ Analytics Zoo includes the **Orca** library that seamlessly scale out your singl
    doc/Zouwu/Overview/zouwu.md
    doc/UserGuide/develop.md
    
+.. toctree::
+   :maxdepth: 1
+   :caption: Common Use Case
+   
+   doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.md
+   doc/UseCase/spark-dataframe.md
+   doc/UseCase/xshards-pandas.md
+   doc/Zouwu/QuickStart/zouwu-autots-quickstart.md
+
 .. toctree::
    :maxdepth: 1
    :caption: Orca Overview
@@ -57,7 +64,7 @@ Analytics Zoo includes the **Orca** library that seamlessly scale out your singl
    
 .. toctree::
    :maxdepth: 1
-   :caption: Real-World Applications
+   :caption: Real-World Application
    
    doc/Application/presentations.md
    doc/Application/powered-by.md  

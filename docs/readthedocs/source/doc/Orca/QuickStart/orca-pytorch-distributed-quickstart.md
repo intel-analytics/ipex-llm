@@ -1,4 +1,4 @@
-# PyTorch Quickstart (torch\_distributed backend)
+# Use `torch.distributed` in Orca
 
 ---
 
@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to scale out _PyTorch_ programs with pytorch\_distributed backend using Orca in 4 simple steps.**
+**In this guide we will describe how to scale out _PyTorch_ programs using the `torch.distributed` package in Orca.**
 
 ### **Step 0: Prepare Environment**
 

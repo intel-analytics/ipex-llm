@@ -1,4 +1,4 @@
-# Zouwu AutoTS Quickstart
+# Use AutoML for Time-Series Forecasting
 
 ---
 
