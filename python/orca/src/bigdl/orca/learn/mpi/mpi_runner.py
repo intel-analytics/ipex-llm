@@ -37,14 +37,12 @@ class MPIRunner:
             def get_ip(iter):
                 yield get_node_ip()
 
+            from bigdl.util.common import get_node_and_core_number
             from zoo.orca import OrcaContext
             sc = OrcaContext.get_spark_context()
-            master = sc.getConf().get("spark.master")
-            if master == "local" or master.startswith("local["):
-                num_executors = 1
-            else:
-                num_executors = int(sc.getConf().get("spark.executor.instances"))
-            self.hosts = list(set(sc.range(0, num_executors, numSlices=num_executors).barrier()
+            node_num, core_num = get_node_and_core_number()
+            total_cores = node_num * core_num
+            self.hosts = list(set(sc.range(0, total_cores, numSlices=total_cores).barrier()
                                   .mapPartitions(get_ip).collect()))
         else:  # User specified hosts, assumed to be non-duplicate
             assert isinstance(hosts, list)
