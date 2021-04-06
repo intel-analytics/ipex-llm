@@ -47,7 +47,9 @@ Analytics Zoo includes the **Orca** library that seamlessly scale out your singl
    doc/UseCase/spark-dataframe.md
    doc/UseCase/xshards-pandas.md
    doc/Zouwu/QuickStart/zouwu-autots-quickstart.md
-
+   doc/UseCase/keras-api.md
+   doc/UseCase/nnframes.md
+   
 .. toctree::
    :maxdepth: 1
    :caption: Orca Overview
