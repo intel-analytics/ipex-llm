@@ -23,7 +23,7 @@
 HDFS_HOST=$1                                                                                               
 set -e
 
-BIGDL_VERSION=0.12.2
+BIGDL_VERSION=0.12.2-SNAPSHOT
 
 if [ -d "images" ]
 then
