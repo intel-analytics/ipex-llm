@@ -58,6 +58,22 @@ python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/fashion_mnist
 now=$(date "+%s")
 time3=$((now - start))
 
+echo "#4 start example for orca Super Resolution"
+#timer
+start=$(date "+%s")
+if [ ! -f BSDS300-images.tgz ]; then
+  wget -nv $FTP_URI/analytics-zoo-data/BSDS300-images.tgz
+fi
+if [ ! -d dataset/BSDS300/images ]; then
+  mkdir dataset
+  tar -xzf BSDS300-images.tgz -C dataset
+fi
+
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/super_resolution/super_resolution.py
+
+now=$(date "+%s")
+time4=$((now - start))
+
 # echo "#3 start test for orca bigdl resnet-finetune"
 # #timer
 # start=$(date "+%s")
@@ -90,4 +106,5 @@ time3=$((now - start))
 echo "#1 MNIST example time used:$time1 seconds"
 echo "#2 orca Cifar10 example time used:$time2 seconds"
 echo "#3 orca Fashion-MNIST example time used:$time3 seconds"
+echo "#4 orca Super Resolution example time used:$time4 seconds"
 #echo "#3 orca bigdl resnet-finetune time used:$time3 seconds"
