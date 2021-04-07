@@ -88,7 +88,7 @@ if [ ! -d dataset/BSDS300/images ]; then
   tar -xzf BSDS300-images.tgz -C dataset
 fi
 
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/super_resolution/super_resolution.py
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/super_resolution/super_resolution.py --backend torch_distributed
 
 now=$(date "+%s")
 time7=$((now-start))

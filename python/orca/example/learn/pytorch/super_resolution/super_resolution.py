@@ -39,6 +39,8 @@ from torchvision.transforms import Compose, CenterCrop, ToTensor, Resize
 
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.pytorch import Estimator
+from zoo.orca.learn.metrics import MSE
+from zoo.orca.learn.trigger import EveryEpoch
 
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
 parser.add_argument('--upscale_factor', type=int,
@@ -52,6 +54,9 @@ parser.add_argument('--threads', type=int, default=4,
 parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
 parser.add_argument('--cluster_mode', type=str,
                     default='local', help='The mode of spark cluster.')
+parser.add_argument('--backend', type=str, default="bigdl",
+                    help='The backend of PyTorch Estimator; '
+                         'bigdl and torch_distributed are supported.')
 opt = parser.parse_args()
 
 print(opt)
@@ -214,50 +219,86 @@ def model_creator(config):
     return net
 
 
-criterion = nn.MSELoss()
-
-
 def optim_creator(model, config):
     return optim.Adam(model.parameters(), lr=config.get("lr", 0.01))
 
 
-estimator = Estimator.from_torch(
-    model=model_creator,
-    optimizer=optim_creator,
-    loss=nn.MSELoss(),
-    backend="torch_distributed",
-    config={
-        "lr": opt.lr,
-        "upscale_factor": opt.upscale_factor,
-        "threads": opt.threads,
-        "seed": opt.seed
-    }
-)
+criterion = nn.MSELoss()
+model_dir = "models"
 
+if opt.backend == "bigdl":
+    model = model_creator(
+        config={
+            "upscale_factor": opt.upscale_factor,
+            "seed": opt.seed
+        }
+    )
+    optimizer = optim_creator(model, config={"lr": opt.lr})
+    estimator = Estimator.from_torch(
+        model=model,
+        optimizer=optimizer,
+        loss=criterion,
+        metrics=[MSE()],
+        model_dir=model_dir,
+        backend="bigdl"
+    )
 
-def train(epoch):
-    stats = estimator.fit(data=train_data_creator, epochs=1, batch_size=opt.batch_size)
-    for epochinfo in stats:
-        print("===> Epoch {} Complete: Avg. Loss: {:.4f}"
-              .format(epoch, epochinfo["train_loss"]))
+    train_loader = train_data_creator(
+        config={
+            "upscale_factor": opt.upscale_factor,
+            "threads": opt.threads
+        },
+        batch_size=opt.batch_size
+    )
+    test_loader = validation_data_creator(
+        config={
+            "upscale_factor": opt.upscale_factor,
+            "threads": opt.threads
+        },
+        batch_size=opt.batch_size
+    )
 
+    estimator.fit(data=train_loader, epochs=opt.epochs, validation_data=test_loader,
+                  checkpoint_trigger=EveryEpoch())
 
-def test():
-    val_stats = estimator.evaluate(data=validation_data_creator, batch_size=opt.test_batch_size)
+    val_stats = estimator.evaluate(data=test_loader)
     print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
-          .format(10 * log10(1. / val_stats["val_loss"]), val_stats["val_loss"]))
+          .format(10 * log10(1. / val_stats["MSE"]), val_stats["MSE"]))
 
+elif opt.backend == "torch_distributed":
+    estimator = Estimator.from_torch(
+        model=model_creator,
+        optimizer=optim_creator,
+        loss=criterion,
+        backend="torch_distributed",
+        config={
+            "lr": opt.lr,
+            "upscale_factor": opt.upscale_factor,
+            "threads": opt.threads,
+            "seed": opt.seed
+        }
+    )
 
-def checkpoint(epoch):
-    model_out_path = "model_epoch_{}.pth".format(epoch)
-    model = estimator.get_model()
-    torch.save(model, model_out_path)
-    print("Checkpoint saved to {}".format(model_out_path))
+    if not exists(model_dir):
+        makedirs(model_dir)
 
+    for epoch in range(1, opt.epochs + 1):
+        stats = estimator.fit(data=train_data_creator, epochs=1, batch_size=opt.batch_size)
+        for epochinfo in stats:
+            print("===> Epoch {} Complete: Avg. Loss: {:.4f}"
+                  .format(epoch, epochinfo["train_loss"]))
 
-for epoch in range(1, opt.epochs + 1):
-    train(epoch)
-    test()
-    checkpoint(epoch)
+        val_stats = estimator.evaluate(data=validation_data_creator,
+                                       batch_size=opt.test_batch_size)
+        print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
+              .format(10 * log10(1. / val_stats["val_loss"]), val_stats["val_loss"]))
+
+        model_out_path = model_dir + "/" + "model_epoch_{}.pth".format(epoch)
+        model = estimator.get_model()
+        torch.save(model, model_out_path)
+        print("Checkpoint saved to {}".format(model_out_path))
+else:
+    raise NotImplementedError("Only bigdl and torch_distributed are supported as the backend, "
+                              "but got {}".format(opt.backend))
 
 stop_orca_context()
