@@ -41,7 +41,7 @@ parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn or k8s.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
-                         'bigdl and torch-distributed are supported')
+                         'bigdl and torch_distributed are supported')
 args = parser.parse_args()
 
 if args.cluster_mode == "local":
