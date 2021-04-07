@@ -34,6 +34,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.learn.pytorch import Estimator
+from zoo.orca.learn.metrics import Accuracy
+from zoo.orca.learn.trigger import EveryEpoch
 
 
 def train_data_creator(config, batch_size):
@@ -105,16 +107,20 @@ def optimizer_creator(model, config):
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Tensorboard Example')
-
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn or k8s.')
+    parser.add_argument('--backend', type=str, default="bigdl",
+                        help='The backend of PyTorch Estimator; '
+                             'bigdl and torch_distributed are supported.')
     args = parser.parse_args()
+
     if args.cluster_mode == "local":
         init_orca_context()
     elif args.cluster_mode == "yarn":
         init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
 
-    writer = SummaryWriter('runs/fashion_mnist_experiment_1')
+    tensorboard_dir = "runs"
+    writer = SummaryWriter(tensorboard_dir + '/fashion_mnist_experiment_1')
     # constant for classes
     classes = ('T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle Boot')
@@ -138,18 +144,44 @@ def main():
 
     # training loss vs. epochs
     criterion = nn.CrossEntropyLoss()
-    orca_estimator = Estimator.from_torch(model=model_creator,
-                                          optimizer=optimizer_creator,
-                                          loss=criterion,
-                                          backend="torch_distributed")
-    stats = orca_estimator.fit(train_data_creator, epochs=5, batch_size=4)
+    batch_size = 4
+    epochs = 5
+    if args.backend == "bigdl":
+        train_loader = train_data_creator(config={}, batch_size=batch_size)
+        test_loader = validation_data_creator(config={}, batch_size=batch_size)
 
-    for stat in stats:
-        writer.add_scalar("training_loss", stat['train_loss'], stat['epoch'])
-    print("Train stats: {}".format(stats))
-    val_stats = orca_estimator.evaluate(validation_data_creator, batch_size=4)
-    print("Validation stats: {}".format(val_stats))
-    orca_estimator.shutdown()
+        net = model_creator(config={})
+        optimizer = optimizer_creator(model=net, config={"lr": 0.001})
+        orca_estimator = Estimator.from_torch(model=net,
+                                              optimizer=optimizer,
+                                              loss=criterion,
+                                              metrics=[Accuracy()],
+                                              backend="bigdl")
+
+        orca_estimator.set_tensorboard(tensorboard_dir, "bigdl")
+
+        orca_estimator.fit(data=train_loader, epochs=epochs, validation_data=test_loader,
+                           checkpoint_trigger=EveryEpoch())
+
+        res = orca_estimator.evaluate(data=test_loader)
+        print("Accuracy of the network on the test images: %s" % res)
+    elif args.backend == "torch_distributed":
+        orca_estimator = Estimator.from_torch(model=model_creator,
+                                              optimizer=optimizer_creator,
+                                              loss=criterion,
+                                              metrics=[Accuracy()],
+                                              backend="torch_distributed")
+        stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size)
+
+        for stat in stats:
+            writer.add_scalar("training_loss", stat['train_loss'], stat['epoch'])
+        print("Train stats: {}".format(stats))
+        val_stats = orca_estimator.evaluate(validation_data_creator, batch_size=batch_size)
+        print("Validation stats: {}".format(val_stats))
+        orca_estimator.shutdown()
+    else:
+        raise NotImplementedError("Only bigdl and torch_distributed are supported "
+                                  "as the backend, but got {}".format(args.backend))
 
     stop_orca_context()
 
