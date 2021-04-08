@@ -13,6 +13,12 @@ core_num=$CORE_NUM
 job_manager_host=$FLINK_JOB_MANAGER_IP
 job_manager_rest_port=$FLINK_JOB_MANAGER_REST_PORT
 job_manager_rpc_port=$FLINK_JOB_MANAGER_RPC_PORT
+
+task_manager_host=$FLINK_TASK_MANAGER_IP
+task_manager_data_port=$FLINK_TASK_MANAGER_DATA_PORT
+task_manager_rpc_port=$FLINK_TASK_MANAGER_RPC_PORT
+task_manager_taskslots_num=$FLINK_TASK_MANAGER_TASKSLOTS_NUM
+
 secure_password=`openssl rsautl -inkey /opt/password/key.txt -decrypt </opt/password/output.bin`
 flink_home=$FLINK_HOME
 flink_version=$FLINK_VERSION
@@ -22,7 +28,7 @@ run_taskmanager() {
     cd /opt/flink
 
     #if conf_dir exists, use the new configurations.
-    if [ -d $conf_dir  ];then
+    if [[ -d $conf_dir && "$(ls -A $conf_dir)" ]]; then
         cp -r $conf_dir/* image/opt/conf/
         occlum build
     fi
@@ -53,6 +59,11 @@ run_taskmanager() {
     -D security.ssl.internal.keystore-password=${secure_password} \
     -D security.ssl.internal.truststore-password=${secure_password} \
     -D security.ssl.internal.key-password=${secure_password} \
+    -D taskmanager.host=${task_manager_host} \
+    -D taskmanager.data.port=${task_manager_data_port} \
+    -D taskmanager.rpc.port=${task_manager_rpc_port} \
+    -D taskmanager.numberOfTaskSlots=${task_manager_taskslots_num} \
+    -D taskmanager.cpu.cores=${core_num} \
     -D taskmanager.memory.framework.off-heap.size=256mb \
     -D taskmanager.memory.network.max=1024mb \
     -D taskmanager.memory.network.min=1024mb \

@@ -119,6 +119,7 @@ ADD ./init-occlum-taskmanager.sh /opt/init-occlum-taskmanager.sh
 ADD ./start-redis.sh /opt/start-redis.sh
 ADD ./start-flink-jobmanager.sh /opt/start-flink-jobmanager.sh
 ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
+ADD ./hosts /opt/hosts
 ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
 ADD ./start-all.sh /opt/start-all.sh
