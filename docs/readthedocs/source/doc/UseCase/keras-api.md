@@ -145,12 +145,6 @@ val model = Model[Float](Array(input1, input2), output)
 ```
 
 ---
-## 6. Layers
-See [here](#8-core-layers) for all the available layers of the Keras-like API.
-
-
----
-
 ## 7. Core Layers
 This section describes all the available layers in the Keras-like API. 
 
