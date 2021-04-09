@@ -48,6 +48,39 @@ Before run the following command, please modify pathes in the `start-local-clust
 ./start-local-cluster-serving.sh
 ```
 
+##### Troubleshooting
+You can run the script `/opt/check-status.sh` in the docker container to check whether the components have been correctly started.
+Note that this only works for local cluster serving (for now).
+
+To test a specific component, pass one or more argument to it among the following:
+"redis", "flinkjm", "flinktm", "frontend", and "serving". For example, run the following command to check the status of the Flink job manager.
+
+```bash
+docker exec -it trusted-cluster-servinglocal bash /opt/check-status.sh flinkjm
+```
+
+To test all components, you can either pass no argument or pass the "all" argument.
+
+```bash
+docker exec -it trusted-cluster-servinglocal bash /opt/check-status.sh
+```
+If all is well, the following results should be displayed:
+
+```
+Detecting redis status...
+Redis initilization successful.
+Detecting Flink job manager status...
+Flink job manager initilization successful.
+Detecting Flink task manager status...
+Flink task manager initilization successful.
+Detecting http frontend status. This may take a while.
+Http frontend initilization successful.
+Detecting cluster-serving-job status...
+cluster-serving-job initilization successful.
+```
+
+It is suggested to run this script once after starting local cluster serving to verify that all components are up and running.
+
 #### Distributed mode (Multi-containers/Multi-nodes)
 
 In this mode, all components, redis, Flink & http front end, are running in different containers, some of them can be distributed to multi-nodes. 
