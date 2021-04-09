@@ -1,12 +1,12 @@
 #!/bin/bash
 # Acceptable arguments: redis, flinkjm, flinktm, frontend, serving, all
 
-REDISLOG="/ppml/trusted-cluster-serving/redis/redis-sgx.log"
-JMSGXLOG="/ppml/trusted-cluster-serving/java/flink-jobmanager-sgx.log"
-STANDALONELOG="/ppml/trusted-cluster-serving/java/work/flink-1.10.1/log/flink-sgx-standalonesession-*.log"
-TMSGXLOG="/ppml/trusted-cluster-serving/java/work/flink-1.10.1/log/flink-sgx-taskexecutor-*.log"
-FRONTENDLOG="/ppml/trusted-cluster-serving/java/http-frontend-sgx.log"
-SERVINGLOG="/ppml/trusted-cluster-serving/java/cluster-serving-job-sgx.log"
+REDISLOG="/opt/redis/redis-sgx.log"
+JMSGXLOG="/opt/flink-jobmanager-sgx.log"
+STANDALONELOG="/opt/flink-1.10.1/log/flink-sgx-standalonesession-*.log"
+TMSGXLOG="/opt/flink/flink---0.log"
+FRONTENDLOG="/opt/http-frontend-sgx.log"
+SERVINGLOG="/opt/cluster-serving-job-sgx.log"
 
 redis () {
     echo "Detecting redis status..."

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -x
 
+bash /opt/occlum/start_aesm.sh
+echo "Starting AESM service..."
+
 cd /opt
 ./init-occlum-taskmanager.sh
 echo "occlum flink jobmanager image built"
@@ -36,3 +39,5 @@ while ! nc -z $FLINK_TASK_MANAGER_IP $FLINK_TASK_MANAGER_DATA_PORT; do
 done
 ./start-cluster-serving-job.sh &
 echo "cluster-serving-job started"
+
+./check-status.sh

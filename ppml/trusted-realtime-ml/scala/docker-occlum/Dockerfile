@@ -109,7 +109,7 @@ RUN wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.k
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk curl wget netcat && \
+        build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools && \
     apt-get clean
 
 # Cluster Serving config
@@ -117,6 +117,7 @@ ADD ./cluster-serving-config.yaml /opt/config.yaml
 # PPML scripts
 ADD ./init-occlum-taskmanager.sh /opt/init-occlum-taskmanager.sh
 ADD ./start-redis.sh /opt/start-redis.sh
+ADD ./check-status.sh /opt/check-status.sh
 ADD ./start-flink-jobmanager.sh /opt/start-flink-jobmanager.sh
 ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
 ADD ./hosts /opt/hosts
