@@ -9,7 +9,7 @@ FRONTENDLOG="/ppml/trusted-cluster-serving/java/http-frontend-sgx.log"
 SERVINGLOG="/ppml/trusted-cluster-serving/java/cluster-serving-job-sgx.log"
 
 redis () {
-    echo "Detecting redis state..."
+    echo "Detecting redis status..."
     REDISSUCCESS=""
     test -f  $REDISLOG
     if [ $? -eq 1 ] ; then
@@ -33,7 +33,7 @@ redis () {
 }
 
 flinkjm () {
-    echo "Detecting Flink job manager state..."
+    echo "Detecting Flink job manager status..."
     JMSUCCESS=""
     test -f $JMSGXLOG
     if [ $? -eq 1 ] ; then
@@ -61,7 +61,7 @@ flinkjm () {
 }
 
 flinktm () {
-    echo "Detecting Flink task manager state..."
+    echo "Detecting Flink task manager status..."
     TMSUCCESS=""
     test -f $TMSGXLOG
     if [ $? -eq 1 ] ; then
@@ -85,7 +85,7 @@ flinktm () {
 }
 
 frontend () {
-    echo "Detecting http frontend state. This may take a while."
+    echo "Detecting http frontend status. This may take a while."
     test -f "$FRONTENDLOG"
     if [ $? -eq 1 ] ; then
         echo "Cannot find http frontend log at path" $FRONTENDLOG 
@@ -101,7 +101,7 @@ frontend () {
 }
 
 serving () {
-    echo "Detecting cluster-serving-job state..."
+    echo "Detecting cluster-serving-job status..."
     test -f "$SERVINGLOG" 
     if [ $? -eq 1 ] ; then
         echo "Cannot find cluster-serving-job log at path" $SERVINGLOG 
@@ -119,13 +119,13 @@ serving () {
 
 all=0
 if [ "$#" -lt 1 ]; then
-    echo "No argument passed, detecting all component states."
+    echo "No argument passed, detecting all component statuses."
     all=$((all+1))
 else
     for arg in "$@"
     do
         if [ "$arg" == all ]; then
-            echo "Detecting all component states."
+            echo "Detecting all component statuses."
             all=$((all+1))
         fi
     done
