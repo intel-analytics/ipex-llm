@@ -155,8 +155,10 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   def doLoadTensorflow(modelPath: String,
                        modelType: String,
                        inputs: Array[String],
-                       outputs: Array[String]): Unit = {
-    doLoadTensorflowModel(modelPath, modelType, inputs, outputs, 1, 1, true)
+                       outputs: Array[String],
+                       intraOp: Int = 1,
+                       interOp: Int = 1): Unit = {
+    doLoadTensorflowModel(modelPath, modelType, inputs, outputs, intraOp, interOp, true)
   }
 
   /**
