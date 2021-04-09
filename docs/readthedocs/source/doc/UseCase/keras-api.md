@@ -11,11 +11,34 @@ import com.intel.analytics.zoo.pipeline.api.keras.models._
 import com.intel.analytics.bigdl.utils.Shape
 ```
 
-One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a [`Shape`](#2-shape) object __excluding__ batch dimension, for example, `inputShape=Shape(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
+One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a `Shape` object __excluding__ batch dimension, for example, `inputShape=Shape(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
 ---
-## 2. Shape
-Input and output shapes of a model in the Keras-Style API are described by the `Shape` object in Scala, which can be classified into `SingleShape` and `MultiShape`.
+## 2. LeNet Example
+Here we use the Keras-like API to define a LeNet CNN model and train it on the MNIST dataset:
+
+```scala
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.zoo.pipeline.api.keras.layers._
+import com.intel.analytics.zoo.pipeline.api.keras.models._
+import com.intel.analytics.bigdl.utils.Shape
+
+val model = Sequential()
+model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
+model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
+model.add(MaxPooling2D())
+model.add(Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5"))
+model.add(MaxPooling2D())
+model.add(Flatten())
+model.add(Dense(100, activation = "tanh").setName("fc1"))
+model.add(Dense(10, activation = "softmax").setName("fc2"))
+
+model.getInputShape().toSingle().toArray // Array(-1, 28, 28, 1)
+model.getOutputShape().toSingle().toArray // Array(-1, 10)
+```
+---
+## 3. Shape
+Input and output shapes of a model in the Keras-like API are described by the `Shape` object in Scala, which can be classified into `SingleShape` and `MultiShape`.
 
 `SingleShape` is just a list of Int indicating shape dimensions while `MultiShape` is essentially a list of `Shape`.
 
@@ -29,8 +52,8 @@ val shape2 = Shape(List(Shape(1, 2, 3), Shape(4, 5, 6)))
 You can use method `toSingle()` to cast a `Shape` to a `SingleShape`. Similarly, use `toMulti()` to cast a `Shape` to a `MultiShape`.
 
 ---
-## 3. Define a model
-You can define a model either using [Sequential API](#4-sequential-api) or [Functional API](#5-functional-api). Remember to specify the input shape for the first layer.
+## 4. Define a model
+You can define a model either using [Sequential API](#sequential-api) or [Functional API](#functional-api). Remember to specify the input shape for the first layer.
 
 After creating a model, you can call the following __methods__:
 
@@ -48,7 +71,7 @@ setName(name)
 * Set the name of the model.
 
 ---
-## 4. Sequential API
+## 5. Sequential API
 The model is described as a linear stack of layers in the Sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
 
 To create a sequential container:
@@ -68,7 +91,7 @@ model.add(Activation[Float]("relu"))
 ```
 
 ---
-## 5. Functional API
+## 6. Functional API
 The model is described as a graph in the Functional API. It is more convenient than the Sequential API when defining some complex model (for example, a model with multiple outputs).
 
 To create an input node:
@@ -125,35 +148,15 @@ val model = Model[Float](Array(input1, input2), output)
 ## 6. Layers
 See [here](#8-core-layers) for all the available layers of the Keras-like API.
 
-To set the name of a layer, call the method `setName(name)` of the layer.
 
 ---
-## 7. LeNet Example
-Here we adopt our Keras-Style API to define a LeNet CNN model to be trained on the MNIST dataset:
 
-```scala
-import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.models._
-import com.intel.analytics.bigdl.utils.Shape
+## 7. Core Layers
+This section describes all the available layers in the Keras-like API. 
 
-val model = Sequential()
-model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
-model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
-model.add(MaxPooling2D())
-model.add(Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5"))
-model.add(MaxPooling2D())
-model.add(Flatten())
-model.add(Dense(100, activation = "tanh").setName("fc1"))
-model.add(Dense(10, activation = "softmax").setName("fc2"))
+To set the name of a specific layer, you call the method `setName(name)` of that layer.
 
-model.getInputShape().toSingle().toArray // Array(-1, 28, 28, 1)
-model.getOutputShape().toSingle().toArray // Array(-1, 10)
-```
----
-## 8. Core Layers
-
-### 8.1 Masking
+### 7.1 Masking
 Use a mask value to skip timesteps for a sequence.
 
 **Scala:**
@@ -220,7 +223,7 @@ Output is
 ```
 
 ---
-### 8.2 SparseDense
+### 7.2 SparseDense
 SparseDense is the sparse version of layer Dense. SparseDense has two different from Dense:
 firstly, SparseDense's input Tensor is a SparseTensor. Secondly, SparseDense doesn't backward
 gradient to next layer in the backpropagation by default, as the gradInput of SparseDense is
@@ -317,7 +320,7 @@ Output is
  [ 2.331141   -0.84687066]]
  ```
 
-### 8.3 SoftShrink
+### 7.3 SoftShrink
 Applies the soft shrinkage function element-wise to the input.
 
 When you use this layer as the first layer of a model, you need to provide
@@ -456,7 +459,7 @@ array([[[[ 0.        ,  0.        ,  0.        ,  0.        ],
  ```
 
 ---
-### 8.4 Reshape
+### 7.4 Reshape
 Reshapes an output to a certain shape.
 
 Supports shape inference by allowing one -1 in the target shape. For example, if input shape is (2, 3, 4), target shape is (3, -1), then output shape will be (3, 8).
@@ -567,7 +570,7 @@ Output is
 ```
 
 ---
-### 8.5 Merge
+### 7.5 Merge
 Used to merge a list of inputs into a single output, following some merge mode.
 
 Merge must have at least two input layers.
@@ -687,7 +690,7 @@ Output is
 ```
 
 ---
-### 8.6 MaxoutDense
+### 7.6 MaxoutDense
 A dense maxout layer that takes the element-wise maximum of linear layers.
 
 This allows the layer to learn a convex, piecewise linear activation function over the inputs.
@@ -762,7 +765,7 @@ Output is
 ```
 
 ---
-### 8.7 Squeeze
+### 7.7 Squeeze
 Delete the singleton dimension(s). The batch dimension needs to be unchanged.
 
 For example, if input has size (2, 1, 3, 4, 1):
@@ -847,7 +850,7 @@ Output is
 ```
 
 ---
-### 8.8 BinaryThreshold
+### 7.8 BinaryThreshold
 Threshold the input.
 
 If an input element is smaller than the threshold value, it will be replaced by 0; otherwise, it will be replaced by 1.
@@ -980,7 +983,7 @@ array([[[[1., 1., 1., 1.],
 ```
 
 ---
-### 8.9 Sqrt
+### 7.9 Sqrt
 Applies an element-wise square root operation to the input.
 
 **Scala:**
@@ -1046,7 +1049,7 @@ Output is
 ```
 
 ---
-### 8.10 Mul
+### 7.10 Mul
 Multiply a single scalar factor to the incoming data
 
 **Scala:**
@@ -1140,7 +1143,7 @@ array([[[-0.22486402, -0.59486258, -0.1932503 , -0.22805998],
 ```
 
 ---
-### 8.11 MulConstant
+### 7.11 MulConstant
 Multiply the input by a (non-learnable) scalar constant.
 
 **Scala:**
@@ -1233,7 +1236,7 @@ Output is
 ```
 
 ---
-### 8.12 Scale
+### 7.12 Scale
 Scale is the combination of CMul and CAdd.
 
 Computes the element-wise product of the input and weight, with the shape of the weight "expand" to match the shape of the input.
@@ -1305,7 +1308,7 @@ Output is
 ```
 
 ---
-### 8.13 Log
+### 7.13 Log
 Applies a log transformation to the input.
 
 **Scala:**
@@ -1405,7 +1408,7 @@ Output is
 ```
 
 ---
-### 8.14 Identity
+### 7.14 Identity
 Identity just return the input to output.
 
 It's useful in same parallel container to get an origin input.
@@ -1529,7 +1532,7 @@ Output is
 ```
 
 ---
-### 8.15 Select
+### 7.15 Select
 Select an index of the input in the given dim and return the subset part.
 
 The batch dimension needs to be unchanged.
@@ -1611,7 +1614,7 @@ array([[[0.7077939 , 0.14438568, 0.37601194]]], dtype=float32)
 ```
 
 ---
-### 8.16 Dense
+### 7.16 Dense
 A densely-connected NN layer.
 
 The most common input is 2D.
@@ -1686,7 +1689,7 @@ array([[0.        , 0.        , 1.2698183 , 0.        , 0.10656227],
 ```
 
 ---
-### 8.17 Negative
+### 7.17 Negative
 Computes the negative value of each element of the input.
 
 **Scala:**
@@ -1764,7 +1767,7 @@ array([[[-0.3926126 , -0.03164615, -0.32179114],
 ```
 
 ---
-### 8.18 CAdd
+### 7.18 CAdd
 This layer has a bias with given size.
 
 The bias will be added element-wise to the input.
@@ -1852,7 +1855,7 @@ array([[[ 0.06560206,  0.38629526, -0.23159817],
 ```
 
 ---
-### 8.19 RepeatVector
+### 7.19 RepeatVector
 Repeats the input n times.
 
 The input of this layer should be 2D, i.e. (num_samples, features).
@@ -1939,7 +1942,7 @@ array([[[ 0.90715921,  0.54594767,  0.53952402],
         [ 0.08989831,  0.07265549,  0.45830116]]], dtype=float32)
 ```
 ---
-### 8.20 GaussianSampler
+### 7.20 GaussianSampler
 Takes {mean, log_variance} as input and samples from the Gaussian distribution.
 
 **Scala:**
@@ -2037,7 +2040,7 @@ Output is
 ```
 
 ---
-### 8.21 Exp
+### 7.21 Exp
 Applies element-wise exp to the input.
 
 When you use this layer as the first layer of a model, you need to provide the argument inputShape (a Single Shape, does not include the batch dimension).
@@ -2169,7 +2172,7 @@ Output is
 ```
 
 ---
-### 8.22 Square
+### 7.22 Square
 Applies an element-wise square operation to the input.
 
 When you use this layer as the first layer of a model, you need to provide the argument inputShape (a Single Shape, does not include the batch dimension).
@@ -2301,7 +2304,7 @@ Output is
 ```
 
 ---
-### 8.23 Power
+### 7.23 Power
 Applies an element-wise power operation with scale and shift to the input.
 
 f(x) = (shift + scale * x)^power^
@@ -2389,7 +2392,7 @@ array([[[0.2809866 , 0.03286255, 0.03815871],
 ```
 
 ---
-### 8.24 AddConstant
+### 7.24 AddConstant
 Add a (non-learnable) scalar constant to the input.
 
 ```scala
@@ -2473,7 +2476,7 @@ array([[[1.7173092, 1.077526 , 1.1044824],
 ```
 
 ---
-### 8.25 Narrow
+### 7.25 Narrow
 Narrow the input with the number of dimensions not being reduced.
 
 The batch dimension needs to be unchanged.
@@ -2604,7 +2607,7 @@ array([[[[0.14824118, 0.43532988, 0.57077086, 0.9153598 ],
 ```
 
 ---
-### 8.26 Permute
+### 7.26 Permute
 Permutes the dimensions of the input according to a given pattern.
 
 Useful for connecting RNNs and convnets together.
@@ -2711,7 +2714,7 @@ array([[[[0.14016896, 0.7275626 , 0.7908709 ],
          [0.46813026, 0.95118374, 0.13145027]]]], dtype=float32)
 ```
 ---
-### 8.27 ResizeBilinear
+### 7.27 ResizeBilinear
 Resize the input image with bilinear interpolation. The input image must be a float tensor with NHWC or NCHW layout.
 
 ```scala
