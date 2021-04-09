@@ -37,11 +37,12 @@ TCNForecaster(past_seq_len,
 ### fit
 
 ```python
-fit(x, y, epochs=1, metric="mse", batch_size=32)
+fit(x, y, validation_data=None, epochs=1, metric="mse", batch_size=32)
 ```
 
 - **`x`**: A numpy array with shape (num_samples, lookback, feature_dim). lookback and feature_dim should be the same as `past_seq_len` and `input_feature_num`.
 - **`y`**: A numpy array with shape (num_samples, horizon, target_dim). horizon and target_dim should be the same as `future_seq_len` and `output_feature_num`.
+- **`validation_data`**: A tuple (x_valid, y_valid) as validation data. Default to None.
 - **`epochs`**: Number of epochs you want to train.
 - **`batch_size`**: Number of batch size you want to train.
 - **`metric`**: The metric for training data.
