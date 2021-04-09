@@ -60,13 +60,18 @@ if __name__ == '__main__':
     config = {'random_state': 2,
               'min_child_weight': 3,
               'n_jobs': 2}
+    num_rand_samples = 10
+    n_estimators = [800, 1000]
+    max_depth = [10, 15]
+
     estimator = AutoXGBoost().regressor(feature_cols=feature_cols,
                                         target_col=target_col, config=config)
     pipeline = estimator.fit(train_df,
                              validation_df=val_df,
                              metric="rmse",
-                             recipe=XgbRegressorGridRandomRecipe(n_estimators=[800, 1000],
-                                                                 max_depth=[10, 15]))
+                             recipe=XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
+                                                                 n_estimators=n_estimators,
+                                                                 max_depth=max_depth))
     print("Training completed.")
 
     pred_df = pipeline.predict(val_df)
