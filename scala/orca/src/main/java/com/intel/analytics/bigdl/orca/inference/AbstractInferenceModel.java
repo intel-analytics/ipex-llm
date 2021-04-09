@@ -70,7 +70,7 @@ public abstract class AbstractInferenceModel extends InferenceModel implements S
   }
 
   public void loadTensorflow(String modelPath, String modelType, String[] inputs, String[] outputs) {
-    doLoadTensorflow(modelPath, modelType, inputs, outputs);
+    doLoadTensorflow(modelPath, modelType, inputs, outputs, 1, 1);
   }
 
   public void loadTensorflow(String modelPath, String modelType, String[] inputs, String[] outputs, int intraOpParallelismThreads, int interOpParallelismThreads, boolean usePerSessionThreads) {
