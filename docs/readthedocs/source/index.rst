@@ -3,12 +3,15 @@ Analytics Zoo Documentation
 
 ------
 
-**Analytics Zoo is an open source Big Data AI platform (for distributed TensorFlow, PyTorch and Keras on Apache Spark & Ray).**
+Analytics Zoo is an open source Big Data AI platform, and includes the following features for scaling end-to-end AI to distributed Big Data:
 
+* `Orca <doc/Orca/Overview/orca.md>`_: seamlessly scale out TensorFlow, PyTorch and Keras programs for Big Data (using Spark & Ray)
+* `RayOnSpark <doc/Ray/Overview/ray.md>`_: run Ray programs directly on Big Data clusters
+* **BigDL Extensions**: high-level `Spark ML pipeline <doc/UseCase/nnframes.md>`_ and `Keras-like <doc/UseCase/keras-api.md>`_ APIs for BigDL 
+* `Zouwu <doc/Zouwu/Overview/zouwu.md>`_: scalable time series analysis using AutoML
+ 
 -------
 
-
-Analytics Zoo includes the **Orca** library that seamlessly scale out your single node Python notebook across large clusters (so as to process distributed Big Data).
 
 .. meta::
    :google-site-verification: hG9ocvSRSRTY5z8g6RLn97_tdJvYRx_tVGhNdtZZavM
@@ -28,13 +31,12 @@ Analytics Zoo includes the **Orca** library that seamlessly scale out your singl
    :caption: User Guide
 
    doc/UserGuide/python.md
+   doc/UserGuide/scala.md
    doc/UserGuide/colab.md
    doc/UserGuide/docker.md
-   doc/UserGuide/k8s.md
    doc/UserGuide/hadoop.md
-   doc/UserGuide/amazon.md
+   doc/UserGuide/k8s.md
    doc/UserGuide/databricks.md
-   doc/UserGuide/scala.md
    doc/Ray/Overview/ray.md
    doc/Zouwu/Overview/zouwu.md
    doc/UserGuide/develop.md

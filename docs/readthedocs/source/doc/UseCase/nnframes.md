@@ -1,8 +1,8 @@
-# Spark ML Pipeline for BigDL
+# Use Spark ML Pipeline for BigDL
 
 ## 1. NNFrames Overview
 
-NNFrames is a package in Analytics Zoo aiming to provide DataFrame-based high level API to facilitate Spark users and speed-up development. It supports native integration with Spark ML Pipeline, which allows user to combine the power of Analytics Zoo, BigDL and Apache Spark MLlib. NNFrames provides both Python and Scala interfaces, and is compatible with both Spark 2.x and Spark 3.x.
+`NNFrames` in Analytics Zoo provides to provide Spark DataFrame and and ML Pipeline support for [BigDL](https://github.com/intel-analytics/bigdl). It provides both Python and Scala interfaces, and is compatible with both Spark 2.x and Spark 3.x.
 
 
 **Highlights**
@@ -12,8 +12,6 @@ NNFrames is a package in Analytics Zoo aiming to provide DataFrame-based high le
 - Effortless integration with Spark ML pipeline and compatibility with other feature transformers and algorithms in Spark ML.
 
 - In a few lines, run large scale inference or transfer learning from pre-trained models of Keras, Tensorflow, PyTorch or BigDL.
-
-- Training of customized model or BigDL built-in neural models (e.g. Inception, ResNet, Wide And Deep).
 
 - Rich toolset for feature extraction and processing, including image, audio and texts.
 
