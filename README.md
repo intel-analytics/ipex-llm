@@ -11,8 +11,8 @@
 
 The **AI for Big Data** community includes the following projects:
 
-- [BigDL](#what-is-bigdl): distributed deep learning library for Apache Spark
-- [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo): distributed ***Tensorflow***, ***PyTorch*** and ***Ray*** on Apache Spark (*as well as Spark ML pipeline for BigDL*)
+* [BigDL](#what-is-bigdl): distributed deep learning library for Apache Spark
+* [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo): distributed ***Tensorflow***, ***PyTorch*** and ***Ray*** on Apache Spark (*as well as Spark ML pipeline for BigDL*)
 
 ## What is BigDL?
 [BigDL](https://arxiv.org/abs/1804.05839) is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
@@ -32,11 +32,11 @@ You may want to write your deep learning programs using BigDL if:
 
 ## How to use BigDL?
 It is highly recommended to use the high-level APIs provided by [Analytics Zoo](https://github.com/intel-analytics/), including:
--  [Spark ML pipeline support](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/nnframes.html) for BigDL
-- [Keras-like API](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/keras-api.html) for BigDL
+*  [Spark ML pipeline support](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/nnframes.html) for BigDL
+* [Keras-like API](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/keras-api.html) for BigDL
 
 For additional information, you may refer to:
-- [BigDL paper](https://arxiv.org/abs/1804.05839)
-- [BigDL documentation](https://bigdl-project.github.io/)
-- [Getting Started page](https://bigdl-project.github.io/master/#getting-started/)
-- [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com))
+* [BigDL paper](https://arxiv.org/abs/1804.05839)
+* [BigDL documentation](https://bigdl-project.github.io/)
+* [Getting Started page](https://bigdl-project.github.io/master/#getting-started/)
+* [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com))
