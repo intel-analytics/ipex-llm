@@ -6,6 +6,7 @@ The **AI for Big Data** community includes the following projects:
 - [BigDL](https://github.com/intel-analytics/BigDL): distributed deep learning library for Apache Spark
 - [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo): distributed ***Tensorflow***, ***PyTorch*** and ***Ray*** on Apache Spark (*as well as Spark ML pipeline for BigDL*)
 
+---
 ## **What is BigDL**
 
 [BigDL](https://arxiv.org/abs/1804.05839) is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
@@ -28,8 +29,7 @@ You may want to write your deep learning programs using BigDL if:
 * You want to leverage existing Hadoop/Spark clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
 
 ---
-
-## **How to use BigDL**
+## **How to use BigDL?**
 
 It is highly recommended to use the high-level APIs provided by [Analytics Zoo](https://github.com/intel-analytics/), including:
 
