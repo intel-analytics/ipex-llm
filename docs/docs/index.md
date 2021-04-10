@@ -1,10 +1,11 @@
+
 ---
 ## AI for Big Data
 
 The **AI for Big Data** community includes the following projects:
 
-- [BigDL](https://github.com/intel-analytics/BigDL): distributed deep learning library for Apache Spark
-- [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo): distributed ***Tensorflow***, ***PyTorch*** and ***Ray*** on Apache Spark (*as well as Spark ML pipeline for BigDL*)
+* [BigDL](https://github.com/intel-analytics/BigDL): distributed deep learning library for Apache Spark
+* [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo): distributed ***Tensorflow***, ***PyTorch*** and ***Ray*** on Apache Spark (*as well as Spark ML pipeline for BigDL*)
 
 ---
 ## **What is BigDL**
