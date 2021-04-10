@@ -43,4 +43,3 @@ For additional information, you may refer to:
 * [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group)
 * [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)
 
-
