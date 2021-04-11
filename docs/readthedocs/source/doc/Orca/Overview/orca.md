@@ -1,4 +1,4 @@
-# Orca
+# The Orca Library
 
 Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node Python notebook across large clusters (so as to process distributed Big Data).
 
@@ -21,7 +21,7 @@ df = df.withColumn('user', array('user')) \
        .withColumn('item', array('item'))
 ```
 
-Finally, use [sklearn-style Estimator APIs in Orca](distributed-training-inference.md) to perform distributed _TensorFlow_, _PyTorch_ or _Keras_ training and inference:
+Finally, use [sklearn-style Estimator APIs in Orca](distributed-training-inference.md) to perform distributed _TensorFlow_, _PyTorch_, _Keras_ and _BigDL_ training and inference:
 
 ```python
 from tensorflow import keras
