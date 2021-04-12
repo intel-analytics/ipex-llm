@@ -1,5 +1,5 @@
 
-**This is the OLD document website for Analytics Zoo; please visit the new [document website](https://analytics-zoo.readthedocs.io/) instead.**
+**This is the _OLD_ document website for Analytics Zoo; please visit the new [document website](https://analytics-zoo.readthedocs.io/) instead.**
 
 ---
 
