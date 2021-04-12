@@ -78,7 +78,7 @@ When compiling with Java 7, you need to add the option “-XX:MaxPermSize=1G”.
 
 ## **Build with script (Recommended)**
 
-It is highly recommended that you build Analytics Zoo using the [make-dist.sh script](https://github.com/intel-analytics/analytics-zoo/blob/master/make-dist.sh). And it will handle the MAVEN_OPTS variable.
+It is highly recommended that you build Analytics Zoo using the [make-dist.sh script](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/make-dist.sh). And it will handle the MAVEN_OPTS variable.
 
 Once downloaded, you can build Analytics Zoo with the following commands:
 ```bash
@@ -103,7 +103,7 @@ To build Analytics Zoo directly using Maven, run the command below:
 ```bash
 $ mvn clean package -DskipTests
 ```
-After that, you can find that jar packages in `PATH_TO_ANALYTICS_ZOO`/target/, where `PATH_TO_ANALYTICS_ZOO` is the path to the directory of the Analytics Zoo.
+After that, you can find that jar packages in `PATH_TO_ANALYTICS_ZOO`/zoo/target/, where `PATH_TO_ANALYTICS_ZOO` is the path to the directory of the Analytics Zoo.
 
 Note that the instructions above will build Analytics Zoo with Spark 2.1.0 for Linux. Similarly, you may customize spark version like [above](#build-with-spark-version).
 
