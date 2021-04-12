@@ -1,5 +1,3 @@
-
----
 ## AI for Big Data
 
 The **AI for Big Data** community includes the following projects:
@@ -45,7 +43,7 @@ For additional information, you may refer to:
 * [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)
 
 ---
-## Citing BigDL
+## **Citing BigDL**
 If you've found BigDL useful for your project, you can cite the [paper](https://arxiv.org/abs/1804.05839) as follows:
 
 ```
