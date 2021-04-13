@@ -1,5 +1,7 @@
 # Hadoop/YARN User Guide
 
+Hadoop version: Hadoop >= 2.7 or CDH 5.X, Hadoop 3.X or CHD 6.X are not supported
+
 ---
 
 You can run Analytics Zoo programs on standard Hadoop/YARN clusters without any changes to the cluster (i.e., no need to pre-install Analytics Zoo or any Python libraries in the cluster).
@@ -39,6 +41,8 @@ You can run Analytics Zoo programs on standard Hadoop/YARN clusters without any 
   ```
 
 ### **1.1 Setup for CDH**
+
+CDH Version: CDH 5.X, CDH 6.X is not supported
 
 ---
 ### **2. YARN Client Mode**
