@@ -133,7 +133,7 @@ val model = Model(input, output)
 After that, use `NNEstimator` to train/predict/evaluate the model using Spark Dataframes and ML pipelines:
 
 ```scala
-val trainingDF = spark.read.parquet("train_daia")
+val trainingDF = spark.read.parquet("train_data")
 val validationDF = spark.read.parquet("val_data")
 val scaler = new MinMaxScaler().setInputCol("in").setOutputCol("value")
 val estimator = NNEstimator(model, CrossEntropyCriterion())  
