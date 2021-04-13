@@ -8,7 +8,7 @@ SGX-based Trusted Big Data ML allows user to run end to end big data analytics a
 Before run the following command, please modify the pathes in the build-docker-image.sh file at first. <br>
 Then build docker image by running this command: <br>
 ```bash
-./build-docker-image.sh
+sudo bash build-docker-image.sh
 ```
 
 ## How to Run
@@ -16,7 +16,7 @@ Then build docker image by running this command: <br>
 ### Prerequisite
 To launch Trusted Big Data ML applications on Graphene-SGX, you need to install graphene-sgx-driver:
 ```bash
-../../../scripts/install-graphene-driver.sh
+sudo bash ../../../scripts/install-graphene-driver.sh
 ```
 
 ### Prepare the data
@@ -29,13 +29,13 @@ After you uncompress the gzip files, these files may be renamed by some uncompre
 The ppml in analytics zoo needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores.
 This script is in /analytics-zoo/ppml/scripts:
 ```bash
-../../../scripts/generate-keys.sh
+sudo bash ../../../scripts/generate-keys.sh
 ```
 ### Prepare the password
 You also need to store the password you used in previous step in a secured file:
 This script is also in /analytics-zoo/ppml/scripts:
 ```bash
-../../../scripts/generate-password.sh used_password_when_generate_keys
+sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
 ```
 
 ### Run the PPML as Docker containers
@@ -45,7 +45,7 @@ This script is also in /analytics-zoo/ppml/scripts:
 Before you run the following command to start container, you need to modify the paths in the start-local-big-data-ml.sh. <br>
 Then run the following command: <br>
 ```bash
-./start-local-big-data-ml.sh
+sudo bash start-local-big-data-ml.sh
 sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
 ```
@@ -86,8 +86,7 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
 
 Then run the script to run pi test in spark: <br>
 ```bash
-chmod a+x start-spark-local-pi-sgx.sh
-./start-spark-local-pi-sgx.sh
+sh start-spark-local-pi-sgx.sh
 ```
 
 Open another terminal and check the log:
@@ -154,6 +153,7 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
         --conf spark.driver.host=127.0.0.1 \
         --conf spark.driver.blockManager.port=10026 \
         --conf spark.io.compression.codec=lz4 \
+        --conf spark.sql.shuffle.partitions=8 \
         --class main.scala.TpchQuery \
         --executor-cores 4 \
         --total-executor-cores 4 \
@@ -164,14 +164,17 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
 
 Then run the script to run TPC-H test in spark: <br>
 ```bash
-chmod a+x start-spark-local-tpc-h-sgx.sh
-./start-spark-local-tpc-h-sgx.sh
+sh start-spark-local-tpc-h-sgx.sh
 ```
 
 Open another terminal and check the log: <br>
 ```bash
-sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/spark.local.tpc.h.sgx.log | egrep "###|INFO"
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/spark.local.tpc.h.sgx.log | egrep "###|INFO|finished"
 ```
+
+The result should look like: <br>
+>   ----------------22 finished--------------------
+
 ##### Other Spark workloads are also supported, please follow the 3 examples to submit your workload with spark on Graphene-SGX
 
 
@@ -183,10 +186,34 @@ nano environments.sh
 ```
 ##### start the distributed bigdata ml
 ```bash
-./start-distributed-big-data-ml.sh
+sudo bash start-distributed-big-data-ml.sh
 ```
 ##### stop the distributed bigdata ml
 ```bash
-./stop-distributed-big-data-ml.sh
+sudo bash stop-distributed-big-data-ml.sh
 ```
-##### Other Spark workloads are also supported, please follow the 3 examples to submit your workload with spark on Graphene-SGX
+##### Troubleshooting
+You can run the script `sudo bash distributed-check-status.sh` after starting distributed cluster serving to check whether the components have been correctly started. 
+
+To test a specific component, pass one or more argument to it among the following:
+"master", and "worker". For example, run the following command to check the status of the Spark job master.
+
+```bash
+sudo bash distributed-check-status.sh master
+```
+
+To test all components, you can either pass no argument or pass the "all" argument.
+
+```bash
+sudo bash distributed-check-status.sh
+```
+If all is well, the following results should be displayed:
+
+```
+(1/2) Detecting Master state...
+Master initilization successful.
+(2/2) Detecting Worker state...
+Worker initilization successful.
+```
+
+It is suggested to run this script once after starting distributed cluster serving to verify that all components are up and running.

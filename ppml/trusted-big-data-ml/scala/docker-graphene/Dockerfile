@@ -145,9 +145,14 @@ ADD ./start-spark-local-train-sgx.sh /ppml/trusted-big-data-ml/start-spark-local
 ADD ./start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-master-sgx.sh
 ADD ./start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh
 ADD ./start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh
+ADD ./distributed-check-status.sh /ppml/trusted-big-data-ml/distributed-check-status.sh
+ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 
 RUN chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-master-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh
+    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/distributed-check-status.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/check-status.sh
+   

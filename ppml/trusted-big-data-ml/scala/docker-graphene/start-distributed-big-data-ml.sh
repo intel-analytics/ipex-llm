@@ -61,7 +61,7 @@ for worker in ${WORKERS[@]}
     ssh root@$worker "docker run -itd \
           --privileged \
           --net=host \
-          --cpuset-cpus="10-30" \
+          --cpuset-cpus="6-10" \
           --oom-kill-disable \
           --device=/dev/gsgx \
           --device=/dev/sgx/enclave \
