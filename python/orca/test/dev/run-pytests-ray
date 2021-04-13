@@ -79,3 +79,13 @@ then
 fi
 
 ray stop -f
+
+echo "Running orca auto estimator tests"
+python -m pytest -v ../test/zoo/orca/automl/autoestimator
+exit_status_6=$?
+if [ $exit_status_6 -ne 0 ];
+then
+    exit $exit_status_6
+fi
+
+ray stop -f
