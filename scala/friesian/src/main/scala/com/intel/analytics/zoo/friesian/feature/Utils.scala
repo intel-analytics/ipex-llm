@@ -50,7 +50,7 @@ private[friesian] object Utils {
       Row.fromSeq(origin)
     })
 
-    val spark = SparkSession.builder().config(dfUpdated.sparkContext.getConf).getOrCreate()
+    val spark = df.sparkSession
     spark.createDataFrame(dfUpdated, schema)
   }
 

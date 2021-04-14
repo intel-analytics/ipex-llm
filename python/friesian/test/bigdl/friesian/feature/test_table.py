@@ -70,7 +70,7 @@ class TestTable(TestCase):
     def test_gen_string_idx(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
-        string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit="1")
+        string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit=1)
         assert string_idx_list[0].count() == 3, "col_4 should have 3 indices"
         assert string_idx_list[1].count() == 2, "col_5 should have 2 indices"
         with tempfile.TemporaryDirectory() as local_path:
@@ -87,6 +87,25 @@ class TestTable(TestCase):
             with self.assertRaises(Exception) as context:
                 StringIndex.read_parquet(local_path + "/col_5.parquet", "col_4")
             self.assertTrue('col_4 should be a column of the DataFrame' in str(context.exception))
+
+    def test_gen_string_idx_dict(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit={"col_4": 1,
+                                                                                     "col_5": 3})
+        with self.assertRaises(Exception) as context:
+            feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit="col_4:1,col_5:3")
+        self.assertTrue('freq_limit only supports int, dict or None, but get str' in str(
+            context.exception))
+        assert string_idx_list[0].count() == 3, "col_4 should have 3 indices"
+        assert string_idx_list[1].count() == 1, "col_5 should have 1 indices"
+
+    def test_gen_string_idx_none(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit=None)
+        assert string_idx_list[0].count() == 3, "col_4 should have 3 indices"
+        assert string_idx_list[1].count() == 2, "col_5 should have 2 indices"
 
     def test_clip(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
