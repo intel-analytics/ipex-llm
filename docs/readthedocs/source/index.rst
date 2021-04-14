@@ -66,6 +66,7 @@ Analytics Zoo is an open source Big Data AI platform, and includes the following
    :caption: Python API
    
    doc/PythonAPI/Orca/orca.rst
+   doc/PythonAPI/Friesian/feature.rst
    
 .. toctree::
    :maxdepth: 1
