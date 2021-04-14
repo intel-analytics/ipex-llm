@@ -6,7 +6,10 @@ source ./environment.sh
 
 echo ">>> $MASTER"
 ssh root@$MASTER "docker rm -f spark-master"
-ssh root@$MASTER "docker rm -f spark-driver"
+
+#ssh root@$MASTER "docker rm -f spark-driver"
+
+bash ./stop-distributed-standalone-spark.sh
 
 for worker in ${WORKERS[@]}
   do
