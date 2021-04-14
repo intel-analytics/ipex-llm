@@ -68,12 +68,27 @@ def _parse_args():
         choices=['overwrite', 'errorifexists'],
         default='errorifexists')
 
-    parser.add_argument('--frequency_limit')
+    parser.add_argument('--frequency_limit', type=str)
 
     args = parser.parse_args()
     start, end = args.days.split('-')
     args.day_range = list(range(int(start), int(end) + 1))
     args.days = len(args.day_range)
+
+    frequency_limit_dict = {}
+    default_limit = None
+    if args.frequency_limit:
+        frequency_limit = args.frequency_limit.split(",")
+        for fl in frequency_limit:
+            frequency_pair = fl.split(":")
+            if len(frequency_pair) == 1:
+                default_limit = int(frequency_pair[0])
+            elif len(frequency_pair) == 2:
+                frequency_limit_dict[frequency_pair[0]] = frequency_pair[1]
+    if len(frequency_limit_dict) > 0:
+        args.frequency_limit = frequency_limit_dict
+    else:
+        args.frequency_limit = default_limit
 
     return args
 
