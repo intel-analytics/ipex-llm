@@ -50,23 +50,24 @@ fit(x, y, validation_data=None, epochs=1, metric="mse", batch_size=32)
 ### evaluate
 
 ```python
-evaluate(x, y, metrics=['mse'])
+evaluate(x, y, metrics=['mse'], multioutput="raw_values")
 ```
 
 - **`x`**: A numpy array with shape (num_samples, lookback, feature_dim).
 - **`y`**: A numpy array with shape (num_samples, horizon, target_dim).
 - **`metrics`**: A list contains metrics for test/valid data.
-
+- **`multioutput`**: Defines aggregating of multiple output values. String in ['raw_values', 'uniform_average']. The value defaults to 'raw_values'.
 ### evaluate_with_onnx
 
 ```python
-evaluate_with_onnx(x, y, metrics=['mse'], dirname=None)
+evaluate_with_onnx(x, y, metrics=['mse'], dirname=None, multioutput="raw_values")
 ```
 
 - **`x`**: A numpy array with shape (num_samples, lookback, feature_dim).
 - **`y`**: A numpy array with shape (num_samples, horizon, target_dim).
 - **`metrics`**: A list contains metrics for test/valid data.
 - **`dirname`**: The directory to save onnx model file. This value defaults to None for no saving file.
+- **`multioutput`**: Defines aggregating of multiple output values. String in ['raw_values', 'uniform_average']. The value defaults to 'raw_values'.
 
 ### predict
 
