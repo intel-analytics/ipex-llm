@@ -17,7 +17,7 @@ index b60f2ba..527158b 100644
          .optimize()
  
 +      println(s"############# train optimized")
-+      model.saveModule("./work/models/lenet.model", "./work/models/lenet.weight", true)
++      model.saveModule("/ppml/trusted-big-data-ml/work/models/lenet.model", "/ppml/trusted-big-data-ml/work/models/lenet.weight", true)
 +      println(s"############# model saved")
 +
        sc.stop()
