@@ -8,7 +8,7 @@ SGX-based Trusted Big Data ML allows user to run end-to-end big data analytics a
 Before running the following command, please modify the paths in `build-docker-image.sh`. <br>
 Then build the docker image by running this command: <br>
 ```bash
-sudo bash build-docker-image.sh
+./build-docker-image.sh
 ```
 
 ## How to Run
@@ -45,7 +45,7 @@ sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
 Before you run the following commands to start container, you need to modify the paths in the start-local-big-data-ml.sh. <br>
 Then run the following commands: <br>
 ```bash
-sudo bash start-local-big-data-ml.sh
+./start-local-big-data-ml.sh
 sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
 ```
@@ -216,13 +216,13 @@ To test a specific component, pass one or more argument to it among the followin
 "master", and "worker". For example, run the following command to check the status of the Spark job master.
 
 ```bash
-sudo bash distributed-check-status.sh master
+./distributed-check-status.sh master
 ```
 
 To test all components, you can either pass no argument or pass the "all" argument.
 
 ```bash
-sudo bash distributed-check-status.sh
+./distributed-check-status.sh
 ```
 If all is well, the following results should be displayed:
 
