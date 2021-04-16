@@ -23,46 +23,45 @@ import random
 from zoo.orca.data import XShards
 from zoo.ray import RayContext
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class LocalStore:
 
     def __init__(self):
-        self.shards = {}
-        self.shard_count = {}
         self.partitions = {}
 
-    def upload_shards(self, shard_id, shard):
-        partition_idx, shard_idx = shard_id
-        self.shards[shard_id] = shard
-        if partition_idx in self.shard_count:
-            self.shard_count[partition_idx] += 1
-        else:
-            self.shard_count[partition_idx] = 1
+    def upload_shards(self, part_shard_id, shard):
+        partition_idx, shard_idx = part_shard_id
+        if partition_idx not in self.partitions:
+            self.partitions[partition_idx] = {}
+        self.partitions[partition_idx][shard_idx] = shard
         return 0
 
     def upload_partition(self, partition_id, partition):
         self.partitions[partition_id] = partition
 
-    def get_shards(self, shard_id):
-        return self.shards[shard_id]
+    def get_shards(self, part_shard_id):
+        partition_idx, shard_idx = part_shard_id
+        return self.partitions[part_shard_id][shard_idx]
 
     def get_partition(self, partition_id):
-        if not self.partitions:
+        part = self.partitions[partition_id]
+        if isinstance(part, dict):
             partition = []
-            for shard_idx in range(self.shard_count[partition_id]):
-                shard = self.shards[(partition_id, shard_idx)]
+            for shard_idx in range(len(part)):
+                shard = part[shard_idx]
                 partition.append(shard)
             return partition
         else:
-            return self.partitions[partition_id]
+            return part
 
     def get_partitions(self):
-        if not self.partitions:
-            result = {partition_id: self.get_partition(partition_id)
-                      for partition_id in self.shard_count.keys()}
-            return result
-        else:
-            return self.partitions
+        result = {}
+        for k in self.partitions.keys():
+            result[k] = self.get_partition(k)
+        return result
 
 
 def write_to_ray(idx, partition, redis_address, redis_password, partition_store_names):
@@ -86,9 +85,13 @@ def write_to_ray(idx, partition, redis_address, redis_password, partition_store_
     for shard_id, shard in enumerate(partition):
         shard_ref = ray.put(shard)
         result.append(local_store.upload_shards.remote((idx, shard_id), shard_ref))
+    is_empty = len(result) == 0
+    if is_empty:
+        partition_ref = ray.put([])
+        result.append(local_store.upload_partition.remote(idx, partition_ref))
     ray.get(result)
 
-    return [(idx, local_store_name.split(":")[-1], local_store_name)]
+    return [(idx, local_store_name.split(":")[-1], local_store_name, is_empty)]
 
 
 def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
@@ -341,7 +344,16 @@ class RayXShards(XShards):
         partition_store_names = list(partition_stores.keys())
         result = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
             idx, part, address, password, partition_store_names)).collect()
-        id2ip = {idx: ip for idx, ip, _ in result}
-        id2store_name = {idx: store for idx, _, store in result}
+
+        num_empty_partitions = 0
+        id2ip = {}
+        id2store_name = {}
+        for idx, ip, local_store_name, is_empty in result:
+            id2ip[idx] = ip
+            id2store_name[idx] = local_store_name
+            if is_empty:
+                num_empty_partitions += 1
+        if num_empty_partitions > 0:
+            logger.warning(f"Found {num_empty_partitions} empty partitions in your SparkXShards.")
 
         return RayXShards(uuid_str, dict(id2store_name), dict(id2ip), partition_stores)

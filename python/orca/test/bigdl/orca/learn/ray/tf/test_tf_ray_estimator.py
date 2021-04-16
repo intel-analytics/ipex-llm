@@ -347,6 +347,37 @@ class TestTFRayEstimator(TestCase):
                          label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
 
+    def test_dataframe_with_empty_partition(self):
+        from zoo.orca import OrcaContext
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 10)
+
+        rdd_with_empty = rdd.repartition(4).\
+            mapPartitionsWithIndex(lambda idx, part: [] if idx == 0 else part)
+
+        from pyspark.sql import SparkSession
+        spark = SparkSession(sc)
+        from pyspark.ml.linalg import DenseVector
+        df = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+                                           int(np.random.randint(0, 1, size=()))))\
+            .toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.8
+        }
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"])
+        trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                         label_cols=["label"])
+        trainer.predict(df, feature_cols=["feature"]).collect()
+
     def test_pandas_dataframe(self):
         def model_creator(config):
             import tensorflow as tf
