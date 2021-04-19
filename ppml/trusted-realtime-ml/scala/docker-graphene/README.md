@@ -80,13 +80,24 @@ It is suggested to run this script once after starting local cluster serving to 
 nano environments.sh
 ```
 ##### Start the distributed cluster serving
+To start all the services of distributed cluster serving, run
 ```bash
 ./start-distributed-cluster-serving.sh
 ```
+You can also run the following command to start the flink jobmanager and taskmanager containers only:
+```bash
+./deploy-flink.sh
+```
 ##### Stop the distributed cluster serving 
+To stop all the services of distributed cluster serving, run
 ```bash
 ./stop-distributed-cluster-serving.sh
 ```
+You can also run the following command to stop the flink jobmanager and taskmanager containers only:
+```bash
+./stop-flink.sh
+```
+
 ##### Troubleshooting
 You can run the script `./distributed-check-status.sh` after starting distributed cluster serving to check whether the components have been correctly started. 
 
