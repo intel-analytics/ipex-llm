@@ -1,15 +1,18 @@
 loader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
 libos.entrypoint = "file:$(JDK_HOME)/bin/java"
 
-loader.log_level = "debug"
+loader.log_level = "error"
 
 loader.insecure_disable_aslr = 1
 loader.insecure__use_cmdline_argv = 1
 
 loader.pal_internal_mem_size = "512M"
 
-sgx.file_check_policy = "allow_all_but_log"
+#sgx.file_check_policy = "allow_all_but_log"
 sgx.static_address = 1
+sgx.debug = 0 
+sgx.isvprodid = 2
+sgx.isvsvn = 1
 
 loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr/$(ARCH_LIBDIR):$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli"
 loader.env.PATH = "/:$(JDK_HOME)/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -88,37 +91,14 @@ sgx.trusted_files.libnssnis  = "file:$(ARCH_LIBDIR)/libnss_nis.so.2"
 # libNSL is a dependency of libnss_compat above.
 sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
 
-##################### SGX: TRUSTED OPENJDK DEPENDENCIES ###########################
 sgx.trusted_files.libz  = "file:$(ARCH_LIBDIR)/libz.so.1"
-sgx.trusted_files.jdk_libjli = "file:$(JDK_HOME)/lib/amd64/jli/libjli.so"
-sgx.trusted_files.jdk_jvmcfg = "file:$(JDK_HOME)/jre/lib/amd64/jvm.cfg"
-sgx.trusted_files.jdk_libverify = "file:$(JDK_HOME)/jre/lib/amd64/libverify.so"
-sgx.trusted_files.jdk_libjava = "file:$(JDK_HOME)/jre/lib/amd64/libjava.so"
-sgx.trusted_files.jdk_libzip = "file:$(JDK_HOME)/jre/lib/amd64/libzip.so"
-#sgx.trusted_files.jdk_modules = "file:$(JDK_HOME)/lib/modules"
-#sgx.trusted_files.jdk_libjimage = "file:$(JDK_HOME)/lib/libjimage.so"
-sgx.trusted_files.jdk_libnet = "file:$(JDK_HOME)/jre/lib/amd64/libnet.so"
-sgx.trusted_files.jdk_libnio = "file:$(JDK_HOME)/jre/lib/amd64/libnio.so"
-#sgx.trusted_files.jdk_librmi = "file:$(JDK_HOME)/jre/lib/amd64/librmi.so"
-sgx.trusted_files.jdk_libjawt = "file:$(JDK_HOME)/jre/lib/amd64/libjawt.so"
-sgx.trusted_files.jdk_libawt = "file:$(JDK_HOME)/jre/lib/amd64/libawt.so"
-#sgx.trusted_files.jdk_libextnet = "file:$(JDK_HOME)/lib/libextnet.so"
-#sgx.trusted_files.jdk_libjavajpeg = "file:$(JDK_HOME)/lib/libjavajpeg.so"
-sgx.trusted_files.jdk_libattach = "file:$(JDK_HOME)/jre/lib/amd64/libattach.so"
-sgx.trusted_files.jdk_libdt_socket = "file:$(JDK_HOME)/jre/lib/amd64/libdt_socket.so"
-sgx.trusted_files.jdk_libfontmanager = "file:$(JDK_HOME)/jre/lib/amd64/libfontmanager.so"
-#sgx.trusted_files.jdk_libprefs = "file:$(JDK_HOME)/lib/libprefs.so"
-sgx.trusted_files.jdk_libjvm = "file:$(JDK_HOME)/jre/lib/amd64/server/libjvm.so"
-sgx.trusted_files.jdk_libjsig = "file:$(JDK_HOME)/jre/lib/amd64/server/libjsig.so"
+sgx.trusted_files.libgcc_s = "file:/lib/x86_64-linux-gnu/libgcc_s.so.1"
 
-
-sgx.allowed_files.nsswitch  = "file:/etc/nsswitch.conf"
-sgx.allowed_files.ethers    = "file:/etc/ethers"
-sgx.allowed_files.hosts     = "file:/etc/hosts"
-sgx.allowed_files.group     = "file:/etc/group"
-sgx.allowed_files.passwd    = "file:/etc/passwd"
-sgx.allowed_files.gaiconf   = "file:/etc/gai.conf"
+sgx.allowed_files.etc       = "file:/etc"
 sgx.allowed_files.tmp       = "file:/tmp"
+sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
+sgx.allowed_files.flink     = "file:$(FLINK_HOME)"
 sgx.allowed_files.redis     = "file:/ppml/trusted-cluster-serving/redis"
+sgx.allowed_files.work      = "file:/ppml/trusted-cluster-serving/java"
 
 sgx.nonpie_binary = 1
