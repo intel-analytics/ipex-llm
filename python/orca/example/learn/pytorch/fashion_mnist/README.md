@@ -11,6 +11,7 @@ conda activate zoo
 pip install torch
 pip install torchvision
 pip install matplotlib
+pip install tensorboard
 
 # For bigdl backend
 pip install analytics-zoo  # 0.10.0.dev3 or above
