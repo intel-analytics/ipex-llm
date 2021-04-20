@@ -115,7 +115,8 @@ RUN mkdir -p /graphene && \
     mkdir -p /ppml/trusted-big-data-ml/work/password && \
     mkdir -p /ppml/trusted-big-data-ml/work/data && \
     mkdir -p /ppml/trusted-big-data-ml/work/models && \
-    mkdir -p /ppml/trusted-big-data-ml/work/apps
+    mkdir -p /ppml/trusted-big-data-ml/work/apps && \
+    mkdir -p /graphene/Pal/src/host/Linux-SGX/signer
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
 COPY --from=graphene /graphene/Runtime/ /graphene/Runtime
@@ -133,10 +134,7 @@ RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y netcat net-tools && \
-    mkdir -p /graphene/Pal/src/host/Linux-SGX/signer && \
-    cd /graphene/Pal/src/host/Linux-SGX/signer && \
-    openssl genrsa -3 -out enclave-key.pem 3072
+    apt-get install -y netcat net-tools
 
 ADD ./java.manifest.template /ppml/trusted-big-data-ml/java.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile

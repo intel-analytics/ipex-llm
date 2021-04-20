@@ -1,3 +1,6 @@
+#!/bin/bash
+
+export ENCLAVE_KEY_PATH=the_dir_of_your_enclave_key
 export DATA_PATH=the_dir_path_of_your_prepared_data
 export KEYS_PATH=the_dir_path_of_your_prepared_keys
 export LOCAL_IP=your_local_ip_of_the_sgx_server
@@ -12,6 +15,7 @@ sudo docker run -itd \
     --device=/dev/gsgx \
     --device=/dev/sgx/enclave \
     --device=/dev/sgx/provision \
+    -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
