@@ -29,3 +29,13 @@ You can easily use the following commands to run this example:
 python path/to/AutoXGBoostClassifier.py --path ${data_path}
 ```
 See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
+
+#### 4. Run the AutoXGBoostRegressor example after pip install
+
+For running `AutoXGBoostRegressorSigOpt.py`, you need to first obtain an SigOpt API token. You can register for SigOpt [here](https://app.sigopt.com/home) and the token could be found [here](https://app.sigopt.com/docs/overview/authentication) after logging in. To enable Ray to access the SigOpt API, you need to store the token as an environment variable as follows:
+
+```bash
+export SIGOPT_KEY=<YOUR-SIGOPT-API-TOKEN>
+```
+
+After running, you could view the comprehensive analysis of your experiment provided by SigOpt API [here](https://app.sigopt.com/home).

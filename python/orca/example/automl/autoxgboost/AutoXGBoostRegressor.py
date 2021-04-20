@@ -15,12 +15,28 @@
 #
 
 import argparse
-
+import os
 from sklearn.model_selection import train_test_split
 from zoo import init_spark_on_local, init_spark_on_yarn
 from zoo.ray import RayContext
 from zoo.orca.automl.xgboost import AutoXGBoost
 from zoo.zouwu.config.recipe import *
+
+
+class XgbSigOptRecipe(Recipe):
+    def __init__(
+            self,
+            num_rand_samples=10,
+    ):
+        """
+        """
+        super(self.__class__, self).__init__()
+
+        self.num_samples = num_rand_samples
+
+    def search_space(self, all_available_features):
+        return dict()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -37,6 +53,11 @@ if __name__ == '__main__':
                         help='The number of executor cores you want to use.')
     parser.add_argument('-n', '--num_workers', type=int, default=2,
                         help='The number of workers to be launched.')
+    parser.add_argument('-m', '--mode', type=str, default='gridrandom',
+                        choices=['gridrandom', 'skopt', 'sigopt'],
+                        help='''Search algorithms''',
+                        )
+
     opt = parser.parse_args()
     if opt.hadoop_conf:
         assert opt.conda_name is not None, "conda_name must be specified for yarn mode"
@@ -60,18 +81,111 @@ if __name__ == '__main__':
     config = {'random_state': 2,
               'min_child_weight': 3,
               'n_jobs': 2}
-    num_rand_samples = 10
-    n_estimators = [800, 1000]
-    max_depth = [10, 15]
 
-    estimator = AutoXGBoost().regressor(feature_cols=feature_cols,
-                                        target_col=target_col, config=config)
+    recipe = None
+
+    num_rand_samples = 10
+    n_estimators_range = (800, 1000)
+    max_depth_range = (10, 15)
+    lr = (1e-4, 1e-1)
+    min_child_weight = [1, 2, 3]
+
+    if opt.mode == 'gridrandom':
+        recipe = XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
+                                              n_estimators=list(n_estimators_range),
+                                              max_depth=list(max_depth_range),
+                                              lr=lr,
+                                              min_child_weight=min_child_weight
+                                              )
+
+        estimator = AutoXGBoost().regressor(feature_cols=feature_cols,
+                                            target_col=target_col,
+                                            config=config
+                                            )
+    elif opt.mode == 'skopt':
+        recipe = XgbRegressorSkOptRecipe(num_rand_samples=num_rand_samples,
+                                         n_estimators_range=n_estimators_range,
+                                         max_depth_range=max_depth_range,
+                                         lr=lr,
+                                         min_child_weight=min_child_weight
+                                         )
+        estimator = AutoXGBoost().regressor(feature_cols=feature_cols,
+                                            target_col=target_col,
+                                            config=config,
+                                            search_alg="skopt",
+                                            search_alg_params=None,
+                                            scheduler="AsyncHyperBand",
+                                            scheduler_params=dict(
+                                                max_t=50,
+                                                grace_period=1,
+                                                reduction_factor=3,
+                                                brackets=3,
+                                            ),
+                                            )
+    elif opt.mode == 'sigopt':
+        if "SIGOPT_KEY" not in os.environ:
+            raise RunTimeError('''Environment Variable 'SIGOPT_KEY' not set''')
+        space = [
+            {
+                "name": "n_estimators",
+                "type": "int",
+                "bounds": {
+                    "min": n_estimators_range[0],
+                    "max": n_estimators_range[1]
+                },
+            },
+            {
+                "name": "max_depth",
+                "type": "int",
+                "bounds": {
+                    "min": max_depth_range[0],
+                    "max": max_depth_range[1]
+                },
+            },
+            {
+                "name": "lr",
+                "type": "double",
+                "bounds": {
+                    "min": lr[0],
+                    "max": lr[1]
+                },
+            },
+            {
+                "name": "min_child_weight",
+                "type": "int",
+                "bounds": {
+                    "min": min_child_weight[0],
+                    "max": min_child_weight[-1]
+                },
+            },
+
+        ]
+
+        # could customize by yourselves, make sure project_id exists
+        experiment_name = "AutoXGBoost SigOpt Experiment"
+        search_alg_params = dict(space=space, name=experiment_name, max_concurrent=1)
+        recipe = XgbSigOptRecipe(num_rand_samples=num_rand_samples)
+
+        estimator = AutoXGBoost().regressor(feature_cols=feature_cols,
+                                            target_col=target_col,
+                                            config=config,
+                                            search_alg="sigopt",
+                                            search_alg_params=search_alg_params,
+                                            scheduler="AsyncHyperBand",
+                                            scheduler_params=dict(
+                                                max_t=50,
+                                                grace_period=1,
+                                                reduction_factor=3,
+                                                brackets=3,
+                                            ),
+                                            )
+
     pipeline = estimator.fit(train_df,
                              validation_df=val_df,
                              metric="rmse",
-                             recipe=XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
-                                                                 n_estimators=n_estimators,
-                                                                 max_depth=max_depth))
+                             recipe=recipe
+                             )
+
     print("Training completed.")
 
     pred_df = pipeline.predict(val_df)
