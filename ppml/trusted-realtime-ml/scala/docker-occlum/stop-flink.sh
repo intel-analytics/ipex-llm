@@ -13,4 +13,3 @@ for worker in ${WORKERS[@]}
     echo ">>> $worker"
     ssh root@$worker "docker rm -f flink-task-manager-$worker"
   done
-
