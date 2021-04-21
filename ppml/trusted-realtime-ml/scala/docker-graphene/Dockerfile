@@ -112,7 +112,8 @@ RUN mkdir -p /graphene && \
     mkdir -p /ppml/trusted-cluster-serving/java/work/keys && \
     mkdir -p /ppml/trusted-cluster-serving/java/work/password && \
     mkdir -p /ppml/trusted-cluster-serving/java/work/data && \
-    mkdir -p /ppml/trusted-cluster-serving/java/work/models
+    mkdir -p /ppml/trusted-cluster-serving/java/work/models && \
+    mkdir -p /graphene/Pal/src/host/Linux-SGX/signer
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
 COPY --from=graphene /graphene/Runtime/ /graphene/Runtime
@@ -133,10 +134,8 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y openssl libssl-dev pkg-config && \
-    apt-get install -y netcat net-tools && \
-    mkdir -p /graphene/Pal/src/host/Linux-SGX/signer && \
-    cd /graphene/Pal/src/host/Linux-SGX/signer && \
-    openssl genrsa -3 -out enclave-key.pem 3072
+    apt-get install -y netcat net-tools
+
 RUN mkdir -p /ppml/trusted-cluster-serving/redis/src && \
     tar -C /ppml/trusted-cluster-serving/redis/src --strip-components=1 -xf /ppml/trusted-cluster-serving/redis/redis.tar.gz && \
     make BUILD_TLS=yes -C /ppml/trusted-cluster-serving/redis/src && \
