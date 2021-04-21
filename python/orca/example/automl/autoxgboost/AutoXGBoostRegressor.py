@@ -41,7 +41,7 @@ class XgbSigOptRecipe(Recipe):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='AutoXGBRegressor example')
-    parser.add_argument('-p', '--path', type=str,
+    parser.add_argument('-p', '--path', type=str, default="./incd.csv",
                         help='Training data path')
     parser.add_argument('--hadoop_conf', type=str,
                         help='The path to the hadoop configuration folder. Required if you '
@@ -55,7 +55,7 @@ if __name__ == '__main__':
                         help='The number of workers to be launched.')
     parser.add_argument('-m', '--mode', type=str, default='gridrandom',
                         choices=['gridrandom', 'skopt', 'sigopt'],
-                        help='''Search algorithms''',
+                        help='Search algorithms',
                         )
 
     opt = parser.parse_args()
@@ -90,19 +90,7 @@ if __name__ == '__main__':
     lr = (1e-4, 1e-1)
     min_child_weight = [1, 2, 3]
 
-    if opt.mode == 'gridrandom':
-        recipe = XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
-                                              n_estimators=list(n_estimators_range),
-                                              max_depth=list(max_depth_range),
-                                              lr=lr,
-                                              min_child_weight=min_child_weight
-                                              )
-
-        estimator = AutoXGBoost().regressor(feature_cols=feature_cols,
-                                            target_col=target_col,
-                                            config=config
-                                            )
-    elif opt.mode == 'skopt':
+    if opt.mode == 'skopt':
         recipe = XgbRegressorSkOptRecipe(num_rand_samples=num_rand_samples,
                                          n_estimators_range=n_estimators_range,
                                          max_depth_range=max_depth_range,
@@ -124,7 +112,7 @@ if __name__ == '__main__':
                                             )
     elif opt.mode == 'sigopt':
         if "SIGOPT_KEY" not in os.environ:
-            raise RunTimeError('''Environment Variable 'SIGOPT_KEY' not set''')
+            raise RuntimeError("Environment Variable 'SIGOPT_KEY' is not set")
         space = [
             {
                 "name": "n_estimators",
@@ -178,6 +166,18 @@ if __name__ == '__main__':
                                                 reduction_factor=3,
                                                 brackets=3,
                                             ),
+                                            )
+    else:
+        recipe = XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
+                                              n_estimators=list(n_estimators_range),
+                                              max_depth=list(max_depth_range),
+                                              lr=lr,
+                                              min_child_weight=min_child_weight
+                                              )
+
+        estimator = AutoXGBoost().regressor(feature_cols=feature_cols,
+                                            target_col=target_col,
+                                            config=config
                                             )
 
     pipeline = estimator.fit(train_df,
