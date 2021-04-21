@@ -1,4 +1,4 @@
-# Trusted Cluster Serving
+# Trusted Realtime ML
 SGX-based Trusted Big Data ML allows user to run end to end Intel Analytics Zoo cluster serving with flink local and distributed cluster on Graphene-SGX.
 
 *Please mind the ip and file path settings, they should be changed to the ip/path of your own sgx server on which you are running the programs.*
@@ -12,7 +12,7 @@ Then build docker image by running this command: <br>
 
 ## How To Run
 ### Prerequisite
-To launch Trusted Cluster Serving on Graphene-SGX, you need to install graphene-sgx-driver:
+To launch Trusted Realtime ML on Graphene-SGX, you need to install graphene-sgx-driver:
 ```bash
 ../../../scripts/install-graphene-driver.sh
 ```
@@ -40,20 +40,20 @@ Then run the example with docker: <br>
 ./start-local-cluster-serving.sh
 ```
 ##### Troubleshooting
-You can run the script `/ppml/trusted-cluster-serving/check-status.sh` in the docker container to check whether the components have been correctly started. 
+You can run the script `/ppml/trusted-realtime-ml/check-status.sh` in the docker container to check whether the components have been correctly started. 
 Note that this only works for local cluster serving (for now).
 
 To test a specific component, pass one or more argument to it among the following:
 "redis", "flinkjm", "flinktm", "frontend", and "serving". For example, run the following command to check the status of the Flink job manager.
 
 ```bash
-docker exec -it flink-local bash /ppml/trusted-cluster-serving/check-status.sh flinkjm
+docker exec -it flink-local bash /ppml/trusted-realtime-ml/check-status.sh flinkjm
 ```
 
 To test all components, you can either pass no argument or pass the "all" argument.
 
 ```bash
-docker exec -it flink-local bash /ppml/trusted-cluster-serving/check-status.sh
+docker exec -it flink-local bash /ppml/trusted-realtime-ml/check-status.sh
 ```
 If all is well, the following results should be displayed:
 

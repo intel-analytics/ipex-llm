@@ -59,8 +59,8 @@ fs.mount.work.path = "$(WORK_DIR)"
 fs.mount.work.uri = "file:$(WORK_DIR)"
 
 fs.mount.redis.type = "chroot"
-fs.mount.redis.path = "/ppml/trusted-cluster-serving/redis"
-fs.mount.redis.uri = "file:/ppml/trusted-cluster-serving/redis"
+fs.mount.redis.path = "/ppml/trusted-realtime-ml/redis"
+fs.mount.redis.uri = "file:/ppml/trusted-realtime-ml/redis"
 
 sgx.enclave_size = "$(G_SGX_SIZE)"
 sgx.thread_num = 1024
@@ -98,7 +98,7 @@ sgx.allowed_files.etc       = "file:/etc"
 sgx.allowed_files.tmp       = "file:/tmp"
 sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
 sgx.allowed_files.flink     = "file:$(FLINK_HOME)"
-sgx.allowed_files.redis     = "file:/ppml/trusted-cluster-serving/redis"
-sgx.allowed_files.work      = "file:/ppml/trusted-cluster-serving/java"
+sgx.allowed_files.redis     = "file:/ppml/trusted-realtime-ml/redis"
+sgx.allowed_files.work      = "file:/ppml/trusted-realtime-ml/java"
 
 sgx.nonpie_binary = 1

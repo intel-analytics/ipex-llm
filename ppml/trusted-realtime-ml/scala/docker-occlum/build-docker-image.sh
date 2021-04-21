@@ -11,4 +11,4 @@ sudo docker build \
     --build-arg HTTP_PROXY_PORT=$HTTP_PROXY_PORT \
     --build-arg HTTPS_PROXY_HOST=$HTTPS_PROXY_HOST \
     --build-arg HTTPS_PROXY_PORT=$HTTPS_PROXY_PORT \
-    -t intelanalytics/analytics-zoo-ppml-trusted-cluster-serving-scala-occlum:0.10-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-occlum:0.10-SNAPSHOT -f ./Dockerfile .

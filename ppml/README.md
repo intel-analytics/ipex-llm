@@ -14,12 +14,12 @@ Occlum is a memory-safe, multi-process library OS (LibOS) for Intel SGX. As a Li
 
 ### Analytics-Zoo PPML(Privacy-Preserving Machine Learning) Platform for E2E Big Data and AI using SGX
 1. SGX-based Trusted Big Data ML
-2. SGX-based Trusted Cluster Serving
+2. SGX-based Trusted Realtime ML
 
 #### SGX-based Trusted Big Data ML
 SGX-based Trusted Big Data ML allows users to run end-to-end big data analytics application and Intel Analytics Zoo and BigDL model training with spark local and distributed cluster on Graphene-SGX.
 
-#### SGX-based Trusted Cluster Serving
-SGX-based Trusted Cluster Serving allows users to run end-to-end Intel Analytics Zoo cluster serving pipeline on both Graphene-SGX and Occlum.
+#### SGX-based Trusted Real Time ML
+SGX-based Trusted Realtime ML allows users to run end-to-end Intel Analytics Zoo cluster serving pipeline on both Graphene-SGX and Occlum.
 
 

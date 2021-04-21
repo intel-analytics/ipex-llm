@@ -2,7 +2,7 @@
 
 model:
   # model path must be provided
-  path: /ppml/trusted-cluster-serving/java/work/models/resnet50
+  path: /ppml/trusted-realtime-ml/java/work/models/resnet50
   # name, default is serving_stream, you need to specify if running multiple servings
   name:
 data:
@@ -27,7 +27,7 @@ secure:
   # default: false
   secure_enabled:
   # default:
-  secure_trust_store_path: /ppml/trusted-cluster-serving/redis/work/keys/keystore.jks
+  secure_trust_store_path: /ppml/trusted-realtime-ml/redis/work/keys/keystore.jks
   # default:
   secure_struct_store_password:
   # default: false
