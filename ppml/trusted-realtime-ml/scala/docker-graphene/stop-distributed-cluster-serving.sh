@@ -11,5 +11,4 @@ ssh root@$MASTER "docker rm -f cluster-serving"
 
 
 # Use the following script to stop flink jobmanager and taskmanager.
-bash stop-flink.sh
-
+bash undeploy-distributed-flink.sh
