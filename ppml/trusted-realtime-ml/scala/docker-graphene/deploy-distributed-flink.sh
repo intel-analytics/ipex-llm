@@ -8,13 +8,15 @@ source environment.sh
 
 echo "### phase.1 distribute the keys and password"
 echo ">>> $MASTER"
-ssh root@$MASTER "rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && mkdir -p $AZ_PPML_PATH"
+ssh root@$MASTER "rm -rf $KEYS_PATH && rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && mkdir -p $AZ_PPML_PATH"
+scp -r $SOURCE_ENCLAVE_KEY_PATH root@$MASTER:$ENCLAVE_KEY_PATH
 scp -r $SOURCE_KEYS_PATH root@$MASTER:$KEYS_PATH
 scp -r $SOURCE_SECURE_PASSWORD_PATH root@$MASTER:$SECURE_PASSWORD_PATH
 for worker in ${WORKERS[@]}
   do
     echo ">>> $worker"
-    ssh root@$worker "rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && mkdir -p $AZ_PPML_PATH"
+    ssh root@$worker "rm -rf $KEYS_PATH && rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && mkdir -p $AZ_PPML_PATH"
+    scp -r $SOURCE_ENCLAVE_KEY_PATH root@$worker:$ENCLAVE_KEY_PATH
     scp -r $SOURCE_KEYS_PATH root@$worker:$KEYS_PATH
     scp -r $SOURCE_SECURE_PASSWORD_PATH root@$worker:$SECURE_PASSWORD_PATH
   done
@@ -32,6 +34,7 @@ ssh root@$MASTER "docker run \
       --device=/dev/sgx/enclave \
       --device=/dev/sgx/provision \
       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+      -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
       -v $KEYS_PATH:/ppml/trusted-cluster-serving/java/work/keys \
       -v $SECURE_PASSWORD_PATH:/ppml/trusted-cluster-serving/java/work/password \
       --name=flink-job-manager \
@@ -72,6 +75,7 @@ for worker in ${WORKERS[@]}
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
         -v $KEYS_PATH:/ppml/trusted-cluster-serving/redis/work/keys \
         -v $KEYS_PATH:/ppml/trusted-cluster-serving/java/work/keys \
         -v $SECURE_PASSWORD_PATH:/ppml/trusted-cluster-serving/redis/work/password \
