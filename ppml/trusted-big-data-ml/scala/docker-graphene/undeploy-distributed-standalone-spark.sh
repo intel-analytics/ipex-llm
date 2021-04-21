@@ -13,4 +13,4 @@ for worker in ${WORKERS[@]}
     ssh root@$worker "docker rm -f spark-worker-$worker"
   done
 
-###echo
+echo "Undeploying completed."

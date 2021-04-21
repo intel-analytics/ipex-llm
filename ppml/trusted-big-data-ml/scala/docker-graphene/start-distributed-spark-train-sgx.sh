@@ -13,6 +13,7 @@ ssh root@$MASTER "docker run -d \
       --device=/dev/sgx/enclave \
       --device=/dev/sgx/provision \
       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+      -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
       -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
       -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
       -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
@@ -24,7 +25,7 @@ ssh root@$MASTER "docker run -d \
       -e SPARK_DRIVER_BLOCK_MANAGER_PORT=10026 \
       $TRUSTED_BIGDATA_ML_DOCKER bash -c 'cd /ppml/trusted-big-data-ml && ./init.sh && ./start-spark-standalone-driver-sgx.sh'"
 while ! ssh root@$MASTER "docker logs spark-driver | grep 'model saved'"; do
-  sleep 10
+  sleep 100
 done
 echo ">>> $MASTER, cluster-serving started successfully."
 
