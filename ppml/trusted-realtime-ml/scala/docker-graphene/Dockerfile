@@ -90,7 +90,7 @@ ENV LOCAL_IP				127.0.0.1
 ENV SGX_MEM_SIZE			64G
 ENV REDIS_PORT				6379
 ENV FLINK_VERSION			${FLINK_VERSION}
-ENV FLINK_HOME				/ppml/trusted-cluster-serving/java/work/flink-${FLINK_VERSION}
+ENV FLINK_HOME				/ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
 ENV FLINK_JOB_MANAGER_IP		127.0.0.1
 ENV FLINK_JOB_MANAGER_REST_PORT		8081
 ENV FLINK_JOB_MANAGER_RPC_PORT		6123
@@ -105,14 +105,14 @@ RUN mkdir -p /graphene && \
     mkdir -p /graphene/python && \
     mkdir -p /graphene/Tools && \
     mkdir -p /graphene/Pal/src && \
-    mkdir -p /ppml/trusted-cluster-serving/redis && \
-    mkdir -p /ppml/trusted-cluster-serving/redis/work/keys && \
-    mkdir -p /ppml/trusted-cluster-serving/redis/work/password && \
-    mkdir -p /ppml/trusted-cluster-serving/java/work && \
-    mkdir -p /ppml/trusted-cluster-serving/java/work/keys && \
-    mkdir -p /ppml/trusted-cluster-serving/java/work/password && \
-    mkdir -p /ppml/trusted-cluster-serving/java/work/data && \
-    mkdir -p /ppml/trusted-cluster-serving/java/work/models && \
+    mkdir -p /ppml/trusted-realtime-ml/redis && \
+    mkdir -p /ppml/trusted-realtime-ml/redis/work/keys && \
+    mkdir -p /ppml/trusted-realtime-ml/redis/work/password && \
+    mkdir -p /ppml/trusted-realtime-ml/java/work && \
+    mkdir -p /ppml/trusted-realtime-ml/java/work/keys && \
+    mkdir -p /ppml/trusted-realtime-ml/java/work/password && \
+    mkdir -p /ppml/trusted-realtime-ml/java/work/data && \
+    mkdir -p /ppml/trusted-realtime-ml/java/work/models && \
     mkdir -p /graphene/Pal/src/host/Linux-SGX/signer
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
@@ -122,12 +122,12 @@ COPY --from=graphene /graphene/Pal /graphene/Pal
 COPY --from=graphene /graphene/Pal/src/host/Linux-SGX/generated_offsets.py /graphene/python/
 COPY --from=graphene /graphene/Examples/common_tools/get_deps.sh /graphene/get_deps.sh
 COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
-COPY --from=graphene /redis.tar.gz /ppml/trusted-cluster-serving/redis
+COPY --from=graphene /redis.tar.gz /ppml/trusted-realtime-ml/redis
 COPY --from=flink /opt/jdk  /opt/jdk8
-COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-cluster-serving/java/work/flink-${FLINK_VERSION}
-COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar /ppml/trusted-cluster-serving/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar
-COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar /ppml/trusted-cluster-serving/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar
-COPY --from=analytics-zoo /opt/resnet50/ /ppml/trusted-cluster-serving/java/work/models/resnet50
+COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
+COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar
+COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar
+COPY --from=analytics-zoo /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree && \
@@ -136,34 +136,34 @@ RUN apt-get update --fix-missing && \
     apt-get install -y openssl libssl-dev pkg-config && \
     apt-get install -y netcat net-tools
 
-RUN mkdir -p /ppml/trusted-cluster-serving/redis/src && \
-    tar -C /ppml/trusted-cluster-serving/redis/src --strip-components=1 -xf /ppml/trusted-cluster-serving/redis/redis.tar.gz && \
-    make BUILD_TLS=yes -C /ppml/trusted-cluster-serving/redis/src && \
-    cp /ppml/trusted-cluster-serving/redis/src/src/redis-server /ppml/trusted-cluster-serving/redis/redis-server
+RUN mkdir -p /ppml/trusted-realtime-ml/redis/src && \
+    tar -C /ppml/trusted-realtime-ml/redis/src --strip-components=1 -xf /ppml/trusted-realtime-ml/redis/redis.tar.gz && \
+    make BUILD_TLS=yes -C /ppml/trusted-realtime-ml/redis/src && \
+    cp /ppml/trusted-realtime-ml/redis/src/src/redis-server /ppml/trusted-realtime-ml/redis/redis-server
 
-ADD ./redis.Makefile /ppml/trusted-cluster-serving/redis/Makefile
-ADD ./redis-server.manifest.template /ppml/trusted-cluster-serving/redis/redis-server.manifest.template
-ADD ./init-redis.sh /ppml/trusted-cluster-serving/redis/init-redis.sh
-ADD ./start-redis.sh /ppml/trusted-cluster-serving/redis/start-redis.sh
-ADD ./java.Makefile /ppml/trusted-cluster-serving/java/Makefile
-ADD ./java.manifest.template /ppml/trusted-cluster-serving/java/java.manifest.template
-ADD ./init-java.sh /ppml/trusted-cluster-serving/java/init-java.sh
-ADD ./start-flink-jobmanager.sh /ppml/trusted-cluster-serving/java/start-flink-jobmanager.sh
-ADD ./start-flink-taskmanager.sh /ppml/trusted-cluster-serving/java/start-flink-taskmanager.sh
-ADD ./start-http-frontend.sh /ppml/trusted-cluster-serving/java/start-http-frontend.sh
-ADD ./cluster-serving-config.yaml /ppml/trusted-cluster-serving/java/config.yaml
-ADD ./init-cluster-serving.sh /ppml/trusted-cluster-serving/java/init-cluster-serving.sh
-ADD ./start-cluster-serving-job.sh /ppml/trusted-cluster-serving/java/start-cluster-serving-job.sh
-ADD ./check-status.sh /ppml/trusted-cluster-serving/check-status.sh
-ADD ./start-all.sh /ppml/trusted-cluster-serving/start-all.sh
+ADD ./redis.Makefile /ppml/trusted-realtime-ml/redis/Makefile
+ADD ./redis-server.manifest.template /ppml/trusted-realtime-ml/redis/redis-server.manifest.template
+ADD ./init-redis.sh /ppml/trusted-realtime-ml/redis/init-redis.sh
+ADD ./start-redis.sh /ppml/trusted-realtime-ml/redis/start-redis.sh
+ADD ./java.Makefile /ppml/trusted-realtime-ml/java/Makefile
+ADD ./java.manifest.template /ppml/trusted-realtime-ml/java/java.manifest.template
+ADD ./init-java.sh /ppml/trusted-realtime-ml/java/init-java.sh
+ADD ./start-flink-jobmanager.sh /ppml/trusted-realtime-ml/java/start-flink-jobmanager.sh
+ADD ./start-flink-taskmanager.sh /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh
+ADD ./start-http-frontend.sh /ppml/trusted-realtime-ml/java/start-http-frontend.sh
+ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
+ADD ./init-cluster-serving.sh /ppml/trusted-realtime-ml/java/init-cluster-serving.sh
+ADD ./start-cluster-serving-job.sh /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh
+ADD ./check-status.sh /ppml/trusted-realtime-ml/check-status.sh
+ADD ./start-all.sh /ppml/trusted-realtime-ml/start-all.sh
 
-RUN chmod a+x /ppml/trusted-cluster-serving/redis/init-redis.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/redis/start-redis.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/java/init-java.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/java/start-flink-jobmanager.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/java/start-flink-taskmanager.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/java/start-http-frontend.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/java/init-cluster-serving.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/java/start-cluster-serving-job.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/check-status.sh && \
-    chmod a+x /ppml/trusted-cluster-serving/start-all.sh
+RUN chmod a+x /ppml/trusted-realtime-ml/redis/init-redis.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/redis/start-redis.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/init-java.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/start-flink-jobmanager.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/start-http-frontend.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/init-cluster-serving.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/check-status.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/start-all.sh

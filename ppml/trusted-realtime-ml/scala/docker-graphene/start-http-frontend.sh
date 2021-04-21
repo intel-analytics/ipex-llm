@@ -6,8 +6,8 @@ echo "### Launching HTTP Frontend ###"
 
 redis_host=$REDIS_HOST
 core_num=$CORE_NUM
-redis_secure_password=`openssl rsautl -inkey /ppml/trusted-cluster-serving/redis/work/password/key.txt -decrypt </ppml/trusted-cluster-serving/redis/work/password/output.bin`
-https_secure_password=`openssl rsautl -inkey /ppml/trusted-cluster-serving/java/work/password/key.txt -decrypt </ppml/trusted-cluster-serving/java/work/password/output.bin`
+redis_secure_password=`openssl rsautl -inkey /ppml/trusted-realtime-ml/redis/work/password/key.txt -decrypt </ppml/trusted-realtime-ml/redis/work/password/output.bin`
+https_secure_password=`openssl rsautl -inkey /ppml/trusted-realtime-ml/java/work/password/key.txt -decrypt </ppml/trusted-realtime-ml/java/work/password/output.bin`
 
 SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -Xms2g \
@@ -19,14 +19,14 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-min=100 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
-    -jar /ppml/trusted-cluster-serving/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar \
+    -jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar \
     --redisHost "${redis_host}" \
     --tokensPerSecond 30 \
     --tokenBucketEnabled true \
     --parallelism 30 \
     --httpsEnabled true \
-    --httpsKeyStorePath "/ppml/trusted-cluster-serving/java/work/keys/keystore.pkcs12" \
+    --httpsKeyStorePath "/ppml/trusted-realtime-ml/java/work/keys/keystore.pkcs12" \
     --httpsKeyStoreToken "${https_secure_password}" \
     --redisSecureEnabled true \
-    --redissTrustStorePath "/ppml/trusted-cluster-serving/redis/work/keys/keystore.jks" \
+    --redissTrustStorePath "/ppml/trusted-realtime-ml/redis/work/keys/keystore.jks" \
     --redissTrustStoreToken "${redis_secure_password}" | tee ./http-frontend-sgx.log
