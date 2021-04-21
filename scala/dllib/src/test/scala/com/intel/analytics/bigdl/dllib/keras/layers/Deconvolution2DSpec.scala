@@ -63,7 +63,7 @@ class Deconvolution2DSpec extends KerasBaseSpec {
       inputShape = Shape(3, 12, 12))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode, weightConverter, precision = 1e-3)
+      kerasCode, weightConverter, precision = 1e-2)
   }
 
 }
