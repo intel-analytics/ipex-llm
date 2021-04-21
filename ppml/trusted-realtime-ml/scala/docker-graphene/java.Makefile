@@ -5,10 +5,10 @@ G_JAVA_XMX ?= 2G
 G_SGX_SIZE ?= 8G
 G_SGX_THREAD_NUM ?= 256
 
-THIS_DIR ?= /ppml/trusted-cluster-serving/java
+THIS_DIR ?= /ppml/trusted-realtime-ml/java
 JDK_HOME ?= /opt/jdk8
 WORK_DIR ?= $(THIS_DIR)/work
-FLINK_HOME ?= /ppml/trusted-cluster-serving/java/work/flink-1.10.1
+FLINK_HOME ?= /ppml/trusted-realtime-ml/java/work/flink-1.10.1
 
 ifeq ($(DEBUG),1)
 GRAPHENE_LOG_LEVEL = debug

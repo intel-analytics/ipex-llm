@@ -1,12 +1,12 @@
 #!/bin/bash
 # Acceptable arguments: redis, flinkjm, flinktm, frontend, serving, all
 
-REDISLOG="/ppml/trusted-cluster-serving/redis/redis-sgx.log"
-JMSGXLOG="/ppml/trusted-cluster-serving/java/flink-jobmanager-sgx.log"
-STANDALONELOG="/ppml/trusted-cluster-serving/java/work/flink-1.10.1/log/flink-sgx-standalonesession-*.log"
-TMSGXLOG="/ppml/trusted-cluster-serving/java/work/flink-1.10.1/log/flink-sgx-taskexecutor-*.log"
-FRONTENDLOG="/ppml/trusted-cluster-serving/java/http-frontend-sgx.log"
-SERVINGLOG="/ppml/trusted-cluster-serving/java/cluster-serving-job-sgx.log"
+REDISLOG="/ppml/trusted-realtime-ml/redis/redis-sgx.log"
+JMSGXLOG="/ppml/trusted-realtime-ml/java/flink-jobmanager-sgx.log"
+STANDALONELOG="/ppml/trusted-realtime-ml/java/work/flink-1.10.1/log/flink-sgx-standalonesession-*.log"
+TMSGXLOG="/ppml/trusted-realtime-ml/java/work/flink-1.10.1/log/flink-sgx-taskexecutor-*.log"
+FRONTENDLOG="/ppml/trusted-realtime-ml/java/http-frontend-sgx.log"
+SERVINGLOG="/ppml/trusted-realtime-ml/java/cluster-serving-job-sgx.log"
 
 redis () {
     echo "Detecting redis status..."
@@ -18,7 +18,7 @@ redis () {
         REDISSUCCESS=$(cat $REDISLOG | grep "Ready to accept connections")
         if [ -z "$REDISSUCCESS" ] ; then
             echo "Redis initilization failed. See" $REDISLOG " for details."
-            echo "To restart Redis, run /ppml/trusted-cluster-serving/redis/start-redis.sh in the docker container."
+            echo "To restart Redis, run /ppml/trusted-realtime-ml/redis/start-redis.sh in the docker container."
         fi
     fi
     REDISPORT=$(netstat -nlp | grep 6379)
@@ -46,7 +46,7 @@ flinkjm () {
         JMSUCCESS=$(cat $STANDALONELOG | grep "Successfully recovered 0 persisted job graphs.")
         if [ -z "$JMSUCCESS" ] ; then
             echo "Flink job manager initilization failed. See" $STANDALONELOG "for details."
-            echo "To restart Flink job manager, run /ppml/trusted-cluster-serving/java/start-flink-jobmanager.sh. in the docker container."
+            echo "To restart Flink job manager, run /ppml/trusted-realtime-ml/java/start-flink-jobmanager.sh. in the docker container."
         fi
     fi
     JMPORT=$(netstat -nlp | grep 8081)
@@ -70,7 +70,7 @@ flinktm () {
         TMSUCCESS=$(cat $TMSGXLOG | grep "Successful registration at job manager")
         if [ -z "$TMSUCCESS" ] ; then
             echo "Flink task manager initilization failed. See" $TMSGXLOG "for details."
-            echo "To restart Flink task manager, run /ppml/trusted-cluster-serving/java/start-flink-taskmanager.sh in the docker container."
+            echo "To restart Flink task manager, run /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh in the docker container."
         fi
     fi
     TMPORT=$(netstat -nlp | grep 6123)
@@ -93,7 +93,7 @@ frontend () {
         FRONTENDSUCCESS=$(cat $FRONTENDLOG | grep "https started at https://0.0.0.0:10023")
         if [ -z "$FRONTENDSUCCESS" ] ; then
             echo "Http frontend initilization failed. See" $FRONTENDLOG "for details."
-            echo "To restart http frontend, run /ppml/trusted-cluster-serving/java/start-http-frontend.sh in the docker container."
+            echo "To restart http frontend, run /ppml/trusted-realtime-ml/java/start-http-frontend.sh in the docker container."
         else 
             echo "Http frontend initilization successful."
         fi
@@ -109,7 +109,7 @@ serving () {
         SERVINGSUCCESS=$(cat $SERVINGLOG | grep "Job has been submitted with JobID")
         if [ -z "$SERVINGSUCCESS" ] ; then
             echo "cluster-serving-job initilization failed. See" $SERVINGLOG "for details."
-            echo "To restart cluster-serving-job, run /ppml/trusted-cluster-serving/java/start-cluster-serving-job.sh in the docker container."
+            echo "To restart cluster-serving-job, run /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh in the docker container."
         else 
             echo "cluster-serving-job initilization successful."
         fi
