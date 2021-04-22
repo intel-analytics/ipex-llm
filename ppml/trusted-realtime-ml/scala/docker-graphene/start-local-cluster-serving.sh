@@ -22,4 +22,4 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     -e CORE_NUM=30 \
     intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.10-SNAPSHOT \
-    bash  -c "cd /ppml/trusted-realtime-ml/ && ./start-all.sh"
+    bash  -c "cd /ppml/trusted-realtime-ml/ && ./start-all.sh && tail -f /dev/null"
