@@ -41,7 +41,8 @@ class XgbSigOptRecipe(Recipe):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='AutoXGBRegressor example')
-    parser.add_argument('-p', '--path', type=str, default="./incd.csv",
+    parser.add_argument('-p', '--path', type=str,
+                        default="./incd.csv",
                         help='Training data path')
     parser.add_argument('--hadoop_conf', type=str,
                         help='The path to the hadoop configuration folder. Required if you '

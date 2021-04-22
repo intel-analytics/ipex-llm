@@ -40,6 +40,9 @@ if __name__ == '__main__':
                         help='The number of executor cores you want to use.')
     parser.add_argument('-n', '--num_workers', type=int, default=2,
                         help='The number of workers to be launched.')
+    parser.add_argument('-m', '--mode', type=str, default='gridrandom',
+                        choices=['gridrandom', 'skopt'],
+                        help='The search algorithm to use.')
     opt = parser.parse_args()
     if opt.hadoop_conf:
         assert opt.conda_name is not None, "conda_name must be specified for yarn mode"
@@ -107,35 +110,47 @@ if __name__ == '__main__':
     max_depth_range = (2, 15)
     # max_features_range = (0.1, 0.8)
 
+    target_col = "ArrDelayBinary"
     input_cols.remove("ArrDelay")
     config = {"tree_method": 'hist', "learning_rate": 0.1, "gamma": 0.1,
               "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
               "subsample": 1, "n_jobs": 4}
 
-    estimator = AutoXGBoost().classifier(feature_cols=input_cols,
-                                         target_col="ArrDelayBinary",
-                                         config=config,
-                                         search_alg="skopt",
-                                         search_alg_params=None,
-                                         scheduler="AsyncHyperBand",
-                                         scheduler_params=dict(
-                                             max_t=50,
-                                             grace_period=1,
-                                             reduction_factor=3,
-                                             brackets=3,
+    if opt.mode == 'skopt':
+        recipe = XgbRegressorSkOptRecipe(num_rand_samples=num_rand_samples,
+                                         n_estimators_range=n_estimators_range,
+                                         max_depth_range=max_depth_range,
                                          ),
-                                         )
+        estimator = AutoXGBoost().classifier(feature_cols=input_cols,
+                                             target_col=target_col,
+                                             config=config,
+                                             search_alg="skopt",
+                                             search_alg_params=None,
+                                             scheduler="AsyncHyperBand",
+                                             scheduler_params=dict(
+                                                 max_t=50,
+                                                 grace_period=1,
+                                                 reduction_factor=3,
+                                                 brackets=3,
+                                             ),
+                                             )
+    else:
+        recipe = XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
+                                              n_estimators=list(n_estimators_range),
+                                              max_depth=list(max_depth_range),
+                                              )
+
+        estimator = AutoXGBoost().classifier(feature_cols=input_cols,
+                                             target_col=target_col,
+                                             config=config
+                                             )
 
     import time
     start = time.time()
     pipeline = estimator.fit(train_df,
                              validation_df=val_df,
                              metric="error",
-                             recipe=XgbRegressorSkOptRecipe(
-                                 num_rand_samples=num_rand_samples,
-                                 n_estimators_range=n_estimators_range,
-                                 max_depth_range=max_depth_range,
-                             ),
+                             recipe=recipe,
                              )
     end = time.time()
     print("elapse: ", (end-start), "s")
