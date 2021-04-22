@@ -30,7 +30,7 @@ This script is in /analytics-zoo/ppml/scripts:
 ```bash
 sudo bash ../../../scripts/generate-keys.sh
 ```
-You also need to generate your enclave key using the command below, and safekeep it for future remote attestations and to start SGX enclaves more securely.
+You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
 ```bash
 openssl genrsa -3 -out enclave-key.pem 3072
@@ -235,9 +235,9 @@ If all is well, the following results should be displayed:
 
 ```
 (1/2) Detecting Master state...
-Master initilization successful.
+Master initialization successful.
 (2/2) Detecting Worker state...
-Worker initilization successful.
+Worker initialization successful.
 ```
 
 It is suggested to run this script once after starting distributed cluster serving to verify that all components are up and running.

@@ -17,18 +17,18 @@ redis () {
     else 
         REDISSUCCESS=$(cat $REDISLOG | grep "Ready to accept connections")
         if [ -z "$REDISSUCCESS" ] ; then
-            echo "Redis initilization failed. See" $REDISLOG " for details."
+            echo "Redis initialization failed. See" $REDISLOG " for details."
             echo "To restart Redis, run /ppml/trusted-realtime-ml/redis/start-redis.sh in the docker container."
         fi
     fi
     REDISPORT=$(netstat -nlp | grep 6379)
     # Default redis port is 6379
     if [ -z "$REDISPORT" ]; then
-        echo "Redis initilization failed. Unable to get redis port at " $REDIS_PORT "."
+        echo "Redis initialization failed. Unable to get redis port at " $REDIS_PORT "."
     fi
     
     if [ -n "$REDISPORT" ] && [ -n "$REDISSUCCESS" ] ; then
-        echo "Redis initilization successful."
+        echo "Redis initialization successful."
     fi
 }
 
@@ -45,18 +45,18 @@ flinkjm () {
     else 
         JMSUCCESS=$(cat $STANDALONELOG | grep "Successfully recovered 0 persisted job graphs.")
         if [ -z "$JMSUCCESS" ] ; then
-            echo "Flink job manager initilization failed. See" $STANDALONELOG "for details."
+            echo "Flink job manager initialization failed. See" $STANDALONELOG "for details."
             echo "To restart Flink job manager, run /ppml/trusted-realtime-ml/java/start-flink-jobmanager.sh. in the docker container."
         fi
     fi
     JMPORT=$(netstat -nlp | grep 8081)
     # Default jm port is 8081.
     if [ -z "$JMPORT" ]; then
-        echo "Flink job manager initilization failed. Unable to get Flink job manager rest port at " $FLINK_JOB_MANAGER_REST_PORT "."
+        echo "Flink job manager initialization failed. Unable to get Flink job manager rest port at " $FLINK_JOB_MANAGER_REST_PORT "."
     fi
     
     if [ -n "$JMPORT" ] && [ -n "$JMSUCCESS" ] ; then
-        echo "Flink job manager initilization successful."
+        echo "Flink job manager initialization successful."
     fi
 }
 
@@ -69,18 +69,18 @@ flinktm () {
     else 
         TMSUCCESS=$(cat $TMSGXLOG | grep "Successful registration at job manager")
         if [ -z "$TMSUCCESS" ] ; then
-            echo "Flink task manager initilization failed. See" $TMSGXLOG "for details."
+            echo "Flink task manager initialization failed. See" $TMSGXLOG "for details."
             echo "To restart Flink task manager, run /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh in the docker container."
         fi
     fi
     TMPORT=$(netstat -nlp | grep 6123)
     # Default TM port is 6123.
     if [ -z "$FLINK_TASK_MANAGER_DATA_PORT" ]; then
-        echo "Flink task manager initilization failed. Unable to get Flink task manager data port at " $FLINK_TASK_MANAGER_DATA_PORT "."
+        echo "Flink task manager initialization failed. Unable to get Flink task manager data port at " $FLINK_TASK_MANAGER_DATA_PORT "."
     fi
     
     if [ -n "$TMPORT" ] && [ -n "$TMSUCCESS" ] ; then
-        echo "Flink task manager initilization successful."
+        echo "Flink task manager initialization successful."
     fi
 }
 
@@ -92,10 +92,10 @@ frontend () {
     else 
         FRONTENDSUCCESS=$(cat $FRONTENDLOG | grep "https started at https://0.0.0.0:10023")
         if [ -z "$FRONTENDSUCCESS" ] ; then
-            echo "Http frontend initilization failed. See" $FRONTENDLOG "for details."
+            echo "Http frontend initialization failed. See" $FRONTENDLOG "for details."
             echo "To restart http frontend, run /ppml/trusted-realtime-ml/java/start-http-frontend.sh in the docker container."
         else 
-            echo "Http frontend initilization successful."
+            echo "Http frontend initialization successful."
         fi
     fi
 }
@@ -108,10 +108,10 @@ serving () {
     else 
         SERVINGSUCCESS=$(cat $SERVINGLOG | grep "Job has been submitted with JobID")
         if [ -z "$SERVINGSUCCESS" ] ; then
-            echo "cluster-serving-job initilization failed. See" $SERVINGLOG "for details."
+            echo "cluster-serving-job initialization failed. See" $SERVINGLOG "for details."
             echo "To restart cluster-serving-job, run /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh in the docker container."
         else 
-            echo "cluster-serving-job initilization successful."
+            echo "cluster-serving-job initialization successful."
         fi
     fi
 }

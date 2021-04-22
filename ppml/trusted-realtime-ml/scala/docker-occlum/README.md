@@ -36,7 +36,7 @@ For example:
 ../../../generate-password.sh 1234qwer
 ```
 
-### Start Trusted Clsuter Serving with PPML Docker image
+### Start Trusted Cluster Serving with PPML Docker image
 
 The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions.
 To address this, run the following command before stating trusted cluster serving:
@@ -49,7 +49,7 @@ This change will propagate into the containers as they share the same kernel as 
 
 In this mode, all components, redis, Flink & http front end, are running in single container.
 
-Before run the following command, please modify paths in `start-local-cluster-serving.sh` first. Then start Trusted Clsuter Serving with the following command:
+Before run the following command, please modify paths in `start-local-cluster-serving.sh` first. Then start Trusted Cluster Serving with the following command:
 
 ```bash
 ./start-local-cluster-serving.sh
@@ -75,15 +75,15 @@ If all is well, the following results should be displayed:
 
 ```
 Detecting redis status...
-Redis initilization successful.
+Redis initialization successful.
 Detecting Flink job manager status...
-Flink job manager initilization successful.
+Flink job manager initialization successful.
 Detecting Flink task manager status...
-Flink task manager initilization successful.
+Flink task manager initialization successful.
 Detecting http frontend status. This may take a while.
-Http frontend initilization successful.
+Http frontend initialization successful.
 Detecting cluster-serving-job status...
-cluster-serving-job initilization successful.
+cluster-serving-job initialization successful.
 ```
 
 It is suggested to run this script once after starting local cluster serving to verify that all components are up and running.
