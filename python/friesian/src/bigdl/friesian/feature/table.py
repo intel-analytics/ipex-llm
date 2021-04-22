@@ -213,8 +213,9 @@ class FeatureTable(Table):
 
         :param columns: str or a list of str, target columns to generate StringIndex.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
-               will be ommited from the encoding. Can be represented as both an integer,
-               dict or None. For instance, 15, {'col_4': 10, 'col_5': 2} etc.
+               will be omitted from the encoding. Can be represented as both an integer,
+               dict or None. For instance, 15, {'col_4': 10, 'col_5': 2} etc. None means all the
+               categories that appear will be encoded.
 
         :return: List of StringIndex
         """

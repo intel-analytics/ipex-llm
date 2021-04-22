@@ -68,7 +68,10 @@ def _parse_args():
         choices=['overwrite', 'errorifexists'],
         default='errorifexists')
 
-    parser.add_argument('--frequency_limit', type=str)
+    parser.add_argument('--frequency_limit', type=str, default="15",
+                        help="Categories with a count/frequency below frequency_limit will be "
+                             "omitted from the encoding. For instance, '15', '_c14:15,_c15:16', "
+                             "etc")
 
     args = parser.parse_args()
     start, end = args.days.split('-')
