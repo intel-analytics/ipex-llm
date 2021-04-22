@@ -720,11 +720,19 @@ echo "#20 start app test for zouwu-anomaly-detect"
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect
 
-chmod +x ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/get_data.sh
-${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/get_data.sh
-
-chmod +x ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/extract_data.sh
-${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/extract_data.sh
+wget $FTP_URI/analytics-zoo-data/zouwu-aiops/m_1932.csv -O ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/m_1932.csv
+echo "Finished downloading AIOps data"
+#FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/m_1932.csv"
+#if [ -f "$FILENAME" ]
+#then
+#   echo "$FILENAME already exists."
+#else
+#   echo "Downloading AIOps data"
+#
+#   wget $FTP_URI/analytics-zoo-data/zouwu-aiops/m_1932.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps
+#
+#   echo "Finished downloading AIOps data"
+#fi
 
 sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
 sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
