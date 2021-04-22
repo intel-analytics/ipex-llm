@@ -25,6 +25,14 @@ Remarks:
 - Please choose the available suffix above according to your Spark platform you want to use.
 - You don't need to add the BigDL dependency to your project as it has already been packaged within Analytics Zoo.
 - You can find the option `${ANALYTICS_ZOO_VERSION}` from the [Release Page](../release-download.md).
+- For mac users, it's recommend to add `zoo-core-mkl-mac` to the dependency.
+  eg. For mac SBT users,
+  ```sbt
+  libraryDependencies ++= Seq(
+  "com.intel.analytics.zoo" % "analytics-zoo-bigdl_0.12.1-spark_2.4.3" % "0.10.0-SNAPSHOT",
+  "com.intel.analytics.zoo" % "zoo-core-mkl-mac" % "0.10.0-SNAPSHOT"
+  )
+  ```
 
 ---
 ## **Link with a development version**
