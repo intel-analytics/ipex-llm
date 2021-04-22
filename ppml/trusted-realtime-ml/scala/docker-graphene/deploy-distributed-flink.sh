@@ -25,7 +25,7 @@ echo "### phase.1 distribute the keys and password finished successfully"
 echo "### phase.2 deploy the flink components"
 
 echo ">>> $MASTER, start flink-jobmanager"
-ssh root@$MASTER "docker run \
+ssh root@$MASTER "docker run -d\
       --privileged \
       --net=host \
       --cpuset-cpus="3-5" \

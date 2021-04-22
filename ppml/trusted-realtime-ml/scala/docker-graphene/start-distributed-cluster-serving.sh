@@ -132,7 +132,7 @@ ssh root@$MASTER "docker run -itd \
       -e CORE_NUM=2 \
       -e FLINK_JOB_MANAGER_IP=$MASTER \
       -e FLINK_JOB_MANAGER_REST_PORT=8081 \
-      $TRUSTED_CLUSTER_SERVING_DOCKER bash -c 'cd /ppml/trusted-realtime-ml/java && ./init-cluster-serving.sh && ./start-cluster-serving-job.sh'"
+      $TRUSTED_CLUSTER_SERVING_DOCKER bash -c 'cd /ppml/trusted-realtime-ml/java && ./init-cluster-serving.sh && ./start-cluster-serving-job.sh && tail -f /dev/null'"
 
 CLUSTER_SERVING_ELAPSED_TIME=0
 while ! ssh root@$MASTER "docker logs cluster-serving | grep 'Job has been submitted'"; do
