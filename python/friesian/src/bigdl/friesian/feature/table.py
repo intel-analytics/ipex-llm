@@ -15,10 +15,14 @@
 #
 import os
 
-from pyspark.sql.functions import col, array, broadcast
+from pyspark import SparkContext
+from pyspark.sql.functions import col, udf, array, broadcast, explode, struct, collect_list
 from zoo.orca import OrcaContext
 from zoo.friesian.feature.utils import generate_string_idx, fill_na, \
     fill_na_int, compute, log_with_clip, clip_min
+import random
+from pyspark.sql.types import ArrayType, IntegerType, Row, StructType, StructField
+from zoo.common.utils import callZooFunc
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
@@ -34,6 +38,21 @@ class Table:
             paths = [paths]
         spark = OrcaContext.get_spark_session()
         df = spark.read.parquet(*paths)
+        return df
+
+    @staticmethod
+    def _read_json(paths, cols):
+        if not isinstance(paths, list):
+            paths = [paths]
+        spark = OrcaContext.get_spark_session()
+        df = spark.read.json(paths)
+        if cols:
+            if isinstance(cols, list):
+                df = df.select(*cols)
+            elif isinstance(cols, str):
+                df = df.select(cols)
+            else:
+                raise Exception("cols should be a column name or list of column names")
         return df
 
     def _clone(self, df):
@@ -97,6 +116,20 @@ class Table:
             return self._clone(fill_na_int(self.df, value, columns))
         else:
             return self._clone(fill_na(self.df, value, columns))
+
+    def dropna(self, how='any', thresh=None, subset=None):
+        """
+        Drop null values. a wrapper of dataframe dropna
+        :return: A new Table that replaced the null values with specified value
+        """
+        return self._clone(self.df.dropna(how, thresh, subset))
+
+    def distinct(self):
+        """
+        A wrapper of dataframe distinct
+        :return: A new Table that only has distinct rows
+        """
+        return self._clone(self.df.distinct())
 
     def clip(self, columns, min=0):
         """
@@ -168,6 +201,9 @@ class Table:
         """
         self.df.show(n, truncate)
 
+    def write_parquet(self, path, mode="overwrite"):
+        self.df.write.mode(mode).parquet(path)
+
 
 class FeatureTable(Table):
     @classmethod
@@ -180,6 +216,10 @@ class FeatureTable(Table):
         :return: A FeatureTable
         """
         return cls(Table._read_parquet(paths))
+
+    @classmethod
+    def read_json(cls, paths, cols=None):
+        return cls(Table._read_json(paths, cols))
 
     def encode_string(self, columns, indices):
         """
@@ -204,7 +244,8 @@ class FeatureTable(Table):
             col_name = columns[i]
             index_tbl.broadcast()
             data_df = data_df.join(index_tbl.df, col_name, how="left") \
-                .drop(col_name).withColumnRenamed("id", col_name)
+                .drop(col_name).withColumnRenamed("id", col_name)\
+                .dropna(subset=[col_name])
         return FeatureTable(data_df)
 
     def gen_string_idx(self, columns, freq_limit):
@@ -234,7 +275,174 @@ class FeatureTable(Table):
                                    zip(df_id_list, columns)))
         return string_idx_list
 
+    def gen_ind2ind(self, cols, indices):
+        """
+        Generate a mapping between of indices
+
+        :param cols: a list of str, target columns to generate StringIndex.
+        :param indices:  list of StringIndex
+
+        :return: FeatureTable
+        """
+        df = self.encode_string(cols, indices).df.select(*cols).distinct()
+        return FeatureTable(df)
+
     def _clone(self, df):
+        return FeatureTable(df)
+
+    def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
+        """
+        Generate negative item visits for each positive item visit
+
+        :param item_size: integer, max of item.
+        :param item_col:  string, name of item column
+        :param label_col:  string, name of label column
+        :param neg_num:  integer, for each positive record, add neg_num of negative samples
+
+        :return: FeatureTable
+        """
+        df = callZooFunc("float", "addNegSamples", self.df, item_size, item_col, label_col, neg_num)
+        return FeatureTable(df)
+
+    def add_hist_seq(self, user_col, cols, sort_col='time', min_len=1, max_len=100):
+        """
+        Generate a list of item visits in history
+
+        :param user_col: string, user column.
+        :param cols:  list of string, ctolumns need to be aggragated
+        :param sort_col:  string, sort by sort_col
+        :param min_len:  int, minimal length of a history list
+        :param max_len:  int, maximal length of a history list
+
+        :return: FeatureTable
+        """
+        df = callZooFunc("float", "addHistSeq", self.df, user_col, cols, sort_col, min_len, max_len)
+        return FeatureTable(df)
+
+    def add_neg_hist_seq(self, item_size, item_history_col, neg_num):
+        """
+         Generate a list negative samples for each item in item_history_col
+
+         :param item_size: int, max of item.
+         :param item2cat:  FeatureTable with a dataframe of item to catgory mapping
+         :param item_history_col:  string, this column should be a list of visits in history
+         :param neg_num:  int, for each positive record, add neg_num of negative samples
+
+         :return: FeatureTable
+         """
+
+        df = callZooFunc("float", "addNegHisSeq", self.df, item_size, item_history_col, neg_num)
+        return FeatureTable(df)
+
+    def pad(self, padding_cols, seq_len=100):
+        """
+         Post padding padding columns
+
+         :param padding_cols: list of string, columns need to be padded with 0s.
+         :param seq_len:  int, length of padded column
+
+         :return: FeatureTable
+         """
+        df = callZooFunc("float", "postPad", self.df, padding_cols, seq_len)
+        return FeatureTable(df)
+
+    def mask(self, mask_cols, seq_len=100):
+        """
+         Mask mask_cols columns
+
+         :param mask_cols: list of string, columns need to be masked with 1s and 0s.
+         :param seq_len:  int, length of masked column
+
+         :return: FeatureTable
+         """
+        df = callZooFunc("float", "mask", self.df, mask_cols, seq_len)
+        return FeatureTable(df)
+
+    def add_length(self, col_name):
+        """
+         Generagte length of a colum
+
+         :param col_name: string.
+
+         :return: FeatureTable
+         """
+        df = callZooFunc("float", "addLength", self.df, col_name)
+        return FeatureTable(df)
+
+    def mask_pad(self, padding_cols, mask_cols, seq_len=100):
+        """
+         Mask and pad columns
+
+         :param padding_cols: list of string, columns need to be padded with 0s.
+         :param mask_cols: list of string, columns need to be masked with 1s and 0s.
+         :param seq_len:  int, length of masked column
+
+         :return: FeatureTable
+         """
+        table = self.mask(mask_cols, seq_len)
+        return table.pad(padding_cols, seq_len)
+
+    def transform_python_udf(self, in_col, out_col, udf_func):
+        """
+         Transform a FeatureTable using a python udf
+
+         :param in_col: string, name of column needed to be transformed.
+         :param out_col: string, output column.
+         :param udf_func: user defined python function
+
+         :return: FeatureTable
+         """
+        df = self.df.withColumn(out_col, udf_func(col(in_col)))
+        return FeatureTable(df)
+
+    def join(self, table, on=None, how=None):
+        """
+         Join a FeatureTable with another FeatureTable, it is wrapper of spark dataframe join
+
+         :param table: FeatureTable
+         :param on: string, join on this column
+         :param how: string
+
+         :return: FeatureTable
+         """
+        assert isinstance(table, Table), "the joined table should be a Table"
+        joined_df = self.df.join(table.df, on=on, how=how)
+        return FeatureTable(joined_df)
+
+    def add_feature(self, item_cols, feature_tbl, default_value):
+        """
+         Get the category or other field from another map like FeatureTable
+
+         :param item_cols: list[string]
+         :param feature_tbl: FeatureTable with two columns [category, item]
+         :param defalut_cat_index: default value for category if key does not exist
+
+         :return: FeatureTable
+         """
+        item2cat_map = dict(feature_tbl.df.distinct().rdd.map(lambda row: (row[0], row[1]))
+                            .collect())
+
+        def gen_cat(items):
+            getcat = lambda item: item2cat_map.get(item, default_value)
+            if isinstance(items, int):
+                cats = getcat(items)
+            elif isinstance(items, list) and isinstance(items[0], int):
+                cats = [getcat(item) for item in items]
+            elif isinstance(items, list) and isinstance(items[0], list) and isinstance(items[0][0],
+                                                                                       int):
+                cats = []
+                for line in items:
+                    line_cats = [getcat(item) for item in line]
+                    cats.append(line_cats)
+            else:
+                raise ValueError('only int, list[int], and list[list[int]] are supported.')
+            return cats
+
+        df = self.df
+        for c in item_cols:
+            col_type = df.schema[c].dataType
+            cat_udf = udf(gen_cat, col_type)
+            df = df.withColumn(c.replace("item", "category"), cat_udf(col(c)))
         return FeatureTable(df)
 
 
