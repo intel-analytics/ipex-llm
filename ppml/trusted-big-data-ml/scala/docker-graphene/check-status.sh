@@ -13,18 +13,18 @@ master () {
     else 
         MASTERSUCCESS=$(cat $MASTERLOG | grep "I have been elected leader")
         if [ -z "$MASTERSUCCESS" ] ; then
-            echo "Master initilization failed. See" $MASTERLOG " for details."
+            echo "Master initialization failed. See" $MASTERLOG " for details."
             echo "To restart Master, run ./start-spark-standalone-master-sgx.sh in the docker container."
         fi
     fi
     MASTERPORT=$(netstat -nlp | grep 8080)
     # Default master port is 8080
     if [ -z "$MASTERPORT" ]; then
-        echo "Master initilization failed. Unable to get master port at " $MASTERPORT "."
+        echo "Master initialization failed. Unable to get master port at " $MASTERPORT "."
     fi
     
     if [ -n "$MASTERPORT" ] && [ -n "$MASTERSUCCESS" ] ; then
-        echo "Master initilization successful."
+        echo "Master initialization successful."
     fi
 }
 
@@ -37,18 +37,18 @@ worker () {
     else 
         WORKERSUCCESS=$(cat $WORKERLOG | grep "Successfully registered with master")
         if [ -z "$WORKERSUCCESS" ] ; then
-            echo "Worker initilization failed. See" $WORKERLOG " for details."
+            echo "Worker initialization failed. See" $WORKERLOG " for details."
             echo "To restart Worker, run ./start-spark-standalone-worker-sgx.sh in the docker container."
         fi
     fi
     WORKERPORT=$(netstat -nlp | grep 8081)
     # Default worker port is 8081
     if [ -z "$WORKERPORT" ]; then
-        echo "Worker initilization failed. Unable to get worker port at " $WORKERPORT "."
+        echo "Worker initialization failed. Unable to get worker port at " $WORKERPORT "."
     fi
     
     if [ -n "$WORKERPORT" ] && [ -n "$WORKERSUCCESS" ] ; then
-        echo "Worker initilization successful."
+        echo "Worker initialization successful."
     fi
 }
 
