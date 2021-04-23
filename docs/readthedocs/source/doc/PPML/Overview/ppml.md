@@ -37,7 +37,8 @@ In this section, we will demonstrate how to use Analytics-Zoo to setup trusted S
 
 ### Get started
 
-#### Prerequisite: Install SGX Driver & Prepare Scripts
+#### Prerequisite: 
+(1) Install SGX Driver & Prepare Scripts
 
 Please check if current platform [has SGX feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors/intel-core-processors.html). Then, enable SGX feature in BIOS. Note that after SGX is enabled, a portion of memory will be assigned to SGX (this memory cannot be seen/used by OS and other applications).
 
@@ -45,6 +46,14 @@ Check SGX driver with `ls /dev | grep sgx`. If SGX driver is not installed, plea
 
 ```bash
 ./ppml/scripts/install-graphene-driver.sh
+```
+
+(2) Generate key for enclave
+
+You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely. It will generate a file enclave-key.pem in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
+
+```bash
+openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
 #### Step 0: Prepare Environment
@@ -80,12 +89,6 @@ This scrips will generate 2 files in `password` dir.
 ```bash
 key.txt
 output.bin
-```
-
-You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely. It will generate a file enclave-key.pem in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
-
-```bash
-openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
 ##### Docker
