@@ -1,7 +1,7 @@
 
 In this guide, we will show you how to use Zouwu TCMFForecaster for high dimension time series forecasting.
 
-Refer to [TCMFForecaster example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/zouwu/examples/run_electricity.py) for demonstration of using TCMFForecaster for distributed training and inference. 
+Refer to [TCMFForecaster example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/zouwu/examples/tcmf/run_electricity.py) for demonstration of using TCMFForecaster for distributed training and inference. 
 
 Refer to [TCMFForecaster API Guide](../API/TCMFForecaster.md) for more details of AutoTS APIs.
 

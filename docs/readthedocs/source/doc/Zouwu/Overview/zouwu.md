@@ -191,4 +191,4 @@ View Network Traffic Prediction [notebook](https://github.com/intel-analytics/an
 
 TCMFForecaster wraps a model architecture that follows implementation of the paper [DeepGLO paper](https://arxiv.org/abs/1905.03806) with slight modifications. It is especially suitable for extremely high dimensional (up-to millions) multivariate time series forecasting.
 
-View High-dimensional Electricity Data Forecasting [example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/zouwu/examples/run_electricity.py) and [TCMFForecaster API Doc]() for more details.
+View High-dimensional Electricity Data Forecasting [example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/zouwu/examples/tcmf/run_electricity.py) and [TCMFForecaster API Doc]() for more details.
