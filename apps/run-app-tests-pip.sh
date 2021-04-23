@@ -786,6 +786,29 @@ now=$(date "+%s")
 time21=$((now-start))
 echo "#21 zouwu-network-traffic-impute time used:$time21 seconds"
 
+echo "#22 start app test for zouwu-stock-prediction"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction
+
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/
+
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
+cd -
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "zouwu-stock-prediction failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time22=$((now-start))
+echo "#22 zouwu-stock-prediction time used:$time22 seconds"
+
+
 fi
 
 # This should be done at the very end after all tests finish.
