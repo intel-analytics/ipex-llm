@@ -26,7 +26,7 @@ echo "Start zouwu tcmf tests"
 #start execute
 echo "#2 zouwu tcmf example"
 start=$(date "+%s")
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/zouwu/examples/run_electricity.py --use_dummy_data --smoke
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/zouwu/examples/tcmf/run_electricity.py --use_dummy_data --smoke
 now=$(date "+%s")
 time2=$((now-start))
 echo "zouwu tcmf example tests finished"
