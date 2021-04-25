@@ -189,7 +189,7 @@ Pay attention to the filenames here. They can be quite confusing.
 ##### Setup passwordless ssh login to all the nodes.
 ##### Configure the environments for master, workers, docker image, security keys/password files, enclave key, and data path.
 ```bash
-nano environments.sh
+nano environment.sh
 ```
 ##### Start distributed big data ML
 To start the Spark services for distributed big data ML, run
