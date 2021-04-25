@@ -19,7 +19,7 @@ PPML in analytics zoo needs secured keys to enable Flink TLS, https and TLS enab
 This script is under `analytics-zoo/ppml/scripts`:
 
 ```bash
-../../../generate-keys.sh
+../../../scripts/generate-keys.sh
 ```
 
 You also need to store password you used in the previous step in a secured file:
@@ -27,13 +27,13 @@ You also need to store password you used in the previous step in a secured file:
 This script is also under `/analytics-zoo/ppml/scripts`:
 
 ```bash
-../../../generate-password.sh used_password_when_generate_keys
+../../../scripts/generate-password.sh used_password_when_generate_keys
 ```
 
 For example:
 
 ```bash
-../../../generate-password.sh 1234qwer
+../../../scripts/generate-password.sh 1234qwer
 ```
 
 ### Start Trusted Cluster Serving with PPML Docker image
@@ -95,10 +95,10 @@ In this mode, all components, redis, Flink & http front end, are running in diff
 Pre-requests:
 
 1. Setup `no password ssh login` between all nodes.
-2. Modify IP/paths in `environments.sh`. 
+2. Modify IP/paths in `environment.sh`. 
 
 ```bash
-nano environments.sh
+nano environment.sh
 ```
 
 ##### Start distributed cluster serving
