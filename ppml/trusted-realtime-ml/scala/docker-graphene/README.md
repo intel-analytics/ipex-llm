@@ -78,9 +78,9 @@ It is suggested to run this script once after starting local cluster serving to 
 
 #### In distributed mode
 *Please setup passwordless ssh login to all the nodes first.*
-##### Specify the environments for master, workers, docker image and security keys/password files in environments.sh.
+##### Specify the environments for master, workers, docker image and security keys/password files in environment.sh.
 ```bash
-nano environments.sh
+nano environment.sh
 ```
 ##### Start the distributed cluster serving
 To start all the services of distributed cluster serving, run
