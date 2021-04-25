@@ -1,136 +1,114 @@
 # PPML (Privacy Preserving Machine Learning)
 
-PPML (Privacy-Preserving Machine Learning) aims at protecting user privacy, meanwhile keeping machine learning applications still useful. However, achieving this goal without impacting existing applications is quite difficult, especially in end-to-end big data scenarios. To resolve this problem, Analytics-Zoo provides an end-to-end PPML platform for Big Data AI based on Intel SGX (Software Guard Extensions). This PPML platform ensures the whole Big Data & AI pipeline are fully protected by secured SGX enclave in hardware level, further more existing Big Data & AI applications, such as Flink, Spark, SparkSQL and machine/deep learning, can be seamlessly migrated into this PPML platform without any code changes.
+Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. Analytics Zoo ***PPML*** combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), so that users can continute to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
 
-## PPML for Big Data AI
+## 1. PPML for Big Data AI
+Analytics Zoo provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:
 
-To take full advantage of big data, especially the value of private or sensitive data, customers need to build a trusted platform under the guidance of privacy laws or regulation, such as [GDPR](https://gdpr-info.eu/) and CCPA (https://oag.ca.gov/privacy/ccpa). This requirement raises big challenges to customers who already have big data and big data applications, such as Spark/SparkSQL, Flink/FlinkSQL and AI applications. Migrating these applications into privacy preserving way requires lots of additional efforts.
+ * Compute and memory protected by SGX Enclaves
+ * Network communication protected by remote attestation and TLS
+ * Storage (e.g., data and model) protected by encryption
+ * Optional federated learning support
 
-With Analytics-Zoo, customers/developers can build a Trusted Platform for big data with a few clicks, and all existing big data & AI applications, such as Flink and Spark applications, can be migrated into this platform without any code changes. In specific, Analytics-Zoo uses serval security technologies
+That is, even when the program runs in an untrusted cloud environment, all the data and models are protected (e.g., using encryption) on disk and network, and the compute and memory are also protected using SGX Enclaves, so as to preserve the confidentiality and privacy during data analysis and machine learning.
 
-- Confidential Computation with Intel SGX. Intel SGX provides hardware-based isolation and memory encryption with very limited attack surface.
-- Seamless migration with LibOS. Based on LibOS projects ([Graphene](https://grapheneproject.io/) and [Occlum](https://occlum.io/)), Analytics-Zoo empowers our customers (e.g., data scientists and big data developers) to build PPML applications on top of large scale dataset without impacting existing applications.
-- Secured networks with TLS and encryption. All network traffic are protected by TLS, in some cases, content should be encrypted before transformation.
-- File or model protection with encryption. Model and sensitive configuration files will be encrypted before uploading to Trusted platform. These files are only decrypted in SGX enclave.
-- Environment & App attestation with SGX attestation. SGX attestation ensures that remote/local SGX env and applications can be verified.
+In the current release, two types of trusted Big Data AI applications are supported:
 
-Note: Intel SGX requires hardware support, please [check if your CPU has this feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors/intel-core-processors.html). In [3rd Gen Intel Xeon Scalable Processors](https://newsroom.intel.com/press-kits/3rd-gen-intel-xeon-scalable/), SGX allows up to 1TB of data to be included in secure enclaves.
+1. Big Data analytics and ML/DL (supporting [Apache Spark](https://spark.apache.org/) and [BigDL](https://github.com/intel-analytics/BigDL))
+2.  Realtime compute and ML/DL (supporting [Apache Flink](https://flink.apache.org/) and Analytics Zoo [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song)) 
 
-### Key features
+## 2. Trusted Big Data Analytics and ML
+With the trusted Big Data analytics and ML/DL support, users can run standard Spark data analysis (such as Spark SQL, Dataframe, MLlib, etc.) and distributed deep learning (using BigDL) in a secure and trusted fashion.
 
-- Protecting data and model confidentiality
-  - Sensitive input/output data (computation, training and inference), e.g., healthcare data
-  - Proprietary model, e.g., model trained with self-owned or sensitive data
-- Seamless migrate existing big data applications into privacy preserving applications
-- Trusted big data & AI Platform based on Intel SGX
-  - Trusted Big Data Analytics and ML: Spark batch, SparkSQL, BigDL, TPC-H
-  - Trusted Realtime Compute and ML: Flink batch/streaming, Cluster Serving
+### 2.1 Prerequisite
 
-## Trusted Big Data Analytics and ML
+Download scripts and dockerfiles from [this link](https://github.com/intel-analytics/analytics-zoo/tree/master/ppml).
 
-In this section, we will demonstrate how to use Analytics-Zoo to setup trusted Spark in SGX, then run Spark PI example in safe way. Trusted Big Data Analytics and ML supports Spark related applications, such as Spark batch jobs, SparkSQL and BigDL etc. For more examples, please refer to [trusted-big-data-ml](https://github.com/intel-analytics/analytics-zoo/tree/master/ppml/trusted-big-data-ml/scala/docker-graphene).
+1. Install SGX Driver
 
-### Use cases
+    Please check if the current HW processor supports [SGX](https://www.intel.com/content/www/us/en/support/articles/000028173/processors/intel-core-processors.html). Then, enable SGX feature in BIOS. Note that after SGX is enabled, a portion of memory will be assigned to SGX (this memory cannot be seen/used by OS and other applications).
 
-- Big Data analysis using Spark (Spark SQL, Dataframe, MLlib, etc.)
-- Distributed deep learning using BigDL
+    Check SGX driver with `ls /dev | grep sgx`. If SGX driver is not installed, please install [SGX DCAP driver](https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/driver/linux):
 
-### Get started
+    ```bash
+    ./ppml/scripts/install-graphene-driver.sh
+    ```
 
-#### Prerequisite: 
-(1) Install SGX Driver & Prepare Scripts
+2. Generate key for SGX enclave
 
-Please check if current platform [has SGX feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors/intel-core-processors.html). Then, enable SGX feature in BIOS. Note that after SGX is enabled, a portion of memory will be assigned to SGX (this memory cannot be seen/used by OS and other applications).
+   Generate the enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely. It will generate a file `enclave-key.pem` in the current working directory, which will be the  enclave key. To store the key elsewhere, modify the output file path.
 
-Check SGX driver with `ls /dev | grep sgx`. If SGX driver is not installed, please install [SGX DCAP driver](https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/driver/linux) with [install-graphene-driver.sh](https://github.com/intel-analytics/analytics-zoo/blob/master/ppml/scripts/install-graphene-driver.sh) (need root permission).
+    ```bash
+    openssl genrsa -3 -out enclave-key.pem 3072
+    ```
 
-```bash
-./ppml/scripts/install-graphene-driver.sh
-```
+3. Prepare keys for TLS (test only, need input security password for keys).
 
-(2) Generate key for enclave
+    ```bash
+    ./ppml/scripts/generate-keys.sh
+    ```
 
-You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely. It will generate a file enclave-key.pem in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
+    This scrips will generate 5 files in `keys` dir (you can replace them with your own TLS keys).
 
-```bash
-openssl genrsa -3 -out enclave-key.pem 3072
-```
+    ```bash
+    keystore.pkcs12
+    server.crt
+    server.csr
+    server.key
+    server.pem
+    ```
 
-#### Step 0: Prepare Environment
+4. Generate `password` to avoid plain text security password transfer.
 
-Download scripts and dockerfiles in [this link](https://github.com/intel-analytics/analytics-zoo/tree/master/ppml).
+    ```bash
+    ./ppml/scripts/generate-password.sh
+    ```
+    This scrips will generate 2 files in `password` dir.
 
-##### TLS keys & password & Enclave key
-
-Prepare keys for TLS (test only, need input security password for keys).
-
-```bash
-./ppml/scripts/generate-keys.sh
-```
-
-This scrips will generate 5 files in `keys` dir (you can replace them with your own TLS keys).
-
-```bash
-keystore.pkcs12
-server.crt
-server.csr
-server.key
-server.pem
-```
-
-Generated `password` to avoid plain text security password transfer.
-
-```bash
-./ppml/scripts/generate-password.sh
-```
-
-This scrips will generate 2 files in `password` dir.
-
-```bash
-key.txt
-output.bin
-```
-
-##### Docker
+    ```bash
+    key.txt
+    output.bin
+    ```
+### 2.2 Prepare Docker Container
 
 Pull docker image from Dockerhub
-
 ```bash
-docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.10-SNAPSHOT
+docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.10-SNAPSHOT
 ```
 
-Also, you can build docker image from Dockerfile (this will take some time).
+Alternatively, you can build docker image from Dockerfile (this will take some time):
 
 ```bash
 cd ppml/trusted-big-data-ml/scala/docker-graphene
 ./build-docker-image.sh
 ```
 
-#### Single-Node Trusted Big Data Analytics and ML Platform
+### 2.3 Run Trusted Big Data and ML on Single Node
 
-Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir. Start Spark service with this command
+#### 2.3.1 Start PPML Container
 
-Prepare `keys` and `password`
-```bash
-cd ppml/trusted-big-data-ml/scala/docker-graphene
-# copy keys and password into current directory
-cp -r ../keys .
-cp -r ../password .
-```
+Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir. 
 
-Before you run the following commands to start the container, you need to modify the paths in deploy-local-big-data-ml.sh.
-Then run the following commands:
-```bash
-./deploy-local-big-data-ml.sh
-sudo docker exec -it spark-local bash
-cd /ppml/trusted-big-data-ml
-./init.sh
-```
+1. Copy `keys` and `password`
+    ```bash
+    cd ppml/trusted-big-data-ml/scala/docker-graphene
+    # copy keys and password into current directory
+    cp -r ../keys .
+    cp -r ../password .
+    ```
+2. To start the container, first modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
+    ```bash
+    ./deploy-local-spark-sgx.sh
+    sudo docker exec -it spark-local bash
+    cd /ppml/trusted-big-data-ml
+    ./init.sh
+    ```
+    
+#### 2.3.2 Run Trusted Spark Pi 
 
-##### **Example 1: Spark Pi on Graphene-SGX**
+This example runs a simple Spark PI program, which is an  easy way to verify if the Trusted PPML environment is ready.  
 
-This example is a simple Spark local PI example, this a very easy way to verify if your SGX environment is ready.  
-Run the script to run pi test in spark:
+Run the script to run trusted Spark Pi:
 
 ```bash
 bash start-spark-local-pi-sgx.sh
@@ -142,13 +120,47 @@ Open another terminal and check the log:
 sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/spark.local.pi.sgx.log | egrep "###|INFO|Pi"
 ```
 
-The result should look like:
+The result should look something like:
 
 >   Pi is roughly 3.1422957114785572
 
-##### **Example 2: BigDL model training on Graphene-SGX**
+#### 2.3.3 Run Trusted Spark SQL
 
-This example is about how to train a lenet model using BigDL on Graphene-SGX. Before you run the following script, you should download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Use `gzip -d` to unzip all the downloaded files(train-images-idx3-ubyte.gz, train-labels-idx1-ubyte.gz, t10k-images-idx3-ubyte.gz, t10k-labels-idx1-ubyte.gz) and put them into folder `/ppml/trusted-big-data-ml/work/data`. Then run the following script:  
+This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries). 
+
+First, download and install [SBT](https://www.scala-sbt.org/download.html) and deploy a [HDFS](https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html) for TPC-H dataset and output, then build the source codes with SBT and generate TPC-H dataset according to the [TPC-H example](https://github.com/qiuxin2012/tpch-spark). After that, check if there is an  `spark-tpc-h-queries_2.11-1.0.jar` under `tpch-spark/target/scala-2.11`; if so, we have successfully packaged the project.
+
+Copy the TPC-H package to container:
+
+```bash
+docker cp tpch-spark/ spark-local:/ppml/trusted-big-data-ml/work
+docker cp tpch-spark/start-spark-local-tpc-h-sgx.sh spark-local:/ppml/trusted-big-data-ml/
+sudo docker exec -it spark-local bash
+cd /ppml/trusted-big-data-ml/
+```
+Then run the script below:
+
+```bash
+sh start-spark-local-tpc-h-sgx.sh [your_hdfs_tpch_data_dir] [your_hdfs_output_dir]
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/spark.local.tpc.h.sgx.log | egrep "###|INFO|finished"
+```
+
+The result should look like:
+
+>   ----------------22 finished--------------------
+
+#### 2.3.4 Run Trusted Deep Learning
+
+This example shows how to run trusted deep learning (using an BigDL LetNet program).
+
+First, download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Use `gzip -d` to unzip all the downloaded files (train-images-idx3-ubyte.gz, train-labels-idx1-ubyte.gz, t10k-images-idx3-ubyte.gz, t10k-labels-idx1-ubyte.gz) and put them into folder `/ppml/trusted-big-data-ml/work/data`. 
+
+Then run the following script:  
 
 ```bash
 bash start-spark-local-train-sgx.sh
@@ -163,116 +175,58 @@ or
 sudo docker logs spark-local | egrep "###|INFO"
 ```
 
-The result should look like: <br>
->   ############# train optimized[P1182:T2:java] ---- end time: 310534 ms return from shim_write(...) = 0x1d <br>
->   ############# ModuleLoader.saveToFile File.saveBytes end, used 827002 ms[P1182:T2:java] ---- end time: 1142754 ms return from shim_write(...) = 0x48 <br>
->   ############# ModuleLoader.saveToFile saveWeightsToFile end, used 842543 ms[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x4b <br>
->   ############# model saved[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x19 <br>
+The result should look like:
 
-##### **Example 3: Spark-SQL on Graphene-SGX** 
-
-Before run TPC-H test in container we created, we should download and install [SBT](https://www.scala-sbt.org/download.html) and deploy a [HDFS](https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html) for TPC-H dataset and output, then build the source codes with SBT and generate TPC-H dataset according to [TPC-H](https://github.com/qiuxin2012/tpch-spark). After packaged, check if we have `spark-tpc-h-queries_2.11-1.0.jar ` under `tpch-spark/target/scala-2.11`, if have, we package successfully.
-
-Copy TPC-H to container: <br>
 ```bash
-docker cp tpch-spark/ spark-local:/ppml/trusted-big-data-ml/work
-docker cp tpch-spark/start-spark-local-tpc-h-sgx.sh spark-local:/ppml/trusted-big-data-ml/
-sudo docker exec -it spark-local bash
-cd /ppml/trusted-big-data-ml/
+############# train optimized[P1182:T2:java] ---- end time: 310534 ms return from shim_write(...) = 0x1d
+############# ModuleLoader.saveToFile File.saveBytes end, used 827002 ms[P1182:T2:java] ---- end time: 1142754 ms return from shim_write(...) = 0x48
+############# ModuleLoader.saveToFile saveWeightsToFile end, used 842543 ms[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x4b
+############# model saved[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x19
 ```
 
-Then run the script to run TPC-H test in spark: <br>
-```bash
-sh start-spark-local-tpc-h-sgx.sh [your_hdfs_tpch_data_dir] [your_hdfs_output_dir]
-```
+### 2.4 Run Trusted Big Data and ML on Cluster
+#### 2.4.1 Configure the Environment
 
-Open another terminal and check the log: <br>
-```bash
-sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/spark.local.tpc.h.sgx.log | egrep "###|INFO|finished"
-```
+Prerequisite: passwordless ssh login to all the nodes needs to be properly set up first.
 
-The result should look like: <br>
->   ----------------22 finished--------------------
-
-#### Distributed Trusted Big Data Analytics and ML Platform
-
-##### **Step 1: Configure the environments for master, workers, docker image, security keys/password files, enclave key, and data path.**
-Requirement: setup passwordless ssh login to all the nodes.
 ```bash
 nano environments.sh
 ```
-##### **Step 2: Start distributed big data ML**
-To start the Spark services for distributed big data ML, run
+#### 2.4.2 Start Distributed Big Data and ML Platform
+
+First run the following command to start the service:
+
 ```bash
 ./deploy-distributed-standalone-spark.sh
 ```
 
 Then run the following command to start the training:
+
 ```bash
 ./start-distributed-spark-train-sgx.sh
 ```
+#### 2.4.3  Stop Distributed Big Data and ML Platform
 
-##### **Step 3: Stop distributed big data ML**
-When stopping distributed big data ML, stop the training first:
+First, stop the training:
+
 ```bash
 ./stop-distributed-standalone-spark.sh
 ```
-Then stop the spark services:
+
+Then stop the service:
+
 ```bash
 ./undeploy-distributed-standalone-spark.sh
 ```
 
------------------------------------------------
+## 3. Trusted Realtime Compute and ML
+With the trusted realtime compute and ML/DL support, users can run standard Flink stream processing and distributed DL model inference (using [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song)) in a secure and trusted fashion.
 
-## Trusted Realtime Compute and ML
+### 3.1 Prerequisite
 
-In this section, we will demonstrate how to use Analytics-Zoo to setup trusted Flink in SGX, then run real-time model serving in safe way. Trusted Realtime Compute and ML supports Flink related applications, such as Batch/Streaming Flink jobs, FlinkSQL and Cluster Serving. For more examples, please refer to [trusted-realtime-ml](https://github.com/intel-analytics/analytics-zoo/tree/master/ppml/trusted-realtime-ml/scala/docker-graphene).
+Please refer to [Section 2.1 Prerequisite](#prerequisite)
 
-### User cases
-
-- Real time data computation/analytics using Flink
-- Distributed end-to-end serving solution with Cluster Serving
-
-### Get started
-
-#### [Prerequisite: Install SGX Driver & Prepare Scripts](#prerequisite-install-sgx-driver--prepare-scripts)
-
-#### Step 0: Prepare Environment
-
-Download scripts and dockerfiles in [this link](https://github.com/intel-analytics/analytics-zoo/tree/master/ppml).
-
-##### TLS keys & password
-
-Prepare keys for TLS (test only, need input security password for keys).
-
-```bash
-./ppml/scripts/generate-keys.sh
-```
-
-This scrips will generate 5 files in `keys` dir (you can replace them with your own TLS keys).
-
-```bash
-keystore.pkcs12
-server.crt
-server.csr
-server.key
-server.pem
-```
-
-Generated `password` to avoid plain text security password transfer.
-
-```bash
-./ppml/scripts/generate-password.sh
-```
-
-This scrips will generate 2 files in `password` dir.
-
-```bash
-key.txt
-output.bin
-```
-
-##### Docker
+### 3.2 Prepare Docker Container
 
 Pull docker image from Dockerhub
 
@@ -283,11 +237,13 @@ docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene
 Also, you can build docker image from Dockerfile (this will take some time).
 
 ```bash
-cd ppml/trusted-big-data-ml/scala/docker-graphene
+cd ppml/trusted-realtime-ml/scala/docker-graphene
 ./build-docker-image.sh
 ```
 
-#### Step 1: Start  Trusted Realtime Compute and ML Platform
+### 3.3 Run Trusted Realtime Compute and ML 
+
+#### 3.3.1 Configure the Environment
 
 Enter `analytics-zoo/ppml/trusted-realtime-ml/scala/docker-graphene` dir.
 
@@ -297,21 +253,17 @@ Modify `environments.sh`. Change MASTER, WORKER IP and file paths (e.g., `keys` 
 nano environments.sh
 ```
 
-Start Flink in SGX
+#### 3.3.2 Start the service
+
+Start Flink service:
 
 ```bash
 ./deploy-flink.sh
 ```
 
-After all jobs are done, stop Flink in SGX
+#### 3.3.3 Run Trusted Flink Program
 
-```bash
-./stop-flink.sh
-```
-
-#### Step 2: Run Flink Program
-
-If working env has Flink, then submit jobs to Flink
+Submit Flink jobs: 
 
 ```bash
 cd ${FLINK_HOME}
@@ -339,12 +291,9 @@ The result should look like:
 (bodkin,1) 
 (bourn,1)  
 ```
+#### 3.3.4 Run Trusted Cluster Serving
 
-#### Step 3: Run Trusted Cluster Serving
-
-[Analytics-Zoo Cluster serving](https://www.usenix.org/conference/opml20/presentation/song) is a distributed end-to-end inference service based on Flink. Now this feature is available in PPML solution, while all input data and model in inference pipeline are fully protected.
-
-Start Cluster Serving Service
+Start Cluster Serving as follows:
 
 ```bash
 ./start-local-cluster-serving.sh
@@ -358,10 +307,8 @@ input_api = InputQueue()
 input_api.enqueue('my-image1', user_define_key={"path: 'path/to/image1'})
 ```
 
-Cluster Serving service is a long running service in container, you can stop it with
+Cluster Serving service is a long running service in container, you can stop it as follows:
 
 ```bash
 docker stop trusted-cluster-servinglocal
 ```
-
-For distributed/multi-container, please refer to [Distributed Trusted Cluster Serving](https://github.com/intel-analytics/analytics-zoo/tree/master/ppml/trusted-realtime-ml/scala/docker-graphene#in-distributed-mode)
