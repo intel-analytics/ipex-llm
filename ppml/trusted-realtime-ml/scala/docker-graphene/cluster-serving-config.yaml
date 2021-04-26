@@ -1,34 +1,60 @@
-## Analytics-zoo Cluster Serving
+## Analytics-zoo Cluster Serving Config
 
-model:
-  # model path must be provided
-  path: /ppml/trusted-realtime-ml/java/work/models/resnet50
-  # name, default is serving_stream, you need to specify if running multiple servings
-  name:
-data:
-  # default, localhost:6379
-  src:
-  # default, None
-  filter:
-params:
-  # default, 4
-  core_number:
-  # default: model number will auto-adapt to core_number, do not set it if not sure about the behavior
-  model_number:
-  # default: OFF
-  performance_mode:
-flink:
-  rest:
-redis:
-  # default, 4g
-  maxmem:
-  timeout: 5000
-secure:
-  # default: false
-  secure_enabled:
-  # default:
-  secure_trust_store_path: /ppml/trusted-realtime-ml/redis/work/keys/keystore.jks
-  # default:
-  secure_struct_store_password:
-  # default: false
-  model_encrypted:
+
+# model path must be provided
+  modelPath:  /ppml/trusted-realtime-ml/java/work/models/resnet50
+
+# name, default is serving_stream, you need to specify if running multiple servings
+# jobName:
+
+# default, None
+# postProcessing:
+
+# default, false, if input is already batched NdArray, set true
+# inputAlreadyBatched:
+
+######## Performance Configuration
+# default, number of cores per machine
+# if you set coreNumberPerMachine, Cluster Serving will auto config modelParallelism and threadPerModel
+# if you need to set modelParallelism and threadPerModel manually, do not set coreNumberPerMachine
+# coreNumberPerMachine:
+
+# default: number of models used in serving
+# modelParallelism:
+
+# default: number of cores (or threads) used per model in serving
+# threadPerModel
+
+# default: OFF
+# performance_mode:
+
+
+######## Specific Configuration
+# default: localhost:8081
+# flinkRestUrl:
+
+# default: localhost:6379
+# redisUrl:
+
+# default: 8g
+# redisMaxmemory:
+
+# default: 5000
+# redisTimeout:
+
+######## Secure Configuration
+# default: false
+# secureEnabled:
+
+# default:
+  secureTrustStorePath: /ppml/trusted-realtime-ml/redis/work/keys/keystore.jks
+
+# default:
+# secureStructStorePassword:
+
+# default: false
+# modelEncrypted:
+
+# default: false
+# recordEncrypted:
+
