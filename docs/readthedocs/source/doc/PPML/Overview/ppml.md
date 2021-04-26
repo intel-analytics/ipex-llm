@@ -128,7 +128,7 @@ The result should look something like:
 
 This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries). 
 
-First, download and install [SBT](https://www.scala-sbt.org/download.html) and deploy a [HDFS](https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html) for TPC-H dataset and output, then build the source codes with SBT and generate TPC-H dataset according to the [TPC-H example](https://github.com/qiuxin2012/tpch-spark). After that, check if there is an  `spark-tpc-h-queries_2.11-1.0.jar` under `tpch-spark/target/scala-2.11`; if so, we have successfully packaged the project.
+First, download and install [SBT](https://www.scala-sbt.org/download.html) and deploy a [HDFS](https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html) for TPC-H dataset and output, then build the source codes with SBT and generate TPC-H dataset according to the [TPC-H example](https://github.com/intel-analytics/zoo-tutorials/tree/master/tpch-spark). After that, check if there is an  `spark-tpc-h-queries_2.11-1.0.jar` under `tpch-spark/target/scala-2.11`; if so, we have successfully packaged the project.
 
 Copy the TPC-H package to container:
 
