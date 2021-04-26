@@ -2,11 +2,11 @@
 
 | | BigDL 0.12.2 | 
 | ------------- | --------- |
-| Spark 2.1.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.1.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.1.1-0.10.0-cluster-serving-all.zip)|
-| Spark 2.2.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.2.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.2.1-0.10.0-cluster-serving-all.zip)|
-| Spark 2.3.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.3.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.3.1-0.10.0-cluster-serving-all.zip)|
-| Spark 2.4.3   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.4.3/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.10.0-cluster-serving-all.zip)|
-| Spark 3.0.0   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_3.0.0/0.10.0/analytics-zoo-bigdl_0.12.2-spark_3.0.0-0.10.0-cluster-serving-all.zip)|
+| Spark 2.1.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.1.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.1.1-0.10.0-dist-all.zip)|
+| Spark 2.2.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.2.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.2.1-0.10.0-dist-all.zip)|
+| Spark 2.3.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.3.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.3.1-0.10.0-dist-all.zip)|
+| Spark 2.4.3   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.4.3/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.10.0-dist-all.zip)|
+| Spark 3.0.0   | [download](https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_3.0.0/0.10.0/analytics-zoo-bigdl_0.12.2-spark_3.0.0-0.10.0-dist-all.zip)|
 
 ---
 ## **Release 0.9.0**
