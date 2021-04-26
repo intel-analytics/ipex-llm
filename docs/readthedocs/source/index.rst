@@ -9,6 +9,8 @@ Analytics Zoo is an open source Big Data AI platform, and includes the following
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
 * **BigDL Extensions**: high-level `Spark ML pipeline <doc/UseCase/nnframes.html>`_ and `Keras-like <doc/UseCase/keras-api.html>`_ APIs for BigDL 
 * `Zouwu <doc/Zouwu/Overview/zouwu.html>`_: scalable time series analysis using AutoML
+* `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning
+
  
 -------
 
