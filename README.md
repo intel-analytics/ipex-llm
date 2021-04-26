@@ -17,6 +17,8 @@ Analytics Zoo is an open source _**Big Data AI**_ platform, and includes the fol
  * [BigDL Extensions](#getting-started-with-bigdl-extensions): high-level Spark ML pipeline and Keras-like APIs for BigDL
  
  * [Zouwu](#getting-started-with-zouwu): scalable time series analysis using AutoML
+ 
+ * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning
 
 For more information, you may [read the docs](https://analytics-zoo.readthedocs.io/).
 
@@ -37,7 +39,7 @@ To install latest nightly build, use ```pip install --pre --upgrade analytics-zo
 
 ## Getting Started with Orca
 
-Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node Python notebook across large clusters (so as to process distributed Big Data).
+Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node TensorFlow or PyTorch notebook across large clusters (so as to process distributed Big Data).
 
 First, initialize [Orca Context](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
@@ -177,6 +179,12 @@ ts_pipeline.predict(test_df)
 ```
 
 See the Zouwu [user guide](https://analytics-zoo.readthedocs.io/en/latest/doc/Zouwu/Overview/zouwu.html) and [example](https://analytics-zoo.readthedocs.io/en/latest/doc/Zouwu/QuickStart/zouwu-autots-quickstart.html) for more details.
+
+## PPML (Privacy Preserving Machine Learning)
+
+***Analytics Zoo PPML*** provides a *Trusted Cluster Environment* for protecting the end-to-end Big Data AI pipeline. It combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), and allows users to run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
+
+See the [PPML user guide](https://analytics-zoo.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
 
 ## More information
 
