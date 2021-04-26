@@ -34,7 +34,7 @@ class XgbSigOptRecipe(Recipe):
 
         self.num_samples = num_rand_samples
 
-    def search_space(self, all_available_features):
+    def search_space(self):
         return dict()
 
 
