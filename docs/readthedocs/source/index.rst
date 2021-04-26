@@ -39,6 +39,7 @@ Analytics Zoo is an open source Big Data AI platform, and includes the following
    doc/UserGuide/databricks.md
    doc/Ray/Overview/ray.md
    doc/Zouwu/Overview/zouwu.md
+   doc/PPML/Overview/ppml.md
    doc/UserGuide/develop.md
    
 .. toctree::
