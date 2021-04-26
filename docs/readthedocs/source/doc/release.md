@@ -10,23 +10,23 @@ cellpadding="10"
     </tr>
     <tr>
         <td>Spark 2.1.1 </td>
-        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.1.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.1.1-0.10.0-cluster-serving-all.zip">download</a></td>
+        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.1.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.1.1-0.10.0-dist-all.zip">download</a></td>
     </tr>
     <tr>
        <td>Spark 2.2.1 </td>
-       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.2.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.2.1-0.10.0-cluster-serving-all.zip">download</a></td>    
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.2.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.2.1-0.10.0-dist-all.zip">download</a></td>    
    </tr>
     <tr>
        <td>Spark 2.3.1 </td>
-       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.3.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.3.1-0.10.0-cluster-serving-all.zip">download</a></td> 
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.3.1/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.3.1-0.10.0-dist-all.zip">download</a></td> 
     </tr>
     <tr>
        <td>Spark 2.4.3 </td>
-       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.4.3/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.10.0-cluster-serving-all.zip">download</a></td> 
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.4.3/0.10.0/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.10.0-dist-all.zip">download</a></td> 
     </tr>
     <tr>
        <td>Spark 3.0.0 </td>
-       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_3.0.0/0.10.0/analytics-zoo-bigdl_0.12.2-spark_3.0.0-0.10.0-cluster-serving-all.zip">download</a></td> 
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_3.0.0/0.10.0/analytics-zoo-bigdl_0.12.2-spark_3.0.0-0.10.0-dist-all.zip">download</a></td> 
     </tr>
 </table>
 <br>
