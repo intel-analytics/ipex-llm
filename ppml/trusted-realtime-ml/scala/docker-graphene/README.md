@@ -18,19 +18,20 @@ To launch Trusted Realtime ML on Graphene-SGX, you need to install graphene-sgx-
 ```
 
 ### Prepare the keys
-The PPML in Analytics Zoo needs secured keys to enable Flink TLS, https and TLS enabled Redis. You need to prepare the secure keys and keystores. <br>
-This script is in /analytics-zoo/ppml/scripts: <br>
+The PPML in Analytics Zoo needs secured keys to enable Flink TLS, https and TLS enabled Redis. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+
 ```bash
-../../../scripts/generate-keys.sh
+sudo ../../../scripts/generate-keys.sh
 ```
+
 You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
 ```bash
 openssl genrsa -3 -out enclave-key.pem 3072
 ```
 ### Prepare the password
-Next, you need to store the password you used in the previous step in a secured file: <br>
-This script is also in /analytics-zoo/ppml/scripts: <br>
+Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file:
+
 ```bash
 ../../../scripts/generate-password.sh used_password_when_generate_keys
 ```

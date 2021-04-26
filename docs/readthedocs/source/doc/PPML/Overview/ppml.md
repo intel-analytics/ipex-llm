@@ -42,10 +42,10 @@ Download scripts and dockerfiles from [this link](https://github.com/intel-analy
     openssl genrsa -3 -out enclave-key.pem 3072
     ```
 
-3. Prepare keys for TLS (test only, need input security password for keys).
+3. Prepare keys for TLS with root permission (test only, need input security password for keys).
 
     ```bash
-    ./ppml/scripts/generate-keys.sh
+    sudo ./ppml/scripts/generate-keys.sh
     ```
 
     This scrips will generate 5 files in `keys` dir (you can replace them with your own TLS keys).
@@ -58,10 +58,10 @@ Download scripts and dockerfiles from [this link](https://github.com/intel-analy
     server.pem
     ```
 
-4. Generate `password` to avoid plain text security password transfer.
+4. Generate `password` to avoid plain text security password (used for key generation in `generate-keys.sh`) transfer.
 
     ```bash
-    ./ppml/scripts/generate-password.sh
+    ./ppml/scripts/generate-password.sh used_password_when_generate_keys
     ```
     This scrips will generate 2 files in `password` dir.
 
