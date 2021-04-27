@@ -18,7 +18,7 @@ Analytics Zoo is an open source _**Big Data AI**_ platform, and includes the fol
  
  * [Zouwu](#getting-started-with-zouwu): scalable time series analysis using AutoML
  
- * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (experimental)
+ * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
 
 For more information, you may [read the docs](https://analytics-zoo.readthedocs.io/).
 
