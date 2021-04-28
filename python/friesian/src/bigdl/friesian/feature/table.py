@@ -14,11 +14,18 @@
 # limitations under the License.
 #
 import os
+from functools import reduce
 
+from pyspark.sql.types import DoubleType, ArrayType
+from pyspark.ml import Pipeline
+from pyspark.ml.feature import MinMaxScaler
+from pyspark.ml.feature import VectorAssembler
 from pyspark.sql.functions import col, udf, array, broadcast, explode, struct, collect_list
+
 from zoo.orca import OrcaContext
 from zoo.friesian.feature.utils import *
 from zoo.common.utils import callZooFunc
+
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
@@ -69,7 +76,7 @@ class Table:
         """
         return self.df
 
-    def count(self):
+    def size(self):
         """
         Returns the number of rows in this Table.
 
@@ -302,6 +309,64 @@ class FeatureTable(Table):
         return FeatureTable(df)
 
     def _clone(self, df):
+        return FeatureTable(df)
+
+    def cross_columns(self, crossed_columns, bucket_sizes):
+        """
+        Cross columns and hashed to specified bucket size
+        :param crossed_columns: list of column name pairs to be crossed.
+        i.e. [['a', 'b'], ['c', 'd']]
+        :param bucket_sizes: hash bucket size for crossed pairs. i.e. [1000, 300]
+        :return: FeatureTable include crossed columns(i.e. 'a_b', 'c_d')
+        """
+        df = cross_columns(self.df, crossed_columns, bucket_sizes)
+        return FeatureTable(df)
+
+    def normalize(self, columns):
+        """
+        Normalize numeric columns
+        :param columns: list of column names
+        :return: FeatureTable
+        """
+        df = self.df
+        types = [x[1] for x in self.df.select(*columns).dtypes]
+        scalar_cols = [columns[i] for i in range(len(columns))
+                       if types[i] == "int" or types[i] == "bigint"
+                       or types[i] == "float" or types[i] == "double"]
+        array_cols = [columns[i] for i in range(len(columns))
+                      if types[i] == "array<int>" or types[i] == "array<bigint>"
+                      or types[i] == "array<float>" or types[i] == "array<double>"]
+        vector_cols = [columns[i] for i in range(len(columns)) if types[i] == "vector"]
+        if scalar_cols:
+            assembler = VectorAssembler(inputCols=scalar_cols, outputCol="vect")
+
+            # MinMaxScaler Transformation
+            scaler = MinMaxScaler(inputCol="vect", outputCol="scaled")
+
+            # Pipeline of VectorAssembler and MinMaxScaler
+            pipeline = Pipeline(stages=[assembler, scaler])
+
+            tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
+
+            # Fitting pipeline on dataframe
+            df = pipeline.fit(df).transform(df) \
+                .withColumn("scaled_list", tolist(col("scaled"))) \
+                .drop("vect").drop("scaled")
+            for i in range(len(scalar_cols)):
+                df = df.withColumn(scalar_cols[i], col("scaled_list")[i])
+            df = df.drop("scaled_list")
+
+            # cast to float
+            for c in scalar_cols:
+                df = df.withColumn(c, col(c).cast("float"))
+
+        for c in array_cols:
+            df = normalize_array(df, c)
+
+        for c in vector_cols:
+            scaler = MinMaxScaler(inputCol=c, outputCol="scaled")
+            df = scaler.fit(df).transform(df).withColumnRenamed("scaled", c)
+
         return FeatureTable(df)
 
     def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):

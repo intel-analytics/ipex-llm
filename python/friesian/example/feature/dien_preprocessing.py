@@ -48,7 +48,7 @@ if __name__ == "__main__":
         .withColumnRenamed('unixReviewTime', 'time')\
         .dropna("any").persist(storageLevel=StorageLevel.DISK_ONLY)
     transaction_tbl = FeatureTable(transaction_df)
-    print("review_tbl, ", transaction_tbl.count())
+    print("review_tbl, ", transaction_tbl.size())
 
     # read meta data
     def get_category(x):
@@ -62,15 +62,15 @@ if __name__ == "__main__":
         .persist(storageLevel=StorageLevel.DISK_ONLY)
     item_tbl = FeatureTable(item_df)
 
-    print("item_tbl, ", item_tbl.count())
+    print("item_tbl, ", item_tbl.size())
 
     item_category_indices = item_tbl.gen_string_idx(["item", "category"], 1)
     cat_default = item_category_indices[1].df.filter("category == 'default'").collect()
-    default_cat = cat_default[0][1] if cat_default else item_category_indices[1].count()
+    default_cat = cat_default[0][1] if cat_default else item_category_indices[1].size()
     new_row = spark.createDataFrame([("default", int(default_cat))], ["category", "id"])
     category_index = StringIndex(item_category_indices[1].df.union(new_row).distinct()
                                  .withColumn("id", col("id").cast("Integer")), "category")
-    item_size = item_category_indices[0].count()
+    item_size = item_category_indices[0].size()
 
     user_index = transaction_tbl.gen_string_idx(['user'], 1)
     get_label = udf(lambda x: [float(x), 1 - float(x)], ArrayType(FloatType()))
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     item2cat.write_parquet(options.output+"item2cat")
     full_tbl.write_parquet(options.output + "data")
 
-    print("final output count, ", full_tbl.count())
+    print("final output count, ", full_tbl.size())
     stop_orca_context()
     end = time.time()
     print(f"perf preprocessing time: {(end - begin):.2f}s")
