@@ -78,4 +78,8 @@ private[friesian] object Utils {
       Array(Tuple2(part_id, rows.size)).iterator
     }
   }
+
+  def hashBucket(content: Any, bucketSize: Int = 1000, start: Int = 0): Int = {
+    return (content.hashCode() % bucketSize + bucketSize) % bucketSize + start
+  }
 }
