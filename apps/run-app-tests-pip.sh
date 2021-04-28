@@ -680,7 +680,7 @@ cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
 
 python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_model_forecasting.py
 cd -
- 
+
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
@@ -792,10 +792,25 @@ start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction
 
 sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
+sed -i "s/epochs\ =\ 50/epochs\ =\ 2/g; s/batch_size\ =\ 16/batch_size\ =\ 1024/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
+cwd=$PWD
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/
 
+# download data
+if ! [ -d "data" ];
+then
+    mkdir data
+    cd data
+    wget https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip
+    wget https://raw.githubusercontent.com/CNuge/kaggle-code/master/stock_data/merge.sh
+    chmod +x merge.sh
+    unzip individual_stocks_5yr.zip
+    ./merge.sh
+    cd ..
+fi
+
 python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
-cd -
+cd $cwd
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
