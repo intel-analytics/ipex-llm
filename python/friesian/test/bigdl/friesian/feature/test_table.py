@@ -18,10 +18,11 @@ import os.path
 import pytest
 import tempfile
 from unittest import TestCase
-from zoo.orca import init_orca_context, stop_orca_context, OrcaContext
 
-from pyspark.sql.functions import col, explode, udf
+from pyspark.sql.functions import col, max, min, array
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType
+
+from zoo.orca import OrcaContext
 from zoo.friesian.feature import FeatureTable, StringIndex
 from zoo.common.nncontext import *
 
@@ -102,8 +103,8 @@ class TestTable(TestCase):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit=1)
-        assert string_idx_list[0].count() == 3, "col_4 should have 3 indices"
-        assert string_idx_list[1].count() == 2, "col_5 should have 2 indices"
+        assert string_idx_list[0].size() == 3, "col_4 should have 3 indices"
+        assert string_idx_list[1].size() == 2, "col_5 should have 2 indices"
         with tempfile.TemporaryDirectory() as local_path:
             for str_idx in string_idx_list:
                 str_idx.write_parquet(local_path)
@@ -128,15 +129,15 @@ class TestTable(TestCase):
             feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit="col_4:1,col_5:3")
         self.assertTrue('freq_limit only supports int, dict or None, but get str' in str(
             context.exception))
-        assert string_idx_list[0].count() == 3, "col_4 should have 3 indices"
-        assert string_idx_list[1].count() == 1, "col_5 should have 1 indices"
+        assert string_idx_list[0].size() == 3, "col_4 should have 3 indices"
+        assert string_idx_list[1].size() == 1, "col_5 should have 1 indices"
 
     def test_gen_string_idx_none(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit=None)
-        assert string_idx_list[0].count() == 3, "col_4 should have 3 indices"
-        assert string_idx_list[1].count() == 2, "col_5 should have 2 indices"
+        assert string_idx_list[0].size() == 3, "col_4 should have 3 indices"
+        assert string_idx_list[1].size() == 2, "col_5 should have 2 indices"
 
     def test_clip(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
@@ -183,6 +184,39 @@ class TestTable(TestCase):
         assert "int_cols" in merged_tbl.df.columns, "int_cols should be a column of merged_tbl"
         assert "col_1" in feature_tbl.df.columns, "col_1 should be a column of feature_tbl"
 
+    def test_norm(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
+        normalized_tbl = feature_tbl.normalize(["col_2"])
+        max_value = normalized_tbl.df.select("col_2") \
+            .agg(max(col("col_2")).alias("max")) \
+            .rdd.map(lambda row: row['max']).collect()[0]
+        min_value = normalized_tbl.df.select("col_2") \
+            .agg(min(col("col_2")).alias("min")) \
+            .rdd.map(lambda row: row['min']).collect()[0]
+
+        assert max_value <= 1, "col_2 shouldn't be more than 1 after normalization"
+        assert min_value >= 0, "col_2 shouldn't be less than 0 after normalization"
+
+        tbl2 = FeatureTable(feature_tbl.df.withColumn("col2-col3", array(["col_2", "col_3"])))
+        normalized_tbl2 = tbl2.normalize(["col_2", "col2-col3"])
+        normalized_tbl2.compute()
+
+    def test_cross(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
+        crossed_tbl = feature_tbl.cross_columns([["col_2", "col_3"]], [100])
+        assert "col_2_col_3" in crossed_tbl.df.columns, "crossed column is not created"
+        max_value = crossed_tbl.df.select("col_2_col_3") \
+            .agg(max(col("col_2_col_3")).alias("max")) \
+            .rdd.map(lambda row: row['max']).collect()[0]
+        min_value = crossed_tbl.df.select("col_2_col_3") \
+            .agg(min(col("col_2_col_3")).alias("min")) \
+            .rdd.map(lambda row: row['min']).collect()[0]
+
+        assert max_value <= 100, "cross value shouldn't be more than 100 after cross"
+        assert min_value > 0, "cross value shouldn't be less than 0 after cross"
+
     def test_add_negative_items(self):
         spark = OrcaContext.get_spark_session()
         data = [("jack", 1, "2019-07-01 12:01:19.000"),
@@ -199,7 +233,7 @@ class TestTable(TestCase):
         df = spark.createDataFrame(data=data, schema=schema)
         tbl = FeatureTable(df).add_negative_samples(10)
         dft = tbl.df
-        assert tbl.count() == 12
+        assert tbl.size() == 12
         assert dft.filter("label == 1").count() == 6
         assert dft.filter("label == 0").count() == 6
 
@@ -220,9 +254,9 @@ class TestTable(TestCase):
                              StructField("time", StringType(), True)])
         df = spark.createDataFrame(data=data, schema=schema)
         df = df.withColumn("ts", col("time").cast("timestamp").cast("long"))
-        tbl = FeatureTable(df.select("name", "item", "ts"))\
+        tbl = FeatureTable(df.select("name", "item", "ts")) \
             .add_hist_seq("name", ["item"], "ts", 1, 4)
-        assert tbl.count() == 8
+        assert tbl.size() == 8
         assert tbl.df.filter(col("name") == "alice").count() == 2
         assert tbl.df.filter("name like '%jack'").count() == 6
         assert "item_hist_seq" in tbl.df.columns
@@ -239,7 +273,7 @@ class TestTable(TestCase):
             StructField("item_hist_seq", ArrayType(IntegerType()), True)])
 
         df = spark.createDataFrame(data, schema)
-        df2 = sc\
+        df2 = sc \
             .parallelize([(1, 0), (2, 0), (3, 0), (4, 1), (5, 1), (6, 1), (7, 2), (8, 2), (9, 2)]) \
             .toDF(["item", "category"]).withColumn("item", col("item").cast("Integer")) \
             .withColumn("category", col("category").cast("Integer"))
@@ -261,7 +295,7 @@ class TestTable(TestCase):
         df = spark.createDataFrame(data, schema)
         df.filter("name like '%alice%'").show()
 
-        df2 = sc\
+        df2 = sc \
             .parallelize([(0, 0), (1, 0), (2, 0), (3, 0), (4, 1), (5, 1), (6, 1), (8, 2), (9, 2)]) \
             .toDF(["item", "category"]).withColumn("item", col("item").cast("Integer")) \
             .withColumn("category", col("category").cast("Integer"))

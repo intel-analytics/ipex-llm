@@ -24,9 +24,12 @@ import com.intel.analytics.zoo.friesian.feature.Utils
 import java.util.{List => JList}
 
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, collect_list, explode, row_number, size, spark_partition_id, struct, udf, log => sqllog}
+import org.apache.spark.sql.functions.{col, collect_list, explode, row_number, size,
+spark_partition_id, struct, udf, log => sqllog, array}
 import org.apache.spark.sql.types.{ArrayType, IntegerType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.ml.linalg.{DenseVector, Vector => MLVector}
+import org.apache.spark.ml.feature.MinMaxScaler
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
@@ -184,6 +187,23 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     resultDF
   }
 
+  def crossColumns(df: DataFrame,
+                   crossCols: JList[JList[String]],
+                   bucketSizes: JList[Int]): DataFrame = {
+    def crossColumns(bucketSize: Int) = udf((cols: WrappedArray[Any]) => {
+      Utils.hashBucket(cols.mkString("_"), bucketSize = bucketSize)
+    })
+
+    var resultDF = df
+    for (i <- 0 until crossCols.size()) {
+      resultDF = resultDF.withColumn(crossCols.get(i).asScala.toList.mkString("_"),
+        crossColumns(bucketSizes.get(i))(
+          array(crossCols.get(i).asScala.toArray.map(x => col(x)): _*)
+        ))
+    }
+    resultDF
+  }
+
   def addHistSeq(df: DataFrame,
                  userCol: String,
                  colNamesin: JList[String],
@@ -217,7 +237,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
           col("history." + c + "_history").as(c + "_hist_seq")))
     val collectColumns = colNames.map(c => col(c)) ++ Seq(col(sortCol))
     val filterCondition = colNames.map(c =>
-      "size(" + c +  s"_hist_seq) >= $minLength").mkString(" and ")
+      "size(" + c + s"_hist_seq) >= $minLength").mkString(" and ")
 
     df.groupBy(userCol)
       .agg(collect_list(struct(collectColumns: _*)).as("his_collect"))
@@ -260,7 +280,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
           var negItem = 0
           do {
             negItem = r.nextInt(itemSize)
-          } while (negItem == item_history(i) )
+          } while (negItem == item_history(i))
           negItemSeq(i)(j) = negItem
         }
       }
@@ -271,7 +291,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     val newSchema = StructType(df.schema.fields ++ Array(
       StructField("neg_item_hist_seq", ArrayType(ArrayType(IntegerType)))))
 
-   sqlContext.createDataFrame(combinedRDD, newSchema)
+    sqlContext.createDataFrame(combinedRDD, newSchema)
   }
 
 
@@ -335,7 +355,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     val selectStatement = df.schema.fields
       .filter(x => colNames.contains(x.name)).map(x => {
       val c = x.name
-      if(x.dataType == ArrayType(IntegerType)) {
+      if (x.dataType == ArrayType(IntegerType)) {
         s"post_pad_array($c) as $c"
       } else {
         s"post_pad_matrix($c) as $c"
@@ -350,4 +370,24 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     df.withColumn(colName + "_length", size(col(colName)))
   }
 
+  def normalizeArray(df: DataFrame, column: String): DataFrame = {
+    val toVector = udf((arr: Seq[Any]) => {
+      val doubleArray = arr.map {
+        case f: Float => f.toDouble
+        case i: Int => i.toDouble
+        case l: Long => l.toDouble
+        case d: Double => d
+      }
+      new DenseVector(doubleArray.toArray)
+    })
+
+    val vectoredDF = df.withColumn(column, toVector(col(column)))
+    val scaler = new MinMaxScaler()
+        .setInputCol(column)
+        .setOutputCol("scaled");
+    val toArray = udf((vec: MLVector) => vec.toArray.map(_.toFloat))
+    val resultDF = scaler.fit(vectoredDF).transform(vectoredDF)
+      .withColumn(column, toArray(col("scaled"))).drop("scaled")
+    resultDF
+  }
 }
