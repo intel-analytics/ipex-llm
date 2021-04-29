@@ -17,16 +17,15 @@
 package com.intel.analytics.zoo.friesian.python
 
 import java.util
-
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.common.PythonZoo
 import com.intel.analytics.zoo.friesian.feature.Utils
-import java.util.{List => JList}
 
+import java.util.{List => JList}
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, collect_list, explode, row_number, size,
 spark_partition_id, struct, udf, log => sqllog, array}
-import org.apache.spark.sql.types.{ArrayType, IntegerType, StructField, StructType}
+import org.apache.spark.sql.types.{ArrayType, IntegerType, DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.ml.linalg.{DenseVector, Vector => MLVector}
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -52,13 +51,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       columns.asScala.toArray
     }
 
-    val cols_idx = cols.map(col_n => {
-      val idx = df.columns.indexOf(col_n)
-      if (idx == -1) {
-        throw new IllegalArgumentException(s"The column name ${col_n} does not exist")
-      }
-      idx
-    })
+    val cols_idx = Utils.getIndex(df, cols)
 
     Utils.fillNaIndex(df, fillVal, cols_idx)
   }
@@ -157,6 +150,15 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   }
 
   def log(df: DataFrame, columns: JList[String], clipping: Boolean = true): DataFrame = {
+    val colsIdx = Utils.getIndex(df, columns.asScala.toArray)
+    for(i <- 0 until columns.size()) {
+      val colName = columns.get(i)
+      val colType = df.schema(colsIdx(i)).dataType.typeName
+      if (!Utils.checkColumnNumeric(df, colName)) {
+        throw new IllegalArgumentException(s"Unsupported data type $colType of column $colName")
+      }
+    }
+
     var resultDF = df
     val zeroThreshold = (value: Int) => {
       if (value < 0) 0 else value
@@ -174,14 +176,35 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     resultDF
   }
 
-  def clipMin(df: DataFrame, columns: JList[String], min: Int): DataFrame = {
-    var resultDF = df
-    val clipFunc = (value: Int) => {
-      if (value < min) min else value
+  def clip(df: DataFrame, columns: JList[String], min: Any = null, max: Any = null):
+  DataFrame = {
+    if (min == null && max == null) {
+      throw new IllegalArgumentException(s"min and max cannot be both null")
     }
-    val clipFuncUDF = udf(clipFunc)
-    for (i <- 0 until columns.size()) {
+    var resultDF = df
+    val cols = columns.asScala.toArray
+    val colsType = Utils.getIndex(df, cols).map(idx => df.schema(idx).dataType.typeName)
+    (cols zip colsType).foreach(nameAndType => {
+      if (!Utils.checkColumnNumeric(df, nameAndType._1)) {
+        throw new IllegalArgumentException(s"Unsupported data type ${nameAndType._2} of " +
+          s"column ${nameAndType._1}")
+      }
+    })
+
+    for(i <- 0 until columns.size()) {
       val colName = columns.get(i)
+      val colType = colsType(i)
+
+      val minVal = Utils.castNumeric(min, colType)
+      val maxVal = Utils.castNumeric(max, colType)
+
+      val clipFuncUDF = colType match {
+        case "long" => udf(Utils.getClipFunc[Long](minVal, maxVal, colType))
+        case "integer" => udf(Utils.getClipFunc[Int](minVal, maxVal, colType))
+        case "double" => udf(Utils.getClipFunc[Double](minVal, maxVal, colType))
+        case _ => throw new IllegalArgumentException(s"Unsupported data type $colType of column" +
+          s" $colName")
+      }
       resultDF = resultDF.withColumn(colName, clipFuncUDF(col(colName)))
     }
     resultDF
@@ -294,7 +317,6 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     sqlContext.createDataFrame(combinedRDD, newSchema)
   }
 
-
   def addNegSamples(df: DataFrame,
                     itemSize: Int,
                     itemCol: String = "item",
@@ -368,6 +390,66 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def addLength(df: DataFrame, colName: String): DataFrame = {
     df.withColumn(colName + "_length", size(col(colName)))
+  }
+
+  def fillMedian(df: DataFrame, columns: JList[String] = null): DataFrame = {
+    val cols = if (columns == null) {
+      df.columns.filter(column => Utils.checkColumnNumeric(df, column))
+    } else {
+      columns.asScala.toArray
+    }
+
+    val colsIdx = Utils.getIndex(df, cols)
+    val medians = Utils.getMedian(df, cols)
+    val idxMedians = (colsIdx zip medians).map(idxMedian => {
+      if (idxMedian._2 == null) {
+        throw new IllegalArgumentException(
+          s"Cannot compute the median of column ${cols(idxMedian._1)} " +
+            s"since it contains only null values.")
+      }
+      val colType = df.schema(idxMedian._1).dataType.typeName
+      colType match {
+        case "long" => (idxMedian._1, idxMedian._2.asInstanceOf[Double].longValue)
+        case "integer" => (idxMedian._1, idxMedian._2.asInstanceOf[Double].intValue)
+        case "double" => (idxMedian._1, idxMedian._2.asInstanceOf[Double])
+        case _ => throw new IllegalArgumentException(
+          s"Unsupported value type $colType of column ${cols(idxMedian._1)}.")
+      }
+    })
+
+    val dfUpdated = df.rdd.map(row => {
+      val origin = row.toSeq.toArray
+      for ((idx, fillV) <- idxMedians) {
+        if (row.isNullAt(idx)) {
+          origin.update(idx, fillV)
+        }
+      }
+      Row.fromSeq(origin)
+    })
+
+    val spark = df.sparkSession
+    spark.createDataFrame(dfUpdated, df.schema)
+  }
+
+  /* ---- Stat Operator ---- */
+
+  def median(df: DataFrame, columns: JList[String] = null, relativeError: Double = 0.00001):
+  DataFrame = {
+    val cols = if (columns == null) {
+      df.columns.filter(column => Utils.checkColumnNumeric(df, column))
+    } else {
+      columns.asScala.toArray
+    }
+
+    Utils.getIndex(df, cols)  // checks if `columns` exist in `df`
+    val medians = Utils.getMedian(df, cols, relativeError)
+    val medians_data = (cols zip medians).map(cm => Row.fromSeq(Array(cm._1, cm._2)))
+    val spark = df.sparkSession
+    val schema = StructType(Array(
+      StructField("column", StringType, nullable = true),
+      StructField("median", DoubleType, nullable = true)
+    ))
+    spark.createDataFrame(spark.sparkContext.parallelize(medians_data), schema)
   }
 
   def normalizeArray(df: DataFrame, column: String): DataFrame = {

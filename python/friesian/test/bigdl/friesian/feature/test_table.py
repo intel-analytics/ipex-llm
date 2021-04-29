@@ -52,7 +52,7 @@ class TestTable(TestCase):
                                                                 "filled with 5"
         with self.assertRaises(Exception) as context:
             feature_tbl.fillna(0, ["col_2", "col_3", "col_8"])
-        self.assertTrue('are not exist in this Table' in str(context.exception))
+        self.assertTrue('do not exist in this Table' in str(context.exception))
 
     def test_fillna_double(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
@@ -142,7 +142,7 @@ class TestTable(TestCase):
     def test_clip(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
-        clip_tbl = feature_tbl.clip(["col_1", "col_2", "col_3"], 2)
+        clip_tbl = feature_tbl.clip(["col_1", "col_2", "col_3"], min=2, max=None)
         assert isinstance(clip_tbl, FeatureTable), "clip_tbl should be a FeatureTable"
         assert feature_tbl.df.filter("col_1 < 2").count() != 0 and feature_tbl \
             .df.filter("col_2 < 2").count() != 0, "feature_tbl should not be changed"
@@ -153,6 +153,67 @@ class TestTable(TestCase):
             feature_tbl.clip(None, 2)
         self.assertTrue('columns should be str or list of str, but got None.'
                         in str(context.exception))
+
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        clip_tbl = feature_tbl.clip(["col_1", "col_2", "col_3"], min=None, max=1)
+        assert isinstance(clip_tbl, FeatureTable), "clip_tbl should be a FeatureTable"
+        assert feature_tbl.df.filter("col_1 > 1").count() != 0 and feature_tbl \
+            .df.filter("col_2 > 1").count() != 0, "feature_tbl should not be changed"
+        assert clip_tbl.df.filter("col_1 > 1").count() == 0, "col_1 should <= 1"
+        assert clip_tbl.df.filter("col_2 > 1").count() == 0, "col_2 should <= 1"
+        assert clip_tbl.df.filter("col_3 > 1").count() == 0, "col_3 should <= 1"
+
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        clip_tbl = feature_tbl.clip(["col_1", "col_2", "col_3"], min=0, max=1)
+        assert isinstance(clip_tbl, FeatureTable), "clip_tbl should be a FeatureTable"
+        assert feature_tbl.df.filter("col_1 > 1 or col_1 < 0").count() != 0 and feature_tbl \
+            .df.filter("col_2 > 1 or col_2 < 0").count() != 0, "feature_tbl should not be changed"
+        assert clip_tbl.df.filter("col_1 < 0").count() == 0, "col_1 should >= 0"
+        assert clip_tbl.df.filter("col_2 > 1").count() == 0, "col_2 should <= 1"
+        assert clip_tbl.df.filter("col_3 < 0 or col_3 > 1").count() == 0, "col_3 should >=0 " \
+                                                                          "and <= 1"
+
+    def test_dropna(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        dropped_tbl = feature_tbl.dropna(["col_1", "col_4"])
+        assert isinstance(dropped_tbl, FeatureTable), "dropped_tbl should be a FeatureTable"
+        assert feature_tbl.df.filter("col_1 is null").count() != 0 and feature_tbl\
+            .df.filter("col_4 is null").count() != 0, "feature_tbl should not be changed"
+        assert dropped_tbl.df.filter("col_1 is null").count() == 0, "col_1 null values should " \
+                                                                    "be dropped"
+        assert dropped_tbl.df.filter("col_4 is null").count() == 0, "col_4 null values should " \
+                                                                    "be dropped"
+        assert 0 < dropped_tbl.df.count() < feature_tbl.df.count(), "the number of rows should " \
+                                                                    "be decreased"
+
+        dropped_tbl = feature_tbl.dropna(["col_1", "col_4"], how="all")
+        assert dropped_tbl.df.filter("col_1 is null and col_4 is null").count() == 0, \
+            "col_1 and col_4 should not both have null values"
+        dropped_tbl = feature_tbl.dropna(["col_2", "col_4"], how="all")
+        assert dropped_tbl.df.filter("col_2 is null").count() > 0, \
+            "col_2 should still have null values after dropna with how=all"
+
+        dropped_tbl = feature_tbl.dropna(["col_2", "col_3", "col_5"], thresh=2)
+        assert dropped_tbl.df.filter("col_2 is null").count() > 0, \
+            "col_2 should still have null values after dropna with thresh=2"
+        assert dropped_tbl.df.filter("col_3 is null and col_5 is null").count() == 0, \
+            "col_3 and col_5 should not both have null values"
+
+    def test_fill_median(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        with self.assertRaises(Exception) as context:
+            feature_tbl.fill_median(["col_4", "col_5"])
+        self.assertTrue('col_4 with data type StringType is not supported' in
+                        str(context.exception))
+
+        filled_tbl = feature_tbl.fill_median(["col_1", "col_2"])
+        assert isinstance(filled_tbl, FeatureTable), "filled_tbl should be a FeatureTable"
+        assert filled_tbl.df.filter("col_1 is null").count() == 0, "col_1 null values should be " \
+                                                                   "filled"
+        assert filled_tbl.df.filter("col_2 is null").count() == 0, "col_2 null values should be " \
+                                                                   "filled"
 
     def test_rename(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
@@ -352,6 +413,23 @@ class TestTable(TestCase):
         assert "history_length" in tbl.df.columns
         assert tbl.df.filter("history_length = 5").count() == 2
         assert tbl.df.filter("history_length = 2").count() == 1
+
+    def test_median(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        with self.assertRaises(Exception) as context:
+            feature_tbl.median(["col_4", "col_5"])
+        self.assertTrue('col_4 with data type StringType is not supported' in
+                        str(context.exception))
+
+        median_tbl = feature_tbl.median(["col_1", "col_2", "col_3"])
+        assert isinstance(median_tbl, FeatureTable), "median_tbl should be a FeatureTable"
+        assert median_tbl.df.count() == 3, "the number of rows of median_tbl should be equal to " \
+                                           "the number of specified columns"
+        assert median_tbl.df.filter("column == 'col_1'").count() == 1, "col_1 should exist in " \
+                                                                       "'column' of median_tbl"
+        assert median_tbl.df.filter("column == 'col_2'").filter("median == 1.0").count() == 1, \
+            "the median of col_2 should be 1.0"
 
 
 if __name__ == "__main__":
