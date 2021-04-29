@@ -123,14 +123,16 @@ def is_spark_below_2_2():
     """
     Check if spark version is below 2.2.
     """
+    return is_spark_below_ver("2.2")
+
+
+def is_spark_below_ver(ver):
+    """
+    Check if spark version is below ver. Always returns True if spark version is below 2.1.0.
+    """
     import pyspark
     if hasattr(pyspark, "version"):
-        full_version = pyspark.version.__version__
-        # We only need the general spark version (eg, 1.6, 2.2).
-        parts = full_version.split(".")
-        spark_version = parts[0] + "." + parts[1]
-        if compare_version(spark_version, "2.2") >= 0:
-            return False
+        return (compare_version(pyspark.version.__version__, ver) < 0)
     return True
 
 
