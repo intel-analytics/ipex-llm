@@ -37,8 +37,16 @@ def fill_na_int(df, fill_val, columns):
     return callZooFunc("float", "fillNaInt", df, fill_val, columns)
 
 
-def clip_min(df, columns, min):
-    return callZooFunc("float", "clipMin", df, columns, min)
+def clip(df, columns, min, max):
+    return callZooFunc("float", "clip", df, columns, min, max)
+
+
+def fill_median(df, columns):
+    return callZooFunc("float", "fillMedian", df, columns)
+
+
+def median(df, columns, relative_error=0.001):
+    return callZooFunc("float", "median", df, columns, relative_error)
 
 
 def cross_columns(df, cross_column_list, bucket_sizes):
@@ -53,4 +61,4 @@ def check_col_exists(df, columns):
     df_cols = df.columns
     col_not_exist = list(filter(lambda x: x not in df_cols, columns))
     if len(col_not_exist) > 0:
-        raise ValueError(str(col_not_exist) + " are not exist in this Table")
+        raise ValueError(str(col_not_exist) + " do not exist in this Table")

@@ -93,7 +93,7 @@ class FriesianSpec extends ZooSpecHelper {
     val path = resource.getFile + "/data1.parquet"
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_2", "col_3")
-    val dfClip = friesian.clipMin(df, cols.toList.asJava, 2)
+    val dfClip = friesian.clip(df, cols.toList.asJava, 1, 2)
     dfClip.show()
   }
 
@@ -158,7 +158,6 @@ class FriesianSpec extends ZooSpecHelper {
     assert(dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
       == "WrappedArray(1, 2, 0, 0)")
   }
-
 
   "addHisSeq" should "work properly" in {
     val data = sc.parallelize(Seq(
@@ -242,4 +241,22 @@ class FriesianSpec extends ZooSpecHelper {
     assert(dft.filter("history_length = 5").count() == 2)
   }
 
+  "Fill median" should "work properly" in {
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
+    val cols = Array("col_1", "col_2")
+    val dfFilled = friesian.fillMedian(df, cols.toList.asJava)
+    assert(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
+    assert(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
+  }
+
+  "Median" should "work properly" in {
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
+    val cols = Array("col_1", "col_2")
+    val dfFilled = friesian.median(df, cols.toList.asJava)
+    assert(dfFilled.count == 2)
+    assert(dfFilled.filter("column == 'col_1'")
+      .filter("median == 1.0").count == 1)
+  }
 }
