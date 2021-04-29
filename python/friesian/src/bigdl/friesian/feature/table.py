@@ -129,12 +129,21 @@ class Table:
                 return self._clone(fill_na_int(self.df, value, columns))
         return self._clone(fill_na(self.df, value, columns))
 
-    def dropna(self, how='any', thresh=None, subset=None):
+    def dropna(self, columns, how='any', thresh=None):
         """
-        Drop null values. a wrapper of dataframe dropna
-        :return: A new Table that replaced the null values with specified value
+        Drops the rows containing null values in the specified columns.
+
+        :param columns: a string or a list of strings that specifies column names. If it is None,
+               it will operate on all columns.
+        :param how: If `how` is "any", then drop rows containing any null values in `columns`.
+               If `how` is "all", then drop rows only if every column in `columns` is null for
+               that row.
+        :param thresh: int, if specified, drop rows that have less than thresh non-null values.
+               Default is None.
+
+        :return: A new Table that drops the rows containing null values in the specified columns.
         """
-        return self._clone(self.df.dropna(how, thresh, subset))
+        return self._clone(self.df.dropna(how, thresh, subset=columns))
 
     def distinct(self):
         """
@@ -143,23 +152,38 @@ class Table:
         """
         return self._clone(self.df.distinct())
 
-    def clip(self, columns, min=0):
+    def filter(self, condition):
         """
-        clips continuous values so that they are within a min bound. For instance by setting the
-        min value to 0, all negative values in columns will be replaced with 0.
+        Filters the rows that satisfy `condition`. For instance, filter("col_1 == 1") will filter
+        the rows that has value 1 at column col_1.
+
+        :param condition: a string that gives the condition for filtering.
+
+        :return: A new Table with filtered rows
+        """
+        return self._clone(self.df.filter(condition))
+
+    def clip(self, columns, min=None, max=None):
+        """
+        Clips continuous values so that they are within the range [min, max]. For instance, by
+        setting the min value to 0, all negative values in columns will be replaced with 0.
 
         :param columns: str or list of str, the target columns to be clipped.
-        :param min: int, The mininum value to clip values to: values less than this will be
+        :param min: numeric, the mininum value to clip values to. Values less than this will be
+               replaced with this value.
+        :param max: numeric, the maxinum value to clip values to. Values greater than this will be
                replaced with this value.
 
-        :return: A new Table that replaced the value less than `min` with specified `min`
+        :return: A new Table that replaced the value less than `min` with specified `min` and the
+                 value greater than `max` with specified `max`
         """
+        assert min is not None or max is not None, "at least one of min and max should be not None"
         if columns is None:
             raise ValueError("columns should be str or list of str, but got None.")
         if not isinstance(columns, list):
             columns = [columns]
         check_col_exists(self.df, columns)
-        return self._clone(clip_min(self.df, columns, min))
+        return self._clone(clip(self.df, columns, min, max))
 
     def log(self, columns, clipping=True):
         """
@@ -178,6 +202,39 @@ class Table:
             columns = [columns]
         check_col_exists(self.df, columns)
         return self._clone(log_with_clip(self.df, columns, clipping))
+
+    def fill_median(self, columns):
+        """
+        Replaces null values with the median in the specified numeric columns. Any column to be
+        filled should not contain only null values.
+
+        :param columns: a string or a list of strings that specifies column names. If it is None,
+               it will operate on all numeric columns.
+
+        :return: A new Table that replaces null values with the median in the specified numeric
+                 columns.
+        """
+        if columns and not isinstance(columns, list):
+            columns = [columns]
+        if columns:
+            check_col_exists(self.df, columns)
+        return self._clone(fill_median(self.df, columns))
+
+    def median(self, columns):
+        """
+        Returns a new Table that has two columns, `column` and `median`, containing the column
+        names and the medians of the specified numeric columns.
+
+        :param columns: a string or a list of strings that specifies column names. If it is None,
+               it will operate on all numeric columns.
+
+        :return: A new Table that contains the medians of the specified columns.
+        """
+        if columns and not isinstance(columns, list):
+            columns = [columns]
+        if columns:
+            check_col_exists(self.df, columns)
+        return self._clone(median(self.df, columns))
 
     # Merge column values as a list to a new col
     def merge_cols(self, columns, target):
