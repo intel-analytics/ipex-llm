@@ -823,6 +823,42 @@ now=$(date "+%s")
 time22=$((now-start))
 echo "#22 zouwu-stock-prediction time used:$time22 seconds"
 
+echo "#23 start app test for zouwu-network-traffic-multivarite-multistep-tcnforecaster"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster
+
+FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data/data.csv"
+if [ -f "$FILENAME" ]
+then
+    echo "$FILENAME already exists."
+else
+    echo "Downloading network traffic data"
+
+    wget $FTP_URI/analytics-zoo-data/network_traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data
+
+    echo "Finished downloading network traffic data"
+fi
+
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+sed -i "s/epochs=20/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
+
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+cd -
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "zouwu network-traffic-multivariate-multistep-tcnforecaster failed"
+    exit $exit_status
+fi
+
+now=$(date "+%s")
+time23=$((now-start))
+echo "#23 zouwu-network-traffic-multivarite-multistep-tcnforecaster time used:$time23 seconds"
+
 
 fi
 
