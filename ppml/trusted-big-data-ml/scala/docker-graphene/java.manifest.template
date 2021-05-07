@@ -94,6 +94,7 @@ sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
 
 sgx.trusted_files.libz  = "file:$(ARCH_LIBDIR)/libz.so.1"
 sgx.trusted_files.libgcc_s = "file:/lib/x86_64-linux-gnu/libgcc_s.so.1"
+sgx.trusted_files.libstdcpp = "file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
 sgx.trusted_files.bigdl = "file:/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar"
 
 sgx.allowed_files.etc       = "file:/etc"

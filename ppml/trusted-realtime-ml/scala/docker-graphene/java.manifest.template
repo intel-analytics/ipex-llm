@@ -93,6 +93,7 @@ sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
 
 sgx.trusted_files.libz  = "file:$(ARCH_LIBDIR)/libz.so.1"
 sgx.trusted_files.libgcc_s = "file:/lib/x86_64-linux-gnu/libgcc_s.so.1"
+sgx.trusted_files.libstdcpp = "file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
 
 sgx.allowed_files.etc       = "file:/etc"
 sgx.allowed_files.tmp       = "file:/tmp"
