@@ -21,8 +21,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from zoo import init_spark_on_local, init_spark_on_yarn
 from zoo.ray import RayContext
-from zoo.orca.automl.xgboost import AutoXGBoost
 from zoo.zouwu.config.recipe import *
+from zoo.orca.automl.xgboost import AutoXGBClassifier
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -98,61 +99,55 @@ if __name__ == '__main__':
     for col in pdf.columns:
         pdf[col] = pdf[col].astype(np.float32)  # needed for random forest
 
-    # put target/label column first [ classic XGBoost standard ]
-    output_cols = ["ArrDelayBinary"] + input_cols[:-1]
-
-    pdf = pdf.reindex(columns=output_cols)
-
-    train_df, val_df = train_test_split(pdf, test_size=0.2, random_state=2)
+    # feature cols = input_cols - "ArrDelay"
+    X = pdf[input_cols[:-1]]
+    y = pdf[["ArrDelayBinary"]]
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=2)
+    data = {'x': X_train, 'y': y_train, 'val_x': X_val, 'val_y': y_val}
 
     num_rand_samples = 1
     n_estimators_range = (50, 1000)
     max_depth_range = (2, 15)
     # max_features_range = (0.1, 0.8)
 
-    target_col = "ArrDelayBinary"
-    input_cols.remove("ArrDelay")
     config = {"tree_method": 'hist', "learning_rate": 0.1, "gamma": 0.1,
               "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
-              "subsample": 1, "n_jobs": 4}
+              "subsample": 1}
 
     if opt.mode == 'skopt':
         recipe = XgbRegressorSkOptRecipe(num_rand_samples=num_rand_samples,
                                          n_estimators_range=n_estimators_range,
                                          max_depth_range=max_depth_range,
                                          ),
-        estimator = AutoXGBoost().classifier(feature_cols=input_cols,
-                                             target_col=target_col,
-                                             config=config,
-                                             search_alg="skopt",
-                                             search_alg_params=None,
-                                             scheduler="AsyncHyperBand",
-                                             scheduler_params=dict(
-                                                 max_t=50,
-                                                 grace_period=1,
-                                                 reduction_factor=3,
-                                                 brackets=3,
-                                             ),
-                                             )
+        search_alg = "skopt"
+        scheduler = "AsyncHyperBand"
+        scheduler_params = dict(
+            max_t=50,
+            grace_period=1,
+            reduction_factor=3,
+            brackets=3,
+        )
     else:
         recipe = XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
                                               n_estimators=list(n_estimators_range),
                                               max_depth=list(max_depth_range),
                                               )
+        search_alg = None
+        scheduler = None
+        scheduler_params = None
 
-        estimator = AutoXGBoost().classifier(feature_cols=input_cols,
-                                             target_col=target_col,
-                                             config=config
-                                             )
-
+    auto_xgb_clf = AutoXGBClassifier(cpus_per_trial=4, name="auto_xgb_classifier", **config)
     import time
     start = time.time()
-    pipeline = estimator.fit(train_df,
-                             validation_df=val_df,
-                             metric="error",
-                             recipe=recipe,
-                             )
+    auto_xgb_clf.fit(data,
+                     recipe=recipe,
+                     metric="error",
+                     search_alg=search_alg,
+                     search_alg_params=None,
+                     scheduler=scheduler,
+                     scheduler_params=scheduler_params)
     end = time.time()
     print("elapse: ", (end-start), "s")
-    accuracy = pipeline.evaluate(val_df, metrics=["accuracy"])
+    best_model = auto_xgb_clf.get_best_model()
+    accuracy = best_model.evaluate(X_val, y_val, metrics=["accuracy"])
     print("Evaluate: accuracy is", accuracy)
