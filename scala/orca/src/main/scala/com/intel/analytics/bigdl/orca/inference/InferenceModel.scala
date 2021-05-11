@@ -18,7 +18,7 @@ package com.intel.analytics.zoo.pipeline.inference
 
 import java.lang.{Float => JFloat, Integer => JInt}
 import java.util
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.{LinkedBlockingDeque, LinkedBlockingQueue}
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
@@ -29,7 +29,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
                      private var concurrentNum: Int = 20,
                      private var originalModel: AbstractModel = null,
                      private[inference] var modelQueue:
-                     LinkedBlockingQueue[AbstractModel] = null)
+                     LinkedBlockingDeque[AbstractModel] = null)
   extends InferenceSupportive with EncryptSupportive with Serializable {
 
   require(concurrentNum > 0, "concurrentNum should > 0")
@@ -59,7 +59,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   def this(autoScalingEnabled: Boolean, concurrentNum: Int) =
     this(autoScalingEnabled, concurrentNum, null, null)
 
-  this.modelQueue = new LinkedBlockingQueue[AbstractModel](concurrentNum)
+  this.modelQueue = new LinkedBlockingDeque[AbstractModel](concurrentNum)
 
   this.originalModel match {
     case null =>
@@ -543,15 +543,20 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
 
       result
     } finally {
+
+
       model match {
         case null =>
         case _ =>
-          val success = modelQueue.offer(model)
-          success match {
-            case true =>
-            case false => model.release()
-          }
+          modelQueue.push(model)
+//            val success = modelQueue.offer(model)
+//            success match {
+//              case true =>
+//              case false => model.release()
+//            }
       }
+
+
     }
   }
 
