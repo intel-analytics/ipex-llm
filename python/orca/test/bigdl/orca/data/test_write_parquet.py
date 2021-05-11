@@ -23,7 +23,7 @@ from zoo.orca.data.image.parquet_dataset import ParquetDataset
 from zoo.orca.data.image.parquet_dataset import _write_ndarrays, write_from_directory
 from zoo.orca.data.image.utils import DType, FeatureType, SchemaField
 from zoo.orca.learn.tf.estimator import Estimator
-from zoo.orca.data.image import write_mnist
+from zoo.orca.data.image import write_mnist, write_voc
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
@@ -137,6 +137,27 @@ def test_write_mnist(orca_context_fixture):
 
         assert np.all(images_load == images)
         assert np.all(labels_load == labels_load)
+
+    finally:
+        shutil.rmtree(temp_dir)
+
+
+def test_write_voc(orca_context_fixture):
+    sc = orca_context_fixture
+    temp_dir = tempfile.mkdtemp()
+    try:
+        from zoo.orca.data import SparkXShards
+        dataset_path = os.path.join(resource_path, "VOCdevkit")
+        output_path = os.path.join(temp_dir, "output_dataset")
+        write_voc(dataset_path, splits_names=[(2007, "trainval")],
+                  output_path="file://" + output_path)
+
+        data, schema = ParquetDataset._read_as_dict_rdd("file://" + output_path)
+        data = data.collect()[0]
+        image_path = data["image_id"]
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
+        assert image_bytes == data['image']
 
     finally:
         shutil.rmtree(temp_dir)
