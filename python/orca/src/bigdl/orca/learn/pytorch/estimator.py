@@ -30,6 +30,7 @@ from torch.utils.data import DataLoader
 from pyspark.sql import DataFrame
 import warnings
 import torch
+import types
 
 
 class Estimator(object):
@@ -51,18 +52,17 @@ class Estimator(object):
         """
         Create an Estimator for torch.
 
-        :param model: PyTorch model if backend="bigdl", PyTorch model creator function if
-               backend="horovod" or "torch_distributed"
-        :param optimizer: Orca or PyTorch optimizer if backend="bigdl", PyTorch optimizer creator
+        :param model: PyTorch model or model creator function if backend="bigdl", PyTorch
+               model creator function if backend="horovod" or "torch_distributed"
+        :param optimizer: Orca/PyTorch optimizer or optimizer creator function if backend="bigdl"
+               , PyTorch optimizer creator function if backend="horovod" or "torch_distributed"
+        :param loss: PyTorch loss or loss creator function if backend="bigdl", PyTorch loss creator
                function if backend="horovod" or "torch_distributed"
-        :param loss: PyTorch loss if backend="bigdl", PyTorch loss creator function if
-               backend="horovod" or "torch_distributed"
         :param metrics: Orca validation methods for evaluate.
         :param scheduler_creator: parameter for `horovod` and `torch_distributed` backends. a
                learning rate scheduler wrapping the optimizer. You will need to set
                ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
-        :param config: parameter for `horovod` and `torch_distributed` backends. Config dict to
-               create model, optimizer loss and data.
+        :param config: parameter config dict to create model, optimizer loss and data.
         :param scheduler_step_freq: parameter for `horovod` and `torch_distributed` backends.
                "batch", "epoch" or None. This will determine when ``scheduler.step`` is called. If
                "batch", ``step`` will be called after every optimizer step. If "epoch", ``step``
@@ -96,6 +96,7 @@ class Estimator(object):
             return PyTorchSparkEstimator(model=model,
                                          loss=loss,
                                          optimizer=optimizer,
+                                         config=config,
                                          metrics=metrics,
                                          model_dir=model_dir,
                                          bigdl_type="float")
@@ -119,7 +120,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                  use_tqdm=False,
                  backend="torch_distributed",
                  workers_per_node=1):
-
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -259,21 +259,29 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
 
 class PyTorchSparkEstimator(OrcaSparkEstimator):
-    def __init__(self, model, loss, optimizer, metrics=None, model_dir=None,
+    def __init__(self, model, loss, optimizer, config=None, metrics=None, model_dir=None,
                  bigdl_type="float"):
         from zoo.pipeline.api.torch import TorchModel, TorchLoss, TorchOptim
         self.loss = loss
+        self.model = model
+        self.optimizer = optimizer
+        self.config = {} if config is None else config
+
         if self.loss is None:
             self.loss = TorchLoss()
         else:
             self.loss = TorchLoss.from_pytorch(loss)
-        if optimizer is None:
+        if isinstance(self.model, types.FunctionType):
+            self.model = self.model(self.config)
+        if isinstance(self.optimizer, types.FunctionType):
+            self.optimizer = self.optimizer(self.model, self.config)
+        if self.optimizer is None:
             from zoo.orca.learn.optimizers.schedule import Default
             self.optimizer = SGD(learningrate_schedule=Default()).get_optimizer()
-        elif isinstance(optimizer, TorchOptimizer):
-            self.optimizer = TorchOptim.from_pytorch(optimizer)
-        elif isinstance(optimizer, OrcaOptimizer):
-            self.optimizer = optimizer.get_optimizer()
+        elif isinstance(self.optimizer, TorchOptimizer):
+            self.optimizer = TorchOptim.from_pytorch(self.optimizer)
+        elif isinstance(self.optimizer, OrcaOptimizer):
+            self.optimizer = self.optimizer.get_optimizer()
         else:
             raise ValueError("Only PyTorch optimizer and orca optimizer are supported")
         from zoo.orca.learn.metrics import Metric
@@ -281,7 +289,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         self.log_dir = None
         self.app_name = None
         self.model_dir = model_dir
-        self.model = TorchModel.from_pytorch(model)
+        self.model = TorchModel.from_pytorch(self.model)
         self.estimator = SparkEstimator(self.model, self.optimizer, model_dir,
                                         bigdl_type=bigdl_type)
 
@@ -321,13 +329,14 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         return train_feature_set, val_feature_set
 
-    def fit(self, data, epochs=1, batch_size=32, feature_cols=None, label_cols=None,
+    def fit(self, data, epochs=1, batch_size=None, feature_cols=None, label_cols=None,
             validation_data=None, checkpoint_trigger=None):
         """
         Train this torch model with train data.
 
         :param data: train data. It can be a XShards, Spark Dataframe, PyTorch DataLoader and
-               PyTorch DataLoader creator function.
+               PyTorch DataLoader creator function that takes config and batch_size as argument and
+               returns a PyTorch DataLoader for training.
                If data is an XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or
                a list of numpy arrays.
@@ -349,7 +358,14 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         from zoo.orca.learn.trigger import Trigger
 
         end_trigger = MaxEpoch(epochs)
-        assert batch_size > 0, "batch_size should be greater than 0"
+        if isinstance(data, DataLoader):
+            assert batch_size is None and data.batch_size > 0, "When using PyTorch Dataloader as " \
+                                                               "input, you need to specify the " \
+                                                               "batch size in DataLoader and " \
+                                                               "don't specify batch_size " \
+                                                               "in the fit method."
+        else:
+            assert batch_size is not None and batch_size > 0, "batch_size should be greater than 0"
         checkpoint_trigger = Trigger.convert_trigger(checkpoint_trigger)
 
         if self.log_dir is not None and self.app_name is not None:
@@ -373,7 +389,10 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                                                           feature_cols, label_cols)
             self.estimator.train(train_fset, self.loss, end_trigger, checkpoint_trigger,
                                  val_fset, self.metrics, batch_size)
-        elif isinstance(data, DataLoader) or callable(data):
+        elif isinstance(data, DataLoader) or callable(data) or isinstance(data, types.FunctionType):
+            if isinstance(data, types.FunctionType):
+                data, validation_data = data(self.config, batch_size), validation_data(self.config,
+                                                                                       batch_size)
             train_fset, val_fset = self._handle_data_loader(data, validation_data)
             self.estimator.train_minibatch(train_fset, self.loss, end_trigger,
                                            checkpoint_trigger, val_fset, self.metrics)
@@ -419,7 +438,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             result = convert_predict_rdd_to_dataframe(data, predicted_rdd)
         return result
 
-    def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None,
+    def evaluate(self, data, batch_size=None, feature_cols=None, label_cols=None,
                  validation_metrics=None):
         """
         Evaluate model.
@@ -442,6 +461,14 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         assert data is not None, "validation data shouldn't be None"
         assert self.metrics is not None, "metrics shouldn't be None, please specify the metrics" \
                                          " argument when creating this estimator."
+        if isinstance(data, DataLoader):
+            assert batch_size is None and data.batch_size > 0, "When using PyTorch Dataloader as " \
+                                                               "input, you need to specify the " \
+                                                               "batch size in DataLoader and " \
+                                                               "don't specify batch_size " \
+                                                               "in the fit method."
+        else:
+            assert batch_size is not None and batch_size > 0, "batch_size should be greater than 0"
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -453,7 +480,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             val_feature_set = FeatureSet.sample_rdd(data.rdd.map(
                 lambda row: row_to_sample(row, schema, feature_cols, label_cols)))
             result = self.estimator.evaluate(val_feature_set, self.metrics, batch_size)
-        elif isinstance(data, DataLoader) or callable(data):
+        elif isinstance(data, DataLoader) or callable(data) or isinstance(data, types.FunctionType):
+            if isinstance(data, types.FunctionType):
+                data = data(self.config, batch_size)
             val_feature_set = FeatureSet.pytorch_dataloader(data)
             result = self.estimator.evaluate_minibatch(val_feature_set, self.metrics)
         else:

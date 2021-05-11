@@ -86,13 +86,13 @@ class TestEstimatorForSaveAndLoad(TestCase):
         est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion,
                                    metrics=[Accuracy()])
 
-        est.fit(data=train_loader, epochs=1, validation_data=test_loader, batch_size=batch_size,
+        est.fit(data=train_loader, epochs=1, validation_data=test_loader,
                 checkpoint_trigger=EveryEpoch())
         paras1 = list(est.get_model().named_parameters())
         est.save("model_epoch_1")
 
         # epoch 2
-        est.fit(data=train_loader, epochs=2, validation_data=test_loader, batch_size=batch_size,
+        est.fit(data=train_loader, epochs=2, validation_data=test_loader,
                 checkpoint_trigger=EveryEpoch())
         paras2 = list(est.get_model().named_parameters())
         est.load("model_epoch_1")
