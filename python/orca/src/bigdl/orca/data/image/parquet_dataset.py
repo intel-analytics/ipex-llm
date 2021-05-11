@@ -22,10 +22,12 @@ from zoo.orca.data import SparkXShards
 from zoo.orca.data.file import open_text, write_text
 from zoo.orca.data.image.utils import chunks, dict_to_row, row_to_dict, encode_schema, \
     decode_schema, SchemaField, FeatureType, DType, ndarray_dtype_to_dtype
+from zoo.orca.data.image.voc_dataset import VOCDatasets
 from bigdl.util.common import get_node_and_core_number
 import os
 import numpy as np
 import random
+import io
 
 
 class ParquetDataset:
@@ -91,7 +93,6 @@ class ParquetDataset:
         rdd, schema = ParquetDataset._read_as_dict_rdd(path)
 
         def merge_records(schema, iter):
-
             l = list(iter)
             result = {}
             for k in schema.keys():
@@ -220,3 +221,28 @@ def write_mnist(image_file, label_file, output_path, **kwargs):
     images = _extract_mnist_images(image_filepath=image_file)
     labels = _extract_mnist_labels(labels_filepath=label_file)
     _write_ndarrays(images, labels, output_path, **kwargs)
+
+
+def write_voc(voc_root_path, splits_names, output_path, **kwargs):
+    custom_classes = kwargs.get("classes", None)
+    voc_datasets = VOCDatasets(voc_root_path, splits_names, classes=custom_classes)
+
+    def make_generator():
+        for img_path, label in voc_datasets:
+            yield {"image": img_path, "label": label, "image_id": img_path}
+
+    image, label = voc_datasets[0]
+    label_shape = (-1, label.shape[-1])
+    schema = {
+        "image": SchemaField(feature_type=FeatureType.IMAGE,
+                             dtype=DType.FLOAT32,
+                             shape=()),
+        "label": SchemaField(feature_type=FeatureType.NDARRAY,
+                             dtype=ndarray_dtype_to_dtype(label.dtype),
+                             shape=label_shape),
+        "image_id": SchemaField(feature_type=FeatureType.SCALAR,
+                                dtype=DType.STRING,
+                                shape=())
+    }
+    kwargs = {key: value for key, value in kwargs.items() if key not in ["classes"]}
+    ParquetDataset.write(output_path, make_generator(), schema, **kwargs)
