@@ -103,7 +103,6 @@ if __name__ == '__main__':
     X = pdf[input_cols[:-1]]
     y = pdf[["ArrDelayBinary"]]
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=2)
-    data = {'x': X_train, 'y': y_train, 'val_x': X_val, 'val_y': y_val}
 
     num_rand_samples = 1
     n_estimators_range = (50, 1000)
@@ -139,7 +138,8 @@ if __name__ == '__main__':
     auto_xgb_clf = AutoXGBClassifier(cpus_per_trial=4, name="auto_xgb_classifier", **config)
     import time
     start = time.time()
-    auto_xgb_clf.fit(data,
+    auto_xgb_clf.fit(data=(X_train, y_train),
+                     validation_data=(X_val, y_val),
                      recipe=recipe,
                      metric="error",
                      search_alg=search_alg,
