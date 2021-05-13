@@ -72,10 +72,9 @@ def get_train_val_data():
         y = np.concatenate([y1, y2], axis=0)
         return x, y
 
-    train_x, train_y = get_x_y(size=1000)
-    val_x, val_y = get_x_y(size=400)
-    data = {'x': train_x, 'y': train_y, 'val_x': val_x, 'val_y': val_y}
-    return data
+    train_data = get_x_y(size=1000)
+    val_data = get_x_y(size=400)
+    return train_data, val_data
 
 
 class LinearRecipe(Recipe):
@@ -103,14 +102,17 @@ def train_example(args):
         logs_dir="/tmp/zoo_automl_logs",
         resources_per_trial={"cpu": args.cpus_per_trial},
         name="test_fit")
-    data = get_train_val_data()
+    train_data, val_data = get_train_val_data()
     recipe = LinearRecipe(training_iteration=args.epochs,
                           num_samples=args.trials)
-    auto_est.fit(data, recipe=recipe, metric="accuracy")
+    auto_est.fit(data=train_data,
+                 validation_data=val_data,
+                 recipe=recipe,
+                 metric="accuracy")
     # Choose the best model
     best_model = auto_est.get_best_model()
-    best_model_accuracy = best_model.evaluate(x=data['val_x'],
-                                              y=data['val_y'],
+    best_model_accuracy = best_model.evaluate(x=val_data[0],
+                                              y=val_data[1],
                                               metrics=['accuracy'])
     print(f'model accuracy is {best_model_accuracy[0]}')
 
