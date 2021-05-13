@@ -80,7 +80,6 @@ if __name__ == '__main__':
     X = df[feature_cols]
     y = df[[target_col]]
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=2)
-    data = {'x': X_train, 'y': y_train, 'val_x': X_val, 'val_y': y_val}
 
     config = {'random_state': 2,
               'min_child_weight': 3}
@@ -174,7 +173,8 @@ if __name__ == '__main__':
         scheduler_params = None
 
     auto_xgb_reg = AutoXGBRegressor(cpus_per_trial=2, name="auto_xgb_regressor", **config)
-    auto_xgb_reg.fit(data,
+    auto_xgb_reg.fit(data=(X_train, y_train),
+                     validation_data=(X_val, y_val),
                      recipe=recipe,
                      metric="rmse",
                      search_alg=search_alg,
