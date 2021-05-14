@@ -140,8 +140,9 @@ if __name__ == '__main__':
     start = time.time()
     auto_xgb_clf.fit(data=(X_train, y_train),
                      validation_data=(X_val, y_val),
-                     recipe=recipe,
                      metric="error",
+                     n_sampling=recipe.num_samples,
+                     search_space=recipe.search_space(),
                      search_alg=search_alg,
                      search_alg_params=None,
                      scheduler=scheduler,
