@@ -175,8 +175,9 @@ if __name__ == '__main__':
     auto_xgb_reg = AutoXGBRegressor(cpus_per_trial=2, name="auto_xgb_regressor", **config)
     auto_xgb_reg.fit(data=(X_train, y_train),
                      validation_data=(X_val, y_val),
-                     recipe=recipe,
                      metric="rmse",
+                     n_sampling=recipe.num_samples,
+                     search_space=recipe.search_space(),
                      search_alg=search_alg,
                      search_alg_params=None,
                      scheduler=scheduler,
