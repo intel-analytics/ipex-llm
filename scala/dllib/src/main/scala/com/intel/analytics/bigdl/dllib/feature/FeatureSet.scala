@@ -469,6 +469,7 @@ class PythonFeatureSet[T: ClassTag](
                   e.getMessage().contains("is not defined")) {
                   PythonInterpreter.exec(getIteratorCode)
                   PythonInterpreter.exec(nextCode)
+                  FeatureSet.logger.debug("The data has been iterated. Start the next epoch...")
                 } else {
                   throw e
                 }
