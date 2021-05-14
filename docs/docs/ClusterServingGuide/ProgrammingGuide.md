@@ -182,19 +182,14 @@ If you use Flink standalone, call `$FLINK_HOME/bin/start-cluster.sh` to start Fl
 After [Installation](#1-installation), you will see a config file `config.yaml` in your current working directory. This file contains all the configurations that you can customize for your Cluster Serving. See an example of `config.yaml` below.
 ```
 ## Analytics Zoo Cluster Serving Config Example
-
-model:
-  # model path must be set
-  path: /opt/work/model
-params:
-  # default, 4
-  core_num:  
+# model path must be provided
+modelPath: /path/to/model
 ```
 
 #### Preparing Model
 Currently Analytics Zoo Cluster Serving supports TensorFlow, OpenVINO, PyTorch, BigDL, Caffe models. Supported types are listed below.
 
-You need to put your model file into a directory with layout like following according to model type, note that only one model is allowed in your directory. Then, set in `config.yaml` file with `model:path:/path/to/dir`.
+You need to put your model file into a directory with layout like following according to model type, note that only one model is allowed in your directory. Then, set in `config.yaml` file with `modelPath:/path/to/dir`.
 
 **Tensorflow**
 ***Tensorflow SavedModel***
@@ -259,14 +254,18 @@ The field `params` contains your inference parameter configuration.
 * core_number: the **batch size** you use for model inference, usually the core number of your machine is recommended. Thus you could just provide your machine core number at this field. We recommend this value to be not smaller than 4 and not larger than 512. In general, using larger batch size means higher throughput, but also increase the latency between batches accordingly.
 
 #### High Performance Configuration Recommended
-Tensorflow, Pytorch, BigDL model recommend following configuration
+##### Tensorflow, Pytorch
+1 <= thread_per_model <= 8, in config
 ```
-params:  
-  # default: model number will auto-adapt to core_number, do not set it if not sure about the behavior
-  model_number: core_number of your machine
+# default: number of models used in serving
+# modelParallelism: core_number of your machine / thread_per_model
 ```
-
-OpenVINO model recommend following configuration
+environment variable
+```
+export OMP_NUM_THREADS=thread_per_model
+```
+##### OpenVINO
+environment variable
 ```
 export OMP_NUM_THREADS=core_number of your machine
 ```
@@ -294,11 +293,11 @@ If you are using Docker, you could also run `docker rm` to shutdown Cluster Serv
 #### Start Multiple Serving
 To run multiple Cluster Serving job, e.g. the second job name is `serving2`, then use following configuration
 ```
-model:
-  # model path must be provided
-  path: /path/to/model
-  # name, default is serving_stream, you need to specify if running multiple servings
-  name: serving2
+# model path must be provided
+# modelPath: /path/to/model
+
+# name, default is serving_stream, you need to specify if running multiple servings
+# jobName: serving2
 ```
 then call `cluster-serving-start` in this directory would start another Cluster Serving job with this new configuration.
 
