@@ -77,21 +77,15 @@ def get_train_val_data():
     return train_data, val_data
 
 
-class LinearRecipe(Recipe):
-    def __init__(self, training_iteration, num_samples):
-        super().__init__()
-        self.training_iteration = training_iteration
-        self.num_samples = num_samples
-
-    def search_space(self):
-        from zoo.orca.automl import hp
-        return {
-            "dropout": hp.uniform(0.2, 0.3),
-            "fc1_size": hp.choice([50, 64]),
-            "fc2_size": hp.choice([100, 128]),
-            LR_NAME: hp.choice([0.001, 0.003, 0.01]),
-            "batch_size": hp.choice([32, 64])
-        }
+def create_linear_search_space():
+    from zoo.orca.automl import hp
+    return {
+        "dropout": hp.uniform(0.2, 0.3),
+        "fc1_size": hp.choice([50, 64]),
+        "fc2_size": hp.choice([100, 128]),
+        LR_NAME: hp.choice([0.001, 0.003, 0.01]),
+        "batch_size": hp.choice([32, 64])
+    }
 
 
 def train_example(args):
@@ -103,12 +97,12 @@ def train_example(args):
         resources_per_trial={"cpu": args.cpus_per_trial},
         name="test_fit")
     train_data, val_data = get_train_val_data()
-    recipe = LinearRecipe(training_iteration=args.epochs,
-                          num_samples=args.trials)
     auto_est.fit(data=train_data,
+                 epochs=args.epochs,
                  validation_data=val_data,
-                 recipe=recipe,
-                 metric="accuracy")
+                 metric="accuracy",
+                 n_sampling=args.trials,
+                 search_space=create_linear_search_space())
     # Choose the best model
     best_model = auto_est.get_best_model()
     best_model_accuracy = best_model.evaluate(x=val_data[0],
