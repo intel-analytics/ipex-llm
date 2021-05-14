@@ -131,6 +131,26 @@ docker exec -it cluster-serving bash
 ##### Requirements
 Non-Docker users need to install [Flink 1.10.0+](https://archive.apache.org/dist/flink/flink-1.10.0/), 1.10.0 by default, [Redis 5.0.0+](https://redis.io/topics/quickstart), 5.0.5 by default.
 
+For users do not have above dependencies, we provide following command to quickly set up.
+
+Redis
+```
+$ export REDIS_VERSION=5.0.5
+$ wget http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
+    tar xzf redis-${REDIS_VERSION}.tar.gz && \
+    rm redis-${REDIS_VERSION}.tar.gz && \
+    cd redis-${REDIS_VERSION} && \
+    make
+```
+
+Flink
+```
+$ export FLINK_VERSION=1.11.2
+$ wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
+    tar xzf flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
+    rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz.tgz
+```
+
 After preparing dependencies above, make sure the environment variable `$FLINK_HOME` (/path/to/flink-FLINK_VERSION-bin), `$REDIS_HOME`(/path/to/redis-REDIS_VERSION) is set before following steps. 
 
 ##### Install release version
