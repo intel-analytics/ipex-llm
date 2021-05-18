@@ -20,7 +20,7 @@ import shutil
 import numpy as np
 import os
 from zoo.orca.data.image.parquet_dataset import ParquetDataset
-from zoo.orca.data.image.parquet_dataset import _write_ndarrays, write_from_directory
+from zoo.orca.data.image.parquet_dataset import _write_ndarrays, write_from_directory, write_parquet
 from zoo.orca.data.image.utils import DType, FeatureType, SchemaField
 from zoo.orca.learn.tf.estimator import Estimator
 from zoo.orca.data.image import write_mnist, write_voc
@@ -112,7 +112,7 @@ def _labels_to_mnist_file(labels, filepath):
         f.write(labels.tobytes())
 
 
-def test_write_mnist(orca_context_fixture):
+def test_write_mnist(orca_context_fixture, use_api=False):
     sc = orca_context_fixture
     temp_dir = tempfile.mkdtemp()
 
@@ -126,10 +126,14 @@ def test_write_mnist(orca_context_fixture):
 
         _images_to_mnist_file(images, train_image_file)
         _labels_to_mnist_file(labels, train_label_file)
-
-        write_mnist(image_file=train_image_file,
-                    label_file=train_label_file,
-                    output_path="file://" + output_path)
+        if use_api:
+            write_parquet("mnist", "file://" + output_path,
+                          image_file=train_image_file,
+                          label_file=train_label_file)
+        else:
+            write_mnist(image_file=train_image_file,
+                        label_file=train_label_file,
+                        output_path="file://" + output_path)
         data, schema = ParquetDataset._read_as_dict_rdd("file://" + output_path)
         data = data.sortBy(lambda x: x['label']).collect()
         images_load = np.reshape(np.stack([d['image'] for d in data]), (-1, 4, 4))
@@ -142,15 +146,19 @@ def test_write_mnist(orca_context_fixture):
         shutil.rmtree(temp_dir)
 
 
-def test_write_voc(orca_context_fixture):
+def test_write_voc(orca_context_fixture, use_api=False):
     sc = orca_context_fixture
     temp_dir = tempfile.mkdtemp()
     try:
         from zoo.orca.data import SparkXShards
         dataset_path = os.path.join(resource_path, "VOCdevkit")
         output_path = os.path.join(temp_dir, "output_dataset")
-        write_voc(dataset_path, splits_names=[(2007, "trainval")],
-                  output_path="file://" + output_path)
+        if use_api:
+            write_parquet("voc", "file://" + output_path, voc_root_path=dataset_path,
+                          splits_names=[(2007, "trainval")])
+        else:
+            write_voc(dataset_path, splits_names=[(2007, "trainval")],
+                      output_path="file://" + output_path)
 
         data, schema = ParquetDataset._read_as_dict_rdd("file://" + output_path)
         data = data.collect()[0]
@@ -205,13 +213,18 @@ def test_train_simple(orca_context_fixture):
         shutil.rmtree(temp_dir)
 
 
-def test_write_from_directory(orca_context_fixture):
+def test_write_from_directory(orca_context_fixture, use_api=False):
     sc = orca_context_fixture
     temp_dir = tempfile.mkdtemp()
     try:
         label_map = {"cats": 0, "dogs": 1}
-        write_from_directory(os.path.join(resource_path, "cat_dog"),
-                             label_map, "file://" + temp_dir)
+        if use_api:
+            write_parquet("image_folder", "file://" + temp_dir,
+                          directory=os.path.join(resource_path, "cat_dog"),
+                          label_map=label_map)
+        else:
+            write_from_directory(os.path.join(resource_path, "cat_dog"),
+                                 label_map, "file://" + temp_dir)
         train_xshard = ParquetDataset._read_as_xshards("file://" + temp_dir)
 
         data = train_xshard.collect()[0]
@@ -224,3 +237,9 @@ def test_write_from_directory(orca_context_fixture):
 
     finally:
         shutil.rmtree(temp_dir)
+
+
+def test_write_parquet_api(orca_context_fixture):
+    test_write_mnist(orca_context_fixture, True)
+    test_write_voc(orca_context_fixture, True)
+    test_write_from_directory(orca_context_fixture, True)
