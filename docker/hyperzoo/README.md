@@ -55,7 +55,95 @@ Then pull the image. It will be faster.
 sudo docker pull intelanalytics/hyper-zoo:latest
 ```
 
-2. Launch a k8s client container:
+2.K8s configuration
+
+Get k8s master as spark master :
+
+```bash
+kubectl cluster-info
+```
+
+After running this commend, it shows "Kubernetes master is running at https://127.0.0.1:12345 "
+
+this means :
+
+```bash
+master="k8s://https://127.0.0.1:12345"
+```
+
+The namespace is default or spark.kubernetes.namespace
+
+RBAC : 
+
+```bash
+kubectl create serviceaccount spark
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+```
+
+View k8s configuration file : 
+
+```
+.kube/config
+```
+
+or
+
+```bash
+kubectl config view --flatten --minify > kuberconfig
+```
+
+The k8s data can stored in nfs or ceph, take nfs as an example
+
+In NFS server, run :
+
+```bash
+yum install nfs-utils
+systemctl enable rpcbind
+systemctl enable nfs
+systemctl start rpcbind
+firewall-cmd --zone=public --permanent --add-service={rpc-bind,mountd,nfs}
+firewall-cmd --reload
+mkdir /disk1/nfsdata
+chmod 755 /disk1/nfsdata
+nano /etc/exports "/disk1/nfsdata *(rw,sync,no_root_squash,no_all_squash)"
+systemctl restart nfs
+```
+
+In NFS client, run :
+
+```bash
+yum install -y nfs-utils && systemctl start rpcbind && showmount -e <nfs-master-ip-address>
+```
+
+k8s conf :
+
+```bash
+git clone https://github.com/kubernetes-incubator/external-storage.git
+cd /XXX/external-storage/nfs-client
+nano deploy/deployment.yaml
+nano deploy/rbac.yaml
+kubectl create -f deploy/rbac.yaml
+kubectl create -f deploy/deployment.yaml
+kubectl create -f deploy/class.yaml
+```
+
+test :
+
+```bash
+kubectl create -f deploy/test-claim.yaml
+kubectl create -f deploy/test-pod.yaml
+kubectl get pvc
+kubectl delete -f deploy/test-pod.yaml
+kubectl delete -f deploy/test-claim.yaml
+```
+
+if the test is success, then run:
+
+```bash
+kubectl create -f deploy/nfs-volume-claim.yaml
+```
+
+3.Launch a k8s client container:
 
 Please note the two different containers: **client container** is for user to submit zoo jobs from here, since it contains all the required env and libs except hadoop/k8s configs; executor container is not need to create manually, which is scheduled by k8s at runtime.
 

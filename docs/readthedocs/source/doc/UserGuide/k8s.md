@@ -125,6 +125,26 @@ init_orca_context(cluster_mode="k8s", master="k8s://https://<k8s-apiserver-host>
 
 Execute `python script.py` to run your program on k8s cluster directly.
 
+**Note**: The k8s client and cluster mode do not support download files to local, logging callback, tensorboard callback, etc. If you have these requirements, it's a good idea to use network file system (NFS).
+
+**Note**: The k8s would delete the pod once the worker failed in client mode and cluster mode. If you want to get the content of of worker log, you could set an "temp-dir" to change the log dir to replace the former one. Please note that in this case you should set num-nodes to 1 if you use network file system (NFS).  Otherwise, it would cause error because the temp-dir and NFS are not point to the same directory.
+
+```python
+init_orca_context(..., extra_params = {"temp-dir": "/tmp/ray/"})
+```
+
+If you training with more than 1 executor and use NFS, please remove `extra_params = {"temp-dir": "/tmp/ray/"}`. Because there would be conflict if multiple executors write files in the same directory at the same time. It may cause JSONDecodeError.
+
+**Note**: If you training with more than 1 executor, please make sure you set proper "steps_per_epoch" and "validation steps".
+
+**Note**: "spark.kubernetes.container.image.pullPolicy" needs to be specified as "always"
+
+**Note**: if  "RayActorError" occurs, try to increase the memory
+
+```python
+init_orca_context(..., memory=10g, exra_executor_memory_for_ray=100g)
+```
+
 #### **3.2 K8s cluster mode**
 
 For k8s [cluster mode](https://spark.apache.org/docs/2.4.5/running-on-kubernetes.html#cluster-mode), you can call `init_orca_context` and specify cluster_mode to be "spark-submit" in your python script (e.g. in script.py):
@@ -148,6 +168,18 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
   --driver-memory 10g \
   --executor-cores 8 \
   --num-executors 2 \
+  file:///path/script.py
+```
+
+**Note**: You should specify the spark driver and spark executor when you use NFS
+
+```bash
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+  --... ...\
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName="nfsvolumeclaim" \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path="/zoo" \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName="nfsvolumeclaim" \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path="/zoo" \
   file:///path/script.py
 ```
 
