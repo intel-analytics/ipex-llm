@@ -18,7 +18,7 @@ import sys
 
 from zoo.pipeline.api.net.utils import find_placeholders, _check_the_same
 from zoo.tfpark.tfnet import TFNet
-from zoo.tfpark.tf_dataset import TFNdarrayDataset
+from zoo.tfpark.tf_dataset import TFNdarrayDataset, check_data_compatible
 from zoo.tfpark.tf_dataset import _standarize_feature_dataset
 
 if sys.version >= '3':
@@ -70,6 +70,8 @@ class TFPredictor:
 
         outputs = keras_model.outputs
         inputs = keras_model.inputs
+
+        check_data_compatible(dataset, keras_model, mode="inference")
 
         if isinstance(dataset, TFNdarrayDataset):
             dataset = _standarize_feature_dataset(dataset, keras_model)

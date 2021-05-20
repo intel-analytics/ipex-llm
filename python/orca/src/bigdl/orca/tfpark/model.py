@@ -21,7 +21,8 @@ from zoo.tfpark.utils import evaluate_string_metrics
 from zoo.common import load_from_file
 from zoo.common import save_file
 from zoo.common.nncontext import getOrCreateSparkContext
-from zoo.tfpark.tf_dataset import TFNdarrayDataset, TFDataset, _standarize_feature_label_dataset
+from zoo.tfpark.tf_dataset import TFNdarrayDataset, TFDataset, _standarize_feature_label_dataset, \
+    check_data_compatible
 
 from zoo.tfpark.tf_optimizer import TFOptimizer
 from zoo.tfpark.tf_predictor import TFPredictor
@@ -200,6 +201,8 @@ class KerasModel(object):
             if isinstance(x, TFNdarrayDataset):
                 x = _standarize_feature_label_dataset(x, self.model)
             # todo check arguments
+            check_data_compatible(x, self.model, mode="evaluate")
+
             return self._evaluate_distributed(x)
         else:
             if distributed:

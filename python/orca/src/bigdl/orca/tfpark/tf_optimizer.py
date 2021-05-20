@@ -33,7 +33,7 @@ from zoo.pipeline.estimator import Estimator
 from zoo.util import nest
 from zoo.util.triggers import EveryEpoch as ZEveryEpoch
 from zoo.util.triggers import ZooTrigger
-from zoo.tfpark.tf_dataset import TFNdarrayDataset
+from zoo.tfpark.tf_dataset import TFNdarrayDataset, check_data_compatible
 from zoo.tfpark.tf_dataset import _standarize_feature_label_dataset
 
 if sys.version >= '3':
@@ -623,6 +623,7 @@ class TFOptimizer:
         # target can be None if loss is None
         model_targets = list(filter(lambda x: x is not None, model_targets))
 
+        check_data_compatible(dataset, keras_model, mode="train")
         # standarize feature, labels to support keras model
         if isinstance(dataset, TFNdarrayDataset):
             dataset = _standarize_feature_label_dataset(dataset, keras_model)
