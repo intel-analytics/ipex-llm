@@ -529,7 +529,6 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   def doRelease(): Unit = {
     clearModelQueue()
   }
-
   private def predict(inputActivity: Activity): Activity = {
     val model = retrieveModel()
     try {
@@ -543,21 +542,13 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
 
       result
     } finally {
-
-
       model match {
         case null =>
         case _ =>
           modelQueue.push(model)
-//            val success = modelQueue.offer(model)
-//            success match {
-//              case true =>
-//              case false => model.release()
-//            }
       }
-
-
     }
+
   }
 
   private def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
