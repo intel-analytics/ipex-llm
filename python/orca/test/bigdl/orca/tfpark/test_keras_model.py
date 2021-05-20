@@ -63,10 +63,26 @@ class TestTFParkModel(ZooTestCase):
         x, y = self.create_training_data()
 
         val_x, val_y = self.create_training_data()
-
         model.fit([x, x], [y, y], validation_data=([val_x, val_x], [val_y, val_y]),
                   batch_size=4, distributed=True)
 
+    def test_invalid_data_handling(self):
+        keras_model = self.create_multi_input_output_model()
+        model = KerasModel(keras_model)
+        x, y = self.create_training_data()
+        val_x, val_y = self.create_training_data()
+
+        # Number doesn't match
+        with pytest.raises(AssertionError) as excinfo:
+            model.fit([x, x], [y, y, y], batch_size=4, distributed=True)
+
+        assert "model_target number does not match data number" in str(excinfo.value)
+
+        # Dict as input
+        with pytest.raises(AssertionError) as excinfo:
+            model.fit({"input_1": x}, [y, y], batch_size=4, distributed=True)
+
+        assert "all model_input names should exist in data" in str(excinfo.value)
 
 if __name__ == "__main__":
     pytest.main([__file__])
