@@ -258,11 +258,8 @@ class TestTFParkModel(ZooTestCase):
         results_pre = model.evaluate(x, y)
 
         pred_y = np.argmax(model.predict(x, distributed=True), axis=1)
-
         acc = np.average((pred_y == y))
-
         print(results_pre)
-
         assert np.square(acc - results_pre["acc"]) < 0.000001
 
     def test_predict_with_dataset(self):
@@ -271,7 +268,6 @@ class TestTFParkModel(ZooTestCase):
         model = KerasModel(keras_model)
 
         x, y = self.create_training_data()
-
         results_pre = model.evaluate(x, y)
 
         pred_y = np.argmax(np.array(model.predict(
