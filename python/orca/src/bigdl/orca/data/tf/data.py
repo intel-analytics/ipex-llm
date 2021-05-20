@@ -150,8 +150,8 @@ class Dataset(object):
             dataset = dataset.batch(batch_per_shard, drop_remainder)
             iterator = dataset.make_initializable_iterator()
             train_next_ops = nest.flatten(iterator.get_next())
-            output_types = [t.as_datatype_enum
-                            for t in nest.flatten(dataset.output_types)]
+            output_types = [t for t in nest.flatten(dataset.output_types)]
+            output_types_enum = [t.as_datatype_enum for t in output_types]
 
             init_op_name = iterator.initializer.name
             table_init_op = tf.tables_initializer().name
@@ -177,7 +177,7 @@ class Dataset(object):
                 "init_op_name": init_op_name,
                 "table_init_op": table_init_op,
                 "output_names": output_names,
-                "output_types": output_types,
+                "output_types": output_types_enum,
                 "tensor_structure": tensor_structure
             }
 
