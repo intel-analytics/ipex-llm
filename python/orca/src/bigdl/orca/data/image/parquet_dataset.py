@@ -21,12 +21,14 @@ from zoo import init_nncontext
 from zoo.orca.data import SparkXShards
 from zoo.orca.data.file import open_text, write_text
 from zoo.orca.data.image.utils import chunks, dict_to_row, row_to_dict, encode_schema, \
-    decode_schema, SchemaField, FeatureType, DType, ndarray_dtype_to_dtype
+    decode_schema, SchemaField, FeatureType, DType, ndarray_dtype_to_dtype, \
+    decode_feature_type_ndarray, pa_fs
 from zoo.orca.data.image.voc_dataset import VOCDatasets
 from bigdl.util.common import get_node_and_core_number
 import os
 import numpy as np
 import random
+import pyarrow.parquet as pq
 import io
 
 
@@ -265,3 +267,42 @@ def write_parquet(format, output_path, *args, **kwargs):
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
     func(output_path=output_path, *args, **kwargs)
+
+
+def read_as_tfdataset(path, output_types, output_shapes=None, *args, **kwargs):
+    """
+    return a orca.data.tf.data.Dataset
+    :param path:
+    :return:
+    """
+    path, _ = pa_fs(path)
+    import tensorflow as tf
+
+    schema_path = os.path.join(path, "_orca_metadata")
+    j_str = open_text(schema_path)[0]
+    schema = decode_schema(j_str)
+
+    def generator():
+        for root, dirs, files in os.walk(path):
+            for name in dirs:
+                if name.startswith("chunk="):
+                    chunk_path = os.path.join(path, name)
+                    pq_table = pq.read_table(chunk_path)
+                    df = decode_feature_type_ndarray(pq_table.to_pandas(), schema)
+                    for record in df.to_dict("records"):
+                        yield record
+
+    dataset = tf.data.Dataset.from_generator(generator, output_types=output_types,
+                                             output_shapes=output_shapes)
+    return dataset
+
+
+def read_parquet(format, input_path, *args, **kwargs):
+    supported_format = {"tf_dataset"}
+    if format not in supported_format:
+        raise ValueError(format + " is not supported, should be 'tf_dataset'.")
+
+    format_to_function = {"tf_dataset": (read_as_tfdataset, ["output_types"])}
+    func, required_args = format_to_function[format]
+    _check_arguments(format, kwargs, required_args)
+    return func(path=input_path, *args, **kwargs)

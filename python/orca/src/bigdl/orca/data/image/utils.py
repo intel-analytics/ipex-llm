@@ -15,9 +15,11 @@
 #
 
 import copy
+import os
 from collections import namedtuple
 from io import BytesIO
 import numpy as np
+import pyarrow as pa
 from itertools import chain, islice
 
 from enum import Enum
@@ -146,7 +148,27 @@ def dict_to_row(schema, row_dict):
     return pyspark.Row(**row)
 
 
+def decode_feature_type_ndarray(df, schema):
+    for n, field in schema.items():
+        if field.feature_type == FeatureType.NDARRAY:
+            df[n] = df[n].map(lambda k: decode_ndarray(k))
+    return df
+
+
 def chunks(iterable, size=10):
     iterator = iter(iterable)
     for first in iterator:
         yield chain([first], islice(iterator, size - 1))
+
+
+def pa_fs(path):
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        fs = pa.hdfs.connect()
+        path = path[len("hdfs://"):]
+        return path, fs
+    elif path.startswith("s3"):
+        raise ValueError("aws s3 is not supported for now")
+    else:  # Local path
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        return path, pa.LocalFileSystem()
