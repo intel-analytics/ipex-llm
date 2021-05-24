@@ -59,7 +59,8 @@ fi
 ray stop -f
 
 echo "Running orca data tests"
-python -m pytest -v ../test/zoo/orca/data
+python -m pytest -v ../test/zoo/orca/data \
+       --ignore=../test/zoo/orca/data/test_read_parquet_images.py
 exit_status_5=$?
 if [ $exit_status_5 -ne 0 ];
 then
