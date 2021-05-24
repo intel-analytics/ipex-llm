@@ -1,7 +1,7 @@
 # PPML User Guide
 
 ## 1. Privacy Preserving Machine Learning
-Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. Analytics Zoo ***PPML*** combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), so that users can continute to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
+Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. Analytics Zoo ***PPML*** combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
 
 ## 1.1 PPML for Big Data AI
 Analytics Zoo provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:
@@ -16,7 +16,7 @@ That is, even when the program runs in an untrusted cloud environment, all the d
 In the current release, two types of trusted Big Data AI applications are supported:
 
 1. Big Data analytics and ML/DL (supporting [Apache Spark](https://spark.apache.org/) and [BigDL](https://github.com/intel-analytics/BigDL))
-2.  Realtime compute and ML/DL (supporting [Apache Flink](https://flink.apache.org/) and Analytics Zoo [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song)) 
+2. Realtime compute and ML/DL (supporting [Apache Flink](https://flink.apache.org/) and Analytics Zoo [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song))
 
 ## 2. Trusted Big Data Analytics and ML
 With the trusted Big Data analytics and ML/DL support, users can run standard Spark data analysis (such as Spark SQL, Dataframe, MLlib, etc.) and distributed deep learning (using BigDL) in a secure and trusted fashion.
@@ -88,7 +88,7 @@ cd ppml/trusted-big-data-ml/scala/docker-graphene
 
 #### 2.3.1 Start PPML Container
 
-Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir. 
+Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
 
 1. Copy `keys` and `password`
     ```bash
@@ -105,7 +105,7 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
     ./init.sh
     ```
     
-#### 2.3.2 Run Trusted Spark Pi 
+#### 2.3.2 Run Trusted Spark Pi
 
 This example runs a simple Spark PI program, which is an  easy way to verify if the Trusted PPML environment is ready.  
 
@@ -127,7 +127,7 @@ The result should look something like:
 
 #### 2.3.3 Run Trusted Spark SQL
 
-This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries). 
+This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries).
 
 First, download and install [SBT](https://www.scala-sbt.org/download.html) and deploy a [HDFS](https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html) for TPC-H dataset and output, then build the source codes with SBT and generate TPC-H dataset according to the [TPC-H example](https://github.com/intel-analytics/zoo-tutorials/tree/master/tpch-spark). After that, check if there is an  `spark-tpc-h-queries_2.11-1.0.jar` under `tpch-spark/target/scala-2.11`; if so, we have successfully packaged the project.
 
@@ -159,7 +159,7 @@ The result should look like:
 
 This example shows how to run trusted deep learning (using an BigDL LetNet program).
 
-First, download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Use `gzip -d` to unzip all the downloaded files (train-images-idx3-ubyte.gz, train-labels-idx1-ubyte.gz, t10k-images-idx3-ubyte.gz, t10k-labels-idx1-ubyte.gz) and put them into folder `/ppml/trusted-big-data-ml/work/data`. 
+First, download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Use `gzip -d` to unzip all the downloaded files (train-images-idx3-ubyte.gz, train-labels-idx1-ubyte.gz, t10k-images-idx3-ubyte.gz, t10k-labels-idx1-ubyte.gz) and put them into folder `/ppml/trusted-big-data-ml/work/data`.
 
 Then run the following script:  
 
@@ -221,32 +221,45 @@ Then stop the service:
 ```
 
 ## 3. Trusted Realtime Compute and ML
-With the trusted realtime compute and ML/DL support, users can run standard Flink stream processing and distributed DL model inference (using [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song)) in a secure and trusted fashion.
+With the trusted realtime compute and ML/DL support, users can run standard Flink stream processing and distributed DL model inference (using [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song)) in a secure and trusted fashion. In this feature, both [Graphene](https://github.com/oscarlab/graphene) and [Occlum](https://github.com/occlum/occlum) are supported, users can choose one of them as LibOS layer.
 
 ### 3.1 Prerequisite
 
-Please refer to [Section 2.1 Prerequisite](#prerequisite)
+Please refer to [Section 2.1 Prerequisite](#prerequisite). For Occlum backend, if your kernel version is below 5.11, please install [enable_rdfsbase](https://github.com/occlum/enable_rdfsbase).
 
 ### 3.2 Prepare Docker Container
 
 Pull docker image from Dockerhub
 
 ```bash
+# For Graphene
 docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.10-SNAPSHOT
+```
+
+```bash
+# For Occlum
+docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-occlum:0.10-SNAPSHOT
 ```
 
 Also, you can build docker image from Dockerfile (this will take some time).
 
 ```bash
+# For Graphene
 cd ppml/trusted-realtime-ml/scala/docker-graphene
 ./build-docker-image.sh
 ```
 
-### 3.3 Run Trusted Realtime Compute and ML 
+```bash
+# For Occlum
+cd ppml/trusted-realtime-ml/scala/docker-occlum
+./build-docker-image.sh
+```
+
+### 3.3 Run Trusted Realtime Compute and ML
 
 #### 3.3.1 Configure the Environment
 
-Enter `analytics-zoo/ppml/trusted-realtime-ml/scala/docker-graphene` dir.
+Enter `analytics-zoo/ppml/trusted-realtime-ml/scala/docker-graphene` or `analytics-zoo/ppml/trusted-realtime-ml/scala/docker-occlum` dir.
 
 Modify `environments.sh`. Change MASTER, WORKER IP and file paths (e.g., `keys` and `password`).
 
@@ -264,7 +277,7 @@ Start Flink service:
 
 #### 3.3.3 Run Trusted Flink Program
 
-Submit Flink jobs: 
+Submit Flink jobs:
 
 ```bash
 cd ${FLINK_HOME}
@@ -311,5 +324,5 @@ input_api.enqueue('my-image1', user_define_key={"path: 'path/to/image1'})
 Cluster Serving service is a long running service in container, you can stop it as follows:
 
 ```bash
-docker stop trusted-cluster-servinglocal
+docker stop trusted-cluster-serving-local
 ```

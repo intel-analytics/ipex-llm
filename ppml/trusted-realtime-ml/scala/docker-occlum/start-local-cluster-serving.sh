@@ -11,7 +11,7 @@ sudo docker run -itd \
     -v $KEYS_PATH:/opt/keys \
     -v $PWD/conf:/opt/conf \
     -v $SECURE_PASSWORD_PATH:/opt/password \
-    --name=trusted-realtime-mllocal \
+    --name=trusted-cluster-serving-local \
     -e LOCAL_IP=$LOCAL_IP \
     -e CORE_NUM=30 \
     intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-occlum:0.10-SNAPSHOT \
