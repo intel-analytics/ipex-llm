@@ -32,6 +32,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
                      LinkedBlockingDeque[AbstractModel] = null)
   extends InferenceSupportive with EncryptSupportive with Serializable {
 
+  var timeMap = Map[Int, util.Queue[Long]]()
   require(concurrentNum > 0, "concurrentNum should > 0")
   /**
    * default constructor, will create a InferenceModel with auto-scaling enabled.
@@ -529,14 +530,42 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   def doRelease(): Unit = {
     clearModelQueue()
   }
+  def updateTimeMap(key: Int, value: Long): Unit = {
+    if (!timeMap.contains(key)) {
+      InferenceSupportive.logger.warn("update timer does not exist in map, creating new one.")
+      timeMap += (key -> new util.LinkedList[Long]())
+    } else {
+      require(timeMap(key).size() <= 1000,
+        s"timeMap size invalid, currently ${timeMap(key).size()}")
+      if (timeMap(key).size() == 1000) {
+        timeMap(key).poll()
+      }
+      timeMap(key).add(value)
+    }
+  }
+  def printTimeMap(): Unit = {
+    timeMap.foreach(tm => {
+      var sum: Long = 0
+      val iterator = tm._2.iterator()
+      while (iterator.hasNext) {
+        sum += iterator.next()
+      }
+      val avg = sum / tm._2.size()
+      val avgMilSec = avg / 1e6
+      InferenceSupportive.logger.info(s"Model ${tm._1} latest ${tm._2.size()} records, " +
+        s"average time cost of model  is $avgMilSec ms]")
+    })
+  }
   private def predict(inputActivity: Activity): Activity = {
     val model = retrieveModel()
+    val hashCode = System.identityHashCode(model)
     try {
       val begin = System.nanoTime()
       val result = model.predict(inputActivity)
       val end = System.nanoTime()
 
       val latency = end - begin
+      updateTimeMap(hashCode, latency)
       val name = s"Thread ${Thread.currentThread().getId} Inference"
       InferenceSupportive.logger.info(s"$name time [${latency/1e9} s, ${latency/1e6} ms].")
 
