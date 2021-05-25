@@ -16,12 +16,13 @@ bzip2 -d airline_14col.data.bz2
 
 we will get `airline_14col.data` for training
 
-For AutoXGBoostRegressor, download dataset from [here](incd.csv)
+For AutoXGBoostRegressor, download dataset from [here](https://data.world/nrippner/cancer-analysis-hackathon-challenge)
 
+You need to sign in and download `incd.csv` for training.
 
 #### 3. Run the AutoXGBoostClassifier example after pip install
 
-data_path=... // training data path. Local file system is supported.
+data_path = path/to/airline_14col.data. Local file system is supported.
 
 You can easily use the following commands to run this example:
 
@@ -32,7 +33,13 @@ See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-afte
 
 #### 4. Run the AutoXGBoostRegressor example after pip install
 
-For running `AutoXGBoostRegressorSigOpt.py`, you need to first obtain an SigOpt API token. You can register for SigOpt [here](https://app.sigopt.com/home) and the token could be found [here](https://app.sigopt.com/docs/overview/authentication) after logging in. To enable Ray to access the SigOpt API, you need to store the token as an environment variable as follows:
+You can easily use the following commands to run this example:
+
+```bash
+python path/to/AutoXGBoostRegressor.py --path path/to/incd.csv
+```
+
+For running with parameter `-m sigopt`, you need to first obtain an SigOpt API token. You can register for SigOpt [here](https://app.sigopt.com/home) and the token could be found [here](https://app.sigopt.com/docs/overview/authentication) after logging in. To enable Ray to access the SigOpt API, you need to store the token as an environment variable as follows:
 
 ```bash
 export SIGOPT_KEY=<YOUR-SIGOPT-API-TOKEN>
