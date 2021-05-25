@@ -470,4 +470,13 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
     img.content((100 + 100 * 213) * 3 + 1) should be(30 / 255f)
     img.content((100 + 100 * 213) * 3) should be(36 / 255f)
   }
+
+  "small RDD" should "throw exception" in {
+    intercept[Exception] {
+      val data = Array.empty[Int]
+      val dataset = DataSet.rdd(sc.parallelize(data, 3)).data(train = true)
+      dataset.mapPartitions(iter => { Iterator.single(iter.next())}).collect()(0)
+    }
+  }
 }
+
