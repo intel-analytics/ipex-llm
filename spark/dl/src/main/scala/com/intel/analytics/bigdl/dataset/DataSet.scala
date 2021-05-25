@@ -285,7 +285,8 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
 
           if (_train) {
             if (localData.length == 0) {
-              throw DatatoosmallException("dataset to small")
+              throw DatatoosmallException("dataset to small, please make increase dataset size to" +
+                " ensure no mapping localData to size zero")
             }
             localData(indexes(i % localData.length))
           } else {
