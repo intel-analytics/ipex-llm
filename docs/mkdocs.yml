@@ -41,7 +41,6 @@ pages:
     - Using Sequential API: ProgrammingGuide/Model/Sequential.md
     - Using Functional API: ProgrammingGuide/Model/Functional.md
   - Optimization: ProgrammingGuide/optimization.md
-  - Use Spark ML: ProgrammingGuide/MLPipeline.md
   - Visualization: ProgrammingGuide/visualization.md
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
@@ -86,7 +85,6 @@ pages:
     - LearningRate Scheduler: APIGuide/Optimizers/Learningrate-Scheduler.md
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
-  - ML Pipeline: APIGuide/DLFrames/DLEstimator_DLClassifier.md
   - Supported Caffe Layers: APIGuide/caffe_layer_list.md
   - Supported Tensorflow Operations: APIGuide/tensorflow_ops_list.md
   - Keras Issues: APIGuide/keras-issues.md
