@@ -44,9 +44,11 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--path', type=str,
                         default="./incd.csv",
                         help='Training data path')
-    parser.add_argument('--hadoop_conf', type=str,
-                        help='The path to the hadoop configuration folder. Required if you '
-                             'wish to run on yarn clusters. Otherwise, run in local mode.')
+    parser.add_argument(
+        '--hadoop_conf',
+        type=str,
+        help='The path to the hadoop configuration folder. Required if you '
+        'wish to run on yarn clusters. Otherwise, run in local mode.')
     parser.add_argument('--conda_name', type=str,
                         help='The name of conda environment. Required if you '
                              'wish to run on yarn clusters.')
@@ -74,12 +76,41 @@ if __name__ == '__main__':
 
     import pandas as pd
     df = pd.read_csv(opt.path, encoding='latin-1')
-    feature_cols = ["FIPS", "Lower 95% Confidence Interval", "Upper 95% Confidence Interval",
-                    "Average Annual Count", "Recent 5-Year Trend"]
+    df.rename(
+        columns={
+            " FIPS": "FIPS",
+            "Age-Adjusted Incidence Rate(Ê) - cases per 100,000": "Age-Adjusted Incidence Rate",
+            "Recent 5-Year Trend () in Incidence Rates": "Recent 5-Year Trend"},
+        inplace=True)
+
+    # removes rows with cell value _, # or *
+    rows = [i for i, x in df.iterrows() if (df.iat[i, 2].find(
+        '_') != -1 or df.iat[i, 2].find('#') != -1 or df.iat[i, 6].find('*') != -1)]
+    df.drop(rows, inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    num_rows = 1500  # number of rows to be used in this notebook; max: 2593
+    df = df[0:num_rows]
+    df["Lower 95% Confidence Interval"] = df["Lower 95% Confidence Interval"].astype(
+        "float")
+    df["Upper 95% Confidence Interval"] = df["Upper 95% Confidence Interval"].astype(
+        "float")
+    df["Average Annual Count"] = df["Average Annual Count"].astype("float")
+    df["Recent 5-Year Trend"] = df["Recent 5-Year Trend"].astype("float")
+    df["Age-Adjusted Incidence Rate"] = df["Age-Adjusted Incidence Rate"].astype(
+        "float")
+
+    feature_cols = [
+        "FIPS",
+        "Lower 95% Confidence Interval",
+        "Upper 95% Confidence Interval",
+        "Average Annual Count",
+        "Recent 5-Year Trend"]
     target_col = "Age-Adjusted Incidence Rate"
     X = df[feature_cols]
     y = df[[target_col]]
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=2)
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=0.2, random_state=2)
 
     config = {'random_state': 2,
               'min_child_weight': 3}
@@ -149,7 +180,10 @@ if __name__ == '__main__':
 
         # could customize by yourselves, make sure project_id exists
         experiment_name = "AutoXGBoost SigOpt Experiment"
-        search_alg_params = dict(space=space, name=experiment_name, max_concurrent=1)
+        search_alg_params = dict(
+            space=space,
+            name=experiment_name,
+            max_concurrent=1)
         recipe = XgbSigOptRecipe(num_rand_samples=num_rand_samples)
         search_alg = "sigopt"
         search_alg_params = search_alg_params
@@ -161,18 +195,21 @@ if __name__ == '__main__':
             brackets=3,
         )
     else:
-        recipe = XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
-                                              n_estimators=list(n_estimators_range),
-                                              max_depth=list(max_depth_range),
-                                              lr=lr,
-                                              min_child_weight=min_child_weight
-                                              )
+        recipe = XgbRegressorGridRandomRecipe(
+            num_rand_samples=num_rand_samples,
+            n_estimators=list(n_estimators_range),
+            max_depth=list(max_depth_range),
+            lr=lr,
+            min_child_weight=min_child_weight)
         search_alg = None
         search_alg_params = None
         scheduler = None
         scheduler_params = None
 
-    auto_xgb_reg = AutoXGBRegressor(cpus_per_trial=2, name="auto_xgb_regressor", **config)
+    auto_xgb_reg = AutoXGBRegressor(
+        cpus_per_trial=2,
+        name="auto_xgb_regressor",
+        **config)
     auto_xgb_reg.fit(data=(X_train, y_train),
                      validation_data=(X_val, y_val),
                      metric="rmse",
