@@ -119,7 +119,8 @@ else
     wget -nv $FTP_URI/analytics-zoo-data/airline_14col.data -P ${ANALYTICS_ZOO_ROOT}/data/
 fi
 
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/automl/autoxgboost/AutoXGBoostClassifier.py
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/automl/autoxgboost/AutoXGBoostClassifier.py \
+ -p ${ANALYTICS_ZOO_ROOT}/data/airline_14col.data
 
 now=$(date "+%s")
 time9=$((now-start))
@@ -127,6 +128,13 @@ time9=$((now-start))
 
 echo "#10 start example for orca auto-xgboost-regressor"
 start=$(date "+%s")
+
+if [ -f ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/automl/autoxgboost/incd.csv ]
+then
+    echo "incd.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/incd.csv -P ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/automl/autoxgboost/
+fi
 
 python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/automl/autoxgboost/AutoXGBoostRegressor.py \
  -p ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/automl/autoxgboost/incd.csv
