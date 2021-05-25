@@ -34,7 +34,6 @@ import java.lang.{Boolean => JBoolean}
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.dataset.image.{CropCenter, CropRandom, CropperMethod}
-import com.intel.analytics.bigdl.dlframes._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
@@ -2704,86 +2703,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     module.quantize()
   }
 
-  def createDLEstimator(model: Module[T], criterion: Criterion[T],
-                        featureSize: JArrayList[Int],
-                        labelSize: JArrayList[Int]): DLEstimator[T] = {
-    new DLEstimator[T](model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray)
-  }
-
-  def createDLClassifier(model: Module[T], criterion: Criterion[T],
-                         featureSize: JArrayList[Int],
-                         labelSize: JArrayList[Int]): DLClassifier[T] = {
-    new DLClassifier[T](model, criterion, featureSize.asScala.toArray)
-  }
-
-  def fitEstimator(estimator: DLEstimator[T], dataSet: DataFrame): DLModel[T] = {
-    estimator.fit(dataSet)
-  }
-
-  def fitClassifier(classifier: DLClassifier[T], dataSet: DataFrame): DLModel[T] = {
-    classifier.fit(dataSet)
-  }
-
-  def setBatchSizeDLEstimator(estimator: DLEstimator[T], batchSize: Int): DLEstimator[T] = {
-    estimator.setBatchSize(batchSize)
-  }
-
-  def setBatchSizeDLClassifier(classifier: DLClassifier[T], batchSize: Int): DLClassifier[T] = {
-    classifier.setBatchSize(batchSize)
-  }
-
-  def setMaxEpochDLEstimator(estimator: DLEstimator[T], maxEpoch: Int): DLEstimator[T] = {
-    estimator.setMaxEpoch(maxEpoch)
-  }
-
-  def setMaxEpochDLClassifier(classifier: DLClassifier[T], maxEpoch: Int): DLClassifier[T] = {
-    classifier.setMaxEpoch(maxEpoch)
-  }
-
-  def setLearningRateDLEstimator(estimator: DLEstimator[T], lr: Double): DLEstimator[T] = {
-    estimator.setLearningRate(lr)
-  }
-
-  def setLearningRateDLClassifier(classifier: DLClassifier[T], lr: Double): DLClassifier[T] = {
-    classifier.setLearningRate(lr)
-  }
-
-  def createDLModel(model: Module[T], featureSize: JArrayList[Int]): DLModel[T] = {
-    new DLModel[T](model, featureSize.asScala.toArray)
-  }
-
-  def createDLClassifierModel(model: Module[T],
-                              featureSize: JArrayList[Int]): DLClassifierModel[T] = {
-    new DLClassifierModel[T](model, featureSize.asScala.toArray)
-  }
-
-  def dlModelTransform(dlModel: DLModel[T], dataSet: DataFrame): DataFrame = {
-    dlModel.transform(dataSet)
-  }
-
-  def dlClassifierModelTransform(dlClassifierModel: DLClassifierModel[T],
-                                 dataSet: DataFrame): DataFrame = {
-    dlClassifierModel.transform(dataSet)
-  }
-
-  def setFeatureSizeDLModel(dlModel: DLModel[T], featureSize: JArrayList[Int]): DLModel[T] = {
-    dlModel.setFeatureSize(featureSize.asScala.toArray)
-  }
-
-  def setFeatureSizeDLClassifierModel(dlClassifierModel: DLClassifierModel[T],
-                                      featureSize: JArrayList[Int]): DLClassifierModel[T] = {
-    dlClassifierModel.setFeatureSize(featureSize.asScala.toArray)
-  }
-
-  def setBatchSizeDLModel(dlModel: DLModel[T], batchSize: Int): DLModel[T] = {
-    dlModel.setBatchSize(batchSize)
-  }
-
-  def setBatchSizeDLClassifierModel(dlClassifierModel: DLClassifierModel[T],
-                                    batchSize: Int): DLClassifierModel[T] = {
-    dlClassifierModel.setBatchSize(batchSize)
-  }
-
   def findGraphNode(model: Graph[T], name: String): ModuleNode[T] = {
     model.node(name)
   }
@@ -3317,19 +3236,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
     DataSet.imageFrame(imageFrame)
-  }
-
-  def dlReadImage(path: String, sc: JavaSparkContext, minParitions: Int): DataFrame = {
-    val df = DLImageReader.readImages(path, sc.sc, minParitions)
-    df
-  }
-
-  def createDLImageTransformer(transformer: FeatureTransformer): DLImageTransformer = {
-    new DLImageTransformer(transformer)
-  }
-
-  def dlImageTransform(dlImageTransformer: DLImageTransformer, dataSet: DataFrame): DataFrame = {
-    dlImageTransformer.transform(dataSet)
   }
 
   def getRealClassNameOfJValue(module: AbstractModule[Activity, Activity, T]): String = {
