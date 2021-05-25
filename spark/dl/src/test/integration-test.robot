@@ -70,8 +70,6 @@ Run Spark Test
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 40g --executor-memory 40g --executor-cores 8 --total-executor-cores 8 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM ${jar_path} -f ./simple-examples/data -b 120 --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 1 --learningRateDecay 0.001 --keepProb 0.5 --overWrite --optimizerVersion "optimizerV2"
    Log To Console                   begin resnet Train
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-memory 5g --executor-cores 8 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.resnet.TrainCIFAR10 ${jar_path} -f /tmp/cifar --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 --learningRate 0.1 --optimizerVersion "optimizerV2"
-   Log To Console                   begin DLClassifierLeNet
-   Run Shell                        ${submit} --master ${spark_master} --executor-cores 16 --total-executor-cores 16 --driver-memory 5g --executor-memory 30g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 1200 -f /tmp/mnist --maxEpoch 1 
    Log To Console                   begin rnn Train
    Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --executor-cores 12 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 1 --checkpoint ./model/ -b 12 --optimizerVersion "optimizerV2"
    Log To Console                   begin inceptionV1 train
@@ -124,8 +122,6 @@ Yarn Test Suite
    Set Environment Variable         http_proxy               ${http_proxy}
    Set Environment Variable         https_proxy              ${https_proxy}
    ${submit}=                       Catenate                 SEPARATOR=/    ${spark_home}	bin    spark-submit
-   Log To Console                   begin DLClassifierLeNet
-   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 1 --driver-memory 20g --executor-memory 60g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 1200 -f /tmp/mnist --maxEpoch 1
    Log To Console                   begin text classification
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --conf spark.yarn.executor.memoryOverhead=40000 --executor-cores 10 --num-executors 2 --driver-memory 20g --executor-memory 40g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 240 --baseDir /tmp/text_data --partitionNum 4
    Log To Console                   begin lenet
