@@ -46,8 +46,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
       path
     }
   }
-
-
+  
 
   "COCODataset" should "correctly transform into sequence file" in {
     val resource = getClass().getClassLoader().getResource("coco")

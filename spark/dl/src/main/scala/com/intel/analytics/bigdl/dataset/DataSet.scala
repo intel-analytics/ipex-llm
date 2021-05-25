@@ -236,6 +236,8 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
   var isCached = false
 }
 
+final case class DatatoosmallException(private val message: String = "") extends Exception(message)
+
 /**
  * Wrap a RDD as a DataSet.
  * @param buffer
@@ -280,7 +282,11 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
 
         override def next(): T = {
           val i = _offset.getAndIncrement()
+
           if (_train) {
+            if (localData.length == 0) {
+              throw DatatoosmallException("dataset to small")
+            }
             localData(indexes(i % localData.length))
           } else {
             if (i < localData.length) {
