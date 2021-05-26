@@ -48,6 +48,7 @@ for worker in ${WORKERS[@]}
         --cpuset-cpus="6-30" \
         --oom-kill-disable \
         --device=/dev/sgx \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
         -v $KEYS_PATH:/opt/keys \
         -v $SECURE_PASSWORD_PATH:/opt/password \
         --name=flink-task-manager-$worker \
@@ -60,7 +61,7 @@ for worker in ${WORKERS[@]}
         -e FLINK_TASK_MANAGER_RPC_PORT=6125 \
         -e FLINK_TASK_MANAGER_TASKSLOTS_NUM=1 \
         -e CORE_NUM=25 \
-        $TRUSTED_CLUSTER_SERVING_DOCKER bash -c 'cd /opt && ./occlum/start_aesm.sh && ./init-occlum-taskmanager.sh && ./start-flink-taskmanager.sh && tail -f /dev/null'"
+        $TRUSTED_CLUSTER_SERVING_DOCKER bash -c 'cd /opt && ./init-occlum-taskmanager.sh && ./start-flink-taskmanager.sh && tail -f /dev/null'"
   done
 for worker in ${WORKERS[@]}
   do
