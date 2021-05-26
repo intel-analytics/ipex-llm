@@ -26,6 +26,7 @@ from zoo.tfpark import ZooOptimizer
 
 
 def main(option):
+    batch_size = 16 if not option.batch_size else int(option.batch_size)
     sc = init_nncontext()
 
     def input_fn(mode, params):
@@ -49,7 +50,7 @@ def main(option):
             feature_set = feature_set.transform(ImageFeatureToSample())
             dataset = TFDataset.from_feature_set(feature_set,
                                                  features=(tf.float32, [224, 224, 3]),
-                                                 labels=(tf.int32, [1]), batch_size=16)
+                                                 labels=(tf.int32, [1]), batch_size=batch_size)
         else:
             raise NotImplementedError
 
@@ -75,7 +76,8 @@ def main(option):
 
     estimator = TFEstimator.from_model_fn(model_fn,
                                           params={"image_path": option.image_path,
-                                                  "num_classes": option.num_classes})
+                                                  "num_classes": option.num_classes,
+                                                  "batch_size": option.batch_size})
 
     estimator.train(input_fn, steps=100)
     print("finished...")
@@ -85,6 +87,7 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("--image-path", dest="image_path")
     parser.add_option("--num-classes", dest="num_classes")
+    parser.add_option("--batch_size", dest="batch_size")
 
     (options, args) = parser.parse_args(sys.argv)
     main(options)
