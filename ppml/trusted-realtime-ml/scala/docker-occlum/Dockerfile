@@ -1,5 +1,5 @@
 # stage.1 Redis
-FROM ubuntu:18.04 as redis-tls
+FROM occlum/occlum:0.21.0-ubuntu18.04 as redis-tls
 
 WORKDIR /opt
 
@@ -69,7 +69,7 @@ RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml/download" -O resnet_v1_50.xml
 
 # stage.3 az ppml occlum
-FROM occlum/occlum:0.21.0-ubuntu18.04
+FROM ubuntu:18.04 as ppml
 
 ARG ANALYTICS_ZOO_VERSION=0.11.0-SNAPSHOT
 ARG BIGDL_VERSION=0.12.2
@@ -98,19 +98,39 @@ RUN mkdir -p /opt/analytics-zoo
 
 COPY --from=redis-tls /opt/ssl /opt/ssl
 COPY --from=redis-tls /opt/redis /opt/redis
+COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
 
 COPY --from=analytics-zoo /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=analytics-zoo /opt/resnet50 /opt/resnet50
 COPY --from=analytics-zoo /opt/analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar /opt/analytics-zoo/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar
 COPY --from=analytics-zoo /opt/analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar /opt/analytics-zoo/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar
 
-# Add key for SGX repo
-RUN wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+        build-essential ca-certificates openjdk-11-jdk \
+        curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
+        libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev
+# Add 01.org & key
+RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
+    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+
+RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
+    wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools && \
+        build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
+        gnupg2 vim jq make gdb libfuse-dev libtool \
+        libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
+        libsgx-dcap-quote-verify-dev \
+        occlum && \
     apt-get clean
+
+RUN echo "source /etc/profile" >> $HOME/.bashrc && \
+    sed -i "s|pgrep \"|if [ -S /var/run/aesmd/aesm.socket ]; then\n            return\n        else\n            pgrep \"|g" /opt/occlum/build/bin/occlum && \
+    sed -i "/pgrep \"/a \ \ \ \ \ \ \ \ fi" /opt/occlum/build/bin/occlum
+# Hotfix for occlum mount aesm
+
 
 # Cluster Serving config
 ADD ./cluster-serving-config.yaml /opt/config.yaml

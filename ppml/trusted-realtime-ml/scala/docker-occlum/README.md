@@ -59,13 +59,13 @@ To test a specific component, pass one or more argument to it among the followin
 "redis", "flinkjm", "flinktm", "frontend", and "serving". For example, run the following command to check the status of the Flink job manager.
 
 ```bash
-docker exec -it trusted-realtime-mllocal bash /opt/check-status.sh flinkjm
+docker exec -it trusted-cluster-serving-local bash /opt/check-status.sh flinkjm
 ```
 
 To test all components, you can either pass no argument or pass the "all" argument.
 
 ```bash
-docker exec -it trusted-realtime-mllocal bash /opt/check-status.sh
+docker exec -it trusted-cluster-serving-local bash /opt/check-status.sh
 ```
 If all is well, the following results should be displayed:
 

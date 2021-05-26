@@ -1,9 +1,6 @@
 #!/bin/bash
 set -x
 
-bash /opt/occlum/start_aesm.sh
-echo "Starting AESM service..."
-
 cd /opt
 ./init-occlum-taskmanager.sh
 echo "occlum flink jobmanager image built"
@@ -16,11 +13,6 @@ export FLINK_JOB_MANAGER_IP=$LOCAL_IP
 ./start-flink-jobmanager.sh &
 echo "flink-jobmanager started"
 
-
-[ "$(pgrep aesm)" ] && echo "AESM started" || echo "AESM not started"
-while ! pgrep aesm; do
-  sleep 10
-done
 export FLINK_TASK_MANAGER_IP=$LOCAL_IP
 while ! nc -z $FLINK_TASK_MANAGER_IP $FLINK_JOB_MANAGER_REST_PORT; do
   sleep 1
