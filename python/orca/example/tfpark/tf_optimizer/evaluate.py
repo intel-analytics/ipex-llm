@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from optparse import OptionParser
 import tensorflow as tf
 from zoo import init_nncontext
 from zoo.tfpark import TFDataset, TFPredictor
@@ -28,12 +28,13 @@ from nets import lenet
 slim = tf.contrib.slim
 
 
-def main(data_num):
+def main(options, data_num):
 
+    data_path = '/tmp/mnist' if not options.data_path else options.data_path
     sc = init_nncontext()
 
     # get data, pre-process and create TFDataset
-    (images_data, labels_data) = mnist.read_data_sets("/tmp/mnist", "test")
+    (images_data, labels_data) = mnist.read_data_sets(data_path, "test")
     images_data = (images_data[:data_num] - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
     labels_data = labels_data[:data_num].astype(np.int32)
     dataset = TFDataset.from_ndarrays((images_data, labels_data), batch_per_thread=20)
@@ -68,4 +69,9 @@ if __name__ == '__main__':
 
     if len(sys.argv) > 1:
         data_num = int(sys.argv[1])
-    main(data_num)
+
+    parser = OptionParser()
+    parser.add_option("--data_path", dest="data_path")
+    (options, args) = parser.parse_args(sys.argv)
+
+    main(options, data_num)
