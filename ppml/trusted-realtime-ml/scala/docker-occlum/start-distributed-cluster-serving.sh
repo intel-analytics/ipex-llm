@@ -53,6 +53,7 @@ ssh root@$MASTER "docker run -itd \
       --cpuset-cpus="31-32" \
       --oom-kill-disable \
       --device=/dev/sgx \
+      -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
       -v $KEYS_PATH:/opt/keys \
       -v $SECURE_PASSWORD_PATH:/opt/password \
       --name=http-frontend \
