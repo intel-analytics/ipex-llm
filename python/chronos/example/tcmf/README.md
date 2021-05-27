@@ -1,11 +1,11 @@
-# High dimension time series forecasting with zouwu TCMFForecaster 
+# High dimension time series forecasting with Chronos TCMFForecaster 
 
-This example demonstrates how to use Analytics Zoo Zouwu TCMFForecaster to run distributed training 
+This example demonstrates how to use Analytics Zoo Chronos TCMFForecaster to run distributed training 
 and inference for high dimension time series forecasting task.
 
 
 ## Environment
-You can follow the instructions [here](https://analytics-zoo.github.io/master/#Zouwu/tutorials/TCMFForecaster/#step-0-prepare-environment) to prepare environment for zouwu TCMFForecaster.
+You can follow the instructions [here](https://analytics-zoo.github.io/master/#Chronos/tutorials/TCMFForecaster/#step-0-prepare-environment) to prepare environment for chronos TCMFForecaster.
 
 ## Prepare data
 The example use the public real-world electricity datasets. You can download by running [download datasets script](https://github.com/rajatsen91/deepglo/blob/master/datasets/download-data.sh). Note that we only need electricity.npy.

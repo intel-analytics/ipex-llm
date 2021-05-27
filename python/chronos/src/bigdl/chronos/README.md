@@ -1,6 +1,6 @@
-## Project Zouwu: Analytics Zoo Time Series for Telco 
+## Project Chronos: Analytics Zoo Time Series for Telco 
 
-Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The Zouwu library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction, including:
+Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The Chronos library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction, including:
 
 * **_Use case_** - reference time series use cases in the Telco industry (such as network traffic forcasting, etc.)
 * **_Model_** - built-in deep learning models for time series analysis, for example
@@ -9,7 +9,7 @@ Time series prediction takes observations from previous time steps as input and 
      * TCMF - suitable for very high dimensional multivarient forecasting
 * **_AutoTS_** - AutoML support for building end-to-end time series analysis pipelines (including automatic feature generation, model selection and hyperparameter tuning).
 
-For more details about how to use, tutorials and API docs, please refer to the [Zouwu User Guide](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/zouwu.html) 
+For more details about how to use, tutorials and API docs, please refer to the [Chronos User Guide](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/chronos.html) 
 
 ---
 ### Reference Use Case
