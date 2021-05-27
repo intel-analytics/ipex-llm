@@ -1,6 +1,6 @@
 ## **Introduction**
 
-Analytics Zoo Zouwu TCMFForecaster provides an efficient way to forecast high dimensional time series. 
+Analytics Zoo Chronos TCMFForecaster provides an efficient way to forecast high dimensional time series. 
 
 TCMFForecaster is based on DeepGLO algorithm, which is a deep forecasting model which thinks globally and acts locally.
 You can refer to [the deepglo paper](https://arxiv.org/abs/1905.03806) for more details. 
@@ -21,7 +21,7 @@ __Ubuntu 16.04 or later__ and __macOS 10.12.6 or later__.
 
 
 ```python
-from zoo.zouwu.model.forecast.tcmf_forecaster import TCMFForecaster
+from zoo.chronos.model.forecast.tcmf_forecaster import TCMFForecaster
 model = TCMFForecaster(
          vbsize=128,
          hbsize=256,

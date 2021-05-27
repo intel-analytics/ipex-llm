@@ -1,6 +1,6 @@
 #AutoTSTrainer
 
-Zouwu AutoTSTrainer is used to train a TSPipeline for forecasting using AutoML.
+Chronos AutoTSTrainer is used to train a TSPipeline for forecasting using AutoML.
 
 It is built upon [Analytics Zoo AutoML module](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/automl) (refer to [AutoML ProgrammingGuide](https://analytics-zoo.github.io/master/#ProgrammingGuide/AutoML/overview/) and [AutoML APIGuide](https://analytics-zoo.github.io/master/#APIGuide/AutoML/time-sequence-predictor/) for details), which uses [Ray Tune](https://github.com/ray-project/ray/tree/master/python/ray/tune) for hyper parameter tuning and runs on [Analytics Zoo RayOnSpark](https://analytics-zoo.github.io/master/#ProgrammingGuide/rayonspark/).
 
@@ -8,7 +8,7 @@ It is built upon [Analytics Zoo AutoML module](https://github.com/intel-analytic
 
 ### \_\_init\_\_
 ```python
-from zoo.zouwu.autots.forecast import AutoTSTrainer
+from zoo.chronos.autots.forecast import AutoTSTrainer
 
 trainer = AutoTSTrainer(dt_col="datetime",
                          target_col="value",

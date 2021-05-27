@@ -1,4 +1,4 @@
-## Zouwu AutoTS Quickstart
+## Chronos AutoTS Quickstart
 
 In this guide, we will show you how to use AutoTS for automated time series forecasting.
 
@@ -9,11 +9,11 @@ The general workflow using AutoTS contains below two steps.
 
 Refer to [AutoTS notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb) for demonstration how to use AutoTS to build a time series forcasting pipeline. 
 
-Refer to [AutoTS API Guide](https://analytics-zoo.github.io/master/#Zouwu/API/AutoTSTrainer/) for more details of AutoTS APIs.
+Refer to [AutoTS API Guide](https://analytics-zoo.github.io/master/#Chronos/API/AutoTSTrainer/) for more details of AutoTS APIs.
 
 ---
 ### **Step 0: Prepare environment**
-Zouwu AutoTS needs below requirements to run.
+Chronos AutoTS needs below requirements to run.
 
 * python 3.6 or 3.7
 * pySpark
@@ -68,7 +68,7 @@ To create an AutoTSTrainer. Specify below arguments in constructor. See below ex
 * ```scheduler_params```: Optional(Dict). Necessary params of scheduler.
 
 ```python
-from zoo.zouwu.autots.forecast import AutoTSTrainer
+from zoo.chronos.autots.forecast import AutoTSTrainer
 
 trainer = AutoTSTrainer(dt_col="datetime",
                         target_col="value",
@@ -109,7 +109,7 @@ ts_pipeline.predict(test_df)
 Use ```TSPipeline.save/load``` to load from file or save to file. 
 
 ```python
-from zoo.zouwu.autots.forecast import TSPipeline
+from zoo.chronos.autots.forecast import TSPipeline
 loaded_ppl = TSPipeline.load(file)
 # ... do sth. e.g. incremental fitting
 loaded_ppl.save(another_file)

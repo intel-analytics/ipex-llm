@@ -16,7 +16,7 @@ Analytics Zoo is an open source _**Big Data AI**_ platform, and includes the fol
  
  * [BigDL Extensions](#getting-started-with-bigdl-extensions): high-level Spark ML pipeline and Keras-like APIs for BigDL
  
- * [Zouwu](#getting-started-with-zouwu): scalable time series analysis using AutoML
+ * [Chronos](#getting-started-with-chronos): scalable time series analysis using AutoML
  
  * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
 
@@ -147,9 +147,9 @@ val predictions = pipelineModel.transform(validationDF)
 ```
 See the [Scala](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/scala.html), [NNframes](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/nnframes.html) and [Keras API](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/keras-api.html) user guides for more details.
 
-## Getting Started with Zouwu
+## Getting Started with Chronos
 
-Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The _**Zouwu**_ library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction.
+Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The _**Chronos**_ library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction.
 
 To train a time series model with AutoML, first initialize [Orca Context](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
@@ -163,7 +163,7 @@ sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, 
 Next, create an _AutoTSTrainer_.
 
 ```python
-from zoo.zouwu.autots.forecast import AutoTSTrainer
+from zoo.chronos.autots.forecast import AutoTSTrainer
 
 trainer = AutoTSTrainer(dt_col="datetime", target_col="value")
 ```
@@ -178,7 +178,7 @@ ts_pipeline = trainer.fit(train_df, validation_df)
 ts_pipeline.predict(test_df)
 ```
 
-See the Zouwu [user guide](https://analytics-zoo.readthedocs.io/en/latest/doc/Zouwu/Overview/zouwu.html) and [example](https://analytics-zoo.readthedocs.io/en/latest/doc/Zouwu/QuickStart/zouwu-autots-quickstart.html) for more details.
+See the Chronos [user guide](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autots-quickstart.html) for more details.
 
 ## PPML (Privacy Preserving Machine Learning)
 

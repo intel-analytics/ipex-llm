@@ -8,7 +8,7 @@ Analytics Zoo Documentation
 * `Orca <doc/Orca/Overview/orca.html>`_: seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
 * **BigDL Extensions**: high-level `Spark ML pipeline <doc/UseCase/nnframes.html>`_ and `Keras-like <doc/UseCase/keras-api.html>`_ APIs for BigDL 
-* `Zouwu <doc/Zouwu/Overview/zouwu.html>`_: scalable time series analysis using AutoML
+* `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
 * `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning (*experimental*)
 
  
@@ -40,7 +40,7 @@ Analytics Zoo Documentation
    doc/UserGuide/k8s.md
    doc/UserGuide/databricks.md
    doc/Ray/Overview/ray.md
-   doc/Zouwu/Overview/zouwu.md
+   doc/Chronos/Overview/chronos.md
    doc/PPML/Overview/ppml.md
    doc/UserGuide/develop.md
    
@@ -51,7 +51,7 @@ Analytics Zoo Documentation
    doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.md
    doc/UseCase/spark-dataframe.md
    doc/UseCase/xshards-pandas.md
-   doc/Zouwu/QuickStart/zouwu-autots-quickstart.md
+   doc/Chronos/QuickStart/chronos-autots-quickstart.md
    doc/UseCase/keras-api.md
    doc/UseCase/nnframes.md
    

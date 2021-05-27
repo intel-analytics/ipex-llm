@@ -1,5 +1,5 @@
 
-In this guide, we will show you how to use Zouwu TCMFForecaster for high dimension time series forecasting.
+In this guide, we will show you how to use Chronos TCMFForecaster for high dimension time series forecasting.
 
 Refer to [TCMFForecaster example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/tcmf/run_electricity.py) for demonstration of using TCMFForecaster for distributed training and inference. 
 
@@ -66,7 +66,7 @@ init_orca_context(cluster_mode="yarn-client",
 ### **Step 2: Create a TCMFForecaster**
 
 ```python
-from zoo.zouwu.model.forecast.tcmf_forecaster import TCMFForecaster
+from zoo.chronos.model.forecast.tcmf_forecaster import TCMFForecaster
 model = TCMFForecaster(
         vbsize=128,
         hbsize=256,

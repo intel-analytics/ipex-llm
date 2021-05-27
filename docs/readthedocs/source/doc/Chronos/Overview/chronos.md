@@ -1,16 +1,16 @@
-# Zouwu User Guide
+# Chronos User Guide
 
 ### **1. Overview**
-_Zouwu_ is an application framework for building large-scale time series analysis applications.
+_Chronos_ is an application framework for building large-scale time series analysis applications.
 
-There are two ways to use _Zouwu_ for time series analysis:
+There are two ways to use _Chronos_ for time series analysis:
 
 - AutoML enabled pipelines (i.e. [AutoTS](#3-use-autots-pipeline-with-automl))
 - Standalone [forecast pipeline](#4-use-standalone-forecaster-pipeline) without AutoML
 
 ### **2. Install**
 
-_Zouwu_ depends on the Python libraries below:
+_Chronos_ depends on the Python libraries below:
 
 ```bash
 python 3.6 or 3.7
@@ -27,7 +27,7 @@ scikit-learn>=0.20.0,<0.24.0
 requests
 ```
 
-You can easily install all the dependencies for _Zouwu_ as follows:
+You can easily install all the dependencies for _Chronos_ as follows:
 
 ```bash
 conda create -n my_env python=3.7
@@ -91,7 +91,7 @@ datetime    target  extra_feature_1  extra_feature_2
 You can create an `AutoTSTrainer` as follows (`dt_col` is the datetime, `target_col` is the target column, and `extra_features_col` is the extra features):
 
 ```python
-from zoo.zouwu.autots.forecast import AutoTSTrainer
+from zoo.chronos.autots.forecast import AutoTSTrainer
 
 trainer = AutoTSTrainer(dt_col="datetime",
                         target_col="target",
@@ -129,7 +129,7 @@ ts_pipeline.fit(new_train_df, new_val_df, epochs=10)
 Use ```TSPipeline.save|load``` to load or save.
 
 ```python
-from zoo.zouwu.autots.forecast import TSPipeline
+from zoo.chronos.autots.forecast import TSPipeline
 loaded_ppl = TSPipeline.load(file)
 # ... do sth. e.g. incremental fitting
 loaded_ppl.save(another_file)
@@ -140,7 +140,7 @@ loaded_ppl.save(another_file)
 ---
 ### **4. Use Standalone Forecaster Pipeline**
 
-Zouwu also provides a set of standalone time series forecaster, which are based on deep learning models (without AutoML support), including
+Chronos also provides a set of standalone time series forecaster, which are based on deep learning models (without AutoML support), including
 
 * TCNForecaster
 * LSTMForecaster

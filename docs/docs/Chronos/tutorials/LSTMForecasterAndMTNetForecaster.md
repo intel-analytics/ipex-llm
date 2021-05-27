@@ -3,7 +3,7 @@ In this guide, we will show you how to use the built-in LSTMForecaster and MTNet
 
 The built-in LSTMForecaster and MTNetForecaster are both derived from [tfpark.KerasModels](https://analytics-zoo.github.io/master/#APIGuide/TFPark/model/). 
 
-Refer to [network traffic notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) for demonstration of forecasting network traffic data with Zouwu built-in LSTMForecaster and MTNetForecaster.
+Refer to [network traffic notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) for demonstration of forecasting network traffic data with Chronos built-in LSTMForecaster and MTNetForecaster.
 
 Refer to [LSTMForecaster API](../API/LSTMForecaster.md) and [MTNetForecaster API](../API/MTNetForecaster.md) detailed explanation of all arguments for each forecast model.
 
@@ -27,8 +27,8 @@ Below are some example code to create forecast models.
 
 ```python
 #import forecast models
-from zoo.zouwu.model.forecast.lstm_forecaster import LSTMForecaster
-from zoo.zouwu.model.forecast.mtnet_forecaster import MTNetForecaster
+from zoo.chronos.model.forecast.lstm_forecaster import LSTMForecaster
+from zoo.chronos.model.forecast.mtnet_forecaster import MTNetForecaster
 
 #build a lstm forecast model
 lstm_forecaster = LSTMForecaster(target_dim=1, 
