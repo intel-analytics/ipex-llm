@@ -431,6 +431,84 @@ class TestTable(TestCase):
         assert median_tbl.df.filter("column == 'col_2'").filter("median == 1.0").count() == 1, \
             "the median of col_2 should be 1.0"
 
+    def test_cast(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", "123", 14, 8),
+                ("alice", "34", 25, 9),
+                ("rose", "25344", 23, 10)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("a", StringType(), True),
+                             StructField("b", IntegerType(), True),
+                             StructField("c", IntegerType(), True)])
+        df = spark.createDataFrame(data, schema)
+        tbl = FeatureTable(df)
+        tbl = tbl.cast("a", "int")
+        assert dict(tbl.df.dtypes)['a'] == "int", "column a should be now be cast to integer type"
+        tbl = tbl.cast("a", "float")
+        assert dict(tbl.df.dtypes)['a'] == "float", "column a should be now be cast to float type"
+        tbl = tbl.cast(["b", "c"], "double")
+        assert dict(tbl.df.dtypes)['b'] == dict(tbl.df.dtypes)['c'] == "double", \
+            "column b and c should be now be cast to double type"
+        tbl = tbl.cast(None, "float")
+        assert dict(tbl.df.dtypes)['name'] == dict(tbl.df.dtypes)['a'] == dict(tbl.df.dtypes)['b'] \
+            == dict(tbl.df.dtypes)['c'] == "float", \
+            "all the columns should now be cast to float type"
+
+    def test_select(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        select_tbl = feature_tbl.select("col_1", "col_2")
+        assert "col_1" in select_tbl.df.columns, "col_1 shoul be selected"
+        assert "col_2" in select_tbl.df.columns, "col_2 shoud be selected"
+        assert "col_3" not in select_tbl.df.columns, "col_3 shoud not be selected"
+        assert feature_tbl.size() == select_tbl.size(), \
+            "the selected table should have the same rows"
+        with self.assertRaises(Exception) as context:
+            feature_tbl.select()
+        self.assertTrue("cols should be str or a list of str, but got None."
+                        in str(context.exception))
+
+    def test_create_from_dict(self):
+        indices = {'a': 1, 'b': 2, 'c': 3}
+        col_name = 'letter'
+        tbl = StringIndex.from_dict(indices, col_name)
+        assert 'id' in tbl.df.columns, "id should be one column in the stringindex"
+        assert 'letter' in tbl.df.columns, "letter should be one column in the stringindex"
+        assert tbl.size() == 3, "the StringIndex should have three rows"
+        with self.assertRaises(Exception) as context:
+            StringIndex.from_dict(indices, None)
+        self.assertTrue("col_name should be str, but get None"
+                        in str(context.exception))
+        with self.assertRaises(Exception) as context:
+            StringIndex.from_dict(indices, 12)
+        self.assertTrue("col_name should be str, but get int"
+                        in str(context.exception))
+        with self.assertRaises(Exception) as context:
+            StringIndex.from_dict([indices], col_name)
+        self.assertTrue("indices should be dict, but get list"
+                        in str(context.exception))
+
+    def test_encode_string_from_dict(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", "123", 14, 8),
+                ("alice", "34", 25, 9),
+                ("rose", "25344", 23, 10)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True),
+                             StructField("height", IntegerType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        columns = ["name", "num"]
+        indices = []
+        indices.append({"jack": 1, "alice": 2, "rose": 3})
+        indices.append({"123": 3, "34": 1, "25344": 2})
+        tbl = tbl.encode_string(columns, indices)
+        assert 'name' in tbl.df.columns, "name should be still in the columns"
+        assert 'num' in tbl.df.columns, "num should be still in the columns"
+        assert tbl.df.where(tbl.df.age == 14).select("name").collect()[0]["name"] == 1, \
+            "the first row of name should be 1"
+        assert tbl.df.where(tbl.df.height == 10).select("num").collect()[0]["num"] == 2, \
+            "the third row of num should be 2"
 
 if __name__ == "__main__":
     pytest.main([__file__])
