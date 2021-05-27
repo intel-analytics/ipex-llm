@@ -7,7 +7,7 @@ The general workflow using AutoTS contains below two steps.
 1. create a `AutoTSTrainer` to train a `TSPipeline`, save it to file to use later or elsewhere if you wish.
 2. use `TSPipeline` to do prediction, evaluation, and incremental fitting as well. 
 
-Refer to [AutoTS notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_autots_forecasting.ipynb) for demonstration how to use AutoTS to build a time series forcasting pipeline. 
+Refer to [AutoTS notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb) for demonstration how to use AutoTS to build a time series forcasting pipeline. 
 
 Refer to [AutoTS API Guide](https://analytics-zoo.github.io/master/#Zouwu/API/AutoTSTrainer/) for more details of AutoTS APIs.
 

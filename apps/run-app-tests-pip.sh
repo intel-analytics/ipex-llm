@@ -623,74 +623,74 @@ time16=$((now-start))
 
 echo "#16 ray paramater-server time used:$time16 seconds"
 
-echo "#17 start app test for zouwu-network-traffic-autots-forecasting"
+echo "#17 start app test for chronos-network-traffic-autots-forecasting"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_autots_forecasting
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting
 
-FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data/data.csv"
+FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data/data.csv"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading network traffic data"
 
-   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data
+   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data
 
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_autots_forecasting.py
-cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_autots_forecasting.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "zouwu network-traffic-autots-forecasting failed"
+    echo "chronos network-traffic-autots-forecasting failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time17=$((now-start))
-echo "#17 zouwu-network-traffic-autots-forecasting time used:$time17 seconds"
+echo "#17 chronos-network-traffic-autots-forecasting time used:$time17 seconds"
 
-echo "#18 start app test for zouwu-network-traffic-model-forecasting"
+echo "#18 start app test for chronos-network-traffic-model-forecasting"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_model_forecasting
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting
 
-FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data/data.csv"
+FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data/data.csv"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading network traffic data"
 
-   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data
+   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data
 
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_model_forecasting.py
-sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_model_forecasting.py
-cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_model_forecasting.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "zouwu network-traffic-model-forecasting failed"
+    echo "chronos network-traffic-model-forecasting failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time18=$((now-start))
-echo "#18 zouwu-network-traffic-model-forecasting time used:$time18 seconds"
+echo "#18 chronos-network-traffic-model-forecasting time used:$time18 seconds"
 
 echo "#19 start app test for automl-nyc-taxi"
 #timer
@@ -715,86 +715,86 @@ now=$(date "+%s")
 time19=$((now-start))
 echo "#19 automl-nyc-taxi time used:$time19 seconds"
 
-echo "#20 start app test for zouwu-anomaly-detect"
+echo "#20 start app test for chronos-anomaly-detect"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect
 
-wget $FTP_URI/analytics-zoo-data/zouwu-aiops/m_1932.csv -O ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/m_1932.csv
+wget $FTP_URI/analytics-zoo-data/zouwu-aiops/m_1932.csv -O ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv
 echo "Finished downloading AIOps data"
-#FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/m_1932.csv"
+#FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv"
 #if [ -f "$FILENAME" ]
 #then
 #   echo "$FILENAME already exists."
 #else
 #   echo "Downloading AIOps data"
 #
-#   wget $FTP_URI/analytics-zoo-data/zouwu-aiops/m_1932.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps
+#   wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps
 #
 #   echo "Finished downloading AIOps data"
 #fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
-sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
-cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect.py
+sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/AIOps/AIOps_anomaly_detect.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "zouwu-anomaly-detect failed"
+    echo "chronos-anomaly-detect failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time20=$((now-start))
-echo "#20 zouwu-anomaly-detect time used:$time20 seconds"
+echo "#20 chronos-anomaly-detect time used:$time20 seconds"
 
-echo "#21 start app test for zouwu-network-traffic-impute"
+echo "#21 start app test for chronos-network-traffic-impute"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_impute
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_impute
 
-FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data/data.csv"
+FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data/data.csv"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading network traffic data"
 
-   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data
+   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data
 
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_impute.py
-cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_impute.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_impute.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_impute.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "zouwu-network-traffic-impute failed"
+    echo "chronos-network-traffic-impute failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time21=$((now-start))
-echo "#21 zouwu-network-traffic-impute time used:$time21 seconds"
+echo "#21 chronos-network-traffic-impute time used:$time21 seconds"
 
-echo "#22 start app test for zouwu-stock-prediction"
+echo "#22 start app test for chronos-stock-prediction"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
-sed -i "s/epochs\ =\ 50/epochs\ =\ 2/g; s/batch_size\ =\ 16/batch_size\ =\ 1024/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction.py
+sed -i "s/epochs\ =\ 50/epochs\ =\ 2/g; s/batch_size\ =\ 16/batch_size\ =\ 1024/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction.py
 cwd=$PWD
-cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/
 
 # download data
 if ! [ -d "data" ];
@@ -809,55 +809,55 @@ then
     cd ..
 fi
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/fsi/stock_prediction.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction.py
 cd $cwd
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "zouwu-stock-prediction failed"
+    echo "chronos-stock-prediction failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time22=$((now-start))
-echo "#22 zouwu-stock-prediction time used:$time22 seconds"
+echo "#22 chronos-stock-prediction time used:$time22 seconds"
 
-echo "#23 start app test for zouwu-network-traffic-multivarite-multistep-tcnforecaster"
+echo "#23 start app test for chronos-network-traffic-multivarite-multistep-tcnforecaster"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster
 
-FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data/data.csv"
+FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data/data.csv"
 if [ -f "$FILENAME" ]
 then
     echo "$FILENAME already exists."
 else
     echo "Downloading network traffic data"
 
-    wget $FTP_URI/analytics-zoo-data/network_traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/data
+    wget $FTP_URI/analytics-zoo-data/network_traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data
 
     echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
-sed -i "s/epochs=20/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
-cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+sed -i "s/epochs=20/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/zouwu/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "zouwu network-traffic-multivariate-multistep-tcnforecaster failed"
+    echo "chronos network-traffic-multivariate-multistep-tcnforecaster failed"
     exit $exit_status
 fi
 
 now=$(date "+%s")
 time23=$((now-start))
-echo "#23 zouwu-network-traffic-multivarite-multistep-tcnforecaster time used:$time23 seconds"
+echo "#23 chronos-network-traffic-multivarite-multistep-tcnforecaster time used:$time23 seconds"
 
 
 fi
