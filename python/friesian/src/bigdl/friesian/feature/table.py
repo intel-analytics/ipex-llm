@@ -16,11 +16,12 @@
 import os
 from functools import reduce
 
-from pyspark.sql.types import DoubleType, ArrayType
+from pyspark.sql.types import DoubleType, ArrayType, DataType
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.feature import VectorAssembler
 from pyspark.sql.functions import col, udf, array, broadcast, explode, struct, collect_list
+from pyspark.sql import Row
 
 from zoo.orca import OrcaContext
 from zoo.friesian.feature.utils import *
@@ -90,6 +91,21 @@ class Table:
         Marks the Table as small enough for use in broadcast join.
         """
         self.df = broadcast(self.df)
+
+    def select(self, *cols):
+        """
+        Select specific columns.
+
+        :param cols: a string or a list of strings that specifies column names. If it is '*',
+                     select all the columns.
+
+        :return: A new Table that contains the specified columns.
+        """
+        # If cols is None, it makes more sense to raise error
+        # instead of returning an empty Table.
+        if not cols:
+            raise ValueError("cols should be str or a list of str, but got None.")
+        return self._clone(self.df.select(*cols))
 
     def drop(self, *cols):
         """
@@ -280,6 +296,29 @@ class Table:
     def write_parquet(self, path, mode="overwrite"):
         self.df.write.mode(mode).parquet(path)
 
+    def cast(self, columns, type):
+        """
+        Cast columns to the specified type.
+
+        :param columns: a string or a list of strings that specifies column names. If it is None,
+                        then cast all of the columns.
+        :param type: a string ("string", "int", "long", "float", "double")
+                     or one of pyspark.sql.types that specifies the type.
+
+        :return: A new Table that casts all of the specified columns to the specified type.
+        """
+        if columns is None:
+            columns = self.df.columns
+        elif not isinstance(columns, list):
+            columns = [columns]
+            check_col_exists(self.df, columns)
+        if not isinstance(type, str) and not isinstance(type, DataType):
+            raise ValueError("type should be a string or a dataype in pyspark.sql.types")
+        df_cast = self._clone(self.df)
+        for i in columns:
+            df_cast.df = df_cast.df.withColumn(i, col(i).cast(type))
+        return df_cast
+
 
 class FeatureTable(Table):
     @classmethod
@@ -305,6 +344,9 @@ class FeatureTable(Table):
         :param indices: StringIndex or a list of StringIndex, StringIndexes of target columns.
                The StringIndex should at least have two columns: id and the corresponding
                categorical column.
+               Or it can be a dict or a list of dicts. In this case,
+               the keys of the dict should be within the categorical column
+               and the values are the target ids to be encoded.
 
         :return: A new FeatureTable which transforms categorical features into unique integer
                  values with provided StringIndexes.
@@ -314,6 +356,9 @@ class FeatureTable(Table):
         if not isinstance(indices, list):
             indices = [indices]
         assert len(columns) == len(indices)
+        if isinstance(indices[0], dict):
+            indices = list(map(lambda x: StringIndex.from_dict(x[1], columns[x[0]]),
+                               enumerate(indices)))
         data_df = self.df
         for i in range(len(columns)):
             index_tbl = indices[i]
@@ -608,6 +653,29 @@ class StringIndex(Table):
         if col_name is None and len(paths) >= 1:
             col_name = os.path.basename(paths[0]).split(".")[0]
         return cls(Table._read_parquet(paths), col_name)
+
+    @classmethod
+    def from_dict(cls, indices, col_name):
+        """
+        Create the StringIndex from a dict of indices.
+
+        :param indices: dict. The key is the categorical column,
+                        the value is the corresponding index.
+                        We assume that the key is a str and the value is a int.
+        :param col_name: str. The column name of the categorical column.
+
+        :return: A StringIndex.
+        """
+        spark = OrcaContext.get_spark_session()
+        if not isinstance(indices, dict):
+            raise ValueError('indices should be dict, but get ' + indices.__class__.__name__)
+        if not col_name:
+            raise ValueError('col_name should be str, but get None')
+        if not isinstance(col_name, str):
+            raise ValueError('col_name should be str, but get ' + col_name.__class__.__name__)
+        indices = map(lambda x: {col_name: x[0], 'id': x[1]}, indices.items())
+        df = spark.createDataFrame(Row(**x) for x in indices)
+        return cls(df, col_name)
 
     def _clone(self, df):
         return StringIndex(df, self.col_name)
