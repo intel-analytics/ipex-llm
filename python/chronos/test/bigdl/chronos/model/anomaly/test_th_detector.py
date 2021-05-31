@@ -20,10 +20,10 @@ import pandas as pd
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
 from zoo.chronos.model.forecast.lstm_forecaster import LSTMForecaster
-from zoo.chronos.model.anomaly import ThresholdDetector, ThresholdEstimator
+from zoo.chronos.model.anomaly import ThresholdDetector
 
 
-class TestChronosModelAnomaly(ZooTestCase):
+class TestThresholdDetector(ZooTestCase):
 
     def gen_data(self, feature_num=6, sample_num=100):
         return pd.DataFrame(data=np.random.randn(sample_num, feature_num))
@@ -49,7 +49,7 @@ class TestChronosModelAnomaly(ZooTestCase):
             Y.append(data[i + look_back][target_col_indexes])
         return np.array(X), np.array(Y)
 
-    def test_app(self):
+    def test_fit_score(self):
         look_back = 4
 
         # generate dataframe
@@ -69,22 +69,23 @@ class TestChronosModelAnomaly(ZooTestCase):
         forecaster.fit(x=x_train, y=y_train, batch_size=1024, epochs=50, distributed=False)
         y_predict = forecaster.predict(x_test)
 
-        # find anomaly by comparing the difference between y_predict and y_test (actual)
-        threshold = 10
-        detector = ThresholdDetector()
-        anomaly_indexes = detector.detect(y=y_test,
-                                          yhat=y_predict,
-                                          threshold=threshold)
-        assert len(anomaly_indexes) == 0
+        # find anomaly using a manual set threshold
+        td = ThresholdDetector()
+        td.set_params(threshold=10)
+        td.fit(y_test, y_predict)
+        anomaly_scores = td.score()
+        assert len(list(np.where(anomaly_scores > 0)[0])) == 0
 
-        # if user don't have a threshold, he can choose to use estimator
-        # to find a threshold first
+        # if threshold is not provided, ThresholDetector can fit to the data
         ratio = 0.1
-        threshold = ThresholdEstimator().fit(y=y_test, yhat=y_predict, ratio=ratio)
-        fitted_anomaly_indexes = detector.detect(y=y_test, yhat=y_predict, threshold=threshold)
+        td = ThresholdDetector()
+        td.set_params(ratio=ratio)
+        td.fit(y_test, y_predict)
+        anomaly_scores = td.score()
+        fitted_anomaly_indexes = list(np.where(anomaly_scores > 0)[0])
         assert len(fitted_anomaly_indexes) == int(ratio * y_test.shape[0])
 
-    def test_threshold_case1_multivariant(self):
+    def test_threshold_single(self):
         sample_num = 10
         feature_dim = 5
         num_anomaly = 5
@@ -97,10 +98,14 @@ class TestChronosModelAnomaly(ZooTestCase):
         y_test[gen_rand_indexes] = 10
         y_test = y_test.reshape((sample_num, feature_dim))
 
-        anomaly_indexes = ThresholdDetector().detect(y=y_test, yhat=y_pred, threshold=3)
+        td = ThresholdDetector()
+        td.set_params(threshold=3)
+        td.fit(y_test, y_pred)
+        anomaly_scores = td.score()
+        anomaly_indexes = set(np.where(anomaly_scores > 0)[0])
         assert len(anomaly_indexes) == num_anomaly
 
-    def test_threshold_case4(self):
+    def test_threshold_minmax(self):
         sample_num = 10
         feature_dim = 5
         num_anomaly = 5
@@ -111,24 +116,27 @@ class TestChronosModelAnomaly(ZooTestCase):
         y_test[gen_rand_indexes] = 10
         y_test = y_test.reshape((sample_num, feature_dim))
 
-        # use threshold (-1, 1) for each dimension
-        threshold_min = np.ones_like(y_test) * (-1)
-        threshold_max = np.ones_like(y_test)
-        anomaly_indexes = ThresholdDetector().detect(y=y_test, yhat=None,
-                                                     threshold=(threshold_min, threshold_max))
+        td = ThresholdDetector()
+        td.set_params(threshold=(-1, 1))
+        td.fit(y_test)
+        anomaly_scores = td.score()
+        anomaly_indexes = set(np.where(anomaly_scores > 0)[0])
         assert len(anomaly_indexes) == num_anomaly
 
-    def test_threshold_gaussian(self):
+    def test_mode_gaussian(self):
         sample_num = 500
         # actual value
         y_test = np.full(sample_num, 2)
         mu, sigma, ratio = 3, 0.1, 0.01
         s = np.random.normal(mu, sigma, sample_num)
-        y = y_test + s
+        y_pred = y_test + s
 
-        threshold = ThresholdEstimator().fit(y, y_test, mode="gaussian", ratio=ratio)
+        td = ThresholdDetector()
+        td.set_params(mode="gaussian", ratio=ratio)
+        td.fit(y_test, y_pred)
+        # check estimated threshold
         from scipy.stats import norm
-        assert abs(threshold-(norm.ppf(1-ratio)*sigma+mu)) < 0.04
+        assert abs(td.th - (norm.ppf(1 - ratio) * sigma + mu)) < 0.04
 
 
 if __name__ == "__main__":

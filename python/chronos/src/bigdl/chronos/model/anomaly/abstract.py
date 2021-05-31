@@ -14,4 +14,25 @@
 # limitations under the License.
 #
 
-from .th_detector import ThresholdDetector
+from abc import ABC, abstractmethod
+
+
+class AnomalyDetector(ABC):
+    """
+    The Anomaly Detector Interface
+    """
+    @abstractmethod
+    def fit(self, y):
+        """
+        fit the model to the input time series
+        :param y: input time series
+        """
+        pass
+
+    @abstractmethod
+    def score(self):
+        """
+        calculate anomaly scores for each sample in input time series
+        :return: anomaly scores
+        """
+        pass
