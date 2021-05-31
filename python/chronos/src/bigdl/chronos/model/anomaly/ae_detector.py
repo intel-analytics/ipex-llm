@@ -14,4 +14,19 @@
 # limitations under the License.
 #
 
-from .th_detector import ThresholdDetector
+from zoo.chronos.model.anomaly.abstract import AnomalyDetector
+
+
+class AEDetector(AnomalyDetector):
+    """
+    Anomaly Detector based on AutoEncoder
+    """
+
+    def __init__(self):
+        pass
+
+    def fit(self, y):
+        pass
+
+    def score(self):
+        pass
