@@ -12,7 +12,9 @@ You could refer to [Analytics Zoo Scala Developer Guide](https://analytics-zoo.r
 ### Debug in IDE
 Once set up, you could copy the `/path/to/analytics-zoo/scripts/cluster-serving/config.yaml` to `/path/to/analytics-zoo/config.yaml`, and run `zoo/src/main/scala/com/intel/analytics/zoo/serving/ClusterServing.scala` in IDE. Since IDE consider `/path/to/analytics-zoo/` as the current directory, it would read the config file in it.
 
-Running `ClusterServing.scala` in IDE would behave the same as you run Cluster Serving locally, so once started, you could run python client code to finish an end-to-end test just as you run Cluster Serving in [Programming Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#4-model-inference).
+Run `zoo/src/main/scala/com/intel/analytics/zoo/serving/http/Frontend2.scala` if you use HTTP frontend.
+ 
+Once started, you could run python client code to finish an end-to-end test just as you run Cluster Serving in [Programming Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#4-model-inference).
 
 
 ## Add Features
