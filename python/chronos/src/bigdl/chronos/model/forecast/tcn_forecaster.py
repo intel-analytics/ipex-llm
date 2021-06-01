@@ -19,7 +19,23 @@ from zoo.chronos.model.tcn import TCNPytorch
 
 
 class TCNForecaster(Forecaster):
-
+    """
+        Example:
+            >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+            >>> forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   loss="mae",
+                                   lr=0.01)
+            >>> train_loss = forecaster.fit(x_train, x_val, epochs=3)
+            >>> test_pred = forecaster.predict(x_test)
+            >>> test_mse = forecaster.evaluate(x_test, y_test)
+            >>> forecaster.save({ckpt_name})
+            >>> forecaster.restore({ckpt_name})
+    """
     def __init__(self,
                  past_seq_len,
                  future_seq_len,
@@ -79,6 +95,8 @@ class TCNForecaster(Forecaster):
         :param epochs: Number of epochs you want to train.
         :param metric: The metric for training data.
         :param batch_size: Number of batch size you want to train.
+
+        :return: Evaluation results on validation data.
         """
         if validation_data is None:
             validation_data = (x, y)
@@ -113,6 +131,8 @@ class TCNForecaster(Forecaster):
         Predict using a trained forecaster.
 
         :param x: A numpy array with shape (num_samples, lookback, feature_dim).
+
+        :return: A numpy array with shape (num_samples, lookback, feature_dim).
         """
         if not self.internal.model_built:
             raise RuntimeError("You must call fit or restore first before calling predict!")
@@ -125,6 +145,8 @@ class TCNForecaster(Forecaster):
         :param x: A numpy array with shape (num_samples, lookback, feature_dim).
         :param dirname: The directory to save onnx model file. This value defaults
                to None for no saving file.
+
+        :return: A numpy array with shape (num_samples, lookback, feature_dim).
         """
         if not self.internal.model_built:
             raise RuntimeError("You must call fit or restore first before calling predict!")
@@ -140,6 +162,8 @@ class TCNForecaster(Forecaster):
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
+
+        :return: A list of evaluation results. Each item represents a metric.
         """
         if not self.internal.model_built:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
@@ -160,6 +184,8 @@ class TCNForecaster(Forecaster):
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
+
+        :return: A list of evaluation results. Each item represents a metric.
         """
         if not self.internal.model_built:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
