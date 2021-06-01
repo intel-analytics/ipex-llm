@@ -17,33 +17,40 @@
 import pandas as pd
 import numpy as np
 
+_DEFAULT_ID_COL_NAME = "id"
+_DEFAULT_ID_PLACEHOLDER = "0"
+
 
 class TSDataset:
-    def __init__(self):
+    def __init__(self, data, **schema):
         '''
         TSDataset is an abstract of time series dataset.
         '''
-        self.df = None  # internal dataframe
-        self.id_col = None  # column name of id
-        self.dt_col = None  # column name of time
-        self.feature_col = None  # column name of feature
-        self.target_col = None  # column name of target
-        raise NotImplementedError("TSDataset is developing for now.")
+        self.df = data
+        self.id_col = schema["id_col"]
+        self.dt_col = schema["dt_col"]
+        self.feature_col = schema["feature_col"]
+        self.target_col = schema["target_col"]
+
+        self._check_basic_invariants()
+
+        self._id_list = list(np.unique(self.df[self.id_col]))
+        self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
 
     @staticmethod
     def from_pandas(df,
-                    datetime_col,
+                    dt_col,
                     target_col,
                     id_col=None,
                     extra_feature_col=None):
         '''
         Initialize a tsdataset from pandas dataframe.
         :param df: a pandas dataframe for your raw time series data.
-        :param datetime_col: a str indicates the col name of datetime
+        :param dt_col: a str indicates the col name of datetime
                column in the input data frame.
         :param target_col: a str or list indicates the col name of target column
                in the input data frame.
-        :param id_col: a str indicates the col name of dataframe id.
+        :param id_col: (optional) a str indicates the col name of dataframe id.
         :param extra_feature_col: (optional) a str or list indicates the col name
                of extra feature columns that needs to predict the target column.
         Here is an df example:
@@ -53,14 +60,26 @@ class TSDataset:
         00        2019-01-02    2.4     3                   4
         01        2019-01-02    2.6     0                   2
         ```python
-        tsdataset = TSDataset.from_pandas(df, datetime_col="datetime",
+        tsdataset = TSDataset.from_pandas(df, dt_col="datetime",
                                           target_col="value", id_col="id",
                                           extra_feature_col=["extra feature 1",""extra feature 2"])
         ```
         '''
-        # check input
-        # map input to required internal dataframe structure
-        raise NotImplementedError("TSDataset is developing for now.")
+        _check_type(df, "df", pd.DataFrame)
+
+        tsdataset_df = df.copy(deep=True)
+        target_col = _to_list(target_col, name="target_col")
+        feature_col = _to_list(extra_feature_col, name="extra_feature_col")
+
+        if id_col is None:
+            tsdataset_df[_DEFAULT_ID_COL_NAME] = _DEFAULT_ID_PLACEHOLDER
+            id_col = _DEFAULT_ID_COL_NAME
+
+        return TSDataset(data=tsdataset_df,
+                         id_col=id_col,
+                         dt_col=dt_col,
+                         target_col=target_col,
+                         feature_col=feature_col)
 
     def impute(self, mode="last"):
         '''
@@ -69,7 +88,7 @@ class TSDataset:
                "last", "const" and "linear" are supported for now.
         '''
         # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call impute function in chronos.transform.impute on each sub-df.
+        # call impute function in chronos.data.utils.impute on each sub-df.
         # concat the result back to self.df
         return self
 
@@ -78,7 +97,7 @@ class TSDataset:
         Remove those duplicated rows.
         '''
         # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call deduplicate function in chronos.transform.deduplicate on each sub-df.
+        # call deduplicate function in chronos.data.utils.deduplicate on each sub-df.
         # concat the result back to self.df
         return self
 
@@ -93,7 +112,7 @@ class TSDataset:
                timestamp with all other column is N/A.
         '''
         # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call deduplicate function in chronos.transform.resample on each sub-df.
+        # call deduplicate function in chronos.data.utils.resample on each sub-df.
         return self
 
     def gen_dt_feature(self):
@@ -105,7 +124,7 @@ class TSDataset:
             "IS_WEEKEND"
         '''
         # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call feature gen function in chronos.transform.feature on each sub-df.
+        # call feature gen function in chronos.data.utils.feature on each sub-df.
         # concat the result back to self.df
         return self
 
@@ -114,7 +133,7 @@ class TSDataset:
         Generate per-time-series feature for each time series.
         This method will be implemented by tsfresh.
         '''
-        # call feature gen function in chronos.transform.feature on each sub-df.
+        # call feature gen function in chronos.data.utils.feature on each sub-df.
         return self
 
     def roll(self,
@@ -165,8 +184,7 @@ class TSDataset:
         '''
         export the pandas dataframe
         '''
-        # return self.df
-        pass
+        return self.df
 
     def _check_basic_invariants(self):
         '''
@@ -175,4 +193,36 @@ class TSDataset:
         or warning message should be provided to the users.
         This function will be called after each method(e.g. impute, deduplicate ...)
         '''
-        pass
+        # check type
+        _check_type(self.df, "df", pd.DataFrame)
+        _check_type(self.id_col, "id_col", str)
+        _check_type(self.dt_col, "dt_col", str)
+        _check_type(self.target_col, "target_col", list)
+        _check_type(self.feature_col, "feature_col", list)
+
+        # check valid name
+        _check_col_within(self.df, self.id_col)
+        _check_col_within(self.df, self.dt_col)
+        for target_col_name in self.target_col:
+            _check_col_within(self.df, target_col_name)
+        for feature_col_name in self.feature_col:
+            _check_col_within(self.df, feature_col_name)
+
+
+def _to_list(item, name, expect_type=str):
+    if isinstance(item, list):
+        return item
+    if item is None:
+        return []
+    _check_type(item, name, expect_type)
+    return [item]
+
+
+def _check_type(item, name, expect_type):
+    assert isinstance(item, expect_type),\
+        f"a {str(expect_type)} is expected for {name} but found {type(item)}"
+
+
+def _check_col_within(df, col_name):
+    assert col_name in df.columns,\
+        f"{col_name} is expected in dataframe while not found"
