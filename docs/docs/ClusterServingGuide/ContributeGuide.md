@@ -9,7 +9,20 @@ Cluster Serving takes advantage of Analytics Zoo core with integration of Deep L
 Go to Analytics Zoo main repo https://github.com/intel-analytics/analytics-zoo, press Fork to your github repo, and git clone the forked repo to local. Use `git checkout -b your_branch_name` to create a new branch, and you could start to write code and pull request to Analytics Zoo from this branch.
 ### Environment Set up
 You could refer to [Analytics Zoo Scala Developer Guide](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/develop.html#scala) to set up develop environment. Cluster Serving is an Analytics Zoo Scala module.
+
 ### Debug in IDE
+Cluster Serving depends on Flink and Redis. To install Redis and start Redis server,
+```
+$ export REDIS_VERSION=5.0.5
+$ wget http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
+    tar xzf redis-${REDIS_VERSION}.tar.gz && \
+    rm redis-${REDIS_VERSION}.tar.gz && \
+    cd redis-${REDIS_VERSION} && \
+    make
+$ ./src/redis-server
+```
+in IDE, embedded Flink would be used so that no dependency is needed.
+
 Once set up, you could copy the `/path/to/analytics-zoo/scripts/cluster-serving/config.yaml` to `/path/to/analytics-zoo/config.yaml`, and run `zoo/src/main/scala/com/intel/analytics/zoo/serving/ClusterServing.scala` in IDE. Since IDE consider `/path/to/analytics-zoo/` as the current directory, it would read the config file in it.
 
 Run `zoo/src/main/scala/com/intel/analytics/zoo/serving/http/Frontend2.scala` if you use HTTP frontend.
