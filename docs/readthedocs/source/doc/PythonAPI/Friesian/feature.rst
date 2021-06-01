@@ -1,5 +1,5 @@
 Friesian Feature API
-=========
+=====================
 
 friesian.feature.table
 ---------------------------
