@@ -20,7 +20,22 @@ from zoo.chronos.model.forecast.tfpark_forecaster import TFParkForecaster
 
 class MTNetForecaster(TFParkForecaster):
     """
-    MTNet Forecast Model
+        Example:
+            >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+            >>> model = MTNetForecaster(target_dim=1,
+                                feature_dim=x_train.shape[-1],
+                                long_series_num=6,
+                                series_length=2
+                                )
+            >>> x_train_long, x_train_short = model.preprocess_input(x_train)
+            >>> x_val_long, x_val_short = model.preprocess_input(x_val)
+            >>> x_test_long, x_test_short = model.preprocess_input(x_test)
+            >>> model.fit([x_train_long, x_train_short],
+                  y_train,
+                  validation_data=([x_val_long, x_val_short], y_val),
+                  batch_size=32,
+                  distributed=False)
+            >>> predict_result = [x_test_long, x_test_short]
     """
 
     def __init__(self,
@@ -41,6 +56,7 @@ class MTNetForecaster(TFParkForecaster):
                  ):
         """
         Build a MTNet Forecast Model.
+
         :param target_dim: the dimension of model output
         :param feature_dim: the dimension of input feature
         :param long_series_num: the number of series for the long-term memory series
@@ -82,7 +98,8 @@ class MTNetForecaster(TFParkForecaster):
     def _build(self):
         """
         build a MTNet model in tf.keras
-       :return: a tf.keras MTNet model
+
+        :return: a tf.keras MTNet model
         """
         # TODO change this function call after MTNet fixes
         self.internal = MTNetKerasModel(
@@ -94,8 +111,10 @@ class MTNetForecaster(TFParkForecaster):
         """
         The original rolled features needs an extra step to process.
         This should be called before train_x, validation_x, and test_x
+
         :param x: the original samples from rolling
-        :return: a tuple (long_term_x, short_term_x)
-                which are long term and short term history respectively
+
+        :return: a tuple (long_term_x, short_term_x) which are long term and short term
+            history respectively
         """
         return self.internal._reshape_input_x(x)

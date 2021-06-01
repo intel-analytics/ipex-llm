@@ -27,7 +27,7 @@ class TFParkForecaster(TFParkKerasModel, Forecaster, metaclass=ABCMeta):
 
     def __init__(self):
         """
-        Initializer.
+        Build a tf.keras model.
         Turns the tf.keras model returned from _build into a tfpark.KerasModel
         """
         self.model = self._build()
@@ -38,6 +38,7 @@ class TFParkForecaster(TFParkKerasModel, Forecaster, metaclass=ABCMeta):
     def _build(self):
         """
         Build a tf.keras model.
-       :return: a tf.keras model (compiled)
+
+        :return: a tf.keras model (compiled)
         """
         pass
