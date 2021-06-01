@@ -964,7 +964,7 @@ class KerasEstimator(Estimator):
                tuple]
         :param batch_size: batch size per thread.
         :param feature_cols: feature_cols: feature column names if train data is Spark DataFrame or
-        XShards of Pandas DataFrame.
+               XShards of Pandas DataFrame.
         :param label_cols: label column names if train data is Spark DataFrame or XShards
                of Pandas DataFrame.
         :param auto_shard_files: whether to automatically detect if the dataset is file-based and

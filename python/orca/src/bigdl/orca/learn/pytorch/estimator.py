@@ -142,9 +142,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             feature_cols=None, label_cols=None):
         """
         Trains a PyTorch model given training data for several epochs.
-
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
         underneath the hood.
+
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
                takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
@@ -165,7 +165,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
 
-        :return A list of dictionary of metrics for every training epoch. If reduce_results is
+        :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
                 equal to the total number of workers.
                 You can also provide custom metrics by passing in a custom training_operator_cls
@@ -185,7 +185,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame.
-        :return A SparkXShards that contains the predictions with key "prediction" in each shard
+        :return: A SparkXShards that contains the predictions with key "prediction" in each shard
         """
         return self.estimator.predict(data, batch_size=batch_size,
                                       feature_cols=feature_cols,
@@ -197,9 +197,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
         default. You can override validate_batch in TrainingOperator for other metrics.
-
         Calls `TrainingOperator.validate()` on N parallel workers simultaneously
         underneath the hood.
+
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
                takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
@@ -216,7 +216,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param feature_cols: feature column names if train data is Spark DataFrame.
         :param label_cols: label column names if train data is Spark DataFrame.
 
-        :return A dictionary of metrics for the given data, including validation accuracy and loss.
+        :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
