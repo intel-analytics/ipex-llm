@@ -20,7 +20,15 @@ from zoo.chronos.model.forecast.tfpark_forecaster import TFParkForecaster
 
 class LSTMForecaster(TFParkForecaster):
     """
-    Vanilla LSTM Forecaster
+    Example:
+        >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+        >>> model = LSTMForecaster(target_dim=1, feature_dim=x_train.shape[-1])
+        >>> model.fit(x_train,
+                  y_train,
+                  validation_data=(x_val, y_val),
+                  batch_size=8,
+                  distributed=False)
+        >>> predict_result = model.predict(x_test)
     """
 
     def __init__(self,
