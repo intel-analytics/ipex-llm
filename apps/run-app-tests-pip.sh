@@ -720,7 +720,7 @@ echo "#20 start app test for chronos-anomaly-detect"
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect
 
-wget $FTP_URI/analytics-zoo-data/zouwu-aiops/m_1932.csv -O ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv
+wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv
 echo "Finished downloading AIOps data"
 #FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv"
 #if [ -f "$FILENAME" ]
