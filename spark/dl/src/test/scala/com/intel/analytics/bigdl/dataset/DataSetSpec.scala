@@ -471,11 +471,19 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
     img.content((100 + 100 * 213) * 3) should be(36 / 255f)
   }
 
-  "small RDD" should "throw exception" in {
-    intercept[Exception] {
+  "small dataset" should "try catch" in {
+    val errormsg = "dataset on this executor is empty, please increase " +
+      "your dataset size or decrease your number of executors."
+    try {
       val data = Array.empty[Int]
       val dataset = DataSet.rdd(sc.parallelize(data, 3)).data(train = true)
-      dataset.mapPartitions(iter => { Iterator.single(iter.next())}).collect()(0)
+      dataset.mapPartitions(iter => {
+        Iterator.single(iter.next())
+      }).collect()(0)
+    }
+    catch {
+      case x: org.apache.spark.SparkException =>
+        x.getMessage().contains(errormsg) should be(true)
     }
   }
 }
