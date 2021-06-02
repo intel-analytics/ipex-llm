@@ -37,7 +37,7 @@ def roll_timeseries_dataframe(df,
     :return: x, y
         x: 3-d numpy array in format (no. of samples, lookback, feature_col length)
         y: 3-d numpy array in format (no. of samples, horizon, target_col length)
-    Note: Specially, if `horizon` is set to 0, then there will not be y. (test mode)
+    Note: Specially, if `horizon` is set to 0, then y will be None.
     """
     assert isinstance(df, pd.DataFrame)
     assert isinstance(lookback, int)
@@ -67,12 +67,12 @@ def _roll_timeseries_dataframe_test(df,
                                     lookback,
                                     feature_col,
                                     target_col):
-    x = df.loc[:, feature_col+target_col].values
+    x = df.loc[:, target_col+feature_col].values
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
     mask = (mask_x == 1)
 
-    return output_x[mask]
+    return output_x[mask], None
 
 
 def _roll_timeseries_dataframe_train(df,
@@ -81,7 +81,7 @@ def _roll_timeseries_dataframe_train(df,
                                      feature_col,
                                      target_col):
     max_horizon = horizon if isinstance(horizon, int) else max(horizon)
-    x = df[:-max_horizon].loc[:, feature_col+target_col].values
+    x = df[:-max_horizon].loc[:, target_col+feature_col].values
     y = df.iloc[lookback:].loc[:, target_col].values
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
