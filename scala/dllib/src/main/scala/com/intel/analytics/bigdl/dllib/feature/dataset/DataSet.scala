@@ -281,6 +281,9 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
         override def next(): T = {
           val i = _offset.getAndIncrement()
           if (_train) {
+            require(localData.length != 0,
+              "dataset on this executor is empty, please increase " +
+                "your dataset size or decrease your number of executors.")
             localData(indexes(i % localData.length))
           } else {
             if (i < localData.length) {
