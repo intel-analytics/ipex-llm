@@ -51,20 +51,22 @@ class TestRollTimeSeries(ZooTestCase):
         assert x.shape == (7-self.lookback, self.lookback, 3)
         assert y.shape == (7-self.lookback, 4, 1)
 
-        x = roll_timeseries_dataframe(self.easy_data,
-                                      lookback=2,
-                                      horizon=0,
-                                      feature_col=[],
-                                      target_col=["A"])
+        x, y = roll_timeseries_dataframe(self.easy_data,
+                                         lookback=2,
+                                         horizon=0,
+                                         feature_col=[],
+                                         target_col=["A"])
         assert x.shape == (9, 2, 1)
+        assert y is None
 
         self.easy_data["A"][0] = None
-        x = roll_timeseries_dataframe(self.easy_data,
-                                      lookback=2,
-                                      horizon=0,
-                                      feature_col=[],
-                                      target_col=["A"])
+        x, y = roll_timeseries_dataframe(self.easy_data,
+                                         lookback=2,
+                                         horizon=0,
+                                         feature_col=[],
+                                         target_col=["A"])
         assert x.shape == (8, 2, 1)
+        assert y is None
 
         x, y = roll_timeseries_dataframe(self.easy_data,
                                          lookback=2,

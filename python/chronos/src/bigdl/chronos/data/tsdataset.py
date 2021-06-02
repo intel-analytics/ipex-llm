@@ -16,6 +16,11 @@
 
 import pandas as pd
 import numpy as np
+import functools
+
+from zoo.chronos.data.utils.feature import generate_dt_features
+from zoo.chronos.data.utils.impute import impute_timeseries_dataframe
+from zoo.chronos.data.utils.roll import roll_timeseries_dataframe
 
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"
@@ -36,6 +41,8 @@ class TSDataset:
 
         self._id_list = list(np.unique(self.df[self.id_col]))
         self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
+        self.numpy_x = None
+        self.numpy_y = None
 
     @staticmethod
     def from_pandas(df,
@@ -81,15 +88,22 @@ class TSDataset:
                          target_col=target_col,
                          feature_col=feature_col)
 
-    def impute(self, mode="last"):
+    def impute(self, mode="last", const_num=0):
         '''
         Impute the tsdataset
-        :param mode: a str defaulted to "last" indicates imputing method.
-               "last", "const" and "linear" are supported for now.
+        :param mode: imputation mode, select from "last", "const" or "linear".
+           "last": impute by propagating the last non N/A number to its following N/A.
+                   if there is no non N/A number ahead, 0 is filled instead.
+           "const": impute by a const value input by user.
+           "linear": impute by linear interpolation.
+        :param const_num: only effective when mode is set to "const".
         '''
-        # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call impute function in chronos.data.utils.impute on each sub-df.
-        # concat the result back to self.df
+        df_list = [impute_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
+                                               dt_col=self.dt_col,
+                                               mode=mode,
+                                               const_num=const_num)
+                   for id_name in self._id_list]
+        self.df = pd.concat(df_list)
         return self
 
     def deduplicate(self):
@@ -123,9 +137,16 @@ class TSDataset:
             "WEEKOFYEAR", "MONTH", "IS_AWAKE", "IS_BUSY_HOURS",
             "IS_WEEKEND"
         '''
-        # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call feature gen function in chronos.data.utils.feature on each sub-df.
-        # concat the result back to self.df
+        df_list = [generate_dt_features(input_df=self.df[self.df[self.id_col] == id_name],
+                                        dt_col=self.dt_col)
+                   for id_name in self._id_list]
+        self.df = pd.concat(df_list)
+        from zoo.chronos.data.utils.feature import TIME_FEATURE, \
+            ADDITIONAL_TIME_FEATURE_HOUR, ADDITIONAL_TIME_FEATURE_WEEKDAY
+        increased_attrbutes = list(TIME_FEATURE) +\
+            list(ADDITIONAL_TIME_FEATURE_HOUR) +\
+            list(ADDITIONAL_TIME_FEATURE_WEEKDAY)
+        self.feature_col += [attr + "({})".format(self.dt_col) for attr in increased_attrbutes]
         return self
 
     def gen_global_feature(self):
@@ -150,6 +171,7 @@ class TSDataset:
                continuously after the forecasting point.
                if `horizon` is an list, we will sample discretely according
                to the input list.
+               specially, when `horizon` is set to 0, no ground truth will be generated.
         :param feature_col: str or list, indicate the feature col name. Default to None,
                where we will take all avaliable feature in rolling.
         :param target_col: str or list, indicate the target col name. Default to None,
@@ -170,15 +192,54 @@ class TSDataset:
                num_feature_col is the product of the number of id and the number of feature_col,
                num_target_col is the product of the number of id and the number of target_col.
         '''
-        # call rolling function in chronos.transform.feature on each sub-df/wide df.
+        feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
+            else self.feature_col
+        target_col = _to_list(target_col, "target_col") if target_col is not None \
+            else self.target_col
+        num_id = len(self._id_list)
+        num_feature_col = len(self.feature_col)
+        num_target_col = len(self.target_col)
+
+        # get rolling result for each sub dataframe
+        rolling_result = [roll_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
+                                                    lookback=lookback,
+                                                    horizon=horizon,
+                                                    feature_col=feature_col,
+                                                    target_col=target_col)
+                          for id_name in self._id_list]
+
+        # concat the result on required axis
+        concat_axis = 2 if id_sensitive else 0
+        self.numpy_x = np.concatenate([rolling_result[i][0]
+                                       for i in range(num_id)],
+                                      axis=concat_axis)
+        if horizon != 0:
+            self.numpy_y = np.concatenate([rolling_result[i][1]
+                                           for i in range(num_id)],
+                                          axis=concat_axis)
+        else:
+            self.numpy_y = None
+
+        # target first
+        if id_sensitive:
+            feature_start_idx = num_target_col*num_id
+            reindex_list = [list(range(i*num_target_col, (i+1)*num_target_col)) +
+                            list(range(feature_start_idx+i*num_feature_col,
+                                       feature_start_idx+(i+1)*num_feature_col))
+                            for i in range(num_id)]
+            reindex_list = functools.reduce(lambda a, b: a+b, reindex_list)
+            self.numpy_x = self.numpy_x[:, :, reindex_list]
+
         return self
 
     def to_numpy(self):
         '''
         export rolling result in form of a tuple of numpy ndarray (x, y)
         '''
-        # return self.numpy_x, self.numpy_y
-        pass
+        if self.numpy_x is None:
+            raise RuntimeError("Please call \"roll\" method\
+                    before transform a TSDataset to numpy ndarray!")
+        return self.numpy_x, self.numpy_y
 
     def to_pandas(self):
         '''
@@ -208,6 +269,10 @@ class TSDataset:
         for feature_col_name in self.feature_col:
             _check_col_within(self.df, feature_col_name)
 
+        # check no n/a in critical col
+        _check_col_no_na(self.df, self.dt_col)
+        _check_col_no_na(self.df, self.id_col)
+
 
 def _to_list(item, name, expect_type=str):
     if isinstance(item, list):
@@ -226,3 +291,10 @@ def _check_type(item, name, expect_type):
 def _check_col_within(df, col_name):
     assert col_name in df.columns,\
         f"{col_name} is expected in dataframe while not found"
+
+
+def _check_col_no_na(df, col_name):
+    assert col_name in df.columns,\
+        f"{col_name} is expected in dataframe while not found"
+    assert df[col_name].isna().sum() == 0,\
+        f"{col_name} column should not have N/A."
