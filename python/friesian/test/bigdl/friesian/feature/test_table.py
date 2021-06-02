@@ -453,6 +453,11 @@ class TestTable(TestCase):
         assert dict(tbl.df.dtypes)['name'] == dict(tbl.df.dtypes)['a'] == dict(tbl.df.dtypes)['b'] \
             == dict(tbl.df.dtypes)['c'] == "float", \
             "all the columns should now be cast to float type"
+        with self.assertRaises(Exception) as context:
+            tbl = tbl.cast("a", "notvalid")
+        self.assertTrue(
+            "type should be string, boolean, int, long, short, float, double."
+            in str(context.exception))
 
     def test_select(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")

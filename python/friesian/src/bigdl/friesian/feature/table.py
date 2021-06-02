@@ -300,10 +300,10 @@ class Table:
         """
         Cast columns to the specified type.
 
-        :param columns: a string or a list of strings that specifies column names. If it is None,
-                        then cast all of the columns.
-        :param type: a string ("string", "int", "long", "float", "double")
-                     or one of pyspark.sql.types that specifies the type.
+        :param columns: a string or a list of strings that specifies column names.
+                        If it is None, then cast all of the columns.
+        :param type: a string ("string", "boolean", "int", "long", "short", "float", "double")
+                     that specifies the type.
 
         :return: A new Table that casts all of the specified columns to the specified type.
         """
@@ -312,8 +312,14 @@ class Table:
         elif not isinstance(columns, list):
             columns = [columns]
             check_col_exists(self.df, columns)
-        if not isinstance(type, str) and not isinstance(type, DataType):
-            raise ValueError("type should be a string or a dataype in pyspark.sql.types")
+        valid_types = ["str", "string", "bool", "boolean", "int",
+                       "integer", "long", "short", "float", "double"]
+        if not (isinstance(type, str) and (type in valid_types)) \
+           and not isinstance(type, DataType):
+            raise ValueError(
+                "type should be string, boolean, int, long, short, float, double.")
+        transform_dict = {"str": "string", "bool": "boolean", "integer": "int"}
+        type = transform_dict[type] if type in transform_dict else type
         df_cast = self._clone(self.df)
         for i in columns:
             df_cast.df = df_cast.df.withColumn(i, col(i).cast(type))
