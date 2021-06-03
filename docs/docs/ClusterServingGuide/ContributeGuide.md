@@ -28,7 +28,21 @@ Once set up, you could copy the `/path/to/analytics-zoo/scripts/cluster-serving/
 Run `zoo/src/main/scala/com/intel/analytics/zoo/serving/http/Frontend2.scala` if you use HTTP frontend.
  
 Once started, you could run python client code to finish an end-to-end test just as you run Cluster Serving in [Programming Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#4-model-inference).
+### Test Package
+Once you write the code and complete the test in IDE, you can package the jar and test.
 
+To package,
+```
+cd /path/to/analytics-zoo/zoo
+./make-dist.sh
+```
+Then, in `target` folder, copy `analytics-zoo-xxx-flink-udf.jar` to your test directory, and rename it as `zoo.jar`, and also copy the `config.yaml` to your test directory.
+
+You could copy `/path/to/analytics-zoo/scripts/cluster-serving/cluster-serving-start` to start Cluster Serving, this scripts will start Redis server for you and submit Flink job. If you prefer not to control Redis, you could use the command in it `${FLINK_HOME}/bin/flink run -c com.intel.analytics.zoo.serving.ClusterServing zoo.jar` to start Cluster Serving.
+
+To run frontend, call `java -cp zoo.jar com.intel.analytics.zoo.serving.http.Frontend2`.
+
+The rest are the same with test in IDE.
 
 ## Add Features
 ### Data Connector
