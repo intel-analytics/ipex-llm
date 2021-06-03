@@ -20,6 +20,7 @@ import functools
 
 from zoo.chronos.data.utils.feature import generate_dt_features
 from zoo.chronos.data.utils.impute import impute_timeseries_dataframe
+from zoo.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
 from zoo.chronos.data.utils.roll import roll_timeseries_dataframe
 
 _DEFAULT_ID_COL_NAME = "id"
@@ -113,6 +114,10 @@ class TSDataset:
         # split the internal dataframe(self.df) to sub-df wrt id_col
         # call deduplicate function in chronos.data.utils.deduplicate on each sub-df.
         # concat the result back to self.df
+        df_list = [deduplicate_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
+                                                    dt_col=self.dt_col)
+                   for id_name in self._id_list]
+        self.df = pd.concat(df_list)
         return self
 
     def resample(self, interval, mode="mean", allow_na=False):
