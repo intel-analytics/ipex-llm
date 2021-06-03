@@ -88,9 +88,7 @@ class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
         supportive.predict(executableNetworkReference,
           tensor.getData, tensor.getShape)
       }
-      outputs.add(Arrays.asList({
-        output
-      }))
+      outputs.add(output)
     })
     outputs
   }
