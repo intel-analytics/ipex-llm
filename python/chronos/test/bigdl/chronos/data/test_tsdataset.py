@@ -175,6 +175,16 @@ class TestTSDataset(ZooTestCase):
         assert tsdata.to_pandas().isna().sum().sum() == 0
         assert len(tsdata.to_pandas()) == 100
 
+    def test_tsdataset_deduplicate(self):
+        df = get_ugly_ts_df()
+        for i in range(20):
+            df.loc[len(df)] = df.loc[np.random.randint(0, 99)]
+        assert len(df) == 120
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="e",
+                                       extra_feature_col=["a", "b", "c", "d"], id_col="id")
+        tsdata.deduplicate()
+        assert len(tsdata.to_pandas()) == 100
+
     def test_tsdataset_datetime_feature(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
