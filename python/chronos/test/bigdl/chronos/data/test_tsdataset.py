@@ -22,6 +22,9 @@ import random
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.chronos.data import TSDataset
 
+from pandas.testing import assert_frame_equal
+from numpy.testing import assert_array_almost_equal
+
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -215,3 +218,58 @@ class TestTSDataset(ZooTestCase):
                                            'WEEKOFYEAR(datetime)',
                                            'MINUTE(datetime)',
                                            'extra feature'}
+
+    def test_tsdataset_scale_unscale(self):
+        df = get_ts_df()
+        df_test = get_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata_test = TSDataset.from_pandas(df_test, dt_col="datetime", target_col="value",
+                                            extra_feature_col=["extra feature"], id_col="id")
+
+        from sklearn.preprocessing import StandardScaler
+        scaler = StandardScaler()
+        tsdata.scale(scaler)
+        tsdata_test.scale(scaler, fit=False)
+
+        with pytest.raises(AssertionError):
+            assert_frame_equal(tsdata.to_pandas(), df)
+        with pytest.raises(AssertionError):
+            assert_frame_equal(tsdata_test.to_pandas(), df_test)
+
+        tsdata.unscale()
+        tsdata_test.unscale()
+
+        assert_frame_equal(tsdata.to_pandas(), df)
+        assert_frame_equal(tsdata_test.to_pandas(), df_test)
+
+    def test_tsdataset_unscale_numpy(self):
+        df = get_multi_id_ts_df()
+        df_test = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata_test = TSDataset.from_pandas(df_test, dt_col="datetime", target_col="value",
+                                            extra_feature_col=["extra feature"], id_col="id")
+
+        from sklearn.preprocessing import StandardScaler
+        scaler = StandardScaler()
+        tsdata.gen_dt_feature()\
+              .scale(scaler)\
+              .roll(lookback=5, horizon=4, id_sensitive=True)
+        tsdata_test.gen_dt_feature()\
+                   .scale(scaler, fit=False)\
+                   .roll(lookback=5, horizon=4, id_sensitive=True)
+
+        _, _ = tsdata.to_numpy()
+        _, y_test = tsdata_test.to_numpy()
+
+        pred = np.copy(y_test)  # sanity check
+
+        unscaled_pred = tsdata._unscale_numpy(pred)
+        unscaled_y_test = tsdata._unscale_numpy(y_test)
+        tsdata_test.unscale()\
+                   .roll(lookback=5, horizon=4, id_sensitive=True)
+        _, unscaled_y_test_reproduce = tsdata_test.to_numpy()
+
+        assert_array_almost_equal(unscaled_pred, unscaled_y_test_reproduce)
+        assert_array_almost_equal(unscaled_y_test, unscaled_y_test_reproduce)
