@@ -23,6 +23,7 @@ import os
 from zoo.orca.data.image.parquet_dataset import ParquetDataset, read_parquet
 from zoo.orca.data.image.utils import DType, FeatureType, SchemaField
 import tensorflow as tf
+
 from zoo.ray import RayContext
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
@@ -74,12 +75,21 @@ class TestReadParquet(TestCase):
         temp_dir = tempfile.mkdtemp()
 
         try:
-            ParquetDataset.write("file://" + temp_dir, images_generator(), images_schema)
+            ParquetDataset.write("file://" + temp_dir, images_generator(),
+                                 images_schema, block_size=4)
             path = "file://" + temp_dir
             output_types = {"id": tf.string, "image": tf.string, "label": tf.float32}
             dataset = read_parquet("tf_dataset", input_path=path, output_types=output_types)
             for dt in dataset.take(1):
                 print(dt.keys())
+
+            dataloader = read_parquet("dataloader", input_path=path)
+            cur_dl = iter(dataloader)
+            while True:
+                try:
+                    print(next(cur_dl)['label'])
+                except StopIteration:
+                    break
 
         finally:
             shutil.rmtree(temp_dir)
@@ -97,7 +107,8 @@ class TestReadParquet(TestCase):
                 dataset = read_parquet("tf_dataset", input_path=path,
                                        output_types=output_types, output_shapes=output_shapes)
                 dataset = dataset.shuffle(10)
-                dataset = dataset.map(lambda data_dict: (data_dict["image"], data_dict["label"]))
+                dataset = dataset.map(lambda data_dict:
+                                      (data_dict["image"], data_dict["label"]))
                 dataset = dataset.map(parse_data_train)
                 dataset = dataset.batch(batch_size)
                 return dataset

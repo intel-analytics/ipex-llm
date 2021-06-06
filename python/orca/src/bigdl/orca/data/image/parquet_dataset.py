@@ -30,6 +30,8 @@ import numpy as np
 import random
 import pyarrow.parquet as pq
 import io
+import math
+import torch
 
 
 class ParquetDataset:
@@ -70,7 +72,8 @@ class ParquetDataset:
             chunk_path = os.path.join(path, f"chunk={i}")
             rows_rdd = sc.parallelize(chunk, core_num * node_num) \
                 .map(lambda x: dict_to_row(schema, x))
-            spark.createDataFrame(rows_rdd).write.mode(write_mode).parquet(chunk_path)
+            spark.createDataFrame(rows_rdd).write.mode(
+                write_mode).parquet(chunk_path)
         metadata_path = os.path.join(path, "_orca_metadata")
 
         write_text(metadata_path, encode_schema(schema))
@@ -109,7 +112,8 @@ class ParquetDataset:
 
             return [result]
 
-        result_rdd = rdd.mapPartitions(lambda iter: merge_records(schema, iter))
+        result_rdd = rdd.mapPartitions(
+            lambda iter: merge_records(schema, iter))
         xshards = SparkXShards(result_rdd)
         return xshards
 
@@ -227,7 +231,8 @@ def write_mnist(image_file, label_file, output_path, **kwargs):
 
 def write_voc(voc_root_path, splits_names, output_path, **kwargs):
     custom_classes = kwargs.get("classes", None)
-    voc_datasets = VOCDatasets(voc_root_path, splits_names, classes=custom_classes)
+    voc_datasets = VOCDatasets(
+        voc_root_path, splits_names, classes=custom_classes)
 
     def make_generator():
         for img_path, label in voc_datasets:
@@ -246,7 +251,8 @@ def write_voc(voc_root_path, splits_names, output_path, **kwargs):
                                 dtype=DType.STRING,
                                 shape=())
     }
-    kwargs = {key: value for key, value in kwargs.items() if key not in ["classes"]}
+    kwargs = {key: value for key, value in kwargs.items() if key not in [
+        "classes"]}
     ParquetDataset.write(output_path, make_generator(), schema, **kwargs)
 
 
@@ -288,7 +294,8 @@ def read_as_tfdataset(path, output_types, output_shapes=None, *args, **kwargs):
                 if name.startswith("chunk="):
                     chunk_path = os.path.join(path, name)
                     pq_table = pq.read_table(chunk_path)
-                    df = decode_feature_type_ndarray(pq_table.to_pandas(), schema)
+                    df = decode_feature_type_ndarray(
+                        pq_table.to_pandas(), schema)
                     for record in df.to_dict("records"):
                         yield record
 
@@ -297,12 +304,107 @@ def read_as_tfdataset(path, output_types, output_shapes=None, *args, **kwargs):
     return dataset
 
 
-def read_parquet(format, input_path, *args, **kwargs):
-    supported_format = {"tf_dataset"}
-    if format not in supported_format:
-        raise ValueError(format + " is not supported, should be 'tf_dataset'.")
+def read_as_dataloader(path, config=None, transforms=None, batch_size=1, *args, **kwargs):
+    path, _ = pa_fs(path)
+    import tensorflow as tf
 
-    format_to_function = {"tf_dataset": (read_as_tfdataset, ["output_types"])}
+    schema_path = os.path.join(path, "_orca_metadata")
+    j_str = open_text(schema_path)[0]
+    schema = decode_schema(j_str)
+
+    row_group = []
+
+    for root, dirs, files in os.walk(path):
+        for name in dirs:
+            if name.startswith("chunk="):
+                chunk_path = os.path.join(path, name)
+                row_group.append(chunk_path)
+
+    class ParquetIterableDataset(torch.utils.data.IterableDataset):
+        def __init__(self, row_group, num_shards=None,
+                     rank=None, transforms=None):
+            super(ParquetDataset).__init__()
+            self.row_group = row_group
+
+            # To get the indices we expect
+            self.row_group.sort()
+
+            self.num_shards = num_shards
+            self.rank = rank
+            self.datapiece = None
+
+            self.transforms = transforms
+
+            filter_row_group_indexed = []
+
+            if self.num_shards is None or self.rank is None:
+                filter_row_group_indexed = [
+                    index for index in list(range(len(self.row_group)))]
+            else:
+                assert self.num_shards <= len(
+                    self.row_group), "num_shards should be not larger than partitions." \
+                                     "but got num_shards {} with partitions {}." \
+                    .format(self.num_shards, len(self.row_group))
+                assert self.rank < self.num_shards, \
+                    "shard index should be included in [0,num_shard)," \
+                    "but got rank {} with num_shard {}.".format(
+                        self.rank, self.num_shards)
+                filter_row_group_indexed = [index for index in list(range(len(self.row_group)))
+                                            if index % self.num_shards == self.rank]
+
+            data_record = []
+            for select_chunk_path in [self.row_group[i] for i in filter_row_group_indexed]:
+                pq_table = pq.read_table(select_chunk_path)
+                df = decode_feature_type_ndarray(pq_table.to_pandas(), schema)
+                data_record.extend(df.to_dict("records"))
+
+            self.datapiece = data_record
+            self.cur = 0
+            self.cur_tail = len(self.datapiece)
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            # move iter here so we can do transforms
+            if self.cur < self.cur_tail:
+                elem = self.datapiece[self.cur]
+                self.cur += 1
+                if self.transforms:
+                    return self.transforms(elem)
+                else:
+                    return elem
+            else:
+                raise StopIteration
+
+    def worker_init_fn(w_id):
+        worker_info = torch.utils.data.get_worker_info()
+        dataset = worker_info.dataset
+        iter_start = dataset.cur
+        iter_end = dataset.cur_tail
+        per_worker = int(
+            math.ceil(iter_end - iter_start / float(worker_info.num_workers)))
+        w_id = worker_info.id
+        dataset.cur = iter_start + w_id * per_worker
+        dataset.cur_tail = min(dataset.cur + per_worker, iter_end)
+
+    dataset = ParquetIterableDataset(
+        row_group=row_group, num_shards=config.get("num_shards"),
+        rank=config.get("rank"), transforms=transforms)
+
+    return torch.utils.data.DataLoader(dataset, num_workers=config.get("num_workers", 0),
+                                       batch_size=batch_size, worker_init_fn=worker_init_fn)
+
+
+def read_parquet(format, input_path, transforms=None, config=None, batch_size=1, *args, **kwargs):
+    supported_format = {"tf_dataset", "dataloader"}
+    if format not in supported_format:
+        raise ValueError(
+            format + " is not supported, should be 'tf_dataset' or 'dataloader'.")
+
+    format_to_function = {"tf_dataset": (read_as_tfdataset, ["output_types"]),
+                          "dataloader": (read_as_dataloader, [])}
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
-    return func(path=input_path, *args, **kwargs)
+    return func(path=input_path, config=config or {},
+                transforms=transforms, batch_size=batch_size, *args, **kwargs)
