@@ -159,13 +159,3 @@ class ProphetBuilder(ModelBuilder):
         model = ProphetModel(config=self.model_config)
         model._build(**config)
         return model
-
-    def build_from_ckpt(self, checkpoint_filename):
-        """
-        Build Prophet Model from checkpoint
-        :param checkpoint_filename: model checkpoint filename
-        """
-        from zoo.chronos.model.prophet import ProphetModel
-        model = ProphetModel(config=self.model_config)
-        model.restore(checkpoint_filename)
-        return model
