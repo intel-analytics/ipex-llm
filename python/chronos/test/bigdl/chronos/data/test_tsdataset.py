@@ -232,21 +232,22 @@ class TestTSDataset(ZooTestCase):
         tsdata_test = TSDataset.from_pandas(df_test, dt_col="datetime", target_col="value",
                                             extra_feature_col=["extra feature"], id_col="id")
 
-        from sklearn.preprocessing import StandardScaler
-        scaler = StandardScaler()
-        tsdata.scale(scaler)
-        tsdata_test.scale(scaler, fit=False)
+        from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
+        scalers = [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]
+        for scaler in scalers:
+            tsdata.scale(scaler)
+            tsdata_test.scale(scaler, fit=False)
 
-        with pytest.raises(AssertionError):
+            with pytest.raises(AssertionError):
+                assert_frame_equal(tsdata.to_pandas(), df)
+            with pytest.raises(AssertionError):
+                assert_frame_equal(tsdata_test.to_pandas(), df_test)
+
+            tsdata.unscale()
+            tsdata_test.unscale()
+
             assert_frame_equal(tsdata.to_pandas(), df)
-        with pytest.raises(AssertionError):
             assert_frame_equal(tsdata_test.to_pandas(), df_test)
-
-        tsdata.unscale()
-        tsdata_test.unscale()
-
-        assert_frame_equal(tsdata.to_pandas(), df)
-        assert_frame_equal(tsdata_test.to_pandas(), df_test)
 
         tsdata._check_basic_invariants()
 
@@ -258,30 +259,40 @@ class TestTSDataset(ZooTestCase):
         tsdata_test = TSDataset.from_pandas(df_test, dt_col="datetime", target_col="value",
                                             extra_feature_col=["extra feature"], id_col="id")
 
-        from sklearn.preprocessing import StandardScaler
-        scaler = StandardScaler()
-        tsdata.gen_dt_feature()\
-              .scale(scaler)\
-              .roll(lookback=5, horizon=4, id_sensitive=True)
-        tsdata_test.gen_dt_feature()\
-                   .scale(scaler, fit=False)\
-                   .roll(lookback=5, horizon=4, id_sensitive=True)
+        from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
+        scalers = [StandardScaler(),
+                   StandardScaler(with_mean=False),
+                   StandardScaler(with_std=False),
+                   MaxAbsScaler(),
+                   MinMaxScaler(),
+                   MinMaxScaler(feature_range=(1, 3)),
+                   RobustScaler(),
+                   RobustScaler(with_centering=False),
+                   RobustScaler(with_scaling=False),
+                   RobustScaler(quantile_range=(20, 80))]
+        for scaler in scalers:
+            tsdata.gen_dt_feature()\
+                  .scale(scaler)\
+                  .roll(lookback=5, horizon=4, id_sensitive=True)
+            tsdata_test.gen_dt_feature()\
+                       .scale(scaler, fit=False)\
+                       .roll(lookback=5, horizon=4, id_sensitive=True)
 
-        _, _ = tsdata.to_numpy()
-        _, y_test = tsdata_test.to_numpy()
+            _, _ = tsdata.to_numpy()
+            _, y_test = tsdata_test.to_numpy()
 
-        pred = np.copy(y_test)  # sanity check
+            pred = np.copy(y_test)  # sanity check
 
-        unscaled_pred = tsdata._unscale_numpy(pred)
-        unscaled_y_test = tsdata._unscale_numpy(y_test)
-        tsdata_test.unscale()\
-                   .roll(lookback=5, horizon=4, id_sensitive=True)
-        _, unscaled_y_test_reproduce = tsdata_test.to_numpy()
+            unscaled_pred = tsdata._unscale_numpy(pred)
+            unscaled_y_test = tsdata._unscale_numpy(y_test)
+            tsdata_test.unscale()\
+                       .roll(lookback=5, horizon=4, id_sensitive=True)
+            _, unscaled_y_test_reproduce = tsdata_test.to_numpy()
 
-        assert_array_almost_equal(unscaled_pred, unscaled_y_test_reproduce)
-        assert_array_almost_equal(unscaled_y_test, unscaled_y_test_reproduce)
+            assert_array_almost_equal(unscaled_pred, unscaled_y_test_reproduce)
+            assert_array_almost_equal(unscaled_y_test, unscaled_y_test_reproduce)
 
-        tsdata._check_basic_invariants()
+            tsdata._check_basic_invariants()
 
     def test_tsdataset_resample(self):
         df = get_multi_id_ts_df()
