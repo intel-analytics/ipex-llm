@@ -41,7 +41,7 @@ def get_multi_id_ts_df():
                              "id": np.array(['00']*50 + ['01']*50),
                              "extra feature": np.random.randn(sample_num)})
     train_df["datetime"] = pd.date_range('1/1/2019', periods=sample_num)
-    train_df["datetime"][50:100] = pd.date_range('1/1/2019', periods=50)
+    train_df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
     return train_df
 
 
@@ -56,7 +56,7 @@ def get_ugly_ts_df():
     df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
     df['a'][0] = np.nan  # make sure column 'a' has a N/A
     df["datetime"] = pd.date_range('1/1/2019', periods=100)
-    df["datetime"][50:100] = pd.date_range('1/1/2019', periods=50)
+    df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
     df["id"] = np.array(['00']*50 + ['01']*50)
     return df
 
@@ -150,6 +150,7 @@ class TestTSDataset(ZooTestCase):
         x, y = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
         assert y is None
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_roll_multi_id(self):
         df = get_multi_id_ts_df()
@@ -169,6 +170,7 @@ class TestTSDataset(ZooTestCase):
         x, y = tsdata.to_numpy()
         assert x.shape == ((50-lookback-horizon+1), lookback, 4)
         assert y.shape == ((50-lookback-horizon+1), horizon, 2)
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_imputation(self):
         df = get_ugly_ts_df()
@@ -177,6 +179,7 @@ class TestTSDataset(ZooTestCase):
         tsdata.impute(mode="last")
         assert tsdata.to_pandas().isna().sum().sum() == 0
         assert len(tsdata.to_pandas()) == 100
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_deduplicate(self):
         df = get_ugly_ts_df()
@@ -187,6 +190,7 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col=["a", "b", "c", "d"], id_col="id")
         tsdata.deduplicate()
         assert len(tsdata.to_pandas()) == 100
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_datetime_feature(self):
         df = get_multi_id_ts_df()
@@ -218,6 +222,7 @@ class TestTSDataset(ZooTestCase):
                                            'WEEKOFYEAR(datetime)',
                                            'MINUTE(datetime)',
                                            'extra feature'}
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_scale_unscale(self):
         df = get_ts_df()
@@ -242,6 +247,8 @@ class TestTSDataset(ZooTestCase):
 
         assert_frame_equal(tsdata.to_pandas(), df)
         assert_frame_equal(tsdata_test.to_pandas(), df_test)
+
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_unscale_numpy(self):
         df = get_multi_id_ts_df()
@@ -273,3 +280,13 @@ class TestTSDataset(ZooTestCase):
 
         assert_array_almost_equal(unscaled_pred, unscaled_y_test_reproduce)
         assert_array_almost_equal(unscaled_y_test, unscaled_y_test_reproduce)
+
+        tsdata._check_basic_invariants()
+
+    def test_tsdataset_resample(self):
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata.resample('2D', df["datetime"][0], df["datetime"][99])
+        assert len(tsdata.to_pandas()) == 50
+        tsdata._check_basic_invariants()
