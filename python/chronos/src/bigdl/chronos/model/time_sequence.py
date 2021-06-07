@@ -53,12 +53,6 @@ class TSModelBuilder(ModelBuilder):
         model.setup(config)
         return model
 
-    @staticmethod
-    def build_from_ckpt(checkpoint_filename):
-        model = TimeSequenceModel()
-        model.restore(checkpoint_filename)
-        return model
-
 
 class TimeSequenceModel(BaseModel):
     """
@@ -66,8 +60,8 @@ class TimeSequenceModel(BaseModel):
     forecasting.
     It has similar functionality with the TimeSequencePipeline.
     Note that to be compatible with load_ts_pipeline in TimeSequencePipeline,
-    TSModelBuilder.build_from_ckpt is a static method and TimeSequenceModel doesn't require
-    parameters to instantiate. TimeSequenceModel could be optimized if we deprecate load_ts_pipeline
+    TimeSequenceModel should be able to restore with TimeSequenceModel().restore(checkpoint).
+    TimeSequenceModel could be optimized if we deprecate load_ts_pipeline
      in future version.
     """
     def __init__(self,
