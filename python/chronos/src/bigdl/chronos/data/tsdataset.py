@@ -23,6 +23,7 @@ from zoo.chronos.data.utils.impute import impute_timeseries_dataframe
 from zoo.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
 from zoo.chronos.data.utils.roll import roll_timeseries_dataframe
 from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
+from zoo.chronos.data.utils.resample import resample_timeseries_dataframe
 
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"
@@ -32,6 +33,7 @@ class TSDataset:
     def __init__(self, data, **schema):
         '''
         TSDataset is an abstract of time series dataset.
+        Cascade call is supported for most of the transform methods.
         '''
         self.df = data
         self.id_col = schema["id_col"]
@@ -43,6 +45,7 @@ class TSDataset:
 
         self._id_list = list(np.unique(self.df[self.id_col]))
         self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
+
         self.numpy_x = None
         self.numpy_y = None
         self.roll_feature = None
@@ -58,6 +61,7 @@ class TSDataset:
                     extra_feature_col=None):
         '''
         Initialize a tsdataset from pandas dataframe.
+
         :param df: a pandas dataframe for your raw time series data.
         :param dt_col: a str indicates the col name of datetime
                column in the input data frame.
@@ -66,18 +70,26 @@ class TSDataset:
         :param id_col: (optional) a str indicates the col name of dataframe id.
         :param extra_feature_col: (optional) a str or list indicates the col name
                of extra feature columns that needs to predict the target column.
-        Here is an df example:
+
+        :return: a TSDataset instance
+
+
+        Here is a df example:
+
         id        datetime      value   "extra feature 1"   "extra feature 2"
         00        2019-01-01    1.9     1                   2
         01        2019-01-01    2.3     0                   9
         00        2019-01-02    2.4     3                   4
         01        2019-01-02    2.6     0                   2
-        ```python
-        tsdataset = TSDataset.from_pandas(df, dt_col="datetime",
-                                          target_col="value", id_col="id",
-                                          extra_feature_col=["extra feature 1",""extra feature 2"])
-        ```
+
+        Create a tsdataset instance by:
+
+        >>> tsdataset = TSDataset.from_pandas(df, dt_col="datetime",
+        >>>                                   target_col="value", id_col="id",
+        >>>                                   extra_feature_col=["extra feature 1",
+        >>>                                                      "extra feature 2"])
         '''
+
         _check_type(df, "df", pd.DataFrame)
 
         tsdataset_df = df.copy(deep=True)
@@ -96,13 +108,21 @@ class TSDataset:
 
     def impute(self, mode="last", const_num=0):
         '''
-        Impute the tsdataset
+        Impute the tsdataset by imputing each univariate time series
+        distinguished by id_col and feature_col
+
         :param mode: imputation mode, select from "last", "const" or "linear".
-           "last": impute by propagating the last non N/A number to its following N/A.
-                   if there is no non N/A number ahead, 0 is filled instead.
-           "const": impute by a const value input by user.
-           "linear": impute by linear interpolation.
-        :param const_num: only effective when mode is set to "const".
+               "last": impute by propagating the last non N/A number to its following N/A.
+                       if there is no non N/A number ahead, 0 is filled instead.
+               "const": impute by a const value input by user.
+               "linear": impute by linear interpolation.
+        :param const_num:  indicate the const number to fill, which only effective when mode
+               is set to "const".
+
+        :return: the tsdataset instance.
+
+        Note: It is preferred that `impute` is called after `resample` while before
+              `roll` if needed.
         '''
         df_list = [impute_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
                                                dt_col=self.dt_col,
@@ -114,38 +134,57 @@ class TSDataset:
 
     def deduplicate(self):
         '''
-        Remove those duplicated rows.
+        Remove those duplicated rows which has exactly the same values in each feature_col for
+        each multivariate timeseries distinguished by id_col
+
+        :return: the tsdataset instance.
+
+        Note: It is preferred that `deduplicate` is called before all other operations if needed.
         '''
-        # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call deduplicate function in chronos.data.utils.deduplicate on each sub-df.
-        # concat the result back to self.df
         df_list = [deduplicate_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
                                                     dt_col=self.dt_col)
                    for id_name in self._id_list]
         self.df = pd.concat(df_list)
         return self
 
-    def resample(self, interval, mode="mean", allow_na=False):
+    def resample(self, interval, start_time, end_time, merge_mode="mean"):
         '''
-        Resampling the data with a new time interval.
-        :param interval: resampling time interval.
-        :param mode: if current interval is smaller than output interval,
-               we need to merge the valuesin a mode. "max", "min", "mean"
-               or "sum" are supported for now.
-        :param allow_na: bool, default to False. If True, we will remove those
-               timestamp with all other column is N/A.
+        resample on an new interval for each univariate time series distinguished
+        by id_col and feature_col.
+
+        :param interval: pandas offset aliases, indicating time interval of the output dataframe.
+        :param start_time: start time of the output dataframe.
+        :param end_time: end time of the output dataframe.
+        :param merge_mode: if current interval is smaller than output interval,
+            we need to merge the values in a mode. "max", "min", "mean"
+            or "sum" are supported for now.
+        :return: the tsdataset instance.
+
+        Note: It if preferred to call `impute` right after `resample`.
         '''
-        # split the internal dataframe(self.df) to sub-df wrt id_col
-        # call deduplicate function in chronos.data.utils.resample on each sub-df.
+        df_list = []
+        for id_name in self._id_list:
+            df_id = resample_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name]
+                                                  .drop(self.id_col, axis=1),
+                                                  dt_col=self.dt_col,
+                                                  interval=interval,
+                                                  start_time=start_time,
+                                                  end_time=end_time,
+                                                  merge_mode=merge_mode)
+            df_id[self.id_col] = id_name
+            df_list.append(df_id.copy())
+        self.df = pd.concat(df_list)
         return self
 
     def gen_dt_feature(self):
         '''
-        Generate datetime feature for each row.
-        Currently we generate following features:
-            "MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY",
-            "WEEKOFYEAR", "MONTH", "IS_AWAKE", "IS_BUSY_HOURS",
-            "IS_WEEKEND"
+        Generate datetime feature for each row. Currently we generate following features:
+        "MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY", "WEEKOFYEAR", "MONTH", "IS_AWAKE",
+        "IS_BUSY_HOURS", "IS_WEEKEND"
+
+        :return: the tsdataset instance.
+
+        Note: it should be called before scale if needed.
         '''
         df_list = [generate_dt_features(input_df=self.df[self.df[self.id_col] == id_name],
                                         dt_col=self.dt_col)
@@ -165,7 +204,7 @@ class TSDataset:
         This method will be implemented by tsfresh.
         '''
         # call feature gen function in chronos.data.utils.feature on each sub-df.
-        return self
+        raise NotImplementedError("This method has not been implemented!")
 
     def roll(self,
              lookback,
@@ -174,18 +213,20 @@ class TSDataset:
              target_col=None,
              id_sensitive=False):
         '''
-        Sampling by rolling for machine learning/deep learning models
+        Sampling by rolling for machine learning/deep learning models.
+
         :param lookback: int, lookback value
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
                if `horizon` is an list, we will sample discretely according
                to the input list.
-               specially, when `horizon` is set to 0, no ground truth will be generated.
+               specially, when `horizon` is set to 0, ground truth will be generated as None.
         :param feature_col: str or list, indicate the feature col name. Default to None,
                where we will take all avaliable feature in rolling.
         :param target_col: str or list, indicate the target col name. Default to None,
-               where we will take all target in rolling.
+               where we will take all target in rolling. it should be a subset of target_col
+               you used to initialized the tsdataset.
         :param id_sensitive: bool,
                if `id_sensitive` is False, we will rolling on each id's sub dataframe
                and fuse the sampings.
@@ -193,6 +234,7 @@ class TSDataset:
                x: (num_sample, lookback, num_feature_col)
                y: (num_sample, horizon, num_target_col)
                where num_sample is the summation of sample number of each dataframe
+
                if `id_sensitive` is True, we will rolling on the wide dataframe whose
                columns are cartesian product of id_col and feature_col
                The shape of rolling will be
@@ -201,11 +243,14 @@ class TSDataset:
                where num_sample is the sample number of the wide dataframe,
                num_feature_col is the product of the number of id and the number of feature_col,
                num_target_col is the product of the number of id and the number of target_col.
+
+        :return: the tsdataset instance.
         '''
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
         target_col = _to_list(target_col, "target_col") if target_col is not None \
             else self.target_col
+
         num_id = len(self._id_list)
         num_feature_col = len(self.feature_col)
         num_target_col = len(self.target_col)
@@ -248,6 +293,8 @@ class TSDataset:
     def to_numpy(self):
         '''
         export rolling result in form of a tuple of numpy ndarray (x, y)
+
+        :return: a 2-dim tuple. each item is a 3d numpy ndarray
         '''
         if self.numpy_x is None:
             raise RuntimeError("Please call \"roll\" method\
@@ -257,8 +304,10 @@ class TSDataset:
     def to_pandas(self):
         '''
         export the pandas dataframe
+
+        :return: the internal dataframe.
         '''
-        return self.df
+        return self.df.copy()
 
     def scale(self, scaler, fit=True):
         '''
@@ -268,6 +317,7 @@ class TSDataset:
         :param fit: if we need to fit the scaler. Typically, the value should
                be set to True for training set, while False for validation and
                test set. The value is defaulted to True.
+        :return: the tsdataset instance.
         '''
         if fit:
             self.df[self.target_col + self.feature_col] = \
@@ -281,6 +331,8 @@ class TSDataset:
     def unscale(self):
         '''
         unscale the time series dataset's feature column and target column.
+
+        :return: the tsdataset instance.
         '''
         self.df[self.target_col + self.feature_col] = \
             self.scaler.inverse_transform(self.df[self.target_col + self.feature_col])
@@ -291,6 +343,7 @@ class TSDataset:
         unscale the time series forecastor's numpy prediction result/ground truth.
         :param data: a numpy ndarray with 3 dim whose shape should be exactly the
                same with self.numpy_y.
+        :return: the unscaled numpy ndarray
         '''
         num_roll_target = len(self.roll_target)
         repeat_factor = len(self._id_list) if self.id_sensitive else 1
