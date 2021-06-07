@@ -24,16 +24,51 @@ def _standard_scaler_unscale_timeseries_numpy(data, scaler, scaler_index):
     data_unscale = np.zeros(data.shape)
     feature_counter = 0
     for i in scaler_index:
-        value_mean = scaler.mean_[i]
-        value_scale = scaler.scale_[i]
+        value_mean = 0 if scaler.mean_ is None else scaler.mean_[i]
+        value_scale = 1 if scaler.scale_ is None else scaler.scale_[i]
         data_unscale[:, :, feature_counter] = data[:, :, feature_counter] * value_scale + value_mean
         feature_counter += 1
     return data_unscale
 
+
+def _maxabs_scaler_unscale_timeseries_numpy(data, scaler, scaler_index):
+    data_unscale = np.zeros(data.shape)
+    feature_counter = 0
+    for i in scaler_index:
+        value_max_abs = scaler.max_abs_[i]
+        data_unscale[:, :, feature_counter] = data[:, :, feature_counter] * value_max_abs
+        feature_counter += 1
+    return data_unscale
+
+
+def _minmax_scaler_unscale_timeseries_numpy(data, scaler, scaler_index):
+    data_unscale = np.zeros(data.shape)
+    feature_counter = 0
+    for i in scaler_index:
+        value_min = scaler.min_[i]
+        value_scale = scaler.scale_[i]
+        data_unscale[:, :, feature_counter] = \
+            (data[:, :, feature_counter] - value_min) / value_scale
+        feature_counter += 1
+    return data_unscale
+
+
+def _robust_scaler_unscale_timeseries_numpy(data, scaler, scaler_index):
+    data_unscale = np.zeros(data.shape)
+    feature_counter = 0
+    for i in scaler_index:
+        value_center = 0 if scaler.center_ is None else scaler.center_[i]
+        value_scale = 1 if scaler.scale_ is None else scaler.scale_[i]
+        data_unscale[:, :, feature_counter] = \
+            data[:, :, feature_counter] * value_scale + value_center
+        feature_counter += 1
+    return data_unscale
+
+
 UNSCALE_HELPER_MAP = {StandardScaler: _standard_scaler_unscale_timeseries_numpy,
-                      MaxAbsScaler: None,
-                      MinMaxScaler: None,
-                      RobustScaler: None}
+                      MaxAbsScaler: _maxabs_scaler_unscale_timeseries_numpy,
+                      MinMaxScaler: _minmax_scaler_unscale_timeseries_numpy,
+                      RobustScaler: _robust_scaler_unscale_timeseries_numpy}
 
 
 def unscale_timeseries_numpy(data, scaler, scaler_index):
