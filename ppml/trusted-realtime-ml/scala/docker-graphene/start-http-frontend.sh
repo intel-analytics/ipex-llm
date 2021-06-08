@@ -29,4 +29,5 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     --httpsKeyStoreToken "${https_secure_password}" \
     --redisSecureEnabled true \
     --redissTrustStorePath "/ppml/trusted-realtime-ml/redis/work/keys/keystore.jks" \
-    --redissTrustStoreToken "${redis_secure_password}" | tee ./http-frontend-sgx.log
+    --redissTrustStoreToken "${redis_secure_password}" \
+    --servableManagerConfPath "/ppml/trusted-realtime-ml/java/work/servables.yaml" | tee ./http-frontend-sgx.log
