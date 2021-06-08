@@ -301,3 +301,19 @@ class TestTSDataset(ZooTestCase):
         tsdata.resample('2D', df["datetime"][0], df["datetime"][99])
         assert len(tsdata.to_pandas()) == 50
         tsdata._check_basic_invariants()
+
+    def test_tsdataset_split(self):
+        df = get_multi_id_ts_df()
+        tsdata_train, tsdata_valid, tsdata_test =\
+            TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                  extra_feature_col=["extra feature"], id_col="id",
+                                  with_split=True, val_ratio=0.1, test_ratio=0.1,
+                                  largest_look_back=5, largest_horizon=2)
+
+        assert set(np.unique(tsdata_train.to_pandas()["id"])) == {"00", "01"}
+        assert set(np.unique(tsdata_valid.to_pandas()["id"])) == {"00", "01"}
+        assert set(np.unique(tsdata_test.to_pandas()["id"])) == {"00", "01"}
+
+        assert len(tsdata_train.to_pandas()) == (50 * 0.8)*2
+        assert len(tsdata_valid.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
+        assert len(tsdata_test.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
