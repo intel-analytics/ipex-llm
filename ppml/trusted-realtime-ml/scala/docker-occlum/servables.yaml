@@ -1,0 +1,9 @@
+---
+modelMetaDataList:
+- !<ClusterServingMetaData>
+   modelName: "1"
+   modelVersion: "1.0"
+   redisHost: "localhost"
+   redisPort: "6379"
+   redisInputQueue: "serving_stream"
+   redisOutputQueue: "cluster-serving_serving_stream:"
