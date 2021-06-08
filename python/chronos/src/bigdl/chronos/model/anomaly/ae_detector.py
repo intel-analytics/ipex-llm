@@ -78,7 +78,7 @@ class AEDetector(AnomalyDetector):
         self.sub_scalef = sub_scalef
         self.recon_err = None
         self.recon_err_subseq = None
-        self.ad_score = None
+        self.anomaly_scores_ = None
 
     def check_rolled(self, arr):
         if __name__ == '__main__':
@@ -97,7 +97,7 @@ class AEDetector(AnomalyDetector):
         :return
         """
         self.check_data(y)
-        self.ad_score = np.zeros_like(y)
+        self.anomaly_scores_ = np.zeros_like(y)
 
         if self.roll_len != 0:
             # roll the time series to create sub sequences
@@ -129,8 +129,8 @@ class AEDetector(AnomalyDetector):
         errors of each point and subsequence.
         :return: the anomaly scores, in an array format with the same size as input
         """
-        if self.ad_score is None:
-            raise ValueError("please call fit before calling score")
+        if self.anomaly_scores_ is None:
+            raise RuntimeError("please call fit before calling score")
 
         # if input is rolled
         if self.recon_err_subseq is not None:
@@ -140,14 +140,14 @@ class AEDetector(AnomalyDetector):
                 agg_err = e + self.sub_scalef * self.recon_err_subseq[index[0]]
                 y_index = index[0] + index[1]
                 # only keep the largest err score for each ts sample
-                if agg_err > self.ad_score[y_index]:
-                    self.ad_score[y_index] = agg_err
+                if agg_err > self.anomaly_scores_[y_index]:
+                    self.anomaly_scores_[y_index] = agg_err
         else:
-            self.ad_score = self.recon_err
+            self.anomaly_scores_ = self.recon_err
 
-        self.ad_score = scale_arr(self.ad_score.reshape(-1, 1)).squeeze()
+        self.anomaly_scores_ = scale_arr(self.anomaly_scores_.reshape(-1, 1)).squeeze()
 
-        return self.ad_score
+        return self.anomaly_scores_
 
     def anomaly_indexes(self):
         """
@@ -155,7 +155,7 @@ class AEDetector(AnomalyDetector):
         (N = size of input y * AEDetector.ratio)
         :return: the indexes of N samples
         """
-        if self.ad_score is None:
+        if self.anomaly_scores_ is None:
             self.score()
-        num_anomalies = int(len(self.ad_score) * self.ratio)
-        return self.ad_score.argsort()[-num_anomalies:]
+        num_anomalies = int(len(self.anomaly_scores_) * self.ratio)
+        return self.anomaly_scores_.argsort()[-num_anomalies:]

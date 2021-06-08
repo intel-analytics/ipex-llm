@@ -81,10 +81,12 @@ def estimate_th(y,
 
 def detect_all(y, yhat, th, dist_measure):
     anomaly_scores = np.zeros_like(y)
+    anomaly_indexes = []
     for i, (y_i, yhat_i) in enumerate(zip(y, yhat)):
         if dist_measure.abs_dist(y_i, yhat_i) > th:
+            anomaly_indexes.append(i)
             anomaly_scores[i] = 1
-    return anomaly_scores
+    return anomaly_indexes, anomaly_scores
 
 
 def detect_range(y, th):
@@ -101,7 +103,7 @@ def detect_range_arr(y, th_arr):
     anomaly_scores = np.zeros_like(y)
     anomaly_scores[anomaly_indexes] = 1
     # anomaly_index.update(np.where(max_diff > 0)[0])
-    return anomaly_scores
+    return list(set(np.where(anomaly_scores > 0)[0])), anomaly_scores
 
 
 def detect_anomaly(y,
@@ -159,7 +161,8 @@ class ThresholdDetector(AnomalyDetector):
         self.ratio = 0.01
         self.dist_measure = EuclideanDistance()
         self.mode = "default"
-        self.anomalies = None
+        self.anomaly_indexes_ = None
+        self.anomaly_scores_ = None
 
     def set_params(self,
                    mode="default",
@@ -195,10 +198,9 @@ class ThresholdDetector(AnomalyDetector):
                                   ratio=self.ratio,
                                   dist_measure=self.dist_measure)
         # calculate anomalies in advance in case score does not specify input
-        self.anomalies = detect_anomaly(y,
-                                        y_pred,
-                                        self.th,
-                                        self.dist_measure)
+        anomalies = detect_anomaly(y, y_pred, self.th, self.dist_measure)
+        self.anomaly_indexes_ = anomalies[0]
+        self.anomaly_scores_ = anomalies[1]
 
     def score(self, y=None, y_pred=None):
         """
@@ -209,9 +211,20 @@ class ThresholdDetector(AnomalyDetector):
         :return: anomaly scores for each input sample in y
         """
         if y is None:
-            return self.anomalies
+            if self.anomaly_scores_ is None:
+                raise RuntimeError("please call fit before calling score")
+            return self.anomaly_scores_
         else:
             return detect_anomaly(y,
                                   y_pred,
                                   self.th,
-                                  self.dist_measure)
+                                  self.dist_measure)[1]
+
+    def anomaly_indexes(self):
+        """
+        gets the indexes of the anomalies.
+        :return: the indexes of the anomalies.
+        """
+        if self.anomaly_indexes_ is None:
+            raise RuntimeError("Please call fit first")
+        return self.anomaly_indexes_
