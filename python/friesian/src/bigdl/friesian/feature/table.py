@@ -14,13 +14,12 @@
 # limitations under the License.
 #
 import os
-from functools import reduce
 
 from pyspark.sql.types import DoubleType, ArrayType, DataType
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.feature import VectorAssembler
-from pyspark.sql.functions import col, udf, array, broadcast, explode, struct, collect_list
+from pyspark.sql.functions import col as pyspark_col, udf, array, broadcast
 from pyspark.sql import Row
 
 from zoo.orca import OrcaContext
@@ -322,8 +321,14 @@ class Table:
         type = transform_dict[type] if type in transform_dict else type
         df_cast = self._clone(self.df)
         for i in columns:
-            df_cast.df = df_cast.df.withColumn(i, col(i).cast(type))
+            df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(type))
         return df_cast
+
+    def __getattr__(self, name):
+        return self.df.__getattr__(name)
+
+    def col(self, name):
+        return pyspark_col(name)
 
 
 class FeatureTable(Table):
@@ -459,15 +464,15 @@ class FeatureTable(Table):
 
             # Fitting pipeline on dataframe
             df = pipeline.fit(df).transform(df) \
-                .withColumn("scaled_list", tolist(col("scaled"))) \
+                .withColumn("scaled_list", tolist(pyspark_col("scaled"))) \
                 .drop("vect").drop("scaled")
             for i in range(len(scalar_cols)):
-                df = df.withColumn(scalar_cols[i], col("scaled_list")[i])
+                df = df.withColumn(scalar_cols[i], pyspark_col("scaled_list")[i])
             df = df.drop("scaled_list")
 
             # cast to float
             for c in scalar_cols:
-                df = df.withColumn(c, col(c).cast("float"))
+                df = df.withColumn(c, pyspark_col(c).cast("float"))
 
         for c in array_cols:
             df = normalize_array(df, c)
@@ -579,7 +584,7 @@ class FeatureTable(Table):
 
         :return: FeatureTable
         """
-        df = self.df.withColumn(out_col, udf_func(col(in_col)))
+        df = self.df.withColumn(out_col, udf_func(pyspark_col(in_col)))
         return FeatureTable(df)
 
     def join(self, table, on=None, how=None):
@@ -629,7 +634,7 @@ class FeatureTable(Table):
         for c in item_cols:
             col_type = df.schema[c].dataType
             cat_udf = udf(gen_cat, col_type)
-            df = df.withColumn(c.replace("item", "category"), cat_udf(col(c)))
+            df = df.withColumn(c.replace("item", "category"), cat_udf(pyspark_col(c)))
         return FeatureTable(df)
 
 
