@@ -215,6 +215,15 @@ class TestTable(TestCase):
         assert filled_tbl.df.filter("col_2 is null").count() == 0, "col_2 null values should be " \
                                                                    "filled"
 
+    def test_filter(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        filtered_tbl = feature_tbl.filter(feature_tbl.col_1 == 1)
+        assert filtered_tbl.size() == 3, "Only 3 out of 5 rows has value 1 for col_1"
+        filtered_tbl2 = feature_tbl.filter(
+            (feature_tbl.col("col_1") == 1) & (feature_tbl.col_2 == 1))
+        assert filtered_tbl2.size() == 1, "Only 1 out of 5 rows has value 1 for col_1 and col_2"
+
     def test_rename(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
