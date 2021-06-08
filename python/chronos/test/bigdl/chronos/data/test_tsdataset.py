@@ -254,10 +254,6 @@ class TestTSDataset(ZooTestCase):
     def test_tsdataset_unscale_numpy(self):
         df = get_multi_id_ts_df()
         df_test = get_multi_id_ts_df()
-        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
-        tsdata_test = TSDataset.from_pandas(df_test, dt_col="datetime", target_col="value",
-                                            extra_feature_col=["extra feature"], id_col="id")
 
         from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
         scalers = [StandardScaler(),
@@ -270,11 +266,18 @@ class TestTSDataset(ZooTestCase):
                    RobustScaler(with_centering=False),
                    RobustScaler(with_scaling=False),
                    RobustScaler(quantile_range=(20, 80))]
+
         for scaler in scalers:
-            tsdata.gen_dt_feature()\
+            tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                           extra_feature_col=["extra feature"], id_col="id")
+            tsdata_test = TSDataset.from_pandas(df_test, dt_col="datetime", target_col="value",
+                                                extra_feature_col=["extra feature"], id_col="id")
+            tsdata.gen_global_feature(settings="minimal")\
+                  .gen_dt_feature()\
                   .scale(scaler)\
                   .roll(lookback=5, horizon=4, id_sensitive=True)
-            tsdata_test.gen_dt_feature()\
+            tsdata_test.gen_global_feature(settings="minimal")\
+                       .gen_dt_feature()\
                        .scale(scaler, fit=False)\
                        .roll(lookback=5, horizon=4, id_sensitive=True)
 
@@ -317,3 +320,10 @@ class TestTSDataset(ZooTestCase):
         assert len(tsdata_train.to_pandas()) == (50 * 0.8)*2
         assert len(tsdata_valid.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
         assert len(tsdata_test.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
+
+    def test_tsdataset_global_feature(self):
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata.gen_global_feature(settings="minimal")
+        tsdata._check_basic_invariants()

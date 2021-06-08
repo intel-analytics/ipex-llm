@@ -24,8 +24,8 @@ def _standard_scaler_unscale_timeseries_numpy(data, scaler, scaler_index):
     data_unscale = np.zeros(data.shape)
     feature_counter = 0
     for i in scaler_index:
-        value_mean = 0 if scaler.mean_ is None else scaler.mean_[i]
-        value_scale = 1 if scaler.scale_ is None else scaler.scale_[i]
+        value_mean = scaler.mean_[i] if scaler.with_mean else 0
+        value_scale = scaler.scale_[i] if scaler.with_std else 1
         data_unscale[:, :, feature_counter] = data[:, :, feature_counter] * value_scale + value_mean
         feature_counter += 1
     return data_unscale
