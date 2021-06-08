@@ -36,3 +36,11 @@ class AnomalyDetector(ABC):
         :return: anomaly scores
         """
         pass
+
+    @abstractmethod
+    def anomaly_indexes(self):
+        """
+        gets the indexes of the anomalies.
+        :return: the indexes of the anomalies.
+        """
+        pass
