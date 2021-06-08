@@ -1,0 +1,137 @@
+loader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
+libos.entrypoint = "file:$(EXECDIR)/bash"
+
+loader.log_level = "debug"
+
+loader.insecure_disable_aslr = 1
+loader.insecure__use_cmdline_argv = 1
+
+loader.pal_internal_mem_size = "512M"
+
+sgx.file_check_policy = "allow_all_but_log"
+sgx.static_address = 1
+sgx.debug = 0
+sgx.isvprodid = 1
+sgx.isvsvn = 3
+
+loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.6/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli"
+loader.env.PATH = "/usr/lib/python3.6/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
+loader.env.PYTHONHOME = "/usr/lib/python3.6"
+loader.env.PYTHONPATH = "/usr/lib/python36.zip:/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages"
+loader.env.JAVA_HOME = "$(JDK_HOME)"
+loader.env.JAVA_OPTS = "'-Djava.library.path=$(JDK_HOME)/lib -Dsun.boot.library.path=$(JDK_HOME)/lib'"
+loader.env.SPARK_LOCAL_IP = "$(SPARK_LOCAL_IP)"
+loader.env.SPARK_USER = "$(SPARK_USER)"
+loader.env.SPARK_SCALA_VERSION = "2.11"
+loader.env.SPARK_HOME = "$(SPARK_HOME)"
+loader.env.SPARK_MASTER_OPTS = "'-Dspark.worker.timeout=60'"
+
+fs.mount.lib.type = "chroot"
+fs.mount.lib.path = "/lib"
+fs.mount.lib.uri = "file:$(GRAPHENEDIR)/Runtime"
+
+fs.mount.lib2.type = "chroot"
+fs.mount.lib2.path = "$(ARCH_LIBDIR)"
+fs.mount.lib2.uri = "file:$(ARCH_LIBDIR)"
+
+fs.mount.lib3.type = "chroot"
+fs.mount.lib3.path = "/usr$(ARCH_LIBDIR)"
+fs.mount.lib3.uri = "file:/usr$(ARCH_LIBDIR)"
+
+fs.mount.usrbin.type = "chroot"
+fs.mount.usrbin.path = "/usr/bin"
+fs.mount.usrbin.uri = "file:/usr/bin"
+
+fs.mount.usrlocal.type = "chroot"
+fs.mount.usrlocal.path = "/usr/local"
+fs.mount.usrlocal.uri = "file:/usr/local"
+
+fs.mount.etc.type = "chroot"
+fs.mount.etc.path = "/etc"
+fs.mount.etc.uri = "file:/etc"
+
+fs.mount.opt.type = "chroot"
+fs.mount.opt.path = "/opt"
+fs.mount.opt.uri = "file:/opt"
+
+fs.mount.bin.type = "chroot"
+fs.mount.bin.path = "/bin"
+fs.mount.bin.uri = "file:/bin"
+
+fs.mount.tmp.type = "chroot"
+fs.mount.tmp.path = "/tmp"
+fs.mount.tmp.uri = "file:/tmp"
+
+# Mount $PYTHONHOME
+fs.mount.pyhome.type = "chroot"
+fs.mount.pyhome.path = "/usr/lib/python3.6"
+fs.mount.pyhome.uri = "file:/usr/lib/python3.6"
+
+# Mount $PYTHONDISTHOME
+fs.mount.pydisthome.type = "chroot"
+fs.mount.pydisthome.path = "$(PYTHONDISTHOME)"
+fs.mount.pydisthome.uri = "file:$(PYTHONDISTHOME)"
+
+fs.mount.work.type = "chroot"
+fs.mount.work.path = "$(WORK_DIR)"
+fs.mount.work.uri = "file:$(WORK_DIR)"
+
+sgx.enclave_size = "$(G_SGX_SIZE)"
+sgx.thread_num = 1024
+
+sgx.allow_file_creation   = 1
+
+#bash ls cat rm cp date env chmod echo
+sgx.trusted_files.bash = "file:$(EXECDIR)/bash"
+sgx.trusted_files.ls = "file:$(EXECDIR)/ls"
+sgx.trusted_files.cat = "file:$(EXECDIR)/cat"
+sgx.trusted_files.rm = "file:$(EXECDIR)/rm"
+sgx.trusted_files.cp = "file:$(EXECDIR)/cp"
+sgx.trusted_files.date = "file:$(EXECDIR)/date"
+sgx.trusted_files.env = "file:/usr/bin/env"
+sgx.trusted_files.chmod = "file:$(EXECDIR)/chmod"
+sgx.trusted_files.echo = "file:$(EXECDIR)/echo"
+sgx.trusted_files.python = "file:/usr/bin/python"
+sgx.trusted_files.python3 = "file:/usr/bin/python3"
+sgx.trusted_files.jupyter = "file:/usr/local/bin/jupyter"
+sgx.trusted_files.pyspark = "file:/ppml/trusted-big-data-ml/work/spark-2.4.3/bin/pyspark"
+sgx.trusted_files.sparksubmit = "file:/ppml/trusted-big-data-ml/work/spark-2.4.3/bin/spark-submit"
+sgx.trusted_files.java = "file:$(JDK_HOME)/bin/java"
+sgx.trusted_files.setsid = "file:/usr/bin/setsid"
+sgx.trusted_files.sh = "file:/bin/sh"
+sgx.trusted_files.stty = "file:/bin/stty"
+
+# Glibc libraries
+sgx.trusted_files.ld = "file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2"
+sgx.trusted_files.libc = "file:$(GRAPHENEDIR)/Runtime/libc.so.6"
+sgx.trusted_files.libm = "file:$(GRAPHENEDIR)/Runtime/libm.so.6"
+sgx.trusted_files.libdl = "file:$(GRAPHENEDIR)/Runtime/libdl.so.2"
+sgx.trusted_files.librt = "file:$(GRAPHENEDIR)/Runtime/librt.so.1"
+sgx.trusted_files.libpthread = "file:$(GRAPHENEDIR)/Runtime/libpthread.so.0"
+
+# Name Service Switch (NSS) libraries (Glibc dependencies)
+sgx.trusted_files.libnsscompat = "file:$(ARCH_LIBDIR)/libnss_compat.so.2"
+sgx.trusted_files.libnssfiles  = "file:$(ARCH_LIBDIR)/libnss_files.so.2"
+sgx.trusted_files.libnssnis  = "file:$(ARCH_LIBDIR)/libnss_nis.so.2"
+
+# libNSL is a dependency of libnss_compat above.
+sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
+sgx.trusted_files.libtinfo = "file:/lib/x86_64-linux-gnu/libtinfo.so.5"
+sgx.trusted_files.libselinux = "file:/lib/x86_64-linux-gnu/libselinux.so.1"
+sgx.trusted_files.libpcre = "file:/lib/x86_64-linux-gnu/libpcre.so.3"
+
+sgx.trusted_files.libz  = "file:$(ARCH_LIBDIR)/libz.so.1"
+sgx.trusted_files.libgcc_s = "file:/lib/x86_64-linux-gnu/libgcc_s.so.1"
+sgx.trusted_files.libstdcpp = "file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
+sgx.trusted_files.bigdl = "file:/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar"
+
+sgx.allowed_files.etc       = "file:/etc"
+sgx.allowed_files.tmp       = "file:/tmp"
+sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
+sgx.allowed_files.spark     = "file:$(SPARK_HOME)"
+sgx.allowed_files.sparkjars = "file:$(SPARK_HOME)/jars"
+sgx.allowed_files.work      = "file:/ppml/trusted-big-data-ml/work"
+sgx.allowed_files.pyhome    = "file:/usr/lib/python3.6"
+sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.6/dist-packages"
+
+sgx.nonpie_binary = 1
