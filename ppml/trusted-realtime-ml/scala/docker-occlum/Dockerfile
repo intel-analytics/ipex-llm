@@ -134,6 +134,7 @@ RUN echo "source /etc/profile" >> $HOME/.bashrc && \
 
 # Cluster Serving config
 ADD ./cluster-serving-config.yaml /opt/config.yaml
+ADD ./servables.yaml /opt/servables.yaml
 # PPML scripts
 ADD ./init-occlum-taskmanager.sh /opt/init-occlum-taskmanager.sh
 ADD ./start-redis.sh /opt/start-redis.sh

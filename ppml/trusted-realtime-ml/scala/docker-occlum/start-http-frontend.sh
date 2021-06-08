@@ -26,4 +26,5 @@ java \
     --parallelism 30 \
     --httpsEnabled true \
     --httpsKeyStorePath "/opt/keys/keystore.pkcs12" \
-    --httpsKeyStoreToken "${https_secure_password}" | tee ./http-frontend-sgx.log
+    --httpsKeyStoreToken "${https_secure_password}" \
+    --servableManagerConfPath "/opt/servables.yaml" | tee ./http-frontend-sgx.log
