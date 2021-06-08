@@ -152,6 +152,7 @@ ADD ./start-flink-jobmanager.sh /ppml/trusted-realtime-ml/java/start-flink-jobma
 ADD ./start-flink-taskmanager.sh /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh
 ADD ./start-http-frontend.sh /ppml/trusted-realtime-ml/java/start-http-frontend.sh
 ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
+ADD ./servables.yaml /ppml/trusted-realtime-ml/java/work/servables.yaml
 ADD ./init-cluster-serving.sh /ppml/trusted-realtime-ml/java/init-cluster-serving.sh
 ADD ./start-cluster-serving-job.sh /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh
 ADD ./check-status.sh /ppml/trusted-realtime-ml/check-status.sh
