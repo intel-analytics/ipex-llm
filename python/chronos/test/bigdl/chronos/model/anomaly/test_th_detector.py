@@ -75,14 +75,15 @@ class TestThresholdDetector(ZooTestCase):
         td.fit(y_test, y_predict)
         anomaly_scores = td.score()
         assert len(list(np.where(anomaly_scores > 0)[0])) == 0
+        anomaly_indexes = td.anomaly_indexes()
+        assert len(anomaly_indexes) == 0
 
-        # if threshold is not provided, ThresholDetector can fit to the data
+        # if threshold is not provided, ThresholdDetector can fit to the data
         ratio = 0.1
         td = ThresholdDetector()
         td.set_params(ratio=ratio)
         td.fit(y_test, y_predict)
-        anomaly_scores = td.score()
-        fitted_anomaly_indexes = list(np.where(anomaly_scores > 0)[0])
+        fitted_anomaly_indexes = td.anomaly_indexes()
         assert len(fitted_anomaly_indexes) == int(ratio * y_test.shape[0])
 
     def test_threshold_single(self):
@@ -102,7 +103,8 @@ class TestThresholdDetector(ZooTestCase):
         td.set_params(threshold=3)
         td.fit(y_test, y_pred)
         anomaly_scores = td.score()
-        anomaly_indexes = set(np.where(anomaly_scores > 0)[0])
+        assert len(set(np.where(anomaly_scores > 0)[0])) == num_anomaly
+        anomaly_indexes = td.anomaly_indexes()
         assert len(anomaly_indexes) == num_anomaly
 
     def test_threshold_minmax(self):
@@ -120,7 +122,8 @@ class TestThresholdDetector(ZooTestCase):
         td.set_params(threshold=(-1, 1))
         td.fit(y_test)
         anomaly_scores = td.score()
-        anomaly_indexes = set(np.where(anomaly_scores > 0)[0])
+        assert len(set(np.where(anomaly_scores > 0)[0])) == num_anomaly
+        anomaly_indexes = td.anomaly_indexes()
         assert len(anomaly_indexes) == num_anomaly
 
     def test_mode_gaussian(self):
