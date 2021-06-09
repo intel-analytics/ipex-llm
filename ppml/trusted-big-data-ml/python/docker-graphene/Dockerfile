@@ -163,7 +163,18 @@ ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
 ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
 ADD ./clean.sh /ppml/trusted-big-data-ml/clean.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
+ADD ./start-spark-local-train-sgx.sh /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh
+ADD ./start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-master-sgx.sh
+ADD ./start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh
+ADD ./start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh
+ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
 
 RUN chmod a+x /ppml/trusted-big-data-ml/init.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/clean.sh
+    chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-master-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh
+    
 
