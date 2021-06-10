@@ -168,6 +168,7 @@ ADD ./start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/start-spark
 ADD ./start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh
 ADD ./start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh
 ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
+ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 
 RUN chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
@@ -175,6 +176,8 @@ RUN chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-master-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh
+    chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/check-status.sh
+
     
 
