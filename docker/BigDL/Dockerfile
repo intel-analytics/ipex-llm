@@ -40,7 +40,7 @@ RUN wget $JDK_URL && \
     tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
-    ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk 
 #python
 RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
