@@ -288,9 +288,11 @@ class RayXShards(XShards):
             for current_assignments in actor2assignments:
                 if len(current_assignments) < avg_part_num:
                     current_assignments.append(part_idx)
+                    break
                 elif len(current_assignments) == avg_part_num and remainder > 0:
                     current_assignments.append(part_idx)
                     remainder -= 1
+                    break
         return actor2assignments, actor_ips
 
     @staticmethod
