@@ -39,15 +39,19 @@ RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.
     rm jdk-8u152-linux-x64.tar && \
     ln -s /opt/jdk1.8.0_152 /opt/jdk
 #python
-RUN apt-get install -y software-properties-common python-software-properties python-pkg-resources && \
-    add-apt-repository -y ppa:jonathonf/python-2.7 && \
-    apt-get update && \
-    apt-get install -y build-essential python python-setuptools python-dev && \
-    wget https://bootstrap.pypa.io/get-pip.py && \
-    python2 get-pip.py && \
-    pip install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud && \
-    python2 -m pip install ipykernel && \
-    python2 -m ipykernel install --user
+RUN apt-get install -y python3-minimal && \
+    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
+    pip3 install --upgrade pip==20.2.4 && \
+    pip install --upgrade setuptools && \
+    pip install numpy scipy && \
+    pip install --no-binary pandas -I pandas && \
+    pip install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
+    pip install torch==1.1.0 torchvision==0.3.0 -f https://download.pytorch.org/whl/torch_stable.html && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    #Fix tornado await process
+    pip uninstall -y -q tornado && \
+    pip install tornado==5.1.1 && \
+    python3 -m ipykernel.kernelspec
 #spark
 RUN wget https://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
