@@ -39,7 +39,7 @@ class TestDBScanDetector(ZooTestCase):
         data[17] -= 3
         return data
 
-    def test_ae_fit_score(self):
+    def test_dbscan_fit_score(self):
         y = self.create_data()
         ad = DBScanDetector(eps=0.1, min_samples=6)
         ad.fit(y)
@@ -49,3 +49,14 @@ class TestDBScanDetector(ZooTestCase):
         # directly use dbscan may cause high local false positive/negatives
         # so the detected anomalies is probably more than the actual ones
         assert len(anomaly_indexes) >= 4
+
+    def test_corner_cases(self):
+        ad = DBScanDetector(eps=0.1, min_samples=6)
+        with pytest.raises(RuntimeError):
+            ad.score()
+        with pytest.raises(RuntimeError):
+            ad.anomaly_indexes()
+        y = self.create_data()
+        y = y[:-1].reshape(2, -1)
+        with pytest.raises(ValueError):
+            ad.fit(y)
