@@ -260,7 +260,7 @@ class LSTMSeq2Seq(BaseModel):
             result = hist.history.get(metric_name)[-1]
         else:
             result = hist.history.get('val_' + metric_name)[-1]
-        return result
+        return {self.metric: result}
 
     def evaluate(self, x, y, metric=['mse']):
         """

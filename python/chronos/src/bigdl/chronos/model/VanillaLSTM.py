@@ -44,7 +44,7 @@ def model_creator(config):
     model.compile(loss=config.get("loss", "mse"),
                   optimizer=getattr(tf.keras.optimizers, config.get("optim", "Adam"))
                   (learning_rate=config.get("lr", 0.001)),
-                  metrics=[config["metric"]])
+                  metrics=[config.get("metric", "mse")])
     return model
 
 

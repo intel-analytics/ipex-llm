@@ -97,7 +97,7 @@ class TestChronosAutoTS(ZooTestCase):
         pipeline = tsp.fit(self.train_df,
                            self.validation_df,
                            recipe=MTNetGridRandomRecipe(
-                               num_rand_samples=5,
+                               num_rand_samples=1,
                                time_step=[5],
                                long_num=[2],
                                batch_size=[1024],
