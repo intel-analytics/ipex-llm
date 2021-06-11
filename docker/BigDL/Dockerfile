@@ -22,6 +22,8 @@ WORKDIR /opt/work
 
 ARG BIGDL_VERSION=0.13.0-SNAPSHOT
 ARG SPARK_VERSION=2.1.1
+ARG JDK_VERSION=8u192
+ARG JDK_URL=your_jdk_url
 ENV BIGDL_VERSION_ENV		${BIGDL_VERSION}
 ENV SPARK_VERSION_ENV		${SPARK_VERSION}
 ENV SPARK_HOME			/opt/work/spark-${SPARK_VERSION}
@@ -33,11 +35,12 @@ ENV PATH 			${JAVA_HOME}/bin:${PATH}
 RUN apt-get update && \
     apt-get install -y vim curl nano wget unzip maven git
 #java
-RUN wget https://build.funtoo.org/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
-    gunzip jdk-8u152-linux-x64.tar.gz && \
-    tar -xf jdk-8u152-linux-x64.tar -C /opt && \
-    rm jdk-8u152-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_152 /opt/jdk
+RUN wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 #python
 RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
