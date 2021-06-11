@@ -54,3 +54,28 @@ class TestAEDetector(ZooTestCase):
         assert len(anomaly_scores) == len(y)
         anomaly_indexes = ad.anomaly_indexes()
         assert len(anomaly_indexes) == int(ad.ratio * len(y))
+
+    def test_ae_fit_score_unrolled(self):
+        y = self.create_data()
+        ad = AEDetector(roll_len=0)
+        ad.fit(y)
+        anomaly_scores = ad.score()
+        assert len(anomaly_scores) == len(y)
+        anomaly_indexes = ad.anomaly_indexes()
+        assert len(anomaly_indexes) == int(ad.ratio * len(y))
+
+    def test_corner_cases(self):
+        y = self.create_data()
+        ad = AEDetector(roll_len=314, backend="dummy")
+        with pytest.raises(ValueError):
+            ad.fit(y)
+        ad = AEDetector(roll_len=314)
+        with pytest.raises(RuntimeError):
+            ad.score()
+        y = np.array([1])
+        with pytest.raises(ValueError):
+            ad.fit(y)
+        y = self.create_data()
+        y = y.reshape(2, -1)
+        with pytest.raises(ValueError):
+            ad.fit(y)

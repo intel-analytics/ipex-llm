@@ -76,7 +76,7 @@ def estimate_th(y,
         t = norm.ppf(1 - ratio)
         return t * sigma + mu
     else:
-        raise Exception("Does not support", mode)
+        raise ValueError("Does not support", mode)
 
 
 def detect_all(y, yhat, th, dist_measure):

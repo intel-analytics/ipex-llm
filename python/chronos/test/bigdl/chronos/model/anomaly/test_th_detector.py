@@ -141,6 +141,33 @@ class TestThresholdDetector(ZooTestCase):
         from scipy.stats import norm
         assert abs(td.th - (norm.ppf(1 - ratio) * sigma + mu)) < 0.04
 
+    def test_corner_cases(self):
+        td = ThresholdDetector()
+        with pytest.raises(RuntimeError):
+            td.score()
+        with pytest.raises(RuntimeError):
+            td.anomaly_indexes()
+
+        time = np.arange(0, 1, 0.5)
+        y = np.sin(time)
+        td.set_params(mode="dummy")
+        with pytest.raises(ValueError):
+            td.fit(y, y)
+        td.set_params(mode="gaussian")
+        with pytest.raises(ValueError):
+            td.fit(y)
+        td.set_params(threshold="1")
+        with pytest.raises(ValueError):
+            td.fit(y)
+        td.set_params(threshold=(1, -1))
+        with pytest.raises(ValueError):
+            td.fit(y)
+        td.set_params(threshold=(np.array([-1]), np.array([-1])))
+        with pytest.raises(ValueError):
+            td.fit(y)
+        td.set_params(threshold=(np.array([1, 1]), np.array([-1, -1])))
+        with pytest.raises(ValueError):
+            td.fit(y)
 
 if __name__ == "__main__":
     pytest.main([__file__])
