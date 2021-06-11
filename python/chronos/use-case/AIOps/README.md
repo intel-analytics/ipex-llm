@@ -6,10 +6,11 @@ We demonstrate how to use Chronos to detect anomaly data  based on historical ti
 In the reference use case, we use the publicly available cluster trace data cluster-trace-v2018 of Alibaba Open Cluster Trace Program. ([dataset link](http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz)). 
  
 
-This use case example contains a notebook:
+This use case example contains two notebooks:
 
-- **AIOps_anomaly_detect.ipynb** demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. 
+- **AIOps_anomaly_detect_unsupervised_forecast_based.ipynb** demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. Then perform anomaly detection on predicted value with [ThresholdDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-th-detector).
 
+- **AIOps_anomaly_detect_unsupervised.ipynb** demonstrates how to perform anomaly detection based on Chronos's built-in [DBScanDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-dbscan-detector), [AEDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-ae-detector) and [ThresholdDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-th-detector).
 
 ### Install
 

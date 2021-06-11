@@ -15,3 +15,5 @@
 #
 
 from .th_detector import ThresholdDetector
+from .ae_detector import AEDetector
+from .dbscan_detector import DBScanDetector
