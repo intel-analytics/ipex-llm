@@ -74,8 +74,8 @@ To specify more argument, use:
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    -e NotebookPort=12345 \
-    -e NotebookToken="your-token" \
+    -e NOTEBOOK_PORT=12345 \
+    -e NOTEBOOK_TOKEN="your-token" \
     -e http_proxy=http://your-proxy-host:your-proxy-port \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
@@ -93,8 +93,8 @@ sudo docker run -itd --net=host \
     intelanalytics/hyper-zoo:latest bash 
 ```
 
-- NotebookPort value 12345 is a user specified port number.
-- NotebookToken value "your-token" is a user specified string.
+- NOTEBOOK_PORT value 12345 is a user specified port number.
+- NOTEBOOK_TOKEN value "your-token" is a user specified string.
 - http_proxy is to specify http proxy.
 - https_proxy is to specify https proxy.
 - RUNTIME_SPARK_MASTER is to specify spark master, which should be `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>` or `spark://<spark-master-host>:<spark-master-port>`. 
@@ -255,7 +255,7 @@ $ kubectl delete pod -l <pod label>
 
 When started a Docker container with specified argument RUNTIME_SPARK_MASTER=`k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>` or RUNTIME_SPARK_MASTER=`spark://<spark-master-host>:<spark-master-port>`, the container will submit jobs to k8s cluster or spark cluster if you use $RUNTIME_SPARK_MASTER as url of spark master.
 
-You may also need to specify NotebookPort=`<your-port>` and NotebookToken=`<your-token>` to start Jupyter Notebook on the specified port and bind to 0.0.0.0.
+You may also need to specify NOTEBOOK_PORT=`<your-port>` and NOTEBOOK_TOKEN=`<your-token>` to start Jupyter Notebook on the specified port and bind to 0.0.0.0.
 
 To start the Jupyter notebooks on remote spark cluster, please use RUNTIME_SPARK_MASTER=`spark://<spark-master-host>:<spark-master-port>`, and attach the client container with command: “docker exec -it `<container-id>`  bash”, then run the shell script: “/opt/start-notebook-spark.sh”, this will start a Jupyter notebook instance on local container, and each tutorial in it will be submitted to the specified spark cluster. User can access the notebook with url `http://<local-ip>:<your-port>` in a preferred browser, and also need to input required  token with `<your-token>` to browse and run the tutorials of Analytics Zoo. Each tutorial will run driver part code in local container and run executor part code on spark cluster.
 

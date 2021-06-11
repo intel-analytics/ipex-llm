@@ -48,8 +48,8 @@ sudo systemctl restart docker
 After pulling the Analytics Zoo Docker image, you can launch an Analytics Zoo Docker container:
 ```
 sudo docker run -it --rm --net=host \
-    -e NotebookPort=12345 \
-    -e NotebookToken="your-token" \
+    -e NOTEBOOK_PORT=12345 \
+    -e NOTEBOOK_TOKEN="your-token" \
     -e http_proxy=http://your-proxy-host:your-proxy-port \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     intelanalytics/analytics-zoo:latest bash

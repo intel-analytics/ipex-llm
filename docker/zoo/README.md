@@ -70,51 +70,51 @@
 ### To start a notebook directly with a specified port(e.g. 12345). You can view the notebook on http://[host-ip]:12345
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/analytics-zoo:default
 
     sudo docker run -it --rm --net=host \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/analytics-zoo:default
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
 
     sudo docker run -it --rm --net=host \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
 
 ### If you need http and https proxy in your environment:
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/analytics-zoo:default
 
     sudo docker run -it --rm --net=host \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/analytics-zoo:default
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
 
     sudo docker run -it --rm --net=host \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/analytics-zoo:0.3.0-bigdl_0.6.0-spark_2.3.1
@@ -122,8 +122,8 @@
 ### You can also start the container first
 
     sudo docker run -it --rm --net=host \
-        -e NotebookPort=12345 \
-        -e NotebookToken="your-token" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/analytics-zoo:default bash
 
 ### In the container, after setting proxy and ports, you can start the Notebook by:
@@ -141,8 +141,8 @@
 ### With 0.3+ version of Anaytics-Zoo Docker image, you can specify the runtime conf of spark
 
     sudo docker run -itd --net=host \
-        -e NotebookPort=12345 \
-        -e NotebookToken="1234qwer" \
+        -e NOTEBOOK_PORT=12345 \
+        -e NOTEBOOK_TOKEN="1234qwer" \
         -e http_proxy=http://your-proxy-host:your-proxy-port  \
         -e https_proxy=https://your-proxy-host:your-proxy-port  \
         -e RUNTIME_SPARK_MASTER=spark://your-spark-master-host:your-spark-master-port or local[*] \

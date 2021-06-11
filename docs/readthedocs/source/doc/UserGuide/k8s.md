@@ -51,8 +51,8 @@ You can specify more arguments:
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    -e NotebookPort=12345 \
-    -e NotebookToken="your-token" \
+    -e NOTEBOOK_PORT=12345 \
+    -e NOTEBOOK_TOKEN="your-token" \
     -e http_proxy=http://your-proxy-host:your-proxy-port \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
@@ -70,8 +70,8 @@ sudo docker run -itd --net=host \
     intelanalytics/hyper-zoo:latest bash 
 ```
 
-- NotebookPort value 12345 is a user specified port number.
-- NotebookToken value "your-token" is a user specified string.
+- NOTEBOOK_PORT value 12345 is a user specified port number.
+- NOTEBOOK_TOKEN value "your-token" is a user specified string.
 - http_proxy/https_proxy is to specify http proxy/https_proxy.
 - RUNTIME_SPARK_MASTER is to specify spark master, which should be `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>` or `spark://<spark-master-host>:<spark-master-port>`. 
 - RUNTIME_K8S_SERVICE_ACCOUNT is service account for driver pod. Please refer to k8s [RBAC](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac).
