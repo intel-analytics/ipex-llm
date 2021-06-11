@@ -47,7 +47,9 @@ class TestSeq2SeqPytorch(TestCase):
     def test_s2s_fit_evaluate(self):
         model = Seq2SeqPytorch()
         config = {"batch_size": 128, "teacher_forcing": False}
-        model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
+        model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data,
+                       metric="mse",
+                       **config)
         mse, smape = model.evaluate(self.val_data[0],
                                     self.val_data[1],
                                     metrics=["mse", "smape"])
@@ -59,7 +61,9 @@ class TestSeq2SeqPytorch(TestCase):
     def test_s2s_teacher_forcing_fit_evaluate(self):
         model = Seq2SeqPytorch()
         config = {"batch_size": 128, "teacher_forcing": True}
-        model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
+        model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data,
+                       metric="mse",
+                       **config)
         mse, smape = model.evaluate(self.val_data[0],
                                     self.val_data[1],
                                     metrics=["mse", "smape"])
@@ -71,7 +75,9 @@ class TestSeq2SeqPytorch(TestCase):
     def test_s2s_predict_save_restore(self):
         model = Seq2SeqPytorch()
         config = {"batch_size": 128}
-        model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
+        model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data,
+                       metric="mse",
+                       **config)
         pred = model.predict(self.test_data[0])
         assert pred.shape == self.test_data[1].shape
         with tempfile.TemporaryDirectory() as tmp_dir_name:

@@ -262,10 +262,10 @@ class MTNetKeras(BaseModel):
         self.saved_configs = {"cnn_height", "long_num", "time_step", "ar_window",
                               "cnn_hid_size", "rnn_hid_sizes", "cnn_dropout",
                               "rnn_dropout", "lr", "batch_size",
-                              "epochs", "metrics", "mc",
+                              "epochs", "metric", "mc",
                               "feature_num", "output_dim", "loss"}
         self.model = None
-        self.metrics = None
+        self.metric = None
         self.mc = None
         self.epochs = None
 
@@ -277,7 +277,7 @@ class MTNetKeras(BaseModel):
             # assert config_names.issuperset(self.lr_decay_configs) or \
             #        config_names.issuperset(self.lr_configs)
         self.epochs = config.get("epochs")
-        self.metrics = config.get("metrics", ["mean_squared_error"])
+        self.metric = config.get("metric") or "mean_squared_error"
         self.mc = config.get("mc")
         self.feature_num = config["feature_num"]
         self.output_dim = config["output_dim"]
@@ -377,7 +377,7 @@ class MTNetKeras(BaseModel):
         #                    optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule))
 
         self.model.compile(loss=self.loss,
-                           metrics=self.metrics,
+                           metrics=[self.metric],
                            optimizer=tf.keras.optimizers.Adam(lr=self.lr))
 
         return self.model
@@ -450,17 +450,17 @@ class MTNetKeras(BaseModel):
         return [long_term, short_term], validation_data
 
     def _add_config_attributes(self, config, **new_attributes):
-        # new_attributes are among ["metrics", "epochs", "mc", "feature_num", "output_dim"]
+        # new_attributes are among ["metric", "epochs", "mc", "feature_num", "output_dim"]
         if self.config is None:
             self.config = config
         else:
             if config:
                 raise ValueError("You can only pass new configuations for 'mc', 'epochs' and "
-                                 "'metrics' during incremental fitting. "
+                                 "'metric' during incremental fitting. "
                                  "Additional configs passed are {}".format(config))
 
-        if new_attributes["metrics"] is None:
-            del new_attributes["metrics"]
+        if new_attributes["metric"] is None:
+            del new_attributes["metric"]
         self.config.update(new_attributes)
 
     def _check_input(self, x, y):
@@ -481,11 +481,11 @@ class MTNetKeras(BaseModel):
                              .format(input_output_dim, self.output_dim))
         return input_feature_num, input_output_dim
 
-    def fit_eval(self, data, validation_data=None, mc=False, metrics=None,
+    def fit_eval(self, data, validation_data=None, mc=False, metric=None,
                  epochs=10, verbose=0, **config):
         x, y = data[0], data[1]
         feature_num, output_dim = self._check_input(x, y)
-        self._add_config_attributes(config, epochs=epochs, mc=mc, metrics=metrics,
+        self._add_config_attributes(config, epochs=epochs, mc=mc, metric=metric,
                                     feature_num=feature_num, output_dim=output_dim)
         self.apply_config(config=self.config)
         processed_x, processed_validation_data = self._pre_processing(x, validation_data)
@@ -493,7 +493,7 @@ class MTNetKeras(BaseModel):
         # if model is not initialized, __build the model
         if self.model is None:
             st = time.time()
-            self.build(config)
+            self.build(self.config)
             end = time.time()
             if verbose == 1:
                 print("Build model took {}s".format(end - st))
@@ -506,13 +506,23 @@ class MTNetKeras(BaseModel):
 
         if verbose == 1:
             print("Fit model took {}s".format(time.time() - st))
-        if validation_data is None:
-            # get train metrics
-            # results = self.model.evaluate(x, y)
-            result = hist.history.get(self.metrics[0])[-1]
+
+        compiled_metric_names = self.model.metrics_names.copy()
+        compiled_metric_names.remove("loss")
+        hist_metric_name = tf.keras.metrics.get(self.metric).__name__
+        if hist_metric_name in compiled_metric_names:
+            metric_name = hist_metric_name
+        elif metric in compiled_metric_names:
+            metric_name = metric
         else:
-            result = hist.history.get('val_' + str(self.metrics[0]))[-1]
-        return result
+            raise ValueError(f"Input metric in fit_eval should be one of the metrics that are "
+                             f"used to compile the model. Got metric value of {metric} and the "
+                             f"metrics in compile are {compiled_metric_names}")
+        if validation_data is None:
+            result = hist.history.get(metric_name)[-1]
+        else:
+            result = hist.history.get('val_' + metric_name)[-1]
+        return {self.metric: result}
 
     def evaluate(self, x, y, metrics=['mse']):
         """
@@ -559,8 +569,7 @@ class MTNetKeras(BaseModel):
                        "batch_size": self.batch_size,
                        # for fit eval
                        "epochs": self.epochs,
-                       # todo: can not serialize metrics unless all elements are str
-                       "metrics": self.metrics,
+                       "metric": self.metric,
                        "mc": self.mc,
                        "feature_num": self.feature_num,
                        "output_dim": self.output_dim,

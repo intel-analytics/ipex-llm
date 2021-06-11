@@ -78,7 +78,7 @@ class ProphetModel(BaseModel):
         target = data['val_y']
         self.model.fit(x)
         val_metric = self.evaluate(x=None, target=target, metrics=[self.metric])[0].item()
-        return val_metric
+        return {self.metric: val_metric}
 
     def predict(self, x=None, horizon=24):
         """
