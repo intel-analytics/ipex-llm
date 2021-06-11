@@ -26,6 +26,15 @@ from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
 from zoo.chronos.data.utils.resample import resample_timeseries_dataframe
 from zoo.chronos.data.utils.split import split_timeseries_dataframe
 
+from tsfresh.utilities.dataframe_functions import roll_time_series
+from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
+from tsfresh import extract_features
+from tsfresh.feature_extraction import ComprehensiveFCParameters,\
+    MinimalFCParameters, EfficientFCParameters
+DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
+                  "minimal": MinimalFCParameters(),
+                  "efficient": EfficientFCParameters()}
+
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"
 
@@ -42,17 +51,19 @@ class TSDataset:
         self.feature_col = schema["feature_col"]
         self.target_col = schema["target_col"]
 
-        self._check_basic_invariants()
-
-        self._id_list = list(np.unique(self.df[self.id_col]))
-        self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
-
         self.numpy_x = None
         self.numpy_y = None
         self.roll_feature = None
         self.roll_target = None
+        self.roll_feature_df = None
+        self.roll_addional_feature = None
         self.scaler = None
         self.id_sensitive = None
+
+        self._check_basic_invariants()
+
+        self._id_list = list(np.unique(self.df[self.id_col]))
+        self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
 
     @staticmethod
     def from_pandas(df,
@@ -234,6 +245,8 @@ class TSDataset:
         Generate per-time-series feature for each time series.
         This method will be implemented by tsfresh.
 
+        TODO: relationship with scale should be figured out.
+
         :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
                "minimal" and "efficient". If a dict is set then it should follow the instruction
                for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
@@ -244,23 +257,20 @@ class TSDataset:
 
         '''
         if full_settings is not None:
-            self.df = generate_global_features(input_df=self.df,
-                                               column_id=self.id_col,
-                                               column_sort=self.dt_col,
-                                               kind_to_fc_parameters=full_settings)
+            self.df,\
+                addtional_feature =\
+                generate_global_features(input_df=self.df,
+                                         column_id=self.id_col,
+                                         column_sort=self.dt_col,
+                                         kind_to_fc_parameters=full_settings)
+            self.feature_col += addtional_feature
             return self
-
-        from tsfresh.feature_extraction import ComprehensiveFCParameters,\
-            MinimalFCParameters, EfficientFCParameters
-        default_params = {"comprehensive": ComprehensiveFCParameters(),
-                          "minimal": MinimalFCParameters(),
-                          "efficient": EfficientFCParameters()}
 
         if isinstance(settings, str):
             assert settings in ["comprehensive", "minimal", "efficient"], \
                 f"settings str should be one of \"comprehensive\", \"minimal\", \"efficient\"\
                     , but found {settings}."
-            default_fc_parameters = default_params[settings]
+            default_fc_parameters = DEFAULT_PARAMS[settings]
         else:
             default_fc_parameters = settings
 
@@ -272,6 +282,55 @@ class TSDataset:
                                      default_fc_parameters=default_fc_parameters)
 
         self.feature_col += addtional_feature
+
+        return self
+
+    def gen_rolling_feature(self,
+                            window_size,
+                            settings="comprehensive",
+                            full_settings=None):
+        '''
+        Generate aggregation feature for each sample.
+        This method will be implemented by tsfresh.
+
+        TODO: relationship with scale should be figured out.
+
+        :param window_size: int, generate feature according to the rolling result.
+        :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
+               "minimal" and "efficient". If a dict is set then it should follow the instruction
+               for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
+        :param full_settings: dict. It should follow the instruction for kind_to_fc_parameters in
+               tsfresh. The value is defaulted to None.
+
+        :return: the tsdataset instance.
+        '''
+        if isinstance(settings, str):
+            assert settings in ["comprehensive", "minimal", "efficient"], \
+                f"settings str should be one of \"comprehensive\", \"minimal\", \"efficient\"\
+                    , but found {settings}."
+            default_fc_parameters = DEFAULT_PARAMS[settings]
+        else:
+            default_fc_parameters = settings
+
+        df_rolled = roll_time_series(self.df,
+                                     column_id=self.id_col,
+                                     column_sort=self.dt_col,
+                                     max_timeshift=window_size-1,
+                                     min_timeshift=window_size-1)
+        if not full_settings:
+            self.roll_feature_df = extract_features(df_rolled,
+                                                    column_id=self.id_col,
+                                                    column_sort=self.dt_col,
+                                                    default_fc_parameters=default_fc_parameters)
+        else:
+            self.roll_feature_df = extract_features(df_rolled,
+                                                    column_id=self.id_col,
+                                                    column_sort=self.dt_col,
+                                                    kind_to_fc_parameters=full_settings)
+        impute_tsfresh(self.roll_feature_df)
+
+        self.feature_col += list(self.roll_feature_df.columns)
+        self.roll_addional_feature = list(self.roll_feature_df.columns)
 
         return self
 
@@ -319,16 +378,27 @@ class TSDataset:
             else self.feature_col
         target_col = _to_list(target_col, "target_col") if target_col is not None \
             else self.target_col
+        if self.roll_addional_feature:
+            additional_feature_col =\
+                list(set(feature_col).intersection(set(self.roll_addional_feature)))
+            feature_col =\
+                list(set(feature_col) - set(self.roll_addional_feature))
+            self.roll_feature = feature_col + additional_feature_col
+        else:
+            additional_feature_col = None
+            self.roll_feature = feature_col
 
-        num_id = len(self._id_list)
-        num_feature_col = len(self.feature_col)
-        num_target_col = len(self.target_col)
-        self.roll_feature = feature_col
         self.roll_target = target_col
+        num_id = len(self._id_list)
+        num_feature_col = len(self.roll_feature)
+        num_target_col = len(self.roll_target)
         self.id_sensitive = id_sensitive
+        roll_feature_df = None if self.roll_feature_df is None \
+            else self.roll_feature_df[additional_feature_col]
 
         # get rolling result for each sub dataframe
         rolling_result = [roll_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
+                                                    roll_feature_df=roll_feature_df,
                                                     lookback=lookback,
                                                     horizon=horizon,
                                                     feature_col=feature_col,
@@ -381,6 +451,7 @@ class TSDataset:
     def scale(self, scaler, fit=True):
         '''
         scale the time series dataset's feature column and target column.
+
         :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,
                MinMaxScaler and RobustScaler are supported.
         :param fit: if we need to fit the scaler. Typically, the value should
@@ -388,12 +459,18 @@ class TSDataset:
                test set. The value is defaulted to True.
         :return: the tsdataset instance.
         '''
+        feature_col = self.feature_col
+        if self.roll_addional_feature:
+            feature_col = []
+            for feature in self.feature_col:
+                if feature not in self.roll_addional_feature:
+                    feature_col.append(feature)
         if fit:
-            self.df[self.target_col + self.feature_col] = \
-                scaler.fit_transform(self.df[self.target_col + self.feature_col])
+            self.df[self.target_col + feature_col] = \
+                scaler.fit_transform(self.df[self.target_col + feature_col])
         else:
-            self.df[self.target_col + self.feature_col] = \
-                scaler.transform(self.df[self.target_col + self.feature_col])
+            self.df[self.target_col + feature_col] = \
+                scaler.transform(self.df[self.target_col + feature_col])
         self.scaler = scaler
         return self
 
@@ -403,8 +480,14 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        self.df[self.target_col + self.feature_col] = \
-            self.scaler.inverse_transform(self.df[self.target_col + self.feature_col])
+        feature_col = self.feature_col
+        if self.roll_addional_feature:
+            feature_col = []
+            for feature in self.feature_col:
+                if feature not in self.roll_addional_feature:
+                    feature_col.append(feature)
+        self.df[self.target_col + feature_col] = \
+            self.scaler.inverse_transform(self.df[self.target_col + feature_col])
         return self
 
     def _unscale_numpy(self, data):
@@ -440,6 +523,8 @@ class TSDataset:
         for target_col_name in self.target_col:
             _check_col_within(self.df, target_col_name)
         for feature_col_name in self.feature_col:
+            if self.roll_addional_feature and feature_col_name in self.roll_addional_feature:
+                continue
             _check_col_within(self.df, feature_col_name)
 
         # check no n/a in critical col
