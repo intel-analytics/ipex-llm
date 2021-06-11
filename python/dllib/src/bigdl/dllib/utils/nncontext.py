@@ -269,6 +269,7 @@ def stop_spark_standalone():
 class ZooContextMeta(type):
 
     _log_output = False
+    _barrier_mode = True
 
     @property
     def log_output(cls):
@@ -288,6 +289,20 @@ class ZooContextMeta(type):
             warnings.warn(msg)
         assert isinstance(value, bool), "log_output should either be True or False"
         cls._log_output = value
+
+    @property
+    def barrier_mode(cls):
+        """
+        Whether to use Spark barrier mode to launch Ray, which is supported in Spark 2.4+ and when
+        dynamic allocation is disabled.
+        Default to be True.
+        """
+        return cls._barrier_mode
+
+    @barrier_mode.setter
+    def barrier_mode(cls, value):
+        assert isinstance(value, bool), "barrier_mode should either be True or False"
+        cls._barrier_mode = value
 
 
 class ZooContext(metaclass=ZooContextMeta):
