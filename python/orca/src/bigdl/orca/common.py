@@ -120,6 +120,19 @@ class OrcaContextMeta(type):
                 "shard size should be either None or a positive integer."
         cls.__shard_size = value
 
+    @property
+    def barrier_mode(cls):
+        """
+        Whether to use Spark barrier mode to launch Ray, which is supported in Spark 2.4+ and when
+        dynamic allocation is disabled.
+        Default to be True.
+        """
+        return ZooContext.barrier_mode
+
+    @barrier_mode.setter
+    def barrier_mode(cls, value):
+        ZooContext.barrier_mode = value
+
 
 class OrcaContext(metaclass=OrcaContextMeta):
     @staticmethod
