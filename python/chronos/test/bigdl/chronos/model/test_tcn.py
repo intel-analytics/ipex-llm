@@ -47,7 +47,9 @@ class TestTcn(TestCase):
 
     def test_fit_evaluate(self):
         config = {"batch_size": 128}
-        self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
+        self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data,
+                            metric="mse",
+                            **config)
         mse, smape = self.model.evaluate(self.val_data[0],
                                          self.val_data[1],
                                          metrics=["mse", "smape"])
@@ -58,7 +60,9 @@ class TestTcn(TestCase):
 
     def test_predict_save_restore(self):
         config = {"batch_size": 128}
-        self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
+        self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data,
+                            metric="mse",
+                            **config)
         pred = self.model.predict(self.test_data[0])
         assert pred.shape == self.test_data[1].shape
         with tempfile.TemporaryDirectory() as tmp_dir_name:

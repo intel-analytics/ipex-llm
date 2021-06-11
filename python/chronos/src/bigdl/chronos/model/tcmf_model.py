@@ -96,7 +96,7 @@ class TCMF(BaseModel):
                                                max_TCN_epoch=config.get("max_TCN_epoch", 300),
                                                num_workers=num_workers,
                                                )
-        return val_loss
+        return {"val_loss": val_loss}
 
     def fit_incremental(self, x, covariates_new=None, dti_new=None):
         """
