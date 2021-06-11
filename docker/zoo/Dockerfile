@@ -60,16 +60,16 @@ RUN wget $JDK_URL && \
 #python
 RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
-    pip3 install --upgrade pip==20.2.4 && \
-    pip install --upgrade setuptools && \
-    pip install numpy scipy && \
-    pip install --no-binary pandas -I pandas && \
-    pip install scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
-    pip install torch==1.1.0 torchvision==0.3.0 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip3 install --no-cache-dir --upgrade pip==20.2.4 && \
+    pip install --no-cache-dir --upgrade setuptools && \
+    pip install --no-cache-dir numpy==1.18.1 scipy && \
+    pip install --no-cache-dir --no-binary pandas -I pandas && \
+    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
+    pip install --no-cache-dir torch==1.1.0 torchvision==0.3.0 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
-    pip install tornado==5.1.1 && \
+    pip install --no-cache-dir tornado==5.1.1 && \
     python3 -m ipykernel.kernelspec
 
 #spark

@@ -143,7 +143,7 @@ RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir --upgrade setuptools && \
-    pip install --no-cache-dir numpy scipy && \
+    pip install --no-cache-dir numpy==1.18.1 scipy && \
     pip install --no-cache-dir pandas==1.0.3 && \
     pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
     pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2  && \
@@ -170,7 +170,7 @@ RUN apt-get install -y python3-minimal && \
     pip install --no-cache-dir cmake==3.16.3 && \
     pip install --no-cache-dir horovod==0.19.2 && \
     pip install --no-cache-dir tf_slim && \
-    git clone https://github.com/tensorflow/models/ /opt/models
+    git clone https://github.com/tensorflow/models/ /opt/models 
 
 ADD ./start-notebook-spark.sh /opt
 ADD ./start-notebook-k8s.sh /opt
@@ -182,4 +182,3 @@ RUN chmod a+x /opt/start-notebook-spark.sh && \
 WORKDIR /opt/spark/work-dir
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
-
