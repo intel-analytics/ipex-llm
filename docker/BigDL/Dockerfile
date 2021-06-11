@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 
