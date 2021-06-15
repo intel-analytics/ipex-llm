@@ -97,7 +97,7 @@ est.fit(data=df,
 
 ### **3. XShards (Distributed Data-Parallel Python Processing)**
 
-`XShards` in Orca allows the user to process large-scale dataset using *existing* Pyhton codes in a distributed and data-parallel fashion, as shown below. 
+`XShards` in Orca allows the user to process large-scale dataset using *existing* Python codes in a distributed and data-parallel fashion, as shown below. 
 
 ```python
 import numpy as np
