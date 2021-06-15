@@ -71,7 +71,7 @@ Analytics Zoo Documentation
    doc/PythonAPI/Orca/orca.rst
    doc/PythonAPI/AutoML/automl.rst
    doc/PythonAPI/Friesian/feature.rst
-   doc/PythonAPI/Chronos/forecasters.rst
+   doc/PythonAPI/Chronos/index.rst
    
 .. toctree::
    :maxdepth: 1

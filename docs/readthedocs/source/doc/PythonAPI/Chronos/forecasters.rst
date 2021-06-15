@@ -1,4 +1,4 @@
-Chronos Forecasters API
+Forecasters
 =====================
 
 chronos.model.forecast.lstm_forecaster
@@ -15,7 +15,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
 
 
 chronos.model.forecast.seq2seq_forecaster
-----------------------------------------
+-------------------------------------------
 
 Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suitable for multivariant & multistep time series forecasting.
 
