@@ -1,4 +1,4 @@
-# Use Distribtued Pandas for Deep Learning
+# Use Distributed Pandas for Deep Learning
 
 ---
 
