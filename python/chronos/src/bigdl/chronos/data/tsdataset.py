@@ -48,8 +48,8 @@ class TSDataset:
         self.df = data
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
-        self.feature_col = schema["feature_col"]
-        self.target_col = schema["target_col"]
+        self.feature_col = schema["feature_col"].copy()
+        self.target_col = schema["target_col"].copy()
 
         self.numpy_x = None
         self.numpy_y = None
