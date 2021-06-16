@@ -321,6 +321,21 @@ class TestTSDataset(ZooTestCase):
         assert len(tsdata_valid.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
         assert len(tsdata_test.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
 
+        assert tsdata_train.feature_col is not tsdata_valid.feature_col
+        assert tsdata_train.feature_col is not tsdata_test.feature_col
+        assert tsdata_train.target_col is not tsdata_valid.target_col
+        assert tsdata_train.target_col is not tsdata_test.target_col
+
+        tsdata_train.feature_col.append("new extra feature")
+        assert len(tsdata_train.feature_col) == 2
+        assert len(tsdata_valid.feature_col) == 1
+        assert len(tsdata_test.feature_col) == 1
+
+        tsdata_train.target_col[0] = "new value"
+        assert tsdata_train.target_col[0] == "new value"
+        assert tsdata_valid.target_col[0] != "new value"
+        assert tsdata_test.target_col[0] != "new value"
+
     def test_tsdataset_global_feature(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
