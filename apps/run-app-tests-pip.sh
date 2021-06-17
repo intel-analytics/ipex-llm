@@ -715,10 +715,10 @@ now=$(date "+%s")
 time19=$((now-start))
 echo "#19 automl-nyc-taxi time used:$time19 seconds"
 
-echo "#20 start app test for chronos-anomaly-detect"
+echo "#20 start app test for chronos-anomaly-detect-unsupervised-forecast-based"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based
 
 wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv
 echo "Finished downloading AIOps data"
@@ -734,25 +734,61 @@ echo "Finished downloading AIOps data"
 #   echo "Finished downloading AIOps data"
 #fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect.py
-sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect.py
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+sed -i "s/epochs=20/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "chronos-anomaly-detect failed"
+    echo "chronos-anomaly-detect-unsupervised-forecast-based failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time20=$((now-start))
-echo "#20 chronos-anomaly-detect time used:$time20 seconds"
+echo "#20 chronos-anomaly-detect-unsupervised-forecast-based time used:$time20 seconds"
 
-echo "#21 start app test for chronos-network-traffic-impute"
+echo "#21 start app test for chronos-anomaly-detect-unsupervised"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised
+
+wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv
+echo "Finished downloading AIOps data"
+#FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/m_1932.csv"
+#if [ -f "$FILENAME" ]
+#then
+#   echo "$FILENAME already exists."
+#else
+#   echo "Downloading AIOps data"
+#
+#   wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps
+#
+#   echo "Finished downloading AIOps data"
+#fi
+
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/
+
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
+cd -
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "chronos-anomaly-detect-unsupervised failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time21=$((now-start))
+echo "#21 chronos-anomaly-detect-unsupervised time used:$time21 seconds"
+
+echo "#22 start app test for chronos-network-traffic-impute"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_impute
@@ -783,10 +819,10 @@ then
     exit $exit_status
 fi
 now=$(date "+%s")
-time21=$((now-start))
-echo "#21 chronos-network-traffic-impute time used:$time21 seconds"
+time22=$((now-start))
+echo "#22 chronos-network-traffic-impute time used:$time22 seconds"
 
-echo "#22 start app test for chronos-stock-prediction"
+echo "#23 start app test for chronos-stock-prediction"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction
@@ -820,10 +856,10 @@ then
     exit $exit_status
 fi
 now=$(date "+%s")
-time22=$((now-start))
-echo "#22 chronos-stock-prediction time used:$time22 seconds"
+time23=$((now-start))
+echo "#23 chronos-stock-prediction time used:$time23 seconds"
 
-echo "#23 start app test for chronos-network-traffic-multivarite-multistep-tcnforecaster"
+echo "#24 start app test for chronos-network-traffic-multivarite-multistep-tcnforecaster"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster
@@ -856,8 +892,8 @@ then
 fi
 
 now=$(date "+%s")
-time23=$((now-start))
-echo "#23 chronos-network-traffic-multivarite-multistep-tcnforecaster time used:$time23 seconds"
+time24=$((now-start))
+echo "#24 chronos-network-traffic-multivarite-multistep-tcnforecaster time used:$time24 seconds"
 
 
 fi
