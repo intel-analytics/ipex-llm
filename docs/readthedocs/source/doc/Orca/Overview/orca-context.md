@@ -62,9 +62,11 @@ Users can make extra configurations when using the functionalities of Project Or
 
 * `OrcaContext.serialize_data_creator`: Default to be False. `OrcaContext.serialize_data_creator = True` would add a file lock when initializing data for distributed training (this may be useful if you run multiple workers on a single node and they download data to the same destination).
 
-* `OrcaContext.pandas_read_backend`: Setting it to the backend to be used for reading data as Panda DataFrame. See [here](./data-parallel-processing.html#data-parallel-pandas) for more details.
+* `OrcaContext.pandas_read_backend`: The backend to be used for reading data as Panda DataFrame. Default to be "spark". See [here](./data-parallel-processing.html#data-parallel-pandas) for more details.
 
-* `OrcaContext.train_data_store`: Default to "DRAM"; `OrcaContext.train_data_store = "DISK_n"` (e.g., "DISK_2") if the training data cannot fit in memory (this will store the data on disk, and cache only 1/n of the data in memory; after going through the 1/n, it will release the current cache, and load another 1/n into memory). Currently it works for TensorFlow and Keras Estimators only.
+* `OrcaContext.train_data_store`: Default to be "DRAM". `OrcaContext.train_data_store = "DISK_n"` (e.g., "DISK_2") if the training data cannot fit in memory (this will store the data on disk, and cache only 1/n of the data in memory; after going through the 1/n, it will release the current cache, and load another 1/n into memory). Currently it works for TensorFlow and Keras Estimators only.
+
+* `OrcaContext.barrier_mode`: Whether to use Spark barrier execution mode to launch Ray. Default to be True. You can set it to be False if you are using Spark below 2.4 or you need to have dynamic allocation enabled.
 
 ---
 

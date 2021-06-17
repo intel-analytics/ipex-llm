@@ -117,7 +117,6 @@ pandas==1.0.3
 Pillow==7.1.1
 protobuf==3.11.4
 psutil==5.7.0
-pyarrow==0.17.0
 py4j==0.10.7
 redis==3.4.1
 scikit-learn==0.22.2.post1

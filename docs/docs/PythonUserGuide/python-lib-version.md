@@ -18,7 +18,6 @@ pandas==1.0.3
 Pillow==7.1.1
 protobuf==3.11.4
 psutil==5.7.0
-pyarrow==0.17.0
 py4j==0.10.7
 pyspark==2.4.3
 ray==1.2.0

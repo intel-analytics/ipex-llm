@@ -10,7 +10,7 @@ _**Note:** Analytics Zoo has been tested on Ray 1.2.0 and you are highly recomme
 ### **1. Install**
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment. 
-When installing analytics-zoo with pip, you can specify the extras key `[ray]` to additionally install the additional dependencies essential for running Ray (i.e. `ray==1.2.0`, `psutil`, `aiohttp`, `setproctitle`, `pyarrow==0.17.0`):
+When installing analytics-zoo with pip, you can specify the extras key `[ray]` to additionally install the additional dependencies essential for running Ray (i.e. `ray==1.2.0`, `psutil`, `aiohttp`, `setproctitle`):
 
 ```bash
 conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
@@ -30,6 +30,14 @@ We recommend using `init_orca_context` to initiate and run Analytics Zoo on the 
 from zoo.orca import init_orca_context
 
 sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True)
+```
+
+By default, the Ray cluster would be launched using Spark barrier execution mode, you can turn it off via the configurations of `OrcaContext`:
+
+```python
+from zoo.orca import OrcaContext
+
+OrcaContext.barrier_mode = False
 ```
 
 View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
