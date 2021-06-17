@@ -274,11 +274,9 @@ class TestTSDataset(ZooTestCase):
                                                 extra_feature_col=["extra feature"], id_col="id")
             tsdata.gen_dt_feature()\
                   .scale(scaler)\
-                  .gen_rolling_feature(settings="minimal", window_size=5)\
                   .roll(lookback=5, horizon=4, id_sensitive=True)
             tsdata_test.gen_dt_feature()\
                        .scale(scaler, fit=False)\
-                       .gen_rolling_feature(settings="minimal", window_size=5)\
                        .roll(lookback=5, horizon=4, id_sensitive=True)
 
             _, _ = tsdata.to_numpy()
