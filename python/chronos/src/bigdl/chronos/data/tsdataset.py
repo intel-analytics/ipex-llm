@@ -77,17 +77,19 @@ class TSDataset:
                     largest_look_back=0,
                     largest_horizon=1):
         '''
-        Initialize a tsdataset(s) from pandas dataframe.
+        Initialize tsdataset(s) from pandas dataframe.
 
         :param df: a pandas dataframe for your raw time series data.
         :param dt_col: a str indicates the col name of datetime
                column in the input data frame.
         :param target_col: a str or list indicates the col name of target column
                in the input data frame.
-        :param id_col: (optional) a str indicates the col name of dataframe id.
+        :param id_col: (optional) a str indicates the col name of dataframe id. If
+               it is not explicitly stated, then the data is interpreted as only
+               containing a single id.
         :param extra_feature_col: (optional) a str or list indicates the col name
                of extra feature columns that needs to predict the target column.
-        :param with_split: (optional) bool, state if we need to split the dataframe
+        :param with_split: (optional) bool, states if we need to split the dataframe
                to train, validation and test set. The value defaults to False.
         :param val_ratio: (optional) float, validation ratio. Only effective when
                with_split is set to True. The value defaults to 0.
@@ -102,17 +104,14 @@ class TSDataset:
         :return: a TSDataset instance when with_split is set to False,
                  three TSDataset instances when with_split is set to True.
 
-
-        Here is a df example:
-
-        id        datetime      value   "extra feature 1"   "extra feature 2"
-        00        2019-01-01    1.9     1                   2
-        01        2019-01-01    2.3     0                   9
-        00        2019-01-02    2.4     3                   4
-        01        2019-01-02    2.6     0                   2
-
         Create a tsdataset instance by:
 
+        >>> # Here is a df example:
+        >>> # id        datetime      value   "extra feature 1"   "extra feature 2"
+        >>> # 00        2019-01-01    1.9     1                   2
+        >>> # 01        2019-01-01    2.3     0                   9
+        >>> # 00        2019-01-02    2.4     3                   4
+        >>> # 01        2019-01-02    2.6     0                   2
         >>> tsdataset = TSDataset.from_pandas(df, dt_col="datetime",
         >>>                                   target_col="value", id_col="id",
         >>>                                   extra_feature_col=["extra feature 1",
@@ -151,20 +150,20 @@ class TSDataset:
     def impute(self, mode="last", const_num=0):
         '''
         Impute the tsdataset by imputing each univariate time series
-        distinguished by id_col and feature_col
+        distinguished by id_col and feature_col.
 
         :param mode: imputation mode, select from "last", "const" or "linear".
-               "last": impute by propagating the last non N/A number to its following N/A.
-                       if there is no non N/A number ahead, 0 is filled instead.
-               "const": impute by a const value input by user.
-               "linear": impute by linear interpolation.
-        :param const_num:  indicate the const number to fill, which only effective when mode
-               is set to "const".
+
+            "last": impute by propagating the last non N/A number to its following N/A.
+            if there is no non N/A number ahead, 0 is filled instead.
+
+            "const": impute by a const value input by user.
+
+            "linear": impute by linear interpolation.
+        :param const_num:  indicates the const number to fill, which is only effective when mode
+            is set to "const".
 
         :return: the tsdataset instance.
-
-        Note: It is preferred that `impute` is called after `resample` while before
-              `roll` if needed.
         '''
         df_list = [impute_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
                                                dt_col=self.dt_col,
@@ -176,12 +175,10 @@ class TSDataset:
 
     def deduplicate(self):
         '''
-        Remove those duplicated rows which has exactly the same values in each feature_col for
-        each multivariate timeseries distinguished by id_col
+        Remove those duplicated records which has exactly the same values in each feature_col
+        for each multivariate timeseries distinguished by id_col.
 
         :return: the tsdataset instance.
-
-        Note: It is preferred that `deduplicate` is called before all other operations if needed.
         '''
         df_list = [deduplicate_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
                                                     dt_col=self.dt_col)
@@ -191,7 +188,7 @@ class TSDataset:
 
     def resample(self, interval, start_time, end_time, merge_mode="mean"):
         '''
-        resample on an new interval for each univariate time series distinguished
+        Resample on a new interval for each univariate time series distinguished
         by id_col and feature_col.
 
         :param interval: pandas offset aliases, indicating time interval of the output dataframe.
@@ -200,9 +197,8 @@ class TSDataset:
         :param merge_mode: if current interval is smaller than output interval,
             we need to merge the values in a mode. "max", "min", "mean"
             or "sum" are supported for now.
-        :return: the tsdataset instance.
 
-        Note: It if preferred to call `impute` right after `resample`.
+        :return: the tsdataset instance.
         '''
         df_list = []
         for id_name in self._id_list:
@@ -220,13 +216,22 @@ class TSDataset:
 
     def gen_dt_feature(self):
         '''
-        Generate datetime feature for each row. Currently we generate following features:
-        "MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY", "WEEKOFYEAR", "MONTH", "IS_AWAKE",
-        "IS_BUSY_HOURS", "IS_WEEKEND"
+        | Generate datetime feature for each row. Currently we generate following features:
+        | "MINUTE": The minute of the time stamp.
+        | "DAY": The day of the time stamp.
+        | "DAYOFYEAR": The ordinal day of the year of the time stamp.
+        | "HOUR": The hour of the time stamp.
+        | "WEEKDAY": The day of the week of the time stamp, Monday=0, Sunday=6.
+        | "WEEKOFYEAR": The ordinal week of the year of the time stamp.
+        | "MONTH": The month of the time stamp.
+        | "IS_AWAKE": Bool value indicating whether it belongs to awake hours for the time stamp,
+        | True for hours between 6A.M. and 1A.M.
+        | "IS_BUSY_HOURS": Bool value indicating whether it belongs to busy hours for the time
+        | stamp, True for hours between 7A.M. and 10A.M. and hours between 4P.M. and 8P.M.
+        | "IS_WEEKEND": Bool value indicating whether it belongs to weekends for the time stamp,
+        | True for Saturdays and Sundays.
 
         :return: the tsdataset instance.
-
-        Note: it should be called before scale if needed.
         '''
         df_list = [generate_dt_features(input_df=self.df[self.df[self.id_col] == id_name],
                                         dt_col=self.dt_col)
@@ -248,7 +253,7 @@ class TSDataset:
         TODO: relationship with scale should be figured out.
 
         :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
-               "minimal" and "efficient". If a dict is set then it should follow the instruction
+               "minimal" and "efficient". If a dict is set, then it should follow the instruction
                for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
         :param full_settings: dict. It should follow the instruction for kind_to_fc_parameters in
                tsfresh. The value is defaulted to None.
@@ -297,7 +302,7 @@ class TSDataset:
 
         :param window_size: int, generate feature according to the rolling result.
         :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
-               "minimal" and "efficient". If a dict is set then it should follow the instruction
+               "minimal" and "efficient". If a dict is set, then it should follow the instruction
                for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
         :param full_settings: dict. It should follow the instruction for kind_to_fc_parameters in
                tsfresh. The value is defaulted to None.
@@ -343,36 +348,59 @@ class TSDataset:
         '''
         Sampling by rolling for machine learning/deep learning models.
 
-        :param lookback: int, lookback value
+        :param lookback: int, lookback value.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
-               if `horizon` is an list, we will sample discretely according
+               if `horizon` is a list, we will sample discretely according
                to the input list.
                specially, when `horizon` is set to 0, ground truth will be generated as None.
-        :param feature_col: str or list, indicate the feature col name. Default to None,
-               where we will take all avaliable feature in rolling.
-        :param target_col: str or list, indicate the target col name. Default to None,
+        :param feature_col: str or list, indicates the feature col name. Default to None,
+               where we will take all available feature in rolling.
+        :param target_col: str or list, indicates the target col name. Default to None,
                where we will take all target in rolling. it should be a subset of target_col
-               you used to initialized the tsdataset.
+               you used to initialize the tsdataset.
         :param id_sensitive: bool,
                if `id_sensitive` is False, we will rolling on each id's sub dataframe
                and fuse the sampings.
                The shape of rolling will be
-               x: (num_sample, lookback, num_feature_col)
+               x: (num_sample, lookback, num_feature_col + num_target_col)
                y: (num_sample, horizon, num_target_col)
                where num_sample is the summation of sample number of each dataframe
 
                if `id_sensitive` is True, we will rolling on the wide dataframe whose
                columns are cartesian product of id_col and feature_col
                The shape of rolling will be
-               x: (num_sample, lookback, num_feature_col)
-               y: (num_sample, horizon, num_target_col)
+               x: (num_sample, lookback, new_num_feature_col + new_num_target_col)
+               y: (num_sample, horizon, new_num_target_col)
                where num_sample is the sample number of the wide dataframe,
-               num_feature_col is the product of the number of id and the number of feature_col,
-               num_target_col is the product of the number of id and the number of target_col.
+               new_num_feature_col is the product of the number of id and the number of feature_col.
+               new_num_target_col is the product of the number of id and the number of target_col.
 
         :return: the tsdataset instance.
+
+        roll() can be called by:
+
+        >>> # Here is a df example:
+        >>> # id        datetime      value   "extra feature 1"   "extra feature 2"
+        >>> # 00        2019-01-01    1.9     1                   2
+        >>> # 01        2019-01-01    2.3     0                   9
+        >>> # 00        2019-01-02    2.4     3                   4
+        >>> # 01        2019-01-02    2.6     0                   2
+        >>> tsdataset = TSDataset.from_pandas(df, dt_col="datetime",
+        >>>                                   target_col="value", id_col="id",
+        >>>                                   extra_feature_col=["extra feature 1",
+        >>>                                                      "extra feature 2"])
+        >>> horizon, lookback = 1, 1
+        >>> tsdataset.roll(lookback=lookback, horizon=horizon, id_sensitive=False)
+        >>> x, y = tsdataset.to_numpy()
+        >>> print(x, y) # x = [[[1.9, 1, 2 ]], [[2.3, 0, 9 ]]] y = [[[ 2.4 ]], [[ 2.6 ]]]
+        >>> print(x.shape, y.shape) # x.shape = (2, 1, 3) y.shape = (2, 1, 1)
+        >>> tsdataset.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
+        >>> x, y = tsdataset.to_numpy()
+        >>> print(x, y) # x = [[[ 1.9, 2.3, 1, 2, 0, 9 ]]] y = [[[ 2.4, 2.6]]]
+        >>> print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)
+
         '''
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
@@ -431,9 +459,9 @@ class TSDataset:
 
     def to_numpy(self):
         '''
-        export rolling result in form of a tuple of numpy ndarray (x, y)
+        Export rolling result in form of a tuple of numpy ndarray (x, y).
 
-        :return: a 2-dim tuple. each item is a 3d numpy ndarray
+        :return: a 2-dim tuple. each item is a 3d numpy ndarray.
         '''
         if self.numpy_x is None:
             raise RuntimeError("Please call \"roll\" method\
@@ -442,7 +470,7 @@ class TSDataset:
 
     def to_pandas(self):
         '''
-        export the pandas dataframe
+        Export the pandas dataframe.
 
         :return: the internal dataframe.
         '''
@@ -450,14 +478,24 @@ class TSDataset:
 
     def scale(self, scaler, fit=True):
         '''
-        scale the time series dataset's feature column and target column.
+        Scale the time series dataset's feature column and target column.
 
         :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,
                MinMaxScaler and RobustScaler are supported.
         :param fit: if we need to fit the scaler. Typically, the value should
                be set to True for training set, while False for validation and
                test set. The value is defaulted to True.
+
         :return: the tsdataset instance.
+
+        Assume there is a training set tsdata and a test set tsdata_test.
+        scale() should be called first on training set with default value fit=True,
+        then be called on test set with the same scaler and fit=False.
+
+        >>> from sklearn.preprocessing import StandardScaler
+        >>> scaler = StandardScaler()
+        >>> tsdata.scale(scaler, fit=True)
+        >>> tsdata_test.scale(scaler, fit=False)
         '''
         feature_col = self.feature_col
         if self.roll_addional_feature:
@@ -476,7 +514,7 @@ class TSDataset:
 
     def unscale(self):
         '''
-        unscale the time series dataset's feature column and target column.
+        Unscale the time series dataset's feature column and target column.
 
         :return: the tsdataset instance.
         '''
@@ -492,10 +530,12 @@ class TSDataset:
 
     def _unscale_numpy(self, data):
         '''
-        unscale the time series forecastor's numpy prediction result/ground truth.
+        Unscale the time series forecaster's numpy prediction result/ground truth.
+
         :param data: a numpy ndarray with 3 dim whose shape should be exactly the
                same with self.numpy_y.
-        :return: the unscaled numpy ndarray
+
+        :return: the unscaled numpy ndarray.
         '''
         num_roll_target = len(self.roll_target)
         repeat_factor = len(self._id_list) if self.id_sensitive else 1
@@ -508,7 +548,7 @@ class TSDataset:
         This function contains a bunch of assertions to make sure strict rules(the invariants)
         for the internal dataframe(self.df) must stands. If not, clear and user-friendly error
         or warning message should be provided to the users.
-        This function will be called after each method(e.g. impute, deduplicate ...)
+        This function will be called after each method(e.g. impute, deduplicate ...).
         '''
         # check type
         _check_type(self.df, "df", pd.DataFrame)
