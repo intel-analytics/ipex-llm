@@ -667,6 +667,17 @@ fi
 now=$(date "+%s")
 time20=$((now - start))
 
+echo "#21 start test for XGBoostRegressor"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+  --master ${MASTER} \
+  --driver-memory 3g \
+  --executor-memory 3g \
+  ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/xgboost/xgboost_example.py -d
+now=$(date "+%s")
+time21=$((now - start))
+
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
 echo "#3 image-classification time used: $time3 seconds"
@@ -687,3 +698,4 @@ echo "#17 orca tf transfer_learning time used:$time17 seconds"
 echo "#18 orca tf basic_text_classification time used:$time18 seconds"
 echo "#19 orca bigdl attention time used:$time19 seconds"
 echo "#20 orca bigdl imageInference time used:$time20 seconds"
+echo "#21 xgboost regressor time used:$time21 seconds"
