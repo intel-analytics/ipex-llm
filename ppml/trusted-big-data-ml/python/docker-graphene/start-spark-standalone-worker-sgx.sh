@@ -26,6 +26,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     -Dspark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
     -Dspark.ssl.trustStorePassword=$secure_password \
     -Dspark.ssl.trustStoreType=JKS \
+    -Dspark.worker.timeout=6000 \
     -Xmx2g \
     org.apache.spark.deploy.worker.Worker \
     --port $worker_port \
