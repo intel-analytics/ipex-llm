@@ -253,6 +253,52 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     model.transform(dataset)
   }
 
+  def getXGBRegressor(): XGBRegressor = {
+    val model = new XGBRegressor()
+    model
+  }
+
+  def setXGBRegressorNthread(model: XGBRegressor, value: Int): Unit = {
+    model.setNthread(value)
+  }
+
+  def setXGBRegressorNumRound(model: XGBRegressor, value: Int): Unit = {
+    model.setNumRound(value)
+  }
+
+  def setXGBRegressorNumWorkers(model: XGBRegressor, value: Int): Unit = {
+    model.setNumWorkers(value)
+  }
+
+  def fitXGBRegressor(model: XGBRegressor, df : DataFrame): XGBRegressorModel = {
+    model.fit(df)
+  }
+
+  def loadXGBRegressorModel(path: String) : XGBRegressorModel = {
+    XGBRegressorModel.load(path)
+  }
+
+  def setPredictionXGBRegressorModel(model: XGBRegressorModel, prediction : String): Unit = {
+    model.setPredictionCol(prediction)
+  }
+
+  def setInferBatchSizeXGBRegressorModel(model: XGBRegressorModel, value : Int): Unit = {
+    model.setInferBatchSize(value)
+  }
+
+  def setFeaturesXGBRegressorModel(model: XGBRegressorModel, features: String): Unit = {
+    model.setFeaturesCol(features)
+  }
+
+  def transformXGBRegressorModel(model: XGBRegressorModel,
+                                 dataset: DataFrame): DataFrame = {
+    model.transform(dataset)
+  }
+
+  def saveXGBRegressorModel(model: XGBRegressorModel, path: String): Unit = {
+    model.save(path)
+  }
+
   def internalEval(estimator: NNEstimator[T],
                    dataFrame: DataFrame): JList[EvaluatedResult] = {
     estimator.internalEval(dataFrame)
