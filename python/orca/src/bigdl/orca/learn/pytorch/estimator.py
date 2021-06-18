@@ -263,7 +263,6 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                  bigdl_type="float"):
         from zoo.pipeline.api.torch import TorchModel, TorchLoss, TorchOptim
         self.loss = loss
-        self.model = model
         self.optimizer = optimizer
         self.config = {} if config is None else config
 
@@ -271,10 +270,10 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             self.loss = TorchLoss()
         else:
             self.loss = TorchLoss.from_pytorch(loss)
-        if isinstance(self.model, types.FunctionType):
-            self.model = self.model(self.config)
-        if isinstance(self.optimizer, types.FunctionType):
-            self.optimizer = self.optimizer(self.model, self.config)
+        if isinstance(model, types.FunctionType):
+            def model_creator(self):
+                return model(self.config)
+            model = model_creator(self)
         if self.optimizer is None:
             from zoo.orca.learn.optimizers.schedule import Default
             self.optimizer = SGD(learningrate_schedule=Default()).get_optimizer()
@@ -289,7 +288,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         self.log_dir = None
         self.app_name = None
         self.model_dir = model_dir
-        self.model = TorchModel.from_pytorch(self.model)
+        self.model = TorchModel.from_pytorch(model)
         self.estimator = SparkEstimator(self.model, self.optimizer, model_dir,
                                         bigdl_type=bigdl_type)
 
