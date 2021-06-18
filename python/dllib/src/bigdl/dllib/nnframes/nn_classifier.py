@@ -712,3 +712,51 @@ class XGBClassifierModel:
         """
         jvalue = callZooFunc("float", "loadXGBClassifierModel", path, numClasses)
         return XGBClassifierModel(jvalue=jvalue)
+
+
+class XGBRegressor():
+    def __init__(self):
+        super(XGBRegressor, self).__init__()
+        bigdl_type = "float"
+        self.value = callZooFunc("float", "getXGBRegressor")
+
+    def setNthread(self, value: int):
+        callZooFunc("float", "setXGBRegressorNthread", self.value, value)
+
+    def setNumRound(self, value: int):
+        callZooFunc("float", "setXGBRegressorNumRound", self.value, value)
+
+    def setNumWorkers(self, value: int):
+        callZooFunc("float", "setXGBRegressorNumWorkers", self.value, value)
+
+    def fit(self, df):
+        return callZooFunc("float", "fitXGBRegressor", self.value, df)
+
+
+class XGBRegressorModel:
+    def __init__(self, jvalue):
+        super(XGBRegressorModel, self).__init__()
+        assert jvalue is not None
+        self.value = jvalue
+
+    def setFeaturesCol(self, features):
+        callZooFunc("float", "setFeaturesXGBRegressorModel", self.value, features)
+
+    def setPredictionCol(self, prediction):
+        callZooFunc("float", "setPredictionXGBRegressorModel", self.value, prediction)
+
+    def setInferBatchSize(self, value: int):
+        callZooFunc("float", "setInferBatchSizeXGBRegressorModel", self.value, value)
+
+    def transform(self, dataset):
+        df = callZooFunc("float", "transformXGBRegressorModel", self.value, dataset)
+        return df
+
+    def save(self, path):
+        print("start saving in python side")
+        callZooFunc("float", "saveXGBRegressorModel", self.value, path)
+
+    @staticmethod
+    def load(path):
+        jvalue = callZooFunc("float", "loadXGBRegressorModel", path)
+        return XGBRegressorModel(jvalue=jvalue)
