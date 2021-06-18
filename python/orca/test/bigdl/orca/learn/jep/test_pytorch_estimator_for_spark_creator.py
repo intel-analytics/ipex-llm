@@ -47,10 +47,10 @@ class TestEstimatorForSparkCreator(TestCase):
 
     def test_bigdl_pytorch_estimator_dataloader_creator(self):
         class SimpleModel(nn.Module):
-            def __init__(self):
+            def __init__(self, momentum):
                 super(SimpleModel, self).__init__()
                 self.dense1 = nn.Linear(2, 4)
-                self.bn1 = torch.nn.BatchNorm1d(4)
+                self.bn1 = torch.nn.BatchNorm1d(4, momentum=momentum)
                 self.dense2 = nn.Linear(4, 1)
 
             def forward(self, x):
@@ -60,16 +60,13 @@ class TestEstimatorForSparkCreator(TestCase):
                 return x
 
         def model_creator(config):
-            model = SimpleModel()
+            model = SimpleModel(momentum=config.get("momentum", 0.1))
             return model
-
-        def optim_creator(model, config):
-            return optim.Adam(model.parameters(), lr=config.get("lr", 0.01))
 
         estimator = Estimator.from_torch(model=model_creator, loss=nn.BCELoss(),
                                          metrics=[Accuracy()],
-                                         optimizer=optim_creator,
-                                         config={"lr": 0.001})
+                                         optimizer=Adam(),
+                                         config={"momentum": 0.9})
 
         def get_dataloader(config, batch_size):
             inputs = torch.Tensor([[1, 2], [1, 3], [3, 2], [5, 6], [8, 9], [1, 9]])
