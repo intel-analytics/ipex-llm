@@ -396,7 +396,7 @@ def read_as_dataloader(path, config=None, transforms=None, batch_size=1, *args, 
                                        batch_size=batch_size, worker_init_fn=worker_init_fn)
 
 
-def read_parquet(format, input_path, transforms=None, config=None, batch_size=1, *args, **kwargs):
+def read_parquet(format, path, transforms=None, config=None, batch_size=1, *args, **kwargs):
     supported_format = {"tf_dataset", "dataloader"}
     if format not in supported_format:
         raise ValueError(
@@ -406,5 +406,5 @@ def read_parquet(format, input_path, transforms=None, config=None, batch_size=1,
                           "dataloader": (read_as_dataloader, [])}
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
-    return func(path=input_path, config=config or {},
+    return func(path=path, config=config or {},
                 transforms=transforms, batch_size=batch_size, *args, **kwargs)

@@ -79,11 +79,11 @@ class TestReadParquet(TestCase):
                                  images_schema, block_size=4)
             path = "file://" + temp_dir
             output_types = {"id": tf.string, "image": tf.string, "label": tf.float32}
-            dataset = read_parquet("tf_dataset", input_path=path, output_types=output_types)
+            dataset = read_parquet("tf_dataset", path=path, output_types=output_types)
             for dt in dataset.take(1):
                 print(dt.keys())
 
-            dataloader = read_parquet("dataloader", input_path=path)
+            dataloader = read_parquet("dataloader", path=path)
             cur_dl = iter(dataloader)
             while True:
                 try:
@@ -104,7 +104,7 @@ class TestReadParquet(TestCase):
             output_shapes = {"id": (), "image": (), "label": ()}
 
             def data_creator(config, batch_size):
-                dataset = read_parquet("tf_dataset", input_path=path,
+                dataset = read_parquet("tf_dataset", path=path,
                                        output_types=output_types, output_shapes=output_shapes)
                 dataset = dataset.shuffle(10)
                 dataset = dataset.map(lambda data_dict:
