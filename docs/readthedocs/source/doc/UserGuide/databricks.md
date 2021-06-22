@@ -3,11 +3,10 @@
 ---
 
 You can run Analytics Zoo program on the [Databricks](https://databricks.com/) cluster as follows.
-
 ### **1. Create a Databricks Cluster**
 
 - Create either [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html) workspace or [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace. 
-- Create a Databricks [clusters](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 5.5 LTS (includes Apache Spark 2.4.3, Scala 2.11).
+- Create a Databricks [clusters](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 7.5 (includes Apache Spark 3.0.1, Scala 2.12).
 
 ### **2. Installing Analytics Zoo libraries**
 
@@ -15,15 +14,15 @@ In the left pane, click **Clusters** and select your cluster.
 
 ![](images/Databricks1.PNG)
 
-Install Analytics Zoo python environment using PyPI. Click **Libraries > Install New > PyPI**. Install official released version by texting "analytics-zoo" library. Or install latest [nightly build](https://pypi.org/project/analytics-zoo/#history) of Analytics Zoo with the specified version.
+Install Analytics Zoo python environment using prebuilt release Wheel package. Click **Libraries > Install New > Upload > Python Whl**. Download Analytics Zoo prebuilt Wheel [here](https://sourceforge.net/projects/analytics-zoo/files/zoo-py). Choose a wheel with timestamp for the same Spark version and platform as Databricks runtime. Download and drop it on Databricks.
 
 ![](images/Databricks2.PNG)
 
-Install Analytics Zoo prebuilt jar package. Click **Libraries > Install New > Upload > Jar**. Download Analytics Zoo prebuilt package from [Release Page](../release.md). Please note that you should choose the same spark version of package as your Databricks runtime version. Unzip it. Find jar named "analytics-zoo-bigdl_*-spark_*-jar-with-dependencies.jar" in the lib directory. Drop the jar on Databricks.
+Install Analytics Zoo prebuilt jar package. Click **Libraries > Install New > Upload > Jar**. Download Analytics Zoo prebuilt package from [Release Page](../release.md). Please note that you should choose the same spark version of package as your Databricks runtime version. Find jar named "analytics-zoo-bigdl_*-spark_*-jar-with-dependencies.jar" in the lib directory. Drop the jar on Databricks.
 
 ![](images/Databricks3.PNG)
 
-Make sure the jar file and analytics-zoo (with PyPI) are installed on all clusters. In **Libraries** tab of your cluster, check installed libraries and click “Install automatically on all clusters” option in **Admin Settings**.
+Make sure the jar file and analytics-zoo (whl) are installed on all clusters. In **Libraries** tab of your cluster, check installed libraries and click “Install automatically on all clusters” option in **Admin Settings**.
 
 ![](images/Databricks4.PNG)
 
@@ -33,14 +32,14 @@ On the cluster configuration page, click the **Advanced Options** toggle. Click 
 
 ![](images/Databricks5.PNG)
 
-See below for an example of Spark config setting needed by Analytics Zoo. Here it sets 1 core per executor. Note that "spark.cores.max" needs to be properly set below.
+See below for an example of Spark config setting needed by Analytics Zoo. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
 
 ```
 spark.shuffle.reduceLocality.enabled false
 spark.serializer org.apache.spark.serializer.JavaSerializer
 spark.shuffle.blockTransferService nio
 spark.databricks.delta.preview.enabled true
-spark.executor.cores 1
+spark.executor.cores 2
 spark.speculation false
 spark.scheduler.minRegisteredResourcesRatio 1.0
 spark.cores.max 4
@@ -48,11 +47,11 @@ spark.cores.max 4
 
 ### **4. Running Analytics Zoo on Databricks**
 
-Open a new notebook, and call `init_orca_context` at the beginning of your code (with `cluster_mode` set to "standalone").
+Open a new notebook, and call `init_orca_context` at the beginning of your code (with `cluster_mode` set to "spark-submit").
 
 ```python
 from zoo.orca import init_orca_context, stop_orca_context
-init_orca_context(cluster_mode="standalone", num_executors=2)
+init_orca_context(cluster_mode="spark-submit")
 ```
 
 Output on Databricks:
