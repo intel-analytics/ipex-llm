@@ -236,7 +236,7 @@ Run the example with SGX and standalone mode with the following command in the t
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'spark://192.168.0.111:7077' \
+	--master 'spark://your_master_url' \
 	--conf spark.authenticate=true \
   --conf spark.authenticate.secret=your_secret_key \
 	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/pi.py" | tee test-pi-sgx.log
@@ -263,7 +263,7 @@ Run the example with SGX and standalone mode with the following command in the t
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'spark://192.168.0.111:7077' \
+	--master 'spark://your_master_url' \
 	--conf spark.authenticate=true \
   --conf spark.authenticate.secret=your_secret_key \
 	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" | tee test-wordcount-sgx.log
@@ -292,7 +292,7 @@ Run the example with SGX and standalone mode with the following command in the t
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'spark://192.168.0.111:7077' \
+	--master 'spark://your_master_url' \
 	--conf spark.authenticate=true \
   --conf spark.authenticate.secret=your_secret_key \
 	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/sql/basic.py" | tee test-sql-basic-sgx.log
@@ -334,7 +334,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
   -Xmx8g \
   org.apache.spark.deploy.SparkSubmit \
-  --master 'spark://192.168.0.111:7077' \
+  --master 'spark://your_master_url' \
   --conf spark.authenticate=true \
   --conf spark.authenticate.secret=your_secret_key \
   --conf spark.driver.memory=8g \
@@ -367,4 +367,77 @@ The result should be similar to
 >2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)
 >
 >2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
+
+
+
+##### Example5: Xgboost
+
+Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace the value of ``spark.authenticate.secret`` with your own secret key and `RABIT_TRACKER_IP` with your IP address.
+
+```bash
+SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+    '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+  -Xmx2g \
+  org.apache.spark.deploy.SparkSubmit \
+  --master 'spark://your_master_url' \
+  --conf spark.authenticate=true \
+  --conf spark.authenticate.secret=your_secret_key \
+  --conf spark.driver.memory=2g \
+  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
+  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
+  --executor-memory 2g \
+  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
+  --file-path /ppml/trusted-big-data-ml/work/data/Boston_Housing.csv" | tee test-zoo-xgboost-sgx.log
+```
+
+Then check the output with the following command.
+
+```bash
+cat test-zoo-xgboost-sgx.log | egrep "prediction" -A19
+```
+
+The result should be similar to
+
+>|      features|label|    prediction|
+>
+>+--------------------+-----+------------------+
+>
+>|[41.5292,0.0,18.1...| 8.5| 8.51994514465332|
+>
+>|[67.9208,0.0,18.1...| 5.0| 5.720333099365234|
+>
+>|[20.7162,0.0,18.1...| 11.9|10.601168632507324|
+>
+>|[11.9511,0.0,18.1...| 27.9| 26.19390106201172|
+>
+>|[7.40389,0.0,18.1...| 17.2|16.112293243408203|
+>
+>|[14.4383,0.0,18.1...| 27.5|25.952226638793945|
+>
+>|[51.1358,0.0,18.1...| 15.0| 14.67484188079834|
+>
+>|[14.0507,0.0,18.1...| 17.2|16.112293243408203|
+>
+>|[18.811,0.0,18.1,...| 17.9| 17.42863655090332|
+>
+>|[28.6558,0.0,18.1...| 16.3| 16.0191593170166|
+>
+>|[45.7461,0.0,18.1...| 7.0| 5.300708770751953|
+>
+>|[18.0846,0.0,18.1...| 7.2| 6.346951007843018|
+>
+>|[10.8342,0.0,18.1...| 7.5| 6.571983814239502|
+>
+>|[25.9406,0.0,18.1...| 10.4|10.235769271850586|
+>
+>|[73.5341,0.0,18.1...| 8.8| 8.460335731506348|
+>
+>|[11.8123,0.0,18.1...| 8.4| 9.193297386169434|
+>
+>|[11.0874,0.0,18.1...| 16.7|16.174896240234375|
+>
+>|[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
