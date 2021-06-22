@@ -166,7 +166,7 @@ class DistriOptimizerSpec2 extends SparkContextLifeCycle with Matchers {
     RandomGenerator.RNG.setSeed(10)
     val model = dnn
     val count = DnnStorage.get().count(!_._2)
-    val optimizer = new DistriOptimizer(
+    val optimizer = Optimizer(
       model,
       dataSet,
       new CrossEntropyCriterion[Float]()).setEndWhen(Trigger.severalIteration(1))
