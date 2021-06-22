@@ -225,10 +225,10 @@ object Engine {
 
   /**
    * Notice: Please use property bigdl.optimizerVersion to set optimizerVersion.
-   * Default version is OptimizerV1
+   * Default version is OptimizerV2
    */
   private var optimizerVersion: OptimizerVersion = {
-    System.getProperty("bigdl.optimizerVersion", "optimizerv1").toLowerCase(Locale.ROOT) match {
+    System.getProperty("bigdl.optimizerVersion", "optimizerv2").toLowerCase(Locale.ROOT) match {
       case "optimizerv1" => OptimizerV1
       case "optimizerv2" => OptimizerV2
       case optimizerVersion => throw new IllegalArgumentException(s"Unknown type $optimizerVersion")
