@@ -65,7 +65,7 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="32")
     parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="2")
-    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV2")
     (options, args) = parser.parse_args(sys.argv)
 
     keras_model = build_keras_model()
