@@ -56,7 +56,7 @@ class ParallelOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val dataSet = DataSet.array(Array(miniBatch), sc)
 
-    val optimizer = new DistriOptimizer[Float](model, dataSet, new ClassNLLCriterion[Float]())
+    val optimizer = Optimizer(model, dataSet, new ClassNLLCriterion[Float]())
       .setState(T("learningRate" -> 1.0))
       .setEndWhen(Trigger.maxIteration(10))
 
@@ -64,7 +64,7 @@ class ParallelOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   }
 
-  "Train with parallel" should "have same results as DistriOptimizer" in {
+  "Train with parallel" should "have same results as DistriOptimizerV2" in {
 
     val input = Tensor[Float](1, 10).fill(1.0f)
     val target = Tensor[Float](1).fill(1.0f)
@@ -77,14 +77,14 @@ class ParallelOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val dataSet = DataSet.array(Array(miniBatch), sc)
 
-    val parallelOptimizer = new DistriOptimizer[Float](model1,
+    val parallelOptimizer = Optimizer(model1,
       dataSet, new ClassNLLCriterion[Float]())
       .setState(T("learningRate" -> 1.0))
       .setEndWhen(Trigger.maxIteration(10))
 
     parallelOptimizer.optimize
 
-    val distriOptimizer = new DistriOptimizer[Float](model2,
+    val distriOptimizer = Optimizer(model2,
       dataSet, new ClassNLLCriterion[Float]())
       .setState(T("learningRate" -> 1.0))
       .setEndWhen(Trigger.maxIteration(10))
