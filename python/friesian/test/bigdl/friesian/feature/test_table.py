@@ -20,8 +20,9 @@ import tempfile
 from unittest import TestCase
 
 from pyspark.sql.functions import col, max, min, array
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, \
+    DoubleType
 import pyspark.sql.functions as F
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType
 
 from zoo.orca import OrcaContext
 from zoo.friesian.feature import FeatureTable, StringIndex
@@ -524,6 +525,56 @@ class TestTable(TestCase):
             "the first row of name should be 1"
         assert tbl.df.where(tbl.df.height == 10).select("num").collect()[0]["num"] == 2, \
             "the third row of num should be 2"
+
+    def test_columns(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        col_names = feature_tbl.columns
+        assert isinstance(col_names, list), "col_names should be a list of strings"
+        assert col_names == ["col_1", "col_2", "col_3", "col_4", "col_5"], \
+            "column names are incorrenct"
+
+    def test_add(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", "123", 14, 8.5),
+                ("alice", "34", 25, 9.6),
+                ("rose", "25344", 23, 10.0)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True),
+                             StructField("height", DoubleType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        columns = ["age", "height"]
+        new_tbl = tbl.add(columns, 1.5)
+        new_list = new_tbl.df.take(3)
+        assert len(new_list) == 3, "new_tbl should have 3 rows"
+        assert new_list[0]['age'] == 15.5, "the age of jack should increase 1.5"
+        assert new_list[0]['height'] == 10, "the height of jack should increase 1.5"
+        assert new_list[1]['age'] == 26.5, "the age of alice should increase 1.5"
+        assert new_list[1]['height'] == 11.1, "the height of alice should increase 1.5"
+        assert new_list[2]['age'] == 24.5, "the age of rose should increase 1.5"
+        assert new_list[2]['height'] == 11.5, "the height of rose should increase 1.5"
+        new_tbl = tbl.add(columns, -1)
+        new_list = new_tbl.df.take(3)
+        assert len(new_list) == 3, "new_tbl should have 3 rows"
+        assert new_list[0]['age'] == 13, "the age of jack should decrease 1"
+        assert new_list[0]['height'] == 7.5, "the height of jack should decrease 1"
+        assert new_list[1]['age'] == 24, "the age of alice should decrease 1"
+        assert new_list[1]['height'] == 8.6, "the height of alice should decrease 1"
+        assert new_list[2]['age'] == 22, "the age of rose should decrease 1"
+        assert new_list[2]['height'] == 9.0, "the height of rose should decrease 1"
+
+    def test_sample(self):
+        spark = OrcaContext.get_spark_session()
+        df = spark.range(1000)
+        feature_tbl = FeatureTable(df)
+        total_line_1 = feature_tbl.size()
+        feature_tbl2 = feature_tbl.sample(0.5)
+        total_line_2 = feature_tbl2.size()
+        assert int(total_line_1/2) - 100 < total_line_2 < int(total_line_1/2) + 100, \
+            "the number of rows should be half"
+        total_distinct_line = feature_tbl2.distinct().size()
+        assert total_line_2 == total_distinct_line, "all rows should be distinct"
 
     def test_group_by(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data2.parquet")
