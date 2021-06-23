@@ -15,11 +15,12 @@
 #
 import os
 
-from pyspark.sql.types import DoubleType, ArrayType, DataType
+from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
+    DoubleType, ArrayType, DataType
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.feature import VectorAssembler
-from pyspark.sql.functions import col as pyspark_col, udf, array, broadcast
+from pyspark.sql.functions import col as pyspark_col, udf, array, broadcast, lit
 from pyspark.sql import Row
 import pyspark.sql.functions as F
 
@@ -35,6 +36,7 @@ JAVA_INT_MAX = 2147483647
 class Table:
     def __init__(self, df):
         self.df = df
+        self.__column_names = self.df.schema.names
 
     @staticmethod
     def _read_parquet(paths):
@@ -292,6 +294,52 @@ class Table:
                align cells right.
         """
         self.df.show(n, truncate)
+
+    def add(self, columns, value=1):
+        """
+        Increase all of values of the target numeric column(s) by a constant value.
+
+        :param columns: str or list of str, the target columns to be increased.
+        :param value: numeric (int/float/double/short/long), the constant value to be added.
+
+        :return: A new Table with updated numeric values on specified columns.
+        """
+        if columns is None:
+            raise ValueError("Columns should be str or list of str, but got None")
+        if not isinstance(columns, list):
+            columns = [columns]
+        check_col_exists(self.df, columns)
+        new_df = self.df
+        for column in columns:
+            if new_df.schema[column].dataType not in [IntegerType(), ShortType(),
+                                                      LongType(), FloatType(),
+                                                      DecimalType(), DoubleType()]:
+                raise ValueError("Column type should be numeric, but have type {} \
+                    for column {}".format(new_df.schema[column].dataType, column))
+            new_df = new_df.withColumn(column, pyspark_col(column) + lit(value))
+        return self._clone(new_df)
+
+    @property
+    def columns(self):
+        """
+        Get column names of the Table.
+
+        :return: A list of strings that specify column names.
+        """
+        return self.__column_names
+
+    def sample(self, fraction, replace=False, seed=None):
+        """
+        Return a sampled subset of Table.
+
+        :param fraction: float, fraction of rows to generate, should be within the
+        range [0, 1].
+        :param replace: allow or disallow sampling of the same row more than once.
+        :param seed: seed for sampling.
+
+        :return: A new Table with sampled rows.
+        """
+        return self._clone(self.df.sample(withReplacement=replace, fraction=fraction, seed=seed))
 
     def write_parquet(self, path, mode="overwrite"):
         self.df.write.mode(mode).parquet(path)
