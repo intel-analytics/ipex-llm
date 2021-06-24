@@ -57,15 +57,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
 
   import Optimizer._
 
-  private[DistriOptimizerV2] var _logger: Option[OptimizerLogger] = None
-
-  def logger: OptimizerLogger = {
-    if (_logger.isEmpty) {
-      _logger = Some(new DistriLogger)
-    }
-
-    _logger.get
-  }
+  val loggerName = "DistriOptimizerV2"
+  val logger: Logger = Logger.getLogger(loggerName)
 
   private[optim] def optimize[T: ClassTag](
     cacheOfMaster: MasterCache[T],
@@ -855,10 +848,6 @@ class DistriOptimizerV2[T: ClassTag](
       iter
     }.count()
     CachedModels.deleteKey(modelBroadcast.uuid)
-  }
-
-  def setLogger(logger: OptimizerLogger): Unit = {
-    DistriOptimizerV2._logger = Some(logger)
   }
 
   private def validArgs(): Boolean = {
