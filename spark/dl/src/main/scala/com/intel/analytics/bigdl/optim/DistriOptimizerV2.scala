@@ -56,9 +56,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     parameterProcessers: Array[ParameterProcessor] = null) extends DistriOptimizer.Cache[T]
 
   import Optimizer._
-
-  val loggerName = "DistriOptimizerV2"
-  val logger: Logger = Logger.getLogger(loggerName)
+  
+  val logger: Logger = Logger.getLogger(getClass)
 
   private[optim] def optimize[T: ClassTag](
     cacheOfMaster: MasterCache[T],
