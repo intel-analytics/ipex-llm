@@ -101,7 +101,8 @@ class PastSeqParamHandler(object):
     @staticmethod
     def get_past_seq_config(look_back):
         """
-        generate pass sequence config based on look_back
+        Generate pass sequence config based on look_back.
+
         :param look_back: look_back configuration
         :return: search configuration for past sequence
         """
@@ -138,7 +139,6 @@ class PastSeqParamHandler(object):
 class GridRandomRecipe(Recipe):
     """
     A recipe involves both grid search and random search.
-       tsp = TimeSequencePredictor(...,recipe = GridRandomRecipe(1))
     """
 
     def __init__(
@@ -188,10 +188,11 @@ class GridRandomRecipe(Recipe):
 
 class LSTMSeq2SeqRandomRecipe(Recipe):
     """
-    A recipe involves both grid search and random search, only for Seq2SeqPytorch
-    Note:This recipe is specifically designed for third-party model searching,
-         rather than TimeSequencePredictor.
+    A recipe involves both grid search and random search, only for Seq2SeqPytorch.
+    Note: This recipe is specifically designed for third-party model searching, rather
+    than TimeSequencePredictor.
     """
+
     def __init__(
             self,
             input_feature_num,
@@ -210,6 +211,7 @@ class LSTMSeq2SeqRandomRecipe(Recipe):
         Constructor.
         set the param to a list for grid search.
         set the param to a tuple with length = 2 for random search.
+
         :param input_feature_num: (int) no. of input feature
         :param output_feature_num: (int) no. of ouput feature
         :param future_seq_len: (int) no. of steps to be predicted (i.e. horizon)
@@ -237,10 +239,13 @@ class LSTMSeq2SeqRandomRecipe(Recipe):
         self.input_feature_num = input_feature_num
         self.output_feature_num = output_feature_num
         self.future_seq_len = future_seq_len
-        self.lstm_hidden_dim = self._gen_sample_func(lstm_hidden_dim, "lstm_hidden_dim")
-        self.lstm_layer_num = self._gen_sample_func(lstm_layer_num, "lstm_layer_num")
+        self.lstm_hidden_dim = self._gen_sample_func(
+            lstm_hidden_dim, "lstm_hidden_dim")
+        self.lstm_layer_num = self._gen_sample_func(
+            lstm_layer_num, "lstm_layer_num")
         self.dropout = self._gen_sample_func(dropout, "dropout")
-        self.teacher_forcing = self._gen_sample_func(teacher_forcing, "teacher_forcing")
+        self.teacher_forcing = self._gen_sample_func(
+            teacher_forcing, "teacher_forcing")
 
     def _gen_sample_func(self, ranges, param_name):
         if isinstance(ranges, tuple):
@@ -250,7 +255,8 @@ class LSTMSeq2SeqRandomRecipe(Recipe):
                 f"type of {param_name} can only be a list while get a tuple"
             if param_name in ["lr"]:
                 return hp.loguniform(lower=ranges[0], upper=ranges[1])
-            if param_name in ["lstm_hidden_dim", "lstm_layer_num", "batch_size"]:
+            if param_name in ["lstm_hidden_dim",
+                              "lstm_layer_num", "batch_size"]:
                 return hp.randint(lower=ranges[0], upper=ranges[1])
             if param_name in ["dropout"]:
                 return hp.uniform(lower=ranges[0], upper=ranges[1])
@@ -279,7 +285,6 @@ class LSTMSeq2SeqRandomRecipe(Recipe):
 class LSTMGridRandomRecipe(Recipe):
     """
     A recipe involves both grid search and random search, only for LSTM.
-       tsp = TimeSequencePredictor(...,recipe = LSTMGridRandomRecipe(1))
     """
 
     def __init__(
@@ -293,6 +298,7 @@ class LSTMGridRandomRecipe(Recipe):
             batch_size=[32, 64]):
         """
         Constructor.
+
         :param lstm_1_units: random search candidates for num of lstm_1_units
         :param lstm_2_units: grid search candidates for num of lstm_1_units
         :param batch_size: grid search candidates for batch size
@@ -341,7 +347,6 @@ class LSTMGridRandomRecipe(Recipe):
 class Seq2SeqRandomRecipe(Recipe):
     """
     A recipe involves both grid search and random search, only for LSTM.
-       tsp = TimeSequencePredictor(...,recipe = LSTMGridRandomRecipe(1))
     """
 
     def __init__(
@@ -354,6 +359,7 @@ class Seq2SeqRandomRecipe(Recipe):
             batch_size=[32, 64]):
         """
         Constructor.
+
         :param lstm_1_units: random search candidates for num of lstm_1_units
         :param lstm_2_units: grid search candidates for num of lstm_1_units
         :param batch_size: grid search candidates for batch size
@@ -411,6 +417,7 @@ class MTNetGridRandomRecipe(Recipe):
                  batch_size=[32, 64]):
         """
         Constructor.
+
         :param num_rand_samples: number of hyper-param configurations sampled randomly
         :param training_iteration: no. of iterations for training (n epochs) in trials
         :param epochs: no. of epochs to train in each iteration
@@ -478,6 +485,7 @@ class TCNGridRandomRecipe(Recipe):
                  ):
         """
         Constructor.
+
         :param num_rand_samples: number of hyper-param configurations sampled randomly
         :param training_iteration: no. of iterations for training (n epochs) in trials
         :param batch_size: grid search candidates for batch size
@@ -516,7 +524,6 @@ class TCNGridRandomRecipe(Recipe):
 class RandomRecipe(Recipe):
     """
     Pure random sample Recipe. Often used as baseline.
-       tsp = TimeSequencePredictor(...,recipe = RandomRecipe(5))
     """
 
     def __init__(
@@ -527,6 +534,8 @@ class RandomRecipe(Recipe):
             reward_metric=-0.05,
             training_iteration=10):
         """
+        Constructor.
+
         :param num_rand_samples: number of hyper-param configurations sampled randomly
         :param look_back:the length to look back, either a tuple with 2 int values,
           which is in format is (min len, max len), or a single int, which is
@@ -568,7 +577,6 @@ class RandomRecipe(Recipe):
 class BayesRecipe(Recipe):
     """
     A Bayes search Recipe. (Experimental)
-       tsp = TimeSequencePredictor(...,recipe = BayesRecipe(5))
     """
 
     def __init__(
@@ -579,7 +587,8 @@ class BayesRecipe(Recipe):
             reward_metric=-0.05,
             training_iteration=5):
         """
-        Constructor
+        Constructor.
+
         :param num_samples: number of hyper-param configurations sampled
         :param look_back: the length to look back, either a tuple with 2 int values,
           which is in format is (min len, max len), or a single int, which is
@@ -596,7 +605,8 @@ class BayesRecipe(Recipe):
         if isinstance(look_back, tuple) and len(look_back) == 2 and \
                 isinstance(look_back[0], int) and isinstance(look_back[1], int):
             if look_back[1] < 2:
-                raise ValueError("The max look back value should be at least 2")
+                raise ValueError(
+                    "The max look back value should be at least 2")
             if look_back[0] < 2:
                 print("The input min look back value is smaller than 2. "
                       "We sample from range (2, {}) instead.".format(look_back[1]))
@@ -632,6 +642,10 @@ class BayesRecipe(Recipe):
 
 
 class XgbRegressorGridRandomRecipe(Recipe):
+    """
+    Grid + Random Recipe for XGBoost Regressor.
+    """
+
     def __init__(
             self,
             num_rand_samples=1,
@@ -649,6 +663,29 @@ class XgbRegressorGridRandomRecipe(Recipe):
             reg_alpha=0,
             reg_lambda=1):
         """
+        Constructor. For XGBoost hyper parameters, refer to
+        https://xgboost.readthedocs.io/en/latest/python/python_api.html for
+        details.
+
+        :param num_rand_samples: number of hyper-param configurations sampled
+          randomly
+        :param n_estimators: number of gradient boosted trees.
+        :param max_depth: max tree depth
+        :param n_jobs: number of parallel threads used to run xgboost.
+        :param tree_method: specify which tree method to use.
+        :param random_state: random number seed.
+        :param seed: seed used to generate the folds
+        :param lr: learning rate
+        :param subsample: subsample ratio of the training instance
+        :param colsample_bytree: subsample ratio of columns when constructing
+          each tree.
+        :param min_child_weight: minimum sum of instance weight(hessian)
+          needed in a child.
+        :param gamma: minimum loss reduction required to make a further
+          partition on a leaf node of the tree.
+        :param reg_alpha: L1 regularization term on weights (xgb’s alpha).
+        :param reg_lambda: L2 regularization term on weights (xgb’s lambda).
+
         """
         super(self.__class__, self).__init__()
 
@@ -683,6 +720,10 @@ class XgbRegressorGridRandomRecipe(Recipe):
 
 
 class XgbRegressorSkOptRecipe(Recipe):
+    """
+    A recipe using SkOpt search algorithm for XGBoost Regressor.
+    """
+
     def __init__(
             self,
             num_rand_samples=10,
@@ -692,6 +733,15 @@ class XgbRegressorSkOptRecipe(Recipe):
             min_child_weight=[1, 2, 3],
     ):
         """
+        Constructor.
+
+        :param num_rand_samples: number of hyper-param configurations sampled
+          randomly
+        :param n_estimators_range: range of number of gradient boosted trees.
+        :param max_depth_range: range of max tree depth
+        :param lr: learning rate
+        :param min_child_weight: minimum sum of instance weight(hessian)
+          needed in a child.
         """
         super(self.__class__, self).__init__()
 
