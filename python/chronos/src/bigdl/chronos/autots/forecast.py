@@ -70,6 +70,7 @@ class AutoTSTrainer:
             ):
         """
         Fit a time series forecasting pipeline w/ automl
+
         :param train_df: the input dataframe (as pandas.dataframe)
         :param validation_df: the validation dataframe (as pandas.dataframe)
         :param recipe: the configuration of searching
@@ -100,14 +101,15 @@ class TSPipeline:
         """
         Initialize an emtpy TSPipeline.
         Usually it is not called by user directly.
-        An TSPipeline either obtained from AutoTrainer.fit or load from file
+        A TSPipeline is either obtained from AutoTrainer.fit or TSPipeline.load
         """
         self.internal = None
         self.uncertainty = False
 
     def save(self, pipeline_file):
         """
-        save the pipeline to a file
+        Save the pipeline to a file
+
         :param pipeline_file: the file path
         :return:
         """
@@ -116,7 +118,8 @@ class TSPipeline:
     @staticmethod
     def load(pipeline_file):
         """
-        load pipeline from a file
+        Load pipeline from a file
+
         :param pipeline_file: the pipeline file
         :return: a TSPipeline object
         """
@@ -158,7 +161,8 @@ class TSPipeline:
 
     def predict(self, input_df):
         """
-        predict the result
+        Prediction.
+
         :param input_df: the input dataframe
         :return: the forecast results
         """
@@ -172,7 +176,8 @@ class TSPipeline:
                  metrics=["mse"],
                  multioutput='raw_values'):
         """
-        evaluate the results
+        Evaluation
+
         :param input_df: the input dataframe
         :param metrics: the evaluation metrics
         :param multioutput: output mode of multiple output, whether to aggregate
