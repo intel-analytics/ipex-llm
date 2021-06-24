@@ -23,6 +23,7 @@ class AutoLSTM:
     def __init__(self,
                  input_feature_num,
                  output_target_num,
+                 past_seq_len,
                  optimizer,
                  loss,
                  metric,
@@ -39,6 +40,8 @@ class AutoLSTM:
 
         :param input_feature_num: Int. The number of features in the input
         :param output_target_num: Int. The number of targets in the output
+        :param past_seq_len: Int or hp sampling function The number of historical
+               steps used for forecasting.
         :param optimizer: String or pyTorch optimizer creator function or
                tf.keras optimizer instance.
         :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function.
@@ -67,6 +70,8 @@ class AutoLSTM:
             dropout=dropout,
             input_feature_num=input_feature_num,
             output_feature_num=output_target_num,
+            past_seq_len=past_seq_len,
+            future_seq_len=1
         )
         self.metric = metric
         model_builder = PytorchModelBuilder(model_creator=model_creator,
