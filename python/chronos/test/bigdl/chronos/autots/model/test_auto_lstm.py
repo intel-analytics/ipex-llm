@@ -70,6 +70,7 @@ class TestAutoLSTM(TestCase):
     def test_fit_np(self):
         auto_lstm = AutoLSTM(input_feature_num=input_feature_dim,
                              output_target_num=output_feature_dim,
+                             past_seq_len=5,
                              optimizer='Adam',
                              loss=torch.nn.MSELoss(),
                              metric="mse",
@@ -94,6 +95,7 @@ class TestAutoLSTM(TestCase):
     def test_fit_data_creator(self):
         auto_lstm = AutoLSTM(input_feature_num=input_feature_dim,
                              output_target_num=output_feature_dim,
+                             past_seq_len=5,
                              optimizer='Adam',
                              loss=torch.nn.MSELoss(),
                              metric="mse",
