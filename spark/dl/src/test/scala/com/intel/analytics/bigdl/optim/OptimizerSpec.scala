@@ -285,7 +285,7 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = Linear[Float](4, 3)
     val criterion = ClassNLLCriterion[Float]()
     val res = Optimizer(model, ds, criterion)
-    res.isInstanceOf[DistriOptimizer[Float]] should be(true)
+    res.isInstanceOf[DistriOptimizerV2[Float]] should be(true)
     res.isInstanceOf[LocalOptimizer[Float]] should be(false)
   }
 
