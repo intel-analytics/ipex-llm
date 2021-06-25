@@ -341,8 +341,28 @@ class Table:
         """
         return self._clone(self.df.sample(withReplacement=replace, fraction=fraction, seed=seed))
 
+    def ordinal_shuffle_partition(self):
+        """
+        Shuffle each partition of the Table by adding a random ordinal column for each row and sort
+        by this ordinal column within each partition.
+
+        :return: A new Table with shuffled partitions.
+        """
+        return self._clone(ordinal_shuffle_partition(self.df))
+
     def write_parquet(self, path, mode="overwrite"):
-        self.df.write.mode(mode).parquet(path)
+        """
+        Write the Table to Parquet file.
+
+        :param path: str. The path to the Parquet file. Note that the col_name
+               will be used as basename of the Parquet file.
+        :param mode: str. One of "append", "overwrite", "error" or "ignore".
+               append: Append contents to the existing data.
+               overwrite: Overwrite the existing data.
+               error: Throw an exception if the data already exists.
+               ignore: Silently ignore this operation if data already exists.
+        """
+        write_parquet(self.df, path, mode)
 
     def cast(self, columns, type):
         """
@@ -811,14 +831,15 @@ class StringIndex(Table):
 
     def write_parquet(self, path, mode="overwrite"):
         """
-        Write StringIndex to Parquet file.
+        Write the StringIndex to Parquet file.
 
-        :param path: str. The path to the `folder` of the Parquet file. Note that the col_name
+        :param path: str. The path to the Parquet file. Note that the col_name
                will be used as basename of the Parquet file.
-        :param mode: str. `append`, `overwrite`, `error` or `ignore`. `append`: Append contents
-               of this StringIndex to existing data. `overwrite`: Overwrite existing data.
-               `error`: Throw an exception if data already exists. `ignore`: Silently ignore this
-               operation if data already exists.
+        :param mode: str. One of "append", "overwrite", "error" or "ignore".
+               append: Append the contents of this StringIndex to the existing data.
+               overwrite: Overwrite the existing data.
+               error: Throw an exception if the data already exists.
+               ignore: Silently ignore this operation if the data already exists.
         """
         path = path + "/" + self.col_name + ".parquet"
-        self.df.write.parquet(path, mode=mode)
+        write_parquet(self.df, path, mode)
