@@ -284,8 +284,8 @@ class TestTSDataset(ZooTestCase):
 
             pred = np.copy(y_test)  # sanity check
 
-            unscaled_pred = tsdata._unscale_numpy(pred)
-            unscaled_y_test = tsdata._unscale_numpy(y_test)
+            unscaled_pred = tsdata.unscale_numpy(pred)
+            unscaled_y_test = tsdata.unscale_numpy(y_test)
             tsdata_test.unscale()\
                        .roll(lookback=5, horizon=4, id_sensitive=True)
             _, unscaled_y_test_reproduce = tsdata_test.to_numpy()

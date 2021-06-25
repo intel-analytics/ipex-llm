@@ -529,7 +529,7 @@ class TSDataset:
             self.scaler.inverse_transform(self.df[self.target_col + feature_col])
         return self
 
-    def _unscale_numpy(self, data):
+    def unscale_numpy(self, data):
         '''
         Unscale the time series forecaster's numpy prediction result/ground truth.
 
