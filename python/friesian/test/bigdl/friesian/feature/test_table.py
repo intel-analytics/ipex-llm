@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 
+import shutil
 import os.path
 import pytest
-import tempfile
 from unittest import TestCase
 
 from pyspark.sql.functions import col, max, min, array
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, \
     DoubleType
-import pyspark.sql.functions as F
 
 from zoo.orca import OrcaContext
 from zoo.friesian.feature import FeatureTable, StringIndex
@@ -604,6 +603,27 @@ class TestTable(TestCase):
         assert groupby_tbl4.df.filter("col_4 == 'b' and col_5 == 'dd' and `first(col_1)` == 0") \
             .count() == feature_tbl.df.filter("col_4 == 'b' and col_5 == 'dd'").count(), \
             "first of col_1 should be 0 for all col_4 = 'b' and col_5 = 'dd' in groupby_tbl4"
+
+    def test_ordinal_shuffle(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("a", 14), ("b", 25), ("c", 23), ("d", 2), ("e", 1)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", IntegerType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema).repartition(1))
+        shuffled_tbl = tbl.ordinal_shuffle_partition()
+        rows = tbl.df.collect()
+        shuffled_rows = shuffled_tbl.df.collect()
+        rows.sort(key=lambda x: x[1])
+        shuffled_rows.sort(key=lambda x: x[1])
+        assert rows == shuffled_rows
+
+    def test_write_parquet(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        feature_tbl.write_parquet("saved.parquet")
+        loaded_tbl = FeatureTable.read_parquet("saved.parquet")
+        if os.path.exists("saved.parquet"):
+            shutil.rmtree("saved.parquet")
 
 
 if __name__ == "__main__":
