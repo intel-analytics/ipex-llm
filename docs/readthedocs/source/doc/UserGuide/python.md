@@ -122,7 +122,7 @@ redis==3.4.1
 scikit-learn==0.22.2.post1
 scipy==1.4.1
 tensorboard==1.15.0
-tensorboardX==2.0
+tensorboardX>=2.1
 tensorflow-datasets==3.2.0
 tensorflow-estimator==1.15.1
 tensorflow-gan==2.0.0
