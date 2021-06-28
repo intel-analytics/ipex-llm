@@ -61,6 +61,37 @@ class Table:
                 raise Exception("cols should be a column name or list of column names")
         return df
 
+    @staticmethod
+    def _read_csv(paths, delimiter=",", header=False, names=None, dtype=None):
+        if not isinstance(paths, list):
+            paths = [paths]
+        spark = OrcaContext.get_spark_session()
+        df = spark.read.options(header=header, inferSchema=True, delimiter=delimiter).csv(paths)
+        columns = df.columns
+        if names:
+            if not isinstance(names, list):
+                names = [names]
+            assert len(names) == len(columns),\
+                "names should have the same length as the number of columns"
+            for i in range(len(names)):
+                df = df.withColumnRenamed(columns[i], names[i])
+        tbl = Table(df)
+        if dtype:
+            if isinstance(dtype, dict):
+                for col, type in dtype.items():
+                    tbl = tbl.cast(col, type)
+            elif isinstance(dtype, str):
+                tbl = tbl.cast(columns=None, dtype=dtype)
+            elif isinstance(dtype, list):
+                columns = df.columns
+                assert len(dtype) == len(columns),\
+                    "dtype should have the same length as the number of columns"
+                for i in range(len(columns)):
+                    tbl = tbl.cast(columns=columns[i], dtype=dtype[i])
+            else:
+                raise ValueError("dtype should be str or list of str or dict")
+        return tbl.df
+
     def _clone(self, df):
         return Table(df)
 
@@ -333,7 +364,7 @@ class Table:
         Return a sampled subset of Table.
 
         :param fraction: float, fraction of rows to generate, should be within the
-        range [0, 1].
+               range [0, 1].
         :param replace: allow or disallow sampling of the same row more than once.
         :param seed: seed for sampling.
 
@@ -364,14 +395,14 @@ class Table:
         """
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns, type):
+    def cast(self, columns, dtype):
         """
         Cast columns to the specified type.
 
         :param columns: a string or a list of strings that specifies column names.
-                        If it is None, then cast all of the columns.
-        :param type: a string ("string", "boolean", "int", "long", "short", "float", "double")
-                     that specifies the type.
+               If it is None, then cast all of the columns.
+        :param dtype: a string ("string", "boolean", "int", "long", "short", "float", "double")
+               that specifies the data type.
 
         :return: A new Table that casts all of the specified columns to the specified type.
         """
@@ -382,15 +413,15 @@ class Table:
             check_col_exists(self.df, columns)
         valid_types = ["str", "string", "bool", "boolean", "int",
                        "integer", "long", "short", "float", "double"]
-        if not (isinstance(type, str) and (type in valid_types)) \
-           and not isinstance(type, DataType):
+        if not (isinstance(dtype, str) and (dtype in valid_types)) \
+           and not isinstance(dtype, DataType):
             raise ValueError(
-                "type should be string, boolean, int, long, short, float, double.")
+                "dtype should be string, boolean, int, long, short, float, double.")
         transform_dict = {"str": "string", "bool": "boolean", "integer": "int"}
-        type = transform_dict[type] if type in transform_dict else type
+        dtype = transform_dict[dtype] if dtype in transform_dict else dtype
         df_cast = self._clone(self.df)
         for i in columns:
-            df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(type))
+            df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(dtype))
         return df_cast
 
     def __getattr__(self, name):
@@ -406,7 +437,7 @@ class FeatureTable(Table):
         """
         Loads Parquet files as a FeatureTable.
 
-        :param paths: str or a list of str. The path/paths to Parquet file(s).
+        :param paths: str or a list of str. The path(s) to Parquet file(s).
 
         :return: A FeatureTable for recommendation data.
         """
@@ -416,11 +447,36 @@ class FeatureTable(Table):
     def read_json(cls, paths, cols=None):
         return cls(Table._read_json(paths, cols))
 
+    @classmethod
+    def read_csv(cls, paths, delimiter=",", header=False, names=None, dtype=None):
+        """
+        Loads csv files as a FeatureTable.
+
+        :param paths: str or a list of str. The path(s) to csv file(s).
+        :param delimiter: str, delimiter to use for parsing the csv file(s). Default is ",".
+        :param header: boolean, whether the first line of the csv file(s) will be treated
+               as the header for column names. Default is False.
+        :param names: str or list of str, the column names for the csv file(s). You need to
+               provide this if the header cannot be inferred. If specified, names should
+               have the same length as the number of columns.
+        :param dtype: str or list of str or dict, the column data type(s) for the csv file(s).\
+               You may need to provide this if you want to change the default inferred types
+               of specified columns.
+               If dtype is a str, then all the columns will be cast to the target dtype.
+               If dtype is a list of str, then it should have the same length as the number of
+               columns and each column will be cast to the corresponding str dtype.
+               If dtype is a dict, then the key should be the column name and the value should be
+               the str dtype to cast the column to.
+
+        :return: A FeatureTable for recommendation data.
+        """
+        return cls(Table._read_csv(paths, delimiter, header, names, dtype))
+
     def encode_string(self, columns, indices):
         """
         Encode columns with provided list of StringIndex.
 
-        :param columns: str or a list of str, target columns to be encoded.
+        :param columns: str or a list of str, the target columns to be encoded.
         :param indices: StringIndex or a list of StringIndex, StringIndexes of target columns.
                The StringIndex should at least have two columns: id and the corresponding
                categorical column.
@@ -449,15 +505,123 @@ class FeatureTable(Table):
                 .dropna(subset=[col_name])
         return FeatureTable(data_df)
 
-    def gen_string_idx(self, columns, freq_limit):
+    def category_encode(self, columns, freq_limit=None):
         """
-        Generate unique index value of categorical features.
+        Category encode the given columns.
+
+        :param columns: str or a list of str, target columns to encode from string to index.
+        :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
+               will be omitted from the encoding. Can be represented as either an integer,
+               dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
+               and in this case all the categories that appear will be encoded.
+
+        :return: A tuple of a new FeatureTable which transforms categorical features into unique
+                 integer values, and a list of StringIndex for the mapping.
+        """
+        indices = self.gen_string_idx(columns, freq_limit)
+        return self.encode_string(columns, indices), indices
+
+    def one_hot_encode(self, columns, sizes=None, prefix=None, keep_original_columns=False):
+        """
+        Convert categorical features into ont hot encodings.
+        If the features are string, you should first call category_encode to encode them into
+        indices before one hot encoding.
+        For each input column, a one hot vector will be created expanding multiple output columns,
+        with the value of each one hot column either 0 or 1.
+        Note that you may only use one hot encoding on the columns with small dimensions
+        for memory concerns.
+
+        For example, for column 'x' with size 5:
+        Input:
+        |x|
+        |1|
+        |3|
+        |0|
+        Output will contain 5 one hot columns:
+        |prefix_0|prefix_1|prefix_2|prefix_3|prefix_4|
+        |   0    |   1    |   0    |   0    |   0    |
+        |   0    |   0    |   0    |   1    |   0    |
+        |   1    |   0    |   0    |   0    |   0    |
+
+        :param columns: str or a list of str, the target columns to be encoded.
+        :param sizes: int or a list of int, the size(s) of the one hot vectors of the column(s).
+               Default is None, and in this case, the sizes will be calculated by the maximum
+               value(s) of the columns(s) + 1, namely the one hot vector will cover 0 to the
+               maximum value.
+               You are recommended to provided the sizes if they are known beforehand. If specified,
+               sizes should have the same length as columns.
+        :param prefix: str or a list of str, the prefix of the one hot columns for the input
+               column(s). Default is None, and in this case, the prefix will be the input
+               column names. If specified, prefix should have the same length as columns.
+               The one hot columns for each input column will have column names:
+               prefix_0, prefix_1, ... , prefix_maximum
+        :param keep_original_columns: boolean, whether to keep the original index column(s) before
+               the one hot encoding. Default is False, and in this case the original column(s)
+               will be replaced by the one hot columns. If True, the one hot columns will be
+               appended to each original column.
+
+        :return: A new FeatureTable which transforms categorical indices into one hot encodings.
+        """
+        if not isinstance(columns, list):
+            columns = [columns]
+        if sizes:
+            if not isinstance(sizes, list):
+                sizes = [sizes]
+        else:
+            # Take the max of the column to make sure all values are within the range.
+            # The vector size is 1 + max (i.e. from 0 to max).
+            sizes = [self.select(col_name).group_by(agg="max").df.collect()[0][0] + 1
+                     for col_name in columns]
+        assert len(columns) == len(sizes), "columns and sizes should have the same length"
+        if prefix:
+            if not isinstance(prefix, list):
+                prefix = [prefix]
+            assert len(columns) == len(prefix), "columns and prefix should have the same length"
+        data_df = self.df
+
+        def one_hot(columns, sizes):
+            one_hot_vectors = []
+            for i in range(len(sizes)):
+                one_hot_vector = [0] * sizes[i]
+                one_hot_vector[columns[i]] = 1
+                one_hot_vectors.append(one_hot_vector)
+            return one_hot_vectors
+
+        one_hot_udf = udf(lambda columns: one_hot(columns, sizes),
+                          ArrayType(ArrayType(IntegerType())))
+        data_df = data_df.withColumn("friesian_onehot", one_hot_udf(array(columns)))
+
+        all_columns = data_df.columns
+        for i in range(len(columns)):
+            col_name = columns[i]
+            col_idx = all_columns.index(col_name)
+            cols_before = all_columns[:col_idx]
+            cols_after = all_columns[col_idx + 1:]
+            one_hot_prefix = prefix[i] if prefix else col_name
+            one_hot_cols = []
+            for j in range(sizes[i]):
+                one_hot_col = one_hot_prefix + "_{}".format(j)
+                one_hot_cols.append(one_hot_col)
+                data_df = data_df.withColumn(one_hot_col,
+                                             data_df.friesian_onehot[i][j])
+            if keep_original_columns:
+                all_columns = cols_before + [col_name] + one_hot_cols + cols_after
+            else:
+                all_columns = cols_before + one_hot_cols + cols_after
+            data_df = data_df.select(*all_columns)
+        data_df = data_df.drop("friesian_onehot")
+        return FeatureTable(data_df)
+
+    def gen_string_idx(self, columns, freq_limit=None):
+        """
+        Generate unique index value of categorical features. The resulting string index would
+        start from 1 with 0 reserved for unknown features.
 
         :param columns: str or a list of str, target columns to generate StringIndex.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
-               will be omitted from the encoding. Can be represented as both an integer,
-               dict or None. For instance, 15, {'col_4': 10, 'col_5': 2} etc. None means all the
-               categories that appear will be encoded.
+               will be omitted from the encoding. Can be represented as either an integer,
+               dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
+               and in this case all the categories that appear will be encoded.
 
         :return: A list of StringIndex.
         """
@@ -532,9 +696,11 @@ class FeatureTable(Table):
             tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
 
             # Fitting pipeline on dataframe
-            df = pipeline.fit(df).transform(df) \
+            model = pipeline.fit(df)
+            df = model.transform(df) \
                 .withColumn("scaled_list", tolist(pyspark_col("scaled"))) \
                 .drop("vect").drop("scaled")
+            # TODO: Save model.stages[1].originalMax/originalMin as mapping for inference
             for i in range(len(scalar_cols)):
                 df = df.withColumn(scalar_cols[i], pyspark_col("scaled_list")[i])
             df = df.drop("scaled_list")
@@ -571,7 +737,7 @@ class FeatureTable(Table):
         Generate a list of item visits in history
 
         :param user_col: string, user column.
-        :param cols:  list of string, ctolumns need to be aggragated
+        :param cols:  list of string, columns need to be aggregated
         :param sort_col:  string, sort by sort_col
         :param min_len:  int, minimal length of a history list
         :param max_len:  int, maximal length of a history list
@@ -621,7 +787,7 @@ class FeatureTable(Table):
 
     def add_length(self, col_name):
         """
-        Generate the length of a columb.
+        Generate the length of a column.
 
         :param col_name: string.
 
@@ -676,7 +842,7 @@ class FeatureTable(Table):
 
         :param item_cols: list[string]
         :param feature_tbl: FeatureTable with two columns [category, item]
-        :param defalut_cat_index: default value for category if key does not exist
+        :param default_value: default value for category if key does not exist
 
         :return: FeatureTable
         """
@@ -713,7 +879,7 @@ class FeatureTable(Table):
 
         :param columns: str or list of str. Columns to group the Table. If it is an empty list,
                aggregation is run directly without grouping. Default is [].
-        :param agg: str, list or dict. Aggragate functions to be applied to grouped Table.
+        :param agg: str, list or dict. Aggregate functions to be applied to grouped Table.
                Default is "count".
                Supported aggregate functions are: "max", "min", "count", "sum", "avg", "mean",
                "sumDistinct", "stddev", "stddev_pop", "variance", "var_pop", "skewness", "kurtosis",
@@ -732,7 +898,7 @@ class FeatureTable(Table):
                agg=["last", "stddev"]
                agg={"*":"count"}
                agg={"col_1":"sum", "col_2":["count", "mean"]}
-        :param join: boolean. If join is True, join the aggragation result with original Table.
+        :param join: boolean. If join is True, join the aggregation result with original Table.
 
         :return: A new Table with aggregated column fields.
         """
@@ -774,6 +940,20 @@ class FeatureTable(Table):
             return FeatureTable(result_df)
         else:
             return FeatureTable(agg_df)
+
+    def split(self, ratio, seed=None):
+        """
+        Split the FeatureTable into multiple FeatureTables for train, validation and test.
+
+        :param ratio: a list of portions as weights with which to split the FeatureTable.
+                      Weights will be normalized if they don't sum up to 1.0.
+        :param seed: The seed for sampling.
+
+        :return: A tuple of FeatureTables split by the given ratio.
+        """
+        df_list = self.df.randomSplit(ratio, seed)
+        tbl_list = [FeatureTable(df) for df in df_list]
+        return tuple(tbl_list)
 
 
 class StringIndex(Table):
@@ -825,6 +1005,23 @@ class StringIndex(Table):
         indices = map(lambda x: {col_name: x[0], 'id': x[1]}, indices.items())
         df = spark.createDataFrame(Row(**x) for x in indices)
         return cls(df, col_name)
+
+    def to_dict(self):
+        """
+        Convert the StringIndex to a dict, with the categorical features as keys and indices
+        as values.
+        Note that you may only call this if the StringIndex is small.
+
+        :return: A dict for the mapping from string to index.
+        """
+        cols = self.df.columns
+        index_id = cols.index("id")
+        col_id = cols.index(self.col_name)
+        rows = self.df.collect()
+        res_dict = {}
+        for row in rows:
+            res_dict[row[col_id]] = row[index_id]
+        return res_dict
 
     def _clone(self, df):
         return StringIndex(df, self.col_name)
