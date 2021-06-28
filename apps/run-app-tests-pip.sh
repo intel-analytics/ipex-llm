@@ -833,8 +833,12 @@ cwd=$PWD
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/
 
 # download data
-if ! [ -d "data" ];
+if [ -d "data" ]
 then
+    echo "data already exists"
+else
+    echo "Downloading stock prediction data"
+
     mkdir data
     cd data
     wget https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip
@@ -843,6 +847,8 @@ then
     unzip individual_stocks_5yr.zip
     ./merge.sh
     cd ..
+
+    echo "Finish downloading stock prediction data"
 fi
 
 python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction.py
@@ -894,6 +900,49 @@ fi
 now=$(date "+%s")
 time24=$((now-start))
 echo "#24 chronos-network-traffic-multivarite-multistep-tcnforecaster time used:$time24 seconds"
+
+echo "#25 start app test for chronos-stock-prediction-prophet"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet
+
+sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet.py
+sed -i "s/epochs\ =\ 50/epochs\ =\ 2/g; s/batch_size\ =\ 16/batch_size\ =\ 1024/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet.py
+cwd=$PWD
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/
+
+# download data
+if [ -d "data" ]
+then
+    echo "data already exists"
+else
+    echo "Downloading stock prediction data"
+
+    mkdir data
+    cd data
+    wget https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip
+    wget https://raw.githubusercontent.com/CNuge/kaggle-code/master/stock_data/merge.sh
+    chmod +x merge.sh
+    unzip individual_stocks_5yr.zip
+    ./merge.sh
+    cd ..
+
+    echo "Finish downloading stock prediction data"
+fi
+
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet.py
+cd $cwd
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "chronos-stock-prediction-prophet failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time25=$((now-start))
+echo "#25 chronos-stock-prediction-prophet time used:$time25 seconds"
 
 
 fi
