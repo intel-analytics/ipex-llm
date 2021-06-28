@@ -186,7 +186,7 @@ class TSDataset:
         self.df = pd.concat(df_list)
         return self
 
-    def resample(self, interval, start_time, end_time, merge_mode="mean"):
+    def resample(self, interval, start_time=None, end_time=None, merge_mode="mean"):
         '''
         Resample on a new interval for each univariate time series distinguished
         by id_col and feature_col.

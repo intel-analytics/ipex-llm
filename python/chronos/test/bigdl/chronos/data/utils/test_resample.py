@@ -139,3 +139,9 @@ class TestResampleTimeSeries(ZooTestCase):
             end_time='2020-11-09T07:52:00.010',
             merge_mode='max')
         assert len(res_df) == 3
+        res_df = resample_timeseries_dataframe(
+            df,
+            dt_col="datetime",
+            interval="2ms",
+            merge_mode='max')
+        assert len(res_df) == 2
