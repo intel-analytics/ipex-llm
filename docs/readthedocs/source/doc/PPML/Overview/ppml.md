@@ -70,7 +70,9 @@ Download scripts and dockerfiles from [this link](https://github.com/intel-analy
     key.txt
     output.bin
     ```
-### 2.2 Prepare Docker Container
+### 2.2 Trusted Big Data Analytics and ML on JVM
+
+#### 2.2.1 Prepare Docker Image
 
 Pull docker image from Dockerhub
 ```bash
@@ -84,9 +86,9 @@ cd ppml/trusted-big-data-ml/scala/docker-graphene
 ./build-docker-image.sh
 ```
 
-### 2.3 Run Trusted Big Data and ML on Single Node
+#### 2.2.2 Run Trusted Big Data and ML on Single Node
 
-#### 2.3.1 Start PPML Container
+##### 2.2.2.1 Start PPML Container
 
 Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
 
@@ -104,10 +106,9 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
     cd /ppml/trusted-big-data-ml
     ./init.sh
     ```
-    
-#### 2.3.2 Run Trusted Spark Pi
+##### 2.2.2.2 Run Trusted Spark Pi
 
-This example runs a simple Spark PI program, which is an  easy way to verify if the Trusted PPML environment is ready.  
+This example runs a simple Spark PI program, which is an easy way to verify if the Trusted PPML environment is ready.  
 
 Run the script to run trusted Spark Pi:
 
@@ -125,7 +126,7 @@ The result should look something like:
 
 >   Pi is roughly 3.1422957114785572
 
-#### 2.3.3 Run Trusted Spark SQL
+##### 2.2.2.3 Run Trusted Spark SQL
 
 This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries).
 
@@ -142,7 +143,7 @@ cd /ppml/trusted-big-data-ml/
 Then run the script below:
 
 ```bash
-sh start-spark-local-tpc-h-sgx.sh [your_hdfs_tpch_data_dir] [your_hdfs_output_dir]
+bash start-spark-local-tpc-h-sgx.sh [your_hdfs_tpch_data_dir] [your_hdfs_output_dir]
 ```
 
 Open another terminal and check the log:
@@ -155,7 +156,7 @@ The result should look like:
 
 >   ----------------22 finished--------------------
 
-#### 2.3.4 Run Trusted Deep Learning
+##### 2.2.2.4 Run Trusted Deep Learning
 
 This example shows how to run trusted deep learning (using an BigDL LetNet program).
 
@@ -185,15 +186,16 @@ The result should look like:
 ############# model saved[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x19
 ```
 
-### 2.4 Run Trusted Big Data and ML on Cluster
-#### 2.4.1 Configure the Environment
+#### 2.2.3 Run Trusted Big Data and ML on Cluster
+
+##### 2.2.3.1 Configure the Environment
 
 Prerequisite: passwordless ssh login to all the nodes needs to be properly set up first.
 
 ```bash
 nano environments.sh
 ```
-#### 2.4.2 Start Distributed Big Data and ML Platform
+##### 2.2.3.2 Start Distributed Big Data and ML Platform
 
 First run the following command to start the service:
 
@@ -206,7 +208,288 @@ Then run the following command to start the training:
 ```bash
 ./start-distributed-spark-train-sgx.sh
 ```
-#### 2.4.3  Stop Distributed Big Data and ML Platform
+##### 2.2.3.3  Stop Distributed Big Data and ML Platform
+
+First, stop the training:
+
+```bash
+./stop-distributed-standalone-spark.sh
+```
+
+Then stop the service:
+
+```bash
+./undeploy-distributed-standalone-spark.sh
+```
+
+### 2.3 Trusted Big Data Analytics and ML with Python
+
+#### 2.3.1 Prepare Docker Image
+
+Pull docker image from Dockerhub
+
+```bash
+docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:0.11-SNAPSHOT
+```
+
+Alternatively, you can build docker image from Dockerfile (this will take some time):
+
+```bash
+cd ppml/trusted-big-data-ml/python/docker-graphene
+./build-docker-image.sh
+```
+
+#### 2.3.2 Run Trusted Big Data and ML on Single Node
+
+##### 2.3.2.1 Start PPML Container
+
+Enter `analytics-zoo/ppml/trusted-big-data-ml/python/docker-graphene` directory.
+
+1. Copy `keys` and `password` to current directory
+
+   ```bash
+   cd ppml/trusted-big-data-ml/scala/docker-graphene
+   # copy keys and password into current directory
+   cp -r ../keys .
+   cp -r ../password .
+   ```
+
+2. To start the container, first modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
+
+   ```bash
+   ./deploy-local-spark-sgx.sh
+   sudo docker exec -it spark-local bash
+   cd /ppml/trusted-big-data-ml
+   ./init.sh
+   ```
+
+##### 2.3.2.2 Run Trusted Python Helloworld
+
+This example runs a simple native python program, which is an easy way to verify if the Trusted PPML environment is correctly set up.
+
+Run the script to run trusted Python Helloworld:
+
+```bash
+bash work/start-scripts/start-python-helloworld-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-helloworld-sgx.log | egrep "Hello World"
+```
+
+The result should look something like:
+
+> Hello World
+
+##### 2.3.2.3 Run Trusted Python Numpy
+
+This example shows how to run trusted native python numpy.
+
+Run the script to run trusted Python Numpy:
+
+```bash
+bash work/start-scripts/start-python-numpy-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-numpy-sgx.log | egrep "numpy.dot"
+```
+
+The result should look something like:
+
+>  numpy.dot: 0.034211914986371994 sec
+
+##### 2.3.2.4 Run Trusted Spark Pi
+
+This example runs a simple Spark PI program.
+
+Run the script to run trusted Spark Pi:
+
+```bash
+bash work/start-scripts/start-spark-local-pi-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-pi-sgx.log | egrep "roughly"
+```
+
+The result should look something like:
+
+> Pi is roughly 3.146760
+
+##### 2.3.2.5 Run Trusted Spark Wordcount
+
+This example runs a simple Spark Wordcount program.
+
+Run the script to run trusted Spark Wordcount:
+
+```bash
+bash work/start-scripts/start-spark-local-wordcount-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-wordcount-sgx.log | egrep "print"
+```
+
+The result should look something like:
+
+> print("Hello: 1
+>
+> print(sys.path);: 1
+
+##### 2.3.2.6 Run Trusted Spark SQL
+
+This example shows how to run trusted Spark SQL.
+
+First, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
+
+Run the script to run trusted Spark SQL:
+
+```bash
+bash work/start-scripts/start-spark-local-sql-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-sql-basic-sgx.log | egrep "Justin"
+```
+
+The result should look something like:
+
+>| 19| Justin|
+>
+>| Justin|
+>
+>| Justin| 20|
+>
+>| 19| Justin|
+>
+>| 19| Justin|
+>
+>| 19| Justin|
+>
+>Name: Justin
+>
+>| Justin|
+
+##### 2.3.2.7 Run Trusted Spark BigDL
+
+This example shows how to run trusted Spark BigDL.
+
+Run the script to run trusted Spark BigDL and it would take some time to show the final results:
+
+```bash
+bash work/start-scripts/start-spark-local-bigdl-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-bigdl-lenet-sgx.log | egrep "Accuracy"
+```
+
+The result should look something like:
+
+> creating: createTop1Accuracy
+>
+> 2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)
+>
+> 2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
+
+##### 2.3.2.8 Run Trusted Spark XGBoost
+
+This example shows how to run trusted Spark XGBoost.
+
+First, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-sgx.sh`. Replace the value of `RABIT_TRACKER_IP` with your own IP address.
+
+Run the script to run trusted Spark BigDL and it would take some time to show the final results:
+
+```bash
+bash work/start-scripts/start-spark-local-xgboost-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-zoo-xgboost-sgx.log | egrep "prediction" -A19
+```
+
+The result should look something like:
+
+> | features|label| prediction|
+>
+> +--------------------+-----+------------------+
+>
+> |[41.5292,0.0,18.1...| 8.5| 8.51994514465332|
+>
+> |[67.9208,0.0,18.1...| 5.0| 5.720333099365234|
+>
+> |[20.7162,0.0,18.1...| 11.9|10.601168632507324|
+>
+> |[11.9511,0.0,18.1...| 27.9| 26.19390106201172|
+>
+> |[7.40389,0.0,18.1...| 17.2|16.112293243408203|
+>
+> |[14.4383,0.0,18.1...| 27.5|25.952226638793945|
+>
+> |[51.1358,0.0,18.1...| 15.0| 14.67484188079834|
+>
+> |[14.0507,0.0,18.1...| 17.2|16.112293243408203|
+>
+> |[18.811,0.0,18.1,...| 17.9| 17.42863655090332|
+>
+> |[28.6558,0.0,18.1...| 16.3| 16.0191593170166|
+>
+> |[45.7461,0.0,18.1...| 7.0| 5.300708770751953|
+>
+> |[18.0846,0.0,18.1...| 7.2| 6.346951007843018|
+>
+> |[10.8342,0.0,18.1...| 7.5| 6.571983814239502|
+>
+> |[25.9406,0.0,18.1...| 10.4|10.235769271850586|
+>
+> |[73.5341,0.0,18.1...| 8.8| 8.460335731506348|
+>
+> |[11.8123,0.0,18.1...| 8.4| 9.193297386169434|
+>
+> |[11.0874,0.0,18.1...| 16.7|16.174896240234375|
+>
+> |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
+
+#### 2.3.3 Run Trusted Big Data and ML on Cluster
+
+##### 2.3.3.1 Configure the Environment
+
+Prerequisite: passwordless ssh login to all the nodes needs to be properly set up first.
+
+```bash
+nano environments.sh
+```
+
+##### 2.3.3.2 Start Distributed Big Data and ML Platform
+
+First run the following command to start the service:
+
+```bash
+./deploy-distributed-standalone-spark.sh
+```
+
+Then run the following command to start the training:
+
+```bash
+./start-distributed-spark-train-sgx.sh
+```
+
+##### 2.3.3.3 Stop Distributed Big Data and ML Platform
 
 First, stop the training:
 
@@ -221,6 +504,7 @@ Then stop the service:
 ```
 
 ## 3. Trusted Realtime Compute and ML
+
 With the trusted realtime compute and ML/DL support, users can run standard Flink stream processing and distributed DL model inference (using [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song)) in a secure and trusted fashion. In this feature, both [Graphene](https://github.com/oscarlab/graphene) and [Occlum](https://github.com/occlum/occlum) are supported, users can choose one of them as LibOS layer.
 
 ### 3.1 Prerequisite
