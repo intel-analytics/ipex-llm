@@ -646,6 +646,8 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
 
   def getOriginalModel: AbstractModel = originalModel
 
+  def getConcurrentNum: Int = concurrentNum
+
   override def toString: String =
     s"InferenceModel($autoScalingEnabled, $concurrentNum, $originalModel, $modelQueue)"
 }
