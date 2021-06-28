@@ -20,8 +20,8 @@ import pandas as pd
 def resample_timeseries_dataframe(df,
                                   dt_col,
                                   interval,
-                                  start_time,
-                                  end_time,
+                                  start_time=None,
+                                  end_time=None,
                                   merge_mode="mean"):
     '''
     resample and return a dataframe with a new time interval.
@@ -36,16 +36,14 @@ def resample_timeseries_dataframe(df,
     '''
     assert dt_col in df.columns, f"dt_col {dt_col} can not be found in df."
     assert pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col"
-    assert pd.Timestamp(start_time) <= pd.Timestamp(
-        end_time), "end time must be later than start time."
     assert merge_mode in ["max", "min", "mean", "sum"],\
         f"merge_mode should be one of [\"max\", \"min\", \"mean\", \"sum\"]," \
         f" but found {merge_mode}."
 
-    start_time_stamp = pd.Timestamp(start_time)
-    end_time_stamp = pd.Timestamp(end_time)
+    start_time_stamp = pd.Timestamp(start_time) if start_time else df[dt_col].iloc[0]
+    end_time_stamp = pd.Timestamp(end_time) if end_time else df[dt_col].iloc[-1]
     zero_time_stamp = pd.Timestamp(0, unit='ms')
-
+    assert start_time_stamp <= end_time_stamp, "end time must be later than start time."
     res_df = df.copy()
     res_df[dt_col] = df.apply(
         lambda row: resample_helper(
