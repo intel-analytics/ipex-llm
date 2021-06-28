@@ -536,6 +536,8 @@ def main():
                         help="Required. The path where weights locates.")
     parser.add_argument("--checkpoint", dest="checkpoint", default="./checkpoints/yolov3.tf",
                         help="Required. The path where checkpoint locates.")
+    parser.add_argument("--checkpoint_folder", dest="checkpoint_folder", default="./checkpoints",
+                        help="Required. The path where saved checkpoint locates.")
     parser.add_argument("--epochs", dest="epochs", type=int, default=2,
                         help="Required. epochs.")
     parser.add_argument("--batch_size", dest="batch_size", type=int, default=16,
@@ -640,7 +642,7 @@ def main():
     callbacks = [
         ReduceLROnPlateau(verbose=1),
         EarlyStopping(patience=3, verbose=1),
-        ModelCheckpoint(options.checkpoint + '/yolov3_train_{epoch}.tf',
+        ModelCheckpoint(options.checkpoint_folder + '/yolov3_train_{epoch}.tf',
                         verbose=1, save_weights_only=True),
         TensorBoard(log_dir='logs')
     ]
