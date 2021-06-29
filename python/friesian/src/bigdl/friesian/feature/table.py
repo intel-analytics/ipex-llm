@@ -286,17 +286,17 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(median(self.df, columns))
 
-    # Merge column values as a list to a new col
     def merge_cols(self, columns, target):
         """
-        Merge column values as a list to a new col.
+        Merge the target column values as a list to a new column.
+        The original columns will be dropped.
 
         :param columns: list of str, the target columns to be merged.
         :param target: str, the new column name of the merged column.
 
-        :return: A new Table that replaced columns with a new target column of merged list value.
+        :return: A new Table that replaces columns with a new target column of merged list values.
         """
-        assert isinstance(columns, list)
+        assert isinstance(columns, list), "columns must be a list of column names"
         return self._clone(self.df.withColumn(target, array(columns)).drop(*columns))
 
     def rename(self, columns):
@@ -425,9 +425,15 @@ class Table:
         return df_cast
 
     def __getattr__(self, name):
+        """
+        Get the target column of the Table.
+        """
         return self.df.__getattr__(name)
 
     def col(self, name):
+        """
+        Get the target column of the Table.
+        """
         return pyspark_col(name)
 
 
