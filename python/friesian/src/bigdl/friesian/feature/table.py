@@ -424,6 +424,17 @@ class Table:
             df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(dtype))
         return df_cast
 
+    def append_column(self, name, value):
+        """
+        Append a column with a constant value to the Table.
+
+        :param name: str, the name of the new column.
+        :param value: The constant column value for the new column.
+
+        :return: A new Table with the appended column.
+        """
+        return self._clone(self.df.withColumn(name, lit(value)))
+
     def __getattr__(self, name):
         """
         Get the target column of the Table.
