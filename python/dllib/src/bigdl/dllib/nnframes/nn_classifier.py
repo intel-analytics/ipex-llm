@@ -682,6 +682,28 @@ class NNClassifierModel(NNModel, HasThreshold):
         return NNClassifierModel(model=None, feature_preprocessing=None, jvalue=jvalue)
 
 
+class XGBClassifier():
+    def __init__(self):
+        super(XGBClassifier, self).__init__()
+        bigdl_type = "float"
+        self.value = callZooFunc("float", "getXGBClassifier")
+
+    def setNthread(self, value: int):
+        callZooFunc("float", "setXGBClassifierNthread", self.value, value)
+
+    def setNumRound(self, value: int):
+        callZooFunc("float", "setXGBClassifierNumRound", self.value, value)
+
+    def setNumWorkers(self, value: int):
+        callZooFunc("float", "setXGBClassifierNumWorkers", self.value, value)
+
+    def fit(self, df):
+        return callZooFunc("float", "fitXGBClassifier", self.value, df)
+
+    def setMissing(self, value: int):
+        return callZooFunc("float", "setXGBClassifierMissing", self.value, value)
+
+
 class XGBClassifierModel:
     '''
     XGBClassifierModel is a trained XGBoost classification model. The prediction column
