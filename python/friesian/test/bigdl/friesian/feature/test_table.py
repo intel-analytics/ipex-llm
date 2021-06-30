@@ -533,6 +533,113 @@ class TestTable(TestCase):
         assert col_names == ["col_1", "col_2", "col_3", "col_4", "col_5"], \
             "column names are incorrenct"
 
+    def test_get_stats(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", "123", 14, 8.5),
+                ("alice", "34", 25, 9.7),
+                ("rose", "25344", 23, 10.0)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True),
+                             StructField("height", DoubleType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        columns = ["age", "height"]
+        # test str
+        statistics = tbl.get_stats(columns, "min")
+        assert len(statistics) == 2, "the dict should contain two statistics"
+        assert statistics["age"] == 14, "the min value of age is not correct"
+        assert statistics["height"] == 8.5, "the min value of height is not correct"
+        columns = ["age", "height"]
+        # test dict
+        statistics = tbl.get_stats(columns, {"age": "max", "height": "avg"})
+        assert len(statistics) == 2, "the dict should contain two statistics"
+        assert statistics["age"] == 25, "the max value of age is not correct"
+        assert statistics["height"] == 9.4, "the avg value of height is not correct"
+        # test list
+        statistics = tbl.get_stats(columns, ["min", "max"])
+        assert len(statistics) == 2, "the dict should contain two statistics"
+        assert statistics["age"][0] == 14, "the min value of age is not correct"
+        assert statistics["age"][1] == 25, "the max value of age is not correct"
+        assert statistics["height"][0] == 8.5, "the min value of height is not correct"
+        assert statistics["height"][1] == 10.0, "the max value of height is not correct"
+        # test dict of list
+        statistics = tbl.get_stats(columns, {"age": ["min", "max"], "height": ["min", "avg"]})
+        assert len(statistics) == 2, "the dict should contain two statistics"
+        assert statistics["age"][0] == 14, "the min value of age is not correct"
+        assert statistics["age"][1] == 25, "the max value of age is not correct"
+        assert statistics["height"][0] == 8.5, "the min value of height is not correct"
+        assert statistics["height"][1] == 9.4, "the max value of height is not correct"
+        statistics = tbl.get_stats(None, "min")
+        assert len(statistics) == 2, "the dict should contain two statistics"
+        assert statistics["age"] == 14, "the min value of age is not correct"
+        assert statistics["height"] == 8.5, "the min value of height is not correct"
+
+    def test_min(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", "123", 14, 8.5),
+                ("alice", "34", 25, 9.7),
+                ("rose", "25344", 23, 10.0)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True),
+                             StructField("height", DoubleType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        columns = ["age", "height"]
+        min_result = tbl.min(columns)
+        assert min_result.to_list("min") == [14, 8.5], \
+            "the min value for age and height is not correct"
+
+    def test_max(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", "123", 14, 8.5),
+                ("alice", "34", 25, 9.7),
+                ("rose", "25344", 23, 10.0)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True),
+                             StructField("height", DoubleType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        columns = ["age", "height"]
+        min_result = tbl.max(columns)
+        assert min_result.to_list("max") == [25, 10.0], \
+            "the maximum value for age and height is not correct"
+
+    def test_to_list(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", "123", 14, 8.5, [0, 0]),
+                ("alice", "34", 25, 9.6, [1, 1]),
+                ("rose", "25344", 23, 10.0, [2, 2])]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True),
+                             StructField("height", DoubleType(), True),
+                             StructField("array", ArrayType(IntegerType()), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        list1 = tbl.to_list("name")
+        list2 = tbl.to_list("num")
+        list3 = tbl.to_list("age")
+        list4 = tbl.to_list("height")
+        list5 = tbl.to_list("array")
+        assert list1 == ["jack", "alice", "rose"], "the result of name is not correct"
+        assert list2 == ["123", "34", "25344"], "the result of num is not correct"
+        assert list3 == [14, 25, 23], "the result of age is not correct"
+        assert list4 == [8.5, 9.6, 10.0], "the result of height is not correct"
+        assert list5 == [[0, 0], [1, 1], [2, 2]], "the result of array is not correct"
+
+    def test_to_dict(self):
+        spark = OrcaContext.get_spark_session()
+        # test the case the column of key is unique
+        data = [("jack", "123", 14),
+                ("alice", "34", 25),
+                ("rose", "25344", 23)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        dictionary = tbl.to_dict()
+        print(dictionary)
+        assert dictionary["name"] == ['jack', 'alice', 'rose']
+
     def test_add(self):
         spark = OrcaContext.get_spark_session()
         data = [("jack", "123", 14, 8.5),
