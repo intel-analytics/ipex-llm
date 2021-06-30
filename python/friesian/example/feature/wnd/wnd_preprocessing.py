@@ -67,16 +67,11 @@ def _parse_args():
                         help="Day range for preprocessing, such as 0-23, 0-1.")
     parser.add_argument('--input_folder', type=str, required=True,
                         help="Path to the folder of parquet files.")
-    parser.add_argument('--output_folder')
-    parser.add_argument(
-        '--write_mode',
-        choices=['overwrite', 'errorifexists'],
-        default='errorifexists')
-
+    parser.add_argument('--output_folder', type=str, default=".",
+                        help="The path to save the preprocessed data to parquet files. ")
     parser.add_argument('--frequency_limit', type=int, default=15,
                         help="frequency below frequency_limit will be "
                              "omitted from the encoding.")
-
     parser.add_argument('--cross_sizes', type=str,
                         help='bucket sizes for cross columns', default="10000, 10000")
 
@@ -88,6 +83,21 @@ def _parse_args():
     args.cross_sizes = [int(x) for x in args.cross_sizes.split(',')]
 
     return args
+
+
+def preprocess_and_save(data_tbl, models, save_path):
+    columns = dict([("_c{}".format(i), "c{}".format(i)) for i in range(40)])
+    data_tbl = data_tbl.rename(columns)
+
+    data_tbl = data_tbl.encode_string(CAT_COLS, models) \
+        .fillna(0, INT_COLS + CAT_COLS) \
+        .normalize(INT_COLS) \
+        .cross_columns(crossed_columns=[CAT_COLS[0:2], CAT_COLS[2:4]],
+                       bucket_sizes=cross_sizes)
+
+    data_tbl = data_tbl.ordinal_shuffle_partition()
+
+    data_tbl.write_parquet(save_path)
 
 
 if __name__ == '__main__':
@@ -109,6 +119,7 @@ if __name__ == '__main__':
     time_start = time()
     paths = [os.path.join(args.input_folder, 'day_%d.parquet' % i) for i in args.day_range]
     tbl = FeatureTable.read_parquet(paths)
+
     # change name for all columns
     columns = dict([("_c{}".format(i), "c{}".format(i)) for i in range(40)])
     tbl = tbl.rename(columns)
@@ -117,29 +128,26 @@ if __name__ == '__main__':
 
     cross_sizes = args.cross_sizes
 
-    tbl_all_data = tbl.encode_string(CAT_COLS, idx_list)\
-        .fillna(0, INT_COLS + CAT_COLS)\
-        .normalize(INT_COLS)\
-        .cross_columns(crossed_columns=[CAT_COLS[0:2], CAT_COLS[2:4]],
-                       bucket_sizes=cross_sizes)
-    tbl_all_data.compute()
-    time_end = time()
-    print("Train data loading and preprocessing time: ", time_end - time_start)
-
     # save meta
     if not exists(os.path.join(args.output_folder, "meta")):
         makedirs(os.path.join(args.output_folder, "meta"))
-    cate_sizes_text = ""
-    for i in cat_sizes:
-        cate_sizes_text += str(i) + '\n'
+    cate_sizes_text = "\n".join([str(s) for s in cat_sizes])
     write_text(os.path.join(args.output_folder, "meta/categorical_sizes.txt"), cate_sizes_text)
 
-    cross_sizes_text = ""
-    for i in cross_sizes:
-        cross_sizes_text += str(i) + '\n'
+    cross_sizes_text = "\n".join([str(s) for s in cross_sizes])
     write_text(os.path.join(args.output_folder, "meta/cross_sizes.txt"), cross_sizes_text)
 
-    tbl_all_data.show(5)
-    print("Finished")
-    tbl_all_data.write_parquet(os.path.join(args.output_folder, "data_parquet"))
+    if args.days == 24:  # Full Criteo dataset
+        train_data = FeatureTable.read_parquet(paths[:-1])
+        preprocess_and_save(train_data, idx_list, os.path.join(args.output_folder, "train_parquet"))
+
+        test_data = FeatureTable.read_parquet(
+            os.path.join(args.input_folder, "day_23_test.parquet"))
+        preprocess_and_save(test_data, idx_list, os.path.join(args.output_folder, "test_parquet"))
+    else:  # Sample data
+        data = FeatureTable.read_parquet(paths)
+        preprocess_and_save(data, idx_list, os.path.join(args.output_folder, "data_parquet"))
+
+    time_end = time()
+    print("Total data loading and preprocessing time: ", time_end - time_start)
     stop_orca_context()
