@@ -98,7 +98,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
       }
 
       val _header = header(
-        trainingTrace.epochs,
+        trainingTrace.epochs-1,
         trainingTrace.recordsOfEpoch,
         context.numSamples,
         trainingTrace.iterations,
