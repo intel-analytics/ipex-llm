@@ -15,6 +15,8 @@
 #
 
 from zoo.common.utils import callZooFunc
+from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
+    DoubleType
 
 
 def compute(df):
@@ -62,6 +64,12 @@ def check_col_exists(df, columns):
     col_not_exist = list(filter(lambda x: x not in df_cols, columns))
     if len(col_not_exist) > 0:
         raise ValueError(str(col_not_exist) + " do not exist in this Table")
+
+
+def check_column_numeric(df, column):
+    return df.schema[column].dataType in [IntegerType(), ShortType(),
+                                          LongType(), FloatType(),
+                                          DecimalType(), DoubleType()]
 
 
 def ordinal_shuffle_partition(df):

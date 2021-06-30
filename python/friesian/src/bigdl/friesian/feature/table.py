@@ -16,7 +16,7 @@
 import os
 
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType, ArrayType, DataType
+    DoubleType, ArrayType, DataType, StructType, StringType, StructField
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.feature import VectorAssembler
@@ -325,6 +325,108 @@ class Table:
                align cells right.
         """
         self.df.show(n, truncate)
+
+    def get_stats(self, columns, aggr):
+        """
+        Calculate the statistics of the values over the target column(s).
+
+        :param columns: str or a list of str that specifies the name(s) of the target column(s).
+        If columns is None, then the function will return statistics for all numeric columns.
+        :param aggr: str or list of str or dict to specify aggregate functions,
+        min/max/avg/sum/count are supported.
+        If aggr is a str or a list of str, it contains the name(s) of aggregate function(s).
+        If aggr is a dict, the key is the column name, and the value is the aggregate function(s).
+
+        :return: dict, the key is the column name, and the value is aggregate result(s).
+        """
+        if columns is None:
+            columns = [column for column in self.columns if check_column_numeric(self.df, column)]
+        if not isinstance(columns, list):
+            columns = [columns]
+        check_col_exists(self.df, columns)
+        stats = {}
+        for column in columns:
+            if isinstance(aggr, str) or isinstance(aggr, list):
+                aggr_strs = aggr
+            elif isinstance(aggr, dict):
+                if column not in aggr:
+                    raise ValueError("aggregate funtion not defined for the column {}.".
+                                     format(column))
+                aggr_strs = aggr[column]
+            else:
+                raise ValueError("aggr must have type str or list or dict.")
+            if isinstance(aggr_strs, str):
+                aggr_strs = [aggr_strs]
+            values = []
+            for aggr_str in aggr_strs:
+                if aggr_str not in ["min", "max", "avg", "sum", "count"]:
+                    raise ValueError("aggregate function must be one of min/max/avg/sum/count, \
+                        but got {}.".format(aggr_str))
+                values.append(self.df.agg({column: aggr_str}).collect()[0][0])
+            stats[column] = values[0] if len(values) == 1 else values
+        return stats
+
+    def min(self, columns):
+        """
+        Returns a new Table that has two columns, `column` and `min`, containing the column
+        names and the minimum values of the specified numeric columns.
+
+        :param columns: str or a list of str that specifies column names. If it is None,
+               it will operate on all numeric columns.
+
+        :return: A new Table that contains the minimum values of the specified columns.
+        """
+        data = self.get_stats(columns, "min")
+        data = [(column, float(data[column])) for column in data]
+        schema = StructType([StructField("column", StringType(), True),
+                             StructField("min", FloatType(), True)])
+        spark = OrcaContext.get_spark_session()
+        return self._clone(spark.createDataFrame(data, schema))
+
+    def max(self, columns):
+        """
+        Returns a new Table that has two columns, `column` and `max`, containing the column
+        names and the maximum values of the specified numeric columns.
+
+        :param columns: str or a list of str that specifies column names. If it is None,
+               it will operate on all numeric columns.
+
+        :return: A new Table that contains the maximum values of the specified columns.
+        """
+        data = self.get_stats(columns, "max")
+        data = [(column, float(data[column])) for column in data]
+        schema = StructType([StructField("column", StringType(), True),
+                             StructField("max", FloatType(), True)])
+        spark = OrcaContext.get_spark_session()
+        return self._clone(spark.createDataFrame(data, schema))
+
+    def to_list(self, column):
+        """
+        Convert all values of the target column to a list.
+        Only call this if the Table is small enougth.
+
+        :param column: str, specifies the name of target column.
+
+        :return: list, contains all values of the target column.
+        """
+        if not isinstance(column, str):
+            raise ValueError("Column must have type str.")
+        check_col_exists(self.df, [column])
+        return self.df.select(column).rdd.flatMap(lambda x: x).collect()
+
+    def to_dict(self):
+        """
+        Convert the Table to a dictionary.
+        Only call this if the Table is small enough.
+
+        :return: dict, the key is the column name, and the value is the list containing
+        all values in the corresponding column.
+        """
+        rows = [list(row) for row in self.df.collect()]
+        result = {}
+        for i, column in enumerate(self.columns):
+            result[column] = [row[i] for row in rows]
+        return result
 
     def add(self, columns, value=1):
         """
