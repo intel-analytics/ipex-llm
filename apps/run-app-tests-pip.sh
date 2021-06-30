@@ -111,7 +111,7 @@ else
     wget $FTP_URI/analytics-zoo-data/apps/object-detection/ffmpeg-linux64-v3.3.1 -P ~/.imageio/ffmpeg/
 fi
 
-# Run the example 
+# Run the example
 export SPARK_DRIVER_MEMORY=12g
 python ${ANALYTICS_ZOO_HOME}/apps/object-detection/object-detection.py
 
@@ -141,10 +141,10 @@ then
    tar -zxvf ${ANALYTICS_ZOO_HOME}/apps/image-similarity/miniimageClassification.tar.gz -C ${ANALYTICS_ZOO_HOME}/apps/image-similarity
 else
    echo "Downloading images"
-   
+
    wget $FTP_URI/analytics-zoo-data/miniimageClassification.tar.gz -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity
    tar -zxvf ${ANALYTICS_ZOO_HOME}/apps/image-similarity/miniimageClassification.tar.gz -C ${ANALYTICS_ZOO_HOME}/apps/image-similarity
-   
+
    echo "Finished downloading images"
 fi
 FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/deploy_googlenet_places365.prototxt"
@@ -153,9 +153,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading places365 deploy model"
-   
+
    wget $FTP_URI/analytics-zoo-models/image-similarity/deploy_googlenet_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
-   
+
    echo "Finished downloading model"
 fi
 FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365/googlenet_places365.caffemodel"
@@ -164,9 +164,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading places365 weight model"
-   
+
    wget $FTP_URI/analytics-zoo-models/image-similarity/googlenet_places365.caffemodel -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/googlenet_places365
-   
+
    echo "Finished downloading model"
 fi
 FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/deploy_vgg16_places365.prototxt"
@@ -175,9 +175,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading VGG deploy model"
-   
+
    wget $FTP_URI/analytics-zoo-models/image-similarity/deploy_vgg16_places365.prototxt -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
-   
+
    echo "Finished downloading model"
 fi
 FILENAME="${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365/vgg16_places365.caffemodel"
@@ -186,9 +186,9 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading VGG weight model"
-   
+
    wget $FTP_URI/analytics-zoo-models/image-classification/vgg16_places365.caffemodel  -P ${ANALYTICS_ZOO_HOME}/apps/image-similarity/vgg_16_places365
-   
+
    echo "Finished downloading model"
 fi
 
@@ -349,7 +349,7 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading model"
-   
+
     mkdir -p ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets
     touch ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/__init__.py
     touch ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/inception.py
@@ -357,7 +357,7 @@ else
     echo "from nets.inception_v1 import inception_v1_arg_scope" >> ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/inception.py
     wget $FTP_URI/analytics-zoo-models/image-classification/inception_utils.py -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/
     wget $FTP_URI/analytics-zoo-models/image-classification/inception_v1.py -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/models/research/slim/nets/
-   
+
    echo "Finished downloading model"
 fi
 FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint/inception_v1.ckpt"
@@ -366,10 +366,10 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading inception_v1 checkpoint"
-   
+
    wget $FTP_URI/analytics-zoo-models/image-classification/inception_v1_2016_08_28.tar.gz -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint
    tar -zxvf ${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint/inception_v1_2016_08_28.tar.gz -C ${ANALYTICS_ZOO_HOME}/apps/tfnet/checkpoint
-   
+
    echo "Finished downloading checkpoint"
 fi
 FILENAME="${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain.zip"
@@ -378,7 +378,7 @@ then
    echo "$FILENAME already exists."
 else
    echo "Downloading dogs and cats images"
-   
+
    wget $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/minitrain.zip -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/data
    unzip -d ${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain ${ANALYTICS_ZOO_HOME}/apps/tfnet/data/minitrain.zip
    #wget $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip -P ${ANALYTICS_ZOO_HOME}/apps/tfnet/data
@@ -640,7 +640,7 @@ else
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
 python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
@@ -674,7 +674,7 @@ else
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
 sed -i "s/epochs=20/epochs=2/g; s/epochs=10/epochs=2/g; s/epochs=50/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
@@ -734,7 +734,7 @@ echo "Finished downloading AIOps data"
 #   echo "Finished downloading AIOps data"
 #fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
 sed -i "s/epochs=20/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/
 
@@ -771,7 +771,7 @@ echo "Finished downloading AIOps data"
 #   echo "Finished downloading AIOps data"
 #fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/
 
 python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
@@ -805,7 +805,7 @@ else
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_impute.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_impute.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
 python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_impute.py
@@ -827,7 +827,7 @@ echo "#23 start app test for chronos-stock-prediction"
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction.py
 sed -i "s/epochs\ =\ 50/epochs\ =\ 2/g; s/batch_size\ =\ 16/batch_size\ =\ 1024/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/stock_prediction.py
 cwd=$PWD
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/fsi/
@@ -882,7 +882,7 @@ else
     echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot./d; /plt./d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
 sed -i "s/epochs=20/epochs=2/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
