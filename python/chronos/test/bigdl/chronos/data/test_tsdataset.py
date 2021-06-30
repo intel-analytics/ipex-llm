@@ -48,9 +48,10 @@ def get_multi_id_ts_df():
 def get_ugly_ts_df():
     data = np.random.random_sample((100, 5))
     mask = np.random.random_sample((100, 5))
-    mask[mask >= 0.4] = 2
-    mask[mask < 0.4] = 1
-    mask[mask < 0.2] = 0
+    newmask = mask.copy()
+    mask[newmask >= 0.4] = 2
+    mask[newmask < 0.4] = 1
+    mask[newmask < 0.2] = 0
     data[mask == 0] = None
     data[mask == 1] = np.nan
     df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
@@ -174,8 +175,19 @@ class TestTSDataset(ZooTestCase):
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
         assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
 
+        tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
+        x, y = tsdata.to_numpy()
+        assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
+        assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
+
         tsdata.roll(lookback=lookback, horizon=horizon,
                     feature_col=["extra feature"], target_col="value")
+        x, y = tsdata.to_numpy()
+        assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
+        assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
+
+        tsdata.roll(lookback=lookback, horizon=horizon,
+                    feature_col=["extra feature"], target_col="value", id_sensitive=True)
         x, y = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
         assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
@@ -186,11 +198,22 @@ class TestTSDataset(ZooTestCase):
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 1)
         assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
 
+        tsdata.roll(lookback=lookback, horizon=horizon,
+                    feature_col=[], target_col="value", id_sensitive=True)
+        x, y = tsdata.to_numpy()
+        assert x.shape == (len(df)-lookback-horizon+1, lookback, 1)
+        assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
+
         # roll test
         horizon = 0
         lookback = random.randint(1, 20)
 
         tsdata.roll(lookback=lookback, horizon=horizon)
+        x, y = tsdata.to_numpy()
+        assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
+        assert y is None
+
+        tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
         x, y = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
         assert y is None
@@ -204,26 +227,27 @@ class TestTSDataset(ZooTestCase):
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
 
-        # roll train
-        tsdata.roll(lookback=lookback, horizon=horizon)
-        x, y = tsdata.to_numpy()
-        assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
-        assert y.shape == ((50-lookback-horizon+1)*2, horizon, 1)
-
+        # test train
         tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
         x, y = tsdata.to_numpy()
         assert x.shape == ((50-lookback-horizon+1), lookback, 4)
         assert y.shape == ((50-lookback-horizon+1), horizon, 2)
+
+        tsdata.roll(lookback=lookback, horizon=horizon)
+        x, y = tsdata.to_numpy()
+        assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
+        assert y.shape == ((50-lookback-horizon+1)*2, horizon, 1)
         tsdata._check_basic_invariants()
 
     def test_tsdataset_imputation(self):
-        df = get_ugly_ts_df()
-        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="e",
-                                       extra_feature_col=["a", "b", "c", "d"], id_col="id")
-        tsdata.impute(mode="last")
-        assert tsdata.to_pandas().isna().sum().sum() == 0
-        assert len(tsdata.to_pandas()) == 100
-        tsdata._check_basic_invariants()
+        for val in ["last", "const", "linear"]:
+            df = get_ugly_ts_df()
+            tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="e",
+                                           extra_feature_col=["a", "b", "c", "d"], id_col="id")
+            tsdata.impute(mode=val)
+            assert tsdata.to_pandas().isna().sum().sum() == 0
+            assert len(tsdata.to_pandas()) == 100
+            tsdata._check_basic_invariants()
 
     def test_tsdataset_deduplicate(self):
         df = get_ugly_ts_df()
@@ -368,7 +392,8 @@ class TestTSDataset(ZooTestCase):
             _, unscaled_y_test_reproduce = tsdata_test.to_numpy()
 
             assert_array_almost_equal(unscaled_pred, unscaled_y_test_reproduce)
-            assert_array_almost_equal(unscaled_y_test, unscaled_y_test_reproduce)
+            assert_array_almost_equal(
+                unscaled_y_test, unscaled_y_test_reproduce)
 
             tsdata._check_basic_invariants()
 
@@ -450,13 +475,21 @@ class TestTSDataset(ZooTestCase):
         assert tsdata_test.target_col[0] != "new value"
 
     def test_tsdataset_global_feature(self):
+        for val in ["minimal", "comprehensive", "efficient"]:
+            df = get_ts_df()
+            tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                           extra_feature_col=["extra feature"], id_col="id")
+            tsdata.gen_global_feature(settings=val)
+            tsdata._check_basic_invariants()
+
+    def test_tsdataset_global_feature_multiple(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
         tsdata.gen_global_feature(settings="minimal")
         tsdata._check_basic_invariants()
 
-    def test_tsdataset_rolling_feature(self):
+    def test_tsdataset_rolling_feature_multiple(self):
         df = get_multi_id_ts_df()
         horizon = random.randint(2, 10)
         lookback = random.randint(2, 20)
