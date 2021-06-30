@@ -121,7 +121,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     {
-      val pattern = s".*INFO.*DistriLogger.* - " + "" +
+      val pattern = s".*INFO.*DistriOptimizerV2.* - " + "" +
         s"\\[Epoch 1 100/100\\]\\[Iteration 2\\]\\[Wall Clock .*\\] " +
         s"Epoch finished. Wall clock time is .*ms"
 
