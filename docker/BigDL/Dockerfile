@@ -63,8 +63,8 @@ RUN wget https://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop
 #bigdl
 RUN git clone https://github.com/intel-analytics/BigDL-Tutorials.git 
 
-ADD ./start-notebook.sh /opt/work
-ADD ./download-bigdl.sh /opt/work
+COPY ./start-notebook.sh /opt/work
+COPY ./download-bigdl.sh /opt/work
 RUN chmod a+x start-notebook.sh && \
     chmod a+x download-bigdl.sh 
 RUN ./download-bigdl.sh
