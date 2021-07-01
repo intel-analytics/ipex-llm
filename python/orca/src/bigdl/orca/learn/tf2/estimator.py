@@ -82,13 +82,8 @@ def process_spark_xshards(spark_xshards, num_workers):
     data = spark_xshards
     if data.num_partitions() != num_workers:
         data = data.repartition(num_workers)
-
-    # todo currently we need this information to pad the short partitions
-    # so that every model run exactly the same number of steps in one epoch
-    max_length = data.rdd.map(data_length) \
-        .mapPartitions(lambda iterator: [sum(iterator)]).max()
     ray_xshards = RayXShards.from_spark_xshards(data)
-    return max_length, ray_xshards
+    return ray_xshards
 
 
 class TensorFlow2Estimator(OrcaRayEstimator):
@@ -228,7 +223,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                             label_cols,
                                                                             validation_data, "fit")
 
-            max_length, ray_xshards = process_spark_xshards(data, self.num_workers)
+            ray_xshards = process_spark_xshards(data, self.num_workers)
 
             if validation_data is None:
                 def transform_func(worker, partition_refs):
@@ -238,8 +233,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                         transform_func)
             else:
-                val_max_length, val_ray_xshards = process_spark_xshards(validation_data,
-                                                                        self.num_workers)
+                val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
                     params["data_creator"] = make_data_creator(this_partition_refs)
