@@ -53,7 +53,7 @@ python ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/chronos/chronos_autots_nyc
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "keras_lenet_mnist failed"
+  echo "chronos_autots_nyc_taxi failed"
   exit $exit_status
 fi
 
