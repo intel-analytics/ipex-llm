@@ -27,6 +27,7 @@ import pandas as pd
 class TestARIMAModel(ZooTestCase):
 
     def setup_method(self, method):
+        np.random.seed(0)
         self.seq_len = 400
         self.config = {
             "p": np.random.randint(0, 4),
