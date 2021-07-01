@@ -161,3 +161,11 @@ class AutoTCN:
         Get the best tcn model.
         """
         return self.auto_est.get_best_model()
+
+    def get_best_config(self):
+        """
+        Get the best configuration
+
+        :return: A dictionary of best hyper parameters
+        """
+        return self.auto_est.get_best_config()

@@ -18,6 +18,7 @@ from unittest import TestCase
 import pytest
 
 import torch
+import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 from zoo.chronos.autots.experimental import AutoTSTrainer
@@ -57,6 +58,43 @@ def get_data_creator():
     return data_creator
 
 
+class CustomizedNet(nn.Module):
+    def __init__(self,
+                 dropout,
+                 input_size,
+                 input_feature_num,
+                 hidden_dim,
+                 output_size):
+        '''
+        Simply use linear layers for multi-variate single-step forecasting.
+        '''
+        super().__init__()
+        self.fc1 = nn.Linear(input_size*input_feature_num, hidden_dim)
+        self.dropout = nn.Dropout(dropout)
+        self.relu1 = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim, output_size)
+
+    def forward(self, x):
+        # x.shape = (num_sample, input_size, input_feature_num)
+        x = x.view(-1, x.shape[1]*x.shape[2])
+        x = self.fc1(x)
+        x = self.dropout(x)
+        x = self.relu1(x)
+        x = self.fc2(x)
+        # x.shape = (num_sample, output_size)
+        x = torch.unsqueeze(x, 1)
+        # x.shape = (num_sample, 1, output_size)
+        return x
+
+
+def model_creator(config):
+    return CustomizedNet(dropout=config["dropout"],
+                         input_size=config["past_seq_len"],
+                         input_feature_num=config["input_feature_num"],
+                         hidden_dim=config["hidden_dim"],
+                         output_size=config["output_feature_num"])
+
+
 class TestAutoTrainer(TestCase):
     def setUp(self) -> None:
         from zoo.orca import init_orca_context
@@ -66,9 +104,75 @@ class TestAutoTrainer(TestCase):
         from zoo.orca import stop_orca_context
         stop_orca_context()
 
+    def test_fit_third_party_feature(self):
+        input_feature_dim = 11  # This param will not be used
+        output_target_num = 2  # 2 targets are generated in get_tsdataset
+
+        tsdata_train = get_tsdataset().gen_dt_feature()
+        tsdata_valid = get_tsdataset().gen_dt_feature()
+
+        search_space = {
+            'hidden_dim': hp.grid_search([32, 64]),
+            'dropout': hp.uniform(0.1, 0.2)
+        }
+
+        auto_trainer = AutoTSTrainer(model=model_creator,
+                                     search_space=search_space,
+                                     past_seq_len=hp.randint(4, 6),
+                                     future_seq_len=1,
+                                     input_feature_num=input_feature_dim,
+                                     output_target_num=output_target_num,
+                                     selected_features="auto",
+                                     metric="mse",
+                                     loss=torch.nn.MSELoss(),
+                                     cpus_per_trial=2)
+
+        auto_trainer.fit(data=tsdata_train,
+                         epochs=1,
+                         batch_size=hp.choice([32, 64]),
+                         validation_data=tsdata_valid,
+                         n_sampling=1
+                         )
+
+        config = auto_trainer.get_best_config()
+        assert 4 <= config["past_seq_len"] <= 6
+
+    def test_fit_third_party_data_creator(self):
+        input_feature_dim = 4
+        output_feature_dim = 2  # 2 targets are generated in get_tsdataset
+
+        search_space = {
+            'hidden_dim': hp.grid_search([32, 64]),
+            'dropout': hp.uniform(0.1, 0.2)
+        }
+
+        auto_trainer = AutoTSTrainer(model=model_creator,
+                                     search_space=search_space,
+                                     past_seq_len=7,
+                                     future_seq_len=1,
+                                     input_feature_num=input_feature_dim,
+                                     output_target_num=output_feature_dim,
+                                     selected_features="auto",
+                                     metric="mse",
+                                     loss=torch.nn.MSELoss(),
+                                     cpus_per_trial=2)
+
+        auto_trainer.fit(data=get_data_creator(),
+                         epochs=1,
+                         batch_size=hp.choice([32, 64]),
+                         validation_data=get_data_creator(),
+                         n_sampling=1
+                         )
+
+        config = auto_trainer.get_best_config()
+        assert config["past_seq_len"] == 7
+
     def test_fit_lstm_feature(self):
         input_feature_dim = 11  # This param will not be used
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
+
+        tsdata_train = get_tsdataset().gen_dt_feature()
+        tsdata_valid = get_tsdataset().gen_dt_feature()
 
         search_space = {
             'hidden_dim': hp.grid_search([32, 64]),
@@ -76,6 +180,7 @@ class TestAutoTrainer(TestCase):
             'lr': hp.choice([0.001, 0.003, 0.01]),
             'dropout': hp.uniform(0.1, 0.2)
         }
+
         auto_trainer = AutoTSTrainer(model='lstm',
                                      search_space=search_space,
                                      past_seq_len=hp.randint(4, 6),
@@ -88,10 +193,11 @@ class TestAutoTrainer(TestCase):
                                      logs_dir="/tmp/auto_trainer",
                                      cpus_per_trial=2,
                                      name="auto_trainer")
-        auto_trainer.fit(data=get_tsdataset().gen_dt_feature(),
+
+        auto_trainer.fit(data=tsdata_train,
                          epochs=1,
                          batch_size=hp.choice([32, 64]),
-                         validation_data=get_tsdataset().gen_dt_feature(),
+                         validation_data=tsdata_valid,
                          n_sampling=1
                          )
         config = auto_trainer.get_best_config()
