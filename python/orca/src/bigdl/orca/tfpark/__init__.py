@@ -65,15 +65,16 @@ else:
         raise error
 
     class UnusableClass(object):
-        pass
+        def __init__(*args, **kwargs):
+            pass
 
     for i in MAGIC_METHODS_TO_CHANGE:
         setattr(UnusableClass, i, error_func)
 
-    KerasModel = UnusableClass()
-    TFEstimator = UnusableClass()
-    TFOptimizer = UnusableClass()
-    TFDataset = UnusableClass()
-    ZooOptimizer = UnusableClass()
-    TFPredictor = UnusableClass()
-    TFNet = UnusableClass()
+    KerasModel = UnusableClass
+    TFEstimator = UnusableClass
+    TFOptimizer = UnusableClass
+    TFDataset = UnusableClass
+    ZooOptimizer = UnusableClass
+    TFPredictor = UnusableClass
+    TFNet = UnusableClass
