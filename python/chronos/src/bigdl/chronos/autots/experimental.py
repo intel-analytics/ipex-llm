@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+import types
+
+from zoo.orca.automl.auto_estimator import AutoEstimator
 from zoo.chronos.data import TSDataset
 import zoo.orca.automl.hp as hp
 from zoo.chronos.autots.model import AutoModelFactory
@@ -46,6 +49,13 @@ class AutoTSTrainer:
         for tuning using AutoML.
         :param model: a string or a model creation function
                a string indicates a built-in model, currently "lstm", "tcn" are supported
+               a model creation function indicates a 3rd party model, the function should take a
+               config param and return a torch.nn.Module (backend="torch") / tf model
+               (backend="keras"). If you use chronos.data.TSDataset as data input, the 3rd party
+               should have 3 dim input (num_sample, past_seq_len, input_feature_num) and 3 dim
+               output (num_sample, future_seq_len, output_feature_num) and use the same key
+               in the model creation function. If you use a customized data creator, the output of
+               data creator should fit the input of model creation function.
         :param search_space: hyper parameter configurations. Read the API docs for each auto model.
                Some common hyper parameter can be explicitly set in named parameter.
         :param metric: String. The evaluation metric name to optimize. e.g. "mse"
@@ -78,28 +88,38 @@ class AutoTSTrainer:
             if loss is None:
                 loss = torch.nn.MSELoss()
 
-        # check 3rd party model
-        import types
-        if isinstance(model, types.FunctionType):
-            self.model = model
-            raise ValueError("3rd party model is not support for now")
+        if isinstance(model, types.FunctionType) and backend == "torch":
+            from zoo.orca.automl.auto_estimator import AutoEstimator
+            self.model = AutoEstimator.from_torch(model_creator=model,
+                                                  optimizer=optimizer,
+                                                  loss=loss,
+                                                  logs_dir=logs_dir,
+                                                  resources_per_trial={"cpu": cpus_per_trial},
+                                                  name=name)
+            self.metric = metric
+            search_space.update({"past_seq_len": past_seq_len,
+                                 "future_seq_len": future_seq_len,
+                                 "input_feature_num": input_feature_num,
+                                 "output_feature_num": output_target_num})
+            self.search_space = search_space
 
-        # update auto model common search space
-        search_space.update({"past_seq_len": past_seq_len,
-                             "future_seq_len": future_seq_len,
-                             "input_feature_num": input_feature_num,
-                             "output_target_num": output_target_num,
-                             "loss": loss,
-                             "metric": metric,
-                             "optimizer": optimizer,
-                             "backend": backend,
-                             "logs_dir": logs_dir,
-                             "cpus_per_trial": cpus_per_trial,
-                             "name": name})
+        if isinstance(model, str):
+            # update auto model common search space
+            search_space.update({"past_seq_len": past_seq_len,
+                                 "future_seq_len": future_seq_len,
+                                 "input_feature_num": input_feature_num,
+                                 "output_target_num": output_target_num,
+                                 "loss": loss,
+                                 "metric": metric,
+                                 "optimizer": optimizer,
+                                 "backend": backend,
+                                 "logs_dir": logs_dir,
+                                 "cpus_per_trial": cpus_per_trial,
+                                 "name": name})
 
-        # create auto model from name
-        self.model = AutoModelFactory.create_auto_model(name=model,
-                                                        search_space=search_space)
+            # create auto model from name
+            self.model = AutoModelFactory.create_auto_model(name=model,
+                                                            search_space=search_space)
 
         # save selected features setting for data creator generation
         self.selected_features = selected_features
@@ -142,28 +162,47 @@ class AutoTSTrainer:
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         """
+        is_third_party_model = isinstance(self.model, AutoEstimator)
+
         # generate data creator from TSDataset (pytorch base require validation data)
         if isinstance(data, TSDataset) and isinstance(validation_data, TSDataset):
             train_d, val_d = self._prepare_data_creator(
-                search_space=self.model.search_space,
+                search_space=self.search_space if is_third_party_model else self.model.search_space,
                 train_data=data,
                 val_data=validation_data,
             )
         else:
             train_d, val_d = data, validation_data
 
-        self.model.fit(
-            data=train_d,
-            epochs=epochs,
-            batch_size=batch_size,
-            validation_data=val_d,
-            metric_threshold=metric_threshold,
-            n_sampling=n_sampling,
-            search_alg=search_alg,
-            search_alg_params=search_alg_params,
-            scheduler=scheduler,
-            scheduler_params=scheduler_params
-        )
+        if is_third_party_model:
+            self.search_space.update({"batch_size": batch_size})
+            self.model.fit(
+                data=train_d,
+                epochs=epochs,
+                validation_data=val_d,
+                metric=self.metric,
+                metric_threshold=metric_threshold,
+                n_sampling=n_sampling,
+                search_space=self.search_space,
+                search_alg=search_alg,
+                search_alg_params=search_alg_params,
+                scheduler=scheduler,
+                scheduler_params=scheduler_params,
+            )
+
+        if not is_third_party_model:
+            self.model.fit(
+                data=train_d,
+                epochs=epochs,
+                batch_size=batch_size,
+                validation_data=val_d,
+                metric_threshold=metric_threshold,
+                n_sampling=n_sampling,
+                search_alg=search_alg,
+                search_alg_params=search_alg_params,
+                scheduler=scheduler,
+                scheduler_params=scheduler_params
+            )
 
     def _prepare_data_creator(self, search_space, train_data, val_data=None):
         """
@@ -235,4 +274,4 @@ class AutoTSTrainer:
 
         :return: A dictionary of best hyper parameters
         """
-        return self.model.auto_est.get_best_config()
+        return self.model.get_best_config()
