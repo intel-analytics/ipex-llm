@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.chronos.autots.model.AutoProphet import AutoProphet
+from zoo.chronos.autots.model.auto_prophet import AutoProphet
 
 import numpy as np
 import pandas as pd
@@ -25,13 +25,12 @@ from zoo.orca.automl import hp
 
 def get_data():
     seq_len = 480
-    x = pd.DataFrame(pd.date_range('20130101', periods=seq_len), columns=['ds'])
-    x.insert(1, 'y', np.random.rand(seq_len))
+    data = pd.DataFrame(pd.date_range('20130101', periods=seq_len), columns=['ds'])
+    data.insert(1, 'y', np.random.rand(seq_len))
     horizon = np.random.randint(2, 50)
-    target = pd.DataFrame(pd.date_range('20140426', periods=horizon), columns=['ds'])
-    target.insert(1, 'y', np.random.rand(horizon))
-    data = {'x': x, 'y': None, 'val_x': None, 'val_y': target}
-    return data
+    validation_data = pd.DataFrame(pd.date_range('20140426', periods=horizon), columns=['ds'])
+    validation_data.insert(1, 'y', np.random.rand(horizon))
+    return data, validation_data
 
 
 class TestAutoProphet(TestCase):
@@ -44,20 +43,19 @@ class TestAutoProphet(TestCase):
         stop_orca_context()
 
     def test_fit(self):
-        auto_prophet = AutoProphet()
-        data = get_data()
-        search_space = {
-            "changepoint_prior_scale": hp.loguniform(0.001, 0.5),
-            "seasonality_prior_scale": hp.loguniform(0.01, 10),
-            "holidays_prior_scale": hp.loguniform(0.01, 10),
-            "seasonality_mode": hp.choice(['additive', 'multiplicative']),
-            "changepoint_range": hp.uniform(0.8, 0.95)
-        }
+        data, validation_data = get_data()
+        auto_prophet = AutoProphet(metric="mse",
+                                   changepoint_prior_scale=hp.loguniform(0.001, 0.5),
+                                   seasonality_prior_scale=hp.loguniform(0.01, 10),
+                                   holidays_prior_scale=hp.loguniform(0.01, 10),
+                                   seasonality_mode=hp.choice(['additive', 'multiplicative']),
+                                   changepoint_range=hp.uniform(0.8, 0.95)
+                                   )
+
         auto_prophet.fit(data=data,
+                         validation_data=validation_data,
                          epochs=1,
-                         metric="mse",
-                         n_sampling=10,
-                         search_space=search_space,
+                         n_sampling=1,
                          )
         best_model = auto_prophet.get_best_model()
         assert 0.001 <= best_model.model.changepoint_prior_scale <= 0.5
