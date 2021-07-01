@@ -17,9 +17,11 @@
 import shutil
 import os.path
 import pytest
+import hashlib
+import operator
 from unittest import TestCase
 
-from pyspark.sql.functions import col, max, min, array
+from pyspark.sql.functions import col, concat, max, min, array
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, \
     DoubleType
 
@@ -99,6 +101,72 @@ class TestTable(TestCase):
                                                                    "filled"
         assert filled_tbl.df.filter("col_5 is null").count() == 0, "col_5 null values should be " \
                                                                    "filled"
+
+    def test_filter_by_frequency(self):
+        data = [("a", "b", 1),
+                ("b", "a", 2),
+                ("a", "bc", 3),
+                ("c", "c", 2),
+                ("b", "a", 2),
+                ("ab", "c", 1),
+                ("c", "b", 1),
+                ("a", "b", 1)]
+        schema = StructType([StructField("A", StringType(), True),
+                             StructField("B", StringType(), True),
+                             StructField("C", IntegerType(), True)])
+        spark = OrcaContext.get_spark_session()
+        df = spark.createDataFrame(data, schema)
+        tbl = FeatureTable(df).filter_by_frequency(["A", "B", "C"])
+        assert tbl.to_spark_df().count() == 2, "the count of frequency >=2 should be 2"
+
+    def test_hash_encode(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("a", "b", 1),
+                ("b", "a", 2),
+                ("a", "c", 3),
+                ("c", "c", 2),
+                ("b", "a", 1),
+                ("a", "d", 1)]
+        schema = StructType([StructField("A", StringType(), True),
+                             StructField("B", StringType(), True),
+                             StructField("C", IntegerType(), True)])
+        df = spark.createDataFrame(data, schema)
+        tbl = FeatureTable(df)
+        hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
+        hash_int = lambda x: int(hash_str(x), 16) % 100
+        hash_value = []
+        for row in df.collect():
+            hash_value.append(hash_int(row[0]))
+        tbl_hash = []
+        for record in tbl.hash_encode(["A"], 100).to_spark_df().collect():
+            tbl_hash.append(int(record[0]))
+        assert(operator.eq(hash_value, tbl_hash)), "the hash encoded value should be equal"
+
+    def test_cross_hash_encode(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("a", "b", "c", 1),
+                ("b", "a", "d", 2),
+                ("a", "c", "e", 3),
+                ("c", "c", "c", 2),
+                ("b", "a", "d", 1),
+                ("a", "d", "e", 1)]
+        schema = StructType([StructField("A", StringType(), True),
+                             StructField("B", StringType(), True),
+                             StructField("C", StringType(), True),
+                             StructField("D", IntegerType(), True)])
+        df = spark.createDataFrame(data, schema)
+        cross_hash_df = df.withColumn("A_B_C", concat("A", "B", "C"))
+        tbl = FeatureTable(df)
+        cross_hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
+        cross_hash_int = lambda x: int(cross_hash_str(x), 16) % 100
+        cross_hash_value = []
+        for row in cross_hash_df.collect():
+            cross_hash_value.append(cross_hash_int(row[4]))
+        tbl_cross_hash = []
+        for record in tbl.cross_hash_encode(["A", "B", "C"], 100).to_spark_df().collect():
+            tbl_cross_hash.append(int(record[4]))
+        assert(operator.eq(cross_hash_value, tbl_cross_hash)), "the crossed hash encoded value" \
+                                                               "should be equal"
 
     def test_gen_string_idx(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
@@ -342,7 +410,6 @@ class TestTable(TestCase):
         schema = StructType([
             StructField("name", StringType(), True),
             StructField("item_hist_seq", ArrayType(IntegerType()), True)])
-
         df = spark.createDataFrame(data, schema)
         df2 = sc \
             .parallelize([(1, 0), (2, 0), (3, 0), (4, 1), (5, 1), (6, 1), (7, 2), (8, 2), (9, 2)]) \
