@@ -54,6 +54,7 @@ Analytics Zoo Documentation
    doc/Chronos/QuickStart/chronos-autots-quickstart.md
    doc/UseCase/keras-api.md
    doc/UseCase/nnframes.md
+   doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.md
    
 .. toctree::
    :maxdepth: 1
