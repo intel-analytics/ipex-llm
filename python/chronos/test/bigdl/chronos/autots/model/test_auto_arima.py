@@ -24,6 +24,7 @@ from zoo.orca.automl import hp
 
 
 def get_data():
+    np.random.seed(0)
     seq_len = 400
     data = np.random.rand(seq_len)
     horizon = np.random.randint(2, 50)
