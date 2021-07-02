@@ -20,6 +20,7 @@ from zoo.orca.automl.auto_estimator import AutoEstimator
 from zoo.chronos.data import TSDataset
 import zoo.orca.automl.hp as hp
 from zoo.chronos.autots.model import AutoModelFactory
+from zoo.chronos.autots.experimental.tspipeline import TSPipeline
 
 
 class AutoTSTrainer:
@@ -123,6 +124,8 @@ class AutoTSTrainer:
 
         # save selected features setting for data creator generation
         self.selected_features = selected_features
+        self._scaler = None
+        self._scaler_index = None
 
     def fit(self,
             data,
@@ -171,6 +174,8 @@ class AutoTSTrainer:
                 train_data=data,
                 val_data=validation_data,
             )
+            self._scaler = data.scaler
+            self._scaler_index = data.scaler_index
         else:
             train_d, val_d = data, validation_data
 
@@ -204,6 +209,11 @@ class AutoTSTrainer:
                 scheduler_params=scheduler_params
             )
 
+        return TSPipeline(best_model=self.get_best_model(),
+                          best_config=self.get_best_config(),
+                          scaler=self._scaler,
+                          scaler_index=self._scaler_index)
+
     def _prepare_data_creator(self, search_space, train_data, val_data=None):
         """
         prepare the data creators and add selected features to search_space
@@ -217,14 +227,18 @@ class AutoTSTrainer:
         import ray
 
         # append feature selection into search space
+        # TODO: more flexible setting
         all_features = train_data.feature_col
         if self.selected_features not in ("all", "auto"):
             raise ValueError(f"Only \"all\" and \"auto\" are supported for selected_features,\
                 but found {self.selected_features}")
         if self.selected_features == "auto":
-            search_space['selected_features'] = hp.choice_n(all_features,
-                                                            min_items=0,
-                                                            max_items=len(all_features))
+            if len(all_features) == 0:
+                search_space['selected_features'] = all_features
+            else:
+                search_space['selected_features'] = hp.choice_n(all_features,
+                                                                min_items=0,
+                                                                max_items=len(all_features))
         if self.selected_features == "all":
             search_space['selected_features'] = all_features
 
