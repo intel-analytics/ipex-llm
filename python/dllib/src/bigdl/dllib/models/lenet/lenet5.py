@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser.add_option("-t", "--endTriggerType", dest="endTriggerType", default="epoch")
     parser.add_option("-n", "--endTriggerNum", type=int, dest="endTriggerNum", default="20")
     parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
-    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV2")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
 
     (options, args) = parser.parse_args(sys.argv)
 

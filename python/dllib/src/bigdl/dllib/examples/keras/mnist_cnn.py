@@ -78,7 +78,7 @@ if __name__ == "__main__":
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
     parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="12")
     parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
-    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV2")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
     (options, args) = parser.parse_args(sys.argv)
 
     keras_model = build_keras_model()
