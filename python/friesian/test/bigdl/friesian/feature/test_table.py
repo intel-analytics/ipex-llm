@@ -220,7 +220,7 @@ class TestTable(TestCase):
         assert clip_tbl.df.filter("col_3 < 2").count() == 0, "col_3 should >= 2"
         with self.assertRaises(Exception) as context:
             feature_tbl.clip(None, 2)
-        self.assertTrue('columns should be str or list of str, but got None.'
+        self.assertTrue('columns should be str or a list of str, but got None.'
                         in str(context.exception))
 
         feature_tbl = FeatureTable.read_parquet(file_path)
