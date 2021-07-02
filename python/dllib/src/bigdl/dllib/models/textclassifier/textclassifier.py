@@ -164,7 +164,7 @@ if __name__ == "__main__":
     parser.add_option("--model", dest="model_type", default="cnn")
     parser.add_option("-p", "--p", dest="p", default="0.0")
     parser.add_option("-d", "--data_path", dest="data_path", default="/tmp/news20/")
-    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV2")
+    parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
