@@ -58,6 +58,7 @@ class TSDataset:
         self.roll_feature_df = None
         self.roll_addional_feature = None
         self.scaler = None
+        self.scaler_index = [i for i in range(len(self.target_col))]
         self.id_sensitive = None
 
         self._check_basic_invariants()
@@ -455,6 +456,13 @@ class TSDataset:
             reindex_list = functools.reduce(lambda a, b: a+b, reindex_list)
             self.numpy_x = self.numpy_x[:, :, reindex_list]
 
+        # scaler index
+        num_roll_target = len(self.roll_target)
+        repeat_factor = len(self._id_list) if self.id_sensitive else 1
+        scaler_index = [self.target_col.index(self.roll_target[i])
+                        for i in range(num_roll_target)] * repeat_factor
+        self.scaler_index = scaler_index
+
         return self
 
     def to_numpy(self):
@@ -538,11 +546,7 @@ class TSDataset:
 
         :return: the unscaled numpy ndarray.
         '''
-        num_roll_target = len(self.roll_target)
-        repeat_factor = len(self._id_list) if self.id_sensitive else 1
-        scaler_index = [self.target_col.index(self.roll_target[i])
-                        for i in range(num_roll_target)] * repeat_factor
-        return unscale_timeseries_numpy(data, self.scaler, scaler_index)
+        return unscale_timeseries_numpy(data, self.scaler, self.scaler_index)
 
     def _check_basic_invariants(self):
         '''
