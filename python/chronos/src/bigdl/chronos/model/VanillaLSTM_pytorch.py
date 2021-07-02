@@ -43,6 +43,7 @@ class LSTMModel(nn.Module):
         # out = lstm_out[-1].contiguous().view(-1, self.hidden_dim)
         # out = self.linear(out, len(input_seq), -1)
         out = self.fc(lstm_out[:, -1, :])
+        out = out.view(out.shape[0], 1, out.shape[1])
         return out
 
 
