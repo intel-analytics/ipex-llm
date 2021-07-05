@@ -42,3 +42,24 @@ AutoLSTM is an LSTM forecasting model with Auto tuning.
     :undoc-members:
     :show-inheritance:
 
+
+chronos.autots.model.auto_arima
+----------------------------------------
+
+AutoARIMA is an ARIMA forecasting model with Auto tuning.
+
+.. automodule:: zoo.chronos.autots.model.auto_arima
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
+    
+chronos.autots.model.auto_prophet
+----------------------------------------
+
+AutoProphet is a Prophet forecasting model with Auto tuning.
+
+.. automodule:: zoo.chronos.autots.model.auto_prophet
+    :members:
+    :undoc-members:
+    :show-inheritance:

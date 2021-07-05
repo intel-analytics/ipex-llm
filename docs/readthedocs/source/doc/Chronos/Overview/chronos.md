@@ -160,6 +160,18 @@ TCMFForecaster wraps a model architecture that follows implementation of the pap
 
 View High-dimensional Electricity Data Forecasting [example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/tcmf/run_electricity.py) and [TCMFForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#chronos-model-forecast-tcmf-forecaster) for more details.
 
+###### **4.2.6 ARIMAForecaster**
+
+ARIMAForecaster wraps a ARIMA model and is suitable for univariate time series forecasting. It works best with data that show evidence of non-stationarity in the sense of mean (and an initial differencing step (corresponding to the "I, integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function.
+
+View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#chronos-model-forecast-arima-forecaster) for more details.
+
+###### **4.2.7 ProphetForecaster**
+
+ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/prophet)) which is an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects and is suitable for univariate time series forecasting. It works best with time series that have strong seasonal effects and several seasons of historical data and is robust to missing data and shifts in the trend, and typically handles outliers well.
+
+View Stock Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#chronos-model-forecast-prophet-forecaster) for more details.
+
 ### **5 Anomaly Detection**
 
 Anomaly Detection detects abnormal samples in a given time series. _Chronos_ provides a set of unsupervised anomaly detectors. 
