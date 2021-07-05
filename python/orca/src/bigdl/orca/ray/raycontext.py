@@ -572,13 +572,17 @@ class RayContext(object):
             master_process_infos = ray_rdd.mapPartitionsWithIndex(
                 self.ray_service.gen_ray_master_start()).collect()
             master_process_infos = [process for process in master_process_infos if process]
-            assert len(master_process_infos) == 1
+            assert len(master_process_infos) == 1, \
+                "There should be only one ray master launched, but got {}"\
+                .format(len(master_process_infos))
             master_process_info = master_process_infos[0]
             redis_address = master_process_info.master_addr
             raylet_process_infos = ray_rdd.mapPartitions(
                 self.ray_service.gen_raylet_start(redis_address)).collect()
             raylet_process_infos = [process for process in raylet_process_infos if process]
-            assert len(raylet_process_infos) == self.num_ray_nodes - 1
+            assert len(raylet_process_infos) == self.num_ray_nodes - 1, \
+                "There should be {} raylets launched across the cluster, but got {}"\
+                .format(self.num_ray_nodes - 1, len(raylet_process_infos))
             process_infos = master_process_infos + raylet_process_infos
 
         self.ray_processesMonitor = ProcessMonitor(process_infos, self.sc, ray_rdd, self,
