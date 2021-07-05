@@ -4,7 +4,7 @@
 echo "Chronos test start"
 
 dir=${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/chronos
-pytorchFiles=("chronos_nyc_taxi_tsdataset_forecaster")
+pytorchFiles=("chronos_nyc_taxi_tsdataset_forecaster" "chronos_minn_traffic_anomaly_detector")
 index=1
 
 set -e
@@ -20,6 +20,11 @@ do
 	# chronos_nyc_taxi_tsdataset_forecaster data download
 	if [ ! -f nyc_taxi.csv ]; then
 		wget https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv
+	fi
+
+	# chronos_minn_traffic_anomaly_detector data download
+	if [ ! -f speed_7578.csv ]; then
+		wget https://raw.githubusercontent.com/numenta/NAB/master/data/realTraffic/speed_7578.csv
 	fi
 
 	${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${filename}
