@@ -20,12 +20,11 @@ from zoo.chronos.model.arima import ARIMAModel
 
 class ARIMAForecaster(Forecaster):
     """
-    ARIMA Forecaster
-    AutoRegressive Integrated Moving Average (ARIMA) is a class of statistical models
-    for analyzing and forecasting time series data. It consists of 3 components:
-    AR (AutoRegressive), I (Integrated) and MA (Moving Average). In ARIMAForecaster we use
-    the SARIMA model (Seasonal ARIMA), which is an extension of ARIMA that additionally
-    supports the direct modeling of the seasonal component of the time series.
+    Example:
+        >>> #The dataset is split into data, validation_data
+        >>> model = ARIMAForecaster(p=2, q=2, seasonality_mode=False)
+        >>> model.fit(data, validation_data)
+        >>> predict_result = model.predict(horizon=24)
     """
 
     def __init__(self,
@@ -39,22 +38,17 @@ class ARIMAForecaster(Forecaster):
                  ):
         """
         Build a ARIMA Forecast Model.
-        User need to set p, q, P, Q, m for the ARIMA model, the differencing term (d) and
-        seasonal differencing term (D) are automatically estimated from the data.
+        User can customize p, q, seasonality_mode, P, Q, m, metric for the ARIMA model,
+        the differencing term (d) and seasonal differencing term (D) are automatically
+        estimated from the data. For details of the ARIMA model hyperparameters, refer to
+        https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
 
-        :param p: hyperparameter p for the ARIMA model, for details you may refer to
-            https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA
-        :param q: hyperparameter q for the ARIMA model, for details you may refer to
-            https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA
-        :param seasonality_mode: hyperparameter seasonality_mode for the ARIMA model,
-            for details you may refer to
-            https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA
-        :param P: hyperparameter P for the ARIMA model, for details you may refer to
-            https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA
-        :param Q: hyperparameter Q for the ARIMA model, for details you may refer to
-            https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA
-        :param m: hyperparameter m for the ARIMA model, for details you may refer to
-            https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA
+        :param p: hyperparameter p for the ARIMA model.
+        :param q: hyperparameter q for the ARIMA model.
+        :param seasonality_mode: hyperparameter seasonality_mode for the ARIMA model.
+        :param P: hyperparameter P for the ARIMA model.
+        :param Q: hyperparameter Q for the ARIMA model.
+        :param m: hyperparameter m for the ARIMA model.
         :param metric: the metric for validation and evaluation. For regression, we support
             Mean Squared Error: ("mean_squared_error", "MSE" or "mse"),
             Mean Absolute Error: ("mean_absolute_error","MAE" or "mae"),
