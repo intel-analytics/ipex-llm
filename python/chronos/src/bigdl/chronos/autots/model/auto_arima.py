@@ -38,42 +38,37 @@ class AutoARIMA:
                  **arima_config
                  ):
         """
-        Create an automated ARIMA Model
+        Create an automated ARIMA Model.
+        User need to specify either the exact value or the search space of
+        the ARIMA model hyperparameters. For details of the ARIMA model hyperparameters, refer to
+        https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
 
         :param p: Int or hp sampling function from an integer space for hyperparameter p
-               of the ARIMA model, for details you may refer to
-               https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
+               of the ARIMA model.
                For hp sampling, see zoo.chronos.orca.automl.hp for more details.
                e.g. hp.randint(0, 3).
         :param q: Int or hp sampling function from an integer space for hyperparameter q
-               of the ARIMA model, for details you may refer to
-               https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
+               of the ARIMA model.
                e.g. hp.randint(0, 3).
         :param seasonal: Bool or hp sampling function from an integer space for whether to add
-               seasonal components to the ARIMA model, for details you may refer to
-               https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
+               seasonal components to the ARIMA model.
                e.g. hp.choice([True, False]).
         :param P: Int or hp sampling function from an integer space for hyperparameter P
-               of the ARIMA model, for details you may refer to
-               https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
+               of the ARIMA model.
                For hp sampling, see zoo.chronos.orca.automl.hp for more details.
                e.g. hp.randint(0, 3).
         :param Q: Int or hp sampling function from an integer space for hyperparameter Q
-               of the ARIMA model, for details you may refer to
-               https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
+               of the ARIMA model.
                e.g. hp.randint(0, 3).
         :param m: Int or hp sampling function from an integer space for hyperparameter p
-               of the ARIMA model, for details you may refer to
-               https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA.
+               of the ARIMA model.
                e.g. hp.choice([4, 7, 12, 24, 365]).
         :param metric: String. The evaluation metric name to optimize. e.g. "mse"
         :param logs_dir: Local directory to save logs and results. It defaults to
                "/tmp/auto_arima_logs"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoARIMA. It defaults to "auto_arima"
-        :param arima_config: Other ARIMA hyperparameters. You may refer to
-               https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning for
-               the parameter names to specify.
+        :param arima_config: Other ARIMA hyperparameters.
 
         """
         self.search_space = {
@@ -88,7 +83,8 @@ class AutoARIMA:
         model_builder = ARIMABuilder()
         self.auto_est = AutoEstimator(model_builder=model_builder,
                                       logs_dir=logs_dir,
-                                      resources_per_trial={"cpu": cpus_per_trial},
+                                      resources_per_trial={
+                                          "cpu": cpus_per_trial},
                                       name=name)
 
     def fit(self,
@@ -104,6 +100,7 @@ class AutoARIMA:
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
+
         :param data: Training data, A 1-D numpy array.
         :param epochs: Max number of epochs to train in each trial. Defaults to 1.
                If you have also set metric_threshold, a trial will stop if either it has been
@@ -137,6 +134,6 @@ class AutoARIMA:
 
     def get_best_model(self):
         """
-        Get the best arima model.
+        Get the best ARIMA model.
         """
         return self.auto_est.get_best_model()
