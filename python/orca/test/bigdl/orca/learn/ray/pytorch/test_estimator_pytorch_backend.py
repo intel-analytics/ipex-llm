@@ -225,6 +225,24 @@ class TestPyTorchEstimator(TestCase):
                            feature_cols=["feature"],
                            label_cols=["label"])
 
+    def test_partition_num_less_than_workers(self):
+        sc = init_nncontext()
+        rdd = sc.range(200, numSlices=1)
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2)
+        assert df.rdd.getNumPartitions() < estimator.estimator.num_workers
+
+        estimator.fit(df, batch_size=4, epochs=2,
+                      feature_cols=["feature"],
+                      label_cols=["label"])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["feature"],
+                           label_cols=["label"])
+        estimator.predict(df, feature_cols=["feature"]).collect()
+
     def test_dataframe_predict(self):
 
         sc = init_nncontext()

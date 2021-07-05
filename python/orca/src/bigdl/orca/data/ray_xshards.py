@@ -175,12 +175,13 @@ class RayXShards(XShards):
         actor, and you may need to use ray.get(partition_ref) on actor to retrieve
         the actor partition objects.
         """
-        assigned_partitions, actor_ips = self.assign_partitions_to_actors(actors)
+        assigned_partitions, actor_ips, assigned_actors = self.assign_partitions_to_actors(actors)
         assigned_partition_refs = [(part_ids, self._get_multiple_partition_refs(part_ids))
                                    for part_ids in assigned_partitions]
-        new_part_id_refs = {part_id: func(actor, part_ref)
-                            for actor, (part_ids, part_refs) in zip(actors, assigned_partition_refs)
-                            for part_id, part_ref in zip(part_ids, part_refs)}
+        new_part_id_refs = {
+            part_id: func(actor, part_ref)
+            for actor, (part_ids, part_refs) in zip(assigned_actors, assigned_partition_refs)
+            for part_id, part_ref in zip(part_ids, part_refs)}
 
         actor_ip2part_id = defaultdict(list)
         for actor_ip, part_ids in zip(actor_ips, assigned_partitions):
@@ -201,7 +202,10 @@ class RayXShards(XShards):
         :param return_refs: Whether to return ray objects refs or ray objects. If True, return a
         list of ray object refs, otherwise return a list of ray objects. Defaults to be False,
         """
-        assigned_partitions, _ = self.assign_partitions_to_actors(actors)
+        assert self.num_partitions() >= len(actors), \
+            f"Get number of partitions ({self.num_partitions()}) smaller than " \
+            f"number of actors ({len(actors)}). Please submit an issue to analytics zoo."
+        assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):
             assigned_partition_refs = self._get_multiple_partition_refs(part_ids)
@@ -216,7 +220,10 @@ class RayXShards(XShards):
                                       return_refs=False):
         assert self.num_partitions() == xshards.num_partitions(),\
             "the rdds to be zipped must have the same number of partitions"
-        assigned_partitions, _ = self.assign_partitions_to_actors(actors)
+        assert self.num_partitions() >= len(actors), \
+            f"Get number of partitions ({self.num_partitions()}) smaller than " \
+            f"number of actors ({len(actors)}). Please submit an issue to analytics zoo."
+        assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):
             assigned_partition_refs = self._get_multiple_partition_refs(part_ids)
@@ -232,8 +239,10 @@ class RayXShards(XShards):
     def assign_partitions_to_actors(self, actors):
         num_parts = self.num_partitions()
         if num_parts < len(actors):
-            raise ValueError(f"this rdd has {num_parts} partitions, which is smaller"
-                             f"than actor number ({len(actors)} actors).")
+            logger.warning(f"this rdd has {num_parts} partitions, which is smaller "
+                           f"than actor number ({len(actors)} actors). That could cause "
+                           f"unbalancing workload on different actors. We recommend you to "
+                           f"repartition the rdd for better performance.")
 
         avg_part_num = num_parts // len(actors)
         remainder = num_parts % len(actors)
@@ -293,7 +302,20 @@ class RayXShards(XShards):
                     current_assignments.append(part_idx)
                     remainder -= 1
                     break
-        return actor2assignments, actor_ips
+
+        if num_parts < len(actors):
+            # filter assigned actors
+            assigned_actors = []
+            assigned_actor2assignments = []
+            assigned_actor_ips = []
+            for actor, assignment, ip in zip(actors, actor2assignments, actor_ips):
+                if assignment:
+                    assigned_actors.append(actor)
+                    assigned_actor2assignments.append(assignment)
+                    assigned_actor_ips.append(ip)
+            return assigned_actor2assignments, assigned_actor_ips, assigned_actors
+        else:
+            return actor2assignments, actor_ips, actors
 
     @staticmethod
     def from_partition_refs(ip2part_id, part_id2ref):
