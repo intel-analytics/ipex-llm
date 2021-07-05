@@ -68,7 +68,7 @@ def test_assign_partitions_to_actors(orca_context_fixture):
 
     actor_num = 3
     actors = [Add1Actor.remote() for i in range(actor_num)]
-    parts_list, _ = ray_xshards.assign_partitions_to_actors(actors)
+    parts_list, _, _ = ray_xshards.assign_partitions_to_actors(actors)
 
     assert len(parts_list) == actor_num
 
@@ -78,6 +78,20 @@ def test_assign_partitions_to_actors(orca_context_fixture):
             assert len(parts_list[counter]) == div + 1
         else:
             assert len(parts_list[counter]) == div
+
+
+def test_less_partition_than_actors(orca_context_fixture):
+    ray_xshards, _ = get_ray_xshards()
+    part_num = ray_xshards.num_partitions()
+
+    actor_num = 6
+    actors = [Add1Actor.remote() for i in range(actor_num)]
+    parts_list, _, assigned_actors = ray_xshards.assign_partitions_to_actors(actors)
+
+    assert len(parts_list) == len(assigned_actors) == part_num
+
+    for counter in range(len(assigned_actors)):
+        assert len(parts_list[counter]) == 1
 
 
 def test_transform_shards_with_actors(orca_context_fixture):
