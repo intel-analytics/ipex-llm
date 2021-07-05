@@ -454,7 +454,8 @@ class TSDataset:
                                        feature_start_idx+(i+1)*num_feature_col))
                             for i in range(num_id)]
             reindex_list = functools.reduce(lambda a, b: a+b, reindex_list)
-            self.numpy_x = self.numpy_x[:, :, reindex_list]
+            sorted_index = sorted(range(len(reindex_list)), key=reindex_list.__getitem__)
+            self.numpy_x = self.numpy_x[:, :, sorted_index]
 
         # scaler index
         num_roll_target = len(self.roll_target)

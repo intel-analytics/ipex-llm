@@ -239,6 +239,27 @@ class TestTSDataset(ZooTestCase):
         assert y.shape == ((50-lookback-horizon+1)*2, horizon, 1)
         tsdata._check_basic_invariants()
 
+    def test_tsdataset_roll_order(self):
+        df = pd.DataFrame({"datetime": np.array(['1/1/2019', '1/1/2019', '1/2/2019', '1/2/2019']),
+                           "value": np.array([1.9, 2.3, 2.4, 2.6]),
+                           "id": np.array(['00', '01', '00', '01']),
+                           "extra feature1": np.array([1, 0, 3, 0]),
+                           "extra feature2": np.array([2, 9, 4, 2])})
+        tsdata = TSDataset.from_pandas(df,
+                                       dt_col="datetime",
+                                       target_col="value",
+                                       extra_feature_col=["extra feature1", "extra feature2"],
+                                       id_col="id")
+        x, y = tsdata.roll(lookback=1, horizon=1, id_sensitive=False).to_numpy()
+        assert x.shape == (2, 1, 3) and y.shape == (2, 1, 1)
+        assert np.array_equal(x, np.array([[[1.9, 1, 2]], [[2.3, 0, 9]]]))
+        assert np.array_equal(y, np.array([[[2.4]], [[2.6]]]))
+
+        x, y = tsdata.roll(lookback=1, horizon=1, id_sensitive=True).to_numpy()
+        assert x.shape == (1, 1, 6) and y.shape == (1, 1, 2)
+        assert np.array_equal(x, np.array([[[1.9, 2.3, 1, 2, 0, 9]]]))
+        assert np.array_equal(y, np.array([[[2.4, 2.6]]]))
+
     def test_tsdataset_imputation(self):
         for val in ["last", "const", "linear"]:
             df = get_ugly_ts_df()
