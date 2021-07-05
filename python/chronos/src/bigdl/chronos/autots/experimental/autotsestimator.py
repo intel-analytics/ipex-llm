@@ -23,9 +23,9 @@ from zoo.chronos.autots.model import AutoModelFactory
 from zoo.chronos.autots.experimental.tspipeline import TSPipeline
 
 
-class AutoTSTrainer:
+class AutoTSEstimator:
     """
-    Automated Trainer.
+    Automated Estimator.
     """
 
     def __init__(self,
@@ -40,12 +40,12 @@ class AutoTSTrainer:
                  output_target_num=None,
                  selected_features="all",
                  backend="torch",
-                 logs_dir="/tmp/autots_trainer",
+                 logs_dir="/tmp/autots_estimator",
                  cpus_per_trial=1,
-                 name="autots_trainer"
+                 name="autots_estimator"
                  ):
         """
-        AutoTSTrainer trains a model for time series forecasting.
+        AutoTSEstimator trains a model for time series forecasting.
         User can choose one of the built-in models, or pass in a customized pytorch or keras model
         for tuning using AutoML.
         :param model: a string or a model creation function
@@ -77,7 +77,7 @@ class AutoTSTrainer:
                if not using chronos.data.TSDataset as input data type.
         :param backend: The backend of the auto model. We only support backend as "torch" for now.
         :param logs_dir: Local directory to save logs and results.
-               It defaults to "/tmp/autots_trainer"
+               It defaults to "/tmp/autots_estimator"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoLSTM. It defaults to "auto_lstm".
         """

@@ -21,9 +21,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
-from zoo.chronos.autots.experimental.autotstrainer import AutoTSTrainer
-from zoo.chronos.data.tsdataset import TSDataset
-from zoo.chronos.autots.experimental.tspipeline import TSPipeline
+from zoo.chronos.autots.experimental import AutoTSEstimator, TSPipeline
+from zoo.chronos.data import TSDataset
 from zoo.orca.automl import hp
 import pandas as pd
 
@@ -119,24 +118,24 @@ class TestAutoTrainer(TestCase):
             'dropout': hp.uniform(0.1, 0.2)
         }
 
-        auto_trainer = AutoTSTrainer(model=model_creator,
-                                     search_space=search_space,
-                                     past_seq_len=hp.randint(4, 6),
-                                     future_seq_len=1,
-                                     input_feature_num=input_feature_dim,
-                                     output_target_num=output_target_num,
-                                     selected_features="auto",
-                                     metric="mse",
-                                     loss=torch.nn.MSELoss(),
-                                     cpus_per_trial=2)
+        auto_estimator = AutoTSEstimator(model=model_creator,
+                                         search_space=search_space,
+                                         past_seq_len=hp.randint(4, 6),
+                                         future_seq_len=1,
+                                         input_feature_num=input_feature_dim,
+                                         output_target_num=output_target_num,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         loss=torch.nn.MSELoss(),
+                                         cpus_per_trial=2)
 
-        ts_pipeline = auto_trainer.fit(data=tsdata_train,
-                                       epochs=1,
-                                       batch_size=hp.choice([32, 64]),
-                                       validation_data=tsdata_valid,
-                                       n_sampling=1)
-        best_config = auto_trainer.get_best_config()
-        best_model = auto_trainer.get_best_model()
+        ts_pipeline = auto_estimator.fit(data=tsdata_train,
+                                         epochs=1,
+                                         batch_size=hp.choice([32, 64]),
+                                         validation_data=tsdata_valid,
+                                         n_sampling=1)
+        best_config = auto_estimator.get_best_config()
+        best_model = auto_estimator.get_best_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
         assert isinstance(ts_pipeline, TSPipeline)
@@ -178,25 +177,24 @@ class TestAutoTrainer(TestCase):
             'dropout': hp.uniform(0.1, 0.2)
         }
 
-        auto_trainer = AutoTSTrainer(model=model_creator,
-                                     search_space=search_space,
-                                     past_seq_len=7,
-                                     future_seq_len=1,
-                                     input_feature_num=input_feature_dim,
-                                     output_target_num=output_feature_dim,
-                                     selected_features="auto",
-                                     metric="mse",
-                                     loss=torch.nn.MSELoss(),
-                                     cpus_per_trial=2)
+        auto_estimator = AutoTSEstimator(model=model_creator,
+                                         search_space=search_space,
+                                         past_seq_len=7,
+                                         future_seq_len=1,
+                                         input_feature_num=input_feature_dim,
+                                         output_target_num=output_feature_dim,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         loss=torch.nn.MSELoss(),
+                                         cpus_per_trial=2)
 
-        auto_trainer.fit(data=get_data_creator(),
-                         epochs=1,
-                         batch_size=hp.choice([32, 64]),
-                         validation_data=get_data_creator(),
-                         n_sampling=1
-                         )
+        auto_estimator.fit(data=get_data_creator(),
+                           epochs=1,
+                           batch_size=hp.choice([32, 64]),
+                           validation_data=get_data_creator(),
+                           n_sampling=1)
 
-        config = auto_trainer.get_best_config()
+        config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
     def test_fit_lstm_feature(self):
@@ -215,25 +213,25 @@ class TestAutoTrainer(TestCase):
             'dropout': hp.uniform(0.1, 0.2)
         }
 
-        auto_trainer = AutoTSTrainer(model='lstm',
-                                     search_space=search_space,
-                                     past_seq_len=hp.randint(4, 6),
-                                     future_seq_len=1,
-                                     input_feature_num=input_feature_dim,
-                                     output_target_num=output_feature_dim,
-                                     selected_features="auto",
-                                     metric="mse",
-                                     loss=torch.nn.MSELoss(),
-                                     logs_dir="/tmp/auto_trainer",
-                                     cpus_per_trial=2,
-                                     name="auto_trainer")
-        ts_pipeline = auto_trainer.fit(data=tsdata_train,
-                                       epochs=1,
-                                       batch_size=hp.choice([32, 64]),
-                                       validation_data=tsdata_valid,
-                                       n_sampling=1)
-        best_config = auto_trainer.get_best_config()
-        best_model = auto_trainer.get_best_model()
+        auto_estimator = AutoTSEstimator(model='lstm',
+                                         search_space=search_space,
+                                         past_seq_len=hp.randint(4, 6),
+                                         future_seq_len=1,
+                                         input_feature_num=input_feature_dim,
+                                         output_target_num=output_feature_dim,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         loss=torch.nn.MSELoss(),
+                                         logs_dir="/tmp/auto_trainer",
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+        ts_pipeline = auto_estimator.fit(data=tsdata_train,
+                                         epochs=1,
+                                         batch_size=hp.choice([32, 64]),
+                                         validation_data=tsdata_valid,
+                                         n_sampling=1)
+        best_config = auto_estimator.get_best_config()
+        best_model = auto_estimator.get_best_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
         assert isinstance(ts_pipeline, TSPipeline)
@@ -282,26 +280,26 @@ class TestAutoTrainer(TestCase):
             'dropout': hp.uniform(0.1, 0.2),
             'lr': hp.loguniform(0.001, 0.01)
         }
-        auto_trainer = AutoTSTrainer(model='tcn',
-                                     search_space=search_space,
-                                     past_seq_len=hp.randint(4, 6),
-                                     future_seq_len=1,
-                                     input_feature_num=input_feature_dim,
-                                     output_target_num=output_feature_dim,
-                                     selected_features="auto",
-                                     metric="mse",
-                                     optimizer="Adam",
-                                     loss=torch.nn.MSELoss(),
-                                     logs_dir="/tmp/auto_trainer",
-                                     cpus_per_trial=2,
-                                     name="auto_trainer")
-        ts_pipeline = auto_trainer.fit(data=tsdata_train,
-                                       epochs=1,
-                                       batch_size=hp.choice([32, 64]),
-                                       validation_data=tsdata_valid,
-                                       n_sampling=1)
-        best_config = auto_trainer.get_best_config()
-        best_model = auto_trainer.get_best_model()
+        auto_estimator = AutoTSEstimator(model='tcn',
+                                         search_space=search_space,
+                                         past_seq_len=hp.randint(4, 6),
+                                         future_seq_len=1,
+                                         input_feature_num=input_feature_dim,
+                                         output_target_num=output_feature_dim,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         optimizer="Adam",
+                                         loss=torch.nn.MSELoss(),
+                                         logs_dir="/tmp/auto_trainer",
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+        ts_pipeline = auto_estimator.fit(data=tsdata_train,
+                                         epochs=1,
+                                         batch_size=hp.choice([32, 64]),
+                                         validation_data=tsdata_valid,
+                                         n_sampling=1)
+        best_config = auto_estimator.get_best_config()
+        best_model = auto_estimator.get_best_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
         assert isinstance(ts_pipeline, TSPipeline)
@@ -344,25 +342,24 @@ class TestAutoTrainer(TestCase):
             'lr': hp.choice([0.001, 0.003, 0.01]),
             'dropout': hp.uniform(0.1, 0.2)
         }
-        auto_trainer = AutoTSTrainer(model='lstm',
-                                     search_space=search_space,
-                                     past_seq_len=7,
-                                     future_seq_len=1,
-                                     input_feature_num=input_feature_dim,
-                                     output_target_num=output_feature_dim,
-                                     selected_features="auto",
-                                     metric="mse",
-                                     loss=torch.nn.MSELoss(),
-                                     logs_dir="/tmp/auto_trainer",
-                                     cpus_per_trial=2,
-                                     name="auto_trainer")
-        auto_trainer.fit(data=get_data_creator(),
-                         epochs=1,
-                         batch_size=hp.choice([32, 64]),
-                         validation_data=get_data_creator(),
-                         n_sampling=1
-                         )
-        config = auto_trainer.get_best_config()
+        auto_estimator = AutoTSEstimator(model='lstm',
+                                         search_space=search_space,
+                                         past_seq_len=7,
+                                         future_seq_len=1,
+                                         input_feature_num=input_feature_dim,
+                                         output_target_num=output_feature_dim,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         loss=torch.nn.MSELoss(),
+                                         logs_dir="/tmp/auto_trainer",
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+        auto_estimator.fit(data=get_data_creator(),
+                           epochs=1,
+                           batch_size=hp.choice([32, 64]),
+                           validation_data=get_data_creator(),
+                           n_sampling=1)
+        config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
 

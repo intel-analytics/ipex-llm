@@ -47,7 +47,7 @@ class TSPipeline:
 
         :param data: data can be a TSDataset or data creator(will be supported).
                The TSDataset should follow the same operations as the training
-               TSDataset used in AutoTSTrainer.fit.
+               TSDataset used in AutoTSEstimator.fit.
         :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
@@ -72,7 +72,7 @@ class TSPipeline:
 
         :param data: data can be a TSDataset or data creator(will be supported).
                The TSDataset should follow the same operations as the training
-               TSDataset used in AutoTSTrainer.fit.
+               TSDataset used in AutoTSEstimator.fit.
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory.  The param is only
                effective when data is a TSDataset. The values defaults to 32.
@@ -90,7 +90,7 @@ class TSPipeline:
 
         :param data: data can be a TSDataset or data creator(will be supported).
                the TSDataset should follow the same operations as the training
-               TSDataset used in AutoTSTrainer.fit.
+               TSDataset used in AutoTSEstimator.fit.
         :param validation_data: validation data, same format as data.
         :param epochs: incremental fitting epoch. The value defaults to 1.
         :param metric: evaluate metric.
