@@ -38,36 +38,32 @@ class AutoProphet:
                  ):
         """
         Create an automated Prophet Model.
+        User need to specify either the exact value or the search space of the
+        Prophet model hyperparameters. For details of the Prophet model hyperparameters, refer to
+        https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning.
+
         :param changepoint_prior_scale: Int or hp sampling function from an integer space
-            for hyperparameter changepoint_prior_scale for the Prophet model,
-            for details you may refer to
-            https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning
+            for hyperparameter changepoint_prior_scale for the Prophet model.
             For hp sampling, see zoo.chronos.orca.automl.hp for more details.
             e.g. hp.loguniform(0.001, 0.5).
         :param seasonality_prior_scale: hyperparameter seasonality_prior_scale for the
-            Prophet model, for details you may refer to
-            https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning
+            Prophet model.
             e.g. hp.loguniform(0.01, 10).
         :param holidays_prior_scale: hyperparameter holidays_prior_scale for the
-            Prophet model, for details you may refer to
-            https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning
+            Prophet model.
             e.g. hp.loguniform(0.01, 10).
         :param seasonality_mode: hyperparameter seasonality_mode for the
-            Prophet model, for details you may refer to
-            https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning
+            Prophet model.
             e.g. hp.choice(['additive', 'multiplicative']).
         :param changepoint_range: hyperparameter changepoint_range for the
-            Prophet model, for details you may refer to
-            https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning
+            Prophet model.
             e.g. hp.uniform(0.8, 0.95).
         :param metric: String. The evaluation metric name to optimize. e.g. "mse"
         :param logs_dir: Local directory to save logs and results. It defaults to
             "/tmp/auto_prophet_logs"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoProphet. It defaults to "auto_prophet"
-        :param prophet_config: Other prophet hyperparameters. You may refer to
-           https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning
-        for the parameter names to specify.
+        :param prophet_config: Other Prophet hyperparameters.
         """
         self.search_space = {
             "changepoint_prior_scale": changepoint_prior_scale,
@@ -96,6 +92,7 @@ class AutoProphet:
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
+
         :param data: Training data, A 1-D numpy array.
         :param epochs: Max number of epochs to train in each trial. Defaults to 1.
                If you have also set metric_threshold, a trial will stop if either it has been
@@ -130,6 +127,6 @@ class AutoProphet:
 
     def get_best_model(self):
         """
-        Get the best arima model.
+        Get the best Prophet model.
         """
         return self.auto_est.get_best_model()
