@@ -201,7 +201,8 @@ class PyTorchRayEstimator:
                                              validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
-                                             mode="fit")
+                                             mode="fit",
+                                             num_workers=self.num_workers)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -281,7 +282,8 @@ class PyTorchRayEstimator:
                                              validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
-                                             mode="evaluate")
+                                             mode="evaluate",
+                                             num_workers=self.num_workers)
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
