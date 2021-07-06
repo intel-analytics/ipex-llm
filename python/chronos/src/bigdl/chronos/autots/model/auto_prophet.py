@@ -112,9 +112,8 @@ class AutoProphet:
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         """
-        data_dict = {'x': data, 'y': None, 'val_x': None, 'val_y': validation_data}
-        self.auto_est.fit(data=data_dict,
-                          validation_data=None,
+        self.auto_est.fit(data=data,
+                          validation_data=validation_data,
                           metric=self.metric,
                           metric_threshold=metric_threshold,
                           n_sampling=n_sampling,

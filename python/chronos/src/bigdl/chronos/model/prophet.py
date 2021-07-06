@@ -24,71 +24,61 @@ from zoo.automl.model.abstract import BaseModel, ModelBuilder
 
 class ProphetModel(BaseModel):
 
-    def __init__(self, config={}):
+    def __init__(self):
         """
         Initialize Model
         """
-
-        self.changepoint_prior_scale = config.get('changepoint_prior_scale', 0.05)
-        self.seasonality_prior_scale = config.get('seasonality_prior_scale', 10.0)
-        self.holidays_prior_scale = config.get('holidays_prior_scale', 10.0)
-        self.seasonality_mode = config.get('seasonality_mode', 'additive')
-        self.changepoint_range = config.get('changepoint_range', 0.8)
-        self.metric = config.get('metric', 'mse')
+        self.metric = 'mse'
         self.model = None
         self.model_init = False
 
-    def set_params(self, **config):
-        self.changepoint_prior_scale = config.get('changepoint_prior_scale',
-                                                  self.changepoint_prior_scale)
-        self.seasonality_prior_scale = config.get('seasonality_prior_scale',
-                                                  self.seasonality_prior_scale)
-        self.holidays_prior_scale = config.get('holidays_prior_scale', self.holidays_prior_scale)
-        self.seasonality_mode = config.get('seasonality_mode', self.seasonality_mode)
-        self.changepoint_range = config.get('changepoint_range', self.changepoint_range)
-        self.metric = config.get('metric', self.metric)
-
     def _build(self, **config):
         """
-        build the models and initialize.
+        build the model and initialize.
         :param config: hyperparameters for the model
         """
-        self.set_params(**config)
-        self.model = Prophet(changepoint_prior_scale=self.changepoint_prior_scale,
-                             seasonality_prior_scale=self.seasonality_prior_scale,
-                             holidays_prior_scale=self.holidays_prior_scale,
-                             changepoint_range=self.changepoint_range,
-                             seasonality_mode=self.seasonality_mode)
-        self.model_init = True
+        changepoint_prior_scale = config.get('changepoint_prior_scale', 0.05)
+        seasonality_prior_scale = config.get('seasonality_prior_scale', 10.0)
+        holidays_prior_scale = config.get('holidays_prior_scale', 10.0)
+        seasonality_mode = config.get('seasonality_mode', 'additive')
+        changepoint_range = config.get('changepoint_range', 0.8)
+        self.metric = config.get('metric', self.metric)
 
-    def fit_eval(self, data, **config):
+        self.model = Prophet(changepoint_prior_scale=changepoint_prior_scale,
+                             seasonality_prior_scale=seasonality_prior_scale,
+                             holidays_prior_scale=holidays_prior_scale,
+                             changepoint_range=changepoint_range,
+                             seasonality_mode=seasonality_mode)
+
+    def fit_eval(self, data, validation_data, **config):
         """
         Fit on the training data from scratch.
 
-        :param x: training data, an dataframe with Td rows,
+        :param data: training data, an dataframe with Td rows,
             and 2 columns, with column 'ds' indicating date and column 'y' indicating target
             and Td is the time dimension
-        :param target: target for evaluation.
+        :param validation_data: validation data, should be the same type as data.
         :return: the evaluation metric value
         """
         if not self.model_init:
             self._build(**config)
+            self.model_init = True
 
-        x = data['x']
-        target = data['val_y']
-        self.model.fit(x)
-        val_metric = self.evaluate(x=None, target=target, metrics=[self.metric])[0].item()
+        self.model.fit(data)
+        val_metric = self.evaluate(target=validation_data,
+                                   metrics=[self.metric])[0].item()
         return {self.metric: val_metric}
 
-    def predict(self, x=None, horizon=24):
+    def predict(self, data=None, horizon=24):
         """
-        Predict horizon time-points ahead the input x in fit_eval
-        :param x: We don't support input x currently.
+        Predict horizon time-points ahead the input data in fit_eval
+        :param data: Prophet predicts the horizon steps foreward from the training data.
+            So data should be None as it is not used.
         :param horizon: horizon length to predict
         :return: predicted result of length horizon
         """
-        if x is not None:
-            raise ValueError("We don't support input x currently")
+        if data is not None:
+            raise ValueError("We don't support input data currently")
         if self.model is None:
             raise Exception("Needs to call fit_eval or restore first before calling predict")
         future = self.model.make_future_dataframe(periods=horizon)
@@ -96,28 +86,28 @@ class ProphetModel(BaseModel):
 
         return out
 
-    def evaluate(self, x, target, metrics=['mse']):
+    def evaluate(self, target, data=None, metrics=['mse']):
         """
-        Evaluate on the prediction results and y. We predict horizon time-points ahead the input x
+        Evaluate on the prediction results. We predict horizon time-points ahead the input data
         in fit_eval before evaluation, where the horizon length equals the second dimension size of
-        y.
-        :param x: We don't support input x currently.
+        target.
+        :param data: Prophet predicts the horizon steps foreward from the training data.
+            So data should be None as it is not used.
         :param target: target for evaluation.
         :param metrics: a list of metrics in string format
         :return: a list of metric evaluation results
         """
-        if x is not None:
-            raise ValueError("We don't support input x currently")
+        if data is not None:
+            raise ValueError("We don't support input data currently")
         if target is None:
             raise ValueError("Input invalid target of None")
         if self.model is None:
             raise Exception("Needs to call fit_eval or restore first before calling evaluate")
 
         horizon = len(target)
-        target = target[['y']]
         future = self.model.make_future_dataframe(periods=horizon)
         target_pred = self.predict(horizon=horizon)[['yhat']]
-        return [Evaluator.evaluate(m, target.values, target_pred.values) for m in metrics]
+        return [Evaluator.evaluate(m, target[['y']].values, target_pred.values) for m in metrics]
 
     def save(self, checkpoint):
         if self.model is None:
@@ -129,12 +119,6 @@ class ProphetModel(BaseModel):
         with open(checkpoint, 'r') as fin:
             self.model = model_from_json(json.load(fin))
         self.model_init = True
-
-    def _get_required_parameters(self):
-        return {}
-
-    def _get_optional_parameters(self):
-        return {}
 
 
 class ProphetBuilder(ModelBuilder):
@@ -156,6 +140,6 @@ class ProphetBuilder(ModelBuilder):
         for the parameter names to specify.
         """
         from zoo.chronos.model.prophet import ProphetModel
-        model = ProphetModel(config=self.model_config)
+        model = ProphetModel()
         model._build(**config)
         return model
