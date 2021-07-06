@@ -89,9 +89,10 @@ def write_to_ray(idx, partition, redis_address, redis_password, partition_store_
     if is_empty:
         partition_ref = ray.put([])
         result.append(local_store.upload_partition.remote(idx, partition_ref))
+        logger.warning(f"Partition {idx} is empty.")
     ray.get(result)
 
-    return [(idx, local_store_name.split(":")[-1], local_store_name, is_empty)]
+    return [(idx, local_store_name.split(":")[-1], local_store_name)]
 
 
 def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
@@ -104,11 +105,22 @@ def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
 
 class RayXShards(XShards):
 
-    def __init__(self, uuid, partition2store_name, partition2ip, partition_stores):
+    def __init__(self, uuid, id_ip_store_rdd, partition_stores):
         self.uuid = uuid
-        self.partition2store_name = partition2store_name
-        self.partition2ip = partition2ip
+        self.rdd = id_ip_store_rdd
         self.partition_stores = partition_stores
+
+    @property
+    def id_ip_store(self):
+        return self.rdd.collect()
+
+    @property
+    def partition2store_name(self):
+        return {idx: store_name for idx, _, store_name in self.id_ip_store}
+
+    @property
+    def partition2ip(self):
+        return {idx: ip for idx, ip, _ in self.id_ip_store}
 
     def transform_shard(self, func, *args):
         raise Exception("Transform is not supported for RayXShards")
@@ -139,8 +151,7 @@ class RayXShards(XShards):
         password = ray_ctx.redis_password
         num_parts = self.num_partitions()
         partition2store = self.partition2store_name
-        rdd = sc.parallelize([0] * num_parts * 10, num_parts)\
-            .mapPartitionsWithIndex(
+        rdd = self.rdd.mapPartitionsWithIndex(
             lambda idx, _: get_from_ray(idx, address, password, partition2store))
 
         # the reason why we trigger computation here is to ensure we get the data
@@ -187,7 +198,7 @@ class RayXShards(XShards):
         for actor_ip, part_ids in zip(actor_ips, assigned_partitions):
             actor_ip2part_id[actor_ip].extend(part_ids)
 
-        return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs)
+        return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs, self.rdd)
 
     def reduce_partitions_for_actors(self, actors, reduce_partitions_func, return_refs=False):
         """
@@ -318,7 +329,7 @@ class RayXShards(XShards):
             return actor2assignments, actor_ips, actors
 
     @staticmethod
-    def from_partition_refs(ip2part_id, part_id2ref):
+    def from_partition_refs(ip2part_id, part_id2ref, old_rdd):
         ray_ctx = RayContext.get()
         uuid_str = str(uuid.uuid4())
         id2store_name = {}
@@ -335,7 +346,9 @@ class RayXShards(XShards):
                 id2store_name[idx] = name
                 part_id2ip[idx] = node
         ray.get(result)
-        return RayXShards(uuid_str, id2store_name, part_id2ip, partition_stores)
+        new_id_ip_store_rdd = old_rdd.mapPartitionsWithIndex(
+            lambda idx, _: [(idx, part_id2ip[idx], id2store_name[idx])]).cache()
+        return RayXShards(uuid_str, new_id_ip_store_rdd, partition_stores)
 
     @staticmethod
     def from_spark_xshards(spark_xshards):
@@ -369,18 +382,14 @@ class RayXShards(XShards):
         # actor creation is aync, this is to make sure they all have been started
         ray.get([v.get_partitions.remote() for v in partition_stores.values()])
         partition_store_names = list(partition_stores.keys())
-        result = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
-            idx, part, address, password, partition_store_names)).collect()
+        result_rdd = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
+            idx, part, address, password, partition_store_names)).cache()
+        result = result_rdd.collect()
 
-        num_empty_partitions = 0
         id2ip = {}
         id2store_name = {}
-        for idx, ip, local_store_name, is_empty in result:
+        for idx, ip, local_store_name in result:
             id2ip[idx] = ip
             id2store_name[idx] = local_store_name
-            if is_empty:
-                num_empty_partitions += 1
-        if num_empty_partitions > 0:
-            logger.warning(f"Found {num_empty_partitions} empty partitions in your SparkXShards.")
 
-        return RayXShards(uuid_str, dict(id2store_name), dict(id2ip), partition_stores)
+        return RayXShards(uuid_str, result_rdd, partition_stores)
