@@ -105,9 +105,6 @@ class TestAutoTrainer(TestCase):
         stop_orca_context()
 
     def test_fit_third_party_feature(self):
-        input_feature_dim = 11  # This param will not be used
-        output_target_num = 2  # 2 targets are generated in get_tsdataset
-
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
         tsdata_train = get_tsdataset().gen_dt_feature().scale(scaler, fit=True)
@@ -122,8 +119,6 @@ class TestAutoTrainer(TestCase):
                                          search_space=search_space,
                                          past_seq_len=hp.randint(4, 6),
                                          future_seq_len=1,
-                                         input_feature_num=input_feature_dim,
-                                         output_target_num=output_target_num,
                                          selected_features="auto",
                                          metric="mse",
                                          loss=torch.nn.MSELoss(),
@@ -198,9 +193,6 @@ class TestAutoTrainer(TestCase):
         assert config["past_seq_len"] == 7
 
     def test_fit_lstm_feature(self):
-        input_feature_dim = 11  # This param will not be used
-        output_feature_dim = 2  # 2 targets are generated in get_tsdataset
-
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
         tsdata_train = get_tsdataset().gen_dt_feature().scale(scaler, fit=True)
@@ -217,8 +209,6 @@ class TestAutoTrainer(TestCase):
                                          search_space=search_space,
                                          past_seq_len=hp.randint(4, 6),
                                          future_seq_len=1,
-                                         input_feature_num=input_feature_dim,
-                                         output_target_num=output_feature_dim,
                                          selected_features="auto",
                                          metric="mse",
                                          loss=torch.nn.MSELoss(),
@@ -265,9 +255,6 @@ class TestAutoTrainer(TestCase):
         new_ts_pipeline.fit(tsdata_valid)
 
     def test_fit_tcn_feature(self):
-        input_feature_dim = 11  # This param will not be used
-        output_feature_dim = 2  # 2 targets are generated in get_tsdataset
-
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
         tsdata_train = get_tsdataset().gen_dt_feature().scale(scaler, fit=True)
@@ -284,8 +271,6 @@ class TestAutoTrainer(TestCase):
                                          search_space=search_space,
                                          past_seq_len=hp.randint(4, 6),
                                          future_seq_len=1,
-                                         input_feature_num=input_feature_dim,
-                                         output_target_num=output_feature_dim,
                                          selected_features="auto",
                                          metric="mse",
                                          optimizer="Adam",
