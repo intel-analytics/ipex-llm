@@ -60,7 +60,8 @@ class AutoTSEstimator:
         :param search_space: hyper parameter configurations. Read the API docs for each auto model.
                Some common hyper parameter can be explicitly set in named parameter.
         :param metric: String. The evaluation metric name to optimize. e.g. "mse"
-        :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function.
+        :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function. The
+               default loss function for pytorch backend is nn.MSELoss().
         :param optimizer: String or pyTorch optimizer creator function or
                tf.keras optimizer instance.
         :param past_seq_len: Int or or hp sampling function. The number of historical steps (i.e.
@@ -69,8 +70,9 @@ class AutoTSEstimator:
         :param future_seq_len: Int. The number of future steps to forecast. The value defaults
                to 1.
         :param input_feature_num: Int. The number of features in the input. The value is ignored if
-               you set selected_features and use chronos.data.TSDataset as input data type.
-        :param output_target_num: Int. The number of targets in the output.
+               you use chronos.data.TSDataset as input data type.
+        :param output_target_num: Int. The number of targets in the output. The value is ignored if
+               you use chronos.data.TSDataset as input data type.
         :param selected_features: String. "all" and "auto" are supported for now. For "all",
                all features that are generated are used for each trial. For "auto", a subset
                is sampled randomly from all features for each trial. The parameter is ignored
@@ -225,6 +227,10 @@ class AutoTSEstimator:
         import torch
         from torch.utils.data import TensorDataset, DataLoader
         import ray
+
+        # automatically inference output_feature_num
+        # input_feature_num will be set by base pytorch model according to selected features.
+        search_space['output_feature_num'] = len(train_data.target_col)
 
         # append feature selection into search space
         # TODO: more flexible setting
