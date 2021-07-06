@@ -36,45 +36,49 @@ class TestProphetModel(ZooTestCase):
             "changepoint_range": np.random.uniform(0.8, 0.95)
         }
         self.model = ProphetModel()
-        self.x = pd.DataFrame(pd.date_range('20130101', periods=self.seq_len), columns=['ds'])
-        self.x.insert(1, 'y', np.random.rand(self.seq_len))
+        self.data = pd.DataFrame(pd.date_range('20130101', periods=self.seq_len), columns=['ds'])
+        self.data.insert(1, 'y', np.random.rand(self.seq_len))
         self.horizon = np.random.randint(2, 50)
-        self.target = pd.DataFrame(pd.date_range('20140426', periods=self.horizon), columns=['ds'])
-        self.target.insert(1, 'y', np.random.rand(self.horizon))
-        self.data = {'x': self.x, 'y': None, 'val_x': None, 'val_y': self.target}
+        self.validation_data = pd.DataFrame(pd.date_range('20140426', periods=self.horizon),
+                                            columns=['ds']
+                                            )
+        self.validation_data.insert(1, 'y', np.random.rand(self.horizon))
 
     def teardown_method(self, method):
         del self.model
-        del self.x
-        del self.target
+        del self.data
+        del self.validation_data
 
     def test_prophet(self):
         # test fit_eval
-        evaluate_result = self.model.fit_eval(data=self.data, **self.config)
+        evaluate_result = self.model.fit_eval(data=self.data,
+                                              validation_data=self.validation_data,
+                                              **self.config)
         # test predict
         result = self.model.predict(horizon=self.horizon)
         assert result.shape[0] == self.horizon
         # test evaluate
-        evaluate_result = self.model.evaluate(x=None, target=self.target, metrics=['mae', 'smape'])
+        evaluate_result = self.model.evaluate(target=self.validation_data,
+                                              metrics=['mae', 'smape'])
         assert len(evaluate_result) == 2
 
     def test_error(self):
-        with pytest.raises(ValueError, match="We don't support input x currently"):
-            self.model.predict(x=1)
+        with pytest.raises(ValueError, match="We don't support input data currently"):
+            self.model.predict(data=1)
 
-        with pytest.raises(ValueError, match="We don't support input x currently"):
-            self.model.evaluate(x=1, target=self.target)
+        with pytest.raises(ValueError, match="We don't support input data currently"):
+            self.model.evaluate(target=self.validation_data, data=1)
 
         with pytest.raises(ValueError, match="Input invalid target of None"):
-            self.model.evaluate(x=None, target=None)
+            self.model.evaluate(target=None)
 
         with pytest.raises(Exception,
                            match="Needs to call fit_eval or restore first before calling predict"):
-            self.model.predict(x=None)
+            self.model.predict()
 
         with pytest.raises(Exception,
                            match="Needs to call fit_eval or restore first before calling evaluate"):
-            self.model.evaluate(x=None, target=self.target)
+            self.model.evaluate(target=self.validation_data)
 
         with pytest.raises(Exception,
                            match="Needs to call fit_eval or restore first before calling save"):
@@ -82,8 +86,10 @@ class TestProphetModel(ZooTestCase):
             self.model.save(model_file)
 
     def test_save_restore(self):
-        self.model.fit_eval(data=self.data, **self.config)
-        result_save = self.model.predict(x=None, horizon=self.horizon)
+        self.model.fit_eval(data=self.data,
+                            validation_data=self.validation_data,
+                            **self.config)
+        result_save = self.model.predict(horizon=self.horizon)
         model_file = "tmp.json"
 
         self.model.save(model_file)
