@@ -115,7 +115,7 @@ numpy==1.18.1
 opencv-python==4.2.0.34
 pandas==1.0.3
 Pillow==7.1.1
-protobuf==3.11.4
+protobuf==3.12.0
 psutil==5.7.0
 py4j==0.10.7
 redis==3.4.1
