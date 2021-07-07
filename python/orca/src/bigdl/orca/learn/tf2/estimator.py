@@ -21,6 +21,7 @@ import numpy as np
 import ray
 
 from zoo.orca.data.ray_xshards import RayXShards
+from zoo.orca.learn.dl_cluster import RayDLCluster
 from zoo.orca.learn.tf2.tf_runner import TFRunner
 from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from zoo.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
@@ -40,7 +41,8 @@ class Estimator(object):
                    verbose=False,
                    workers_per_node=1,
                    compile_args_creator=None,
-                   backend="tf2"
+                   backend="tf2",
+                   cpu_binding=True,
                    ):
         """
         Create an Estimator for tensorflow 2.
@@ -58,10 +60,12 @@ class Estimator(object):
                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
                "mean_squared_error", "metrics": ["mean_squared_error"]}
         :param backend: (string) You can choose "horovod" or "tf2" as backend. Default: `tf2`.
+        :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: True
         """
         return TensorFlow2Estimator(model_creator=model_creator, config=config,
                                     verbose=verbose, workers_per_node=workers_per_node,
-                                    backend=backend, compile_args_creator=compile_args_creator)
+                                    backend=backend, compile_args_creator=compile_args_creator,
+                                    cpu_binding=cpu_binding)
 
 
 def make_data_creator(refs):
@@ -86,7 +90,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  config=None,
                  verbose=False,
                  backend="tf2",
-                 workers_per_node=1):
+                 workers_per_node=1,
+                 cpu_binding=True):
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
@@ -118,9 +123,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
 
-            worker_class = ray.remote(num_cpus=cores_per_node)(TFRunner)
-            self.remote_workers = [worker_class.remote(**params)
-                                   for i in range(0, num_nodes)]
+            self.cluster = RayDLCluster(
+                num_workers=num_nodes,
+                worker_cores=cores_per_node,
+                worker_cls=TFRunner,
+                worker_param=params,
+                cpu_binding=cpu_binding
+            )
+            self.remote_workers = self.cluster.get_workers()
             ips = ray.get(
                 [worker.get_node_ip.remote() for worker in self.remote_workers])
             ports = ray.get(
@@ -128,7 +138,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
             urls = ["{ip}:{port}".format(ip=ips[i], port=ports[i])
                     for i in range(len(self.remote_workers))]
-
+            ray.get([worker.setup.remote() for worker in self.remote_workers])
             # Get setup tasks in order to throw errors on failure
             ray.get([
                 worker.setup_distributed.remote(urls, i, len(self.remote_workers))
@@ -142,6 +152,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               workers_per_node=workers_per_node)
             horovod_runner.run(lambda: print("worker initialized"))
             self.remote_workers = horovod_runner.remote_workers
+            ray.get([worker.setup.remote() for worker in self.remote_workers])
             ray.get([
                 worker.setup_horovod.remote()
                 for i, worker in enumerate(self.remote_workers)])
