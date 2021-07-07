@@ -944,6 +944,40 @@ now=$(date "+%s")
 time25=$((now-start))
 echo "#25 chronos-stock-prediction-prophet time used:$time25 seconds"
 
+echo "#26 start app test for chronos-network-traffic-autots-forecasting-experimental"
+#timer
+start=$(date "+%s")
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental
+
+FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data/data.csv"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading network traffic data"
+
+   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data
+
+   echo "Finished downloading network traffic data"
+fi
+
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental.py
+sed -i "s/cores=10/cores=4/g; s/epochs=5/epochs=1/g; s/n_sampling=4/n_sampling=1/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental.py
+cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
+
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental.py
+cd -
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "chronos network-traffic-autots-forecasting-experimental failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time26=$((now-start))
+echo "#26 chronos-network-traffic-autots-forecasting-experimental time used:$time26 seconds"
 
 fi
 
