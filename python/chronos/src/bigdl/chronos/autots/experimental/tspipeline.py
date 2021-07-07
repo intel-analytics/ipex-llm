@@ -29,7 +29,9 @@ class TSPipeline:
     '''
     TSPipeline is an E2E solution for time series analysis (only forecasting task for now).
     You can use TSPipeline to:
+
     1. Further development on the prototype. (predict, evaluate, incremental fit)
+
     2. Deploy the model to their scenario. (save, load)
     '''
     def __init__(self, best_model, best_config, **kwargs):
