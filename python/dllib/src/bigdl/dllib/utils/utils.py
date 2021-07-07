@@ -105,7 +105,8 @@ def pack_conda_main(conda_name, tmp_path):
     pack_cmd = "conda pack --format tar.gz --n-threads 8 -f -n {} -o {}"\
         .format(conda_name, tmp_path)
     pro = subprocess.Popen(pack_cmd, shell=True, env=pack_env)
-    os.waitpid(pro.pid, 0)
+    if pro.wait() != 0:
+        raise RuntimeError(f"conda pack failed! Error executing command: {pack_cmd} ")
 
 
 def pack_penv(conda_name, output_name):
