@@ -69,6 +69,8 @@ class DatasetHandler:
                               validation_steps):
 
         config, local_batch_size = self._handle_batch_size(config)
+        config['rank'] = self.rank
+        config['size'] = self.size
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
                 all([isinstance(x, ray.ObjectID) for x in train_dataset]):
@@ -99,6 +101,8 @@ class DatasetHandler:
 
     def handle_dataset_validation(self, data_creator, config, steps):
         config, local_batch_size = self._handle_batch_size(config)
+        config['rank'] = self.rank
+        config['size'] = self.size
         dataset = data_creator(config, config["batch_size"])
         if isinstance(dataset, list) and all([isinstance(x, ray.ObjectID) for x in dataset]):
             assert steps is not None, "steps must be provided for xshard"
