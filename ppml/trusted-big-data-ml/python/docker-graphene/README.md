@@ -48,11 +48,9 @@ Before running the following command, please modify the paths in `build-docker-i
   sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
   ```
 
+## Run Native Python Examples
 
-
-## Run as Spark Local Mode
-
-#### 1. Start the container to run spark applications in spark local mode
+#### 1. Start the container to run native python examples
 
 Before you run the following commands to start the container, you need to modify the paths in `deploy-local-spark-sgx.sh` and then run the following commands.
 
@@ -70,11 +68,7 @@ cd /ppml/trusted-big-data-ml
 Run the example with SGX with the following command in the terminal.
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \ 
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/examples/helloworld.py" | tee test-helloworld-sgx.log
+SGX=1 ./pal_loader bash -c "python ./work/examples/helloworld.py" | tee test-helloworld-sgx.log
 ```
 Then check the output with the following command.
 
@@ -93,11 +87,7 @@ The result should be
 Run the example with SGX with the following command in the terminal.
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \ 
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/examples/test-numpy.py" | tee test-numpy-sgx.log
+SGX=1 ./pal_loader bash -c "python ./work/examples/test-numpy.py" | tee test-numpy-sgx.log
 ```
 
 Then check the output with the following command.
@@ -110,135 +100,30 @@ The result should be similar to
 
 > numpy.dot: 0.034211914986371994 sec
 
+## Run as Spark Local Mode
 
+#### 1. Start the container to run spark applications in spark local mode
 
-##### Example3: `pytorch`
-
-Before running the pytorch example, first you need to download the pretrained model.
-```bash
-cd work/examples/pytorch/
-python download-pretrained-model.py
-cd ../..
-```
-
-Run the example with SGX with the following command in the terminal.
+Before you run the following commands to start the container, you need to modify the paths in `deploy-local-spark-sgx.sh` and then run the following commands.
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/examples/pytorch/pytorchexample.py" | tee test-pytorch-sgx.log
-```
-
-Then check the output with the following command.
-
-```bash
-cat result.txt
-```
-
-The result should be
-
->[('Labrador retriever', 41.585174560546875), ('golden retriever', 16.591665267944336), ('Saluki, gazelle hound', 16.286867141723633), ('whippet', 2.8539085388183594), ('Ibizan hound, Ibizan Podenco', 2.392474889755249)]
-
-
-
-##### Example4: `tensorflow-lite`
-
-Before running the tensorflow example, first you need to download the pretrained model and other dependant files.
-
-```bash
-cd work/examples/tensorflow-lite/
-make install-dependencies-ubuntu
-cd ../..
-```
-
-Run the example with SGX with the following command in the terminal.
-
-```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/examples/tensorflow-lite/label_image \
-	-m /ppml/trusted-big-data-ml/work/examples/tensorflow-lite/inception_v3.tflite \
-	-i /ppml/trusted-big-data-ml/work/examples/tensorflow-lite/image.bmp \
-	-l /ppml/trusted-big-data-ml/work/examples/tensorflow-lite/labels.txt" | tee test-tflite-sgx.log
-```
-
-Then check the output with the following command.
-
-```bash
-cat test-tflite-sgx.log | egrep "military"
-```
-
-The result should be
-
->0.699143: 653 military uniform
-
-
-
-##### Example5: `tensorflow`
-
-Run the example with SGX with the following command in the terminal.
-
-```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/examples/tensorflow/hand_classifier_with_resnet.py" | tee test-tf-sgx.log
-```
-
-Then check the output with the following command.
-
-```bash
-cat test-tf-sgx.log | egrep "accuracy"
-```
-
-The result should be similar to
-
->test accuracy 0.78357
->
->training data accuracy 0.92361
-
-
-
-## Run as Spark Standalone Mode
-
-#### 1. Start the container to run spark applications in spark standalone mode
-
-Before you run the following commands to start the container, you need to modify the paths in `environment.sh` and then run the following commands.
-
-```bash
-./deploy-distributed-standalone-spark.sh
-./start-distributed-spark-driver.sh
-```
-
-Then use `distributed-check-status.sh` to check master's and worker's status and make sure that both of them are running.
-
-Use the following commands to enter the docker of spark driver.
-
-```bash
-sudo docker exec -it spark-driver bash
+./deploy-local-spark-sgx.sh
+sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
-./start-spark-standalone-driver-sgx.sh
 ./init.sh
 ```
 
-#### 2. Run pyspark examples
+ #### 2. Run pyspark examples
 
-##### Example1: `pi.py`
+##### Example 1: `pi.py`
 
-Run the example with SGX and standalone mode with the following command in the terminal. Replace the value of ``spark.authenticate.secret`` with your own secret key.
+Run the example with SGX and standalone mode with the following command in the terminal. 
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'spark://your_master_url' \
-	--conf spark.authenticate=true \
-  --conf spark.authenticate.secret=your_secret_key \
+	--master 'local[4]' \
 	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/pi.py" | tee test-pi-sgx.log
 
 ```
@@ -255,17 +140,15 @@ The result should be similar to
 
 
 
-##### Example2: `test-wordcount.py`
+##### Example 2: `test-wordcount.py`
 
-Run the example with SGX and standalone mode with the following command in the terminal. Replace the value of ``spark.authenticate.secret`` with your own secret key.
+Run the example with SGX and standalone mode with the following command in the terminal. 
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'spark://your_master_url' \
-	--conf spark.authenticate=true \
-  --conf spark.authenticate.secret=your_secret_key \
+	--master 'local[4]' \
 	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" | tee test-wordcount-sgx.log
 
 ```
@@ -284,17 +167,15 @@ The result should be similar to
 
 
 
-##### Example3: Basic SQL
+##### Example 3: Basic SQL
 
-Run the example with SGX and standalone mode with the following command in the terminal. Replace the value of ``spark.authenticate.secret`` with your own secret key.
+Run the example with SGX and standalone mode with the following command in the terminal. 
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'spark://your_master_url' \
-	--conf spark.authenticate=true \
-  --conf spark.authenticate.secret=your_secret_key \
+	--master 'local[4]' \
 	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/sql/basic.py" | tee test-sql-basic-sgx.log
 
 ```
@@ -325,18 +206,16 @@ The result should be similar to
 
 
 
-##### Example4: Bigdl lenet
+##### Example 4: Bigdl lenet
 
-Run the example with SGX and standalone mode with the following command in the terminal. Replace the value of ``spark.authenticate.secret`` with your own secret key.
+Run the example with SGX and standalone mode with the following command in the terminal. 
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
   -Xmx8g \
   org.apache.spark.deploy.SparkSubmit \
-  --master 'spark://your_master_url' \
-  --conf spark.authenticate=true \
-  --conf spark.authenticate.secret=your_secret_key \
+  --master 'local[4]' \
   --conf spark.driver.memory=8g \
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar \
@@ -370,18 +249,16 @@ The result should be similar to
 
 
 
-##### Example5: Xgboost
+##### Example 5: XGBoost Regressor
 
-Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace the value of ``spark.authenticate.secret`` with your own secret key and `RABIT_TRACKER_IP` with your IP address.
+Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace `RABIT_TRACKER_IP` with your IP address.
 
 ```bash
 SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
     '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
-  --master 'spark://your_master_url' \
-  --conf spark.authenticate=true \
-  --conf spark.authenticate.secret=your_secret_key \
+  --master 'local[4]' \
   --conf spark.driver.memory=2g \
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
@@ -390,13 +267,13 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8
   --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
-  --file-path /ppml/trusted-big-data-ml/work/data/Boston_Housing.csv" | tee test-zoo-xgboost-sgx.log
+  --file-path /ppml/trusted-big-data-ml/work/data/Boston_Housing.csv" | tee test-zoo-xgboost-regressor-sgx.log
 ```
 
 Then check the output with the following command.
 
 ```bash
-cat test-zoo-xgboost-sgx.log | egrep "prediction" -A19
+cat test-zoo-xgboost-regressor-sgx.log | egrep "prediction" -A19
 ```
 
 The result should be similar to
@@ -441,3 +318,184 @@ The result should be similar to
 >
 >|[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
+
+
+##### Example 6: XGBoost Classifier
+
+Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command. 
+
+```bash
+wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
+```
+
+After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace  `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
+
+```bash
+SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=192.168.0.111 && /opt/jdk8/bin/java -cp \
+  '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+  -Xmx2g \
+  org.apache.spark.deploy.SparkSubmit \
+  --master 'local[4]' \
+  --conf spark.driver.memory=2g \
+  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
+  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
+  --executor-memory 2g \
+  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
+  -f /ppml/trusted-big-data-ml/work/data/pima-indians-diabetes.data.csv" | tee test-xgboost-classifier-sgx.log
+```
+
+Then check the output with the following command.
+
+```bash
+cat test-xgboost-classifier-sgx.log | egrep "prediction" -A7
+```
+
+The result should be similar to
+
+> | f1|  f2| f3| f4|  f5| f6|  f7| f8|label|    rawPrediction|     probability|prediction|
+>
+> +----+-----+----+----+-----+----+-----+----+-----+--------------------+--------------------+----------+
+>
+> |11.0|138.0|74.0|26.0|144.0|36.1|0.557|50.0| 1.0|[-0.8209581375122...|[0.17904186248779...|    1.0|
+>
+> | 3.0|106.0|72.0| 0.0| 0.0|25.8|0.207|27.0| 0.0|[-0.0427864193916...|[0.95721358060836...|    0.0|
+>
+> | 6.0|117.0|96.0| 0.0| 0.0|28.7|0.157|30.0| 0.0|[-0.2336160838603...|[0.76638391613960...|    0.0|
+>
+> | 2.0| 68.0|62.0|13.0| 15.0|20.1|0.257|23.0| 0.0|[-0.0315906107425...|[0.96840938925743...|    0.0|
+>
+> | 9.0|112.0|82.0|24.0| 0.0|28.2|1.282|50.0| 1.0|[-0.7087597250938...|[0.29124027490615...|    1.0|
+>
+> | 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827...|[0.55266016721725...|    0.0|
+
+
+
+##### Example 7: Orca data
+
+Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo manually or with following command. 
+
+```bash
+wget https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
+```
+
+After downloading the dataset, make sure that `nyc_taxi.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace `path_of_nyc_taxi_csv` with your path of `nyc_taxi.csv`.
+
+```bash
+SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
+  '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+  -Xmx2g \
+  org.apache.spark.deploy.SparkSubmit \
+  --master 'local[4]' \
+  --conf spark.driver.memory=2g \
+  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
+  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
+  --executor-memory 2g \
+  /ppml/trusted-big-data-ml/work/examples/pyzoo/orca/data/spark_pandas.py \
+  -f path_of_nyc_taxi_csv" | tee test-orca-data-sgx.log
+```
+
+Then check the output with the following command.
+
+```bash
+cat test-orca-data-sgx.log | egrep -a "INFO data|Stopping" -A10
+```
+
+Then the result should contain the similar content as 
+
+>INFO data collected: [        timestamp value
+>
+>0   2014-07-01 00:00:00 10844
+>
+>1   2014-07-01 00:30:00  8127
+>
+>2   2014-07-01 01:00:00  6210
+>
+>3   2014-07-01 01:30:00  4656
+>
+>4   2014-07-01 02:00:00  3820
+>
+>...          ...  ...
+>
+>10315 2015-01-31 21:30:00 24670
+>
+>10316 2015-01-31 22:00:00 25721
+>
+>10317 2015-01-31 22:30:00 27309
+>
+>10318 2015-01-31 23:00:00 26591
+>
+>\--
+>
+> 
+>
+>INFO data2 collected: [        timestamp value      datetime hours awake
+>
+>0  2014-07-01 00:00:00 10844 2014-07-01 00:00:00   0   1
+>
+>1  2014-07-01 00:30:00  8127 2014-07-01 00:30:00   0   1
+>
+>2  2014-07-01 03:00:00  2369 2014-07-01 03:00:00   3   0
+>
+>3  2014-07-01 04:30:00  2158 2014-07-01 04:30:00   4   0
+>
+>4  2014-07-01 05:00:00  2515 2014-07-01 05:00:00   5   0
+>
+>...         ...  ...         ...  ...  ...
+>
+>5215 2015-01-31 17:30:00 23595 2015-01-31 17:30:00   17   1
+>
+>5216 2015-01-31 18:30:00 27286 2015-01-31 18:30:00   18   1
+>
+>5217 2015-01-31 19:00:00 28804 2015-01-31 19:00:00   19   1
+>
+>5218 2015-01-31 19:30:00 27773 2015-01-31 19:30:00   19   1
+>
+>\--
+>
+>Stopping orca context
+
+## Run as Spark Standalone Mode
+
+#### 1. Start the container to run spark applications in spark standalone mode
+
+Before you run the following commands to start the container, you need to modify the paths in `environment.sh` and then run the following commands.
+
+```bash
+./deploy-distributed-standalone-spark.sh
+./start-distributed-spark-driver.sh
+```
+
+Then use `distributed-check-status.sh` to check master's and worker's status and make sure that both of them are running.
+
+Use the following commands to enter the docker of spark driver.
+
+```bash
+sudo docker exec -it spark-driver bash
+cd /ppml/trusted-big-data-ml
+./start-spark-standalone-driver-sgx.sh
+./init.sh
+```
+
+#### 2. Run pyspark examples 
+
+To run the pyspark examples in spark standalone mode, you only need to replace the following command in spark local mode command:
+
+```bash
+--master 'local[4]' \
+```
+
+with 
+
+```bash
+--master 'spark://your_master_url' \
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=your_secret_key \
+```
+
+and  replace `your_master_url` with your own master url and `your_secret_key` with your own secret key.

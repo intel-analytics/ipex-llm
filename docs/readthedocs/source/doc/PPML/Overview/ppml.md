@@ -405,22 +405,22 @@ The result should look something like:
 >
 > 2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
 
-##### 2.3.2.8 Run Trusted Spark XGBoost
+##### 2.3.2.8 Run Trusted Spark XGBoost Regressor
 
-This example shows how to run trusted Spark XGBoost.
+This example shows how to run trusted Spark XGBoost Regressor.
 
-First, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-sgx.sh`. Replace the value of `RABIT_TRACKER_IP` with your own IP address.
+First, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-regressor-sgx.sh`. Replace the value of `RABIT_TRACKER_IP` with your own IP address in the script.
 
-Run the script to run trusted Spark BigDL and it would take some time to show the final results:
+Run the script to run trusted Spark XGBoost Regressor and it would take some time to show the final results:
 
 ```bash
-bash work/start-scripts/start-spark-local-xgboost-sgx.sh
+bash work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh
 ```
 
 Open another terminal and check the log:
 
 ```bash
-sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-zoo-xgboost-sgx.log | egrep "prediction" -A19
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-zoo-xgboost-regressor-sgx.log | egrep "prediction" -A19
 ```
 
 The result should look something like:
@@ -465,6 +465,110 @@ The result should look something like:
 >
 > |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
+##### 2.3.2.9 Run Trusted Spark XGBoost Classifier
+
+Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset. After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-classifier-sgx.sh`. Replace the value of `your_secret_key` with your own secret key and `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv` in the script.
+
+Run the script to run trusted Spark XGBoost Classifier and it would take some time to show the final results:
+
+```bash
+bash start-spark-local-xgboost-classifier-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-xgboost-classifier-sgx.log | egrep "prediction" -A7
+```
+
+The result should look something like:
+
+> | f1|  f2| f3| f4|  f5| f6|  f7| f8|label|    rawPrediction|     probability|prediction|
+>
+> +----+-----+----+----+-----+----+-----+----+-----+--------------------+--------------------+----------+
+>
+> |11.0|138.0|74.0|26.0|144.0|36.1|0.557|50.0| 1.0|[-0.8209581375122...|[0.17904186248779...|    1.0|
+>
+> | 3.0|106.0|72.0| 0.0| 0.0|25.8|0.207|27.0| 0.0|[-0.0427864193916...|[0.95721358060836...|    0.0|
+>
+> | 6.0|117.0|96.0| 0.0| 0.0|28.7|0.157|30.0| 0.0|[-0.2336160838603...|[0.76638391613960...|    0.0|
+>
+> | 2.0| 68.0|62.0|13.0| 15.0|20.1|0.257|23.0| 0.0|[-0.0315906107425...|[0.96840938925743...|    0.0|
+>
+> | 9.0|112.0|82.0|24.0| 0.0|28.2|1.282|50.0| 1.0|[-0.7087597250938...|[0.29124027490615...|    1.0|
+>
+> | 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827...|[0.55266016721725...|    0.0|
+
+##### 2.3.2.10 Run Trusted Spark Orca Data
+
+This example shows how to run trusted Spark Orca Data.
+
+Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo. After downloading the dataset, make sure that `nyc_taxi.csv` is under `work/data` directory or the same path in the `start-spark-local-orca-data-sgx.sh`. Replace the value of `your_secret_key` with your own secret key and `path_of_nyc_taxi_csv` with your path of `nyc_taxi.csv` in the script.
+
+Run the script to run trusted Spark Orca Data and it would take some time to show the final results:
+
+```bash
+bash start-spark-local-orca-data-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-orca-data-sgx.log | egrep -a "INFO data|Stopping" -A10
+```
+
+The result should contain the content look like:
+
+>INFO data collected: [        timestamp value
+>
+>0   2014-07-01 00:00:00 10844
+>
+>1   2014-07-01 00:30:00  8127
+>
+>2   2014-07-01 01:00:00  6210
+>
+>3   2014-07-01 01:30:00  4656
+>
+>4   2014-07-01 02:00:00  3820
+>
+>...          ...  ...
+>
+>10315 2015-01-31 21:30:00 24670
+>
+>10316 2015-01-31 22:00:00 25721
+>
+>10317 2015-01-31 22:30:00 27309
+>
+>10318 2015-01-31 23:00:00 26591
+>
+>\--
+>
+>INFO data2 collected: [        timestamp value      datetime hours awake
+>
+>0  2014-07-01 00:00:00 10844 2014-07-01 00:00:00   0   1
+>
+>1  2014-07-01 00:30:00  8127 2014-07-01 00:30:00   0   1
+>
+>2  2014-07-01 03:00:00  2369 2014-07-01 03:00:00   3   0
+>
+>3  2014-07-01 04:30:00  2158 2014-07-01 04:30:00   4   0
+>
+>4  2014-07-01 05:00:00  2515 2014-07-01 05:00:00   5   0
+>
+>...         ...  ...         ...  ...  ...
+>
+>5215 2015-01-31 17:30:00 23595 2015-01-31 17:30:00   17   1
+>
+>5216 2015-01-31 18:30:00 27286 2015-01-31 18:30:00   18   1
+>
+>5217 2015-01-31 19:00:00 28804 2015-01-31 19:00:00   19   1
+>
+>5218 2015-01-31 19:30:00 27773 2015-01-31 19:30:00   19   1
+>
+>\--
+>
+>Stopping orca context
+
 #### 2.3.3 Run Trusted Big Data and ML on Cluster
 
 ##### 2.3.3.1 Configure the Environment
@@ -483,10 +587,18 @@ First run the following command to start the service:
 ./deploy-distributed-standalone-spark.sh
 ```
 
-Then run the following command to start the training:
+Then start the service:
 
 ```bash
-./start-distributed-spark-train-sgx.sh
+./start-distributed-spark-driver.sh
+```
+
+After that, you can run previous examples on cluster by replacing `--master 'local[4]'` in the start scripts with
+
+```bash
+--master 'spark://your_master_url' \
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=your_secret_key \
 ```
 
 ##### 2.3.3.3 Stop Distributed Big Data and ML Platform
@@ -511,7 +623,7 @@ With the trusted realtime compute and ML/DL support, users can run standard Flin
 
 Please refer to [Section 2.1 Prerequisite](#prerequisite). For Occlum backend, if your kernel version is below 5.11, please install [enable_rdfsbase](https://github.com/occlum/enable_rdfsbase).
 
-### 3.2 Prepare Docker Container
+### 3.2 Prepare Docker Image
 
 Pull docker image from Dockerhub
 
