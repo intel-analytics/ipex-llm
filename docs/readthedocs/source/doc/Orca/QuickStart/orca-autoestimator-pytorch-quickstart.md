@@ -111,7 +111,9 @@ def test_loader_creator(config):
 ```
 
 ### **Step 4: Define Search Space**
-You should define a dictionary as your hyper-parameter search space. The keys are hyper-parameter names which should be the same with those in your creators, and you can specify how you want to sample each hyper-parameter in the values of the search space. See more about [automl.hp](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp)
+You should define a dictionary as your hyper-parameter search space.
+
+The keys are hyper-parameter names which should be the same with those in your creators, and you can specify how you want to sample each hyper-parameter in the values of the search space. See [automl.hp](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
 
 ```python
 from zoo.orca.automl import hp
