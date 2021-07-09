@@ -425,23 +425,23 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
-        # get rolling result for each sub dataframe
-        rolling_result = [roll_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
-                                                    roll_feature_df=roll_feature_df,
-                                                    lookback=lookback,
-                                                    horizon=horizon,
-                                                    feature_col=feature_col,
-                                                    target_col=target_col)
-                          for id_name in self._id_list]
+        rolling_result =\
+            self.df.groupby([self.id_col])\
+                   .apply(lambda df: roll_timeseries_dataframe(df=df,
+                                                               roll_feature_df=roll_feature_df,
+                                                               lookback=lookback,
+                                                               horizon=horizon,
+                                                               feature_col=feature_col,
+                                                               target_col=target_col))
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
         self.numpy_x = np.concatenate([rolling_result[i][0]
-                                       for i in range(num_id)],
+                                       for i in self._id_list],
                                       axis=concat_axis).astype(np.float64)
         if horizon != 0:
             self.numpy_y = np.concatenate([rolling_result[i][1]
-                                           for i in range(num_id)],
+                                           for i in self._id_list],
                                           axis=concat_axis).astype(np.float64)
         else:
             self.numpy_y = None
