@@ -151,5 +151,8 @@ if __name__ == '__main__':
     end = time.time()
     print("elapse: ", (end-start), "s")
     best_model = auto_xgb_clf.get_best_model()
-    accuracy = best_model.evaluate(X_val, y_val, metrics=["accuracy"])
+
+    y_hat = best_model.predict(X_val)
+    from zoo.automl.common.metrics import Evaluator
+    accuracy = Evaluator.evaluate(metric="accuracy", y_true=y_val, y_pred=y_hat)
     print("Evaluate: accuracy is", accuracy)

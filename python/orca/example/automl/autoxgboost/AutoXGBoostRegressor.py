@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='AutoXGBRegressor example')
     parser.add_argument('-p', '--path', type=str,
-                        default="./incd.csv",
+                        default="./data/incd.csv",
                         help='Training data path')
     parser.add_argument(
         '--hadoop_conf',
@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     recipe = None
 
-    num_rand_samples = 10
+    num_rand_samples = 1
     n_estimators_range = (800, 1000)
     max_depth_range = (10, 15)
     lr = (1e-4, 1e-1)
@@ -224,8 +224,9 @@ if __name__ == '__main__':
     best_model = auto_xgb_reg.get_best_model()
     y_hat = best_model.predict(X_val)
 
-    rmse = best_model.evaluate(X_val, y_val, metrics=["rmse"])
-    print("Evaluate: the square root of mean square error is", rmse)
+    from zoo.automl.common.metrics import Evaluator
+    rmse = Evaluator.evaluate(metric="rmse", y_true=y_val, y_pred=y_hat)
+    print(f"Evaluate: the square root of mean square error is {rmse:.2f}")
 
     ray_ctx.stop()
     sc.stop()

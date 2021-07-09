@@ -105,10 +105,11 @@ def train_example(args):
                  search_space=create_linear_search_space())
     # Choose the best model
     best_model = auto_est.get_best_model()
-    best_model_accuracy = best_model.evaluate(x=val_data[0],
-                                              y=val_data[1],
-                                              metrics=['accuracy'])
-    print(f'model accuracy is {best_model_accuracy[0]}')
+
+    y_hat = best_model(torch.from_numpy(val_data[0]).float()).detach().numpy()
+    from zoo.automl.common.metrics import Evaluator
+    accuracy = Evaluator.evaluate(metric="accuracy", y_true=val_data[1], y_pred=y_hat)
+    print("Evaluate: accuracy is", accuracy)
 
 
 if __name__ == "__main__":
