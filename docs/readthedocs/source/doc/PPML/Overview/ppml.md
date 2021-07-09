@@ -467,7 +467,7 @@ The result should look something like:
 
 ##### 2.3.2.9 Run Trusted Spark XGBoost Classifier
 
-Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset. After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-classifier-sgx.sh`. Replace the value of `your_secret_key` with your own secret key and `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv` in the script.
+Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset. After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-classifier-sgx.sh`. Replace `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`  and the value of `RABIT_TRACKER_IP` with your own IP address in the script.
 
 Run the script to run trusted Spark XGBoost Classifier and it would take some time to show the final results:
 
@@ -503,7 +503,7 @@ The result should look something like:
 
 This example shows how to run trusted Spark Orca Data.
 
-Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo. After downloading the dataset, make sure that `nyc_taxi.csv` is under `work/data` directory or the same path in the `start-spark-local-orca-data-sgx.sh`. Replace the value of `your_secret_key` with your own secret key and `path_of_nyc_taxi_csv` with your path of `nyc_taxi.csv` in the script.
+Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo. After downloading the dataset, make sure that `nyc_taxi.csv` is under `work/data` directory or the same path in the `start-spark-local-orca-data-sgx.sh`. Replace  `path_of_nyc_taxi_csv` with your path of `nyc_taxi.csv` in the script.
 
 Run the script to run trusted Spark Orca Data and it would take some time to show the final results:
 

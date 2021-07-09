@@ -12,4 +12,4 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8
   --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
-  -f your_path_of_pima_indians_diabetes_data_csv" | tee test-xgboost-classifier-sgx.log
+  -f path_of_pima_indians_diabetes_data_csv" | tee test-xgboost-classifier-sgx.log
