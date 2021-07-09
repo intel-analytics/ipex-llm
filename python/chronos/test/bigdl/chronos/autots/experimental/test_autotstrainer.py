@@ -130,7 +130,7 @@ class TestAutoTrainer(TestCase):
                                          validation_data=tsdata_valid,
                                          n_sampling=1)
         best_config = auto_estimator.get_best_config()
-        best_model = auto_estimator.get_best_model()
+        best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
         assert isinstance(ts_pipeline, TSPipeline)
@@ -221,7 +221,7 @@ class TestAutoTrainer(TestCase):
                                          validation_data=tsdata_valid,
                                          n_sampling=1)
         best_config = auto_estimator.get_best_config()
-        best_model = auto_estimator.get_best_model()
+        best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
         assert isinstance(ts_pipeline, TSPipeline)
@@ -284,7 +284,7 @@ class TestAutoTrainer(TestCase):
                                          validation_data=tsdata_valid,
                                          n_sampling=1)
         best_config = auto_estimator.get_best_config()
-        best_model = auto_estimator.get_best_model()
+        best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
         assert isinstance(ts_pipeline, TSPipeline)

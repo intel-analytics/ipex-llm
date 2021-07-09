@@ -121,7 +121,7 @@ if __name__ == '__main__':
         .roll(lookback=best_config["past_seq_len"],
               horizon=best_config["future_seq_len"])\
         .to_numpy()
-    yhat = best_model.predict(x)
+    yhat = best_model(torch.from_numpy(x).float()).detach().numpy()
 
     y_unscale = tsdata_test.unscale_numpy(y)
     yhat_unscale = tsdata_test.unscale_numpy(np.expand_dims(yhat, axis=1))
