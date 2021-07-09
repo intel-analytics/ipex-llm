@@ -403,7 +403,7 @@ class Table:
     def to_list(self, column):
         """
         Convert all values of the target column to a list.
-        Only call this if the Table is small enougth.
+        Only call this if the Table is small enough.
 
         :param column: str, specifies the name of target column.
 
@@ -808,11 +808,13 @@ class FeatureTable(Table):
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
                and in this case all the categories that appear will be encoded.
 
-        :return: A list of StringIndex.
+        :return: A StringIndex or a list of StringIndex.
         """
         if columns is None:
             raise ValueError("columns should be str or a list of str, but got None.")
+        columns_is_str = False
         if not isinstance(columns, list):
+            columns_is_str = True
             columns = [columns]
         check_col_exists(self.df, columns)
         if freq_limit:
@@ -826,7 +828,11 @@ class FeatureTable(Table):
         df_id_list = generate_string_idx(self.df, columns, freq_limit)
         string_idx_list = list(map(lambda x: StringIndex(x[0], x[1]),
                                    zip(df_id_list, columns)))
-        return string_idx_list
+        # If input is a single column (not a list), then the output would be a single StringIndex.
+        if len(string_idx_list) == 1 and columns_is_str:
+            return string_idx_list[0]
+        else:
+            return string_idx_list
 
     def _clone(self, df):
         return FeatureTable(df)

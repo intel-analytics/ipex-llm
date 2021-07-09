@@ -103,7 +103,7 @@ if __name__ == "__main__":
         .rename({"asin": "item"}).drop("categories").distinct()
     print("item_tbl, ", item_tbl.size())
 
-    user_index = transaction_tbl.gen_string_idx(['user'], 1)
+    user_index = transaction_tbl.gen_string_idx('user', 1)
     item_category_indices = item_tbl.gen_string_idx(["item", "category"], 1)
     item_size = item_category_indices[0].size()
     category_index = item_category_indices[1]
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         .distinct()
 
     transaction_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index[0], item_category_indices[0]])\
+        .encode_string(['user', 'item'], [user_index, item_category_indices[0]])\
         .dropna(columns="item")\
         .add_hist_seq(cols=['item'], user_col="user",
                       sort_col='time', min_len=1, max_len=100)\
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         .apply("label", "label", trans_label, "array<float>")
 
     # write out
-    user_index[0].write_parquet(args.output+"user_index")
+    user_index.write_parquet(args.output)
     item_category_indices[0].write_parquet(args.output + "item_index")
     category_index.write_parquet(args.output + "category_index")
     item_tbl.write_parquet(args.output + "item2cat")
