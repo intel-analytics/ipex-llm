@@ -55,10 +55,6 @@ def cross_columns(df, cross_column_list, bucket_sizes):
     return callZooFunc("float", "crossColumns", df, cross_column_list, bucket_sizes)
 
 
-def normalize_array(df, column):
-    return callZooFunc("float", "normalizeArray", df, column)
-
-
 def check_col_exists(df, columns):
     df_cols = df.columns
     col_not_exist = list(filter(lambda x: x not in df_cols, columns))
