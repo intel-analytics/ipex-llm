@@ -58,8 +58,8 @@ class TestAutoProphet(TestCase):
                          n_sampling=1,
                          )
         best_model = auto_prophet.get_best_model()
-        assert 0.001 <= best_model.model.changepoint_prior_scale <= 0.5
-        assert 0.01 <= best_model.model.seasonality_prior_scale <= 10
-        assert 0.01 <= best_model.model.holidays_prior_scale <= 10
-        assert best_model.model.seasonality_mode in ['additive', 'multiplicative']
-        assert 0.8 <= best_model.model.changepoint_range <= 0.95
+        assert 0.001 <= best_model.changepoint_prior_scale <= 0.5
+        assert 0.01 <= best_model.seasonality_prior_scale <= 10
+        assert 0.01 <= best_model.holidays_prior_scale <= 10
+        assert best_model.seasonality_mode in ['additive', 'multiplicative']
+        assert 0.8 <= best_model.changepoint_range <= 0.95

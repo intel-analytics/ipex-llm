@@ -237,7 +237,7 @@ class AutoTSEstimator:
                 scheduler_params=scheduler_params
             )
 
-        return TSPipeline(best_model=self.get_best_model(),
+        return TSPipeline(best_model=self._get_best_automl_model(),
                           best_config=self.get_best_config(),
                           scaler=self._scaler,
                           scaler_index=self._scaler_index)
@@ -306,13 +306,13 @@ class AutoTSEstimator:
 
         return train_data_creator, val_data_creator
 
-    def get_best_model(self):
+    def _get_best_automl_model(self):
         """
-        Get the tuned model
+        For internal use only.
 
-        :return: the best model instance
+        :return: the best automl model instance
         """
-        return self.model.get_best_model()
+        return self.model._get_best_automl_model()
 
     def get_best_config(self):
         """
