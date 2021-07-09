@@ -27,8 +27,6 @@ import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.types.{ArrayType, IntegerType, DoubleType, StringType, LongType, StructField, StructType}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.functions.{col, row_number, spark_partition_id, udf, log => sqllog, rand}
-import org.apache.spark.ml.linalg.{DenseVector, Vector => MLVector}
-import org.apache.spark.ml.feature.MinMaxScaler
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
@@ -421,27 +419,6 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       StructField("median", DoubleType, nullable = true)
     ))
     spark.createDataFrame(spark.sparkContext.parallelize(medians_data), schema)
-  }
-
-  def normalizeArray(df: DataFrame, column: String): DataFrame = {
-    val toVector = udf((arr: Seq[Any]) => {
-      val doubleArray = arr.map {
-        case f: Float => f.toDouble
-        case i: Int => i.toDouble
-        case l: Long => l.toDouble
-        case d: Double => d
-      }
-      new DenseVector(doubleArray.toArray)
-    })
-
-    val vectoredDF = df.withColumn(column, toVector(col(column)))
-    val scaler = new MinMaxScaler()
-      .setInputCol(column)
-      .setOutputCol("scaled")
-    val toArray = udf((vec: MLVector) => vec.toArray.map(_.toFloat))
-    val resultDF = scaler.fit(vectoredDF).transform(vectoredDF)
-      .withColumn(column, toArray(col("scaled"))).drop("scaled")
-    resultDF
   }
 
   def ordinalShufflePartition(df: DataFrame): DataFrame = {

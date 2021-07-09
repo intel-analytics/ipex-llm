@@ -71,7 +71,7 @@ class Table:
         if names:
             if not isinstance(names, list):
                 names = [names]
-            assert len(names) == len(columns),\
+            assert len(names) == len(columns), \
                 "names should have the same length as the number of columns"
             for i in range(len(names)):
                 df = df.withColumnRenamed(columns[i], names[i])
@@ -84,7 +84,7 @@ class Table:
                 tbl = tbl.cast(columns=None, dtype=dtype)
             elif isinstance(dtype, list):
                 columns = df.columns
-                assert len(dtype) == len(columns),\
+                assert len(dtype) == len(columns), \
                     "dtype should have the same length as the number of columns"
                 for i in range(len(columns)):
                     tbl = tbl.cast(columns=columns[i], dtype=dtype[i])
@@ -516,7 +516,7 @@ class Table:
         valid_types = ["str", "string", "bool", "boolean", "int",
                        "integer", "long", "short", "float", "double"]
         if not (isinstance(dtype, str) and (dtype in valid_types)) \
-           and not isinstance(dtype, DataType):
+                and not isinstance(dtype, DataType):
             raise ValueError(
                 "dtype should be string, boolean, int, long, short, float, double.")
         transform_dict = {"str": "string", "bool": "boolean", "integer": "int"}
@@ -850,13 +850,16 @@ class FeatureTable(Table):
         df = cross_columns(self.df, crossed_columns, bucket_sizes)
         return FeatureTable(df)
 
-    def normalize(self, columns):
+    def min_max_scale(self, columns, min=0.0, max=1.0):
         """
-        Normalize numeric columns
+        Rescale each column individually to a common range [min, max] linearly using
+         column summary statistics, which is also known as min-max normalization or Rescaling.
 
         :param columns: list of column names
+        :param min: Lower bound after transformation, shared by all columns. 0.0 by default.
+        :param max: Upper bound after transformation, shared by all columns. 1.0 by default.
 
-        :return: FeatureTable
+        :return: FeatureTable and mapping = {c: (originalMin, originalMax) for c in columns}
         """
         df = self.df
         types = [x[1] for x in self.df.select(*columns).dtypes]
@@ -867,16 +870,18 @@ class FeatureTable(Table):
                       if types[i] == "array<int>" or types[i] == "array<bigint>"
                       or types[i] == "array<float>" or types[i] == "array<double>"]
         vector_cols = [columns[i] for i in range(len(columns)) if types[i] == "vector"]
+
+        min_max_dic = {}
+        tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
+
         if scalar_cols:
             assembler = VectorAssembler(inputCols=scalar_cols, outputCol="vect")
 
             # MinMaxScaler Transformation
-            scaler = MinMaxScaler(inputCol="vect", outputCol="scaled")
+            scaler = MinMaxScaler(min=min, max=max, inputCol="vect", outputCol="scaled")
 
             # Pipeline of VectorAssembler and MinMaxScaler
             pipeline = Pipeline(stages=[assembler, scaler])
-
-            tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
 
             # Fitting pipeline on dataframe
             model = pipeline.fit(df)
@@ -892,14 +897,31 @@ class FeatureTable(Table):
             for c in scalar_cols:
                 df = df.withColumn(c, pyspark_col(c).cast("float"))
 
+            min_list = model.stages[1].originalMin.toArray().tolist()
+            max_list = model.stages[1].originalMax.toArray().tolist()
+
+            for i, min_max in enumerate(zip(min_list, max_list)):
+                min_max_dic[scalar_cols[i]] = min_max
+
+        from pyspark.ml.linalg import Vectors, VectorUDT
         for c in array_cols:
-            df = normalize_array(df, c)
+            list_to_vector_udf = udf(lambda l: Vectors.dense(l), VectorUDT())
+            df = df.withColumn(c, list_to_vector_udf(pyspark_col(c)))
+            scaler = MinMaxScaler(min=min, max=max, inputCol=c, outputCol="scaled")
+            model = scaler.fit(df)
+            df = model.transform(df).drop(c).withColumn(c, tolist("scaled")).drop("scaled")
+            min_max_dic[c] = (model.originalMin.toArray().tolist(),
+                              model.originalMax.toArray().tolist())
 
         for c in vector_cols:
-            scaler = MinMaxScaler(inputCol=c, outputCol="scaled")
-            df = scaler.fit(df).transform(df).withColumnRenamed("scaled", c)
+            scaler = MinMaxScaler(min=min, max=max, inputCol=c, outputCol="scaled")
+            model = scaler.fit(df)
+            df = model.transform(df).withColumnRenamed("scaled", c)
+            min = model.originalMin
+            max = model.originalMax
+            min_max_dic[c] = (min, max)
 
-        return FeatureTable(df)
+        return FeatureTable(df), min_max_dic
 
     def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
         """
