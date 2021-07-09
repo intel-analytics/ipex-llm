@@ -169,6 +169,8 @@ The result should be similar to
 
 ##### Example 3: Basic SQL
 
+Before running the example, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
+
 Run the example with SGX and standalone mode with the following command in the terminal. 
 
 ```bash
@@ -251,7 +253,7 @@ The result should be similar to
 
 ##### Example 5: XGBoost Regressor
 
-Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace `RABIT_TRACKER_IP` with your IP address.
+Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
 
 ```bash
 SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
@@ -267,7 +269,7 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8
   --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
-  --file-path /ppml/trusted-big-data-ml/work/data/Boston_Housing.csv" | tee test-zoo-xgboost-regressor-sgx.log
+  --file-path path_of_boston_housing_csv" | tee test-zoo-xgboost-regressor-sgx.log
 ```
 
 Then check the output with the following command.
@@ -328,10 +330,10 @@ Before running the example, download the sample dataset from [pima-indians-diabe
 wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
 ```
 
-After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace  `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
+After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX and standalone mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
 
 ```bash
-SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=192.168.0.111 && /opt/jdk8/bin/java -cp \
+SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -344,7 +346,7 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=192.168.0.111 && /opt/jdk8/b
   --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
-  -f /ppml/trusted-big-data-ml/work/data/pima-indians-diabetes.data.csv" | tee test-xgboost-classifier-sgx.log
+  -f path_of_pima_indians_diabetes_csv" | tee test-xgboost-classifier-sgx.log
 ```
 
 Then check the output with the following command.
