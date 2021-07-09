@@ -87,10 +87,11 @@ class TestAutoLSTM(TestCase):
                       validation_data=get_x_y(size=400),
                       n_sampling=1,
                       )
-        best_model = auto_lstm.get_best_model()
-        assert 0.1 <= best_model.config['dropout'] <= 0.2
-        assert best_model.config['batch_size'] in (32, 64)
-        assert 1 <= best_model.config['layer_num'] < 3
+        assert auto_lstm.get_best_model()
+        best_config = auto_lstm.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert best_config['batch_size'] in (32, 64)
+        assert 1 <= best_config['layer_num'] < 3
 
     def test_fit_data_creator(self):
         auto_lstm = AutoLSTM(input_feature_num=input_feature_dim,
@@ -113,10 +114,11 @@ class TestAutoLSTM(TestCase):
                       validation_data=valid_dataloader_creator,
                       n_sampling=1,
                       )
-        best_model = auto_lstm.get_best_model()
-        assert 0.1 <= best_model.config['dropout'] <= 0.2
-        assert best_model.config['batch_size'] in (32, 64)
-        assert 1 <= best_model.config['layer_num'] < 3
+        assert auto_lstm.get_best_model()
+        best_config = auto_lstm.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert best_config['batch_size'] in (32, 64)
+        assert 1 <= best_config['layer_num'] < 3
 
 
 if __name__ == "__main__":

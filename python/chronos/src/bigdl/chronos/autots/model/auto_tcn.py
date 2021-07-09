@@ -169,3 +169,6 @@ class AutoTCN:
         :return: A dictionary of best hyper parameters
         """
         return self.auto_est.get_best_config()
+
+    def _get_best_automl_model(self):
+        return self.auto_est._get_best_automl_model()

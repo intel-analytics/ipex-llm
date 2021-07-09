@@ -94,10 +94,11 @@ class TestAutoTCN(TestCase):
                      validation_data=get_x_y(size=400),
                      n_sampling=1,
                      )
-        best_model = auto_tcn.get_best_model()
-        assert 0.1 <= best_model.config['dropout'] <= 0.2
-        assert best_model.config['batch_size'] in (32, 64)
-        assert 1 <= best_model.config['levels'] < 3
+        assert auto_tcn.get_best_model()
+        best_config = auto_tcn.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert best_config['batch_size'] in (32, 64)
+        assert 1 <= best_config['levels'] < 3
 
     def test_fit_data_creator(self):
         auto_tcn = get_auto_estimator()
@@ -107,10 +108,11 @@ class TestAutoTCN(TestCase):
                      validation_data=valid_dataloader_creator,
                      n_sampling=1,
                      )
-        best_model = auto_tcn.get_best_model()
-        assert 0.1 <= best_model.config['dropout'] <= 0.2
-        assert best_model.config['batch_size'] in (32, 64)
-        assert 1 <= best_model.config['levels'] < 3
+        assert auto_tcn.get_best_model()
+        best_config = auto_tcn.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert best_config['batch_size'] in (32, 64)
+        assert 1 <= best_config['levels'] < 3
 
     def test_num_channels(self):
         auto_tcn = AutoTCN(input_feature_num=input_feature_dim,
@@ -135,8 +137,9 @@ class TestAutoTCN(TestCase):
                      validation_data=valid_dataloader_creator,
                      n_sampling=1,
                      )
-        best_model = auto_tcn.get_best_model()
-        assert best_model.config['num_channels'] == [8]*2
+        assert auto_tcn.get_best_model()
+        best_config = auto_tcn.get_best_config()
+        assert best_config['num_channels'] == [8]*2
 
 
 if __name__ == "__main__":
