@@ -394,7 +394,7 @@ class TestTable(TestCase):
         df = spark.createDataFrame(data=data, schema=schema)
         df = df.withColumn("ts", col("time").cast("timestamp").cast("long"))
         tbl = FeatureTable(df.select("name", "item", "ts")) \
-            .add_hist_seq("name", ["item"], "ts", 1, 4)
+            .add_hist_seq(["item"], "name", "ts", 1, 4)
         assert tbl.size() == 8
         assert tbl.df.filter(col("name") == "alice").count() == 2
         assert tbl.df.filter("name like '%jack'").count() == 6
@@ -419,7 +419,7 @@ class TestTable(TestCase):
         tbl = tbl.add_neg_hist_seq(9, "item_hist_seq", 4)
         assert tbl.df.select("neg_item_hist_seq").count() == 3
 
-    def test_gen_cats_from_items(self):
+    def test_add_value_features(self):
         spark = OrcaContext.get_spark_session()
         sc = OrcaContext.get_spark_context()
         data = [
@@ -439,7 +439,8 @@ class TestTable(TestCase):
             .withColumn("category", col("category").cast("Integer"))
         tbl = FeatureTable(df)
         tbl2 = tbl.add_neg_hist_seq(9, "item_hist_seq", 4)
-        tbl3 = tbl2.add_feature(["item_hist_seq", "neg_item_hist_seq"], FeatureTable(df2), 5)
+        tbl3 = tbl2.add_value_features(["item_hist_seq", "neg_item_hist_seq"],
+                                       FeatureTable(df2), "item", "category")
         assert tbl3.df.select("category_hist_seq").count() == 3
         assert tbl3.df.select("neg_category_hist_seq").count() == 3
         assert tbl3.df.filter("name like '%alice%'").select("neg_category_hist_seq").count() == 1
@@ -455,41 +456,14 @@ class TestTable(TestCase):
                              StructField("list", ArrayType(IntegerType()), True),
                              StructField("matrix", ArrayType(ArrayType(IntegerType())))])
         df = spark.createDataFrame(data, schema)
-        tbl = FeatureTable(df).pad(["list", "matrix"], 4)
-        dft = tbl.df
-        assert dft.filter("size(matrix) = 4").count() == 3
-        assert dft.filter("size(list) = 4").count() == 3
-
-    def test_mask(self):
-        spark = OrcaContext.get_spark_session()
-        data = [
-            ("jack", [1, 2, 3, 4, 5]),
-            ("alice", [4, 5, 6, 7, 8]),
-            ("rose", [1, 2])]
-        schema = StructType([
-            StructField("name", StringType(), True),
-            StructField("history", ArrayType(IntegerType()), True)])
-
-        df = spark.createDataFrame(data, schema)
-        tbl = FeatureTable(df).mask(["history"], 4)
-        assert "history_mask" in tbl.df.columns
-        assert tbl.df.filter("size(history_mask) = 4").count() == 3
-        assert tbl.df.filter("size(history_mask) = 2").count() == 0
-
-    def test_add_length(self):
-        spark = OrcaContext.get_spark_session()
-        data = [("jack", [1, 2, 3, 4, 5]),
-                ("alice", [4, 5, 6, 7, 8]),
-                ("rose", [1, 2])]
-        schema = StructType([StructField("name", StringType(), True),
-                             StructField("history", ArrayType(IntegerType()), True)])
-
-        df = spark.createDataFrame(data, schema)
-        tbl = FeatureTable(df)
-        tbl = tbl.add_length("history")
-        assert "history_length" in tbl.df.columns
-        assert tbl.df.filter("history_length = 5").count() == 2
-        assert tbl.df.filter("history_length = 2").count() == 1
+        tbl1 = FeatureTable(df).pad(["list", "matrix"], seq_len=4)
+        dft1 = tbl1.df
+        tbl2 = FeatureTable(df).pad(cols=["list", "matrix"], mask_cols=["list"], seq_len=4)
+        assert dft1.filter("size(matrix) = 4").count() == 3
+        assert dft1.filter("size(list) = 4").count() == 3
+        assert tbl2.df.filter("size(list_mask) = 4").count() == 3
+        assert tbl2.df.filter("size(list_mask) = 2").count() == 0
+        assert "list_mask" in tbl2.df.columns
 
     def test_median(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")

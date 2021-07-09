@@ -66,6 +66,28 @@ def check_col_exists(df, columns):
         raise ValueError(str(col_not_exist) + " do not exist in this Table")
 
 
+def add_negative_samples(df, item_size, item_col, label_col, neg_num):
+    return callZooFunc("float", "addNegSamples", df, item_size, item_col, label_col, neg_num)
+
+
+def add_hist_seq(df, cols, user_col, sort_col, min_len, max_len):
+    return callZooFunc("float", "addHistSeq", df, cols, user_col, sort_col, min_len, max_len)
+
+
+def add_neg_hist_seq(df, item_size, item_history_col, neg_num):
+    return callZooFunc("float", "addNegHisSeq", df, item_size, item_history_col, neg_num)
+
+
+def mask(df, mask_cols, seq_len):
+    return callZooFunc("float", "mask", df, mask_cols, seq_len)
+
+
+def pad(df, cols, seq_len, mask_cols):
+    df = callZooFunc("float", "mask", df, mask_cols, seq_len) if mask_cols else df
+    df = callZooFunc("float", "postPad", df, cols, seq_len)
+    return df
+
+
 def check_column_numeric(df, column):
     return df.schema[column].dataType in [IntegerType(), ShortType(),
                                           LongType(), FloatType(),

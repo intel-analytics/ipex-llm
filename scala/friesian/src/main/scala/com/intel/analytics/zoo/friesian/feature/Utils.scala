@@ -23,6 +23,11 @@ import org.apache.spark.TaskContext
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
+import scala.collection.{immutable, mutable}
+import scala.collection.mutable.WrappedArray
+import reflect.runtime.universe._
+import scala.util.Random
+
 private[friesian] object Utils {
   def fillNaIndex(df: DataFrame, fillVal: Any, columns: Array[Int]): DataFrame = {
     val targetType = fillVal match {
@@ -142,7 +147,7 @@ private[friesian] object Utils {
   def getIndex(df: DataFrame, columns: Array[String]): Array[Int] = {
     columns.map(col_n => {
       val idx = df.columns.indexOf(col_n)
-      if(idx == -1) {
+      if (idx == -1) {
         throw new IllegalArgumentException(s"The column name $col_n does not exist")
       }
       idx
@@ -155,16 +160,103 @@ private[friesian] object Utils {
     //                 of the return value is either empty or a singleton
     df.stat.approxQuantile(columns, Array(0.5), relativeError).map(
       quantiles => {
-      if (quantiles.isEmpty) {
-        null
-      }
-      else {
-        quantiles(0)
-      }
-    })
+        if (quantiles.isEmpty) {
+          null
+        }
+        else {
+          quantiles(0)
+        }
+      })
   }
 
   def hashBucket(content: Any, bucketSize: Int = 1000, start: Int = 0): Int = {
     return (content.hashCode() % bucketSize + bucketSize) % bucketSize + start
+  }
+
+  def maskArr: (Int, mutable.WrappedArray[Any]) => Seq[Int] = {
+    (maxLength: Int, history: WrappedArray[Any]) => {
+      val n = history.length
+      val result = if (maxLength > n) {
+        (0 to n - 1).map(_ => 1) ++ (0 to (maxLength - n - 1)).map(_ => 0)
+      } else {
+        (0 to maxLength - 1).map(_ => 1)
+      }
+      result
+    }
+  }
+
+  def padArr[T]: (Int, mutable.WrappedArray[T]) => mutable.Seq[T] = {
+    (maxLength: Int, history: WrappedArray[T]) => {
+      val n = history.length
+      val padValue = castValueFromNum(history(0), 0)
+      val pads: mutable.Seq[T] = if (maxLength > n) {
+        history ++ (0 to maxLength - n - 1).map(_ => padValue)
+      } else {
+        history.slice(n - maxLength, n)
+      }
+      pads
+    }
+  }
+
+  def padMatrix[T]: (Int, WrappedArray[WrappedArray[T]]) => Seq[Seq[T]] = {
+    (maxLength: Int, history: WrappedArray[WrappedArray[T]]) => {
+      val n = history.length
+      val padValue = castValueFromNum(history(0)(0), 0)
+      if (maxLength > n) {
+        val hishead = history(0)
+        val padArray =
+          (0 to maxLength - n - 1).map(_ => (0 to hishead.length - 1).map(_ => padValue))
+        history ++ padArray
+      } else {
+        history.slice(n - maxLength, n)
+      }
+    }
+  }
+
+  def castValueFromNum[T](num: T, value: Int): T = {
+    val out: Any = num match {
+      case _: Double => value.toDouble
+      case _: Int => value
+      case _: Float => value.toFloat
+      case _: Long => value.toLong
+      case _ => throw new IllegalArgumentException(
+        s"Unsupported value type ${num.getClass.getName} ($num).")
+    }
+    out.asInstanceOf[T]
+  }
+
+  def addNegtiveItem[T](negNum: Int, itemSize: Int): Int => Seq[(Int, Int)] = {
+    val r = new Random()
+    (itemId: Int) =>
+      (1 to negNum).map(x => {
+        var negItem = 0
+        do {
+          negItem = 1 + r.nextInt(itemSize - 1)
+        } while (negItem == itemId)
+        negItem
+      }).map(x => (x, 0)) ++ Seq((itemId, 1))
+  }
+
+  def addNegativeList[T](negNum: Int, itemSize: Int): mutable.WrappedArray[Int] => Seq[Seq[Int]] = {
+    val r = new Random()
+    (history: WrappedArray[Int]) => {
+      val r = new Random()
+      val negItemSeq: Seq[Seq[Int]] = (0 to history.length - 1).map(i => {
+        (0 to negNum - 1).map(j => {
+          var negItem = 0
+          do {
+            negItem = 1 + r.nextInt(itemSize - 1)
+          } while (negItem == history(i))
+          negItem
+        })
+      })
+      negItemSeq
+    }
+  }
+
+  def get1row[T](full_rows: Array[Row], colName: String, index: Int, lowerBound: Int): Seq[Any] = {
+    val colValue = full_rows(index).getAs[T](colName)
+    val historySeq = full_rows.slice(lowerBound, index).map(row => row.getAs[T](colName))
+    Seq(colValue, historySeq)
   }
 }
