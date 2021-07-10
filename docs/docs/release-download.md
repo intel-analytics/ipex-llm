@@ -1,12 +1,12 @@
 ## **Release 0.11.0 nightly build**
 
-| | BigDL 0.12.2 | 
+| | BigDL 0.13.0 | 
 | ------------- | --------- |
-| Spark 2.1.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.1.1/0.11.0-SNAPSHOT/)|
-| Spark 2.2.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.2.1/0.11.0-SNAPSHOT/)|
-| Spark 2.3.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.3.1/0.11.0-SNAPSHOT/)|
-| Spark 2.4.3   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_2.4.3/0.11.0-SNAPSHOT/)|
-| Spark 3.0.0   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.12.2-spark_3.0.0/0.11.0-SNAPSHOT/)|
+| Spark 2.1.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.13.0-spark_2.1.1/0.11.0-SNAPSHOT/)|
+| Spark 2.2.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.13.0-spark_2.2.1/0.11.0-SNAPSHOT/)|
+| Spark 2.3.1   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.13.0-spark_2.3.1/0.11.0-SNAPSHOT/)|
+| Spark 2.4.3   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.13.0-spark_2.4.3/0.11.0-SNAPSHOT/)|
+| Spark 3.0.0   | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-bigdl_0.13.0-spark_3.0.0/0.11.0-SNAPSHOT/)|
 
 ---
 ## **Release 0.10.0**

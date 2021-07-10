@@ -32,7 +32,7 @@ You can install the latest release version of Analytics Zoo as follows:
 ```bash
 pip install analytics-zoo
 ```
-_**Note:** Installing Analytics Zoo will automatically install `bigdl==0.12.2`, `pyspark==2.4.3`, `conda-pack==0.3.1` and their dependencies if they haven't been detected in your conda environment._
+_**Note:** Installing Analytics Zoo will automatically install `bigdl==0.13.0`, `pyspark==2.4.3`, `conda-pack==0.3.1` and their dependencies if they haven't been detected in your conda environment._
 
 #### **1.2 Nightly Build**
 
