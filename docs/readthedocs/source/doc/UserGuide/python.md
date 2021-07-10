@@ -32,7 +32,7 @@ You can install the latest release version of Analytics Zoo as follows:
 ```bash
 pip install analytics-zoo
 ```
-_**Note:** Installing Analytics Zoo will automatically install `bigdl==0.13.0`, `pyspark==2.4.3`, `conda-pack==0.3.1` and their dependencies if they haven't been detected in your conda environment._
+_**Note:** Installing Analytics Zoo will automatically install `bigdl==0.13.0`, `pyspark==2.4.6`, `conda-pack==0.3.1` and their dependencies if they haven't been detected in your conda environment._
 
 #### **1.2 Nightly Build**
 
@@ -101,7 +101,7 @@ For more details, please refer to [Orca Context](../Orca/Overview/orca-context.m
 Analytics Zoo has been tested on __Python 3.6 and 3.7__ with the following library versions:
 
 ```bash
-pyspark==2.4.3
+pyspark==2.4.6
 ray==1.2.0
 tensorflow==1.15.0 or >2.0
 pytorch>=1.5.0

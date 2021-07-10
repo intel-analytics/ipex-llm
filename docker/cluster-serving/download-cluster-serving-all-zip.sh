@@ -16,9 +16,9 @@
 # limitations under the License.
 #
 if [ -z "${ANALYTICS_ZOO_VERSION}" ]; then
-  export ANALYTICS_ZOO_VERSION=0.11.0-SNAPSHOT
+  export ANALYTICS_ZOO_VERSION=0.12.0-SNAPSHOT
   export BIGDL_VERSION=0.13.0
-  export SPARK_VERSION=2.4.3
+  export SPARK_VERSION=2.4.6
   echo "You did not specify ANALYTICS_ZOO_VERSION, will download "$ANALYTICS_ZOO_VERSION
 fi
 
