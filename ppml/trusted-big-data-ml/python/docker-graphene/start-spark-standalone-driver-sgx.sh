@@ -7,7 +7,7 @@ driver_host=$SPARK_DRIVER_IP
 driver_block_manager_port=$SPARK_DRIVER_BLOCK_MANAGER_PORT
 export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
-export SPARK_HOME=/ppml/trusted-big-data-ml/work/spark-2.4.3
+export SPARK_HOME=/ppml/trusted-big-data-ml/work/spark-2.4.6
 
 bash ppml-spark-submit.sh \
     --master $spark_master \
