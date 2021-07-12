@@ -1,7 +1,7 @@
 FROM occlum/occlum:0.23.0-ubuntu18.04 AS occlum
 ENV LOCAL_IP your_local_ip
-ARG BIGDL_VERSION=0.12.2
-ARG SPARK_VERSION=2.4.3
+ARG BIGDL_VERSION=0.13.0
+ARG SPARK_VERSION=2.4.6
 ENV SPARK_VERSION		${SPARK_VERSION}
 ENV BIGDL_VERSION		${BIGDL_VERSION}
 ENV http_proxy $http_proxy
@@ -10,10 +10,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-11-jdk unzip
 RUN mkdir -p /bin/examples/jars
 RUN mkdir -p /ppml/docker-occlum && cd /ppml/docker-occlum && \
-    wget -P /ppml/docker-occlum https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz && \
-    tar -xvzf /ppml/docker-occlum/spark-2.4.3-bin-hadoop2.7.tgz  &&  \
-    wget -P /bin/examples/jars/spark-network-common_2.11-2.4.3.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.11-2.4.3.jar && \
-    rm /ppml/docker-occlum/spark-2.4.3-bin-hadoop2.7.tgz
+    wget -P /ppml/docker-occlum https://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz && \
+    tar -xvzf /ppml/docker-occlum/spark-2.4.6-bin-hadoop2.7.tgz  &&  \
+    wget -P /bin/examples/jars/spark-network-common_2.11-2.4.6.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.11-2.4.6.jar && \
+    rm /ppml/docker-occlum/spark-2.4.6-bin-hadoop2.7.tgz
 ADD ./hosts /ppml/docker-occlum/hosts
 ADD ./README.md  /ppml/docker-occlum/README.md 
 ADD ./run_spark_on_occlum_glibc.sh /ppml/docker-occlum/run_spark_on_occlum_glibc.sh
