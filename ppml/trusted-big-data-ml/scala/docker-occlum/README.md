@@ -1,6 +1,6 @@
 # Java Spark Occlum
 
-## Spark 2.4.3 local test
+## Spark 2.4.6 local test
 
 Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
 

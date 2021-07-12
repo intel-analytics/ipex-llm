@@ -10,7 +10,7 @@ THIS_DIR ?= /ppml/trusted-big-data-ml
 JDK_HOME ?= /opt/jdk8
 SPARK_LOCAL_IP ?= 127.0.0.1
 SPARK_USER ?= root
-SPARK_HOME ?= $(THIS_DIR)/work/spark-2.4.3-bin-hadoop2.7
+SPARK_HOME ?= $(THIS_DIR)/work/spark-2.4.6-bin-hadoop2.7
 WORK_DIR ?= $(THIS_DIR)/work
 
 ifeq ($(DEBUG),1)

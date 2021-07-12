@@ -18,7 +18,7 @@ RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(rea
 
 # stage.2 jdk & spark
 FROM ubuntu:18.04 as spark
-ARG SPARK_VERSION=2.4.3
+ARG SPARK_VERSION=2.4.6
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ENV SPARK_VERSION	${SPARK_VERSION}
@@ -76,9 +76,9 @@ RUN git clone https://github.com/intel-analytics/BigDL.git && \
 
 # stage.4 analytics-zoo
 FROM ubuntu:18.04 as analytics-zoo
-ARG ANALYTICS_ZOO_VERSION=0.11.0-SNAPSHOT
+ARG ANALYTICS_ZOO_VERSION=0.12.0-SNAPSHOT
 ARG BIGDL_VERSION=0.13.0
-ARG SPARK_VERSION=2.4.3
+ARG SPARK_VERSION=2.4.6
 ENV ANALYTICS_ZOO_VERSION	${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION		${SPARK_VERSION}
 ENV BIGDL_VERSION		${BIGDL_VERSION}
@@ -92,8 +92,8 @@ RUN ./download-analytics-zoo.sh && \
 
 # stage.5 az ppml
 FROM ubuntu:18.04
-ARG ANALYTICS_ZOO_VERSION=0.11.0-SNAPSHOT
-ARG SPARK_VERSION=2.4.3
+ARG ANALYTICS_ZOO_VERSION=0.12.0-SNAPSHOT
+ARG SPARK_VERSION=2.4.6
 ENV ANALYTICS_ZOO_VERSION		${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV SPARK_HOME				/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
@@ -177,7 +177,7 @@ ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 ADD tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 
-RUN jar -uf /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar ./tracker.py && \
+RUN jar -uf /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar ./tracker.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \

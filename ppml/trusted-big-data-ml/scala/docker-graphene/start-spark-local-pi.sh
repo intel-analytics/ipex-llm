@@ -12,4 +12,4 @@ bash ppml-spark-submit.sh \
         --conf spark.io.compression.codec=lz4 \
         --class org.apache.spark.examples.SparkPi \
         --driver-memory 10G \
-        /ppml/trusted-big-data-ml/work/spark-2.4.3/examples/jars/spark-examples_2.11-2.4.3.jar | tee spark.local.pi.sgx.log
+        /ppml/trusted-big-data-ml/work/spark-2.4.6/examples/jars/spark-examples_2.11-2.4.6.jar | tee spark.local.pi.sgx.log
