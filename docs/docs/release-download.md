@@ -7,6 +7,17 @@ These are built BigDL packages including dependency and Python files. You can do
 
 ---
 
+## **Release 0.13.0**
+|             | Download Link (for Linux x64 and Mac)                 |
+| ----------- | ------------------------------------------------------------ |
+| Spark 2.1.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-all/0.13.0/dist-spark-2.1.1-scala-2.11.8-all-0.13.0-dist.zip) |
+| Spark 2.2.0 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.2.0-scala-2.11.8-all/0.13.0/dist-spark-2.2.0-scala-2.11.8-all-0.13.0-dist.zip) |
+| Spark 2.3.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.3.1-scala-2.11.8-all/0.13.0/dist-spark-2.3.1-scala-2.11.8-all-0.13.0-dist.zip) |
+| Spark 2.4.6 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.4.6-scala-2.11.8-all/0.13.0/dist-spark-2.4.6-scala-2.11.8-all-0.13.0-dist.zip) |
+| Spark 3.0.0 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-3.0.0-scala-2.12.10-all/0.13.0/dist-spark-3.0.0-scala-2.12.10-all-0.13.0-dist.zip) |
+
+---
+
 ## **Release 0.12.2**
 |             | Download Link (for Linux x64 and Mac)                 |
 | ----------- | ------------------------------------------------------------ |
