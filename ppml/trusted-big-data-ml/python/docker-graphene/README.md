@@ -121,10 +121,10 @@ Run the example with SGX and standalone mode with the following command in the t
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
 	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/pi.py" | tee test-pi-sgx.log
+	/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/pi.py" | tee test-pi-sgx.log
 
 ```
 
@@ -146,10 +146,10 @@ Run the example with SGX and standalone mode with the following command in the t
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
 	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" | tee test-wordcount-sgx.log
+	/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" | tee test-wordcount-sgx.log
 
 ```
 
@@ -169,16 +169,16 @@ The result should be similar to
 
 ##### Example 3: Basic SQL
 
-Before running the example, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
+Before running the example, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
 
 Run the example with SGX and standalone mode with the following command in the terminal. 
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
 	-Xmx1g org.apache.spark.deploy.SparkSubmit \
 	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/spark-2.4.3/examples/src/main/python/sql/basic.py" | tee test-sql-basic-sgx.log
+	/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py" | tee test-sql-basic-sgx.log
 
 ```
 
@@ -214,7 +214,7 @@ Run the example with SGX and standalone mode with the following command in the t
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+  '/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
   -Xmx8g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
@@ -257,16 +257,16 @@ Before running the example, make sure that `Boston_Housing.csv` is under `work/d
 
 ```bash
 SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
-    '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+    '/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --conf spark.driver.memory=2g \
-  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
-  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
+  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
+  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
   --file-path path_of_boston_housing_csv" | tee test-zoo-xgboost-regressor-sgx.log
@@ -334,16 +334,16 @@ After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` i
 
 ```bash
 SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+  '/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --conf spark.driver.memory=2g \
-  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
-  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
+  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
+  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
   -f path_of_pima_indians_diabetes_csv" | tee test-xgboost-classifier-sgx.log
@@ -387,16 +387,16 @@ After downloading the dataset, make sure that `nyc_taxi.csv` is under `work/data
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.3/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.3/jars/*' \
+  '/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --conf spark.driver.memory=2g \
-  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
-  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-jar-with-dependencies.jar \
-  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.11.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.12.2-spark_2.4.3-0.11.0-SNAPSHOT-python-api.zip \
+  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --properties-file /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/conf/spark-analytics-zoo.conf \
+  --jars /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar \
+  --py-files /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/orca/data/spark_pandas.py \
   -f path_of_nyc_taxi_csv" | tee test-orca-data-sgx.log
