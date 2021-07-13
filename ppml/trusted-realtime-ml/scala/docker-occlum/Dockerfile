@@ -51,7 +51,7 @@ RUN cd /opt && \
     rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz
 
 # analytics-zoo
-RUN cd /opt && git clone https://github.com/intel-analytics/analytics-zoo.git && \
+RUN cd /opt && git clone --single-branch --branch master https://github.com/intel-analytics/analytics-zoo.git && \
     cd analytics-zoo/zoo && \
     export MAVEN_OPTS="-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
