@@ -76,7 +76,24 @@ fi
 now=$(date "+%s")
 time4=$((now - start))
 
+echo "#5 start test for basic_text_classification"
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/examples/basic_text_classification
+sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/examples/basic_text_classification.py
+start=$(date "+%s")
+python ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/examples/basic_text_classification.py
+
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "basic_text_classification failed"
+  exit $exit_status
+fi
+
+now=$(date "+%s")
+time5=$((now - start))
+
 echo "#1 tf_lenet_mnist time used: $time1 seconds"
 echo "#2 keras_lenet_mnist time used: $time2 seconds"
 echo "#3 chronos_autots_nyc_taxi time used: $time3 seconds"
 echo "#4 ncf_xshards_pandas time used: $time4 seconds"
+echo "#5 basic_text_classification time used: $time5 seconds"
