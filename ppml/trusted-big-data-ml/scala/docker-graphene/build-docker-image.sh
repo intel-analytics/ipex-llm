@@ -13,4 +13,4 @@ sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=$JDK_URL \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.10-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.12.0-SNAPSHOT -f ./Dockerfile .

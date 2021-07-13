@@ -153,7 +153,8 @@ RUN mkdir -p /opt/analytics-zoo-examples/python && \
 # chmod
     chmod a+x /opt/start-notebook-spark.sh && \
     chmod a+x /opt/start-notebook-k8s.sh && \
-    chmod +x /sbin/tini
+    chmod +x /sbin/tini && \
+    cp /sbin/tini /usr/bin/tini    
 
 WORKDIR /opt/spark/work-dir
 

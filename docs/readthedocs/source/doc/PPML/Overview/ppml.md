@@ -76,7 +76,7 @@ Download scripts and dockerfiles from [this link](https://github.com/intel-analy
 
 Pull docker image from Dockerhub
 ```bash
-docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.10-SNAPSHOT
+docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.12.0-SNAPSHOT
 ```
 
 Alternatively, you can build docker image from Dockerfile (this will take some time):
@@ -629,12 +629,12 @@ Pull docker image from Dockerhub
 
 ```bash
 # For Graphene
-docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.10-SNAPSHOT
+docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
 ```
 
 ```bash
 # For Occlum
-docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-occlum:0.10-SNAPSHOT
+docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-occlum:0.12.0-SNAPSHOT
 ```
 
 Also, you can build docker image from Dockerfile (this will take some time).
