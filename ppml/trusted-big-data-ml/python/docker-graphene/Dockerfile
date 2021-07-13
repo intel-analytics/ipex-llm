@@ -161,6 +161,7 @@ RUN apt-get install -y python3-minimal && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
     pip install tornado && \
+    pip install filelock && \
     python3 -m ipykernel.kernelspec
 
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
