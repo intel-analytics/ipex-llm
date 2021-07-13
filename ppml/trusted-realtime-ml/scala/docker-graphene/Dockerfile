@@ -60,7 +60,7 @@ COPY --from=flink /opt/jdk  /opt/jdk8
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git maven
-RUN git clone https://github.com/intel-analytics/analytics-zoo.git && \
+RUN git clone --single-branch --branch master https://github.com/intel-analytics/analytics-zoo.git && \
     cd analytics-zoo/zoo && \
     export MAVEN_OPTS="-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
