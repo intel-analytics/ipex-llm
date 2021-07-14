@@ -124,6 +124,17 @@ class FriesianSpec extends ZooSpecHelper {
     assert(stringIdxList.get(1).count == 1)
   }
 
+  "AssignStringIdx limit order by freq" should "work properly" in {
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
+    val cols = Array("col_4", "col_5")
+    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, orderByFrequency = true)
+    val col4Idx = stringIdxList.get(0).collect().sortBy(_.getInt(1))
+    val col5Idx = stringIdxList.get(1).collect().sortBy(_.getInt(1))
+    assert(col4Idx(0).getString(0) == "abc")
+    assert(col5Idx(0).getString(0) == "aa")
+  }
+
   "mask Int" should "work properly" in {
     val data = sc.parallelize(Seq(
       Row("jack", Seq(1, 2, 3, 4, 5)),

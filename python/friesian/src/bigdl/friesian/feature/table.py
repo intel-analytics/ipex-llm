@@ -690,7 +690,7 @@ class FeatureTable(Table):
         cross_hash_df = FeatureTable(cross_hash_df).hash_encode([cross_col_name], bins)
         return cross_hash_df
 
-    def category_encode(self, columns, freq_limit=None):
+    def category_encode(self, columns, freq_limit=None, order_by_freq=False):
         """
         Category encode the given columns.
 
@@ -699,11 +699,14 @@ class FeatureTable(Table):
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
                and in this case all the categories that appear will be encoded.
+        :param order_by_freq: boolean, whether the result StringIndex will assign smaller indices
+               to values with more frequencies. Default is False and in this case frequency order
+               may not be preserved when assigning indices.
 
         :return: A tuple of a new FeatureTable which transforms categorical features into unique
                  integer values, and a list of StringIndex for the mapping.
         """
-        indices = self.gen_string_idx(columns, freq_limit)
+        indices = self.gen_string_idx(columns, freq_limit, order_by_freq)
         return self.encode_string(columns, indices), indices
 
     def one_hot_encode(self, columns, sizes=None, prefix=None, keep_original_columns=False):
@@ -797,7 +800,7 @@ class FeatureTable(Table):
         data_df = data_df.drop("friesian_onehot")
         return FeatureTable(data_df)
 
-    def gen_string_idx(self, columns, freq_limit=None):
+    def gen_string_idx(self, columns, freq_limit=None, order_by_freq=False):
         """
         Generate unique index value of categorical features. The resulting index would
         start from 1 with 0 reserved for unknown features.
@@ -807,6 +810,9 @@ class FeatureTable(Table):
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
                and in this case all the categories that appear will be encoded.
+        :param order_by_freq: boolean, whether the result StringIndex will assign smaller indices
+               to values with more frequencies. Default is False and in this case frequency order
+               may not be preserved when assigning indices.
 
         :return: A StringIndex or a list of StringIndex.
         """
@@ -825,7 +831,7 @@ class FeatureTable(Table):
             else:
                 raise ValueError("freq_limit only supports int, dict or None, but get " +
                                  freq_limit.__class__.__name__)
-        df_id_list = generate_string_idx(self.df, columns, freq_limit)
+        df_id_list = generate_string_idx(self.df, columns, freq_limit, order_by_freq)
         string_idx_list = list(map(lambda x: StringIndex(x[0], x[1]),
                                    zip(df_id_list, columns)))
         # If input is a single column (not a list), then the output would be a single StringIndex.
