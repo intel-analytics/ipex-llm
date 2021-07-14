@@ -135,7 +135,7 @@ class VOCDatasets:
             logging.warning("Invalid label at %s, %s", anno_path, e)
         return label
 
-    def _check_label(self, label, width, height):
+    def _check_label(self, label, width=1, height=1):
         """Check if label is correct."""
         xmin = label[:, 0]
         ymin = label[:, 1]
