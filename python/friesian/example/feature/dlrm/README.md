@@ -29,7 +29,7 @@ python dlrm_preprocessing.py \
     --memory 50g \
     --days 0-1 \
     --input_folder /path/to/the/folder/of/parquet_files \
-    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files/and/string_index \
     --frequency_limit 15
 ```
 
@@ -43,7 +43,7 @@ python dlrm_preprocessing.py \
     --num_nodes 8 \
     --days 0-23 \
     --input_folder /path/to/the/folder/of/parquet_files \
-    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files/and/string_index \
     --frequency_limit 15
 ```
 
@@ -56,7 +56,7 @@ python dlrm_preprocessing.py \
     --num_nodes 8 \
     --days 0-23 \
     --input_folder /path/to/the/folder/of/parquet_files \
-    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files 
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files/and/string_index \
     --frequency_limit 15
 ```
 
@@ -71,4 +71,6 @@ __Options:__
 * `days`: The day range for data preprocessing, such as 0-23 for the full Criteo dataset, 0-1 for the first two days, etc. Default to be 0-23.
 * `frequency_limit`: Categories with frequency below this value will be omitted from encoding. We recommend using 15 when you preprocess the full 1TB dataset. Default to be 15.
 * `input_folder`: This option is __required__. The path to the folder of parquet files, either a local path or an HDFS path.
-* `output_folder`: The path to save the preprocessed data to parquet files. HDFS path is recommended. For the full 1TB dataset, preprocessed train data will be saved to `output_folder/saved_data` and test data will be saved to `output_folder/saved_data_test`. Default to be None. If not specified, the program will only do the computation but not save the preprocessed data.
+* `output_folder`: The path to save the preprocessed data and the generated string indices to parquet files. HDFS path is recommended. 
+The generated string indices will be saved to `output_folder/[colname].parquet` respectively. For the full 1TB dataset, preprocessed train data 
+will be saved to `output_folder/saved_data` and test data will be saved to `output_folder/saved_data_test`. Default to be None. If not specified, the program will only do the computation but not save the preprocessed data and the generated string indices.
