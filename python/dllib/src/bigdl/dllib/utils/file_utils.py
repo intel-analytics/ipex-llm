@@ -19,6 +19,7 @@ import numpy as np
 import os
 import tempfile
 import uuid
+import functools
 
 from urllib.parse import urlparse
 
@@ -71,37 +72,65 @@ def append_suffix(prefix, path):
     return file_name
 
 
-def save_file(save_func, path, **kwargs):
+def enable_multi_fs_save(save_func):
 
-    if is_local_path(path):
-        save_func(path, **kwargs)
-    else:
-        file_name = str(uuid.uuid1())
-        file_name = append_suffix(file_name, path)
-        temp_path = os.path.join(tempfile.gettempdir(), file_name)
+    @functools.wraps(save_func)
+    def save_mult_fs(obj, path, *args, **kwargs):
+        if is_local_path(path):
+            return save_func(obj, path, *args, **kwargs)
+        else:
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path)
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
 
-        try:
-            save_func(temp_path, **kwargs)
-            if "overwrite" in kwargs:
-                put_local_file_to_remote(temp_path, path, over_write=kwargs['overwrite'])
-            else:
-                put_local_file_to_remote(temp_path, path)
-        finally:
-            os.remove(temp_path)
+            try:
+                result = save_func(obj, temp_path, *args, **kwargs)
+                if "overwrite" in kwargs:
+                    put_local_file_to_remote(temp_path, path, over_write=kwargs['overwrite'])
+                else:
+                    put_local_file_to_remote(temp_path, path)
+            finally:
+                os.remove(temp_path)
+            return result
+
+    return save_mult_fs
 
 
-def load_from_file(load_func, path):
-    if is_local_path(path):
-        return load_func(path)
-    else:
-        file_name = str(uuid.uuid1())
-        file_name = append_suffix(file_name, path)
-        temp_path = os.path.join(tempfile.gettempdir(), file_name)
-        get_remote_file_to_local(path, temp_path)
-        try:
-            return load_func(temp_path)
-        finally:
-            os.remove(temp_path)
+def enable_multi_fs_load_static(load_func):
+    @functools.wraps(load_func)
+    def multi_fs_load(path, *args, **kwargs):
+        if is_local_path(path):
+            return load_func(path, *args, **kwargs)
+        else:
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path)
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            get_remote_file_to_local(path, temp_path)
+            try:
+                return load_func(temp_path, *args, **kwargs)
+            finally:
+                os.remove(temp_path)
+
+    return multi_fs_load
+
+
+def enable_multi_fs_load(load_func):
+
+    @functools.wraps(load_func)
+    def multi_fs_load(obj, path, *args, **kwargs):
+        if is_local_path(path):
+            return load_func(obj, path, *args, **kwargs)
+        else:
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path)
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            get_remote_file_to_local(path, temp_path)
+            try:
+                return load_func(obj, temp_path, *args, **kwargs)
+            finally:
+                os.remove(temp_path)
+
+    return multi_fs_load
 
 
 def get_remote_file_to_local(remote_path, local_path, over_write=False):
