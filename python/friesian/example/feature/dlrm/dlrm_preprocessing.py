@@ -67,7 +67,8 @@ def _parse_args():
                         help="The path to the folder of parquet files, "
                              "either a local path or an HDFS path.")
     parser.add_argument("--output_folder", type=str,
-                        help="The path to save the preprocessed data to parquet files. "
+                        help="The path to save the preprocessed data and "
+                             "the generated string indices to parquet files. "
                              "HDFS path is recommended.")
 
     args = parser.parse_args()
@@ -126,5 +127,10 @@ if __name__ == "__main__":
     time_end = time()
     print("Total preprocessing time: ", time_end - time_start)
     train_preprocessed.show(5)
+
+    if args.output_folder:
+        for idx in idx_list:
+            idx.write_parquet(args.output_folder)
+
     print("Finished")
     stop_orca_context()
