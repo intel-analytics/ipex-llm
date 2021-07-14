@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_save
 from zoo.orca.data.utils import row_to_sample, xshard_to_sample
 from zoo.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
     process_xshards_of_pandas_dataframe
@@ -232,6 +233,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         """
         return self.estimator.get_model()
 
+    @enable_multi_fs_save
     def save(self, model_path):
         """
         Saves the Estimator state (including model and optimizer) to the provided model_path.
@@ -241,6 +243,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         """
         return self.estimator.save(model_path)
 
+    @enable_multi_fs_load
     def load(self, model_path):
         """
         Loads the Estimator state (including model and optimizer) from the provided model_path.
@@ -504,6 +507,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         else:
             return model_path + "_optim"
 
+    @enable_multi_fs_save
     def save(self, model_path):
         """
         Saves the Estimator state (including model and optimizer) to the provided model_path.
@@ -519,6 +523,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         return model_path
 
+    @enable_multi_fs_load
     def load(self, model_path):
         """
         Load the Estimator state (model and possibly with optimizer) from provided model_path.

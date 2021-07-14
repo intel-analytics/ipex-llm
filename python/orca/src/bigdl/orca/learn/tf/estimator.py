@@ -18,7 +18,8 @@ from pyspark.sql import DataFrame
 from bigdl.optim.optimizer import MaxEpoch
 
 from zoo.tfpark.tf_dataset import _standardize_keras_target_data
-from zoo.common.utils import load_from_file
+from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_load_static, \
+    enable_multi_fs_save
 from zoo.orca import OrcaContext
 from zoo.orca.data.tf.data import Dataset, TFDataDataset2
 from zoo.orca.data import SparkXShards
@@ -348,6 +349,7 @@ class Estimator(SparkEstimator):
         return KerasEstimator(keras_model, metrics, model_dir, optimizer)
 
     @staticmethod
+    @enable_multi_fs_load_static
     def load_keras_model(path):
         """
         Create Estimator by loading an existing keras model (with weights) from HDF5 file.
@@ -356,11 +358,7 @@ class Estimator(SparkEstimator):
         :return: Orca TF Estimator.
         """
         from tensorflow.python.keras import models
-
-        def load_func(file_path):
-            return models.load_model(file_path)
-
-        model = load_from_file(load_func, path)
+        model = models.load_model(path)
         return Estimator.from_keras(keras_model=model)
 
 
@@ -996,6 +994,7 @@ class KerasEstimator(Estimator):
 
         return self.model.evaluate(dataset, batch_per_thread=batch_size)
 
+    @enable_multi_fs_save
     def save_keras_model(self, path, overwrite=True):
         """
         Save tensorflow keras model in this estimator.
@@ -1013,6 +1012,7 @@ class KerasEstimator(Estimator):
         """
         return self.model.model
 
+    @enable_multi_fs_save
     def save(self, model_path, overwrite=True):
         """
         Save model to model_path
@@ -1024,6 +1024,7 @@ class KerasEstimator(Estimator):
         """
         self.save_keras_model(model_path, overwrite=overwrite)
 
+    @enable_multi_fs_load
     def load(self, model_path):
         """
         Load existing keras model
@@ -1068,6 +1069,7 @@ class KerasEstimator(Estimator):
         """
         self.clip_norm = clip_norm
 
+    @enable_multi_fs_save
     def save_keras_weights(self, filepath, overwrite=True, save_format=None):
         """
         Save tensorflow keras model weights in this estimator.
@@ -1080,6 +1082,7 @@ class KerasEstimator(Estimator):
         """
         self.model.save_weights(filepath, overwrite, save_format)
 
+    @enable_multi_fs_load
     def load_keras_weights(self, filepath, by_name=False):
         """
         Save tensorflow keras model in this estimator.

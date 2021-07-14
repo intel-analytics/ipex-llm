@@ -19,6 +19,7 @@ import pickle
 
 import numpy as np
 import ray
+from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_save
 
 from zoo.orca.data.ray_xshards import RayXShards
 from zoo.orca.learn.dl_cluster import RayDLCluster
@@ -402,6 +403,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         state = ray.get(state_refs[0])
         return self._get_model_from_state(state)
 
+    @enable_multi_fs_save
     def save(self, checkpoint):
         """
         Saves the model at the provided checkpoint.
@@ -423,6 +425,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return checkpoint
 
+    @enable_multi_fs_load
     def load(self, checkpoint, **kwargs):
         """
         Loads the model from the provided checkpoint.
