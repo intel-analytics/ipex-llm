@@ -10,7 +10,7 @@
 Before you start this guide, make sure a Databricks workspace is ready and a cluster is created using the Databricks UI.
 
 1. Create either [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html)  workspace or [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace.
-2. Create Databricks [clusters](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 5.5 LTS (includes Apache Spark 2.4.3, Scala 2.11).
+2. Create Databricks [clusters](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 7.5 LTS (includes Apache Spark 3.0.0, Scala 2.12).
 
 ### **Installing Analytics Zoo libraries**  
 
@@ -65,7 +65,7 @@ Output on Databricks:
 
 ```
 Prepending /databricks/python/lib/python3.6/site-packages/bigdl/share/conf/spark-bigdl.conf to sys.path
-Adding /databricks/python/lib/python3.6/site-packages/zoo/share/lib/analytics-zoo-bigdl_0.9.1-spark_2.4.3-0.6.0-jar-with-dependencies.jar to BIGDL_JARS
+Adding /databricks/python/lib/python3.6/site-packages/zoo/share/lib/analytics-zoo-bigdl_VERSION-spark_VERSION-ANALYTICS-ZOO-VERSION-jar-with-dependencies.jar to BIGDL_JARS
 Prepending /databricks/python/lib/python3.6/site-packages/zoo/share/conf/spark-analytics-zoo.conf to sys.path
 ```
 
