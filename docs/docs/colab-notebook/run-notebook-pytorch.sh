@@ -76,6 +76,7 @@ do
 	sed -i 's/^[^#].*site-packages*/#&/g' ${filename}.py
 	sed -i 's/version_info/#version_info/g' ${filename}.py
 	sed -i 's/python_version/#python_version/g' ${filename}.py
+	sed -i 's/epochs=30/epochs=1/g' ${filename}.py
 
 	python ${filename}.py
 
@@ -89,7 +90,7 @@ done
 echo "orca examples test start"
 
 dir=${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/examples
-pytorchFiles=("fashion_mnist_bigdl")
+pytorchFiles=("fashion_mnist_bigdl" "super_resolution")
 index=1
 
 set -e
@@ -113,6 +114,8 @@ do
 	sed -i 's/^[^#].*site-packages*/#&/g' ${filename}.py
 	sed -i 's/version_info/#version_info/g' ${filename}.py
 	sed -i 's/python_version/#python_version/g' ${filename}.py
+	sed -i 's/batch_size = 32/batch_size = 320/g' ${filename}.py
+	sed -i 's/epochs = 30/epochs = 1/g' ${filename}.py
 
 	python ${filename}.py
 
