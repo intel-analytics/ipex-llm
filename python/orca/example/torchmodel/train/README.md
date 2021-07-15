@@ -9,7 +9,7 @@ There are some examples to show you how to use analytics-zoo to distribute pytor
 * Python 3.7
 * torch 1.5.0 or above
 * torchvision 0.6.0 or above
-* Apache Spark 2.4.3(pyspark)
+* Apache Spark 2.4.6(pyspark)
 * jep 3.9.0
 * cloudpickle 1.6.0
 * Java 1.8
