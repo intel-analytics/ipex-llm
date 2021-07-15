@@ -19,7 +19,7 @@ ADD ./README.md  /ppml/docker-occlum/README.md
 ADD ./run_spark_on_occlum_glibc.sh /ppml/docker-occlum/run_spark_on_occlum_glibc.sh
 ADD ./start-spark-local.sh /ppml/docker-occlum/start-spark-local.sh
 RUN wget -P /ppml/docker-occlum https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-${SPARK_VERSION}-scala-2.11.8-all/${BIGDL_VERSION}/dist-spark-${SPARK_VERSION}-scala-2.11.8-all-${BIGDL_VERSION}-dist.zip  && \
-    unzip -xvzf /ppml/docker-occlum/dist-spark-${SPARK_VERSION}-scala-2.11.8-all-${BIGDL_VERSION}-dist.zip -d /ppml/docker-occlum/bigdl && \
+    unzip /ppml/docker-occlum/dist-spark-${SPARK_VERSION}-scala-2.11.8-all-${BIGDL_VERSION}-dist.zip -d /ppml/docker-occlum/bigdl && \
     rm /ppml/docker-occlum/dist-spark-${SPARK_VERSION}-scala-2.11.8-all-${BIGDL_VERSION}-dist.zip && \
     cp /ppml/docker-occlum/bigdl/lib/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar /ppml/docker-occlum/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar && \
     rm -r /ppml/docker-occlum/bigdl
