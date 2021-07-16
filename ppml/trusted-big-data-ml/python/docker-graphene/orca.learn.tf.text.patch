@@ -1,0 +1,16 @@
+85c85
+< print("Training entries: {}, labels: {}".format(len(train_data), len(train_labels)))
+---
+> print("INFO Training entries: {}, labels: {}".format(len(train_data), len(train_labels)))
+87c87
+< print(train_data[0])
+---
+> print("INFO train_data[0]: " + str(train_data[0]))
+148c148
+<         epochs=100,
+---
+>         epochs=3,
+152c152
+< print(results)
+---
+> print("INFO results: "+str(results))
