@@ -72,6 +72,10 @@ fs.mount.pydisthome.type = "chroot"
 fs.mount.pydisthome.path = "$(PYTHONDISTHOME)"
 fs.mount.pydisthome.uri = "file:$(PYTHONDISTHOME)"
 
+fs.mount.keras.type = "chroot"
+fs.mount.keras.path = "/root/.keras/datasets"
+fs.mount.keras.uri = "file:/root/.keras/datasets"
+
 fs.mount.work.type = "chroot"
 fs.mount.work.path = "$(WORK_DIR)"
 fs.mount.work.uri = "file:$(WORK_DIR)"
@@ -133,5 +137,6 @@ sgx.allowed_files.sparkjars = "file:$(SPARK_HOME)/jars"
 sgx.allowed_files.work      = "file:/ppml/trusted-big-data-ml/work"
 sgx.allowed_files.pyhome    = "file:/usr/lib/python3.6"
 sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.6/dist-packages"
+sgx.allowed_files.kerasdatas = "file:/root/.keras/datasets"
 
 sgx.nonpie_binary = 1
