@@ -83,12 +83,16 @@ ENV ANALYTICS_ZOO_VERSION	${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION		${SPARK_VERSION}
 ENV BIGDL_VERSION		${BIGDL_VERSION}
 ENV ANALYTICS_ZOO_HOME		/analytics-zoo-${ANALYTICS_ZOO_VERSION}
+ADD orca.data.patch		/opt/orca.data.patch
+ADD orca.learn.tf.text.patch	/opt/orca.learn.tf.text.patch
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/docker/zoo/download-analytics-zoo.sh && \
     chmod a+x ./download-analytics-zoo.sh
 RUN ./download-analytics-zoo.sh && \
     cd /opt && git clone --depth 1 https://github.com/intel-analytics/analytics-zoo.git
+RUN patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/data/spark_pandas.py /opt/orca.data.patch && \
+    patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py /opt/orca.learn.tf.text.patch
 
 # stage.5 az ppml
 FROM ubuntu:18.04
@@ -125,6 +129,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /ppml/trusted-big-data-ml/work/models && \
     mkdir -p /ppml/trusted-big-data-ml/work/apps && \
     mkdir -p /ppml/trusted-big-data-ml/work/examples/bigdl && \
+    mkdir -p /root/.keras/datasets && \
     mkdir -p /graphene/Pal/src/host/Linux-SGX/signer
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
@@ -175,7 +180,7 @@ ADD ./start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/start-spark
 ADD ./start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh
 ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
 ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
-ADD tracker.py ./tracker.py
+ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 
 RUN jar -uf /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar ./tracker.py && \

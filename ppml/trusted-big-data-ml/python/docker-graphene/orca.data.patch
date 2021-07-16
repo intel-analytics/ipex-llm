@@ -1,0 +1,8 @@
+45a46
+>     print("INFO data collected: " + str(data))
+47a49
+>     print("INFO data shard: " + type(data_shard).__name__)
+48a51
+>     print("INFO data shard ended")
+52a56
+>     print("INFO data2 collected: " + str(data2))
