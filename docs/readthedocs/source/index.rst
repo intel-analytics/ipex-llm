@@ -67,6 +67,7 @@ Analytics Zoo Documentation
    doc/Orca/Overview/orca-context.md
    doc/Orca/Overview/data-parallel-processing.md
    doc/Orca/Overview/distributed-training-inference.md
+   doc/Orca/Overview/distributed-tuning.md
 
 .. toctree::
    :maxdepth: 1
