@@ -64,7 +64,14 @@ class TSDataset:
         self._check_basic_invariants()
 
         self._id_list = list(np.unique(self.df[self.id_col]))
+        self._freq_certainty = False
+        self._freq = None
         self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
+        if self._is_pd_datetime:
+            if len(self.df[self.dt_col]) < 2:
+                self._freq = None
+            else:
+                self._freq = self.df[self.dt_col].iloc[1] - self.df[self.dt_col].iloc[0]
 
     @staticmethod
     def from_pandas(df,
@@ -213,11 +220,25 @@ class TSDataset:
             df_id[self.id_col] = id_name
             df_list.append(df_id.copy())
         self.df = pd.concat(df_list)
+        self._freq = pd.Timedelta(interval)
+        self._freq_certainty = True
         return self
 
-    def gen_dt_feature(self):
+    def gen_dt_feature(self, features="auto", one_hot_features=None):
         '''
-        | Generate datetime feature for each row. Currently we generate following features:
+        Generate datetime feature(s) for each record.
+
+        :param features: str or list, states which feature(s) will be generated. If the value
+               is set to be a str, it should be one of "auto" or "all". For "auto", a subset
+               of datetime features will be generated under the consideration of the sampling
+               frequency of your data. For "all", the whole set of datetime features will be
+               generated. If the value is set to be a list, the list should contain the features
+               you want to generate. A table of all datatime features and their description is
+               listed below. The value defaults to "auto".
+        :param one_hot_features: list, states which feature(s) will be generated as one-hot-encoded
+               feature. The value defaults to None, which means no features will be generated with\
+               one-hot-encoded.
+
         | "MINUTE": The minute of the time stamp.
         | "DAY": The day of the time stamp.
         | "DAYOFYEAR": The ordinal day of the year of the time stamp.
@@ -234,16 +255,16 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        features_generated = []
         df_list = [generate_dt_features(input_df=self.df[self.df[self.id_col] == id_name],
-                                        dt_col=self.dt_col)
+                                        dt_col=self.dt_col,
+                                        features=features,
+                                        one_hot_features=one_hot_features,
+                                        freq=self._freq,
+                                        features_generated=features_generated)
                    for id_name in self._id_list]
         self.df = pd.concat(df_list)
-        from zoo.chronos.data.utils.feature import TIME_FEATURE, \
-            ADDITIONAL_TIME_FEATURE_HOUR, ADDITIONAL_TIME_FEATURE_WEEKDAY
-        increased_attrbutes = list(TIME_FEATURE) +\
-            list(ADDITIONAL_TIME_FEATURE_HOUR) +\
-            list(ADDITIONAL_TIME_FEATURE_WEEKDAY)
-        self.feature_col += [attr + "({})".format(self.dt_col) for attr in increased_attrbutes]
+        self.feature_col += features_generated
         return self
 
     def gen_global_feature(self, settings="comprehensive", full_settings=None):
