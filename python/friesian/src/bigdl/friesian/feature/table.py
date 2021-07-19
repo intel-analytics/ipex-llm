@@ -1198,7 +1198,9 @@ class StringIndex(Table):
         if not isinstance(col_name, str):
             raise ValueError('col_name should be str, but get ' + col_name.__class__.__name__)
         indices = map(lambda x: {col_name: x[0], 'id': x[1]}, indices.items())
-        df = spark.createDataFrame(Row(**x) for x in indices)
+        schema = StructType([StructField(col_name, StringType(), False),
+                             StructField("id", IntegerType(), False)])
+        df = spark.createDataFrame((Row(**x) for x in indices), schema=schema)
         return cls(df, col_name)
 
     def to_dict(self):
