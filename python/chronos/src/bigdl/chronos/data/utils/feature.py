@@ -38,35 +38,92 @@ TIME_FEATURE = ("MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY", "WEEKOFYEAR", "
 ADDITIONAL_TIME_FEATURE_HOUR = {"IS_AWAKE": _is_awake,
                                 "IS_BUSY_HOURS": _is_busy_hours}
 ADDITIONAL_TIME_FEATURE_WEEKDAY = {"IS_WEEKEND": _is_weekend}
+FEATURE_INTERVAL = {"MINUTE": pd.Timedelta('1m'),
+                    "DAY": pd.Timedelta('1D'),
+                    "DAYOFYEAR": pd.Timedelta('1D'),
+                    "HOUR": pd.Timedelta('1T'),
+                    "WEEKDAY": pd.Timedelta('1D'),
+                    "WEEKOFYEAR": pd.Timedelta('1W'),
+                    "MONTH": pd.Timedelta('30D'),
+                    "IS_AWAKE": pd.Timedelta('1T'),
+                    "IS_BUSY_HOURS": pd.Timedelta('1T'),
+                    "IS_WEEKEND": pd.Timedelta('1D')}
+FEATURE_BIN_NUM = {"MINUTE": range(0, 60),
+                   "DAY": range(1, 32),
+                   "DAYOFYEAR": range(1, 367),
+                   "HOUR": range(0, 24),
+                   "WEEKDAY": range(0, 7),
+                   "WEEKOFYEAR": range(1, 54),
+                   "MONTH": range(1, 13)}
 
 
-def generate_dt_features(input_df, dt_col):
+def _one_hot_encode_helper(df, class_name, class_range, features_generated):
+    for i in class_range:
+        df[class_name + "_" + str(i)] = 0
+        df[class_name + "_" + str(i)][df[class_name] == i] = 1
+        features_generated.append(class_name + "_" + str(i))
+    df.drop([class_name], axis=1, inplace=True)
+    features_generated.remove(class_name)
+    return df
+
+
+def generate_dt_features(input_df, dt_col, features, one_hot_features, freq, features_generated):
     '''
     generate features related to datetime
     :param input_df: pandas dataframe
     :param dt_col: col name of the datetime in `input_df`
+    :param features: same as the param in TSDataset interface
+    :param one_hot_features: same as the param in TSDataset interface
+    :param freq: data frequency
+    :param features_generated:
+
+    :return : df
     '''
+    # get feature generation candidate
+    if isinstance(features, list):
+        features_normal = set(features)
+    if isinstance(features, str):
+        if features == "auto":
+            features_normal = set([key for key, value in FEATURE_INTERVAL.items() if value >= freq])
+        if features == "all":
+            features_normal = set([key for key in FEATURE_INTERVAL.keys()])
+    if one_hot_features is None:
+        one_hot_features = []
+    features_onehot = set(one_hot_features)
+    features_normal = features_normal - features_onehot
+
     df = input_df.copy()
     field = df[dt_col]
 
     # built in time features
     for attr in TIME_FEATURE:
+        if attr not in features_onehot and attr not in features_normal:
+            continue
         if attr == "WEEKOFYEAR" and \
                 version.parse(pd.__version__) >= version.parse("1.1.0"):
             field_datetime = pd.to_datetime(field.values.astype(np.int64))
-            df[attr + "({})".format(dt_col)] =\
+            df[attr] =\
                 pd.Int64Index(field_datetime.isocalendar().week)
         else:
-            df[attr + "({})".format(dt_col)] = getattr(field.dt, attr.lower())
+            df[attr] = getattr(field.dt, attr.lower())
+        features_generated.append(attr)
+        if attr in features_onehot:
+            df = _one_hot_encode_helper(df, attr, FEATURE_BIN_NUM[attr], features_generated)
 
     # additional time features
     hour = field.dt.hour
     for attr in ADDITIONAL_TIME_FEATURE_HOUR:
-        df[attr + "({})".format(dt_col)] = ADDITIONAL_TIME_FEATURE_HOUR[attr](hour)
+        if attr not in features_onehot and attr not in features_normal:
+            continue
+        df[attr] = ADDITIONAL_TIME_FEATURE_HOUR[attr](hour)
+        features_generated.append(attr)
 
     weekday = field.dt.weekday
     for attr in ADDITIONAL_TIME_FEATURE_WEEKDAY:
-        df[attr + "({})".format(dt_col)] = ADDITIONAL_TIME_FEATURE_WEEKDAY[attr](weekday)
+        if attr not in features_onehot and attr not in features_normal:
+            continue
+        df[attr] = ADDITIONAL_TIME_FEATURE_WEEKDAY[attr](weekday)
+        features_generated.append(attr)
 
     return df
 

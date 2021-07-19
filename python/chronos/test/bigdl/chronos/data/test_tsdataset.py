@@ -283,65 +283,121 @@ class TestTSDataset(ZooTestCase):
 
     def test_tsdataset_datetime_feature(self):
         df = get_ts_df()
+        # interval = day
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
         tsdata.gen_dt_feature()
-        assert set(tsdata.to_pandas().columns) == {'IS_AWAKE(datetime)',
-                                                   'IS_BUSY_HOURS(datetime)',
-                                                   'HOUR(datetime)',
-                                                   'DAY(datetime)',
-                                                   'IS_WEEKEND(datetime)',
-                                                   'WEEKDAY(datetime)',
-                                                   'MONTH(datetime)',
-                                                   'DAYOFYEAR(datetime)',
-                                                   'WEEKOFYEAR(datetime)',
-                                                   'MINUTE(datetime)',
+        assert set(tsdata.to_pandas().columns) == {'DAY',
+                                                   'IS_WEEKEND',
+                                                   'WEEKDAY',
+                                                   'MONTH',
+                                                   'DAYOFYEAR',
+                                                   'WEEKOFYEAR',
                                                    'extra feature',
                                                    'value',
                                                    'datetime',
                                                    'id'}
-        assert set(tsdata.feature_col) == {'IS_AWAKE(datetime)',
-                                           'IS_BUSY_HOURS(datetime)',
-                                           'HOUR(datetime)',
-                                           'DAY(datetime)',
-                                           'IS_WEEKEND(datetime)',
-                                           'WEEKDAY(datetime)',
-                                           'MONTH(datetime)',
-                                           'DAYOFYEAR(datetime)',
-                                           'WEEKOFYEAR(datetime)',
-                                           'MINUTE(datetime)',
+        assert set(tsdata.feature_col) == {'DAY',
+                                           'IS_WEEKEND',
+                                           'WEEKDAY',
+                                           'MONTH',
+                                           'DAYOFYEAR',
+                                           'WEEKOFYEAR',
+                                           'extra feature'}
+        tsdata._check_basic_invariants()
+
+        # interval = day, one_hot = ["WEEKDAY"]
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata.gen_dt_feature(one_hot_features=["WEEKDAY"])
+        assert set(tsdata.to_pandas().columns) == {'DAY',
+                                                   'IS_WEEKEND',
+                                                   'WEEKDAY_0',
+                                                   'WEEKDAY_1',
+                                                   'WEEKDAY_2',
+                                                   'WEEKDAY_3',
+                                                   'WEEKDAY_4',
+                                                   'WEEKDAY_5',
+                                                   'WEEKDAY_6',
+                                                   'MONTH',
+                                                   'DAYOFYEAR',
+                                                   'WEEKOFYEAR',
+                                                   'extra feature',
+                                                   'value',
+                                                   'datetime',
+                                                   'id'}
+        assert set(tsdata.feature_col) == {'DAY',
+                                           'IS_WEEKEND',
+                                           'WEEKDAY_0',
+                                           'WEEKDAY_1',
+                                           'WEEKDAY_2',
+                                           'WEEKDAY_3',
+                                           'WEEKDAY_4',
+                                           'WEEKDAY_5',
+                                           'WEEKDAY_6',
+                                           'MONTH',
+                                           'DAYOFYEAR',
+                                           'WEEKOFYEAR',
                                            'extra feature'}
         tsdata._check_basic_invariants()
 
     def test_tsdataset_datetime_feature_multiple(self):
         df = get_multi_id_ts_df()
+        # interval = day
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
         tsdata.gen_dt_feature()
-        assert set(tsdata.to_pandas().columns) == {'IS_AWAKE(datetime)',
-                                                   'IS_BUSY_HOURS(datetime)',
-                                                   'HOUR(datetime)',
-                                                   'DAY(datetime)',
-                                                   'IS_WEEKEND(datetime)',
-                                                   'WEEKDAY(datetime)',
-                                                   'MONTH(datetime)',
-                                                   'DAYOFYEAR(datetime)',
-                                                   'WEEKOFYEAR(datetime)',
-                                                   'MINUTE(datetime)',
+        assert set(tsdata.to_pandas().columns) == {'DAY',
+                                                   'IS_WEEKEND',
+                                                   'WEEKDAY',
+                                                   'MONTH',
+                                                   'DAYOFYEAR',
+                                                   'WEEKOFYEAR',
                                                    'extra feature',
                                                    'value',
                                                    'datetime',
                                                    'id'}
-        assert set(tsdata.feature_col) == {'IS_AWAKE(datetime)',
-                                           'IS_BUSY_HOURS(datetime)',
-                                           'HOUR(datetime)',
-                                           'DAY(datetime)',
-                                           'IS_WEEKEND(datetime)',
-                                           'WEEKDAY(datetime)',
-                                           'MONTH(datetime)',
-                                           'DAYOFYEAR(datetime)',
-                                           'WEEKOFYEAR(datetime)',
-                                           'MINUTE(datetime)',
+        assert set(tsdata.feature_col) == {'DAY',
+                                           'IS_WEEKEND',
+                                           'WEEKDAY',
+                                           'MONTH',
+                                           'DAYOFYEAR',
+                                           'WEEKOFYEAR',
+                                           'extra feature'}
+        tsdata._check_basic_invariants()
+
+        # interval = day, one_hot = ["WEEKDAY"]
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata.gen_dt_feature(one_hot_features=["WEEKDAY"])
+        assert set(tsdata.to_pandas().columns) == {'DAY',
+                                                   'IS_WEEKEND',
+                                                   'WEEKDAY_0',
+                                                   'WEEKDAY_1',
+                                                   'WEEKDAY_2',
+                                                   'WEEKDAY_3',
+                                                   'WEEKDAY_4',
+                                                   'WEEKDAY_5',
+                                                   'WEEKDAY_6',
+                                                   'MONTH',
+                                                   'DAYOFYEAR',
+                                                   'WEEKOFYEAR',
+                                                   'extra feature',
+                                                   'value',
+                                                   'datetime',
+                                                   'id'}
+        assert set(tsdata.feature_col) == {'DAY',
+                                           'IS_WEEKEND',
+                                           'WEEKDAY_0',
+                                           'WEEKDAY_1',
+                                           'WEEKDAY_2',
+                                           'WEEKDAY_3',
+                                           'WEEKDAY_4',
+                                           'WEEKDAY_5',
+                                           'WEEKDAY_6',
+                                           'MONTH',
+                                           'DAYOFYEAR',
+                                           'WEEKOFYEAR',
                                            'extra feature'}
         tsdata._check_basic_invariants()
 
@@ -441,6 +497,12 @@ class TestTSDataset(ZooTestCase):
 
     def test_tsdataset_split(self):
         df = get_ts_df()
+        # only train and test
+        tsdata_train, tsdata_valid, tsdata_test =\
+            TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                  extra_feature_col=["extra feature"], id_col="id",
+                                  with_split=True, val_ratio=0, test_ratio=0.1)
+        # standard split with all three sets
         tsdata_train, tsdata_valid, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                   extra_feature_col=["extra feature"], id_col="id",
