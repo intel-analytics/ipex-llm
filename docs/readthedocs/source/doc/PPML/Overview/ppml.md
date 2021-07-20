@@ -467,6 +467,8 @@ The result should look something like:
 
 ##### 2.3.2.9 Run Trusted Spark XGBoost Classifier
 
+This example shows how to run trusted Spark XGBoost Classifier.
+
 Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset. After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-classifier-sgx.sh`. Replace `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`  and the value of `RABIT_TRACKER_IP` with your own IP address in the script.
 
 Run the script to run trusted Spark XGBoost Classifier and it would take some time to show the final results:
@@ -568,6 +570,26 @@ The result should contain the content look like:
 >\--
 >
 >Stopping orca context
+
+##### 2.3.2.11 Run Trusted Spark Orca Learn Tensorflow Basic Text Classification
+
+This example shows how to run trusted Spark Orca learn Tensorflow basic text classification.
+
+Run the script to run trusted Spark Orca learn Tensorflow basic text classification and it would take some time to show the final results. To run this example in standalone mode, replace `-e SGX_MEM_SIZE=32G \` with `-e SGX_MEM_SIZE=64G \` in `start-distributed-spark-driver.sh`
+
+```bash
+bash start-spark-local-orca-tf-text.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat test-orca-tf-text.log | egrep "results"
+```
+
+The result should be similar to:
+
+>INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
 
 #### 2.3.3 Run Trusted Big Data and ML on Cluster
 
