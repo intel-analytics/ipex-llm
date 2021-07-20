@@ -188,10 +188,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        df_list = [deduplicate_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
-                                                    dt_col=self.dt_col)
-                   for id_name in self._id_list]
-        self.df = pd.concat(df_list)
+        self.df = deduplicate_timeseries_dataframe(df=self.df, dt_col=self.dt_col)
         return self
 
     def resample(self, interval, start_time=None, end_time=None, merge_mode="mean"):
