@@ -164,6 +164,8 @@ def _is_scalar_type(dtype):
         return True
     if isinstance(dtype, df_types.DoubleType):
         return True
+    if isinstance(dtype, df_types.StringType):
+        return True
     return False
 
 
