@@ -200,7 +200,8 @@ RUN jar -uf /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/ana
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-wordcount-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-classifier-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh 
 
     
 
