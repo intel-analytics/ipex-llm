@@ -85,6 +85,7 @@ ENV BIGDL_VERSION		${BIGDL_VERSION}
 ENV ANALYTICS_ZOO_HOME		/analytics-zoo-${ANALYTICS_ZOO_VERSION}
 ADD orca.data.patch		/opt/orca.data.patch
 ADD orca.learn.tf.text.patch	/opt/orca.learn.tf.text.patch
+ADD orca.learn.tf.transfer.patch /opt/orca.learn.tf.transfer.patch
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/docker/zoo/download-analytics-zoo.sh && \
@@ -92,7 +93,8 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/
 RUN ./download-analytics-zoo.sh && \
     cd /opt && git clone --depth 1 https://github.com/intel-analytics/analytics-zoo.git
 RUN patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/data/spark_pandas.py /opt/orca.data.patch && \
-    patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py /opt/orca.learn.tf.text.patch
+    patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py /opt/orca.learn.tf.text.patch && \
+    patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/learn/tf/transfer_learning/transfer_learning.py /opt/orca.learn.tf.transfer.patch
 
 # stage.5 az ppml
 FROM ubuntu:18.04
@@ -167,6 +169,7 @@ RUN apt-get install -y python3-minimal && \
     pip uninstall -y -q tornado && \
     pip install tornado && \
     pip install filelock && \
+    pip install tensorflow_datasets==3.2.0 h5py==2.10.0 && \
     python3 -m ipykernel.kernelspec
 
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
