@@ -57,7 +57,8 @@ class Chomp1d(nn.Module):
 
 
 class TemporalBlock(nn.Module):
-    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2):
+    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2,
+                 repo_initialization=True):
         super(TemporalBlock, self).__init__()
         self.conv1 = weight_norm(nn.Conv1d(n_inputs, n_outputs, kernel_size,
                                            stride=stride, padding=padding, dilation=dilation))
@@ -75,7 +76,8 @@ class TemporalBlock(nn.Module):
                                  self.conv2, self.chomp2, self.relu2, self.dropout2)
         self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         self.relu = nn.ReLU()
-        self.init_weights()
+        if repo_initialization:
+            self.init_weights()
 
     def init_weights(self):
         self.conv1.weight.data.normal_(0, 0.01)
@@ -97,7 +99,8 @@ class TemporalConvNet(nn.Module):
                  output_feature_num,
                  num_channels,
                  kernel_size=3,
-                 dropout=0.1):
+                 dropout=0.1,
+                 repo_initialization=True):
         super(TemporalConvNet, self).__init__()
 
         num_channels.append(output_feature_num)
@@ -110,11 +113,13 @@ class TemporalConvNet(nn.Module):
             out_channels = num_channels[i]
             layers += [TemporalBlock(in_channels, out_channels, kernel_size,
                                      stride=1, dilation=dilation_size,
-                                     padding=(kernel_size-1) * dilation_size, dropout=dropout)]
+                                     padding=(kernel_size-1) * dilation_size,
+                                     dropout=dropout, repo_initialization=repo_initialization)]
 
         self.tcn = nn.Sequential(*layers)
         self.linear = nn.Linear(past_seq_len, future_seq_len)
-        self.init_weights()
+        if repo_initialization:
+            self.init_weights()
 
     def init_weights(self):
         self.linear.weight.data.normal_(0, 0.01)
@@ -143,7 +148,8 @@ def model_creator(config):
                            output_feature_num=config["output_feature_num"],
                            num_channels=num_channels.copy(),
                            kernel_size=config.get("kernel_size", 7),
-                           dropout=config.get("dropout", 0.2))
+                           dropout=config.get("dropout", 0.2),
+                           repo_initialization=config.get("repo_initialization", True))
 
 
 def optimizer_creator(model, config):
