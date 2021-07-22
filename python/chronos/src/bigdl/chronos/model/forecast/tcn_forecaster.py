@@ -43,12 +43,18 @@ class TCNForecaster(Forecaster):
                  output_feature_num,
                  num_channels=[30]*8,
                  kernel_size=7,
+                 repo_initialization=True,
                  dropout=0.2,
                  optimizer="Adam",
                  loss="mse",
-                 lr=0.001):
+                 lr=0.001,
+                 seed=None):
         """
         Build a TCN Forecast Model.
+
+        TCN Forecast may fall into local optima. Please set repo_initialization
+        to False to alleviate the issue. You can also change a random seed to
+        work around.
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
@@ -58,6 +64,9 @@ class TCNForecaster(Forecaster):
                TCN's encoder. This value defaults to [30]*8.
         :param kernel_size: Specify convolutional layer filter height in TCN's
                encoder. This value defaults to 7.
+        :param repo_initialization: if to use framework default initialization,
+               True to use paper author's initialization and False to use the
+               framework's default initialization. The value defaults to True.
         :param dropout: Specify the dropout close possibility (i.e. the close
                possibility to a neuron). This value defaults to 0.2.
         :param optimizer: Specify the optimizer used for training. This value
@@ -66,7 +75,15 @@ class TCNForecaster(Forecaster):
                defaults to "mse". You can choose from "mse", "mae" and
                "huber_loss".
         :param lr: Specify the learning rate. This value defaults to 0.001.
+        :param seed: random seed for training. This value defaults to None.
         """
+        if seed is not None and isinstance(seed, int):
+            import torch
+            import random
+            import numpy
+            torch.manual_seed(seed)
+            numpy.random.seed(seed)
+            random.seed(seed)
         self.internal = TCNPytorch(check_optional_config=False)
         self.data_config = {
             "past_seq_len": past_seq_len,
@@ -79,6 +96,7 @@ class TCNForecaster(Forecaster):
             "loss": loss,
             "num_channels": num_channels,
             "kernel_size": kernel_size,
+            "repo_initialization": repo_initialization,
             "optim": optimizer,
             "dropout": dropout
         }
