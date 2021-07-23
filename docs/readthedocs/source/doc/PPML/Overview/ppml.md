@@ -263,7 +263,19 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/python/docker-graphene` directory.
    ./init.sh
    ```
 
-##### 2.3.2.2 Run Trusted Python Helloworld
+##### 2.3.2.2 Run Your Pyspark Program with Analytics Zoo PPML on SGX
+
+To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+
+```bash
+./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
+```
+
+When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
+
+##### 2.3.2.3 Run Python and Pyspark Examples with Analytics Zoo PPML on SGX
+
+##### 2.3.2.3.1 Run Trusted Python Helloworld
 
 This example runs a simple native python program, which is an easy way to verify if the Trusted PPML environment is correctly set up.
 
@@ -283,7 +295,7 @@ The result should look something like:
 
 > Hello World
 
-##### 2.3.2.3 Run Trusted Python Numpy
+##### 2.3.2.3.2 Run Trusted Python Numpy
 
 This example shows how to run trusted native python numpy.
 
@@ -303,7 +315,7 @@ The result should look something like:
 
 >  numpy.dot: 0.034211914986371994 sec
 
-##### 2.3.2.4 Run Trusted Spark Pi
+##### 2.3.2.3.3 Run Trusted Spark Pi
 
 This example runs a simple Spark PI program.
 
@@ -323,7 +335,7 @@ The result should look something like:
 
 > Pi is roughly 3.146760
 
-##### 2.3.2.5 Run Trusted Spark Wordcount
+##### 2.3.2.3.4 Run Trusted Spark Wordcount
 
 This example runs a simple Spark Wordcount program.
 
@@ -345,7 +357,7 @@ The result should look something like:
 >
 > print(sys.path);: 1
 
-##### 2.3.2.6 Run Trusted Spark SQL
+##### 2.3.2.3.5 Run Trusted Spark SQL
 
 This example shows how to run trusted Spark SQL.
 
@@ -381,7 +393,7 @@ The result should look something like:
 >
 >| Justin|
 
-##### 2.3.2.7 Run Trusted Spark BigDL
+##### 2.3.2.3.6 Run Trusted Spark BigDL
 
 This example shows how to run trusted Spark BigDL.
 
@@ -405,7 +417,7 @@ The result should look something like:
 >
 > 2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
 
-##### 2.3.2.8 Run Trusted Spark XGBoost Regressor
+##### 2.3.2.3.7 Run Trusted Spark XGBoost Regressor
 
 This example shows how to run trusted Spark XGBoost Regressor.
 
@@ -465,7 +477,7 @@ The result should look something like:
 >
 > |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
-##### 2.3.2.9 Run Trusted Spark XGBoost Classifier
+##### 2.3.2.3.8 Run Trusted Spark XGBoost Classifier
 
 This example shows how to run trusted Spark XGBoost Classifier.
 
@@ -501,7 +513,7 @@ The result should look something like:
 >
 > | 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827...|[0.55266016721725...|    0.0|
 
-##### 2.3.2.10 Run Trusted Spark Orca Data
+##### 2.3.2.3.9 Run Trusted Spark Orca Data
 
 This example shows how to run trusted Spark Orca Data.
 
@@ -571,7 +583,7 @@ The result should contain the content look like:
 >
 >Stopping orca context
 
-##### 2.3.2.11 Run Trusted Spark Orca Learn Tensorflow Basic Text Classification
+##### 2.3.2.3.10 Run Trusted Spark Orca Learn Tensorflow Basic Text Classification
 
 This example shows how to run trusted Spark Orca learn Tensorflow basic text classification.
 
