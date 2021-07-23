@@ -48,6 +48,29 @@ Before running the following command, please modify the paths in `build-docker-i
   sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
   ```
 
+## Run Your Pyspark Program
+
+#### 1. Start the container to run native python examples
+
+Before you run the following commands to start the container, you need to modify the paths in `deploy-local-spark-sgx.sh` and then run the following commands.
+
+```bash
+./deploy-local-spark-sgx.sh
+sudo docker exec -it spark-local bash
+cd /ppml/trusted-big-data-ml
+./init.sh
+```
+
+ #### 2. Run your pyspark program
+
+To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+
+```bash
+./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
+```
+
+When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
+
 ## Run Native Python Examples
 
 #### 1. Start the container to run native python examples
@@ -79,8 +102,6 @@ cat test-helloworld-sgx.log | egrep "Hello World"
 The result should be 
 
 > Hello World
-
-
 
 ##### Example 2: `test-numpy.py`
 
@@ -138,8 +159,6 @@ The result should be similar to
 
 >Pi is roughly 3.146760
 
-
-
 ##### Example 2: `test-wordcount.py`
 
 Run the example with SGX spark local mode with the following command in the terminal. 
@@ -164,8 +183,6 @@ The result should be similar to
 > print("Hello: 1
 >
 > print(sys.path);: 1
-
-
 
 ##### Example 3: Basic SQL
 
@@ -205,8 +222,6 @@ The result should be similar to
 > Name: Justin
 >
 > |  Justin|
-
-
 
 ##### Example 4: Bigdl lenet
 
@@ -248,8 +263,6 @@ The result should be similar to
 >2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)
 >
 >2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
-
-
 
 ##### Example 5: XGBoost Regressor
 
@@ -320,8 +333,6 @@ The result should be similar to
 >
 >|[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
-
-
 ##### Example 6: XGBoost Classifier
 
 Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command. 
@@ -372,8 +383,6 @@ The result should be similar to
 > | 9.0|112.0|82.0|24.0| 0.0|28.2|1.282|50.0| 1.0|[-0.7087597250938...|[0.29124027490615...|    1.0|
 >
 > | 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827...|[0.55266016721725...|    0.0|
-
-
 
 ##### Example 7: Orca data
 
@@ -461,8 +470,6 @@ Then the result should contain the similar content as
 >\--
 >
 >Stopping orca context
-
-
 
 ##### Example 8: Orca learn Tensorflow basic text classification
 

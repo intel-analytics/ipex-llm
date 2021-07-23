@@ -106,7 +106,19 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
     cd /ppml/trusted-big-data-ml
     ./init.sh
     ```
-##### 2.2.2.2 Run Trusted Spark Pi
+##### 2.2.2.2 Run Your Spark Program with Analytics Zoo PPML on SGX
+
+To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+
+```bash
+./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
+```
+
+When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
+
+##### 2.2.2.3 Run Trusted Spark Examples with Analytics Zoo PPML SGX
+
+##### 2.2.2.3.1 Run Trusted Spark Pi
 
 This example runs a simple Spark PI program, which is an easy way to verify if the Trusted PPML environment is ready.  
 
@@ -126,7 +138,7 @@ The result should look something like:
 
 >   Pi is roughly 3.1422957114785572
 
-##### 2.2.2.3 Run Trusted Spark SQL
+##### 2.2.2.3.2 Run Trusted Spark SQL
 
 This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries).
 
@@ -156,7 +168,7 @@ The result should look like:
 
 >   ----------------22 finished--------------------
 
-##### 2.2.2.4 Run Trusted Deep Learning
+##### 2.2.2.3.3 Run Trusted Deep Learning
 
 This example shows how to run trusted deep learning (using an BigDL LetNet program).
 
