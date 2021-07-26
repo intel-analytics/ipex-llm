@@ -79,14 +79,14 @@ class TestResampleTimeSeries(ZooTestCase):
         data = {
             'data': [
                 1, 2, 3], 'datetime': [
-                "2020-11-09T07", "2020-11-09T08", "2020-11-09T10"]}
+                "2020-11-09T08", "2020-11-09T09", "2020-11-09T11"]}
         df = pd.DataFrame(data)
         df['datetime'] = pd.to_datetime(df['datetime'])
         res_df = resample_timeseries_dataframe(
             df,
             dt_col="datetime",
             interval="2H",
-            start_time='2020-11-09T05',
+            start_time='2020-11-09T07',
             end_time='2020-11-09T10',
             merge_mode='max')
         assert np.isnan(
@@ -95,7 +95,7 @@ class TestResampleTimeSeries(ZooTestCase):
             df,
             dt_col="datetime",
             interval="2H",
-            start_time='2020-11-09T05',
+            start_time='2020-11-09T07',
             end_time='2020-11-09T10',
             merge_mode='min')
         assert np.isnan(
@@ -104,7 +104,7 @@ class TestResampleTimeSeries(ZooTestCase):
             df,
             dt_col="datetime",
             interval="2H",
-            start_time='2020-11-09T05',
+            start_time='2020-11-09T07',
             end_time='2020-11-09T10',
             merge_mode='mean')
         assert np.isnan(
@@ -113,7 +113,7 @@ class TestResampleTimeSeries(ZooTestCase):
             df,
             dt_col="datetime",
             interval="2H",
-            start_time='2020-11-09T05',
+            start_time='2020-11-09T07',
             end_time='2020-11-09T10',
             merge_mode='sum')
         assert np.isnan(
@@ -138,10 +138,26 @@ class TestResampleTimeSeries(ZooTestCase):
             start_time='2020-11-09T07:52:00.005',
             end_time='2020-11-09T07:52:00.010',
             merge_mode='max')
-        assert len(res_df) == 3
+        assert len(res_df) == 4 and res_df['data'].isna().sum() == 1
+        res_df = resample_timeseries_dataframe(
+            df,
+            dt_col="datetime",
+            interval="2ms",
+            start_time='2020-11-09T07:52:00.006',
+            end_time='2020-11-09T07:52:00.010',
+            merge_mode='max')
+        assert len(res_df) == 3 and res_df['data'].isna().sum() == 0
+        res_df = resample_timeseries_dataframe(
+            df,
+            dt_col="datetime",
+            interval="2ms",
+            start_time='2020-11-09T07:52:00.007',
+            end_time='2020-11-09T07:52:00.010',
+            merge_mode='max')
+        assert len(res_df) == 3 and res_df['data'].isna().sum() == 0
         res_df = resample_timeseries_dataframe(
             df,
             dt_col="datetime",
             interval="2ms",
             merge_mode='max')
-        assert len(res_df) == 2
+        assert len(res_df) == 3 and res_df['data'].isna().sum() == 0
