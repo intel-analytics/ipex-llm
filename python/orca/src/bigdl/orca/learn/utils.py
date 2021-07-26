@@ -296,6 +296,9 @@ def dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="
         # avoid empty partition for worker
         if data.rdd.getNumPartitions() < num_workers:
             data = data.repartition(num_workers)
+        if validation_data is not None:
+            num_data_part = data.rdd.getNumPartitions()
+            validation_data = validation_data.repartition(num_data_part)
 
     data = _dataframe_to_xshards(data, feature_cols, label_cols, accept_str_col)
     if validation_data is not None:

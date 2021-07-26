@@ -457,11 +457,41 @@ class TestTFRayEstimator(TestCase):
         assert df.rdd.getNumPartitions() < trainer.num_workers
 
         trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
+                    validation_data=df, validation_steps=1,
                     feature_cols=["feature"],
                     label_cols=["label"])
         trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                          label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
+
+    def test_num_part_data_diff_val_data(self):
+        sc = init_nncontext()
+        rdd = sc.range(200, numSlices=10)
+        val_rdd = sc.range(60, numSlices=8)
+        from pyspark.sql import SparkSession
+        spark = SparkSession(sc)
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+                                int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+                                        int(np.random.randint(0, 1, size=()))))\
+            .toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.8
+        }
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+        assert df.rdd.getNumPartitions() > trainer.num_workers
+        assert df.rdd.getNumPartitions() != val_df.rdd.getNumPartitions()
+
+        trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
+                    validation_data=val_df, validation_steps=1,
+                    feature_cols=["feature"],
+                    label_cols=["label"])
 
     def test_dataframe_predict(self):
         sc = init_nncontext()
