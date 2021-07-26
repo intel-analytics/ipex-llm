@@ -60,7 +60,7 @@ FEATURE_BIN_NUM = {"MINUTE": range(0, 60),
 def _one_hot_encode_helper(df, class_name, class_range, features_generated):
     for i in class_range:
         df[class_name + "_" + str(i)] = 0
-        df[class_name + "_" + str(i)][df[class_name] == i] = 1
+        df.loc[df[class_name] == i, class_name + "_" + str(i)] = 1
         features_generated.append(class_name + "_" + str(i))
     df.drop([class_name], axis=1, inplace=True)
     features_generated.remove(class_name)
