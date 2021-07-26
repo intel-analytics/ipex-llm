@@ -22,6 +22,7 @@ def resample_timeseries_dataframe(df,
                                   interval,
                                   start_time=None,
                                   end_time=None,
+                                  id_col=None,
                                   merge_mode="mean"):
     '''
     resample and return a dataframe with a new time interval.
@@ -30,6 +31,7 @@ def resample_timeseries_dataframe(df,
     :param interval: pandas offset aliases, indicating time interval of the output dataframe
     :param start_time: start time of the output dataframe
     :param end_time: end time of the output dataframe
+    :param id_col: name of id column, this column won't be resampled
     :param merge_mode: if current interval is smaller than output interval,
         we need to merge the values in a mode. "max", "min", "mean"
         or "sum" are supported for now.
@@ -40,52 +42,32 @@ def resample_timeseries_dataframe(df,
         f"merge_mode should be one of [\"max\", \"min\", \"mean\", \"sum\"]," \
         f" but found {merge_mode}."
 
-    start_time_stamp = pd.Timestamp(start_time) if start_time else df[dt_col].iloc[0]
-    end_time_stamp = pd.Timestamp(end_time) if end_time else df[dt_col].iloc[-1]
-    zero_time_stamp = pd.Timestamp(0, unit='ms')
-    assert start_time_stamp <= end_time_stamp, "end time must be later than start time."
     res_df = df.copy()
-    res_df[dt_col] = df.apply(
-        lambda row: resample_helper(
-            row[dt_col],
-            interval,
-            start_time_stamp,
-            end_time_stamp,
-            zero_time_stamp),
-        axis=1)
-    res_df = res_df[~res_df[dt_col].isin([None])]
+    id_name = None
+    if id_col:
+        id_name = res_df[id_col].iloc[0]
+        res_df.drop(id_col, axis=1)
+    res_df.set_index(dt_col, inplace=True)
+    res_df = res_df.resample(pd.Timedelta(interval))
 
     if merge_mode == "max":
-        res_df = res_df.groupby([dt_col]).max()
-    if merge_mode == "min":
-        res_df = res_df.groupby([dt_col]).min()
-    if merge_mode == "mean":
-        res_df = res_df.groupby([dt_col]).mean()
-    if merge_mode == "sum":
-        res_df = res_df.groupby([dt_col]).sum()
+        res_df = res_df.max()
+    elif merge_mode == "min":
+        res_df = res_df.min()
+    elif merge_mode == "mean":
+        res_df = res_df.mean()
+    elif merge_mode == "sum":
+        res_df = res_df.sum()
 
-    new_start = start_time_stamp + \
-        (interval - divmod(start_time_stamp - zero_time_stamp, pd.Timedelta(interval))[1])
-    new_end = end_time_stamp - \
-        divmod(end_time_stamp - zero_time_stamp, pd.Timedelta(interval))[1]
-    new_end = new_start if new_start > new_end else new_end
-    new_index = pd.date_range(start=new_start, end=new_end, freq=interval)
+    start_time_stamp = pd.Timestamp(start_time) if start_time else res_df.index[0]
+    end_time_stamp = pd.Timestamp(end_time) if end_time else res_df.index[-1]
+    assert start_time_stamp <= end_time_stamp, "end time must be later than start time."
+
+    offset = (start_time_stamp - res_df.index[0]) % pd.Timedelta(interval)
+    new_index = pd.date_range(start=start_time_stamp-offset, end=end_time_stamp, freq=interval)
     res_df = res_df.reindex(new_index)
     res_df.index.name = dt_col
     res_df = res_df.reset_index()
+    if id_col:
+        res_df[id_col] = id_name
     return res_df
-
-
-def resample_helper(curr_time,
-                    interval,
-                    start_time_stamp,
-                    end_time_stamp,
-                    zero_time_stamp):
-    offset = divmod((curr_time - zero_time_stamp), pd.Timedelta(interval))[1]
-    if(offset / interval) >= 0.5:
-        resampled_time = curr_time + (interval - offset)
-    else:
-        resampled_time = curr_time - offset
-    if (resampled_time < start_time_stamp or resampled_time > end_time_stamp):
-        return None
-    return resampled_time
