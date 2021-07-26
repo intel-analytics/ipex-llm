@@ -173,12 +173,12 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        df_list = [impute_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name],
-                                               dt_col=self.dt_col,
-                                               mode=mode,
-                                               const_num=const_num)
-                   for id_name in self._id_list]
-        self.df = pd.concat(df_list)
+        self.df = self.df.groupby([self.id_col])\
+                         .apply(lambda df: impute_timeseries_dataframe(df=df,
+                                                                       dt_col=self.dt_col,
+                                                                       mode=mode,
+                                                                       const_num=const_num))
+        self.df.reset_index(drop=True, inplace=True)
         return self
 
     def deduplicate(self):
@@ -205,20 +205,18 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        df_list = []
-        for id_name in self._id_list:
-            df_id = resample_timeseries_dataframe(df=self.df[self.df[self.id_col] == id_name]
-                                                  .drop(self.id_col, axis=1),
-                                                  dt_col=self.dt_col,
-                                                  interval=interval,
-                                                  start_time=start_time,
-                                                  end_time=end_time,
-                                                  merge_mode=merge_mode)
-            df_id[self.id_col] = id_name
-            df_list.append(df_id.copy())
-        self.df = pd.concat(df_list)
+
+        self.df = self.df.groupby([self.id_col]) \
+                         .apply(lambda df: resample_timeseries_dataframe(df=df,
+                                                                         dt_col=self.dt_col,
+                                                                         interval=interval,
+                                                                         start_time=start_time,
+                                                                         end_time=end_time,
+                                                                         id_col=self.id_col,
+                                                                         merge_mode=merge_mode))
         self._freq = pd.Timedelta(interval)
         self._freq_certainty = True
+        self.df.reset_index(drop=True, inplace=True)
         return self
 
     def gen_dt_feature(self, features="auto", one_hot_features=None):
@@ -253,14 +251,12 @@ class TSDataset:
         :return: the tsdataset instance.
         '''
         features_generated = []
-        df_list = [generate_dt_features(input_df=self.df[self.df[self.id_col] == id_name],
-                                        dt_col=self.dt_col,
-                                        features=features,
-                                        one_hot_features=one_hot_features,
-                                        freq=self._freq,
-                                        features_generated=features_generated)
-                   for id_name in self._id_list]
-        self.df = pd.concat(df_list)
+        self.df = generate_dt_features(input_df=self.df,
+                                       dt_col=self.dt_col,
+                                       features=features,
+                                       one_hot_features=one_hot_features,
+                                       freq=self._freq,
+                                       features_generated=features_generated)
         self.feature_col += features_generated
         return self
 

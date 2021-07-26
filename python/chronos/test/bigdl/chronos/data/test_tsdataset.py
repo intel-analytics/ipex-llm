@@ -479,7 +479,7 @@ class TestTSDataset(ZooTestCase):
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
         tsdata.resample('2D', df["datetime"][0], df["datetime"][df.shape[0]-1])
-        assert len(tsdata.to_pandas()) == df.shape[0] // 2
+        assert len(tsdata.to_pandas()) == (df.shape[0] + 1) // 2
         tsdata._check_basic_invariants()
 
     def test_tsdataset_resample_multiple(self):
