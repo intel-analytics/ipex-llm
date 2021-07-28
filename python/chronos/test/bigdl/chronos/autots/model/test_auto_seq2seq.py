@@ -68,7 +68,7 @@ def get_auto_estimator():
                                metric="mse",
                                lr=hp.choice([0.001, 0.003, 0.01]),
                                lstm_hidden_dim=hp.grid_search([32, 64, 128]),
-                               lstm_layer_num=hp.grid_search([1, 4]),
+                               lstm_layer_num=hp.randint(1, 4),
                                dropout=hp.uniform(0.1, 0.3),
                                teacher_forcing=False,
                                logs_dir="/tmp/auto_seq2seq",
