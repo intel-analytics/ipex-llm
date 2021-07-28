@@ -52,11 +52,11 @@ class AutoSeq2Seq:
                e.g. hp.choice([0.001, 0.003, 0.01])
         :param lstm_hidden_dim: LSTM hidden channel for decoder and encoder.
                hp.grid_search([32, 64, 128])
-        :param lstm_layer_num:LSTM layer number for decoder and encoder.
-               e.g. hp.grid_search([1, 4])
+        :param lstm_layer_num: LSTM layer number for decoder and encoder.
+               e.g. hp.randint(1, 4)
         :param dropout: float or hp sampling function from a float space. Learning rate. Dropout
                rate. e.g. hp.uniform(0.1, 0.3)
-        :param teacher_forcing: If use teacher forcing in training.
+        :param teacher_forcing: If use teacher forcing in training. e.g. hp.choice([True, False])
         :param backend: The backend of the Seq2Seq model. We only support backend as "torch"
                for now.
         :param logs_dir: Local directory to save logs and results. It defaults to
@@ -129,8 +129,6 @@ class AutoSeq2Seq:
                metric and searcher mode
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
-
-        :return:
         """
         self.search_space["batch_size"] = batch_size
         self.auto_est.fit(

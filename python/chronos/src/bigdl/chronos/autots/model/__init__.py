@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn"]
+AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn", "seq2seq"]
 
 
 class AutoModelFactory:
@@ -29,5 +29,8 @@ class AutoModelFactory:
         if name == "tcn":
             from .auto_tcn import AutoTCN
             return AutoTCN(**search_space)
+        if name == "seq2seq":
+            from .auto_seq2seq import AutoSeq2Seq
+            return AutoSeq2Seq(**search_space)
         return NotImplementedError(f"{AUTO_MODEL_SUPPORT_LIST} are supported for auto model,\
                                     but get {name}.")
