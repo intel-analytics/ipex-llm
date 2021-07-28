@@ -76,10 +76,13 @@ class AutoTSEstimator:
                output (num_sample, future_seq_len, output_feature_num) and use the same key
                in the model creation function. If you use a customized data creator, the output of
                data creator should fit the input of model creation function.
-        :param search_space: hyper parameter configurations. Read the API docs for each auto model.
-               Some common hyper parameter can be explicitly set in named parameter. search_space
-               should contain those parameters other than the keyword arguments in this
-               constructor in its key.
+        :param search_space: str or dict. hyper parameter configurations. For str, you can choose
+               from "minimal", "normal", or "large", each represents a default search_space for
+               our built-in model with different computing requirement. For dict, Read the API docs
+               for each auto model. Some common hyper parameter can be explicitly set in named
+               parameter. search_space should contain those parameters other than the keyword
+               arguments in this constructor in its key. If a 3rd parth model is used, then you
+               must set search_space to a dict.
         :param metric: String. The evaluation metric name to optimize. e.g. "mse"
         :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function. The
                default loss function for pytorch backend is nn.MSELoss().
@@ -112,6 +115,9 @@ class AutoTSEstimator:
             import torch
             if loss is None:
                 loss = torch.nn.MSELoss()
+
+        if isinstance(search_space, str):
+            search_space = AutoModelFactory.get_default_search_space(model, search_space)
 
         if isinstance(model, types.FunctionType) and backend == "torch":
             # pytorch 3rd party model
