@@ -69,6 +69,7 @@ function deploy {
 }
 
 deploy 3.0.0 SPARK_3.0 '-P spark_3.x'
+deploy 3.1.2 SPARK_3.1 '-P spark_3.x'
 
 mv dl/pom.xml.origin dl/pom.xml
 mv spark-version/1.5-plus/pom.xml.origin spark-version/1.5-plus/pom.xml
