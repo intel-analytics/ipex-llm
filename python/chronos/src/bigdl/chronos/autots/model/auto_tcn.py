@@ -138,8 +138,6 @@ class AutoTCN:
                metric and searcher mode
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
-
-        :return:
         """
         self.search_space["batch_size"] = batch_size
         self.auto_est.fit(

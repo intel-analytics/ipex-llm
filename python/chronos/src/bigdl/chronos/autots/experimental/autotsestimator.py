@@ -27,7 +27,7 @@ class AutoTSEstimator:
     """
     Automated TimeSeries Estimator for time series forecasting task, which supports
     TSDataset and customized data creator as data input on built-in model (only
-    "lstm", "tcn" for now) and 3rd party model.
+    "lstm", "tcn", "seq2seq" for now) and 3rd party model.
 
     Only backend="torch" is supported for now. Customized data creator has not been
     fully supported by TSPipeline.
@@ -66,7 +66,8 @@ class AutoTSEstimator:
         for tuning using AutoML.
 
         :param model: a string or a model creation function.
-               A string indicates a built-in model, currently "lstm", "tcn" are supported.
+               A string indicates a built-in model, currently "lstm", "tcn", "seq2seq" are
+               supported.
                A model creation function indicates a 3rd party model, the function should take a
                config param and return a torch.nn.Module (backend="torch") / tf model
                (backend="keras").
