@@ -46,6 +46,15 @@ AutoLSTM is an LSTM forecasting model with Auto tuning.
     :undoc-members:
     :show-inheritance:
 
+chronos.autots.model.auto_seq2seq
+----------------------------------------
+
+AutoSeq2Seq is an Seq2Seq forecasting model with Auto tuning.
+
+.. automodule:: zoo.chronos.autots.model.auto_seq2seq
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 chronos.autots.model.auto_arima
 ----------------------------------------
