@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .table import FeatureTable, StringIndex
+from .table import FeatureTable, StringIndex, TargetCode
