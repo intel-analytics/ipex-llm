@@ -60,9 +60,33 @@ class TSPipeline:
         '''
         _, y = self._tsdataset_to_numpy(data, is_predict=False)
         yhat = self.predict(data, batch_size=batch_size)
-        if self._scaler:
-            from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
-            y = unscale_timeseries_numpy(y, self._scaler, self._scaler_index)
+        y = self._tsdataset_unscale(y)
+        # y is already rolled, need to ensure y_pred and y_true have the same length
+        eval_result = [Evaluator.evaluate(m, y_true=y, y_pred=yhat[:y.shape[0]],
+                                          multioutput=multioutput)
+                       for m in metrics]
+        return eval_result
+
+    def evaluate_with_onnx(self, data, metrics=['mse'], multioutput="uniform_average",
+                           batch_size=32):
+        '''
+        Evaluate the time series pipeline with onnx.
+
+        :param data: data can be a TSDataset or data creator(will be supported).
+               The TSDataset should follow the same operations as the training
+               TSDataset used in AutoTSEstimator.fit.
+        :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
+        :param multioutput: Defines aggregating of multiple output values.
+               String in ['raw_values', 'uniform_average']. The value defaults to
+               'uniform_average'.
+        :param batch_size: predict batch_size, the process will cost more time
+               if batch_size is small while cost less memory. The param is only
+               effective when data is a TSDataset. The values defaults to 32.
+        '''
+        _, y = self._tsdataset_to_numpy(data, is_predict=False)
+        yhat = self.predict_with_onnx(data, batch_size=batch_size)
+        y = self._tsdataset_unscale(y)
+        # y is already rolled, need to ensure y_pred and y_true have the same length
         eval_result = [Evaluator.evaluate(m, y_true=y, y_pred=yhat[:y.shape[0]],
                                           multioutput=multioutput)
                        for m in metrics]
@@ -81,9 +105,23 @@ class TSPipeline:
         '''
         x, _ = self._tsdataset_to_numpy(data, is_predict=True)
         yhat = self._best_model.predict(x, batch_size=batch_size)
-        if self._scaler:
-            from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
-            yhat = unscale_timeseries_numpy(yhat, self._scaler, self._scaler_index)
+        yhat = self._tsdataset_unscale(yhat)
+        return yhat
+
+    def predict_with_onnx(self, data, batch_size=32):
+        '''
+        Rolling predict with onnx with time series pipeline.
+
+        :param data: data can be a TSDataset or data creator(will be supported).
+               The TSDataset should follow the same operations as the training
+               TSDataset used in AutoTSEstimator.fit.
+        :param batch_size: predict batch_size, the process will cost more time
+               if batch_size is small while cost less memory.  The param is only
+               effective when data is a TSDataset. The values defaults to 32.
+        '''
+        x, _ = self._tsdataset_to_numpy(data, is_predict=True)
+        yhat = self._best_model.predict_with_onnx(x, batch_size=batch_size)
+        yhat = self._tsdataset_unscale(yhat)
         return yhat
 
     def fit(self, data, validation_data=None, epochs=1, metric="mse"):
@@ -165,3 +203,9 @@ class TSPipeline:
         else:
             raise NotImplementedError("Data creator has not been supported now.")
         return x, y
+
+    def _tsdataset_unscale(self, y):
+        if self._scaler:
+            from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
+            y = unscale_timeseries_numpy(y, self._scaler, self._scaler_index)
+        return y
