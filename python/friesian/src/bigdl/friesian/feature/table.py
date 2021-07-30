@@ -1152,35 +1152,41 @@ class FeatureTable(Table):
         return tuple(tbl_list)
 
     def target_encode(self, cat_cols, target_cols, target_mean=None, smooth=20, kfold=2,
-                      fold_seed=None, fold_col="__fold__", drop_cat=True, drop_fold=True,
+                      fold_seed=None, fold_col="__fold__", drop_cat=False, drop_fold=True,
                       out_cols=None):
         """
-        For each categorical column / column group in cat_cols, calculate the mean of target
-        columns in target_cols and encode the Table with mean.
+        For each categorical column or column group in cat_cols, calculate the mean of target
+        columns in target_cols and encode the FeatureTable with the target mean(s) to generate
+        new features.
 
-        :param cat_cols: str, a list of str or a nested list of str. Categorical columns / column
-               groups to target encode. If an element in the list is a str, then it is a categorical
-               column; otherwise if it is a list of str, then it is a categorical column group.
-        :param target_cols: str, or a list of str. Numeric target column to calculate the mean.
-        :param target_mean: dict. {target column : mean}. Provides global mean of target column(s)
-               to save calculation. Default is None.
+        :param cat_cols: str, a list of str or a nested list of str. Categorical column(s) or column
+               group(s) to target encode. To encode categorical column(s), cat_cols should be a str
+               or a list of str. To encode categorical column group(s), cat_cols should be a nested
+               list of str.
+        :param target_cols: str or a list of str. Numeric target column(s) to calculate the mean.
+               If target_cols is a list, then each target_col would be used separately to encode the
+               cat_cols.
+        :param target_mean: dict of {target column : mean} to provides global mean of target
+               column(s) if known beforehand to save calculation. Default is None and in this case
+               the global mean(s) would be calculated on demand.
         :param smooth: int. The mean of each category is smoothed by the overall mean. Default is
                20.
         :param kfold: int. Specifies number of folds for cross validation. The mean values within
                the i-th fold are calculated with data from all other folds. If kfold is 1,
                global-mean statistics are applied; otherwise, cross validation is applied. Default
                is 2.
-        :param fold_seed: int. Random seed used for generating folds if it is not None. If it is
-               None, folds will be generated with row number in each partition. Default is None.
+        :param fold_seed: int. Random seed used for generating folds. Default is None and in this
+               case folds will be generated with row number in each partition.
         :param fold_col: str. Name of integer column used for splitting folds. If fold_col exists
-               in the Table, then this column is used; otherwise, it is randomly generated with
-               range [0, kfold). Default is "__fold__".
-        :param drop_cat: Boolean. Drop the categorical columns if it is true. Default is True.
-        :param drop_folds: Boolean. Drop the fold column if it is true. Default is True.
+               in the FeatureTable, then this column is used; otherwise, it is randomly generated
+               within the range [0, kfold). Default is "__fold__".
+        :param drop_cat: boolean. Whether to drop the original categorical columns.
+               Default is False.
+        :param drop_fold: boolean. Drop the fold column if it is true. Default is True.
         :param out_cols: a nested list of str. Each inner list corresponds to the categorical
-               column in the same position of cat_cols. Each element in the inner list corresponds
-               to the target column in the same position of target_cols. If it is None, the output
-               column will be cat_col + "_te_" + target_col. Default is None.
+               column in the same position of cat_cols. Each element in the inner list
+               corresponds to the target column in the same position of target_cols. Default to be
+               None and in this case the output column will be cat_col + "_te_" + target_col.
 
         :return: A new target encoded FeatureTable, a list of TargetCodes which contains mean
                  statistics of the whole Table.
@@ -1320,15 +1326,15 @@ class FeatureTable(Table):
 
     def encode_target(self, targets, target_cols=None, drop_cat=True):
         """
-        Encode columns with provided list of TargetCode.
+        Encode columns with the provided TargetCode(s).
 
         :param targets: TargetCode or a list of TargetCode.
-        :param target_cols: str or a list of str. Selects part of target columns of which mean will
-               be applied. If it is None, the mean statistics of all target columns contained
-               in targets are applied. Default is None.
-        :param drop_cat: Boolean. Drop the categorical columns if it is true. Default is True.
+        :param target_cols: str or a list of str. Selects part of target columns of which target
+               encoding will be applied. Default is None and in this case all target columns
+               contained in targets will be encoded.
+        :param drop_cat: boolean. Whether to drop the categorical columns. Default is True.
 
-        :return: A new FeatureTable which transforms each categorical column into group-specific
+        :return: A new FeatureTable which encodes each categorical column into group-specific
                  mean of target columns with provided TargetCodes.
         """
         if isinstance(targets, TargetCode):
