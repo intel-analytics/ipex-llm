@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import pytest
 import numpy as np
 import pandas as pd
 import random
+import tempfile
+import os
+import shutil
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.chronos.data import TSDataset
@@ -113,6 +115,27 @@ class TestTSDataset(ZooTestCase):
         with pytest.raises(AssertionError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
+
+    def test_tsdataset_from_parquet(self):
+        df = get_ts_df()
+
+        configs = dict(dt_col="datetime",
+                       target_col="value",
+                       extra_feature_col=["extra feature"],
+                       id_col="id")
+        tsdata_pd = TSDataset.from_pandas(df, **configs)
+
+        temp = tempfile.mkdtemp()
+        try:
+            path = os.path.join(temp, "test.parquet")
+            df.to_parquet(path)
+
+            tsdata_pq = TSDataset.from_parquet(path, **configs)
+
+            pd.testing.assert_frame_equal(tsdata_pd.to_pandas(), tsdata_pq.to_pandas(),
+                                          check_like=True)
+        finally:
+            shutil.rmtree(temp)
 
     def test_tsdataset_initialization_multiple(self):
         df = get_multi_id_ts_df()
