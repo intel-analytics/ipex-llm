@@ -19,6 +19,7 @@ import ray
 import ray._private.services
 import uuid
 import random
+from packaging import version
 
 from zoo.orca.data import XShards
 from zoo.ray import RayContext
@@ -64,9 +65,20 @@ class LocalStore:
         return result
 
 
-def write_to_ray(idx, partition, redis_address, redis_password, partition_store_names):
+def init_ray_if_not(redis_address, redis_password):
     if not ray.is_initialized():
-        ray.init(address=redis_address, _redis_password=redis_password, ignore_reinit_error=True)
+        init_params = dict(
+            address=redis_address,
+            _redis_password=redis_password,
+            ignore_reinit_error=True
+        )
+        if version.parse(ray.__version__) >= version.parse("1.4.0"):
+            init_params["namespace"] = "az"
+        ray.init(**init_params)
+
+
+def write_to_ray(idx, partition, redis_address, redis_password, partition_store_names):
+    init_ray_if_not(redis_address, redis_password)
     ip = ray._private.services.get_node_ip_address()
     local_store_name = None
     for name in partition_store_names:
@@ -96,8 +108,7 @@ def write_to_ray(idx, partition, redis_address, redis_password, partition_store_
 
 
 def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
-    if not ray.is_initialized():
-        ray.init(address=redis_address, _redis_password=redis_password, ignore_reinit_error=True)
+    init_ray_if_not(redis_address, redis_password)
     local_store_handle = ray.get_actor(idx_to_store_name[idx])
     partition = ray.get(local_store_handle.get_partition.remote(idx))
     return partition
@@ -366,8 +377,12 @@ class RayXShards(XShards):
         partition_stores = {}
         for node in nodes:
             name = f"partition:{uuid_str}:{node}"
-            store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
-                .options(name=name).remote()
+            if version.parse(ray.__version__) >= version.parse("1.4.0"):
+                store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
+                    .options(name=name, lifetime="detached").remote()
+            else:
+                store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore) \
+                    .options(name=name).remote()
             partition_stores[name] = store
 
         # actor creation is aync, this is to make sure they all have been started
