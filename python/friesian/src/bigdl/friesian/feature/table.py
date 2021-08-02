@@ -1183,7 +1183,7 @@ class FeatureTable(Table):
         :param drop_cat: boolean. Whether to drop the original categorical columns.
                Default is False.
         :param drop_fold: boolean. Drop the fold column if it is true. Default is True.
-        :param out_cols: str, a list of str, or a nested list of str. When both cat_cols and
+        :param out_cols: str, a list of str or a nested list of str. When both cat_cols and
                target_cols has only one element, out_cols can be a single str. When cat_cols or
                target_cols has only one element, out_cols can be a list of str, and each element
                in out_cols corresponds to an element in target_cols or cat_cols. When it is a
@@ -1192,8 +1192,8 @@ class FeatureTable(Table):
                column in the same position of target_cols. Default to be None and in this case the
                output column will be cat_col + "_te_" + target_col.
 
-        :return: A new target encoded FeatureTable, a list of TargetCodes which contains mean
-                 statistics of the whole Table.
+        :return: A tuple of a new FeatureTable with target encoded columns and a list of TargetCodes
+                 which contains the target encode values of the whole FeatureTable.
         """
         assert isinstance(kfold, int) and kfold > 0, "kfold should be an integer larger than 0"
         if isinstance(cat_cols, str):
@@ -1398,7 +1398,7 @@ class FeatureTable(Table):
                shift in shifts. If it is None, the output column will be sort_cols + "_diff_lag_"
                + column + "_" + shift. Default is None.
 
-        :return: a new FeatureTable with difference columns.
+        :return: A new FeatureTable with difference columns.
         """
         columns = str_to_list(columns, "columns")
         sort_cols = str_to_list(sort_cols, "sort_cols")
@@ -1492,9 +1492,9 @@ class StringIndex(Table):
         """
         Create the StringIndex from a dict of indices.
 
-        :param indices: dict. The key is the categorical column,
-                        the value is the corresponding index.
-                        We assume that the key is a str and the value is a int.
+        :param indices: dict, the key is the categorical column, and the value is the
+               corresponding index. We assume that the key is a str and the value
+               is a int.
         :param col_name: str. The column name of the categorical column.
 
         :return: A StringIndex.
@@ -1551,15 +1551,19 @@ class StringIndex(Table):
 class TargetCode(Table):
     def __init__(self, df, cat_col, out_target_mean):
         """
-        Consists of categorical columns, output columns (mean statistics of categorical columns).
+        Target Encoding output used for encoding new FeatureTables, which consists of the encoded
+        categorical column or column group and the target encoded columns (mean statistics of
+        the categorical column or column group).
 
-        :param df: DataFrame.
-        :param cat_col: str or list of str. Categorical column/column group to be encoded in the
-               original Table.
-        :param out_target_mean: dictionary. out_col:(target_col, global_mean), i.e.
-               (target column's name in TargetCode):
-               (target column's name in original Table,
-               target column's global mean in original Table)
+        :param df: Target encoded data.
+        :param cat_col: str or list of str. The categorical column or column group encoded in the
+               original FeatureTable.
+        :param out_target_mean: dict, the key is the target encoded output column in this
+               TargetCode, and the value is a tuple of the target column in the original
+               FeatureTable together with the target column's global mean in the original
+               FeatureTable.
+               For example: {"col3_te_target1": ("target1", 3.0)}, and in this case cat_col for this
+               TargetCode should be "col3".
         """
         super().__init__(df)
         self.cat_col = cat_col
