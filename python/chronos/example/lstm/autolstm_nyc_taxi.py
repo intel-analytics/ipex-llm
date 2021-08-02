@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-
 import torch
 import pandas as pd
 import numpy as np
@@ -29,13 +27,14 @@ from zoo.orca import init_orca_context, stop_orca_context
 from zoo.automl.common.metrics import Evaluator
 
 
-def get_data(path):
-    df = pd.read_csv(path, engine='python')
+def get_data(args):
+    dataset = args.datadir if args.datadir else args.url
+    df = pd.read_csv(dataset)
     return df
 
 
-def get_nyc_taxi_tsdataset(path):
-    df = get_data(path)
+def get_nyc_taxi_tsdataset(args):
+    df = get_data(args)
     tsdata_train, tsdata_valid, tsdata_test = TSDataset.from_pandas(df,
                                                                     dt_col="timestamp",
                                                                     target_col=[
@@ -74,26 +73,24 @@ if __name__ == '__main__':
                         help="The memory you want to use on each node."
                         "You can change it depending on your own cluster setting.")
 
-    url = 'https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv'
-
     parser.add_argument('--epoch', type=int, default=1,
                         help="Max number of epochs to train in each trial.")
     parser.add_argument('--cpus_per_trial', type=int, default=2,
                         help="Int. Number of cpus for each trial")
     parser.add_argument('--n_sampling', type=int, default=1,
                         help="Number of times to sample from the search_space.")
-    parser.add_argument('--datadir', default=url,
-                        help="wget https://raw.githubusercontent.com/numenta/NAB/"
-                        "v1.0/data/realKnownCause/nyc_taxi.csv")
-
+    parser.add_argument('--datadir', type=str,
+                        help="Use local csv file by default.")
+    parser.add_argument('--url', type=str, default="https://raw.githubusercontent.com/numenta/NAB"
+                        "/v1.0/data/realKnownCause/nyc_taxi.csv",
+                        help="Download link of dataset.")
     args = parser.parse_args()
 
     num_nodes = 1 if args.cluster_mode == "local" else args.num_workers
     init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
                       memory=args.memory, num_nodes=num_nodes, init_ray_on_spark=True)
 
-    tsdata_train, tsdata_valid, tsdata_test = get_nyc_taxi_tsdataset(
-        args.datadir)
+    tsdata_train, tsdata_valid, tsdata_test = get_nyc_taxi_tsdataset(args)
 
     auto_lstm = AutoLSTM(input_feature_num=1,
                          output_target_num=1,
@@ -103,7 +100,7 @@ if __name__ == '__main__':
                          metric="mse",
                          hidden_dim=hp.grid_search([32, 64]),
                          layer_num=hp.randint(1, 3),
-                         lr=hp.choice([0.001, 0.003, 0.01]),
+                         lr=hp.choice([0.01, 0.03, 0.1]),
                          dropout=hp.uniform(0.1, 0.2),
                          logs_dir="/tmp/auto_lstm",
                          cpus_per_trial=args.cpus_per_trial,
