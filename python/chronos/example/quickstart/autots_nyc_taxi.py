@@ -37,10 +37,11 @@ parser.add_argument("--cores", type=int, default=4,
 parser.add_argument("--memory", type=str, default="10g",
                     help="The memory you want to use on each node. "
                          "You can change it depending on your own cluster setting.")
-parser.add_argument("--data_dir", type=str, default="./nyc_taxi.csv",
-                    help="the directory of electricity data file, you can download by running "
-                         "wget https://raw.githubusercontent.com/numenta/NAB/v1.0/"
-                         "data/realKnownCase/nyc_taxi.csv")
+parser.add_argument("--datadir", type=str,
+                    help="Use local csv file by default.")
+parser.add_argument("--url", type=str, default="https://raw.githubusercontent.com/numenta/NAB/"
+                    "v1.0/data/realKnownCause/nyc_taxi.csv",
+                    help="Download link of dataset.")
 
 if __name__ == "__main__":
 
@@ -56,7 +57,8 @@ if __name__ == "__main__":
                       )
 
     # load the dataset. The downloaded dataframe contains two columns, "timestamp" and "value".
-    df = pd.read_csv(args.data_dir, parse_dates=["timestamp"])
+    dataset = args.datadir if args.datadir else args.url
+    df = pd.read_csv(dataset, parse_dates=["timestamp"])
 
     # split the dataframe into train/validation/test set.
     train_df, val_df, test_df = train_val_test_split(df, val_ratio=0.1, test_ratio=0.1)
