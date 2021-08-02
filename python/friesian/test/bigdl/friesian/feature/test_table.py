@@ -860,9 +860,6 @@ class TestTable(TestCase):
             feature_tbl.target_encode("col_4", "col_5")
         self.assertTrue("target_cols should be numeric" in str(context.exception))
         with self.assertRaises(Exception) as context:
-            feature_tbl.target_encode("col_4", "target", out_cols=[])
-        self.assertTrue("out_cols should have the same length" in str(context.exception))
-        with self.assertRaises(Exception) as context:
             feature_tbl.target_encode("col_4", "target", target_mean={"target": "2"})
         self.assertTrue("mean in target_mean should be numeric" in str(context.exception))
         with self.assertRaises(Exception) as context:

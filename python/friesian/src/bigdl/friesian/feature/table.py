@@ -1183,10 +1183,14 @@ class FeatureTable(Table):
         :param drop_cat: boolean. Whether to drop the original categorical columns.
                Default is False.
         :param drop_fold: boolean. Drop the fold column if it is true. Default is True.
-        :param out_cols: a nested list of str. Each inner list corresponds to the categorical
-               column in the same position of cat_cols. Each element in the inner list
-               corresponds to the target column in the same position of target_cols. Default to be
-               None and in this case the output column will be cat_col + "_te_" + target_col.
+        :param out_cols: str, a list of str, or a nested list of str. When both cat_cols and
+               target_cols has only one element, out_cols can be a single str. When cat_cols or
+               target_cols has only one element, out_cols can be a list of str, and each element
+               in out_cols corresponds to an element in target_cols or cat_cols. When it is a
+               nested list of str, each inner list corresponds to the categorical column in the
+               same position of cat_cols. Each element in the inner list corresponds to the target
+               column in the same position of target_cols. Default to be None and in this case the
+               output column will be cat_col + "_te_" + target_col.
 
         :return: A new target encoded FeatureTable, a list of TargetCodes which contains mean
                  statistics of the whole Table.
@@ -1209,13 +1213,31 @@ class FeatureTable(Table):
             out_cols = [[gen_cols_name(cat_col, "_") + "_te_" + target_col
                          for target_col in target_cols] for cat_col in cat_cols]
         else:
-            assert isinstance(out_cols, list), "out_cols should be a list of list of str"
-            assert len(out_cols) == len(cat_cols), "out_cols should have the same length" \
-                                                   " with cat_cols"
-            for cat_col, out_col in zip(cat_cols, out_cols):
-                assert isinstance(out_col, list), "elements in out_cols should be list"
-                assert len(out_col) == len(target_cols), "the inner list of out_cols should " \
-                                                         "have the same length with target_cols"
+            if isinstance(out_cols, str):
+                assert len(cat_cols) == 1 and len(target_cols) == 1, \
+                    "out_cols can be string only if both cat_cols and target_cols has only one" + \
+                    " element"
+                out_cols = [[out_cols]]
+            elif isinstance(out_cols, list):
+                if all(isinstance(out_col, str) for out_col in out_cols):
+                    if len(cat_cols) == 1:
+                        out_cols = [out_cols]
+                    elif len(target_cols) == 1:
+                        out_cols = [[out_col] for out_col in out_cols]
+                    else:
+                        raise TypeError("out_cols should be a nested list of str when both " +
+                                        "cat_cols and target_cols have more than one elements")
+                else:
+                    for outs in out_cols:
+                        assert isinstance(outs, list), "out_cols should be str, a list of str, " \
+                                                       "or a nested list of str"
+            else:
+                raise TypeError("out_cols should be str, a list of str, or a nested list of str")
+            assert len(out_cols) == len(cat_cols), "length of out_cols should be equal to " \
+                                                   "length of cat_cols"
+            for outs in out_cols:
+                assert len(outs) == len(target_cols), "length of element in out_cols should be " \
+                                                      "equal to length of target_cols"
 
         # calculate global mean for each target column
         target_mean_dict = {}
