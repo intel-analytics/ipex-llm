@@ -19,3 +19,12 @@ Sampling specs to be used in search space configuration.
 .. automodule:: zoo.orca.automl.hp
     :members:
     :show-inheritance:
+
+automl.common.metrics
+----------------------------
+
+Evaluate unscaled metrics between y true value and y predicted value.
+
+.. automodule:: zoo.automl.common.metrics
+    :members:
+    :show-inheritance:
