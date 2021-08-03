@@ -31,7 +31,7 @@ def _is_busy_hours(hour):
 
 
 def _is_weekend(weekday):
-    return (weekday >= 5).values
+    return (weekday >= 5).values.astype(np.int64)
 
 
 TIME_FEATURE = ("MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY", "WEEKOFYEAR", "MONTH")
