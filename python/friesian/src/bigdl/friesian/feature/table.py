@@ -28,7 +28,6 @@ from pyspark.sql.window import Window
 
 from zoo.orca import OrcaContext
 from zoo.friesian.feature.utils import *
-from zoo.common.utils import callZooFunc
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
@@ -488,8 +487,7 @@ class Table:
         """
         Write the Table to Parquet file.
 
-        :param path: str. The path to the Parquet file. Note that the col_name
-               will be used as basename of the Parquet file.
+        :param path: str. The path to the Parquet file.
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append contents to the existing data.
                overwrite: Overwrite the existing data.
@@ -849,10 +847,10 @@ class FeatureTable(Table):
         Cross columns and hashed to specified bucket size
 
         :param crossed_columns: list of column name pairs to be crossed.
-        i.e. [['a', 'b'], ['c', 'd']]
+               i.e. [['a', 'b'], ['c', 'd']]
         :param bucket_sizes: hash bucket size for crossed pairs. i.e. [1000, 300]
 
-        :return: FeatureTable include crossed columns(i.e. 'a_b', 'c_d')
+        :return: A new FeatureTable with crossed columns.
         """
         df = cross_columns(self.df, crossed_columns, bucket_sizes)
         return FeatureTable(df)
@@ -987,29 +985,29 @@ class FeatureTable(Table):
 
     def pad(self, cols, seq_len=100, mask_cols=None):
         """
-        pad and mask columns
+        Pad and mask columns of the FeatureTable.
 
-         :param cols: list of string, columns need to be padded with 0s.
-         :param mask_cols: list of string, columns need to be masked with 1s and 0s.
-         :param seq_len:  int, length of masked column
+        :param cols: list of str, columns need to be padded with 0s.
+        :param seq_len: int, the length of masked column. Default is 100.
+        :param mask_cols: list of string, columns need to be masked with 1s and 0s.
 
-         :return: FeatureTable
-         """
+        :return: A new FeatureTable with padded columns.
+        """
         df = pad(self.df, cols, seq_len, mask_cols)
         return FeatureTable(df)
 
-    def apply(self, in_col, out_col, func, data_type):
+    def apply(self, in_col, out_col, func, dtype="string"):
         """
-        Transform a FeatureTable using a python udf
+        Transform a FeatureTable using a user-defined Python function.
 
-         :param in_col: string, name of column needed to be transformed.
-         :param out_col: string, name of output column.
-         :param func: python function
-         :param data_type: string, data type of out_col
+        :param in_col: str, the name of column to be transformed.
+        :param out_col: str, the name of output column.
+        :param func: The Python function to convert in_col to out_col.
+        :param dtype: str, the data type of out_col. Default is string type.
 
-         :return: FeatureTable
-         """
-        udf_func = udf(func, data_type)
+        :return: A new FeatureTable after column transformation.
+        """
+        udf_func = udf(func, dtype)
         df = self.df.withColumn(out_col, udf_func(pyspark_col(in_col)))
         return FeatureTable(df)
 
