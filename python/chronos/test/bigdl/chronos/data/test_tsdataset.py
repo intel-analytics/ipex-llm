@@ -580,7 +580,7 @@ class TestTSDataset(ZooTestCase):
         assert tsdata_test.target_col[0] != "new value"
 
     def test_tsdataset_global_feature(self):
-        for val in ["minimal", "comprehensive", "efficient"]:
+        for val in ["minimal"]:
             df = get_ts_df()
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                            extra_feature_col=["extra feature"], id_col="id")
@@ -636,4 +636,5 @@ class TestTSDataset(ZooTestCase):
             tsdata._check_basic_invariants()
 
         with pytest.raises(AssertionError):
-            tsdata.gen_global_feature().gen_rolling_feature(window_size=5)
+            tsdata.gen_global_feature(settings="minimal")\
+                  .gen_rolling_feature(settings="minimal", window_size=5)
