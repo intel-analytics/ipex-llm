@@ -622,7 +622,6 @@ class RayContext(object):
         ray.shutdown()
         init_params = dict(
             address=redis_address,
-            namespace="az",
             _redis_password=self.ray_service.password,
             _node_ip_address=node_ip
         )
