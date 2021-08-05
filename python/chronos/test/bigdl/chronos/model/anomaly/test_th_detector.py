@@ -25,6 +25,12 @@ from zoo.chronos.model.anomaly import ThresholdDetector
 
 class TestThresholdDetector(ZooTestCase):
 
+    def setup_method(self, method):
+        pass
+
+    def teardown_method(self, method):
+        pass
+
     def gen_data(self, feature_num=6, sample_num=100):
         return pd.DataFrame(data=np.random.randn(sample_num, feature_num))
 

@@ -25,6 +25,8 @@ from zoo.chronos.data.utils.roll import roll_timeseries_dataframe
 from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
 from zoo.chronos.data.utils.resample import resample_timeseries_dataframe
 from zoo.chronos.data.utils.split import split_timeseries_dataframe
+from zoo.chronos.data.utils.utils import _to_list, _check_type,\
+    _check_col_within, _check_col_no_na
 
 from tsfresh.utilities.dataframe_functions import roll_time_series
 from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
@@ -678,28 +680,3 @@ class TSDataset:
         # check no n/a in critical col
         _check_col_no_na(self.df, self.dt_col)
         _check_col_no_na(self.df, self.id_col)
-
-
-def _to_list(item, name, expect_type=str):
-    if isinstance(item, list):
-        return item
-    if item is None:
-        return []
-    _check_type(item, name, expect_type)
-    return [item]
-
-
-def _check_type(item, name, expect_type):
-    assert isinstance(item, expect_type), \
-        f"a {str(expect_type)} is expected for {name} but found {type(item)}"
-
-
-def _check_col_within(df, col_name):
-    assert col_name in df.columns, \
-        f"{col_name} is expected in dataframe while not found"
-
-
-def _check_col_no_na(df, col_name):
-    _check_col_within(df, col_name)
-    assert df[col_name].isna().sum() == 0, \
-        f"{col_name} column should not have N/A."
