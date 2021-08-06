@@ -564,6 +564,97 @@ class TSDataset:
 
         return self
 
+    def to_torch_data_loader(self,
+                             batch_size=32,
+                             roll=False,
+                             lookback=None,
+                             horizon=None,
+                             feature_col=None,
+                             target_col=None, ):
+        """
+        Convert TSDataset to a PyTorch DataLoader with or without rolling. We recommend to use
+        to_torch_data_loader(roll=True) if you don't need to output the rolled numpy array. It is
+        much more efficient than rolling separately, especially when the dataframe or lookback
+        is large.
+
+        :param batch_size: int, the batch_size for a Pytorch DataLoader. It defaults to 32.
+        :param roll: Boolean. Whether to roll the dataframe before converting to DataLoader.
+               If True, you must also specify lookback and horizon for rolling. If False, you must
+               have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.
+        :param lookback: int, lookback value.
+        :param horizon: int or list,
+               if `horizon` is an int, we will sample `horizon` step
+               continuously after the forecasting point.
+               if `horizon` is a list, we will sample discretely according
+               to the input list.
+               specially, when `horizon` is set to 0, ground truth will be generated as None.
+        :param feature_col: str or list, indicates the feature col name. Default to None,
+               where we will take all available feature in rolling.
+        :param target_col: str or list, indicates the target col name. Default to None,
+               where we will take all target in rolling. it should be a subset of target_col
+               you used to initialize the tsdataset.
+
+        :return: A pytorch DataLoader instance.
+
+        to_torch_data_loader() can be called by:
+
+        >>> # Here is a df example:
+        >>> # id        datetime      value   "extra feature 1"   "extra feature 2"
+        >>> # 00        2019-01-01    1.9     1                   2
+        >>> # 01        2019-01-01    2.3     0                   9
+        >>> # 00        2019-01-02    2.4     3                   4
+        >>> # 01        2019-01-02    2.6     0                   2
+        >>> tsdataset = TSDataset.from_pandas(df, dt_col="datetime",
+        >>>                                   target_col="value", id_col="id",
+        >>>                                   extra_feature_col=["extra feature 1",
+        >>>                                                      "extra feature 2"])
+        >>> horizon, lookback = 1, 1
+        >>> data_loader = tsdataset.to_torch_data_loader(batch_size=32,
+        >>>                                              roll=True,
+        >>>                                              lookback=lookback,
+        >>>                                              horizon=horizon)
+        >>> # or roll outside. That might be less efficient than the way above.
+        >>> tsdataset.roll(lookback=lookback, horizon=horizon, id_sensitive=False)
+        >>> x, y = tsdataset.to_numpy()
+        >>> print(x, y) # x = [[[1.9, 1, 2 ]], [[2.3, 0, 9 ]]] y = [[[ 2.4 ]], [[ 2.6 ]]]
+        >>> data_loader = tsdataset.to_torch_data_loader(batch_size=32)
+
+        """
+        from torch.utils.data import TensorDataset, DataLoader
+        import torch
+        if roll:
+            if lookback is None:
+                raise ValueError("You must input lookback if roll is True")
+            if horizon is None:
+                raise ValueError("You must input horizon if roll is True")
+            from zoo.chronos.data.utils.roll_dataset import RollDataset
+            feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
+                else self.feature_col
+            target_col = _to_list(target_col, "target_col") if target_col is not None \
+                else self.target_col
+
+            # set scaler index for unscale_numpy
+            self.scaler_index = [self.target_col.index(t) for t in target_col]
+
+            torch_dataset = RollDataset(self.df,
+                                        lookback=lookback,
+                                        horizon=horizon,
+                                        feature_col=feature_col,
+                                        target_col=target_col,
+                                        id_col=self.id_col)
+            return DataLoader(torch_dataset,
+                              batch_size=batch_size,
+                              shuffle=True)
+        else:
+            if self.numpy_x is None:
+                raise RuntimeError("Please call \"roll\" method before transforming a TSDataset to "
+                                   "torch DataLoader without rolling (default roll=False)!")
+            x, y = self.to_numpy()
+            return DataLoader(TensorDataset(torch.from_numpy(x).float(),
+                                            torch.from_numpy(y).float()),
+                              batch_size=batch_size,
+                              shuffle=True)
+
     def to_numpy(self):
         '''
         Export rolling result in form of a tuple of numpy ndarray (x, y).
