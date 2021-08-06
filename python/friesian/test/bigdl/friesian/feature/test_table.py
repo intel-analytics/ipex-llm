@@ -328,7 +328,7 @@ class TestTable(TestCase):
     def test_norm(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
-        normalized_tbl, min_max = feature_tbl.min_max_scale(["col_2"])
+        normalized_tbl, min_max_dic = feature_tbl.min_max_scale(["col_2"])
         max_value = normalized_tbl.df.select("col_2") \
             .agg(max(col("col_2")).alias("max")) \
             .rdd.map(lambda row: row['max']).collect()[0]
@@ -340,8 +340,33 @@ class TestTable(TestCase):
         assert min_value >= 0, "col_2 shouldn't be less than 0 after normalization"
 
         tbl2 = FeatureTable(feature_tbl.df.withColumn("col2-col3", array(["col_2", "col_3"])))
-        normalized_tbl2, min_max = tbl2.min_max_scale(["col_2", "col2-col3"])
-        normalized_tbl2.compute()
+        normalized_tbl2, min_max_dic2 = tbl2.min_max_scale(["col_2", "col2-col3"])
+
+        test_file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data3.parquet")
+        test_tbl = FeatureTable.read_parquet(test_file_path).fillna(0, ["col_2", "col_3"])
+        scaled = test_tbl.transform_min_max_scale(["col_2"], min_max_dic)
+        max_value = scaled.df.select("col_2") \
+            .agg(max(col("col_2")).alias("max")) \
+            .rdd.map(lambda row: row['max']).collect()[0]
+        min_value = scaled.df.select("col_2") \
+            .agg(min(col("col_2")).alias("min")) \
+            .rdd.map(lambda row: row['min']).collect()[0]
+
+        assert max_value <= 1, "col_2 shouldn't be more than 1 after normalization"
+        assert min_value >= 0, "col_2 shouldn't be less than 0 after normalization"
+
+        test_tbl2 = FeatureTable(test_tbl.df.withColumn("col2-col3", array(["col_2", "col_3"])))
+        scaled2 = test_tbl2.transform_min_max_scale(["col_2", "col2-col3"], min_max_dic2)
+        max_value = scaled2.df.select("col2-col3") \
+            .agg(max(col("col2-col3")).alias("max")) \
+            .rdd.map(lambda row: row['max']).collect()[0]
+        min_value = scaled2.df.select("col2-col3") \
+            .agg(min(col("col2-col3")).alias("min")) \
+            .rdd.map(lambda row: row['min']).collect()[0]
+        assert max_value[0] <= 1 and max_value[1] <= 1, \
+            "col2-col3 shouldn't be more than 1 after normalization"
+        assert min_value[0] >= 0 and min_value[1] >= 0, \
+            "col2-col3 shouldn't be less than 0 after normalization"
 
     def test_cross(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
