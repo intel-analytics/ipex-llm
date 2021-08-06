@@ -38,3 +38,9 @@ def _check_col_no_na(df, col_name):
     _check_col_within(df, col_name)
     assert df[col_name].isna().sum() == 0, \
         f"{col_name} column should not have N/A."
+
+
+def _check_cols_no_na(df, col_names):
+    col_names = _to_list(col_names, name=None)
+    for col_name in col_names:
+        _check_col_no_na(df, col_name)
