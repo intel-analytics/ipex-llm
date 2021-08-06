@@ -21,13 +21,23 @@ from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, Decim
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.feature import VectorAssembler
-from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadcast, lit
-from pyspark.sql import Row
+
+from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadcast, \
+    lit, rank, monotonically_increasing_id
+from pyspark.sql import Row, Window
 import pyspark.sql.functions as F
 from pyspark.sql.window import Window
 
 from zoo.orca import OrcaContext
 from zoo.friesian.feature.utils import *
+
+
+from functools import reduce
+from pyspark.ml.feature import Bucketizer
+
+import numpy as np
+import copy
+
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
@@ -331,11 +341,12 @@ class Table:
         Calculate the statistics of the values over the target column(s).
 
         :param columns: str or a list of str that specifies the name(s) of the target column(s).
-        If columns is None, then the function will return statistics for all numeric columns.
+               If columns is None, then the function will return statistics for all numeric columns.
         :param aggr: str or a list of str or dict to specify aggregate functions,
-        min/max/avg/sum/count are supported.
-        If aggr is a str or a list of str, it contains the name(s) of aggregate function(s).
-        If aggr is a dict, the key is the column name, and the value is the aggregate function(s).
+               min/max/avg/sum/count are supported.
+               If aggr is a str or a list of str, it contains the name(s) of aggregate function(s).
+               If aggr is a dict, the key is the column name, and the value is the aggregate
+               function(s).
 
         :return: dict, the key is the column name, and the value is aggregate result(s).
         """
@@ -524,6 +535,160 @@ class Table:
         for i in columns:
             df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(dtype))
         return df_cast
+
+    def write_csv(self, path, mode="overwrite", header=True, num_partitions=None):
+        """
+        Write the Table to csv file.
+
+        :param path: str. The path to the csv file.
+        :param mode: str. One of "append", "overwrite", "error" or "ignore".
+               append: Append the contents of this StringIndex to the existing data.
+               overwrite: Overwrite the existing data.
+               error: Throw an exception if the data already exists.
+               ignore: Silently ignore this operation if the data already exists.
+        :param header: boolean. Whether to include the schema at the first line of the csv file.
+               Default is False.
+        :param num_partitions: positive int. The number of files to write.
+        """
+        if num_partitions:
+            self.df.repartition(num_partitions).write.csv(path=path, mode=mode, header=header)
+        else:
+            self.df.write.csv(path=path, mode=mode, header=header)
+
+    def _concat(self, join="outer"):
+        def concat_inner(self, df2):
+            col_names_1 = set(self.schema.names)
+            col_names_2 = set(df2.schema.names)
+            for col in list(col_names_1.difference(col_names_2)):
+                self = self.drop(col)
+            for col in list(col_names_2.difference(col_names_1)):
+                df2 = df2.drop(col)
+            return self.unionByName(df2)
+
+        def concat_outer(self, df2):
+            col_names_1 = set(self.schema.names)
+            col_names_2 = set(df2.schema.names)
+            for col in col_names_1.difference(col_names_2):
+                df2 = df2.withColumn(col, lit(None).cast(self.schema[col].dataType))
+            for col in col_names_2.difference(col_names_1):
+                self = self.withColumn(col, lit(None).cast(df2.schema[col].dataType))
+            return self.unionByName(df2)
+        if join == "outer":
+            return concat_outer
+        else:
+            return concat_inner
+
+    def concat(self, tables, mode="inner", distinct=False):
+        """
+        Concatenate a list of Tables into one Table in the dimension of row.
+
+        :param tables: a Table or a list of Tables.
+        :param mode: str, either inner or outer. For inner mode, the new Table would only
+               contain columns that are shared by all Tables. For outer mode, the resulting
+               Table would contain all the columns that appear in all Tables.
+        :param distinct: boolean. If True, the result Table would only contain distinct rows.
+               Default is False.
+
+        :return: A single concatenated Table.
+        """
+        if mode not in ["outer", "inner"]:
+            raise ValueError("concat mode should be either outer or inner,\
+                                     but got {}.".format(mode))
+        if not isinstance(tables, list):
+            tables = [tables]
+        dfs = [table.df for table in tables] + [self.df]
+        df = reduce(self._concat(mode), dfs)
+        if distinct:
+            df = df.distinct()
+        return self._clone(df)
+
+    def drop_duplicates(self, subset=None, sort_cols=None, keep="min"):
+        """
+        Return a new Table with duplicate rows removed.
+
+        :param subset: str or a list of str, specifies which column(s) to be considered when
+               referring to duplication. If subset is None, all columns will be considered.
+        :param sort_cols: str or a list of str, specifies the column(s) to determine which
+               item to keep when duplicated. If sort_cols is None, duplicate rows will be
+               dropped randomly.
+        :param keep: str, either min and max. Default is min.
+               -min: rows which have smallest values in sort_cols will be kept.
+               -max: rows which have largest values in sort_cols will be kept.
+
+        :return: A new Table with duplicate rows removed.
+        """
+        if subset is not None:
+            if not isinstance(subset, list):
+                subset = [subset]
+            check_col_exists(self.df, subset)
+        else:
+            subset = self.columns
+        if sort_cols is None:
+            return self._clone(self.df.dropDuplicates(subset=subset))
+        if not isinstance(sort_cols, list):
+                sort_cols = [sort_cols]
+        check_col_exists(self.df, sort_cols)
+        if keep == "min":
+            window = Window.partitionBy(subset).orderBy(*sort_cols, 'id')
+        elif keep == "max":
+            window = Window.partitionBy(subset).orderBy(*[self.df[sort_col].desc()
+                                                        for sort_col in sort_cols], 'id')
+        else:
+            raise ValueError("keep should be either min or max, but got {}.".format(keep))
+        df = self.df.withColumn('id', monotonically_increasing_id())\
+            .withColumn('rank', rank().over(window))
+        df = df.filter(pyspark_col('rank') == 1).drop('rank', 'id')
+        return self._clone(df)
+
+    def cut_bins(self, bins, columns, labels=None, out_cols=None, drop=True):
+        """
+        Segment values of the target column into bins.
+
+        :param bins: int, a list of int or dict. If bins is a list, it defines the bins to be used.
+               With n splits, there are n+1 buckets. For example, if bins is [0, 6, 18, 60], splits
+               are[-inf,0) [0, 6), [6, 18), [18, 60), [60, inf].
+               If bins is an int, it defines the number of equal-width bins in the range of all
+               column values.
+               If bins is a dict, key(s) should be the input column name(s).
+        :param columns: str, a list of str or dict, specifies the name(s) of the input column(s).
+               If bins is a dict, key(s) should be the input column name(s).
+        :param labels: a list of str or dict, specifies the labels for the returned bins.
+               If lables is None, then the new bin column would use integer to encode categories.
+               If bins is a dict, key(s) should be the input column name(s).
+        :param out_cols: str or dict, specifies the name of output categorical column.
+               If out_col is None, the name of output column is "column_bin".
+               If bins is a dict, key(s) should be the input column name(s).
+        :param drop: boolean. Whether to drop the original column. Default is True.
+
+        :return: a new Table with the updated bin column.
+        """
+        if not isinstance(columns, list):
+            columns = [columns]
+        check_col_exists(self.df, columns)
+        df_buck = self.df
+        for column in columns:
+            out_col = out_cols[column] if isinstance(out_cols, dict) else out_cols
+            bin = bins[column] if isinstance(bins, dict) else bins
+            label = labels[column] if isinstance(labels, dict) else labels
+            if not check_column_numeric(self.df, column):
+                raise ValueError("Column should be numeric.")
+            if out_col is None:
+                out_col = column+"_bin"
+            if isinstance(bin, int):
+                max = self.get_stats(column, "max")[column]
+                min = self.get_stats(column, "min")[column]
+                bin = np.linspace(min, max, bin+1, endpoint=True).tolist()
+            elif isinstance(bin, list):
+                bin = [float("-inf")] + bin + [float("inf")]
+            bucketizer = Bucketizer(splits=bin, inputCol=column, outputCol=out_col)
+            df_buck = bucketizer.setHandleInvalid("keep").transform(df_buck)
+            if label is not None:
+                to_label = {i: l for (i, l) in enumerate(label)}
+                udf_label = udf(lambda i: to_label[i], StringType())
+                df_buck = df_buck.withColumn(out_col, udf_label(out_col))
+            if drop:
+                df_buck = df_buck.drop(column)
+        return self._clone(df_buck)
 
     def append_column(self, name, value):
         """
@@ -1011,17 +1176,31 @@ class FeatureTable(Table):
         df = self.df.withColumn(out_col, udf_func(pyspark_col(in_col)))
         return FeatureTable(df)
 
-    def join(self, table, on=None, how=None):
+    def join(self, table, on=None, how=None, lsuffix=None, rsuffix=None):
         """
-        Join a FeatureTable with another FeatureTable, it is wrapper of spark dataframe join
+        Join a FeatureTable with another FeatureTable.
 
-        :param table: FeatureTable
-        :param on: string, join on this column
-        :param how: string
+        :param table: A FeatureTable.
+        :param on: str or a list of str, name(s) of column(s) to join.
+        :param how: str, default is inner. Must be one of: inner, cross, outer, full,
+               fullouter, full_outer, left, leftouter, left_outer, right, rightouter,
+               right_outer, semi, leftsemi, left_semi, anti, leftanti and left_anti.
+        :param lsuffix: The suffix to use for the original Table's overlapping columns.
+        :param rsuffix: The suffix to use for the input Table's overlapping columns.
 
-        :return: FeatureTable
+        :return: A joined FeatureTable.
         """
         assert isinstance(table, Table), "the joined table should be a Table"
+        if not isinstance(on, list):
+            on = [on]
+        overlap_columns = list(set(self.df.schema.names).
+                               intersection(set(table.df.schema.names)).difference(on))
+        if lsuffix is not None:
+            names = {column: column + lsuffix for column in overlap_columns}
+            self = self.rename(names)
+        if rsuffix is not None:
+            names = {column: column + rsuffix for column in overlap_columns}
+            table = table.rename(names)
         joined_df = self.df.join(table.df, on=on, how=how)
         return FeatureTable(joined_df)
 
