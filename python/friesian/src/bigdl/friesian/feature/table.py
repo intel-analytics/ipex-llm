@@ -1023,13 +1023,14 @@ class FeatureTable(Table):
     def min_max_scale(self, columns, min=0.0, max=1.0):
         """
         Rescale each column individually to a common range [min, max] linearly using
-         column summary statistics, which is also known as min-max normalization or Rescaling.
+        column summary statistics, which is also known as min-max normalization or Rescaling.
 
         :param columns: list of column names
         :param min: Lower bound after transformation, shared by all columns. 0.0 by default.
         :param max: Upper bound after transformation, shared by all columns. 1.0 by default.
 
-        :return: FeatureTable and mapping = {c: (originalMin, originalMax) for c in columns}
+        :return: new FeatureTable with scaled columns,
+        and a dictionary of original min, original max values of each columns
         """
         df = self.df
         types = [x[1] for x in self.df.select(*columns).dtypes]
@@ -1041,7 +1042,7 @@ class FeatureTable(Table):
                       or types[i] == "array<float>" or types[i] == "array<double>"]
         vector_cols = [columns[i] for i in range(len(columns)) if types[i] == "vector"]
 
-        min_max_dic = {}
+        min_max_dict = {}
         tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
 
         if scalar_cols:
@@ -1071,7 +1072,7 @@ class FeatureTable(Table):
             max_list = model.stages[1].originalMax.toArray().tolist()
 
             for i, min_max in enumerate(zip(min_list, max_list)):
-                min_max_dic[scalar_cols[i]] = min_max
+                min_max_dict[scalar_cols[i]] = min_max
 
         from pyspark.ml.linalg import Vectors, VectorUDT
         for c in array_cols:
@@ -1080,8 +1081,8 @@ class FeatureTable(Table):
             scaler = MinMaxScaler(min=min, max=max, inputCol=c, outputCol="scaled")
             model = scaler.fit(df)
             df = model.transform(df).drop(c).withColumn(c, tolist("scaled")).drop("scaled")
-            min_max_dic[c] = (model.originalMin.toArray().tolist(),
-                              model.originalMax.toArray().tolist())
+            min_max_dict[c] = (model.originalMin.toArray().tolist(),
+                               model.originalMax.toArray().tolist())
 
         for c in vector_cols:
             scaler = MinMaxScaler(min=min, max=max, inputCol=c, outputCol="scaled")
@@ -1089,9 +1090,66 @@ class FeatureTable(Table):
             df = model.transform(df).withColumnRenamed("scaled", c)
             min = model.originalMin
             max = model.originalMax
-            min_max_dic[c] = (min, max)
+            min_max_dict[c] = (min, max)
 
-        return FeatureTable(df), min_max_dic
+        return FeatureTable(df), min_max_dict
+
+    def transform_min_max_scale(self, columns, min_max_dict):
+        """
+        Rescale each column individually with given [min, max] range of each column.
+
+        :param columns: str or a list of str. The column(s) to be rescaled.
+        :param min_max_dict: a dictionary of min, max values of each column.
+         The key is the column name, and the value is (min, max) of this column.
+        :return: A new FeatureTable with rescaled column(s).
+        """
+        if not isinstance(columns, list):
+            columns = [columns]
+        types = [x[1] for x in self.df.select(*columns).dtypes]
+        scalar_cols = [columns[i] for i in range(len(columns))
+                       if types[i] == "int" or types[i] == "bigint"
+                       or types[i] == "float" or types[i] == "double"]
+        array_cols = [columns[i] for i in range(len(columns))
+                      if types[i] == "array<int>" or types[i] == "array<bigint>"
+                      or types[i] == "array<float>" or types[i] == "array<double>"]
+        vector_cols = [columns[i] for i in range(len(columns)) if types[i] == "vector"]
+
+        tbl = self
+        
+        import numpy as np
+
+        def normalize_array(c_min, c_max):
+
+            def normalize(x):
+                np_x = np.array(x)
+                np_min = np.array(c_min)
+                np_max = np.array(c_max)
+                normalized = (np_x - np_min) / (np_max - np_min)
+                return normalized.tolist()
+            return normalize
+
+        def normalize_scalar_vector(c_min, c_max):
+            def normalize(x):
+                return (x - c_min) / (c_max - c_min)
+            return normalize
+
+        for column in scalar_cols:
+            if column in min_max_dict:
+                col_min, col_max = min_max_dict[column]
+                tbl = tbl.apply(column, column, normalize_scalar_vector(col_min, col_max), "float")
+
+        for column in array_cols:
+            if column in min_max_dict:
+                col_min, col_max = min_max_dict[column]
+                tbl = tbl.apply(column, column, normalize_array(col_min, col_max), "array<float>")
+
+        for column in vector_cols:
+            if column in min_max_dict:
+                col_min, col_max = min_max_dict[column]
+                tbl = tbl.apply(column, column,
+                                normalize_scalar_vector(col_min, col_max), "vector")
+
+        return tbl
 
     def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
         """
