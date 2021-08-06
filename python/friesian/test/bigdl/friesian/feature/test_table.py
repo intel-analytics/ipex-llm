@@ -29,6 +29,8 @@ from zoo.orca import OrcaContext
 from zoo.friesian.feature import FeatureTable, StringIndex, TargetCode
 from zoo.common.nncontext import *
 
+import shutil
+
 
 class TestTable(TestCase):
     def setup_method(self, method):
@@ -565,6 +567,166 @@ class TestTable(TestCase):
             "the first row of name should be 1"
         assert tbl.df.where(tbl.df.height == 10).select("num").collect()[0]["num"] == 2, \
             "the third row of num should be 2"
+
+    def test_write_csv(self):
+        spark = OrcaContext.get_spark_session()
+        data = [("jack", 14, 8),
+                ("alice", 25, 9),
+                ("rose", 23, 10)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("age", IntegerType(), True),
+                             StructField("height", IntegerType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        directory = "write.csv"
+        if os.path.exists("write.csv"):
+            shutil.rmtree("write.csv")
+        tbl.write_csv(directory, mode="overwrite", header=True, num_partitions=1)
+        assert os.path.exists("write.csv"), "files not write"
+        result = FeatureTable(spark.read.csv(directory, header=True))
+        assert isinstance(result, FeatureTable)
+        assert result.size() == 3, "the size of result should be 3"
+        assert result.filter("age == 23").size() == 1, "wrong age"
+        assert result.filter("name == 'jack'").size() == 1, "wrong name"
+        assert result.filter("name == 'alice'").size() == 1, "wrong name"
+        shutil.rmtree(directory)
+
+    def test_concat(self):
+        spark = OrcaContext.get_spark_session()
+        data1 = [("jack", 1)]
+        data2 = [(2, "alice")]
+        data3 = [("amy", 3, 50)]
+        schema1 = StructType([StructField("name", StringType(), True),
+                             StructField("id", IntegerType(), True)])
+        schema2 = StructType([StructField("id", IntegerType(), True),
+                              StructField("name", StringType(), True)])
+        schema3 = StructType([StructField("name", StringType(), True),
+                             StructField("id", IntegerType(), True),
+                             StructField("weight", IntegerType(), True)])
+        tbl1 = FeatureTable(spark.createDataFrame(data1, schema1))
+        tbl2 = FeatureTable(spark.createDataFrame(data2, schema2))
+        tbl3 = FeatureTable(spark.createDataFrame(data3, schema3))
+        tbl = tbl1.concat(tbl1)
+        assert tbl.size() == 2
+        tbl = tbl1.concat(tbl1, distinct=True)
+        assert tbl.size() == 1
+        tbl = tbl1.concat(tbl2)
+        assert tbl.filter("name == 'jack'").size() == 1
+        assert tbl.filter("name == 'alice'").size() == 1
+        tbl = tbl1.concat(tbl3, mode="inner")
+        assert tbl.df.schema.names == ["name", "id"]
+        tbl = tbl1.concat(tbl3, mode="outer")
+        assert tbl.df.schema.names == ["name", "id", "weight"]
+        assert tbl.fillna(0, "weight").filter("weight == 0").size() == 1
+        tbl = tbl1.concat([tbl1, tbl2, tbl3])
+        assert tbl.size() == 4
+        assert tbl.distinct().size() == 3
+        tbl = tbl1.concat([tbl1, tbl2, tbl3], distinct=True)
+        assert tbl.size() == 3
+
+    def test_drop_duplicates(self):
+        spark = OrcaContext.get_spark_session()
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("grade", StringType(), True),
+                             StructField("number", IntegerType(), True)])
+        data = [("jack", "a", 1), ("jack", "a", 3), ("jack", "b", 2), ("amy", "a", 2),
+                ("amy", "a", 5), ("amy", "a", 4)]
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        tbl2 = tbl.drop_duplicates(subset=['name', 'grade'], sort_cols='number', keep='min')
+        tbl2.df.show()
+        assert tbl2.size() == 3
+        assert tbl2.df.filter((tbl2.df.name == 'jack') & (tbl2.df.grade == 'a'))\
+            .select("number").collect()[0]["number"] == 1
+        assert tbl2.df.filter((tbl2.df.name == 'jack') & (tbl2.df.grade == 'b'))\
+            .select("number").collect()[0]["number"] == 2
+        assert tbl2.df.filter((tbl2.df.name == 'amy') & (tbl2.df.grade == 'a'))\
+            .select("number").collect()[0]["number"] == 2
+        tbl3 = tbl.drop_duplicates(subset=['name', 'grade'], sort_cols='number', keep='max')
+        tbl3.df.show()
+        assert tbl3.size() == 3
+        assert tbl3.df.filter((tbl2.df.name == 'jack') & (tbl2.df.grade == 'a'))\
+            .select("number").collect()[0]["number"] == 3
+        assert tbl3.df.filter((tbl2.df.name == 'jack') & (tbl2.df.grade == 'b'))\
+            .select("number").collect()[0]["number"] == 2
+        assert tbl3.df.filter((tbl2.df.name == 'amy') & (tbl2.df.grade == 'a'))\
+            .select("number").collect()[0]["number"] == 5
+        tbl4 = tbl.drop_duplicates(subset=None, sort_cols='number', keep='max')
+        tbl4.df.show()
+        assert tbl4.size() == 6
+        tbl5 = tbl.drop_duplicates(subset=['name', 'grade'], sort_cols=None, keep='max')
+        tbl5.df.show()
+        assert tbl5.size() == 3
+        tbl6 = tbl.drop_duplicates(subset=['name'], sort_cols=["grade", "number"], keep='max')
+        assert tbl6.size() == 2
+        tbl6.df.show()
+        assert tbl6.df.filter((tbl6.df.name == 'jack') & (tbl6.df.grade == 'b')
+                              & (tbl6.df.number == 2))\
+            .select("number").collect()[0]["number"] == 2
+        assert tbl6.df.filter((tbl6.df.name == 'amy') & (tbl6.df.grade == 'a')
+                              & (tbl6.df.number == 5))\
+            .select("number").collect()[0]["number"] == 5
+
+    def test_join(self):
+        spark = OrcaContext.get_spark_session()
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("id", IntegerType(), True)])
+        data = [("jack", 1), ("jack", 2), ("jack", 3)]
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        tbl2 = FeatureTable(spark.createDataFrame(data, schema))
+        tbl = tbl.join(tbl2, on="id", lsuffix="_l", rsuffix="_r")
+        assert "name_l" in tbl.df.schema.names
+        assert "id" in tbl.df.schema.names
+        assert "name_r" in tbl.df.schema.names
+
+    def test_cut_bins(self):
+        spark = OrcaContext.get_spark_session()
+        values = [("a", 23), ("b", 45), ("c", 10), ("d", 60), ("e", 56), ("f", 2),
+                  ("g", 25), ("h", 40), ("j", 33)]
+        tbl = FeatureTable(spark.createDataFrame(values, ["name", "ages"]))
+        splits = [6, 18, 60]
+        labels = ["infant", "minor", "adult", "senior"]
+        # test drop false, name defiend
+        new_tbl = tbl.cut_bins(bins=splits, columns="ages", labels=labels,
+                               out_cols="age_bucket", drop=False)
+        assert "age_bucket" in new_tbl.df.schema.names
+        assert "ages" in new_tbl.df.schema.names
+        assert new_tbl.df.select("age_bucket").rdd.flatMap(lambda x: x).collect() ==\
+            ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
+        # test drop true, name defined
+        new_tbl = tbl.cut_bins(bins=splits, columns="ages", labels=labels,
+                               out_cols="age_bucket", drop=True)
+        assert "age_bucket" in new_tbl.df.schema.names
+        assert "ages" not in new_tbl.df.schema.names
+        assert new_tbl.df.select("age_bucket").rdd.flatMap(lambda x: x).collect() == \
+            ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
+        # test name not defined
+        new_tbl = tbl.cut_bins(bins=splits, columns="ages", labels=labels, drop=True)
+        assert "ages_bin" in new_tbl.df.schema.names
+        assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() == \
+            ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
+        # test integer bins
+        new_tbl = tbl.cut_bins(bins=4, columns="ages", labels=labels, drop=True)
+        assert "ages_bin" in new_tbl.df.schema.names
+        assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() \
+            == ["minor", "adult", "infant", "senior", "senior", "infant", "minor", "adult", "adult"]
+        # test label is None
+        new_tbl = tbl.cut_bins(bins=4, columns="ages", drop=True)
+        assert "ages_bin" in new_tbl.df.schema.names
+        assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() \
+            == [1, 2, 0, 3, 3, 0, 1, 2, 2]
+        # test multiple columns
+        values = [("a", 23, 23), ("b", 45, 45), ("c", 10, 10), ("d", 60, 60), ("e", 56, 56),
+                  ("f", 2, 2), ("g", 25, 25), ("h", 40, 40), ("j", 33, 33)]
+        tbl = FeatureTable(spark.createDataFrame(values, ["name", "ages", "number"]))
+        splits = [6, 18, 60]
+        splits2 = [6, 18, 60]
+        labels = ["infant", "minor", "adult", "senior"]
+        new_tbl = tbl.cut_bins(bins={'ages': splits, 'number': splits2}, columns=["ages", 'number'],
+                               labels={'ages': labels, 'number': labels}, out_cols=None, drop=False)
+        assert "ages_bin" in new_tbl.df.schema.names
+        assert "ages" in new_tbl.df.schema.names
+        assert "number_bin" in new_tbl.df.schema.names
+        assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() ==\
+            ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
 
     def test_columns(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
