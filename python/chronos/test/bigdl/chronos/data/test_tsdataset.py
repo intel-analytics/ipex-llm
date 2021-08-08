@@ -697,6 +697,7 @@ class TestTSDataset(ZooTestCase):
                 tsdata.scale(stand, fit=False)
             tsdata._check_basic_invariants()
 
-        with pytest.raises(AssertionError):
-            tsdata.gen_global_feature(settings="minimal")\
-                  .gen_rolling_feature(settings="minimal", window_size=5)
+        # remove due to the possible large cost on test sys
+        # with pytest.raises(AssertionError):
+        #     tsdata.gen_global_feature(settings="minimal")\
+        #           .gen_rolling_feature(settings="minimal", window_size=5)
