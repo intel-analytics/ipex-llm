@@ -1,4 +1,4 @@
-ARG SPARK_VERSION=2.4.6
+ARG SPARK_VERSION=3.1.2
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
@@ -29,10 +29,17 @@ RUN apt-get update --fix-missing && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
-    rm $SPARK_HOME/jars/kubernetes-client-*.jar
+    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt
 
-ADD https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar $SPARK_HOME/jars
+RUN ln -fs /bin/bash /bin/sh
+RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
+        rm $SPARK_HOME/jars/okhttp-*.jar && \
+        wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
+    elif [ $SPARK_VERSION = "2.4.6" ]; then \
+        rm $SPARK_HOME/jars/kubernetes-client-*.jar && \
+        wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar; \
+    fi
+
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 
 # stage.2 analytics-zoo
@@ -154,7 +161,7 @@ RUN mkdir -p /opt/analytics-zoo-examples/python && \
     chmod a+x /opt/start-notebook-spark.sh && \
     chmod a+x /opt/start-notebook-k8s.sh && \
     chmod +x /sbin/tini && \
-    cp /sbin/tini /usr/bin/tini    
+    cp /sbin/tini /usr/bin/tini
 
 WORKDIR /opt/spark/work-dir
 
